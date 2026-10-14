@@ -27,8 +27,8 @@ const ROOM_SHOTS: Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }> =
       look: new THREE.Vector3(1.2, 2.2, -3.5),
     },
     "amusement-park": {
-      eye: new THREE.Vector3(0, 9.8, 18.5),
-      look: new THREE.Vector3(0, 3.4, -12),
+      eye: new THREE.Vector3(0, 10, 19),
+      look: new THREE.Vector3(0, 4.5, -10),
     },
   };
 

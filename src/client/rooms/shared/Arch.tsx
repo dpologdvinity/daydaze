@@ -23,11 +23,13 @@ function archPoints(scale: number): THREE.Vector3[] {
 export function Arch({
   sign,
   position,
+  width = 3.8,
   color = "#ffb02e",
   accent = "#ff2f9a",
 }: {
   sign: string;
   position: [number, number, number];
+  width?: number;
   color?: string;
   accent?: string;
 }) {
@@ -41,7 +43,7 @@ export function Arch({
         text={sign}
         color={accent}
         font={MARQUEE}
-        width={3.8}
+        width={width}
         position={[0, SPRING + RADIUS + 0.75, 0]}
         flicker
       />

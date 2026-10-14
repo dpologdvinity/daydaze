@@ -357,10 +357,16 @@ export function SwingRide() {
                 to={[SWING_RADIUS, -1.7, 0]}
                 radius={0.02}
               />
-              <mesh position={[SWING_RADIUS, -2, 0]}>
-                <boxGeometry args={[0.55, 0.14, 0.55]} />
-                <meshStandardMaterial color={k % 2 ? "#ff2f9a" : "#ffb02e"} />
-              </mesh>
+              <group position={[SWING_RADIUS, -2, 0]}>
+                <mesh>
+                  <boxGeometry args={[0.55, 0.12, 0.55]} />
+                  <meshStandardMaterial color={k % 2 ? "#ff2f9a" : "#ffb02e"} />
+                </mesh>
+                <mesh position={[0, 0.35, -0.25]}>
+                  <boxGeometry args={[0.55, 0.6, 0.1]} />
+                  <meshStandardMaterial color={k % 2 ? "#ffb02e" : "#ff2f9a"} />
+                </mesh>
+              </group>
             </group>
           );
         })}

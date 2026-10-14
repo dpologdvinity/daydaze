@@ -32,10 +32,24 @@ import {
   Teacups,
 } from "./amusementpark/Rides.tsx";
 import { Arch } from "./shared/Arch.tsx";
+import { Bulbs } from "./amusementpark/Bulbs.tsx";
 import { Beams, type Beam } from "./shared/Beams.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { canvasTex, hdr } from "./shared/materials.ts";
+
+// A starfield over the back of the park, fixed so the scene never reshuffles.
+const STARS: [number, number, number][] = Array.from(
+  { length: 180 },
+  (_, i) => {
+    const a = Math.sin(i * 12.9898) * 43758.5453;
+    const b = Math.sin(i * 78.233) * 12345.6789;
+    const x = (a - Math.floor(a)) * 90 - 45;
+    const y = 11 + (b - Math.floor(b)) * 20;
+    return [x, y, -44];
+  },
+);
+const STAR_COLORS = ["#ffffff", "#fff1c8", "#bff6ff"];
 
 const BEAMS: readonly Beam[] = [
   { position: [-8.5, 0.1, 6.5], color: "#ff2f9a", phase: 0, length: 30 },
@@ -97,9 +111,9 @@ export function AmusementPark({
         256,
         256,
         (ctx) => {
-          ctx.fillStyle = "#2a0d40";
+          ctx.fillStyle = "#34124c";
           ctx.fillRect(0, 0, 256, 256);
-          ctx.fillStyle = "#3d1656";
+          ctx.fillStyle = "#55207a";
           for (let y = 0; y < 8; y++) {
             for (let x = 0; x < 8; x++) {
               if ((x + y) % 2 === 0) ctx.fillRect(x * 32, y * 32, 32, 32);
@@ -205,13 +219,14 @@ export function AmusementPark({
           scale={[8, 3, 1]}
         />
       </Environment>
-      <ambientLight color="#4a2468" intensity={0.4} />
-      <hemisphereLight args={["#3a2a8a", "#ff2f9a", 0.35]} />
+      <ambientLight color="#5a2c7a" intensity={0.7} />
+      <hemisphereLight args={["#4a3aa0", "#ff2f9a", 0.6]} />
+      <Bulbs points={STARS} colors={STAR_COLORS} radius={0.1} />
       <Floor
         width={18}
         depth={15.5}
         center={[0, -0.25]}
-        color="#2a0d40"
+        color="#3d1656"
         map={tiles}
         mirror={0.5}
         onPick={onPick}
@@ -224,6 +239,13 @@ export function AmusementPark({
       <Beams beams={BEAMS} aim={[0, -12]} aimY={12} spread={[14, 4]} />
       <PortalPads room={ROOMS["amusement-park"]} color="#ffb02e" />
       <Arch sign="THE MIDWAY" position={[0, 0, ENTRANCE_Z]} />
+      <Arch
+        sign="DAYDAZE CARNIVAL"
+        width={9}
+        position={[0, 0, -30]}
+        color="#ff2f9a"
+        accent="#3fe0d0"
+      />
       <Midway />
       <FerrisWheel />
       <Carousel />
