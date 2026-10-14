@@ -58,11 +58,11 @@ async function guest() {
   return { ...identity, cookie: cookie.split(";")[0] };
 }
 
-function connect(player) {
+function connect(player, headers = {}) {
   const socket = new WebSocket(
     `${BASE.replace("http", "ws")}/ws/room/plaza/1`,
     {
-      headers: { Cookie: player.cookie },
+      headers: { Cookie: player.cookie, ...headers },
     },
   );
   const messages = [];
@@ -227,6 +227,61 @@ try {
     "a blocked player's chat never arrives",
   );
 
+  // Identity comes from the session only: a forged header claiming admin is ignored.
+  const carol = await guest();
+  const forged = await connect(carol, {
+    "X-Daydaze-Identity": JSON.stringify({
+      id: "u_forged",
+      name: "Admin",
+      isGuest: false,
+      isAdmin: true,
+    }),
+  });
+  await waitFor(
+    a2.messages,
+    (m) => m.type === "profile" && m.id === carol.id && m.name === carol.name,
+    "a forged identity header is replaced by the session's identity",
+  );
+  check(
+    !a2.messages.some((m) => m.type === "profile" && m.id === "u_forged"),
+    "the forged id never appears",
+  );
+  forged.socket.close();
+
+  // Cross-site requests: a foreign Origin cannot open sockets or change state.
+  const hijack = new WebSocket(
+    `${BASE.replace("http", "ws")}/ws/room/plaza/1`,
+    {
+      headers: { Cookie: alice.cookie, Origin: "https://evil.example" },
+    },
+  );
+  const hijackOpened = await new Promise((resolve) => {
+    hijack.addEventListener("open", () => resolve(true));
+    hijack.addEventListener("error", () => resolve(false));
+    hijack.addEventListener("close", () => resolve(false));
+  });
+  check(!hijackOpened, "a cross-origin WebSocket upgrade is refused");
+  const csrf = await fetch(`${BASE}/api/block`, {
+    method: "POST",
+    headers: { Cookie: alice.cookie, Origin: "https://evil.example" },
+    body: JSON.stringify({ targetId: carol.id }),
+  });
+  check(
+    csrf.status === 403 && (await csrf.json()).error === "bad-origin",
+    "a cross-origin POST is refused",
+  );
+  const devOrigin = await fetch(`${BASE}/api/guest`, {
+    method: "POST",
+    headers: { Origin: "http://localhost:5173" },
+  });
+  check(devOrigin.status === 201, "the Vite dev origin is allowed");
+  check(
+    devOrigin.headers.get("X-Content-Type-Options") === "nosniff" &&
+      devOrigin.headers.get("Cache-Control") === "no-store" &&
+      devOrigin.headers.get("Referrer-Policy") === "no-referrer",
+    "API responses carry security headers",
+  );
+
   a2.socket.close();
   b.socket.close();
 
@@ -328,6 +383,27 @@ try {
     body: JSON.stringify({ ...credentials, password: "wrong horse" }),
   });
   check(wrong.status === 401, "POST /api/login rejects a wrong password");
+
+  // Password guessing: the 6th rapid attempt on one account is refused.
+  const statuses = [];
+  let retryAfter = null;
+  for (let i = 0; i < 6; i++) {
+    const attempt = await fetch(`${BASE}/api/login`, {
+      method: "POST",
+      body: JSON.stringify({
+        username: "Brute Target",
+        password: `guess-${i}-x`,
+      }),
+    });
+    statuses.push(attempt.status);
+    retryAfter = attempt.headers.get("Retry-After");
+  }
+  check(
+    statuses.slice(0, 5).every((status) => status === 401) &&
+      statuses[5] === 429,
+    `the 6th rapid login attempt gets 429 (${statuses.join(", ")})`,
+  );
+  check(Number(retryAfter) >= 1, "the 429 says when to retry");
 } catch (error) {
   failed = true;
   console.error(error);
