@@ -1,6 +1,8 @@
 import { Environment, Lightformer } from "@react-three/drei";
+import type { Look, Mood } from "../../game/look.ts";
 import { ROOMS } from "../../game/rooms.ts";
-import { SHOP_Z } from "./plaza/layout.ts";
+import { Doll } from "../avatar/Doll.tsx";
+import { SHOP_Z, SHOPS } from "./plaza/layout.ts";
 import { Sky } from "./plaza/Sky.tsx";
 import { Storefronts } from "./plaza/Storefronts.tsx";
 import { Street } from "./plaza/Street.tsx";
@@ -10,18 +12,73 @@ import type { PickHandler } from "./shared/Floor.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 
 // Searchlights from the club roof, sweeping the clouds.
+const CLUB_X = SHOPS.find((s) => s.id === "club")?.x ?? 0;
 const SEARCHLIGHTS: readonly Beam[] = [
   {
-    position: [-1.6, 5.8, SHOP_Z - 0.4],
+    position: [CLUB_X - 1.4, 5.8, SHOP_Z - 0.4],
     color: "#ff2f9a",
     phase: 0,
     length: 42,
   },
   {
-    position: [1.2, 5.8, SHOP_Z - 0.4],
+    position: [CLUB_X + 1.4, 5.8, SHOP_Z - 0.4],
     color: "#9b5cff",
     phase: 2.6,
     length: 42,
+  },
+];
+
+// Regulars out on the street; positions sit inside ROOMS.plaza.walkable.
+const LOCALS: readonly {
+  look: Look;
+  mood: Mood;
+  at: [number, number, number];
+  rot: number;
+}[] = [
+  {
+    look: {
+      skin: "#c48d68",
+      hairStyle: "buns",
+      hairColor: "#f1d78f",
+      lips: "lips-burgundy-cherry",
+      brows: "brows-sculpted-espresso",
+      outfit: "mini",
+      outfitColor: "#141018",
+      shadow: "#3fe0d0",
+    },
+    mood: "pose",
+    at: [CLUB_X + 1.9, 0, SHOP_Z + 1.6],
+    rot: -0.5,
+  },
+  {
+    look: {
+      skin: "#633c29",
+      hairStyle: "waves",
+      hairColor: "#ff4fb3",
+      lips: "lips-hot-pink-glam",
+      brows: "brows-fox-snatched",
+      outfit: "flares",
+      outfitColor: "#e8e2ff",
+      shadow: "#ff2f9a",
+    },
+    mood: "lean",
+    at: [6.6, 0, SHOP_Z + 1.3],
+    rot: -0.35,
+  },
+  {
+    look: {
+      skin: "#f3d4c4",
+      hairStyle: "ponytail",
+      hairColor: "#4a2a1c",
+      lips: "lips-nude-pink-gloss",
+      brows: "brows-feathered-honey",
+      outfit: "fur",
+      outfitColor: "#ff2f9a",
+      shadow: "#d23cff",
+    },
+    mood: "dance",
+    at: [-9.4, 0, -3.6],
+    rot: 0.7,
   },
 ];
 
@@ -66,7 +123,22 @@ export function Plaza({ onPick }: { onPick: PickHandler }) {
       <Storefronts />
       <StringLights />
       <PortalPads room={ROOMS.plaza} />
-      <Beams beams={SEARCHLIGHTS} aim={[0, -40]} aimY={45} spread={[22, 6]} />
+      {LOCALS.map((n, i) => (
+        <Doll
+          key={i}
+          look={n.look}
+          mood={n.mood}
+          seed={i + 11}
+          position={n.at}
+          rotation-y={n.rot}
+        />
+      ))}
+      <Beams
+        beams={SEARCHLIGHTS}
+        aim={[CLUB_X, -40]}
+        aimY={45}
+        spread={[22, 6]}
+      />
     </>
   );
 }
