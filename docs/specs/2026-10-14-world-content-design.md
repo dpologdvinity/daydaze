@@ -179,6 +179,12 @@ Places have a few scripted non-player characters (NPCs) so they never feel empty
 - Water Park: lifeguard, snack-bar cashier, swimmers and sunbathers.
 - Amusement Park and Speedway: ride operators, a ticket booth cashier, a carnival barker, a pit crew.
 - NPCs idle, dance or walk short loops, and show a speech bubble with a random line when a player is near or taps them. Some offer an action (the bartender hands you a drink, the stylist opens the salon).
+- Dialogue is a large handwritten line bank, not AI. Lines are data (one file per NPC role, e.g. `src/game/dialogue/bartender.ts`), keyed by situation, with many variants per situation so NPCs rarely repeat:
+  - situations: greeting (first visit, regular, returning after a long time), tapped, idle chatter, time of day, weather, the player's outfit (swimsuit, glam, new item, matching another player), the player's state (drunk, high, tripping, just released from jail, caught shoplifting), events (pride night, dance-off, a ride just ended), the player's actions (dancing nearby, ordering, tipping, leaving without paying), and goodbyes;
+  - placeholders fill in names, items and places ("Love the {item}, {name}");
+  - each line can carry weights and conditions (neighborhood, venue, time), and recently used lines are skipped;
+  - target depth: at least 10 lines per situation per role, growing over time. Writing more lines is a content task, not a code task.
+- A small test checks every line bank: no empty situations, every placeholder valid, no banned words.
 - NPCs use the same doll system as players, so they wear real outfits and look like part of the world.
 
 ## Body shape
