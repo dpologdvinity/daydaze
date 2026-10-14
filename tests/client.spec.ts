@@ -97,3 +97,21 @@ test("on a phone the dressing room opens from its toggle", async ({ page }) => {
     page.getByRole("button", { name: "Close mirror" }),
   ).toHaveAttribute("aria-expanded", "true");
 });
+
+test("walking into the Plaza's glowing door enters the Mango Room", async ({
+  page,
+}) => {
+  await page.goto(`${LOW}&room=plaza`);
+  await expect(roomTitle(page)).toHaveText("Daydaze Plaza");
+  // clicks need the camera rig's first frame, which can take seconds here
+  await expect(page.locator("canvas")).toHaveAttribute(
+    "data-frames",
+    /[3-9]|10/,
+  );
+  // The spawn shot is fixed at 1280x800: this pixel is the floor at the
+  // door's centre (0, -6.3), inside the portal's 0.7 m radius.
+  await page.mouse.click(613, 488);
+  await expect(roomTitle(page)).toHaveText("The Mango Room", {
+    timeout: 120_000,
+  });
+});
