@@ -35,7 +35,6 @@ import { areaOf } from "../../game/area.ts";
 import { VelvetRoom } from "../rooms/VelvetRoom.tsx";
 import { Plaza } from "../rooms/Plaza.tsx";
 import type { PickHandler } from "../rooms/shared/Floor.tsx";
-import { Speedway } from "../rooms/Speedway.tsx";
 import { WaterPark } from "../rooms/WaterPark.tsx";
 import { CameraRig, type View } from "./CameraRig.tsx";
 import { NeonClamp } from "./NeonClamp.tsx";
@@ -56,7 +55,12 @@ const CityScene = lazy(() =>
 // Enough for the environment map, face textures and reflector to settle.
 const STILL_FRAMES = 4;
 
-// The park is big and rarely visited, so its code loads on first arrival.
+// The Speedway and the park are big and rarely visited, so their code loads on first arrival.
+const Speedway = lazy(() =>
+  import("../rooms/Speedway.tsx").then((m) => ({
+    default: m.Speedway,
+  })),
+);
 const AmusementPark = lazy(() =>
   import("../rooms/AmusementPark.tsx").then((m) => ({
     default: m.AmusementPark,
