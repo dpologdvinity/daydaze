@@ -162,9 +162,9 @@ export const CITY_SURFACES: readonly Surface[] = [
   { kind: "sidewalk", polygon: FORECOURT_NORTH },
 ];
 
-// On the north avenue sidewalk, facing east: the first view runs back down
-// the avenue past the frontages, and the Velvet door is out of trigger range.
-export const CITY_SPAWN: Spawn = { position: [80, -9], yaw: Math.PI / 2 };
+// In the square, facing south: the Splash Zone gate stands behind the doll, so
+// its sign frames the first view, and no door is in trigger range.
+export const CITY_SPAWN: Spawn = { position: [8, 12], yaw: 0 };
 
 const VELVET_DOOR: Door = {
   position: [112, -12.5],
