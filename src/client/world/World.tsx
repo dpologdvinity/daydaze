@@ -26,14 +26,19 @@ import { QualityContext, type QualityTier } from "./quality.ts";
 // Enough for the environment map, face textures and reflector to settle.
 const STILL_FRAMES = 4;
 
-/** In still mode, renders a few frames on demand and then lets the GPU rest. */
-function StillFrames() {
+/**
+ * Counts rendered frames into `canvas[data-frames]` (up to 10) so tests and
+ * screenshots can wait for a real picture. In still mode it also asks for
+ * the few on-demand frames the scene needs to settle.
+ */
+function FrameCount({ still }: { still: boolean }) {
   const invalidate = useThree((s) => s.invalidate);
   const count = useRef(0);
   useFrame(({ gl }) => {
+    if (count.current >= 10) return;
     count.current += 1;
     gl.domElement.dataset.frames = String(count.current);
-    if (count.current < STILL_FRAMES) invalidate();
+    if (still && count.current < STILL_FRAMES) invalidate();
   });
   return null;
 }
@@ -105,7 +110,7 @@ export function World({
             onDecline={() => setAuto("low")}
           />
         )}
-        {still && <StillFrames />}
+        <FrameCount still={still} />
         {/* the key light, shared so a doll looks the same in every room */}
         <directionalLight
           position={[2, 5, 6]}
