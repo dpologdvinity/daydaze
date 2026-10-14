@@ -18,8 +18,8 @@ function entity(id: string, overrides: Partial<EntityDelta> = {}): EntityDelta {
   return {
     id,
     x: 0,
-    y: 0,
-    heading: "right",
+    z: 0,
+    yaw: 0,
     action: "idle",
     timestamp: 0,
     ...overrides,
@@ -42,7 +42,13 @@ function join(
   ent: EntityDelta,
 ) {
   clientTransport.send(
-    encodeClientMessage({ type: "join", roomId, entity: ent }),
+    encodeClientMessage({
+      type: "join",
+      roomId,
+      name: ent.id,
+      look: { hair: "bob" },
+      entity: ent,
+    }),
   );
 }
 
@@ -260,44 +266,54 @@ test("emote is broadcast to other occupants in the same room, not to self", () =
   assert.equal(a.received.length, 0);
 });
 
-test("interpolateEntityState linearly interpolates x and y between prev and next", () => {
-  const prev = entity("a", { x: 0, y: 0, heading: "right", timestamp: 0 });
-  const next = entity("a", {
-    x: 100,
-    y: 200,
-    heading: "right",
-    timestamp: 1000,
-  });
+test("interpolateEntityState linearly interpolates x, z and yaw between prev and next", () => {
+  const prev = entity("a", { x: 0, z: 0, yaw: 0, timestamp: 0 });
+  const next = entity("a", { x: 100, z: 200, yaw: 1, timestamp: 1000 });
 
   const mid = interpolateEntityState(prev, next, 500);
 
   assert.equal(mid.x, 50);
-  assert.equal(mid.y, 100);
-  assert.equal(mid.heading, "right");
+  assert.equal(mid.z, 100);
+  assert.equal(mid.yaw, 0.5);
 });
 
-test("interpolateEntityState determines heading from movement direction", () => {
-  const prev = entity("a", { x: 100, y: 0, heading: "right", timestamp: 0 });
-  const next = entity("a", { x: 0, y: 0, heading: "right", timestamp: 1000 });
+test("interpolateEntityState turns yaw the shortest way around ±π", () => {
+  const prev = entity("a", { yaw: 3, timestamp: 0 });
+  const next = entity("a", { yaw: -3, timestamp: 1000 });
 
   const mid = interpolateEntityState(prev, next, 500);
+  assert.ok(Math.abs(Math.abs(mid.yaw) - Math.PI) < 1e-9, `${mid.yaw}`);
+  assert.ok(mid.yaw > -Math.PI && mid.yaw <= Math.PI);
+  const quarter = interpolateEntityState(prev, next, 250);
+  assert.ok(Math.abs(quarter.yaw - (3 + (2 * Math.PI - 6) / 4)) < 1e-9);
+  const reverse = interpolateEntityState(
+    entity("a", { yaw: -3, timestamp: 0 }),
+    entity("a", { yaw: 3, timestamp: 1000 }),
+    250,
+  );
+  assert.ok(Math.abs(reverse.yaw - (-3 - (2 * Math.PI - 6) / 4)) < 1e-9);
+});
 
-  assert.equal(mid.heading, "left");
+test("interpolateEntityState holds the latest yaw while extrapolating", () => {
+  const prev = entity("a", { x: 0, yaw: 0, timestamp: 0 });
+  const next = entity("a", { x: 100, yaw: 1, timestamp: 1000 });
+
+  assert.equal(interpolateEntityState(prev, next, 1100).yaw, 1);
 });
 
 test("interpolateEntityState clamps to prev at or before prev timestamp", () => {
-  const prev = entity("a", { x: 0, y: 0, timestamp: 1000 });
-  const next = entity("a", { x: 100, y: 100, timestamp: 2000 });
+  const prev = entity("a", { x: 0, z: 0, timestamp: 1000 });
+  const next = entity("a", { x: 100, z: 100, timestamp: 2000 });
 
   const result = interpolateEntityState(prev, next, 500);
 
   assert.equal(result.x, 0);
-  assert.equal(result.y, 0);
+  assert.equal(result.z, 0);
 });
 
 test("interpolateEntityState extrapolates beyond next timestamp within the bounded window", () => {
-  const prev = entity("a", { x: 0, y: 0, timestamp: 0 });
-  const next = entity("a", { x: 100, y: 0, timestamp: 1000 });
+  const prev = entity("a", { x: 0, z: 0, timestamp: 0 });
+  const next = entity("a", { x: 100, z: 0, timestamp: 1000 });
 
   const result = interpolateEntityState(prev, next, 1100);
 
@@ -306,8 +322,8 @@ test("interpolateEntityState extrapolates beyond next timestamp within the bound
 });
 
 test("interpolateEntityState caps extrapolation at the max extrapolation window", () => {
-  const prev = entity("a", { x: 0, y: 0, timestamp: 0 });
-  const next = entity("a", { x: 100, y: 0, timestamp: 1000 });
+  const prev = entity("a", { x: 0, z: 0, timestamp: 0 });
+  const next = entity("a", { x: 100, z: 0, timestamp: 1000 });
 
   const withinCap = interpolateEntityState(prev, next, 1200);
   const beyondCap = interpolateEntityState(prev, next, 5000);
@@ -375,6 +391,8 @@ test("reconnect replaces the old session without ghost entities or stale callbac
     encodeClientMessage({
       type: "join",
       roomId: "plaza",
+      name: "n",
+      look: {},
       entity: entity("old"),
     }),
   );
@@ -384,6 +402,8 @@ test("reconnect replaces the old session without ghost entities or stale callbac
     encodeClientMessage({
       type: "join",
       roomId: "plaza",
+      name: "n",
+      look: {},
       entity: entity("stale"),
     }),
   );
@@ -417,6 +437,8 @@ test("invalid identities, malformed packets, spoofed updates and stale timestamp
     encodeClientMessage({
       type: "join",
       roomId: "plaza",
+      name: "n",
+      look: {},
       entity: entity("avatar-a"),
     }),
   ])
@@ -471,25 +493,25 @@ test("dead reckoning is exact at 12–15Hz and capped by vector length", () => {
   for (const hz of [12, 15]) {
     const span = 1000 / hz;
     const prev = entity("a");
-    const next = entity("a", { x: 3, y: 4, timestamp: span });
+    const next = entity("a", { x: 3, z: 4, timestamp: span });
     const midpoint = interpolateEntityState(prev, next, span / 2);
     assert.equal(midpoint.x, 1.5);
-    assert.equal(midpoint.y, 2);
+    assert.equal(midpoint.z, 2);
     const predicted = interpolateEntityState(prev, next, span * 2);
     assert.equal(predicted.x, 6);
-    assert.equal(predicted.y, 8);
+    assert.equal(predicted.z, 8);
   }
-  const next = entity("a", { x: 3, y: 4, timestamp: 1 });
+  const next = entity("a", { x: 3, z: 4, timestamp: 1 });
   const capped = interpolateEntityState(entity("a"), next, 201);
   assert.equal(capped.x, 15);
-  assert.equal(capped.y, 20);
+  assert.equal(capped.z, 20);
 });
 
 test("tiny timestamp spans and nonfinite target times cannot produce NaN coordinates", () => {
   const next = entity("a", { x: 1, timestamp: Number.MIN_VALUE });
   const result = interpolateEntityState(entity("a"), next, 100);
   assert.equal(result.x, 21);
-  assert.equal(result.y, 0);
+  assert.equal(result.z, 0);
   assert.throws(
     () => interpolateEntityState(entity("a"), next, NaN),
     TypeError,
@@ -538,6 +560,8 @@ test("a failed transport send disconnects that client while room broadcasts cont
     encodeClientMessage({
       type: "join",
       roomId: "plaza",
+      name: "n",
+      look: {},
       entity: entity("broken"),
     }),
   );

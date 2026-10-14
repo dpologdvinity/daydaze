@@ -1,19 +1,27 @@
 /** World-space limits also bound untrusted local/remote transport inputs. */
 export const MAX_COORDINATE = 100_000;
 export const MAX_ROOM_ENTITIES = 512;
+export const MAX_CHAT_LENGTH = 120;
+const MAX_NAME_LENGTH = 32;
 const MAX_PACKET_BYTES = 65_536;
 
+/** Floor position in metres on the XZ plane; yaw in radians within (-π, π]. */
 export type EntityDelta = {
   id: string;
   x: number;
-  y: number;
-  heading: "left" | "right";
+  z: number;
+  yaw: number;
   action: string;
   timestamp: number;
 };
+/** Opaque here; the game layer's `validateLook` decides catalog validity. */
+export type LookShape = Record<string, string>;
 export type JoinRoomMessage = {
   type: "join";
   roomId: string;
+  /** Untrusted: the server replaces it with the session's name. */
+  name: string;
+  look: LookShape;
   entity: EntityDelta;
 };
 export type LeaveRoomMessage = { type: "leave" };
@@ -48,13 +56,21 @@ export type RoomOccupancyMessage = {
   roomId: string;
   count: number;
 };
+export type ProfileMessage = {
+  type: "profile";
+  roomId: string;
+  id: string;
+  name: string;
+  look: LookShape;
+};
 export type ServerMessage =
   | RoomSnapshotMessage
   | EntityDeltaBroadcast
   | EntityLeaveBroadcast
   | ChatBroadcast
   | EmoteBroadcast
-  | RoomOccupancyMessage;
+  | RoomOccupancyMessage
+  | ProfileMessage;
 
 function parse(raw: unknown): unknown {
   if (typeof raw !== "string") return raw;
@@ -84,28 +100,49 @@ function coordinate(value: unknown): value is number {
     Math.abs(value) <= MAX_COORDINATE
   );
 }
+/** Maps any finite angle into (-π, π]. */
+export function normalizeYaw(yaw: number): number {
+  return yaw - 2 * Math.PI * Math.ceil((yaw - Math.PI) / (2 * Math.PI));
+}
+/** Plain object of at most 16 string entries, keys and values ≤ 32 chars. */
+export function isLookShape(value: unknown): value is LookShape {
+  if (!record(value)) return false;
+  const proto: unknown = Object.getPrototypeOf(value);
+  if (proto !== Object.prototype && proto !== null) return false;
+  const entries = Object.entries(value);
+  return (
+    entries.length <= 16 &&
+    entries.every(
+      ([key, item]) =>
+        key.length <= 32 && typeof item === "string" && item.length <= 32,
+    )
+  );
+}
+function look(value: unknown): LookShape | null {
+  return isLookShape(value) ? Object.fromEntries(Object.entries(value)) : null;
+}
 function entity(raw: unknown): EntityDelta | null {
   const value = parse(raw);
-  let id, x, y, heading, action, timestamp;
+  let id, x, z, yaw, action, timestamp;
   if (Array.isArray(value)) {
-    if (value.length !== 6 || (value[3] !== 0 && value[3] !== 1)) return null;
-    [id, x, y, , action, timestamp] = value;
-    heading = value[3] === 0 ? "left" : "right";
+    if (value.length !== 6) return null;
+    [id, x, z, yaw, action, timestamp] = value;
   } else if (record(value)) {
-    ({ id, x, y, heading, action, timestamp } = value);
+    ({ id, x, z, yaw, action, timestamp } = value);
   } else return null;
   if (
     !isNetworkId(id) ||
     !coordinate(x) ||
-    !coordinate(y) ||
-    (heading !== "left" && heading !== "right") ||
+    !coordinate(z) ||
+    typeof yaw !== "number" ||
+    !Number.isFinite(yaw) ||
     !text(action, 24) ||
     typeof timestamp !== "number" ||
     !Number.isFinite(timestamp) ||
     timestamp < 0
   )
     return null;
-  return { id, x, y, heading, action, timestamp };
+  return { id, x, z, yaw: normalizeYaw(yaw), action, timestamp };
 }
 
 /** Accept a compact tuple/string or a domain object; never retain input references. */
@@ -116,19 +153,22 @@ export function decodeEntityDelta(raw: unknown): EntityDelta | null {
     return null;
   }
 }
+function round(value: number, scale: number): number {
+  return Math.round(value * scale) / scale;
+}
 function tuple(
   delta: EntityDelta,
 ): [string, number, number, number, string, number] {
   return [
     delta.id,
-    Math.round(delta.x),
-    Math.round(delta.y),
-    delta.heading === "left" ? 0 : 1,
+    round(delta.x, 100),
+    round(delta.z, 100),
+    round(delta.yaw, 1000),
     delta.action,
     delta.timestamp,
   ];
 }
-/** <40 UTF-8 bytes for standard short IDs/actions; longer validated IDs cost more. */
+/** <48 UTF-8 bytes for standard short IDs/actions; longer validated IDs cost more. */
 export function encodeEntityDelta(delta: EntityDelta): string {
   const valid = decodeEntityDelta(delta);
   if (!valid) throw new TypeError("Invalid entity delta");
@@ -141,10 +181,11 @@ export function decodeClientMessage(raw: unknown): ClientMessage | null {
     if (!record(value)) return null;
     switch (value.type) {
       case "join": {
-        const roomId = value.roomId;
+        const { roomId, name } = value;
         const delta = entity(value.entity);
-        return text(roomId, 64) && delta
-          ? { type: "join", roomId, entity: delta }
+        const shape = look(value.look);
+        return text(roomId, 64) && text(name, MAX_NAME_LENGTH) && shape && delta
+          ? { type: "join", roomId, name, look: shape, entity: delta }
           : null;
       }
       case "leave":
@@ -155,7 +196,9 @@ export function decodeClientMessage(raw: unknown): ClientMessage | null {
       }
       case "chat": {
         const content = value.text;
-        return text(content, 280) ? { type: "chat", text: content } : null;
+        return text(content, MAX_CHAT_LENGTH)
+          ? { type: "chat", text: content }
+          : null;
       }
       case "emote": {
         const emote = value.emote;
@@ -201,7 +244,7 @@ export function decodeServerMessage(raw: unknown): ServerMessage | null {
       case "chat": {
         const id = value.id,
           content = value.text;
-        return isNetworkId(id) && text(content, 280)
+        return isNetworkId(id) && text(content, MAX_CHAT_LENGTH)
           ? { type: "chat", roomId, id, text: content }
           : null;
       }
@@ -219,6 +262,13 @@ export function decodeServerMessage(raw: unknown): ServerMessage | null {
           count >= 0 &&
           count <= MAX_ROOM_ENTITIES
           ? { type: "occupancy", roomId, count }
+          : null;
+      }
+      case "profile": {
+        const { id, name } = value;
+        const shape = look(value.look);
+        return isNetworkId(id) && text(name, MAX_NAME_LENGTH) && shape
+          ? { type: "profile", roomId, id, name, look: shape }
           : null;
       }
       default:
