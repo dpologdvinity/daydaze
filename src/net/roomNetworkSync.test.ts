@@ -313,17 +313,16 @@ test("interpolateEntityState clamps to prev at or before prev timestamp", () => 
 
 test("interpolateEntityState extrapolates beyond next timestamp within the bounded window", () => {
   const prev = entity("a", { x: 0, z: 0, timestamp: 0 });
-  const next = entity("a", { x: 100, z: 0, timestamp: 1000 });
+  const next = entity("a", { x: 2, z: 0, timestamp: 1000 });
 
   const result = interpolateEntityState(prev, next, 1100);
 
-  assert.ok(result.x > 100);
-  assert.ok(result.x <= 120);
+  assert.ok(Math.abs(result.x - 2.2) < 1e-9, `${result.x}`);
 });
 
-test("interpolateEntityState caps extrapolation at the max extrapolation window", () => {
+test("interpolateEntityState caps extrapolation at 200 ms past the latest state", () => {
   const prev = entity("a", { x: 0, z: 0, timestamp: 0 });
-  const next = entity("a", { x: 100, z: 0, timestamp: 1000 });
+  const next = entity("a", { x: 2, z: 0, timestamp: 1000 });
 
   const withinCap = interpolateEntityState(prev, next, 1200);
   const beyondCap = interpolateEntityState(prev, next, 5000);
@@ -489,28 +488,29 @@ test("interpolation handles duplicate and reversed timestamps without jumping to
   assert.equal(interpolateEntityState(prev, stale, 150).x, 20);
 });
 
-test("dead reckoning is exact at 12–15Hz and capped by vector length", () => {
+test("dead reckoning is exact at 12–15Hz and capped at 1 m along the movement", () => {
   for (const hz of [12, 15]) {
     const span = 1000 / hz;
     const prev = entity("a");
-    const next = entity("a", { x: 3, z: 4, timestamp: span });
+    const next = entity("a", { x: 0.3, z: 0.4, timestamp: span });
     const midpoint = interpolateEntityState(prev, next, span / 2);
-    assert.equal(midpoint.x, 1.5);
-    assert.equal(midpoint.z, 2);
+    assert.equal(midpoint.x, 0.15);
+    assert.equal(midpoint.z, 0.2);
     const predicted = interpolateEntityState(prev, next, span * 2);
-    assert.equal(predicted.x, 6);
-    assert.equal(predicted.z, 8);
+    assert.ok(Math.abs(predicted.x - 0.6) < 1e-9);
+    assert.ok(Math.abs(predicted.z - 0.8) < 1e-9);
   }
+  // A 5 m jump in 1 ms (a teleport) predicts at most 1 m further.
   const next = entity("a", { x: 3, z: 4, timestamp: 1 });
   const capped = interpolateEntityState(entity("a"), next, 201);
-  assert.equal(capped.x, 15);
-  assert.equal(capped.z, 20);
+  assert.ok(Math.abs(capped.x - 3.6) < 1e-9);
+  assert.ok(Math.abs(capped.z - 4.8) < 1e-9);
 });
 
 test("tiny timestamp spans and nonfinite target times cannot produce NaN coordinates", () => {
   const next = entity("a", { x: 1, timestamp: Number.MIN_VALUE });
   const result = interpolateEntityState(entity("a"), next, 100);
-  assert.equal(result.x, 21);
+  assert.equal(result.x, 2);
   assert.equal(result.z, 0);
   assert.throws(
     () => interpolateEntityState(entity("a"), next, NaN),
