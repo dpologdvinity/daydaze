@@ -513,18 +513,21 @@ export function MangoMixology({
     >
       {phase === "intro" && (
         <section className="mx-intro">
-          <svg
-            className="mx-intro-glass"
-            viewBox="0 0 200 240"
-            aria-hidden="true"
-          >
-            <path
-              className="mx-glass-outline"
-              d={GLASS_SHAPE.martini.outline}
-            />
-            <path className="mx-intro-fill" d={GLASS_SHAPE.martini.clip} />
-            <Garnish id="mango_slice" x={168} y={56} />
-          </svg>
+          <div className="mx-intro-art">
+            <NeonMango />
+            <svg
+              className="mx-intro-glass"
+              viewBox="0 0 200 240"
+              aria-hidden="true"
+            >
+              <path
+                className="mx-glass-outline"
+                d={GLASS_SHAPE.martini.outline}
+              />
+              <path className="mx-intro-fill" d={GLASS_SHAPE.martini.clip} />
+              <Garnish id="mango_slice" x={168} y={56} />
+            </svg>
+          </div>
           <p className="mx-lede">
             Five guests are waiting at the bar. Read each ticket, build the
             drink, and nail the mix.
