@@ -141,9 +141,7 @@ export function Overlay({
     <>
       <header className="venue">
         <p className="venue-name">The Mango Room</p>
-        <p className="venue-sub">
-          Daydaze VIP lounge. Tap the floor to walk.
-        </p>
+        <p className="venue-sub">Daydaze VIP lounge. Tap the floor to walk.</p>
       </header>
 
       <button

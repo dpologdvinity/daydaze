@@ -776,13 +776,7 @@ export function NeonSigns() {
           <Glow id="glowLion" std={4} />
         </defs>
         <g filter="url(#glowLion)">
-          <NeonWord
-            text="DAYDAZE"
-            x={460}
-            y={190}
-            size={30}
-            color="#ff4fd0"
-          />
+          <NeonWord text="DAYDAZE" x={460} y={190} size={30} color="#ff4fd0" />
         </g>
       </Layer>
       <Layer z={2} className="neon neon-vip" box={[740, 212, 120, 76]}>
