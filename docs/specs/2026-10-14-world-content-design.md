@@ -136,6 +136,16 @@ Guns exist only inside game zones and inside the player's own home: the shooting
 - Homes can't be entered while the owner is offline (the door locks itself), and blocked players can never enter. Repeated break-ins on the same player count as harassment and trigger an automatic block plus a moderation report.
 - Needs multiplayer and server-owned home items, so it ships after multiplayer wiring.
 
+## Shoplifting
+
+- In any store, a player can try to pocket an item instead of buying it. It's a stealth challenge, not a button.
+- Each store has a security level built from: cashier and guard NPCs with sight cones that sweep the floor, security cameras with their own sweep, mirrors, tag alarms at the exit, and how busy the store is (crowds give cover).
+- To succeed, the player picks a moment when nobody is watching, pockets the item (a short hold, longer for big items), and walks out without running. Running, lingering by the exit or getting spotted mid-pocket raises a suspicion meter. A full meter gets them stopped at the door.
+- Difficulty by place: easy at the bodega, flea market and thrift stores (one distracted cashier); medium at the supermarket, drugstore and mall chains (cameras and a guard); hard at the jewelry store, designer boutiques and the electronics store (guards, cameras, tag alarms, locked cases).
+- Consequences scale with the place and the item's value: a warning and a ban from that store for a day at the bodega; a fine in coins at the mall; arrest and jail at high-end stores, with a longer sentence the pricier the item. Getting caught again raises the penalty.
+- Jail is the same place as for break-ins: the player waits out the sentence or pays bail in coins, or a friend pays it.
+- Stolen items are tagged "stolen" in the closet for a while. Wearing one in front of that store's staff can get the player recognised.
+
 ## Dancing
 
 - Players can dance anywhere, and especially on club dance floors. A dance button opens a picker of dance moves. The doll loops the chosen move until the player moves or stops.
