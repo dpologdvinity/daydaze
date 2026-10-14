@@ -176,13 +176,12 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  overflow-x: auto;
 }
 
 .mx-slip {
   display: grid;
-  flex: 1 0 0;
-  min-width: 112px;
+  flex: 1 1 0;
+  min-width: 0;
   gap: 2px;
   padding: 8px 12px;
   border-radius: 10px;
@@ -759,9 +758,15 @@
     order: 1;
   }
 
+  /* All five slips fit across a phone; the ticket names the drink up now. */
   .mx-slip {
-    flex: none;
-    min-width: 108px;
+    min-width: 0;
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .mx-slip-drink {
+    display: none;
   }
 
   .mx-tally {
