@@ -423,6 +423,31 @@ button:focus-visible {
   transform: translateX(-50%) rotate(45deg);
 }
 
+/* NPC lines are written by hand, so they look it. */
+.npc-bubble {
+  font-family:
+    "Z003", "Snell Roundhand", "Segoe Script", "Brush Script MT", cursive;
+  font-size: 17px;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ------------------------------------------------------------ rides */
+
+.ride {
+  position: fixed;
+  top: 164px;
+  left: 28px;
+  padding: 10px 20px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #8ff4ff, #1fb6d8 60%, #0a6f96);
+  color: #04263a;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0 0 18px rgb(63 224 208 / 0.6);
+}
+
 /* ------------------------------------------------------------ fade, debug */
 
 .fade {
@@ -465,6 +490,10 @@ button:focus-visible {
   }
   .venue-sub {
     font-size: 12px;
+  }
+  .ride {
+    top: 92px;
+    left: 16px;
   }
   .mirror {
     top: auto;

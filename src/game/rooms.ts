@@ -1,6 +1,6 @@
 import type { Vec2 } from "./walk.ts";
 
-export type RoomId = "velvet-room" | "plaza" | "amusement-park";
+export type RoomId = "velvet-room" | "plaza" | "amusement-park" | "water-park";
 
 export type Spawn = { position: Vec2; yaw: number };
 
@@ -9,6 +9,8 @@ export type RoomDefinition = {
   name: string;
   walkable: readonly Vec2[];
   spawn: Spawn;
+  /** Dolls wear their swimsuit look here instead of their outfit. */
+  swimwear?: boolean;
   portals: readonly {
     id: string;
     position: Vec2;
@@ -69,6 +71,18 @@ const AMUSEMENT_PARK_FLOOR: readonly Vec2[] = [
   [-9, 7.5],
 ];
 
+// Water Park: a sunny deck in front of the wave pool (x -10..3, z -9.5..-1.5).
+// The slide tower and its spirals fill the back right, the snack bar sits off
+// the left edge and the gate to the Plaza is on the right.
+const WATER_PARK_FLOOR: readonly Vec2[] = [
+  [-10, -1],
+  [3.6, -1],
+  [3.6, -3.2],
+  [11, -3.2],
+  [11, 7],
+  [-10, 7],
+];
+
 export const ROOMS: Record<RoomId, RoomDefinition> = {
   "velvet-room": {
     id: "velvet-room",
@@ -111,6 +125,15 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         target: "amusement-park",
         targetSpawn: { position: [0, 4.6], yaw: Math.PI },
       },
+      {
+        // The surf-shack arch at the east end of the street.
+        id: "to-water-park",
+        position: [11.4, 0],
+        radius: 0.7,
+        label: "To the Water Park",
+        target: "water-park",
+        targetSpawn: { position: [9, 2.5], yaw: -Math.PI / 2 },
+      },
     ],
   },
   "amusement-park": {
@@ -127,6 +150,24 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Back to Daydaze Plaza",
         target: "plaza",
         targetSpawn: { position: [9.5, 4.2], yaw: Math.PI },
+      },
+    ],
+  },
+  "water-park": {
+    id: "water-park",
+    name: "The Water Park",
+    walkable: WATER_PARK_FLOOR,
+    spawn: { position: [6.5, 2.5], yaw: -2.4 },
+    swimwear: true,
+    portals: [
+      {
+        // The palm-leaf gate on the east edge.
+        id: "water-park-to-plaza",
+        position: [10.4, 2.5],
+        radius: 0.6,
+        label: "To the Plaza",
+        target: "plaza",
+        targetSpawn: { position: [10, 0], yaw: -Math.PI / 2 },
       },
     ],
   },

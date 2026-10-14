@@ -15,6 +15,18 @@ const SHOTS: {
   { name: "velvet-room-full-look", query: "room=velvet-room&view=full" },
   { name: "plaza", query: "room=plaza" },
   { name: "plaza-face", query: "room=plaza&view=face" },
+  { name: "water-park-wide", query: "room=water-park" },
+  { name: "water-park-swimsuit", query: "room=water-park&view=full" },
+  {
+    name: "water-park-slide",
+    query: "room=water-park&slide=0.45",
+    live: true,
+  },
+  {
+    name: "water-park-mobile",
+    query: "room=water-park",
+    viewport: { width: 390, height: 844 },
+  },
   { name: "amusement-park-wide", query: "room=amusement-park" },
   {
     name: "amusement-park-coaster",

@@ -1,7 +1,7 @@
 import { useFrame, useThree, type ThreeElements } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import type { Look, Mood } from "../../game/look.ts";
+import type { Look, Mood, SwimLook } from "../../game/look.ts";
 import { useReducedMotion } from "../motion.ts";
 import {
   hairGeometry,
@@ -47,8 +47,10 @@ function shade(hex: string, l: number) {
   return c.setHSL(hsl.h, hsl.s, THREE.MathUtils.clamp(hsl.l + l, 0, 1));
 }
 
-function useDollMaterials(look: Look) {
-  const { skin, outfitColor, hairColor } = look;
+function useDollMaterials(look: Look, swim: SwimLook | null) {
+  const { skin, hairColor } = look;
+  const outfitColor = swim?.color ?? look.outfitColor;
+  const outfit = swim ? "swim" : look.outfit;
   const mats = useMemo(() => {
     const rim = "#ff74d4";
     const accent = outfitColor;
@@ -63,20 +65,20 @@ function useDollMaterials(look: Look) {
         gloss: 0.4,
       }),
       top: makeToon({
-        color: look.outfit === "fur" ? "#16101a" : shade(accent, 0.08),
+        color: outfit === "fur" ? "#16101a" : shade(accent, 0.08),
         rim,
         gloss: 0.3,
       }),
       fur: makeToon({ color: accent, rim: "#ffffff", rimStrength: 0.4 }),
       shoe: makeToon({
-        color: look.outfit === "mini" ? "#f6e7ff" : shade(accent, 0.05),
+        color: outfit === "mini" ? "#f6e7ff" : shade(accent, 0.05),
         rim,
         gloss: 0.9,
       }),
       sole: makeToon({ color: "#1a0d1d", rim, rimStrength: 0.3, gloss: 0.6 }),
       hair: makeHair(hairColor),
     };
-  }, [skin, outfitColor, hairColor, look.outfit]);
+  }, [skin, outfitColor, hairColor, outfit]);
   useEffect(
     () => () => Object.values(mats).forEach((m) => m.dispose()),
     [mats],
@@ -125,13 +127,22 @@ export type WalkState = { speed: number };
 
 type DollProps = {
   look: Look;
+  /** Worn instead of the outfit in swimwear rooms; the look is untouched. */
+  swim?: SwimLook | null;
   mood: Mood;
   walk?: { current: WalkState };
   seed?: number;
 } & Omit<ThreeElements["group"], "children">;
 
-export function Doll({ look, mood, walk, seed = 0, ...rest }: DollProps) {
-  const m = useDollMaterials(look);
+export function Doll({
+  look,
+  swim = null,
+  mood,
+  walk,
+  seed = 0,
+  ...rest
+}: DollProps) {
+  const m = useDollMaterials(look, swim);
   const face = useFace(look, m.face);
   const hair = hairGeometry(look.hairStyle);
   const rig = useRef<Rig>({});
@@ -161,9 +172,9 @@ export function Doll({ look, mood, walk, seed = 0, ...rest }: DollProps) {
     }
   });
 
-  const flares = look.outfit === "flares";
-  const mini = look.outfit === "mini";
-  const fur = look.outfit === "fur";
+  const flares = !swim && look.outfit === "flares";
+  const mini = !swim && look.outfit === "mini";
+  const fur = !swim && look.outfit === "fur";
   const earL = headPoint(Math.PI / 2, -0.03, 0.0);
 
   return (
@@ -189,6 +200,21 @@ export function Doll({ look, mood, walk, seed = 0, ...rest }: DollProps) {
         {mini && (
           <>
             <Part geometry={G.dress} material={m.cloth} />
+            <Part geometry={G.strap} material={m.cloth} position-x={0.062} />
+            <Part geometry={G.strap} material={m.cloth} position-x={-0.062} />
+          </>
+        )}
+        {swim?.style === "one-piece" && (
+          <Part geometry={G.onePiece} material={m.cloth} />
+        )}
+        {swim?.style === "bikini" && (
+          <>
+            <Part geometry={G.bikiniTop} material={m.cloth} />
+            <Part geometry={G.bikiniBottom} material={m.cloth2} />
+          </>
+        )}
+        {swim && (
+          <>
             <Part geometry={G.strap} material={m.cloth} position-x={0.062} />
             <Part geometry={G.strap} material={m.cloth} position-x={-0.062} />
           </>
@@ -288,7 +314,7 @@ export function Doll({ look, mood, walk, seed = 0, ...rest }: DollProps) {
               <Part geometry={G.shin} material={m.skin} />
               {flares && <Part geometry={G.flareShin} material={m.cloth} />}
               <group position-y={-0.305} ref={set(ft)}>
-                <Shoe m={m} />
+                <Shoe m={m} flat={swim !== null} />
               </group>
             </group>
           </group>
@@ -298,7 +324,32 @@ export function Doll({ look, mood, walk, seed = 0, ...rest }: DollProps) {
   );
 }
 
-function Shoe({ m }: { m: ReturnType<typeof useDollMaterials> }) {
+/** Heeled sandals, or flat flip-flops with the swimsuit. */
+function Shoe({
+  m,
+  flat,
+}: {
+  m: ReturnType<typeof useDollMaterials>;
+  flat: boolean;
+}) {
+  if (flat)
+    return (
+      <group>
+        <Part
+          geometry={G.sole}
+          material={m.shoe}
+          position={[0, -0.12, 0.03]}
+          scale={[1, 0.45, 1.1]}
+        />
+        <Part
+          geometry={G.strapRing}
+          material={m.shoe}
+          position={[0, -0.08, 0.05]}
+          rotation-x={Math.PI / 2}
+          scale={0.8}
+        />
+      </group>
+    );
   return (
     <group>
       <Part geometry={G.sole} material={m.sole} position={[0, -0.105, 0.045]} />

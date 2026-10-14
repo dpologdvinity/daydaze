@@ -63,6 +63,18 @@ test("the debug buttons move the player between rooms", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("the Water Park loads with the swimsuit on", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&debug=1`);
+  await expect(roomTitle(page)).toHaveText("The Velvet Room");
+  const view = page.getByRole("img", { name: "3D room view" });
+  await expect(view).toHaveAttribute("data-wearing", "outfit");
+  await page.getByRole("button", { name: "Go to Water Park" }).click();
+  await expect(roomTitle(page)).toHaveText("The Water Park");
+  await expect(view).toHaveAttribute("data-wearing", "bikini");
+  expect(errors).toEqual([]);
+});
+
 test("the debug panel is hidden without the flag", async ({ page }) => {
   await page.goto(STILL);
   await expect(roomTitle(page)).toBeVisible();

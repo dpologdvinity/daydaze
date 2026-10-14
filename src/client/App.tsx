@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Look, Mood } from "../game/look.ts";
+import type { Look, Mood, SwimLook } from "../game/look.ts";
 import { arrive } from "../game/portals.ts";
 import { ROOMS, type RoomId, type Spawn } from "../game/rooms.ts";
 import {
@@ -80,6 +80,8 @@ export function App() {
   }, [chat]);
 
   const setLook = (look: Look) => setSave((s) => ({ ...s, look }));
+  const setSwim = (swim: SwimLook) => setSave((s) => ({ ...s, swim }));
+  const [rides, setRides] = useState(0);
   const saved = save.settings.quality;
   const quality = flags.quality ?? (saved === "auto" ? null : saved);
 
@@ -90,6 +92,9 @@ export function App() {
           room={here.room}
           arrival={here.arrival}
           look={save.look}
+          swim={save.swim}
+          rides={rides}
+          slideAt={flags.slide}
           mood={mood}
           view={view}
           tag={tag}
@@ -111,6 +116,9 @@ export function App() {
           roomName={ROOMS[here.room].name}
           look={save.look}
           setLook={setLook}
+          swim={save.swim}
+          setSwim={setSwim}
+          onRide={() => setRides((n) => n + 1)}
           mood={mood}
           setMood={setMood}
           view={view}

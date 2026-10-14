@@ -12,8 +12,12 @@ import {
   OUTFIT_COLORS,
   OUTFITS,
   SKINS,
+  SWIMSUITS,
+  DEFAULT_SWIM,
   isMood,
+  swimFor,
   validateLook,
+  validateSwim,
 } from "./look.ts";
 
 test("the default look and every NPC look use catalog ids", () => {
@@ -94,4 +98,27 @@ test("isMood accepts the five moods only", () => {
   for (const value of ["run", "", null, 1, "Idle"]) {
     assert.equal(isMood(value), false);
   }
+});
+
+test("swimwear rooms dress the doll in the swimsuit slot, others do not", () => {
+  const swim = { style: "one-piece", color: "#ff2f9a" } as const;
+  assert.equal(swimFor({ swimwear: true }, swim), swim);
+  assert.equal(swimFor({ swimwear: false }, swim), null);
+  assert.equal(swimFor({}, swim), null);
+});
+
+test("validateSwim accepts catalog swimsuits only", () => {
+  assert.equal(validateSwim(DEFAULT_SWIM), true);
+  for (const s of SWIMSUITS)
+    assert.equal(validateSwim({ style: s.id, color: "#141018" }), true);
+  for (const bad of [
+    null,
+    "bikini",
+    [],
+    { style: "thong", color: "#3fe0d0" },
+    { style: "bikini", color: "red" },
+    { style: "bikini" },
+    { ...DEFAULT_SWIM, extra: 1 },
+  ])
+    assert.equal(validateSwim(bad), false, JSON.stringify(bad));
 });
