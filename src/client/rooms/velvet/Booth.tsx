@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import * as THREE from "three";
-import { MangoCocktail } from "../shared/Cocktail.tsx";
+import { Cocktail } from "../shared/Cocktail.tsx";
 import { GOLD, LACQUER, neonMat } from "../shared/materials.ts";
 import { BOOTH } from "./layout.ts";
 
@@ -67,8 +67,8 @@ export function Booth() {
         <mesh position-y={0.73} rotation-x={Math.PI / 2} material={GOLD}>
           <torusGeometry args={[0.5, 0.018, 8, 48]} />
         </mesh>
-        <MangoCocktail position={[0.15, 0.75, 0.18]} scale={0.85} />
-        <MangoCocktail position={[0.1, 0.75, -0.22]} scale={0.85} />
+        <Cocktail position={[0.15, 0.75, 0.18]} scale={0.85} />
+        <Cocktail position={[0.1, 0.75, -0.22]} scale={0.85} />
         {[
           [-0.18, 0.05],
           [-0.05, -0.05],

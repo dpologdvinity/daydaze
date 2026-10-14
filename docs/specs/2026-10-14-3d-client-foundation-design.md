@@ -13,7 +13,7 @@ This spec covers the single-player client only. Multiplayer is covered by `2026-
 
 - Stack: Vite, React 19, TypeScript strict, three.js 0.186, React Three Fiber 9, drei 10, @react-three/postprocessing 3. These match the prototype.
 - The prototype in `prototypes/3d-lounge/` is reference code. It is ported, cleaned and split into modules, not imported directly.
-- **Assumption:** first playable slice is two rooms joined by portals: the Mango Room lounge (from the prototype) and Daydaze Plaza, an outdoor night street hub with neon storefronts that later leads to clubs, bars and minigames.
+- **Assumption:** first playable slice is two rooms joined by portals: the Velvet Room lounge (from the prototype) and Daydaze Plaza, an outdoor night street hub with neon storefronts that later leads to clubs, bars and minigames.
 - **Assumption:** the camera is a third-person orbit camera that follows the player, with limited pitch and zoom, matching the prototype. Players move by tapping or clicking the floor, or with WASD and arrow keys.
 - **Assumption:** the player's look and settings save to `localStorage` under `daydaze-save-v1`, validated on load. Coins, inventory and the shop come in a later spec.
 - Name tags use the player's chosen display name. Default: a generated name such as `MangoGuest4821`, matching the guest naming in the online spec.
@@ -38,7 +38,7 @@ src/
       CameraRig.tsx       follow camera and view presets (room, full look, face)
       PlayerController.tsx  click/tap-to-walk, keyboard movement, portal checks
     rooms/
-      MangoRoom.tsx       lounge scene ported from the prototype
+      VelvetRoom.tsx       lounge scene ported from the prototype
       Plaza.tsx           outdoor hub scene
     avatar/
       Doll.tsx, dollGeometry.ts, toon.ts, faceTexture.ts   ported from the prototype
@@ -58,7 +58,7 @@ public/doll/              face template, lips and brows images used by the face 
 type Vec2 = readonly [x: number, z: number];
 
 type RoomDefinition = {
-  id: RoomId;                     // "mango-room" | "plaza"
+  id: RoomId;                     // "velvet-room" | "plaza"
   name: string;                   // shown in the HUD
   walkable: readonly Vec2[];      // floor polygon on the XZ plane
   spawn: { position: Vec2; yaw: number };

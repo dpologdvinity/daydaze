@@ -23,7 +23,7 @@ const PLAYER_MOODS: readonly { id: Mood; label: string }[] = [
 ];
 
 const ROOM_HINTS: Record<RoomId, string> = {
-  "mango-room": "Daydaze VIP lounge. Tap the floor or use WASD to walk.",
+  "velvet-room": "Daydaze VIP lounge. Tap the floor or use WASD to walk.",
   plaza: "The strip after dark. Walk into a glowing door.",
 };
 

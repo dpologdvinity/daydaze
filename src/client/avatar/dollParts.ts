@@ -275,7 +275,7 @@ export const GLASS = new THREE.MeshStandardMaterial({
   transparent: true,
   opacity: 0.35,
 });
-export const MANGO_DRINK = new THREE.MeshBasicMaterial({
+export const DRINK_MATERIAL = new THREE.MeshBasicMaterial({
   color: new THREE.Color("#ff9a1f").multiplyScalar(1.6),
   toneMapped: false,
 });

@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { lathe } from "../../avatar/dollGeometry.ts";
 import { gradientMap } from "../../avatar/toon.ts";
 
-export function MangoCocktail(props: {
+export function Cocktail(props: {
   position: [number, number, number];
   scale?: number;
 }) {
@@ -59,15 +59,7 @@ export function MangoCocktail(props: {
           envMapIntensity={2}
         />
       </mesh>
-      {/* mango wedge, straw, umbrella */}
-      <mesh
-        position={[0.05, 0.29, 0]}
-        rotation-z={-0.5}
-        scale={[0.05, 0.03, 0.025]}
-      >
-        <sphereGeometry args={[1, 16, 10, 0, Math.PI]} />
-        <meshToonMaterial color="#ffa21f" gradientMap={gradientMap} />
-      </mesh>
+      {/* straw, umbrella */}
       <mesh position={[-0.02, 0.32, 0.01]} rotation-z={0.25}>
         <cylinderGeometry args={[0.005, 0.005, 0.22, 8]} />
         <meshToonMaterial color="#ff2f9a" gradientMap={gradientMap} />

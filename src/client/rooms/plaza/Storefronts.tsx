@@ -4,11 +4,11 @@ import * as THREE from "three";
 import type { Look } from "../../../game/look.ts";
 import { Doll } from "../../avatar/Doll.tsx";
 import { useReducedMotion } from "../../motion.ts";
-import { MangoCocktail } from "../shared/Cocktail.tsx";
+import { Cocktail } from "../shared/Cocktail.tsx";
 import { canvasTex, GOLD, hdr, LACQUER, neonMat } from "../shared/materials.ts";
 import {
   DECO,
-  MangoNeon,
+  RingNeon,
   MARQUEE,
   Neon,
   NeonText,
@@ -453,7 +453,7 @@ export function Storefronts() {
     return found;
   };
   const club = shop("club");
-  const mango = shop("mango-room");
+  const velvet = shop("velvet-room");
   const boutique = shop("boutique");
   return (
     <>
@@ -461,8 +461,8 @@ export function Storefronts() {
       <Storefront shop={shop("arcade")}>
         <PixelHeart position={[0, 3.05, 0.08]} />
       </Storefront>
-      <Storefront shop={mango}>
-        <MangoNeon position={[0, 6.6, 0.1]} scale={1.5} />
+      <Storefront shop={velvet}>
+        <RingNeon position={[0, 6.6, 0.1]} scale={1.5} />
         <Ropes x0={-1.9} x1={-1.0} z={0.55} />
         <Ropes x0={1.0} x1={1.9} z={0.55} />
       </Storefront>
@@ -473,8 +473,8 @@ export function Storefronts() {
       </Storefront>
       <Storefront shop={shop("bar")}>
         <MartiniNeon position={[1.55, 3.0, 0.08]} />
-        <MangoCocktail position={[-1.6, 0.46, 0.12]} scale={1.3} />
-        <MangoCocktail position={[-1.2, 0.46, 0.12]} scale={1.1} />
+        <Cocktail position={[-1.6, 0.46, 0.12]} scale={1.3} />
+        <Cocktail position={[-1.2, 0.46, 0.12]} scale={1.1} />
       </Storefront>
       <Storefront shop={boutique}>
         {/* a dressed mannequin on a plinth in front of the window */}
@@ -506,7 +506,7 @@ export function Storefronts() {
         position={[club.x + 1.6, 6.0, SHOP_Z - 0.3]}
       />
       <pointLight
-        position={[mango.x, 2.2, SHOP_Z + 1.2]}
+        position={[velvet.x, 2.2, SHOP_Z + 1.2]}
         color="#ffb02e"
         intensity={7}
         distance={6}

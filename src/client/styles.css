@@ -2,7 +2,7 @@
   --plum: #2a0b2e;
   --velvet: #4a1046;
   --fuchsia: #ff2f9a;
-  --mango: #ffb02e;
+  --amber: #ffb02e;
   --champagne: #f7e7c6;
   --lilac: #d9c8ff;
   --ink: #07020b;
@@ -50,7 +50,7 @@ button {
 }
 
 button:focus-visible {
-  outline: 2px solid var(--mango);
+  outline: 2px solid var(--amber);
   outline-offset: 3px;
 }
 
@@ -189,7 +189,7 @@ button:focus-visible {
   font-style: italic;
   font-weight: 400;
   font-size: 19px;
-  color: var(--mango);
+  color: var(--amber);
 }
 
 .row {
@@ -306,7 +306,7 @@ button:focus-visible {
 }
 
 .seg button[aria-checked="true"] {
-  background: linear-gradient(180deg, #ffd27a, var(--mango) 55%, #c06f00);
+  background: linear-gradient(180deg, #ffd27a, var(--amber) 55%, #c06f00);
   color: #2a0b05;
   font-weight: 700;
   box-shadow: 0 0 16px rgb(255 176 46 / 0.6);
@@ -357,7 +357,7 @@ button:focus-visible {
 }
 
 .chat input:focus-visible {
-  outline: 2px solid var(--mango);
+  outline: 2px solid var(--amber);
   outline-offset: 0;
 }
 

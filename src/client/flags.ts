@@ -9,7 +9,7 @@ export type Flags = {
   still: boolean;
   /** `?debug=1` shows the room jump buttons. */
   debug: boolean;
-  /** `?room=plaza` starts somewhere other than the Mango Room. */
+  /** `?room=plaza` starts somewhere other than the Velvet Room. */
   room: RoomId | null;
   /** `?view=face` starts on another camera shot. */
   view: View | null;

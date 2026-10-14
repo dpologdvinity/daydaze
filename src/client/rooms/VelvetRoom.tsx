@@ -6,15 +6,15 @@ import { NPC_LOOKS } from "../../game/look.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import { Doll } from "../avatar/Doll.tsx";
 import { useReducedMotion } from "../motion.ts";
-import { Bar } from "./mango/Bar.tsx";
-import { Booth } from "./mango/Booth.tsx";
-import { DanceFloor, DiscoBall } from "./mango/DanceFloor.tsx";
-import { Chandelier, Drape, LionCrest } from "./mango/Decor.tsx";
-import { BOOTH, DANCE, ROOM } from "./mango/layout.ts";
-import { Walls } from "./mango/Walls.tsx";
+import { Bar } from "./velvet/Bar.tsx";
+import { Booth } from "./velvet/Booth.tsx";
+import { DanceFloor, DiscoBall } from "./velvet/DanceFloor.tsx";
+import { Chandelier, Drape, LionCrest } from "./velvet/Decor.tsx";
+import { BOOTH, DANCE, ROOM } from "./velvet/layout.ts";
+import { Walls } from "./velvet/Walls.tsx";
 import { Beams, type Beam } from "./shared/Beams.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
-import { DECO, MangoNeon, Neon, NeonText, SCRIPT } from "./shared/Neon.tsx";
+import { DECO, RingNeon, Neon, NeonText, SCRIPT } from "./shared/Neon.tsx";
 import { Palm } from "./shared/Palm.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 
@@ -168,7 +168,7 @@ function Regulars() {
   );
 }
 
-export function MangoRoom({ onPick }: { onPick: PickHandler }) {
+export function VelvetRoom({ onPick }: { onPick: PickHandler }) {
   const calm = useReducedMotion();
   return (
     <>
@@ -182,7 +182,7 @@ export function MangoRoom({ onPick }: { onPick: PickHandler }) {
         color="#120814"
         onPick={onPick}
       />
-      <PortalPads room={ROOMS["mango-room"]} />
+      <PortalPads room={ROOMS["velvet-room"]} />
       <Walls />
       <Bar />
       <LionCrest position={[-0.8, 3.75, -5.9]} />
@@ -193,8 +193,8 @@ export function MangoRoom({ onPick }: { onPick: PickHandler }) {
         width={3.4}
         position={[3.9, 2.9, -5.9]}
       />
-      <MangoNeon
-        caption="mango hour"
+      <RingNeon
+        caption="velvet hour"
         position={[5.92, 2.95, BOOTH.z]}
         rotation={[0, -Math.PI / 2, 0]}
       />

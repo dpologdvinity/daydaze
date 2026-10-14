@@ -14,7 +14,7 @@ import {
   GLASS,
   GOLD,
   HAIR_OUTLINE,
-  MANGO_DRINK,
+  DRINK_MATERIAL,
   OUTLINE,
   shadowTex,
 } from "./dollParts.ts";
@@ -264,7 +264,7 @@ export function Doll({ look, mood, walk, seed = 0, ...rest }: DollProps) {
                   <mesh
                     position-y={-0.005}
                     scale={[0.03, 0.012, 0.03]}
-                    material={MANGO_DRINK}
+                    material={DRINK_MATERIAL}
                   >
                     <sphereGeometry args={[1, 16, 8]} />
                   </mesh>

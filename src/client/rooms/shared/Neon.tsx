@@ -104,53 +104,22 @@ export function NeonText({
   );
 }
 
-/** The kidney-shaped mango outline used by the Mango Room and Plaza signs. */
-export function MangoNeon({
+/** A round neon sign with an optional script caption below it. */
+export function RingNeon({
   caption,
   ...props
 }: { caption?: string } & Omit<ThreeElements["group"], "children">) {
-  const { mango, leaf, stem, blush } = useMemo(() => {
-    const mango: THREE.Vector3[] = [];
+  const ring = useMemo(() => {
+    const pts: THREE.Vector3[] = [];
     for (let i = 0; i < 24; i++) {
       const a = (i / 24) * Math.PI * 2;
-      const r = 0.55 + 0.12 * Math.cos(a) - 0.08 * Math.sin(2 * a);
-      mango.push(
-        new THREE.Vector3(
-          Math.cos(a) * r * 0.82 + 0.08 * Math.sin(a) ** 2,
-          Math.sin(a) * r,
-          0,
-        ),
-      );
+      pts.push(new THREE.Vector3(Math.cos(a) * 0.6, Math.sin(a) * 0.6, 0));
     }
-    const v = (pts: number[][]) =>
-      pts.map(([x, y]) => new THREE.Vector3(x, y, 0));
-    return {
-      mango,
-      leaf: v([
-        [0.05, 0.58],
-        [0.22, 0.82],
-        [0.48, 0.9],
-        [0.36, 0.72],
-        [0.05, 0.58],
-      ]),
-      stem: v([
-        [0.0, 0.52],
-        [-0.04, 0.7],
-        [-0.1, 0.82],
-      ]),
-      blush: v([
-        [-0.25, -0.12],
-        [-0.3, 0.1],
-        [-0.18, 0.3],
-      ]),
-    };
+    return pts;
   }, []);
   return (
     <group {...props}>
-      <Neon points={mango} color="#ff9a1f" k={4.5} radius={0.028} closed />
-      <Neon points={blush} color="#ff3d6e" k={4} radius={0.02} />
-      <Neon points={leaf} color="#3dff9a" k={3.2} radius={0.02} />
-      <Neon points={stem} color="#3dff9a" k={3.2} radius={0.018} />
+      <Neon points={ring} color="#ff9a1f" k={4.5} radius={0.028} closed />
       {caption && (
         <NeonText
           text={caption}

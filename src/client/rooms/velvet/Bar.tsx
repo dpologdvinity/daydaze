@@ -2,7 +2,7 @@ import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { lathe } from "../../avatar/dollGeometry.ts";
 import { gradientMap } from "../../avatar/toon.ts";
-import { MangoCocktail } from "../shared/Cocktail.tsx";
+import { Cocktail } from "../shared/Cocktail.tsx";
 import {
   canvasTex,
   GOLD,
@@ -87,48 +87,6 @@ function Bottles({
     <instancedMesh ref={ref} args={[BOTTLE, undefined, count]}>
       <meshBasicMaterial transparent opacity={0.92} />
     </instancedMesh>
-  );
-}
-
-function Mangoes({ position }: { position: [number, number, number] }) {
-  const geo = useMemo(() => {
-    const g = new THREE.SphereGeometry(1, 20, 14);
-    const p = g.attributes.position;
-    const col = new Float32Array(p.count * 3);
-    const c = new THREE.Color();
-    for (let i = 0; i < p.count; i++) {
-      const x = p.getX(i);
-      // kidney bulge + red/orange/green blush
-      p.setX(i, x + 0.25 * (1 - p.getY(i) ** 2) * (x > 0 ? 0.3 : -0.1));
-      c.set(x > 0.3 ? "#ff4a2a" : x < -0.5 ? "#9bd43a" : "#ffa21f");
-      col.set([c.r, c.g, c.b], i * 3);
-    }
-    g.computeVertexNormals();
-    g.setAttribute("color", new THREE.BufferAttribute(col, 3));
-    return g;
-  }, []);
-  return (
-    <group position={position}>
-      <mesh material={GOLD} position-y={0.03}>
-        <cylinderGeometry args={[0.2, 0.1, 0.07, 24, 1, true]} />
-      </mesh>
-      {[
-        [0, 0.09, 0, 0.3],
-        [0.1, 0.08, 0.05, 1.8],
-        [-0.08, 0.08, 0.07, 3.6],
-        [0.02, 0.15, -0.02, 5],
-      ].map(([x, y, z, r], i) => (
-        <mesh
-          key={i}
-          geometry={geo}
-          position={[x, y, z]}
-          rotation-y={r}
-          scale={[0.075, 0.06, 0.06]}
-        >
-          <meshToonMaterial vertexColors gradientMap={gradientMap} />
-        </mesh>
-      ))}
-    </group>
   );
 }
 
@@ -226,9 +184,8 @@ export function Bar() {
           </mesh>
         </group>
       ))}
-      <MangoCocktail position={[0.35, 1.06, -4.55]} />
-      <MangoCocktail position={[-2.6, 1.06, -4.6]} scale={0.9} />
-      <Mangoes position={[-0.2, 1.06, -4.62]} />
+      <Cocktail position={[0.35, 1.06, -4.55]} />
+      <Cocktail position={[-2.6, 1.06, -4.6]} scale={0.9} />
     </group>
   );
 }

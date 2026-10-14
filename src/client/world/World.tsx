@@ -16,7 +16,7 @@ import {
   type Spawn,
 } from "../../game/rooms.ts";
 import type { Vec2 } from "../../game/walk.ts";
-import { MangoRoom } from "../rooms/MangoRoom.tsx";
+import { VelvetRoom } from "../rooms/VelvetRoom.tsx";
 import { Plaza } from "../rooms/Plaza.tsx";
 import { CameraRig, type View } from "./CameraRig.tsx";
 import { NeonClamp } from "./NeonClamp.tsx";
@@ -89,7 +89,7 @@ export function World({
   // a fresh player per arrival, so a portal can only fire once per visit
   const player = useMemo(() => createPlayer(arrival), [arrival]);
   const onPick = (point: Vec2) => walkTo(player, def, point);
-  const Room = room === "plaza" ? Plaza : MangoRoom;
+  const Room = room === "plaza" ? Plaza : VelvetRoom;
 
   return (
     <Canvas

@@ -52,7 +52,7 @@ export function App() {
   useEffect(() => writeStorage(save), [save]);
 
   const [here, setHere] = useState(() => {
-    const room = flags.room ?? "mango-room";
+    const room = flags.room ?? "velvet-room";
     return visit(room, ROOMS[room].spawn);
   });
   const [fading, setFading] = useState(false);

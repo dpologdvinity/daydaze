@@ -9,8 +9,8 @@ export const HALF_WIDTH = 12;
 export const SHOP_HEIGHT = 5.6;
 
 const [door] = ROOMS.plaza.portals;
-/** The Mango Room entrance, centred on its portal. */
-export const MANGO_DOOR_X = door.position[0];
+/** The Velvet Room entrance, centred on its portal. */
+export const VELVET_DOOR_X = door.position[0];
 
 export type Shop = {
   id: string;
@@ -43,9 +43,9 @@ export const SHOPS: readonly Shop[] = [
     open: false,
   },
   {
-    id: "mango-room",
-    name: "the mango room",
-    x: MANGO_DOOR_X,
+    id: "velvet-room",
+    name: "the velvet room",
+    x: VELVET_DOOR_X,
     width: 4.6,
     color: "#ffb02e",
     accent: "#ff2f9a",

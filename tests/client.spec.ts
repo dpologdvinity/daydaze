@@ -17,13 +17,13 @@ function collectErrors(page: Page) {
 
 const roomTitle = (page: Page) => page.getByRole("heading", { level: 1 });
 
-test("loads the Mango Room with no errors and mounts the canvas", async ({
+test("loads the Velvet Room with no errors and mounts the canvas", async ({
   page,
 }) => {
   const errors = collectErrors(page);
   await page.goto(LOW);
   await expect(page.getByRole("img", { name: "3D room view" })).toBeVisible();
-  await expect(roomTitle(page)).toHaveText("The Mango Room");
+  await expect(roomTitle(page)).toHaveText("The Velvet Room");
   // let the continuous loop run a while: shaders compile on the first frames
   await page.waitForTimeout(8000);
   expect(errors).toEqual([]);
@@ -53,11 +53,11 @@ test("a hair style picked in the closet survives a reload", async ({
 test("the debug buttons move the player between rooms", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto(`${STILL}&debug=1`);
-  await expect(roomTitle(page)).toHaveText("The Mango Room");
+  await expect(roomTitle(page)).toHaveText("The Velvet Room");
   await page.getByRole("button", { name: "Go to Plaza" }).click();
   await expect(roomTitle(page)).toHaveText("Daydaze Plaza");
-  await page.getByRole("button", { name: "Go to Mango Room" }).click();
-  await expect(roomTitle(page)).toHaveText("The Mango Room");
+  await page.getByRole("button", { name: "Go to Velvet Room" }).click();
+  await expect(roomTitle(page)).toHaveText("The Velvet Room");
   expect(errors).toEqual([]);
 });
 
@@ -72,9 +72,9 @@ test("the debug panel is hidden without the flag", async ({ page }) => {
 test("chat shows what you said above your doll", async ({ page }) => {
   await page.goto(STILL);
   const input = page.getByRole("textbox", { name: "Chat message" });
-  await input.fill("mango hour anyone?");
+  await input.fill("velvet hour anyone?");
   await input.press("Enter");
-  await expect(page.getByRole("status")).toHaveText("mango hour anyone?");
+  await expect(page.getByRole("status")).toHaveText("velvet hour anyone?");
   await expect(input).toHaveValue("");
 });
 
@@ -98,7 +98,7 @@ test("on a phone the dressing room opens from its toggle", async ({ page }) => {
   ).toHaveAttribute("aria-expanded", "true");
 });
 
-test("walking into the Plaza's glowing door enters the Mango Room", async ({
+test("walking into the Plaza's glowing door enters the Velvet Room", async ({
   page,
 }) => {
   await page.goto(`${LOW}&room=plaza`);
@@ -111,7 +111,7 @@ test("walking into the Plaza's glowing door enters the Mango Room", async ({
   // The spawn shot is fixed at 1280x800: this pixel is the floor at the
   // door's centre (0, -6.3), inside the portal's 0.7 m radius.
   await page.mouse.click(613, 488);
-  await expect(roomTitle(page)).toHaveText("The Mango Room", {
+  await expect(roomTitle(page)).toHaveText("The Velvet Room", {
     timeout: 120_000,
   });
 });

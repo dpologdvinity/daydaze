@@ -18,7 +18,7 @@ export const VIEWS: readonly { id: View; label: string }[] = [
 // The wide shot of each room: where the camera sits and what it looks at.
 const ROOM_SHOTS: Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }> =
   {
-    "mango-room": {
+    "velvet-room": {
       eye: new THREE.Vector3(6.4, 5.4, 10),
       look: new THREE.Vector3(0.6, 1.0, -1.0),
     },

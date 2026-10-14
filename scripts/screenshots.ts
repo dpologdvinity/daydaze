@@ -5,8 +5,8 @@ import { chromium } from "@playwright/test";
 
 const BASE = process.env.BASE_URL ?? "http://localhost:5195";
 const SHOTS: { name: string; query: string }[] = [
-  { name: "mango-room", query: "room=mango-room" },
-  { name: "mango-room-full-look", query: "room=mango-room&view=full" },
+  { name: "velvet-room", query: "room=velvet-room" },
+  { name: "velvet-room-full-look", query: "room=velvet-room&view=full" },
   { name: "plaza", query: "room=plaza" },
   { name: "plaza-face", query: "room=plaza&view=face" },
 ];
