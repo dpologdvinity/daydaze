@@ -62,7 +62,7 @@
 }
 
 .mx-intro-fill {
-  fill: var(--mg-mango);
+  fill: var(--mg-amber);
   opacity: 0.9;
 }
 
@@ -222,7 +222,7 @@
 }
 
 .mx-slip-done .mx-slip-state {
-  color: var(--mg-mango);
+  color: var(--mg-amber);
   font-weight: 700;
 }
 
@@ -255,7 +255,7 @@
   font-size: 34px;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  color: var(--mg-mango);
+  color: var(--mg-amber);
   text-shadow: 0 0 14px rgb(255 176 46 / 0.6);
 }
 
@@ -421,9 +421,9 @@
 }
 
 .mx-neon-glass {
-  stroke: var(--mg-mango);
+  stroke: var(--mg-amber);
   stroke-width: 4;
-  filter: drop-shadow(0 0 4px var(--mg-mango)) drop-shadow(0 0 16px #ff7a1a);
+  filter: drop-shadow(0 0 4px var(--mg-amber)) drop-shadow(0 0 16px #ff7a1a);
 }
 
 /* A tired tube: two quick stutters every few seconds. */
@@ -587,7 +587,7 @@
 
 .mx-count {
   margin-left: auto;
-  color: var(--mg-mango);
+  color: var(--mg-amber);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -696,8 +696,8 @@
 }
 
 .mx-quality-perfect {
-  color: var(--mg-mango);
-  text-shadow: 0 0 18px var(--mg-mango);
+  color: var(--mg-amber);
+  text-shadow: 0 0 18px var(--mg-amber);
 }
 
 .mx-receipt {
@@ -731,7 +731,7 @@
 }
 
 .mx-receipt .mx-earned strong {
-  color: var(--mg-mango);
+  color: var(--mg-amber);
 }
 
 .mx-receipt .mx-lost {

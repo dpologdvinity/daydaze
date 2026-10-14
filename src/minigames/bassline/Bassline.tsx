@@ -20,7 +20,7 @@ import {
   type Lane,
   type Result,
 } from "./engine.ts";
-import "./MangoDecks.css";
+import "./Bassline.css";
 
 declare module "react" {
   interface CSSProperties {
@@ -47,7 +47,7 @@ const GRADE_LINE: Record<Grade, string> = {
 
 type Phase = "intro" | "playing" | "done";
 
-export type MangoDecksProps = {
+export type BasslineProps = {
   /** Called once: the best result of this visit, or null if no set was finished. */
   onClose: (result: Result | null) => void;
   reducedMotion?: boolean;
@@ -80,11 +80,11 @@ function Crowd() {
   );
 }
 
-export function MangoDecks({
+export function Bassline({
   onClose,
   reducedMotion = false,
   muted = false,
-}: MangoDecksProps) {
+}: BasslineProps) {
   const [phase, setPhase] = useState<Phase>("intro");
   const [judgments, setJudgments] = useState<readonly Judgment[]>([]);
   const [elapsed, setElapsed] = useState(0);
@@ -220,8 +220,8 @@ export function MangoDecks({
 
   return (
     <Dialog
-      title="Mango Decks"
-      subtitle="The DJ booth in the Mango Room"
+      title="Bassline"
+      subtitle="The DJ booth in the Velvet Room"
       onClose={close}
       className={`md ${reducedMotion ? "md-calm" : ""}`}
     >
@@ -280,7 +280,7 @@ export function MangoDecks({
           <div
             className="md-field"
             role="group"
-            aria-label={`Mango Decks set in progress. Score ${score}, streak ${combo}.`}
+            aria-label={`Bassline set in progress. Score ${score}, streak ${combo}.`}
           >
             {feedback && (
               <span

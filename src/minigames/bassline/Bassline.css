@@ -78,7 +78,7 @@
 }
 .md-keycaps kbd:nth-child(2),
 .md-lane-1 {
-  --lane-glow: var(--mg-mango);
+  --lane-glow: var(--mg-amber);
 }
 .md-keycaps kbd:nth-child(3),
 .md-lane-2 {
@@ -157,7 +157,7 @@
   gap: 14px;
 }
 
-/* Intro record: a spinning mango-label vinyl on the platter. */
+/* Intro record: a spinning amber-label vinyl on the platter. */
 .md-vinyl {
   display: grid;
   place-items: center;
@@ -188,7 +188,7 @@
   border-radius: 50%;
   background:
     radial-gradient(circle, var(--mg-ink) 0 6%, transparent 7%),
-    radial-gradient(circle at 35% 30%, #ffd27a, var(--mg-mango) 45%, #e8590c);
+    radial-gradient(circle at 35% 30%, #ffd27a, var(--mg-amber) 45%, #e8590c);
 }
 
 @keyframes md-spin {
@@ -273,7 +273,7 @@
   margin-left: 6px;
   padding: 4px 10px;
   border-radius: 999px;
-  background: var(--mg-mango);
+  background: var(--mg-amber);
   color: var(--mg-ink);
   font-weight: 700;
 }
@@ -288,7 +288,7 @@
 }
 
 .md-energy-label {
-  color: var(--mg-mango);
+  color: var(--mg-amber);
   font-size: 13px;
   font-weight: 700;
 }
@@ -310,7 +310,7 @@
   inset: auto 0 0;
   height: calc(var(--energy) * 100%);
   border-radius: 999px;
-  background: linear-gradient(0deg, var(--mg-mango), var(--mg-fuchsia));
+  background: linear-gradient(0deg, var(--mg-amber), var(--mg-fuchsia));
   box-shadow: 0 0 22px var(--mg-fuchsia);
   transition: height 200ms ease-out;
 }
@@ -430,8 +430,8 @@
 }
 
 .md-feedback-perfect {
-  color: var(--mg-mango);
-  text-shadow: 0 0 22px var(--mg-mango);
+  color: var(--mg-amber);
+  text-shadow: 0 0 22px var(--mg-amber);
 }
 .md-feedback-great {
   color: var(--mg-fuchsia);

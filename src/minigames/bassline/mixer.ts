@@ -1,5 +1,5 @@
 /**
- * Mango Decks backing groove: procedural Web Audio DJ mixer ported from Club
+ * Bassline backing groove: procedural Web Audio DJ mixer ported from Club
  * Lion. Plays through the shared audio bus music channel so the global
  * mute and volume reach it; does nothing when Web Audio is unavailable.
  */
