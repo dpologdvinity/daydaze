@@ -16,6 +16,8 @@ function collectErrors(page: Page) {
 }
 
 const roomTitle = (page: Page) => page.getByRole("heading", { level: 1 });
+const canvasOf = (page: Page) =>
+  page.getByRole("img", { name: "3D room view" });
 
 test("loads the Velvet Room with no errors and mounts the canvas", async ({
   page,
@@ -108,11 +110,23 @@ test("the Amusement Park opens from the debug panel and renders its rides", asyn
   await expect(roomTitle(page)).toHaveText("Amusement Park");
   await expect(page.getByRole("img", { name: "3D room view" })).toBeVisible();
   // the scene draws its frames, so the rides and midway have rendered
-  await expect(page.locator("canvas")).toHaveAttribute(
-    "data-frames",
-    /[3-9]|10/,
-    { timeout: 120_000 },
-  );
+  await expect(canvasOf(page)).toHaveAttribute("data-frames", /[3-9]|10/, {
+    timeout: 120_000,
+  });
+  expect(errors).toEqual([]);
+});
+
+test("a coaster ride seats the doll, runs the loop and steps it back off", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  // ?ride=coaster boards at once; the frame loop stays live so the ride can run
+  await page.goto(`${LOW}&room=amusement-park&ride=coaster`);
+  await expect(canvasOf(page)).toHaveAttribute("data-ride-state", "riding");
+  // a coaster lap takes 22 s of scene time; allow for slow SwiftShader frames
+  await expect(canvasOf(page)).toHaveAttribute("data-ride-state", "idle", {
+    timeout: 150_000,
+  });
   expect(errors).toEqual([]);
 });
 

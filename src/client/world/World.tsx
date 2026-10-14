@@ -7,7 +7,14 @@ import {
   Vignette,
 } from "@react-three/postprocessing";
 import { ToneMappingMode } from "postprocessing";
-import { Suspense, useMemo, useRef, useState, type RefObject } from "react";
+import {
+  lazy,
+  Suspense,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import type { Look, Mood } from "../../game/look.ts";
 import {
   ROOMS,
@@ -18,7 +25,6 @@ import {
 import type { Vec2 } from "../../game/walk.ts";
 import { VelvetRoom } from "../rooms/VelvetRoom.tsx";
 import { Plaza } from "../rooms/Plaza.tsx";
-import { AmusementPark } from "../rooms/AmusementPark.tsx";
 import { CameraRig, type View } from "./CameraRig.tsx";
 import { NeonClamp } from "./NeonClamp.tsx";
 import { createPlayer, PlayerController, walkTo } from "./PlayerController.tsx";
@@ -27,10 +33,18 @@ import { QualityContext, type QualityTier } from "./quality.ts";
 // Enough for the environment map, face textures and reflector to settle.
 const STILL_FRAMES = 4;
 
+// The park is big and rarely visited, so its code loads on first arrival.
+const AmusementPark = lazy(() =>
+  import("../rooms/AmusementPark.tsx").then((m) => ({
+    default: m.AmusementPark,
+  })),
+);
+
 /**
  * Counts rendered frames into `canvas[data-frames]` (up to 10) so tests and
  * screenshots can wait for a real picture. In still mode it also asks for
- * the few on-demand frames the scene needs to settle.
+ * the few on-demand frames the scene needs to settle. The first frames also
+ * record draw calls and triangles in `data-calls` and `data-triangles`.
  */
 function FrameCount({ still }: { still: boolean }) {
   const invalidate = useThree((s) => s.invalidate);
@@ -39,6 +53,8 @@ function FrameCount({ still }: { still: boolean }) {
     if (count.current >= 10) return;
     count.current += 1;
     gl.domElement.dataset.frames = String(count.current);
+    gl.domElement.dataset.calls = String(gl.info.render.calls);
+    gl.domElement.dataset.triangles = String(gl.info.render.triangles);
     if (still && count.current < STILL_FRAMES) invalidate();
   });
   return null;

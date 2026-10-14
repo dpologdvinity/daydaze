@@ -65,8 +65,12 @@ for (const shot of SHOTS) {
     path: `docs/screenshots/${shot.name}.png`,
     timeout: 180_000,
   });
+  // renderer stats for the first frames: draw calls and triangles
+  const canvas = page.getByRole("img", { name: "3D room view" });
+  const calls = await canvas.getAttribute("data-calls");
+  const triangles = await canvas.getAttribute("data-triangles");
   console.log(
-    `${shot.name}: ${last} frames, ${((Date.now() - started) / 1000).toFixed(0)} s`,
+    `${shot.name}: ${last} frames, ${calls} draw calls, ${triangles} triangles, ${((Date.now() - started) / 1000).toFixed(0)} s`,
   );
 }
 await browser.close();

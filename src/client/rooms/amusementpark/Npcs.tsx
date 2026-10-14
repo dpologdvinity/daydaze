@@ -2,10 +2,11 @@ import { Html } from "@react-three/drei";
 import type { ThreeEvent } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
 import {
-  lineAt,
-  PARK_LINES,
+  PARK_CONTEXT,
+  PARK_NPC_ROLES,
   type ParkNpcId,
 } from "../../../game/amusementPark.ts";
+import { pickLine, type RecentLines } from "../../../game/dialogue/pick.ts";
 import type { Look, Mood } from "../../../game/look.ts";
 import { Doll } from "../../avatar/Doll.tsx";
 
@@ -20,8 +21,8 @@ type Npc = {
   rot: number;
 };
 
-// Ride staff stand at the rides; visitors wander the midway. Each NPC has a
-// handwritten line bank in PARK_LINES and says the next line on every tap.
+// Ride staff stand at the rides; visitors wander the midway. Each NPC speaks
+// for a dialogue role, so a tap picks a fairground line from that role's bank.
 export const PARK_NPCS: readonly Npc[] = [
   {
     id: "tamsin",
@@ -144,16 +145,24 @@ export const PARK_NPCS: readonly Npc[] = [
   },
 ];
 
-/** A standing doll that says its next handwritten line when tapped. */
+/** A standing doll that says a fairground line from its dialogue role when tapped. */
 export function ParkNpc({ npc, seed }: { npc: Npc; seed: number }) {
   const [line, setLine] = useState<string | null>(null);
-  const next = useRef(0);
+  // lines this NPC said lately, so taps rarely repeat
+  const recent = useRef<RecentLines>([]);
   const timer = useRef(0);
   useEffect(() => () => window.clearTimeout(timer.current), []);
   const say = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
-    setLine(lineAt(PARK_LINES[npc.id], next.current));
-    next.current += 1;
+    const picked = pickLine({
+      role: PARK_NPC_ROLES[npc.id],
+      situation: "tapped",
+      context: PARK_CONTEXT,
+      rng: Math.random,
+      recent: recent.current,
+    });
+    recent.current = picked.recent;
+    setLine(picked.text);
     window.clearTimeout(timer.current);
     timer.current = window.setTimeout(() => setLine(null), BUBBLE_MS);
   };

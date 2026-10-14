@@ -3,26 +3,23 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import {
-  ferrisSeat,
+  newPose,
   parseRide,
-  rideProgress,
-  rideSeconds,
-  trackPose,
+  RIDES,
+  rideStep,
+  seatPose,
+  type RideEvent,
   type RideId,
+  type RideState,
 } from "../../game/amusementPark.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import type { Vec2 } from "../../game/walk.ts";
-import { walkTo, type Player } from "../world/PlayerController.tsx";
 import { useReducedMotion } from "../motion.ts";
-import { PARK_NPCS, ParkNpc } from "./amusementpark/Npcs.tsx";
+import { walkTo, type Player } from "../world/PlayerController.tsx";
+import { Bulbs } from "./amusementpark/Bulbs.tsx";
 import { Midway } from "./amusementpark/Midway.tsx";
-import {
-  COASTER_SPOT,
-  COASTER_TRACK,
-  ENTRANCE_Z,
-  FERRIS,
-  FERRIS_SPOT,
-} from "./amusementpark/layout.ts";
+import { PARK_NPCS, ParkNpc } from "./amusementpark/Npcs.tsx";
+import { ENTRANCE_Z } from "./amusementpark/layout.ts";
 import {
   Carousel,
   Coaster,
@@ -32,7 +29,6 @@ import {
   Teacups,
 } from "./amusementpark/Rides.tsx";
 import { Arch } from "./shared/Arch.tsx";
-import { Bulbs } from "./amusementpark/Bulbs.tsx";
 import { Beams, type Beam } from "./shared/Beams.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
@@ -56,11 +52,8 @@ const BEAMS: readonly Beam[] = [
   { position: [8.5, 0.1, 6.5], color: "#3fe0d0", phase: 2.1, length: 30 },
 ];
 
-// Where a doll stands to board each ride.
-const SPOTS: Record<RideId, readonly [number, number]> = {
-  "ferris-wheel": FERRIS_SPOT,
-  coaster: COASTER_SPOT,
-};
+// How close the doll must walk to its ring before it is seated.
+const ARRIVE_METRES = 0.3;
 
 function Ring({
   at,
@@ -93,8 +86,9 @@ function Ring({
 
 /**
  * The Amusement Park: a night midway with a ferris wheel, carousel, coaster,
- * drop tower, swing ride and teacups. The ferris wheel and coaster can be
- * boarded from their rings; the doll then rides the ride's path and steps off.
+ * drop tower, swing ride and teacups. The ferris wheel and coaster board from
+ * their rings. Riding is a small state machine (idle, boarding, riding,
+ * exiting); the seat position is a pure function of time.
  */
 export function AmusementPark({
   onPick,
@@ -104,6 +98,7 @@ export function AmusementPark({
   player: Player;
 }) {
   const clock = useThree((s) => s.clock);
+  const gl = useThree((s) => s.gl);
   const calm = useReducedMotion();
   const tiles = useMemo(
     () =>
@@ -124,71 +119,69 @@ export function AmusementPark({
       ),
     [],
   );
-  // The ride being taken and, while the doll walks to the ring, the boarding request.
-  const ride = useRef<{ id: RideId; start: number; seconds: number } | null>(
-    null,
-  );
-  const pending = useRef<{ id: RideId; target: Vec2 | null } | null>(null);
+  const ride = useRef<RideState>({ phase: "idle" });
+  // The walk target that means "still walking to the ring"; a new target cancels.
+  const boardTarget = useRef<Vec2 | null>(null);
+  const seat = useMemo(newPose, []);
   const cabin = useRef<THREE.Group>(null);
 
-  const start = (id: RideId) => {
-    pending.current = null;
-    player.target = null;
-    player.seat ??= { position: new THREE.Vector3(), yaw: 0 };
-    ride.current = {
-      id,
-      start: clock.elapsedTime,
-      seconds: rideSeconds(id, calm),
-    };
+  const dispatch = (event: RideEvent) => {
+    const next = rideStep(ride.current, event);
+    if (next.phase !== ride.current.phase) {
+      // tests and screenshots wait on this instead of a fixed delay
+      gl.domElement.dataset.rideState = next.phase;
+    }
+    ride.current = next;
   };
+
   const board = (id: RideId) => {
-    if (ride.current) return;
-    walkTo(player, ROOMS["amusement-park"], SPOTS[id]);
-    pending.current = { id, target: player.target };
+    if (ride.current.phase !== "idle") return;
+    walkTo(player, ROOMS["amusement-park"], RIDES[id].spot);
+    boardTarget.current = player.target;
+    dispatch({ type: "board", ride: id });
   };
 
   useEffect(() => {
+    gl.domElement.dataset.rideState = "idle";
     // `?ride=coaster` boards straight away, for screenshots and tests
     const id = parseRide(
       new URLSearchParams(window.location.search).get("ride"),
     );
     if (!id) return;
-    player.pos.set(SPOTS[id][0], 0, SPOTS[id][1]);
-    start(id);
+    const [x, z] = RIDES[id].spot;
+    player.pos.set(x, 0, z);
+    dispatch({ type: "board", ride: id });
+    dispatch({ type: "arrive", now: clock.elapsedTime, calm });
+    // runs once per visit to the park
   }, []);
 
   useFrame(() => {
-    const p = pending.current;
-    if (p && !ride.current) {
-      const [sx, sz] = SPOTS[p.id];
-      if (Math.hypot(player.pos.x - sx, player.pos.z - sz) < 0.3) start(p.id);
-      // a click elsewhere on the floor cancels the boarding walk
-      else if (player.target !== p.target) pending.current = null;
+    const now = clock.elapsedTime;
+    const current = ride.current;
+    if (current.phase === "boarding") {
+      const [sx, sz] = RIDES[current.ride].spot;
+      if (Math.hypot(player.pos.x - sx, player.pos.z - sz) < ARRIVE_METRES) {
+        dispatch({ type: "arrive", now, calm });
+      } else if (player.target !== boardTarget.current) {
+        dispatch({ type: "cancel" });
+      }
     }
-    const r = ride.current;
-    const seat = player.seat;
-    if (!r || !seat) {
-      if (cabin.current) cabin.current.visible = false;
-      return;
-    }
-    const elapsed = clock.elapsedTime - r.start;
-    if (elapsed >= r.seconds) {
-      ride.current = null;
+    dispatch({ type: "tick", now });
+    const phase = ride.current;
+    const at = seatPose(phase, now, calm, seat);
+    if (!at) {
       player.seat = null;
       if (cabin.current) cabin.current.visible = false;
       return;
     }
-    const progress = rideProgress(elapsed, r.seconds);
-    const pose =
-      r.id === "ferris-wheel"
-        ? ferrisSeat(FERRIS, progress)
-        : trackPose(COASTER_TRACK, progress * COASTER_TRACK.length);
-    seat.position.set(...pose.position);
-    seat.yaw = pose.yaw;
+    player.seat ??= { position: new THREE.Vector3(), yaw: 0 };
+    player.seat.position.set(at.x, at.y, at.z);
+    player.seat.yaw = at.yaw;
     if (cabin.current) {
-      cabin.current.visible = true;
-      cabin.current.position.copy(seat.position);
-      cabin.current.rotation.y = seat.yaw;
+      // the car is only shown while the doll is strapped in, not while stepping off
+      cabin.current.visible = phase.phase === "riding";
+      cabin.current.position.copy(player.seat.position);
+      cabin.current.rotation.y = at.yaw;
     }
   });
 
@@ -221,7 +214,7 @@ export function AmusementPark({
       </Environment>
       <ambientLight color="#5a2c7a" intensity={0.7} />
       <hemisphereLight args={["#4a3aa0", "#ff2f9a", 0.6]} />
-      <Bulbs points={STARS} colors={STAR_COLORS} radius={0.1} />
+      <Bulbs points={STARS} colors={STAR_COLORS} radius={0.1} detail={[5, 4]} />
       <Floor
         width={18}
         depth={15.5}
@@ -254,12 +247,12 @@ export function AmusementPark({
       <SwingRide />
       <Teacups />
       <Ring
-        at={FERRIS_SPOT}
+        at={RIDES["ferris-wheel"].spot}
         color="#3fe0d0"
         onBoard={() => board("ferris-wheel")}
       />
       <Ring
-        at={COASTER_SPOT}
+        at={RIDES.coaster.spot}
         color="#ff2f9a"
         onBoard={() => board("coaster")}
       />

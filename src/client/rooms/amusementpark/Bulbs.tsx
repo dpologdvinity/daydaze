@@ -19,10 +19,13 @@ export function Bulbs({
   points,
   colors = BULB_PALETTE,
   radius = 0.07,
+  detail = [8, 6],
 }: {
   points: readonly Vec3[];
   colors?: readonly string[];
   radius?: number;
+  /** Width and height segments of each bulb; far bulbs can use fewer. */
+  detail?: [number, number];
 }) {
   const ref = useRef<THREE.InstancedMesh>(null);
   useLayoutEffect(() => {
@@ -41,7 +44,7 @@ export function Bulbs({
   }, [points, colors]);
   return (
     <instancedMesh ref={ref} args={[undefined, undefined, points.length]}>
-      <sphereGeometry args={[radius, 8, 6]} />
+      <sphereGeometry args={[radius, detail[0], detail[1]]} />
       <meshBasicMaterial toneMapped={false} />
     </instancedMesh>
   );
