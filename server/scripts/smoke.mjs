@@ -46,8 +46,11 @@ async function waitForServer() {
   throw new Error("wrangler dev did not start within 60 s");
 }
 
-async function guest() {
-  const response = await fetch(`${BASE}/api/guest`, { method: "POST" });
+async function guest(headers = {}) {
+  const response = await fetch(`${BASE}/api/guest`, {
+    method: "POST",
+    headers,
+  });
   check(response.status === 201, "POST /api/guest creates a guest");
   const cookie = response.headers.getSetCookie()[0] ?? "";
   check(
@@ -459,6 +462,78 @@ try {
     reportStatuses.slice(0, 5).every((status) => status === 201) &&
       reportStatuses[5] === 429,
     `the 6th rapid report gets 429 (${reportStatuses.join(", ")})`,
+  );
+
+  // Admin ban. Last on purpose: banning a guest also bans their address. The
+  // gateway reads the address from CF-Connecting-IP, which wrangler dev never
+  // sets, so this guest gets its own address header and no other check shares it.
+  const bannedAddress = { "CF-Connecting-IP": "203.0.113.7" };
+  const adminSignup = await fetch(`${BASE}/api/signup`, {
+    method: "POST",
+    body: JSON.stringify({
+      username: "Smoke Admin",
+      password: "correct horse",
+    }),
+  });
+  check(adminSignup.status === 201, "an admin-to-be signs up");
+  const adminCookie = adminSignup.headers.getSetCookie()[0].split(";")[0];
+  // Async on purpose: spawnSync would freeze this process while the dev
+  // server idles, and the next keep-alive request would hit a dead socket.
+  const promoted = await new Promise((resolve) =>
+    spawn(
+      ...wrangler(
+        [
+          "d1",
+          "execute",
+          "DB",
+          "--local",
+          "--command",
+          "UPDATE users SET is_admin = 1 WHERE username_key = 'smoke admin'",
+        ],
+        { stdio: "ignore", env: { ...process.env, CI: "1" } },
+      ),
+    ).on("exit", (code) => resolve(code)),
+  );
+  check(promoted === 0, "the account is made admin with SQL on D1");
+  const erin = await guest(bannedAddress);
+  const erinSocket = await connect(erin);
+  await waitFor(
+    erinSocket.messages,
+    (m) => m.type === "snapshot",
+    "the soon-banned guest is in a room",
+  );
+  const banBody = JSON.stringify({ targetId: erin.id, reason: "smoke test" });
+  const notAdmin = await fetch(`${BASE}/api/admin/ban`, {
+    method: "POST",
+    headers: { Cookie: dave.cookie },
+    body: banBody,
+  });
+  check(notAdmin.status === 403, "a non-admin cannot ban");
+  const banned = await fetch(`${BASE}/api/admin/ban`, {
+    method: "POST",
+    headers: { Cookie: adminCookie },
+    body: banBody,
+  });
+  const banResult = await banned.json();
+  check(
+    banned.status === 200 && banResult.kicked === 1,
+    `an admin ban kicks the player from their room copy (${JSON.stringify(banResult)})`,
+  );
+  check(
+    (await erinSocket.closed) === 4003,
+    "the banned socket closes with 4003",
+  );
+  const erinMe = await fetch(`${BASE}/api/me`, {
+    headers: { Cookie: erin.cookie },
+  });
+  check(erinMe.status === 401, "the banned player's session is gone");
+  const reentry = await fetch(`${BASE}/api/guest`, {
+    method: "POST",
+    headers: bannedAddress,
+  });
+  check(
+    banResult.addressBanned && reentry.status === 403,
+    "a banned guest cannot come straight back as a new guest",
   );
 } catch (error) {
   failed = true;
