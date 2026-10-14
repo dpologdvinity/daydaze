@@ -19,6 +19,11 @@ import {
 export const IDENTITY_HEADER = "X-Daydaze-Identity";
 export const DIRECTORY_NAME = "world";
 
+/** The Durable Object name of one room copy. */
+export function roomObjectName(roomId: string, copy: number): string {
+  return `${roomId}:${copy}`;
+}
+
 function parseJson(text: string | null): unknown {
   try {
     return JSON.parse(text ?? "null");
@@ -127,6 +132,16 @@ export class RoomInstance extends DurableObject<Env> {
   /** RPC from the gateway for reports. */
   recentChat(): ChatLine[] {
     return this.core?.recentChat(REPORT_CHAT_LINES) ?? [];
+  }
+
+  /** RPC from the Directory after an admin ban; true when the player was here. */
+  async enforceBan(targetId: string): Promise<boolean> {
+    const kicked = this.core?.enforceBan(targetId) ?? false;
+    // Also any socket RoomCore does not know, such as one mid-join.
+    for (const ws of this.ctx.getWebSockets(targetId))
+      ws.close(CLOSE_CODES.banned, "banned");
+    if (kicked) await this.reportOccupancy();
+    return kicked;
   }
 
   private coreFor(room: RoomCopy): RoomCore {

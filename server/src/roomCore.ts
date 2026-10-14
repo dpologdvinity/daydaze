@@ -249,10 +249,19 @@ export class RoomCore {
   /** Bans the id from this room copy, present or not. */
   ban(adminId: string, targetId: string): boolean {
     if (!this.isAdmin(adminId, targetId)) return false;
+    this.enforceBan(targetId);
+    return true;
+  }
+
+  /**
+   * A ban the gateway already authorised (POST /api/admin/ban). Keeps the id
+   * out of this copy; true when they were here and got disconnected.
+   */
+  enforceBan(targetId: string): boolean {
     this.banned.add(targetId);
     const target = this.occupants.get(targetId);
     if (target) this.disconnect(target, "banned");
-    return true;
+    return target !== undefined;
   }
 
   look(id: string): Look | null {

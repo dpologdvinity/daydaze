@@ -11,7 +11,8 @@ export type Route =
         | "save-get"
         | "save-put"
         | "report"
-        | "block";
+        | "block"
+        | "admin-ban";
     }
   | { kind: "rooms"; roomId: RoomId }
   | { kind: "ws"; roomId: RoomId; copy: number };
@@ -26,6 +27,7 @@ const FIXED = new Map<string, Route>([
   ["PUT /api/save", { kind: "save-put" }],
   ["POST /api/report", { kind: "report" }],
   ["POST /api/block", { kind: "block" }],
+  ["POST /api/admin/ban", { kind: "admin-ban" }],
 ]);
 
 /** Copies are numbered 1 to 99 ("Downtown #1"). */

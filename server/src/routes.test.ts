@@ -12,6 +12,7 @@ test("fixed API routes match by method and path", () => {
   assert.deepEqual(matchRoute("PUT", "/api/save"), { kind: "save-put" });
   assert.deepEqual(matchRoute("POST", "/api/report"), { kind: "report" });
   assert.deepEqual(matchRoute("POST", "/api/block"), { kind: "block" });
+  assert.deepEqual(matchRoute("POST", "/api/admin/ban"), { kind: "admin-ban" });
 });
 
 test("room routes accept only known rooms and copies 1 to 99", () => {
@@ -48,6 +49,7 @@ test("wrong methods and unknown paths do not match", () => {
     ["DELETE", "/api/save"],
     ["POST", "/api/me"],
     ["POST", "/api/rooms/plaza"],
+    ["GET", "/api/admin/ban"],
     ["GET", "/api/guest/"],
     ["GET", "/"],
   ])

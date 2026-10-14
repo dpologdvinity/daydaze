@@ -99,6 +99,20 @@ export function parseReport(
     : null;
 }
 
+export function parseBan(
+  body: unknown,
+): { targetId: string; reason: string } | null {
+  const f = fields(body);
+  const targetId = f.get("targetId");
+  const reason = f.get("reason");
+  return isNetworkId(targetId) &&
+    typeof reason === "string" &&
+    reason.trim() !== "" &&
+    reason.length <= MAX_REASON_LENGTH
+    ? { targetId, reason }
+    : null;
+}
+
 /** `room` is where both players are now, so the block applies at once. */
 export function parseBlock(
   body: unknown,

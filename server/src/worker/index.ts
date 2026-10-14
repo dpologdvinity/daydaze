@@ -27,6 +27,7 @@ import {
 } from "../sessions.ts";
 import {
   MAX_SAVE_BYTES,
+  parseBan,
   parseBlock,
   parseCredentials,
   parseIdentity,
@@ -34,7 +35,11 @@ import {
   parseSave,
   type Identity,
 } from "../validation.ts";
-import { DIRECTORY_NAME, IDENTITY_HEADER } from "./roomInstance.ts";
+import {
+  DIRECTORY_NAME,
+  IDENTITY_HEADER,
+  roomObjectName,
+} from "./roomInstance.ts";
 
 export { Directory } from "./directory.ts";
 export { RateLimiter } from "./rateLimiter.ts";
@@ -80,7 +85,7 @@ async function rateLimited(
 }
 
 function roomStub(env: Env, roomId: RoomId, copy: number) {
-  return env.ROOMS.getByName(`${roomId}:${copy}`);
+  return env.ROOMS.getByName(roomObjectName(roomId, copy));
 }
 
 function clientIp(request: Request): string | null {
@@ -348,6 +353,35 @@ async function handle(
         )
         .run();
       return new Response(null, { status: 201 });
+    }
+    case "admin-ban": {
+      if (!session.isAdmin) return error(403, "forbidden");
+      const ban = parseBan(await readJson(request));
+      if (!ban || ban.targetId === session.id) return error(400, "invalid-ban");
+      // A guest id dies with its session, so a guest ban also covers their
+      // last address; accounts are banned by id only.
+      const last = ban.targetId.startsWith("g_")
+        ? await env.DB.prepare(
+            `SELECT ip FROM sessions WHERE player_id = ? AND ip IS NOT NULL
+             ORDER BY created_at DESC LIMIT 1`,
+          )
+            .bind(ban.targetId)
+            .first()
+        : null;
+      const ip = typeof last?.ip === "string" ? last.ip : null;
+      await env.DB.batch([
+        env.DB.prepare(
+          "INSERT INTO bans (player_id, ip, reason, created_at) VALUES (?, ?, ?, ?)",
+        ).bind(ban.targetId, ip, ban.reason, Date.now()),
+        // Signed out everywhere; login and new guest sessions check bans.
+        env.DB.prepare("DELETE FROM sessions WHERE player_id = ?").bind(
+          ban.targetId,
+        ),
+      ]);
+      const kicked = await env.DIRECTORY.getByName(
+        DIRECTORY_NAME,
+      ).kickEverywhere(ban.targetId);
+      return json({ banned: ban.targetId, addressBanned: ip !== null, kicked });
     }
     case "block": {
       const block = parseBlock(await readJson(request));

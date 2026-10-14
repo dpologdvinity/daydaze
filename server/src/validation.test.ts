@@ -5,6 +5,7 @@ import { createDefaultSave, serializeSave } from "../../src/game/save.ts";
 import {
   MAX_SAVE_BYTES,
   parseAttachment,
+  parseBan,
   parseBlock,
   parseCredentials,
   parseLookParam,
@@ -121,4 +122,19 @@ test("the look query parameter falls back to the default look", () => {
   assert.deepEqual(parseLookParam(JSON.stringify(look)), look);
   for (const bad of [null, "", "{", JSON.stringify({ hair: "bob" })])
     assert.deepEqual(parseLookParam(bad), DEFAULT_LOOK);
+});
+
+test("admin bans need a target and a short reason", () => {
+  assert.deepEqual(parseBan({ targetId: "g_x", reason: "slurs", extra: 1 }), {
+    targetId: "g_x",
+    reason: "slurs",
+  });
+  for (const bad of [
+    null,
+    { targetId: "g_x" },
+    { targetId: "", reason: "slurs" },
+    { targetId: "g_x", reason: " " },
+    { targetId: "g_x", reason: "x".repeat(201) },
+  ])
+    assert.equal(parseBan(bad), null);
 });

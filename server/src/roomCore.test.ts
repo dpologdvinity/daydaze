@@ -520,3 +520,20 @@ test("no client message can kick or ban, even from an admin's socket", () => {
   assert.equal(room.ban("t", "admin"), false);
   assert.deepEqual(admin.closed, []);
 });
+
+test("enforceBan removes a player the gateway banned and keeps them out", () => {
+  const { room, join } = setup();
+  const watcher = join("w");
+  const target = join("t");
+  watcher.received.length = 0;
+  assert.equal(room.enforceBan("t"), true);
+  assert.deepEqual(target.closed, ["banned"]);
+  assert.deepEqual(
+    watcher.received.filter((m) => m.type === "entity-leave"),
+    [{ type: "entity-leave", roomId: "plaza", id: "t" }],
+  );
+  assert.deepEqual(join("t").result, { ok: false, reason: "banned" });
+  // Banning someone who is not here still keeps them out of this copy.
+  assert.equal(room.enforceBan("absent"), false);
+  assert.deepEqual(join("absent").result, { ok: false, reason: "banned" });
+});
