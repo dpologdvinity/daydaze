@@ -187,7 +187,8 @@ export function signSpec(
   b: Building,
   f: Front,
 ): { y: number; sx: number; sy: number } {
-  if (b.style === "gate") return { y: ARCH_TOP - 1.6, sx: f.w + 1.4, sy: 2.6 };
+  // the gate's name hangs low between the posts, where the first view sees it
+  if (b.style === "gate") return { y: 7.4, sx: f.w + 1.4, sy: 3.2 };
   if (b.style === "billboard")
     return { y: f.h * 0.7, sx: Math.min(f.w * 0.8, 14), sy: 6 };
   if (b.style === "tower" || b.style === "glass")
@@ -378,6 +379,15 @@ function queueLine(out: Buckets, f: Front): void {
 
 /** Gate arches: two tall neon posts, one each side of the door, under the sign beam. */
 function arch(out: Buckets, f: Front, color: string): void {
+  out.arch.push({
+    x: f.cx,
+    y: ARCH_TOP - 0.4,
+    z: f.faceZ + f.out1 * 0.6,
+    sx: f.w + 1.6,
+    sy: 0.8,
+    sz: 0.9,
+    color,
+  });
   for (const x of [f.x0 - 0.2, f.x1 + 0.2]) {
     out.arch.push({
       x,
@@ -574,11 +584,11 @@ function furniture(out: Placed[]): void {
       });
       put(out, "treeCanopy", {
         x: x + 6,
-        y: 0.95,
+        y: 0.85,
         z: side * 9.6,
-        sx: 1.4,
-        sy: 1,
-        sz: 1.4,
+        sx: 1.0,
+        sy: 0.7,
+        sz: 1.0,
         color: "#2fa36b",
       });
     }

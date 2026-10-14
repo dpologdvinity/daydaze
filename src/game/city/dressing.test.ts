@@ -106,13 +106,15 @@ test("each gate raises two tall arches either side of its door", () => {
   assert.equal(gates.length, 2);
   for (const b of gates) {
     const out = dressed(b.id);
-    assert.equal(out.arch.length, 2, b.id);
+    // two posts and a beam across the top
+    assert.equal(out.arch.length, 3, b.id);
     const door = b.door?.position;
     assert.ok(door, `${b.id} has no door`);
-    const xs = out.arch.map((a) => a.x);
+    const posts = out.arch.filter((a) => a.sy >= 16);
+    assert.equal(posts.length, 2, b.id);
+    const xs = posts.map((a) => a.x);
     assert.ok(Math.min(...xs) < door[0] && door[0] < Math.max(...xs), b.id);
-    for (const a of out.arch)
-      assert.ok(a.sy >= 16, `${b.id} arch is ${a.sy} m`);
+    for (const a of posts) assert.ok(a.sy >= 16, `${b.id} arch is ${a.sy} m`);
   }
 });
 
