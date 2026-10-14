@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Club Lion - Character Customizer & Trait Compositor</title>
+  <style>
+    :root {
+      --bg: #0f1015;
+      --panel: #181922;
+      --card: #20222e;
+      --border: #2d3042;
+      --accent: #f59e0b;
+      --accent-pink: #ec4899;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    /* Left: Viewport Stage */
+    .stage-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #26293d 0%, #0f1015 70%);
+      padding: 24px;
+      position: relative;
+    }
+    .stage-header {
+      position: absolute;
+      top: 20px;
+      left: 24px;
+    }
+    .stage-header h1 {
+      font-size: 1.6rem;
+      color: #fbbf24;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .stage-header p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+    .viewport-card {
+      width: 440px;
+      height: 440px;
+      background: #15161f;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      position: relative;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.6);
+      overflow: hidden;
+    }
+    /* Layer Stacking */
+    .avatar-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      object-fit: contain;
+    }
+    .base-doll {
+      background: #dfa882;
+      border-radius: 50% 50% 45% 45% / 40% 40% 60% 60%;
+      width: 220px;
+      height: 250px;
+      position: absolute;
+      top: 90px;
+      left: 110px;
+      box-shadow: inset 0 -12px 24px rgba(0,0,0,0.15);
+      transition: background-color 0.2s ease;
+    }
+    .base-neck {
+      background: #dfa882;
+      width: 50px;
+      height: 80px;
+      position: absolute;
+      top: 310px;
+      left: 195px;
+      border-radius: 6px;
+      transition: background-color 0.2s ease;
+    }
+    .base-chest {
+      background: #dfa882;
+      width: 240px;
+      height: 90px;
+      position: absolute;
+      top: 360px;
+      left: 100px;
+      border-radius: 50px 50px 0 0;
+      transition: background-color 0.2s ease;
+    }
+
+    /* Right: Controls Panel */
+    .controls-panel {
+      width: 480px;
+      background: var(--panel);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .category-tabs {
+      display: flex;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--border);
+      background: #14151d;
+    }
+    .tab-btn {
+      padding: 14px 16px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      color: #fbbf24;
+      border-bottom-color: #fbbf24;
+      background: rgba(251, 191, 36, 0.05);
+    }
+    .tab-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+    .section-title {
+      font-size: 0.95rem;
+      color: #fbbf24;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .color-swatch {
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.2);
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .color-swatch:hover, .color-swatch.active {
+      transform: scale(1.15);
+      border-color: #fff;
+      box-shadow: 0 0 10px rgba(255,255,255,0.4);
+    }
+    .trait-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .trait-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .trait-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .trait-card.active {
+      border-color: var(--accent);
+      background: rgba(245, 158, 11, 0.12);
+    }
+    .trait-card img {
+      width: 70px;
+      height: 70px;
+      object-fit: contain;
+    }
+    .trait-card span {
+      font-size: 0.75rem;
+      color: var(--text);
+      display: block;
+      word-break: break-word;
+    }
+    .clear-btn {
+      width: 100%;
+      padding: 8px;
+      background: #2a2c3d;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      margin-bottom: 16px;
+    }
+    .clear-btn:hover {
+      color: #fff;
+      background: #36394e;
+    }
+  </style>
+</head>
+<body>
+  <div class="stage-section">
+    <div class="stage-header">
+      <h1>Club Lion Modular Compositor</h1>
+      <p>Real-time layered transparent sprite rendering engine</p>
+    </div>
+
+    <!-- Live Overlapping Canvas Viewport -->
+    <div class="viewport-card">
+      <!-- High Glam 2D Base Doll Template (Blank Face: Modular Brows & Lips) -->
+      <img id="layer-hair-back" class="avatar-layer" style="z-index: 5; display: none;" />
+      <img id="layer-template-doll" class="avatar-layer" style="z-index: 10;" src="./template-doll-golden.png" alt="Official 2D Doll Blank Base Doll" />
+
+      <!-- Mannequin Fallback (hidden by default) -->
+      <div id="base-neck" class="base-neck" style="display: none;"></div>
+      <div id="base-chest" class="base-chest" style="display: none;"></div>
+      <div id="base-doll" class="base-doll" style="display: none;"></div>
+
+      <!-- Layer 1: Eyes -->
+      <img id="layer-eyes" class="avatar-layer" style="z-index: 12; display: none;" />
+      <!-- Layer 1.5: Eyebrows (Modular) -->
+      <img id="layer-brows" class="avatar-layer" style="z-index: 13; display: none;" />
+      <!-- Layer 2: Eyeliner -->
+      <img id="layer-eyeliner" class="avatar-layer" style="z-index: 14; display: none;" />
+      <!-- Layer 3: Eyeshadow -->
+      <img id="layer-eyeshadow" class="avatar-layer" style="z-index: 15; display: none;" />
+      <!-- Layer 4: Blush -->
+      <img id="layer-blush" class="avatar-layer" style="z-index: 16; display: none;" />
+      <!-- Layer 5: Freckles -->
+      <img id="layer-freckles" class="avatar-layer" style="z-index: 17; display: none;" />
+      <!-- Layer 6: Lips (Modular) -->
+      <img id="layer-lips" class="avatar-layer" style="z-index: 18; display: none;" />
+      <!-- Layer 8: Clothes -->
+      <img id="layer-clothes" class="avatar-layer" style="z-index: 22; display: none;" />
+      <!-- Layer 9: Jewelry -->
+      <img id="layer-jewelry" class="avatar-layer" style="z-index: 24; display: none;" />
+      <!-- Layer 10: Hair Front -->
+      <img id="layer-hair" class="avatar-layer" style="z-index: 30; display: none;" />
+      <!-- Layer 10.5: Piercings / Earrings / Bling (On top of hair) -->
+      <img id="layer-piercings" class="avatar-layer" style="z-index: 32; display: none;" />
+      <!-- Layer 11: Bangs -->
+      <img id="layer-bangs" class="avatar-layer" style="z-index: 34; display: none;" />
+    </div>
+  </div>
+
+  <div class="controls-panel">
+    <div class="category-tabs" id="tabs">
+      <button class="tab-btn active" data-tab="hair">Hair</button>
+      <button class="tab-btn" data-tab="brows">Brows</button>
+      <button class="tab-btn" data-tab="lips">Lips</button>
+      <button class="tab-btn" data-tab="piercings">Bling</button>
+      <button class="tab-btn" data-tab="clothes">Clothes</button>
+      <button class="tab-btn" data-tab="skin">Skin</button>
+      <button class="tab-btn" data-tab="bangs">Bangs</button>
+      <button class="tab-btn" data-tab="eyes">Eyes</button>
+      <button class="tab-btn" data-tab="eyeliner">Liner</button>
+      <button class="tab-btn" data-tab="eyeshadow">Shadow</button>
+      <button class="tab-btn" data-tab="blush">Blush</button>
+    </div>
+
+    <div class="tab-content" id="tab-content">
+      <!-- Injected dynamically by JS -->
+    </div>
+  </div>
+
+  <script>
+    const SKIN_TONES = [
+      { id: "base-golden-2d", name: "✨ 2D Doll Golden (Verified)", hex: "#f8c584", src: "./template-doll-golden.png" },
+      { id: "base-porcelain", name: "Porcelain", hex: "#f8e2d4", src: "./bases/base-porcelain.png" },
+      { id: "base-warm-ivory", name: "Warm Ivory", hex: "#eed0bc", src: "./bases/base-warm-ivory.png" },
+      { id: "base-golden-honey", name: "Golden Honey", hex: "#dfa882", src: "./bases/base-golden-honey.png" },
+      { id: "base-caramel", name: "Caramel", hex: "#c9895c", src: "./bases/base-caramel.png" },
+      { id: "base-warm-almond", name: "Warm Almond", hex: "#ad6b43", src: "./bases/base-warm-almond.png" },
+      { id: "base-mocha", name: "Mocha", hex: "#834f31", src: "./bases/base-mocha.png" },
+      { id: "base-rich-cocoa", name: "Rich Cocoa", hex: "#5b3621", src: "./bases/base-rich-cocoa.png" },
+      { id: "base-midnight", name: "Midnight", hex: "#351e13", src: "./bases/base-midnight.png" }
+    ];
+
+    const TRAITS_DATA = {
+      hair: [
+        { 
+          id: "shiny-wavy-butterflies-v3", 
+          name: "✨ Shiny Butterfly Waves (Aligned)", 
+          src: "./modular/hair-wavy-butterflies-v3.png" 
+        },
+        { 
+          id: "full-hair-topknot-braids", 
+          name: "✨ Royal Topknot Micro-Braids (Aligned)", 
+          src: "./modular/full-hair-topknot-braids.png" 
+        },
+        { 
+          id: "shiny-wavy-butterflies", 
+          name: "Butterfly Waves (Original)", 
+          src: "./traits/transparent/hair/shiny-wavy-butterflies-front.png",
+          backSrc: "./traits/transparent/hair/shiny-wavy-butterflies-back.png" 
+        },
+        { 
+          id: "fulani-braids-gold", 
+          name: "Fulani Braids (Gold)", 
+          src: "./traits/transparent/hair/fulani-braids-gold-front.png",
+          backSrc: "./traits/transparent/hair/fulani-braids-gold-back.png" 
+        },
+        { 
+          id: "box-braids-espresso", 
+          name: "Box Braids (Espresso)", 
+          src: "./traits/transparent/hair/box-braids-espresso-front.png",
+          backSrc: "./traits/transparent/hair/box-braids-espresso-back.png" 
+        },
+        { 
+          id: "afro-puffs-black", 
+          name: "4C Afro Puffs (Jet)", 
+          src: "./traits/transparent/hair/afro-puffs-black-front.png",
+          backSrc: "./traits/transparent/hair/afro-puffs-black-back.png" 
+        },
+        { 
+          id: "blowout-90s-caramel", 
+          name: "90s Blowout (Caramel)", 
+          src: "./traits/transparent/hair/blowout-90s-caramel-front.png",
+          backSrc: "./traits/transparent/hair/blowout-90s-caramel-back.png" 
+        },
+        { 
+          id: "snatched-high-pony", 
+          name: "Snatched High Pony", 
+          src: "./traits/transparent/hair/snatched-high-pony-front.png",
+          backSrc: "./traits/transparent/hair/snatched-high-pony-back.png" 
+        },
+        { 
+          id: "space-buns-pink", 
+          name: "Y2K Space Buns (Pink)", 
+          src: "./traits/transparent/hair/space-buns-pink-front.png",
+          backSrc: "./traits/transparent/hair/space-buns-pink-back.png" 
+        },
+        { 
+          id: "sleek-blunt-bob", 
+          name: "Blunt Glass Bob", 
+          src: "./traits/transparent/hair/sleek-blunt-bob-front.png",
+          backSrc: "./traits/transparent/hair/sleek-blunt-bob-back.png" 
+        },
+        { 
+          id: "goddess-locs-bronze", 
+          name: "Goddess Locs (Bronze)", 
+          src: "./traits/transparent/hair/goddess-locs-bronze-front.png",
+          backSrc: "./traits/transparent/hair/goddess-locs-bronze-back.png" 
+        },
+        { id: "bantu-knots-dark", name: "Bantu Knots", src: "./traits/transparent/hair/bantu-knots-dark.png" },
+        { id: "3c-curls-honey", name: "3C Honey Curls", src: "./traits/transparent/hair/3c-curls-honey.png" },
+        { id: "afro-tapered-fade", name: "Tapered Afro Fade", src: "./traits/transparent/hair/afro-tapered-fade.png" }
+      ],
+      brows: [
+        { id: "full-brows-sculpted-espresso", name: "✨ Sculpted Espresso (Aligned)", src: "./modular/full-brows-sculpted-espresso.png" },
+        { id: "full-brows-feathered-honey", name: "✨ Feathered Honey (Aligned)", src: "./modular/full-brows-feathered-honey.png" },
+        { id: "full-brows-fox-snatched", name: "✨ Snatched Fox-Eye (Aligned)", src: "./modular/full-brows-fox-snatched.png" },
+        { id: "full-brows-y2k-thin", name: "✨ Thin 90s Pencil (Aligned)", src: "./modular/full-brows-y2k-thin.png" },
+        { id: "doll-brows-arched-dark-brown", name: "Snatched Dark Brow", src: "./traits/transparent/eyebrows/doll-brows-arched-dark-brown.png" },
+        { id: "doll-brows-arched-jet-black", name: "Jet Black Arch", src: "./traits/transparent/eyebrows/doll-brows-arched-jet-black.png" },
+        { id: "doll-brows-thin-90s-pencil", name: "Thin 90s Pencil Brow", src: "./traits/transparent/eyebrows/doll-brows-thin-90s-pencil.png" },
+        { id: "doll-brows-arched-honey-blonde", name: "Honey Blonde Arch", src: "./traits/transparent/eyebrows/doll-brows-arched-honey-blonde.png" },
+        { id: "doll-brows-bleached-platinum", name: "Bleached Glam Brow", src: "./traits/transparent/eyebrows/doll-brows-bleached-platinum.png" }
+      ],
+      bangs: [
+        { id: "curtain-bangs-soft", name: "Curtain Fringe", src: "./traits/transparent/bangs/curtain-bangs-soft.png" },
+        { id: "micro-bangs-blunt", name: "Micro Blunt Bangs", src: "./traits/transparent/bangs/micro-bangs-blunt.png" },
+        { id: "laid-edges-swirls", name: "Laid Edges Swirls", src: "./traits/transparent/bangs/laid-edges-swirls.png" }
+      ],
+      eyes: [
+        { id: "almond-amber-gold", name: "Almond Amber Gold", src: "./traits/transparent/eyes/almond-amber-gold.png" },
+        { id: "siren-ice-blue", name: "Siren Ice Blue", src: "./traits/transparent/eyes/siren-ice-blue.png" },
+        { id: "doe-deep-brown", name: "Doe Chocolate Brown", src: "./traits/transparent/eyes/doe-deep-brown.png" },
+        { id: "anime-violet-sparkle", name: "Anime Violet Star", src: "./traits/transparent/eyes/anime-violet-sparkle.png" },
+        { id: "cat-hazel-green", name: "Cat Hazel Green", src: "./traits/transparent/eyes/cat-hazel-green.png" }
+      ],
+      eyeliner: [
+        { id: "bold-cat-wing", name: "Bold Cat Wing", src: "./traits/transparent/eyeliner/bold-cat-wing.png" },
+        { id: "siren-inner-corner", name: "Siren Inner Corner", src: "./traits/transparent/eyeliner/siren-inner-corner.png" },
+        { id: "graphic-white-double", name: "Graphic White Double", src: "./traits/transparent/eyeliner/graphic-white-double.png" }
+      ],
+      eyeshadow: [
+        { id: "frosted-pink-y2k", name: "Frosted Pink Y2K", src: "./traits/transparent/eyeshadow/frosted-pink-y2k.png" },
+        { id: "smokey-charcoal", name: "Smokey Charcoal", src: "./traits/transparent/eyeshadow/smokey-charcoal.png" },
+        { id: "sunset-gold-glitter", name: "Sunset Gold Glitter", src: "./traits/transparent/eyeshadow/sunset-gold-glitter.png" }
+      ],
+      lips: [
+        { id: "full-lips-hot-pink-glam", name: "✨ Hot Pink Diva Gloss (Aligned)", src: "./modular/full-lips-hot-pink-glam.png" },
+        { id: "full-lips-90s-caramel-ombre", name: "✨ 90s Caramel Ombré (Aligned)", src: "./modular/full-lips-90s-caramel-ombre.png" },
+        { id: "full-lips-burgundy-cherry", name: "✨ Burgundy Cherry Lacquer (Aligned)", src: "./modular/full-lips-burgundy-cherry.png" },
+        { id: "full-lips-nude-pink-gloss", name: "✨ Glassy Nude-Pink (Aligned)", src: "./modular/full-lips-nude-pink-gloss.png" },
+        { id: "doll-lips-chocolate-gloss", name: "🍫 Chocolate Ombre Gloss", src: "./traits/transparent/lips/doll-lips-chocolate-gloss.png" },
+        { id: "doll-lips-hot-pink-gloss", name: "💖 Hot Pink Diva Gloss", src: "./traits/transparent/lips/doll-lips-hot-pink-gloss.png" },
+        { id: "doll-lips-cherry-red-gloss", name: "🍒 Cherry Red Siren Gloss", src: "./traits/transparent/lips/doll-lips-cherry-red-gloss.png" },
+        { id: "doll-lips-vampire-plum-gloss", name: "🍇 Vampire Plum Gloss", src: "./traits/transparent/lips/doll-lips-vampire-plum-gloss.png" },
+        { id: "doll-lips-frosted-nude-gloss", name: "✨ Frosted Nude 90s", src: "./traits/transparent/lips/doll-lips-frosted-nude-gloss.png" },
+        { id: "doll-lips-baby-pink-gloss", name: "🌸 Baby Pink Jelly Gloss", src: "./traits/transparent/lips/doll-lips-baby-pink-gloss.png" }
+      ],
+      blush: [
+        { id: "doll-pink-apples", name: "Doll Pink Apples", src: "./traits/transparent/blush/doll-pink-apples.png" },
+        { id: "sunkissed-terracotta", name: "Sunkissed Terracotta", src: "./traits/transparent/blush/sunkissed-terracotta.png" },
+        { id: "star-constellation-gold", name: "Gold Star Freckles", src: "./traits/transparent/freckles/star-constellation-gold.png" },
+        { id: "natural-nose-freckles", name: "Natural Nose Freckles", src: "./traits/transparent/freckles/natural-nose-freckles.png" }
+      ],
+      piercings: [
+        { id: "full-jewelry-bamboo-hoops-gold", name: "✨ Fitted Chunky Bamboo Hoops (Aligned)", src: "./modular/full-jewelry-bamboo-hoops-gold.png" },
+        { id: "bamboo-hoops-gold-official", name: "Fitted Bamboo Hoops (Classic)", src: "./traits/transparent/jewelry/bamboo-hoops-gold-official.png" },
+        { id: "layered-cuban-chains", name: "Layered Cuban Chains", src: "./traits/transparent/jewelry/layered-cuban-chains.png" },
+        { id: "diamond-tennis-choker", name: "Diamond Tennis Choker", src: "./traits/transparent/jewelry/diamond-tennis-choker.png" },
+        { id: "gold-nose-stud-double", name: "Double Nose Stud", src: "./traits/transparent/piercings/gold-nose-stud-double.png" },
+        { id: "septum-horseshoe-gold", name: "Gold Septum Ring", src: "./traits/transparent/piercings/septum-horseshoe-gold.png" }
+      ],
+      clothes: [
+        { id: "full-outfit-pink-fur-jacket", name: "✨ Pink Faux Fur & Cross Chain (Aligned)", src: "./modular/full-outfit-pink-fur-jacket.png" },
+        { id: "full-outfit-gold-royal-choker", name: "✨ Royal Gold Halter & Choker (Aligned)", src: "./modular/full-outfit-gold-royal-choker.png" },
+        { id: "butterfly-halter-pink", name: "Metallic Butterfly Halter", src: "./traits/transparent/clothes/butterfly-halter-pink.png" },
+        { id: "black-lace-corset", name: "Black Lace Corset", src: "./traits/transparent/clothes/black-lace-corset.png" },
+        { id: "fur-trim-jacket-pink", name: "Pink Faux Fur Jacket", src: "./traits/transparent/clothes/fur-trim-jacket-pink.png" },
+        { id: "fur-trim-jacket-denim", name: "Fur Trim Denim Jacket", src: "./traits/transparent/clothes/fur-trim-jacket-denim.png" },
+        { id: "baby-tee-angel-graphic", name: "Angel Baby Tee", src: "./traits/transparent/clothes/baby-tee-angel-graphic.png" },
+        { id: "bandeau-tube-top-white", name: "White Tube Top", src: "./traits/transparent/clothes/bandeau-tube-top-white.png" },
+        { id: "halter-chain-top-silver", name: "Silver Chain Halter", src: "./traits/transparent/clothes/halter-chain-top-silver.png" },
+        { id: "corset-leather-black", name: "Black Leather Corset", src: "./traits/transparent/clothes/corset-leather-black.png" }
+      ]
+    };
+
+    let activeTab = "hair";
+    const selectedTraits = {};
+
+    function updateSkin(tone) {
+      document.getElementById("layer-template-doll").src = tone.src;
+      document.getElementById("base-doll").style.backgroundColor = tone.hex;
+      document.getElementById("base-neck").style.backgroundColor = tone.hex;
+      document.getElementById("base-chest").style.backgroundColor = tone.hex;
+    }
+
+    function toggleTrait(category, trait) {
+      const layerId = "layer-" + category;
+      const img = document.getElementById(layerId);
+      if (!img) return;
+
+      if (selectedTraits[category] && selectedTraits[category].id === trait.id) {
+        delete selectedTraits[category];
+        img.style.display = "none";
+        img.src = "";
+        if (category === "hair") {
+          const backImg = document.getElementById("layer-hair-back");
+          if (backImg) {
+            backImg.style.display = "none";
+            backImg.src = "";
+          }
+        }
+      } else {
+        selectedTraits[category] = trait;
+        img.src = trait.src;
+        img.style.display = "block";
+        if (category === "hair") {
+          const backImg = document.getElementById("layer-hair-back");
+          if (backImg) {
+            if (trait.backSrc) {
+              backImg.src = trait.backSrc;
+              backImg.style.display = "block";
+            } else {
+              backImg.style.display = "none";
+              backImg.src = "";
+            }
+          }
+        }
+      }
+      renderTab();
+    }
+
+    function clearCategory(category) {
+      delete selectedTraits[category];
+      const img = document.getElementById("layer-" + category);
+      if (img) {
+        img.style.display = "none";
+        img.src = "";
+      }
+      if (category === "hair") {
+        const backImg = document.getElementById("layer-hair-back");
+        if (backImg) {
+          backImg.style.display = "none";
+          backImg.src = "";
+        }
+      }
+      renderTab();
+    }
+
+    function renderTab() {
+      const container = document.getElementById("tab-content");
+      container.innerHTML = "";
+
+      if (activeTab === "skin") {
+        const title = document.createElement("div");
+        title.className = "section-title";
+        title.textContent = "Select Skin Tone";
+        container.appendChild(title);
+
+        const grid = document.createElement("div");
+        grid.className = "palette-grid";
+        SKIN_TONES.forEach(tone => {
+          const swatch = document.createElement("div");
+          swatch.className = "color-swatch";
+          swatch.style.backgroundColor = tone.hex;
+          swatch.title = tone.name;
+          swatch.onclick = () => updateSkin(tone);
+          grid.appendChild(swatch);
+        });
+        container.appendChild(grid);
+        return;
+      }
+
+      const traits = TRAITS_DATA[activeTab] || [];
+      const title = document.createElement("div");
+      title.className = "section-title";
+      title.textContent = activeTab + " Options (" + traits.length + ")";
+      container.appendChild(title);
+
+      const clearBtn = document.createElement("button");
+      clearBtn.className = "clear-btn";
+      clearBtn.textContent = "Remove " + activeTab;
+      clearBtn.onclick = () => clearCategory(activeTab);
+      container.appendChild(clearBtn);
+
+      const grid = document.createElement("div");
+      grid.className = "trait-grid";
+      traits.forEach(trait => {
+        const card = document.createElement("div");
+        const isSelected = selectedTraits[activeTab] && selectedTraits[activeTab].id === trait.id;
+        card.className = "trait-card" + (isSelected ? " active" : "");
+        card.onclick = () => toggleTrait(activeTab, trait);
+
+        const img = document.createElement("img");
+        img.src = trait.src;
+        img.alt = trait.name;
+        img.loading = "lazy";
+
+        const label = document.createElement("span");
+        label.textContent = trait.name;
+
+        card.appendChild(img);
+        card.appendChild(label);
+        grid.appendChild(card);
+      });
+      container.appendChild(grid);
+    }
+
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        activeTab = btn.dataset.tab;
+        renderTab();
+      };
+    });
+
+    // Initialize with verified modular traits
+    toggleTrait("hair", TRAITS_DATA.hair[0]);
+    toggleTrait("brows", TRAITS_DATA.brows[0]);
+    toggleTrait("lips", TRAITS_DATA.lips[0]);
+    toggleTrait("clothes", TRAITS_DATA.clothes[0]);
+    toggleTrait("piercings", TRAITS_DATA.piercings[0]);
+    renderTab();
+  </script>
+</body>
+</html>
