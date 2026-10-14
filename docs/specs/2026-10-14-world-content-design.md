@@ -123,6 +123,7 @@ Drinks and weed are free props: a player grabs one at a bar or the lounge. Alcoh
 - Each prop adds to a buzz meter with a cap. The meter fades over a few minutes. Water and food lower it faster.
 - Drunk: gentle camera sway, a slight edge blur, a wobbly walk and idle lean, chat that sometimes stretches or swaps letters ("heyyy"), warmer and more muffled music.
 - High: richer, slowly shifting colors and a soft glow, slight slow motion, motion trails behind dolls, dreamy music with reverb, a munchies thought bubble and giggle emotes.
+- Shrooms (18+ area only, like weed): the world turns psychedelic. Surfaces breathe and ripple slowly, colors cycle in soft rainbow gradients, patterns crawl gently across the floor and walls, plants and lamps sway as if alive, NPC speech bubbles turn whimsical, and the music gains a warped, swirling filter. The trip lasts a little longer than a buzz and fades out gently. Same rules: optional, intensity setting, no strobing or flashing, and reduced motion keeps only color and audio changes.
 - Other players see a buzzed doll's wobble and a small icon by the name. The chat effect is applied by the server, so it can't be faked or skipped in someone else's view.
 - Effects never punish a player and never block a game. A buzz may make a carnival booth slightly harder.
 - Settings has an effects intensity control: off, low, full. With reduced motion there is no sway, blur or slow motion; only color and audio change. No strobing or flashing at any setting.
@@ -143,7 +144,7 @@ Drinks and weed are free props: a player grabs one at a bar or the lounge. Alcoh
 3. Speedway: race track and bumper cars.
 4. Nightlife Row, including the lesbian bar, and the drunk effect.
 5. Multiplayer wiring in the 3D client, after the first districts.
-6. The remaining districts. The weed lounge and high effect ship with the 18+ area after the age gate.
+6. The remaining districts. The weed lounge, shrooms, and the high and trip effects ship with the 18+ area after the age gate.
 
 New games ship one per batch alongside the districts, alternating solo and multiplayer. Multiplayer-only games are playable against simple bots, or as local turns, until multiplayer is wired.
 
