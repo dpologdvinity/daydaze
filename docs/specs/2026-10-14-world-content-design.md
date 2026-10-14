@@ -117,6 +117,7 @@ Both venues are part of the 18+ area and need the age gate. They are a secret: n
 - Hair salons in several neighborhoods: a glam downtown salon, a braiding shop (box braids, knotless, cornrows, Fulani braids, locs retwist), a barbershop with fades and designs, a Korean perm and colour salon, and a cheap-and-cheerful walk-in salon.
 - A stylist NPC seats the player at a mirror. The player picks a cut, style, colour (including ombré, highlights, money pieces and neon), and extensions or a wig, and sees the doll update live before paying in coins.
 - Also in the salons: lash extensions, brow shaping, nail art, and a makeup artist who applies full looks (Y2K glam, soft glam, goth, natural).
+- Nail salons: a busy neighborhood nail salon with pedicure thrones and massage chairs, and a luxe nail art studio. Players choose nail shape (almond, coffin, stiletto, square, short), length, colour, finish (gloss, matte, chrome, cat-eye, glitter) and art (French tips, Y2K flames, butterflies, rhinestones, airbrush, 3D charms) and see them on the doll's hands. A nail-painting minigame lets players paint a client's nails to match an order (easy to medium).
 - Salon chairs double as hangout seats: friends can sit beside each other and chat while getting styled.
 
 ## Dancing
