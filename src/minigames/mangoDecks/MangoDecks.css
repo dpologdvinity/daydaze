@@ -1,0 +1,573 @@
+.md {
+  --note-h: 22px;
+  --pad-h: 76px;
+  --aqua: #3ef2e0;
+  --violet: #a46bff;
+}
+
+.md-intro,
+.md-result,
+.md-booth {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  /* Sequin wall: a fine dot grid lit pink from the decks below. */
+  background:
+    radial-gradient(circle, rgb(255 255 255 / 0.07) 1px, transparent 1.6px) 0
+      0 / 14px 14px,
+    radial-gradient(
+      ellipse at 50% 110%,
+      rgb(255 47 154 / 0.45),
+      transparent 60%
+    ),
+    linear-gradient(180deg, var(--mg-plum), var(--mg-ink) 70%);
+}
+
+/* Intro and result */
+
+.md-intro,
+.md-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.md-lede {
+  max-width: 34ch;
+  margin: 0;
+  font-family: var(--mg-display);
+  font-size: clamp(22px, 3vw, 30px);
+  line-height: 1.3;
+}
+
+.md-hint {
+  max-width: 46ch;
+  margin: 0;
+  color: var(--mg-lilac);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.md-keycaps {
+  display: flex;
+  gap: 14px;
+}
+
+.md-keycaps kbd {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  background: var(--mg-chrome);
+  color: var(--mg-ink);
+  font: 700 26px/1 var(--mg-sans);
+  box-shadow:
+    inset 0 -4px 0 rgb(0 0 0 / 0.25),
+    0 6px 0 var(--lane-glow),
+    0 0 26px var(--lane-glow);
+}
+
+.md-keycaps kbd:nth-child(1),
+.md-lane-0 {
+  --lane-glow: var(--mg-fuchsia);
+}
+.md-keycaps kbd:nth-child(2),
+.md-lane-1 {
+  --lane-glow: var(--mg-mango);
+}
+.md-keycaps kbd:nth-child(3),
+.md-lane-2 {
+  --lane-glow: var(--violet);
+}
+.md-keycaps kbd:nth-child(4),
+.md-lane-3 {
+  --lane-glow: var(--aqua);
+}
+
+.md-button {
+  min-height: 52px;
+  padding: 0 30px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background:
+    linear-gradient(var(--mg-ink), var(--mg-ink)) padding-box,
+    var(--mg-chrome) border-box;
+  color: var(--mg-champagne);
+  font: 700 17px/1 var(--mg-sans);
+  cursor: pointer;
+}
+
+.md-button-hot {
+  background:
+    linear-gradient(var(--mg-fuchsia), var(--mg-fuchsia)) padding-box,
+    var(--mg-chrome) border-box;
+  color: var(--mg-ink);
+  box-shadow: 0 0 28px rgb(255 47 154 / 0.7);
+}
+
+.md-grade {
+  margin: 0;
+  font-family: var(--mg-display);
+  font-style: italic;
+  font-weight: 700;
+  font-size: clamp(120px, 22vh, 190px);
+  line-height: 0.9;
+  background: var(--mg-chrome);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 24px rgb(255 47 154 / 0.9));
+}
+
+.md-result h3 {
+  margin: 0;
+  font-family: var(--mg-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(24px, 3.4vw, 34px);
+}
+
+.md-stats {
+  display: flex;
+  gap: clamp(20px, 5vw, 56px);
+  margin: 4px 0;
+}
+
+.md-stats dt {
+  color: var(--mg-lilac);
+  font-size: 14px;
+}
+
+.md-stats dd {
+  margin: 4px 0 0;
+  font-size: 30px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.md-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+}
+
+/* Intro record: a spinning mango-label vinyl on the platter. */
+.md-vinyl {
+  display: grid;
+  place-items: center;
+  width: clamp(168px, 30vh, 240px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    conic-gradient(
+      from 30deg,
+      transparent 0deg 40deg,
+      rgb(255 255 255 / 0.22) 60deg,
+      transparent 80deg 220deg,
+      rgb(255 47 154 / 0.3) 240deg,
+      transparent 260deg
+    ),
+    repeating-radial-gradient(circle, #111 0 2px, #1d1220 2px 4px);
+  box-shadow:
+    0 0 0 6px #120414,
+    0 0 0 9px #b9b3c9,
+    0 0 50px rgb(255 47 154 / 0.55);
+  animation: md-spin 1.8s linear infinite;
+}
+
+.md-vinyl::before {
+  content: "";
+  width: 36%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, var(--mg-ink) 0 6%, transparent 7%),
+    radial-gradient(circle at 35% 30%, #ffd27a, var(--mg-mango) 45%, #e8590c);
+}
+
+@keyframes md-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+/* The booth during a set */
+
+.md-booth {
+  --energy: 0;
+  display: grid;
+  grid-template:
+    "hud hud" auto
+    "field energy" 1fr
+    "crowd crowd" auto / 1fr 44px;
+  gap: 12px 18px;
+  padding: 14px 24px 0;
+  overflow: hidden;
+}
+
+/* Two slow searchlights from behind the decks; brighter as the crowd warms up. */
+.md-booth::before {
+  content: "";
+  position: absolute;
+  inset: -40% -20% 0;
+  background: repeating-conic-gradient(
+    from 180deg at 50% 100%,
+    rgb(255 47 154 / 0.16) 0deg 3deg,
+    transparent 3deg 22deg
+  );
+  opacity: calc(0.35 + var(--energy) * 0.65);
+  pointer-events: none;
+  animation: md-sweep 8s ease-in-out infinite alternate;
+}
+
+@keyframes md-sweep {
+  from {
+    transform: rotate(-6deg);
+  }
+  to {
+    transform: rotate(6deg);
+  }
+}
+
+.md-hud {
+  grid-area: hud;
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.md-hud p {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.md-score span {
+  color: var(--mg-lilac);
+  font-size: 15px;
+}
+
+.md-score strong {
+  font-family: var(--mg-display);
+  font-size: 40px;
+  line-height: 1;
+}
+
+.md-streak {
+  font-size: 18px;
+}
+
+.md-streak strong {
+  font-size: 28px;
+}
+
+.md-multiplier {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--mg-mango);
+  color: var(--mg-ink);
+  font-weight: 700;
+}
+
+.md-energy-wrap {
+  grid-area: energy;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.md-energy-label {
+  color: var(--mg-mango);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.md-energy {
+  position: relative;
+  flex: 1;
+  align-self: stretch;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background:
+    linear-gradient(var(--mg-ink), var(--mg-ink)) padding-box,
+    var(--mg-chrome) border-box;
+  overflow: hidden;
+}
+
+.md-energy-fill {
+  position: absolute;
+  inset: auto 0 0;
+  height: calc(var(--energy) * 100%);
+  border-radius: 999px;
+  background: linear-gradient(0deg, var(--mg-mango), var(--mg-fuchsia));
+  box-shadow: 0 0 22px var(--mg-fuchsia);
+  transition: height 200ms ease-out;
+}
+
+.md-field {
+  grid-area: field;
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  min-height: 0;
+}
+
+/* Mixer console plate the pads are mounted on. */
+.md-field::after {
+  content: "";
+  position: absolute;
+  inset: auto -14px -8px;
+  height: calc(var(--pad-h) + 22px);
+  border-radius: 20px 20px 0 0;
+  border-top: 2px solid #d8d2e6;
+  background:
+    radial-gradient(circle, rgb(255 176 46 / 0.9) 1.5px, transparent 2px) 12px
+      8px / 22px 100% no-repeat repeat-x,
+    linear-gradient(180deg, var(--mg-velvet), #12041a);
+  box-shadow: 0 -6px 30px rgb(255 47 154 / 0.35);
+}
+
+.md-lane {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+
+.md-track {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  border-radius: 16px 16px 6px 6px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    color-mix(in srgb, var(--lane-glow) 16%, transparent)
+  );
+  border-inline: 1px solid color-mix(in srgb, var(--lane-glow) 45%, transparent);
+}
+
+.md-note {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  height: var(--note-h);
+  top: calc(var(--p) * (100% - var(--note-h)));
+  border-radius: 999px;
+  background: var(--mg-chrome);
+  box-shadow:
+    0 0 0 3px var(--lane-glow),
+    0 0 20px var(--lane-glow);
+}
+
+.md-hit-line {
+  position: absolute;
+  inset: auto 0 0;
+  height: var(--note-h);
+  border-radius: 999px;
+  border: 2px solid var(--lane-glow);
+  box-shadow: 0 0 14px var(--lane-glow);
+}
+
+.md-pad {
+  position: relative;
+  height: var(--pad-h);
+  border: 3px solid transparent;
+  border-radius: 18px;
+  background:
+    radial-gradient(
+        circle at 50% 40%,
+        color-mix(in srgb, var(--lane-glow) 55%, var(--mg-ink)),
+        var(--mg-ink) 75%
+      )
+      padding-box,
+    var(--mg-chrome) border-box;
+  color: var(--mg-champagne);
+  font: 700 26px/1 var(--mg-sans);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--lane-glow) 60%, transparent);
+  transition: transform 60ms ease-out;
+}
+
+.md-pad:active {
+  transform: translateY(3px);
+  background:
+    linear-gradient(var(--lane-glow), var(--lane-glow)) padding-box,
+    var(--mg-chrome) border-box;
+  color: var(--mg-ink);
+}
+
+.md-feedback {
+  position: absolute;
+  z-index: 2;
+  top: 30%;
+  left: 50%;
+  translate: -50% 0;
+  font-family: var(--mg-display);
+  font-style: italic;
+  font-weight: 700;
+  font-size: clamp(36px, 6vw, 60px);
+  pointer-events: none;
+  animation: md-pop 420ms ease-out forwards;
+}
+
+.md-feedback-perfect {
+  color: var(--mg-mango);
+  text-shadow: 0 0 22px var(--mg-mango);
+}
+.md-feedback-great {
+  color: var(--mg-fuchsia);
+  text-shadow: 0 0 22px var(--mg-fuchsia);
+}
+.md-feedback-good {
+  color: var(--mg-lilac);
+}
+.md-feedback-miss {
+  color: #b8adc4;
+}
+
+@keyframes md-pop {
+  from {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+  25% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-12px);
+    opacity: 0;
+  }
+}
+
+.md-crowd {
+  grid-area: crowd;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 84px;
+  margin: 0 -24px;
+  overflow: hidden;
+}
+
+.md-raver {
+  flex: none;
+  width: 54px;
+  height: 84px;
+  margin-bottom: -10px;
+  fill: #1c0722;
+  stroke: #1c0722;
+  filter: drop-shadow(
+    0 -2px 5px rgb(255 47 154 / calc(0.3 + var(--energy) * 0.7))
+  );
+  animation: md-bob 500ms ease-in-out infinite alternate;
+}
+
+@keyframes md-bob {
+  to {
+    transform: translateY(calc(-3px - var(--energy) * 9px));
+  }
+}
+
+.md-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .md-booth {
+    grid-template:
+      "hud" auto
+      "energy" auto
+      "field" 1fr
+      "crowd" auto / 1fr;
+    gap: 10px;
+    padding: 10px 12px 0;
+  }
+
+  .md-energy-wrap {
+    flex-direction: row-reverse;
+    gap: 10px;
+  }
+
+  .md-energy {
+    height: 14px;
+  }
+
+  .md-energy-fill {
+    inset: 0 auto 0 0;
+    height: auto;
+    width: calc(var(--energy) * 100%);
+    transition-property: width;
+  }
+
+  .md-field {
+    gap: 8px;
+  }
+
+  .md {
+    --pad-h: 104px;
+  }
+
+  .md-pad {
+    font-size: 30px;
+  }
+
+  .md-vinyl {
+    width: 168px;
+  }
+
+  .md-crowd {
+    height: 56px;
+    margin: 0 -12px;
+  }
+
+  .md-raver {
+    width: 36px;
+    height: 56px;
+  }
+
+  .md-keycaps kbd {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+/* Decorative motion off; the falling notes are the game, so they keep moving. */
+.md-calm *,
+.md-calm *::before {
+  animation: none !important;
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md *,
+  .md *::before {
+    animation: none !important;
+    transition: none !important;
+  }
+}
