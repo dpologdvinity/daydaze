@@ -122,7 +122,7 @@ Both venues are part of the 18+ area and need the age gate. They are a secret: n
 
 ## Guns
 
-Guns exist only inside game zones: the shooting range, paintball, laser tag, the carnival shooting gallery, the water-gun battle, and the arcade zombie shooter. A player picks up a gun on entering the zone and returns it on leaving. Hangouts, clubs, malls, restaurants and the rest of the world stay gun-free, so nobody can be shot outside a game. Hits are cartoon and paint or light effects, never blood.
+Guns exist only inside game zones: the shooting range, paintball, laser tag, the carnival shooting gallery, the water-gun battle, and the arcade alien shooter. A player picks up a gun on entering the zone and returns it on leaving. Hangouts, clubs, malls, restaurants and the rest of the world stay gun-free, so nobody can be shot outside a game. Hits are cartoon and paint or light effects, never blood.
 
 ## Dancing
 
@@ -184,7 +184,7 @@ Places have a few scripted non-player characters (NPCs) so they never feel empty
 | Shooting range: targets, timed drills, pistol to rifle | Shooting range | solo | easy to hard | action |
 | Paintball arena | Sports Complex | multi | medium | action |
 | Laser tag (team neon maze) | arcade bar | multi | medium | action |
-| Zombie arcade shooter | arcade bar | solo or co-op | medium to hard | horror action |
+| Alien invasion arcade shooter | arcade bar | solo or co-op | medium to hard | sci-fi action |
 | Runway battle with player voting | Fashion District | multi | medium | fashion |
 | Trivia night (2000s pop culture) | arcade bar | multi | medium | nostalgia |
 | Surf | Boardwalk | solo | hard | beach |
