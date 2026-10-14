@@ -6,6 +6,7 @@ import { pointInPolygon, type Vec2 } from "./walk.ts";
 test("every room is registered under its own id", () => {
   assert.deepEqual(Object.keys(ROOMS).sort(), [
     "amusement-park",
+    "city",
     "plaza",
     "velvet-room",
     "water-park",

@@ -1,7 +1,11 @@
+import { areaOf, clampToArea } from "./area.ts";
 import type { Portal, RoomDefinition, Spawn } from "./rooms.ts";
-import { clampToWalkable, type Vec2 } from "./walk.ts";
+import type { Vec2 } from "./walk.ts";
 
-export function portalAt(room: RoomDefinition, p: Vec2): Portal | null {
+export function portalAt(
+  room: Pick<RoomDefinition, "portals">,
+  p: Vec2,
+): Portal | null {
   return (
     room.portals.find(
       ({ position: [x, z], radius }) =>
@@ -12,7 +16,7 @@ export function portalAt(room: RoomDefinition, p: Vec2): Portal | null {
 
 export function arrive(target: RoomDefinition, spawn: Spawn): Spawn {
   return {
-    position: clampToWalkable(target.walkable, spawn.position),
+    position: clampToArea(areaOf(target), spawn.position),
     yaw: Number.isFinite(spawn.yaw) ? spawn.yaw : 0,
   };
 }

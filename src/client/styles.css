@@ -548,3 +548,28 @@ button:focus-visible {
     transition: none !important;
   }
 }
+
+/* City stick: touch only, above the mood and view tabs, walks like the arrow keys. */
+.joystick {
+  position: fixed;
+  left: 16px;
+  bottom: 196px;
+  z-index: 5;
+  width: 120px;
+  height: 120px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid rgb(255 79 179 / 0.7);
+  background: rgb(20 10 40 / 0.45);
+  touch-action: none;
+}
+
+.joystick-knob {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgb(255 79 179 / 0.85);
+  box-shadow: 0 0 18px rgb(255 79 179 / 0.8);
+  pointer-events: none;
+}

@@ -10,6 +10,7 @@ const SHOTS: {
   viewport?: { width: number; height: number };
   /** Live shots keep the frame loop running, so a ride can move between frames. */
   live?: boolean;
+  touch?: boolean;
 }[] = [
   { name: "velvet-room", query: "room=velvet-room" },
   { name: "velvet-room-full-look", query: "room=velvet-room&view=full" },
@@ -38,6 +39,14 @@ const SHOTS: {
     query: "room=amusement-park",
     viewport: { width: 390, height: 844 },
   },
+  { name: "city-street", query: "room=city&view=full" },
+  { name: "city-overview", query: "room=city" },
+  {
+    name: "city-mobile",
+    query: "room=city&view=full",
+    viewport: { width: 390, height: 844 },
+    touch: true,
+  },
 ];
 
 const only = process.argv.slice(2);
@@ -48,10 +57,15 @@ const browser = await chromium.launch({
     "--enable-unsafe-swiftshader",
   ],
 });
-const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
-page.on("pageerror", (e) => console.error("page error:", e.message));
 for (const shot of SHOTS) {
   if (only.length && !only.includes(shot.name)) continue;
+  // a phone shot needs touch on, so the stick shows and pointer:coarse matches
+  const page = await browser.newPage({
+    viewport: shot.viewport ?? { width: 1280, height: 800 },
+    isMobile: shot.touch ?? false,
+    hasTouch: shot.touch ?? false,
+  });
+  page.on("pageerror", (e) => console.error("page error:", e.message));
   const started = Date.now();
   await page.setViewportSize(shot.viewport ?? { width: 1280, height: 800 });
   const still = shot.live ? "" : "&still=1";
@@ -84,5 +98,6 @@ for (const shot of SHOTS) {
   console.log(
     `${shot.name}: ${last} frames, ${calls} draw calls, ${triangles} triangles, ${((Date.now() - started) / 1000).toFixed(0)} s`,
   );
+  await page.close();
 }
 await browser.close();

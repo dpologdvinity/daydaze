@@ -31,6 +31,7 @@ import {
 } from "../../game/rooms.ts";
 import type { Vec2 } from "../../game/walk.ts";
 import { SLIDES } from "../../game/waterPark.ts";
+import { areaOf } from "../../game/area.ts";
 import { VelvetRoom } from "../rooms/VelvetRoom.tsx";
 import { Plaza } from "../rooms/Plaza.tsx";
 import type { PickHandler } from "../rooms/shared/Floor.tsx";
@@ -45,6 +46,11 @@ import {
   type Player,
 } from "./PlayerController.tsx";
 import { QualityContext, type QualityTier } from "./quality.ts";
+
+// The city is the heaviest scene, so it loads on first visit only.
+const CityScene = lazy(() =>
+  import("../city/CityScene.tsx").then((m) => ({ default: m.CityScene })),
+);
 
 // Enough for the environment map, face textures and reflector to settle.
 const STILL_FRAMES = 4;
@@ -107,7 +113,7 @@ type SceneProps = {
   player: Player;
 };
 
-const SCENES: Record<RoomId, ComponentType<SceneProps>> = {
+const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   "velvet-room": VelvetRoom,
   plaza: Plaza,
   "water-park": WaterPark,
@@ -149,9 +155,10 @@ export function World({
   const [auto, setAuto] = useState<QualityTier>("high");
   const tier = quality ?? auto;
   const def = ROOMS[room];
+  const area = useMemo(() => areaOf(def), [def]);
   // a fresh player per arrival, so a portal can only fire once per visit
   const player = useMemo(() => createPlayer(arrival), [arrival]);
-  const onPick = (point: Vec2) => walkTo(player, def, point);
+  const onPick = (point: Vec2) => walkTo(player, area, point);
   const onRide = (slide: number, t = 0) => {
     const s = SLIDES[slide];
     if (def.id === "water-park" && s) startRide(player, s, t);
@@ -162,7 +169,8 @@ export function World({
   useEffect(() => {
     if (slideAt !== null) onRide(0, slideAt);
   }, [player, slideAt]);
-  const Room = SCENES[room];
+  // the city is its own scene, streamed rather than built as one room
+  const Room = room === "city" ? null : SCENES[room];
 
   return (
     <Canvas
@@ -170,7 +178,7 @@ export function World({
       frameloop={still ? "demand" : "always"}
       dpr={tier === "high" ? [1, 1.5] : 1}
       gl={{ antialias: false, powerPreference: "high-performance" }}
-      camera={{ position: [6.4, 5.4, 10], fov: 38, near: 0.05, far: 200 }}
+      camera={{ position: [6.4, 5.4, 10], fov: 38, near: 0.05, far: 600 }}
       onCreated={({ gl }) => {
         gl.domElement.setAttribute("role", "img");
         gl.domElement.setAttribute("aria-label", "3D room view");
@@ -192,10 +200,14 @@ export function World({
           intensity={2.2}
         />
         <Suspense fallback={null}>
-          <Room key={room} onPick={onPick} onRide={onRide} player={player} />
+          {room === "city" ? (
+            <CityScene key={room} player={player} onPick={onPick} />
+          ) : Room ? (
+            <Room key={room} onPick={onPick} onRide={onRide} player={player} />
+          ) : null}
           <PlayerController
             player={player}
-            room={def}
+            area={area}
             look={look}
             swim={swimFor(def, swim)}
             mood={mood}

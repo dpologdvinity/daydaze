@@ -159,3 +159,29 @@ test("walking into the Plaza's glowing door enters the Velvet Room", async ({
     timeout: 120_000,
   });
 });
+
+test("the city loads, the player walks with the keys, and the scene renders", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=city`);
+  await expect(roomTitle(page)).toHaveText("Downtown and Nightlife Row");
+  const view = page.getByRole("img", { name: "3D room view" });
+  await expect(view).toHaveAttribute("data-frames", "10");
+  // the lazy city writes its position from its first frame; wait for it
+  await expect(view).toHaveAttribute("data-player-x", /-?\d/);
+  const at = async () => ({
+    x: Number(await view.getAttribute("data-player-x")),
+    z: Number(await view.getAttribute("data-player-z")),
+  });
+  const start = await at();
+  await page.keyboard.down("KeyD");
+  await expect
+    .poll(async () => {
+      const now = await at();
+      return Math.hypot(now.x - start.x, now.z - start.z);
+    })
+    .toBeGreaterThan(0.5);
+  await page.keyboard.up("KeyD");
+  expect(errors).toEqual([]);
+});
