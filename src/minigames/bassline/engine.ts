@@ -1,5 +1,5 @@
 /**
- * Mango Decks rhythm rules, ported from Club Lion's DJ Beat Drop. Pure
+ * Bassline rhythm rules, ported from Club Lion's DJ Beat Drop. Pure
  * TypeScript: no DOM, no audio, so every rule is testable in Node.
  */
 

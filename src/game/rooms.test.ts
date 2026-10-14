@@ -4,20 +4,20 @@ import { ROOMS, isRoomId } from "./rooms.ts";
 import { pointInPolygon, type Vec2 } from "./walk.ts";
 
 test("every room is registered under its own id", () => {
-  assert.deepEqual(Object.keys(ROOMS).sort(), ["mango-room", "plaza"]);
+  assert.deepEqual(Object.keys(ROOMS).sort(), ["plaza", "velvet-room"]);
   for (const [id, room] of Object.entries(ROOMS)) assert.equal(room.id, id);
 });
 
 test("isRoomId accepts registered rooms only", () => {
-  assert.equal(isRoomId("mango-room"), true);
+  assert.equal(isRoomId("velvet-room"), true);
   assert.equal(isRoomId("plaza"), true);
   for (const value of ["toString", "constructor", "Plaza", "", null, 1, {}]) {
     assert.equal(isRoomId(value), false, String(value));
   }
 });
 
-test("the Mango Room keeps the player out of the bar and the booth", () => {
-  const { walkable, spawn } = ROOMS["mango-room"];
+test("the Velvet Room keeps the player out of the bar and the booth", () => {
+  const { walkable, spawn } = ROOMS["velvet-room"];
   // The prototype start point and the open dance floor stay walkable.
   assert.equal(pointInPolygon(walkable, spawn.position), true);
   assert.deepEqual(spawn.position, [0.9, 1.6]);

@@ -43,7 +43,7 @@ export const OUTFITS = [
 
 export const OUTFIT_COLORS = [
   { id: "#ff2f9a", label: "Fuchsia" },
-  { id: "#ffb02e", label: "Mango" },
+  { id: "#ffb02e", label: "Amber" },
   { id: "#9b5cff", label: "Violet" },
   { id: "#e8e2ff", label: "Chrome" },
   { id: "#141018", label: "Midnight" },
@@ -53,7 +53,7 @@ export const OUTFIT_COLORS = [
 export const EYESHADOWS = [
   { id: "#d23cff", label: "Orchid" },
   { id: "#ff2f9a", label: "Fuchsia" },
-  { id: "#ffb02e", label: "Mango" },
+  { id: "#ffb02e", label: "Amber" },
   { id: "#3fe0d0", label: "Lagoon" },
   { id: "#8a5a3c", label: "Bronze" },
   // The prototype's space-buns regular wore this without it being pickable.
@@ -132,7 +132,7 @@ export const DEFAULT_LOOK: Look = {
   shadow: "#d23cff",
 };
 
-// Mango Room regulars from the prototype; `at` is [x, y, z] in metres.
+// Velvet Room regulars from the prototype; `at` is [x, y, z] in metres.
 export const NPC_LOOKS: readonly {
   look: Look;
   mood: Mood;

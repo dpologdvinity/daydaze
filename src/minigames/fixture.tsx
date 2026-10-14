@@ -1,7 +1,7 @@
 import { StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { MangoDecks } from "./mangoDecks/MangoDecks.tsx";
-import type { Result } from "./mangoDecks/engine.ts";
+import { Bassline } from "./bassline/Bassline.tsx";
+import type { Result } from "./bassline/engine.ts";
 import { LastCall } from "./lastCall/LastCall.tsx";
 import type { Result as LastCallResult } from "./lastCall/engine.ts";
 
@@ -20,14 +20,14 @@ function Fixture() {
       <button type="button" onClick={() => setOpen("bar")}>
         Open the bar
       </button>
-      <output aria-label="Mango Decks payouts" style={{ color: "#f7e7c6" }}>
+      <output aria-label="Bassline payouts" style={{ color: "#f7e7c6" }}>
         {JSON.stringify(payouts)}
       </output>
       <output aria-label="Last Call payouts" style={{ color: "#f7e7c6" }}>
         {JSON.stringify(tips)}
       </output>
       {open === "decks" && (
-        <MangoDecks
+        <Bassline
           muted={muted}
           reducedMotion={reducedMotion}
           onClose={(result) => {

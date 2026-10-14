@@ -390,11 +390,11 @@ test("constructor rejects unknown rooms and bad capacities", () => {
     { roomId: "plaza", capacity: 513, now },
   ])
     assert.throws(() => new RoomCore(options), TypeError);
-  assert.equal(new RoomCore({ roomId: "mango-room", now }).occupancy(), 0);
+  assert.equal(new RoomCore({ roomId: "velvet-room", now }).occupancy(), 0);
 });
 
 test("the walkable floor comes from the room definition", () => {
-  const room = new RoomCore({ roomId: "mango-room", now: () => 0 });
+  const room = new RoomCore({ roomId: "velvet-room", now: () => 0 });
   const received: ServerMessage[] = [];
   const player = { isGuest: false, isAdmin: false, look };
   room.join(

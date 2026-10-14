@@ -20,9 +20,9 @@ test("room routes accept only known rooms and copies 1 to 99", () => {
     kind: "rooms",
     roomId: "plaza",
   });
-  assert.deepEqual(matchRoute("GET", "/ws/room/mango-room/2"), {
+  assert.deepEqual(matchRoute("GET", "/ws/room/velvet-room/2"), {
     kind: "ws",
-    roomId: "mango-room",
+    roomId: "velvet-room",
     copy: 2,
   });
   assert.deepEqual(matchRoute("GET", "/ws/room/plaza/99"), {

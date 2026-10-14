@@ -3,7 +3,7 @@
   --mg-plum: #2a0b2e;
   --mg-velvet: #4a1046;
   --mg-fuchsia: #ff2f9a;
-  --mg-mango: #ffb02e;
+  --mg-amber: #ffb02e;
   --mg-champagne: #f7e7c6;
   --mg-lilac: #d9c8ff;
   --mg-chrome: linear-gradient(
@@ -111,7 +111,7 @@
 }
 
 .mg-dialog :focus-visible {
-  outline: 3px solid var(--mg-mango);
+  outline: 3px solid var(--mg-amber);
   outline-offset: 3px;
 }
 

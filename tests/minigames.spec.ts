@@ -17,7 +17,7 @@ async function axeViolations(page: Page) {
   ).violations;
 }
 
-const payouts = (page: Page) => page.getByLabel("Mango Decks payouts");
+const payouts = (page: Page) => page.getByLabel("Bassline payouts");
 
 test("missed beats reset the streak, the result keeps the peak, and leaving pays once", async ({
   page,

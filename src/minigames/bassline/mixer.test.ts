@@ -2,7 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { DJMixerEngine, DEFAULT_DJ_STATE, SCALE_FREQUENCIES } from "./mixer.ts";
 
-describe("Mango Decks mixer", () => {
+describe("Bassline mixer", () => {
   it("initializes with default DJ state", () => {
     const mixer = new DJMixerEngine();
     const state = mixer.getState();
