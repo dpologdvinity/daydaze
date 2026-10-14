@@ -104,6 +104,14 @@ Both venues are part of the 18+ area and need the age gate. They are a secret: n
 - Thrift stores restock with a random selection every day, so they reward coming back. Some items are rare one-offs. Vintage pieces are older Y2K styles you can't buy new.
 - The swap rack becomes player-to-player once multiplayer and server-owned items exist; until then it trades with NPCs.
 
+## Diverse characters
+
+- The doll builder covers a wide range: many skin tones from deep to fair with warm, neutral and cool undertones; face shapes; eye shapes (monolid, hooded, almond, round); nose and lip shapes; freckles, vitiligo, birthmarks; body sizes from slim to plus-size, plus the bust, hips and height sliders; a range of heights.
+- Hair for every texture: coily and kinky (afros, puffs, twist-outs, locs, box braids, cornrows, bantu knots), curly, wavy and straight, plus buzz cuts, shaved sides and bald. Hair colours from natural to neon. Edges and baby-hair styling options.
+- Gender expression is free: any doll can wear any outfit, hair or makeup. Body presets are not tied to a gender. Players choose their pronouns (shown on the profile card), including they/them.
+- Accessibility and identity details: glasses, hearing aids, a wheelchair option that rides, dances and uses every place, prosthetic limbs, hijabs and head wraps, bindis, turbans.
+- NPCs reflect the same range, and each neighborhood's regulars look like the people who'd live there, without stereotypes. Every NPC is a real person with a name and a handwritten line, never a punchline.
+
 ## Dancing
 
 - Players can dance anywhere, and especially on club dance floors. A dance button opens a picker of dance moves. The doll loops the chosen move until the player moves or stops.
