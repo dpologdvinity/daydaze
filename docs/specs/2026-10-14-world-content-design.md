@@ -22,6 +22,10 @@ The world is a set of districts joined by portals, with Downtown Plaza as the hu
 | Water Park | entrance plaza, slide towers, wave pool, lazy river, splash zone, cliff-dive lagoon, cabanas and pool bar, night swim |
 | Amusement Park | entrance gate, roller coaster, ferris wheel, drop tower, carousel, log flume, haunted house, swing ride, teacups, carnival midway, photo booth |
 | Speedway | race track with grandstand and pit garage, bumper car arena |
+| Marina | docks, yacht club bar, a party yacht you can board and sail between the marina and a private island, speedboat and jet-ski rentals, rowboats |
+| Airport and Private Jets | terminal lounge, a private jet with a cabin party you board to fly between districts and to vacation spots (tropical island, snowy mountain town, city rooftop) |
+| Ice Rink and Winter Village | outdoor ice-skating rink with free skating and couple skating, hot cocoa stand, cabin lodge |
+| Sports Complex | basketball court, soccer pitch, tennis court, bowling alley, mini golf, gym |
 | Boardwalk and Beach | pier, bonfire, surf break, volleyball court |
 | Fashion District | boutiques (shop), salon, nail bar, runway |
 | Home | your own apartment, decorated, visitable by friends |
@@ -29,6 +33,10 @@ The world is a set of districts joined by portals, with Downtown Plaza as the hu
 | 18+ area (behind the age gate) | strip club, weed lounge |
 
 The current lounge, "The Mango Room", is renamed **The Velvet Room** so that no venue is mango-branded.
+
+### Vehicles
+
+Jets, yachts, speedboats, jet skis and rowboats are vehicles. A vehicle is a place feature like a ride: players board it, sit together, and either travel to another place (the jet and the yacht) or drive it around a water area (speedboats, jet skis, rowboats). Driving uses the same tap or keys as walking. Vehicles are free to use.
 
 ### Rides
 
@@ -47,6 +55,7 @@ A ride is a place feature that moves the player's doll along a fixed path while 
 - On a club floor, dancing on the beat (shown by pulsing tiles) earns a small streak glow. It is optional: no score, no failure.
 - Couple dances (slow dance, partner spin) work for any two dolls, and against NPCs until multiplayer exists.
 - Moves are animation clips on the doll rig, so new moves are data, not code.
+- Dance events: a scheduled club "dance-off" where players take turns on a spotlight and others cheer, and partner dances on the ice rink and the yacht deck.
 
 ## Non-player characters
 
@@ -81,6 +90,17 @@ Places have a few scripted non-player characters (NPCs) so they never feel empty
 | Race track: kart and car races on several tracks | Speedway | solo time trial or multi | easy to hard | racing |
 | Haunted house | Amusement Park | solo | medium | horror |
 | Carnival booths: ring toss, whack-a-mole, shooting gallery | Amusement Park | solo | easy to hard | carnival |
+| Jet-ski race | Marina | multi | medium | water racing |
+| Yacht party DJ set and dance-off | party yacht | multi | easy | party |
+| Fishing off the dock | Marina | solo | easy | chill |
+| Figure skating tricks | Ice Rink | solo | medium to hard | winter |
+| Curling | Ice Rink | multi | easy | winter |
+| Basketball shootout | Sports Complex | solo or multi | easy to hard | sports |
+| Penalty kicks | Sports Complex | solo or multi | easy | sports |
+| Tennis | Sports Complex | multi | medium | sports |
+| Bowling | Sports Complex | multi | easy | sports |
+| Mini golf | Sports Complex | solo or multi | easy | sports |
+| Dance battle | any club | multi | medium | dance |
 | Runway battle with player voting | Fashion District | multi | medium | fashion |
 | Trivia night (2000s pop culture) | arcade bar | multi | medium | nostalgia |
 | Surf | Boardwalk | solo | hard | beach |
