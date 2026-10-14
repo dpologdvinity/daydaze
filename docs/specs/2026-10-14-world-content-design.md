@@ -122,7 +122,19 @@ Both venues are part of the 18+ area and need the age gate. They are a secret: n
 
 ## Guns
 
-Guns exist only inside game zones: the shooting range, paintball, laser tag, the carnival shooting gallery, the water-gun battle, and the arcade alien shooter. A player picks up a gun on entering the zone and returns it on leaving. Hangouts, clubs, malls, restaurants and the rest of the world stay gun-free, so nobody can be shot outside a game. Hits are cartoon and paint or light effects, never blood.
+Guns exist only inside game zones and inside the player's own home: the shooting range, paintball, laser tag, the carnival shooting gallery, the water-gun battle, and the arcade alien shooter. A player picks up a gun on entering the zone and returns it on leaving. Hangouts, clubs, malls, restaurants and the rest of the world stay gun-free, so nobody can be shot outside a game or a home defence. Hits are cartoon and paint or light effects, never blood.
+
+## Homes, break-ins, police and jail
+
+- Every apartment door has a lock. Doors start locked. The owner can unlock it to invite friends in, and lock it again.
+- An unlocked door can be opened by anyone, like real life. Walking into someone else's home without an invite is a break-in, shown to the intruder as a warning before they step in.
+- The homeowner keeps a gun at home. If they catch an intruder, they can:
+  - **shoot them**: the intruder is knocked out (cartoon effect, no blood), wakes up at the hospital, and drops anything they picked up in the home; or
+  - **call the police**: police NPCs arrive within seconds, arrest the intruder, and send them to jail.
+- Jail is a real place: a cell block with bunks, a yard, a phone to call friends, and simple jail minigames (card games, push-ups for a better bunk). A sentence lasts a few minutes of play time, shortened by good behaviour. Friends can visit and post bail with coins.
+- Intruders can pick up and carry items out. Items return to the owner automatically if the intruder is caught; otherwise the owner gets a "stolen" notice and can report it to the police, who return it later.
+- Homes can't be entered while the owner is offline (the door locks itself), and blocked players can never enter. Repeated break-ins on the same player count as harassment and trigger an automatic block plus a moderation report.
+- Needs multiplayer and server-owned home items, so it ships after multiplayer wiring.
 
 ## Dancing
 
