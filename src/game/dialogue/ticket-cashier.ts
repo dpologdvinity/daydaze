@@ -32,6 +32,34 @@ export const ticketCashierBank: RoleBank = {
     "Back for round four? Respect. Let's keep the streak alive.",
   ],
   tapped: [
+    {
+      text: "Passes are on the counter. The wristband is sticky on purpose, that's the glitter.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "Wristband first, then the wheel. Don't lean on the gate, it's older than both of us.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "You look like a coaster person. Don't argue, I've sold tickets here for nine summers.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "Keep the sticker. It makes the operators nicer to you, I've tested it.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "We close at eleven. The last lap is the best one, everybody goes quiet.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "The swing ride's shut since the storm. Ask Gus, he's the one who fixes things.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "Hello, come in out of the dark. I take coins and compliments at this booth.",
+      when: { neighborhood: "fairground" },
+    },
     "Yes? Quick question or a full ticket order? Both are fine.",
     "Ding ding! Booth's open, what can I do for you?",
     "Tapped the window? Okay, I'm here, what's up?",

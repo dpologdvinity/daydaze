@@ -32,6 +32,34 @@ export const rideOperatorBank: RoleBank = {
     "Hey, regular! Wave to the fairground crew on the way up.",
   ],
   tapped: [
+    {
+      text: "Hold the rail and keep your hands inside the car. I say that to everyone, me included.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "The brake is a lever, not a dare. Leave it alone while we're moving.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "Every car gets checked before the lap. Yours passed. I looked twice.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "The wheel turns slow on purpose. The view has to earn its height.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "Waving at the top works. Your friends on the midway will see it from the ground.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "The coaster hill is nine metres. It feels like twice that, I promise.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "If the lights stutter, that's the generator sulking, not the ride. Stay seated.",
+      when: { neighborhood: "fairground" },
+    },
     "Yes? Ask fast, the next car is loading.",
     "Hey! Need the bathroom, the ride, or the lost-and-found? I got you.",
     "Tapped the operator booth, big move. What's up?",

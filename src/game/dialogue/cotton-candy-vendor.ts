@@ -30,6 +30,34 @@ export const cottonCandyVendorBank: RoleBank = {
     "Hey regular! Tell me about your last ride and I'll make the cloud bigger.",
   ],
   tapped: [
+    {
+      text: "Hold the cone by the stick and keep it out of your hair. Trust me on that one.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "Pink or blue? Pink if you're thinking about someone, blue if you're thinking about nothing.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "That's my own recipe. Don't ask for the sugar ratio, I'd only lie.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "Tell me a secret and the second cone's on me. Keep it small, I'm working.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "Fluff goes everywhere on windy nights. Look, I've got sugar in my eyebrows.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "I've been spinning since opening and my arm has opinions. Tip the jar, it's appreciated.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "Come back after midnight. The sugar's crisper and I'm in a better mood.",
+      when: { neighborhood: "fairground" },
+    },
     "Hi! Sticky fingers are a sign of a good time.",
     "Ooh, you got my attention. Spin a cloud, or just wave?",
     "Don't poke the sugar machine, it gets moody. Poke me instead.",

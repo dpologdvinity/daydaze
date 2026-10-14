@@ -1,6 +1,6 @@
 import type { Vec2 } from "./walk.ts";
 
-export type RoomId = "velvet-room" | "plaza";
+export type RoomId = "velvet-room" | "plaza" | "amusement-park";
 
 export type Spawn = { position: Vec2; yaw: number };
 
@@ -60,6 +60,15 @@ const PLAZA_FLOOR: readonly Vec2[] = [
   [-12, 7],
 ];
 
+// Amusement Park: a 18 m x 15.5 m midway. Rides stand behind the back edge at
+// z = -8, beyond the walkable floor, and each boarding ring sits inside it.
+const AMUSEMENT_PARK_FLOOR: readonly Vec2[] = [
+  [-9, -8],
+  [9, -8],
+  [9, 7.5],
+  [-9, 7.5],
+];
+
 export const ROOMS: Record<RoomId, RoomDefinition> = {
   "velvet-room": {
     id: "velvet-room",
@@ -92,6 +101,32 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "To the Velvet Room",
         target: "velvet-room",
         targetSpawn: { position: [-3.8, -1.5], yaw: Math.PI / 2 },
+      },
+      {
+        // The carnival arch on the right of the curb, a little in from the edge.
+        id: "to-amusement-park",
+        position: [9.5, 2],
+        radius: 0.9,
+        label: "To the Amusement Park",
+        target: "amusement-park",
+        targetSpawn: { position: [0, 4.6], yaw: Math.PI },
+      },
+    ],
+  },
+  "amusement-park": {
+    id: "amusement-park",
+    name: "Amusement Park",
+    walkable: AMUSEMENT_PARK_FLOOR,
+    spawn: { position: [0, 4.6], yaw: Math.PI },
+    portals: [
+      {
+        // The entrance arch the player came in through.
+        id: "park-to-plaza",
+        position: [0, 6.9],
+        radius: 0.9,
+        label: "Back to Daydaze Plaza",
+        target: "plaza",
+        targetSpawn: { position: [9.5, 4.2], yaw: Math.PI },
       },
     ],
   },

@@ -7,9 +7,13 @@ import { Sky } from "./plaza/Sky.tsx";
 import { Storefronts } from "./plaza/Storefronts.tsx";
 import { Street } from "./plaza/Street.tsx";
 import { StringLights } from "./plaza/StringLights.tsx";
+import { AmusementGate } from "./plaza/AmusementGate.tsx";
 import { Beams, type Beam } from "./shared/Beams.tsx";
 import type { PickHandler } from "./shared/Floor.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
+
+// Found by destination, so other portals on the Plaza can come and go.
+const parkGate = ROOMS.plaza.portals.find((p) => p.target === "amusement-park");
 
 // Searchlights from the club roof, sweeping the clouds.
 const CLUB_X = SHOPS.find((s) => s.id === "club")?.x ?? 0;
@@ -123,6 +127,7 @@ export function Plaza({ onPick }: { onPick: PickHandler }) {
       <Storefronts />
       <StringLights />
       <PortalPads room={ROOMS.plaza} />
+      {parkGate && <AmusementGate at={parkGate.position} />}
       {LOCALS.map((n, i) => (
         <Doll
           key={i}

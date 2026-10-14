@@ -25,6 +25,8 @@ const PLAYER_MOODS: readonly { id: Mood; label: string }[] = [
 const ROOM_HINTS: Record<RoomId, string> = {
   "velvet-room": "Daydaze VIP lounge. Tap the floor or use WASD to walk.",
   plaza: "The strip after dark. Walk into a glowing door.",
+  "amusement-park":
+    "Night carnival. Tap a boarding ring to ride, or use WASD to walk.",
 };
 
 function Mirror({

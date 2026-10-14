@@ -4,13 +4,18 @@ import { ROOMS, isRoomId } from "./rooms.ts";
 import { pointInPolygon, type Vec2 } from "./walk.ts";
 
 test("every room is registered under its own id", () => {
-  assert.deepEqual(Object.keys(ROOMS).sort(), ["plaza", "velvet-room"]);
+  assert.deepEqual(Object.keys(ROOMS).sort(), [
+    "amusement-park",
+    "plaza",
+    "velvet-room",
+  ]);
   for (const [id, room] of Object.entries(ROOMS)) assert.equal(room.id, id);
 });
 
 test("isRoomId accepts registered rooms only", () => {
   assert.equal(isRoomId("velvet-room"), true);
   assert.equal(isRoomId("plaza"), true);
+  assert.equal(isRoomId("amusement-park"), true);
   for (const value of ["toString", "constructor", "Plaza", "", null, 1, {}]) {
     assert.equal(isRoomId(value), false, String(value));
   }
@@ -73,4 +78,41 @@ test("every room has a name and at least one portal", () => {
       assert.ok(portal.label.length > 0);
     }
   }
+});
+
+test("the Amusement Park is a walkable midway with its gate at the front", () => {
+  const { walkable, spawn } = ROOMS["amusement-park"];
+  assert.equal(pointInPolygon(walkable, spawn.position), true);
+  // the boarding rings for both rides stay on the floor
+  assert.equal(pointInPolygon(walkable, [-6.5, -7]), true);
+  assert.equal(pointInPolygon(walkable, [6, -7]), true);
+  // the rides and their supports stand behind the back edge
+  assert.equal(pointInPolygon(walkable, [-6.5, -9]), false);
+  assert.equal(pointInPolygon(walkable, [6, -10]), false);
+});
+
+test("the Plaza gate and the park's exit lead to each other", () => {
+  const gate = ROOMS.plaza.portals.find((p) => p.target === "amusement-park");
+  assert.ok(gate, "plaza has a gate");
+  assert.equal(pointInPolygon(ROOMS.plaza.walkable, gate.position), true);
+  assert.deepEqual(
+    gate.targetSpawn.position,
+    ROOMS["amusement-park"].spawn.position,
+  );
+  const exit = ROOMS["amusement-park"].portals.find(
+    (p) => p.target === "plaza",
+  );
+  assert.ok(exit, "park has an exit");
+  assert.equal(
+    pointInPolygon(ROOMS["amusement-park"].walkable, exit.position),
+    true,
+  );
+  // arriving back in the Plaza must not drop the player straight into the gate
+  const [gx, gz] = gate.position;
+  const [ax, az] = exit.targetSpawn.position;
+  assert.ok(Math.hypot(ax - gx, az - gz) > gate.radius);
+  assert.equal(
+    pointInPolygon(ROOMS.plaza.walkable, exit.targetSpawn.position),
+    true,
+  );
 });
