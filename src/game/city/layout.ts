@@ -184,6 +184,15 @@ const CARNIVAL_DOOR: Door = {
   targetSpawn: { position: [0, 4.6], yaw: Math.PI },
 };
 
+const SPLASH_DOOR: Door = {
+  position: [4, -12.5],
+  radius: 2,
+  label: "Into the Splash Zone",
+  target: "water-park",
+  // the water park's arrival point; see rooms.ts
+  targetSpawn: { position: [6.5, 2.5], yaw: -2.4 },
+};
+
 export const BUILDINGS: readonly Building[] = [
   // Downtown, south of the avenue
   {
@@ -376,6 +385,16 @@ export const BUILDINGS: readonly Building[] = [
     style: "gate",
     sign: { text: "NIGHT CARNIVAL", color: "#ff8a3d" },
     door: CARNIVAL_DOOR,
+  },
+  {
+    // The gate to the Water Park, on the north avenue between two blocks.
+    id: "splash-gate",
+    neighborhood: "downtown",
+    footprint: rect(-6, -40, 10, -14),
+    height: 12,
+    style: "gate",
+    sign: { text: "SPLASH ZONE", color: "#4fe3ff" },
+    door: SPLASH_DOOR,
   },
 ];
 

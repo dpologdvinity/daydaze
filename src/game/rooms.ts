@@ -1,7 +1,8 @@
 import { CITY_AREA, CITY_BOUNDS, CITY_SPAWN } from "./city/layout.ts";
 import type { Vec2 } from "./walk.ts";
 
-export type RoomId = "velvet-room" | "plaza" | "amusement-park" | "water-park" | "city";
+export type RoomId =
+  "velvet-room" | "plaza" | "amusement-park" | "water-park" | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
 
@@ -188,6 +189,15 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "To the Plaza",
         target: "plaza",
         targetSpawn: { position: [10, 0], yaw: -Math.PI / 2 },
+      },
+      {
+        // The gate out to the city, on the west side of the deck.
+        id: "water-park-to-city",
+        position: [-7.5, 4.5],
+        radius: 0.9,
+        label: "Out through the gate",
+        target: "city",
+        targetSpawn: { position: [4, -9], yaw: 0 },
       },
     ],
   },
