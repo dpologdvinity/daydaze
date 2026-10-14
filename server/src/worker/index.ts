@@ -11,8 +11,14 @@ import {
   SESSION_MAX_AGE_SECONDS,
   sessionCookie,
 } from "../cookies.ts";
+import type { AuthAction } from "../authLimits.ts";
 import { hashPassword, verifyPassword } from "../passwords.ts";
 import { matchRoute, type Route } from "../routes.ts";
+import {
+  applySecurityHeaders,
+  isAllowedOrigin,
+  parseAllowedOrigins,
+} from "../security.ts";
 import {
   hashToken,
   newPlayerId,
@@ -31,6 +37,7 @@ import {
 import { DIRECTORY_NAME, IDENTITY_HEADER } from "./roomInstance.ts";
 
 export { Directory } from "./directory.ts";
+export { RateLimiter } from "./rateLimiter.ts";
 export { RoomInstance } from "./roomInstance.ts";
 
 const MAX_JSON_BYTES = 4096;
@@ -40,8 +47,23 @@ type Session = Identity & { tokenHash: string };
 function json(body: unknown, status = 200, headers?: HeadersInit): Response {
   return Response.json(body, { status, headers });
 }
-function error(status: number, code: string): Response {
-  return json({ error: code }, status);
+/** Error bodies are fixed codes only: never request input or internals. */
+function error(status: number, code: string, headers?: HeadersInit): Response {
+  return json({ error: code }, status, headers);
+}
+
+/** A 429 when this IP address is over its budget for `action`, else null. */
+async function rateLimited(
+  env: Env,
+  request: Request,
+  action: AuthAction,
+  key = "",
+): Promise<Response | null> {
+  const limiter = env.RATE_LIMITER.getByName(clientIp(request) ?? "unknown");
+  const retryAfter = await limiter.take(action, key);
+  return retryAfter > 0
+    ? error(429, "rate-limited", { "Retry-After": String(retryAfter) })
+    : null;
 }
 
 function roomStub(env: Env, roomId: RoomId, copy: number) {
@@ -149,6 +171,8 @@ async function handle(
   switch (route.kind) {
     case "guest": {
       if (session?.isGuest) return json(publicIdentity(session));
+      const limited = await rateLimited(env, request, "guest");
+      if (limited) return limited;
       if (await isBanned(env, null, clientIp(request)))
         return error(403, "banned");
       const identity: Identity = {
@@ -165,6 +189,8 @@ async function handle(
     case "signup": {
       const credentials = parseCredentials(await readJson(request));
       if (!credentials) return error(400, "invalid-credentials");
+      const limited = await rateLimited(env, request, "signup");
+      if (limited) return limited;
       const { username, password } = credentials;
       const taken = await env.DB.prepare(
         "SELECT 1 FROM users WHERE username_key = ?",
@@ -203,6 +229,13 @@ async function handle(
     case "login": {
       const credentials = parseCredentials(await readJson(request));
       if (!credentials) return error(401, "wrong-credentials");
+      const limited = await rateLimited(
+        env,
+        request,
+        "login",
+        credentials.username.toLowerCase(),
+      );
+      if (limited) return limited;
       const user = await env.DB.prepare(
         "SELECT id, username, password_hash, is_admin FROM users WHERE username_key = ?",
       )
@@ -334,12 +367,29 @@ export default {
   async fetch(request, env): Promise<Response> {
     const url = new URL(request.url);
     const route = matchRoute(request.method, url.pathname);
-    if (!route) return error(404, "not-found");
-    try {
-      return await handle(route, request, env, url);
-    } catch (cause) {
-      console.error(cause);
-      return error(500, "server-error");
-    }
+    let response: Response;
+    if (!route) response = error(404, "not-found");
+    else if (
+      (request.method !== "GET" || route.kind === "ws") &&
+      !isAllowedOrigin(
+        request.headers.get("Origin"),
+        url.origin,
+        parseAllowedOrigins(env.ALLOWED_ORIGINS),
+      )
+    )
+      response = error(403, "bad-origin");
+    else
+      try {
+        response = await handle(route, request, env, url);
+      } catch (cause) {
+        // Logged for us; the client only ever sees the code.
+        console.error(cause);
+        response = error(500, "server-error");
+      }
+    if (response.webSocket) return response;
+    // Copy first: responses passed through from a Durable Object are immutable.
+    const secured = new Response(response.body, response);
+    applySecurityHeaders(secured.headers);
+    return secured;
   },
 } satisfies ExportedHandler<Env>;

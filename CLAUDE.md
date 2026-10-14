@@ -54,7 +54,7 @@ export default defineConfig({
 });
 ```
 
-The session cookie is `Secure`. Chrome and Firefox accept it on `http://localhost`; other plain-HTTP hosts (a LAN IP for phone testing) need HTTPS.
+State-changing requests and room sockets must come from the Worker's own origin or one listed in `ALLOWED_ORIGINS` (`server/wrangler.jsonc`; production must set the real site). See `docs/security.md` for the threat model and known gaps. The session cookie is `Secure`. Chrome and Firefox accept it on `http://localhost`; other plain-HTTP hosts (a LAN IP for phone testing) need HTTPS.
 
 ## Rules
 

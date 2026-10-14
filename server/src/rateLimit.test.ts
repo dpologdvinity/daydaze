@@ -97,3 +97,15 @@ test("spec limits: chat 1/2s burst 3 for accounts, 1/4s burst 2 for guests, emot
   const allowed = takes(movement, "m", flood).filter(Boolean).length;
   assert.ok(allowed >= 5 && allowed <= 15, `${allowed}`);
 });
+
+test("retryAfterMs says how long until the next token", () => {
+  const limiter = createRateLimiter({ capacity: 2, refillPerSecond: 0.5 });
+  assert.equal(limiter.retryAfterMs("a", 0), 0);
+  limiter.take("a", 0);
+  limiter.take("a", 0);
+  assert.equal(limiter.take("a", 0), false);
+  assert.equal(limiter.retryAfterMs("a", 0), 2000);
+  assert.equal(limiter.retryAfterMs("a", 1500), 500);
+  assert.equal(limiter.retryAfterMs("a", 2000), 0);
+  assert.equal(limiter.retryAfterMs("unknown", 0), 0);
+});

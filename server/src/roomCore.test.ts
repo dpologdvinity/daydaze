@@ -499,3 +499,24 @@ test("a join message with a shape-valid but non-catalog look counts as invalid",
   );
   assert.deepEqual(b.closed, ["invalid-messages"]);
 });
+
+test("no client message can kick or ban, even from an admin's socket", () => {
+  const { room, join } = setup();
+  const admin = join("admin", { isAdmin: true });
+  const target = join("t");
+  for (const raw of [
+    JSON.stringify({ type: "kick", targetId: "t" }),
+    JSON.stringify({ type: "ban", targetId: "t" }),
+    JSON.stringify({ type: "join", isAdmin: true, targetId: "t" }),
+  ]) {
+    room.handle("admin", raw);
+    room.handle("t", raw);
+  }
+  assert.deepEqual(target.closed, []);
+  assert.deepEqual(admin.closed, []);
+  assert.equal(room.occupancy(), 2);
+  // A non-admin calling the moderation API directly is refused.
+  assert.equal(room.kick("t", "admin"), false);
+  assert.equal(room.ban("t", "admin"), false);
+  assert.deepEqual(admin.closed, []);
+});
