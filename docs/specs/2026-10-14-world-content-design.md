@@ -26,6 +26,8 @@ The world is a set of districts joined by portals, with Downtown Plaza as the hu
 | Airport and Private Jets | terminal lounge, a private jet with a cabin party you board to fly between districts and to vacation spots (tropical island, snowy mountain town, city rooftop) |
 | Ice Rink and Winter Village | outdoor ice-skating rink with free skating and couple skating, hot cocoa stand, cabin lodge |
 | Sports Complex | basketball court, soccer pitch, tennis court, bowling alley, mini golf, gym |
+| Zoo | savanna walk with a lion pride (the lion nod), giraffe feeding deck, penguin house (the Club Penguin nod), monkey canopy walk, reptile house, petting area, safari tram ride |
+| Aquarium | shark tunnel, jellyfish glow room (night-club lighting), coral reef tank, touch pool, otter and seal show, underwater cafe and lounge |
 | Boardwalk and Beach | pier, bonfire, surf break, volleyball court |
 | Fashion District | boutiques (shop), salon, nail bar, runway |
 | Home | your own apartment, decorated, visitable by friends |
@@ -101,6 +103,10 @@ Places have a few scripted non-player characters (NPCs) so they never feel empty
 | Bowling | Sports Complex | multi | easy | sports |
 | Mini golf | Sports Complex | solo or multi | easy | sports |
 | Dance battle | any club | multi | medium | dance |
+| Safari photo hunt | Zoo | solo | easy | animals |
+| Feeding time (match food to animals) | Zoo | solo | easy | animals |
+| Reef dive spotter | Aquarium | solo | medium | ocean |
+| Seal show tricks (rhythm) | Aquarium | solo or multi | medium | ocean |
 | Runway battle with player voting | Fashion District | multi | medium | fashion |
 | Trivia night (2000s pop culture) | arcade bar | multi | medium | nostalgia |
 | Surf | Boardwalk | solo | hard | beach |
