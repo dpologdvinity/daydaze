@@ -159,3 +159,27 @@ test("walking into the Plaza's glowing door enters the Velvet Room", async ({
     timeout: 120_000,
   });
 });
+
+test("the city loads, the player walks with the keys, and the scene renders", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=city`);
+  await expect(roomTitle(page)).toHaveText("Downtown and Nightlife Row");
+  const canvas = page.locator("canvas");
+  await expect(canvas).toHaveAttribute("data-frames", /[3-9]|10/);
+  const start = await canvas.getAttribute("data-player");
+  await page.keyboard.down("KeyD");
+  await page.waitForTimeout(1500);
+  await page.keyboard.up("KeyD");
+  await page.waitForTimeout(500);
+  await expect(canvas).not.toHaveAttribute("data-player", start ?? "");
+  // a real scene: the city's meshes, not just the sky
+  expect(Number(await canvas.getAttribute("data-draw-calls"))).toBeGreaterThan(
+    5,
+  );
+  expect(Number(await canvas.getAttribute("data-draw-calls"))).toBeLessThan(
+    250,
+  );
+  expect(errors).toEqual([]);
+});
