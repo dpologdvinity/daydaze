@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { generateGuestName } from "../../src/game/save.ts";
 import { filterChat, isAllowedUsername } from "./chatFilter.ts";
 
 const relaxed = { strict: false };
@@ -60,4 +61,11 @@ test("usernames containing a slur are rejected, even inside other words", () => 
     "NigelFromNiger",
   ])
     assert.equal(isAllowedUsername(name), true, name);
+});
+
+test("every generated guest name passes the username filter", () => {
+  for (let i = 0; i < 1000; i++) {
+    const name = generateGuestName(() => i / 1000);
+    assert.ok(isAllowedUsername(name), name);
+  }
 });
