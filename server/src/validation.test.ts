@@ -7,7 +7,6 @@ import {
   parseAttachment,
   parseBlock,
   parseCredentials,
-  parseIdentity,
   parseLookParam,
   parseReport,
   parseSave,
@@ -19,19 +18,6 @@ const identity = {
   isGuest: true,
   isAdmin: false,
 };
-
-test("identities need a network id, a display name and boolean flags", () => {
-  assert.deepEqual(parseIdentity({ ...identity, extra: 1 }), identity);
-  for (const bad of [
-    null,
-    "x",
-    { ...identity, id: "" },
-    { ...identity, name: "x" },
-    { ...identity, isGuest: "yes" },
-    { ...identity, isAdmin: 1 },
-  ])
-    assert.equal(parseIdentity(bad), null);
-});
 
 test("socket attachments carry identity, look, room and copy", () => {
   const attachment = { identity, look: DEFAULT_LOOK, roomId: "plaza", copy: 2 };

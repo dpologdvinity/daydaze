@@ -5,6 +5,18 @@ export const MAX_CHAT_LENGTH = 120;
 const MAX_NAME_LENGTH = 32;
 const MAX_PACKET_BYTES = 65_536;
 
+/** WebSocket close codes for room sockets. */
+export const CLOSE_CODES = {
+  left: 1000,
+  invalid: 4000,
+  full: 4001,
+  kicked: 4002,
+  banned: 4003,
+  "invalid-messages": 4004,
+  "send-failed": 4005,
+  replaced: 4009,
+} as const;
+
 /** Floor position in metres on the XZ plane; yaw in radians within (-π, π]. */
 export type EntityDelta = {
   id: string;

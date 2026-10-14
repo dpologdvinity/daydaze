@@ -5,17 +5,14 @@ import {
   loadSave,
   type SaveV1,
 } from "../../src/game/save.ts";
+import { parseIdentity, type Identity } from "../../src/net/identity.ts";
 import { isNetworkId } from "../../src/net/networkProtocol.ts";
 import { isAllowedUsername } from "./chatFilter.ts";
 import { isValidPassword } from "./passwords.ts";
 import { parseCopy } from "./routes.ts";
 
-export type Identity = {
-  id: string;
-  name: string;
-  isGuest: boolean;
-  isAdmin: boolean;
-};
+export { parseIdentity, type Identity };
+
 export type RoomCopy = { roomId: RoomId; copy: number };
 export type Attachment = RoomCopy & { identity: Identity; look: Look };
 
@@ -26,20 +23,6 @@ function fields(value: unknown): Map<string, unknown> {
   return new Map(
     typeof value === "object" && value !== null ? Object.entries(value) : [],
   );
-}
-
-export function parseIdentity(value: unknown): Identity | null {
-  const f = fields(value);
-  const id = f.get("id");
-  const name = f.get("name");
-  const isGuest = f.get("isGuest");
-  const isAdmin = f.get("isAdmin");
-  return isNetworkId(id) &&
-    isValidDisplayName(name) &&
-    typeof isGuest === "boolean" &&
-    typeof isAdmin === "boolean"
-    ? { id, name, isGuest, isAdmin }
-    : null;
 }
 
 function parseRoomCopy(f: Map<string, unknown>): RoomCopy | null {
