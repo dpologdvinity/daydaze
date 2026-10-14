@@ -100,3 +100,39 @@ test("a step with bad input stays where it is", () => {
   assert.deepEqual(stepInArea(open, [1, 1], [Number.NaN, 0], 0.5), [1, 1]);
   assert.deepEqual(stepInArea(open, [1, 1], [5, 1], 0), [1, 1]);
 });
+
+test("the blocker index agrees with testing every blocker", () => {
+  // a field of small blockers, checked on a grid of points against a full scan
+  const blockers: Vec2[][] = [];
+  for (let x = 1; x < 60; x += 7) {
+    for (let z = 2; z < 60; z += 9) {
+      blockers.push([
+        [x, z],
+        [x + 1.5, z],
+        [x + 1.5, z + 1],
+        [x, z + 1],
+      ]);
+    }
+  }
+  const field: WalkArea = {
+    surfaces: [
+      [
+        [0, 0],
+        [70, 0],
+        [70, 70],
+        [0, 70],
+      ],
+    ],
+    blockers,
+    portals: [],
+  };
+  for (let x = -1; x < 70; x += 0.37) {
+    for (let z = -1; z < 70; z += 0.41) {
+      const brute = blockers.some((b) => {
+        const scan: WalkArea = { surfaces: [], blockers: [b], portals: [] };
+        return isBlocked(scan, [x, z]);
+      });
+      assert.equal(isBlocked(field, [x, z]), brute, `at ${x},${z}`);
+    }
+  }
+});

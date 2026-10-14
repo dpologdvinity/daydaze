@@ -3,10 +3,10 @@
 import type { Vec2 } from "../walk.ts";
 import { CITY_BOUNDS, type Neighborhood } from "./layout.ts";
 
-export const CELL_SIZE = 64;
+export { CELL_SIZE, VIEW_RADIUS } from "./tuning.ts";
+import { CELL_SIZE } from "./tuning.ts";
+
 export const CELLS_PER_SIDE = 6;
-/** Cells within this many metres of the player are loaded. */
-export const VIEW_RADIUS = 160;
 
 const ORIGIN = CITY_BOUNDS[0][0];
 

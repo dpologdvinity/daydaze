@@ -49,14 +49,55 @@ export function clampToArea(area: WalkArea, p: Vec2): Vec2 {
   return best ?? p;
 }
 
+// Blockers are bucketed on an 8 m grid, so a point only tests the few
+// footprints near it instead of every footprint in the city.
+const BUCKET = 8;
+type BlockerIndex = Map<number, number[]>;
+const indexes = new WeakMap<readonly (readonly Vec2[])[], BlockerIndex>();
+
+function bucketKey(ix: number, iz: number): number {
+  return ix * 1_000_003 + iz;
+}
+
+function indexOf(blockers: readonly (readonly Vec2[])[]): BlockerIndex {
+  const cached = indexes.get(blockers);
+  if (cached) return cached;
+  const index: BlockerIndex = new Map();
+  blockers.forEach((blocker, i) => {
+    const xs = blocker.map(([x]) => x);
+    const zs = blocker.map(([, z]) => z);
+    // expanded by the body radius, so any point that could touch it finds it
+    const x0 = Math.floor((Math.min(...xs) - BODY_RADIUS) / BUCKET);
+    const x1 = Math.floor((Math.max(...xs) + BODY_RADIUS) / BUCKET);
+    const z0 = Math.floor((Math.min(...zs) - BODY_RADIUS) / BUCKET);
+    const z1 = Math.floor((Math.max(...zs) + BODY_RADIUS) / BUCKET);
+    for (let ix = x0; ix <= x1; ix++) {
+      for (let iz = z0; iz <= z1; iz++) {
+        const key = bucketKey(ix, iz);
+        const bucket = index.get(key);
+        if (bucket) bucket.push(i);
+        else index.set(key, [i]);
+      }
+    }
+  });
+  indexes.set(blockers, index);
+  return index;
+}
+
 /** True if the body would overlap a blocker at this point. */
 export function isBlocked(area: WalkArea, p: Vec2): boolean {
-  return area.blockers.some(
-    (blocker) =>
+  const near = indexOf(area.blockers).get(
+    bucketKey(Math.floor(p[0] / BUCKET), Math.floor(p[1] / BUCKET)),
+  );
+  if (!near) return false;
+  return near.some((i) => {
+    const blocker = area.blockers[i];
+    return (
       pointInPolygon(blocker, p) ||
       distanceSq(nearestPointOnPolygon(blocker, p), p) <
-        BODY_RADIUS * BODY_RADIUS,
-  );
+        BODY_RADIUS * BODY_RADIUS
+    );
+  });
 }
 
 /**

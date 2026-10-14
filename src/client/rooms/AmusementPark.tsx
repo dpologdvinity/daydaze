@@ -12,6 +12,7 @@ import {
   type RideId,
   type RideState,
 } from "../../game/amusementPark.ts";
+import { areaOf } from "../../game/area.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import type { Vec2 } from "../../game/walk.ts";
 import { useReducedMotion } from "../motion.ts";
@@ -137,8 +138,8 @@ export function AmusementPark({
 
   const board = (id: RideId) => {
     if (ride.current.phase !== "idle") return;
-    walkTo(player, ROOMS["amusement-park"], RIDES[id].spot);
-    boardTarget.current = player.target;
+    walkTo(player, areaOf(ROOMS["amusement-park"]), RIDES[id].spot);
+    boardTarget.current = player.walk.target;
     dispatch({ type: "board", ride: id });
   };
 
@@ -165,7 +166,7 @@ export function AmusementPark({
       const [sx, sz] = RIDES[current.ride].spot;
       if (Math.hypot(player.pos.x - sx, player.pos.z - sz) < ARRIVE_METRES) {
         dispatch({ type: "arrive", now, calm });
-      } else if (player.target !== boardTarget.current) {
+      } else if (player.walk.target !== boardTarget.current) {
         dispatch({ type: "cancel" });
       }
     }

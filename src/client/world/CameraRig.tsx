@@ -45,6 +45,7 @@ const ROOM_SHOTS: Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }> =
 const MAX_DISTANCE: Record<RoomId, number> = {
   "velvet-room": 18,
   plaza: 18,
+  "amusement-park": 18,
   city: 300,
 };
 
