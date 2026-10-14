@@ -29,6 +29,8 @@ The world is a set of districts joined by portals, with Downtown Plaza as the hu
 | Zoo | savanna walk with a lion pride (the lion nod), giraffe feeding deck, penguin house (the Club Penguin nod), monkey canopy walk, reptile house, petting area, safari tram ride |
 | Aquarium | shark tunnel, jellyfish glow room (night-club lighting), coral reef tank, touch pool, otter and seal show, underwater cafe and lounge |
 | Mermaid Cove | a hidden ocean cove past the beach where mermaids live and everyone can see them: sea caves, a coral lagoon, rocks where mermaids sit and sing, a sunken ship to explore while swimming |
+| Food Street | Filipino turo-turo and carinderia (adobo, sinigang, lumpia, pancit, halo-halo), a red-and-yellow Filipino fried-chicken and spaghetti joint inspired by Jollibee (with its own original name and a bee-free mascot), an ube bakery (ube cheese pandesal, ube crinkles, ube ice cream), a matcha bar, a boba tea shop, a Korean BBQ grill, a ramen counter, a sushi conveyor bar, a taco truck, a pizza-by-the-slice window, a dim sum teahouse, a pho shop, a Thai street-food stall, a crêperie, a bagel deli, a 24-hour diner with milkshakes, a donut shop, a gelato cart, a late-night halal cart, a Yunnan mushroom hot-pot stall |
+| Cafes | a cozy bookshop cafe, a cat cafe, a plant-filled Instagram cafe, a Y2K internet cafe with old computers and dial-up noises |
 | Boardwalk and Beach | pier, bonfire, surf break, volleyball court |
 | Fashion District | boutiques (shop), salon, nail bar, runway |
 | Home | your own apartment, decorated, visitable by friends |
@@ -61,6 +63,14 @@ Both venues are part of the 18+ area and need the age gate. They are a secret: n
 - Content limits: suggestive only. No nudity at any time; dancers keep lingerie or costumes on. A massage "happy ending" is implied with a fade to black and a cheeky line afterward, never shown.
 - Services come from NPCs and are free, like drinks. Players can tip with coins as a cosmetic gesture.
 - Players can bring a date: two players can share a VIP booth or a couples massage room.
+
+## Food and cafes
+
+- Every restaurant and cafe has a counter NPC (cashier or server), a menu with real dishes, and seating. Food is free, like drinks. Players order from the menu, get the item in hand, and eat it with an eating animation.
+- Food lowers the drunk buzz faster, as the effects section says.
+- Shared tables work as hangout spots: players can sit together, share a plate, and clink drinks.
+- Trademarks: real chains are never named or copied. The Jollibee-inspired joint gets an original name, logo and mascot, keeping the vibe (red and yellow, fried chicken, sweet spaghetti, peach mango pie) without the brand.
+- Food minigames, one per batch: boba builder (match the order: tea, milk, sugar level, toppings; easy), halo-halo stacker (stacking layers; easy to medium), sushi conveyor catch (medium), ramen rush (timed orders; hard), and a Filipino cook-off for two players (multi).
 
 ## Dancing
 
