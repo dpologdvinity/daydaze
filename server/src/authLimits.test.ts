@@ -31,3 +31,15 @@ test("signups and guest sessions have their own budgets", () => {
   assert.equal(run("guest", 30), 10);
   assert.equal(limiter.take("login", "kai", 0), 0);
 });
+
+test("reports and blocks have their own budgets", () => {
+  const limiter = createAuthLimiter();
+  const run = (kind: "report" | "block", times: number) =>
+    Array.from({ length: times }, () => limiter.take(kind, "", 0) === 0).filter(
+      Boolean,
+    ).length;
+  assert.equal(run("report", 20), 5);
+  assert.equal(run("block", 50), 20);
+  assert.ok(limiter.take("report", "", 0) >= 1);
+  assert.equal(limiter.take("report", "", 60_000), 0);
+});
