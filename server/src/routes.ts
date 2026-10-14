@@ -1,0 +1,50 @@
+import { isRoomId, type RoomId } from "../../src/game/rooms.ts";
+
+export type Route =
+  | {
+      kind:
+        | "guest"
+        | "signup"
+        | "login"
+        | "logout"
+        | "me"
+        | "save-get"
+        | "save-put"
+        | "report"
+        | "block";
+    }
+  | { kind: "rooms"; roomId: RoomId }
+  | { kind: "ws"; roomId: RoomId; copy: number };
+
+const FIXED = new Map<string, Route>([
+  ["POST /api/guest", { kind: "guest" }],
+  ["POST /api/signup", { kind: "signup" }],
+  ["POST /api/login", { kind: "login" }],
+  ["POST /api/logout", { kind: "logout" }],
+  ["GET /api/me", { kind: "me" }],
+  ["GET /api/save", { kind: "save-get" }],
+  ["PUT /api/save", { kind: "save-put" }],
+  ["POST /api/report", { kind: "report" }],
+  ["POST /api/block", { kind: "block" }],
+]);
+
+/** Copies are numbered 1 to 99 ("Downtown #1"). */
+export function parseCopy(value: unknown): number | null {
+  if (typeof value === "number")
+    return Number.isInteger(value) && value >= 1 && value <= 99 ? value : null;
+  return typeof value === "string" && /^[1-9]\d?$/.test(value)
+    ? Number(value)
+    : null;
+}
+
+export function matchRoute(method: string, pathname: string): Route | null {
+  const fixed = FIXED.get(`${method} ${pathname}`);
+  if (fixed) return fixed;
+  if (method !== "GET") return null;
+  const rooms = /^\/api\/rooms\/([^/]+)$/.exec(pathname);
+  if (rooms && isRoomId(rooms[1])) return { kind: "rooms", roomId: rooms[1] };
+  const ws = /^\/ws\/room\/([^/]+)\/([^/]+)$/.exec(pathname);
+  const copy = ws && parseCopy(ws[2]);
+  if (ws && copy && isRoomId(ws[1])) return { kind: "ws", roomId: ws[1], copy };
+  return null;
+}

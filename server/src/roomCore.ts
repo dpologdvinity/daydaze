@@ -1,7 +1,11 @@
+import { validateLook, type Look } from "../../src/game/look.ts";
+import { isRoomId, ROOMS, type RoomId } from "../../src/game/rooms.ts";
+import { isValidDisplayName } from "../../src/game/save.ts";
+import { clampToWalkable, type Vec2 } from "../../src/game/walk.ts";
 import {
   decodeClientMessage,
-  decodeServerMessage,
   encodeServerMessage,
+  isNetworkId,
   MAX_ROOM_ENTITIES,
   type EntityDelta,
   type ProfileMessage,
@@ -15,8 +19,8 @@ import {
   GUEST_CHAT_LIMIT,
   MOVEMENT_LIMIT,
 } from "./rateLimit.ts";
-import { clampToPolygon } from "./walkable.ts";
 
+export const ROOM_CAPACITY = 60;
 export const MAX_INVALID_MESSAGES = 10;
 export const REPORT_CHAT_LINES = 20;
 
@@ -32,16 +36,31 @@ export type JoinResult =
 /** Passed to the socket's close callback; the player is already removed. */
 export type CloseReason =
   "kicked" | "banned" | "invalid-messages" | "left" | "send-failed";
+/** WebSocket close codes for room sockets, shared with the client. */
+export const CLOSE_CODES = {
+  left: 1000,
+  invalid: 4000,
+  full: 4001,
+  kicked: 4002,
+  banned: 4003,
+  "invalid-messages": 4004,
+  "send-failed": 4005,
+  replaced: 4009,
+} as const satisfies Record<
+  CloseReason | Exclude<JoinResult, { ok: true }>["reason"] | "replaced",
+  number
+>;
 export type ChatLine = { id: string; name: string; text: string; at: number };
 export type RoomCoreOptions = {
   roomId: string;
   capacity?: number;
-  walkable: readonly [number, number][];
   now: () => number;
 };
 
 type Occupant = {
-  profile: ProfileMessage;
+  id: string;
+  name: string;
+  look: Look;
   isGuest: boolean;
   isAdmin: boolean;
   send: (message: string) => void;
@@ -52,9 +71,9 @@ type Occupant = {
 
 /** One room copy's state and rules, independent of the socket host. */
 export class RoomCore {
-  private readonly roomId: string;
+  private readonly roomId: RoomId;
   private readonly capacity: number;
-  private readonly walkable: readonly [number, number][];
+  private readonly walkable: readonly Vec2[];
   private readonly now: () => number;
   private readonly occupants = new Map<string, Occupant>();
   // shortcut: blocks and bans live as long as the room copy; the gateway re-applies stored ones on join.
@@ -66,23 +85,17 @@ export class RoomCore {
   private readonly guestChat = createRateLimiter(GUEST_CHAT_LIMIT);
   private readonly emotes = createRateLimiter(EMOTE_LIMIT);
 
-  constructor({ roomId, capacity = 60, walkable, now }: RoomCoreOptions) {
-    if (roomId.trim() === "" || roomId.length > 64)
-      throw new TypeError("Invalid room ID");
+  constructor({ roomId, capacity = ROOM_CAPACITY, now }: RoomCoreOptions) {
+    if (!isRoomId(roomId)) throw new TypeError("Unknown room");
     if (
       !Number.isInteger(capacity) ||
       capacity < 1 ||
       capacity > MAX_ROOM_ENTITIES
     )
       throw new TypeError("Invalid capacity");
-    if (
-      walkable.length < 3 ||
-      !walkable.flat().every((value) => Number.isFinite(value))
-    )
-      throw new TypeError("Invalid walkable polygon");
     this.roomId = roomId;
     this.capacity = capacity;
-    this.walkable = walkable;
+    this.walkable = ROOMS[roomId].walkable;
     this.now = now;
   }
 
@@ -91,30 +104,12 @@ export class RoomCore {
     send: (message: string) => void,
     close: (reason: CloseReason) => void,
   ): JoinResult {
-    // The profile decoder validates id, name and look (shortcut: shape only via
-    // isLookShape; swap in validateLook from src/game/look.ts once it lands).
-    const profile = decodeServerMessage({
-      type: "profile",
-      roomId: this.roomId,
-      id: player.id,
-      name: player.name,
-      look: player.look,
-    });
-    if (profile?.type !== "profile" || this.occupants.has(player.id))
-      return { ok: false, reason: "invalid" };
+    const occupant = this.admit(player, send, close);
+    if (!occupant) return { ok: false, reason: "invalid" };
     if (this.banned.has(player.id)) return { ok: false, reason: "banned" };
     if (this.occupants.size >= this.capacity)
       return { ok: false, reason: "full" };
 
-    const occupant: Occupant = {
-      profile,
-      isGuest: player.isGuest,
-      isAdmin: player.isAdmin,
-      send,
-      close,
-      entity: null,
-      invalid: 0,
-    };
     this.occupants.set(player.id, occupant);
     const others = [...this.occupants.values()].filter(
       (other) => other !== occupant && this.visible(other, occupant),
@@ -124,11 +119,26 @@ export class RoomCore {
       roomId: this.roomId,
       entities: others.flatMap((other) => (other.entity ? [other.entity] : [])),
     });
-    for (const other of others) this.sendTo(occupant, other.profile);
+    for (const other of others) this.sendTo(occupant, this.profile(other));
     if (this.occupants.get(player.id) !== occupant) return { ok: true };
-    this.broadcast(occupant, profile);
+    this.broadcast(occupant, this.profile(occupant));
     this.broadcastOccupancy();
     return { ok: true };
+  }
+
+  /**
+   * Re-registers a socket that outlived the room's memory (hibernation)
+   * without sending anything; positions return with the next updates.
+   */
+  restore(
+    player: RoomPlayer,
+    send: (message: string) => void,
+    close: (reason: CloseReason) => void,
+  ): boolean {
+    const occupant = this.admit(player, send, close);
+    if (!occupant) return false;
+    this.occupants.set(player.id, occupant);
+    return true;
   }
 
   leave(id: string): void {
@@ -150,7 +160,7 @@ export class RoomCore {
     const occupant = this.occupants.get(id);
     if (!occupant) return;
     const message = decodeClientMessage(raw);
-    if (!message) {
+    if (!message || (message.type === "join" && !validateLook(message.look))) {
       if (++occupant.invalid >= MAX_INVALID_MESSAGES)
         this.disconnect(occupant, "invalid-messages");
       return;
@@ -165,16 +175,16 @@ export class RoomCore {
         // The socket already fixes the room copy, so join's roomId and name are ignored.
         if (
           message.type === "join" &&
-          JSON.stringify(message.look) !== JSON.stringify(occupant.profile.look)
+          validateLook(message.look) &&
+          JSON.stringify(message.look) !== JSON.stringify(occupant.look)
         ) {
-          occupant.profile = { ...occupant.profile, look: message.look };
-          this.broadcast(occupant, occupant.profile);
+          occupant.look = { ...message.look };
+          this.broadcast(occupant, this.profile(occupant));
         }
-        const [x, z] = clampToPolygon(
-          this.walkable,
+        const [x, z] = clampToWalkable(this.walkable, [
           message.entity.x,
           message.entity.z,
-        );
+        ]);
         occupant.entity = { ...message.entity, id, x, z };
         this.broadcast(occupant, {
           type: "delta",
@@ -189,7 +199,7 @@ export class RoomCore {
         // Reports need what was typed, so the log keeps the unfiltered text.
         this.chatLog.push({
           id,
-          name: occupant.profile.name,
+          name: occupant.name,
           text: message.text,
           at: now,
         });
@@ -252,6 +262,11 @@ export class RoomCore {
     return true;
   }
 
+  look(id: string): Look | null {
+    const look = this.occupants.get(id)?.look;
+    return look ? { ...look } : null;
+  }
+
   occupancy(): number {
     return this.occupants.size;
   }
@@ -263,16 +278,45 @@ export class RoomCore {
       .map((line) => ({ ...line }));
   }
 
+  private admit(
+    { id, name, isGuest, isAdmin, look }: RoomPlayer,
+    send: (message: string) => void,
+    close: (reason: CloseReason) => void,
+  ): Occupant | null {
+    if (
+      !isNetworkId(id) ||
+      !isValidDisplayName(name) ||
+      !validateLook(look) ||
+      this.occupants.has(id)
+    )
+      return null;
+    return {
+      id,
+      name,
+      look: { ...look },
+      isGuest,
+      isAdmin,
+      send,
+      close,
+      entity: null,
+      invalid: 0,
+    };
+  }
+
+  private profile({ id, name, look }: Occupant): ProfileMessage {
+    return { type: "profile", roomId: this.roomId, id, name, look };
+  }
+
   private isAdmin(adminId: string, targetId: string): boolean {
     return adminId !== targetId && !!this.occupants.get(adminId)?.isAdmin;
   }
 
   private visible(a: Occupant, b: Occupant): boolean {
-    return !this.blocked.has(pairKey(a.profile.id, b.profile.id));
+    return !this.blocked.has(pairKey(a.id, b.id));
   }
 
   private disconnect(occupant: Occupant, reason: CloseReason): void {
-    this.leave(occupant.profile.id);
+    this.leave(occupant.id);
     try {
       occupant.close(reason);
     } catch {
@@ -301,7 +345,7 @@ export class RoomCore {
   }
 
   private deliver(occupant: Occupant, raw: string): void {
-    if (this.occupants.get(occupant.profile.id) !== occupant) return;
+    if (this.occupants.get(occupant.id) !== occupant) return;
     try {
       occupant.send(raw);
     } catch {

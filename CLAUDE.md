@@ -9,6 +9,7 @@ Early setup. The renderer is 3D (React Three Fiber), recorded in `docs/VISION.md
 ## Layout
 
 - `src/net/`: network protocol and room server (pure TypeScript, tested).
+- `server/`: Cloudflare Worker, Durable Objects and D1 schema. Pure, Node-tested modules sit in `server/src/`; the thin runtime adapters in `server/src/worker/` are type-checked with `server/tsconfig.json` against generated Workers types.
 - `src/audio/`: procedural Web Audio synthesis (tested).
 - `art/doll/`: layered 2D doll art and its compositor. Open `art/doll/compositor.html` in a browser to preview combinations.
 - `docs/VISION.md`: product decisions.
@@ -19,7 +20,9 @@ Early setup. The renderer is 3D (React Three Fiber), recorded in `docs/VISION.md
 Use Node.js 22.18 or newer.
 
 - `npm test`: run all `src/**/*.test.ts` with Node's built-in test runner.
-- `npm run typecheck`: strict TypeScript check.
+- `npm run typecheck`: strict TypeScript check, including the Worker (regenerates `server/worker-configuration.d.ts`).
+- `npm run dev:server`: local `wrangler dev`. Apply migrations first with `npx wrangler d1 migrations apply DB --local --config server/wrangler.jsonc`.
+- `npm run smoke:server`: starts a throwaway local `wrangler dev` and checks guests, rooms, chat, blocks, reconnects and accounts end to end. Never run `wrangler deploy` or log in to Cloudflare without the user's approval.
 - `npm run format` / `npm run format:check`: Prettier.
 - `npm run verify`: tests, typecheck and format check.
 

@@ -10,5 +10,6 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["src", "server"]
+  "include": ["src", "server"],
+  "exclude": ["server/src/worker", "server/worker-configuration.d.ts"]
 }

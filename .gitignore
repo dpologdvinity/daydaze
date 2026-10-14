@@ -11,3 +11,8 @@ dist
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# Wrangler local state
+.wrangler
+.dev.vars
+server/worker-configuration.d.ts

@@ -5,10 +5,13 @@
   "type": "module",
   "scripts": {
     "test": "node --experimental-strip-types --test --test-isolation=none \"src/**/*.test.ts\" \"server/**/*.test.ts\"",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && npm run typecheck:server",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "verify": "npm test && npm run typecheck && npm run format:check"
+    "verify": "npm test && npm run typecheck && npm run format:check",
+    "typecheck:server": "wrangler types --config server/wrangler.jsonc server/worker-configuration.d.ts > /dev/null && tsc --noEmit -p server",
+    "dev:server": "wrangler dev --config server/wrangler.jsonc",
+    "smoke:server": "node server/scripts/smoke.mjs"
   },
   "engines": {
     "node": ">=22.18.0"
@@ -16,6 +19,7 @@
   "devDependencies": {
     "@types/node": "^24.19.1",
     "prettier": "^3.9.9",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "wrangler": "^4.148.0"
   }
 }

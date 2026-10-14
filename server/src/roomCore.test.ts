@@ -6,6 +6,7 @@ import {
   type EntityDelta,
   type ServerMessage,
 } from "../../src/net/networkProtocol.ts";
+import { DEFAULT_LOOK } from "../../src/game/look.ts";
 import {
   MAX_INVALID_MESSAGES,
   RoomCore,
@@ -13,19 +14,14 @@ import {
   type RoomPlayer,
 } from "./roomCore.ts";
 
-const square: [number, number][] = [
-  [0, 0],
-  [10, 0],
-  [10, 10],
-  [0, 10],
-];
+const look = DEFAULT_LOOK;
+const otherLook = { ...DEFAULT_LOOK, hairStyle: "ponytail" };
 
 function setup(capacity?: number) {
   const clock = { t: 0 };
   const room = new RoomCore({
-    roomId: "plaza-1",
+    roomId: "plaza",
     capacity,
-    walkable: square,
     now: () => clock.t,
   });
   function join(id: string, overrides: Partial<RoomPlayer> = {}) {
@@ -37,7 +33,7 @@ function setup(capacity?: number) {
         name: `Name-${id}`,
         isGuest: false,
         isAdmin: false,
-        look: { hair: "bob" },
+        look,
         ...overrides,
       },
       (raw) => {
@@ -78,29 +74,29 @@ test("joining sends a snapshot and every occupant's profile, and announces the n
   assert.deepEqual(b.received.slice(0, 2), [
     {
       type: "snapshot",
-      roomId: "plaza-1",
+      roomId: "plaza",
       entities: [entity("a", { x: 2, z: 3 })],
     },
     {
       type: "profile",
-      roomId: "plaza-1",
+      roomId: "plaza",
       id: "a",
       name: "Name-a",
-      look: { hair: "bob" },
+      look,
     },
   ]);
   assert.deepEqual(ofType(a.received, "profile"), [
     {
       type: "profile",
-      roomId: "plaza-1",
+      roomId: "plaza",
       id: "b",
       name: "Name-b",
-      look: { hair: "bob" },
+      look,
     },
   ]);
   assert.deepEqual(ofType(a.received, "occupancy").at(-1), {
     type: "occupancy",
-    roomId: "plaza-1",
+    roomId: "plaza",
     count: 2,
   });
   assert.equal(room.occupancy(), 2);
@@ -113,10 +109,16 @@ test("joins are rejected when invalid, duplicated, full or banned", () => {
     ok: false,
     reason: "invalid",
   });
-  assert.deepEqual(join("x", { look: { hair: 1 } }).result, {
-    ok: false,
-    reason: "invalid",
-  });
+  for (const overrides of [
+    { name: "x" },
+    { name: "Bad\u00e9name" },
+    { look: { hair: 1 } },
+    { look: { ...DEFAULT_LOOK, skin: "#000001" } },
+  ])
+    assert.deepEqual(join("x", overrides).result, {
+      ok: false,
+      reason: "invalid",
+    });
   join("admin", { isAdmin: true });
   join("b");
   assert.deepEqual(join("b").result, { ok: false, reason: "invalid" });
@@ -140,8 +142,8 @@ test("updates broadcast a delta under the session id, clamped to the walkable fl
   assert.deepEqual(ofType(a.received, "delta"), [
     {
       type: "delta",
-      roomId: "plaza-1",
-      entity: entity("b", { x: 10, z: 4, timestamp: 5 }),
+      roomId: "plaza",
+      entity: entity("b", { x: 12, z: 4, timestamp: 5 }),
     },
   ]);
   assert.deepEqual(b.received, []);
@@ -162,7 +164,7 @@ test("a join message updates the look, ignores the client's name and moves the a
       type: "join",
       roomId: "anything",
       name: "Impostor",
-      look: { hair: "mohawk" },
+      look: otherLook,
       entity: entity("b", { x: 4 }),
     }),
   );
@@ -170,10 +172,10 @@ test("a join message updates the look, ignores the client's name and moves the a
   assert.deepEqual(ofType(a.received, "profile"), [
     {
       type: "profile",
-      roomId: "plaza-1",
+      roomId: "plaza",
       id: "b",
       name: "Name-b",
-      look: { hair: "mohawk" },
+      look: otherLook,
     },
   ]);
   assert.equal(ofType(a.received, "delta")[0]?.entity.x, 4);
@@ -267,10 +269,10 @@ test("a blocked pair never receives each other's entities, profiles, chat or emo
 
   room.block("a", "b");
   assert.deepEqual(a.received, [
-    { type: "entity-leave", roomId: "plaza-1", id: "b" },
+    { type: "entity-leave", roomId: "plaza", id: "b" },
   ]);
   assert.deepEqual(b.received, [
-    { type: "entity-leave", roomId: "plaza-1", id: "a" },
+    { type: "entity-leave", roomId: "plaza", id: "a" },
   ]);
   a.received.length = 0;
   b.received.length = 0;
@@ -316,7 +318,7 @@ test("only a present admin can kick or ban, and the target's socket is closed", 
   assert.equal(room.kick("admin", "b"), true);
   assert.deepEqual(b.closed, ["kicked"]);
   assert.deepEqual(ofType(admin.received, "entity-leave"), [
-    { type: "entity-leave", roomId: "plaza-1", id: "b" },
+    { type: "entity-leave", roomId: "plaza", id: "b" },
   ]);
   assert.equal(room.occupancy(), 2);
   assert.deepEqual(join("b").result, { ok: true });
@@ -352,8 +354,8 @@ test("leaving announces the departure once and unknown senders are ignored", () 
   room.handle("b", chat("ghost"));
   room.handle("nobody", chat("ghost"));
   assert.deepEqual(a.received, [
-    { type: "entity-leave", roomId: "plaza-1", id: "b" },
-    { type: "occupancy", roomId: "plaza-1", count: 1 },
+    { type: "entity-leave", roomId: "plaza", id: "b" },
+    { type: "occupancy", roomId: "plaza", count: 1 },
   ]);
 });
 
@@ -362,7 +364,7 @@ test("a send that throws drops that player while the broadcast continues", () =>
   const a = join("a");
   let fail = false;
   room.join(
-    { id: "broken", name: "B", isGuest: false, isAdmin: false, look: {} },
+    { id: "broken", name: "Broken", isGuest: false, isAdmin: false, look },
     () => {
       if (fail) throw new Error("socket gone");
     },
@@ -377,25 +379,41 @@ test("a send that throws drops that player while the broadcast continues", () =>
   assert.equal(c.result.ok, true);
 });
 
-test("constructor rejects bad room ids, capacities and walkable areas", () => {
+test("constructor rejects unknown rooms and bad capacities", () => {
   const now = () => 0;
   for (const options of [
-    { roomId: "", walkable: square, now },
-    { roomId: "r".repeat(65), walkable: square, now },
-    { roomId: "r", capacity: 0, walkable: square, now },
-    { roomId: "r", capacity: 1.5, walkable: square, now },
-    { roomId: "r", capacity: 513, walkable: square, now },
-    { roomId: "r", walkable: square.slice(0, 2), now },
-    {
-      roomId: "r",
-      walkable: [...square.slice(0, 3), [NaN, 0] as [number, number]],
-      now,
-    },
+    { roomId: "", now },
+    { roomId: "nowhere", now },
+    { roomId: "toString", now },
+    { roomId: "plaza", capacity: 0, now },
+    { roomId: "plaza", capacity: 1.5, now },
+    { roomId: "plaza", capacity: 513, now },
   ])
     assert.throws(() => new RoomCore(options), TypeError);
-  assert.equal(
-    new RoomCore({ roomId: "r", walkable: square, now }).occupancy(),
-    0,
+  assert.equal(new RoomCore({ roomId: "mango-room", now }).occupancy(), 0);
+});
+
+test("the walkable floor comes from the room definition", () => {
+  const room = new RoomCore({ roomId: "mango-room", now: () => 0 });
+  const received: ServerMessage[] = [];
+  const player = { isGuest: false, isAdmin: false, look };
+  room.join(
+    { ...player, id: "a", name: "Alpha" },
+    (raw) => {
+      const message = decodeServerMessage(raw);
+      if (message) received.push(message);
+    },
+    () => {},
+  );
+  room.join(
+    { ...player, id: "b", name: "Bravo" },
+    () => {},
+    () => {},
+  );
+  room.handle("b", update(entity("b", { x: -20, z: 0 })));
+  assert.deepEqual(
+    ofType(received, "delta").map((m) => [m.entity.x, m.entity.z]),
+    [[-5.3, 0]],
   );
 });
 
@@ -403,4 +421,81 @@ test("capacity defaults to 60", () => {
   const { join } = setup();
   for (let i = 0; i < 60; i++) assert.equal(join(`p${i}`).result.ok, true);
   assert.deepEqual(join("late").result, { ok: false, reason: "full" });
+});
+
+test("restore re-registers sockets silently after the room wakes from hibernation", () => {
+  const room = new RoomCore({ roomId: "plaza", now: () => 0 });
+  const received: string[] = [];
+  const player = { isGuest: false, isAdmin: false, look };
+  assert.equal(
+    room.restore(
+      { ...player, id: "a", name: "Alpha" },
+      (raw) => received.push(raw),
+      () => {},
+    ),
+    true,
+  );
+  room.restore(
+    { ...player, id: "b", name: "Bravo" },
+    () => {},
+    () => {},
+  );
+  assert.equal(
+    room.restore(
+      { ...player, id: "b", name: "Bravo" },
+      () => {},
+      () => {},
+    ),
+    false,
+  );
+  assert.equal(
+    room.restore(
+      { ...player, id: "c", name: "" },
+      () => {},
+      () => {},
+    ),
+    false,
+  );
+  assert.deepEqual(received, []);
+  assert.equal(room.occupancy(), 2);
+  room.handle("b", update(entity("b")));
+  assert.equal(decodeServerMessage(received[0])?.type, "delta");
+});
+
+test("look reports each occupant's current look", () => {
+  const { room, join } = setup();
+  join("a");
+  assert.deepEqual(room.look("a"), look);
+  room.handle(
+    "a",
+    encodeClientMessage({
+      type: "join",
+      roomId: "plaza",
+      name: "Alpha",
+      look: otherLook,
+      entity: entity("a"),
+    }),
+  );
+  assert.deepEqual(room.look("a"), otherLook);
+  assert.equal(room.look("nobody"), null);
+});
+
+test("a join message with a shape-valid but non-catalog look counts as invalid", () => {
+  const { room, join } = setup();
+  const a = join("a");
+  const b = join("b");
+  a.received.length = 0;
+  const raw = encodeClientMessage({
+    type: "join",
+    roomId: "plaza",
+    name: "Bravo",
+    look: { hair: "bob" },
+    entity: entity("b"),
+  });
+  for (let i = 0; i < MAX_INVALID_MESSAGES; i++) room.handle("b", raw);
+  assert.deepEqual(
+    a.received.filter((m) => m.type === "profile"),
+    [],
+  );
+  assert.deepEqual(b.closed, ["invalid-messages"]);
 });
