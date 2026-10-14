@@ -1,0 +1,138 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { DEFAULT_LOOK } from "../../src/game/look.ts";
+import { createDefaultSave, serializeSave } from "../../src/game/save.ts";
+import {
+  MAX_SAVE_BYTES,
+  parseAttachment,
+  parseBlock,
+  parseCredentials,
+  parseIdentity,
+  parseLookParam,
+  parseReport,
+  parseSave,
+} from "./validation.ts";
+
+const identity = {
+  id: "g_abc",
+  name: "MangoGuest1234",
+  isGuest: true,
+  isAdmin: false,
+};
+
+test("identities need a network id, a display name and boolean flags", () => {
+  assert.deepEqual(parseIdentity({ ...identity, extra: 1 }), identity);
+  for (const bad of [
+    null,
+    "x",
+    { ...identity, id: "" },
+    { ...identity, name: "x" },
+    { ...identity, isGuest: "yes" },
+    { ...identity, isAdmin: 1 },
+  ])
+    assert.equal(parseIdentity(bad), null);
+});
+
+test("socket attachments carry identity, look, room and copy", () => {
+  const attachment = { identity, look: DEFAULT_LOOK, roomId: "plaza", copy: 2 };
+  assert.deepEqual(parseAttachment(attachment), attachment);
+  for (const bad of [
+    null,
+    { ...attachment, identity: null },
+    { ...attachment, look: { hair: "bob" } },
+    { ...attachment, roomId: "nowhere" },
+    { ...attachment, copy: 0 },
+  ])
+    assert.equal(parseAttachment(bad), null);
+});
+
+test("credentials need a clean display name and an 8 to 128 character password", () => {
+  assert.deepEqual(
+    parseCredentials({ username: "Kai_99", password: "hunter22" }),
+    { username: "Kai_99", password: "hunter22" },
+  );
+  for (const bad of [
+    null,
+    { username: "Kai" },
+    { username: "Kai", password: "short" },
+    { username: "K", password: "hunter22" },
+    { username: "xXniggerXx", password: "hunter22" },
+    { username: "Kai", password: 12345678 },
+  ])
+    assert.equal(parseCredentials(bad), null);
+});
+
+test("saves are stored only when loadSave keeps every field as sent", () => {
+  const save = {
+    ...createDefaultSave("Kai"),
+    settings: { quality: "low", muted: true },
+  };
+  const raw = JSON.stringify(save);
+  assert.deepEqual(parseSave(raw, "Fallback"), save);
+  // Key order does not matter.
+  const reordered = JSON.stringify({
+    settings: { muted: true, quality: "low" },
+    look: save.look,
+    name: "Kai",
+    version: 1,
+  });
+  assert.deepEqual(parseSave(reordered, "Fallback"), save);
+  for (const bad of [
+    "{",
+    "null",
+    "[]",
+    JSON.stringify({ ...save, look: { hair: "bob" } }),
+    JSON.stringify({ ...save, name: "x" }),
+    JSON.stringify({ ...save, version: 2 }),
+    JSON.stringify({ ...save, coins: 5 }),
+    JSON.stringify({ ...save, settings: { quality: "ultra", muted: true } }),
+  ])
+    assert.equal(parseSave(bad, "Fallback"), null, bad);
+});
+
+test("saves over 64 KB are rejected by UTF-8 size", () => {
+  const save = serializeSave(createDefaultSave("Kai"));
+  const padded = save.replace("{", `{${" ".repeat(MAX_SAVE_BYTES)}`);
+  assert.equal(parseSave(padded, "Kai"), null);
+  const multibyte = save.replace("{", `{${" ".repeat(MAX_SAVE_BYTES / 2)}`);
+  assert.ok(multibyte.length < MAX_SAVE_BYTES);
+  assert.equal(parseSave(multibyte, "Kai"), null);
+});
+
+test("reports need a target, a short reason and the room copy", () => {
+  const report = { targetId: "u_x", reason: "spam", roomId: "plaza", copy: 1 };
+  assert.deepEqual(parseReport(report), report);
+  for (const bad of [
+    { ...report, reason: "" },
+    { ...report, reason: "x".repeat(201) },
+    { ...report, targetId: "" },
+    { ...report, roomId: "nowhere" },
+    { ...report, copy: 100 },
+  ])
+    assert.equal(parseReport(bad), null);
+});
+
+test("blocks need a target and optionally the shared room copy", () => {
+  assert.deepEqual(parseBlock({ targetId: "u_x" }), {
+    targetId: "u_x",
+    room: null,
+  });
+  assert.deepEqual(parseBlock({ targetId: "u_x", roomId: "plaza", copy: 3 }), {
+    targetId: "u_x",
+    room: { roomId: "plaza", copy: 3 },
+  });
+  for (const bad of [
+    null,
+    { targetId: "" },
+    { targetId: "u_x", roomId: "plaza" },
+    { targetId: "u_x", roomId: "nowhere", copy: 1 },
+  ])
+    assert.equal(parseBlock(bad), null);
+});
+
+test("the look query parameter falls back to the default look", () => {
+  const look = { ...DEFAULT_LOOK, hairStyle: "buns" };
+  assert.deepEqual(parseLookParam(JSON.stringify(look)), look);
+  for (const bad of [null, "", "{", JSON.stringify({ hair: "bob" })])
+    assert.deepEqual(parseLookParam(bad), DEFAULT_LOOK);
+});
