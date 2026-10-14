@@ -65,6 +65,7 @@ export function CityScene({
     if (!last || Math.hypot(x - last[0], z - last[1]) > RELOAD_DISTANCE) {
       const at: Vec2 = [x, z];
       loadedAt.current = at;
+      // shortcut: planCity allocates a fresh plan on each 16 m reload, not per frame; stream into pooled buffers if reloads show up in a profile
       const plan = planCity(cellsWithin(at, VIEW_RADIUS), lightCount, at);
       for (const kind of KINDS)
         writeKind(meshes[kind], kind, plan.instances[kind]);
