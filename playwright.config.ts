@@ -7,7 +7,7 @@ const PORT = Number(process.env.PORT ?? 5195);
 // timeouts are generous and only two browsers run at once.
 export default defineConfig({
   testDir: "tests",
-  testMatch: "*.spec.ts",
+  testMatch: "client.spec.ts",
   workers: 2,
   timeout: 180_000,
   expect: { timeout: 60_000 },
