@@ -4,6 +4,7 @@ import {
   encodeServerMessage,
   isNetworkId,
   MAX_ROOM_ENTITIES,
+  normalizeYaw,
   type ClientMessage,
   type EntityDelta,
   type ServerMessage,
@@ -44,12 +45,16 @@ export function interpolateEntityState(
   );
   const ratio = Math.min(1, (clampedTimeMs - prev.timestamp) / span);
   let x = lerp(prev.x, next.x, ratio);
-  let y = lerp(prev.y, next.y, ratio);
+  let z = lerp(prev.z, next.z, ratio);
+  // Turn through the smaller arc so -3 → 3 rad crosses π instead of 0.
+  const yaw = normalizeYaw(
+    prev.yaw + normalizeYaw(next.yaw - prev.yaw) * ratio,
+  );
 
   if (clampedTimeMs > next.timestamp) {
     const dx = next.x - prev.x;
-    const dy = next.y - prev.y;
-    const distance = Math.hypot(dx, dy);
+    const dz = next.z - prev.z;
+    const distance = Math.hypot(dx, dz);
     if (distance > 0) {
       // Cap the scalar distance before projecting it: tiny spans may overflow
       // the speed estimate, but must never create Infinity/Infinity or 0*Infinity.
@@ -58,18 +63,15 @@ export function interpolateEntityState(
         distance * ((clampedTimeMs - next.timestamp) / span),
       );
       x = next.x + (dx / distance) * displacement;
-      y = next.y + (dy / distance) * displacement;
+      z = next.z + (dz / distance) * displacement;
     }
   }
-
-  const heading =
-    next.x !== prev.x ? (next.x < prev.x ? "left" : "right") : next.heading;
 
   return {
     id: next.id,
     x,
-    y,
-    heading,
+    z,
+    yaw,
     action: next.action,
     timestamp: clampedTimeMs,
   };
