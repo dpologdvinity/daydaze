@@ -8,6 +8,7 @@ test("every room is registered under its own id", () => {
     "amusement-park",
     "plaza",
     "velvet-room",
+    "water-park",
   ]);
   for (const [id, room] of Object.entries(ROOMS)) assert.equal(room.id, id);
 });
@@ -16,6 +17,7 @@ test("isRoomId accepts registered rooms only", () => {
   assert.equal(isRoomId("velvet-room"), true);
   assert.equal(isRoomId("plaza"), true);
   assert.equal(isRoomId("amusement-park"), true);
+  assert.equal(isRoomId("water-park"), true);
   for (const value of ["toString", "constructor", "Plaza", "", null, 1, {}]) {
     assert.equal(isRoomId(value), false, String(value));
   }
