@@ -9,6 +9,7 @@ import {
   serializeSave,
   type SaveV1,
 } from "../game/save.ts";
+import { CityJoystick } from "./city/CityJoystick.tsx";
 import { readFlags } from "./flags.ts";
 import { ReducedMotionContext, usePrefersReducedMotion } from "./motion.ts";
 import { ChatBar } from "./ui/ChatBar.tsx";
@@ -45,6 +46,10 @@ function visit(room: RoomId, spawn: Spawn): Visit {
 
 export function App() {
   const flags = useMemo(() => readFlags(window.location.search), []);
+  const touch = useMemo(
+    () => window.matchMedia("(pointer: coarse)").matches,
+    [],
+  );
   const reducedMotion = usePrefersReducedMotion();
   const [save, setSave] = useState(() =>
     loadSave(readStorage(), generateGuestName(Math.random)),
@@ -124,6 +129,7 @@ export function App() {
           view={view}
           setView={setView}
         />
+        {here.room === "city" && touch && <CityJoystick />}
         <ChatBar onSay={(text) => setChat({ text, at: Date.now() })} />
         {flags.debug && (
           <DebugPanel onGo={(room) => travel(room, ROOMS[room].spawn)} />
