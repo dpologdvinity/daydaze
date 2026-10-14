@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { DEFAULT_LOOK, type Look } from "./look.ts";
+import { DEFAULT_LOOK, DEFAULT_SWIM, type Look } from "./look.ts";
 import {
   SAVE_KEY,
   createDefaultSave,
@@ -27,6 +27,7 @@ test("createDefaultSave uses the default look and auto quality", () => {
     version: 1,
     name: "Mango Fan",
     look: DEFAULT_LOOK,
+    swim: DEFAULT_SWIM,
     settings: { quality: "auto", muted: false },
   });
 });
@@ -41,9 +42,38 @@ test("a save round-trips through serializeSave and loadSave", () => {
     version: 1,
     name: "Velvet_Kat-99",
     look: customLook,
+    swim: { style: "one-piece", color: "#ff2f9a" },
     settings: { quality: "low", muted: true },
   };
   assert.deepEqual(loadSave(serializeSave(save), "Fallback"), save);
+});
+
+test("a save from before the swimsuit slot still loads", () => {
+  const old = JSON.stringify({
+    version: 1,
+    name: "Velvet_Kat-99",
+    look: customLook,
+    settings: { quality: "low", muted: true },
+  });
+  assert.deepEqual(loadSave(old, "Fallback"), {
+    version: 1,
+    name: "Velvet_Kat-99",
+    look: customLook,
+    swim: DEFAULT_SWIM,
+    settings: { quality: "low", muted: true },
+  });
+});
+
+test("a bad swimsuit falls back without touching the outfit", () => {
+  const raw = JSON.stringify({
+    version: 1,
+    name: "Kept Name",
+    look: customLook,
+    swim: { style: "bikini", color: "#000001" },
+  });
+  const save = loadSave(raw, "Fallback");
+  assert.deepEqual(save.swim, DEFAULT_SWIM);
+  assert.deepEqual(save.look, customLook);
 });
 
 test("loadSave falls back to a default save for missing or broken data", () => {
@@ -64,6 +94,7 @@ test("loadSave keeps a valid name when the look is bad", () => {
     version: 1,
     name: "Kept Name",
     look: DEFAULT_LOOK,
+    swim: DEFAULT_SWIM,
     settings: { quality: "high", muted: true },
   });
 });
@@ -78,6 +109,7 @@ test("loadSave keeps a valid look when the name is bad", () => {
     version: 1,
     name: "Fallback",
     look: customLook,
+    swim: DEFAULT_SWIM,
     settings: { quality: "auto", muted: false },
   });
 });

@@ -1,4 +1,11 @@
-import { DEFAULT_LOOK, validateLook, type Look } from "./look.ts";
+import {
+  DEFAULT_LOOK,
+  DEFAULT_SWIM,
+  validateLook,
+  validateSwim,
+  type Look,
+  type SwimLook,
+} from "./look.ts";
 
 export type Quality = "auto" | "high" | "low";
 
@@ -6,6 +13,7 @@ export type SaveV1 = {
   version: 1;
   name: string;
   look: Look;
+  swim: SwimLook;
   settings: { quality: Quality; muted: boolean };
 };
 
@@ -26,6 +34,7 @@ export function createDefaultSave(name: string): SaveV1 {
     version: 1,
     name,
     look: { ...DEFAULT_LOOK },
+    swim: { ...DEFAULT_SWIM },
     settings: { quality: "auto", muted: false },
   };
 }
@@ -48,6 +57,7 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
   const settings = fieldsOf(save.get("settings"));
   const name = save.get("name");
   const look = save.get("look");
+  const swim = save.get("swim");
   const quality = settings.get("quality");
   const muted = settings.get("muted");
   const defaults = createDefaultSave(
@@ -56,6 +66,8 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
   return {
     ...defaults,
     look: validateLook(look) ? { ...look } : defaults.look,
+    // saves from before the Water Park have no swimsuit slot yet
+    swim: validateSwim(swim) ? { ...swim } : defaults.swim,
     settings: {
       quality: isQuality(quality) ? quality : defaults.settings.quality,
       muted: typeof muted === "boolean" ? muted : defaults.settings.muted,

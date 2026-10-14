@@ -59,6 +59,7 @@ test("saves are stored only when loadSave keeps every field as sent", () => {
   // Key order does not matter.
   const reordered = JSON.stringify({
     settings: { muted: true, quality: "low" },
+    swim: { color: save.swim.color, style: save.swim.style },
     look: save.look,
     name: "Kai",
     version: 1,
@@ -69,6 +70,7 @@ test("saves are stored only when loadSave keeps every field as sent", () => {
     "null",
     "[]",
     JSON.stringify({ ...save, look: { hair: "bob" } }),
+    JSON.stringify({ ...save, swim: { style: "thong", color: "#3fe0d0" } }),
     JSON.stringify({ ...save, name: "x" }),
     JSON.stringify({ ...save, version: 2 }),
     JSON.stringify({ ...save, coins: 5 }),

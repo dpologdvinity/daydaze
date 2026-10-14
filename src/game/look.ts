@@ -117,6 +117,39 @@ export function validateLook(value: unknown): value is Look {
   );
 }
 
+export const SWIMSUITS = [
+  { id: "one-piece", label: "One-piece" },
+  { id: "bikini", label: "Bikini" },
+] as const;
+
+export type Swimsuit = IdOf<typeof SWIMSUITS>;
+
+/** The Water Park look: its own save slot, so the outfit is never touched. */
+export type SwimLook = {
+  style: Swimsuit;
+  color: IdOf<typeof OUTFIT_COLORS>;
+};
+
+export const DEFAULT_SWIM: SwimLook = { style: "bikini", color: "#3fe0d0" };
+
+export function validateSwim(value: unknown): value is SwimLook {
+  if (typeof value !== "object" || value === null) return false;
+  const fields = new Map<string, unknown>(Object.entries(value));
+  return (
+    fields.size === 2 &&
+    isId(SWIMSUITS, fields.get("style")) &&
+    isId(OUTFIT_COLORS, fields.get("color"))
+  );
+}
+
+/** What the doll wears in a room: the swimsuit in swimwear rooms, else null. */
+export function swimFor(
+  room: { swimwear?: boolean },
+  swim: SwimLook,
+): SwimLook | null {
+  return room.swimwear ? swim : null;
+}
+
 export function isMood(value: unknown): value is Mood {
   return isId(MOODS, value);
 }
