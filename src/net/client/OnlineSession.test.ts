@@ -332,3 +332,79 @@ test("leaving closes the socket and forgets everyone", async () => {
   assert.equal(session.status(), "ready");
   assert.equal(session.room(), null);
 });
+
+const account = { id: "u_acct", name: "Kai", isGuest: false, isAdmin: false };
+
+test("adoptIdentity rejoins the same room copy as the signed-in account, in place", async () => {
+  const routes: Routes = {};
+  const { session, socket } = await joined(routes);
+  session.setLook(otherLook);
+  session.sendMove(3, 4, 1, "idle");
+  routes["GET /api/me"] = () => json(account);
+
+  const adopting = session.adoptIdentity();
+  await flush();
+  assert.equal(socket.closedWith, 1000);
+  const next = FakeSocket.latest();
+  assert.notEqual(next, socket);
+  const url = new URL(next.url);
+  assert.equal(url.pathname, "/ws/room/plaza/1");
+  assert.deepEqual(JSON.parse(url.searchParams.get("look") ?? ""), otherLook);
+  next.open();
+  serve(next, snapshot());
+  assert.deepEqual(await adopting, {
+    identity: account,
+    join: { ok: true, copy: 1 },
+  });
+  assert.deepEqual(session.identity(), account);
+  const [join] = sentBy(next);
+  assert.ok(join.type === "join");
+  assert.equal(join.entity.id, account.id);
+  assert.equal(join.name, account.name);
+  assert.deepEqual([join.entity.x, join.entity.z, join.entity.yaw], [3, 4, 1]);
+});
+
+test("adoptIdentity outside a room only refreshes who we are", async () => {
+  const routes: Routes = {};
+  const { session } = setup(routes);
+  await session.start();
+  routes["GET /api/me"] = () => json(account);
+  assert.deepEqual(await session.adoptIdentity(), {
+    identity: account,
+    join: null,
+  });
+  assert.equal(FakeSocket.instances.length, 0);
+  assert.equal(session.status(), "ready");
+});
+
+test("after logout adoptIdentity carries on as a fresh guest", async () => {
+  const routes: Routes = {};
+  const { session } = await joined(routes);
+  const guest = { ...me, id: "g_fresh", name: "JuicySlice4321" };
+  routes["GET /api/me"] = () => json({ error: "no-session" }, 401);
+  routes["POST /api/guest"] = () => json(guest, 201);
+  const adopting = session.adoptIdentity();
+  await flush();
+  FakeSocket.latest().open();
+  serve(FakeSocket.latest(), snapshot());
+  const result = await adopting;
+  assert.deepEqual(result.identity, guest);
+  assert.ok(result.join?.ok);
+});
+
+test("adoptIdentity goes offline when the server has gone away", async () => {
+  const routes: Routes = {};
+  const { session, socket } = await joined(routes);
+  const down = () => {
+    throw new TypeError("fetch failed");
+  };
+  routes["GET /api/me"] = down;
+  routes["POST /api/guest"] = down;
+  assert.deepEqual(await session.adoptIdentity(), {
+    identity: null,
+    join: null,
+  });
+  assert.equal(socket.closedWith, 1000);
+  assert.equal(session.status(), "offline");
+  assert.equal(session.room(), null);
+});

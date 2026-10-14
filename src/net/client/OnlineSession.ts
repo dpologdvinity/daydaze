@@ -147,20 +147,55 @@ export class OnlineSession {
   }
 
   /** Joins the least-full copy, moving on to the next one while copies are full. */
-  async joinRoom(roomId: RoomId, look: Look): Promise<JoinOutcome> {
+  joinRoom(roomId: RoomId, look: Look): Promise<JoinOutcome> {
+    const { position, yaw } = ROOMS[roomId].spawn;
+    return this.enter(roomId, look, {
+      x: position[0],
+      z: position[1],
+      yaw,
+      action: "idle",
+    });
+  }
+
+  /**
+   * Call after login, signup or logout: re-reads the cookie session (or becomes
+   * a guest) and rejoins the current room copy, in place, as that identity.
+   */
+  async adoptIdentity(): Promise<{
+    identity: Identity | null;
+    join: JoinOutcome | null;
+  }> {
+    const room = this.current;
+    const look = this.look;
+    const pose = this.pose;
+    // The old socket still speaks for the old identity: drop it first.
+    this.leaveRoom();
+    const identity = await this.start();
+    if (!identity || !room || !look) return { identity, join: null };
+    return {
+      identity,
+      join: await this.enter(room.roomId, look, pose, room.copy),
+    };
+  }
+
+  private async enter(
+    roomId: RoomId,
+    look: Look,
+    pose: Pose,
+    preferredCopy?: number,
+  ): Promise<JoinOutcome> {
     if (!this.self) return { ok: false, reason: "offline" };
     this.leaveRoom();
     this.look = { ...look };
-    const { position, yaw } = ROOMS[roomId].spawn;
-    this.pose = { x: position[0], z: position[1], yaw, action: "idle" };
+    this.pose = pose;
     const listing = await this.api.rooms(roomId);
     if (!listing.ok) return { ok: false, reason: "network" };
     const { pick, copies } = listing.value;
     const open = copies.filter((copy) => !copy.full).map(({ copy }) => copy);
     const highest = Math.max(pick, ...copies.map(({ copy }) => copy));
-    const candidates = [...new Set([pick, ...open, highest + 1])].filter(
-      (copy) => copy <= MAX_COPY,
-    );
+    const candidates = [
+      ...new Set([preferredCopy ?? pick, pick, ...open, highest + 1]),
+    ].filter((copy) => copy <= MAX_COPY);
     for (const copy of candidates) {
       const attempt = await this.connect(roomId, copy);
       if (attempt === "joined") return { ok: true, copy };
