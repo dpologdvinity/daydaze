@@ -28,7 +28,7 @@ The world is a set of districts joined by portals, with Downtown Plaza as the hu
 | Park and Gardens | picnic lawn, boating lake, night-sky lookout |
 | 18+ area (behind the age gate) | strip club, weed lounge |
 
-The current lounge, "The Mango Room", is renamed so that no venue is mango-branded.
+The current lounge, "The Mango Room", is renamed **The Velvet Room** so that no venue is mango-branded.
 
 ### Rides
 
@@ -44,7 +44,7 @@ A ride is a place feature that moves the player's doll along a fixed path while 
 
 | Game | Place | Mode | Difficulty | Theme |
 |---|---|---|---|---|
-| DJ rhythm (exists, re-theme) | dance club | solo | hard | music |
+| Bassline DJ rhythm (exists as Mango Decks, renaming) | dance club | solo | hard | music |
 | Last Call cocktail mixing (exists, re-theming) | rooftop bar | solo | easy | bartending |
 | Karaoke | karaoke bar | solo or multi | easy | music |
 | Speed slide race | Water Park | multi | medium | water |
@@ -86,15 +86,15 @@ Drinks and weed are free props: a player grabs one at a bar or the lounge. Alcoh
 
 ## Build order
 
-1. Multiplayer wiring in the 3D client.
-2. Water Park district, including the swimsuit slot.
-3. Amusement Park district.
+1. Water Park district, including the swimsuit slot.
+2. Amusement Park district.
+3. Speedway: race track and bumper cars.
 4. Nightlife Row, including the lesbian bar, and the drunk effect.
-5. The remaining districts. The weed lounge and high effect ship with the 18+ area after the age gate.
+5. Multiplayer wiring in the 3D client, after the first districts.
+6. The remaining districts. The weed lounge and high effect ship with the 18+ area after the age gate.
 
-New games ship one per batch alongside the districts, alternating solo and multiplayer.
+New games ship one per batch alongside the districts, alternating solo and multiplayer. Multiplayer-only games are playable against simple bots, or as local turns, until multiplayer is wired.
 
 ## Open questions
 
-- Water Park first or Amusement Park first.
-- Names for the renamed lounge and the DJ game.
+None. Names are placeholders the user may change later.
