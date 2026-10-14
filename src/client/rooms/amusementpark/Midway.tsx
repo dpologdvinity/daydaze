@@ -3,7 +3,6 @@ import * as THREE from "three";
 import { stringPoints, type Vec3 } from "../../../game/amusementPark.ts";
 import { BOOTHS, type Booth as BoothSpec } from "./layout.ts";
 import { Bulbs } from "./Bulbs.tsx";
-import { Boxes, type Box } from "./Instanced.tsx";
 import { useStripes } from "./Rides.tsx";
 import { LACQUER } from "../shared/materials.ts";
 import { MARQUEE, NeonText } from "../shared/Neon.tsx";
@@ -46,41 +45,19 @@ function Wire({ a, b, sag }: { a: Vec3; b: Vec3; sag: number }) {
   );
 }
 
-// A booth's counter and back wall, in the midway's own frame, turned into world
-// boxes once so every booth shares a single instanced draw call.
-const BOOTH_BOXES: readonly Box[] = BOOTHS.flatMap(
-  ({ at, rot, accent }): Box[] => {
-    const toWorld = (
-      lx: number,
-      ly: number,
-      lz: number,
-    ): [number, number, number] => [
-      at[0] + lx * Math.cos(rot) + lz * Math.sin(rot),
-      ly,
-      at[1] - lx * Math.sin(rot) + lz * Math.cos(rot),
-    ];
-    return [
-      {
-        position: toWorld(0, 0.55, 0),
-        size: [2.6, 1.1, 1],
-        yaw: rot,
-        color: "#2b1238",
-      },
-      {
-        position: toWorld(0, 1.9, -0.4),
-        size: [2.8, 2.6, 0.12],
-        yaw: rot,
-        color: accent,
-      },
-    ];
-  },
-);
-
-/** One booth's awning and neon sign on the front. */
+/** One booth: a counter, a striped awning and a neon sign on the front. */
 function Booth({ sign, color, accent, at, rot }: BoothSpec) {
   const awning = useStripes(color, accent);
   return (
     <group position={[at[0], 0, at[1]]} rotation-y={rot}>
+      <mesh position={[0, 0.55, 0]}>
+        <boxGeometry args={[2.6, 1.1, 1]} />
+        <meshStandardMaterial color="#2b1238" roughness={0.6} />
+      </mesh>
+      <mesh position={[0, 1.9, -0.4]}>
+        <boxGeometry args={[2.8, 2.6, 0.12]} />
+        <meshStandardMaterial color={accent} roughness={0.5} />
+      </mesh>
       <mesh position={[0, 3.25, 0.2]} material={LACQUER}>
         <boxGeometry args={[3.1, 0.14, 1.9]} />
       </mesh>
@@ -104,7 +81,6 @@ function Booth({ sign, color, accent, at, rot }: BoothSpec) {
 export function Midway() {
   return (
     <>
-      <Boxes items={BOOTH_BOXES} />
       {BOOTHS.map((b) => (
         <Booth key={b.sign} {...b} />
       ))}

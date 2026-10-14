@@ -129,11 +129,7 @@ export function FerrisWheel() {
       </instancedMesh>
       <instancedMesh ref={cabins} args={[undefined, undefined, GONDOLAS]}>
         <boxGeometry args={[0.9, 0.7, 0.8]} />
-        <meshStandardMaterial
-          emissive="#ffffff"
-          emissiveIntensity={0.2}
-          roughness={0.5}
-        />
+        <meshStandardMaterial roughness={0.5} />
       </instancedMesh>
     </group>
   );
@@ -274,11 +270,7 @@ export function Coaster() {
       <Segments items={COASTER_PILLARS} />
       <instancedMesh ref={cars} args={[undefined, undefined, CAR_COUNT]}>
         <boxGeometry args={[0.9, 0.42, 1.3]} />
-        <meshStandardMaterial
-          emissive="#ff2f9a"
-          emissiveIntensity={0.35}
-          roughness={0.4}
-        />
+        <meshStandardMaterial roughness={0.4} />
       </instancedMesh>
     </group>
   );
