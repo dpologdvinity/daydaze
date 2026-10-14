@@ -1,15 +1,20 @@
 import { DurableObject } from "cloudflare:workers";
-import { createAuthLimiter, type AuthAction } from "../authLimits.ts";
+import {
+  createAuthLimiter,
+  type AuthAction,
+  type LimitScope,
+} from "../authLimits.ts";
 
 /**
- * One per client IP address: login, signup and guest budgets.
+ * One per client IP address (login, signup, guest, report and block budgets)
+ * or per player (report and block).
  * shortcut: buckets live in memory, so an evicted (idle) object starts full again; persist them if abuse shows up.
  */
 export class RateLimiter extends DurableObject<Env> {
   private readonly limiter = createAuthLimiter();
 
   /** 0 when allowed, otherwise seconds for Retry-After. */
-  take(action: AuthAction, key: string): number {
-    return this.limiter.take(action, key, Date.now());
+  take(action: AuthAction, key: string, scope: LimitScope): number {
+    return this.limiter.take(action, key, Date.now(), scope);
   }
 }
