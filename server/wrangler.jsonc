@@ -7,11 +7,18 @@
     "bindings": [
       { "name": "ROOMS", "class_name": "RoomInstance" },
       { "name": "DIRECTORY", "class_name": "Directory" },
+      { "name": "RATE_LIMITER", "class_name": "RateLimiter" },
     ],
   },
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["RoomInstance", "Directory"] },
+    { "tag": "v2", "new_sqlite_classes": ["RateLimiter"] },
   ],
+  "vars": {
+    // Browser origins allowed to call /api and open room sockets, besides the
+    // Worker's own origin. Production overrides this with the real site.
+    "ALLOWED_ORIGINS": "http://localhost:5173,http://127.0.0.1:5173",
+  },
   "d1_databases": [
     {
       "binding": "DB",
