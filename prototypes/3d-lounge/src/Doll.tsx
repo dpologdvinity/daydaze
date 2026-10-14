@@ -299,11 +299,18 @@ type PartProps = {
   outline?: Mat | null;
 } & Omit<ThreeElements["group"], "children">;
 
+// Outlines live on layer 1: the main camera sees them, the floor reflection
+// camera (default layer only) skips them, halving the dolls' reflected draws.
+export const OUTLINE_LAYER = 1;
+const outlineLayer = (m: THREE.Mesh | null) => m?.layers.set(OUTLINE_LAYER);
+
 function Part({ geometry, material, outline = OUTLINE, ...rest }: PartProps) {
   return (
     <group {...rest}>
       <mesh geometry={geometry} material={material} />
-      {outline && <mesh geometry={geometry} material={outline} />}
+      {outline && (
+        <mesh geometry={geometry} material={outline} ref={outlineLayer} />
+      )}
     </group>
   );
 }
@@ -505,11 +512,20 @@ export function Doll({ look, mood, walk, seed = 0, ...rest }: DollProps) {
               </group>
             ))}
             <mesh geometry={hair.main} material={m.hair} />
-            <mesh geometry={hair.main} material={HAIR_OUTLINE} />
+            <mesh
+              geometry={hair.main}
+              material={HAIR_OUTLINE}
+              ref={outlineLayer}
+            />
+            {hair.shell && <mesh geometry={hair.shell} material={m.hair} />}
             {hair.pony && (
               <group position={PONY_ROOT} ref={set("pony")}>
                 <mesh geometry={hair.pony} material={m.hair} />
-                <mesh geometry={hair.pony} material={HAIR_OUTLINE} />
+                <mesh
+                  geometry={hair.pony}
+                  material={HAIR_OUTLINE}
+                  ref={outlineLayer}
+                />
                 <Part geometry={G.scrunchie} material={m.cloth} />
               </group>
             )}

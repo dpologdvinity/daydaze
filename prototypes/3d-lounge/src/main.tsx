@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   Bloom,
   EffectComposer,
+  SMAA,
   ToneMapping,
   Vignette,
 } from "@react-three/postprocessing";
@@ -11,7 +12,7 @@ import { StrictMode, Suspense, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import * as THREE from "three";
 import type { OrbitControls as OrbitImpl } from "three-stdlib";
-import { Doll, type WalkState } from "./Doll";
+import { Doll, OUTLINE_LAYER, type WalkState } from "./Doll";
 import { BOOTH, Lounge, ROOM } from "./Lounge";
 import { DEFAULT_LOOK, NPC_LOOKS, type Look, type Mood } from "./looks";
 import { OFF } from "./flags";
@@ -95,13 +96,14 @@ function PlayerDoll({
 
 const VIEWS: Record<View, { off: THREE.Vector3; look: number }> = {
   room: { off: new THREE.Vector3(5.8, 5.4, 11), look: 1.0 },
-  full: { off: new THREE.Vector3(0.55, 1.15, 3.1), look: 0.95 },
+  full: { off: new THREE.Vector3(0.6, 1.1, 3.5), look: 0.88 },
   face: { off: new THREE.Vector3(0.2, 1.55, 1.3), look: 1.45 },
 };
 
 function CameraRig({ player, view }: { player: Player; view: View }) {
   const controls = useRef<OrbitImpl>(null);
   const { camera } = useThree();
+  camera.layers.enable(OUTLINE_LAYER);
   const last = useRef(player.pos.clone());
   const fly = useRef<{ view: View; t: number } | null>(null);
   const shown = useRef<View | null>(null);
@@ -127,11 +129,11 @@ function CameraRig({ player, view }: { player: Player; view: View }) {
               .applyAxisAngle(new THREE.Vector3(0, 1, 0), player.yaw);
       const base =
         fly.current.view === "room"
-          ? new THREE.Vector3(0.6, 0, -1)
+          ? new THREE.Vector3(1.7, 0, -1)
           : player.pos;
       const goalPos = base.clone().add(off);
       const goalTarget = base.clone().setY(v.look);
-      if (fly.current.view === "room") goalTarget.set(0.6, 1.0, -1.0);
+      if (fly.current.view === "room") goalTarget.set(1.7, 1.0, -1.0);
       const k = 1 - Math.exp(-dt * 5);
       camera.position.lerp(goalPos, k);
       c.target.lerp(goalTarget, k);
@@ -191,7 +193,7 @@ function App() {
             ))}
           <CameraRig player={player} view={view} />
           {!OFF.has("post") && (
-            <EffectComposer multisampling={OFF.has("msaa") ? 0 : 4}>
+            <EffectComposer multisampling={0}>
               <Bloom
                 mipmapBlur
                 luminanceThreshold={1}
@@ -201,6 +203,7 @@ function App() {
               />
               <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
               <Vignette offset={0.28} darkness={0.72} />
+              <SMAA />
             </EffectComposer>
           )}
         </Suspense>

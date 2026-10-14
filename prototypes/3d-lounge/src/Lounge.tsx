@@ -231,12 +231,12 @@ function Floor({ onPick }: { onPick: (p: THREE.Vector3) => void }) {
         <meshStandardMaterial color="#120814" metalness={0.6} roughness={0.3} />
       ) : (
         <MeshReflectorMaterial
-          blur={[400, 120]}
-          resolution={512}
+          blur={[260, 90]}
+          resolution={256}
           mixBlur={1}
-          mixStrength={3.2}
+          mixStrength={3.6}
           mixContrast={1.1}
-          roughness={0.55}
+          roughness={0.38}
           depthScale={1.1}
           minDepthThreshold={0.4}
           maxDepthThreshold={1.3}
@@ -445,9 +445,12 @@ function LionCrest(props: { position: [number, number, number] }) {
         <meshStandardMaterial
           attach="material"
           color="#ffffff"
-          metalness={0.9}
+          metalness={0.5}
           roughness={0.3}
           map={tex}
+          emissiveMap={tex}
+          emissive="#ffffff"
+          emissiveIntensity={0.55}
         />
       </mesh>
       <mesh material={GOLD}>
@@ -753,6 +756,75 @@ function Bar() {
   );
 }
 
+const LEOPARD = (() => {
+  const c = document.createElement("canvas");
+  c.width = c.height = 512;
+  const ctx = c.getContext("2d")!;
+  ctx.fillStyle = "#d39a52";
+  ctx.fillRect(0, 0, 512, 512);
+  let seed = 7;
+  const r = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 140; i++) {
+    const x = r() * 512,
+      y = r() * 512,
+      s = 9 + r() * 12;
+    ctx.fillStyle = "#b8682a";
+    ctx.beginPath();
+    ctx.ellipse(x, y, s, s * 0.8, r() * 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#2a1408";
+    ctx.lineWidth = 4 + r() * 3;
+    ctx.lineCap = "round";
+    for (let k = 0; k < 4; k++) {
+      const a = r() * Math.PI * 2;
+      ctx.beginPath();
+      ctx.arc(x, y, s, a, a + 0.6 + r() * 0.9);
+      ctx.stroke();
+    }
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return t;
+})();
+
+function Rug({
+  position,
+  size,
+  round,
+}: {
+  position: [number, number, number];
+  size: [number, number];
+  round?: boolean;
+}) {
+  const map = useMemo(() => {
+    const t = LEOPARD.clone();
+    t.repeat.set(size[0] / 1.6, size[1] / 1.6);
+    t.needsUpdate = true;
+    return t;
+  }, [size]);
+  return (
+    <group position={position}>
+      <mesh rotation-x={-Math.PI / 2} position-y={0.006}>
+        {round ? (
+          <circleGeometry args={[size[0] / 2, 48]} />
+        ) : (
+          <planeGeometry args={size} />
+        )}
+        <meshStandardMaterial map={map} roughness={0.95} />
+      </mesh>
+      <mesh rotation-x={-Math.PI / 2} position-y={0.004}>
+        {round ? (
+          <circleGeometry args={[size[0] / 2 + 0.07, 48]} />
+        ) : (
+          <planeGeometry args={[size[0] + 0.14, size[1] + 0.14]} />
+        )}
+        <meshStandardMaterial color="#ff2f9a" roughness={0.8} />
+      </mesh>
+    </group>
+  );
+}
+
 // ---------------------------------------------------------------- booth
 
 function sectorShape(r0: number, r1: number, a0: number, a1: number) {
@@ -988,7 +1060,7 @@ function Chandelier({ position }: { position: [number, number, number] }) {
         <mesh
           key={`b${t.r}`}
           position-y={t.y + 0.06}
-          material={neonMat("#ffd6a0", 3)}
+          material={neonMat("#ffd6a0", 1.8)}
         >
           <torusGeometry args={[t.r * 0.92, 0.01, 6, 48]} />
         </mesh>
@@ -1324,12 +1396,14 @@ export function Lounge({ onPick }: { onPick: (p: THREE.Vector3) => void }) {
       <Drape position={[-5.85, 0, 0.4]} />
       <Drape position={[-5.85, 0, 3.6]} color="#3a0a2e" />
       <Booth />
+      <Rug position={[BOOTH.x - 0.1, 0, BOOTH.z]} size={[1.85, 1.85]} round />
+      <Rug position={[-0.8, 0, -3.55]} size={[5.6, 0.95]} />
       <DanceFloor />
       <DiscoBall />
       <Chandelier position={[2.2, 3.5, -1.0]} />
       <Palm position={[-5.1, 0, -5.1]} />
       <Palm position={[-5.0, 0, -1.5]} scale={0.85} />
-      <Palm position={[5.0, 0, 4.6]} scale={1.1} />
+      <Palm position={[5.3, 0, 5.3]} scale={0.95} />
       <Palm position={[5.1, 0, -4.9]} scale={0.9} />
       {!OFF.has("sparkles") && (
         <Sparkles

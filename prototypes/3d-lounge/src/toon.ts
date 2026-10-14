@@ -89,7 +89,11 @@ export function makeHair(color: THREE.ColorRepresentation) {
     Math.min(1, hsl.s * 0.9),
     Math.min(0.92, hsl.l * 0.6 + 0.5),
   );
-  const m = new THREE.MeshToonMaterial({ color: base, gradientMap });
+  const m = new THREE.MeshToonMaterial({
+    color: base,
+    gradientMap,
+    side: THREE.DoubleSide,
+  });
   m.onBeforeCompile = (shader) => {
     shader.uniforms.uHairTime = hairTime;
     shader.uniforms.uShine = { value: shine };
@@ -122,15 +126,15 @@ export function makeHair(color: THREE.ColorRepresentation) {
           float jit = sin(vObj.x * 160.0 + vObj.z * 90.0) * sin(vObj.z * 140.0 - vObj.y * 30.0);
           vec3 N = normalize(normal);
           float ndh = dot(N, H);
-          float ring = 1.0 - smoothstep(0.015, 0.04, abs(ndh - 0.84 - 0.018 * jit));
+          float ring = 1.0 - smoothstep(0.006, 0.02, abs(ndh - 0.86 - 0.012 * jit));
           float ring2 = 1.0 - smoothstep(0.0, 0.012, abs(ndh - 0.95 - 0.01 * jit));
           float th = dot(normalize(vStrand), H);
           float aniso = pow(sqrt(max(0.0, 1.0 - th * th)), 12.0);
           float sheen = pow(max(ndh, 0.0), 6.0);
           outgoingLight += uShine * (ring * 0.8 + ring2 * 0.5) * aniso
-            + uSheen * sheen * 0.35;
+            + uSheen * sheen * 0.18;
           float f = 1.0 - max(dot(normalize(normal), V), 0.0);
-          outgoingLight += vec3(0.9, 0.35, 0.8) * smoothstep(0.66, 0.74, f) * 0.35;
+          outgoingLight += vec3(0.9, 0.35, 0.8) * smoothstep(0.7, 0.76, f) * 0.15;
         }
         #include <opaque_fragment>`,
       );
