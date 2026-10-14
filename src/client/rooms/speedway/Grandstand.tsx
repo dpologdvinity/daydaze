@@ -9,6 +9,7 @@ import type { Box } from "./strips.ts";
 export const GRANDSTAND_ORIGIN: Vec2 = [0, -23];
 
 const SHADOW = new THREE.Color("#241d40");
+const SKIN = new THREE.Color("#e6b48e");
 const ROWS = 5;
 const SEATS = 11;
 const FANS = [
@@ -38,6 +39,27 @@ export function Grandstand() {
         });
       }
     }
+    // fans on every third seat: a torso on the seat, a head on top
+    const torsos: Box[] = [];
+    const heads: Box[] = [];
+    seats.forEach((seat, n) => {
+      if (n % 3 !== 0) return;
+      torsos.push({
+        ...seat,
+        length: 1.1,
+        height: 0.7,
+        depth: 0.7,
+        color: seat.color,
+      });
+      heads.push({
+        ...seat,
+        y: seat.y + 0.7,
+        length: 0.4,
+        height: 0.4,
+        depth: 0.4,
+        color: SKIN,
+      });
+    });
     const rails: Box[] = [];
     for (let row = 0; row < ROWS; row++) {
       rails.push({
@@ -84,11 +106,13 @@ export function Grandstand() {
       height: 5.6,
       depth: 0.5,
     }));
-    return { seats, rails, roof, canopyEdge, posts };
+    return { seats, torsos, heads, rails, roof, canopyEdge, posts };
   }, []);
   return (
     <group position={[GRANDSTAND_ORIGIN[0], 0, GRANDSTAND_ORIGIN[1]]}>
       <Boxes boxes={parts.seats} />
+      <Boxes boxes={parts.torsos} />
+      <Boxes boxes={parts.heads} />
       <Boxes boxes={parts.rails} glow />
       <Boxes boxes={parts.roof} color="#15122b" />
       <Boxes boxes={parts.canopyEdge} glow />

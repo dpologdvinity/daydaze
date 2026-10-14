@@ -26,6 +26,7 @@ import { ARENA_ORIGIN, BumperArena } from "./speedway/BumperArena.tsx";
 import { CarMesh } from "./speedway/CarMesh.tsx";
 import { ChaseCamera } from "./speedway/ChaseCamera.tsx";
 import { Grandstand } from "./speedway/Grandstand.tsx";
+import { Locals } from "./speedway/Locals.tsx";
 import { NEON } from "./speedway/neon.ts";
 import { PitGarage } from "./speedway/PitGarage.tsx";
 import { RaceTrack } from "./speedway/Track.tsx";
@@ -195,6 +196,7 @@ export function Speedway({ onPick }: { onPick: PickHandler }) {
         onPick={onPick}
       />
       <PortalPads room={ROOMS.speedway} color="#ff4fb3" />
+      <Locals />
       <PitGarage />
       <Grandstand />
       <RaceTrack

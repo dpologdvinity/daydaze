@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { LINE_BANKS } from "./index.ts";
+import { pitCrewBank } from "./pit-crew.ts";
 import {
   ROLE_IDS,
   SITUATION_IDS,
@@ -191,4 +192,8 @@ test("the bank meets the target size", () => {
     0,
   );
   assert.ok(total >= MIN_TOTAL_LINES, `only ${total} lines`);
+});
+
+test("the pit crew has at least 10 lines for a finished race", () => {
+  assert.ok((pitCrewBank["event-ride-ended"] ?? []).length >= 10);
 });
