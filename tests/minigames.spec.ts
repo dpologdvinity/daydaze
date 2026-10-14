@@ -28,7 +28,7 @@ test("missed beats reset the streak, the result keeps the peak, and leaving pays
   await expect(page.locator(".md-streak")).toContainText("1 streak");
   await page.clock.runFor(1200);
   await expect(page.locator(".md-streak")).toContainText("0 streak");
-  await page.clock.runFor(17000);
+  await page.clock.fastForward(18000);
   await expect(page.getByRole("button", { name: "Play again" })).toBeFocused();
   await expect(page.locator(".md-stats")).toContainText("Peak streak1");
   await expect(page.locator(".md-grade")).toHaveText("Grade C");
@@ -41,7 +41,7 @@ test("missed beats reset the streak, the result keeps the peak, and leaving pays
   await page.getByRole("button", { name: "Hit lane D" }).click();
   await page.clock.runFor(500);
   await page.getByRole("button", { name: "Hit lane J" }).click();
-  await page.clock.runFor(18000);
+  await page.clock.fastForward(18000);
   await expect(page.locator(".md-stats")).toContainText("Score200");
   await page.clock.resume();
   expect(await axeViolations(page)).toEqual([]);
@@ -88,7 +88,7 @@ test("audio initialization failure still permits scoring and completion", async 
   await page.clock.runFor(500);
   await page.getByRole("button", { name: "Hit lane D" }).click();
   await expect(page.locator(".md-score strong")).toHaveText("100");
-  await page.clock.runFor(18000);
+  await page.clock.fastForward(18000);
   await page.getByRole("button", { name: "Leave the booth" }).click();
   await expect(payouts(page)).toHaveText(
     '[{"score":100,"peakStreak":1,"accuracy":3,"grade":"C"}]',
