@@ -1,7 +1,7 @@
 import { defineConfig } from "@playwright/test";
 
-// Override only when another worktree's server already holds 5196.
-const port = Number(process.env.MINIGAMES_PORT ?? 5196);
+// Override only when another worktree's server already holds 5296.
+const port = Number(process.env.MINIGAMES_PORT ?? 5296);
 
 export default defineConfig({
   testDir: "./tests",
