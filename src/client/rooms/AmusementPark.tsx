@@ -99,6 +99,7 @@ export function AmusementPark({
 }) {
   const clock = useThree((s) => s.clock);
   const gl = useThree((s) => s.gl);
+  const invalidate = useThree((s) => s.invalidate);
   const calm = useReducedMotion();
   const tiles = useMemo(
     () =>
@@ -142,14 +143,16 @@ export function AmusementPark({
   };
 
   useEffect(() => {
-    gl.domElement.dataset.rideState = "idle";
+    // the lazy-loaded scene mounts after the startup frames, so ask for a frame
+    // to let the environment map render in still mode
+    invalidate();
+    gl.domElement.dataset.rideState = ride.current.phase;
     // `?ride=coaster` boards straight away, for screenshots and tests
     const id = parseRide(
       new URLSearchParams(window.location.search).get("ride"),
     );
     if (!id) return;
-    const [x, z] = RIDES[id].spot;
-    player.pos.set(x, 0, z);
+    // no teleport: the camera follows any move of player.pos, and the seat pose takes over
     dispatch({ type: "board", ride: id });
     dispatch({ type: "arrive", now: clock.elapsedTime, calm });
     // runs once per visit to the park
