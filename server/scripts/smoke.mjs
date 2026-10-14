@@ -303,11 +303,11 @@ try {
   const first = await one.session.start();
   const second = await two.session.start();
   check(first?.isGuest && second?.isGuest, "OnlineSession.start makes guests");
-  const joinedOne = await one.session.joinRoom("mango-room", DEFAULT_LOOK);
-  const joinedTwo = await two.session.joinRoom("mango-room", DEFAULT_LOOK);
+  const joinedOne = await one.session.joinRoom("velvet-room", DEFAULT_LOOK);
+  const joinedTwo = await two.session.joinRoom("velvet-room", DEFAULT_LOOK);
   check(
     joinedOne.ok && joinedTwo.ok && joinedOne.copy === joinedTwo.copy,
-    "two OnlineSessions join the same Mango Room copy",
+    "two OnlineSessions join the same Velvet Room copy",
   );
   await waitFor(
     one.events,

@@ -1,6 +1,6 @@
 import type { Vec2 } from "./walk.ts";
 
-export type RoomId = "mango-room" | "plaza";
+export type RoomId = "velvet-room" | "plaza";
 
 export type Spawn = { position: Vec2; yaw: number };
 
@@ -21,12 +21,12 @@ export type RoomDefinition = {
 
 export type Portal = RoomDefinition["portals"][number];
 
-// Mango Room (prototype lounge): walls at x = +-6 and z = -6, open towards the
+// Velvet Room (prototype lounge): walls at x = +-6 and z = -6, open towards the
 // camera at z = +6. The prototype clamped walking to x +-5.3, z -3.9..5.5,
 // which keeps the player in front of the bar counter. The notch on the right
 // wall wraps the round booth at (4.2, 0.7); every vertex and chord stays at
 // least 1.9 m from its centre, the prototype's keep-out radius.
-const MANGO_ROOM_FLOOR: readonly Vec2[] = [
+const VELVET_ROOM_FLOOR: readonly Vec2[] = [
   [-5.3, -3.9],
   [5.3, -3.9],
   [5.3, -1.0],
@@ -61,10 +61,10 @@ const PLAZA_FLOOR: readonly Vec2[] = [
 ];
 
 export const ROOMS: Record<RoomId, RoomDefinition> = {
-  "mango-room": {
-    id: "mango-room",
-    name: "The Mango Room",
-    walkable: MANGO_ROOM_FLOOR,
+  "velvet-room": {
+    id: "velvet-room",
+    name: "The Velvet Room",
+    walkable: VELVET_ROOM_FLOOR,
     spawn: { position: [0.9, 1.6], yaw: 0.25 },
     portals: [
       {
@@ -85,12 +85,12 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
     spawn: { position: [0, 2], yaw: Math.PI },
     portals: [
       {
-        // The Mango Room storefront, centred on the back row.
-        id: "to-mango-room",
+        // The Velvet Room storefront, centred on the back row.
+        id: "to-velvet-room",
         position: [0, -6.3],
         radius: 0.7,
-        label: "To the Mango Room",
-        target: "mango-room",
+        label: "To the Velvet Room",
+        target: "velvet-room",
         targetSpawn: { position: [-3.8, -1.5], yaw: Math.PI / 2 },
       },
     ],

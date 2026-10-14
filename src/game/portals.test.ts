@@ -20,7 +20,7 @@ const room: RoomDefinition = {
       position: [1, 1],
       radius: 0.5,
       label: "A",
-      target: "mango-room",
+      target: "velvet-room",
       targetSpawn: { position: [0, 0], yaw: 0 },
     },
     {
@@ -28,7 +28,7 @@ const room: RoomDefinition = {
       position: [9, 9],
       radius: 1,
       label: "B",
-      target: "mango-room",
+      target: "velvet-room",
       targetSpawn: { position: [0, 0], yaw: 0 },
     },
   ],
