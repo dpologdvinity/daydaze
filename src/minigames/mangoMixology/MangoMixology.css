@@ -1,0 +1,846 @@
+.mx {
+  --brass: linear-gradient(180deg, #f6dc8f, #b8862e 45%, #6d4a16 100%);
+  --paper: #f7e7c6;
+}
+
+.mx-intro,
+.mx-result,
+.mx-bar {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  /* Back-bar mirror: faint shelf lines lit fuchsia and mango from the counter. */
+  background:
+    repeating-linear-gradient(
+      180deg,
+      transparent 0 118px,
+      rgb(255 255 255 / 0.06) 118px 120px
+    ),
+    radial-gradient(
+      ellipse at 50% 105%,
+      rgb(255 176 46 / 0.28),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse at 50% 120%,
+      rgb(255 47 154 / 0.5),
+      transparent 70%
+    ),
+    linear-gradient(180deg, var(--mg-plum), var(--mg-ink) 75%);
+}
+
+/* Intro and result */
+
+.mx-intro,
+.mx-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.mx-intro-glass {
+  width: clamp(140px, 26vh, 210px);
+  overflow: visible;
+  filter: drop-shadow(0 0 22px rgb(255 47 154 / 0.8));
+}
+
+.mx-intro-fill {
+  fill: var(--mg-mango);
+  opacity: 0.9;
+}
+
+.mx-lede {
+  max-width: 34ch;
+  margin: 0;
+  font-family: var(--mg-display);
+  font-size: clamp(22px, 3vw, 30px);
+  line-height: 1.3;
+}
+
+.mx-hint {
+  max-width: 46ch;
+  margin: 0;
+  color: var(--mg-lilac);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.mx-button {
+  min-height: 56px;
+  padding: 0 28px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background:
+    linear-gradient(var(--mg-ink), var(--mg-ink)) padding-box,
+    var(--mg-chrome) border-box;
+  color: var(--mg-champagne);
+  font: 700 17px/1 var(--mg-sans);
+  cursor: pointer;
+}
+
+.mx-button-hot {
+  background:
+    linear-gradient(var(--mg-fuchsia), var(--mg-fuchsia)) padding-box,
+    var(--mg-chrome) border-box;
+  color: var(--mg-ink);
+  box-shadow: 0 0 28px rgb(255 47 154 / 0.7);
+}
+
+.mx-button:disabled {
+  opacity: 0.4;
+  box-shadow: none;
+  cursor: default;
+}
+
+.mx-grade {
+  margin: 0;
+  font-family: var(--mg-display);
+  font-style: italic;
+  font-weight: 700;
+  font-size: clamp(120px, 22vh, 190px);
+  line-height: 0.9;
+  background: var(--mg-chrome);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 24px rgb(255 176 46 / 0.85));
+}
+
+.mx-result h3 {
+  margin: 0;
+  font-family: var(--mg-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(24px, 3.4vw, 34px);
+}
+
+.mx-stats {
+  display: flex;
+  gap: clamp(20px, 5vw, 56px);
+  margin: 4px 0;
+}
+
+.mx-stats dt {
+  color: var(--mg-lilac);
+  font-size: 14px;
+}
+
+.mx-stats dd {
+  margin: 4px 0 0;
+  font-size: 30px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.mx-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+}
+
+/* The bar */
+
+.mx-bar {
+  display: grid;
+  grid-template-columns: minmax(210px, 250px) minmax(220px, 1fr) minmax(
+      340px,
+      400px
+    );
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "book book book"
+    "ticket stage station"
+    "ticket action station";
+  gap: 14px 20px;
+  padding: 16px 20px 16px;
+  overflow: auto;
+}
+
+.mx-book-row {
+  grid-area: book;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mx-book {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+}
+
+.mx-slip {
+  display: grid;
+  flex: 1 0 0;
+  min-width: 112px;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgb(255 255 255 / 0.16);
+  background: rgb(7 2 11 / 0.6);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.mx-slip-guest {
+  font-weight: 700;
+}
+
+.mx-slip-drink {
+  overflow: hidden;
+  color: var(--mg-lilac);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mx-slip-state {
+  color: var(--mg-lilac);
+  font-variant-numeric: tabular-nums;
+}
+
+.mx-slip-done .mx-slip-state {
+  color: var(--mg-mango);
+  font-weight: 700;
+}
+
+.mx-slip-now {
+  border-color: var(--mg-fuchsia);
+  background: rgb(74 16 70 / 0.85);
+  box-shadow: 0 0 18px rgb(255 47 154 / 0.45);
+}
+
+.mx-slip-now .mx-slip-state {
+  color: var(--mg-champagne);
+}
+
+.mx-tally {
+  display: flex;
+  gap: 18px;
+  margin: 0;
+}
+
+.mx-tally dt {
+  color: var(--mg-lilac);
+  font-size: 13px;
+}
+
+.mx-tally dd {
+  margin: 0;
+  font-family: var(--mg-display);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 34px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--mg-mango);
+  text-shadow: 0 0 14px rgb(255 176 46 / 0.6);
+}
+
+/* The order ticket: a paper slip clipped to the rail, perforated at the top. */
+.mx-ticket {
+  grid-area: ticket;
+  align-self: start;
+  position: relative;
+  padding: 22px 18px 18px;
+  border-radius: 4px 4px 12px 12px;
+  background: var(--paper);
+  color: var(--mg-ink);
+  box-shadow:
+    0 14px 30px rgb(0 0 0 / 0.5),
+    0 0 0 1px rgb(255 255 255 / 0.4);
+  mask: radial-gradient(circle 5px at 8px 0, transparent 98%, #000) -8px 0 /
+    16px 100%;
+}
+
+.mx-doll {
+  float: right;
+  width: 64px;
+  margin: -6px -4px 4px 8px;
+  fill: hsl(var(--hue) 80% 52%);
+}
+
+.mx-doll-skin {
+  fill: hsl(var(--hue) 35% 22%);
+}
+
+.mx-doll-lips {
+  fill: var(--mg-fuchsia);
+}
+
+.mx-ticket-guest {
+  margin: 0;
+  font-size: 14px;
+}
+
+.mx-ticket h3 {
+  margin: 4px 0 14px;
+  font-family: var(--mg-display);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 23px;
+  line-height: 1.1;
+}
+
+.mx-recipe {
+  clear: both;
+  margin: 0 0 12px;
+  padding: 12px 0 0;
+  border-top: 1px dashed rgb(7 2 11 / 0.4);
+  list-style: none;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.mx-specs {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-top: 10px;
+  border-top: 1px dashed rgb(7 2 11 / 0.4);
+  font-size: 15px;
+}
+
+.mx-specs div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mx-specs dt {
+  color: #5a3b55;
+}
+
+.mx-specs dd {
+  margin: 0;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* The glass on the counter: the one loud thing on screen. */
+.mx-stage {
+  grid-area: stage;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 0;
+  padding-bottom: 30px;
+}
+
+.mx-stage::after {
+  content: "";
+  position: absolute;
+  inset: auto -8px 12px;
+  height: 14px;
+  border-radius: 7px;
+  background: var(--brass);
+  box-shadow:
+    0 -10px 40px rgb(255 176 46 / 0.45),
+    0 6px 14px rgb(0 0 0 / 0.6);
+}
+
+.mx-glass {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 300px);
+  max-height: 100%;
+  min-height: 0;
+  overflow: visible;
+  filter: drop-shadow(0 0 18px rgb(255 47 154 / 0.55));
+}
+
+.mx-glass-outline {
+  fill: rgb(255 255 255 / 0.06);
+  stroke: var(--mg-champagne);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mx-glass-ghost .mx-glass-outline {
+  stroke-dasharray: 8 9;
+  opacity: 0.55;
+}
+
+.mx-layer {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: mx-pour 260ms ease-out;
+}
+
+.mx-liquid {
+  transition: fill 400ms;
+}
+
+.mx-glass-mixing {
+  animation: mx-shake 180ms ease-in-out infinite alternate;
+}
+
+.mx-measures {
+  position: relative;
+  z-index: 1;
+  margin: 10px 0 0;
+  color: var(--mg-lilac);
+  font-size: 14px;
+}
+
+.mx-neon {
+  position: absolute;
+  top: 2%;
+  left: 50%;
+  width: min(92%, 320px);
+  translate: -50% 0;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: mx-flicker 7s infinite;
+}
+
+.mx-neon-fruit {
+  stroke: var(--mg-mango);
+  stroke-width: 4;
+  filter: drop-shadow(0 0 4px var(--mg-mango)) drop-shadow(0 0 16px #ff7a1a);
+}
+
+.mx-neon-leaf {
+  stroke: #3ef2a0;
+  stroke-width: 4;
+  filter: drop-shadow(0 0 4px #3ef2a0) drop-shadow(0 0 14px #1fbf7a);
+}
+
+/* A tired tube: two quick stutters every few seconds. */
+@keyframes mx-flicker {
+  0%,
+  90%,
+  92%,
+  95%,
+  100% {
+    opacity: 0.85;
+  }
+  91%,
+  94% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes mx-pour {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes mx-shake {
+  from {
+    transform: translate(-5px, 2px) rotate(-4deg);
+  }
+  to {
+    transform: translate(5px, -2px) rotate(4deg);
+  }
+}
+
+/* Garnishes */
+
+.mx-g-salt {
+  stroke: #fff;
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-dasharray: 1 5;
+}
+
+.mx-g-lime_wheel .mx-g-peel {
+  fill: #3a9a2c;
+}
+.mx-g-lime_wheel .mx-g-flesh {
+  fill: #c6ec6a;
+}
+.mx-g-lemon_wheel .mx-g-peel {
+  fill: #f0c419;
+}
+.mx-g-lemon_wheel .mx-g-flesh {
+  fill: #fff2a0;
+}
+.mx-g-lime_wheel path,
+.mx-g-lemon_wheel path {
+  stroke: rgb(255 255 255 / 0.8);
+  stroke-width: 1.5;
+}
+
+.mx-g-mint ellipse {
+  fill: #35b45e;
+}
+.mx-g-mint path {
+  stroke: #217a3b;
+  stroke-width: 2.5;
+}
+
+.mx-g-mango path {
+  fill: var(--mg-mango);
+}
+.mx-g-mango .mx-g-score {
+  fill: none;
+  stroke: #ffdd8a;
+  stroke-width: 2;
+}
+
+.mx-g-passion > circle:first-child {
+  fill: #6b2a6e;
+}
+.mx-g-passion .mx-g-pulp {
+  fill: #f2c230;
+}
+.mx-g-passion .mx-g-seed {
+  fill: #2a0b2e;
+}
+
+/* Station */
+
+.mx-station {
+  grid-area: station;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.mx-station fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.mx-station legend {
+  margin-bottom: 4px;
+  padding: 0;
+  font-family: var(--mg-display);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 19px;
+}
+
+.mx-pours,
+.mx-garnishes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.mx-glasses {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.mx-chip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 6px 10px;
+  border: 1px solid rgb(255 255 255 / 0.2);
+  border-radius: 12px;
+  background: rgb(42 11 46 / 0.75);
+  color: var(--mg-champagne);
+  font: 600 14px/1.2 var(--mg-sans);
+  text-align: left;
+  cursor: pointer;
+}
+
+.mx-chip:active {
+  transform: translateY(2px);
+}
+
+.mx-station fieldset:disabled .mx-chip {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.mx-drop {
+  flex: none;
+  width: 14px;
+  height: 18px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+}
+
+.mx-count {
+  margin-left: auto;
+  color: var(--mg-mango);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.mx-pick {
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.mx-pick svg {
+  width: 34px;
+  height: 34px;
+  overflow: visible;
+}
+
+.mx-glasses .mx-glass-outline {
+  stroke-width: 10;
+}
+
+.mx-garnishes .mx-pick {
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 6px;
+  text-align: left;
+}
+
+.mx-garnishes .mx-pick svg {
+  flex: none;
+  width: 26px;
+  height: 26px;
+}
+
+.mx-pick[aria-pressed="true"] {
+  border-color: var(--mg-fuchsia);
+  background: var(--mg-velvet);
+  box-shadow:
+    inset 0 0 0 1px var(--mg-fuchsia),
+    0 0 16px rgb(255 47 154 / 0.5);
+}
+
+/* Action: the mix meter, the serve button and the receipt. */
+.mx-action {
+  grid-area: action;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  align-content: center;
+  gap: 12px;
+  min-height: 136px;
+}
+
+.mx-action .mx-button {
+  white-space: nowrap;
+}
+
+/* A lone button under the meter, quality line or receipt takes the whole row. */
+.mx-action > .mx-button:only-of-type {
+  grid-column: 1 / -1;
+}
+
+.mx-meter {
+  position: relative;
+  grid-column: 1 / -1;
+  height: 26px;
+  border-radius: 13px;
+  background: rgb(255 255 255 / 0.1);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.25);
+}
+
+.mx-meter-good,
+.mx-meter-perfect {
+  position: absolute;
+  inset-block: 0;
+}
+
+.mx-meter-good {
+  background: rgb(255 176 46 / 0.4);
+}
+
+.mx-meter-perfect {
+  background: var(--mg-fuchsia);
+  box-shadow: 0 0 14px var(--mg-fuchsia);
+}
+
+.mx-needle {
+  position: absolute;
+  top: -6px;
+  bottom: -6px;
+  left: calc(var(--needle) * 100%);
+  width: 6px;
+  translate: -50% 0;
+  border-radius: 3px;
+  background: #fff;
+  box-shadow: 0 0 10px #fff;
+}
+
+.mx-quality {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-family: var(--mg-display);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 30px;
+  text-align: center;
+}
+
+.mx-quality-perfect {
+  color: var(--mg-mango);
+  text-shadow: 0 0 18px var(--mg-mango);
+}
+
+.mx-receipt {
+  grid-column: 1 / -1;
+}
+
+.mx-receipt-head {
+  margin: 0 0 6px;
+  font-family: var(--mg-display);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 26px;
+  text-align: center;
+}
+
+.mx-receipt ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+
+.mx-receipt li {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.2);
+}
+
+.mx-receipt .mx-earned strong {
+  color: var(--mg-mango);
+}
+
+.mx-receipt .mx-lost {
+  color: var(--mg-lilac);
+  text-decoration: line-through;
+}
+
+.mx-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .mx-bar {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(4, max-content);
+    grid-template-areas:
+      "book book"
+      "ticket stage"
+      "station station"
+      "action action";
+    gap: 12px;
+    padding: 10px 12px 0;
+  }
+
+  .mx-book-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .mx-book {
+    flex-basis: 100%;
+    order: 1;
+  }
+
+  .mx-slip {
+    flex: none;
+    min-width: 108px;
+  }
+
+  .mx-tally {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .mx-tally div {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .mx-tally dd {
+    font-size: 26px;
+  }
+
+  .mx-ticket {
+    padding: 18px 12px 12px;
+  }
+
+  .mx-doll {
+    width: 44px;
+  }
+
+  .mx-ticket h3 {
+    font-size: 20px;
+  }
+
+  .mx-recipe {
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .mx-specs {
+    font-size: 13px;
+  }
+
+  .mx-specs div {
+    display: block;
+  }
+
+  .mx-specs dd {
+    text-align: left;
+  }
+
+  .mx-stage {
+    padding-bottom: 26px;
+  }
+
+  .mx-glass {
+    width: 100%;
+  }
+
+  /* The next move stays under the thumb while the station scrolls. */
+  .mx-action {
+    position: sticky;
+    bottom: 0;
+    min-height: 0;
+    z-index: 2;
+    margin: 0 -12px;
+    padding: 12px;
+    background: linear-gradient(180deg, rgb(7 2 11 / 0.85), var(--mg-ink));
+    border-top: 1px solid rgb(255 47 154 / 0.5);
+  }
+}
+
+.mx-calm *,
+.mx-calm *::before,
+.mx-calm *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx *,
+  .mx *::before,
+  .mx *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

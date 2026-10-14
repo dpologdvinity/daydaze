@@ -2,27 +2,47 @@ import { StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { MangoDecks } from "./mangoDecks/MangoDecks.tsx";
 import type { Result } from "./mangoDecks/engine.ts";
+import { MangoMixology } from "./mangoMixology/MangoMixology.tsx";
+import type { Result as MixologyResult } from "./mangoMixology/engine.ts";
 
 // Standalone test bench until the 3D world launches minigames from hotspots.
 function Fixture() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<"decks" | "bar" | null>(null);
   const [payouts, setPayouts] = useState<Result[]>([]);
+  const [tips, setTips] = useState<MixologyResult[]>([]);
   const muted = new URLSearchParams(location.search).has("muted");
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
   return (
     <main style={{ padding: 24, background: "#07020b", minHeight: "100dvh" }}>
-      <button type="button" onClick={() => setOpen(true)}>
+      <button type="button" onClick={() => setOpen("decks")}>
         Open DJ booth
+      </button>
+      <button type="button" onClick={() => setOpen("bar")}>
+        Open the bar
       </button>
       <output aria-label="Mango Decks payouts" style={{ color: "#f7e7c6" }}>
         {JSON.stringify(payouts)}
       </output>
-      {open && (
+      <output aria-label="Mango Mixology payouts" style={{ color: "#f7e7c6" }}>
+        {JSON.stringify(tips)}
+      </output>
+      {open === "decks" && (
         <MangoDecks
           muted={muted}
-          reducedMotion={matchMedia("(prefers-reduced-motion: reduce)").matches}
+          reducedMotion={reducedMotion}
           onClose={(result) => {
-            setOpen(false);
+            setOpen(null);
             if (result) setPayouts((list) => [...list, result]);
+          }}
+        />
+      )}
+      {open === "bar" && (
+        <MangoMixology
+          muted={muted}
+          reducedMotion={reducedMotion}
+          onClose={(result) => {
+            setOpen(null);
+            if (result) setTips((list) => [...list, result]);
           }}
         />
       )}
