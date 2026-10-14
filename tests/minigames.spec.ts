@@ -142,3 +142,194 @@ test("reduced motion stills the crowd and lights but keeps notes falling", async
   await page.clock.runFor(500);
   await expect(page.locator(".md-lane-0 .md-note")).toHaveCount(1);
 });
+
+async function openBar(page: Page) {
+  await page.clock.install({ time: new Date("2026-10-14T22:00:00Z") });
+  await page.goto("/minigames.html");
+  await page.clock.pauseAt(new Date("2026-10-14T23:00:00Z"));
+  await page.getByRole("button", { name: "Open the bar" }).click();
+  await page.getByRole("button", { name: "Take the first order" }).click();
+}
+
+type Ticket = { pours: string[]; glass: string; garnish: string };
+
+/** Reads the drink off the recipe card the way a player would. */
+async function readTicket(page: Page): Promise<Ticket> {
+  const items = await page
+    .getByRole("list", { name: "Recipe card" })
+    .getByRole("listitem")
+    .allInnerTexts();
+  const pours = items.flatMap((item) => {
+    const [, label, count] = /^(.*?)(?: × (\d+))?$/.exec(item.trim()) ?? [];
+    return Array<string>(Number(count ?? 1)).fill(label);
+  });
+  const [glass, garnish] = await page.locator(".mx-specs dd").allInnerTexts();
+  return { pours, glass, garnish };
+}
+
+async function build(page: Page, ticket: Ticket, garnish = ticket.garnish) {
+  for (const name of [...ticket.pours, ticket.glass, garnish]) {
+    await page.getByRole("button", { name, exact: true }).click();
+  }
+}
+
+/** Stops the needle dead centre: it sweeps across and back every 1.6 s. */
+async function mixPerfectly(page: Page) {
+  await page.getByRole("button", { name: /^(Shake|Stir) it$/ }).click();
+  await page.clock.runFor(400);
+  await page.getByRole("button", { name: /^Stop (shaking|stirring)$/ }).click();
+  await expect(page.locator(".mx-quality")).toHaveText(/^Perfect/);
+  await page.clock.runFor(400);
+}
+
+const barPayouts = (page: Page) => page.getByLabel("Last Call payouts");
+
+test("the recipe card is what gets judged, and a perfect round pays once even when serving rapidly", async ({
+  page,
+}) => {
+  await openBar(page);
+  for (let order = 0; order < 5; order++) {
+    await build(page, await readTicket(page));
+    await mixPerfectly(page);
+    await page
+      .getByRole("button", { name: /^Serve / })
+      .evaluate((button: HTMLButtonElement) => {
+        button.click();
+        button.click();
+      });
+    const receipt = page.locator(".mx-receipt");
+    await expect(receipt).toContainText("tipped");
+    await expect(receipt.locator(".mx-lost")).toHaveCount(0);
+    const total = (await receipt.locator(".mx-receipt-head").innerText())
+      .split(" ")
+      .pop();
+    if (order === 0) {
+      await expect(page.locator(".mx-tally dd").first()).toHaveText(
+        total ?? "",
+      );
+    }
+    await expect(page.locator(".mx-tally dd").last()).toHaveText(
+      String(order + 1),
+    );
+    await page.clock.runFor(400);
+    await page
+      .getByRole("button", { name: /^(Next guest|Close out the round)$/ })
+      .click();
+  }
+  await expect(page.locator(".mx-grade")).toHaveText("Grade S");
+  await expect(page.locator(".mx-stats")).toContainText("Served5 of 5");
+  await expect(page.locator(".mx-stats")).toContainText("Perfect5");
+  const tips = await page.locator(".mx-stats dd").first().innerText();
+  await expect(barPayouts(page)).toHaveText("[]");
+  await page.getByRole("button", { name: "Close up" }).click();
+  await expect(barPayouts(page)).toHaveText(
+    `[{"tips":${tips},"served":5,"perfect":5,"grade":"S"}]`,
+  );
+  await expect(
+    page.getByRole("button", { name: "Open the bar" }),
+  ).toBeFocused();
+});
+
+test("a wrong garnish loses its tip and the streak, and leaving mid-round pays nothing", async ({
+  page,
+}) => {
+  await openBar(page);
+  const ticket = await readTicket(page);
+  // No drink on the menu takes a lime wheel.
+  await build(page, ticket, "Lime wheel");
+  await mixPerfectly(page);
+  await page.getByRole("button", { name: /^Serve / }).click();
+  const receipt = page.locator(".mx-receipt");
+  await expect(receipt.getByRole("listitem")).toHaveText([
+    /^Pour \+\d+$/,
+    "Glass +2",
+    "Garnish +0",
+    /^Perfect (shake|stir) \+3$/,
+    "Quick serve +3",
+  ]);
+  await expect(receipt.locator(".mx-lost")).toHaveText("Garnish +0");
+  await expect(page.locator(".mx-tally dd").last()).toHaveText("0");
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(barPayouts(page)).toHaveText("[]");
+  await expect(
+    page.getByRole("button", { name: "Open the bar" }),
+  ).toBeFocused();
+});
+
+test("audio failure cannot interrupt pouring, mixing or serving", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.addInitScript(() => {
+    Object.defineProperty(window, "AudioContext", {
+      value: class {
+        constructor() {
+          throw new Error("Audio unavailable");
+        }
+      },
+    });
+  });
+  await openBar(page);
+  await build(page, await readTicket(page));
+  await mixPerfectly(page);
+  await page.getByRole("button", { name: /^Serve / }).click();
+  await expect(page.locator(".mx-receipt")).toContainText("tipped");
+  expect(errors).toEqual([]);
+});
+
+test("the bar plays by keyboard alone, has big tap targets, and passes axe", async ({
+  page,
+}) => {
+  await openBar(page);
+  await expect(page.getByRole("button", { name: "Tequila" })).toBeFocused();
+  const ticket = await readTicket(page);
+  for (const name of [...ticket.pours, ticket.glass, ticket.garnish]) {
+    await page.getByRole("button", { name, exact: true }).focus();
+    await page.keyboard.press("Enter");
+  }
+  for (const chip of await page.locator(".mx-chip").all()) {
+    expect((await chip.boundingBox())?.height).toBeGreaterThanOrEqual(48);
+  }
+  await page.clock.resume();
+  expect(await axeViolations(page)).toEqual([]);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.clock.pauseAt(new Date("2026-10-14T23:30:00Z"));
+
+  await page.getByRole("button", { name: /^(Shake|Stir) it$/ }).focus();
+  await page.keyboard.press("Enter");
+  const stop = page.getByRole("button", { name: /^Stop (shaking|stirring)$/ });
+  await expect(stop).toBeFocused();
+  await page.clock.runFor(400);
+  await page.keyboard.press("Space");
+  await expect(page.locator(".mx-quality")).toHaveText(/^Perfect/);
+  await page.clock.runFor(400);
+  await expect(page.getByRole("button", { name: /^Serve / })).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".mx-receipt")).toContainText("tipped");
+  await expect(page.getByRole("button", { name: "Next guest" })).toBeFocused();
+  await page.clock.resume();
+  expect(await axeViolations(page)).toEqual([]);
+  await page.keyboard.press("Escape");
+  await expect(
+    page.getByRole("button", { name: "Open the bar" }),
+  ).toBeFocused();
+});
+
+test("reduced motion holds the glass and neon still but the meter keeps sweeping", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await openBar(page);
+  await page.getByRole("button", { name: "Soda water" }).click();
+  await page.getByRole("button", { name: /^(Shake|Stir) it$/ }).click();
+  await expect(page.locator(".mx-glass")).toHaveCSS("animation-name", "none");
+  await expect(page.locator(".mx-neon")).toHaveCSS("animation-name", "none");
+  await page.clock.runFor(400);
+  await expect(page.getByRole("meter")).toHaveAttribute("aria-valuenow", "50");
+});
