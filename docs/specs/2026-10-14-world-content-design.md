@@ -44,6 +44,25 @@ The world is a set of districts joined by portals, with Downtown Plaza as the hu
 
 The current lounge, "The Mango Room", is renamed **The Velvet Room** so that no venue is mango-branded.
 
+### Neighborhoods
+
+The districts sit inside distinct neighborhoods, each with its own look, music, NPCs and time-of-day mood. Players can live in any of them: the apartment's neighborhood sets the view from the window and the street outside.
+
+| Neighborhood | Feel | Holds |
+|---|---|---|
+| Downtown | glossy towers, neon billboards, taxis | Plaza hub, mega-mall, luxury street, airport link |
+| Nightlife Row | brick, neon, queues outside clubs | clubs, bars, lounge, speakeasy, secret venues |
+| Little Manila | jeepneys, parol lanterns, karaoke spilling out of doorways | Filipino restaurants, bakery, Filipino grocery, a sari-sari store |
+| Chinatown and Koreatown | red lanterns, night market, K-pop storefronts | dim sum, hot pot, noodles, KBBQ, Asian supermarket, boba |
+| The Arts District | murals, warehouses, thrift stores, record shops | thrift and vintage, tattoo studio, techno warehouse club, cafes |
+| Suburbia | cul-de-sacs, lawns, a 2000s strip mall | supermarket, dead mall, drive-in diner, high-school nostalgia spots |
+| Beachside | boardwalk, pastel houses, surf shops | beach, Mermaid Cove, Marina, Water Park |
+| Uptown | brownstones, wine bars, a park | patisserie, bistro, tasting-menu restaurant, Park and Gardens, zoo, aquarium |
+| Fairground | flashing lights, carnival music | Amusement Park, Speedway |
+| Hillside Winter Town | snow, cabins, string lights | Ice Rink and Winter Village |
+
+Each neighborhood has a bus stop and a taxi rank, and the world map groups places by neighborhood.
+
 ### Vehicles
 
 Jets, yachts, speedboats, jet skis and rowboats are vehicles. A vehicle is a place feature like a ride: players board it, sit together, and either travel to another place (the jet and the yacht) or drive it around a water area (speedboats, jet skis, rowboats). Driving uses the same tap or keys as walking. Vehicles are free to use.
