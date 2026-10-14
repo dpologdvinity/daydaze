@@ -63,18 +63,18 @@ const PLAZA_FLOOR: readonly Vec2[] = [
 export const ROOMS: Record<RoomId, RoomDefinition> = {
   "mango-room": {
     id: "mango-room",
-    name: "Mango Room",
+    name: "The Mango Room",
     walkable: MANGO_ROOM_FLOOR,
     spawn: { position: [0.9, 1.6], yaw: 0.25 },
     portals: [
       {
         // The neon VIP arch on the left wall at (-5.9, -1.5).
-        id: "mango-room-door",
+        id: "to-plaza",
         position: [-5.0, -1.5],
         radius: 0.6,
         label: "To the Plaza",
         target: "plaza",
-        targetSpawn: { position: [-6, -4.8], yaw: 0 },
+        targetSpawn: { position: [0, -4.8], yaw: 0 },
       },
     ],
   },
@@ -82,16 +82,16 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
     id: "plaza",
     name: "Daydaze Plaza",
     walkable: PLAZA_FLOOR,
-    spawn: { position: [0, 0], yaw: 0 },
+    spawn: { position: [0, 2], yaw: Math.PI },
     portals: [
       {
-        // The Mango Room's storefront door on the back row.
-        id: "plaza-lounge-entrance",
-        position: [-6, -6.3],
+        // The Mango Room storefront, centred on the back row.
+        id: "to-mango-room",
+        position: [0, -6.3],
         radius: 0.7,
-        label: "Mango Room",
+        label: "To the Mango Room",
         target: "mango-room",
-        targetSpawn: { position: [-4.0, -1.5], yaw: Math.PI / 2 },
+        targetSpawn: { position: [-3.8, -1.5], yaw: Math.PI / 2 },
       },
     ],
   },
