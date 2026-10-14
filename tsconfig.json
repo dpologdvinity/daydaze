@@ -4,13 +4,21 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
     "strict": true,
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
     "noEmit": true,
-    "types": ["node"],
-    "jsx": "react-jsx"
+    "types": ["node", "vite/client"]
   },
-  "include": ["src", "server"],
+  "include": [
+    "src",
+    "server",
+    "tests",
+    "scripts",
+    "vite.config.ts",
+    "playwright.config.ts",
+    "playwright.minigames.config.ts"
+  ],
   "exclude": ["server/src/worker", "server/worker-configuration.d.ts"]
 }

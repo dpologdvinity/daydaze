@@ -4,10 +4,12 @@ Daydaze is a multiplayer social hangout web game for adults who grew up on Club 
 
 ## Status
 
-Early setup. The renderer is 3D (React Three Fiber), recorded in `docs/VISION.md`. The app scaffold comes from the 3D prototype.
+Early setup. The renderer is 3D (React Three Fiber), recorded in `docs/VISION.md`. The client in `src/client/` is ported from the 3D prototype; see `docs/specs/2026-10-14-3d-client-foundation-design.md`.
 
 ## Layout
 
+- `src/client/`: the Vite + React Three Fiber client (`world/`, `rooms/`, `avatar/`, `ui/`). Keep it thin; rules live in `src/game/`.
+- `src/game/`: pure, tested game logic (looks, saves, walking, rooms, portals). No React or three.js.
 - `src/net/`: network protocol and room server (pure TypeScript, tested).
 - `server/`: Cloudflare Worker, Durable Objects and D1 schema. Pure, Node-tested modules sit in `server/src/`; the thin runtime adapters in `server/src/worker/` are type-checked with `server/tsconfig.json` against generated Workers types.
 - `src/audio/`: procedural Web Audio synthesis (tested).
@@ -19,12 +21,17 @@ Early setup. The renderer is 3D (React Three Fiber), recorded in `docs/VISION.md
 
 Use Node.js 22.18 or newer.
 
+- `npm run dev`: start the client at `http://localhost:5173` (`npm run dev -- --port 5195` for another port).
+- `npm run build` / `npm run preview`: typecheck, build `dist/`, and serve it.
 - `npm test`: run all `src/**/*.test.ts` with Node's built-in test runner.
 - `npm run typecheck`: strict TypeScript check, including the Worker (regenerates `server/worker-configuration.d.ts`).
 - `npm run dev:server`: builds the app, then runs local `wrangler dev`, which serves `dist/` with the CSP from `public/_headers`. Apply migrations first with `npx wrangler d1 migrations apply DB --local --config server/wrangler.jsonc`.
 - `npm run smoke:server`: starts a throwaway local `wrangler dev` and checks guests, rooms, chat, blocks, reconnects and accounts end to end. Never run `wrangler deploy` or log in to Cloudflare without the user's approval.
+- `npm run test:e2e:client`: Playwright browser tests for the client in `tests/client.spec.ts` (install the browser once with `npx playwright install chromium`). Headless WebGL runs on SwiftShader on the CPU, so it is slow: pin it with `taskset -c 0-5` on shared machines.
 - `npm run format` / `npm run format:check`: Prettier.
-- `npm run verify`: tests, typecheck and format check.
+- `npm run verify`: tests, typecheck, format check and build.
+
+Client URL flags: `?quality=low|high` forces a quality tier, `?still=1` renders a few frames and stops (for screenshots), `?debug=1` shows room jump buttons.
 
 ## Online client
 
