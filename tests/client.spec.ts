@@ -168,6 +168,8 @@ test("the city loads, the player walks with the keys, and the scene renders", as
   await expect(roomTitle(page)).toHaveText("Downtown and Nightlife Row");
   const view = page.getByRole("img", { name: "3D room view" });
   await expect(view).toHaveAttribute("data-frames", "10");
+  // the lazy city writes its position from its first frame; wait for it
+  await expect(view).toHaveAttribute("data-player-x", /-?\d/);
   const at = async () => ({
     x: Number(await view.getAttribute("data-player-x")),
     z: Number(await view.getAttribute("data-player-z")),
@@ -183,8 +185,8 @@ test("the city loads, the player walks with the keys, and the scene renders", as
   await page.keyboard.up("KeyD");
   // a real scene: the city's meshes drew, and the low-tier budget held
   await expect
-    .poll(async () => Number(await view.getAttribute("data-draw-calls")))
+    .poll(async () => Number(await view.getAttribute("data-calls")))
     .toBeGreaterThan(5);
-  expect(Number(await view.getAttribute("data-draw-calls"))).toBeLessThan(250);
+  expect(Number(await view.getAttribute("data-calls"))).toBeLessThan(250);
   expect(errors).toEqual([]);
 });

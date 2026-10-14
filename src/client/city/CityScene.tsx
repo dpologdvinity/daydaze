@@ -60,12 +60,10 @@ export function CityScene({
         }
       });
     }
-    // read by tests and screenshots; the draw counts are last frame's
+    // read by tests; World records the draw counts for every room
     const dom = gl.domElement.dataset;
     dom.playerX = x.toFixed(2);
     dom.playerZ = z.toFixed(2);
-    dom.drawCalls = String(gl.info.render.calls);
-    dom.triangles = String(gl.info.render.triangles);
   });
 
   // a drag orbits the camera; only a click walks the player
