@@ -9,21 +9,28 @@ import {
   RELOAD_DISTANCE,
   VIEW_RADIUS,
 } from "../../game/city/tuning.ts";
-import { KINDS, planCity } from "../../game/city/plan.ts";
+import { KINDS, planCity, type Kind } from "../../game/city/plan.ts";
 import type { Vec2 } from "../../game/walk.ts";
 import type { PickHandler } from "../rooms/shared/Floor.tsx";
+import { useReducedMotion } from "../motion.ts";
 import type { Player } from "../world/PlayerController.tsx";
 import { useQuality } from "../world/quality.ts";
+import { CitySky } from "./CitySky.tsx";
+import { createLabelAtlas } from "./labelAtlas.ts";
 import { createKindMeshes, disposeKindMeshes, writeKind } from "./meshes.ts";
+import { CITY_CLOCK } from "./shaders.ts";
 
 // Enough for the busiest view of the whole city, so meshes never reallocate.
 const WHOLE_CITY = planCity(ALL_CELLS, 0, [0, 0]);
-const CAPACITY = Math.max(...KINDS.map((k) => WHOLE_CITY.instances[k].length));
+const CAPACITY = Object.fromEntries(
+  KINDS.map((k) => [k, Math.max(1, WHOLE_CITY.instances[k].length)]),
+) as Record<Kind, number>;
 
 /**
  * The downtown slice. Cells within VIEW_RADIUS of the player are written into
  * one InstancedMesh per kind. The loaded set is rebuilt only after the player
- * has moved RELOAD_DISTANCE, so most frames do no work at all.
+ * has moved RELOAD_DISTANCE, so most frames do no work at all. Between
+ * rebuilds the only motion is the shared clock in the shaders.
  */
 export function CityScene({
   player,
@@ -33,14 +40,25 @@ export function CityScene({
   onPick: PickHandler;
 }) {
   const tier = useQuality();
+  const reduced = useReducedMotion();
   // the key light is the World's; these are the city's real lights
   const lightCount = tier === "high" ? POINT_LIGHTS.high : POINT_LIGHTS.low;
-  const meshes = useMemo(() => createKindMeshes(CAPACITY), []);
-  useEffect(() => () => disposeKindMeshes(meshes), [meshes]);
+  const atlas = useMemo(() => createLabelAtlas(), []);
+  const meshes = useMemo(() => createKindMeshes(CAPACITY, atlas), [atlas]);
+  useEffect(() => {
+    return () => {
+      disposeKindMeshes(meshes);
+      atlas.dispose();
+    };
+  }, [atlas, meshes]);
+  useEffect(() => {
+    CITY_CLOCK.uMotion.value = reduced ? 0 : 1;
+  }, [reduced]);
   const lights = useRef<(THREE.PointLight | null)[]>([]);
   const loadedAt = useRef<Vec2 | null>(null);
 
-  useFrame(({ gl }) => {
+  useFrame(({ gl, clock }) => {
+    CITY_CLOCK.uTime.value = clock.elapsedTime;
     const x = player.pos.x;
     const z = player.pos.z;
     const last = loadedAt.current;
@@ -76,8 +94,9 @@ export function CityScene({
   return (
     <>
       <color attach="background" args={["#0a0618"]} />
-      <fog attach="fog" args={["#120a26", 120, 420]} />
-      <hemisphereLight args={["#8fa6ff", "#2a1038", 1.2]} />
+      <fog attach="fog" args={["#1a0d30", 120, 420]} />
+      <CitySky />
+      <hemisphereLight args={["#8fa6ff", "#2a1038", 1.6]} />
       {Array.from({ length: lightCount }, (_, i) => (
         <pointLight
           key={i}
@@ -96,7 +115,7 @@ export function CityScene({
         name="city-ground"
       >
         <planeGeometry args={[900, 900]} />
-        <meshStandardMaterial color="#0d0a1c" roughness={0.9} />
+        <meshStandardMaterial color="#120d26" roughness={0.9} />
       </mesh>
       {KINDS.map((kind) => (
         <primitive key={kind} object={meshes[kind]} onClick={click} />

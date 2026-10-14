@@ -12,6 +12,7 @@ import {
   type PropKind,
   type Surface,
 } from "./layout.ts";
+import { dressBuilding, frontOf, signSpec, STREET_DRESS } from "./dressing.ts";
 
 export const KINDS = [
   "road",
@@ -31,6 +32,20 @@ export const KINDS = [
   "palmFrond",
   "treeTrunk",
   "treeCanopy",
+  "window",
+  "label",
+  "panel",
+  "arch",
+  "bulb",
+  "car",
+  "carGlass",
+  "furniture",
+  "glass",
+  "crowd",
+  "head",
+  "hair",
+  "puddle",
+  "steam",
 ] as const;
 export type Kind = (typeof KINDS)[number];
 
@@ -44,6 +59,8 @@ export type Instance = {
   sz: number;
   rot?: readonly [number, number, number];
   color?: string;
+  /** Atlas rectangle for a label: u, v, width and height. */
+  uv?: readonly [number, number, number, number];
 };
 
 export type Light = { x: number; y: number; z: number; color: string };
@@ -73,28 +90,41 @@ export const TRIANGLES: Record<Kind, number> = {
   palmFrond: 12,
   treeTrunk: 32,
   treeCanopy: 160,
+  window: 2,
+  label: 2,
+  panel: 12,
+  arch: 12,
+  bulb: 12,
+  car: 12,
+  carGlass: 12,
+  furniture: 12,
+  glass: 12,
+  crowd: 200,
+  head: 160,
+  hair: 160,
+  puddle: 12,
+  steam: 48,
 };
 
 const BODY_COLOR: Record<BuildingStyle, string> = {
-  tower: "#27335f",
-  glass: "#1f2d52",
-  billboard: "#1d1634",
-  storefront: "#2b1f3f",
-  deck: "#3a3552",
-  brick: "#6b2f2c",
-  club: "#3b1a40",
-  warehouse: "#2f2b2e",
-  velvet: "#40112f",
-  gate: "#2a1a3a",
+  tower: "#3d4f9e",
+  glass: "#3a5aa8",
+  billboard: "#4a2a7a",
+  storefront: "#5a3a7a",
+  deck: "#5c5a8a",
+  brick: "#a4483f",
+  club: "#6a2a7a",
+  warehouse: "#55505c",
+  velvet: "#7a1f55",
+  gate: "#4f2f8a",
 };
 
-const QUEUE_COLORS = ["#ff4fb3", "#4fe3ff", "#ffd84f"];
-const DASH_COLOR = "#ffe6a8";
 const BAND_COLOR = "#6a5cff";
+const DASH_COLOR = "#ffe6a8";
 const SURFACE_COLOR = {
-  road: "#1c1533",
-  sidewalk: "#3a3262",
-  square: "#4a3e7a",
+  road: "#2a2050",
+  sidewalk: "#5a4a8a",
+  square: "#6a5a9a",
 };
 
 type Box = { x0: number; z0: number; x1: number; z1: number };
@@ -139,6 +169,20 @@ function emptyInstances(): Record<Kind, Instance[]> {
     palmFrond: [],
     treeTrunk: [],
     treeCanopy: [],
+    window: [],
+    label: [],
+    panel: [],
+    arch: [],
+    bulb: [],
+    car: [],
+    carGlass: [],
+    furniture: [],
+    glass: [],
+    crowd: [],
+    head: [],
+    hair: [],
+    puddle: [],
+    steam: [],
   };
 }
 
@@ -212,122 +256,76 @@ function buildingInstances(
   out: Record<Kind, Instance[]>,
   lights: Light[],
 ): void {
-  const box = boundsOf(b.footprint);
-  const cx = (box.x0 + box.x1) / 2;
-  const cz = (box.z0 + box.z1) / 2;
-  const w = box.x1 - box.x0;
-  const d = box.z1 - box.z0;
-  const h = b.height;
-  // the face nearest the avenue, and the way out of it
-  const south = cz > 0;
-  const faceZ = south ? box.z0 : box.z1;
-  const out1 = south ? -1 : 1;
+  const f = frontOf(b);
   const signColor = b.sign?.color;
 
   out.body.push({
-    x: cx,
-    y: h / 2,
-    z: cz,
-    sx: w,
-    sy: h,
-    sz: d,
+    x: f.cx,
+    y: f.h / 2,
+    z: f.cz,
+    sx: f.w,
+    sy: f.h,
+    sz: f.z1 - f.z0,
     color: BODY_COLOR[b.style],
   });
   // neon tubes up the four corners: cheap glow on every facade
   for (const [x, z] of [
-    [box.x0, box.z0],
-    [box.x1, box.z0],
-    [box.x1, box.z1],
-    [box.x0, box.z1],
+    [f.x0, f.z0],
+    [f.x1, f.z0],
+    [f.x1, f.z1],
+    [f.x0, f.z1],
   ]) {
     out.tube.push({
       x,
-      y: h / 2,
+      y: f.h / 2,
       z,
       sx: 0.18,
-      sy: h,
+      sy: f.h,
       sz: 0.18,
       color: signColor ?? BAND_COLOR,
     });
   }
   out.roof.push({
-    x: cx,
-    y: h + 0.25,
-    z: cz,
-    sx: w + 0.4,
+    x: f.cx,
+    y: f.h + 0.25,
+    z: f.cz,
+    sx: f.w + 0.4,
     sy: 0.5,
-    sz: d + 0.4,
-    color: "#140e26",
+    sz: f.z1 - f.z0 + 0.4,
+    color: "#1c1438",
   });
-  for (let y = 3.6; y < h - 1; y += 3.6) {
+  for (let y = 3.6; y < f.h - 1; y += 3.6) {
     out.band.push({
-      x: cx,
+      x: f.cx,
       y,
-      z: cz,
-      sx: w + 0.12,
+      z: f.cz,
+      sx: f.w + 0.12,
       sy: 0.35,
-      sz: d + 0.12,
+      sz: f.z1 - f.z0 + 0.12,
       color: BAND_COLOR,
     });
   }
   out.glow.push({
-    x: cx,
+    x: f.cx,
     y: 1.6,
-    z: faceZ + out1 * 0.06,
-    sx: w * 0.86,
+    z: f.faceZ + f.out1 * 0.06,
+    sx: f.w * 0.86,
     sy: 2.6,
     sz: 0.12,
     // shopfronts glow warm; signed fronts stay dim so the neon carries the colour
     color: b.style === "storefront" ? "#f2b26b" : "#3a2452",
   });
-  out.awning.push({
-    x: cx,
-    y: 3.2,
-    z: faceZ + out1 * 0.7,
-    sx: Math.min(w * 0.6, 8),
-    sy: 0.3,
-    sz: 1.4,
-    color: signColor ?? "#2a2140",
-  });
 
   if (b.sign) {
-    // gates carry a big sign too, so the venue reads from across the avenue
-    const billboard = b.style === "billboard" || b.style === "gate";
-    const tall = b.style === "tower" || b.style === "glass";
-    const y = billboard
-      ? h * (b.style === "gate" ? 0.45 : 0.7)
-      : tall
-        ? h * 0.5
-        : 4.4;
-    const sign = billboard
-      ? { sx: Math.min(w * 0.8, 14), sy: 6 }
-      : tall
-        ? { sx: 1.2, sy: 9 }
-        : { sx: Math.min(w * 0.7, 8), sy: 1.6 };
-    out.sign.push({
-      x: cx,
-      y,
-      z: faceZ + out1 * 0.12,
-      ...sign,
-      sz: 0.2,
+    const s = signSpec(b, f);
+    lights.push({
+      x: f.cx,
+      y: s.y,
+      z: f.faceZ + f.out1 * 1.2,
       color: b.sign.color,
     });
-    lights.push({ x: cx, y, z: faceZ + out1 * 1.2, color: b.sign.color });
   }
-
-  if (b.queue) {
-    for (let i = 0; i < 3; i++) {
-      out.queue.push({
-        x: box.x0 + 4 + i * 5,
-        y: 0.9,
-        z: faceZ + out1 * 1.5,
-        sx: 0.36,
-        sy: 0.9,
-        sz: 0.36,
-        color: QUEUE_COLORS[i % QUEUE_COLORS.length],
-      });
-    }
-  }
+  dressBuilding(b, out);
 }
 
 function propInstances(
@@ -411,6 +409,11 @@ export function planCity(
 
   for (const b of BUILDINGS) {
     if (inView(boundsOf(b.footprint))) buildingInstances(b, instances, lights);
+  }
+
+  const loaded = new Set(cells.map((c) => c.key));
+  for (const p of STREET_DRESS) {
+    if (loaded.has(cellAt(p.at).key)) instances[p.kind].push(p.instance);
   }
 
   for (const prop of PROPS) {
