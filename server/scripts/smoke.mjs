@@ -5,7 +5,11 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
+import { DEFAULT_LOOK } from "../../src/game/look.ts";
 import { createDefaultSave } from "../../src/game/save.ts";
+import { createApi } from "../../src/net/client/api.ts";
+import { OnlineSession } from "../../src/net/client/OnlineSession.ts";
+import { WebSocketTransport } from "../../src/net/client/WebSocketTransport.ts";
 import {
   decodeServerMessage,
   encodeClientMessage,
@@ -83,6 +87,33 @@ async function waitFor(messages, predicate, description) {
     await sleep(100);
   }
   check(false, description);
+}
+
+/** An OnlineSession wired like the browser's, with a cookie jar in place of one. */
+function onlineSession() {
+  let cookie = "";
+  const fetchWithCookies = async (url, init) => {
+    const headers = new Headers(init.headers);
+    if (cookie) headers.set("Cookie", cookie);
+    const response = await fetch(url, { ...init, headers });
+    const set = response.headers.getSetCookie()[0];
+    if (set) cookie = set.split(";")[0];
+    return response;
+  };
+  // A constructor returning an object makes `new NodeSocket(url)` that object.
+  function NodeSocket(url) {
+    return new WebSocket(url, { headers: { Cookie: cookie } });
+  }
+  const session = new OnlineSession({
+    api: createApi({ fetch: fetchWithCookies, baseUrl: BASE }),
+    wsBaseUrl: BASE.replace("http", "ws"),
+    openTransport: (url) =>
+      new WebSocketTransport({ url, WebSocket: NodeSocket }),
+  });
+  const events = [];
+  for (const name of ["profile", "delta", "leave", "chat"])
+    session.on(name, (payload) => events.push({ name, payload }));
+  return { session, events };
 }
 
 const migrate = spawnSync(
@@ -198,6 +229,53 @@ try {
 
   a2.socket.close();
   b.socket.close();
+
+  // The browser client library end to end, in a room of its own.
+  const one = onlineSession();
+  const two = onlineSession();
+  const first = await one.session.start();
+  const second = await two.session.start();
+  check(first?.isGuest && second?.isGuest, "OnlineSession.start makes guests");
+  const joinedOne = await one.session.joinRoom("mango-room", DEFAULT_LOOK);
+  const joinedTwo = await two.session.joinRoom("mango-room", DEFAULT_LOOK);
+  check(
+    joinedOne.ok && joinedTwo.ok && joinedOne.copy === joinedTwo.copy,
+    "two OnlineSessions join the same Mango Room copy",
+  );
+  await waitFor(
+    one.events,
+    ({ name, payload }) => name === "profile" && payload.id === second.id,
+    "OnlineSession sees the other player join",
+  );
+  two.session.sendMove(1.25, 2.5, 0.75, "walk");
+  await waitFor(
+    one.events,
+    ({ name, payload }) =>
+      name === "delta" && payload.id === second.id && payload.next?.x === 1.25,
+    "OnlineSession sees the other player move",
+  );
+  // Remote players render 100 ms behind; after that they rest where they stopped.
+  await sleep(150);
+  check(
+    one.session.sample(second.id)?.z === 2.5,
+    "OnlineSession samples the remote position",
+  );
+  one.session.sendChat("hi from OnlineSession");
+  await waitFor(
+    two.events,
+    ({ name, payload }) =>
+      name === "chat" &&
+      payload.name === first.name &&
+      payload.text === "hi from OnlineSession",
+    "OnlineSession receives chat with the sender's name",
+  );
+  one.session.leaveRoom();
+  await waitFor(
+    two.events,
+    ({ name, payload }) => name === "leave" && payload === first.id,
+    "OnlineSession sees the other player leave",
+  );
+  two.session.leaveRoom();
 
   // Accounts: signup, save round trip, logout and login.
   const credentials = { username: "Smoke Tester", password: "correct horse" };

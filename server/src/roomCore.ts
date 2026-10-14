@@ -3,6 +3,7 @@ import { isRoomId, ROOMS, type RoomId } from "../../src/game/rooms.ts";
 import { isValidDisplayName } from "../../src/game/save.ts";
 import { clampToWalkable, type Vec2 } from "../../src/game/walk.ts";
 import {
+  CLOSE_CODES,
   decodeClientMessage,
   encodeServerMessage,
   isNetworkId,
@@ -20,6 +21,7 @@ import {
   MOVEMENT_LIMIT,
 } from "./rateLimit.ts";
 
+export { CLOSE_CODES };
 export const ROOM_CAPACITY = 60;
 export const MAX_INVALID_MESSAGES = 10;
 export const REPORT_CHAT_LINES = 20;
@@ -36,18 +38,9 @@ export type JoinResult =
 /** Passed to the socket's close callback; the player is already removed. */
 export type CloseReason =
   "kicked" | "banned" | "invalid-messages" | "left" | "send-failed";
-/** WebSocket close codes for room sockets, shared with the client. */
-export const CLOSE_CODES = {
-  left: 1000,
-  invalid: 4000,
-  full: 4001,
-  kicked: 4002,
-  banned: 4003,
-  "invalid-messages": 4004,
-  "send-failed": 4005,
-  replaced: 4009,
-} as const satisfies Record<
-  CloseReason | Exclude<JoinResult, { ok: true }>["reason"] | "replaced",
+// Every reason RoomCore can close or refuse with needs a code.
+CLOSE_CODES satisfies Record<
+  CloseReason | Exclude<JoinResult, { ok: true }>["reason"],
   number
 >;
 export type ChatLine = { id: string; name: string; text: string; at: number };
