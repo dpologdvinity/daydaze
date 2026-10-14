@@ -10,7 +10,7 @@
     "format:check": "prettier --check .",
     "verify": "npm test && npm run typecheck && npm run format:check",
     "typecheck:server": "wrangler types --config server/wrangler.jsonc server/worker-configuration.d.ts > /dev/null && tsc --noEmit -p server",
-    "dev:server": "wrangler dev --config server/wrangler.jsonc",
+    "dev:server": "vite build && wrangler dev --config server/wrangler.jsonc",
     "smoke:server": "node server/scripts/smoke.mjs",
     "dev": "vite",
     "build": "vite build",
