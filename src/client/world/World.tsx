@@ -32,7 +32,6 @@ import {
 import type { Vec2 } from "../../game/walk.ts";
 import { SLIDES } from "../../game/waterPark.ts";
 import { areaOf } from "../../game/area.ts";
-import { CityScene } from "../city/CityScene.tsx";
 import { VelvetRoom } from "../rooms/VelvetRoom.tsx";
 import { Plaza } from "../rooms/Plaza.tsx";
 import type { PickHandler } from "../rooms/shared/Floor.tsx";
@@ -47,6 +46,11 @@ import {
   type Player,
 } from "./PlayerController.tsx";
 import { QualityContext, type QualityTier } from "./quality.ts";
+
+// The city is the heaviest scene, so it loads on first visit only.
+const CityScene = lazy(() =>
+  import("../city/CityScene.tsx").then((m) => ({ default: m.CityScene })),
+);
 
 // Enough for the environment map, face textures and reflector to settle.
 const STILL_FRAMES = 4;

@@ -1,7 +1,14 @@
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import type * as THREE from "three";
-import { ALL_CELLS, cellsWithin, VIEW_RADIUS } from "../../game/city/cells.ts";
+import { ALL_CELLS, cellsWithin } from "../../game/city/cells.ts";
+import {
+  LIGHT_DISTANCE,
+  LIGHT_INTENSITY,
+  POINT_LIGHTS,
+  RELOAD_DISTANCE,
+  VIEW_RADIUS,
+} from "../../game/city/tuning.ts";
 import { KINDS, planCity } from "../../game/city/plan.ts";
 import type { Vec2 } from "../../game/walk.ts";
 import type { PickHandler } from "../rooms/shared/Floor.tsx";
@@ -13,11 +20,10 @@ import { createKindMeshes, disposeKindMeshes, writeKind } from "./meshes.ts";
 const WHOLE_CITY = planCity(ALL_CELLS, 0, [0, 0]);
 const CAPACITY = Math.max(...KINDS.map((k) => WHOLE_CITY.instances[k].length));
 
-const LIGHT_INTENSITY = 6;
-
 /**
  * The downtown slice. Cells within VIEW_RADIUS of the player are written into
- * one InstancedMesh per kind, and only when the set of loaded cells changes.
+ * one InstancedMesh per kind. The loaded set is rebuilt only after the player
+ * has moved RELOAD_DISTANCE, so most frames do no work at all.
  */
 export function CityScene({
   player,
@@ -28,19 +34,20 @@ export function CityScene({
 }) {
   const tier = useQuality();
   // the key light is the World's; these are the city's real lights
-  const lightCount = tier === "high" ? 6 : 2;
+  const lightCount = tier === "high" ? POINT_LIGHTS.high : POINT_LIGHTS.low;
   const meshes = useMemo(() => createKindMeshes(CAPACITY), []);
   useEffect(() => () => disposeKindMeshes(meshes), [meshes]);
   const lights = useRef<(THREE.PointLight | null)[]>([]);
-  const loaded = useRef("");
+  const loadedAt = useRef<Vec2 | null>(null);
 
   useFrame(({ gl }) => {
-    const at: Vec2 = [player.pos.x, player.pos.z];
-    const cells = cellsWithin(at, VIEW_RADIUS);
-    const key = cells.map((c) => c.key).join(" ");
-    if (key !== loaded.current) {
-      loaded.current = key;
-      const plan = planCity(cells, lightCount, at);
+    const x = player.pos.x;
+    const z = player.pos.z;
+    const last = loadedAt.current;
+    if (!last || Math.hypot(x - last[0], z - last[1]) > RELOAD_DISTANCE) {
+      const at: Vec2 = [x, z];
+      loadedAt.current = at;
+      const plan = planCity(cellsWithin(at, VIEW_RADIUS), lightCount, at);
       for (const kind of KINDS)
         writeKind(meshes[kind], kind, plan.instances[kind]);
       lights.current.forEach((light, i) => {
@@ -53,9 +60,10 @@ export function CityScene({
         }
       });
     }
-    // read by tests and screenshots; the counts are last frame's
+    // read by tests and screenshots; the draw counts are last frame's
     const dom = gl.domElement.dataset;
-    dom.player = `${at[0].toFixed(2)},${at[1].toFixed(2)}`;
+    dom.playerX = x.toFixed(2);
+    dom.playerZ = z.toFixed(2);
     dom.drawCalls = String(gl.info.render.calls);
     dom.triangles = String(gl.info.render.triangles);
   });
@@ -78,7 +86,7 @@ export function CityScene({
           ref={(light) => {
             lights.current[i] = light;
           }}
-          distance={34}
+          distance={LIGHT_DISTANCE}
           decay={2}
           intensity={0}
         />

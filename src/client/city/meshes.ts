@@ -79,8 +79,6 @@ export function createKindMeshes(capacity: number): KindMeshes {
       capacity,
     );
     mesh.count = 0;
-    // the city streams, so the bounds of each mesh change; culling would lie
-    mesh.frustumCulled = false;
     mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     return mesh;
   };
@@ -141,4 +139,6 @@ export function writeKind(
   });
   mesh.instanceMatrix.needsUpdate = true;
   if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  // the bounds follow the instances, so frustum culling stays correct
+  mesh.computeBoundingSphere();
 }
