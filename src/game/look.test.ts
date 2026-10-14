@@ -1,0 +1,97 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import {
+  BROWS,
+  DEFAULT_LOOK,
+  EYESHADOWS,
+  HAIR_COLORS,
+  HAIR_STYLES,
+  LIPS,
+  MOODS,
+  NPC_LOOKS,
+  OUTFIT_COLORS,
+  OUTFITS,
+  SKINS,
+  isMood,
+  validateLook,
+} from "./look.ts";
+
+test("the default look and every NPC look use catalog ids", () => {
+  assert.equal(validateLook(DEFAULT_LOOK), true);
+  for (const npc of NPC_LOOKS) assert.equal(validateLook(npc.look), true);
+});
+
+test("the default look keeps the prototype's lavender shadow and thin brows", () => {
+  assert.equal(DEFAULT_LOOK.shadow, "#d23cff");
+  assert.equal(DEFAULT_LOOK.brows, "brows-y2k-thin");
+});
+
+test("catalogs have unique ids and the outfits from the spec", () => {
+  for (const catalog of [
+    SKINS,
+    HAIR_STYLES,
+    HAIR_COLORS,
+    LIPS,
+    BROWS,
+    OUTFITS,
+    OUTFIT_COLORS,
+    EYESHADOWS,
+    MOODS,
+  ]) {
+    const ids = catalog.map((option) => option.id);
+    assert.equal(new Set(ids).size, ids.length);
+  }
+  assert.deepEqual(
+    OUTFITS.map((outfit) => outfit.label),
+    ["Crop and flares", "Slip mini", "Faux fur"],
+  );
+});
+
+test("validateLook accepts any combination of catalog ids", () => {
+  assert.equal(
+    validateLook({
+      ...DEFAULT_LOOK,
+      skin: "#633c29",
+      hairStyle: "buns",
+      outfit: "fur",
+      shadow: "#8a5a3c",
+    }),
+    true,
+  );
+});
+
+test("validateLook rejects non-objects", () => {
+  for (const value of [null, undefined, 0, "look", [], true]) {
+    assert.equal(validateLook(value), false);
+  }
+});
+
+test("validateLook rejects missing, extra and off-catalog fields", () => {
+  const { lips: _lips, ...missing } = DEFAULT_LOOK;
+  assert.equal(validateLook(missing), false);
+  assert.equal(validateLook({ ...DEFAULT_LOOK, hat: "beret" }), false);
+  assert.equal(validateLook({ ...DEFAULT_LOOK, skin: "#000000" }), false);
+  assert.equal(validateLook({ ...DEFAULT_LOOK, hairStyle: "mohawk" }), false);
+  assert.equal(validateLook({ ...DEFAULT_LOOK, outfitColor: 7 }), false);
+  // Mixing catalogs: a hair colour is not an outfit colour.
+  assert.equal(
+    validateLook({ ...DEFAULT_LOOK, outfitColor: "#1b1014" }),
+    false,
+  );
+});
+
+test("validateLook ignores inherited fields", () => {
+  const inherited = Object.create(DEFAULT_LOOK);
+  assert.equal(validateLook(inherited), false);
+});
+
+test("isMood accepts the five moods only", () => {
+  assert.deepEqual(
+    MOODS.map((mood) => mood.id),
+    ["idle", "pose", "dance", "sit", "lean"],
+  );
+  for (const mood of MOODS) assert.equal(isMood(mood.id), true);
+  for (const value of ["run", "", null, 1, "Idle"]) {
+    assert.equal(isMood(value), false);
+  }
+});
