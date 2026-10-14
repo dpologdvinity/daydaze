@@ -12,8 +12,8 @@ import { Beams, type Beam } from "./shared/Beams.tsx";
 import type { PickHandler } from "./shared/Floor.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 
-// The Velvet Room door is the first portal and the Amusement Park gate the second.
-const [, parkGate] = ROOMS.plaza.portals;
+// Found by destination, so other portals on the Plaza can come and go.
+const parkGate = ROOMS.plaza.portals.find((p) => p.target === "amusement-park");
 
 // Searchlights from the club roof, sweeping the clouds.
 const CLUB_X = SHOPS.find((s) => s.id === "club")?.x ?? 0;
@@ -127,7 +127,7 @@ export function Plaza({ onPick }: { onPick: PickHandler }) {
       <Storefronts />
       <StringLights />
       <PortalPads room={ROOMS.plaza} />
-      <AmusementGate at={parkGate.position} />
+      {parkGate && <AmusementGate at={parkGate.position} />}
       {LOCALS.map((n, i) => (
         <Doll
           key={i}
