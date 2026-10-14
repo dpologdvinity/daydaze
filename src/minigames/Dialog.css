@@ -1,0 +1,127 @@
+.mg-dialog {
+  --mg-ink: #07020b;
+  --mg-plum: #2a0b2e;
+  --mg-velvet: #4a1046;
+  --mg-fuchsia: #ff2f9a;
+  --mg-mango: #ffb02e;
+  --mg-champagne: #f7e7c6;
+  --mg-lilac: #d9c8ff;
+  --mg-chrome: linear-gradient(
+    160deg,
+    #fdfcff 0%,
+    #b9b3c9 24%,
+    #f6f2ff 46%,
+    #77708a 72%,
+    #e9e4f5 100%
+  );
+  --mg-display:
+    "Didot", "Bodoni 72", "Bodoni Moda", "TeX Gyre Bonum", "URW Bookman",
+    Georgia, serif;
+  --mg-sans:
+    "Futura", "Century Gothic", "Avenir Next", "URW Gothic",
+    "TeX Gyre Adventor", system-ui, sans-serif;
+
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: min(1040px, calc(100vw - 32px));
+  height: min(760px, calc(100dvh - 32px));
+  max-width: none;
+  max-height: none;
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: 28px;
+  background:
+    linear-gradient(var(--mg-ink), var(--mg-ink)) padding-box,
+    var(--mg-chrome) border-box;
+  color: var(--mg-champagne);
+  font-family: var(--mg-sans);
+  box-shadow:
+    0 0 0 1px rgb(255 47 154 / 0.5),
+    0 0 60px rgb(255 47 154 / 0.35),
+    0 30px 80px rgb(0 0 0 / 0.7);
+}
+
+.mg-dialog:not([open]) {
+  display: none;
+}
+
+.mg-dialog *,
+.mg-dialog *::before,
+.mg-dialog *::after {
+  box-sizing: border-box;
+}
+
+.mg-dialog::backdrop {
+  background: radial-gradient(
+    circle at 50% 40%,
+    rgb(74 16 70 / 0.7),
+    rgb(7 2 11 / 0.92)
+  );
+  backdrop-filter: blur(6px);
+}
+
+.mg-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px 12px 26px;
+  background: linear-gradient(180deg, var(--mg-velvet), var(--mg-plum));
+  border-bottom: 1px solid rgb(255 255 255 / 0.18);
+}
+
+.mg-dialog-header h2 {
+  margin: 0;
+  font-family: var(--mg-display);
+  font-style: italic;
+  font-weight: 700;
+  font-size: clamp(30px, 4vw, 44px);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  background: var(--mg-chrome);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 10px rgb(255 47 154 / 0.85));
+}
+
+.mg-dialog-header p {
+  margin: 4px 0 0;
+  color: var(--mg-lilac);
+  font-size: 14px;
+}
+
+.mg-dialog-close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--mg-chrome);
+  color: var(--mg-ink);
+  cursor: pointer;
+  box-shadow: 0 0 16px rgb(255 47 154 / 0.5);
+}
+
+.mg-dialog :focus-visible {
+  outline: 3px solid var(--mg-mango);
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .mg-dialog {
+    width: 100vw;
+    height: 100dvh;
+    border-radius: 0;
+    border-width: 0;
+  }
+
+  .mg-dialog-header {
+    padding: 10px 12px 10px 18px;
+  }
+}
