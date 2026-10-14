@@ -217,3 +217,11 @@ test("each venue gate's door fires from the sidewalk, and the venue's exit leads
     assert.ok(gap > door.radius, `${gateId} arrival would re-enter at once`);
   }
 });
+
+test("the water park's swimwear flag applies to arrivals through its gate", () => {
+  const door = BUILDINGS.find((b) => b.id === "splash-gate")?.door;
+  assert.ok(door);
+  // the doll's outfit is chosen from the room a visit lands in, so the gate's
+  // arrival is a swimwear room exactly when the water park is
+  assert.equal(ROOMS[door.target].swimwear, true);
+});

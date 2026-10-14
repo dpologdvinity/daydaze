@@ -291,9 +291,14 @@ function buildingInstances(
   });
 
   if (b.sign) {
-    const billboard = b.style === "billboard";
+    // gates carry a big sign too, so the venue reads from across the avenue
+    const billboard = b.style === "billboard" || b.style === "gate";
     const tall = b.style === "tower" || b.style === "glass";
-    const y = billboard ? h * 0.7 : tall ? h * 0.5 : 4.4;
+    const y = billboard
+      ? h * (b.style === "gate" ? 0.45 : 0.7)
+      : tall
+        ? h * 0.5
+        : 4.4;
     const sign = billboard
       ? { sx: Math.min(w * 0.8, 14), sy: 6 }
       : tall
