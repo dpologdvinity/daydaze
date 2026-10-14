@@ -33,6 +33,7 @@ export const snackCashierBank: RoleBank = {
   ],
   tapped: [
     "Yes? Order at the window, I'm right here, babe.",
+    "We're out of mango. Long story.",
     "Hey, you tapped the counter, so I'm assuming you're hungry.",
     "Menu's on the board. Want a suggestion? Get the {drink} and the fries.",
     "I hear you! What can I get you? Quick, the line is building.",
