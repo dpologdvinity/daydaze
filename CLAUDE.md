@@ -4,7 +4,7 @@ Daydaze is a multiplayer social hangout web game for adults who grew up on Club 
 
 ## Status
 
-Early setup. The renderer (2D or 3D) is not chosen yet, so there is no app scaffold. Do not add a framework, bundler or renderer until that decision is recorded in `docs/VISION.md`.
+Early setup. The renderer is 3D (React Three Fiber), recorded in `docs/VISION.md`. The app scaffold comes from the 3D prototype.
 
 ## Layout
 

@@ -6,7 +6,7 @@ Not intended for children.
 
 ## Status
 
-Early setup. The 2D vs 3D renderer is being decided with two prototypes. See [docs/VISION.md](docs/VISION.md).
+Early setup. Daydaze is a 3D game built with React Three Fiber. See [docs/VISION.md](docs/VISION.md).
 
 ## Develop
 

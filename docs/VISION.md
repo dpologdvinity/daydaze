@@ -34,14 +34,14 @@ The name is a mix of daydream, a buzzed daze, and "the good old days".
 - Anonymous guest play, plus optional accounts.
 - Coins and purchases stay client-owned until trading or online leaderboards exist.
 
-## Open decision: 2D or 3D
+## Renderer: 3D (decided 2026-10-14)
 
-Two throwaway prototypes of the same neon lounge are being compared:
+Two throwaway prototypes of the same neon lounge were compared: 3D in the style of IMVU, and 2D in the style of Club Penguin and Fantage. The 2D version was polished but felt too flat, so Daydaze is 3D:
 
-- 3D in the style of IMVU: React Three Fiber, a code-built fashion-doll avatar with toon shading and painted face layers, orbit camera.
-- 2D in the style of Club Penguin and Fantage: an illustrated front-on room with a perspective floor, layered 2D doll avatars on a drawn body.
-
-The renderer, and the folder structure that depends on it, is chosen after that comparison.
+- React Three Fiber and three.js world, orbit camera, click-to-walk.
+- Code-built fashion-doll avatar: doll proportions, toon shading with outlines, painted face layers (eyes, brows, lips, makeup) from `art/doll/`, tintable code-built hair and outfits, plus select hair and accessories generated with image-to-3D tools and auto-rigged.
+- Minigames may stay as 2D overlays launched from the 3D world.
+- The network protocol moves from 2D `x, y, heading` to a 3D position and rotation.
 
 ## What came from Club Lion
 
