@@ -11,8 +11,8 @@ import {
   SESSION_MAX_AGE_SECONDS,
   sessionCookie,
 } from "../cookies.ts";
-import type { AuthAction } from "../authLimits.ts";
-import { hashPassword, verifyPassword } from "../passwords.ts";
+import type { AuthAction, LimitScope } from "../authLimits.ts";
+import { checkLogin, hashPassword } from "../passwords.ts";
 import { matchRoute, type Route } from "../routes.ts";
 import {
   applySecurityHeaders,
@@ -52,18 +52,31 @@ function error(status: number, code: string, headers?: HeadersInit): Response {
   return json({ error: code }, status, headers);
 }
 
-/** A 429 when this IP address is over its budget for `action`, else null. */
+/**
+ * A 429 when this IP address, or the given player, is over its budget for
+ * `action`; otherwise null.
+ */
 async function rateLimited(
   env: Env,
   request: Request,
   action: AuthAction,
   key = "",
+  playerId?: string,
 ): Promise<Response | null> {
-  const limiter = env.RATE_LIMITER.getByName(clientIp(request) ?? "unknown");
-  const retryAfter = await limiter.take(action, key);
-  return retryAfter > 0
-    ? error(429, "rate-limited", { "Retry-After": String(retryAfter) })
-    : null;
+  const scopes: [string, LimitScope][] = [
+    [clientIp(request) ?? "unknown", "address"],
+  ];
+  if (playerId) scopes.push([`player:${playerId}`, "player"]);
+  for (const [name, scope] of scopes) {
+    const retryAfter = await env.RATE_LIMITER.getByName(name).take(
+      action,
+      key,
+      scope,
+    );
+    if (retryAfter > 0)
+      return error(429, "rate-limited", { "Retry-After": String(retryAfter) });
+  }
+  return null;
 }
 
 function roomStub(env: Env, roomId: RoomId, copy: number) {
@@ -192,6 +205,8 @@ async function handle(
       const limited = await rateLimited(env, request, "signup");
       if (limited) return limited;
       const { username, password } = credentials;
+      // Hash before the lookup so a taken name answers no faster than a free one.
+      const passwordHash = await hashPassword(password);
       const taken = await env.DB.prepare(
         "SELECT 1 FROM users WHERE username_key = ?",
       )
@@ -212,7 +227,7 @@ async function handle(
           identity.id,
           username,
           username.toLowerCase(),
-          await hashPassword(password),
+          passwordHash,
           Date.now(),
         )
         .run();
@@ -249,11 +264,12 @@ async function handle(
           isAdmin: user.is_admin === 1,
         },
       );
-      if (
-        !identity ||
-        typeof user?.password_hash !== "string" ||
-        !(await verifyPassword(credentials.password, user.password_hash))
-      )
+      const stored =
+        identity && typeof user?.password_hash === "string"
+          ? user.password_hash
+          : null;
+      // Unknown users cost a full hash too, and get the same answer.
+      if (!(await checkLogin(credentials.password, stored)) || !identity)
         return error(401, "wrong-credentials");
       if (await isBanned(env, identity.id, clientIp(request)))
         return error(403, "banned");
@@ -313,6 +329,8 @@ async function handle(
     case "report": {
       const report = parseReport(await readJson(request));
       if (!report) return error(400, "invalid-report");
+      const limited = await rateLimited(env, request, "report", "", session.id);
+      if (limited) return limited;
       const chat = await roomStub(env, report.roomId, report.copy).recentChat();
       await env.DB.prepare(
         `INSERT INTO reports
@@ -335,6 +353,8 @@ async function handle(
       const block = parseBlock(await readJson(request));
       if (!block || block.targetId === session.id)
         return error(400, "invalid-block");
+      const limited = await rateLimited(env, request, "block", "", session.id);
+      if (limited) return limited;
       await env.DB.prepare(
         `INSERT OR IGNORE INTO blocks (blocker_id, blocked_id, created_at)
          VALUES (?, ?, ?)`,

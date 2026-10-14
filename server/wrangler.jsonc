@@ -28,5 +28,10 @@
       "migrations_dir": "migrations",
     },
   ],
-  // shortcut: no static assets yet; add "assets": { "directory": "../dist" } once the Vite app builds here.
+  // The Vite build. Asset requests skip the Worker (free, and dist/_headers
+  // adds the CSP); only the API and room sockets run Worker code.
+  "assets": {
+    "directory": "../dist",
+    "run_worker_first": ["/api/*", "/ws/*"],
+  },
 }

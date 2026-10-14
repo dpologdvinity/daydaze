@@ -1,6 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { hashPassword, isValidPassword, verifyPassword } from "./passwords.ts";
+import {
+  checkLogin,
+  hashPassword,
+  isValidPassword,
+  verifyPassword,
+} from "./passwords.ts";
 
 const salt = new Uint8Array(16).fill(7);
 
@@ -47,4 +52,20 @@ test("corrupt or foreign stored hashes never verify", async () => {
   ])
     assert.equal(await verifyPassword("correct horse", bad), false, bad);
   assert.equal(await verifyPassword("short", stored), false);
+});
+
+test("checking a login for an unknown user still runs the full hash", async () => {
+  const stored = await hashPassword("correct horse", salt);
+  assert.equal(await checkLogin("correct horse", stored), true);
+  assert.equal(await checkLogin("wrong horse", stored), false);
+  assert.equal(await checkLogin("correct horse", null), false);
+  // Timing: the missing-user path must not be the fast path.
+  const time = async (stored: string | null) => {
+    const start = performance.now();
+    await checkLogin("correct horse", stored);
+    return performance.now() - start;
+  };
+  const known = await time(stored);
+  const unknown = await time(null);
+  assert.ok(unknown > known * 0.3, `unknown ${unknown}ms vs known ${known}ms`);
 });

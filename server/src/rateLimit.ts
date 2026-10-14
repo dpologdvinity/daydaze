@@ -27,6 +27,17 @@ export const SIGNUP_LIMIT: RateLimit = {
   refillPerSecond: 1 / 600,
 };
 export const GUEST_LIMIT: RateLimit = { capacity: 10, refillPerSecond: 1 / 30 };
+// Per player, plus a wider budget per IP address for shared connections.
+export const REPORT_LIMIT: RateLimit = { capacity: 5, refillPerSecond: 1 / 60 };
+export const BLOCK_LIMIT: RateLimit = { capacity: 20, refillPerSecond: 1 / 6 };
+export const REPORT_ADDRESS_LIMIT: RateLimit = {
+  capacity: 15,
+  refillPerSecond: 1 / 20,
+};
+export const BLOCK_ADDRESS_LIMIT: RateLimit = {
+  capacity: 60,
+  refillPerSecond: 1 / 2,
+};
 
 export type RateLimiter = {
   /** Spends one token for `key` at `now` (ms); false when the bucket is empty. */

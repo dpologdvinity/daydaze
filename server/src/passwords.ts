@@ -77,3 +77,20 @@ export async function verifyPassword(
     difference |= expected[i] ^ actual[i];
   return difference === 0;
 }
+
+// A real hash of a random password, so a missing account costs a full derive.
+let dummyHash: Promise<string> | null = null;
+
+/**
+ * Login check that takes about as long whether or not the account exists, so
+ * response timing does not reveal which usernames are registered.
+ */
+export async function checkLogin(
+  password: string,
+  stored: string | null,
+): Promise<boolean> {
+  if (stored !== null) return verifyPassword(password, stored);
+  dummyHash ??= hashPassword(crypto.randomUUID());
+  await verifyPassword(password, await dummyHash);
+  return false;
+}

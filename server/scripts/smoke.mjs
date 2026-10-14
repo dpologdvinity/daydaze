@@ -116,6 +116,15 @@ function onlineSession() {
   return { session, events };
 }
 
+// The Worker serves dist/ as static assets, so build the app first.
+const build = spawnSync("npx", ["vite", "build", "--logLevel", "warn"], {
+  stdio: "inherit",
+});
+if (build.status !== 0) {
+  rmSync(persist, { recursive: true, force: true });
+  throw new Error("vite build failed");
+}
+
 const migrate = spawnSync(
   ...wrangler(["d1", "migrations", "apply", "DB", "--local"], {
     stdio: "inherit",
@@ -404,6 +413,53 @@ try {
     `the 6th rapid login attempt gets 429 (${statuses.join(", ")})`,
   );
   check(Number(retryAfter) >= 1, "the 429 says when to retry");
+
+  // Static assets come from dist/ with the CSP; the API still reaches the Worker.
+  const page = await fetch(`${BASE}/minigames.html`);
+  const csp = page.headers.get("Content-Security-Policy") ?? "";
+  check(
+    page.status === 200 &&
+      csp.includes("script-src 'self';") &&
+      csp.includes("connect-src 'self';") &&
+      csp.includes("frame-ancestors 'none'"),
+    "the static app is served with the Content-Security-Policy",
+  );
+
+  // Reports and blocks are rate limited per player.
+  const dave = await guest();
+  const blockStatuses = [];
+  for (let i = 0; i < 21; i++) {
+    const response = await fetch(`${BASE}/api/block`, {
+      method: "POST",
+      headers: { Cookie: dave.cookie },
+      body: JSON.stringify({ targetId: `g_target${i}` }),
+    });
+    blockStatuses.push(response.status);
+  }
+  check(
+    blockStatuses.slice(0, 20).every((status) => status === 204) &&
+      blockStatuses[20] === 429,
+    "the 21st rapid block gets 429",
+  );
+  const reportStatuses = [];
+  for (let i = 0; i < 6; i++) {
+    const response = await fetch(`${BASE}/api/report`, {
+      method: "POST",
+      headers: { Cookie: dave.cookie },
+      body: JSON.stringify({
+        targetId: alice.id,
+        reason: "smoke test",
+        roomId: "plaza",
+        copy: 1,
+      }),
+    });
+    reportStatuses.push(response.status);
+  }
+  check(
+    reportStatuses.slice(0, 5).every((status) => status === 201) &&
+      reportStatuses[5] === 429,
+    `the 6th rapid report gets 429 (${reportStatuses.join(", ")})`,
+  );
 } catch (error) {
   failed = true;
   console.error(error);

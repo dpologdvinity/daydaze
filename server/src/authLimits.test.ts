@@ -31,3 +31,23 @@ test("signups and guest sessions have their own budgets", () => {
   assert.equal(run("guest", 30), 10);
   assert.equal(limiter.take("login", "kai", 0), 0);
 });
+
+test("reports and blocks are limited per player, and more loosely per address", () => {
+  const limiter = createAuthLimiter();
+  const run = (
+    kind: "report" | "block",
+    scope: "player" | "address",
+    times: number,
+  ) =>
+    Array.from(
+      { length: times },
+      () => limiter.take(kind, "", 0, scope) === 0,
+    ).filter(Boolean).length;
+  assert.equal(run("report", "player", 20), 5);
+  assert.equal(run("block", "player", 50), 20);
+  // A shared address (a household, a campus) gets a wider budget.
+  assert.equal(run("report", "address", 50), 15);
+  assert.equal(run("block", "address", 100), 60);
+  assert.ok(limiter.take("report", "", 0, "player") >= 1);
+  assert.equal(limiter.take("report", "", 60_000, "player"), 0);
+});
