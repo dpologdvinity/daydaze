@@ -20,6 +20,7 @@ import {
   MOVEMENT_LIMIT,
 } from "./rateLimit.ts";
 
+export const ROOM_CAPACITY = 60;
 export const MAX_INVALID_MESSAGES = 10;
 export const REPORT_CHAT_LINES = 20;
 
@@ -35,6 +36,20 @@ export type JoinResult =
 /** Passed to the socket's close callback; the player is already removed. */
 export type CloseReason =
   "kicked" | "banned" | "invalid-messages" | "left" | "send-failed";
+/** WebSocket close codes for room sockets, shared with the client. */
+export const CLOSE_CODES = {
+  left: 1000,
+  invalid: 4000,
+  full: 4001,
+  kicked: 4002,
+  banned: 4003,
+  "invalid-messages": 4004,
+  "send-failed": 4005,
+  replaced: 4009,
+} as const satisfies Record<
+  CloseReason | Exclude<JoinResult, { ok: true }>["reason"] | "replaced",
+  number
+>;
 export type ChatLine = { id: string; name: string; text: string; at: number };
 export type RoomCoreOptions = {
   roomId: string;
@@ -70,7 +85,7 @@ export class RoomCore {
   private readonly guestChat = createRateLimiter(GUEST_CHAT_LIMIT);
   private readonly emotes = createRateLimiter(EMOTE_LIMIT);
 
-  constructor({ roomId, capacity = 60, now }: RoomCoreOptions) {
+  constructor({ roomId, capacity = ROOM_CAPACITY, now }: RoomCoreOptions) {
     if (!isRoomId(roomId)) throw new TypeError("Unknown room");
     if (
       !Number.isInteger(capacity) ||
