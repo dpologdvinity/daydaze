@@ -187,6 +187,8 @@ const barPayouts = (page: Page) => page.getByLabel("Last Call payouts");
 test("the recipe card is what gets judged, and a perfect round pays once even when serving rapidly", async ({
   page,
 }) => {
+  // Five full orders take about 35s alone and more under parallel load.
+  test.setTimeout(120_000);
   await openBar(page);
   for (let order = 0; order < 5; order++) {
     await build(page, await readTicket(page));
