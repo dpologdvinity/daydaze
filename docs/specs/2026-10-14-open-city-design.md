@@ -1,6 +1,6 @@
 # Open City Design
 
-Status: draft, waiting for the user's approval before any build work.
+Status: approved by the user on 2026-10-14.
 
 ## Intent
 
@@ -75,8 +75,8 @@ None of this is built now. The data model above (cells grouped into regions) lea
 
 The Amusement Park and the Speedway can be built as gated venues in parallel with phases 1 and 2, because they are separate scenes.
 
-## Decisions for the user
+## Decisions (user, 2026-10-14)
 
-1. Should big venues (Water Park, Amusement Park, Speedway) be gated scenes, as recommended here, or open parts of the city?
-2. Is Downtown plus Nightlife Row the right first slice? The alternative is Beachside, which holds the Water Park.
-3. Should the city be built now (phase 1 next), or should the Amusement Park and the Speedway come first as rooms?
+1. Big venues (Water Park, Amusement Park, Speedway) are gated scenes.
+2. The first slice is Downtown plus Nightlife Row.
+3. The city core comes next, after the Water Park and Amusement Park. The Speedway and Nightlife Row follow it.
