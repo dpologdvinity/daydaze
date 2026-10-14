@@ -4,6 +4,10 @@ Daydaze is a multiplayer social hangout game that brings back the feeling of Clu
 
 The name is a mix of daydream, a buzzed daze, and "the good old days".
 
+## The one-line pitch
+
+GTA meets IMVU meets Fantage: an open city you drive, explore and get into trouble in (GTA), where you dress up and hang out with people in glam 3D spaces (IMVU), with the dress-up, minigames, pets and cosy nostalgia of the games you grew up on (Fantage).
+
 ## Who it is for
 
 - Players who grew up on Club Penguin and Fantage, now 16 and older.
