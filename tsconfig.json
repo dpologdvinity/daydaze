@@ -15,6 +15,7 @@
     "src",
     "server",
     "tests",
+    "scripts",
     "vite.config.ts",
     "playwright.config.ts",
     "playwright.minigames.config.ts"
