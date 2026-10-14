@@ -18,7 +18,7 @@ The world is a set of districts joined by portals, with Downtown Plaza as the hu
 | District | Places |
 |---|---|
 | Downtown Plaza (hub) | street, fountain, bus stop with the world map |
-| Nightlife Row | lounge, dance club, rooftop bar, karaoke bar, arcade bar, speakeasy, lesbian bar |
+| Nightlife Row | The Velvet Room lounge, several clubs (a main dance club, a Y2K pop club, a techno warehouse, a Latin night club, the lesbian bar's dance floor), rooftop bar, karaoke bar, arcade bar, speakeasy |
 | Water Park | entrance plaza, slide towers, wave pool, lazy river, splash zone, cliff-dive lagoon, cabanas and pool bar, night swim |
 | Amusement Park | entrance gate, roller coaster, ferris wheel, drop tower, carousel, log flume, haunted house, swing ride, teacups, carnival midway, photo booth |
 | Speedway | race track with grandstand and pit garage, bumper car arena |
@@ -39,6 +39,32 @@ A ride is a place feature that moves the player's doll along a fixed path while 
 - Entering any Water Park room shows the player's doll in their swimsuit look. Leaving the district restores the normal outfit.
 - The saved outfit never changes. The swimsuit is a separate look slot in the save, chosen in the closet: one-piece, bikini, board shorts and rash guard, each tintable.
 - Other players see the swimsuit too. The room's data marks it as a swimwear room, and the room server sends each player's active look.
+
+## Dancing
+
+- Players can dance anywhere, and especially on club dance floors. A dance button opens a picker of dance moves. The doll loops the chosen move until the player moves or stops.
+- Moves include a basic two-step, a body roll, a hair flip, a Y2K shuffle, voguing, a twerk, and a slow dance.
+- On a club floor, dancing on the beat (shown by pulsing tiles) earns a small streak glow. It is optional: no score, no failure.
+- Couple dances (slow dance, partner spin) work for any two dolls, and against NPCs until multiplayer exists.
+- Moves are animation clips on the doll rig, so new moves are data, not code.
+
+## Non-player characters
+
+Places have a few scripted non-player characters (NPCs) so they never feel empty. NPCs use fixed, handwritten lines. No AI-generated dialogue.
+
+- Clubs: a bouncer at the door who nods you in, a DJ in the booth, a bartender, dancers on the floor, a coat-check attendant.
+- Bars and lounge: bartender, regulars at the bar, a server.
+- Shops and the salon: a cashier, a stylist.
+- Water Park: lifeguard, snack-bar cashier, swimmers and sunbathers.
+- Amusement Park and Speedway: ride operators, a ticket booth cashier, a carnival barker, a pit crew.
+- NPCs idle, dance or walk short loops, and show a speech bubble with a random line when a player is near or taps them. Some offer an action (the bartender hands you a drink, the stylist opens the salon).
+- NPCs use the same doll system as players, so they wear real outfits and look like part of the world.
+
+## Body shape
+
+- The doll body has shape controls in the closet: bust, hips and butt, waist, and height, each a slider with a sensible range, for curvy doll proportions.
+- Outfits are built to follow the body shape.
+- Clothed at all times outside the 18+ area, which is suggestive but has no nudity.
 
 ## Games roster
 
@@ -77,7 +103,7 @@ Drinks and weed are free props: a player grabs one at a bar or the lounge. Alcoh
 
 ## Sapphic themes
 
-- A lesbian bar on Nightlife Row with its own look, playlist and regular NPC-free flavor (posters, signage, menu).
+- A lesbian bar on Nightlife Row with its own look, playlist, regulars, posters, signage and menu.
 - The lesbian sunset flag and other pride flags as room decor and clothing prints.
 - Couple emotes and slow dancing for any two dolls: holding hands, forehead kiss, piggyback ride.
 - Sapphic pop-culture nods in posters, neon-sign puns, song-title jokes and carnival prize names.
