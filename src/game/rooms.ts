@@ -2,7 +2,12 @@ import { CITY_AREA, CITY_BOUNDS, CITY_SPAWN } from "./city/layout.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
-  "velvet-room" | "plaza" | "amusement-park" | "water-park" | "city";
+  | "velvet-room"
+  | "plaza"
+  | "amusement-park"
+  | "water-park"
+  | "speedway"
+  | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
 
@@ -85,6 +90,16 @@ const WATER_PARK_FLOOR: readonly Vec2[] = [
   [-10, 7],
 ];
 
+// Speedway: a 20 m x 13 m pit apron in front of the track. The grandstand and
+// the track sit behind the back edge; the bumper arena is off the right side.
+// The gate to the city is on the front edge, right of centre.
+const SPEEDWAY_FLOOR: readonly Vec2[] = [
+  [-10, -6],
+  [10, -6],
+  [10, 7],
+  [-10, 7],
+];
+
 export const ROOMS: Record<RoomId, RoomDefinition> = {
   "velvet-room": {
     id: "velvet-room",
@@ -146,6 +161,15 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         target: "water-park",
         targetSpawn: { position: [9, 2.5], yaw: -Math.PI / 2 },
       },
+      {
+        // The pit-lane arch at the west end of the street.
+        id: "to-speedway",
+        position: [-11.2, 0],
+        radius: 0.7,
+        label: "To the Speedway",
+        target: "speedway",
+        targetSpawn: { position: [-8, 0], yaw: Math.PI / 2 },
+      },
     ],
   },
   "amusement-park": {
@@ -198,6 +222,32 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out through the gate",
         target: "city",
         targetSpawn: { position: [4, -9], yaw: 0 },
+      },
+    ],
+  },
+  speedway: {
+    id: "speedway",
+    name: "The Speedway",
+    walkable: SPEEDWAY_FLOOR,
+    spawn: { position: [-8, 0], yaw: Math.PI / 2 },
+    portals: [
+      {
+        // The pit-lane arch the player came in through, back to the Plaza.
+        id: "speedway-to-plaza",
+        position: [-9.6, 5.8],
+        radius: 0.8,
+        label: "Back to Daydaze Plaza",
+        target: "plaza",
+        targetSpawn: { position: [-9.2, 1.5], yaw: Math.PI / 2 },
+      },
+      {
+        // The gate out to the city, on the north avenue sidewalk.
+        id: "speedway-to-city",
+        position: [9.4, 5.8],
+        radius: 0.9,
+        label: "Out through the gate",
+        target: "city",
+        targetSpawn: { position: [81, -9], yaw: 0 },
       },
     ],
   },

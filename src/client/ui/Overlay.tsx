@@ -30,6 +30,7 @@ const ROOM_HINTS: Record<RoomId, string> = {
   "amusement-park":
     "Night carnival. Tap a boarding ring to ride, or use WASD to walk.",
   "water-park": "Swimsuits on. Tap the slide tower to ride.",
+  speedway: "Pit lane. Tap a spot to race or ride the bumper cars.",
   city: "Downtown after dark. Tap the street or use WASD, then walk into a lit door.",
 };
 

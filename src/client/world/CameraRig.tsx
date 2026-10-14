@@ -34,6 +34,10 @@ const ROOM_SHOTS: Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }> =
       eye: new THREE.Vector3(9.5, 9.5, 19),
       look: new THREE.Vector3(1.5, 2.2, -4),
     },
+    speedway: {
+      eye: new THREE.Vector3(0, 8, 14),
+      look: new THREE.Vector3(0, 1.5, -3),
+    },
     // high over the first slice of the city; the orbit allows this far out
     city: {
       eye: new THREE.Vector3(-120, 150, 170),
@@ -47,6 +51,7 @@ const MAX_DISTANCE: Record<RoomId, number> = {
   plaza: 18,
   "amusement-park": 18,
   "water-park": 18,
+  speedway: 18,
   city: 300,
 };
 

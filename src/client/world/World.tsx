@@ -35,6 +35,7 @@ import { areaOf } from "../../game/area.ts";
 import { VelvetRoom } from "../rooms/VelvetRoom.tsx";
 import { Plaza } from "../rooms/Plaza.tsx";
 import type { PickHandler } from "../rooms/shared/Floor.tsx";
+import { Speedway } from "../rooms/Speedway.tsx";
 import { WaterPark } from "../rooms/WaterPark.tsx";
 import { CameraRig, type View } from "./CameraRig.tsx";
 import { NeonClamp } from "./NeonClamp.tsx";
@@ -118,6 +119,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   plaza: Plaza,
   "water-park": WaterPark,
   "amusement-park": AmusementPark,
+  speedway: Speedway,
 };
 
 export type WorldProps = {
