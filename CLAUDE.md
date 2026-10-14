@@ -26,6 +26,36 @@ Use Node.js 22.18 or newer.
 - `npm run format` / `npm run format:check`: Prettier.
 - `npm run verify`: tests, typecheck and format check.
 
+## Online client
+
+`src/net/client/` is the framework-free browser side: `api.ts` (typed, validated `/api` calls), `WebSocketTransport.ts` (reconnects with backoff; close codes 4000 invalid, 4001 full, 4002 kicked, 4003 banned and 4009 replaced are final) and `OnlineSession.ts` (session, room copies, remote players, throttled moves). Wire it up in the browser like this:
+
+```ts
+const session = new OnlineSession({
+  api: createApi({ fetch: (url, init) => fetch(url, init) }),
+  wsBaseUrl: location.origin.replace(/^http/, "ws"),
+  openTransport: (url) => new WebSocketTransport({ url, WebSocket }),
+});
+if (await session.start()) await session.joinRoom("plaza", look);
+// else: status "offline", keep playing single-player.
+```
+
+In development, run `npm run dev:server` (wrangler dev on port 8787) next to Vite and proxy both paths, so cookies stay same-origin:
+
+```ts
+// vite.config.ts
+export default defineConfig({
+  server: {
+    proxy: {
+      "/api": "http://127.0.0.1:8787",
+      "/ws": { target: "ws://127.0.0.1:8787", ws: true },
+    },
+  },
+});
+```
+
+The session cookie is `Secure`. Chrome and Firefox accept it on `http://localhost`; other plain-HTTP hosts (a LAN IP for phone testing) need HTTPS.
+
 ## Rules
 
 - TypeScript strict. No `any`, no `as` assertions where a type guard or `as const` works.
