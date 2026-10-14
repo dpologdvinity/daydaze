@@ -112,6 +112,13 @@ Both venues are part of the 18+ area and need the age gate. They are a secret: n
 - Accessibility and identity details: glasses, hearing aids, a wheelchair option that rides, dances and uses every place, prosthetic limbs, hijabs and head wraps, bindis, turbans.
 - NPCs reflect the same range, and each neighborhood's regulars look like the people who'd live there, without stereotypes. Every NPC is a real person with a name and a handwritten line, never a punchline.
 
+## Hair salon and beauty services
+
+- Hair salons in several neighborhoods: a glam downtown salon, a braiding shop (box braids, knotless, cornrows, Fulani braids, locs retwist), a barbershop with fades and designs, a Korean perm and colour salon, and a cheap-and-cheerful walk-in salon.
+- A stylist NPC seats the player at a mirror. The player picks a cut, style, colour (including ombré, highlights, money pieces and neon), and extensions or a wig, and sees the doll update live before paying in coins.
+- Also in the salons: lash extensions, brow shaping, nail art, and a makeup artist who applies full looks (Y2K glam, soft glam, goth, natural).
+- Salon chairs double as hangout seats: friends can sit beside each other and chat while getting styled.
+
 ## Dancing
 
 - Players can dance anywhere, and especially on club dance floors. A dance button opens a picker of dance moves. The doll loops the chosen move until the player moves or stops.
