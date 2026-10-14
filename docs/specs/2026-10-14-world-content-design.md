@@ -75,6 +75,7 @@ Both venues are part of the 18+ area and need the age gate. They are a secret: n
 - Food lowers the drunk buzz faster, as the effects section says.
 - Shared tables work as hangout spots: players can sit together, share a plate, and clink drinks.
 - Trademarks: real chains are never named or copied. The Jollibee-inspired joint gets an original name, logo and mascot, keeping the vibe (red and yellow, fried chicken, sweet spaghetti, peach mango pie) without the brand.
+- Food delivery: an in-game phone app inspired by DoorDash (original name and logo, never the real brand). Players order from any restaurant on the map and a courier NPC on a scooter delivers it to wherever they are (apartment, beach, a club booth) after a short wait. Players can also take a delivery job: pick up orders and race them across the map on a scooter for coin tips (solo, easy to medium; a tip bonus for fast, careful deliveries).
 - Food minigames, one per batch: boba builder (match the order: tea, milk, sugar level, toppings; easy), halo-halo stacker (stacking layers; easy to medium), sushi conveyor catch (medium), ramen rush (timed orders; hard), and a Filipino cook-off for two players (multi).
 
 ## Shopping
