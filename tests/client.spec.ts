@@ -24,8 +24,8 @@ test("loads the Velvet Room with no errors and mounts the canvas", async ({
   await page.goto(LOW);
   await expect(page.getByRole("img", { name: "3D room view" })).toBeVisible();
   await expect(roomTitle(page)).toHaveText("The Velvet Room");
-  // let the continuous loop run a while: shaders compile on the first frames
-  await page.waitForTimeout(8000);
+  // shaders compile on the first frames; wait until the frame counter caps out
+  await expect(page.locator("canvas")).toHaveAttribute("data-frames", "10");
   expect(errors).toEqual([]);
 });
 

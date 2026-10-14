@@ -15,6 +15,8 @@ export default defineConfig({
   use: {
     baseURL: `http://localhost:${PORT}`,
     viewport: { width: 1280, height: 800 },
+    trace: "retain-on-failure",
+    screenshot: "only-on-failure",
     launchOptions: {
       args: [
         "--use-gl=angle",
