@@ -33,7 +33,7 @@ The world is a set of districts joined by portals, with Downtown Plaza as the hu
 | Fashion District | boutiques (shop), salon, nail bar, runway |
 | Home | your own apartment, decorated, visitable by friends |
 | Park and Gardens | picnic lawn, boating lake, night-sky lookout |
-| 18+ area (behind the age gate) | strip club, weed lounge |
+| 18+ area (behind the age gate) | weed lounge, plus two secret venues described below |
 
 The current lounge, "The Mango Room", is renamed **The Velvet Room** so that no venue is mango-branded.
 
@@ -50,6 +50,17 @@ A ride is a place feature that moves the player's doll along a fixed path while 
 - Entering any Water Park room shows the player's doll in their swimsuit look. Leaving the district restores the normal outfit.
 - The saved outfit never changes. The swimsuit is a separate look slot in the save, chosen in the closet: one-piece, bikini, board shorts and rash guard, each tintable.
 - Other players see the swimsuit too. The room's data marks it as a swimwear room, and the room server sends each player's active look.
+
+## Secret 18+ venues
+
+Both venues are part of the 18+ area and need the age gate. They are a secret: no sign, no map pin and no mention in the UI. Players find them by word of mouth and in-world clues.
+
+- **The strip club** sits behind an unmarked door in the back of the speakeasy. A bartender NPC gives the knock or password when asked the right way.
+- **The massage parlor** is upstairs from the nail bar in the Fashion District, reached through a "staff only" door that opens once the receptionist NPC has been asked for "the full treatment".
+- Audience: built for women and queer women first, lesbian-leaning, and open to everyone. Not built around a male gaze. Dancers and masseuses are mostly women, with a mix of genders available. Decor, music and copy speak to women: velvet booths, a candlelit spa, a playlist of sapphic artists, flirty handwritten lines.
+- Content limits: suggestive only. No nudity at any time; dancers keep lingerie or costumes on. A massage "happy ending" is implied with a fade to black and a cheeky line afterward, never shown.
+- Services come from NPCs and are free, like drinks. Players can tip with coins as a cosmetic gesture.
+- Players can bring a date: two players can share a VIP booth or a couples massage room.
 
 ## Dancing
 
