@@ -25,7 +25,7 @@ The world is a set of districts joined by portals, with Downtown Plaza as the hu
 | Marina | docks, yacht club bar, a party yacht you can board and sail between the marina and a private island, speedboat and jet-ski rentals, rowboats |
 | Airport and Private Jets | terminal lounge, a private jet with a cabin party you board to fly between districts and to vacation spots (tropical island, snowy mountain town, city rooftop) |
 | Ice Rink and Winter Village | outdoor ice-skating rink with free skating and couple skating, hot cocoa stand, cabin lodge |
-| Sports Complex | basketball court, soccer pitch, tennis court, bowling alley, mini golf, gym |
+| Sports Complex | shooting range, paintball arena, basketball court, soccer pitch, tennis court, bowling alley, mini golf, gym |
 | Zoo | savanna walk with a lion pride (the lion nod), giraffe feeding deck, penguin house (the Club Penguin nod), monkey canopy walk, reptile house, petting area, safari tram ride |
 | Aquarium | shark tunnel, jellyfish glow room (night-club lighting), coral reef tank, touch pool, otter and seal show, underwater cafe and lounge |
 | Mermaid Cove | a hidden ocean cove past the beach where mermaids live and everyone can see them: sea caves, a coral lagoon, rocks where mermaids sit and sing, a sunken ship to explore while swimming |
@@ -120,6 +120,10 @@ Both venues are part of the 18+ area and need the age gate. They are a secret: n
 - Nail salons: a busy neighborhood nail salon with pedicure thrones and massage chairs, and a luxe nail art studio. Players choose nail shape (almond, coffin, stiletto, square, short), length, colour, finish (gloss, matte, chrome, cat-eye, glitter) and art (French tips, Y2K flames, butterflies, rhinestones, airbrush, 3D charms) and see them on the doll's hands. A nail-painting minigame lets players paint a client's nails to match an order (easy to medium).
 - Salon chairs double as hangout seats: friends can sit beside each other and chat while getting styled.
 
+## Guns
+
+Guns exist only inside game zones: the shooting range, paintball, laser tag, the carnival shooting gallery, the water-gun battle, and the arcade zombie shooter. A player picks up a gun on entering the zone and returns it on leaving. Hangouts, clubs, malls, restaurants and the rest of the world stay gun-free, so nobody can be shot outside a game. Hits are cartoon and paint or light effects, never blood.
+
 ## Dancing
 
 - Players can dance anywhere, and especially on club dance floors. A dance button opens a picker of dance moves. The doll loops the chosen move until the player moves or stops.
@@ -177,6 +181,10 @@ Places have a few scripted non-player characters (NPCs) so they never feel empty
 | Feeding time (match food to animals) | Zoo | solo | easy | animals |
 | Reef dive spotter | Aquarium | solo | medium | ocean |
 | Seal show tricks (rhythm) | Aquarium | solo or multi | medium | ocean |
+| Shooting range: targets, timed drills, pistol to rifle | Shooting range | solo | easy to hard | action |
+| Paintball arena | Sports Complex | multi | medium | action |
+| Laser tag (team neon maze) | arcade bar | multi | medium | action |
+| Zombie arcade shooter | arcade bar | solo or co-op | medium to hard | horror action |
 | Runway battle with player voting | Fashion District | multi | medium | fashion |
 | Trivia night (2000s pop culture) | arcade bar | multi | medium | nostalgia |
 | Surf | Boardwalk | solo | hard | beach |
