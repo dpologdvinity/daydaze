@@ -40,7 +40,17 @@ Out of scope for now: anything that only hurts the cheater (client-owned coins),
   - Login: 5 tries per account, then 1 every 12 s; and 20 per address across all accounts, then 1 every 6 s.
   - Signup: 3, then 1 every 10 minutes.
   - Guest sessions: 10, then 1 every 30 s.
+  - Reports: 5 per player, then 1 a minute; 15 per address, then 1 every 20 s.
+  - Blocks: 20 per player, then 1 every 6 s; 60 per address, then 1 every 2 s.
 - Over-limit requests get 429 with `Retry-After`.
+- Player budgets live in a separate `RateLimiter` object per player, so one player can't use up a whole household's address budget.
+
+**Username enumeration**
+
+- Login answers the same `401 wrong-credentials` for an unknown user and for a wrong password.
+- Both cases take about as long, because an unknown user is checked against a dummy PBKDF2 hash (`checkLogin`).
+- Signup hashes the password before it looks the name up, so a taken name answers no faster than a free one.
+- The per-account login bucket also applies to names that don't exist, so it gives nothing away.
 
 **Identity inside rooms**
 
@@ -68,7 +78,21 @@ Out of scope for now: anything that only hurts the cheater (client-owned coins),
 - Errors are fixed codes such as `{ "error": "rate-limited" }`. They never echo input, stack traces or SQL. Exceptions are logged on the server only.
 - API responses send `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer` and `Cache-Control: no-store`.
 
-The smoke test (`npm run smoke:server`) exercises the cross-origin refusals, the 6th rapid login getting 429, the security headers, blocks, reconnects and forged identity headers against a local `wrangler dev`.
+**The static app**
+
+- The Worker serves the Vite build (`dist/`) as static assets. Asset requests never run Worker code; `run_worker_first` covers only `/api/*` and `/ws/*`.
+- `public/_headers`, copied into `dist/`, adds this policy to every asset response:
+  - `Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'`
+  - `X-Content-Type-Options: nosniff`
+  - `Referrer-Policy: strict-origin-when-cross-origin`
+- The policy was checked against the build:
+  - The HTML has one external module script and no inline scripts.
+  - The bundle has no `eval` or `new Function`.
+  - The CSS loads nothing external.
+  - In headless Chromium, the app renders with no violations, a same-host `ws://` connection passes (CSP Level 3 `'self'` covers `ws:`/`wss:` to the same host), and `ws://evil.example` is blocked.
+- `'unsafe-inline'` styles are for React style props. `server/src/csp.test.ts` pins the policy, so a loosened header fails `npm test`.
+
+The smoke test (`npm run smoke:server`) runs against a local `wrangler dev`. It covers the cross-origin refusals, the 6th rapid login, the 21st rapid block and the 6th rapid report getting 429, the security headers and the CSP, blocks, reconnects, and forged identity headers.
 
 ## Deployment requirements
 
@@ -82,9 +106,8 @@ The smoke test (`npm run smoke:server`) exercises the cross-origin refusals, the
 - **Client-owned coins and purchases.** Coins live in the client save, so players can give themselves anything. That only affects the cheater while there is no trading or online leaderboard. Both of those must wait for a server-authoritative economy.
 - **No admin route yet.** `RoomCore` supports kick and ban, but nothing exposes them, so bans are added by hand in D1.
 - **Rate-limit memory.** Buckets live in Durable Object memory, so an object evicted after idling starts full again. Many users behind one IP share a budget.
-- **Username enumeration.** Signup answers 409 for taken names, and login skips the password hash for unknown users, which leaks timing.
+- **Username enumeration, residual.** Signup still answers 409 for a taken name. Letting people choose a name requires that, and display names are public in every room anyway. Signup's 3-per-10-minutes budget makes bulk probing slow. Small timing differences remain, such as D1 lookups and the one-time dummy hash per isolate, but they are tiny next to a 100,000-iteration PBKDF2.
 - **No account recovery, no 2FA, and no breached-password check.**
-- **`/api/report` and `/api/block` are not rate limited** beyond requiring a session.
 - **The chat filter is a short list.** Spacing and look-alike letters get past it; block and report are the backstop.
-- **No Content-Security-Policy yet.** The Worker doesn't serve the app's static assets yet. Add a CSP when it does.
+- **CSP scope.** The CSP covers static assets, which includes every HTML page. If the Worker ever renders HTML itself, it must add the same header in code. A future CDN, font host or analytics script needs an explicit CSP change.
 - **Age gate.** It isn't built. The 18+ venues must stay unreachable for real players until it ships.
