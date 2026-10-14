@@ -1,7 +1,7 @@
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useRef, type RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import * as THREE from "three";
-import type { Look, Mood } from "../../game/look.ts";
+import type { Look, Mood, SwimLook } from "../../game/look.ts";
 import { portalAt } from "../../game/portals.ts";
 import type { Portal, RoomDefinition, Spawn } from "../../game/rooms.ts";
 import {
@@ -11,6 +11,13 @@ import {
   yawTowards,
   type Vec2,
 } from "../../game/walk.ts";
+import {
+  pathLength,
+  POOL,
+  samplePath,
+  type Slide,
+} from "../../game/waterPark.ts";
+import { useReducedMotion } from "../motion.ts";
 import { Doll, type WalkState } from "../avatar/Doll.tsx";
 import { hdr } from "../rooms/shared/materials.ts";
 
@@ -23,6 +30,8 @@ export type Player = {
   leaving: boolean;
   /** Set while a ride carries the doll; movement pauses and the seat wins. */
   seat: { position: THREE.Vector3; yaw: number } | null;
+  /** A slide ride: `t` runs 0..1 down the slide, then `swim` counts seconds. */
+  ride: { slide: Slide; length: number; t: number; swim: number } | null;
 };
 
 export function createPlayer(spawn: Spawn): Player {
@@ -33,7 +42,46 @@ export function createPlayer(spawn: Spawn): Player {
     target: null,
     leaving: false,
     seat: null,
+    ride: null,
   };
+}
+
+/** Puts the player at the top of a slide. Ignored mid-ride or mid-portal. */
+export function startRide(player: Player, slide: Slide, t = 0) {
+  if (player.ride || player.leaving) return;
+  player.target = null;
+  player.ride = { slide, length: pathLength(slide.path), t, swim: 0 };
+}
+
+const SLIDE_SPEED = 6.5;
+const SWIM_SECONDS = 1.6;
+const SEAT = 0.42;
+
+/** Moves a riding player; returns how the doll should hold itself. */
+function ride(player: Player, room: RoomDefinition, dt: number, calm: boolean) {
+  const r = player.ride;
+  if (!r) return null;
+  if (r.t < 1) {
+    // reduced motion skips the slide and goes straight to the splash
+    r.t = calm ? 1 : Math.min(1, r.t + (dt * SLIDE_SPEED) / r.length);
+    const { point, yaw } = samplePath(r.slide.path, r.t);
+    // the path is the rider's hips; the doll's origin is at its feet
+    player.pos.set(point[0], point[1] - SEAT, point[2]);
+    player.yaw = yaw;
+    return "sit";
+  }
+  r.swim += dt;
+  if (r.swim < SWIM_SECONDS) {
+    // treading water: shoulders above the surface, a little bob
+    const bob = calm ? 0 : Math.sin(r.swim * 5) * 0.04;
+    player.pos.y = POOL.water - 1.12 + bob;
+    return "idle";
+  }
+  const [x, z] = clampToWalkable(room.walkable, r.slide.exit);
+  player.pos.set(x, 0, z);
+  player.yaw = 0;
+  player.ride = null;
+  return null;
 }
 
 /** Sends a click on the floor to the player as a walk target. */
@@ -120,6 +168,7 @@ export function PlayerController({
   player,
   room,
   look,
+  swim,
   mood,
   tag,
   onPortal,
@@ -127,6 +176,7 @@ export function PlayerController({
   player: Player;
   room: RoomDefinition;
   look: Look;
+  swim: SwimLook | null;
   mood: Mood;
   /** DOM name tag and chat bubble, pinned above the doll's head each frame. */
   tag: RefObject<HTMLDivElement | null>;
@@ -136,12 +186,21 @@ export function PlayerController({
   const walk = useRef<WalkState>({ speed: 0 });
   const marker = useRef<THREE.Mesh>(null);
   const held = useHeldKeys();
+  const calm = useReducedMotion();
+  const [riding, setRiding] = useState<Mood | null>(null);
+  const shownRide = useRef<Mood | null>(null);
 
   useFrame((state, dt) => {
     const from: Vec2 = [player.pos.x, player.pos.z];
     const dir = keyDirection(held.current, state.camera);
     let goal: Vec2 | null = player.target;
-    if (dir) {
+    const rideMood = ride(player, room, dt, calm);
+    if (rideMood !== shownRide.current) {
+      shownRide.current = rideMood;
+      setRiding(rideMood);
+    }
+    if (rideMood) goal = null;
+    else if (dir) {
       player.target = null;
       goal = [from[0] + dir[0], from[1] + dir[1]];
     }
@@ -205,7 +264,7 @@ export function PlayerController({
   return (
     <>
       <group ref={g}>
-        <Doll look={look} mood={mood} walk={walk} />
+        <Doll look={look} swim={swim} mood={riding ?? mood} walk={walk} />
       </group>
       <mesh ref={marker} rotation-x={-Math.PI / 2} visible={false}>
         <ringGeometry args={[0.16, 0.2, 40]} />

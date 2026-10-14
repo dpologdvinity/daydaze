@@ -10,12 +10,19 @@ import { ToneMappingMode } from "postprocessing";
 import {
   lazy,
   Suspense,
+  useEffect,
   useMemo,
   useRef,
   useState,
+  type ComponentType,
   type RefObject,
 } from "react";
-import type { Look, Mood } from "../../game/look.ts";
+import {
+  swimFor,
+  type Look,
+  type Mood,
+  type SwimLook,
+} from "../../game/look.ts";
 import {
   ROOMS,
   type Portal,
@@ -23,11 +30,20 @@ import {
   type Spawn,
 } from "../../game/rooms.ts";
 import type { Vec2 } from "../../game/walk.ts";
+import { SLIDES } from "../../game/waterPark.ts";
 import { VelvetRoom } from "../rooms/VelvetRoom.tsx";
 import { Plaza } from "../rooms/Plaza.tsx";
+import type { PickHandler } from "../rooms/shared/Floor.tsx";
+import { WaterPark } from "../rooms/WaterPark.tsx";
 import { CameraRig, type View } from "./CameraRig.tsx";
 import { NeonClamp } from "./NeonClamp.tsx";
-import { createPlayer, PlayerController, walkTo } from "./PlayerController.tsx";
+import {
+  createPlayer,
+  PlayerController,
+  startRide,
+  walkTo,
+  type Player,
+} from "./PlayerController.tsx";
 import { QualityContext, type QualityTier } from "./quality.ts";
 
 // Enough for the environment map, face textures and reflector to settle.
@@ -60,6 +76,15 @@ function FrameCount({ still }: { still: boolean }) {
   return null;
 }
 
+// Exposes what the doll wears on the canvas, so tests can read it by role.
+function Wearing({ style }: { style: string }) {
+  const gl = useThree((s) => s.gl);
+  useEffect(() => {
+    gl.domElement.dataset.wearing = style;
+  }, [gl, style]);
+  return null;
+}
+
 function Effects() {
   return (
     <EffectComposer multisampling={4}>
@@ -76,10 +101,28 @@ function Effects() {
   );
 }
 
+type SceneProps = {
+  onPick: PickHandler;
+  onRide: (slide: number) => void;
+  player: Player;
+};
+
+const SCENES: Record<RoomId, ComponentType<SceneProps>> = {
+  "velvet-room": VelvetRoom,
+  plaza: Plaza,
+  "water-park": WaterPark,
+  "amusement-park": AmusementPark,
+};
+
 export type WorldProps = {
   room: RoomId;
   arrival: Spawn;
   look: Look;
+  swim: SwimLook;
+  /** Bumped by the UI's ride button; each bump rides the next slide. */
+  rides: number;
+  /** `?slide=0.4` starts on the first slide that far down, for screenshots. */
+  slideAt: number | null;
   mood: Mood;
   view: View;
   tag: RefObject<HTMLDivElement | null>;
@@ -93,6 +136,9 @@ export function World({
   room,
   arrival,
   look,
+  swim,
+  rides,
+  slideAt,
   mood,
   view,
   tag,
@@ -106,7 +152,17 @@ export function World({
   // a fresh player per arrival, so a portal can only fire once per visit
   const player = useMemo(() => createPlayer(arrival), [arrival]);
   const onPick = (point: Vec2) => walkTo(player, def, point);
-  const Room = room === "plaza" ? Plaza : VelvetRoom;
+  const onRide = (slide: number, t = 0) => {
+    const s = SLIDES[slide];
+    if (def.id === "water-park" && s) startRide(player, s, t);
+  };
+  useEffect(() => {
+    if (rides > 0) onRide((rides - 1) % SLIDES.length);
+  }, [rides]);
+  useEffect(() => {
+    if (slideAt !== null) onRide(0, slideAt);
+  }, [player, slideAt]);
+  const Room = SCENES[room];
 
   return (
     <Canvas
@@ -128,6 +184,7 @@ export function World({
           />
         )}
         <FrameCount still={still} />
+        <Wearing style={swimFor(def, swim)?.style ?? "outfit"} />
         {/* the key light, shared so a doll looks the same in every room */}
         <directionalLight
           position={[2, 5, 6]}
@@ -135,15 +192,12 @@ export function World({
           intensity={2.2}
         />
         <Suspense fallback={null}>
-          {room === "amusement-park" ? (
-            <AmusementPark key={room} onPick={onPick} player={player} />
-          ) : (
-            <Room key={room} onPick={onPick} />
-          )}
+          <Room key={room} onPick={onPick} onRide={onRide} player={player} />
           <PlayerController
             player={player}
             room={def}
             look={look}
+            swim={swimFor(def, swim)}
             mood={mood}
             tag={tag}
             onPortal={onPortal}

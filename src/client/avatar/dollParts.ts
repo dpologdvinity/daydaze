@@ -106,6 +106,10 @@ export const G = {
   // clothes
   cropTop: torsoShape(lathe(band(0.935, 1.1, 0.008), 32)),
   lowRise: torsoShape(lathe(band(0.665, 0.79, 0.008), 32)),
+  // swimwear
+  bikiniTop: torsoShape(lathe(band(0.96, 1.05, 0.009), 32)),
+  bikiniBottom: torsoShape(lathe(band(0.655, 0.73, 0.007), 32)),
+  onePiece: torsoShape(lathe(band(0.655, 1.06, 0.008), 32)),
   flareThigh: lathe(
     [
       [-0.34, 0.052],

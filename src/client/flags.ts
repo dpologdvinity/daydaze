@@ -13,6 +13,8 @@ export type Flags = {
   room: RoomId | null;
   /** `?view=face` starts on another camera shot. */
   view: View | null;
+  /** `?slide=0.4` starts the Water Park's first slide 40% of the way down. */
+  slide: number | null;
 };
 
 const VIEW_IDS: readonly View[] = ["room", "full", "face"];
@@ -21,6 +23,7 @@ export function readFlags(search: string): Flags {
   const q = new URLSearchParams(search);
   const quality = q.get("quality");
   const room = q.get("room");
+  const slide = Number(q.get("slide") ?? Number.NaN);
   const view = VIEW_IDS.find((v) => v === q.get("view")) ?? null;
   return {
     quality: quality === "low" || quality === "high" ? quality : null,
@@ -28,5 +31,6 @@ export function readFlags(search: string): Flags {
     debug: q.get("debug") === "1",
     room: isRoomId(room) ? room : null,
     view,
+    slide: slide >= 0 && slide <= 1 ? slide : null,
   };
 }

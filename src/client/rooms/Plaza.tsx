@@ -1,4 +1,6 @@
 import { Environment, Lightformer } from "@react-three/drei";
+import { useMemo } from "react";
+import * as THREE from "three";
 import type { Look, Mood } from "../../game/look.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import { Doll } from "../avatar/Doll.tsx";
@@ -10,10 +12,54 @@ import { StringLights } from "./plaza/StringLights.tsx";
 import { AmusementGate } from "./plaza/AmusementGate.tsx";
 import { Beams, type Beam } from "./shared/Beams.tsx";
 import type { PickHandler } from "./shared/Floor.tsx";
+import { DECO, Neon, NeonText, SCRIPT } from "./shared/Neon.tsx";
+import { Palm } from "./shared/Palm.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 
 // Found by destination, so other portals on the Plaza can come and go.
 const parkGate = ROOMS.plaza.portals.find((p) => p.target === "amusement-park");
+
+const WATER_GATE = ROOMS.plaza.portals.find((p) => p.target === "water-park");
+
+/** A turquoise neon arch at the east end of the street, out to the pools. */
+function WaterParkGate() {
+  const arch = useMemo(() => {
+    const pts = [new THREE.Vector3(0, 0.1, -1), new THREE.Vector3(0, 2.3, -1)];
+    for (let i = 1; i < 12; i++) {
+      const a = Math.PI - (i / 12) * Math.PI;
+      pts.push(new THREE.Vector3(0, 2.3 + Math.sin(a), Math.cos(a)));
+    }
+    pts.push(new THREE.Vector3(0, 2.3, 1), new THREE.Vector3(0, 0.1, 1));
+    return pts;
+  }, []);
+  if (!WATER_GATE) return null;
+  const [x, z] = WATER_GATE.position;
+  return (
+    <group position={[x + 0.7, 0, z]}>
+      <Neon points={arch} color="#3fe0d0" k={4} radius={0.03} />
+      <NeonText
+        text="water park"
+        color="#3fe0d0"
+        font={SCRIPT}
+        width={2.4}
+        k={3}
+        position={[0, 3.75, 0]}
+        rotation={[0, -Math.PI / 2, 0]}
+      />
+      <NeonText
+        text="SPLASH"
+        color="#ffb02e"
+        font={DECO}
+        width={1.4}
+        k={2.6}
+        position={[0, 4.35, 0]}
+        rotation={[0, -Math.PI / 2, 0]}
+      />
+      <Palm position={[0, 0, -1.9]} scale={1.2} />
+      <Palm position={[0, 0, 1.9]} scale={1.1} />
+    </group>
+  );
+}
 
 // Searchlights from the club roof, sweeping the clouds.
 const CLUB_X = SHOPS.find((s) => s.id === "club")?.x ?? 0;
@@ -128,6 +174,7 @@ export function Plaza({ onPick }: { onPick: PickHandler }) {
       <StringLights />
       <PortalPads room={ROOMS.plaza} />
       {parkGate && <AmusementGate at={parkGate.position} />}
+      <WaterParkGate />
       {LOCALS.map((n, i) => (
         <Doll
           key={i}

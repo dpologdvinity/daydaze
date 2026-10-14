@@ -30,6 +30,10 @@ const ROOM_SHOTS: Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }> =
       eye: new THREE.Vector3(0, 10, 19),
       look: new THREE.Vector3(0, 4.5, -10),
     },
+    "water-park": {
+      eye: new THREE.Vector3(9.5, 9.5, 19),
+      look: new THREE.Vector3(1.5, 2.2, -4),
+    },
   };
 
 // Close-ups orbit with the player: offsets are in the player's frame.

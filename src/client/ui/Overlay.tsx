@@ -8,8 +8,10 @@ import {
   OUTFIT_COLORS,
   OUTFITS,
   SKINS,
+  SWIMSUITS,
   type Look,
   type Mood,
+  type SwimLook,
 } from "../../game/look.ts";
 import type { RoomId } from "../../game/rooms.ts";
 import { VIEWS, type View } from "../world/CameraRig.tsx";
@@ -27,14 +29,19 @@ const ROOM_HINTS: Record<RoomId, string> = {
   plaza: "The strip after dark. Walk into a glowing door.",
   "amusement-park":
     "Night carnival. Tap a boarding ring to ride, or use WASD to walk.",
+  "water-park": "Swimsuits on. Tap the slide tower to ride.",
 };
 
 function Mirror({
   look,
   setLook,
+  swim,
+  setSwim,
 }: {
   look: Look;
   setLook: (look: Look) => void;
+  swim: SwimLook;
+  setSwim: (swim: SwimLook) => void;
 }) {
   return (
     <div className="mirror-glass">
@@ -104,6 +111,21 @@ function Mirror({
           onPick={(outfitColor) => setLook({ ...look, outfitColor })}
         />
       </section>
+      <section>
+        <h3>Swimsuit</h3>
+        <Chips
+          label="Swimsuit"
+          options={SWIMSUITS}
+          value={swim.style}
+          onPick={(style) => setSwim({ ...swim, style })}
+        />
+        <Swatches
+          label="Swimsuit colour"
+          options={OUTFIT_COLORS}
+          value={swim.color}
+          onPick={(color) => setSwim({ ...swim, color })}
+        />
+      </section>
     </div>
   );
 }
@@ -113,6 +135,9 @@ export function Overlay({
   roomName,
   look,
   setLook,
+  swim,
+  setSwim,
+  onRide,
   mood,
   setMood,
   view,
@@ -122,6 +147,9 @@ export function Overlay({
   roomName: string;
   look: Look;
   setLook: (look: Look) => void;
+  swim: SwimLook;
+  setSwim: (swim: SwimLook) => void;
+  onRide: () => void;
   mood: Mood;
   setMood: (mood: Mood) => void;
   view: View;
@@ -155,8 +183,14 @@ export function Overlay({
         data-open={open}
         aria-label="Dressing room"
       >
-        <Mirror look={look} setLook={setLook} />
+        <Mirror look={look} setLook={setLook} swim={swim} setSwim={setSwim} />
       </section>
+
+      {room === "water-park" && (
+        <button type="button" className="ride" onClick={onRide}>
+          Ride a slide
+        </button>
+      )}
 
       <Segmented
         className="moods"
