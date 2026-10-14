@@ -182,7 +182,7 @@ async function mixPerfectly(page: Page) {
   await page.clock.runFor(400);
 }
 
-const barPayouts = (page: Page) => page.getByLabel("Mango Mixology payouts");
+const barPayouts = (page: Page) => page.getByLabel("Last Call payouts");
 
 test("the recipe card is what gets judged, and a perfect round pays once even when serving rapidly", async ({
   page,

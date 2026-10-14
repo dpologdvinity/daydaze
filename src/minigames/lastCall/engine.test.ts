@@ -44,8 +44,8 @@ const sequence = (...values: number[]) => {
 
 test("the menu has every drink in a regular and a zero-proof version", () => {
   for (const name of [
-    "Mango margarita",
-    "Mango mojito",
+    "Peach margarita",
+    "Peach mojito",
     "Passionfruit martini",
     "Pink lemonade spritz",
   ]) {
@@ -79,16 +79,16 @@ test("recipes only use known bottles, glasses and garnishes and fit the glass", 
   }
 });
 
-test("zero-proof drinks carry no spirits and wear a mango slice", () => {
+test("zero-proof drinks carry no spirits and wear a cherry", () => {
   const spirits = new Set(INGREDIENTS.filter((i) => i.spirit).map((i) => i.id));
   for (const r of RECIPES.filter((r) => r.zeroProof)) {
     assert.ok(!r.ingredients.some((i) => spirits.has(i)), r.id);
-    assert.equal(r.garnish, "mango_slice");
+    assert.equal(r.garnish, "cherry");
   }
 });
 
 test("ingredients match as a multiset, in any pour order", () => {
-  const margarita = recipe("mango_margarita");
+  const margarita = recipe("peach_margarita");
   assert.ok(ingredientsMatch(margarita, [...margarita.ingredients].reverse()));
   assert.ok(!ingredientsMatch(margarita, margarita.ingredients.slice(1)));
   assert.ok(!ingredientsMatch(margarita, [...margarita.ingredients, "soda"]));
@@ -138,7 +138,7 @@ test("mix quality depends on how close the stop is to the sweet spot", () => {
 });
 
 test("a perfect, quick drink earns every part of the tip", () => {
-  const r = recipe("mango_margarita");
+  const r = recipe("peach_margarita");
   const verdict = judgeDrink(r, exact(r), "perfect", 9_000);
   assert.deepEqual(verdict, {
     ingredients: true,
@@ -160,7 +160,7 @@ test("a perfect, quick drink earns every part of the tip", () => {
 });
 
 test("a wrong garnish loses only the garnish tip and breaks perfection", () => {
-  const r = recipe("mango_mojito");
+  const r = recipe("peach_mojito");
   const verdict = judgeDrink(
     r,
     { ...exact(r), garnish: "lime_wheel" },
@@ -202,7 +202,7 @@ test("wrong ingredients send the drink back with no tip at all", () => {
 });
 
 test("a perfect streak adds a growing bonus, capped at 3", () => {
-  const r = recipe("mango_margarita");
+  const r = recipe("peach_margarita");
   const verdict = judgeDrink(r, exact(r), "perfect", 1_000);
   assert.deepEqual(
     [0, 1, 2, 3, 7].map((s) => tipFor(r, verdict, s).streak),

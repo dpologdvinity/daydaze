@@ -1,5 +1,5 @@
 /**
- * Mango Mixology bar rules, ported from Club Lion's Smoothie Kitchen. Pure
+ * Last Call bar rules, ported from Club Lion's Smoothie Kitchen. Pure
  * TypeScript: no DOM, no audio, so every rule is testable in Node.
  */
 
@@ -9,7 +9,7 @@ export type IngredientId =
   | "vodka"
   | "prosecco"
   | "zero_spirit"
-  | "mango"
+  | "peach"
   | "passionfruit"
   | "lime"
   | "agave"
@@ -35,7 +35,7 @@ export const INGREDIENTS: readonly Ingredient[] = [
     color: "#c9f4e8",
     spirit: false,
   },
-  { id: "mango", label: "Mango purée", color: "#ffb02e", spirit: false },
+  { id: "peach", label: "Peach purée", color: "#ffc48a", spirit: false },
   {
     id: "passionfruit",
     label: "Passionfruit",
@@ -68,7 +68,7 @@ export type GarnishId =
   | "lime_wheel"
   | "lemon_wheel"
   | "mint_sprig"
-  | "mango_slice"
+  | "cherry"
   | "passionfruit_half";
 
 export const GARNISHES: readonly { id: GarnishId; label: string }[] = [
@@ -76,7 +76,7 @@ export const GARNISHES: readonly { id: GarnishId; label: string }[] = [
   { id: "lime_wheel", label: "Lime wheel" },
   { id: "lemon_wheel", label: "Lemon wheel" },
   { id: "mint_sprig", label: "Mint sprig" },
-  { id: "mango_slice", label: "Mango slice" },
+  { id: "cherry", label: "Cherry" },
   { id: "passionfruit_half", label: "Passionfruit half" },
 ];
 
@@ -94,45 +94,45 @@ export type Recipe = {
   baseTip: number;
 };
 
-// Zero-proof drinks always wear a mango slice so the guest can tell them apart.
+// Zero-proof drinks always wear a cherry so the guest can tell them apart.
 export const RECIPES: readonly Recipe[] = [
   {
-    id: "mango_margarita",
-    name: "Mango margarita",
+    id: "peach_margarita",
+    name: "Peach margarita",
     zeroProof: false,
-    ingredients: ["tequila", "mango", "mango", "lime", "agave"],
+    ingredients: ["tequila", "peach", "peach", "lime", "agave"],
     glass: "rocks",
     garnish: "salt_rim",
     method: "shake",
     baseTip: 8,
   },
   {
-    id: "zero_mango_margarita",
-    name: "Zero-proof mango margarita",
+    id: "zero_peach_margarita",
+    name: "Zero-proof peach margarita",
     zeroProof: true,
-    ingredients: ["zero_spirit", "mango", "mango", "lime", "agave"],
+    ingredients: ["zero_spirit", "peach", "peach", "lime", "agave"],
     glass: "rocks",
-    garnish: "mango_slice",
+    garnish: "cherry",
     method: "shake",
     baseTip: 8,
   },
   {
-    id: "mango_mojito",
-    name: "Mango mojito",
+    id: "peach_mojito",
+    name: "Peach mojito",
     zeroProof: false,
-    ingredients: ["rum", "mango", "lime", "mint", "soda"],
+    ingredients: ["rum", "peach", "lime", "mint", "soda"],
     glass: "highball",
     garnish: "mint_sprig",
     method: "stir",
     baseTip: 8,
   },
   {
-    id: "zero_mango_mojito",
-    name: "Zero-proof mango mojito",
+    id: "zero_peach_mojito",
+    name: "Zero-proof peach mojito",
     zeroProof: true,
-    ingredients: ["zero_spirit", "mango", "lime", "mint", "soda"],
+    ingredients: ["zero_spirit", "peach", "lime", "mint", "soda"],
     glass: "highball",
-    garnish: "mango_slice",
+    garnish: "cherry",
     method: "stir",
     baseTip: 8,
   },
@@ -140,7 +140,7 @@ export const RECIPES: readonly Recipe[] = [
     id: "passionfruit_martini",
     name: "Passionfruit martini",
     zeroProof: false,
-    ingredients: ["vodka", "passionfruit", "passionfruit", "mango", "lime"],
+    ingredients: ["vodka", "passionfruit", "passionfruit", "peach", "lime"],
     glass: "martini",
     garnish: "passionfruit_half",
     method: "shake",
@@ -154,11 +154,11 @@ export const RECIPES: readonly Recipe[] = [
       "zero_spirit",
       "passionfruit",
       "passionfruit",
-      "mango",
+      "peach",
       "lime",
     ],
     glass: "martini",
-    garnish: "mango_slice",
+    garnish: "cherry",
     method: "shake",
     baseTip: 9,
   },
@@ -178,7 +178,7 @@ export const RECIPES: readonly Recipe[] = [
     zeroProof: true,
     ingredients: ["zero_spirit", "pink_lemonade", "pink_lemonade", "soda"],
     glass: "wine",
-    garnish: "mango_slice",
+    garnish: "cherry",
     method: "stir",
     baseTip: 7,
   },

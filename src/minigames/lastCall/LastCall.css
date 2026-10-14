@@ -9,7 +9,7 @@
   position: relative;
   flex: 1;
   min-height: 0;
-  /* Back-bar mirror: faint shelf lines lit fuchsia and mango from the counter. */
+  /* Back-bar mirror: faint shelf lines lit fuchsia and amber from the counter. */
   background:
     repeating-linear-gradient(
       180deg,
@@ -420,16 +420,10 @@
   animation: mx-flicker 7s infinite;
 }
 
-.mx-neon-fruit {
+.mx-neon-glass {
   stroke: var(--mg-mango);
   stroke-width: 4;
   filter: drop-shadow(0 0 4px var(--mg-mango)) drop-shadow(0 0 16px #ff7a1a);
-}
-
-.mx-neon-leaf {
-  stroke: #3ef2a0;
-  stroke-width: 4;
-  filter: drop-shadow(0 0 4px #3ef2a0) drop-shadow(0 0 14px #1fbf7a);
 }
 
 /* A tired tube: two quick stutters every few seconds. */
@@ -497,12 +491,17 @@
   stroke-width: 2.5;
 }
 
-.mx-g-mango path {
-  fill: var(--mg-mango);
+.mx-g-cherry circle {
+  fill: #c8102e;
 }
-.mx-g-mango .mx-g-score {
+.mx-g-cherry path {
   fill: none;
-  stroke: #ffdd8a;
+  stroke: #3d7a2a;
+  stroke-width: 2.5;
+}
+.mx-g-cherry .mx-g-score {
+  fill: none;
+  stroke: #ffb3b3;
   stroke-width: 2;
 }
 

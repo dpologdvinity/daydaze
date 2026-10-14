@@ -1,5 +1,5 @@
 /**
- * Bar sound effects for Mango Mixology, all synthesized: a liquid pour, an
+ * Bar sound effects for Last Call, all synthesized: a liquid pour, an
  * ice-filled shaker rattle and a service bell. Routes through the shared
  * audio bus SFX channel so the global mute and volume reach it.
  */

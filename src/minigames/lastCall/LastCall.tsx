@@ -30,7 +30,7 @@ import {
   type Round,
   type Served,
 } from "./engine.ts";
-import "./MangoMixology.css";
+import "./LastCall.css";
 
 declare module "react" {
   interface CSSProperties {
@@ -67,7 +67,7 @@ const QUALITY_WORD: Record<MixQuality, string> = {
 type Phase = "intro" | "bar" | "done";
 type Step = "build" | "mixing" | "mixed" | "tipped";
 
-export type MangoMixologyProps = {
+export type LastCallProps = {
   /** Called once: the best finished round of this visit, or null if none. */
   onClose: (result: Result | null) => void;
   reducedMotion?: boolean;
@@ -184,11 +184,12 @@ function Garnish({ id, x, y }: { id: GarnishId; x: number; y: number }) {
           <ellipse rx="5" ry="9" transform="translate(0 -20)" />
         </g>
       );
-    case "mango_slice":
+    case "cherry":
       return (
-        <g transform={at} className="mx-g-mango">
-          <path d="M-18 4C-14-14 10-20 20-6C10 4-4 8-18 4z" />
-          <path d="M-12 1C-6-8 6-11 14-5" className="mx-g-score" />
+        <g transform={at} className="mx-g-cherry">
+          <path d="M0-10C2-20 8-24 14-26" />
+          <circle r="10" />
+          <path d="M-4-5C-6-1-6 2-4 4" className="mx-g-score" />
         </g>
       );
     case "passionfruit_half":
@@ -286,16 +287,12 @@ function Glass({
 }
 
 /** The neon tube sign on the back bar, behind the glass. */
-function NeonMango() {
+function NeonSign() {
   return (
     <svg className="mx-neon" viewBox="0 0 200 170" aria-hidden="true">
       <path
-        className="mx-neon-fruit"
-        d="M104 34C150 30 182 66 174 108C166 148 116 160 82 144C44 126 30 84 52 54C64 40 84 35 104 34z"
-      />
-      <path
-        className="mx-neon-leaf"
-        d="M104 34C108 18 126 8 150 12C142 28 124 36 104 34zM104 34C100 24 98 18 92 12"
+        className="mx-neon-glass"
+        d="M40 34H160L100 104zM100 104V146M70 146H130"
       />
     </svg>
   );
@@ -348,11 +345,11 @@ function Receipt({
   );
 }
 
-export function MangoMixology({
+export function LastCall({
   onClose,
   reducedMotion = false,
   muted = false,
-}: MangoMixologyProps) {
+}: LastCallProps) {
   const [phase, setPhase] = useState<Phase>("intro");
   const [round, setRound] = useState<Round>(() => newRound([]));
   const [drink, setDrink] = useState<Drink>(EMPTY_DRINK);
@@ -506,15 +503,15 @@ export function MangoMixology({
 
   return (
     <Dialog
-      title="Mango Mixology"
-      subtitle="Behind the bar at the Mango Room"
+      title="Last Call"
+      subtitle="Behind the bar"
       onClose={close}
       className={`mx ${reducedMotion ? "mx-calm" : ""}`}
     >
       {phase === "intro" && (
         <section className="mx-intro">
           <div className="mx-intro-art">
-            <NeonMango />
+            <NeonSign />
             <svg
               className="mx-intro-glass"
               viewBox="0 0 200 240"
@@ -525,7 +522,7 @@ export function MangoMixology({
                 d={GLASS_SHAPE.martini.outline}
               />
               <path className="mx-intro-fill" d={GLASS_SHAPE.martini.clip} />
-              <Garnish id="mango_slice" x={168} y={56} />
+              <Garnish id="cherry" x={168} y={56} />
             </svg>
           </div>
           <p className="mx-lede">
@@ -618,7 +615,7 @@ export function MangoMixology({
           </article>
 
           <div className="mx-stage">
-            <NeonMango />
+            <NeonSign />
             <Glass
               drink={drink}
               mixed={step === "mixed" || step === "tipped"}

@@ -2,14 +2,14 @@ import { StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { MangoDecks } from "./mangoDecks/MangoDecks.tsx";
 import type { Result } from "./mangoDecks/engine.ts";
-import { MangoMixology } from "./mangoMixology/MangoMixology.tsx";
-import type { Result as MixologyResult } from "./mangoMixology/engine.ts";
+import { LastCall } from "./lastCall/LastCall.tsx";
+import type { Result as LastCallResult } from "./lastCall/engine.ts";
 
 // Standalone test bench until the 3D world launches minigames from hotspots.
 function Fixture() {
   const [open, setOpen] = useState<"decks" | "bar" | null>(null);
   const [payouts, setPayouts] = useState<Result[]>([]);
-  const [tips, setTips] = useState<MixologyResult[]>([]);
+  const [tips, setTips] = useState<LastCallResult[]>([]);
   const muted = new URLSearchParams(location.search).has("muted");
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
   return (
@@ -23,7 +23,7 @@ function Fixture() {
       <output aria-label="Mango Decks payouts" style={{ color: "#f7e7c6" }}>
         {JSON.stringify(payouts)}
       </output>
-      <output aria-label="Mango Mixology payouts" style={{ color: "#f7e7c6" }}>
+      <output aria-label="Last Call payouts" style={{ color: "#f7e7c6" }}>
         {JSON.stringify(tips)}
       </output>
       {open === "decks" && (
@@ -37,7 +37,7 @@ function Fixture() {
         />
       )}
       {open === "bar" && (
-        <MangoMixology
+        <LastCall
           muted={muted}
           reducedMotion={reducedMotion}
           onClose={(result) => {
