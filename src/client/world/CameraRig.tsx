@@ -46,6 +46,7 @@ const MAX_DISTANCE: Record<RoomId, number> = {
   "velvet-room": 18,
   plaza: 18,
   "amusement-park": 18,
+  "water-park": 18,
   city: 300,
 };
 
