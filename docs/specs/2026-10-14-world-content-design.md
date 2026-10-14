@@ -146,6 +146,20 @@ Guns exist only inside game zones and inside the player's own home: the shooting
 - Jail is the same place as for break-ins: the player waits out the sentence or pays bail in coins, or a friend pays it.
 - Stolen items are tagged "stolen" in the closet for a while. Wearing one in front of that store's staff can get the player recognised.
 
+## Cars
+
+- Players buy cars with coins, park them at home, and drive them on the city streets between neighborhoods. Friends can ride along. Driving uses the same controls as walking, plus a horn, headlights and a radio.
+- Cars follow the GTA approach: each model is clearly based on a real car, with an accurate silhouette, size, class, price tier, seat count and performance feel (top speed, acceleration, handling), but carries an original brand and model name and badge. Real brand names and logos are never used.
+- The roster runs from cheap to expensive, for example:
+  - Used beaters: an old compact sedan modeled on a 2000s Corolla or Civic, a boxy hatchback, a beat-up minivan.
+  - Everyday: a modern compact SUV, a hybrid hatchback, a pickup truck, an electric sedan modeled on a Model 3.
+  - Y2K nostalgia: a bubbly 2000s hatchback, a lowered tuner coupe modeled on a 2000s import, a pastel convertible beetle.
+  - Luxury: a German executive sedan, a luxury SUV, a grand-tourer coupe.
+  - Exotic: Italian-style supercars, a British hypercar, a vintage convertible.
+- Every car has paint colours, rims, a wrap (including pride wraps), window tint and underglow, set at a car customization garage.
+- Cars can be parked, locked and stolen like homes: an unlocked car can be taken, the owner can report it, and the police recover it.
+- The Speedway uses the same cars for track days.
+
 ## Dancing
 
 - Players can dance anywhere, and especially on club dance floors. A dance button opens a picker of dance moves. The doll loops the chosen move until the player moves or stops.
