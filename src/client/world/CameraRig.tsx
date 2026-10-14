@@ -5,6 +5,7 @@ import * as THREE from "three";
 import type { OrbitControls as OrbitImpl } from "three-stdlib";
 import type { RoomId } from "../../game/rooms.ts";
 import { useReducedMotion } from "../motion.ts";
+import { driving } from "./driving.ts";
 import type { Player } from "./PlayerController.tsx";
 
 export type View = "room" | "full" | "face";
@@ -35,8 +36,8 @@ const ROOM_SHOTS: Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }> =
       look: new THREE.Vector3(1.5, 2.2, -4),
     },
     speedway: {
-      eye: new THREE.Vector3(0, 8, 14),
-      look: new THREE.Vector3(0, 1.5, -3),
+      eye: new THREE.Vector3(0, 12, 26),
+      look: new THREE.Vector3(0, 1.5, -18),
     },
     // high over the first slice of the city; the orbit allows this far out
     city: {
@@ -51,7 +52,8 @@ const MAX_DISTANCE: Record<RoomId, number> = {
   plaza: 18,
   "amusement-park": 18,
   "water-park": 18,
-  speedway: 18,
+  // the track sits far back, so the Speedway's wide shot needs more orbit range
+  speedway: 60,
   city: 300,
 };
 
@@ -89,6 +91,9 @@ export function CameraRig({
   useFrame((_, dt) => {
     const c = controls.current;
     if (!c) return;
+    // the Speedway's chase camera owns the view while a car is driven
+    c.enabled = driving.session === null;
+    if (!c.enabled) return;
     if (shown.current?.player !== player) {
       // new room or first frame: cut straight to the shot
       shown.current = { view, player };

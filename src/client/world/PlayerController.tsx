@@ -23,6 +23,7 @@ import { WALK_SPEED, type Vec2 } from "../../game/walk.ts";
 import { useReducedMotion } from "../motion.ts";
 import { Doll, type WalkState } from "../avatar/Doll.tsx";
 import { hdr } from "../rooms/shared/materials.ts";
+import { driving } from "./driving.ts";
 import { stick } from "./joystick.ts";
 
 /** Frame time the simulation may catch up on; longer gaps (a hidden tab) are dropped. */
@@ -139,6 +140,7 @@ function useHeldKeys() {
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (!MOVE_CODES.has(e.code) || e.altKey || e.ctrlKey || e.metaKey) return;
+      if (driving.session) return;
       if (ignoresKeys(e.target, e.code)) return;
       held.current.add(e.code);
       if (e.code.startsWith("Arrow")) e.preventDefault();
@@ -201,6 +203,8 @@ export function PlayerController({
   const shownRide = useRef<Mood | null>(null);
 
   useFrame((state, dt) => {
+    // a driven car takes the keys; the doll stands at the pit wall
+    if (driving.session) return;
     const local = moveAction(held.current, stick);
     const intent = local && worldDirection(local, state.camera);
     const rideMood = ride(player, area, dt, calm);

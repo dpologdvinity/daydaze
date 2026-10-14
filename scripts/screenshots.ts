@@ -1,7 +1,7 @@
 // Captures review screenshots of each room into docs/screenshots/.
 // Needs a dev server: `npm run dev -- --port 5195 --strictPort`, then
 // `node --experimental-strip-types scripts/screenshots.ts [name...]`.
-import { chromium } from "@playwright/test";
+import { chromium, expect, type Page } from "@playwright/test";
 
 const BASE = process.env.BASE_URL ?? "http://localhost:5195";
 const SHOTS: {
@@ -11,6 +11,8 @@ const SHOTS: {
   /** Live shots keep the frame loop running, so a ride can move between frames. */
   live?: boolean;
   touch?: boolean;
+  /** Drives the scene before the capture, e.g. to start a race. */
+  act?: (page: Page) => Promise<void>;
 }[] = [
   { name: "velvet-room", query: "room=velvet-room" },
   { name: "velvet-room-full-look", query: "room=velvet-room&view=full" },
@@ -47,6 +49,44 @@ const SHOTS: {
     viewport: { width: 390, height: 844 },
     touch: true,
   },
+  { name: "speedway-grid", query: "room=speedway" },
+  {
+    name: "speedway-racing",
+    query: "room=speedway",
+    live: true,
+    act: async (page) => {
+      const canvas = page.getByRole("img", { name: "3D room view" });
+      await page.getByRole("button", { name: "Race the Neon Oval" }).click();
+      await expect(canvas).toHaveAttribute("data-race-phase", "racing", {
+        timeout: 120_000,
+      });
+      await page.keyboard.down("KeyW");
+    },
+  },
+  {
+    name: "speedway-bumper",
+    query: "room=speedway",
+    live: true,
+    act: async (page) => {
+      const canvas = page.getByRole("img", { name: "3D room view" });
+      await page.getByRole("button", { name: "Bumper cars" }).click();
+      await expect(canvas).toHaveAttribute("data-race-phase", "bumpers");
+    },
+  },
+  {
+    name: "speedway-mobile",
+    query: "room=speedway",
+    viewport: { width: 390, height: 844 },
+    touch: true,
+    live: true,
+    act: async (page) => {
+      const canvas = page.getByRole("img", { name: "3D room view" });
+      await page.getByRole("button", { name: "Race the Neon Oval" }).click();
+      await expect(canvas).toHaveAttribute("data-race-phase", "racing", {
+        timeout: 120_000,
+      });
+    },
+  },
 ];
 
 const only = process.argv.slice(2);
@@ -70,6 +110,7 @@ for (const shot of SHOTS) {
   await page.setViewportSize(shot.viewport ?? { width: 1280, height: 800 });
   const still = shot.live ? "" : "&still=1";
   await page.goto(`${BASE}/?quality=low${still}&${shot.query}`);
+  if (shot.act) await shot.act(page);
   // wait until the demand loop has rendered and then gone quiet for 8 s
   let last = "";
   let quietSince = Date.now();
