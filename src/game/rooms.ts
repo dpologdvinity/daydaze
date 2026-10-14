@@ -1,6 +1,7 @@
+import { CITY_AREA, CITY_BOUNDS, CITY_SPAWN } from "./city/layout.ts";
 import type { Vec2 } from "./walk.ts";
 
-export type RoomId = "velvet-room" | "plaza" | "amusement-park" | "water-park";
+export type RoomId = "velvet-room" | "plaza" | "amusement-park" | "water-park" | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
 
@@ -91,11 +92,21 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
     spawn: { position: [0.9, 1.6], yaw: 0.25 },
     portals: [
       {
-        // The neon VIP arch on the left wall at (-5.9, -1.5).
-        id: "to-plaza",
+        // The neon VIP arch on the left wall at (-5.9, -1.5). Leads out to
+        // the sidewalk in front of the Velvet Room's door in the city.
+        id: "to-city",
         position: [-5.0, -1.5],
         radius: 0.6,
-        label: "To the Plaza",
+        label: "Out to the street",
+        target: "city",
+        targetSpawn: { position: [112, -9], yaw: 0 },
+      },
+      {
+        // The way back to the Plaza, by the front opening.
+        id: "to-plaza",
+        position: [-3.6, 4.6],
+        radius: 0.6,
+        label: "Back to the Plaza",
         target: "plaza",
         targetSpawn: { position: [0, -4.8], yaw: 0 },
       },
@@ -170,6 +181,14 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         targetSpawn: { position: [10, 0], yaw: -Math.PI / 2 },
       },
     ],
+  },
+  city: {
+    id: "city",
+    name: "Downtown and Nightlife Row",
+    // The bounds; the walkable surfaces and blockers live in CITY_AREA.
+    walkable: CITY_BOUNDS,
+    spawn: CITY_SPAWN,
+    portals: CITY_AREA.portals,
   },
 };
 

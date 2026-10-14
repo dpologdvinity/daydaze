@@ -34,7 +34,19 @@ const ROOM_SHOTS: Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }> =
       eye: new THREE.Vector3(9.5, 9.5, 19),
       look: new THREE.Vector3(1.5, 2.2, -4),
     },
+    // high over the first slice of the city; the orbit allows this far out
+    city: {
+      eye: new THREE.Vector3(-120, 150, 170),
+      look: new THREE.Vector3(0, 0, 0),
+    },
   };
+
+// The city's wide shot is high above it, so it needs far more orbit range.
+const MAX_DISTANCE: Record<RoomId, number> = {
+  "velvet-room": 18,
+  plaza: 18,
+  city: 300,
+};
 
 // Close-ups orbit with the player: offsets are in the player's frame.
 const CLOSE: Record<"full" | "face", { off: THREE.Vector3; look: number }> = {
@@ -108,7 +120,7 @@ export function CameraRig({
       makeDefault
       enableDamping={!calm}
       minDistance={0.6}
-      maxDistance={18}
+      maxDistance={MAX_DISTANCE[room]}
       maxPolarAngle={Math.PI / 2 - 0.06}
       minPolarAngle={0.15}
     />
