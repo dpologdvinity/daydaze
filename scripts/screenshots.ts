@@ -4,11 +4,28 @@
 import { chromium } from "@playwright/test";
 
 const BASE = process.env.BASE_URL ?? "http://localhost:5195";
-const SHOTS: { name: string; query: string }[] = [
+const SHOTS: {
+  name: string;
+  query: string;
+  viewport?: { width: number; height: number };
+  /** Live shots keep the frame loop running, so a ride can move between frames. */
+  live?: boolean;
+}[] = [
   { name: "velvet-room", query: "room=velvet-room" },
   { name: "velvet-room-full-look", query: "room=velvet-room&view=full" },
   { name: "plaza", query: "room=plaza" },
   { name: "plaza-face", query: "room=plaza&view=face" },
+  { name: "amusement-park-wide", query: "room=amusement-park" },
+  {
+    name: "amusement-park-coaster",
+    query: "room=amusement-park&ride=coaster",
+    live: true,
+  },
+  {
+    name: "amusement-park-mobile",
+    query: "room=amusement-park",
+    viewport: { width: 390, height: 844 },
+  },
 ];
 
 const only = process.argv.slice(2);
@@ -24,7 +41,9 @@ page.on("pageerror", (e) => console.error("page error:", e.message));
 for (const shot of SHOTS) {
   if (only.length && !only.includes(shot.name)) continue;
   const started = Date.now();
-  await page.goto(`${BASE}/?quality=low&still=1&${shot.query}`);
+  await page.setViewportSize(shot.viewport ?? { width: 1280, height: 800 });
+  const still = shot.live ? "" : "&still=1";
+  await page.goto(`${BASE}/?quality=low${still}&${shot.query}`);
   // wait until the demand loop has rendered and then gone quiet for 8 s
   let last = "";
   let quietSince = Date.now();
@@ -41,7 +60,11 @@ for (const shot of SHOTS) {
     }
     if (Date.now() - started > 600_000) break;
   }
-  await page.screenshot({ path: `docs/screenshots/${shot.name}.png` });
+  // a live frame loop can make the capture wait a long time on SwiftShader
+  await page.screenshot({
+    path: `docs/screenshots/${shot.name}.png`,
+    timeout: 180_000,
+  });
   console.log(
     `${shot.name}: ${last} frames, ${((Date.now() - started) / 1000).toFixed(0)} s`,
   );

@@ -98,6 +98,24 @@ test("on a phone the dressing room opens from its toggle", async ({ page }) => {
   ).toHaveAttribute("aria-expanded", "true");
 });
 
+test("the Amusement Park opens from the debug panel and renders its rides", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&debug=1`);
+  await expect(roomTitle(page)).toHaveText("The Velvet Room");
+  await page.getByRole("button", { name: "Go to Amusement Park" }).click();
+  await expect(roomTitle(page)).toHaveText("Amusement Park");
+  await expect(page.getByRole("img", { name: "3D room view" })).toBeVisible();
+  // the scene draws its frames, so the rides and midway have rendered
+  await expect(page.locator("canvas")).toHaveAttribute(
+    "data-frames",
+    /[3-9]|10/,
+    { timeout: 120_000 },
+  );
+  expect(errors).toEqual([]);
+});
+
 test("walking into the Plaza's glowing door enters the Velvet Room", async ({
   page,
 }) => {
