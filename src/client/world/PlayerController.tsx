@@ -184,10 +184,10 @@ export function PlayerController({
     }
     const el = tag.current;
     if (el) {
-      head
-        .copy(player.seat?.position ?? player.pos)
-        .setY(1.95)
-        .project(state.camera);
+      // above the doll's feet, which sit on the seat while riding
+      head.copy(player.seat?.position ?? player.pos);
+      head.y += 1.95;
+      head.project(state.camera);
       const x = ((head.x + 1) / 2) * state.size.width;
       const y = ((1 - head.y) / 2) * state.size.height;
       el.style.visibility = head.z < 1 ? "visible" : "hidden";
