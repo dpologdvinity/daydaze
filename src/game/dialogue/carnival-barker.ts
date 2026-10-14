@@ -23,6 +23,34 @@ export const carnivalBarkerBank: RoleBank = {
     },
   ],
   tapped: [
+    {
+      text: "Step right up! Nobody leaves this midway with a dry pocket and a dull heart!",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "Ring toss! Three rings, one prize, and a seventy percent chance I'm telling the truth!",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "You! Yes, you with the look! The shooting gallery has been asking for you all night!",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "Winners take the big plush. Everybody else takes a small plush and a good story.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "The whack-a-mole has been waiting all night for someone with your reflexes.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "Don't pretend you're just looking. Everybody who walks past this stand is a player.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "Hold on, my voice needs a sip. Then step right up, friend, step right up!",
+      when: { neighborhood: "fairground" },
+    },
     "Ooh, you tapped me! Ring the bell and it's a prize.",
     "Careful, I bite. Only for good prizes though.",
     "You want to play? I'll set up the bottles, you set up the aim.",

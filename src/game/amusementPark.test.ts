@@ -1,18 +1,31 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { LINE_BANKS } from "./dialogue/index.ts";
+import { pickLine, seededRng } from "./dialogue/pick.ts";
 import {
-  PARK_LINES,
+  COASTER_TRACK,
+  EXIT_SECONDS,
+  FERRIS,
+  PARK_CONTEXT,
+  PARK_NPC_ROLES,
+  RIDES,
   buildTrack,
-  parseRide,
   dropTowerHeight,
-  ferrisSeat,
-  lineAt,
+  ferrisPose,
+  parseRide,
   rideProgress,
   rideSeconds,
+  rideStep,
+  ridePose,
+  seatPose,
   stringPoints,
   trackPose,
+  newPose,
+  type RideState,
   type Vec3,
 } from "./amusementPark.ts";
+import { ROOMS } from "./rooms.ts";
+import { pointInPolygon } from "./walk.ts";
 
 function assertNear(actual: readonly number[], expected: readonly number[]) {
   assert.equal(actual.length, expected.length);
@@ -21,34 +34,47 @@ function assertNear(actual: readonly number[], expected: readonly number[]) {
   });
 }
 
+const at = (p: { x: number; y: number; z: number }) => [p.x, p.y, p.z];
+
 test("calm rides take longer than normal rides", () => {
   for (const ride of ["ferris-wheel", "coaster"] as const) {
-    const normal = rideSeconds(ride, false);
-    const calm = rideSeconds(ride, true);
-    assert.ok(normal > 0);
-    assert.ok(calm > normal, ride);
+    assert.ok(rideSeconds(ride, false) > 0);
+    assert.ok(rideSeconds(ride, true) > rideSeconds(ride, false), ride);
+  }
+});
+
+test("both rides board from a spot on the midway floor", () => {
+  const { walkable } = ROOMS["amusement-park"];
+  for (const ride of Object.values(RIDES)) {
+    assert.equal(pointInPolygon(walkable, ride.spot), true, `${ride.spot}`);
   }
 });
 
 test("ride progress is clamped and bad input counts as the start", () => {
-  assert.equal(rideProgress(0, 20), 0);
   assert.equal(rideProgress(10, 20), 0.5);
   assert.equal(rideProgress(99, 20), 1);
   assert.equal(rideProgress(-3, 20), 0);
   assert.equal(rideProgress(Number.NaN, 20), 0);
+  assert.equal(rideProgress(Number.POSITIVE_INFINITY, 20), 0);
   assert.equal(rideProgress(5, 0), 0);
 });
 
 test("the ferris wheel loads at the bottom and rides the rim", () => {
   const wheel = { hub: [-6, 9, -9] as const, radius: 7 };
-  assertNear(ferrisSeat(wheel, 0).position, [-6, 2, -9]);
-  assertNear(ferrisSeat(wheel, 0.5).position, [-6, 16, -9]);
-  assertNear(ferrisSeat(wheel, 1).position, [-6, 2, -9]);
+  assertNear(at(ferrisPose(wheel, 0)), [-6, 2, -9]);
+  assertNear(at(ferrisPose(wheel, 0.5)), [-6, 16, -9]);
+  assertNear(at(ferrisPose(wheel, 1)), [-6, 2, -9]);
   for (let i = 0; i <= 20; i++) {
-    const [x, y, z] = ferrisSeat(wheel, i / 20).position;
-    assert.ok(Math.abs(Math.hypot(x + 6, y - 9) - 7) < 1e-9);
-    assert.equal(z, -9);
+    const p = ferrisPose(wheel, i / 20);
+    assert.ok(Math.abs(Math.hypot(p.x + 6, p.y - 9) - 7) < 1e-9);
+    assert.equal(p.z, -9);
   }
+});
+
+test("a pose can be written into a caller's scratch object", () => {
+  const out = newPose();
+  const back = ferrisPose(FERRIS, 0.25, out);
+  assert.equal(back, out);
 });
 
 const LOOP: readonly Vec3[] = [
@@ -63,17 +89,16 @@ const LOOP: readonly Vec3[] = [
 test("a closed track loops back to its start", () => {
   const track = buildTrack(LOOP);
   assert.equal(track.samples.length, LOOP.length * 16);
-  assertNear(trackPose(track, 0).position, [0, 1, 0]);
-  assertNear(trackPose(track, track.length).position, [0, 1, 0]);
-  assertNear(trackPose(track, -track.length).position, [0, 1, 0]);
+  assertNear(at(trackPose(track, 0)), [0, 1, 0]);
+  assertNear(at(trackPose(track, track.length)), [0, 1, 0]);
+  assertNear(at(trackPose(track, -track.length)), [0, 1, 0]);
   assert.ok(track.length > 50, `length ${track.length}`);
 });
 
 test("the track passes through each control point", () => {
   const track = buildTrack(LOOP);
   for (let i = 0; i < LOOP.length; i++) {
-    const at = track.distances[i * 16];
-    assertNear(trackPose(track, at).position, LOOP[i]);
+    assertNear(at(trackPose(track, track.distances[i * 16])), LOOP[i]);
   }
 });
 
@@ -81,8 +106,111 @@ test("track headings point along the way the rider travels", () => {
   const track = buildTrack(LOOP);
   const a = trackPose(track, 1);
   const b = trackPose(track, 2);
-  const moved = [b.position[0] - a.position[0], b.position[2] - a.position[2]];
-  assert.ok(moved[0] * Math.sin(a.yaw) + moved[1] * Math.cos(a.yaw) > 0);
+  const dx = b.x - a.x;
+  const dz = b.z - a.z;
+  assert.ok(dx * Math.sin(a.yaw) + dz * Math.cos(a.yaw) > 0);
+});
+
+test("the coaster's track is a closed loop that starts at the station", () => {
+  assertNear(at(trackPose(COASTER_TRACK, 0)), [6.5, 1.4, -10.5]);
+  assertNear(
+    at(trackPose(COASTER_TRACK, COASTER_TRACK.length)),
+    at(trackPose(COASTER_TRACK, 0)),
+  );
+});
+
+test("a ride pose is a pure function of time", () => {
+  const a = ridePose("coaster", 7.5, false);
+  const b = ridePose("coaster", 7.5, false);
+  assert.deepEqual(a, b);
+  // calm rides move slower, so the same time finds the doll earlier on the loop
+  const calm = ridePose("coaster", 7.5, true);
+  assert.notDeepEqual(calm, a);
+});
+
+test("the ferris ride ends back at the bottom of the wheel", () => {
+  const end = ridePose(
+    "ferris-wheel",
+    rideSeconds("ferris-wheel", false),
+    false,
+  );
+  assertNear(at(end), at(ferrisPose(FERRIS, 0)));
+});
+
+test("the idle and boarding phases have no seat, so the doll walks freely", () => {
+  assert.equal(seatPose({ phase: "idle" }, 0, false), null);
+  assert.equal(
+    seatPose({ phase: "boarding", ride: "coaster" }, 0, false),
+    null,
+  );
+});
+
+test("the state machine runs idle, boarding, riding, exiting and back to idle", () => {
+  let s: RideState = { phase: "idle" };
+  s = rideStep(s, { type: "board", ride: "coaster" });
+  assert.deepEqual(s, { phase: "boarding", ride: "coaster" });
+  s = rideStep(s, { type: "arrive", now: 10, calm: false });
+  assert.deepEqual(s, {
+    phase: "riding",
+    ride: "coaster",
+    start: 10,
+    seconds: rideSeconds("coaster", false),
+  });
+  const seconds = rideSeconds("coaster", false);
+  s = rideStep(s, { type: "tick", now: 10 + seconds - 0.1 });
+  assert.equal(s.phase, "riding");
+  s = rideStep(s, { type: "tick", now: 10 + seconds + 0.3 });
+  // the step-off starts at the moment the ride really ended
+  assert.deepEqual(s, {
+    phase: "exiting",
+    ride: "coaster",
+    start: 10 + seconds,
+  });
+  s = rideStep(s, { type: "tick", now: 10 + seconds + EXIT_SECONDS - 0.01 });
+  assert.equal(s.phase, "exiting");
+  s = rideStep(s, { type: "tick", now: 10 + seconds + EXIT_SECONDS });
+  assert.deepEqual(s, { phase: "idle" });
+});
+
+test("walking away while boarding cancels the ride", () => {
+  const s = rideStep(
+    { phase: "boarding", ride: "ferris-wheel" },
+    { type: "cancel" },
+  );
+  assert.deepEqual(s, { phase: "idle" });
+});
+
+test("events that do not apply to the phase change nothing", () => {
+  const riding: RideState = {
+    phase: "riding",
+    ride: "coaster",
+    start: 0,
+    seconds: 22,
+  };
+  assert.equal(rideStep(riding, { type: "board", ride: "coaster" }), riding);
+  assert.equal(rideStep(riding, { type: "cancel" }), riding);
+  assert.deepEqual(rideStep({ phase: "idle" }, { type: "tick", now: 5 }), {
+    phase: "idle",
+  });
+});
+
+test("the seat follows the ride, then steps off to the boarding spot", () => {
+  const riding: RideState = {
+    phase: "riding",
+    ride: "ferris-wheel",
+    start: 0,
+    seconds: 24,
+  };
+  assertNear(at(seatPose(riding, 0, false)!), at(ferrisPose(FERRIS, 0)));
+  const exiting: RideState = {
+    phase: "exiting",
+    ride: "ferris-wheel",
+    start: 24,
+  };
+  const [sx, sz] = RIDES["ferris-wheel"].spot;
+  assertNear(at(seatPose(exiting, 24, false)!), at(ferrisPose(FERRIS, 1)));
+  const landed = seatPose(exiting, 24 + EXIT_SECONDS, false)!;
+  assertNear([landed.x, landed.y, landed.z], [sx, 0, sz]);
 });
 
 test("the drop tower rests, lifts, holds, drops and repeats", () => {
@@ -96,7 +224,6 @@ test("the drop tower rests, lifts, holds, drops and repeats", () => {
     peak = Math.max(peak, h);
   }
   assert.ok(Math.abs(peak - top) < 1e-9);
-  // the cycle repeats exactly
   assert.ok(
     Math.abs(
       dropTowerHeight(3.3, bottom, top) - dropTowerHeight(3.3 + 8, bottom, top),
@@ -105,9 +232,7 @@ test("the drop tower rests, lifts, holds, drops and repeats", () => {
 });
 
 test("string lights space bulbs between two anchors and sag", () => {
-  const a: Vec3 = [0, 4, 0];
-  const b: Vec3 = [6, 4, 0];
-  const bulbs = stringPoints(a, b, 0.5, 1);
+  const bulbs = stringPoints([0, 4, 0], [6, 4, 0], 0.5, 1);
   assert.ok(bulbs.length >= 10 && bulbs.length <= 14, `${bulbs.length}`);
   for (const [x, y] of bulbs) {
     assert.ok(x > 0 && x < 6);
@@ -121,37 +246,23 @@ test("string lights space bulbs between two anchors and sag", () => {
   );
 });
 
-test("every NPC has at least six handwritten lines with no duplicates", () => {
-  for (const [id, lines] of Object.entries(PARK_LINES)) {
-    assert.ok(lines.length >= 6, `${id} has ${lines.length} lines`);
-    assert.equal(new Set(lines).size, lines.length, `${id} repeats a line`);
-    for (const line of lines) {
-      assert.equal(line, line.trim(), `${id}: whitespace`);
-      assert.ok(line.length > 10 && line.length < 140, `${id}: ${line}`);
-    }
-  }
-});
-
-test("line banks avoid AI and platform wording and any placeholders", () => {
-  const banned = /as an ai|language model|chatgpt|openai|\{[a-z]+\}|\bai\b/i;
-  for (const lines of Object.values(PARK_LINES)) {
-    for (const line of lines) assert.doesNotMatch(line, banned, line);
-  }
-});
-
-test("lineAt cycles through a bank in order and wraps", () => {
-  const bank = ["one", "two", "three"];
-  assert.equal(lineAt(bank, 0), "one");
-  assert.equal(lineAt(bank, 2), "three");
-  assert.equal(lineAt(bank, 3), "one");
-  assert.equal(lineAt(bank, -1), "three");
-  assert.equal(lineAt([], 4), "");
-});
-
 test("parseRide accepts only the rides in the park", () => {
   assert.equal(parseRide("coaster"), "coaster");
   assert.equal(parseRide("ferris-wheel"), "ferris-wheel");
   for (const value of ["toString", "Coaster", "", null]) {
     assert.equal(parseRide(value), null, String(value));
+  }
+});
+
+test("every park NPC's role has tapped lines for the fairground", () => {
+  for (const [npc, role] of Object.entries(PARK_NPC_ROLES)) {
+    const picked = pickLine({
+      role,
+      situation: "tapped",
+      context: PARK_CONTEXT,
+      rng: seededRng(npc.length),
+    });
+    assert.notEqual(picked.text, "...", `${npc} (${role}) has no tapped line`);
+    assert.ok(LINE_BANKS[role].tapped?.length, role);
   }
 });

@@ -1,25 +1,48 @@
-// Amusement Park: ride paths, string-light spacing and the NPC line banks.
-// Pure math and data; the 3D scene reads these and draws them.
+// Amusement Park: ride tuning, ride motion and state, string-light spacing.
+// Pure math and data; the 3D scene samples these every frame.
+
+import type { DialogueRole } from "./dialogue/types.ts";
 
 export type Vec3 = readonly [x: number, y: number, z: number];
 
 export const RIDE_IDS = ["ferris-wheel", "coaster"] as const;
 export type RideId = (typeof RIDE_IDS)[number];
 
-// Calm rides take longer, so the same motion reads slower.
-const RIDE_SECONDS: Record<RideId, { normal: number; calm: number }> = {
-  "ferris-wheel": { normal: 24, calm: 40 },
-  coaster: { normal: 22, calm: 36 },
+// Ride tuning. Calm (reduced motion) rides take longer, so the same motion reads slower.
+export const RIDES: Record<
+  RideId,
+  { spot: readonly [number, number]; seconds: { normal: number; calm: number } }
+> = {
+  "ferris-wheel": { spot: [-6.5, -7], seconds: { normal: 24, calm: 40 } },
+  coaster: { spot: [6.5, -7], seconds: { normal: 22, calm: 36 } },
 };
+
+/** Seconds for the doll to step off a ride back onto its boarding spot. */
+export const EXIT_SECONDS = 1.2;
+
+export type FerrisWheel = { hub: Vec3; radius: number };
+
+export const FERRIS: FerrisWheel = { hub: [-6.5, 7.6, -10], radius: 6 };
+
+// Control points of the coaster loop; the station is the first point.
+export const COASTER_CONTROLS: readonly Vec3[] = [
+  [6.5, 1.4, -10.5],
+  [11.5, 3.8, -12],
+  [14.5, 9.5, -16.5],
+  [12.5, 13.5, -21],
+  [7, 10, -23.5],
+  [2.5, 5, -20],
+  [3.5, 1.4, -14],
+];
+
+export function rideSeconds(ride: RideId, calm: boolean): number {
+  const seconds = RIDES[ride].seconds;
+  return calm ? seconds.calm : seconds.normal;
+}
 
 /** The ride named by a `?ride=` value, or null. */
 export function parseRide(value: string | null): RideId | null {
   return RIDE_IDS.find((id) => id === value) ?? null;
-}
-
-export function rideSeconds(ride: RideId, calm: boolean): number {
-  const seconds = RIDE_SECONDS[ride];
-  return calm ? seconds.calm : seconds.normal;
 }
 
 /** 0 at boarding, 1 at the end of the ride; bad input counts as 0. */
@@ -28,23 +51,30 @@ export function rideProgress(elapsed: number, seconds: number): number {
   return Math.min(1, Math.max(0, elapsed / seconds));
 }
 
-export type Seat = { position: Vec3; yaw: number };
+/**
+ * A position and facing. Motion functions write into a Pose the caller owns,
+ * so a frame loop can reuse one scratch object and allocate nothing.
+ */
+export type Pose = { x: number; y: number; z: number; yaw: number };
 
-export type FerrisWheel = { hub: Vec3; radius: number };
+export function newPose(): Pose {
+  return { x: 0, y: 0, z: 0, yaw: 0 };
+}
 
 /** A gondola on the rim after `progress` of one full turn, starting at the bottom. */
-export function ferrisSeat(wheel: FerrisWheel, progress: number): Seat {
+export function ferrisPose(
+  wheel: FerrisWheel,
+  progress: number,
+  out: Pose = newPose(),
+): Pose {
   const angle = progress * Math.PI * 2;
-  const [x, y, z] = wheel.hub;
-  return {
-    position: [
-      x + wheel.radius * Math.sin(angle),
-      y - wheel.radius * Math.cos(angle),
-      z,
-    ],
-    // gondolas stay upright and the rider faces the camera side
-    yaw: 0,
-  };
+  const [hx, hy, hz] = wheel.hub;
+  out.x = hx + wheel.radius * Math.sin(angle);
+  out.y = hy - wheel.radius * Math.cos(angle);
+  out.z = hz;
+  // gondolas stay upright and the rider faces the camera side
+  out.yaw = 0;
+  return out;
 }
 
 export type Track = {
@@ -97,11 +127,14 @@ export function buildTrack(controls: readonly Vec3[], steps = 16): Track {
   return { samples, distances, length };
 }
 
-/** The point and facing direction `distance` metres along the track, wrapping. */
+export const COASTER_TRACK = buildTrack(COASTER_CONTROLS);
+
+/** The point and facing `at` metres along the track, wrapping around the loop. */
 export function trackPose(
   track: Track,
   at: number,
-): { position: Vec3; yaw: number } {
+  out: Pose = newPose(),
+): Pose {
   const { samples, distances, length } = track;
   const d = ((at % length) + length) % length;
   let i = 0;
@@ -111,12 +144,115 @@ export function trackPose(
   const f = span > 0 ? (d - distances[i]) / span : 0;
   const a = samples[i];
   const b = samples[next];
-  const position: Vec3 = [
-    a[0] + (b[0] - a[0]) * f,
-    a[1] + (b[1] - a[1]) * f,
-    a[2] + (b[2] - a[2]) * f,
-  ];
-  return { position, yaw: Math.atan2(b[0] - a[0], b[2] - a[2]) };
+  out.x = a[0] + (b[0] - a[0]) * f;
+  out.y = a[1] + (b[1] - a[1]) * f;
+  out.z = a[2] + (b[2] - a[2]) * f;
+  out.yaw = Math.atan2(b[0] - a[0], b[2] - a[2]);
+  return out;
+}
+
+/** The seat on a ride `elapsed` seconds after boarding. Pure function of time. */
+export function ridePose(
+  ride: RideId,
+  elapsed: number,
+  calm: boolean,
+  out: Pose = newPose(),
+): Pose {
+  const progress = rideProgress(elapsed, rideSeconds(ride, calm));
+  if (ride === "ferris-wheel") return ferrisPose(FERRIS, progress, out);
+  return trackPose(COASTER_TRACK, progress * COASTER_TRACK.length, out);
+}
+
+export type RideState =
+  | { phase: "idle" }
+  | { phase: "boarding"; ride: RideId }
+  | { phase: "riding"; ride: RideId; start: number; seconds: number }
+  | { phase: "exiting"; ride: RideId; start: number };
+
+export type RideEvent =
+  | { type: "board"; ride: RideId }
+  /** The doll reached the boarding spot. */
+  | { type: "arrive"; now: number; calm: boolean }
+  /** The doll walked away before reaching the spot. */
+  | { type: "cancel" }
+  | { type: "tick"; now: number };
+
+/**
+ * idle -> boarding -> riding -> exiting -> idle. Events that do not apply to the
+ * current phase are ignored, so a stray click mid-ride changes nothing.
+ */
+export function rideStep(state: RideState, event: RideEvent): RideState {
+  switch (state.phase) {
+    case "idle":
+      return event.type === "board"
+        ? { phase: "boarding", ride: event.ride }
+        : state;
+    case "boarding":
+      if (event.type === "arrive") {
+        return {
+          phase: "riding",
+          ride: state.ride,
+          start: event.now,
+          seconds: rideSeconds(state.ride, event.calm),
+        };
+      }
+      return event.type === "cancel" ? { phase: "idle" } : state;
+    case "riding":
+      if (event.type === "tick" && event.now - state.start >= state.seconds) {
+        // the step-off starts when the ride really ended, not when we noticed
+        return {
+          phase: "exiting",
+          ride: state.ride,
+          start: state.start + state.seconds,
+        };
+      }
+      return state;
+    case "exiting":
+      if (event.type === "tick" && event.now - state.start >= EXIT_SECONDS) {
+        return { phase: "idle" };
+      }
+      return state;
+  }
+}
+
+const RIDE_END = newPose();
+
+function smoothstep(t: number): number {
+  return t * t * (3 - 2 * t);
+}
+
+/**
+ * Where the doll is while seated: on the ride, stepping off, or null when it
+ * walks freely. The step-off eases from the last seat to the boarding spot.
+ */
+export function seatPose(
+  state: RideState,
+  now: number,
+  calm: boolean,
+  out: Pose = newPose(),
+): Pose | null {
+  switch (state.phase) {
+    case "idle":
+    case "boarding":
+      return null;
+    case "riding":
+      return ridePose(state.ride, now - state.start, calm, out);
+    case "exiting": {
+      const end = ridePose(
+        state.ride,
+        rideSeconds(state.ride, calm),
+        calm,
+        RIDE_END,
+      );
+      const t = smoothstep(rideProgress(now - state.start, EXIT_SECONDS));
+      const [sx, sz] = RIDES[state.ride].spot;
+      out.x = end.x + (sx - end.x) * t;
+      out.y = end.y * (1 - t);
+      out.z = end.z + (sz - end.z) * t;
+      out.yaw = end.yaw;
+      return out;
+    }
+  }
 }
 
 // Drop tower cycle: lift, hold at the top, fall, rest on the ground.
@@ -167,76 +303,16 @@ export function stringPoints(
 export type ParkNpcId =
   "tamsin" | "gus" | "mabel" | "dex" | "sunny" | "rafe" | "ayo";
 
-/** Handwritten tap lines. Each NPC cycles through their own bank in order. */
-export const PARK_LINES: Record<ParkNpcId, readonly string[]> = {
-  tamsin: [
-    "Passes are on the counter. The wristband is sticky on purpose, that's the glitter.",
-    "Wristband first, then the wheel. Don't lean on the gate, it's older than both of us.",
-    "You look like a coaster person. Don't argue, I've sold tickets here for nine summers.",
-    "Keep the sticker. It makes the operators nicer to you, I've tested it.",
-    "We close at eleven. The last lap is the best one, everybody goes quiet.",
-    "The swing ride's shut since the storm. Ask Gus, he's the one who fixes things.",
-    "Hello, come in out of the dark. I take coins and compliments at this booth.",
-  ],
-  gus: [
-    "Hold the rail and keep your hands inside the car. I say that to everyone, me included.",
-    "The brake is a lever, not a dare. Leave it alone while we're moving.",
-    "Every car gets checked before the lap. Yours passed. I looked twice.",
-    "The wheel turns slow on purpose. The view has to earn its height.",
-    "Waving at the top works. Your friends on the midway will see it from the ground.",
-    "The coaster hill is nine metres. It feels like twice that, I promise.",
-    "If the lights stutter, that's the generator sulking, not the ride. Stay seated.",
-  ],
-  mabel: [
-    "Hold the cone by the stick and keep it out of your hair. Trust me on that one.",
-    "Pink or blue? Pink if you're thinking about someone, blue if you're thinking about nothing.",
-    "That's my own recipe. Don't ask for the sugar ratio, I'd only lie.",
-    "Tell me a secret and the second cone's on me. Keep it small, I'm working.",
-    "Fluff goes everywhere on windy nights. Look, I've got sugar in my eyebrows.",
-    "I've been spinning since opening and my arm has opinions. Tip the jar, it's appreciated.",
-    "Come back after midnight. The sugar's crisper and I'm in a better mood.",
-  ],
-  dex: [
-    "Step right up! Nobody leaves this midway with a dry pocket and a dull heart!",
-    "Ring toss! Three rings, one prize, and a seventy percent chance I'm telling the truth!",
-    "You! Yes, you with the look! The shooting gallery has been asking for you all night!",
-    "Winners take the big plush. Everybody else takes a small plush and a good story.",
-    "The whack-a-mole has been waiting all night for someone with your reflexes.",
-    "Don't pretend you're just looking. Everybody who walks past this stand is a player.",
-    "Hold on, my voice needs a sip. Then step right up, friend, step right up!",
-  ],
-  sunny: [
-    "I came for the coaster and stayed for the lights. The lights were the plan.",
-    "My feet hurt and I won't go home until I've eaten something fried.",
-    "Did you see the wheel go past the moon? I'm waiting for it to come back round.",
-    "First night here? You've got the face of someone about to scream on purpose.",
-    "I'm saving my last ride for the end of the night. It's a tradition I just made up.",
-    "Lost my friend by the teacups. She's fine. She's probably ahead, doing something brave.",
-    "If you see a pink tote bag near the gallery, that's me. Come say hello.",
-  ],
-  rafe: [
-    "Ten minutes in line and I'd queue again. The line is half the fun with good company.",
-    "My dad taught me the ring toss. He cheated. I forgive him, mostly.",
-    "You're standing on my chalk square. It's for hopscotch. It's a long story.",
-    "The carousel music gets in your head and stays there for a week. Worth it.",
-    "I've ridden every ride twice and I'm still scared of the drop tower. Respect it.",
-    "Give me a second, I'm deciding between the fried dough and the other fried dough.",
-    "Nice night for it. Everybody here looks like they've got a plan and no regrets.",
-  ],
-  ayo: [
-    "The carousel horses have names on their saddles. I've decided mine is Gerald.",
-    "Nice shoes for a midway. Mine hurt already, but it's the good kind of hurting.",
-    "I'm not scared of the coaster. I'm scared of the gap between the cars.",
-    "Lights on the wheel look like a slow fireworks show. Nobody told me it'd be this pretty.",
-    "Keep your change. I'm saving it for the teacups, they spin the coins right out of you.",
-    "Everyone says it's only a little bit of a drop. It's a lot of a drop. Enjoy it.",
-    "I came alone and I'm leaving with a plush shark. The night is going well.",
-  ],
-};
+/** Which dialogue role speaks for each park NPC. Lines live in src/game/dialogue/. */
+export const PARK_NPC_ROLES = {
+  tamsin: "ticket-cashier",
+  gus: "ride-operator",
+  mabel: "cotton-candy-vendor",
+  dex: "carnival-barker",
+  sunny: "regular",
+  rafe: "regular",
+  ayo: "regular",
+} as const satisfies Record<ParkNpcId, DialogueRole>;
 
-/** The line at position `n` in a bank, wrapping, so tapped lines come in order. */
-export function lineAt(lines: readonly string[], n: number): string {
-  if (lines.length === 0) return "";
-  const i = ((n % lines.length) + lines.length) % lines.length;
-  return lines[i];
-}
+/** The neighbourhood context that unlocks the park's own tapped lines. */
+export const PARK_CONTEXT = { neighborhood: "fairground" } as const;

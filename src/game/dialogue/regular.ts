@@ -45,6 +45,58 @@ export const regularBank: RoleBank = {
     "Bienvenida de vuelta! The bartender still remembers your drink.",
   ],
   tapped: [
+    {
+      text: "I came for the coaster and stayed for the lights. The lights were the plan.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "My feet hurt and I won't go home until I've eaten something fried.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "Did you see the wheel go past the moon? I'm waiting for it to come back round.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "First night here? You've got the face of someone about to scream on purpose.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "I'm saving my last ride for the end of the night. It's a tradition I just made up.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "Lost my friend by the teacups. She's fine. She's probably ahead, doing something brave.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "If you see a pink tote bag near the gallery, that's me. Come say hello.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "Ten minutes in line and I'd queue again. The line is half the fun with good company.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "My dad taught me the ring toss. He cheated. I forgive him, mostly.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "The carousel music gets in your head and stays there for a week. Worth it.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "The carousel horses have names on their saddles. I've decided mine is Gerald.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "Nice shoes for a midway. Mine hurt already, but it's the good kind of hurting.",
+      when: { neighborhood: "fairground" },
+    },
+    {
+      text: "Everyone says it's only a little bit of a drop. It's a lot of a drop. Enjoy it.",
+      when: { neighborhood: "fairground" },
+    },
     "Hey! Yes, I'm talking to you. You look like you have opinions.",
     "Oh, you want my attention? Well, you've got it now.",
     "Tapping on a regular? Bold. I like it.",
