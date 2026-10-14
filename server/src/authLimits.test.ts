@@ -1,6 +1,16 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { createAuthLimiter } from "./authLimits.ts";
+import { BUCKET_PRUNE_AFTER_MS, createAuthLimiter } from "./authLimits.ts";
+import {
+  BLOCK_ADDRESS_LIMIT,
+  BLOCK_LIMIT,
+  GUEST_LIMIT,
+  LOGIN_ACCOUNT_LIMIT,
+  LOGIN_ADDRESS_LIMIT,
+  REPORT_ADDRESS_LIMIT,
+  REPORT_LIMIT,
+  SIGNUP_LIMIT,
+} from "./rateLimit.ts";
 
 test("the 6th rapid login for one account is refused with a retry time", () => {
   const limiter = createAuthLimiter();
@@ -50,4 +60,32 @@ test("reports and blocks are limited per player, and more loosely per address", 
   assert.equal(run("block", "address", 100), 60);
   assert.ok(limiter.take("report", "", 0, "player") >= 1);
   assert.equal(limiter.take("report", "", 60_000, "player"), 0);
+});
+
+test("auth budgets persist across instances that share a store", () => {
+  const store = new Map<string, { tokens: number; at: number }>();
+  const first = createAuthLimiter(store);
+  for (let i = 0; i < 5; i++) first.take("login", "kai", 0);
+  const second = createAuthLimiter(store);
+  assert.ok(second.take("login", "kai", 0) >= 1);
+  // Limiters share the store without sharing keys.
+  assert.equal(second.take("login", "sam", 0), 0);
+  assert.equal(second.take("guest", "", 0), 0);
+  assert.ok([...store.keys()].every((key) => key.includes(":")));
+});
+
+test("buckets idle for the prune age are full again, so pruning forgets nothing", () => {
+  for (const limit of [
+    LOGIN_ACCOUNT_LIMIT,
+    LOGIN_ADDRESS_LIMIT,
+    SIGNUP_LIMIT,
+    GUEST_LIMIT,
+    REPORT_LIMIT,
+    REPORT_ADDRESS_LIMIT,
+    BLOCK_LIMIT,
+    BLOCK_ADDRESS_LIMIT,
+  ])
+    assert.ok(
+      (limit.capacity / limit.refillPerSecond) * 1000 <= BUCKET_PRUNE_AFTER_MS,
+    );
 });

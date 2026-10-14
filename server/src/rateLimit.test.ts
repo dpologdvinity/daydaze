@@ -109,3 +109,31 @@ test("retryAfterMs says how long until the next token", () => {
   assert.equal(limiter.retryAfterMs("a", 2000), 0);
   assert.equal(limiter.retryAfterMs("unknown", 0), 0);
 });
+
+test("buckets in a shared store survive a new limiter instance (eviction)", () => {
+  const store = new Map<string, { tokens: number; at: number }>();
+  const before = createRateLimiter({ capacity: 2, refillPerSecond: 1 }, store);
+  before.take("a", 0);
+  before.take("a", 0);
+  const after = createRateLimiter({ capacity: 2, refillPerSecond: 1 }, store);
+  assert.equal(after.take("a", 0), false);
+  assert.equal(after.retryAfterMs("a", 0), 1000);
+  assert.equal(after.take("a", 1000), true);
+  // Reads never write; only take does.
+  const writes: string[] = [];
+  const watched = createRateLimiter(
+    { capacity: 2, refillPerSecond: 1 },
+    {
+      get: (key) => store.get(key),
+      set: (key, bucket) => {
+        writes.push(key);
+        store.set(key, bucket);
+      },
+      delete: (key) => store.delete(key),
+    },
+  );
+  watched.retryAfterMs("a", 5000);
+  assert.deepEqual(writes, []);
+  watched.take("a", 5000);
+  assert.deepEqual(writes, ["a"]);
+});

@@ -47,16 +47,23 @@ export type RateLimiter = {
   forget(key: string): void;
 };
 
-/** Token bucket per key; a new key starts full. */
-export function createRateLimiter({
-  capacity,
-  refillPerSecond,
-}: RateLimit): RateLimiter {
+export type Bucket = { tokens: number; at: number };
+/** Where buckets live: a Map by default, or Durable Object storage. */
+export type BucketStore = {
+  get(key: string): Bucket | undefined;
+  set(key: string, bucket: Bucket): void;
+  delete(key: string): void;
+};
+
+/** Token bucket per key; a new key starts full. Only `take` writes. */
+export function createRateLimiter(
+  { capacity, refillPerSecond }: RateLimit,
+  buckets: BucketStore = new Map(),
+): RateLimiter {
   if (!(capacity >= 1 && Number.isFinite(capacity)))
     throw new RangeError("Invalid capacity");
   if (!(refillPerSecond > 0 && Number.isFinite(refillPerSecond)))
     throw new RangeError("Invalid refill rate");
-  const buckets = new Map<string, { tokens: number; at: number }>();
   function refill(key: string, now: number) {
     const bucket = buckets.get(key);
     if (!bucket) return { tokens: capacity, at: now };
