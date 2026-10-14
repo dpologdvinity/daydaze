@@ -1,0 +1,32 @@
+{
+  "porcelain": {
+    "base": "#f2c6ac",
+    "shade": "#d19375",
+    "light": "#ffefff"
+  },
+  "honey": {
+    "base": "#edac64",
+    "shade": "#cd8044",
+    "light": "#fad096"
+  },
+  "caramel": {
+    "base": "#ce8c54",
+    "shade": "#b26839",
+    "light": "#dbae85"
+  },
+  "mocha": {
+    "base": "#a46840",
+    "shade": "#8e4d2c",
+    "light": "#b78d73"
+  },
+  "cocoa": {
+    "base": "#7a4a30",
+    "shade": "#6a3721",
+    "light": "#977769"
+  },
+  "midnight": {
+    "base": "#603a2c",
+    "shade": "#532b1e",
+    "light": "#866d6a"
+  }
+}

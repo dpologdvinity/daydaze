@@ -95,6 +95,16 @@ Worker (gateway)
 - The client loads the save at login and pushes changes with a short debounce.
 - Coins and purchases remain client-owned. Cheating affects only the cheater because there is no trading yet. This becomes server-authoritative when trading or online leaderboards are added.
 
+## 3D protocol changes
+
+The client is 3D (see `2026-10-14-3d-client-foundation-design.md`), so the shared protocol in `src/net/networkProtocol.ts` changes:
+
+- `EntityDelta` becomes `{ id, x, z, yaw, action, timestamp }`. `x` and `z` are floor coordinates in metres on the XZ plane, bounded by ±`MAX_COORDINATE`. `yaw` is the facing angle in radians, normalised to (-π, π]. The old `y` and `heading` fields are removed. Height is not sent, because players stand on the floor.
+- `JoinRoomMessage` gains `look`, validated with `validateLook` from `src/game/look.ts`, and `name`, which the server overwrites with the session's name.
+- A new server message, `{ type: "profile", roomId, id, name, look }`, is sent for every occupant in the snapshot and whenever someone joins. `look` changes are sent as a new `profile` message.
+- Chat text is limited to 120 characters in the decoder.
+- Walkable clamping uses the room definition's XZ polygon from `src/game/rooms.ts`.
+
 ## Realtime rooms
 
 ### Join flow
@@ -109,7 +119,7 @@ Worker (gateway)
 
 - Every inbound message is decoded with the existing `decodeClientMessage`. Invalid messages are dropped. Repeated invalid messages disconnect the socket.
 - Rate limits: movement updates at about 15 per second, chat at 1 message per 2 seconds for accounts and slower for guests, emotes throttled.
-- Positions are clamped to the room manifest's walkable polygon.
+- Positions are clamped to the room definition's walkable XZ polygon.
 - Blocked pairs never receive each other's entities or chat.
 
 ## Chat and moderation
