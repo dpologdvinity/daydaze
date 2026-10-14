@@ -162,6 +162,15 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         target: "plaza",
         targetSpawn: { position: [9.5, 4.2], yaw: Math.PI },
       },
+      {
+        // The gate out to the city, a little west of the entrance arch.
+        id: "park-to-city",
+        position: [-6.5, 6.9],
+        radius: 0.9,
+        label: "Out through the gate",
+        target: "city",
+        targetSpawn: { position: [185, -9], yaw: 0 },
+      },
     ],
   },
   "water-park": {

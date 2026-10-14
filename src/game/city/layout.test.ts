@@ -187,3 +187,26 @@ test("street props stand on sidewalks, never in the road", () => {
       assert.equal(overlaps(spot, road), false, `${prop.kind} at ${x},${z}`);
   }
 });
+
+test("the carnival gate's door fires from the sidewalk into the park, and the park's gate leads back", () => {
+  const door = BUILDINGS.find((b) => b.id === "carnival-gate")?.door;
+  assert.ok(door, "the gate has a door");
+  assert.equal(door.target, "amusement-park");
+  let pos: Vec2 = [door.position[0], -9];
+  let fired: string | null = null;
+  for (let step = 0; step < 200 && fired === null; step++) {
+    pos = stepInArea(CITY_AREA, pos, door.position, 0.2);
+    fired = portalAt(CITY_AREA, pos)?.target ?? null;
+  }
+  assert.equal(fired, "amusement-park");
+  const back = ROOMS["amusement-park"].portals.find((p) => p.target === "city");
+  assert.ok(back, "the park has a gate back to the city");
+  assert.equal(isBlocked(CITY_AREA, back.targetSpawn.position), false);
+  assert.ok(
+    Math.hypot(
+      back.targetSpawn.position[0] - door.position[0],
+      back.targetSpawn.position[1] - door.position[1],
+    ) > door.radius,
+    "arrival would re-enter the gate at once",
+  );
+});

@@ -85,6 +85,7 @@ const BODY_COLOR: Record<BuildingStyle, string> = {
   club: "#3b1a40",
   warehouse: "#2f2b2e",
   velvet: "#40112f",
+  gate: "#2a1a3a",
 };
 
 const QUEUE_COLORS = ["#ff4fb3", "#4fe3ff", "#ffd84f"];

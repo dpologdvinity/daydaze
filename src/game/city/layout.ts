@@ -62,7 +62,8 @@ export type BuildingStyle =
   | "brick"
   | "club"
   | "warehouse"
-  | "velvet";
+  | "velvet"
+  | "gate";
 
 export type Door = {
   position: Vec2;
@@ -172,6 +173,15 @@ const VELVET_DOOR: Door = {
   target: "velvet-room",
   // The Velvet Room's own arrival point; see rooms.ts.
   targetSpawn: { position: [0.9, 1.6], yaw: 0.25 },
+};
+
+const CARNIVAL_DOOR: Door = {
+  position: [185, -12.5],
+  radius: 2,
+  label: "Into the Night Carnival",
+  target: "amusement-park",
+  // the park's arrival point; see rooms.ts
+  targetSpawn: { position: [0, 4.6], yaw: Math.PI },
 };
 
 export const BUILDINGS: readonly Building[] = [
@@ -356,6 +366,16 @@ export const BUILDINGS: readonly Building[] = [
     height: 24,
     style: "club",
     sign: { text: "GLITTER", color: "#ff4fb3" },
+  },
+  {
+    // The gate to the Amusement Park: walking through its door loads the park.
+    id: "carnival-gate",
+    neighborhood: "nightlife-row",
+    footprint: rect(180, -40, 190, -14),
+    height: 16,
+    style: "gate",
+    sign: { text: "NIGHT CARNIVAL", color: "#ff8a3d" },
+    door: CARNIVAL_DOOR,
   },
 ];
 
