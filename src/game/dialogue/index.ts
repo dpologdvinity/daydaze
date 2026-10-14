@@ -1,0 +1,40 @@
+import { bartenderBank } from "./bartender.ts";
+import { bouncerBank } from "./bouncer.ts";
+import { djBank } from "./dj.ts";
+import { clubDancerBank } from "./club-dancer.ts";
+import { coatCheckBank } from "./coat-check.ts";
+import { serverBank } from "./server.ts";
+import { regularBank } from "./regular.ts";
+import { cashierBank } from "./cashier.ts";
+import { stylistBank } from "./stylist.ts";
+import { nailTechBank } from "./nail-tech.ts";
+import { lifeguardBank } from "./lifeguard.ts";
+import { snackCashierBank } from "./snack-cashier.ts";
+import { swimmerBank } from "./swimmer.ts";
+import { rideOperatorBank } from "./ride-operator.ts";
+import { ticketCashierBank } from "./ticket-cashier.ts";
+import { carnivalBarkerBank } from "./carnival-barker.ts";
+import { pitCrewBank } from "./pit-crew.ts";
+import { cottonCandyVendorBank } from "./cotton-candy-vendor.ts";
+import type { DialogueRole, RoleBank } from "./types.ts";
+
+export const LINE_BANKS: Record<DialogueRole, RoleBank> = {
+  bartender: bartenderBank,
+  bouncer: bouncerBank,
+  dj: djBank,
+  "club-dancer": clubDancerBank,
+  "coat-check": coatCheckBank,
+  server: serverBank,
+  regular: regularBank,
+  cashier: cashierBank,
+  stylist: stylistBank,
+  "nail-tech": nailTechBank,
+  lifeguard: lifeguardBank,
+  "snack-cashier": snackCashierBank,
+  swimmer: swimmerBank,
+  "ride-operator": rideOperatorBank,
+  "ticket-cashier": ticketCashierBank,
+  "carnival-barker": carnivalBarkerBank,
+  "pit-crew": pitCrewBank,
+  "cotton-candy-vendor": cottonCandyVendorBank,
+};
