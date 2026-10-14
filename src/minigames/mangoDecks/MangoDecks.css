@@ -1,5 +1,6 @@
 .md {
   --note-h: 22px;
+  --pad-h: 76px;
   --aqua: #3ef2e0;
   --violet: #a46bff;
 }
@@ -156,6 +157,46 @@
   gap: 14px;
 }
 
+/* Intro record: a spinning mango-label vinyl on the platter. */
+.md-vinyl {
+  display: grid;
+  place-items: center;
+  width: clamp(168px, 30vh, 240px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    conic-gradient(
+      from 30deg,
+      transparent 0deg 40deg,
+      rgb(255 255 255 / 0.22) 60deg,
+      transparent 80deg 220deg,
+      rgb(255 47 154 / 0.3) 240deg,
+      transparent 260deg
+    ),
+    repeating-radial-gradient(circle, #111 0 2px, #1d1220 2px 4px);
+  box-shadow:
+    0 0 0 6px #120414,
+    0 0 0 9px #b9b3c9,
+    0 0 50px rgb(255 47 154 / 0.55);
+  animation: md-spin 1.8s linear infinite;
+}
+
+.md-vinyl::before {
+  content: "";
+  width: 36%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, var(--mg-ink) 0 6%, transparent 7%),
+    radial-gradient(circle at 35% 30%, #ffd27a, var(--mg-mango) 45%, #e8590c);
+}
+
+@keyframes md-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
 /* The booth during a set */
 
 .md-booth {
@@ -237,9 +278,25 @@
   font-weight: 700;
 }
 
-.md-energy {
+.md-energy-wrap {
   grid-area: energy;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.md-energy-label {
+  color: var(--mg-mango);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.md-energy {
+  position: relative;
+  flex: 1;
+  align-self: stretch;
   border: 2px solid transparent;
   border-radius: 999px;
   background:
@@ -261,13 +318,31 @@
 .md-field {
   grid-area: field;
   position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
   min-height: 0;
 }
 
+/* Mixer console plate the pads are mounted on. */
+.md-field::after {
+  content: "";
+  position: absolute;
+  inset: auto -14px -8px;
+  height: calc(var(--pad-h) + 22px);
+  border-radius: 20px 20px 0 0;
+  border-top: 2px solid #d8d2e6;
+  background:
+    radial-gradient(circle, rgb(255 176 46 / 0.9) 1.5px, transparent 2px) 12px
+      8px / 22px 100% no-repeat repeat-x,
+    linear-gradient(180deg, var(--mg-velvet), #12041a);
+  box-shadow: 0 -6px 30px rgb(255 47 154 / 0.35);
+}
+
 .md-lane {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -310,7 +385,8 @@
 }
 
 .md-pad {
-  height: 76px;
+  position: relative;
+  height: var(--pad-h);
   border: 3px solid transparent;
   border-radius: 18px;
   background:
@@ -389,15 +465,15 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  height: 64px;
+  height: 84px;
   margin: 0 -24px;
   overflow: hidden;
 }
 
 .md-raver {
   flex: none;
-  width: 44px;
-  height: 64px;
+  width: 54px;
+  height: 84px;
   margin-bottom: -10px;
   fill: #1c0722;
   stroke: #1c0722;
@@ -426,11 +502,20 @@
   .md-booth {
     grid-template:
       "hud" auto
-      "energy" 14px
+      "energy" auto
       "field" 1fr
       "crowd" auto / 1fr;
     gap: 10px;
     padding: 10px 12px 0;
+  }
+
+  .md-energy-wrap {
+    flex-direction: row-reverse;
+    gap: 10px;
+  }
+
+  .md-energy {
+    height: 14px;
   }
 
   .md-energy-fill {
@@ -444,14 +529,26 @@
     gap: 8px;
   }
 
+  .md {
+    --pad-h: 104px;
+  }
+
   .md-pad {
-    height: 104px;
     font-size: 30px;
   }
 
+  .md-vinyl {
+    width: 168px;
+  }
+
   .md-crowd {
-    height: 48px;
+    height: 56px;
     margin: 0 -12px;
+  }
+
+  .md-raver {
+    width: 36px;
+    height: 56px;
   }
 
   .md-keycaps kbd {

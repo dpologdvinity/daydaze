@@ -227,6 +227,7 @@ export function MangoDecks({
     >
       {phase === "intro" && (
         <section className="md-intro">
+          <div className="md-vinyl" aria-hidden="true" />
           <p className="md-lede">
             Hit each beat as it lands on the line. Keep the streak going and the
             crowd goes wild.
@@ -261,15 +262,20 @@ export function MangoDecks({
               <span className="md-multiplier">x{comboMultiplier(combo)}</span>
             </p>
           </div>
-          <div
-            className="md-energy"
-            role="meter"
-            aria-label="Crowd energy"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={energy}
-          >
-            <span className="md-energy-fill" />
+          <div className="md-energy-wrap">
+            <div
+              className="md-energy"
+              role="meter"
+              aria-label="Crowd energy"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={energy}
+            >
+              <span className="md-energy-fill" />
+            </div>
+            <span className="md-energy-label" aria-hidden="true">
+              Crowd
+            </span>
           </div>
           <div
             className="md-field"
