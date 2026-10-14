@@ -18,6 +18,7 @@ import {
 import type { Vec2 } from "../../game/walk.ts";
 import { VelvetRoom } from "../rooms/VelvetRoom.tsx";
 import { Plaza } from "../rooms/Plaza.tsx";
+import { AmusementPark } from "../rooms/AmusementPark.tsx";
 import { CameraRig, type View } from "./CameraRig.tsx";
 import { NeonClamp } from "./NeonClamp.tsx";
 import { createPlayer, PlayerController, walkTo } from "./PlayerController.tsx";
@@ -118,7 +119,11 @@ export function World({
           intensity={2.2}
         />
         <Suspense fallback={null}>
-          <Room key={room} onPick={onPick} />
+          {room === "amusement-park" ? (
+            <AmusementPark key={room} onPick={onPick} player={player} />
+          ) : (
+            <Room key={room} onPick={onPick} />
+          )}
           <PlayerController
             player={player}
             room={def}

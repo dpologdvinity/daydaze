@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   PARK_LINES,
   buildTrack,
+  parseRide,
   dropTowerHeight,
   ferrisSeat,
   lineAt,
@@ -97,7 +98,9 @@ test("the drop tower rests, lifts, holds, drops and repeats", () => {
   assert.ok(Math.abs(peak - top) < 1e-9);
   // the cycle repeats exactly
   assert.ok(
-    Math.abs(dropTowerHeight(3.3, bottom, top) - dropTowerHeight(3.3 + 8, bottom, top)) < 1e-9,
+    Math.abs(
+      dropTowerHeight(3.3, bottom, top) - dropTowerHeight(3.3 + 8, bottom, top),
+    ) < 1e-9,
   );
 });
 
@@ -112,7 +115,10 @@ test("string lights space bulbs between two anchors and sag", () => {
   }
   // a quadratic curve reaches half its control depth at the middle
   const middle = bulbs[Math.floor(bulbs.length / 2)];
-  assert.ok(Math.abs(middle[1] - 3.5) < 0.05, `the middle sags, got ${middle[1]}`);
+  assert.ok(
+    Math.abs(middle[1] - 3.5) < 0.05,
+    `the middle sags, got ${middle[1]}`,
+  );
 });
 
 test("every NPC has at least six handwritten lines with no duplicates", () => {
@@ -140,4 +146,12 @@ test("lineAt cycles through a bank in order and wraps", () => {
   assert.equal(lineAt(bank, 3), "one");
   assert.equal(lineAt(bank, -1), "three");
   assert.equal(lineAt([], 4), "");
+});
+
+test("parseRide accepts only the rides in the park", () => {
+  assert.equal(parseRide("coaster"), "coaster");
+  assert.equal(parseRide("ferris-wheel"), "ferris-wheel");
+  for (const value of ["toString", "Coaster", "", null]) {
+    assert.equal(parseRide(value), null, String(value));
+  }
 });

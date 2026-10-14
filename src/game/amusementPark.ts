@@ -12,6 +12,11 @@ const RIDE_SECONDS: Record<RideId, { normal: number; calm: number }> = {
   coaster: { normal: 22, calm: 36 },
 };
 
+/** The ride named by a `?ride=` value, or null. */
+export function parseRide(value: string | null): RideId | null {
+  return RIDE_IDS.find((id) => id === value) ?? null;
+}
+
 export function rideSeconds(ride: RideId, calm: boolean): number {
   const seconds = RIDE_SECONDS[ride];
   return calm ? seconds.calm : seconds.normal;
@@ -160,13 +165,7 @@ export function stringPoints(
 }
 
 export type ParkNpcId =
-  | "tamsin"
-  | "gus"
-  | "mabel"
-  | "dex"
-  | "sunny"
-  | "rafe"
-  | "ayo";
+  "tamsin" | "gus" | "mabel" | "dex" | "sunny" | "rafe" | "ayo";
 
 /** Handwritten tap lines. Each NPC cycles through their own bank in order. */
 export const PARK_LINES: Record<ParkNpcId, readonly string[]> = {

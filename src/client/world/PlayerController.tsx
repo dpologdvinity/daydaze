@@ -21,6 +21,8 @@ export type Player = {
   target: Vec2 | null;
   /** Set once a portal fires, so it fires once per visit. */
   leaving: boolean;
+  /** Set while a ride carries the doll; movement pauses and the seat wins. */
+  seat: { position: THREE.Vector3; yaw: number } | null;
 };
 
 export function createPlayer(spawn: Spawn): Player {
@@ -30,6 +32,7 @@ export function createPlayer(spawn: Spawn): Player {
     yaw: spawn.yaw,
     target: null,
     leaving: false,
+    seat: null,
   };
 }
 
@@ -143,7 +146,7 @@ export function PlayerController({
       goal = [from[0] + dir[0], from[1] + dir[1]];
     }
     let moving = false;
-    if (goal && !player.leaving) {
+    if (goal && !player.leaving && !player.seat) {
       const want = yawTowards(from, goal);
       const diff = Math.atan2(
         Math.sin(want - player.yaw),
@@ -176,12 +179,15 @@ export function PlayerController({
       dt,
     );
     if (g.current) {
-      g.current.position.copy(player.pos);
-      g.current.rotation.y = player.yaw;
+      g.current.position.copy(player.seat?.position ?? player.pos);
+      g.current.rotation.y = player.seat?.yaw ?? player.yaw;
     }
     const el = tag.current;
     if (el) {
-      head.copy(player.pos).setY(1.95).project(state.camera);
+      head
+        .copy(player.seat?.position ?? player.pos)
+        .setY(1.95)
+        .project(state.camera);
       const x = ((head.x + 1) / 2) * state.size.width;
       const y = ((1 - head.y) / 2) * state.size.height;
       el.style.visibility = head.z < 1 ? "visible" : "hidden";
