@@ -84,3 +84,9 @@ export const LAMPS: readonly [number, number][] = [
   [7.5, CURB_Z + 0.45],
 ];
 export const LAMP_TOP = 4.6;
+
+/** Close-up on the Velvet Room door and its sign, for the detail shot. */
+export const DETAIL_SHOT = {
+  eye: [VELVET_DOOR_X + 1.8, 1.8, SHOP_Z + 3.2] as [number, number, number],
+  look: [VELVET_DOOR_X, 2.2, SHOP_Z] as [number, number, number],
+};

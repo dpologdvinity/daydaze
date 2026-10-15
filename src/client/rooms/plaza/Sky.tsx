@@ -51,16 +51,16 @@ const WINDOWS = canvasTex(
   [1, 1],
 );
 
-function skylineGeometry() {
+function skylineGeometry(zFar: number, seed: number) {
   const parts: THREE.BufferGeometry[] = [];
   let x = -60;
   let i = 0;
   while (x < 60) {
-    const n = Math.sin(i * 12.3) * 4375.85;
+    const n = Math.sin((i + seed) * 12.3) * 4375.85;
     const r = n - Math.floor(n);
     const w = 3 + r * 5;
     const h = 6 + ((r * 7.3) % 1) * 12;
-    const z = -30 - ((r * 3.1) % 1) * 16;
+    const z = zFar - ((r * 3.1) % 1) * 16;
     const g = new THREE.BoxGeometry(w, h, 4);
     // scale UVs so each window cell stays the same size on every tower
     const uv = g.attributes.uv;
@@ -79,7 +79,9 @@ function skylineGeometry() {
 
 export function Sky() {
   const calm = useReducedMotion();
-  const skyline = useMemo(skylineGeometry, []);
+  const skyline = useMemo(() => skylineGeometry(-30, 0), []);
+  // a second, fogged row far behind: depth without any new light
+  const far = useMemo(() => skylineGeometry(-70, 40), []);
   const windows = useMemo(() => {
     const t = WINDOWS.clone();
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
@@ -100,6 +102,9 @@ export function Sky() {
         fade
         speed={calm ? 0 : 0.6}
       />
+      <mesh geometry={far}>
+        <meshBasicMaterial color="#2b1846" />
+      </mesh>
       <mesh geometry={skyline}>
         <meshBasicMaterial map={windows} color="#b8a8c8" />
       </mesh>

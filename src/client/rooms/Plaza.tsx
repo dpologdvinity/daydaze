@@ -1,19 +1,20 @@
 import { Environment, Lightformer } from "@react-three/drei";
 import { useMemo } from "react";
 import * as THREE from "three";
-import type { Look, Mood } from "../../game/look.ts";
+import type { Look } from "../../game/look.ts";
 import { ROOMS } from "../../game/rooms.ts";
-import { Doll } from "../avatar/Doll.tsx";
 import { SHOP_Z, SHOPS } from "./plaza/layout.ts";
+import { addPalm } from "./plaza/Palms.tsx";
 import { Sky } from "./plaza/Sky.tsx";
 import { Storefronts } from "./plaza/Storefronts.tsx";
 import { Street } from "./plaza/Street.tsx";
 import { StringLights } from "./plaza/StringLights.tsx";
 import { AmusementGate } from "./plaza/AmusementGate.tsx";
+import { Batch } from "./shared/batch.ts";
 import { Beams, type Beam } from "./shared/Beams.tsx";
+import { CrowdFigure } from "./shared/CrowdFigure.tsx";
 import type { PickHandler } from "./shared/Floor.tsx";
 import { DECO, Neon, NeonText, SCRIPT } from "./shared/Neon.tsx";
-import { Palm } from "./shared/Palm.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 
 // Found by destination, so other portals on the Plaza can come and go.
@@ -23,6 +24,12 @@ const WATER_GATE = ROOMS.plaza.portals.find((p) => p.target === "water-park");
 
 /** A turquoise neon arch at the east end of the street, out to the pools. */
 function WaterParkGate() {
+  const palms = useMemo(() => {
+    const b = new Batch();
+    addPalm(b, 0, 0, -1.9, 1.2);
+    addPalm(b, 0, 0, 1.9, 1.1);
+    return b.build();
+  }, []);
   const arch = useMemo(() => {
     const pts = [new THREE.Vector3(0, 0.1, -1), new THREE.Vector3(0, 2.3, -1)];
     for (let i = 1; i < 12; i++) {
@@ -55,8 +62,7 @@ function WaterParkGate() {
         position={[0, 4.35, 0]}
         rotation={[0, -Math.PI / 2, 0]}
       />
-      <Palm position={[0, 0, -1.9]} scale={1.2} />
-      <Palm position={[0, 0, 1.9]} scale={1.1} />
+      <primitive object={palms} />
     </group>
   );
 }
@@ -81,7 +87,7 @@ const SEARCHLIGHTS: readonly Beam[] = [
 // Regulars out on the street; positions sit inside ROOMS.plaza.walkable.
 const LOCALS: readonly {
   look: Look;
-  mood: Mood;
+  dance: boolean;
   at: [number, number, number];
   rot: number;
 }[] = [
@@ -96,7 +102,7 @@ const LOCALS: readonly {
       outfitColor: "#141018",
       shadow: "#3fe0d0",
     },
-    mood: "pose",
+    dance: false,
     at: [CLUB_X + 1.9, 0, SHOP_Z + 1.6],
     rot: -0.5,
   },
@@ -111,7 +117,7 @@ const LOCALS: readonly {
       outfitColor: "#e8e2ff",
       shadow: "#ff2f9a",
     },
-    mood: "lean",
+    dance: false,
     at: [6.6, 0, SHOP_Z + 1.3],
     rot: -0.35,
   },
@@ -126,7 +132,7 @@ const LOCALS: readonly {
       outfitColor: "#ff2f9a",
       shadow: "#d23cff",
     },
-    mood: "dance",
+    dance: true,
     at: [-9.4, 0, -3.6],
     rot: 0.7,
   },
@@ -161,13 +167,7 @@ export function Plaza({ onPick }: { onPick: PickHandler }) {
           scale={4}
         />
       </Environment>
-      <ambientLight color="#4a2468" intensity={0.35} />
       <hemisphereLight args={["#3a2a8a", "#ff2f9a", 0.35]} />
-      <directionalLight
-        position={[-6, 8, -4]}
-        color="#9ab8ff"
-        intensity={0.6}
-      />
       <Sky />
       <Street onPick={onPick} />
       <Storefronts />
@@ -176,14 +176,9 @@ export function Plaza({ onPick }: { onPick: PickHandler }) {
       {parkGate && <AmusementGate at={parkGate.position} />}
       <WaterParkGate />
       {LOCALS.map((n, i) => (
-        <Doll
-          key={i}
-          look={n.look}
-          mood={n.mood}
-          seed={i + 11}
-          position={n.at}
-          rotation-y={n.rot}
-        />
+        <group key={i} position={n.at} rotation-y={n.rot}>
+          <CrowdFigure look={n.look} dance={n.dance} seed={i + 11} />
+        </group>
       ))}
       <Beams
         beams={SEARCHLIGHTS}

@@ -1,9 +1,12 @@
+import { useFrame } from "@react-three/fiber";
 import { useMemo } from "react";
 import * as THREE from "three";
+import { useReducedMotion } from "../../motion.ts";
 import { useQuality } from "../../world/quality.ts";
+import { Batch } from "../shared/batch.ts";
 import { Floor, type PickHandler } from "../shared/Floor.tsx";
 import { canvasTex, GOLD, hdr, LACQUER } from "../shared/materials.ts";
-import { Palm } from "../shared/Palm.tsx";
+import { addPalm } from "./Palms.tsx";
 import { CURB_Z, LAMP_TOP, LAMPS, PLANTERS, SHOP_Z, SHOPS } from "./layout.ts";
 
 // The ground plane spans the sidewalk and the road beyond the curb.
@@ -12,6 +15,22 @@ const X1 = 15;
 const Z0 = SHOP_Z - 1;
 const Z1 = 17;
 const PX_PER_M = 36;
+
+// Benches on the sidewalk, clear of the planters.
+const BENCHES = [-8.6, 9.2];
+const BENCH_Z = 5.9;
+
+const NEON_STRIP = new THREE.MeshBasicMaterial({
+  color: hdr("#ff2f9a", 3),
+  toneMapped: false,
+});
+const SOIL = new THREE.MeshStandardMaterial({ color: "#1a0f0c", roughness: 1 });
+// The lamp globes breathe: the colour is rewritten each frame, never the material.
+const LAMP_BASE = hdr("#ffe0f0", 1.5);
+const LAMP_GLOW = new THREE.MeshBasicMaterial({
+  color: LAMP_BASE.clone(),
+  toneMapped: false,
+});
 
 /** Wet paving: square slabs up to the curb, then asphalt with lane paint. */
 function groundTex() {
@@ -83,60 +102,87 @@ function FakeReflections() {
   );
 }
 
-function Planter({ x0, x1, z0 }: { x0: number; x1: number; z0: number }) {
+function addPlanter(
+  b: Batch,
+  { x0, x1, z0 }: { x0: number; x1: number; z0: number },
+) {
   const w = x1 - x0;
   const d = CURB_Z - z0 + 0.25;
   const cx = (x0 + x1) / 2;
   const cz = z0 + d / 2;
-  return (
-    <group>
-      <mesh position={[cx, 0.3, cz]} material={LACQUER}>
-        <boxGeometry args={[w, 0.6, d]} />
-      </mesh>
-      <mesh position={[cx, 0.61, cz]} material={GOLD}>
-        <boxGeometry args={[w + 0.06, 0.04, d + 0.06]} />
-      </mesh>
-      <mesh position={[cx, 0.62, cz]} rotation-x={-Math.PI / 2}>
-        <planeGeometry args={[w - 0.12, d - 0.12]} />
-        <meshStandardMaterial color="#1a0f0c" roughness={1} />
-      </mesh>
-      <mesh position={[cx, 0.06, z0 - 0.01]} material={neonStrip}>
-        <boxGeometry args={[w, 0.03, 0.02]} />
-      </mesh>
-      <Palm position={[cx - w / 4, 0.4, cz]} scale={1.15} />
-      <Palm position={[cx + w / 4, 0.4, cz]} scale={0.95} />
-    </group>
-  );
+  b.add(new THREE.BoxGeometry(w, 0.6, d), LACQUER, { position: [cx, 0.3, cz] })
+    .add(new THREE.BoxGeometry(w + 0.06, 0.04, d + 0.06), GOLD, {
+      position: [cx, 0.61, cz],
+    })
+    .add(new THREE.PlaneGeometry(w - 0.12, d - 0.12), SOIL, {
+      position: [cx, 0.62, cz],
+      rotation: [-Math.PI / 2, 0, 0],
+    })
+    .add(new THREE.BoxGeometry(w, 0.03, 0.02), NEON_STRIP, {
+      position: [cx, 0.06, z0 - 0.01],
+    });
+  addPalm(b, cx - w / 4, 0.4, cz, 1.15);
+  addPalm(b, cx + w / 4, 0.4, cz, 0.95);
 }
 
-const neonStrip = new THREE.MeshBasicMaterial({
-  color: hdr("#ff2f9a", 3),
-  toneMapped: false,
-});
+function addLamp(b: Batch, x: number, z: number) {
+  b.add(new THREE.CylinderGeometry(0.05, 0.08, LAMP_TOP, 12), LACQUER, {
+    position: [x, LAMP_TOP / 2, z],
+  })
+    .add(new THREE.CylinderGeometry(0.14, 0.18, 0.8, 16), GOLD, {
+      position: [x, 0.4, z],
+    })
+    .add(new THREE.SphereGeometry(0.22, 20, 14), LAMP_GLOW, {
+      position: [x, LAMP_TOP + 0.18, z],
+    })
+    .add(new THREE.TorusGeometry(0.2, 0.025, 8, 24), GOLD, {
+      position: [x, LAMP_TOP, z],
+    });
+}
 
-function Lamp({ x, z }: { x: number; z: number }) {
-  return (
-    <group position={[x, 0, z]}>
-      <mesh position-y={LAMP_TOP / 2} material={LACQUER}>
-        <cylinderGeometry args={[0.05, 0.08, LAMP_TOP, 12]} />
-      </mesh>
-      <mesh position-y={0.4} material={GOLD}>
-        <cylinderGeometry args={[0.14, 0.18, 0.8, 16]} />
-      </mesh>
-      <mesh position-y={LAMP_TOP + 0.18}>
-        <sphereGeometry args={[0.22, 20, 14]} />
-        <meshBasicMaterial color={hdr("#ffe0f0", 1.5)} toneMapped={false} />
-      </mesh>
-      <mesh position-y={LAMP_TOP} material={GOLD}>
-        <torusGeometry args={[0.2, 0.025, 8, 24]} />
-      </mesh>
-    </group>
-  );
+function addBench(b: Batch, x: number) {
+  const z = BENCH_Z;
+  b.add(new THREE.BoxGeometry(1.6, 0.07, 0.42), LACQUER, {
+    position: [x, 0.44, z],
+  })
+    .add(new THREE.BoxGeometry(1.6, 0.42, 0.05), LACQUER, {
+      position: [x, 0.7, z - 0.2],
+    })
+    .add(new THREE.BoxGeometry(0.06, 0.44, 0.4), GOLD, {
+      position: [x - 0.7, 0.22, z],
+    })
+    .add(new THREE.BoxGeometry(0.06, 0.44, 0.4), GOLD, {
+      position: [x + 0.7, 0.22, z],
+    });
+}
+
+/** Every static street prop, one mesh per material. */
+function buildStreet() {
+  const b = new Batch();
+  b.add(new THREE.BoxGeometry(X1 - X0, 0.14, 0.24), LACQUER, {
+    position: [0, 0.07, CURB_Z + 0.12],
+  }).add(new THREE.BoxGeometry(X1 - X0, 0.012, 0.03), GOLD, {
+    position: [0, 0.145, CURB_Z + 0.01],
+  });
+  PLANTERS.forEach((p) => addPlanter(b, p));
+  LAMPS.forEach(([x, z]) => addLamp(b, x, z));
+  BENCHES.forEach((x) => addBench(b, x));
+  addPalm(b, -12.6, 0, SHOP_Z + 0.9, 1.2);
+  addPalm(b, 12.6, 0, SHOP_Z + 0.9, 1.2);
+  return b.build();
 }
 
 export function Street({ onPick }: { onPick: PickHandler }) {
   const quality = useQuality();
   const ground = useMemo(groundTex, []);
+  const street = useMemo(buildStreet, []);
+  const calm = useReducedMotion();
+  useFrame(({ clock }) => {
+    if (calm) return;
+    LAMP_GLOW.color
+      .copy(LAMP_BASE)
+      .multiplyScalar(0.9 + 0.1 * Math.sin(clock.elapsedTime * 1.3));
+  });
   return (
     <>
       <Floor
@@ -153,21 +199,7 @@ export function Street({ onPick }: { onPick: PickHandler }) {
         onPick={onPick}
       />
       {quality === "low" && <FakeReflections />}
-      {/* curb */}
-      <mesh position={[0, 0.07, CURB_Z + 0.12]} material={LACQUER}>
-        <boxGeometry args={[X1 - X0, 0.14, 0.24]} />
-      </mesh>
-      <mesh position={[0, 0.145, CURB_Z + 0.01]} material={GOLD}>
-        <boxGeometry args={[X1 - X0, 0.012, 0.03]} />
-      </mesh>
-      {PLANTERS.map((p) => (
-        <Planter key={p.x0} {...p} />
-      ))}
-      {LAMPS.map(([x, z]) => (
-        <Lamp key={x} x={x} z={z} />
-      ))}
-      <Palm position={[-12.6, 0, SHOP_Z + 0.9]} scale={1.2} />
-      <Palm position={[12.6, 0, SHOP_Z + 0.9]} scale={1.2} />
+      <primitive object={street} />
     </>
   );
 }
