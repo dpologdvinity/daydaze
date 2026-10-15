@@ -15,7 +15,13 @@ export type SaveV1 = {
   name: string;
   look: Look;
   swim: SwimLook;
-  settings: { quality: Quality; muted: boolean; effects: Intensity };
+  settings: {
+    quality: Quality;
+    muted: boolean;
+    effects: Intensity;
+    /** The dressing-room drawer; closed on a new save. */
+    panelOpen: boolean;
+  };
 };
 
 export const SAVE_KEY = "daydaze-save-v1";
@@ -36,7 +42,12 @@ export function createDefaultSave(name: string): SaveV1 {
     name,
     look: { ...DEFAULT_LOOK },
     swim: { ...DEFAULT_SWIM },
-    settings: { quality: "auto", muted: false, effects: "full" },
+    settings: {
+      quality: "auto",
+      muted: false,
+      effects: "full",
+      panelOpen: false,
+    },
   };
 }
 
@@ -62,6 +73,7 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
   const quality = settings.get("quality");
   const muted = settings.get("muted");
   const effects = settings.get("effects");
+  const panelOpen = settings.get("panelOpen");
   const defaults = createDefaultSave(
     isValidDisplayName(name) ? name : fallbackName,
   );
@@ -75,6 +87,11 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
       muted: typeof muted === "boolean" ? muted : defaults.settings.muted,
       // saves from before the drunk effects have no effects field yet
       effects: isIntensity(effects) ? effects : defaults.settings.effects,
+      // saves from before the dressing-room drawer have no panelOpen field yet
+      panelOpen:
+        typeof panelOpen === "boolean"
+          ? panelOpen
+          : defaults.settings.panelOpen,
     },
   };
 }
