@@ -46,10 +46,18 @@ test("good behaviour shortens the sentence and never goes below release", () => 
   assert.equal(goodBehaviour(DEFAULT_JAIL, NOW), DEFAULT_JAIL);
 });
 
-test("bail cannot be paid until a coin wallet exists", () => {
+test("bail is paid from the wallet or refused", () => {
   const jail = sentence(NOW, 2);
-  assert.equal(bailOut(jail, NOW), null);
-  assert.deepEqual(bailOut(DEFAULT_JAIL, NOW), DEFAULT_JAIL);
+  const cost = bailCost(jail, NOW);
+  assert.equal(bailOut(jail, NOW, cost - 1), null);
+  assert.deepEqual(bailOut(jail, NOW, cost + 5), {
+    jail: { endsAt: null },
+    coins: 5,
+  });
+  assert.deepEqual(bailOut(DEFAULT_JAIL, NOW, 7), {
+    jail: DEFAULT_JAIL,
+    coins: 7,
+  });
 });
 
 test("saved jail data that is not a finite time is dropped", () => {

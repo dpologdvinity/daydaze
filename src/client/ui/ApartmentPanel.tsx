@@ -20,9 +20,11 @@ type Change = (items: Furniture[] | null) => void;
 export function ApartmentPanel({
   home,
   onChange,
+  onShelf,
 }: {
   home: HomeSave;
   onChange: (home: HomeSave) => void;
+  onShelf: () => void;
 }) {
   const [choice, setChoice] = useState<FurnitureId | null>(null);
   const [picked, setPicked] = useState<number | null>(null);
@@ -68,6 +70,9 @@ export function ApartmentPanel({
         onClick={() => onChange(toggleLock(home))}
       >
         Door: {home.locked ? "locked" : "unlocked"}
+      </button>
+      <button type="button" onClick={onShelf}>
+        Try the test shelf
       </button>
       <fieldset>
         <legend>Furniture</legend>

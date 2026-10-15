@@ -17,11 +17,15 @@ function clock(ms: number): string {
 // The sentence countdown. It reads the saved end time, so a reload resumes it.
 export function JailHud({
   jail,
+  coins,
   onChange,
+  onPayBail,
   onRelease,
 }: {
   jail: JailSave;
+  coins: number;
   onChange: (jail: JailSave) => void;
+  onPayBail: (coins: number) => void;
   onRelease: () => void;
 }) {
   const [now, setNow] = useState(() => Date.now());
@@ -57,15 +61,16 @@ export function JailHud({
         type="button"
         disabled={!serving || done}
         onClick={() => {
-          const paid = bailOut(jail, Date.now());
+          const paid = bailOut(jail, Date.now(), coins);
           if (paid === null) {
             setNote(
-              `Bail is ${bailCost(jail, now)} coins. Bail can't be paid yet, so wait it out.`,
+              `Bail is ${bailCost(jail, now)} coins and you have ${coins}. Play cards or wait it out.`,
             );
             return;
           }
-          onChange(paid);
-          if (paid.endsAt === null) onRelease();
+          onPayBail(paid.coins);
+          onChange(paid.jail);
+          onRelease();
         }}
       >
         Pay bail ({bailCost(jail, now)} coins)

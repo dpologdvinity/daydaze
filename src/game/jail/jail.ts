@@ -1,4 +1,4 @@
-import { payBail } from "./bail.ts";
+import { spend } from "../wallet.ts";
 
 // Sentences run on the wall clock and are saved as an end time, so the
 // countdown survives a reload. Times are epoch milliseconds.
@@ -37,11 +37,15 @@ export function goodBehaviour(jail: JailSave, now: number): JailSave {
   return { endsAt: endsAt === now ? null : endsAt };
 }
 
-// Pays the bail through the coin wallet. Until the wallet exists this never
-// clears a sentence, so the player has to wait it out.
-export function bailOut(jail: JailSave, now: number): JailSave | null {
-  if (!isJailed(jail, now)) return jail;
-  return payBail(bailCost(jail, now)) ? { endsAt: null } : null;
+// Pays the bail from the wallet. Null when the player cannot afford it.
+export function bailOut(
+  jail: JailSave,
+  now: number,
+  coins: number,
+): { jail: JailSave; coins: number } | null {
+  if (!isJailed(jail, now)) return { jail, coins };
+  const left = spend(coins, bailCost(jail, now));
+  return left === null ? null : { jail: { endsAt: null }, coins: left };
 }
 
 // Saved jail times are untrusted: anything that is not a finite time is dropped.

@@ -17,7 +17,7 @@ import {
   serializeSave,
   type SaveV1,
 } from "../game/save.ts";
-import { earn, payoutFor, type PayGrade } from "../game/wallet.ts";
+import { earn, spend, payoutFor, type PayGrade } from "../game/wallet.ts";
 import { CityJoystick } from "./city/CityJoystick.tsx";
 import { readFlags } from "./flags.ts";
 import { ReducedMotionContext, usePrefersReducedMotion } from "./motion.ts";
@@ -135,17 +135,21 @@ export function App() {
       ...s,
       crime: recordCaught(s.crime, store.id, now, penalty),
       jail: jailAfterArrest(now, penalty) ?? s.jail,
+      // the fine takes what the player has, up to the fine
+      coins:
+        penalty.kind === "fine"
+          ? (spend(s.coins, penalty.coins) ?? 0)
+          : s.coins,
     }));
     setArrest(null);
     if (penalty.kind === "jail") {
       travel("jail", ROOMS.jail.spawn);
     } else {
-      // shortcut: a coin fine is recorded but not charged until the wallet exists
       setChat({
         text:
           penalty.kind === "warning"
             ? `Officer: a warning, and a day's ban from ${store.name}.`
-            : `Officer: a ${penalty.coins} coin fine, to be paid later.`,
+            : `Officer: a ${penalty.coins} coin fine, paid on the spot.`,
         at: now,
       });
     }
@@ -221,7 +225,11 @@ export function App() {
           setPanelOpen={setPanelOpen}
         />
         {here.room === "apartment" && (
-          <ApartmentPanel home={save.home} onChange={setHome} />
+          <ApartmentPanel
+            home={save.home}
+            onChange={setHome}
+            onShelf={() => setShopping(true)}
+          />
         )}
         {here.room === "apartment" && shopping && (
           <ShopliftPanel
@@ -233,7 +241,13 @@ export function App() {
         )}
         {arrest && <ArrestSequence onDone={finishArrest} />}
         {here.room === "jail" && (
-          <JailHud jail={save.jail} onChange={setJail} onRelease={release} />
+          <JailHud
+            jail={save.jail}
+            coins={save.coins}
+            onChange={setJail}
+            onPayBail={(coins) => setSave((s) => ({ ...s, coins }))}
+            onRelease={release}
+          />
         )}
         {game && <GameOverlay game={game} onClose={endGame} />}
         {here.room === "city" && touch && <CityJoystick />}

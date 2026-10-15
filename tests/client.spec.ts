@@ -352,3 +352,77 @@ test("Last Call opens from the Velvet Room bar and closes back to the world", as
   await expect(dialog).toBeHidden();
   await expect(roomTitle(page)).toHaveText("The Velvet Room");
 });
+
+test("apartment: place, rotate and remove furniture, lock the door, and it persists", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&debug=1`);
+  await page.getByRole("button", { name: "Go to Apartment" }).click();
+  await expect(roomTitle(page)).toHaveText("Your apartment");
+  const lock = page.getByRole("button", { name: /^Door:/ });
+  await expect(lock).toHaveText("Door: locked");
+  await lock.click();
+  await expect(lock).toHaveText("Door: unlocked");
+  await page.getByRole("button", { name: "Velvet sofa" }).click();
+  await page.getByRole("button", { name: "Empty cell 1, 1" }).click();
+  await expect(page.getByRole("status").last()).toHaveText(
+    "Placed Velvet sofa.",
+  );
+  await page.getByRole("button", { name: /^Velvet sofa at 1, 1/ }).click();
+  await page.getByRole("button", { name: "Rotate" }).click();
+  await page.reload();
+  await page.getByRole("button", { name: "Go to Apartment" }).click();
+  await expect(
+    page.getByRole("button", { name: /^Velvet sofa at 1, 1/ }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: /^Velvet sofa at 1, 1/ }).click();
+  await page.getByRole("button", { name: "Remove" }).click();
+  await expect(
+    page.getByRole("button", { name: "Empty cell 1, 1" }),
+  ).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("jail: the sentence counts down, cards shorten it, and bail needs coins", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    if (localStorage.getItem("daydaze-save-v1")) return;
+    localStorage.setItem(
+      "daydaze-save-v1",
+      JSON.stringify({ jail: { endsAt: Date.now() + 120_000 }, coins: 0 }),
+    );
+  });
+  await page.goto(`${STILL}&debug=1`);
+  await page.getByRole("button", { name: "Go to Jail" }).click();
+  await expect(roomTitle(page)).toHaveText("City Jail, Block C");
+  const clock = page.getByRole("timer");
+  await expect(clock).toContainText("Time left: 1:");
+  await page.getByRole("button", { name: /Play cards/ }).click();
+  await expect(clock).toContainText(/Time left: 1:[0-3]\d/);
+  await page.getByRole("button", { name: /Pay bail/ }).click();
+  await expect(page.getByText(/you have 0/)).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("timer")).toContainText("Time left");
+});
+
+test("shoplifting: the suspicion meter fills and a caught player is penalised", async ({
+  page,
+}) => {
+  await page.goto(`${STILL}&debug=1`);
+  await page.getByRole("button", { name: "Go to Apartment" }).click();
+  await page.getByRole("button", { name: "Try the test shelf" }).click();
+  await page.getByRole("button", { name: /Corner Bodega/ }).click();
+  await expect(page.getByRole("meter", { name: "Suspicion" })).toBeVisible();
+  // running draws attention every beat, so the meter fills and the officer comes
+  for (let i = 0; i < 12; i++) {
+    const run = page.getByRole("button", { name: "Run" });
+    if ((await run.count()) === 0) break;
+    await run.click();
+  }
+  await expect(page.getByRole("alert", { name: "Arrest" })).toBeVisible();
+  await expect(page.getByText(/a warning, and a day's ban/)).toBeVisible({
+    timeout: 20_000,
+  });
+});
