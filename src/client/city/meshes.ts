@@ -163,11 +163,14 @@ const MATERIAL: Record<Shared, THREE.Material> = {
     roughness: 0.9,
   }),
   // the leaf colour comes from each frond's instance colour, the shape from the alpha card
-  palmFrond: new THREE.MeshStandardMaterial({
-    roughness: 0.6,
-    side: THREE.DoubleSide,
-    alphaTest: 0.5,
-  }),
+  palmFrond: animate(
+    new THREE.MeshStandardMaterial({
+      roughness: 0.6,
+      side: THREE.DoubleSide,
+      alphaTest: 0.5,
+    }),
+    { sway: true },
+  ),
   treeTrunk: new THREE.MeshStandardMaterial({
     color: "#4a3524",
     roughness: 0.9,

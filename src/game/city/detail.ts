@@ -16,6 +16,7 @@ const TANK = "#6b4a2b";
 const AC = ["#9aa3c4", "#7d86ab", "#b9bfd6"];
 const NEON = ["#ff4fb3", "#4fe3ff", "#ffd84f", "#7dff6b", "#b06bff", "#ff8a3d"];
 const PRODUCT = ["#ffd84f", "#ff4fb3", "#f2eefc", "#4fe3ff", "#7dff6b"];
+const POSTER = ["#ff4fb3", "#4fe3ff", "#ffd84f", "#b06bff", "#f2eefc"];
 const GRAFFITI = ["#ff4fb3", "#4fe3ff", "#7dff6b", "#ffd84f"];
 const PLANTER = "#c0633f";
 const LEAF = ["#2fa36b", "#1f6b52", "#3dbf7a", "#25905c"];
@@ -156,6 +157,61 @@ export function detailBuilding(b: Building, f: Front, out: Buckets): void {
         sy: 0.9,
         sz: 0.05,
         color: pick(GRAFFITI, hash(k, f.cz, 42)),
+      });
+    }
+  }
+
+  // posters pasted on the wall and a neon glyph, a heart in tube, by the door
+  if (["brick", "warehouse", "storefront", "club"].includes(b.style)) {
+    for (let k = 0; k < 2; k++) {
+      if (hash(f.cx, k, 60) < 0.3) continue;
+      const px = f.x0 + f.w * (0.1 + 0.8 * hash(f.cz, k, 61));
+      const py = 2 + hash(k, f.cx, 62) * 1.2;
+      const pz = f.faceZ + f.out1 * 0.05;
+      out.glow.push({
+        x: px,
+        y: py,
+        z: pz,
+        sx: 1.1,
+        sy: 1.5,
+        sz: 0.04,
+        color: pick(POSTER, hash(k, px, 63)),
+      });
+      out.glow.push({
+        x: px,
+        y: py + 0.2,
+        z: pz + f.out1 * 0.02,
+        sx: 0.7,
+        sy: 0.5,
+        sz: 0.04,
+        color: "#1a0b2e",
+      });
+    }
+  }
+  if (
+    (b.style === "storefront" || b.style === "club") &&
+    hash(f.cx, f.cz, 64) < 0.7
+  ) {
+    const gx = f.x1 - 1.6;
+    const gy = 3.4;
+    const gz = f.faceZ + f.out1 * 0.12;
+    const color = pick(NEON, hash(f.cx, f.cz, 65));
+    // two lobes and a point, as four angled bars
+    for (const [dx, dy, r] of [
+      [-0.3, 0.25, -0.7],
+      [0.3, 0.25, 0.7],
+      [-0.3, -0.2, 0.9],
+      [0.3, -0.2, -0.9],
+    ] as const) {
+      out.tube.push({
+        x: gx + dx,
+        y: gy + dy,
+        z: gz,
+        sx: 0.7,
+        sy: 0.1,
+        sz: 0.1,
+        rot: [0, 0, r],
+        color,
       });
     }
   }
