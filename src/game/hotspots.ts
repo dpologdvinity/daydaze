@@ -3,7 +3,7 @@
 import type { RoomId } from "./rooms.ts";
 import type { Vec2 } from "./walk.ts";
 
-export const MINIGAME_IDS = ["bassline", "last-call"] as const;
+export const MINIGAME_IDS = ["bassline", "last-call", "midway"] as const;
 
 export type MinigameId = (typeof MINIGAME_IDS)[number];
 
@@ -35,6 +35,15 @@ export const HOTSPOTS: readonly Hotspot[] = [
     label: "Play Last Call at the bar",
     position: [-1, -3.1],
     radius: 0.9,
+  },
+  {
+    // In front of the STEP RIGHT UP booth on the midway's west side.
+    id: "carnival-midway",
+    room: "amusement-park",
+    game: "midway",
+    label: "Play the midway games",
+    position: [-8.3, 1.4],
+    radius: 1,
   },
 ];
 

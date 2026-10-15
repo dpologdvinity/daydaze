@@ -16,6 +16,12 @@ const LastCall = lazy(() =>
   })),
 );
 
+const Midway = lazy(() =>
+  import("../../minigames/midway/Midway.tsx").then((m) => ({
+    default: m.Midway,
+  })),
+);
+
 /** The keyboard route to each hotspot in this room, as plain buttons. */
 export function VenueGames({
   room,
@@ -53,6 +59,8 @@ export function GameOverlay({
     <Suspense fallback={null}>
       {game === "bassline" ? (
         <Bassline onClose={done} reducedMotion={reducedMotion} />
+      ) : game === "midway" ? (
+        <Midway onClose={done} reducedMotion={reducedMotion} />
       ) : (
         <LastCall onClose={done} reducedMotion={reducedMotion} />
       )}
