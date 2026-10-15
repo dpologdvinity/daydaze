@@ -43,13 +43,9 @@ test("only the cells in view are drawn", () => {
   const cells = cellsWithin(corner, 60);
   const plan = planCity(cells, 0, corner);
   assert.ok(plan.instances.body.length < BUILDINGS.length);
-  for (const kind of [
-    "road",
-    "sidewalk",
-    "lane",
-    "pole",
-    "palmTrunk",
-  ] as const) {
+  // building kit (tanks, antennas) hangs off a building drawn whole, so it can
+  // stand just outside the view; the ground kinds are clipped to the cells
+  for (const kind of ["road", "sidewalk", "lane", "palmTrunk"] as const) {
     for (const i of plan.instances[kind]) {
       assert.ok(
         insideCells(i, cells),

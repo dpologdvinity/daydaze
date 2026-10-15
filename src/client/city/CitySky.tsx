@@ -18,13 +18,61 @@ const SKY_FRAGMENT = `
 uniform vec3 uZenith;
 uniform vec3 uHorizon;
 uniform vec3 uGlow;
+uniform float uTime;
+uniform float uMotion;
 varying vec3 vDir;
+
+float hash21(vec2 p) {
+  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+
+float valueNoise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(
+    mix(hash21(i), hash21(i + vec2(1.0, 0.0)), f.x),
+    mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), f.x),
+    f.y
+  );
+}
+
+float cloudNoise(vec2 p) {
+  float sum = 0.0;
+  float amp = 0.5;
+  for (int i = 0; i < 4; i++) {
+    sum += amp * valueNoise(p);
+    p = p * 2.03 + vec2(1.7, 9.2);
+    amp *= 0.5;
+  }
+  return sum;
+}
+
 void main() {
   float up = vDir.y;
   vec3 col = mix(uHorizon, uZenith, smoothstep(0.0, 0.55, up));
   // the city's glow hangs over the skyline, strongest on the south side
   float glow = exp(-max(up, 0.0) * 7.0) * (0.55 + 0.45 * smoothstep(-0.5, 0.5, -vDir.z));
   col += uGlow * glow * 0.45;
+
+  // clouds: slow noise on a plane above the city, lit from below by the streets
+  if (up > 0.02) {
+    vec2 p = vDir.xz / (up + 0.15) * 1.6 + vec2(uTime * 0.012 * uMotion, 0.0);
+    float cover = smoothstep(0.5, 0.8, cloudNoise(p));
+    vec3 cloud = mix(vec3(0.16, 0.09, 0.3), uGlow * 0.55, 0.3 + 0.4 * glow);
+    col = mix(col, cloud, cover * 0.6 * smoothstep(0.02, 0.22, up));
+  }
+
+  // a skyline ring of towers along the horizon, with a few lit windows
+  float angle = atan(vDir.x, vDir.z);
+  float column = floor((angle + 3.14159) / 6.28318 * 90.0);
+  float tower = 0.02 + 0.12 * hash21(vec2(column, 3.0)) * hash21(vec2(column, 7.0)) + 0.05 * hash21(vec2(column, 11.0));
+  float edge = smoothstep(tower + 0.004, tower, up);
+  vec2 cell = vec2(angle * 140.0, up * 420.0);
+  float lit = step(0.72, hash21(floor(cell))) * step(fract(cell.x), 0.55) * step(fract(cell.y), 0.5);
+  vec3 towerCol = vec3(0.07, 0.04, 0.15) + uGlow * lit * 0.8;
+  col = mix(col, towerCol, edge);
+
   if (up < 0.0) col = uHorizon;
   gl_FragColor = vec4(col, 1.0);
   #include <colorspace_fragment>
@@ -63,6 +111,8 @@ export function CitySky() {
           uZenith: { value: new THREE.Color("#07041a") },
           uHorizon: { value: new THREE.Color("#2a1046") },
           uGlow: { value: new THREE.Color("#ff5fa8") },
+          uTime: CITY_CLOCK.uTime,
+          uMotion: CITY_CLOCK.uMotion,
         },
         side: THREE.BackSide,
         depthWrite: false,
