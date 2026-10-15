@@ -2,6 +2,7 @@ import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useReducedMotion } from "../../motion.ts";
+import { Batch } from "../shared/batch.ts";
 import { hdr } from "../shared/materials.ts";
 import { HALF_WIDTH, LAMP_TOP, LAMPS, SHOP_HEIGHT, SHOP_Z } from "./layout.ts";
 
@@ -13,6 +14,7 @@ const PALETTE = ["#fff1c8", "#ff6ac8", "#ffb02e", "#fff1c8", "#9b5cff"].map(
 
 // Wires run from the shop cornices out to the lamp posts and back, zig-zag.
 const BACK_X = [-HALF_WIDTH, -6, 3, HALF_WIDTH];
+const WIRE = new THREE.MeshBasicMaterial({ color: "#1a0d1d" });
 
 function anchors() {
   const out: THREE.Vector3[] = [];
@@ -41,8 +43,11 @@ export function StringLights() {
       const n = Math.floor(c.getLength() / BULB_GAP);
       for (let i = 1; i < n; i++) bulbs.push(c.getPointAt(i / n));
     }
-    const wires = curves.map((c) => new THREE.TubeGeometry(c, 40, 0.012, 4));
-    return { wires, bulbs };
+    const b = new Batch();
+    for (const c of curves) {
+      b.add(new THREE.TubeGeometry(c, 40, 0.012, 4), WIRE);
+    }
+    return { wires: b.build(), bulbs };
   }, []);
   useLayoutEffect(() => {
     const m = ref.current;
@@ -74,11 +79,7 @@ export function StringLights() {
   });
   return (
     <>
-      {wires.map((g, i) => (
-        <mesh key={i} geometry={g}>
-          <meshBasicMaterial color="#1a0d1d" />
-        </mesh>
-      ))}
+      <primitive object={wires} />
       <instancedMesh ref={ref} args={[undefined, undefined, bulbs.length]}>
         <sphereGeometry args={[0.06, 10, 8]} />
         <meshBasicMaterial toneMapped={false} />
