@@ -274,6 +274,7 @@ test.describe("with reduced motion", () => {
       .toBeGreaterThan(0);
     await expect(canvas).toHaveAttribute("data-sway", "0");
   });
+});
 
 test("the debug buttons take the player into Pulse", async ({ page }) => {
   const errors = collectErrors(page);

@@ -18,6 +18,7 @@ import {
 } from "./pulse/Decor.tsx";
 import { PulseNpcs } from "./pulse/Npcs.tsx";
 import { DANCE } from "./pulse/layout.ts";
+import { drink } from "../effects/drunk.ts";
 
 const BEAMS: readonly Beam[] = [
   { position: [-3.4, 3.8, -6.4], color: "#ff2f9a", phase: 0 },
@@ -30,10 +31,13 @@ const BEAMS: readonly Beam[] = [
  * from a floor hotspot; `onDrink` is the hook the bartender's tap calls, for
  * the drink and buzz system to wire in.
  */
+// The bartender pours a free cocktail; the buzz system takes it from there.
+const orderCocktail = () => drink("cocktail");
+
 export function Pulse({
   onPick,
   onGame,
-  onDrink,
+  onDrink = orderCocktail,
 }: {
   onPick: PickHandler;
   onGame: (game: MinigameId) => void;

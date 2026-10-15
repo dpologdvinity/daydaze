@@ -15,15 +15,19 @@ import {
 } from "./violethour/Decor.tsx";
 import { VioletNpcs } from "./violethour/Npcs.tsx";
 import { BAR_CENTRE_X, BAR_Z, DANCE } from "./violethour/layout.ts";
+import { drink } from "../effects/drunk.ts";
 
 /**
  * The Violet Hour, a lesbian bar with a small dance floor on Nightlife Row.
  * `onDrink` is the hook the bartender's tap calls, for the drink and buzz
  * system to wire in.
  */
+// The bartender pours a free cocktail; the buzz system takes it from there.
+const orderCocktail = () => drink("cocktail");
+
 export function VioletHour({
   onPick,
-  onDrink,
+  onDrink = orderCocktail,
 }: {
   onPick: PickHandler;
   onDrink?: () => void;
