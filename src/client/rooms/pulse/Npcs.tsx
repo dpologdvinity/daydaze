@@ -1,6 +1,7 @@
 import type { JSX } from "react";
 import type { Look } from "../../../game/look.ts";
 import type { DialogueContext } from "../../../game/dialogue/types.ts";
+import { CrowdFigure } from "../shared/CrowdFigure.tsx";
 import { TalkingNpc } from "../shared/TalkingNpc.tsx";
 import { BAR_X, DJ_BOOTH, PODIUM_TOP, PODIUMS } from "./layout.ts";
 
@@ -170,6 +171,40 @@ export function PulseNpcs({ onDrink }: { onDrink?: () => void }): JSX.Element {
         seed={27}
         context={CONTEXT}
       />
+    </>
+  );
+}
+
+/** Background dancers and drinkers that give the floor a crowd; a full doll costs too many calls. */
+const CROWD: readonly {
+  look: Look;
+  at: readonly [number, number, number];
+  rot: number;
+  dance: boolean;
+}[] = [
+  { look: DANCER_LOOKS[0].look, at: [-2.3, 0, 2], rot: 0.4, dance: true },
+  { look: DANCER_LOOKS[1].look, at: [2.3, 0, 2.6], rot: -0.4, dance: true },
+  { look: COAT_CHECK_LOOK, at: [1.4, 0, 4.9], rot: 0, dance: true },
+  {
+    look: DANCER_LOOKS[0].look,
+    at: [-3.8, 0, -1.2],
+    rot: Math.PI / 2,
+    dance: false,
+  },
+];
+
+export function PulseCrowd(): JSX.Element {
+  return (
+    <>
+      {CROWD.map((c, i) => (
+        <group
+          key={i}
+          position={[c.at[0], c.at[1], c.at[2]]}
+          rotation-y={c.rot}
+        >
+          <CrowdFigure look={c.look} dance={c.dance} seed={i + 1} />
+        </group>
+      ))}
     </>
   );
 }

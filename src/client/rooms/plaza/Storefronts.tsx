@@ -461,9 +461,11 @@ export function Storefronts() {
       <group position={[velvet.x, 0, SHOP_Z]}>
         <RingNeon position={[0, 6.6, 0.1]} scale={1.5} />
       </group>
-      <group position={[club.x, 0, SHOP_Z]}>
-        <Marquee w={club.width * 0.92} h={1.3} y={4.15} />
-      </group>
+      {SHOPS.filter((s) => s.id !== "velvet-room").map((s) => (
+        <group key={s.id} position={[s.x, 0, SHOP_Z]}>
+          <Marquee w={s.width * 0.92} h={1.3} y={4.15} />
+        </group>
+      ))}
       <group position={[bar.x, 0, SHOP_Z]}>
         <MartiniNeon position={[1.55, 3.0, 0.08]} />
         <Cocktail position={[-1.6, 0.46, 0.12]} scale={1.3} />

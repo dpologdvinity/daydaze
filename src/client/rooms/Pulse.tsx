@@ -7,16 +7,9 @@ import { GamePad } from "./shared/GamePad.tsx";
 import { LedFloor } from "./shared/LedFloor.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { ClubLights } from "./pulse/DanceFloor.tsx";
-import {
-  Bar,
-  Booths,
-  CoatCheck,
-  DjBooth,
-  MirrorBall,
-  Podiums,
-  Walls,
-} from "./pulse/Decor.tsx";
-import { PulseNpcs } from "./pulse/Npcs.tsx";
+import { MirrorBall, Walls } from "./pulse/Decor.tsx";
+import { PulseSet } from "./pulse/Set.tsx";
+import { PulseCrowd, PulseNpcs } from "./pulse/Npcs.tsx";
 import { DANCE } from "./pulse/layout.ts";
 import { drink } from "../effects/drunk.ts";
 
@@ -24,6 +17,8 @@ const BEAMS: readonly Beam[] = [
   { position: [-3.4, 3.8, -6.4], color: "#ff2f9a", phase: 0 },
   { position: [3.4, 3.8, -6.4], color: "#4fe3ff", phase: 2 },
   { position: [0, 3.9, -6.6], color: "#9b5cff", phase: 4 },
+  { position: [-2, 3.3, -2.2], color: "#4fe3ff", phase: 1 },
+  { position: [2, 3.3, 3.2], color: "#ff2f9a", phase: 3 },
 ];
 
 /**
@@ -62,13 +57,10 @@ export function Pulse({
         center={[DANCE.x, DANCE.y]}
         colors={["#ff2f9a", "#9b5cff", "#3fe0d0", "#ffb02e"]}
       />
-      <DjBooth />
+      <PulseSet />
       <MirrorBall />
-      <Podiums />
-      <Bar />
-      <Booths />
-      <CoatCheck />
       <PulseNpcs onDrink={onDrink} />
+      <PulseCrowd />
       {hotspotsIn("pulse").map((spot) => (
         <GamePad key={spot.id} spot={spot} onGame={onGame} />
       ))}
