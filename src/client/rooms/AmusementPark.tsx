@@ -18,6 +18,7 @@ import type { Vec2 } from "../../game/walk.ts";
 import { useReducedMotion } from "../motion.ts";
 import { walkTo, type Player } from "../world/PlayerController.tsx";
 import { Bulbs } from "./amusementpark/Bulbs.tsx";
+import { Fairground } from "./amusementpark/Fairground.tsx";
 import { Midway } from "./amusementpark/Midway.tsx";
 import { PARK_NPCS, ParkNpc } from "./amusementpark/Npcs.tsx";
 import { ENTRANCE_Z } from "./amusementpark/layout.ts";
@@ -244,6 +245,7 @@ export function AmusementPark({
         accent="#3fe0d0"
       />
       <Midway />
+      <Fairground />
       <FerrisWheel />
       <Carousel />
       <Coaster />
