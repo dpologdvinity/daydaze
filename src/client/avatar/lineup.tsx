@@ -6,7 +6,7 @@ import { useRef } from "react";
 import { createRoot } from "react-dom/client";
 import * as THREE from "three";
 import { DEFAULT_LOOK, type Look } from "../../game/look.ts";
-import { Doll } from "./Doll.tsx";
+import { ToonDoll as Doll } from "./Doll.tsx";
 import { HumanDoll } from "./human/HumanDoll.tsx";
 import { Environment, Lightformer } from "@react-three/drei";
 import { Suspense } from "react";

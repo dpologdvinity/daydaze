@@ -1,5 +1,5 @@
 import { useFrame, useThree, type ThreeElements } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { couplePoseAt, type CoupleRole } from "../../game/dance/couple.ts";
 import {
@@ -30,6 +30,7 @@ import {
   shadowTex,
 } from "./dollParts.ts";
 import { buildFaceTextures } from "./faceTexture.ts";
+import { HumanDoll } from "./human/HumanDoll.tsx";
 import { pose, type Rig } from "./pose.ts";
 import { hairTime, makeHair, makeToon } from "./toon.ts";
 
@@ -180,7 +181,8 @@ type DollProps = {
   seed?: number;
 } & Omit<ThreeElements["group"], "children">;
 
-export function Doll({
+/** The original toon doll, shown while the 3D doll's models load. */
+export function ToonDoll({
   look,
   swim = null,
   mood,
@@ -457,5 +459,15 @@ function Shoe({
         rotation-x={Math.PI / 2}
       />
     </group>
+  );
+}
+
+/** A doll: the 3D Blender-built doll, with the toon doll standing in while
+ * its models load. */
+export function Doll(props: DollProps) {
+  return (
+    <Suspense fallback={<ToonDoll {...props} />}>
+      <HumanDoll {...props} />
+    </Suspense>
   );
 }
