@@ -2,7 +2,6 @@ import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import {
-  COASTER_CONTROLS,
   COASTER_TRACK,
   FERRIS,
   dropTowerHeight,
@@ -11,10 +10,30 @@ import {
   trackPose,
 } from "../../../game/amusementPark.ts";
 import { useReducedMotion } from "../../motion.ts";
-import { canvasTex, hdr, LACQUER } from "../shared/materials.ts";
+import { canvasTex, GOLD, hdr, LACQUER } from "../shared/materials.ts";
 import { Neon } from "../shared/Neon.tsx";
 import { Bulbs } from "./Bulbs.tsx";
-import { Boxes, Segments, type Box, type Segment } from "./Instanced.tsx";
+import {
+  Boxes,
+  Copies,
+  Segments,
+  type Box,
+  type Copy,
+  type Segment,
+} from "./Instanced.tsx";
+import {
+  CAROUSEL_POLE,
+  COASTER_CAR,
+  COASTER_SUPPORTS,
+  COASTER_TIES,
+  FERRIS_FRAME,
+  GONDOLA,
+  HORSE,
+  TRACK_CURVE,
+  coasterRails,
+  rimBulbs,
+  rimLattice,
+} from "./models.ts";
 import { CAROUSEL_AT, DROP_TOWER_AT, SWING_AT, TEACUPS_AT } from "./layout.ts";
 
 const STEEL = new THREE.MeshStandardMaterial({
@@ -23,6 +42,37 @@ const STEEL = new THREE.MeshStandardMaterial({
   roughness: 0.4,
 });
 const TAU = Math.PI * 2;
+
+// Shared materials for the detailed ride parts. Colours come per instance, so
+// the materials stay white.
+const PAINT = new THREE.MeshStandardMaterial({
+  roughness: 0.45,
+  metalness: 0.1,
+});
+const TRIM = new THREE.MeshStandardMaterial({
+  color: "#2b1238",
+  roughness: 0.6,
+});
+const GLASS = new THREE.MeshStandardMaterial({
+  color: "#bff6ff",
+  emissive: "#ffb02e",
+  emissiveIntensity: 0.6,
+  transparent: true,
+  opacity: 0.55,
+  roughness: 0.1,
+  depthWrite: false,
+});
+const GLOW = new THREE.MeshBasicMaterial({
+  color: "#ffffff",
+  toneMapped: false,
+});
+const MIRROR = new THREE.MeshStandardMaterial({
+  color: "#e8f6ff",
+  metalness: 1,
+  roughness: 0.05,
+  envMapIntensity: 1.4,
+});
+const SCALLOP = new THREE.MeshStandardMaterial({ roughness: 0.5 });
 
 // Per-frame scratch, shared by the rides (they run one after another in
 // useFrame), so the frame loop allocates nothing.
@@ -54,37 +104,23 @@ export function useStripes(a: string, b: string) {
   );
 }
 
-const [HX, HY, HZ] = FERRIS.hub;
-const FERRIS_LEGS: readonly Segment[] = [
-  { from: [HX - 2.4, 0, HZ], to: [HX, HY, HZ], radius: 0.12 },
-  { from: [HX + 2.4, 0, HZ], to: [HX, HY, HZ], radius: 0.12 },
-  { from: [HX - 2.4, 0, HZ], to: [HX - 0.9, 0, HZ], radius: 0.1 },
-  { from: [HX + 2.4, 0, HZ], to: [HX + 0.9, 0, HZ], radius: 0.1 },
-];
-// Six diameters of the wheel, in the rim's own frame so they turn with it.
-const FERRIS_SPOKES: readonly Segment[] = Array.from(
-  { length: 6 },
-  (_, k): Segment => {
-    const a = (k * Math.PI) / 6;
-    const r = FERRIS.radius;
-    return {
-      from: [-Math.cos(a) * r, -Math.sin(a) * r, 0],
-      to: [Math.cos(a) * r, Math.sin(a) * r, 0],
-      radius: 0.03,
-    };
-  },
-);
 const GONDOLAS = 12;
 const GONDOLA_COLORS = ["#ff2f9a", "#3fe0d0", "#ffb02e"];
+const RIM_RADIUS = FERRIS.radius;
+const RIM_LATTICE = rimLattice(RIM_RADIUS);
+const RIM_BULBS = rimBulbs(RIM_RADIUS);
+const [HX, HY, HZ] = FERRIS.hub;
+const COASTER_RAILS = coasterRails();
 
 /** A ferris wheel that always turns. Gondolas stay upright on the rim. */
 export function FerrisWheel() {
   const calm = useReducedMotion();
   const rim = useRef<THREE.Group>(null);
-  const cabins = useRef<THREE.InstancedMesh>(null);
-  const rods = useRef<THREE.InstancedMesh>(null);
+  const paint = useRef<THREE.InstancedMesh>(null);
+  const glass = useRef<THREE.InstancedMesh>(null);
+  const trim = useRef<THREE.InstancedMesh>(null);
   useLayoutEffect(() => {
-    const m = cabins.current;
+    const m = paint.current;
     if (!m) return;
     for (let k = 0; k < GONDOLAS; k++) {
       m.setColorAt(k, new THREE.Color(GONDOLA_COLORS[k % 3]));
@@ -99,38 +135,38 @@ export function FerrisWheel() {
     for (let k = 0; k < GONDOLAS; k++) {
       ferrisPose(FERRIS, k / GONDOLAS + turn, pose);
       matrix.makeTranslation(pose.x, pose.y, pose.z);
-      cabins.current?.setMatrixAt(k, matrix);
-      // the hanger rod runs from the rim down to the cabin roof
-      matrix.makeTranslation(pose.x, pose.y - 0.25, pose.z);
-      rods.current?.setMatrixAt(k, matrix);
+      paint.current?.setMatrixAt(k, matrix);
+      glass.current?.setMatrixAt(k, matrix);
+      trim.current?.setMatrixAt(k, matrix);
     }
-    if (cabins.current) cabins.current.instanceMatrix.needsUpdate = true;
-    if (rods.current) rods.current.instanceMatrix.needsUpdate = true;
+    if (paint.current) paint.current.instanceMatrix.needsUpdate = true;
+    if (glass.current) glass.current.instanceMatrix.needsUpdate = true;
+    if (trim.current) trim.current.instanceMatrix.needsUpdate = true;
   });
   return (
     <group>
-      <Segments items={FERRIS_LEGS} />
+      <Segments items={FERRIS_FRAME} />
       <mesh position={[HX, HY, HZ]} rotation-x={Math.PI / 2} material={LACQUER}>
         <cylinderGeometry args={[0.5, 0.5, 0.7, 12]} />
       </mesh>
+      <mesh
+        position={[HX, HY, HZ + 0.36]}
+        rotation-x={Math.PI / 2}
+        material={GOLD}
+      >
+        <cylinderGeometry args={[0.2, 0.2, 0.06, 12]} />
+      </mesh>
       <group ref={rim} position={[HX, HY, HZ]}>
         <mesh>
-          <torusGeometry args={[FERRIS.radius, 0.07, 6, 64]} />
+          <torusGeometry args={[RIM_RADIUS, 0.07, 6, 64]} />
           <meshBasicMaterial color={hdr("#ff6ac8", 2.2)} toneMapped={false} />
         </mesh>
-        <Segments items={FERRIS_SPOKES} />
+        <Segments items={RIM_LATTICE} />
+        <Bulbs points={RIM_BULBS} radius={0.08} detail={[6, 4]} />
       </group>
-      <instancedMesh
-        ref={rods}
-        args={[undefined, undefined, GONDOLAS]}
-        material={STEEL}
-      >
-        <cylinderGeometry args={[0.025, 0.025, 0.5, 4]} />
-      </instancedMesh>
-      <instancedMesh ref={cabins} args={[undefined, undefined, GONDOLAS]}>
-        <boxGeometry args={[0.9, 0.7, 0.8]} />
-        <meshStandardMaterial roughness={0.5} />
-      </instancedMesh>
+      <instancedMesh ref={paint} args={[GONDOLA.paint, PAINT, GONDOLAS]} />
+      <instancedMesh ref={glass} args={[GONDOLA.glass, GLASS, GONDOLAS]} />
+      <instancedMesh ref={trim} args={[GONDOLA.trim, TRIM, GONDOLAS]} />
     </group>
   );
 }
@@ -144,40 +180,42 @@ const CANOPY_BULBS: [number, number, number][] = Array.from(
   },
 );
 
-// Each horse is a pole, a body and a head, placed on a ring around the carousel's centre.
-const HORSE_POLES: readonly Segment[] = Array.from(
+// Each horse stands on a ring around the carousel's centre, facing along the tangent.
+const HORSE_ITEMS: readonly Copy[] = Array.from(
   { length: CAROUSEL_HORSES },
-  (_, k): Segment => {
+  (_, k): Copy => {
     const a = (k / CAROUSEL_HORSES) * TAU;
-    const x = Math.cos(a) * 2.6;
-    const z = Math.sin(a) * 2.6;
-    return { from: [x, 0, z], to: [x, 2, z], radius: 0.05 };
+    return { position: [Math.cos(a) * 2.6, 0, Math.sin(a) * 2.6], yaw: -a };
   },
 );
-const HORSE_BOXES: readonly Box[] = Array.from(
-  { length: CAROUSEL_HORSES },
-  (_, k): Box[] => {
-    const a = (k / CAROUSEL_HORSES) * TAU;
-    const x = Math.cos(a) * 2.6;
-    const z = Math.sin(a) * 2.6;
-    const color = k % 2 ? "#3fe0d0" : "#ffb02e";
-    // the body and head sit along the horse's own forward axis, -a in yaw
-    return [
-      {
-        position: [x - Math.sin(a) * 0.12, 0.95, z + Math.cos(a) * 0.12],
-        size: [0.45, 0.42, 0.9],
-        yaw: -a,
-        color,
-      },
-      {
-        position: [x - Math.sin(a) * 0.5, 1.35, z + Math.cos(a) * 0.5],
-        size: [0.22, 0.46, 0.3],
-        yaw: -a,
-        color,
-      },
-    ];
-  },
-).flat();
+const HORSE_BODY = HORSE_ITEMS.map((h, k) => ({
+  ...h,
+  color: k % 2 ? "#3fe0d0" : "#ffb02e",
+}));
+const HORSE_TRIM = HORSE_ITEMS.map((h, k) => ({
+  ...h,
+  color: k % 2 ? "#ff2f9a" : "#fff1c8",
+}));
+const HORSE_POLES: readonly Copy[] = HORSE_ITEMS.map((h) => ({
+  position: h.position,
+}));
+// Scallops hang from the canopy's lower edge, alternating two stripe colours.
+const SCALLOP_GEOMETRY = new THREE.SphereGeometry(
+  0.3,
+  10,
+  5,
+  0,
+  TAU,
+  0,
+  Math.PI / 2,
+).rotateX(Math.PI);
+const SCALLOPS: readonly Copy[] = Array.from({ length: 24 }, (_, i): Copy => {
+  const a = (i / 24) * TAU;
+  return {
+    position: [Math.cos(a) * 3.95, 3.4, Math.sin(a) * 3.95],
+    color: i % 2 ? "#fff1c8" : "#ff2f9a",
+  };
+});
 
 /** The carousel: a striped canopy over a ring of painted horses that turns. */
 export function Carousel() {
@@ -194,6 +232,13 @@ export function Carousel() {
         <cylinderGeometry args={[3.9, 3.9, 0.24, 24]} />
         <meshStandardMaterial color="#3a1450" roughness={0.5} />
       </mesh>
+      {/* a mirrored drum at the centre and a mirrored skirt round the platform */}
+      <mesh position={[0, 0.9, 0]} material={MIRROR}>
+        <cylinderGeometry args={[1.1, 1.1, 1.8, 16, 1, true]} />
+      </mesh>
+      <mesh position={[0, 0.5, 0]} material={MIRROR}>
+        <cylinderGeometry args={[3.85, 3.85, 0.5, 24, 1, true]} />
+      </mesh>
       <mesh position={[0, 0.7, 0]} material={LACQUER}>
         <cylinderGeometry args={[0.18, 0.18, 1.4, 8]} />
       </mesh>
@@ -201,28 +246,21 @@ export function Carousel() {
         <coneGeometry args={[4, 1.4, 24, 1, true]} />
         <meshStandardMaterial map={stripes} side={THREE.DoubleSide} />
       </mesh>
+      <Copies geometry={SCALLOP_GEOMETRY} material={SCALLOP} items={SCALLOPS} />
+      <mesh position={[0, 4.9, 0]} material={GOLD}>
+        <sphereGeometry args={[0.2, 12, 8]} />
+      </mesh>
       <Bulbs points={CANOPY_BULBS} radius={0.09} />
       <group ref={ring}>
-        <Segments items={HORSE_POLES} />
-        <Boxes items={HORSE_BOXES} />
+        <Copies geometry={CAROUSEL_POLE} material={GOLD} items={HORSE_POLES} />
+        <Copies geometry={HORSE.paint} material={PAINT} items={HORSE_BODY} />
+        <Copies geometry={HORSE.trim} material={TRIM} items={HORSE_TRIM} />
+        <Copies geometry={HORSE.gilt} material={GOLD} items={HORSE_ITEMS} />
       </group>
     </group>
   );
 }
 
-const TRACK_CURVE = new THREE.CatmullRomCurve3(
-  COASTER_CONTROLS.map((p) => new THREE.Vector3(...p)),
-  true,
-  "catmullrom",
-  0.5,
-);
-const COASTER_PILLARS: readonly Segment[] = COASTER_CONTROLS.filter(
-  ([, y]) => y > 2.5,
-).map(([x, y, z]): Segment => ({
-  from: [x, 0, z],
-  to: [x, y, z],
-  radius: 0.06,
-}));
 const CAR_COUNT = 3;
 const CAR_SPACING = 2.4;
 const CAR_COLORS = ["#ffb02e", "#ff2f9a", "#3dff9a"];
@@ -230,13 +268,15 @@ const CAR_COLORS = ["#ffb02e", "#ff2f9a", "#3dff9a"];
 /** The coaster: a glowing loop of track with a decorative train always running it. */
 export function Coaster() {
   const calm = useReducedMotion();
-  const cars = useRef<THREE.InstancedMesh>(null);
+  const paint = useRef<THREE.InstancedMesh>(null);
+  const trim = useRef<THREE.InstancedMesh>(null);
+  const glow = useRef<THREE.InstancedMesh>(null);
   const track = useMemo(
     () => new THREE.TubeGeometry(TRACK_CURVE, 240, 0.07, 6, true),
     [],
   );
   useLayoutEffect(() => {
-    const m = cars.current;
+    const m = paint.current;
     if (!m) return;
     for (let k = 0; k < CAR_COUNT; k++) {
       m.setColorAt(k, new THREE.Color(CAR_COLORS[k]));
@@ -246,8 +286,6 @@ export function Coaster() {
   useFrame(({ clock }) => {
     // metres per second along the loop; calm mode runs a slow train
     const speed = calm ? 3 : 8;
-    const m = cars.current;
-    if (!m) return;
     const { pose, matrix, position, quaternion, scale, axis } = scratch;
     for (let k = 0; k < CAR_COUNT; k++) {
       trackPose(
@@ -258,20 +296,25 @@ export function Coaster() {
       position.set(pose.x, pose.y + 0.2, pose.z);
       quaternion.setFromAxisAngle(axis, pose.yaw);
       matrix.compose(position, quaternion, scale);
-      m.setMatrixAt(k, matrix);
+      paint.current?.setMatrixAt(k, matrix);
+      trim.current?.setMatrixAt(k, matrix);
+      glow.current?.setMatrixAt(k, matrix);
     }
-    m.instanceMatrix.needsUpdate = true;
+    if (paint.current) paint.current.instanceMatrix.needsUpdate = true;
+    if (trim.current) trim.current.instanceMatrix.needsUpdate = true;
+    if (glow.current) glow.current.instanceMatrix.needsUpdate = true;
   });
   return (
     <group>
       <mesh geometry={track}>
         <meshBasicMaterial color={hdr("#3fe0d0", 2)} toneMapped={false} />
       </mesh>
-      <Segments items={COASTER_PILLARS} />
-      <instancedMesh ref={cars} args={[undefined, undefined, CAR_COUNT]}>
-        <boxGeometry args={[0.9, 0.42, 1.3]} />
-        <meshStandardMaterial roughness={0.4} />
-      </instancedMesh>
+      <mesh geometry={COASTER_RAILS} material={STEEL} />
+      <Boxes items={COASTER_TIES} />
+      <Segments items={COASTER_SUPPORTS} />
+      <instancedMesh ref={paint} args={[COASTER_CAR.paint, PAINT, CAR_COUNT]} />
+      <instancedMesh ref={trim} args={[COASTER_CAR.trim, TRIM, CAR_COUNT]} />
+      <instancedMesh ref={glow} args={[COASTER_CAR.glow, GLOW, CAR_COUNT]} />
     </group>
   );
 }

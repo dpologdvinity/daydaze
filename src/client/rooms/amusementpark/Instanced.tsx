@@ -78,3 +78,36 @@ export function Boxes({ items }: { items: readonly Box[] }) {
     </instancedMesh>
   );
 }
+
+export type Copy = { position: Vec3; yaw?: number; color?: string };
+
+/**
+ * One instanced draw of `geometry` at each copy. A copy's colour multiplies the
+ * material colour, so a white material takes the colour as its paint.
+ */
+export function Copies({
+  geometry,
+  material,
+  items,
+}: {
+  geometry: THREE.BufferGeometry;
+  material: THREE.Material;
+  items: readonly Copy[];
+}) {
+  const ref = useRef<THREE.InstancedMesh>(null);
+  useLayoutEffect(() => {
+    const m = ref.current;
+    if (!m) return;
+    const o = new THREE.Object3D();
+    items.forEach((c, i) => {
+      o.position.set(...c.position);
+      o.rotation.set(0, c.yaw ?? 0, 0);
+      o.updateMatrix();
+      m.setMatrixAt(i, o.matrix);
+      m.setColorAt(i, new THREE.Color(c.color ?? "#ffffff"));
+    });
+    m.instanceMatrix.needsUpdate = true;
+    if (m.instanceColor) m.instanceColor.needsUpdate = true;
+  }, [items]);
+  return <instancedMesh ref={ref} args={[geometry, material, items.length]} />;
+}

@@ -3,6 +3,8 @@ import * as THREE from "three";
 import { stringPoints, type Vec3 } from "../../../game/amusementPark.ts";
 import { BOOTHS, type Booth as BoothSpec } from "./layout.ts";
 import { Bulbs } from "./Bulbs.tsx";
+import { Copies, type Copy } from "./Instanced.tsx";
+import { merged } from "./models.ts";
 import { useStripes } from "./Rides.tsx";
 import { LACQUER } from "../shared/materials.ts";
 import { MARQUEE, NeonText } from "../shared/Neon.tsx";
@@ -24,6 +26,66 @@ const POLES: readonly [number, number][] = [
   [12, 5.5],
 ];
 
+// Prizes sit on each counter: plush toys and wrapped gift boxes, alternating.
+const PLUSH = merged([
+  {
+    g: new THREE.SphereGeometry(1, 10, 8),
+    size: [0.13, 0.12, 0.13],
+    at: [0, 0.13, 0],
+  },
+  {
+    g: new THREE.SphereGeometry(1, 8, 6),
+    size: [0.1, 0.1, 0.1],
+    at: [0, 0.27, 0],
+  },
+  {
+    g: new THREE.SphereGeometry(1, 6, 4),
+    size: [0.035, 0.035, 0.035],
+    at: [-0.07, 0.36, 0],
+  },
+  {
+    g: new THREE.SphereGeometry(1, 6, 4),
+    size: [0.035, 0.035, 0.035],
+    at: [0.07, 0.36, 0],
+  },
+]);
+const GIFT = merged([
+  {
+    g: new THREE.BoxGeometry(1, 1, 1),
+    size: [0.18, 0.14, 0.14],
+    at: [0, 0.07, 0],
+  },
+  {
+    g: new THREE.BoxGeometry(1, 1, 1),
+    size: [0.19, 0.145, 0.03],
+    at: [0, 0.07, 0],
+  },
+  {
+    g: new THREE.BoxGeometry(1, 1, 1),
+    size: [0.03, 0.145, 0.19],
+    at: [0, 0.07, 0],
+  },
+]);
+const PRIZE_COLORS = ["#ff6ac8", "#3fe0d0", "#ffb02e", "#9b5cff", "#3dff9a"];
+const COUNTER_SLOTS = [-0.9, -0.3, 0.3, 0.9];
+const PLUSH_ITEMS: Copy[] = [];
+const GIFT_ITEMS: Copy[] = [];
+BOOTHS.forEach((booth, b) =>
+  COUNTER_SLOTS.forEach((x, i) => {
+    // local counter point, turned with the booth so the prizes face the midway
+    const at = new THREE.Vector3(x, 1.1, 0.15).applyAxisAngle(
+      new THREE.Vector3(0, 1, 0),
+      booth.rot,
+    );
+    const copy: Copy = {
+      position: [booth.at[0] + at.x, 1.1, booth.at[1] + at.z],
+      yaw: booth.rot,
+      color: PRIZE_COLORS[(b + i) % PRIZE_COLORS.length],
+    };
+    (i % 2 ? GIFT_ITEMS : PLUSH_ITEMS).push(copy);
+  }),
+);
+
 function Wire({ a, b, sag }: { a: Vec3; b: Vec3; sag: number }) {
   const geometry = useMemo(() => {
     const mid = new THREE.Vector3(
@@ -44,6 +106,8 @@ function Wire({ a, b, sag }: { a: Vec3; b: Vec3; sag: number }) {
     </mesh>
   );
 }
+
+const PRIZE = new THREE.MeshStandardMaterial({ roughness: 0.6 });
 
 /** One booth: a counter, a striped awning and a neon sign on the front. */
 function Booth({ sign, color, accent, at, rot }: BoothSpec) {
@@ -93,6 +157,8 @@ export function Midway() {
         </mesh>
       ))}
       <Bulbs points={BULBS} />
+      <Copies geometry={PLUSH} material={PRIZE} items={PLUSH_ITEMS} />
+      <Copies geometry={GIFT} material={PRIZE} items={GIFT_ITEMS} />
     </>
   );
 }
