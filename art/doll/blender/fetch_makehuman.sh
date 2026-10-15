@@ -82,3 +82,16 @@ for f in "${FILES[@]}"; do
   curl -fsSL "$BASE/$f" -o "$OUT/$f"
 done
 echo "MakeHuman assets in $OUT"
+
+# Hair, clothes and shoe proxies from MakeHuman's CC0 system asset pack
+# (280 MB zip; only the folders proxies.py uses are kept).
+PACK="$(dirname "$0")/.cache/mhassets"
+if [ ! -d "$PACK/hair/long01" ]; then
+  tmp="$(mktemp -d)"
+  curl -fsSL https://files.makehumancommunity.org/asset_packs/makehuman_system_assets/makehuman_system_assets_cc0.zip -o "$tmp/cc0.zip"
+  unzip -q -o "$tmp/cc0.zip" '*hair/afro01/*' '*hair/bob01/*' '*hair/braid01/*' \
+    '*hair/long01/*' '*hair/ponytail01/*' '*clothes/shoes06/*' \
+    '*clothes/female_sportsuit01/*' -d "$PACK"
+  rm -r "$tmp"
+fi
+echo "MakeHuman proxies in $PACK"

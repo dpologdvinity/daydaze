@@ -17,3 +17,4 @@ dist
 .dev.vars
 server/worker-configuration.d.ts
 art/doll/blender/.cache
+__pycache__/

@@ -11,6 +11,7 @@ plain corner of the same texture.
 """
 
 import json
+from types import SimpleNamespace
 import math
 import os
 import sys
@@ -27,7 +28,8 @@ import doll_outfits  # noqa: E402
 
 MH = os.path.join(HERE, ".cache", "mh")
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
-OUT = os.path.join(ROOT, "public", "models", "doll.raw.glb")
+# raw exports; scripts/optimize-doll.sh compresses them into public/models/doll/
+OUT_DIR = os.path.join(HERE, ".cache", "out")
 
 # ------------------------------------------------------------------ MakeHuman
 
@@ -100,7 +102,7 @@ SHAPE = [
     ),
     (target("bodyshapes/bodyshapes-elvs-fem-neat-hourglass.target"), 0.4),
     (target("hip/hip-waist-up.target"), 0.15),
-    (target("stomach/stomach-tone-incr.target"), 0.5),
+    (target("stomach/stomach-tone-incr.target"), 0.15),
     (pair("eyes/{s}-eye-scale-incr.target"), 0.3),
     (pair("eyes/{s}-eye-bag-decr.target"), 0.6),
     (pair("eyes/{s}-eye-height2-incr.target"), 0.25),
@@ -359,6 +361,8 @@ def build_body():
     src = np.array(used)
     lash_src = add_lashes(ob, src)
     src = np.concatenate([src, lash_src])
+    global BODY_SRC
+    BODY_SRC = src
     face_uvs(ob, src)
     global MARKS
     MARKS = face_maps(ob, src)
@@ -687,6 +691,28 @@ def smooth(ob):
         p.use_smooth = True
 
 
+def export(rig, objects, name):
+    """One GLB per part, each with the shared rig, so the client loads only
+    the hair and clothes a doll wears."""
+    bpy.ops.object.select_all(action="DESELECT")
+    rig.select_set(True)
+    for ob in objects:
+        ob.select_set(True)
+    bpy.ops.export_scene.gltf(
+        filepath=os.path.join(OUT_DIR, name + ".glb"),
+        use_selection=True,
+        export_format="GLB",
+        export_yup=True,
+        export_apply=False,
+        export_morph=True,
+        export_morph_normal=True,
+        export_skins=True,
+        export_extras=True,
+        export_animations=False,
+        export_materials="EXPORT",
+    )
+
+
 def main():
     reset()
     rig = build_armature()
@@ -701,24 +727,20 @@ def main():
         "marks": MARKS,
         "joints": {b: list(map(float, JB[b])) for b in BONES},
     }
-    built = [body, eyes]
-    built += doll_hair.build(JB, body, rig, bind)
-    built += doll_outfits.build(JB, body, rig, bind, KB)
-    rig["doll"] = json.dumps(meta)
-    os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    bpy.ops.export_scene.gltf(
-        filepath=OUT,
-        export_format="GLB",
-        export_yup=True,
-        export_apply=False,
-        export_morph=True,
-        export_morph_normal=True,
-        export_skins=True,
-        export_extras=True,
-        export_animations=False,
-        export_materials="EXPORT",
+    ctx = SimpleNamespace(
+        P=P, PB=PB, W=W, BONES=BONES, KEYS=KEYS, FACES=FACES, JB=JB,
+        to_blender=to_blender, new_object=new_object,
     )
-    print("wrote", OUT, "verts", len(body.data.vertices))
+    parts = doll_hair.build(ctx) + doll_outfits.build(ctx, body, BODY_SRC)
+    for ob in parts:
+        bind(ob, rig)
+    rig["doll"] = json.dumps(meta)
+    os.makedirs(OUT_DIR, exist_ok=True)
+    export(rig, [body, eyes], "body")
+    for ob in parts:
+        kind, name = ob.name.split("_", 1)
+        export(rig, [ob], f"{kind.lower()}-{name}")
+    print("wrote", OUT_DIR, "body verts", len(body.data.vertices))
 
 
 main()

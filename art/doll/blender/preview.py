@@ -12,21 +12,26 @@ import bpy
 from mathutils import Vector
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-GLB = os.path.join(HERE, "..", "..", "..", "public", "models", "doll.raw.glb")
+OUT = os.path.join(HERE, ".cache", "out")
 args = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else []
 view = args[0] if args else "face"
 out = args[1] if len(args) > 1 else f"/tmp/doll-{view}.png"
 keys = dict(a.split("=") for a in args[2:])
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
-bpy.ops.import_scene.gltf(filepath=GLB)
+bpy.ops.import_scene.gltf(filepath=os.path.join(OUT, "body.glb"))
+# show=Hair_waves,Outfit_flares imports those parts (hair-waves.glb, ...)
+for part in filter(None, keys.get("show", "").split(",")):
+    kind, name = part.split("_", 1)
+    bpy.ops.import_scene.gltf(filepath=os.path.join(OUT, f"{kind.lower()}-{name}.glb"))
 for ob in bpy.data.objects:
     if ob.type == "MESH" and ob.data.shape_keys:
         for kb in ob.data.shape_keys.key_blocks:
+            shown = {"tuck_" + n.split("_", 1)[1] for n in keys.get("show", "").split(",") if n}
+            if kb.name in shown:
+                kb.value = 1.0
             if kb.name in keys:
                 kb.value = float(keys[kb.name])
-    if ob.type == "MESH" and ob.name.startswith(("Hair", "Outfit", "Lod")):
-        ob.hide_render = ob.name not in keys.get("show", "").split(",")
 
 skin = {
     "skin": (0.78, 0.55, 0.42, 1),
