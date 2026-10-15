@@ -513,7 +513,18 @@ function car(
     sy: 0.7,
     sz: 1.75,
     rot,
-    color: "#120c24",
+    color: "#5a4aa8",
+  });
+  // a roof slab over the glass, so the cabin reads as a car and not a black box
+  put(out, "car", {
+    x,
+    y: 1.68,
+    z,
+    sx: 2.1,
+    sy: 0.1,
+    sz: 1.8,
+    rot,
+    color: pick(CAR_COLORS, r),
   });
   // four wheels, tyres turned across the car, and two headlights at the nose
   const c = Math.cos(yaw);

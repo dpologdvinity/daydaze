@@ -268,10 +268,7 @@ function touching(
   a: Box,
   b: Box,
 ): { axis: "x" | "z"; line: number; lo: number; hi: number } | null {
-  const shared = (
-    lo: number,
-    hi: number,
-  ): { lo: number; hi: number } | null =>
+  const shared = (lo: number, hi: number): { lo: number; hi: number } | null =>
     hi - lo > CURB_EPS ? { lo, hi } : null;
   for (const [edge, other] of [
     [a.z1, b.z0],
@@ -293,7 +290,12 @@ function touching(
 }
 
 /** Each box as an instance in the cells it overlaps. */
-function pieces(box: Box, cells: readonly Cell[], out: Instance[], m: Partial<Instance>): void {
+function pieces(
+  box: Box,
+  cells: readonly Cell[],
+  out: Instance[],
+  m: Partial<Instance>,
+): void {
   for (const cell of cells) {
     const p = overlap(box, cell);
     if (!p) continue;
@@ -313,7 +315,10 @@ function pieces(box: Box, cells: readonly Cell[], out: Instance[], m: Partial<In
  * Curbs, zebra crossings, manholes and sidewalk seams: the marks that make a
  * street read as a street rather than a flat stripe of colour.
  */
-function streetMarks(cells: readonly Cell[], out: Record<Kind, Instance[]>): void {
+function streetMarks(
+  cells: readonly Cell[],
+  out: Record<Kind, Instance[]>,
+): void {
   const inCells = (x: number, z: number) =>
     cells.some((c) => cellAt([x, z]).key === c.key);
 
@@ -325,8 +330,18 @@ function streetMarks(cells: readonly Cell[], out: Record<Kind, Instance[]>): voi
       const half = 0.12;
       const lip: Box =
         edge.axis === "z"
-          ? { x0: edge.lo, x1: edge.hi, z0: edge.line - half, z1: edge.line + half }
-          : { x0: edge.line - half, x1: edge.line + half, z0: edge.lo, z1: edge.hi };
+          ? {
+              x0: edge.lo,
+              x1: edge.hi,
+              z0: edge.line - half,
+              z1: edge.line + half,
+            }
+          : {
+              x0: edge.line - half,
+              x1: edge.line + half,
+              z0: edge.lo,
+              z1: edge.hi,
+            };
       pieces(lip, cells, out.ledge, { y: 0.11, sy: 0.22, color: CURB_COLOR });
     }
   }
@@ -340,20 +355,34 @@ function streetMarks(cells: readonly Cell[], out: Record<Kind, Instance[]>): voi
       if (!I) continue;
       for (const road of [a, b]) {
         const vertical = road.z1 - road.z0 > road.x1 - road.x0;
-        const ends = vertical
-          ? [I.z0 - 2, I.z1 + 2]
-          : [I.x0 - 2, I.x1 + 2];
+        const ends = vertical ? [I.z0 - 2, I.z1 + 2] : [I.x0 - 2, I.x1 + 2];
         for (const end of ends) {
           for (let k = -1.2; k <= 1.2; k += 0.8) {
             const at = end + k;
             if (vertical) {
               const x = (road.x0 + road.x1) / 2;
               if (!inCells(x, at)) continue;
-              out.lane.push({ x, y: 0.045, z: at, sx: road.x1 - road.x0, sy: 0.02, sz: 0.4, color: ZEBRA_COLOR });
+              out.lane.push({
+                x,
+                y: 0.045,
+                z: at,
+                sx: road.x1 - road.x0,
+                sy: 0.02,
+                sz: 0.4,
+                color: ZEBRA_COLOR,
+              });
             } else {
               const z = (road.z0 + road.z1) / 2;
               if (!inCells(at, z)) continue;
-              out.lane.push({ x: at, y: 0.045, z, sx: 0.4, sy: 0.02, sz: road.z1 - road.z0, color: ZEBRA_COLOR });
+              out.lane.push({
+                x: at,
+                y: 0.045,
+                z,
+                sx: 0.4,
+                sy: 0.02,
+                sz: road.z1 - road.z0,
+                color: ZEBRA_COLOR,
+              });
             }
           }
         }
@@ -370,10 +399,23 @@ function streetMarks(cells: readonly Cell[], out: Record<Kind, Instance[]>): voi
       const x = vertical ? (road.x0 + road.x1) / 2 + 2.2 : at;
       const z = vertical ? at : (road.z0 + road.z1) / 2 + 2.2;
       const clear = ROAD_SURFACES.every(
-        (o) => o === road || x < o.x0 - 4 || x > o.x1 + 4 || z < o.z0 - 4 || z > o.z1 + 4,
+        (o) =>
+          o === road ||
+          x < o.x0 - 4 ||
+          x > o.x1 + 4 ||
+          z < o.z0 - 4 ||
+          z > o.z1 + 4,
       );
       if (clear && inCells(x, z)) {
-        out.lane.push({ x, y: 0.05, z, sx: 1.1, sy: 0.03, sz: 1.1, color: MANHOLE_COLOR });
+        out.lane.push({
+          x,
+          y: 0.05,
+          z,
+          sx: 1.1,
+          sy: 0.03,
+          sz: 1.1,
+          color: MANHOLE_COLOR,
+        });
       }
     }
   }
@@ -507,7 +549,11 @@ function propInstances(
       });
     }
     // coconuts tucked under the crown
-    for (const [dx, dz] of [[0.3, 0.2], [-0.25, 0.3], [0.1, -0.3]]) {
+    for (const [dx, dz] of [
+      [0.3, 0.2],
+      [-0.25, 0.3],
+      [0.1, -0.3],
+    ]) {
       out.treeCanopy.push({
         x: x + dx,
         y: 6.3,

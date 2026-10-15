@@ -51,8 +51,24 @@ export function detailBuilding(b: Building, f: Front, out: Buckets): void {
   // an antenna with a red light blinking at the top
   const ax = f.x1 - 1.2;
   const az = f.z0 + 1.2;
-  out.pole.push({ x: ax, y: top + 2.2, z: az, sx: 0.12, sy: 4.4, sz: 0.12, color: "#8a8aa8" });
-  out.bulb.push({ x: ax, y: top + 4.5, z: az, sx: 0.3, sy: 0.3, sz: 0.3, color: "#ff3b4f" });
+  out.pole.push({
+    x: ax,
+    y: top + 2.2,
+    z: az,
+    sx: 0.12,
+    sy: 4.4,
+    sz: 0.12,
+    color: "#8a8aa8",
+  });
+  out.bulb.push({
+    x: ax,
+    y: top + 4.5,
+    z: az,
+    sx: 0.3,
+    sy: 0.3,
+    sz: 0.3,
+    color: "#ff3b4f",
+  });
   // a rooftop neon bar on about a third of the buildings
   const sign = hash(f.cx, f.cz, 20);
   if (sign < 0.35) {
@@ -172,12 +188,27 @@ export function detailBuilding(b: Building, f: Front, out: Buckets): void {
   }
 }
 
-function put(out: Placed[], kind: "treeCanopy" | "pole" | "furniture" | "bulb", x: number, y: number, z: number, sx: number, sy: number, sz: number, color: string): void {
+function put(
+  out: Placed[],
+  kind: "treeCanopy" | "pole" | "furniture" | "bulb",
+  x: number,
+  y: number,
+  z: number,
+  sx: number,
+  sy: number,
+  sz: number,
+  color: string,
+): void {
   out.push({ at: [x, z], kind, instance: { x, y, z, sx, sy, sz, color } });
 }
 
 /** A planter box with a clump of leaves, sitting on the pavement at (x, z). */
-export function planter(out: Placed[], x: number, z: number, seed: number): void {
+export function planter(
+  out: Placed[],
+  x: number,
+  z: number,
+  seed: number,
+): void {
   put(out, "furniture", x, 0.25, z, 1.6, 0.5, 1, PLANTER);
   for (let k = 0; k < 4; k++) {
     const r = hash(seed, k, 50);
@@ -185,11 +216,11 @@ export function planter(out: Placed[], x: number, z: number, seed: number): void
       out,
       "treeCanopy",
       x + (k - 1.5) * 0.4,
-      0.85 + r * 0.2,
+      0.7 + r * 0.15,
       z + (hash(seed, k, 51) - 0.5) * 0.4,
-      0.9 + r * 0.6,
-      0.8 + r * 0.5,
-      0.9 + r * 0.6,
+      0.5 + r * 0.3,
+      0.45 + r * 0.25,
+      0.5 + r * 0.3,
       pick(LEAF, r),
     );
   }
