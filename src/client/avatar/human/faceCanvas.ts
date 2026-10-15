@@ -222,8 +222,8 @@ function paintLiner(
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
   ctx.filter = "blur(1px)";
-  ctx.lineWidth = 0.006 * SIZE;
-  path(ctx, winged(lid, 0.02));
+  ctx.lineWidth = 0.0085 * SIZE;
+  path(ctx, winged(lid, 0.03));
   ctx.stroke();
   ctx.restore();
 }
@@ -415,14 +415,14 @@ export function paintIris(colour = "#6b3f22") {
   ctx.fillRect(0, 0, S, S);
   const c = S / 2;
   const iris = hexRgb(colour);
-  const g = ctx.createRadialGradient(c, c, 0, c, c, S * 0.2);
+  const g = ctx.createRadialGradient(c, c, 0, c, c, S * 0.235);
   g.addColorStop(0, rgba(mixRgb(iris, [255, 210, 120], 0.35)));
   g.addColorStop(0.55, rgba(iris));
   g.addColorStop(0.9, rgba(iris.map((v) => v * 0.55)));
   g.addColorStop(1, "rgba(20,10,8,1)");
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.arc(c, c, S * 0.2, 0, Math.PI * 2);
+  ctx.arc(c, c, S * 0.235, 0, Math.PI * 2);
   ctx.fill();
   // fibres
   ctx.strokeStyle = rgba(mixRgb(iris, [255, 255, 255], 0.25), 0.35);
@@ -436,7 +436,16 @@ export function paintIris(colour = "#6b3f22") {
   }
   ctx.fillStyle = "#070304";
   ctx.beginPath();
-  ctx.arc(c, c, S * 0.075, 0, Math.PI * 2);
+  ctx.arc(c, c, S * 0.085, 0, Math.PI * 2);
+  ctx.fill();
+  // catchlights: the sparkle that makes a doll's eyes read as alive
+  ctx.fillStyle = "rgba(255,255,255,0.95)";
+  ctx.beginPath();
+  ctx.arc(c - S * 0.06, c - S * 0.07, S * 0.035, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,0.6)";
+  ctx.beginPath();
+  ctx.arc(c + S * 0.07, c + S * 0.06, S * 0.015, 0, Math.PI * 2);
   ctx.fill();
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;

@@ -98,7 +98,13 @@ function useBody(look: Look) {
     scene.traverse((o) => {
       if (typeof o.userData.doll === "string") meta = o.userData.doll;
     });
-    const skin = new THREE.MeshStandardMaterial({ roughness: 0.55 });
+    // a little self-glow from the skin's own texture softens harsh room
+    // lighting into the dewy glam finish
+    const skin = new THREE.MeshStandardMaterial({
+      roughness: 0.42,
+      emissive: "#ffffff",
+      emissiveIntensity: 0.14,
+    });
     const lashes = new THREE.MeshStandardMaterial({
       color: "#0d0609",
       map: paintLashes(),
@@ -152,7 +158,9 @@ function useBody(look: Look) {
 
   useEffect(() => {
     const { marks, skin } = body;
-    skin.color.set(marks ? "#ffffff" : look.skin);
+    // plain skin until the painted face arrives, then the texture tints both
+    skin.color.set(look.skin);
+    skin.emissive.set(look.skin);
     if (!marks) return;
     let live = true;
     let tex: THREE.Texture | null = null;
@@ -160,15 +168,15 @@ function useBody(look: Look) {
       .then((t) => {
         if (!live) return t.dispose();
         tex = t;
+        skin.color.set("#ffffff");
+        skin.emissive.set("#ffffff");
         skin.map = t;
+        skin.emissiveMap = t;
         skin.needsUpdate = true;
         invalidate();
       })
       // a missing mask leaves plain skin rather than breaking the room
-      .catch((e: unknown) => {
-        console.warn(e);
-        skin.color.set(look.skin);
-      });
+      .catch((e: unknown) => console.warn(e));
     return () => {
       live = false;
       tex?.dispose();
@@ -354,3 +362,6 @@ export function HumanDoll({
     </group>
   );
 }
+
+// every doll needs the body, so start fetching it with the code
+useGLTF.preload(`${MODELS}/body.glb`);

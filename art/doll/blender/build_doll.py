@@ -103,10 +103,10 @@ SHAPE = [
     (target("bodyshapes/bodyshapes-elvs-fem-neat-hourglass.target"), 0.4),
     (target("hip/hip-waist-up.target"), 0.15),
     (target("stomach/stomach-tone-incr.target"), 0.15),
-    (pair("eyes/{s}-eye-scale-incr.target"), 0.3),
+    (pair("eyes/{s}-eye-scale-incr.target"), 0.6),
     (pair("eyes/{s}-eye-bag-decr.target"), 0.6),
     (pair("eyes/{s}-eye-height2-incr.target"), 0.25),
-    (target("nose/nose-volume-decr.target"), 0.35),
+    (target("nose/nose-volume-decr.target"), 0.5),
     (target("nose/nose-point-width-decr.target"), 0.4),
     (target("nose/nose-point-up.target"), 0.25),
     (target("mouth/mouth-upperlip-volume-incr.target"), 0.45),
@@ -405,7 +405,7 @@ def lid_line(group, upper, bins=12):
     return np.array(line)
 
 
-LASH_LEN = 0.0105
+LASH_LEN = 0.0145
 LIDS = {}
 LASH_BASE = 10**9
 
