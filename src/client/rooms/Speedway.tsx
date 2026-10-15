@@ -100,6 +100,8 @@ export function Speedway({ onPick }: { onPick: PickHandler }) {
   // Set while mounted. A request taken before the mount effect has run would
   // be wiped by StrictMode's simulated unmount, so frames wait for this.
   const live = useRef(false);
+  // Set once a frame has run while mounted, so a StrictMode remount keeps a pending request.
+  const framed = useRef(false);
 
   useEffect(() => {
     live.current = true;
@@ -116,12 +118,15 @@ export function Speedway({ onPick }: { onPick: PickHandler }) {
       window.clearInterval(id);
       live.current = false;
       driving.session = null;
+      if (framed.current) driving.request = null;
+      framed.current = false;
       releaseControls();
     };
   }, [canvas]);
 
   useFrame((_, dt) => {
     if (!live.current) return;
+    framed.current = true;
     const request = driving.request;
     if (request !== null) {
       driving.request = null;
@@ -249,6 +254,7 @@ export function Speedway({ onPick }: { onPick: PickHandler }) {
           position={[spot.position[0], 0.03, spot.position[1]]}
           rotation-x={-Math.PI / 2}
           onClick={(e) => {
+            if (e.delta > 6) return;
             e.stopPropagation();
             driving.request = spot.id;
           }}
