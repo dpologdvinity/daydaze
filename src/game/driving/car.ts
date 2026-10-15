@@ -69,6 +69,7 @@ function resolveWalls(
 ): { center: Vec2; normal: Vec2 | null } {
   let c = center;
   let normal: Vec2 | null = null;
+  // shortcut: tests every wall each substep; add an AABB pre-reject if a profile shows GC pressure.
   for (const wall of walls) {
     const nearest = nearestPointOnPolygon(wall, c);
     const dx = c[0] - nearest[0];
