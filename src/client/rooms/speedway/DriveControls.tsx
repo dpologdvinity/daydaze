@@ -1,5 +1,6 @@
 import { useEffect, useState, type JSX, type PointerEvent } from "react";
 import { driving, setControl, type Control } from "../../world/driving.ts";
+import { ignoresKeys } from "../../world/keyTargets.ts";
 import { useHud } from "./RaceHud.tsx";
 
 // Keys by physical position. Left steers positive, as the car model expects.
@@ -22,6 +23,7 @@ export function DriveControls(): JSX.Element | null {
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (!driving.session || e.altKey || e.ctrlKey || e.metaKey) return;
+      if (ignoresKeys(e.target, e.code)) return;
       if (e.code === "Escape") {
         driving.request = "leave";
         return;
