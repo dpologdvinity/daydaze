@@ -14,6 +14,7 @@ import {
   type Look,
   type SwimLook,
 } from "./look.ts";
+import { cleanBody, DEFAULT_BODY, type BodyShape } from "./body.ts";
 import { cleanWardrobe, unlockedLook } from "./shop.ts";
 import { isCoins, STARTING_COINS } from "./wallet.ts";
 
@@ -27,6 +28,7 @@ export type SaveV1 = {
   coins: number;
   /** Shop items the player owns; unowned shop looks are never worn. */
   wardrobe: string[];
+  body: BodyShape;
   settings: {
     quality: Quality;
     muted: boolean;
@@ -59,8 +61,9 @@ export function createDefaultSave(name: string): SaveV1 {
     look: { ...DEFAULT_LOOK },
     swim: { ...DEFAULT_SWIM },
     coins: STARTING_COINS,
-      wardrobe: [],
-  settings: {
+    wardrobe: [],
+    body: { ...DEFAULT_BODY },
+    settings: {
       quality: "auto",
       muted: false,
       effects: "full",
@@ -108,6 +111,7 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
     // saves from before the economy start with the starting coins
     coins: isCoins(coins) ? coins : defaults.coins,
     wardrobe,
+    body: cleanBody(save.get("body")),
     settings: {
       quality: isQuality(quality) ? quality : defaults.settings.quality,
       muted: typeof muted === "boolean" ? muted : defaults.settings.muted,

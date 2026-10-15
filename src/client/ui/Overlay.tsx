@@ -15,6 +15,12 @@ import {
 import type { DanceMoveId } from "../../game/dance/moves.ts";
 import { INTENSITIES, type Intensity } from "../../game/effects/buzz.ts";
 import type { RoomId } from "../../game/rooms.ts";
+import {
+  BODY_LABELS,
+  BODY_TRAITS,
+  clampTrait,
+  type BodyShape,
+} from "../../game/body.ts";
 import { wearable } from "../../game/shop.ts";
 import { drink } from "../effects/drunk.ts";
 import type { MinigameId } from "../../game/hotspots.ts";
@@ -24,7 +30,7 @@ import { RaceHud, SpeedwayMenu } from "../rooms/speedway/RaceHud.tsx";
 import { CocktailIcon, RideIcon } from "./icons.tsx";
 import { DancePicker } from "./DancePicker.tsx";
 import { Dressing } from "./Dressing.tsx";
-import { Chips, Segmented, Swatches } from "./controls.tsx";
+import { Chips, Segmented, Slider, Swatches } from "./controls.tsx";
 import { VenueGames } from "./Minigames.tsx";
 
 // Sit and lean need furniture, so the player only picks these.
@@ -61,6 +67,8 @@ function Mirror({
   swim,
   setSwim,
   wardrobe,
+  body,
+  setBody,
   effects,
   setEffects,
 }: {
@@ -69,6 +77,8 @@ function Mirror({
   swim: SwimLook;
   setSwim: (swim: SwimLook) => void;
   wardrobe: readonly string[];
+  body: BodyShape;
+  setBody: (body: BodyShape) => void;
   effects: Intensity;
   setEffects: (effects: Intensity) => void;
 }) {
@@ -155,6 +165,19 @@ function Mirror({
         />
       </section>
       <section>
+        <h3>Body</h3>
+        {BODY_TRAITS.map((trait) => (
+          <Slider
+            key={trait}
+            label={BODY_LABELS[trait]}
+            value={body[trait]}
+            onChange={(value) =>
+              setBody({ ...body, [trait]: clampTrait(value) })
+            }
+          />
+        ))}
+      </section>
+      <section>
         <h3>Drunk effects</h3>
         <Chips
           label="Drunk effects"
@@ -176,6 +199,8 @@ export function Overlay({
   setSwim,
   coins,
   wardrobe,
+  body,
+  setBody,
   onRide,
   onPlayGame,
   mood,
@@ -197,6 +222,8 @@ export function Overlay({
   setSwim: (swim: SwimLook) => void;
   coins: number;
   wardrobe: readonly string[];
+  body: BodyShape;
+  setBody: (body: BodyShape) => void;
   onRide: () => void;
   onPlayGame: (game: MinigameId) => void;
   mood: Mood;
@@ -229,6 +256,8 @@ export function Overlay({
           swim={swim}
           setSwim={setSwim}
           wardrobe={wardrobe}
+          body={body}
+          setBody={setBody}
           effects={effects}
           setEffects={setEffects}
         />

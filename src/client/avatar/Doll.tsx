@@ -9,6 +9,7 @@ import {
   type DanceMoveId,
   type Pose,
 } from "../../game/dance/moves.ts";
+import { bodyScales, DEFAULT_BODY, type BodyShape } from "../../game/body.ts";
 import {
   silhouetteOf,
   type Look,
@@ -144,6 +145,8 @@ type DollProps = {
   look: Look;
   /** Worn instead of the outfit in swimwear rooms; the look is untouched. */
   swim?: SwimLook | null;
+  /** Closet sliders: a clothed doll scales, it never changes outline shape. */
+  body?: BodyShape;
   mood: Mood;
   /** The move a dancing doll loops; the two-step when none is given. */
   dance?: DanceMoveId;
@@ -158,6 +161,7 @@ type DollProps = {
 export function Doll({
   look,
   swim = null,
+  body = DEFAULT_BODY,
   mood,
   dance = "two-step",
   couple,
@@ -219,9 +223,10 @@ export function Doll({
   const mini = !swim && silhouette === "mini";
   const fur = !swim && silhouette === "fur";
   const earL = headPoint(Math.PI / 2, -0.03, 0.0);
+  const scale = bodyScales(body);
 
   return (
-    <group {...rest}>
+    <group {...rest} scale={[scale.hips, scale.height, scale.hips]}>
       <mesh
         geometry={G.shadow}
         rotation-x={-Math.PI / 2}
@@ -230,7 +235,10 @@ export function Doll({
       >
         <meshBasicMaterial map={shadowTex} transparent depthWrite={false} />
       </mesh>
-      <group ref={set("body")}>
+      <group
+        ref={set("body")}
+        scale={[scale.bust * scale.waist, 1, scale.bust * scale.waist]}
+      >
         <Part geometry={G.torso} material={m.skin} />
         <Part geometry={G.neck} material={m.skin} position-z={-0.008} />
         {(flares || fur) && <Part geometry={G.cropTop} material={m.top} />}

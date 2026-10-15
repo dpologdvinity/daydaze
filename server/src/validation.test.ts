@@ -68,6 +68,7 @@ test("saves are stored only when loadSave keeps every field as sent", () => {
     version: 1,
     coins: save.coins,
     wardrobe: save.wardrobe,
+    body: save.body,
   });
   assert.deepEqual(parseSave(reordered, "Fallback"), save);
   for (const bad of [

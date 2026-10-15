@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { DEFAULT_LOOK, DEFAULT_SWIM, type Look } from "./look.ts";
+import { DEFAULT_BODY } from "./body.ts";
 import { STARTING_COINS } from "./wallet.ts";
 import {
   SAVE_KEY,
@@ -31,6 +32,7 @@ test("createDefaultSave uses the default look and auto quality", () => {
     swim: DEFAULT_SWIM,
     coins: STARTING_COINS,
     wardrobe: [],
+    body: DEFAULT_BODY,
     settings: {
       quality: "auto",
       muted: false,
@@ -56,6 +58,7 @@ test("a save round-trips through serializeSave and loadSave", () => {
     swim: { style: "one-piece", color: "#ff2f9a" },
     coins: 320,
     wardrobe: [],
+    body: DEFAULT_BODY,
     settings: { quality: "low", muted: true, effects: "off", panelOpen: true },
     home: {
       locked: false,
@@ -109,6 +112,7 @@ test("a save from before the swimsuit slot still loads", () => {
     swim: DEFAULT_SWIM,
     coins: STARTING_COINS,
     wardrobe: [],
+    body: DEFAULT_BODY,
     settings: {
       quality: "low",
       muted: true,
@@ -159,6 +163,7 @@ test("loadSave keeps a valid name when the look is bad", () => {
     swim: DEFAULT_SWIM,
     coins: STARTING_COINS,
     wardrobe: [],
+    body: DEFAULT_BODY,
     settings: {
       quality: "high",
       muted: true,
@@ -184,6 +189,7 @@ test("loadSave keeps a valid look when the name is bad", () => {
     swim: DEFAULT_SWIM,
     coins: STARTING_COINS,
     wardrobe: [],
+    body: DEFAULT_BODY,
     settings: {
       quality: "auto",
       muted: false,
@@ -317,6 +323,36 @@ test("owned shop looks are kept and unowned ones are worn as the default", () =>
     ...shopLook,
     outfit: DEFAULT_LOOK.outfit,
   });
+});
+
+test("body-shape sliders round-trip and a bad slider resets alone", () => {
+  const shaped = {
+    ...createDefaultSave("Kept Name"),
+    body: { bust: 70, hips: 30, waist: 55, height: 50 },
+  };
+  assert.deepEqual(
+    loadSave(serializeSave(shaped), "Fallback").body,
+    shaped.body,
+  );
+  const bad = JSON.stringify({
+    ...shaped,
+    body: { bust: 999, hips: 30, waist: 55, height: 50 },
+  });
+  assert.deepEqual(loadSave(bad, "Fallback").body, {
+    bust: 50,
+    hips: 30,
+    waist: 55,
+    height: 50,
+  });
+});
+
+test("a save from before the body sliders loads at the default body", () => {
+  const old = JSON.stringify({
+    version: 1,
+    name: "Kept Name",
+    look: customLook,
+  });
+  assert.deepEqual(loadSave(old, "Fallback").body, DEFAULT_BODY);
 });
 
 test("loadSave salvages valid fields from a wrong version", () => {

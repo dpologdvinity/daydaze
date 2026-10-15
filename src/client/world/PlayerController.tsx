@@ -2,6 +2,7 @@ import { useFrame } from "@react-three/fiber";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import * as THREE from "three";
 import { clampToArea, type WalkArea } from "../../game/area.ts";
+import type { BodyShape } from "../../game/body.ts";
 import type { DanceMoveId } from "../../game/dance/moves.ts";
 import type { Look, Mood, SwimLook } from "../../game/look.ts";
 import { moveAction, MOVE_CODES } from "../../game/input.ts";
@@ -173,6 +174,7 @@ export function PlayerController({
   area,
   look,
   swim,
+  body,
   mood,
   dance,
   onMove,
@@ -183,6 +185,7 @@ export function PlayerController({
   area: WalkArea;
   look: Look;
   swim: SwimLook | null;
+  body: BodyShape;
   mood: Mood;
   dance: DanceMoveId;
   /** Fires when the player starts walking, so a dance can end. */
@@ -286,6 +289,7 @@ export function PlayerController({
         <Doll
           look={look}
           swim={swim}
+          body={body}
           mood={riding ?? mood}
           dance={dance}
           // shortcut: the wobble blacks out the high-tier canvas (a body offset
