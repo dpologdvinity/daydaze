@@ -1,7 +1,4 @@
-import {
-  isIntensity,
-  type Intensity,
-} from "./effects/buzz.ts";
+import { isIntensity, type Intensity } from "./effects/buzz.ts";
 import {
   DEFAULT_LOOK,
   DEFAULT_SWIM,

@@ -14,7 +14,8 @@ const FOOD_RELIEF = 0.15;
 /** Time constant of the fade: a full buzz is mostly gone in about four minutes. */
 export const DECAY_SECONDS = 90;
 
-const clamp01 = (x: number) => (Number.isFinite(x) ? Math.min(1, Math.max(0, x)) : 0);
+const clamp01 = (x: number) =>
+  Number.isFinite(x) ? Math.min(1, Math.max(0, x)) : 0;
 
 export function addDrink(level: number, drink: Drink): number {
   return Math.min(BUZZ_CAP, clamp01(level) + DRINK_STRENGTH[drink]);
