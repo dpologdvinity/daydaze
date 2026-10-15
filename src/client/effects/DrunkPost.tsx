@@ -17,11 +17,11 @@ void mainUv(inout vec2 uv) {
 	uv.y += cos(time * 1.6) * sway * 0.5;
 }
 
-vec4 mainImage(in vec4 inputColor, in vec2 uv, in GData data) {
+void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
 	vec3 c = inputColor.rgb * vec3(1.0 + 0.12 * warm, 1.0, 1.0 - 0.18 * warm);
 	float d = length((uv - 0.5) * vec2(1.0, 0.8));
 	c *= 1.0 - edge * smoothstep(0.3, 0.75, d);
-	return vec4(c, inputColor.a);
+	outputColor = vec4(c, inputColor.a);
 }
 `;
 

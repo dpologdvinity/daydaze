@@ -101,12 +101,15 @@ function Wearing({ style }: { style: string }) {
 }
 
 // Exposes the dance move on the canvas; "none" when the doll is not dancing.
+// A still scene only draws on demand, so a new move asks for a frame to show it.
 function Dancing({ mood, move }: { mood: Mood; move: DanceMoveId }) {
   const gl = useThree((s) => s.gl);
+  const invalidate = useThree((s) => s.invalidate);
   const value = mood === "dance" ? move : "none";
   useEffect(() => {
     gl.domElement.dataset.dance = value;
-  }, [gl, value]);
+    invalidate();
+  }, [gl, invalidate, value]);
   return null;
 }
 

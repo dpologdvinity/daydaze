@@ -288,7 +288,9 @@ export function PlayerController({
           swim={swim}
           mood={riding ?? mood}
           dance={dance}
-          buzzed
+          // shortcut: the wobble blacks out the high-tier canvas (a body offset
+          // alone does it, see the report), so it stays off until that is fixed
+          buzzed={false}
           walk={gait}
         />
       </group>

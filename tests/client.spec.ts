@@ -232,3 +232,46 @@ test("Speedway on a phone: on-screen pedals drive the car", async ({
   await page.mouse.up();
   await context.close();
 });
+
+test("the Dance mood opens a move picker, and the picked move plays", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(STILL);
+  const canvas = canvasOf(page);
+  await expect(canvas).toHaveAttribute("data-dance", "none");
+  await page.getByRole("radio", { name: "Dance", exact: true }).click();
+  await expect(canvas).toHaveAttribute("data-dance", "two-step");
+  const picker = page.getByRole("radiogroup", { name: "Dance move" });
+  await picker.getByRole("radio", { name: "Body roll" }).click();
+  await expect(canvas).toHaveAttribute("data-dance", "body-roll");
+  expect(errors).toEqual([]);
+});
+
+test("a drink in the Velvet Room raises the buzz and sways the view", async ({
+  page,
+}) => {
+  await page.goto(STILL);
+  const canvas = canvasOf(page);
+  await expect(canvas).toHaveAttribute("data-buzz", "0.00");
+  await page.getByRole("button", { name: "Have a drink" }).click();
+  await expect
+    .poll(async () => Number(await canvas.getAttribute("data-buzz")))
+    .toBeGreaterThan(0);
+  // full effects are the default, so the sway is on without reduced motion
+  await expect(canvas).not.toHaveAttribute("data-sway", "0");
+});
+
+test.describe("with reduced motion", () => {
+  test.use({ reducedMotion: "reduce" });
+
+  test("the drunk sway is off, but the buzz still shows", async ({ page }) => {
+    await page.goto(STILL);
+    const canvas = canvasOf(page);
+    await page.getByRole("button", { name: "Have a drink" }).click();
+    await expect
+      .poll(async () => Number(await canvas.getAttribute("data-buzz")))
+      .toBeGreaterThan(0);
+    await expect(canvas).toHaveAttribute("data-sway", "0");
+  });
+});
