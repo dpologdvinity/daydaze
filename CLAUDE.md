@@ -19,7 +19,7 @@ Daydaze is a multiplayer social hangout web game for adults who grew up on Club 
 
 ## Commands
 
-Use Node.js 22.18 or newer.
+Use Node.js 22.18 or newer; `.nvmrc` pins 24 for nvm and CI.
 
 - `npm run dev`: start the client at `http://localhost:5173` (`npm run dev -- --port 5195` for another port).
 - `npm run build` / `npm run preview`: typecheck, build `dist/`, and serve it.
