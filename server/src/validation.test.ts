@@ -52,13 +52,13 @@ test("credentials need a clean display name and an 8 to 128 character password",
 test("saves are stored only when loadSave keeps every field as sent", () => {
   const save = {
     ...createDefaultSave("Kai"),
-    settings: { quality: "low", muted: true },
+    settings: { quality: "low", muted: true, effects: "low" },
   };
   const raw = JSON.stringify(save);
   assert.deepEqual(parseSave(raw, "Fallback"), save);
   // Key order does not matter.
   const reordered = JSON.stringify({
-    settings: { muted: true, quality: "low" },
+    settings: { muted: true, quality: "low", effects: "low" },
     swim: { color: save.swim.color, style: save.swim.style },
     look: save.look,
     name: "Kai",
@@ -75,6 +75,10 @@ test("saves are stored only when loadSave keeps every field as sent", () => {
     JSON.stringify({ ...save, version: 2 }),
     JSON.stringify({ ...save, coins: 5 }),
     JSON.stringify({ ...save, settings: { quality: "ultra", muted: true } }),
+    JSON.stringify({
+      ...save,
+      settings: { quality: "low", muted: true, effects: "loud" },
+    }),
   ])
     assert.equal(parseSave(bad, "Fallback"), null, bad);
 });

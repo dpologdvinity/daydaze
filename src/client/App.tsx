@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { DanceMoveId } from "../game/dance/moves.ts";
+import type { Intensity } from "../game/effects/buzz.ts";
 import type { Look, Mood, SwimLook } from "../game/look.ts";
 import { arrive } from "../game/portals.ts";
 import { ROOMS, type RoomId, type Spawn } from "../game/rooms.ts";
@@ -76,6 +78,7 @@ export function App() {
 
   const tag = useRef<HTMLDivElement>(null);
   const [mood, setMood] = useState<Mood>("idle");
+  const [dance, setDance] = useState<DanceMoveId>("two-step");
   const [view, setView] = useState<View>(flags.view ?? "room");
   const [chat, setChat] = useState<{ text: string; at: number } | null>(null);
   useEffect(() => {
@@ -86,6 +89,8 @@ export function App() {
 
   const setLook = (look: Look) => setSave((s) => ({ ...s, look }));
   const setSwim = (swim: SwimLook) => setSave((s) => ({ ...s, swim }));
+  const setEffects = (effects: Intensity) =>
+    setSave((s) => ({ ...s, settings: { ...s.settings, effects } }));
   const [rides, setRides] = useState(0);
   const saved = save.settings.quality;
   const quality = flags.quality ?? (saved === "auto" ? null : saved);
@@ -101,6 +106,10 @@ export function App() {
           rides={rides}
           slideAt={flags.slide}
           mood={mood}
+          dance={dance}
+          effects={save.settings.effects}
+          // walking ends a dance, so the Dance mood drops back to idle
+          onMove={() => setMood((m) => (m === "dance" ? "idle" : m))}
           view={view}
           tag={tag}
           quality={quality}
@@ -126,6 +135,10 @@ export function App() {
           onRide={() => setRides((n) => n + 1)}
           mood={mood}
           setMood={setMood}
+          dance={dance}
+          setDance={setDance}
+          effects={save.settings.effects}
+          setEffects={setEffects}
           view={view}
           setView={setView}
         />

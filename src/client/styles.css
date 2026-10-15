@@ -448,6 +448,34 @@ button:focus-visible {
   box-shadow: 0 0 18px rgb(63 224 208 / 0.6);
 }
 
+/* ------------------------------------------------------------ dance, drink */
+
+.dance-picker {
+  position: fixed;
+  bottom: 80px;
+  left: 28px;
+  max-width: min(420px, calc(100vw - 56px));
+  padding: 8px;
+  border-radius: 22px;
+  background: rgb(32 6 34 / 0.82);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 0 1px rgb(255 207 106 / 0.5);
+}
+
+.drink {
+  position: fixed;
+  bottom: 80px;
+  right: 28px;
+  padding: 10px 20px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffd27a, var(--amber) 55%, #c06f00);
+  color: #2a0b05;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0 0 18px rgb(255 176 46 / 0.6);
+}
+
 /* ------------------------------------------------------------ fade, debug */
 
 .fade {
@@ -524,6 +552,21 @@ button:focus-visible {
     font-weight: 700;
     font-size: 13px;
     box-shadow: 0 0 18px rgb(255 47 154 / 0.6);
+  }
+  .dance-picker {
+    left: 10px;
+    right: 10px;
+    bottom: 164px;
+    max-width: none;
+    display: flex;
+    justify-content: center;
+  }
+  .drink {
+    top: 92px;
+    right: 16px;
+    bottom: auto;
+    padding: 9px 16px;
+    font-size: 13px;
   }
   .moods,
   .views {

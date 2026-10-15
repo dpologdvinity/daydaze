@@ -2,8 +2,9 @@ import { Environment, Lightformer, Sparkles } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
-import { NPC_LOOKS } from "../../game/look.ts";
+import { DEFAULT_LOOK, NPC_LOOKS } from "../../game/look.ts";
 import { ROOMS } from "../../game/rooms.ts";
+import { Couple } from "../avatar/Couple.tsx";
 import { Doll } from "../avatar/Doll.tsx";
 import { useReducedMotion } from "../motion.ts";
 import { Bar } from "./velvet/Bar.tsx";
@@ -204,6 +205,13 @@ export function VelvetRoom({ onPick }: { onPick: PickHandler }) {
       <Drape position={[-5.85, 0, 3.6]} color="#3a0a2e" />
       <Booth />
       <DanceFloor />
+      <Couple
+        a={{ ...DEFAULT_LOOK, hairStyle: "buns", outfit: "mini" }}
+        b={{ ...DEFAULT_LOOK, skin: "#94603f", outfit: "fur" }}
+        centre={[DANCE.x, DANCE.z]}
+        facing={0}
+        move="slow-dance"
+      />
       <DiscoBall />
       <Chandelier position={[2.2, 3.5, -1.0]} />
       <Palm position={[-5.1, 0, -5.1]} />

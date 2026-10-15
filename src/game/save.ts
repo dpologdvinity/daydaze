@@ -1,3 +1,4 @@
+import { isIntensity, type Intensity } from "./effects/buzz.ts";
 import {
   DEFAULT_LOOK,
   DEFAULT_SWIM,
@@ -14,7 +15,7 @@ export type SaveV1 = {
   name: string;
   look: Look;
   swim: SwimLook;
-  settings: { quality: Quality; muted: boolean };
+  settings: { quality: Quality; muted: boolean; effects: Intensity };
 };
 
 export const SAVE_KEY = "daydaze-save-v1";
@@ -35,7 +36,7 @@ export function createDefaultSave(name: string): SaveV1 {
     name,
     look: { ...DEFAULT_LOOK },
     swim: { ...DEFAULT_SWIM },
-    settings: { quality: "auto", muted: false },
+    settings: { quality: "auto", muted: false, effects: "full" },
   };
 }
 
@@ -60,6 +61,7 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
   const swim = save.get("swim");
   const quality = settings.get("quality");
   const muted = settings.get("muted");
+  const effects = settings.get("effects");
   const defaults = createDefaultSave(
     isValidDisplayName(name) ? name : fallbackName,
   );
@@ -71,6 +73,8 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
     settings: {
       quality: isQuality(quality) ? quality : defaults.settings.quality,
       muted: typeof muted === "boolean" ? muted : defaults.settings.muted,
+      // saves from before the drunk effects have no effects field yet
+      effects: isIntensity(effects) ? effects : defaults.settings.effects,
     },
   };
 }

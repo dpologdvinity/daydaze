@@ -1,7 +1,16 @@
 import { useFrame, useThree, type ThreeElements } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
+import { couplePoseAt, type CoupleRole } from "../../game/dance/couple.ts";
+import {
+  createPose,
+  danceMove,
+  poseAt,
+  type DanceMoveId,
+  type Pose,
+} from "../../game/dance/moves.ts";
 import type { Look, Mood, SwimLook } from "../../game/look.ts";
+import { liveDrunk } from "../effects/drunk.ts";
 import { useReducedMotion } from "../motion.ts";
 import {
   hairGeometry,
@@ -130,6 +139,12 @@ type DollProps = {
   /** Worn instead of the outfit in swimwear rooms; the look is untouched. */
   swim?: SwimLook | null;
   mood: Mood;
+  /** The move a dancing doll loops; the two-step when none is given. */
+  dance?: DanceMoveId;
+  /** Set on one partner of a couple dance; the other doll takes the other role. */
+  couple?: CoupleRole;
+  /** Wobbles with the local player's buzz. */
+  buzzed?: boolean;
   walk?: { current: WalkState };
   seed?: number;
 } & Omit<ThreeElements["group"], "children">;
@@ -138,6 +153,9 @@ export function Doll({
   look,
   swim = null,
   mood,
+  dance = "two-step",
+  couple,
+  buzzed = false,
   walk,
   seed = 0,
   ...rest
@@ -152,6 +170,8 @@ export function Doll({
   const calm = useReducedMotion();
   const phase = useRef(0);
   const blinkAt = useRef(2 + seed);
+  // one pose buffer per doll, rewritten each frame, so the loop allocates nothing
+  const sampled = useMemo<Pose>(createPose, []);
 
   useFrame((state, dt) => {
     const t = state.clock.elapsedTime + seed * 7.3;
@@ -159,8 +179,24 @@ export function Doll({
     const j = rig.current;
     if (!j.body) return;
     const speed = walk?.current.speed ?? 0;
+    const moving = speed > 0.05;
     phase.current += dt * speed * 6.2;
-    pose(j, speed > 0.05 ? "walk" : mood, t, phase.current, calm);
+    // walking ends the dance, so a move only plays while the doll stands still
+    const move = mood === "dance" && !moving ? danceMove(dance) : null;
+    const danced = !move
+      ? null
+      : couple
+        ? couplePoseAt(move, couple, t, sampled)
+        : poseAt(move, t, sampled);
+    pose(
+      j,
+      moving ? "walk" : mood,
+      t,
+      phase.current,
+      calm,
+      danced,
+      buzzed ? liveDrunk.wobble : 0,
+    );
     // blink
     if (face) {
       const tm = state.clock.elapsedTime;
