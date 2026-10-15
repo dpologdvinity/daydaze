@@ -7,6 +7,7 @@ import {
   type Look,
   type SwimLook,
 } from "./look.ts";
+import { isCoins, STARTING_COINS } from "./wallet.ts";
 
 export type Quality = "auto" | "high" | "low";
 
@@ -15,6 +16,7 @@ export type SaveV1 = {
   name: string;
   look: Look;
   swim: SwimLook;
+  coins: number;
   settings: {
     quality: Quality;
     muted: boolean;
@@ -42,6 +44,7 @@ export function createDefaultSave(name: string): SaveV1 {
     name,
     look: { ...DEFAULT_LOOK },
     swim: { ...DEFAULT_SWIM },
+    coins: STARTING_COINS,
     settings: {
       quality: "auto",
       muted: false,
@@ -70,6 +73,7 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
   const name = save.get("name");
   const look = save.get("look");
   const swim = save.get("swim");
+  const coins = save.get("coins");
   const quality = settings.get("quality");
   const muted = settings.get("muted");
   const effects = settings.get("effects");
@@ -82,6 +86,8 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
     look: validateLook(look) ? { ...look } : defaults.look,
     // saves from before the Water Park have no swimsuit slot yet
     swim: validateSwim(swim) ? { ...swim } : defaults.swim,
+    // saves from before the economy start with the starting coins
+    coins: isCoins(coins) ? coins : defaults.coins,
     settings: {
       quality: isQuality(quality) ? quality : defaults.settings.quality,
       muted: typeof muted === "boolean" ? muted : defaults.settings.muted,
