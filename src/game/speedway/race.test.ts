@@ -45,3 +45,18 @@ test("the race finishes when the player completes the last lap", () => {
   assert.equal(race.phase, "finished");
   assert.ok(race.cars[0].finishedMs !== null);
 });
+
+test("after the player finishes, their car coasts to a stop while a bot keeps driving", () => {
+  let race = createRace(TRACKS[0], 1, spec, 1, "easy", 0);
+  let t = 1;
+  for (; t <= 20000 && race.phase !== "finished"; t++)
+    race = stepRace(race, "autopilot", t * 20);
+  assert.equal(race.phase, "finished");
+  assert.equal(race.cars[1].finishedMs, null);
+  const finishSpeed = race.cars[0].state.speed;
+  const botAtFinish = race.cars[1].state.position;
+  for (let i = 0; i < 100; i++, t++) race = stepRace(race, GAS, t * 20);
+  assert.equal(race.phase, "finished");
+  assert.ok(Math.abs(race.cars[0].state.speed) < Math.abs(finishSpeed));
+  assert.notDeepEqual(race.cars[1].state.position, botAtFinish);
+});

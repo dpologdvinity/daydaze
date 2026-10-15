@@ -78,7 +78,7 @@ export function stepRace(
   playerInput: CarInput | "autopilot",
   nowMs: number,
 ): Race {
-  if (race.phase === "finished" || race.phase === "grid") return race;
+  if (race.phase === "grid") return race;
   if (race.phase === "countdown") {
     const countdownMs = race.countdownMs - TICK_MS;
     return countdownMs > 0
