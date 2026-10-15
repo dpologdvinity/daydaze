@@ -64,6 +64,13 @@ type Props = {
   seed?: number;
 } & Omit<ThreeElements["group"], "children">;
 
+// shortcut: shoes follow the outfit until the closet has a shoe picker
+const SHOES: Record<Look["outfit"], string> = {
+  flares: "sneakers",
+  mini: "platforms",
+  fur: "boots",
+};
+
 /** The part files a look wears, by kind. */
 export function partsFor(look: Look, swim: SwimLook | null) {
   return {
@@ -71,8 +78,10 @@ export function partsFor(look: Look, swim: SwimLook | null) {
     outfit: swim
       ? `${MODELS}/swim-${swim.style}.glb`
       : `${MODELS}/outfit-${look.outfit}.glb`,
-    shoes: swim ? null : `${MODELS}/shoes-sneakers.glb`,
-    tuck: swim ? `tuck_${swim.style}` : `tuck_${look.outfit}`,
+    shoes: swim ? null : `${MODELS}/shoes-${SHOES[look.outfit]}.glb`,
+    tucks: swim
+      ? [`tuck_${swim.style}`]
+      : [`tuck_${look.outfit}`, `tuck_${SHOES[look.outfit]}`],
   };
 }
 
@@ -202,7 +211,7 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
   return body;
 }
 
-type Tint = { colour: string; kind: "hair" | "cloth" | "keep" };
+type Tint = { colour: string; kind: "hair" | "cloth" | "gloss" | "keep" };
 
 /** A worn part, re-bound to the body's bones and tinted. */
 function Part({
@@ -214,7 +223,8 @@ function Part({
   url: string;
   bones: Map<string, THREE.Bone>;
   tint: Tint;
-  onMeshes: (meshes: THREE.Mesh[] | null) => void;
+  /** The part's meshes, and how far its soles lift the doll (metres). */
+  onMeshes: (meshes: THREE.Mesh[] | null, lift: number) => void;
 }) {
   const gltf = useGLTF(url);
   const part = useMemo(() => {
@@ -224,6 +234,12 @@ function Part({
     });
     const group = new THREE.Group();
     const materials: THREE.Material[] = [];
+    let lift = 0;
+    gltf.scene.traverse((o) => {
+      const v: unknown = o.userData.lift;
+      if (typeof v === "number" && Number.isFinite(v) && v >= 0 && v < 0.2)
+        lift = v;
+    });
     for (const src of meshes) {
       const mesh = src.clone();
       const skeleton = new THREE.Skeleton(
@@ -241,7 +257,8 @@ function Part({
       const mat = new THREE.MeshStandardMaterial({
         map: old?.map ?? null,
         color: tint.kind === "keep" ? "#ffffff" : tint.colour,
-        roughness: tint.kind === "hair" ? 0.45 : 0.7,
+        roughness:
+          tint.kind === "hair" ? 0.45 : tint.kind === "gloss" ? 0.22 : 0.7,
         side: tint.kind === "hair" ? THREE.DoubleSide : THREE.FrontSide,
         alphaTest: tint.kind === "hair" ? 0.35 : 0,
       });
@@ -249,13 +266,13 @@ function Part({
       mesh.material = mat;
       group.add(mesh);
     }
-    return { group, materials };
+    return { group, materials, lift };
   }, [gltf, bones, tint.colour, tint.kind]);
 
   useEffect(() => {
-    onMeshes(morphMeshes(part.group));
+    onMeshes(morphMeshes(part.group), part.lift);
     return () => {
-      onMeshes(null);
+      onMeshes(null, 0);
       part.materials.forEach((m) => m.dispose());
     };
   }, [part, onMeshes]);
@@ -280,6 +297,8 @@ export function HumanDoll({
   );
   const body = useBody(look, face.eyeColor);
   const parts = partsFor(look, swim);
+  const tuckKey = parts.tucks.join(",");
+  const tucks = useMemo(() => tuckKey.split(","), [tuckKey]);
   const calm = useReducedMotion();
   const phase = useRef(0);
   const blinkAt = useRef(2 + seed);
@@ -293,10 +312,12 @@ export function HumanDoll({
   const bodyMeshes = useMemo(() => morphMeshes(body.scene), [body]);
   const worn = useRef(new Map<string, THREE.Mesh[]>());
   const wornList = useRef<THREE.Mesh[]>([]);
+  const lift = useRef(0);
   const track = useMemo(() => {
-    const make = (key: string) => (meshes: THREE.Mesh[] | null) => {
+    const make = (key: string) => (meshes: THREE.Mesh[] | null, up: number) => {
       if (meshes) worn.current.set(key, meshes);
       else worn.current.delete(key);
+      if (key === "shoes") lift.current = up;
       wornList.current = [...bodyMeshes, ...[...worn.current.values()].flat()];
     };
     return { hair: make("hair"), outfit: make("outfit"), shoes: make("shoes") };
@@ -308,9 +329,9 @@ export function HumanDoll({
       const dict = m.morphTargetDictionary ?? {};
       for (const name of Object.keys(dict))
         if (name.startsWith("tuck_"))
-          setMorph([m], name, name === parts.tuck ? 1 : 0);
+          setMorph([m], name, tucks.includes(name) ? 1 : 0);
     }
-  }, [bodyMeshes, parts.tuck]);
+  }, [bodyMeshes, tucks]);
 
   useFrame((state, dt) => {
     const t = state.clock.elapsedTime + seed * 7.3;
@@ -339,6 +360,7 @@ export function HumanDoll({
       if (!g || !bone || !r) continue;
       bone.quaternion.copy(g.quaternion);
       bone.position.copy(r).add(g.position);
+      if (j === "body") bone.position.y += lift.current;
       bone.scale.copy(g.scale);
     }
     // blink and a faint smile, on every mesh that carries the keys
@@ -381,7 +403,15 @@ export function HumanDoll({
             key={parts.shoes}
             url={parts.shoes}
             bones={body.bones}
-            tint={{ colour: "#ffffff", kind: "keep" }}
+            tint={
+              SHOES[look.outfit] === "sneakers"
+                ? { colour: "#ffffff", kind: "keep" }
+                : {
+                    colour:
+                      look.outfit === "mini" ? "#f6e7ff" : look.outfitColor,
+                    kind: "gloss",
+                  }
+            }
             onMeshes={track.shoes}
           />
         </Suspense>

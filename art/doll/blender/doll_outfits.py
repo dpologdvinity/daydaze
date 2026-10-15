@@ -7,6 +7,7 @@ garment also adds a "tuck_<name>" shape key to the body that pulls the skin
 under it inwards, so skin never pokes through cloth.
 """
 
+import bmesh
 import bpy
 import numpy as np
 from mathutils import Vector
@@ -195,9 +196,59 @@ def build(ctx, body, body_src):
             proxies.textured("shoes_sneakers", shoe_img),
         )
     )
+    gloss = bpy.data.materials.new("shoe_gloss")
+    out.append(platforms(ctx, "Shoes_platforms", h["ankle"] + 0.02, gloss))
+    out.append(platforms(ctx, "Shoes_boots", h["knee"] - 0.06, gloss))
     for ob in out:
         tuck(ctx, body, body_src, ob, ob.name.split("_", 1)[1])
     return out
+
+
+PLATFORM = 0.05  # sole height in metres; the client lifts the doll by this
+
+
+def platforms(ctx, name, top, mat):
+    """Y2K platforms: an upper cut from the tights helper around the foot (up
+    to `top`, so ankle pumps or knee boots) on a chunky sole block per foot.
+    The sole hangs below the foot; the client lifts the doll to stand on it."""
+    upper = shell(ctx, name, ["helper-tights"], [(-1.0, top)], 0.0035, mat, arms=0.2)
+    co = np.array([v.co[:] for v in upper.data.vertices])
+    foot_bones = [ctx.BONES.index(b) for b in ("lFoot", "rFoot")]
+    sole_parts = []
+    for side, bone in (("l", "lFoot"), ("r", "rFoot")):
+        sel = co[(co[:, 0] > 0) == (side == "l")]
+        sel = sel[sel[:, 2] < ctx.JB[bone][2] + 0.01]
+        lo, hi = sel.min(0), sel.max(0)
+        bm = bmesh.new()
+        bmesh.ops.create_cube(bm, size=1.0)
+        for v in bm.verts:
+            # a block under the whole foot, a touch wider, toe slightly rounded
+            x = (v.co.x + 0.5) * (hi[0] - lo[0] + 0.012) + lo[0] - 0.006
+            y = (v.co.y + 0.5) * (hi[1] - lo[1] + 0.012) + lo[1] - 0.006
+            z = (v.co.z + 0.5) * (PLATFORM + 0.012) - PLATFORM
+            v.co = Vector((x, y, z))
+        me = bpy.data.meshes.new(f"{name}_{side}_sole")
+        bm.to_mesh(me)
+        bm.free()
+        sole = bpy.data.objects.new(me.name, me)
+        bpy.context.scene.collection.objects.link(sole)
+        mod = sole.modifiers.new("bevel", "BEVEL")
+        mod.width = 0.008
+        mod.segments = 3
+        bpy.context.view_layer.objects.active = sole
+        bpy.ops.object.select_all(action="DESELECT")
+        sole.select_set(True)
+        bpy.ops.object.modifier_apply(modifier="bevel")
+        sole.data.materials.append(mat)
+        n = len(sole.data.vertices)
+        w = np.zeros((n, len(ctx.BONES)))
+        w[:, ctx.BONES.index(bone)] = 1
+        proxies.attach(ctx, sole, w, {k: np.zeros((n, 3)) for k in ctx.KEYS})
+        sole_parts.append(sole)
+    for sole in sole_parts:
+        upper = join(upper, sole)
+    upper["lift"] = PLATFORM
+    return upper
 
 
 def join(a, b):

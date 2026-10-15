@@ -749,6 +749,10 @@ def main():
     parts = doll_hair.build(ctx) + doll_outfits.build(ctx, body, BODY_SRC)
     for ob in parts:
         bind(ob, rig)
+        # build-time bookkeeping; glTF would ship it as (large) node extras
+        for key in ("deleted", "src"):
+            if key in ob:
+                del ob[key]
     # on the body, not the rig: optimisers flatten the rig node away
     body["doll"] = json.dumps(meta)
     os.makedirs(OUT_DIR, exist_ok=True)
