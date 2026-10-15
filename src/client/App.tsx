@@ -12,6 +12,7 @@ import {
   serializeSave,
   type SaveV1,
 } from "../game/save.ts";
+import { earn, payoutFor, type PayGrade } from "../game/wallet.ts";
 import { CityJoystick } from "./city/CityJoystick.tsx";
 import { readFlags } from "./flags.ts";
 import { ReducedMotionContext, usePrefersReducedMotion } from "./motion.ts";
@@ -100,6 +101,12 @@ export function App() {
   );
   const [rides, setRides] = useState(0);
   const [game, setGame] = useState<MinigameId | null>(null);
+  // a finished game pays its grade; quitting early (null) pays nothing
+  const endGame = (grade: PayGrade | null) => {
+    setGame(null);
+    if (grade)
+      setSave((s) => ({ ...s, coins: earn(s.coins, payoutFor(grade)) }));
+  };
   const saved = save.settings.quality;
   const quality = flags.quality ?? (saved === "auto" ? null : saved);
 
@@ -154,7 +161,7 @@ export function App() {
           panelOpen={save.settings.panelOpen}
           setPanelOpen={setPanelOpen}
         />
-        {game && <GameOverlay game={game} onClose={() => setGame(null)} />}
+        {game && <GameOverlay game={game} onClose={endGame} />}
         {here.room === "city" && touch && <CityJoystick />}
         <ChatBar onSay={(text) => setChat({ text, at: Date.now() })} />
         {flags.debug && (

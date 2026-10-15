@@ -63,6 +63,7 @@ test("saves are stored only when loadSave keeps every field as sent", () => {
     look: save.look,
     name: "Kai",
     version: 1,
+    coins: save.coins,
   });
   assert.deepEqual(parseSave(reordered, "Fallback"), save);
   for (const bad of [
@@ -73,7 +74,7 @@ test("saves are stored only when loadSave keeps every field as sent", () => {
     JSON.stringify({ ...save, swim: { style: "thong", color: "#3fe0d0" } }),
     JSON.stringify({ ...save, name: "x" }),
     JSON.stringify({ ...save, version: 2 }),
-    JSON.stringify({ ...save, coins: 5 }),
+    JSON.stringify({ ...save, coins: -5 }),
     JSON.stringify({ ...save, settings: { quality: "ultra", muted: true } }),
     JSON.stringify({
       ...save,

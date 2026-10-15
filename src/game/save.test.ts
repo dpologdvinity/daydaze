@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { DEFAULT_LOOK, DEFAULT_SWIM, type Look } from "./look.ts";
+import { STARTING_COINS } from "./wallet.ts";
 import {
   SAVE_KEY,
   createDefaultSave,
@@ -28,6 +29,7 @@ test("createDefaultSave uses the default look and auto quality", () => {
     name: "Mango Fan",
     look: DEFAULT_LOOK,
     swim: DEFAULT_SWIM,
+    coins: STARTING_COINS,
     settings: {
       quality: "auto",
       muted: false,
@@ -48,6 +50,7 @@ test("a save round-trips through serializeSave and loadSave", () => {
     name: "Velvet_Kat-99",
     look: customLook,
     swim: { style: "one-piece", color: "#ff2f9a" },
+    coins: 320,
     settings: { quality: "low", muted: true, effects: "off", panelOpen: true },
   };
   assert.deepEqual(loadSave(serializeSave(save), "Fallback"), save);
@@ -65,6 +68,7 @@ test("a save from before the swimsuit slot still loads", () => {
     name: "Velvet_Kat-99",
     look: customLook,
     swim: DEFAULT_SWIM,
+    coins: STARTING_COINS,
     settings: {
       quality: "low",
       muted: true,
@@ -110,6 +114,7 @@ test("loadSave keeps a valid name when the look is bad", () => {
     name: "Kept Name",
     look: DEFAULT_LOOK,
     swim: DEFAULT_SWIM,
+    coins: STARTING_COINS,
     settings: {
       quality: "high",
       muted: true,
@@ -130,6 +135,7 @@ test("loadSave keeps a valid look when the name is bad", () => {
     name: "Fallback",
     look: customLook,
     swim: DEFAULT_SWIM,
+    coins: STARTING_COINS,
     settings: {
       quality: "auto",
       muted: false,
@@ -203,6 +209,30 @@ test("loadSave repairs the effects setting without touching the rest", () => {
   assert.equal(loadSave(low, "Fallback").settings.effects, "low");
 });
 
+test("a save from before the economy starts with the starting coins", () => {
+  const old = JSON.stringify({
+    version: 1,
+    name: "Kept Name",
+    look: customLook,
+    swim: DEFAULT_SWIM,
+    settings: { quality: "low", muted: true, effects: "full" },
+  });
+  assert.equal(loadSave(old, "Fallback").coins, STARTING_COINS);
+});
+
+test("a bad coin balance falls back without touching the rest", () => {
+  for (const coins of [-5, 2.5, "lots", 1_000_000_000]) {
+    const raw = JSON.stringify({
+      ...createDefaultSave("Kept Name"),
+      look: customLook,
+      coins,
+    });
+    const save = loadSave(raw, "Fallback");
+    assert.equal(save.coins, STARTING_COINS, String(coins));
+    assert.deepEqual(save.look, customLook);
+  }
+});
+
 test("loadSave salvages valid fields from a wrong version", () => {
   const raw = JSON.stringify({ version: 7, name: "Kept Name", look: 3 });
   assert.deepEqual(loadSave(raw, "Fallback"), createDefaultSave("Kept Name"));
@@ -211,7 +241,7 @@ test("loadSave salvages valid fields from a wrong version", () => {
 test("loadSave drops unknown fields", () => {
   const raw = JSON.stringify({
     ...createDefaultSave("Kept Name"),
-    coins: 9999,
+    cheats: 9999,
   });
   assert.deepEqual(loadSave(raw, "Fallback"), createDefaultSave("Kept Name"));
 });

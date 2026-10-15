@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { hotspotsIn, type MinigameId } from "../../game/hotspots.ts";
 import type { RoomId } from "../../game/rooms.ts";
+import type { PayGrade } from "../../game/wallet.ts";
 import { useReducedMotion } from "../motion.ts";
 
 // The minigames are big and rarely opened, so their code loads on first play.
@@ -42,15 +43,18 @@ export function GameOverlay({
   onClose,
 }: {
   game: MinigameId;
-  onClose: () => void;
+  /** Receives the finished round's grade, or null when the player quit. */
+  onClose: (grade: PayGrade | null) => void;
 }) {
   const reducedMotion = useReducedMotion();
+  const done = (result: { grade: PayGrade } | null) =>
+    onClose(result?.grade ?? null);
   return (
     <Suspense fallback={null}>
       {game === "bassline" ? (
-        <Bassline onClose={onClose} reducedMotion={reducedMotion} />
+        <Bassline onClose={done} reducedMotion={reducedMotion} />
       ) : (
-        <LastCall onClose={onClose} reducedMotion={reducedMotion} />
+        <LastCall onClose={done} reducedMotion={reducedMotion} />
       )}
     </Suspense>
   );
