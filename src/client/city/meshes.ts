@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { CAR_BODY, CAR_CABIN } from "./carGeometry.ts";
 import { KINDS, type Instance, type Kind } from "../../game/city/plan.ts";
 import { animate } from "./shaders.ts";
 
@@ -112,8 +113,8 @@ const GEOMETRY: Record<Shared, THREE.BufferGeometry> = {
   panel: BOX,
   arch: BOX,
   bulb: BOX,
-  car: BOX,
-  carGlass: BOX,
+  car: CAR_BODY,
+  carGlass: CAR_CABIN,
   furniture: BOX,
   glass: BOX,
   crowd: CAPSULE,
