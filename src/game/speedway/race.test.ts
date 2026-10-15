@@ -60,3 +60,12 @@ test("after the player finishes, their car coasts to a stop while a bot keeps dr
   assert.ok(Math.abs(race.cars[0].state.speed) < Math.abs(finishSpeed));
   assert.notDeepEqual(race.cars[1].state.position, botAtFinish);
 });
+
+test("before anyone crosses the line, standings follow the grid", () => {
+  const race = createRace(TRACKS[0], 3, spec, 3, "medium", 0);
+  assert.deepEqual(
+    standings(race),
+    race.cars.map((c) => c.id),
+  );
+  assert.equal(standings(race)[0], "player");
+});
