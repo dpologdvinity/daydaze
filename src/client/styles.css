@@ -103,6 +103,14 @@ button:focus-visible {
   opacity: 0.85;
 }
 
+/* the wallet, next to the room name */
+.coins {
+  margin-top: 4px !important;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--lilac);
+}
+
 /* ------------------------------------------------------------ dressing room */
 
 /* the toggle is the one bright control on the top right */

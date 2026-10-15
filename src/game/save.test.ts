@@ -30,6 +30,7 @@ test("createDefaultSave uses the default look and auto quality", () => {
     look: DEFAULT_LOOK,
     swim: DEFAULT_SWIM,
     coins: STARTING_COINS,
+    wardrobe: [],
     settings: {
       quality: "auto",
       muted: false,
@@ -54,6 +55,7 @@ test("a save round-trips through serializeSave and loadSave", () => {
     look: customLook,
     swim: { style: "one-piece", color: "#ff2f9a" },
     coins: 320,
+    wardrobe: [],
     settings: { quality: "low", muted: true, effects: "off", panelOpen: true },
     home: {
       locked: false,
@@ -106,6 +108,7 @@ test("a save from before the swimsuit slot still loads", () => {
     look: customLook,
     swim: DEFAULT_SWIM,
     coins: STARTING_COINS,
+    wardrobe: [],
     settings: {
       quality: "low",
       muted: true,
@@ -155,6 +158,7 @@ test("loadSave keeps a valid name when the look is bad", () => {
     look: DEFAULT_LOOK,
     swim: DEFAULT_SWIM,
     coins: STARTING_COINS,
+    wardrobe: [],
     settings: {
       quality: "high",
       muted: true,
@@ -179,6 +183,7 @@ test("loadSave keeps a valid look when the name is bad", () => {
     look: customLook,
     swim: DEFAULT_SWIM,
     coins: STARTING_COINS,
+    wardrobe: [],
     settings: {
       quality: "auto",
       muted: false,
@@ -277,6 +282,41 @@ test("a bad coin balance falls back without touching the rest", () => {
     assert.equal(save.coins, STARTING_COINS, String(coins));
     assert.deepEqual(save.look, customLook);
   }
+});
+
+test("a save from before the wardrobe loads with nothing owned", () => {
+  const old = JSON.stringify({
+    version: 1,
+    name: "Kept Name",
+    look: customLook,
+    coins: 40,
+  });
+  assert.deepEqual(loadSave(old, "Fallback").wardrobe, []);
+});
+
+test("owned shop looks are kept and unowned ones are worn as the default", () => {
+  const shopLook: Look = {
+    ...customLook,
+    outfit: "tracksuit-y2k",
+    lips: "lips-chrome-berry",
+  };
+  const owned = JSON.stringify({
+    ...createDefaultSave("Kept Name"),
+    look: shopLook,
+    wardrobe: ["tracksuit-y2k", "lips-chrome-berry", "mystery"],
+  });
+  const loaded = loadSave(owned, "Fallback");
+  assert.deepEqual(loaded.look, shopLook);
+  assert.deepEqual(loaded.wardrobe, ["tracksuit-y2k", "lips-chrome-berry"]);
+  const unowned = JSON.stringify({
+    ...createDefaultSave("Kept Name"),
+    look: shopLook,
+    wardrobe: ["lips-chrome-berry"],
+  });
+  assert.deepEqual(loadSave(unowned, "Fallback").look, {
+    ...shopLook,
+    outfit: DEFAULT_LOOK.outfit,
+  });
 });
 
 test("loadSave salvages valid fields from a wrong version", () => {

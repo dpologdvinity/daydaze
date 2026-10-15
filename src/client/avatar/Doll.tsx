@@ -9,7 +9,12 @@ import {
   type DanceMoveId,
   type Pose,
 } from "../../game/dance/moves.ts";
-import type { Look, Mood, SwimLook } from "../../game/look.ts";
+import {
+  silhouetteOf,
+  type Look,
+  type Mood,
+  type SwimLook,
+} from "../../game/look.ts";
 import { liveDrunk } from "../effects/drunk.ts";
 import { useReducedMotion } from "../motion.ts";
 import {
@@ -59,7 +64,8 @@ function shade(hex: string, l: number) {
 function useDollMaterials(look: Look, swim: SwimLook | null) {
   const { skin, hairColor } = look;
   const outfitColor = swim?.color ?? look.outfitColor;
-  const outfit = swim ? "swim" : look.outfit;
+  // shop outfits are cut from the three starting silhouettes
+  const outfit = swim ? "swim" : silhouetteOf(look.outfit);
   const mats = useMemo(() => {
     const rim = "#ff74d4";
     const accent = outfitColor;
@@ -208,9 +214,10 @@ export function Doll({
     }
   });
 
-  const flares = !swim && look.outfit === "flares";
-  const mini = !swim && look.outfit === "mini";
-  const fur = !swim && look.outfit === "fur";
+  const silhouette = silhouetteOf(look.outfit);
+  const flares = !swim && silhouette === "flares";
+  const mini = !swim && silhouette === "mini";
+  const fur = !swim && silhouette === "fur";
   const earL = headPoint(Math.PI / 2, -0.03, 0.0);
 
   return (

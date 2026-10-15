@@ -15,6 +15,7 @@ import {
 import type { DanceMoveId } from "../../game/dance/moves.ts";
 import { INTENSITIES, type Intensity } from "../../game/effects/buzz.ts";
 import type { RoomId } from "../../game/rooms.ts";
+import { wearable } from "../../game/shop.ts";
 import { drink } from "../effects/drunk.ts";
 import type { MinigameId } from "../../game/hotspots.ts";
 import { VIEWS, type View } from "../world/CameraRig.tsx";
@@ -59,6 +60,7 @@ function Mirror({
   setLook,
   swim,
   setSwim,
+  wardrobe,
   effects,
   setEffects,
 }: {
@@ -66,6 +68,7 @@ function Mirror({
   setLook: (look: Look) => void;
   swim: SwimLook;
   setSwim: (swim: SwimLook) => void;
+  wardrobe: readonly string[];
   effects: Intensity;
   setEffects: (effects: Intensity) => void;
 }) {
@@ -84,13 +87,13 @@ function Mirror({
         <h3>Hair</h3>
         <Chips
           label="Hair style"
-          options={HAIR_STYLES}
+          options={wearable(HAIR_STYLES, wardrobe)}
           value={look.hairStyle}
           onPick={(hairStyle) => setLook({ ...look, hairStyle })}
         />
         <Swatches
           label="Hair colour"
-          options={HAIR_COLORS}
+          options={wearable(HAIR_COLORS, wardrobe)}
           value={look.hairColor}
           onPick={(hairColor) => setLook({ ...look, hairColor })}
         />
@@ -99,7 +102,7 @@ function Mirror({
         <h3>Lips</h3>
         <Chips
           label="Lips"
-          options={LIPS}
+          options={wearable(LIPS, wardrobe)}
           value={look.lips}
           onPick={(lips) => setLook({ ...look, lips })}
           thumbs
@@ -116,7 +119,7 @@ function Mirror({
         />
         <Swatches
           label="Eyeshadow"
-          options={EYESHADOWS}
+          options={wearable(EYESHADOWS, wardrobe)}
           value={look.shadow}
           onPick={(shadow) => setLook({ ...look, shadow })}
         />
@@ -125,7 +128,7 @@ function Mirror({
         <h3>Outfit</h3>
         <Chips
           label="Outfit"
-          options={OUTFITS}
+          options={wearable(OUTFITS, wardrobe)}
           value={look.outfit}
           onPick={(outfit) => setLook({ ...look, outfit })}
         />
@@ -171,6 +174,8 @@ export function Overlay({
   setLook,
   swim,
   setSwim,
+  coins,
+  wardrobe,
   onRide,
   onPlayGame,
   mood,
@@ -190,6 +195,8 @@ export function Overlay({
   setLook: (look: Look) => void;
   swim: SwimLook;
   setSwim: (swim: SwimLook) => void;
+  coins: number;
+  wardrobe: readonly string[];
   onRide: () => void;
   onPlayGame: (game: MinigameId) => void;
   mood: Mood;
@@ -210,6 +217,9 @@ export function Overlay({
           <h1 className="venue-name">{roomName}</h1>
         </div>
         <p className="venue-sub">{ROOM_HINTS[room]}</p>
+        <p className="coins" aria-label={`${coins} coins`}>
+          {coins} coins
+        </p>
       </header>
 
       <Dressing open={panelOpen} onOpenChange={setPanelOpen}>
@@ -218,6 +228,7 @@ export function Overlay({
           setLook={setLook}
           swim={swim}
           setSwim={setSwim}
+          wardrobe={wardrobe}
           effects={effects}
           setEffects={setEffects}
         />

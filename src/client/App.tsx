@@ -211,6 +211,8 @@ export function App() {
           setLook={setLook}
           swim={save.swim}
           setSwim={setSwim}
+          coins={save.coins}
+          wardrobe={save.wardrobe}
           onRide={() => setRides((n) => n + 1)}
           onPlayGame={setGame}
           mood={mood}

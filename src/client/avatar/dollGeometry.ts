@@ -378,6 +378,19 @@ export function hairGeometry(style: HairStyle): HairGeo {
       locks.push(lock(pts, 0.04, 0.005, 0.7));
     }
     pony = merge(locks.map(strip));
+  } else if (style === "sleek-bob") {
+    // a glossy shell with curtain bangs and no loose locks
+    parts.push(
+      cap(0.174, 0.46, partFlow),
+      curtainBang(1, 0.5),
+      curtainBang(-1, 2.1),
+    );
+  } else if (style === "curl-cloud") {
+    parts.push(cap(0.176, 0.6, partFlow));
+    const deg = Math.PI / 180;
+    for (let a = 60; a <= 300; a += 9) {
+      parts.push(wavyLock(a * deg, 0.55 + r() * 0.2, r() * 6, 0.2, 0.07));
+    }
   } else {
     parts.push(cap(0.172, 0.55, partFlow), ...bun(1), ...bun(-1));
     parts.push(tendril(1, 0.36), tendril(-1, 0.36));

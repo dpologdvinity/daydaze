@@ -10,6 +10,9 @@ export const HAIR_STYLES = [
   { id: "waves", label: "Glossy waves" },
   { id: "ponytail", label: "Snatched pony" },
   { id: "buns", label: "Space buns" },
+  // Salon styles: sold by the stylist, see shop.ts.
+  { id: "sleek-bob", label: "Sleek bob" },
+  { id: "curl-cloud", label: "Curl cloud" },
 ] as const;
 
 export const HAIR_COLORS = [
@@ -19,6 +22,7 @@ export const HAIR_COLORS = [
   { id: "#f1d78f", label: "Platinum" },
   { id: "#ff4fb3", label: "Bubblegum" },
   { id: "#7b4dff", label: "Ultraviolet" },
+  { id: "#7ee8a2", label: "Mint soda" },
 ] as const;
 
 export const LIPS = [
@@ -26,6 +30,9 @@ export const LIPS = [
   { id: "lips-burgundy-cherry", label: "Cherry" },
   { id: "lips-nude-pink-gloss", label: "Nude gloss" },
   { id: "lips-90s-caramel-ombre", label: "90s caramel" },
+  // Beauty supply testers, see shop.ts.
+  { id: "lips-chrome-berry", label: "Chrome berry" },
+  { id: "lips-blue-raspberry-gloss", label: "Blue raspberry gloss" },
 ] as const;
 
 export const BROWS = [
@@ -35,10 +42,18 @@ export const BROWS = [
   { id: "brows-feathered-honey", label: "Feathered" },
 ] as const;
 
+/** The doll geometry each outfit is cut from. Shop outfits reuse these shapes. */
+export type Silhouette = "flares" | "mini" | "fur";
+
 export const OUTFITS = [
-  { id: "flares", label: "Crop and flares" },
-  { id: "mini", label: "Slip mini" },
-  { id: "fur", label: "Faux fur" },
+  { id: "flares", label: "Crop and flares", silhouette: "flares" },
+  { id: "mini", label: "Slip mini", silhouette: "mini" },
+  { id: "fur", label: "Faux fur", silhouette: "fur" },
+  // Boutique outfits, see shop.ts.
+  { id: "tracksuit-y2k", label: "Y2K velour tracksuit", silhouette: "flares" },
+  { id: "baby-tee-mini", label: "Baby tee and mini", silhouette: "mini" },
+  { id: "sequin-slip", label: "Sequin slip gown", silhouette: "mini" },
+  { id: "glam-faux-fur", label: "Glam faux-fur wrap", silhouette: "fur" },
 ] as const;
 
 export const OUTFIT_COLORS = [
@@ -58,6 +73,9 @@ export const EYESHADOWS = [
   { id: "#8a5a3c", label: "Bronze" },
   // The prototype's space-buns regular wore this without it being pickable.
   { id: "#7b4dff", label: "Ultraviolet" },
+  // Beauty supply testers, see shop.ts.
+  { id: "#ffd1f0", label: "Cotton candy" },
+  { id: "#2e7dff", label: "Electric blue" },
 ] as const;
 
 export const MOODS = [
@@ -73,6 +91,10 @@ type IdOf<T extends readonly Option[]> = T[number]["id"];
 
 export type HairStyle = IdOf<typeof HAIR_STYLES>;
 export type Outfit = IdOf<typeof OUTFITS>;
+
+export function silhouetteOf(outfit: Outfit): Silhouette {
+  return OUTFITS.find((option) => option.id === outfit)?.silhouette ?? "flares";
+}
 export type Mood = IdOf<typeof MOODS>;
 
 export type Look = {
