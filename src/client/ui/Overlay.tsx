@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   BROWS,
   EYESHADOWS,
@@ -17,11 +16,15 @@ import type { DanceMoveId } from "../../game/dance/moves.ts";
 import { INTENSITIES, type Intensity } from "../../game/effects/buzz.ts";
 import type { RoomId } from "../../game/rooms.ts";
 import { drink } from "../effects/drunk.ts";
+import type { MinigameId } from "../../game/hotspots.ts";
 import { VIEWS, type View } from "../world/CameraRig.tsx";
 import { DriveControls } from "../rooms/speedway/DriveControls.tsx";
 import { RaceHud, SpeedwayMenu } from "../rooms/speedway/RaceHud.tsx";
+import { CocktailIcon, RideIcon } from "./icons.tsx";
 import { DancePicker } from "./DancePicker.tsx";
+import { Dressing } from "./Dressing.tsx";
 import { Chips, Segmented, Swatches } from "./controls.tsx";
+import { VenueGames } from "./Minigames.tsx";
 
 // Sit and lean need furniture, so the player only picks these.
 const PLAYER_MOODS: readonly { id: Mood; label: string }[] = [
@@ -64,8 +67,7 @@ function Mirror({
   setEffects: (effects: Intensity) => void;
 }) {
   return (
-    <div className="mirror-glass">
-      <h2 className="mirror-title">Get the look</h2>
+    <>
       <section>
         <h3>Skin</h3>
         <Swatches
@@ -155,7 +157,7 @@ function Mirror({
           onPick={setEffects}
         />
       </section>
-    </div>
+    </>
   );
 }
 
@@ -167,6 +169,7 @@ export function Overlay({
   swim,
   setSwim,
   onRide,
+  onPlayGame,
   mood,
   setMood,
   dance,
@@ -175,6 +178,8 @@ export function Overlay({
   setEffects,
   view,
   setView,
+  panelOpen,
+  setPanelOpen,
 }: {
   room: RoomId;
   roomName: string;
@@ -183,6 +188,7 @@ export function Overlay({
   swim: SwimLook;
   setSwim: (swim: SwimLook) => void;
   onRide: () => void;
+  onPlayGame: (game: MinigameId) => void;
   mood: Mood;
   setMood: (mood: Mood) => void;
   dance: DanceMoveId;
@@ -191,10 +197,9 @@ export function Overlay({
   setEffects: (effects: Intensity) => void;
   view: View;
   setView: (view: View) => void;
+  panelOpen: boolean;
+  setPanelOpen: (open: boolean) => void;
 }) {
-  const [open, setOpen] = useState(
-    () => !window.matchMedia("(max-width: 720px)").matches,
-  );
   return (
     <>
       <header className="venue">
@@ -204,22 +209,7 @@ export function Overlay({
         <p className="venue-sub">{ROOM_HINTS[room]}</p>
       </header>
 
-      <button
-        type="button"
-        className="mirror-toggle"
-        aria-expanded={open}
-        aria-controls="mirror"
-        onClick={() => setOpen(!open)}
-      >
-        {open ? "Close mirror" : "Dressing room"}
-      </button>
-
-      <section
-        id="mirror"
-        className="mirror"
-        data-open={open}
-        aria-label="Dressing room"
-      >
+      <Dressing open={panelOpen} onOpenChange={setPanelOpen}>
         <Mirror
           look={look}
           setLook={setLook}
@@ -228,13 +218,7 @@ export function Overlay({
           effects={effects}
           setEffects={setEffects}
         />
-      </section>
-
-      {room === "water-park" && (
-        <button type="button" className="ride" onClick={onRide}>
-          Ride a slide
-        </button>
-      )}
+      </Dressing>
 
       {room === "speedway" && (
         <>
@@ -244,32 +228,44 @@ export function Overlay({
         </>
       )}
 
-      {room === "velvet-room" && (
-        <button
-          type="button"
-          className="drink"
-          onClick={() => drink("cocktail")}
-        >
-          Have a drink
-        </button>
-      )}
-
-      {mood === "dance" && <DancePicker move={dance} onPick={setDance} />}
-
-      <Segmented
-        className="moods"
-        label="Mood"
-        value={mood}
-        onPick={setMood}
-        options={PLAYER_MOODS}
-      />
-      <Segmented
-        className="views"
-        label="Camera"
-        value={view}
-        onPick={setView}
-        options={VIEWS}
-      />
+      <div className="dock">
+        {mood === "dance" && <DancePicker move={dance} onPick={setDance} />}
+        <div className="dock-actions" role="group" aria-label="Room actions">
+          {room === "water-park" && (
+            <button type="button" className="ride" onClick={onRide}>
+              <RideIcon />
+              Ride a slide
+            </button>
+          )}
+          {room === "velvet-room" && (
+            <button
+              type="button"
+              className="drink"
+              onClick={() => drink("cocktail")}
+            >
+              <CocktailIcon />
+              Have a drink
+            </button>
+          )}
+          <VenueGames room={room} onPlay={onPlayGame} />
+        </div>
+        <div className="dock-modes">
+          <Segmented
+            className="moods"
+            label="Mood"
+            value={mood}
+            onPick={setMood}
+            options={PLAYER_MOODS}
+          />
+          <Segmented
+            className="views"
+            label="Camera"
+            value={view}
+            onPick={setView}
+            options={VIEWS}
+          />
+        </div>
+      </div>
     </>
   );
 }
