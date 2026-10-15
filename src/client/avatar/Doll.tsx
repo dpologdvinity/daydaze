@@ -151,13 +151,12 @@ const worldPos = new THREE.Vector3();
 function setLod(root: THREE.Object3D, far: boolean) {
   root.traverse((o) => {
     if (!(o instanceof THREE.Mesh)) return;
+    const geo: THREE.BufferGeometry | undefined = o.geometry;
+    if (!geo) return;
     const outline = o.material === OUTLINE || o.material === HAIR_OUTLINE;
-    o.visible = !((outline || detailParts.has(o.geometry)) && far);
-    let base = nearGeometry.get(o);
-    if (!base) {
-      base = o.geometry;
-      nearGeometry.set(o, base);
-    }
+    o.visible = !((outline || detailParts.has(geo)) && far);
+    const base = nearGeometry.get(o) ?? geo;
+    nearGeometry.set(o, base);
     o.geometry = far ? farGeometry(base) : base;
   });
 }

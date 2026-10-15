@@ -343,10 +343,25 @@ def new_object(name, verts, faces, mat_slots=()):
     return ob
 
 
+# Distinct colours keep glTF optimisers from merging the materials into one;
+# the client swaps every material by name anyway.
+COLOURS = {
+    "skin": (0.8, 0.6, 0.5, 1),
+    "lashes": (0.02, 0.01, 0.01, 1),
+    "eye": (0.95, 0.95, 0.95, 1),
+    "cornea": (1, 1, 1, 0.1),
+}
+
+
 def material(name):
     m = bpy.data.materials.get(name)
     if m is None:
         m = bpy.data.materials.new(name)
+        if name in COLOURS:
+            m.use_nodes = True
+            bsdf = m.node_tree.nodes["Principled BSDF"]
+            bsdf.inputs["Base Color"].default_value = COLOURS[name]
+            bsdf.inputs["Alpha"].default_value = COLOURS[name][3]
     return m
 
 
@@ -734,7 +749,8 @@ def main():
     parts = doll_hair.build(ctx) + doll_outfits.build(ctx, body, BODY_SRC)
     for ob in parts:
         bind(ob, rig)
-    rig["doll"] = json.dumps(meta)
+    # on the body, not the rig: optimisers flatten the rig node away
+    body["doll"] = json.dumps(meta)
     os.makedirs(OUT_DIR, exist_ok=True)
     export(rig, [body, eyes], "body")
     for ob in parts:
