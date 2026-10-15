@@ -62,10 +62,7 @@ export function Cocktails({ items }: { items: readonly Cocktail[] }) {
   }, [items]);
   return (
     <>
-      <instancedMesh
-        ref={glass}
-        args={[GLASS_GEO, GLASS, items.length]}
-      />
+      <instancedMesh ref={glass} args={[GLASS_GEO, GLASS, items.length]} />
       <instancedMesh ref={drink} args={[DRINK_GEO, undefined, items.length]}>
         <meshBasicMaterial toneMapped={false} />
       </instancedMesh>

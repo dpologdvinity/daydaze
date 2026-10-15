@@ -2,10 +2,7 @@ import { useMemo } from "react";
 import * as THREE from "three";
 import { Batch } from "../shared/batch.ts";
 import { canvasTex, GOLD, LACQUER } from "../shared/materials.ts";
-import {
-  NEON_PINK,
-  NEON_VIOLET,
-} from "./materials.ts";
+import { NEON_PINK, NEON_VIOLET } from "./materials.ts";
 import { inFrame, type Frame } from "./place.ts";
 import { ROOM } from "./layout.ts";
 

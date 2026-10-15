@@ -36,7 +36,11 @@ export function Plants() {
         const a = (i / 12) * Math.PI * 2 + (x + z) * 0.7;
         const h = 0.55 + ((i * 37) % 7) * 0.05;
         at.add(frond, FOLIAGE, {
-          position: [Math.cos(a) * 0.12 * s, (0.5 + h * 0.4) * s, Math.sin(a) * 0.12 * s],
+          position: [
+            Math.cos(a) * 0.12 * s,
+            (0.5 + h * 0.4) * s,
+            Math.sin(a) * 0.12 * s,
+          ],
           rotation: [Math.sin(a) * 0.6, a, Math.cos(a) * 0.6],
           scale: [0.1 * s, h * s, 0.04 * s],
         });

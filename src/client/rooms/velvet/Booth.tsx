@@ -110,8 +110,16 @@ export function Booth() {
       <primitive object={parts} />
       <Cocktails
         items={[
-          { position: [BOOTH.x - 0.1, BOOTH.y + 0.75, BOOTH.z + 0.18], color: "#ff2f4a", scale: 0.85 },
-          { position: [BOOTH.x - 0.15, BOOTH.y + 0.75, BOOTH.z - 0.22], color: "#ffc21f", scale: 0.85 },
+          {
+            position: [BOOTH.x - 0.1, BOOTH.y + 0.75, BOOTH.z + 0.18],
+            color: "#ff2f4a",
+            scale: 0.85,
+          },
+          {
+            position: [BOOTH.x - 0.15, BOOTH.y + 0.75, BOOTH.z - 0.22],
+            color: "#ffc21f",
+            scale: 0.85,
+          },
         ]}
       />
     </group>

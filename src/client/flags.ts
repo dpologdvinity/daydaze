@@ -17,7 +17,7 @@ export type Flags = {
   slide: number | null;
 };
 
-const VIEW_IDS: readonly View[] = ["room", "full", "face"];
+const VIEW_IDS: readonly View[] = ["room", "full", "face", "detail"];
 
 export function readFlags(search: string): Flags {
   const q = new URLSearchParams(search);

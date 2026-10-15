@@ -4,7 +4,13 @@ import { Batch, type Pose } from "../shared/batch.ts";
 const UP = new THREE.Vector3(0, 1, 0);
 
 /** Where a wall or prop sits in the room. Pieces are authored in its local space. */
-export type Frame = { x?: number; y?: number; z?: number; ry?: number; s?: number };
+export type Frame = {
+  x?: number;
+  y?: number;
+  z?: number;
+  ry?: number;
+  s?: number;
+};
 
 /** Adds pieces authored in a frame's local space, baked to room space. */
 export function inFrame(batch: Batch, frame: Frame) {
@@ -19,14 +25,20 @@ export function inFrame(batch: Batch, frame: Frame) {
       material: THREE.Material,
       pose: Pose = {},
     ) {
-      const g = geometry.clone().applyMatrix4(base.clone().multiply(local(pose)));
+      const g = geometry
+        .clone()
+        .applyMatrix4(base.clone().multiply(local(pose)));
       batch.add(g, material);
       return this;
     },
   };
 }
 
-function local({ position = [0, 0, 0], rotation = [0, 0, 0], scale = 1 }: Pose) {
+function local({
+  position = [0, 0, 0],
+  rotation = [0, 0, 0],
+  scale = 1,
+}: Pose) {
   const s =
     typeof scale === "number"
       ? new THREE.Vector3(scale, scale, scale)

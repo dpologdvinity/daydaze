@@ -39,7 +39,7 @@ const FROND_LEN = 1.4;
 const PALMS: { x: number; z: number; s: number }[] = [
   { x: -5.1, z: -5.1, s: 1 },
   { x: -5.0, z: 3.0, s: 0.85 },
-  { x: 5.0, z: 4.6, s: 1.1 },
+  { x: 5.4, z: 5.4, s: 0.7 },
   { x: 5.1, z: -4.9, s: 0.9 },
 ];
 

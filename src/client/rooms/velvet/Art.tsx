@@ -53,8 +53,20 @@ const PICTURES: {
   h: number;
   uv: number;
 }[] = [
-  { frame: { x: ROOM, z: 0, ry: -Math.PI / 2 }, x: -2.6, w: 1.5, h: 1.1, uv: 0 },
-  { frame: { x: -ROOM, z: 0, ry: Math.PI / 2 }, x: -2.0, w: 1.2, h: 1.2, uv: 0.5 },
+  {
+    frame: { x: ROOM, z: 0, ry: -Math.PI / 2 },
+    x: -2.6,
+    w: 1.5,
+    h: 1.1,
+    uv: 0,
+  },
+  {
+    frame: { x: -ROOM, z: 0, ry: Math.PI / 2 },
+    x: -2.0,
+    w: 1.2,
+    h: 1.2,
+    uv: 0.5,
+  },
 ];
 
 export function Art() {

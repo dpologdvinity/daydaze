@@ -2,18 +2,8 @@ import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { lathe } from "../../avatar/dollGeometry.ts";
 import { Batch } from "../shared/batch.ts";
-import {
-  canvasTex,
-  GOLD,
-  gradientTex,
-  LACQUER,
-} from "../shared/materials.ts";
-import {
-  MIRROR,
-  NEON_AMBER,
-  NEON_PINK,
-  VELVET,
-} from "./materials.ts";
+import { canvasTex, GOLD, gradientTex, LACQUER } from "../shared/materials.ts";
+import { MIRROR, NEON_AMBER, NEON_PINK, VELVET } from "./materials.ts";
 import { Cocktails } from "./Props.tsx";
 
 const CX = -0.8;
@@ -87,7 +77,14 @@ const PALETTE = [
   "#ff7a1f",
 ];
 
-type Bottle = { shape: number; x: number; y: number; z: number; s: number; c: THREE.Color };
+type Bottle = {
+  shape: number;
+  x: number;
+  y: number;
+  z: number;
+  s: number;
+  c: THREE.Color;
+};
 
 // Bottles on every shelf: shape and colour cycle so neighbours differ.
 function bottlesFor(x0: number, x1: number, per = 16): Bottle[] {
@@ -100,9 +97,9 @@ function bottlesFor(x0: number, x1: number, per = 16): Bottle[] {
         y,
         z: -5.84 + (k % 2) * 0.06,
         s: 0.75 + ((k * 7 + row * 3) % 5) * 0.09,
-        c: new THREE.Color(PALETTE[(k * 3 + row * 2) % PALETTE.length]).multiplyScalar(
-          1.35,
-        ),
+        c: new THREE.Color(
+          PALETTE[(k * 3 + row * 2) % PALETTE.length],
+        ).multiplyScalar(1.35),
       });
     }
   });

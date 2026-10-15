@@ -37,7 +37,10 @@ const glows = new Map<string, THREE.MeshBasicMaterial>();
 function glow(hex: string) {
   let m = glows.get(hex);
   if (!m) {
-    m = new THREE.MeshBasicMaterial({ color: hdr(hex), toneMapped: false });
+    m = new THREE.MeshBasicMaterial({
+      color: hdr(hex, 2.5),
+      toneMapped: false,
+    });
     glows.set(hex, m);
   }
   return m;

@@ -4,7 +4,12 @@ import * as THREE from "three";
 import { useReducedMotion } from "../../motion.ts";
 import { Batch } from "../shared/batch.ts";
 import { canvasTex, GOLD } from "../shared/materials.ts";
-import { NEON_AMBER, NEON_WARM, PLUM_VELVET, ROSE_VELVET } from "./materials.ts";
+import {
+  NEON_AMBER,
+  NEON_WARM,
+  PLUM_VELVET,
+  ROSE_VELVET,
+} from "./materials.ts";
 import { inFrame } from "./place.ts";
 
 export function LionCrest(props: { position: [number, number, number] }) {
@@ -151,7 +156,10 @@ const CURTAIN = (() => {
 export function Drapes({
   items,
 }: {
-  items: readonly { position: [number, number, number]; fabric: THREE.Material }[];
+  items: readonly {
+    position: [number, number, number];
+    fabric: THREE.Material;
+  }[];
 }) {
   const parts = useMemo(() => {
     const batch = new Batch();

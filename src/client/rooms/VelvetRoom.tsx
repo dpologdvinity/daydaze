@@ -6,7 +6,9 @@ import { hotspotsIn, type MinigameId } from "../../game/hotspots.ts";
 import { DEFAULT_LOOK, NPC_LOOKS } from "../../game/look.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import { Couple } from "../avatar/Couple.tsx";
+import { Doll } from "../avatar/Doll.tsx";
 import { useReducedMotion } from "../motion.ts";
+import { useQuality } from "../world/quality.ts";
 import { Beams, type Beam } from "./shared/Beams.tsx";
 import { CrowdFigure } from "./shared/CrowdFigure.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
@@ -31,9 +33,18 @@ const BEAMS: readonly Beam[] = [
 ];
 
 const DRAPES = [
-  { position: [-5.85, 0, -3.4] as [number, number, number], fabric: PLUM_VELVET },
-  { position: [-5.85, 0, 0.4] as [number, number, number], fabric: PLUM_VELVET },
-  { position: [-5.85, 0, 3.6] as [number, number, number], fabric: ROSE_VELVET },
+  {
+    position: [-5.85, 0, -3.4] as [number, number, number],
+    fabric: PLUM_VELVET,
+  },
+  {
+    position: [-5.85, 0, 0.4] as [number, number, number],
+    fabric: PLUM_VELVET,
+  },
+  {
+    position: [-5.85, 0, 3.6] as [number, number, number],
+    fabric: ROSE_VELVET,
+  },
 ];
 
 // Four lights in total: one fill, three coloured points.
@@ -177,6 +188,7 @@ export function VelvetRoom({
   onGame: (game: MinigameId) => void;
 }) {
   const calm = useReducedMotion();
+  const quality = useQuality();
   return (
     <>
       <color attach="background" args={["#07020b"]} />
@@ -211,13 +223,26 @@ export function VelvetRoom({
       <Booth />
       <Plants />
       <DanceFloor />
-      <Couple
-        a={{ ...DEFAULT_LOOK, hairStyle: "buns", outfit: "mini" }}
-        b={{ ...DEFAULT_LOOK, skin: "#94603f", outfit: "fur" }}
-        centre={[DANCE.x, DANCE.z]}
-        facing={0}
-        move="slow-dance"
-      />
+      {quality === "low" ? (
+        // A full doll costs about 65 calls and 90k triangles: one dancer on
+        // the low tier, the slow-dance couple on the high tier.
+        <Doll
+          look={{ ...DEFAULT_LOOK, hairStyle: "buns", outfit: "mini" }}
+          mood="dance"
+          dance="body-roll"
+          seed={1}
+          position={[DANCE.x, 0, DANCE.z]}
+          rotation-y={0}
+        />
+      ) : (
+        <Couple
+          a={{ ...DEFAULT_LOOK, hairStyle: "buns", outfit: "mini" }}
+          b={{ ...DEFAULT_LOOK, skin: "#94603f", outfit: "fur" }}
+          centre={[DANCE.x, DANCE.z]}
+          facing={0}
+          move="slow-dance"
+        />
+      )}
       <DiscoBall />
       <Chandelier position={[2.2, 3.5, -1.0]} />
       <Palms />
