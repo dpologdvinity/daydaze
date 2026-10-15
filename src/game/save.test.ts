@@ -28,7 +28,7 @@ test("createDefaultSave uses the default look and auto quality", () => {
     name: "Mango Fan",
     look: DEFAULT_LOOK,
     swim: DEFAULT_SWIM,
-    settings: { quality: "auto", muted: false },
+    settings: { quality: "auto", muted: false, effects: "full" },
   });
 });
 
@@ -43,7 +43,7 @@ test("a save round-trips through serializeSave and loadSave", () => {
     name: "Velvet_Kat-99",
     look: customLook,
     swim: { style: "one-piece", color: "#ff2f9a" },
-    settings: { quality: "low", muted: true },
+    settings: { quality: "low", muted: true, effects: "off" },
   };
   assert.deepEqual(loadSave(serializeSave(save), "Fallback"), save);
 });
@@ -60,7 +60,7 @@ test("a save from before the swimsuit slot still loads", () => {
     name: "Velvet_Kat-99",
     look: customLook,
     swim: DEFAULT_SWIM,
-    settings: { quality: "low", muted: true },
+    settings: { quality: "low", muted: true, effects: "full" },
   });
 });
 
@@ -88,14 +88,14 @@ test("loadSave keeps a valid name when the look is bad", () => {
     version: 1,
     name: "Kept Name",
     look: { ...customLook, hairStyle: "mohawk" },
-    settings: { quality: "high", muted: true },
+    settings: { quality: "high", muted: true, effects: "full" },
   });
   assert.deepEqual(loadSave(raw, "Fallback"), {
     version: 1,
     name: "Kept Name",
     look: DEFAULT_LOOK,
     swim: DEFAULT_SWIM,
-    settings: { quality: "high", muted: true },
+    settings: { quality: "high", muted: true, effects: "full" },
   });
 });
 
@@ -110,7 +110,7 @@ test("loadSave keeps a valid look when the name is bad", () => {
     name: "Fallback",
     look: customLook,
     swim: DEFAULT_SWIM,
-    settings: { quality: "auto", muted: false },
+    settings: { quality: "auto", muted: false, effects: "full" },
   });
 });
 
@@ -124,6 +124,7 @@ test("loadSave repairs settings field by field", () => {
   assert.deepEqual(loadSave(raw, "Fallback").settings, {
     quality: "auto",
     muted: true,
+    effects: "full",
   });
   const badMuted = JSON.stringify({
     version: 1,
@@ -134,7 +135,39 @@ test("loadSave repairs settings field by field", () => {
   assert.deepEqual(loadSave(badMuted, "Fallback").settings, {
     quality: "low",
     muted: false,
+    effects: "full",
   });
+});
+
+test("a save from before the effects setting loads with full effects", () => {
+  const old = JSON.stringify({
+    version: 1,
+    name: "Kept Name",
+    look: customLook,
+    settings: { quality: "low", muted: true },
+  });
+  assert.equal(loadSave(old, "Fallback").settings.effects, "full");
+});
+
+test("loadSave repairs the effects setting without touching the rest", () => {
+  const raw = JSON.stringify({
+    version: 1,
+    name: "Kept Name",
+    look: customLook,
+    settings: { quality: "low", muted: true, effects: "loud" },
+  });
+  assert.deepEqual(loadSave(raw, "Fallback").settings, {
+    quality: "low",
+    muted: true,
+    effects: "full",
+  });
+  const low = JSON.stringify({
+    version: 1,
+    name: "Kept Name",
+    look: customLook,
+    settings: { quality: "low", muted: true, effects: "low" },
+  });
+  assert.equal(loadSave(low, "Fallback").settings.effects, "low");
 });
 
 test("loadSave salvages valid fields from a wrong version", () => {
