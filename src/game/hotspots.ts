@@ -1,0 +1,43 @@
+// Minigame hotspots: floor spots in a room that open a 2D minigame over the
+// world. Tapping the spot and the keyboard button both launch the same game.
+import type { RoomId } from "./rooms.ts";
+import type { Vec2 } from "./walk.ts";
+
+export const MINIGAME_IDS = ["bassline", "last-call"] as const;
+
+export type MinigameId = (typeof MINIGAME_IDS)[number];
+
+export type Hotspot = {
+  id: string;
+  room: RoomId;
+  game: MinigameId;
+  /** The keyboard button's label and the spot's tooltip. */
+  label: string;
+  position: Vec2;
+  radius: number;
+};
+
+export const HOTSPOTS: readonly Hotspot[] = [
+  {
+    // In front of the DJ booth, on the dance floor's back edge.
+    id: "pulse-decks",
+    room: "pulse",
+    game: "bassline",
+    label: "Play Bassline at the DJ booth",
+    position: [0, -2.8],
+    radius: 1,
+  },
+  {
+    // In front of the bar counter, under the velvet arch.
+    id: "velvet-bar",
+    room: "velvet-room",
+    game: "last-call",
+    label: "Play Last Call at the bar",
+    position: [-1, -3.1],
+    radius: 0.9,
+  },
+];
+
+export function hotspotsIn(room: RoomId): readonly Hotspot[] {
+  return HOTSPOTS.filter((spot) => spot.room === room);
+}

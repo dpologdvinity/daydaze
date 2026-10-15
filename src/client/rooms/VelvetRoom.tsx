@@ -2,6 +2,7 @@ import { Environment, Lightformer, Sparkles } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
+import { hotspotsIn, type MinigameId } from "../../game/hotspots.ts";
 import { DEFAULT_LOOK, NPC_LOOKS } from "../../game/look.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import { Couple } from "../avatar/Couple.tsx";
@@ -15,6 +16,7 @@ import { BOOTH, DANCE, ROOM } from "./velvet/layout.ts";
 import { Walls } from "./velvet/Walls.tsx";
 import { Beams, type Beam } from "./shared/Beams.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
+import { GamePad } from "./shared/GamePad.tsx";
 import { DECO, RingNeon, Neon, NeonText, SCRIPT } from "./shared/Neon.tsx";
 import { Palm } from "./shared/Palm.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
@@ -169,7 +171,13 @@ function Regulars() {
   );
 }
 
-export function VelvetRoom({ onPick }: { onPick: PickHandler }) {
+export function VelvetRoom({
+  onPick,
+  onGame,
+}: {
+  onPick: PickHandler;
+  onGame: (game: MinigameId) => void;
+}) {
   const calm = useReducedMotion();
   return (
     <>
@@ -228,6 +236,9 @@ export function VelvetRoom({ onPick }: { onPick: PickHandler }) {
         opacity={0.7}
       />
       <Regulars />
+      {hotspotsIn("velvet-room").map((spot) => (
+        <GamePad key={spot.id} spot={spot} onGame={onGame} />
+      ))}
     </>
   );
 }

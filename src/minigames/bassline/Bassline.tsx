@@ -221,7 +221,7 @@ export function Bassline({
   return (
     <Dialog
       title="Bassline"
-      subtitle="The DJ booth in the Velvet Room"
+      subtitle="The DJ booth at Pulse"
       onClose={close}
       className={`md ${reducedMotion ? "md-calm" : ""}`}
     >

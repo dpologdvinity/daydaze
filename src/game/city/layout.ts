@@ -175,6 +175,25 @@ const VELVET_DOOR: Door = {
   targetSpawn: { position: [0.9, 1.6], yaw: 0.25 },
 };
 
+// Nightlife Row's south forecourt: the Pulse door opens onto the sidewalk.
+const PULSE_DOOR: Door = {
+  position: [113, 12.5],
+  radius: 2,
+  label: "Into Pulse",
+  target: "pulse",
+  // Pulse's own arrival point; see rooms.ts
+  targetSpawn: { position: [0, 2.6], yaw: Math.PI },
+};
+
+const VIOLET_HOUR_DOOR: Door = {
+  position: [130, -12.5],
+  radius: 2,
+  label: "Into The Violet Hour",
+  target: "violet-hour",
+  // The Violet Hour's own arrival point; see rooms.ts
+  targetSpawn: { position: [0, 2.6], yaw: Math.PI },
+};
+
 const CARNIVAL_DOOR: Door = {
   position: [185, -12.5],
   radius: 2,
@@ -326,13 +345,14 @@ export const BUILDINGS: readonly Building[] = [
   },
   // Nightlife Row, south of the avenue
   {
-    id: "prism-club",
+    id: "pulse",
     neighborhood: "nightlife-row",
     footprint: rect(100, 14, 126, 40),
     height: 22,
     style: "club",
     queue: true,
-    sign: { text: "PRISM", color: "#ff4fb3" },
+    sign: { text: "PULSE", color: "#ff4fb3" },
+    door: PULSE_DOOR,
   },
   {
     id: "sugar-rush-club",
@@ -368,6 +388,16 @@ export const BUILDINGS: readonly Building[] = [
     style: "velvet",
     sign: { text: "THE VELVET ROOM", color: "#f6c46a" },
     door: VELVET_DOOR,
+  },
+  {
+    // A narrow frontage in the gap between the Velvet Room and the Back Room.
+    id: "violet-hour",
+    neighborhood: "nightlife-row",
+    footprint: rect(126, -40, 134, -14),
+    height: 16,
+    style: "club",
+    sign: { text: "VIOLET HOUR", color: "#b06bff" },
+    door: VIOLET_HOUR_DOOR,
   },
   {
     id: "speakeasy",

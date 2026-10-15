@@ -14,6 +14,24 @@ const SHOTS: {
   /** Drives the scene before the capture, e.g. to start a race. */
   act?: (page: Page) => Promise<void>;
 }[] = [
+  { name: "club-pulse", query: "room=pulse" },
+  {
+    name: "club-pulse-mobile",
+    query: "room=pulse",
+    viewport: { width: 390, height: 844 },
+    touch: true,
+  },
+  { name: "lesbian-bar", query: "room=violet-hour" },
+  {
+    name: "minigame-from-world",
+    query: "room=velvet-room",
+    act: async (page) => {
+      await page
+        .getByRole("button", { name: "Play Last Call at the bar" })
+        .click();
+      await expect(page.getByRole("dialog")).toBeVisible({ timeout: 120_000 });
+    },
+  },
   { name: "velvet-room", query: "room=velvet-room" },
   { name: "velvet-room-full-look", query: "room=velvet-room&view=full" },
   { name: "plaza", query: "room=plaza" },

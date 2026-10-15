@@ -2,6 +2,96 @@ import type { RoleBank } from "./types.ts";
 
 export const bouncerBank: RoleBank = {
   "greeting-first": [
+    // The Violet Hour: the sapphic bar on Nightlife Row
+    {
+      text: "Welcome to the Violet Hour, {name}. Violet light on, door open, you're in the right place.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Come on in to the Violet Hour. Everyone's welcome, and the pool table's free for the first game.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Hi, love. Sunset flag's up, door's open, the Violet Hour is glad you came.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Welcome in! The regulars' corner has a seat, and it's a good one.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "The Violet Hour is open to anyone who's kind. Looks like that's you.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Hey! Come in out of the street. The neon's warm and the pool table's ready.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "The Violet Hour is glad you walked in. Door's open, go on in.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Welcome! Tonight the violet light is perfect for you. Find a seat and relax.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "In you come. Everybody gets a warm welcome here, promise.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Pool table's free, the music's soft, and the door's wide open. Welcome, friend.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Hi! I'm the one who checks the list, and you're definitely on mine.",
+      when: { venue: "violet-hour" },
+    },
+    // Pulse: the main dance club on Nightlife Row
+    {
+      text: "Pulse is open, {name}. The floor lights up the second you step in. Go on.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Welcome to Pulse. Coats go to the check, hearts go on the dance floor.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Door's open at Pulse. Keep the glow, leave the bad mood at the rope.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Name on the list or a big smile at the door? Either gets you into Pulse tonight.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Step inside Pulse, the LED floor is already changing colors for you.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Pulse on a night like this? Good call. Drinks at the bar, dancing everywhere else.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "First Pulse night? Watch the stairs, they glow, and so will you.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Walk in, wave at the DJ, and find the brightest spot on the floor. That's Pulse.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Pulse doesn't do slow entrances. Skip the staring and get in there.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Welcome in. The bass is loud, the lights are louder, and the staff is friendly.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "I'm the one at the Pulse door. Smile, say hi, then go turn the room up.",
+      when: { venue: "pulse" },
+    },
     "Evening. Name on the list, or are you here to vibe?",
     "Nod's yours, go on in. Coats are free at the check.",
     "Hey, first time? Stay close to the bar and you'll be fine.",
@@ -18,6 +108,96 @@ export const bouncerBank: RoleBank = {
     },
   ],
   tapped: [
+    // The Violet Hour: the sapphic bar on Nightlife Row
+    {
+      text: "Yes, love? I'm at the door of the Violet Hour, and I'm listening.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "You need the pool table, the bar, or a seat in the corner? Tell me which.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Hi! Whatever it is, the Violet Hour is glad you asked. What's up?",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Okay, you got my attention. Sunset flag's behind me, I'm all yours for a minute.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Need a seat in the regulars' corner? I'll point you right to it.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Happy to help. Ask me anything that doesn't involve a line-cutting plan.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "You tapped the door. Respect. What can I do for you?",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Pool shark or first timer? Either way, you're welcome here. Talk to me.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Hi, sweetheart. I've got a sign-up sheet and a soft spot for good questions.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Looking for the restroom or a little advice? I've got both, pick one.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Whatever you need, love, I'm listening. The violet light looks good on you.",
+      when: { venue: "violet-hour" },
+    },
+    // Pulse: the main dance club on Nightlife Row
+    {
+      text: "Pulse door's right here, babe. What do you need, one minute of my time?",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Yep, I'm the big voice at the door. Talk to me, I can hear you over the bass.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Need the coat check or the bar? Tell me which glowing thing you're after.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "You got my attention, and the LED floor's got everybody else's. What's up?",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "I'm holding the rope and the rhythm. Quick question or quick hello?",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Want in faster? Be nice to the people in line, then ask me again.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "You tapped the bouncer. Brave move. What's the question, friend?",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "One hand on the door, one on the clipboard. Speak up, I'm listening.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Pulse rules: be kind, dance hard, and don't climb the speakers. Got a question?",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Hi! Yes, the bouncer is listening. Keep it fun and keep it short.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Okay, cute, you need something from the door? Lay it on me.",
+      when: { venue: "pulse" },
+    },
     "Yeah? I'm listening, but make it quick.",
     "Hey, I'm working. Need something, or are you just saying hi?",
     "Eyes up here, babe. What's up?",

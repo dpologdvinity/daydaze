@@ -2,6 +2,51 @@ import type { RoleBank } from "./types.ts";
 
 export const coatCheckBank: RoleBank = {
   "greeting-first": [
+    // Pulse: the main dance club on Nightlife Row
+    {
+      text: "Pulse coat check, {name}. Hand it over, the hangers here glow in the dark.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Welcome to Pulse! Coat check is by the door, and I'll find you a hook.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Jacket off, glitter on. Coat check at Pulse is free, babe.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Hi! Pulse coats go on these hangers, and your ticket goes in your pocket.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Coat check here, friend. The dance floor's bright, so leave the heavy stuff with me.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Welcome in. I'll tag your coat so it doesn't get lost in the sparkle pile.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "New face at Pulse? Pop your jacket here and get on the floor.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Hand me the coat, I'll keep it warm and safe until you're sweaty and happy.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Hey! Coat check is free and we have hooks for days. Anything else to leave here?",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Welcome to Pulse. Ticket number's on the tag. Don't lose it or I'll be sad.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Hi, dancer. Your coat is going somewhere cozy while you go glow on the floor.",
+      when: { venue: "pulse" },
+    },
     "Hi! Hand me the coat, I'll keep it safe and warm.",
     "Coat check is free. Ticket's right here, don't lose it.",
     "Welcome in! Anything you want to leave behind? I'll hold it.",

@@ -3,6 +3,8 @@ import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
   | "velvet-room"
+  | "pulse"
+  | "violet-hour"
   | "plaza"
   | "amusement-park"
   | "water-park"
@@ -49,6 +51,25 @@ const VELVET_ROOM_FLOOR: readonly Vec2[] = [
   [5.3, 2.4],
   [5.3, 5.5],
   [-5.3, 5.5],
+];
+
+// Pulse: a 10.8 m x 9.1 m dance club. The DJ booth and the podiums stand
+// behind the back edge at z = -3.5; the bar runs down the left wall.
+const PULSE_FLOOR: readonly Vec2[] = [
+  [-5.4, -3.5],
+  [5.4, -3.5],
+  [5.4, 5.6],
+  [-5.4, 5.6],
+];
+
+// The Violet Hour: an 8.6 m x 8.6 m bar. The bar counter runs along the back
+// wall, the pool table sits past the right edge and the regulars' corner is
+// front left.
+const VIOLET_HOUR_FLOOR: readonly Vec2[] = [
+  [-5.2, -3.2],
+  [3.4, -3.2],
+  [3.4, 5.4],
+  [-5.2, 5.4],
 ];
 
 // Daydaze Plaza: a 24 m x 14 m night street. Storefronts line the back at
@@ -125,6 +146,40 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Back to the Plaza",
         target: "plaza",
         targetSpawn: { position: [0, -4.8], yaw: 0 },
+      },
+    ],
+  },
+  pulse: {
+    id: "pulse",
+    name: "Pulse",
+    walkable: PULSE_FLOOR,
+    spawn: { position: [0, 2.6], yaw: Math.PI },
+    portals: [
+      {
+        // The street door the player came in through, back to the sidewalk.
+        id: "pulse-to-city",
+        position: [0, 5.0],
+        radius: 0.9,
+        label: "Out to the street",
+        target: "city",
+        targetSpawn: { position: [113, 9], yaw: Math.PI },
+      },
+    ],
+  },
+  "violet-hour": {
+    id: "violet-hour",
+    name: "The Violet Hour",
+    walkable: VIOLET_HOUR_FLOOR,
+    spawn: { position: [0, 2.6], yaw: Math.PI },
+    portals: [
+      {
+        // The street door the player came in through, back to the sidewalk.
+        id: "violet-hour-to-city",
+        position: [0, 4.9],
+        radius: 0.9,
+        label: "Out to the street",
+        target: "city",
+        targetSpawn: { position: [130, -9], yaw: 0 },
       },
     ],
   },

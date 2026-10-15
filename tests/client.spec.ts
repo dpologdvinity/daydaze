@@ -275,3 +275,59 @@ test.describe("with reduced motion", () => {
     await expect(canvas).toHaveAttribute("data-sway", "0");
   });
 });
+
+test("the debug buttons take the player into Pulse", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&debug=1`);
+  await page.getByRole("button", { name: "Go to Pulse" }).click();
+  await expect(roomTitle(page)).toHaveText("Pulse");
+  expect(errors).toEqual([]);
+});
+
+test("the debug buttons take the player into The Violet Hour", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&debug=1`);
+  await page.getByRole("button", { name: "Go to Violet Hour" }).click();
+  await expect(roomTitle(page)).toHaveText("The Violet Hour");
+  expect(errors).toEqual([]);
+});
+
+test("Pulse renders within the low-tier draw call budget", async ({ page }) => {
+  await page.goto(`${STILL}&room=pulse`);
+  const canvas = canvasOf(page);
+  // Pulse loads lazily, and the frame counter stops after ten frames, so wait
+  // for the club's frame: the player's doll alone draws well under 100 calls.
+  await expect
+    .poll(async () => Number(await canvas.getAttribute("data-calls")))
+    .toBeGreaterThan(100);
+  const calls = Number(await canvas.getAttribute("data-calls"));
+  expect(calls).toBeLessThan(250);
+});
+
+test("Bassline opens from the Pulse DJ booth and closes back to the world", async ({
+  page,
+}) => {
+  await page.goto(`${STILL}&room=pulse`);
+  await page
+    .getByRole("button", { name: "Play Bassline at the DJ booth" })
+    .click();
+  const dialog = page.getByRole("dialog", { name: "Bassline" });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole("button", { name: "Close Bassline" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(roomTitle(page)).toHaveText("Pulse");
+});
+
+test("Last Call opens from the Velvet Room bar and closes back to the world", async ({
+  page,
+}) => {
+  await page.goto(STILL);
+  await page.getByRole("button", { name: "Play Last Call at the bar" }).click();
+  const dialog = page.getByRole("dialog", { name: "Last Call" });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole("button", { name: "Close Last Call" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(roomTitle(page)).toHaveText("The Velvet Room");
+});
