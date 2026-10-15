@@ -127,6 +127,8 @@
 /* ---------------------------------------------------------- whack-a-mole */
 
 .mw-holes {
+  width: min(100%, 460px, 62vh);
+  justify-self: center;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 14px;
@@ -140,7 +142,7 @@
 
 .mw-hole {
   position: relative;
-  aspect-ratio: 1.25;
+  aspect-ratio: 1.5;
   border: 0;
   border-radius: 50% / 40%;
   background: radial-gradient(ellipse at 50% 70%, #0b0508 55%, #2b1410 70%);
@@ -255,6 +257,8 @@
 /* --------------------------------------------------------------- ring toss */
 
 .mw-ring-play {
+  width: min(100%, 440px, 60vh);
+  justify-self: center;
   display: grid;
   grid-template-columns: 1fr 40px;
   gap: 14px;
@@ -323,8 +327,6 @@
 
 .mw-meters {
   display: grid;
-  grid-template-rows: 24px 1fr;
-  gap: 10px;
 }
 
 .mw-meter {
