@@ -10,6 +10,9 @@ export const HAIR_STYLES = [
   { id: "waves", label: "Glossy waves" },
   { id: "ponytail", label: "Snatched pony" },
   { id: "buns", label: "Space buns" },
+  { id: "bob", label: "Sleek bob" },
+  { id: "braids", label: "Knotless braids" },
+  { id: "afro", label: "Afro puff" },
 ] as const;
 
 export const HAIR_COLORS = [

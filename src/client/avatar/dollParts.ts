@@ -1,9 +1,46 @@
 import * as THREE from "three";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { makeCanvas } from "../canvas.ts";
 import { lathe, lumpy } from "./dollGeometry.ts";
-import { makeOutline } from "./toon.ts";
+import { makeOutline, makeToon } from "./toon.ts";
 
 // ------------------------------------------------------------ shared geometry
+
+// Unit-high hand, mirrored per arm by a negative x scale: palm, thumb and four
+// fingers as one mesh. Fingertips sit at about y = -0.9.
+function makeHand() {
+  const parts: THREE.BufferGeometry[] = [];
+  const palm = new THREE.SphereGeometry(1, 16, 12);
+  palm.scale(0.85, 0.74, 0.7);
+  palm.translate(0, 0.3, 0);
+  parts.push(palm);
+  for (const x of [-0.56, -0.19, 0.19, 0.56]) {
+    const finger = new THREE.CapsuleGeometry(0.17, 0.42, 4, 8);
+    finger.translate(x, -0.42, 0);
+    parts.push(finger);
+  }
+  const thumb = new THREE.CapsuleGeometry(0.18, 0.3, 4, 8);
+  thumb.rotateZ(-0.7);
+  thumb.translate(0.82, 0.12, 0.12);
+  parts.push(thumb);
+  const merged = mergeGeometries(parts);
+  if (!merged) throw new Error("Hand parts have mismatched attributes.");
+  return merged;
+}
+
+// Glossy nail caps on the fingertips, a second mesh in its own material.
+function makeNails() {
+  const parts: THREE.BufferGeometry[] = [];
+  for (const x of [-0.56, -0.19, 0.19, 0.56]) {
+    const nail = new THREE.SphereGeometry(0.12, 8, 6);
+    nail.scale(1, 0.62, 0.45);
+    nail.translate(x, -0.86, 0.12);
+    parts.push(nail);
+  }
+  const merged = mergeGeometries(parts);
+  if (!merged) throw new Error("Nail parts have mismatched attributes.");
+  return merged;
+}
 
 const TORSO: [number, number][] = [
   [0.655, 0],
@@ -77,7 +114,8 @@ export const G = {
     ],
     16,
   ),
-  hand: new THREE.SphereGeometry(1, 16, 12),
+  hand: makeHand(),
+  nails: makeNails(),
   thigh: lathe(
     [
       [-0.345, 0],
@@ -220,8 +258,8 @@ export const G = {
     6,
   ),
   // shoes
-  sole: new THREE.BoxGeometry(0.09, 0.055, 0.15, 1, 1, 1),
-  heel: new THREE.CylinderGeometry(0.03, 0.026, 0.1, 14),
+  sole: new THREE.BoxGeometry(0.1, 0.07, 0.18, 1, 1, 1),
+  heel: new THREE.CylinderGeometry(0.028, 0.024, 0.12, 14),
   upper: new THREE.SphereGeometry(1, 18, 12),
   strapRing: new THREE.TorusGeometry(0.032, 0.007, 8, 20),
   hoop: new THREE.TorusGeometry(0.036, 0.0045, 8, 32),
@@ -278,6 +316,12 @@ export const GLASS = new THREE.MeshStandardMaterial({
   roughness: 0.05,
   transparent: true,
   opacity: 0.35,
+});
+export const NAIL = makeToon({
+  color: "#ff5fae",
+  rim: "#ffffff",
+  rimStrength: 0.35,
+  gloss: 0.85,
 });
 export const DRINK_MATERIAL = new THREE.MeshBasicMaterial({
   color: new THREE.Color("#ff9a1f").multiplyScalar(1.6),

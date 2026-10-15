@@ -33,8 +33,8 @@ export function headPoint(a: number, y: number, pad = 0) {
   );
 }
 
-function sculptHead() {
-  const g = new THREE.SphereGeometry(1, 72, 56);
+function sculptHead(widthSegs: number, heightSegs: number) {
+  const g = new THREE.SphereGeometry(1, widthSegs, heightSegs);
   g.deleteAttribute("uv");
   g.deleteAttribute("normal");
   const p = g.attributes.position;
@@ -54,10 +54,11 @@ function sculptHead() {
   return merged;
 }
 
-const headBase = sculptHead();
+const headBase = sculptHead(72, 56);
+// The far LOD head: the same silhouette on a coarse sphere, still face-UV'd.
+const headBaseFar = sculptHead(24, 18);
 
-export const headGeometry = (() => {
-  const g = headBase.clone();
+function faceUv(g: THREE.BufferGeometry) {
   const p = g.attributes.position;
   const uv = new Float32Array(p.count * 2);
   for (let i = 0; i < p.count; i++) {
@@ -68,7 +69,10 @@ export const headGeometry = (() => {
   }
   g.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
   return g;
-})();
+}
+
+export const headGeometry = faceUv(headBase.clone());
+const headGeometryFar = faceUv(headBaseFar.clone());
 
 export const HEAD_TOP = (TY0 - 70) * S;
 export const HEAD_CHIN = -(762 - TY0) * S;
@@ -133,10 +137,16 @@ function withStrand(
 }
 
 /** Tapered, ribbon-flattened tube along `pts`. */
-function lock(pts: THREE.Vector3[], r0: number, r1: number, flat = 0.55) {
+function lock(
+  pts: THREE.Vector3[],
+  r0: number,
+  r1: number,
+  flat = 0.55,
+  k = 1,
+) {
   const curve = new THREE.CatmullRomCurve3(pts, false, "catmullrom", 0.5);
-  const segs = 44,
-    radial = 9;
+  const segs = Math.round(44 * k),
+    radial = Math.max(4, Math.round(9 * k));
   const g = new THREE.TubeGeometry(curve, segs, 1, radial, false);
   const p = g.attributes.position;
   const strand = new Float32Array(p.count * 3);
@@ -170,8 +180,8 @@ function cap(
   frontY: number,
   sideFall: number,
   flow: (p: THREE.Vector3, n: THREE.Vector3) => THREE.Vector3,
+  src: THREE.BufferGeometry,
 ) {
-  const src = headBase;
   const p = src.attributes.position;
   const pos = new Float32Array(p.count * 3);
   for (let i = 0; i < p.count; i++) {
@@ -223,6 +233,7 @@ function wavyLock(
   pad: number,
   r0: number,
   waveAmp = 0.03,
+  k = 1,
 ) {
   const pts = [
     headPoint(a, 0.27, pad - 0.02),
@@ -237,10 +248,10 @@ function wavyLock(
     const w = Math.sin(y * 13 + phase) * waveAmp * Math.min(1, i / 2);
     pts.push(fallPoint(a, y, R).addScaledVector(tan, w));
   }
-  return lock(pts, r0, 0.006);
+  return lock(pts, r0, 0.006, 0.55, k);
 }
 
-function curtainBang(s: number, phase: number) {
+function curtainBang(s: number, phase: number, k = 1) {
   const pts = [
     headPoint(s * 0.1, 0.29, 0.05),
     headPoint(s * 0.36, 0.245, 0.09),
@@ -258,10 +269,10 @@ function curtainBang(s: number, phase: number) {
       ),
     );
   });
-  return lock(pts, 0.055, 0.006, 0.5);
+  return lock(pts, 0.055, 0.006, 0.5, k);
 }
 
-function tendril(s: number, len: number) {
+function tendril(s: number, len: number, k = 1) {
   const pts = [
     headPoint(s * 0.95, 0.14, 0.06),
     headPoint(s * 1.15, 0.04, 0.12),
@@ -276,7 +287,7 @@ function tendril(s: number, len: number) {
       ),
     );
   }
-  return lock(pts, 0.016, 0.004, 0.8);
+  return lock(pts, 0.016, 0.004, 0.8, k);
 }
 
 function bun(s: number) {
@@ -307,6 +318,25 @@ function bun(s: number) {
   return parts;
 }
 
+// A plait: two strands wound round each other down the back.
+function plait(s: number, phase: number, twist: number, k = 1) {
+  const pts: THREE.Vector3[] = [headPoint(s * 0.9, 0.1, 0.1)];
+  for (let i = 1; i <= 8; i++) {
+    const y = 0.06 - i * 0.075;
+    pts.push(
+      new THREE.Vector3(
+        s * (0.2 + 0.02 * Math.sin(i * 1.4)) +
+          twist * Math.sin(i * 2.6 + phase),
+        y,
+        -0.06 - i * 0.02 + twist * Math.cos(i * 2.6 + phase),
+      ),
+    );
+  }
+  return lock(pts, 0.024, 0.014, 0.85, k);
+}
+
+const PUFF_C = new THREE.Vector3(0, 0.27, -0.03);
+
 export const PONY_ROOT = new THREE.Vector3(0, 0.255, -0.175);
 
 function strip(g: THREE.BufferGeometry) {
@@ -329,30 +359,47 @@ export type HairGeo = {
 };
 
 const hairCache = new Map<HairStyle, HairGeo>();
-export function hairGeometry(style: HairStyle): HairGeo {
-  const hit = hairCache.get(style);
-  if (hit) return hit;
+
+// Far LOD: each hair mesh's coarse twin, swapped in by Doll beyond its range.
+const farHair = new WeakMap<THREE.BufferGeometry, THREE.BufferGeometry>();
+export const farGeometry = (g: THREE.BufferGeometry) => farHair.get(g) ?? g;
+farHair.set(headGeometry, headGeometryFar);
+
+const NEAR = 1;
+const FAR = 0.45;
+
+function buildHair(style: HairStyle, k: number, src: THREE.BufferGeometry) {
   const r = rng(style.length * 977 + 13);
+  const deg = Math.PI / 180;
   const parts: THREE.BufferGeometry[] = [];
   let pony: THREE.BufferGeometry | undefined;
   if (style === "waves") {
-    parts.push(cap(0.172, 0.5, partFlow));
-    const deg = Math.PI / 180;
+    parts.push(cap(0.172, 0.5, partFlow, src));
     for (let a = 62; a <= 298; a += 11) {
-      parts.push(wavyLock(a * deg, 0.62 + r() * 0.1, r() * 6, 0.1, 0.05));
+      parts.push(
+        wavyLock(a * deg, 0.62 + r() * 0.1, r() * 6, 0.1, 0.05, 0.03, k),
+      );
     }
     for (let a = 70; a <= 290; a += 13) {
       parts.push(
-        wavyLock((a + 5) * deg, 0.5 + r() * 0.12, r() * 6, 0.16, 0.042, 0.035),
+        wavyLock(
+          (a + 5) * deg,
+          0.5 + r() * 0.12,
+          r() * 6,
+          0.16,
+          0.042,
+          0.035,
+          k,
+        ),
       );
     }
-    parts.push(curtainBang(1, 0.5), curtainBang(-1, 2.1));
+    parts.push(curtainBang(1, 0.5, k), curtainBang(-1, 2.1, k));
   } else if (style === "ponytail") {
     const q = PONY_ROOT;
     parts.push(
-      cap(0.178, 0.78, (p) => new THREE.Vector3().subVectors(q, p)),
-      tendril(1, 0.3),
-      tendril(-1, 0.3),
+      cap(0.178, 0.78, (p) => new THREE.Vector3().subVectors(q, p), src),
+      tendril(1, 0.3, k),
+      tendril(-1, 0.3, k),
     );
     const locks: THREE.BufferGeometry[] = [];
     for (let i = 0; i < 13; i++) {
@@ -365,32 +412,67 @@ export function hairGeometry(style: HairStyle): HairGeo {
         new THREE.Vector3(ox, 0.06, -0.16 + oz),
         new THREE.Vector3(ox * 1.3, -0.06, -0.22 + oz),
       ];
-      for (let k = 1; k <= 4; k++) {
-        const y = -0.06 - k * 0.15;
+      for (let j = 1; j <= 4; j++) {
+        const y = -0.06 - j * 0.15;
         pts.push(
           new THREE.Vector3(
-            ox * (1.3 - k * 0.15) + Math.sin(y * 10 + ph) * 0.02,
+            ox * (1.3 - j * 0.15) + Math.sin(y * 10 + ph) * 0.02,
             y,
-            -0.22 + oz + k * 0.012,
+            -0.22 + oz + j * 0.012,
           ),
         );
       }
-      locks.push(lock(pts, 0.04, 0.005, 0.7));
+      locks.push(lock(pts, 0.04, 0.005, 0.7, k));
     }
     pony = merge(locks.map(strip));
+  } else if (style === "bob") {
+    parts.push(cap(0.172, 0.5, partFlow, src));
+    for (let a = 64; a <= 296; a += 8) {
+      parts.push(wavyLock(a * deg, 0.07, 0, 0.11, 0.05, 0, k));
+    }
+    parts.push(curtainBang(1, 0.2, k), curtainBang(-1, 1.4, k));
+  } else if (style === "braids") {
+    parts.push(cap(0.172, 0.5, partFlow, src));
+    for (const side of [1, -1]) {
+      parts.push(plait(side, 0, 0.014, k), plait(side, Math.PI, 0.014, k));
+    }
+    parts.push(tendril(1, 0.22, k), tendril(-1, 0.22, k));
+  } else if (style === "afro") {
+    parts.push(cap(0.172, 0.5, partFlow, src));
+    const puff = new THREE.SphereGeometry(
+      0.25,
+      Math.round(36 * k) + 4,
+      Math.round(24 * k) + 4,
+    );
+    puff.scale(1, 0.95, 1);
+    puff.translate(0, 0.25, -0.03);
+    lumpy(puff, 0.03, 45);
+    parts.push(
+      withStrand(puff, (p) => new THREE.Vector3().subVectors(p, PUFF_C)),
+    );
   } else {
-    parts.push(cap(0.172, 0.55, partFlow), ...bun(1), ...bun(-1));
-    parts.push(tendril(1, 0.36), tendril(-1, 0.36));
-    const deg = Math.PI / 180;
+    parts.push(cap(0.172, 0.55, partFlow, src), ...bun(1), ...bun(-1));
+    parts.push(tendril(1, 0.36, k), tendril(-1, 0.36, k));
     for (let a = 112; a <= 248; a += 12) {
-      parts.push(wavyLock(a * deg, 0.42 + r() * 0.08, r() * 6, 0.1, 0.045));
+      parts.push(
+        wavyLock(a * deg, 0.42 + r() * 0.08, r() * 6, 0.1, 0.045, 0.03, k),
+      );
     }
   }
-  const out: HairGeo = {
+  return {
     main: merge(parts.map(strip)),
     pony,
     tie: style === "ponytail" ? PONY_ROOT : undefined,
   };
-  hairCache.set(style, out);
-  return out;
+}
+
+export function hairGeometry(style: HairStyle): HairGeo {
+  const hit = hairCache.get(style);
+  if (hit) return hit;
+  const near = buildHair(style, NEAR, headBase);
+  const far = buildHair(style, FAR, headBaseFar);
+  farHair.set(near.main, far.main);
+  if (near.pony && far.pony) farHair.set(near.pony, far.pony);
+  hairCache.set(style, near);
+  return near;
 }

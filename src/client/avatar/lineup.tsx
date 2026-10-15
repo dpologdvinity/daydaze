@@ -47,7 +47,7 @@ const LINEUP: Look[] = [
   {
     ...DEFAULT_LOOK,
     skin: "#94603f",
-    hairStyle: "waves",
+    hairStyle: "bob",
     hairColor: "#7b4dff",
     lips: "lips-90s-caramel-ombre",
     brows: "brows-sculpted-espresso",
@@ -58,7 +58,7 @@ const LINEUP: Look[] = [
   {
     ...DEFAULT_LOOK,
     skin: "#633c29",
-    hairStyle: "ponytail",
+    hairStyle: "braids",
     hairColor: "#1b1014",
     lips: "lips-burgundy-cherry",
     brows: "brows-sculpted-espresso",
@@ -69,8 +69,8 @@ const LINEUP: Look[] = [
   {
     ...DEFAULT_LOOK,
     skin: "#633c29",
-    hairStyle: "buns",
-    hairColor: "#b77a3e",
+    hairStyle: "afro",
+    hairColor: "#1b1014",
     lips: "lips-hot-pink-glam",
     brows: "brows-fox-snatched",
     outfit: "fur",

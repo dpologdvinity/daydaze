@@ -255,6 +255,52 @@ function paintClosedEyes(
   }
 }
 
+// Soft elliptical glint, used for lip gloss and the highlight on the iris.
+function glint(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  rx: number,
+  ry: number,
+  c: number[],
+  a: number,
+) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(1, ry / rx);
+  const g = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
+  g.addColorStop(0, rgba(c, a));
+  g.addColorStop(1, rgba(c, 0));
+  ctx.fillStyle = g;
+  ctx.fillRect(-rx, -rx, rx * 2, rx * 2);
+  ctx.restore();
+}
+
+// Freckles fade in with lightness and never appear on the deepest skins; the
+// beauty mark is drawn on every skin, in a deeper ink.
+function paintSpots(
+  ctx: CanvasRenderingContext2D,
+  skin: [number, number, number],
+) {
+  const lum = (skin[0] + skin[1] + skin[2]) / 3;
+  const density = smooth(170, 215, lum);
+  let seed = 4242;
+  const rand = () => {
+    seed = (seed * 16807) % 2147483647;
+    return seed / 2147483647;
+  };
+  const freckle = mix(skin, [90, 50, 30], 0.6);
+  const count = Math.round(density * 34);
+  for (let i = 0; i < count; i++) {
+    const side = i % 2 ? 1 : -1;
+    const x = 512 + side * (40 + rand() * 120) + (rand() - 0.5) * 18;
+    const y = 572 + rand() * 60;
+    const r = 2.2 + rand() * 1.8;
+    glint(ctx, x, y, r, r, freckle, 0.55 * density);
+  }
+  glint(ctx, 436, 630, 4, 4, [70, 36, 28], 0.85);
+}
+
 async function paint(opts: FaceOpts, closed: boolean) {
   const skin = hexRgb(opts.skin);
   const [features, lips, brows] = await Promise.all([
@@ -271,10 +317,14 @@ async function paint(opts: FaceOpts, closed: boolean) {
   ctx.drawImage(features, 268, 392);
   if (closed) paintClosedEyes(ctx, skin, opts.shadow);
   else paintShadow(ctx, skin, opts.shadow);
+  paintSpots(ctx, skin);
   ctx.drawImage(brows, 512 - 226, 326, 452, 130);
   const lw = 156,
     lh = (lw * lips.height) / lips.width;
   ctx.drawImage(lips, 512 - lw / 2, 668 - lh / 2, lw, lh);
+  // lip gloss: a broad sheen on the lower lip and a sharp spark on top
+  glint(ctx, 500, 676, 24, 7, [255, 255, 255], 0.5);
+  glint(ctx, 492, 672, 6, 3, [255, 255, 255], 0.95);
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 8;
