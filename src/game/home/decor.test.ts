@@ -4,6 +4,7 @@ import {
   FURNITURE_CATALOG,
   HOME_GRID,
   moveFurniture,
+  pieceAt,
   placeFurniture,
   removeFurniture,
   rotateFurniture,
@@ -51,7 +52,7 @@ test("pieces cannot overlap, but may touch", () => {
 
 test("rotation swaps the footprint, so a piece must fit the grid turned", () => {
   const wide = FURNITURE_CATALOG.sofa;
-  assert.ok(wide.width !== wide.depth, "test needs a non-square piece");
+  assert.ok(wide.width > wide.depth, "test needs a wider-than-deep piece");
   // The sofa is 3 wide and 1 deep: it fits in the bottom right corner, but
   // turned it is 1 wide and 3 deep and runs off the bottom edge.
   const corner: [number, number] = [
@@ -114,4 +115,18 @@ test("saved furniture that overlaps is dropped after the first piece", () => {
     { id: "lamp", cell: [0, 0], rotation: 0 },
   ]);
   assert.equal(valid.length, 1);
+});
+
+test("pieceAt finds the piece covering a cell, turned or not", () => {
+  let items = placeFurniture([], "sofa", [0, 0], 0);
+  assert.ok(items);
+  items = placeFurniture(items, "lamp", [6, 5], 0);
+  assert.ok(items);
+  assert.equal(pieceAt(items, 2, 0), 0);
+  assert.equal(pieceAt(items, 3, 0), -1);
+  assert.equal(pieceAt(items, 6, 5), 1);
+  const turned = rotateFurniture(items, 0);
+  assert.ok(turned);
+  assert.equal(pieceAt(turned, 0, 2), 0);
+  assert.equal(pieceAt(turned, 1, 0), -1);
 });

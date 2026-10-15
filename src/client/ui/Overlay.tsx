@@ -44,6 +44,9 @@ const ROOM_HINTS: Record<RoomId, string> = {
   "water-park": "Swimsuits on. Tap the slide tower to ride.",
   speedway: "Pit lane. Tap a spot to race or ride the bumper cars.",
   city: "Downtown after dark. Tap the street or use WASD, then walk into a lit door.",
+  apartment:
+    "Your flat. Use the decorating panel to place furniture and lock the door. Tap the blue shelf to try a shoplift.",
+  jail: "City Jail. Wait out the sentence, play cards with the guard, or talk to Officer Dee.",
 };
 
 const EFFECT_LEVELS = INTENSITIES.map((id) => ({

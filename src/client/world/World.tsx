@@ -18,6 +18,7 @@ import {
   type RefObject,
 } from "react";
 import type { DanceMoveId } from "../../game/dance/moves.ts";
+import type { HomeSave } from "../../game/home/home.ts";
 import type { Intensity } from "../../game/effects/buzz.ts";
 import {
   swimFor,
@@ -79,6 +80,13 @@ const VioletHour = lazy(() =>
   import("../rooms/VioletHour.tsx").then((m) => ({
     default: m.VioletHour,
   })),
+);
+// The apartment and the jail are small, but their code loads on first visit too.
+const Apartment = lazy(() =>
+  import("../rooms/Apartment.tsx").then((m) => ({ default: m.Apartment })),
+);
+const Jail = lazy(() =>
+  import("../rooms/Jail.tsx").then((m) => ({ default: m.Jail })),
 );
 
 /**
@@ -146,6 +154,8 @@ type SceneProps = {
   /** Opens a minigame overlay from a floor hotspot. */
   onGame: (game: MinigameId) => void;
   player: Player;
+  home: HomeSave;
+  onShelf: () => void;
 };
 
 const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
@@ -156,6 +166,8 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   "water-park": WaterPark,
   "amusement-park": AmusementPark,
   speedway: Speedway,
+  apartment: Apartment,
+  jail: Jail,
 };
 
 export type WorldProps = {
@@ -181,6 +193,9 @@ export type WorldProps = {
   quality: QualityTier | null;
   still: boolean;
   onPortal: (portal: Portal) => void;
+  home: HomeSave;
+  /** The stub shop shelf in the apartment opens the shoplifting test. */
+  onShelf: () => void;
 };
 
 export function World({
@@ -200,6 +215,8 @@ export function World({
   quality,
   still,
   onPortal,
+  home,
+  onShelf,
 }: WorldProps) {
   const [auto, setAuto] = useState<QualityTier>("high");
   const tier = quality ?? auto;
@@ -260,6 +277,8 @@ export function World({
               onRide={onRide}
               onGame={onGame}
               player={player}
+              home={home}
+              onShelf={onShelf}
             />
           ) : null}
           <PlayerController

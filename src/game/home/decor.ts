@@ -30,7 +30,7 @@ function isFurnitureId(value: unknown): value is FurnitureId {
   return typeof value === "string" && FURNITURE_IDS.includes(value as FurnitureId);
 }
 
-function footprint(id: FurnitureId, rotation: Rotation) {
+export function footprint(id: FurnitureId, rotation: Rotation) {
   const { width, depth } = FURNITURE_CATALOG[id];
   return rotation % 2 === 0 ? { w: width, d: depth } : { w: depth, d: width };
 }
@@ -56,6 +56,21 @@ export function placeFurniture(
 ): Furniture[] | null {
   const piece: Furniture = { id, cell, rotation };
   return fits(items, -1, piece) ? [...items, piece] : null;
+}
+
+// Index of the piece covering a grid cell, or -1 for an empty cell.
+export function pieceAt(
+  items: readonly Furniture[],
+  column: number,
+  row: number,
+): number {
+  return items.findIndex((item) => {
+    const size = footprint(item.id, item.rotation);
+    const [c, r] = item.cell;
+    return (
+      column >= c && column < c + size.w && row >= r && row < r + size.d
+    );
+  });
 }
 
 function replaceAt(

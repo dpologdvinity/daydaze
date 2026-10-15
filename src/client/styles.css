@@ -877,3 +877,103 @@ button:focus-visible {
     bottom: 72px;
   }
 }
+
+/* ------------------------------------------------------------ homes and jail */
+.home-panel {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 5;
+  display: grid;
+  gap: 8px;
+  width: min(360px, calc(100vw - 32px));
+  max-height: 60vh;
+  overflow: auto;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgb(18 10 28 / 0.9);
+  color: #fbeaff;
+}
+
+.home-panel fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.home-panel fieldset:disabled {
+  opacity: 0.5;
+}
+
+.home-panel button {
+  min-height: 36px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid #c58cff;
+  background: #2a1438;
+  color: inherit;
+  cursor: pointer;
+}
+
+.home-panel button[aria-pressed="true"] {
+  background: #c58cff;
+  color: #1b0a24;
+}
+
+.home-panel button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.home-grid {
+  display: grid;
+  gap: 2px;
+}
+
+.home-cell {
+  aspect-ratio: 1;
+  min-height: 0;
+  padding: 0;
+  font-size: 10px;
+}
+
+.home-note {
+  margin: 0;
+  min-height: 1.2em;
+  font-size: 13px;
+}
+
+.suspicion {
+  height: 10px;
+  border-radius: 5px;
+  background: #3a2448;
+  overflow: hidden;
+}
+
+.suspicion span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #ffd166, #ff4d6d);
+}
+
+.arrest {
+  top: 50%;
+  bottom: auto;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  font-size: 18px;
+}
+
+.arrest-line {
+  margin: 0;
+}
+
+.jail-clock {
+  margin: 0;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
