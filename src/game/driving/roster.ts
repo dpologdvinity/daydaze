@@ -37,6 +37,9 @@ export const BANNED_BRANDS: readonly string[] = [
   "maserati",
   "cadillac",
   "mini cooper",
+  "corsa",
+  "volt",
+  "kaiser",
 ];
 
 const car = (spec: CarSpec): CarSpec => spec;
@@ -44,8 +47,8 @@ const car = (spec: CarSpec): CarSpec => spec;
 // Shapes, classes and feel follow real cars; names are original (GTA approach).
 export const CARS: readonly CarSpec[] = [
   car({
-    id: "corsa-lite",
-    name: "Corsa Lite",
+    id: "quill-lite",
+    name: "Quill Lite",
     basedOn: "2000s compact sedan",
     class: "beater",
     topSpeed: 45,
@@ -89,8 +92,8 @@ export const CARS: readonly CarSpec[] = [
     price: 4000,
   }),
   car({
-    id: "volt-s",
-    name: "Volt S",
+    id: "arc-s",
+    name: "Arc S",
     basedOn: "electric fastback sedan",
     class: "everyday",
     topSpeed: 62,
@@ -104,8 +107,8 @@ export const CARS: readonly CarSpec[] = [
     price: 9000,
   }),
   car({
-    id: "kaiser-7",
-    name: "Kaiser 7",
+    id: "halden-7",
+    name: "Halden 7",
     basedOn: "German-style executive sedan",
     class: "luxury",
     topSpeed: 70,

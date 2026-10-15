@@ -95,7 +95,7 @@
   - Prices increase from beater to exotic.
   - No name or `basedOn` matches the banned brand list. Reuse the list exported from `src/game/dialogue/` if it exists. Otherwise define `BANNED_BRANDS` in `roster.ts` and export it.
 - [ ] **Step 3:** Run `npm test` and confirm it FAILS.
-- [ ] **Step 4:** Implement `stepCar`, `CARS`, `BUMPER_CAR` and `carById`. Give the cars original names, for example "Corsa Lite", "Pebble", "Volt S".
+- [ ] **Step 4:** Implement `stepCar`, `CARS`, `BUMPER_CAR` and `carById`. Give the cars original names, for example "Quill Lite", "Pebble", "Arc S".
 - [ ] **Step 5:** Run `npm test` and confirm it PASSES.
 - [ ] **Step 6:** Commit `feat(game): add an arcade car model and starter roster`.
 

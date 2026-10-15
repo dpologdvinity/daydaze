@@ -4,7 +4,7 @@ import { carById } from "../driving/roster.ts";
 import { TRACKS } from "./track.ts";
 import { createRace, standings, stepRace } from "./race.ts";
 
-const spec = carById("corsa-lite");
+const spec = carById("quill-lite");
 if (!spec) throw new Error("missing car");
 const GAS = { throttle: 1, brake: 0, steer: 0 };
 
