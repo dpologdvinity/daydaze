@@ -31,6 +31,51 @@ export const clubDancerBank: RoleBank = {
     "Sure, but first, did you see that last move? Wild.",
   ],
   idle: [
+    // Pulse: the main dance club on Nightlife Row
+    {
+      text: "My shoes are glowing and I refuse to take them off. The floor is that good.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Every time the lights change I get a new move. I'm running out of ideas, though.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Pulse floor is wild tonight. I can feel the beat bounce off my ribs.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "The LED squares just flashed under my feet and I screamed. Happy scream.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "I'm stretching for the next song. Don't mind me doing a lunge in the middle.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Somebody's drink is glowing on the floor now. Iconic.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "I love a crowd that dances like they forgot about their phones.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Pulse has the best bass, which means my sneakers are doing all the work.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Keep the energy up, friend. The floor's only as good as the people on it.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Ten songs in and I'm still bouncing. Water break, then I'm right back.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Glow, sweat, repeat. That's my whole night and I'm happy about it.",
+      when: { venue: "pulse" },
+    },
     "My feet are sore and I'm not even sorry.",
     "Floor's so warm tonight, I can feel the bass in my teeth.",
     "Shake it out, shake it out. Breathe, then go again.",
@@ -57,6 +102,51 @@ export const clubDancerBank: RoleBank = {
     "Okay, last song and then I'm out. Thanks for the company.",
   ],
   "action-dancing-nearby": [
+    // Pulse: the main dance club on Nightlife Row
+    {
+      text: "Oh, you're on the beat! Keep those hands up, Pulse is watching you.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Great footwork, the LED squares are lighting up under you!",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "You're catching the drop perfectly. Do the spin again, I'm filming.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Okay, come into the light, we're making a circle. Bring your best moves.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Yes, babe! That hip roll made the whole row turn around and cheer.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Nice spin! The floor's glowing for you, just like I told the DJ.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Now the crowd's split in two. Pick a side and show me your best bounce.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "You're dancing like the lights are on your side. Keep going, friend.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Ahh, that last step made me laugh. Let's do it together on the next beat.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "You've got rhythm, and rhythm is contagious at Pulse. Keep it coming.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Shoulders loose, feet light. Yes, that's it. Pulse just got a little brighter.",
+      when: { venue: "pulse" },
+    },
     "Yes! Your hips are on beat, keep it up.",
     "Oh, you're a natural. Show me that spin again.",
     "Dance with me, I'll bring the energy, you bring the groove.",

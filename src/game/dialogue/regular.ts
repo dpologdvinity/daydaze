@@ -19,6 +19,51 @@ export const regularBank: RoleBank = {
     },
   ],
   "greeting-regular": [
+    // The Violet Hour: the sapphic bar on Nightlife Row
+    {
+      text: "There's my favorite regular! The corner's been saving your seat, love.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Back again? The pool table's been asking where you are, and so have I.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Look who's here! Your drink's already poured, and the bartender's grinning about it.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Hey, regular! The corner got quieter without you. Sit down and fix that.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Good to see you, {name}. The Violet Hour's a better bar with you in it.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Ayyy, my favorite cue master's back. Who's racking first?",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "There's my favorite person in this whole violet room. Sit, tell me everything.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "You showed up! The regulars' corner has a new rumor and you're at the center of it.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Hi again! I'm so glad you came back, the room feels a little brighter already.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Oh, you're back! I told the bartender you'd be late, and now I'm proven right.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Welcome back to your corner, friend. The seat's warm and the drink's on the way.",
+      when: { venue: "violet-hour" },
+    },
     "There she is! Same seat, same drink, same chaos. Love it.",
     "Look who's back! I saved your stool, babe.",
     "Ayyy, my favorite regular! The bartender already started your order.",
@@ -45,6 +90,51 @@ export const regularBank: RoleBank = {
     "Bienvenida de vuelta! The bartender still remembers your drink.",
   ],
   tapped: [
+    // The Violet Hour: the sapphic bar on Nightlife Row
+    {
+      text: "Hey! Pull up a stool, the regulars' corner has room for one more witty person.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "What's up, love? I've got gossip, cue advice, and a good pour on tap.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Ask me anything, I'm basically the house mascot at this point.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "You're asking me? Good. Pool, drinks, or who's dating whom in the corner?",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "I'm the regular who's on a first-name basis with the jukebox. Ask away.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Did you come for the sapphic neon or the pool table? Both is the right answer.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Hi! If you're new, the corner booth is soft and the stories are better.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "You tapped the regular. Congratulations, you've been adopted by the corner.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Need a partner for the pool table? I'm bad, but I'm a lot of fun to lose to.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Yes? I'm all ears, and my drink's almost gone, so make it a good question.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Hey! Sit with us, we've got a whole theory about the bartender's sunset cocktail.",
+      when: { venue: "violet-hour" },
+    },
     {
       text: "I came for the coaster and stayed for the lights. The lights were the plan.",
       when: { neighborhood: "fairground" },
@@ -110,6 +200,51 @@ export const regularBank: RoleBank = {
     "Okay, what do you need? I was just about to win this trivia.",
   ],
   idle: [
+    // The Violet Hour: the sapphic bar on Nightlife Row
+    {
+      text: "Pool table's hogged again. Someone's about to get schooled, and it's not me.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "I've been in this corner so long the stool has my shape. Don't tell the bar.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "The sunset flag is catching the light just right. I'm a little in love with this room.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Lowkey the best part of this bar is the people who keep coming back.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Somebody just nailed a bank shot and everyone cheered. Best sound in the building.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "The violet lights make everybody look like they're in a movie. Me too, hopefully.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "I'm nursing my drink and watching the room. Rare peace, don't interrupt it.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "The regulars' corner is my kingdom. The jukebox is my court jester.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Pink, orange, violet. This room is the only place I can wear all three at once.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "I'm pretty sure the pool table likes me more than the other players do.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Every time I think this bar can't get warmer, somebody new walks in and proves me wrong.",
+      when: { venue: "violet-hour" },
+    },
     "Okay, this jukebox is cursed but the song choices are immaculate.",
     "I've been sitting here for three hours and I'm still not tired.",
     "Honestly, the best part of this bar is watching everyone's outfits.",

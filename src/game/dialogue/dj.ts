@@ -18,6 +18,51 @@ export const djBank: RoleBank = {
     },
   ],
   tapped: [
+    // Pulse: the main dance club on Nightlife Row
+    {
+      text: "Pulse requests are open, and the booth is listening. Got a song for the floor?",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Hey! The LED floor pulses to whatever you pick next. Shout it out.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Want a shoutout on the mic? Tell me your name and I'll give the crowd a wave.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Booth's busy, but you're louder than the snare. What do you want?",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Ask away! I'm mixing, the floor is glowing, and you're in the middle of it all.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "One request, one song, one wild minute on the floor. What are we playing?",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Heavy bass or bright synths? Pick a side, the booth can do both.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Hi! If you're asking for the next track, the floor votes with its feet.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Talk to me, dancer. I've got three new bangers and a question for you.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "The booth has a lot of buttons. Tell me which one you want pushed.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Requests, hype, or just vibes at Pulse? Say it and I'll make it happen.",
+      when: { venue: "pulse" },
+    },
     "Yes! Requests are open, go for it.",
     "Mid-mix, but I can hear you. What's up?",
     "Want the next song or a shout-out? I'll take either.",
@@ -31,6 +76,51 @@ export const djBank: RoleBank = {
     "Talk to me, DJ's always got time for a good dancer.",
   ],
   idle: [
+    // Pulse: the main dance club on Nightlife Row
+    {
+      text: "The LED floor is doing the rainbow thing right now. I'm not going to stop it.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "The crowd's bouncing on every beat tonight. Pulse is one big heartbeat.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Pulse at full power: lights, bass, bodies moving. Honestly, it's perfect.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Every drop lands on the floor and the floor sends back even more energy.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "I'm mixing a little faster than usual. The room is having a great time.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "This glow on the dance floor? Pure magic. I'm taking notes.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "If the bass starts to hum, that's me saying the room is ready for the next song.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Pulse is loud and I love it. Turn your ears up and your brain off.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Somebody on the floor just spun twice and nailed the landing. Respect.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "I can see the whole room from up here. Every face is lit. Beautiful.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Pulse on a night like this is the best job I've ever had. Don't tell the boss.",
+      when: { venue: "pulse" },
+    },
     "This bassline is doing things to my chest right now.",
     "Okay, the crowd's ready. I'm just waiting for the perfect drop.",
     "Lowkey my favorite job is watching people find the beat.",

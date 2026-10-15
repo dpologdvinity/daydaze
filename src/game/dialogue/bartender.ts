@@ -2,6 +2,96 @@ import type { RoleBank } from "./types.ts";
 
 export const bartenderBank: RoleBank = {
   "greeting-first": [
+    // The Violet Hour: the sapphic bar on Nightlife Row
+    {
+      text: "Hey! Welcome to the Violet Hour, {name}. Stool or the pool table, your pick.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Come on in, the violet lights are on and the bar is wide open.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Pull up a stool at the Violet Hour. Tell me what you're in the mood for.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Hi, friend. The sunset drinks are on the board, and they're gorgeous.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "New here? Welcome to the Violet Hour. Everyone's invited to the bar.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Hola, bienvenida. The sunset special's on tap, want to try it?",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Welcome! Tell me a flavor and I'll make you something that matches the neon.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Come in, sit, relax. The bar's soft, the music's soft, and I'm a little bit witty.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Hey, hey. Want a drink that's pink, orange, or violet? I can do all three.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Welcome to the bar where the neon puns are free. Ask for one and see.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Sit down, love. Your drink is about to be the best thing you've tasted all night.",
+      when: { venue: "violet-hour" },
+    },
+    // Pulse: the main dance club on Nightlife Row
+    {
+      text: "Pulse bar's open, {name}. Tell me a flavor and I'll build the rest.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Welcome to Pulse. Glowing drinks come with glowing service, promise.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Hey! Your first Pulse drink is on me if you tell me your favorite color.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Come on up to the bar. The LED lights make everything look like a cocktail.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Pulse bar, where the drinks light up and so do the people. What's yours?",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Hi! Sweet, sour, or electric blue? I make all three, no judgment.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "The bar's about to get busy, so tell me what you want while it's quiet.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Pulse bar is the best seat for watching the floor. Grab a stool, I'll be quick.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Welcome in! You look like someone who wants a drink with a little sparkle.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "New at Pulse? The bar's the loudest spot in the room, so yell your order.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Hey, pull up a stool. The menu's bright, the ice is cold, and I'm on it.",
+      when: { venue: "pulse" },
+    },
     "Welcome in, what are we drinking?",
     "Hey, first time? Pull up a stool, I'll make you something good.",
     "Ooh, new face at my bar. Sit, sit.",
@@ -18,6 +108,51 @@ export const bartenderBank: RoleBank = {
     },
   ],
   tapped: [
+    // The Violet Hour: the sapphic bar on Nightlife Row
+    {
+      text: "Hey, love. I see you. One sec, I'm pouring a sunset for the corner.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Need a drink, or just a little violet-light conversation? Either is welcome.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Tap again and I'll start charging you rent in puns. Kidding. What's the order?",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "You rang the bar? Cute. What do you want to sip tonight?",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Menu, specials, or the gossip from the regulars' corner? I've got all three.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Hi! The pool table's free, and so is the drink list. Ask me anything.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "You're going to make me blush, babe. What can I get you?",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Okay, you've got my attention. Something cold, sweet, or a little bit spicy?",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Talk to me, I'm wiping glasses and listening. Violet is the color of the night.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Need a cue for the pool table? I'm the bartender, not the cue. What's up?",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Hey, sweetheart, you tapped the bar. Tell me your mood and I'll do the rest.",
+      when: { venue: "violet-hour" },
+    },
     "Yes? Lemme guess, you want a drink.",
     "Hey, I see you. One sec, I'm mid-pour.",
     "Need something, or just checking if I'm real?",
@@ -104,6 +239,96 @@ export const bartenderBank: RoleBank = {
     "Okay, that look deserves a drink with a little drama.",
   ],
   "action-ordering": [
+    // The Violet Hour: the sapphic bar on Nightlife Row
+    {
+      text: "Great order. Pink, orange, or violet? Pick the color and I'll make it sing.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "One sunset coming up, babe. Stand by while I mix it right.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Good choice. I'm pouring it slow so the orange sunset looks perfect in the glass.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Okay, that's a drink with a view. Give me a moment and it's yours.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Yes! Violet, pink, orange. You picked the most gorgeous one on the board.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "That's on the way. Pay now, or run a tab? I won't tell the pool table.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Mixing a {drink} for you now. Keep your eyes on the violet light.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Good call. I'll bring it to the regulars' corner so you can settle in.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Coming right up. Shaken with love and a little bit of ice, the sunset will be extra.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Order received, love. I'll bring it over before the next song drops.",
+      when: { venue: "violet-hour" },
+    },
+    {
+      text: "Nice pick, friend. This one's a little tart and a little sweet, just like me.",
+      when: { venue: "violet-hour" },
+    },
+    // Pulse: the main dance club on Nightlife Row
+    {
+      text: "Great pick. That one lights up in the glass. Want it with a splash or straight?",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Coming right up. The blender's loud, so I'll shout the name at you.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "One {drink} for the glow seeker. Coming up, don't go anywhere.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Order's in, and the LED ice is already glowing. Give me one second.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Nice choice. Pay now or run a tab? Either way I'll keep it cold.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Okay, that's a drink with a light show. I'm doing my best with the shaker.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Got it! I'll pour it slow so the color looks extra fun when it hits your hand.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Yes, that's my favorite order to make tonight. Stand by, it's going on the bar.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Done and done. Want a cherry, a glow stick, or both? I've got both.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Mixing it now, babe. Try not to dance into the ice bin while you wait.",
+      when: { venue: "pulse" },
+    },
+    {
+      text: "Good order, friend. I'll bring it to you before the next song drops.",
+      when: { venue: "pulse" },
+    },
     "Good choice. I'll have it ready in two minutes.",
     "Ooh, the {drink} again? My kind of person.",
     "Tell me your flavor and I'll make it sing.",
