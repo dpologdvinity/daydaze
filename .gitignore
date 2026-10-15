@@ -16,3 +16,4 @@ dist
 .wrangler
 .dev.vars
 server/worker-configuration.d.ts
+art/doll/blender/.cache
