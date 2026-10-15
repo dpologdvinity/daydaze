@@ -9,8 +9,10 @@ test("every room is registered under its own id", () => {
     "amusement-park",
     "city",
     "plaza",
+    "pulse",
     "speedway",
     "velvet-room",
+    "violet-hour",
     "water-park",
   ]);
   for (const [id, room] of Object.entries(ROOMS)) assert.equal(room.id, id);

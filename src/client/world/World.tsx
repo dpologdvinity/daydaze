@@ -36,6 +36,7 @@ import { SLIDES } from "../../game/waterPark.ts";
 import { areaOf } from "../../game/area.ts";
 import { DrunkPost } from "../effects/DrunkPost.tsx";
 import { DrunkState } from "../effects/DrunkState.tsx";
+import type { MinigameId } from "../../game/hotspots.ts";
 import { VelvetRoom } from "../rooms/VelvetRoom.tsx";
 import { Plaza } from "../rooms/Plaza.tsx";
 import type { PickHandler } from "../rooms/shared/Floor.tsx";
@@ -68,6 +69,15 @@ const Speedway = lazy(() =>
 const AmusementPark = lazy(() =>
   import("../rooms/AmusementPark.tsx").then((m) => ({
     default: m.AmusementPark,
+  })),
+);
+// The clubs load on first arrival, like the park: each has its own meshes and dialogue.
+const Pulse = lazy(() =>
+  import("../rooms/Pulse.tsx").then((m) => ({ default: m.Pulse })),
+);
+const VioletHour = lazy(() =>
+  import("../rooms/VioletHour.tsx").then((m) => ({
+    default: m.VioletHour,
   })),
 );
 
@@ -133,11 +143,15 @@ function Effects() {
 type SceneProps = {
   onPick: PickHandler;
   onRide: (slide: number) => void;
+  /** Opens a minigame overlay from a floor hotspot. */
+  onGame: (game: MinigameId) => void;
   player: Player;
 };
 
 const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   "velvet-room": VelvetRoom,
+  pulse: Pulse,
+  "violet-hour": VioletHour,
   plaza: Plaza,
   "water-park": WaterPark,
   "amusement-park": AmusementPark,
@@ -151,6 +165,8 @@ export type WorldProps = {
   swim: SwimLook;
   /** Bumped by the UI's ride button; each bump rides the next slide. */
   rides: number;
+  /** Opens a minigame overlay from a room's hotspot. */
+  onGame: (game: MinigameId) => void;
   /** `?slide=0.4` starts on the first slide that far down, for screenshots. */
   slideAt: number | null;
   mood: Mood;
@@ -173,6 +189,7 @@ export function World({
   look,
   swim,
   rides,
+  onGame,
   slideAt,
   mood,
   dance,
@@ -237,7 +254,13 @@ export function World({
           {room === "city" ? (
             <CityScene key={room} player={player} onPick={onPick} />
           ) : Room ? (
-            <Room key={room} onPick={onPick} onRide={onRide} player={player} />
+            <Room
+              key={room}
+              onPick={onPick}
+              onRide={onRide}
+              onGame={onGame}
+              player={player}
+            />
           ) : null}
           <PlayerController
             player={player}

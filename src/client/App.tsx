@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { DanceMoveId } from "../game/dance/moves.ts";
 import type { Intensity } from "../game/effects/buzz.ts";
+import type { MinigameId } from "../game/hotspots.ts";
 import type { Look, Mood, SwimLook } from "../game/look.ts";
 import { arrive } from "../game/portals.ts";
 import { ROOMS, type RoomId, type Spawn } from "../game/rooms.ts";
@@ -16,6 +17,7 @@ import { readFlags } from "./flags.ts";
 import { ReducedMotionContext, usePrefersReducedMotion } from "./motion.ts";
 import { ChatBar } from "./ui/ChatBar.tsx";
 import { DebugPanel } from "./ui/DebugPanel.tsx";
+import { GameOverlay, VenueGames } from "./ui/Minigames.tsx";
 import { Overlay } from "./ui/Overlay.tsx";
 import type { View } from "./world/CameraRig.tsx";
 import { World } from "./world/World.tsx";
@@ -92,6 +94,7 @@ export function App() {
   const setEffects = (effects: Intensity) =>
     setSave((s) => ({ ...s, settings: { ...s.settings, effects } }));
   const [rides, setRides] = useState(0);
+  const [game, setGame] = useState<MinigameId | null>(null);
   const saved = save.settings.quality;
   const quality = flags.quality ?? (saved === "auto" ? null : saved);
 
@@ -104,6 +107,7 @@ export function App() {
           look={save.look}
           swim={save.swim}
           rides={rides}
+          onGame={setGame}
           slideAt={flags.slide}
           mood={mood}
           dance={dance}
@@ -142,6 +146,8 @@ export function App() {
           view={view}
           setView={setView}
         />
+        <VenueGames room={here.room} onPlay={setGame} />
+        {game && <GameOverlay game={game} onClose={() => setGame(null)} />}
         {here.room === "city" && touch && <CityJoystick />}
         <ChatBar onSay={(text) => setChat({ text, at: Date.now() })} />
         {flags.debug && (

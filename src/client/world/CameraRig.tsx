@@ -23,6 +23,14 @@ const ROOM_SHOTS: Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }> =
       eye: new THREE.Vector3(6.4, 5.4, 10),
       look: new THREE.Vector3(0.6, 1.0, -1.0),
     },
+    pulse: {
+      eye: new THREE.Vector3(6.4, 5.6, 12),
+      look: new THREE.Vector3(0, 1.2, -2),
+    },
+    "violet-hour": {
+      eye: new THREE.Vector3(3.6, 4.8, 10.2),
+      look: new THREE.Vector3(1.1, 1.2, -1.6),
+    },
     plaza: {
       eye: new THREE.Vector3(5.5, 5.4, 14.5),
       look: new THREE.Vector3(1.2, 2.2, -3.5),
@@ -49,6 +57,8 @@ const ROOM_SHOTS: Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }> =
 // The city's wide shot is high above it, so it needs far more orbit range.
 const MAX_DISTANCE: Record<RoomId, number> = {
   "velvet-room": 18,
+  pulse: 18,
+  "violet-hour": 18,
   plaza: 18,
   "amusement-park": 18,
   "water-park": 18,
