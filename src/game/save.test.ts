@@ -36,6 +36,9 @@ test("createDefaultSave uses the default look and auto quality", () => {
       effects: "full",
       panelOpen: false,
     },
+    home: { locked: true, furniture: [] },
+    jail: { endsAt: null },
+    crime: { offences: 0, bans: {} },
   });
 });
 
@@ -52,8 +55,42 @@ test("a save round-trips through serializeSave and loadSave", () => {
     swim: { style: "one-piece", color: "#ff2f9a" },
     coins: 320,
     settings: { quality: "low", muted: true, effects: "off", panelOpen: true },
+    home: {
+      locked: false,
+      furniture: [{ id: "sofa", cell: [0, 0], rotation: 1 }],
+    },
+    jail: { endsAt: 1_900_000_000_000 },
+    crime: { offences: 3, bans: { bodega: 1_900_000_000_000 } },
   };
   assert.deepEqual(loadSave(serializeSave(save), "Fallback"), save);
+});
+
+test("a save from before the apartment, jail and crime fields still loads", () => {
+  const old = JSON.stringify({
+    version: 1,
+    name: "Velvet_Kat-99",
+    look: customLook,
+    settings: { quality: "low", muted: true, effects: "off" },
+  });
+  const loaded = loadSave(old, "Fallback");
+  assert.deepEqual(loaded.home, { locked: true, furniture: [] });
+  assert.deepEqual(loaded.jail, { endsAt: null });
+  assert.deepEqual(loaded.crime, { offences: 0, bans: {} });
+});
+
+test("a damaged home, jail or crime field falls back without losing the rest", () => {
+  const raw = JSON.stringify({
+    version: 1,
+    name: "Kept Name",
+    home: { locked: "yes", furniture: "lots" },
+    jail: { endsAt: "later" },
+    crime: { offences: -1, bans: "none" },
+  });
+  const loaded = loadSave(raw, "Fallback");
+  assert.equal(loaded.name, "Kept Name");
+  assert.deepEqual(loaded.home, { locked: true, furniture: [] });
+  assert.deepEqual(loaded.jail, { endsAt: null });
+  assert.deepEqual(loaded.crime, { offences: 0, bans: {} });
 });
 
 test("a save from before the swimsuit slot still loads", () => {
@@ -75,6 +112,9 @@ test("a save from before the swimsuit slot still loads", () => {
       effects: "full",
       panelOpen: false,
     },
+    home: { locked: true, furniture: [] },
+    jail: { endsAt: null },
+    crime: { offences: 0, bans: {} },
   });
 });
 
@@ -121,6 +161,9 @@ test("loadSave keeps a valid name when the look is bad", () => {
       effects: "full",
       panelOpen: false,
     },
+    home: { locked: true, furniture: [] },
+    jail: { endsAt: null },
+    crime: { offences: 0, bans: {} },
   });
 });
 
@@ -142,6 +185,9 @@ test("loadSave keeps a valid look when the name is bad", () => {
       effects: "full",
       panelOpen: false,
     },
+    home: { locked: true, furniture: [] },
+    jail: { endsAt: null },
+    crime: { offences: 0, bans: {} },
   });
 });
 

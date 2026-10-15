@@ -1,4 +1,7 @@
 import { isIntensity, type Intensity } from "./effects/buzz.ts";
+import { DEFAULT_CRIME, validateCrime, type CrimeSave } from "./crime/record.ts";
+import { DEFAULT_HOME, validateHome, type HomeSave } from "./home/home.ts";
+import { DEFAULT_JAIL, validateJail, type JailSave } from "./jail/jail.ts";
 import {
   DEFAULT_LOOK,
   DEFAULT_SWIM,
@@ -24,6 +27,10 @@ export type SaveV1 = {
     /** The dressing-room drawer; closed on a new save. */
     panelOpen: boolean;
   };
+  // Added after v1 shipped: older saves load with these defaults.
+  home: HomeSave;
+  jail: JailSave;
+  crime: CrimeSave;
 };
 
 export const SAVE_KEY = "daydaze-save-v1";
@@ -51,6 +58,9 @@ export function createDefaultSave(name: string): SaveV1 {
       effects: "full",
       panelOpen: false,
     },
+    home: { ...DEFAULT_HOME, furniture: [] },
+    jail: { ...DEFAULT_JAIL },
+    crime: { ...DEFAULT_CRIME, bans: {} },
   };
 }
 
@@ -99,6 +109,9 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
           ? panelOpen
           : defaults.settings.panelOpen,
     },
+    home: validateHome(save.get("home")),
+    jail: validateJail(save.get("jail")),
+    crime: validateCrime(save.get("crime")),
   };
 }
 
