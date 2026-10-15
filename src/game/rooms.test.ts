@@ -8,7 +8,6 @@ test("every room is registered under its own id", () => {
   assert.deepEqual(Object.keys(ROOMS).sort(), [
     "amusement-park",
     "apartment",
-    "city",
     "boba-matcha",
     "city",
     "filipino-joint",
