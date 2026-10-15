@@ -5,7 +5,7 @@ import { TICK_HZ } from "./fixedStep.ts";
 import { stepCar, type CarInput, type CarState } from "./car.ts";
 import { carById } from "./roster.ts";
 
-const sedan = carById("corsa-lite");
+const sedan = carById("quill-lite");
 if (!sedan) throw new Error("starter sedan missing");
 const spec = sedan;
 

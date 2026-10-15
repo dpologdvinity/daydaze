@@ -78,7 +78,7 @@ export function stepRace(
   playerInput: CarInput | "autopilot",
   nowMs: number,
 ): Race {
-  if (race.phase === "finished" || race.phase === "grid") return race;
+  if (race.phase === "grid") return race;
   if (race.phase === "countdown") {
     const countdownMs = race.countdownMs - TICK_MS;
     return countdownMs > 0
@@ -132,6 +132,8 @@ function progress(race: Race, car: RaceCar): [number, number, number] {
 
 /** Car ids, leader first: finishers by finish time, then by lap, checkpoint and distance. */
 export function standings(race: Race): readonly string[] {
+  // Nobody has crossed the line yet, so the grid order decides.
+  if (race.cars.every((c) => c.lap.lap === 0)) return race.cars.map((c) => c.id);
   return [...race.cars]
     .sort((x, y) => {
       if (x.finishedMs !== null || y.finishedMs !== null) {

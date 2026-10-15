@@ -80,3 +80,51 @@ test("six bots stay inside the arena for 3000 ticks with finite numbers", () => 
     "bots should bump into each other",
   );
 });
+
+test("a slow touch against a car pinned to the wall is not counted as a hit", () => {
+  const wall = ARENA.size[0] / 2 - R;
+  const cars: readonly Bumper[] = [
+    {
+      id: "player",
+      isPlayer: true,
+      hits: 0,
+      state: { position: [-wall, 0], yaw: Math.PI / 2, speed: 0 },
+    },
+    {
+      id: "bot-1",
+      isPlayer: false,
+      hits: 0,
+      state: {
+        position: [-wall + 2 * R - 0.01, 0],
+        yaw: -Math.PI / 2,
+        speed: 0.3,
+      },
+    },
+  ];
+  const next = stepBumpers(cars, { throttle: 0, brake: 0, steer: 0 }, 0);
+  assert.equal(next[0].hits, 0);
+  assert.equal(next[1].hits, 0);
+});
+
+test("a car pinned to the wall passes its unapplied push to the other car", () => {
+  const wall = ARENA.size[0] / 2 - R;
+  const cars: readonly Bumper[] = [
+    {
+      id: "player",
+      isPlayer: true,
+      hits: 0,
+      state: { position: [-wall, 0], yaw: Math.PI / 2, speed: 0 },
+    },
+    {
+      id: "bot-1",
+      isPlayer: false,
+      hits: 0,
+      state: { position: [-wall + 2 * R - 0.2, 0], yaw: 0, speed: 0 },
+    },
+  ];
+  const next = stepBumpers(cars, { throttle: 0, brake: 0, steer: 0 }, 0);
+  assert.ok(
+    gap(next[0], next[1]) >= 2 * R - 1e-6,
+    "the free car should take the whole push",
+  );
+});

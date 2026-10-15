@@ -113,11 +113,17 @@ export function hudOf(session: Session): Hud {
   const { race, ticks } = session;
   const me = race.cars[0];
   const nowMs = ticks * TICK_MS;
+  // After the finish the lap counter has run past the last lap, so show the total.
+  const finished = me.finishedMs !== null;
   return {
     phase: race.phase,
-    lap: me.lap.lap,
+    lap: Math.min(me.lap.lap, race.laps),
     laps: race.laps,
-    lapMs: me.lap.lap === 0 ? 0 : (me.finishedMs ?? nowMs) - me.lap.lapStartMs,
+    lapMs: finished
+      ? me.lap.lapTimesMs.reduce((sum, ms) => sum + ms, 0)
+      : me.lap.lap === 0
+        ? 0
+        : nowMs - me.lap.lapStartMs,
     bestMs: me.lap.bestLapMs,
     place: standings(race).indexOf("player") + 1,
     field: race.cars.length,

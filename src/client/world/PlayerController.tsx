@@ -24,6 +24,7 @@ import { useReducedMotion } from "../motion.ts";
 import { Doll, type WalkState } from "../avatar/Doll.tsx";
 import { hdr } from "../rooms/shared/materials.ts";
 import { driving } from "./driving.ts";
+import { ignoresKeys } from "./keyTargets.ts";
 import { stick } from "./joystick.ts";
 
 /** Frame time the simulation may catch up on; longer gaps (a hidden tab) are dropped. */
@@ -124,16 +125,6 @@ function ride(
 // The prototype's walk cycle was tuned for 1.35 m/s; scale the stride rate so
 // feet keep up with the spec's faster walking speed.
 const STRIDE = WALK_SPEED / 1.35;
-
-function ignoresKeys(target: EventTarget | null, code: string) {
-  if (!(target instanceof HTMLElement)) return false;
-  if (target.isContentEditable) return true;
-  if (target.closest("input, textarea, select")) return true;
-  // arrow keys inside the closet move between options, not the doll
-  return (
-    code.startsWith("Arrow") && target.closest("[role=radiogroup]") !== null
-  );
-}
 
 function useHeldKeys() {
   const held = useRef(new Set<string>());

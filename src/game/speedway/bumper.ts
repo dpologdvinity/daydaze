@@ -6,6 +6,7 @@ const HALF_X = 12;
 const HALF_Z = 8;
 const THICK = 3;
 const RESTITUTION = 0.8;
+const HIT_SPEED = 0.5; // m/s of closing speed that counts as a bump
 const RADIUS = BUMPER_CAR.width / 2 + 0.1;
 
 // shortcut: square corners, not rounded; round them if the scene wants softer corners.
@@ -132,20 +133,29 @@ export function stepBumpers(
           const cap = BUMPER_CAR.topSpeed;
           sa = Math.max(-cap, Math.min(cap, nva[0] * fa[0] + nva[1] * fa[1]));
           sb = Math.max(-cap, Math.min(cap, nvb[0] * fb[0] + nvb[1] * fb[1]));
-          ha++;
-          hb++;
+          // Cars pressed together keep closing by a hair each tick; only a real knock counts.
+          if (-closing > HIT_SPEED) {
+            ha++;
+            hb++;
+          }
         }
         const push = (2 * RADIUS - d) / 2 + 1e-6;
+        // A car held by a wall gives the rest of its push to the other car.
+        const pa = a.state.position;
+        const pb = b.state.position;
+        const aWanted = clampInside([pa[0] - n[0] * push, pa[1] - n[1] * push]);
+        const bWanted = clampInside([pb[0] + n[0] * push, pb[1] + n[1] * push]);
+        const aLost = push + (aWanted[0] - pa[0]) * n[0] + (aWanted[1] - pa[1]) * n[1];
+        const bLost = push - ((bWanted[0] - pb[0]) * n[0] + (bWanted[1] - pb[1]) * n[1]);
+        const aShift = push + bLost;
+        const bShift = push + aLost;
         next[i] = {
           ...a,
           hits: ha,
           state: {
             ...a.state,
             speed: sa,
-            position: clampInside([
-              a.state.position[0] - n[0] * push,
-              a.state.position[1] - n[1] * push,
-            ]),
+            position: clampInside([pa[0] - n[0] * aShift, pa[1] - n[1] * aShift]),
           },
         };
         next[j] = {
@@ -154,10 +164,7 @@ export function stepBumpers(
           state: {
             ...b.state,
             speed: sb,
-            position: clampInside([
-              b.state.position[0] + n[0] * push,
-              b.state.position[1] + n[1] * push,
-            ]),
+            position: clampInside([pb[0] + n[0] * bShift, pb[1] + n[1] * bShift]),
           },
         };
       }

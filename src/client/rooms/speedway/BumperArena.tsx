@@ -1,12 +1,9 @@
 import { useMemo } from "react";
 import { ARENA } from "../../../game/speedway/bumper.ts";
-import type { Vec2 } from "../../../game/walk.ts";
+import { ARENA_ORIGIN } from "../../../game/speedway/layout.ts";
 import { Boxes } from "./Boxes.tsx";
 import { NEON, neonCycle } from "./neon.ts";
 import { quadBoxes, type Box } from "./strips.ts";
-
-/** Where the arena sits in the room, clear of the pit apron. */
-export const ARENA_ORIGIN: Vec2 = [36, -2];
 
 /** A glowing floor with neon grid lines, and neon-topped walls. */
 export function BumperArena() {

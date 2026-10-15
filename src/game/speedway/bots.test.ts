@@ -7,7 +7,7 @@ import { TRACKS, trackWalls } from "./track.ts";
 import { initialLap, updateLap } from "./laps.ts";
 import { botInput, type BotSkill } from "./bots.ts";
 
-const sedan = carById("corsa-lite");
+const sedan = carById("quill-lite");
 if (!sedan) throw new Error("missing car");
 const spec = sedan;
 
