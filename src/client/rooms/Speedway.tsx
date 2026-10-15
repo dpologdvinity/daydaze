@@ -88,8 +88,12 @@ export function Speedway({ onPick }: { onPick: PickHandler }) {
   const raceCars = useRef<(Group | null)[]>([]);
   const bumperCars = useRef<(Group | null)[]>([]);
   const player = useRef<Group | null>(null);
+  // Set while mounted. A request taken before the mount effect has run would
+  // be wiped by StrictMode's simulated unmount, so frames wait for this.
+  const live = useRef(false);
 
   useEffect(() => {
+    live.current = true;
     // Mirrors the drive for the browser tests, outside the frame loop.
     const id = window.setInterval(() => {
       const s = driving.session;
@@ -101,13 +105,14 @@ export function Speedway({ onPick }: { onPick: PickHandler }) {
     }, 100);
     return () => {
       window.clearInterval(id);
+      live.current = false;
       driving.session = null;
-      driving.request = null;
       releaseControls();
     };
   }, [canvas]);
 
   useFrame((_, dt) => {
+    if (!live.current) return;
     const request = driving.request;
     if (request !== null) {
       driving.request = null;
