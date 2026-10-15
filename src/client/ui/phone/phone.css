@@ -109,8 +109,9 @@
 
 .phone-open {
   position: fixed;
-  top: 16px;
-  right: 28px;
+  top: 66px;
+  right: 18px;
+  z-index: 6;
   padding: 9px 16px;
   border-radius: 999px;
   border: 0;
