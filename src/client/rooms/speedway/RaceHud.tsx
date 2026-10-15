@@ -24,6 +24,11 @@ export function useHud(): Hud | null {
   return hud;
 }
 
+const STATUS: Partial<Record<string, string>> = {
+  countdown: "Get ready",
+  finished: "Finished",
+};
+
 /** The race or bumper car readout, in the top corner while driving. */
 export function RaceHud(): JSX.Element | null {
   const hud = useHud();
@@ -47,8 +52,7 @@ export function RaceHud(): JSX.Element | null {
         {formatLap(hud.lapMs)}
       </p>
       <p>Best {hud.bestMs === null ? "--" : formatLap(hud.bestMs)}</p>
-      {hud.phase === "countdown" && <p role="status">Get ready</p>}
-      {hud.phase === "finished" && <p role="status">Finished</p>}
+      <p role="status">{STATUS[hud.phase] ?? ""}</p>
     </section>
   );
 }
