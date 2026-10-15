@@ -1,6 +1,12 @@
 import {
+  BODY_SHAPES,
   BROWS,
+  EYE_COLORS,
   EYESHADOWS,
+  FACE_SLIDERS,
+  encodeFace,
+  faceOf,
+  type Face,
   HAIR_COLORS,
   HAIR_STYLES,
   LIPS,
@@ -23,7 +29,7 @@ import { RaceHud, SpeedwayMenu } from "../rooms/speedway/RaceHud.tsx";
 import { CocktailIcon, RideIcon } from "./icons.tsx";
 import { DancePicker } from "./DancePicker.tsx";
 import { Dressing } from "./Dressing.tsx";
-import { Chips, Segmented, Swatches } from "./controls.tsx";
+import { Chips, Segmented, Slider, Swatches } from "./controls.tsx";
 import { VenueGames } from "./Minigames.tsx";
 
 // Sit and lean need furniture, so the player only picks these.
@@ -69,6 +75,8 @@ function Mirror({
   effects: Intensity;
   setEffects: (effects: Intensity) => void;
 }) {
+  const face = faceOf(look);
+  const setFace = (next: Face) => setLook({ ...look, face: encodeFace(next) });
   return (
     <>
       <section>
@@ -78,6 +86,32 @@ function Mirror({
           options={SKINS}
           value={look.skin}
           onPick={(skin) => setLook({ ...look, skin })}
+        />
+      </section>
+      <section>
+        <h3>Face</h3>
+        <Swatches
+          label="Eye colour"
+          options={EYE_COLORS}
+          value={face.eyeColor}
+          onPick={(eyeColor) => setFace({ ...face, eyeColor })}
+        />
+        {FACE_SLIDERS.map((s) => (
+          <Slider
+            key={s.id}
+            label={s.label}
+            value={face[s.id]}
+            onChange={(v) => setFace({ ...face, [s.id]: v })}
+          />
+        ))}
+      </section>
+      <section>
+        <h3>Body</h3>
+        <Chips
+          label="Body shape"
+          options={BODY_SHAPES}
+          value={face.body}
+          onPick={(body) => setFace({ ...face, body })}
         />
       </section>
       <section>

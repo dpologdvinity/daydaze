@@ -11,7 +11,14 @@ import {
   type DanceMoveId,
   type Pose,
 } from "../../../game/dance/moves.ts";
-import type { Look, Mood, SwimLook } from "../../../game/look.ts";
+import {
+  BODY_SHAPES,
+  FACE_SLIDERS,
+  faceOf,
+  type Look,
+  type Mood,
+  type SwimLook,
+} from "../../../game/look.ts";
 import { liveDrunk } from "../../effects/drunk.ts";
 import { useReducedMotion } from "../../motion.ts";
 import { pose, type Rig } from "../pose.ts";
@@ -142,6 +149,7 @@ function useBody(look: Look) {
       rest,
       marks: readMarks(meta),
       skin,
+      eye,
       materials: [skin, lashes, eye, cornea],
     };
   }, [gltf]);
@@ -182,6 +190,14 @@ function useBody(look: Look) {
       tex?.dispose();
     };
   }, [body, look.skin, look.lips, look.brows, look.shadow, invalidate]);
+  const eyeColor = faceOf(look).eyeColor;
+  useEffect(() => {
+    const tex = paintIris(eyeColor);
+    body.eye.map?.dispose();
+    body.eye.map = tex;
+    body.eye.needsUpdate = true;
+    invalidate();
+  }, [body, eyeColor, invalidate]);
   return body;
 }
 
@@ -323,6 +339,12 @@ export function HumanDoll({
     const tm = state.clock.elapsedTime;
     const closed = tm > blinkAt.current && tm < blinkAt.current + 0.14;
     setMorph(wornList.current, "blink", closed ? 1 : 0);
+    // face sliders and body shape, on every worn mesh (parts mount later)
+    const face = faceOf(look);
+    for (const s of FACE_SLIDERS) setMorph(wornList.current, s.id, face[s.id]);
+    for (const b of BODY_SHAPES)
+      if (b.id !== "classic")
+        setMorph(wornList.current, b.id, face.body === b.id ? 1 : 0);
     if (tm > blinkAt.current + 0.14)
       blinkAt.current = tm + 2.2 + ((seed * 13.7 + tm) % 3.1);
   });

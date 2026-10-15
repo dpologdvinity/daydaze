@@ -78,6 +78,91 @@ export type HairStyle = IdOf<typeof HAIR_STYLES>;
 export type Outfit = IdOf<typeof OUTFITS>;
 export type Mood = IdOf<typeof MOODS>;
 
+/** Eye colours for the 3D doll's irises. */
+export const EYE_COLORS = [
+  { id: "#6b3f22", label: "Brown" },
+  { id: "#3a2216", label: "Deep brown" },
+  { id: "#8a6a2e", label: "Hazel" },
+  { id: "#3f7a4a", label: "Green" },
+  { id: "#3d6fa8", label: "Blue" },
+  { id: "#7d8790", label: "Grey" },
+  { id: "#8e4dff", label: "Violet" },
+] as const;
+
+export const BODY_SHAPES = [
+  { id: "classic", label: "Classic" },
+  { id: "curvy", label: "Curvy" },
+  { id: "slim", label: "Slim" },
+  { id: "athletic", label: "Athletic" },
+] as const;
+
+/** Face sliders, -1..1; ids are the doll model's shape-key names. */
+export const FACE_SLIDERS = [
+  { id: "eyeSize", label: "Eye size" },
+  { id: "eyeTilt", label: "Eye tilt" },
+  { id: "nose", label: "Nose width" },
+  { id: "lips", label: "Lip fullness" },
+  { id: "cheeks", label: "Cheekbones" },
+  { id: "jaw", label: "Jaw" },
+] as const;
+
+export type FaceSlider = IdOf<typeof FACE_SLIDERS>;
+export type BodyShape = IdOf<typeof BODY_SHAPES>;
+
+export type Face = Record<FaceSlider, number> & {
+  body: BodyShape;
+  eyeColor: IdOf<typeof EYE_COLORS>;
+};
+
+export const DEFAULT_FACE: Face = {
+  eyeSize: 0,
+  eyeTilt: 0,
+  nose: 0,
+  lips: 0,
+  cheeks: 0,
+  jaw: 0,
+  body: "classic",
+  eyeColor: "#6b3f22",
+};
+
+// A face travels inside the look as one short string, because looks go over
+// the network as flat maps of short strings. One letter per slider (a..u is
+// -1..1 in steps of 0.1), then the body shape's and eye colour's indexes.
+const STEPS = "abcdefghijklmnopqrstu";
+
+export function encodeFace(face: Face): string {
+  const slider = (v: number) =>
+    STEPS[Math.round((Math.max(-1, Math.min(1, v)) + 1) * 10)];
+  return (
+    FACE_SLIDERS.map((s) => slider(face[s.id])).join("") +
+    BODY_SHAPES.findIndex((b) => b.id === face.body) +
+    EYE_COLORS.findIndex((c) => c.id === face.eyeColor)
+  );
+}
+
+/** The face a look's code describes; null when the code is malformed. */
+export function decodeFace(code: unknown): Face | null {
+  if (typeof code !== "string" || code.length !== FACE_SLIDERS.length + 2)
+    return null;
+  const face: Face = { ...DEFAULT_FACE };
+  for (const [i, s] of FACE_SLIDERS.entries()) {
+    const step = STEPS.indexOf(code[i]);
+    if (step < 0) return null;
+    face[s.id] = (step - 10) / 10;
+  }
+  const body = BODY_SHAPES[Number(code[FACE_SLIDERS.length])];
+  const eye = EYE_COLORS[Number(code[FACE_SLIDERS.length + 1])];
+  if (!body || !eye) return null;
+  face.body = body.id;
+  face.eyeColor = eye.id;
+  return face;
+}
+
+/** A look's face, or the default for looks from before the 3D doll. */
+export function faceOf(look: Look): Face {
+  return decodeFace(look.face) ?? DEFAULT_FACE;
+}
+
 export type Look = {
   skin: IdOf<typeof SKINS>;
   hairStyle: HairStyle;
@@ -87,10 +172,13 @@ export type Look = {
   outfit: Outfit;
   outfitColor: IdOf<typeof OUTFIT_COLORS>;
   shadow: IdOf<typeof EYESHADOWS>;
+  /** encodeFace's code for the face sliders, body shape and eye colour;
+   * looks from before the 3D doll have none and wear DEFAULT_FACE. */
+  face?: string;
 };
 
 const LOOK_CATALOGS: {
-  [K in keyof Look]: readonly {
+  [K in Exclude<keyof Look, "face">]: readonly {
     readonly id: Look[K];
     readonly label: string;
   }[];
@@ -114,8 +202,10 @@ export function validateLook(value: unknown): value is Look {
   // Own enumerable fields only, so prototypes and arrays cannot sneak through.
   const fields = new Map<string, unknown>(Object.entries(value));
   const catalogs = Object.entries(LOOK_CATALOGS);
+  const hasFace = fields.has("face");
   return (
-    fields.size === catalogs.length &&
+    fields.size === catalogs.length + (hasFace ? 1 : 0) &&
+    (!hasFace || decodeFace(fields.get("face")) !== null) &&
     catalogs.every(([key, catalog]) => isId(catalog, fields.get(key)))
   );
 }

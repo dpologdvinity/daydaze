@@ -357,6 +357,20 @@ button:focus-visible {
     border-color 0.15s;
 }
 
+.slider {
+  display: grid;
+  grid-template-columns: 7.5em 1fr;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.slider input {
+  accent-color: var(--fuchsia);
+  width: 100%;
+}
+
 .chip:hover {
   background: rgb(255 47 154 / 0.15);
 }

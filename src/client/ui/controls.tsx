@@ -95,3 +95,28 @@ export function Segmented<T extends string>({
     </div>
   );
 }
+
+/** A labelled -1..1 slider in steps of 0.1. */
+export function Slider({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <label className="slider">
+      <span>{label}</span>
+      <input
+        type="range"
+        min={-1}
+        max={1}
+        step={0.1}
+        value={value}
+        onChange={(e) => onChange(Number(e.currentTarget.value))}
+      />
+    </label>
+  );
+}
