@@ -1,4 +1,4 @@
-import { Environment, Lightformer, Sparkles } from "@react-three/drei";
+import { Environment, Lightformer } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -20,6 +20,7 @@ import { GamePad } from "./shared/GamePad.tsx";
 import { DECO, RingNeon, Neon, NeonText, SCRIPT } from "./shared/Neon.tsx";
 import { Palm } from "./shared/Palm.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
+import { Sparkles } from "./shared/Sparkles.tsx";
 
 const BEAMS: readonly Beam[] = [
   { position: [-5.2, 4.4, 4.5], color: "#ff2f9a", phase: 0 },
