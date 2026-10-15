@@ -16,6 +16,8 @@ import { ticketCashierBank } from "./ticket-cashier.ts";
 import { carnivalBarkerBank } from "./carnival-barker.ts";
 import { pitCrewBank } from "./pit-crew.ts";
 import { cottonCandyVendorBank } from "./cotton-candy-vendor.ts";
+import { guardBank } from "./guard.ts";
+import { policeBank } from "./police.ts";
 import type { DialogueRole, RoleBank } from "./types.ts";
 
 export const LINE_BANKS: Record<DialogueRole, RoleBank> = {
@@ -37,4 +39,6 @@ export const LINE_BANKS: Record<DialogueRole, RoleBank> = {
   "carnival-barker": carnivalBarkerBank,
   "pit-crew": pitCrewBank,
   "cotton-candy-vendor": cottonCandyVendorBank,
+  guard: guardBank,
+  police: policeBank,
 };
