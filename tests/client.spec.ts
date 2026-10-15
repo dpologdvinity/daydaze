@@ -194,6 +194,7 @@ test("Speedway: race starts, car moves, HUD shows lap 1", async ({ page }) => {
   await expect(canvas).toHaveAttribute("data-race-phase", "walk");
   await page.getByRole("button", { name: "Race the Neon Oval" }).click();
   await expect(canvas).toHaveAttribute("data-race-phase", "racing");
+  await expect(page.getByText("Lap 1 of 3")).toBeVisible();
   const start = await canvas.getAttribute("data-car-x");
   await page.keyboard.down("KeyW");
   await expect.poll(() => canvas.getAttribute("data-car-x")).not.toBe(start);
