@@ -220,7 +220,7 @@ test("Speedway on a phone: on-screen pedals drive the car", async ({
   await expect(canvas).toHaveAttribute("data-race-phase", "walk");
   await page.getByRole("button", { name: "Race the Boardwalk Loop" }).click();
   await expect(canvas).toHaveAttribute("data-race-phase", "racing");
-  const gas = page.getByRole("button", { name: "Throttle" });
+  const gas = page.getByRole("button", { name: "Gas" });
   await expect(gas).toBeInViewport();
   const start = await canvas.getAttribute("data-car-x");
   const box = await gas.boundingBox();

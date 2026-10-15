@@ -1,7 +1,16 @@
-import { useEffect, useState, type JSX, type PointerEvent } from "react";
+import {
+  useEffect,
+  useState,
+  type JSX,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type PointerEvent,
+} from "react";
 import { driving, setControl, type Control } from "../../world/driving.ts";
 import { ignoresKeys } from "../../world/keyTargets.ts";
 import { useHud } from "./RaceHud.tsx";
+
+// Keys that press a focused on-screen pedal, as a native button would.
+const PEDAL_KEYS = new Set([" ", "Enter"]);
 
 // Keys by physical position. Left steers positive, as the car model expects.
 const KEYS: Partial<Record<string, Control>> = {
@@ -73,6 +82,14 @@ export function DriveControls(): JSX.Element | null {
     onPointerUp: () => setControl(control, false),
     onPointerCancel: () => setControl(control, false),
     onLostPointerCapture: () => setControl(control, false),
+    onKeyDown: (e: ReactKeyboardEvent<HTMLButtonElement>) => {
+      if (!PEDAL_KEYS.has(e.key)) return;
+      e.preventDefault();
+      setControl(control, true);
+    },
+    onKeyUp: (e: ReactKeyboardEvent<HTMLButtonElement>) => {
+      if (PEDAL_KEYS.has(e.key)) setControl(control, false);
+    },
   });
 
   return (
@@ -112,7 +129,7 @@ export function DriveControls(): JSX.Element | null {
         >
           Brake
         </button>
-        <button type="button" {...pedal("throttle", "Throttle", "pedal gas")}>
+        <button type="button" {...pedal("throttle", "Gas", "pedal gas")}>
           Gas
         </button>
       </div>
