@@ -33,13 +33,11 @@ function overlaps(a: Box, b: Box): boolean {
 test("the race tracks and the bumper arena occupy separate space in the room", () => {
   const boxes: [string, Box][] = [
     ["bumper arena", boxOf(ARENA.walls, ARENA_ORIGIN)],
-    ...Object.entries(TRACK_ORIGINS).map(
-      ([id, origin]): [string, Box] => {
-        const track = TRACKS.find((t) => t.id === id);
-        if (!track) throw new Error(`missing track ${id}`);
-        return [id, boxOf(trackWalls(track), origin)];
-      },
-    ),
+    ...Object.entries(TRACK_ORIGINS).map(([id, origin]): [string, Box] => {
+      const track = TRACKS.find((t) => t.id === id);
+      if (!track) throw new Error(`missing track ${id}`);
+      return [id, boxOf(trackWalls(track), origin)];
+    }),
   ];
   for (let i = 0; i < boxes.length; i++) {
     for (let j = i + 1; j < boxes.length; j++) {
