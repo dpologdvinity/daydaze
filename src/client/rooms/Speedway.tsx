@@ -12,6 +12,7 @@ import {
   stepSession,
   type Session,
 } from "../../game/speedway/session.ts";
+import { ARENA_ORIGIN, TRACK_ORIGINS } from "../../game/speedway/layout.ts";
 import { SPEEDWAY_SPOTS } from "../../game/speedway/spots.ts";
 import { TRACKS, type Track } from "../../game/speedway/track.ts";
 import type { Vec2 } from "../../game/walk.ts";
@@ -22,7 +23,7 @@ import {
 } from "../world/driving.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
-import { ARENA_ORIGIN, BumperArena } from "./speedway/BumperArena.tsx";
+import { BumperArena } from "./speedway/BumperArena.tsx";
 import { CarMesh } from "./speedway/CarMesh.tsx";
 import { ChaseCamera } from "./speedway/ChaseCamera.tsx";
 import { Grandstand } from "./speedway/Grandstand.tsx";
@@ -35,8 +36,16 @@ type RaceSetup = { track: Track; origin: Vec2; skill: BotSkill };
 
 // Each race track sits behind the grandstand, in its own place in the world.
 const RACES: Record<"race-oval" | "race-boardwalk", RaceSetup> = {
-  "race-oval": { track: TRACKS[0], origin: [0, -84], skill: "easy" },
-  "race-boardwalk": { track: TRACKS[1], origin: [0, -102], skill: "medium" },
+  "race-oval": {
+    track: TRACKS[0],
+    origin: TRACK_ORIGINS["neon-oval"],
+    skill: "easy",
+  },
+  "race-boardwalk": {
+    track: TRACKS[1],
+    origin: TRACK_ORIGINS["boardwalk-loop"],
+    skill: "medium",
+  },
 };
 const RACE_BOTS = 5;
 const KART = carById("zip-kart");
