@@ -206,6 +206,8 @@ function Part({
         src.skeleton.boneInverses,
       );
       mesh.bind(skeleton, src.bindMatrix);
+      // exports can carry non-zero default weights; the doll sets its own
+      mesh.morphTargetInfluences?.fill(0);
       mesh.frustumCulled = false;
       const old =
         src.material instanceof THREE.MeshStandardMaterial

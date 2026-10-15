@@ -135,6 +135,7 @@ def attach(ctx, ob, weights, keys):
     for k, d in keys.items():
         sk = ob.shape_key_add(name=k, from_mix=False)
         sk.slider_min = -1
+        sk.value = 0
         sk.data.foreach_set("co", (base + ctx.to_blender(d, offset=False)).ravel())
 
 

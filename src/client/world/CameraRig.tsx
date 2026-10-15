@@ -79,8 +79,8 @@ const MAX_DISTANCE: Record<RoomId, number> = {
 
 // Close-ups orbit with the player: offsets are in the player's frame.
 const CLOSE: Record<"full" | "face", { off: THREE.Vector3; look: number }> = {
-  full: { off: new THREE.Vector3(0.55, 1.15, 3.1), look: 0.95 },
-  face: { off: new THREE.Vector3(0.2, 1.55, 1.3), look: 1.45 },
+  full: { off: new THREE.Vector3(0.6, 1.2, 4.1), look: 0.9 },
+  face: { off: new THREE.Vector3(0.12, 1.6, 0.85), look: 1.53 },
 };
 
 const Y = new THREE.Vector3(0, 1, 0);
