@@ -15,6 +15,8 @@ import {
 } from "../../game/look.ts";
 import type { RoomId } from "../../game/rooms.ts";
 import { VIEWS, type View } from "../world/CameraRig.tsx";
+import { DriveControls } from "../rooms/speedway/DriveControls.tsx";
+import { RaceHud, SpeedwayMenu } from "../rooms/speedway/RaceHud.tsx";
 import { Chips, Segmented, Swatches } from "./controls.tsx";
 
 // Sit and lean need furniture, so the player only picks these.
@@ -30,6 +32,7 @@ const ROOM_HINTS: Record<RoomId, string> = {
   "amusement-park":
     "Night carnival. Tap a boarding ring to ride, or use WASD to walk.",
   "water-park": "Swimsuits on. Tap the slide tower to ride.",
+  speedway: "Pit lane. Tap a spot to race or ride the bumper cars.",
   city: "Downtown after dark. Tap the street or use WASD, then walk into a lit door.",
 };
 
@@ -191,6 +194,14 @@ export function Overlay({
         <button type="button" className="ride" onClick={onRide}>
           Ride a slide
         </button>
+      )}
+
+      {room === "speedway" && (
+        <>
+          <SpeedwayMenu />
+          <RaceHud />
+          <DriveControls />
+        </>
       )}
 
       <Segmented

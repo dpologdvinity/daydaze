@@ -185,3 +185,49 @@ test("the city loads, the player walks with the keys, and the scene renders", as
   await page.keyboard.up("KeyD");
   expect(errors).toEqual([]);
 });
+
+test("Speedway: race starts, car moves, HUD shows lap 1", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=speedway`);
+  await expect(roomTitle(page)).toHaveText("The Speedway");
+  const canvas = canvasOf(page);
+  await expect(canvas).toHaveAttribute("data-race-phase", "walk");
+  await page.getByRole("button", { name: "Race the Neon Oval" }).click();
+  await expect(canvas).toHaveAttribute("data-race-phase", "racing");
+  const start = await canvas.getAttribute("data-car-x");
+  await page.keyboard.down("KeyW");
+  await expect.poll(() => canvas.getAttribute("data-car-x")).not.toBe(start);
+  await expect(page.getByRole("timer", { name: "Lap time" })).not.toHaveText(
+    "0:00.00",
+  );
+  await page.keyboard.up("KeyW");
+  const results = await new AxeBuilder({ page }).exclude("canvas").analyze();
+  expect(results.violations).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
+test("Speedway on a phone: on-screen pedals drive the car", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    hasTouch: true,
+    isMobile: true,
+  });
+  const page = await context.newPage();
+  await page.goto(`${LOW}&room=speedway`);
+  const canvas = canvasOf(page);
+  await expect(canvas).toHaveAttribute("data-race-phase", "walk");
+  await page.getByRole("button", { name: "Race the Boardwalk Loop" }).click();
+  await expect(canvas).toHaveAttribute("data-race-phase", "racing");
+  const gas = page.getByRole("button", { name: "Throttle" });
+  await expect(gas).toBeInViewport();
+  const start = await canvas.getAttribute("data-car-x");
+  const box = await gas.boundingBox();
+  if (!box) throw new Error("the throttle pedal has no box");
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await expect.poll(() => canvas.getAttribute("data-car-x")).not.toBe(start);
+  await page.mouse.up();
+  await context.close();
+});

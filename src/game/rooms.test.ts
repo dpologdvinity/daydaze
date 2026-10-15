@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { ROOMS, isRoomId } from "./rooms.ts";
+import { SPEEDWAY_SPOTS } from "./speedway/spots.ts";
 import { pointInPolygon, type Vec2 } from "./walk.ts";
 
 test("every room is registered under its own id", () => {
@@ -8,6 +9,7 @@ test("every room is registered under its own id", () => {
     "amusement-park",
     "city",
     "plaza",
+    "speedway",
     "velvet-room",
     "water-park",
   ]);
@@ -19,6 +21,7 @@ test("isRoomId accepts registered rooms only", () => {
   assert.equal(isRoomId("plaza"), true);
   assert.equal(isRoomId("amusement-park"), true);
   assert.equal(isRoomId("water-park"), true);
+  assert.equal(isRoomId("speedway"), true);
   for (const value of ["toString", "constructor", "Plaza", "", null, 1, {}]) {
     assert.equal(isRoomId(value), false, String(value));
   }
@@ -118,4 +121,36 @@ test("the Plaza gate and the park's exit lead to each other", () => {
     pointInPolygon(ROOMS.plaza.walkable, exit.targetSpawn.position),
     true,
   );
+});
+
+test("the Plaza portal to the Speedway lands on the Speedway's walkable floor", () => {
+  const gate = ROOMS.plaza.portals.find((p) => p.target === "speedway");
+  assert.ok(gate, "plaza has a Speedway portal");
+  assert.equal(pointInPolygon(ROOMS.plaza.walkable, gate.position), true);
+  assert.equal(
+    pointInPolygon(ROOMS.speedway.walkable, gate.targetSpawn.position),
+    true,
+  );
+  const exit = ROOMS.speedway.portals.find((p) => p.target === "plaza");
+  assert.ok(exit, "the Speedway has a way back to the Plaza");
+  assert.equal(pointInPolygon(ROOMS.speedway.walkable, exit.position), true);
+  assert.equal(
+    pointInPolygon(ROOMS.plaza.walkable, exit.targetSpawn.position),
+    true,
+  );
+});
+
+test("every Speedway spot lies on the walkable floor", () => {
+  assert.deepEqual(SPEEDWAY_SPOTS.map((s) => s.id).sort(), [
+    "bumper-cars",
+    "race-boardwalk",
+    "race-oval",
+  ]);
+  for (const spot of SPEEDWAY_SPOTS) {
+    assert.equal(
+      pointInPolygon(ROOMS.speedway.walkable, spot.position),
+      true,
+      spot.id,
+    );
+  }
 });

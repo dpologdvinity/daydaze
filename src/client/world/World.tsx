@@ -55,7 +55,12 @@ const CityScene = lazy(() =>
 // Enough for the environment map, face textures and reflector to settle.
 const STILL_FRAMES = 4;
 
-// The park is big and rarely visited, so its code loads on first arrival.
+// The Speedway and the park are big and rarely visited, so their code loads on first arrival.
+const Speedway = lazy(() =>
+  import("../rooms/Speedway.tsx").then((m) => ({
+    default: m.Speedway,
+  })),
+);
 const AmusementPark = lazy(() =>
   import("../rooms/AmusementPark.tsx").then((m) => ({
     default: m.AmusementPark,
@@ -118,6 +123,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   plaza: Plaza,
   "water-park": WaterPark,
   "amusement-park": AmusementPark,
+  speedway: Speedway,
 };
 
 export type WorldProps = {

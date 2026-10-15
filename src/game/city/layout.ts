@@ -184,6 +184,15 @@ const CARNIVAL_DOOR: Door = {
   targetSpawn: { position: [0, 4.6], yaw: Math.PI },
 };
 
+const SPEEDWAY_DOOR: Door = {
+  position: [81, -12.5],
+  radius: 2,
+  label: "Into the Speedway",
+  target: "speedway",
+  // the Speedway's arrival point; see rooms.ts
+  targetSpawn: { position: [-8, 0], yaw: Math.PI / 2 },
+};
+
 const SPLASH_DOOR: Door = {
   position: [4, -12.5],
   radius: 2,
@@ -395,6 +404,16 @@ export const BUILDINGS: readonly Building[] = [
     style: "gate",
     sign: { text: "SPLASH ZONE", color: "#4fe3ff" },
     door: SPLASH_DOOR,
+  },
+  {
+    // The gate to the Speedway, on the north avenue sidewalk past the cross street.
+    id: "speedway-gate",
+    neighborhood: "nightlife-row",
+    footprint: rect(76, -40, 86, -14),
+    height: 14,
+    style: "gate",
+    sign: { text: "SPEEDWAY", color: "#ff4fb3" },
+    door: SPEEDWAY_DOOR,
   },
 ];
 

@@ -192,6 +192,7 @@ test("each venue gate's door fires from the sidewalk, and the venue's exit leads
   for (const [gateId, venue] of [
     ["carnival-gate", "amusement-park"],
     ["splash-gate", "water-park"],
+    ["speedway-gate", "speedway"],
   ] as const) {
     const door = BUILDINGS.find((b) => b.id === gateId)?.door;
     assert.ok(door, `${gateId} has a door`);
