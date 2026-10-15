@@ -27,6 +27,67 @@ const PLANE = new THREE.PlaneGeometry(1, 1);
 const CIRCLE = new THREE.CircleGeometry(0.5, 12);
 const PUFF = new THREE.SphereGeometry(0.5, 6, 4);
 
+/**
+ * A window: a dark frame round two panes, a mullion and a transom, with blinds
+ * across the top pane. Instance colours multiply through it, so the frame stays
+ * dark on every lit window and the glass takes the window's colour.
+ */
+function windowTexture(): THREE.Texture {
+  const canvas = document.createElement("canvas");
+  canvas.width = 64;
+  canvas.height = 72;
+  const g = canvas.getContext("2d");
+  if (!g) throw new Error("no 2d context for the window texture");
+  g.fillStyle = "#000";
+  g.fillRect(0, 0, 64, 72);
+  const glass = g.createLinearGradient(0, 6, 0, 66);
+  glass.addColorStop(0, "#ffffff");
+  glass.addColorStop(1, "#b8b6d0");
+  g.fillStyle = glass;
+  g.fillRect(6, 6, 52, 60);
+  g.fillStyle = "#000";
+  g.fillRect(31, 6, 2, 60);
+  g.fillRect(6, 34, 52, 2);
+  g.fillStyle = "rgba(0, 0, 0, 0.25)";
+  for (let y = 9; y < 30; y += 4) g.fillRect(8, y, 48, 1);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+/**
+ * A palm leaf on an alpha card: a rib up the middle with leaflets off it, and
+ * nothing between them, so the sky shows through the frond.
+ */
+function leafTexture(): THREE.Texture {
+  const canvas = document.createElement("canvas");
+  canvas.width = 64;
+  canvas.height = 256;
+  const g = canvas.getContext("2d");
+  if (!g) throw new Error("no 2d context for the leaf texture");
+  g.strokeStyle = "#ffffff";
+  g.lineCap = "round";
+  g.lineWidth = 3;
+  g.beginPath();
+  g.moveTo(32, 0);
+  g.lineTo(32, 256);
+  g.stroke();
+  g.lineWidth = 2.5;
+  for (let y = 8; y < 236; y += 8) {
+    // leaflets are longest in the middle of the frond and short at both ends
+    const reach = 12 + 22 * Math.sin(Math.PI * (y / 256));
+    g.beginPath();
+    g.moveTo(32, y);
+    g.lineTo(32 - reach, y + 22);
+    g.moveTo(32, y);
+    g.lineTo(32 + reach, y + 22);
+    g.stroke();
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
 // Shared across mounts, so a mesh that is torn down never frees them.
 const GEOMETRY: Record<Shared, THREE.BufferGeometry> = {
   road: BOX,
@@ -35,6 +96,7 @@ const GEOMETRY: Record<Shared, THREE.BufferGeometry> = {
   body: BOX,
   band: BOX,
   roof: BOX,
+  ledge: BOX,
   glow: BOX,
   awning: BOX,
   sign: BOX,
@@ -43,7 +105,7 @@ const GEOMETRY: Record<Shared, THREE.BufferGeometry> = {
   pole: CYLINDER,
   lamp: SPHERE,
   palmTrunk: CYLINDER,
-  palmFrond: CONE,
+  palmFrond: PLANE,
   treeTrunk: CYLINDER,
   treeCanopy: SPHERE,
   window: PLANE,
@@ -83,6 +145,7 @@ const MATERIAL: Record<Shared, THREE.Material> = {
   }),
   band: new THREE.MeshBasicMaterial({ toneMapped: false }),
   roof: new THREE.MeshStandardMaterial({ roughness: 0.6 }),
+  ledge: new THREE.MeshStandardMaterial({ roughness: 0.55, metalness: 0.1 }),
   glow: new THREE.MeshBasicMaterial({ toneMapped: false }),
   // flat-lit, so the striped colours read at night without a lamp on them
   awning: new THREE.MeshBasicMaterial({ toneMapped: false }),
@@ -99,10 +162,11 @@ const MATERIAL: Record<Shared, THREE.Material> = {
     color: "#6b4a2b",
     roughness: 0.9,
   }),
+  // the leaf colour comes from each frond's instance colour, the shape from the alpha card
   palmFrond: new THREE.MeshStandardMaterial({
-    color: "#1f7a4f",
     roughness: 0.6,
     side: THREE.DoubleSide,
+    alphaTest: 0.5,
   }),
   treeTrunk: new THREE.MeshStandardMaterial({
     color: "#4a3524",
@@ -181,6 +245,11 @@ export function createKindMeshes(
 ): KindMeshes {
   const make = (kind: Shared) =>
     instanced(GEOMETRY[kind], MATERIAL[kind], capacity[kind]);
+  // the card and frame textures are drawn once, on first mount
+  const windowMaterial = MATERIAL.window as THREE.MeshBasicMaterial;
+  windowMaterial.map ??= windowTexture();
+  const frond = MATERIAL.palmFrond as THREE.MeshStandardMaterial;
+  frond.map ??= leafTexture();
   const labels = new THREE.PlaneGeometry(1, 1);
   labels.setAttribute(
     "aUv",
@@ -202,6 +271,7 @@ export function createKindMeshes(
     body: make("body"),
     band: make("band"),
     roof: make("roof"),
+    ledge: make("ledge"),
     glow: make("glow"),
     awning: make("awning"),
     sign: make("sign"),

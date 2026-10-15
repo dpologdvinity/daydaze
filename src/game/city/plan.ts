@@ -21,6 +21,7 @@ export const KINDS = [
   "body",
   "band",
   "roof",
+  "ledge",
   "glow",
   "awning",
   "sign",
@@ -79,6 +80,7 @@ export const TRIANGLES: Record<Kind, number> = {
   body: 12,
   band: 12,
   roof: 12,
+  ledge: 12,
   glow: 12,
   awning: 12,
   sign: 12,
@@ -87,7 +89,7 @@ export const TRIANGLES: Record<Kind, number> = {
   pole: 32,
   lamp: 160,
   palmTrunk: 32,
-  palmFrond: 12,
+  palmFrond: 2,
   treeTrunk: 32,
   treeCanopy: 160,
   window: 2,
@@ -120,6 +122,7 @@ const BODY_COLOR: Record<BuildingStyle, string> = {
 };
 
 const BAND_COLOR = "#6a5cff";
+const FROND_COLORS = ["#1f7a4f", "#2fa36b", "#25905c", "#3dbf7a"];
 const DASH_COLOR = "#ffe6a8";
 const SURFACE_COLOR = {
   road: "#2a2050",
@@ -158,6 +161,7 @@ function emptyInstances(): Record<Kind, Instance[]> {
     body: [],
     band: [],
     roof: [],
+    ledge: [],
     glow: [],
     awning: [],
     sign: [],
@@ -246,6 +250,144 @@ function laneDashes(cells: readonly Cell[], out: Instance[]): void {
           });
         }
       }
+    }
+  }
+}
+
+const SIDEWALK_BOXES: readonly Box[] = CITY_SURFACES.filter(
+  (s) => s.kind !== "road",
+).map((s) => boundsOf(s.polygon));
+const CURB_COLOR = "#8c80c0";
+const SEAM_COLOR = "#3d2f6e";
+const ZEBRA_COLOR = "#e8e6f5";
+const MANHOLE_COLOR = "#1a1230";
+const CURB_EPS = 1e-6;
+
+/** The shared edge of two boxes that touch along a line, or null. */
+function touching(
+  a: Box,
+  b: Box,
+): { axis: "x" | "z"; line: number; lo: number; hi: number } | null {
+  const shared = (
+    lo: number,
+    hi: number,
+  ): { lo: number; hi: number } | null =>
+    hi - lo > CURB_EPS ? { lo, hi } : null;
+  for (const [edge, other] of [
+    [a.z1, b.z0],
+    [a.z0, b.z1],
+  ] as const) {
+    if (Math.abs(edge - other) > CURB_EPS) continue;
+    const span = shared(Math.max(a.x0, b.x0), Math.min(a.x1, b.x1));
+    if (span) return { axis: "z", line: edge, ...span };
+  }
+  for (const [edge, other] of [
+    [a.x1, b.x0],
+    [a.x0, b.x1],
+  ] as const) {
+    if (Math.abs(edge - other) > CURB_EPS) continue;
+    const span = shared(Math.max(a.z0, b.z0), Math.min(a.z1, b.z1));
+    if (span) return { axis: "x", line: edge, ...span };
+  }
+  return null;
+}
+
+/** Each box as an instance in the cells it overlaps. */
+function pieces(box: Box, cells: readonly Cell[], out: Instance[], m: Partial<Instance>): void {
+  for (const cell of cells) {
+    const p = overlap(box, cell);
+    if (!p) continue;
+    out.push({
+      x: (p.x0 + p.x1) / 2,
+      y: 0,
+      z: (p.z0 + p.z1) / 2,
+      sx: p.x1 - p.x0,
+      sy: 0,
+      sz: p.z1 - p.z0,
+      ...m,
+    });
+  }
+}
+
+/**
+ * Curbs, zebra crossings, manholes and sidewalk seams: the marks that make a
+ * street read as a street rather than a flat stripe of colour.
+ */
+function streetMarks(cells: readonly Cell[], out: Record<Kind, Instance[]>): void {
+  const inCells = (x: number, z: number) =>
+    cells.some((c) => cellAt([x, z]).key === c.key);
+
+  // a raised lip where each sidewalk meets the road beside it
+  for (const side of SIDEWALK_BOXES) {
+    for (const road of ROAD_SURFACES) {
+      const edge = touching(side, road);
+      if (!edge) continue;
+      const half = 0.12;
+      const lip: Box =
+        edge.axis === "z"
+          ? { x0: edge.lo, x1: edge.hi, z0: edge.line - half, z1: edge.line + half }
+          : { x0: edge.line - half, x1: edge.line + half, z0: edge.lo, z1: edge.hi };
+      pieces(lip, cells, out.ledge, { y: 0.11, sy: 0.22, color: CURB_COLOR });
+    }
+  }
+
+  // zebra stripes on each road, at the two ends of every crossing
+  for (let i = 0; i < ROAD_SURFACES.length; i++) {
+    for (let j = i + 1; j < ROAD_SURFACES.length; j++) {
+      const a = ROAD_SURFACES[i];
+      const b = ROAD_SURFACES[j];
+      const I = overlap(a, b);
+      if (!I) continue;
+      for (const road of [a, b]) {
+        const vertical = road.z1 - road.z0 > road.x1 - road.x0;
+        const ends = vertical
+          ? [I.z0 - 2, I.z1 + 2]
+          : [I.x0 - 2, I.x1 + 2];
+        for (const end of ends) {
+          for (let k = -1.2; k <= 1.2; k += 0.8) {
+            const at = end + k;
+            if (vertical) {
+              const x = (road.x0 + road.x1) / 2;
+              if (!inCells(x, at)) continue;
+              out.lane.push({ x, y: 0.045, z: at, sx: road.x1 - road.x0, sy: 0.02, sz: 0.4, color: ZEBRA_COLOR });
+            } else {
+              const z = (road.z0 + road.z1) / 2;
+              if (!inCells(at, z)) continue;
+              out.lane.push({ x: at, y: 0.045, z, sx: 0.4, sy: 0.02, sz: road.z1 - road.z0, color: ZEBRA_COLOR });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // manholes every 30 m along each road, clear of the crossings and the dashes
+  for (const road of ROAD_SURFACES) {
+    const vertical = road.z1 - road.z0 > road.x1 - road.x0;
+    const from = vertical ? road.z0 : road.x0;
+    const to = vertical ? road.z1 : road.x1;
+    for (let at = from + 12; at < to - 6; at += 30) {
+      const x = vertical ? (road.x0 + road.x1) / 2 + 2.2 : at;
+      const z = vertical ? at : (road.z0 + road.z1) / 2 + 2.2;
+      const clear = ROAD_SURFACES.every(
+        (o) => o === road || x < o.x0 - 4 || x > o.x1 + 4 || z < o.z0 - 4 || z > o.z1 + 4,
+      );
+      if (clear && inCells(x, z)) {
+        out.lane.push({ x, y: 0.05, z, sx: 1.1, sy: 0.03, sz: 1.1, color: MANHOLE_COLOR });
+      }
+    }
+  }
+
+  // paving joints across every sidewalk, every 2.5 m
+  for (const s of SIDEWALK_BOXES) {
+    const along = s.x1 - s.x0 >= s.z1 - s.z0;
+    const from = along ? s.x0 : s.z0;
+    const to = along ? s.x1 : s.z1;
+    for (let at = from + 2.5; at < to; at += 2.5) {
+      const seam: Box = along
+        ? { x0: at - 0.04, x1: at + 0.04, z0: s.z0, z1: s.z1 }
+        : { x0: s.x0, x1: s.x1, z0: at - 0.04, z1: at + 0.04 };
+      pieces(seam, cells, out.lane, { y: 0.145, sy: 0.01, color: SEAM_COLOR });
     }
   }
 }
@@ -347,16 +489,33 @@ function propInstances(
     });
   } else if (propKind === "palm") {
     out.palmTrunk.push({ x, y: 3.5, z, sx: 0.3, sy: 7, sz: 0.3 });
-    for (let k = 0; k < 6; k++) {
-      const a = (k * Math.PI) / 3;
+    // nine fronds of three lengths, each drooping a little more than the last
+    for (let k = 0; k < 9; k++) {
+      const a = (k * Math.PI * 2) / 9 + (k % 2) * 0.12;
+      const len = 2.8 + (k % 3) * 0.5;
+      const droop = 0.3 + (k % 4) * 0.14;
+      const reach = len / 2 + 0.3;
       out.palmFrond.push({
-        x: x + Math.cos(a) * 1.5,
-        y: 6.9,
-        z: z + Math.sin(a) * 1.5,
-        sx: 0.9,
-        sy: 3,
-        sz: 0.9,
-        rot: [0, -a, -Math.PI / 2],
+        x: x + Math.cos(a) * reach,
+        y: 6.8 - droop * reach * 0.5,
+        z: z + Math.sin(a) * reach,
+        sx: 1.6,
+        sy: len,
+        sz: 1,
+        rot: [0, -a, -Math.PI / 2 - droop],
+        color: FROND_COLORS[k % FROND_COLORS.length],
+      });
+    }
+    // coconuts tucked under the crown
+    for (const [dx, dz] of [[0.3, 0.2], [-0.25, 0.3], [0.1, -0.3]]) {
+      out.treeCanopy.push({
+        x: x + dx,
+        y: 6.3,
+        z: z + dz,
+        sx: 0.4,
+        sy: 0.4,
+        sz: 0.4,
+        color: "#5a3a1f",
       });
     }
   } else {
@@ -406,6 +565,7 @@ export function planCity(
   }
 
   laneDashes(cells, instances.lane);
+  streetMarks(cells, instances);
 
   for (const b of BUILDINGS) {
     if (inView(boundsOf(b.footprint))) buildingInstances(b, instances, lights);

@@ -12,6 +12,10 @@ import {
   type BuildingStyle,
 } from "./layout.ts";
 import type { Instance, Kind } from "./plan.ts";
+import { hash, pick } from "./hash.ts";
+import { detailBuilding, planter, trafficLights } from "./detail.ts";
+
+export { hash };
 
 /** An instance on the ground at `at`, so the planner can cull it by cell. */
 export type Placed = { at: Vec2; kind: Kind; instance: Instance };
@@ -45,6 +49,8 @@ const WINDOW_COLORS = [
   "#ff7ac8",
   "#a58bff",
 ];
+const UNLIT_WINDOW = "#2a2250";
+const SILL = "#3a2f63";
 const BULB_COLORS = ["#ffd08a", "#ff4fb3", "#4fe3ff", "#7dff6b", "#ffd84f"];
 const QUEUE_COLORS = ["#ff4fb3", "#4fe3ff", "#ffd84f"];
 const OUTFITS = [
@@ -122,21 +128,6 @@ export function labelUv(text: string): [number, number, number, number] {
     1 / LABEL_COLUMNS,
     1 / LABEL_ROWS,
   ];
-}
-
-function fract(v: number): number {
-  return v - Math.floor(v);
-}
-
-/** A stable 0..1 number for a place, so the same spot always dresses the same. */
-export function hash(...n: number[]): number {
-  let h = 0.37;
-  for (const v of n) h = fract(Math.sin(h * 91.3 + v * 17.7) * 43758.5453);
-  return h;
-}
-
-function pick<T>(list: readonly T[], r: number): T {
-  return list[Math.min(list.length - 1, Math.floor(r * list.length))];
 }
 
 function nodeX(id: string): number {
@@ -253,7 +244,10 @@ function blade(out: Buckets, f: Front, text: string, color: string): void {
   }
 }
 
-/** Lit windows on all four faces: warm, cool and pink, about half of them on. */
+/**
+ * Windows on all four faces, each with a sill under it. About half are lit,
+ * warm, cool or pink; the rest are dark glass with the frame showing.
+ */
 function windows(b: Building, f: Front, out: Buckets): void {
   if (b.style === "gate") return;
   for (let y = 5; y < f.h - 1.5; y += FLOOR) {
@@ -262,7 +256,7 @@ function windows(b: Building, f: Front, out: Buckets): void {
       [f.z1, 1, 0],
     ] as const) {
       for (let x = f.x0 + WINDOW_STEP / 2; x < f.x1 - 1; x += WINDOW_STEP) {
-        if (hash(x, y, z) > 0.55) continue;
+        const lit = hash(x, y, z) <= 0.55;
         out.window.push({
           x,
           y,
@@ -271,7 +265,16 @@ function windows(b: Building, f: Front, out: Buckets): void {
           sy: 2.2,
           sz: 1,
           rot: [0, rot, 0],
-          color: pick(WINDOW_COLORS, hash(y, x, z, 3)),
+          color: lit ? pick(WINDOW_COLORS, hash(y, x, z, 3)) : UNLIT_WINDOW,
+        });
+        out.ledge.push({
+          x,
+          y: y - 1.25,
+          z: z + dz * 0.25,
+          sx: 2.2,
+          sy: 0.14,
+          sz: 0.5,
+          color: SILL,
         });
       }
     }
@@ -280,7 +283,7 @@ function windows(b: Building, f: Front, out: Buckets): void {
       [f.x1, 1, Math.PI / 2],
     ] as const) {
       for (let z = f.z0 + WINDOW_STEP / 2; z < f.z1 - 1; z += WINDOW_STEP) {
-        if (hash(z, y, x) > 0.55) continue;
+        const lit = hash(z, y, x) <= 0.55;
         out.window.push({
           x: x + dx * 0.07,
           y,
@@ -289,7 +292,16 @@ function windows(b: Building, f: Front, out: Buckets): void {
           sy: 2.2,
           sz: 1,
           rot: [0, rot, 0],
-          color: pick(WINDOW_COLORS, hash(y, z, x, 3)),
+          color: lit ? pick(WINDOW_COLORS, hash(y, z, x, 3)) : UNLIT_WINDOW,
+        });
+        out.ledge.push({
+          x: x + dx * 0.25,
+          y: y - 1.25,
+          z,
+          sx: 0.5,
+          sy: 0.14,
+          sz: 2.2,
+          color: SILL,
         });
       }
     }
@@ -442,6 +454,7 @@ export function dressBuilding(b: Building, out: Buckets): void {
       ad.color,
       ad.text,
     );
+  detailBuilding(b, f, out);
   if (b.style === "gate") arch(out, f, b.sign?.color ?? accent);
 }
 
@@ -502,6 +515,40 @@ function car(
     rot,
     color: "#120c24",
   });
+  // four wheels, tyres turned across the car, and two headlights at the nose
+  const c = Math.cos(yaw);
+  const s = Math.sin(yaw);
+  const at = (lx: number, lz: number): [number, number] => [
+    x + lx * c + lz * s,
+    z - lx * s + lz * c,
+  ];
+  for (const lx of [-1.4, 1.4]) {
+    for (const lz of [-0.85, 0.85]) {
+      const [wx, wz] = at(lx, lz);
+      put(out, "pole", {
+        x: wx,
+        y: 0.35,
+        z: wz,
+        sx: 0.7,
+        sy: 0.3,
+        sz: 0.7,
+        rot: [Math.PI / 2, yaw, 0],
+        color: "#120c24",
+      });
+    }
+  }
+  for (const lz of [-0.6, 0.6]) {
+    const [hx, hz] = at(2.12, lz);
+    put(out, "bulb", {
+      x: hx,
+      y: 0.7,
+      z: hz,
+      sx: 0.2,
+      sy: 0.2,
+      sz: 0.2,
+      color: "#fff1dc",
+    });
+  }
 }
 
 /** Parked cars at the kerbs: a row along the avenue and along each cross street. */
@@ -573,24 +620,7 @@ function furniture(out: Placed[]): void {
       });
     }
     if (!nearCross(x + 6, 7) && hash(x, z, 10) < 0.5) {
-      put(out, "furniture", {
-        x: x + 6,
-        y: 0.25,
-        z: side * 9.6,
-        sx: 1.6,
-        sy: 0.5,
-        sz: 1,
-        color: "#6b3f8a",
-      });
-      put(out, "treeCanopy", {
-        x: x + 6,
-        y: 0.85,
-        z: side * 9.6,
-        sx: 1.0,
-        sy: 0.7,
-        sz: 1.0,
-        color: "#2fa36b",
-      });
+      planter(out, x + 6, side * 9.6, hash(x, z, 12));
     }
   }
   for (const x of [152.5, 160]) {
@@ -603,15 +633,7 @@ function furniture(out: Placed[]): void {
       sz: 0.5,
       color: "#ff4fb3",
     });
-    put(out, "furniture", {
-      x,
-      y: 0.8,
-      z: -9.5,
-      sx: 0.6,
-      sy: 0.3,
-      sz: 0.45,
-      color: "#120c24",
-    });
+    planter(out, x, -9.5, x);
   }
 }
 
@@ -684,6 +706,7 @@ function streetDress(): Placed[] {
   busStops(out);
   grates(out);
   strings(out);
+  trafficLights(out, CROSS_X);
   return out;
 }
 
