@@ -84,6 +84,7 @@ State-changing requests and room sockets must come from the Worker's own origin 
 - Render budget on the low tier: under 250 draw calls, under 300k triangles, at most 4 real lights. Use instancing and emissive materials; allocate nothing inside `useFrame`.
 - NPC lines come from `pickLine` in `src/game/dialogue/`; add lines to the role files (10+ per situation, handwritten). Venue-specific lines use `when: { venue: "<room-id>" }`.
 - Free resources when done: stop dev servers, delete `dist/` and `test-results/`, remove merged worktrees.
+- 3D assets: optimize GLB files with `npx -y @gltf-transform/cli@4.5.1 optimize in.glb out.glb --compress meshopt --texture-compress webp` (run on demand, not a dependency: its `braces` dep has an unpatched advisory). Profile scenes with the Chrome DevTools MCP (telemetry off via env in `~/.claude/settings.json`).
 - Blender: `blender-mcp-headless` (in `~/.local/bin`) starts Blender on a virtual display with the MCP add-on listening on port 9876; the `blender` MCP server (user scope) talks to it.
 
 ## Commits
