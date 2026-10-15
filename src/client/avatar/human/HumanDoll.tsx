@@ -254,14 +254,28 @@ function Part({
         src.material instanceof THREE.MeshStandardMaterial
           ? src.material
           : null;
-      const mat = new THREE.MeshStandardMaterial({
-        map: old?.map ?? null,
-        color: tint.kind === "keep" ? "#ffffff" : tint.colour,
-        roughness:
-          tint.kind === "hair" ? 0.45 : tint.kind === "gloss" ? 0.22 : 0.7,
-        side: tint.kind === "hair" ? THREE.DoubleSide : THREE.FrontSide,
-        alphaTest: tint.kind === "hair" ? 0.35 : 0,
-      });
+      const mat =
+        tint.kind === "hair"
+          ? // strands catch a long anisotropic highlight and a soft sheen
+            new THREE.MeshPhysicalMaterial({
+              map: old?.map ?? null,
+              color: tint.colour,
+              roughness: 0.38,
+              anisotropy: 0.7,
+              sheen: 0.6,
+              sheenRoughness: 0.4,
+              sheenColor: new THREE.Color(tint.colour).lerp(
+                new THREE.Color("#ffffff"),
+                0.35,
+              ),
+              side: THREE.DoubleSide,
+              alphaTest: 0.35,
+            })
+          : new THREE.MeshStandardMaterial({
+              map: old?.map ?? null,
+              color: tint.kind === "keep" ? "#ffffff" : tint.colour,
+              roughness: tint.kind === "gloss" ? 0.22 : 0.7,
+            });
       materials.push(mat);
       mesh.material = mat;
       group.add(mesh);
