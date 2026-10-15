@@ -35,6 +35,7 @@ test("a hair style picked in the closet survives a reload", async ({
   page,
 }) => {
   await page.goto(STILL);
+  await page.getByRole("button", { name: "Dressing room" }).click();
   const hair = page.getByRole("radiogroup", { name: "Hair style" });
   const buns = hair.getByRole("radio", { name: "Space buns" });
   await expect(buns).toHaveAttribute("aria-checked", "false");
@@ -104,12 +105,32 @@ test("on a phone the dressing room opens from its toggle", async ({ page }) => {
   await page.goto(STILL);
   const toggle = page.getByRole("button", { name: "Dressing room" });
   await expect(toggle).toHaveAttribute("aria-expanded", "false");
-  await expect(page.locator("#mirror")).toBeHidden();
+  await expect(page.locator("#dressing")).toBeHidden();
   await toggle.click();
-  await expect(page.locator("#mirror")).toBeVisible();
+  await expect(page.locator("#dressing")).toBeVisible();
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
   await expect(
-    page.getByRole("button", { name: "Close mirror" }),
-  ).toHaveAttribute("aria-expanded", "true");
+    page.getByRole("heading", { name: "Get the look" }),
+  ).toBeFocused();
+});
+
+test("the dressing room starts closed, closes on Esc and keeps its state", async ({
+  page,
+}) => {
+  await page.goto(STILL);
+  const toggle = page.getByRole("button", { name: "Dressing room" });
+  await expect(page.locator("#dressing")).toBeHidden();
+  await toggle.click();
+  await expect(page.locator("#dressing")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#dressing")).toBeHidden();
+  await expect(toggle).toBeFocused();
+  await toggle.click();
+  await page.reload();
+  await expect(page.locator("#dressing")).toBeVisible();
+  await page.getByRole("button", { name: "Close dressing room" }).click();
+  await expect(page.locator("#dressing")).toBeHidden();
+  await expect(toggle).toBeFocused();
 });
 
 test("the Amusement Park opens from the debug panel and renders its rides", async ({

@@ -17,7 +17,7 @@ import { readFlags } from "./flags.ts";
 import { ReducedMotionContext, usePrefersReducedMotion } from "./motion.ts";
 import { ChatBar } from "./ui/ChatBar.tsx";
 import { DebugPanel } from "./ui/DebugPanel.tsx";
-import { GameOverlay, VenueGames } from "./ui/Minigames.tsx";
+import { GameOverlay } from "./ui/Minigames.tsx";
 import { Overlay } from "./ui/Overlay.tsx";
 import type { View } from "./world/CameraRig.tsx";
 import { World } from "./world/World.tsx";
@@ -93,6 +93,11 @@ export function App() {
   const setSwim = (swim: SwimLook) => setSave((s) => ({ ...s, swim }));
   const setEffects = (effects: Intensity) =>
     setSave((s) => ({ ...s, settings: { ...s.settings, effects } }));
+  const setPanelOpen = useCallback(
+    (panelOpen: boolean) =>
+      setSave((s) => ({ ...s, settings: { ...s.settings, panelOpen } })),
+    [],
+  );
   const [rides, setRides] = useState(0);
   const [game, setGame] = useState<MinigameId | null>(null);
   const saved = save.settings.quality;
@@ -137,6 +142,7 @@ export function App() {
           swim={save.swim}
           setSwim={setSwim}
           onRide={() => setRides((n) => n + 1)}
+          onPlayGame={setGame}
           mood={mood}
           setMood={setMood}
           dance={dance}
@@ -145,8 +151,9 @@ export function App() {
           setEffects={setEffects}
           view={view}
           setView={setView}
+          panelOpen={save.settings.panelOpen}
+          setPanelOpen={setPanelOpen}
         />
-        <VenueGames room={here.room} onPlay={setGame} />
         {game && <GameOverlay game={game} onClose={() => setGame(null)} />}
         {here.room === "city" && touch && <CityJoystick />}
         <ChatBar onSay={(text) => setChat({ text, at: Date.now() })} />

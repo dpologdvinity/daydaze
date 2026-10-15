@@ -28,7 +28,12 @@ test("createDefaultSave uses the default look and auto quality", () => {
     name: "Mango Fan",
     look: DEFAULT_LOOK,
     swim: DEFAULT_SWIM,
-    settings: { quality: "auto", muted: false, effects: "full" },
+    settings: {
+      quality: "auto",
+      muted: false,
+      effects: "full",
+      panelOpen: false,
+    },
   });
 });
 
@@ -43,7 +48,7 @@ test("a save round-trips through serializeSave and loadSave", () => {
     name: "Velvet_Kat-99",
     look: customLook,
     swim: { style: "one-piece", color: "#ff2f9a" },
-    settings: { quality: "low", muted: true, effects: "off" },
+    settings: { quality: "low", muted: true, effects: "off", panelOpen: true },
   };
   assert.deepEqual(loadSave(serializeSave(save), "Fallback"), save);
 });
@@ -60,7 +65,12 @@ test("a save from before the swimsuit slot still loads", () => {
     name: "Velvet_Kat-99",
     look: customLook,
     swim: DEFAULT_SWIM,
-    settings: { quality: "low", muted: true, effects: "full" },
+    settings: {
+      quality: "low",
+      muted: true,
+      effects: "full",
+      panelOpen: false,
+    },
   });
 });
 
@@ -88,14 +98,24 @@ test("loadSave keeps a valid name when the look is bad", () => {
     version: 1,
     name: "Kept Name",
     look: { ...customLook, hairStyle: "mohawk" },
-    settings: { quality: "high", muted: true, effects: "full" },
+    settings: {
+      quality: "high",
+      muted: true,
+      effects: "full",
+      panelOpen: false,
+    },
   });
   assert.deepEqual(loadSave(raw, "Fallback"), {
     version: 1,
     name: "Kept Name",
     look: DEFAULT_LOOK,
     swim: DEFAULT_SWIM,
-    settings: { quality: "high", muted: true, effects: "full" },
+    settings: {
+      quality: "high",
+      muted: true,
+      effects: "full",
+      panelOpen: false,
+    },
   });
 });
 
@@ -110,7 +130,12 @@ test("loadSave keeps a valid look when the name is bad", () => {
     name: "Fallback",
     look: customLook,
     swim: DEFAULT_SWIM,
-    settings: { quality: "auto", muted: false, effects: "full" },
+    settings: {
+      quality: "auto",
+      muted: false,
+      effects: "full",
+      panelOpen: false,
+    },
   });
 });
 
@@ -125,6 +150,7 @@ test("loadSave repairs settings field by field", () => {
     quality: "auto",
     muted: true,
     effects: "full",
+    panelOpen: false,
   });
   const badMuted = JSON.stringify({
     version: 1,
@@ -136,6 +162,7 @@ test("loadSave repairs settings field by field", () => {
     quality: "low",
     muted: false,
     effects: "full",
+    panelOpen: false,
   });
 });
 
@@ -154,18 +181,24 @@ test("loadSave repairs the effects setting without touching the rest", () => {
     version: 1,
     name: "Kept Name",
     look: customLook,
-    settings: { quality: "low", muted: true, effects: "loud" },
+    settings: {
+      quality: "low",
+      muted: true,
+      effects: "loud",
+      panelOpen: false,
+    },
   });
   assert.deepEqual(loadSave(raw, "Fallback").settings, {
     quality: "low",
     muted: true,
     effects: "full",
+    panelOpen: false,
   });
   const low = JSON.stringify({
     version: 1,
     name: "Kept Name",
     look: customLook,
-    settings: { quality: "low", muted: true, effects: "low" },
+    settings: { quality: "low", muted: true, effects: "low", panelOpen: false },
   });
   assert.equal(loadSave(low, "Fallback").settings.effects, "low");
 });
@@ -252,4 +285,26 @@ test("generateGuestName is always a valid display name, even for bad randoms", (
       }
     }
   }
+});
+
+test("the dressing-room drawer starts closed and keeps its saved state", () => {
+  assert.equal(createDefaultSave("Kept Name").settings.panelOpen, false);
+  const old = JSON.stringify({
+    version: 1,
+    name: "Kept Name",
+    settings: { quality: "low", muted: true, effects: "low" },
+  });
+  assert.equal(loadSave(old, "Fallback").settings.panelOpen, false);
+  const open = JSON.stringify({
+    version: 1,
+    name: "Kept Name",
+    settings: { panelOpen: true },
+  });
+  assert.equal(loadSave(open, "Fallback").settings.panelOpen, true);
+  const bad = JSON.stringify({
+    version: 1,
+    name: "Kept Name",
+    settings: { panelOpen: "yes" },
+  });
+  assert.equal(loadSave(bad, "Fallback").settings.panelOpen, false);
 });
