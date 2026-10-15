@@ -1,5 +1,11 @@
 import react from "@vitejs/plugin-react";
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
+
+// This checkout's own worktrees folder. A glob like "**/.worktrees/**" would
+// also match every file when the server runs inside a worktree, and HMR there
+// would silently stop.
+const worktrees = fileURLToPath(new URL("./.worktrees/", import.meta.url));
 
 // `npm run dev -- --port <n>` overrides the default port.
 export default defineConfig({
@@ -8,7 +14,11 @@ export default defineConfig({
     port: 5173,
     // Agents edit files in .worktrees/; watching them reloads the open game.
     watch: {
-      ignored: ["**/.worktrees/**", "**/test-results/**", "**/docs/**"],
+      ignored: [
+        (path: string) => path.startsWith(worktrees),
+        "**/test-results/**",
+        "**/docs/**",
+      ],
     },
   },
   // Only scan the real entry points for dependencies, not worktree copies.
