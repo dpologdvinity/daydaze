@@ -17,6 +17,8 @@ import {
   type ComponentType,
   type RefObject,
 } from "react";
+import type { DanceMoveId } from "../../game/dance/moves.ts";
+import type { Intensity } from "../../game/effects/buzz.ts";
 import {
   swimFor,
   type Look,
@@ -32,6 +34,8 @@ import {
 import type { Vec2 } from "../../game/walk.ts";
 import { SLIDES } from "../../game/waterPark.ts";
 import { areaOf } from "../../game/area.ts";
+import { DrunkPost } from "../effects/DrunkPost.tsx";
+import { DrunkState } from "../effects/DrunkState.tsx";
 import { VelvetRoom } from "../rooms/VelvetRoom.tsx";
 import { Plaza } from "../rooms/Plaza.tsx";
 import type { PickHandler } from "../rooms/shared/Floor.tsx";
@@ -96,6 +100,16 @@ function Wearing({ style }: { style: string }) {
   return null;
 }
 
+// Exposes the dance move on the canvas; "none" when the doll is not dancing.
+function Dancing({ mood, move }: { mood: Mood; move: DanceMoveId }) {
+  const gl = useThree((s) => s.gl);
+  const value = mood === "dance" ? move : "none";
+  useEffect(() => {
+    gl.domElement.dataset.dance = value;
+  }, [gl, value]);
+  return null;
+}
+
 function Effects() {
   return (
     <EffectComposer multisampling={4}>
@@ -106,6 +120,7 @@ function Effects() {
         intensity={1.15}
         radius={0.72}
       />
+      <DrunkPost />
       <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
       <Vignette offset={0.28} darkness={0.72} />
     </EffectComposer>
@@ -136,6 +151,11 @@ export type WorldProps = {
   /** `?slide=0.4` starts on the first slide that far down, for screenshots. */
   slideAt: number | null;
   mood: Mood;
+  dance: DanceMoveId;
+  /** The local player's drunk setting; off, low or full. */
+  effects: Intensity;
+  /** Called when the player starts walking. */
+  onMove: () => void;
   view: View;
   tag: RefObject<HTMLDivElement | null>;
   /** A forced tier from the URL or settings; null lets the frame rate decide. */
@@ -152,6 +172,9 @@ export function World({
   rides,
   slideAt,
   mood,
+  dance,
+  effects,
+  onMove,
   view,
   tag,
   quality,
@@ -198,6 +221,8 @@ export function World({
           />
         )}
         <FrameCount still={still} />
+        <DrunkState intensity={effects} />
+        <Dancing mood={mood} move={dance} />
         <Wearing style={swimFor(def, swim)?.style ?? "outfit"} />
         {/* the key light, shared so a doll looks the same in every room */}
         <directionalLight
@@ -217,6 +242,8 @@ export function World({
             look={look}
             swim={swimFor(def, swim)}
             mood={mood}
+            dance={dance}
+            onMove={onMove}
             tag={tag}
             onPortal={onPortal}
           />

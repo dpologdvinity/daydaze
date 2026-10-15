@@ -1,4 +1,5 @@
 import type { RoomId } from "../../game/rooms.ts";
+import { drink } from "../effects/drunk.ts";
 
 /** Room jumps for testing, shown only with `?debug=1`. */
 export function DebugPanel({ onGo }: { onGo: (room: RoomId) => void }) {
@@ -18,6 +19,9 @@ export function DebugPanel({ onGo }: { onGo: (room: RoomId) => void }) {
       </button>
       <button type="button" onClick={() => onGo("city")}>
         Go to City
+      </button>
+      <button type="button" onClick={() => drink("shot")}>
+        Debug: add a shot
       </button>
     </nav>
   );

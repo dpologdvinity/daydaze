@@ -13,10 +13,14 @@ import {
   type Mood,
   type SwimLook,
 } from "../../game/look.ts";
+import type { DanceMoveId } from "../../game/dance/moves.ts";
+import { INTENSITIES, type Intensity } from "../../game/effects/buzz.ts";
 import type { RoomId } from "../../game/rooms.ts";
+import { drink } from "../effects/drunk.ts";
 import { VIEWS, type View } from "../world/CameraRig.tsx";
 import { DriveControls } from "../rooms/speedway/DriveControls.tsx";
 import { RaceHud, SpeedwayMenu } from "../rooms/speedway/RaceHud.tsx";
+import { DancePicker } from "./DancePicker.tsx";
 import { Chips, Segmented, Swatches } from "./controls.tsx";
 
 // Sit and lean need furniture, so the player only picks these.
@@ -36,16 +40,25 @@ const ROOM_HINTS: Record<RoomId, string> = {
   city: "Downtown after dark. Tap the street or use WASD, then walk into a lit door.",
 };
 
+const EFFECT_LEVELS = INTENSITIES.map((id) => ({
+  id,
+  label: id === "off" ? "Off" : id === "low" ? "Low" : "Full",
+}));
+
 function Mirror({
   look,
   setLook,
   swim,
   setSwim,
+  effects,
+  setEffects,
 }: {
   look: Look;
   setLook: (look: Look) => void;
   swim: SwimLook;
   setSwim: (swim: SwimLook) => void;
+  effects: Intensity;
+  setEffects: (effects: Intensity) => void;
 }) {
   return (
     <div className="mirror-glass">
@@ -130,6 +143,15 @@ function Mirror({
           onPick={(color) => setSwim({ ...swim, color })}
         />
       </section>
+      <section>
+        <h3>Drunk effects</h3>
+        <Chips
+          label="Drunk effects"
+          options={EFFECT_LEVELS}
+          value={effects}
+          onPick={setEffects}
+        />
+      </section>
     </div>
   );
 }
@@ -144,6 +166,10 @@ export function Overlay({
   onRide,
   mood,
   setMood,
+  dance,
+  setDance,
+  effects,
+  setEffects,
   view,
   setView,
 }: {
@@ -156,6 +182,10 @@ export function Overlay({
   onRide: () => void;
   mood: Mood;
   setMood: (mood: Mood) => void;
+  dance: DanceMoveId;
+  setDance: (move: DanceMoveId) => void;
+  effects: Intensity;
+  setEffects: (effects: Intensity) => void;
   view: View;
   setView: (view: View) => void;
 }) {
@@ -187,7 +217,14 @@ export function Overlay({
         data-open={open}
         aria-label="Dressing room"
       >
-        <Mirror look={look} setLook={setLook} swim={swim} setSwim={setSwim} />
+        <Mirror
+          look={look}
+          setLook={setLook}
+          swim={swim}
+          setSwim={setSwim}
+          effects={effects}
+          setEffects={setEffects}
+        />
       </section>
 
       {room === "water-park" && (
@@ -203,6 +240,18 @@ export function Overlay({
           <DriveControls />
         </>
       )}
+
+      {room === "velvet-room" && (
+        <button
+          type="button"
+          className="drink"
+          onClick={() => drink("cocktail")}
+        >
+          Have a drink
+        </button>
+      )}
+
+      {mood === "dance" && <DancePicker move={dance} onPick={setDance} />}
 
       <Segmented
         className="moods"

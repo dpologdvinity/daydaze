@@ -2,6 +2,7 @@ import { useFrame } from "@react-three/fiber";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import * as THREE from "three";
 import { clampToArea, type WalkArea } from "../../game/area.ts";
+import type { DanceMoveId } from "../../game/dance/moves.ts";
 import type { Look, Mood, SwimLook } from "../../game/look.ts";
 import { moveAction, MOVE_CODES } from "../../game/input.ts";
 import type { Portal, Spawn } from "../../game/rooms.ts";
@@ -173,6 +174,8 @@ export function PlayerController({
   look,
   swim,
   mood,
+  dance,
+  onMove,
   tag,
   onPortal,
 }: {
@@ -181,6 +184,9 @@ export function PlayerController({
   look: Look;
   swim: SwimLook | null;
   mood: Mood;
+  dance: DanceMoveId;
+  /** Fires when the player starts walking, so a dance can end. */
+  onMove: () => void;
   /** DOM name tag and chat bubble, pinned above the doll's head each frame. */
   tag: RefObject<HTMLDivElement | null>;
   onPortal: (portal: Portal) => void;
@@ -192,6 +198,7 @@ export function PlayerController({
   const calm = useReducedMotion();
   const [riding, setRiding] = useState<Mood | null>(null);
   const shownRide = useRef<Mood | null>(null);
+  const walking = useRef(false);
 
   useFrame((state, dt) => {
     // a driven car takes the keys; the doll stands at the pit wall
@@ -236,6 +243,11 @@ export function PlayerController({
         player.before.yaw + turnBetween(player.before.yaw, player.walk.yaw) * a;
     }
 
+    // only the start of a walk matters, so the state is set once, not per frame
+    if (moving !== walking.current) {
+      walking.current = moving;
+      if (moving) onMove();
+    }
     gait.current.speed = THREE.MathUtils.damp(
       gait.current.speed,
       moving ? STRIDE : 0,
@@ -271,7 +283,14 @@ export function PlayerController({
   return (
     <>
       <group ref={g}>
-        <Doll look={look} swim={swim} mood={riding ?? mood} walk={gait} />
+        <Doll
+          look={look}
+          swim={swim}
+          mood={riding ?? mood}
+          dance={dance}
+          buzzed
+          walk={gait}
+        />
       </group>
       <mesh ref={marker} rotation-x={-Math.PI / 2} visible={false}>
         <ringGeometry args={[0.16, 0.2, 40]} />

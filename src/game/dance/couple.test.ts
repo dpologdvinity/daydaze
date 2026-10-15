@@ -7,12 +7,13 @@ const dist = (a: [number, number], b: [number, number]) =>
   Math.hypot(a[0] - b[0], a[1] - b[1]);
 
 test("a couple stands gap metres apart, centred on the given point", () => {
-  for (const [centre, facing] of [
+  const cases: [[number, number], number][] = [
     [[0, 0], 0],
     [[10, -4], 0.7],
     [[-3, 2], Math.PI],
-  ] as const) {
-    const [lead, follow] = coupleSpots([...centre], facing, 0.8);
+  ];
+  for (const [centre, facing] of cases) {
+    const [lead, follow] = coupleSpots(centre, facing, 0.8);
     assert.ok(Math.abs(dist(lead.at, follow.at) - 0.8) < 1e-9);
     const mid = [
       (lead.at[0] + follow.at[0]) / 2,

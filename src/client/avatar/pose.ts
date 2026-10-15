@@ -1,5 +1,6 @@
 import type * as THREE from "three";
 import type { Mood } from "../../game/look.ts";
+import { JOINTS, type Pose } from "../../game/dance/moves.ts";
 
 type JointName =
   | "body"
@@ -23,12 +24,34 @@ function r(j: Joint, x = 0, y = 0, z = 0) {
   j?.rotation.set(x, y, z);
 }
 
+/**
+ * Poses the rig. A dance move's sampled `dance` pose wins over the mood's
+ * own dance; `wobble` (0..1, from the buzz) tips the body on top of any mood.
+ */
 export function pose(
   j: Rig,
   mood: Mood | "walk",
   t: number,
   ph: number,
   calm: boolean,
+  dance: Pose | null = null,
+  wobble = 0,
+) {
+  poseMood(j, mood, t, ph, calm, dance);
+  const body = j.body;
+  if (!body || wobble <= 0) return;
+  body.rotation.z += wobble * 0.08 * Math.sin(t * 1.3);
+  body.rotation.x += wobble * 0.05 * Math.sin(t * 0.9 + 1);
+  body.position.x += wobble * 0.02 * Math.sin(t * 1.1);
+}
+
+function poseMood(
+  j: Rig,
+  mood: Mood | "walk",
+  t: number,
+  ph: number,
+  calm: boolean,
+  dance: Pose | null,
 ) {
   const breath = Math.sin(t * 1.7);
   const body = j.body;
@@ -36,6 +59,12 @@ export function pose(
   body.position.set(0, 0, 0);
   body.scale.set(1, 1, 1);
   r(j.pony, Math.sin(t * 1.6) * 0.05, 0, Math.sin(t * 1.1) * 0.06);
+  if (mood === "dance" && dance) {
+    // a move drives every joint; reduced motion keeps its sway but not its bounce
+    body.position.set(dance.root[0], calm ? 0 : dance.root[1], dance.root[2]);
+    for (const name of JOINTS) r(j[name], ...dance.joints[name]);
+    return;
+  }
 
   if (mood === "walk") {
     const s = Math.sin(ph),
@@ -54,27 +83,6 @@ export function pose(
     r(j.rFore, -0.35);
     r(j.head, -0.02, -s * 0.08, 0);
     r(j.pony, 0.15 + c * 0.12, 0, s * 0.15);
-    return;
-  }
-  if (mood === "dance") {
-    // Reduced motion keeps the sway and arms but drops the bounce.
-    const b = calm ? 0 : Math.abs(Math.sin(t * 4.2));
-    const sway = Math.sin(t * 2.1);
-    body.position.y = -b * 0.045;
-    body.position.x = sway * 0.03;
-    r(body, 0, sway * 0.3, sway * 0.09);
-    r(j.lLeg, -b * 0.3, 0, 0.06);
-    r(j.rLeg, -b * 0.3 + 0.1, 0, -0.06);
-    r(j.lShin, b * 0.55);
-    r(j.rShin, b * 0.45);
-    r(j.lFoot, -0.1);
-    r(j.rFoot, -0.1);
-    r(j.lArm, -0.4, 0, 2.5 + Math.sin(t * 4.2) * 0.25);
-    r(j.rArm, -0.4, 0, -2.4 - Math.sin(t * 4.2 + 1) * 0.25);
-    r(j.lFore, -0.5, 0, 0.5 + Math.sin(t * 8.4) * 0.3);
-    r(j.rFore, -0.5, 0, -0.5);
-    r(j.head, 0.05 + b * 0.08, sway * -0.25, sway * 0.12);
-    r(j.pony, 0.2 + b * 0.25, 0, sway * 0.3);
     return;
   }
   if (mood === "sit") {
