@@ -36,13 +36,14 @@ export function ChaseCamera({
     const base = calm ? CHASE.calm : CHASE.lively;
     // the arena is far smaller than a track, so its shot stands further off
     const scale = session.kind === "bumpers" ? 2 : 1;
-    const style = { ...base, back: base.back * scale, up: base.up * scale };
+    const back = base.back * scale;
+    const up = base.up * scale;
     const speed =
       session.kind === "race"
         ? session.race.cars[0].state.speed
         : session.cars[0].state.speed;
     const shake =
-      style.shake *
+      base.shake *
       Math.min(1, Math.abs(speed) / 20) *
       Math.sin(state.clock.elapsedTime * 31);
     if (driving.sideView) {
@@ -50,11 +51,11 @@ export function ChaseCamera({
       goal.set(x - fz * SIDE.out, SIDE.up, z + fx * SIDE.out);
       aim.set(x, 1, z);
     } else {
-      goal.set(x - fx * style.back, style.up, z - fz * style.back);
+      goal.set(x - fx * back, up, z - fz * back);
       aim.set(x + fx * 2, 1, z + fz * 2);
     }
     goal.x += shake;
-    const ease = 1 - Math.pow(1 - style.damping, dt * 60);
+    const ease = 1 - Math.pow(1 - base.damping, dt * 60);
     camera.position.lerp(goal, ease);
     camera.lookAt(aim);
   });
