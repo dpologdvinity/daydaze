@@ -10,11 +10,14 @@ export function Boxes({
   boxes,
   glow = false,
   color = "#ffffff",
+  ball = false,
 }: {
   boxes: readonly Box[];
   glow?: boolean;
   /** Base colour of the solid boxes, multiplied by each box's colour. */
   color?: string;
+  /** Low-poly spheres in the same boxes, for heads. */
+  ball?: boolean;
 }) {
   const mesh = useRef<THREE.InstancedMesh>(null);
   useLayoutEffect(() => {
@@ -38,7 +41,11 @@ export function Boxes({
       args={[undefined, undefined, boxes.length]}
       frustumCulled={false}
     >
-      <boxGeometry args={[1, 1, 1]} />
+      {ball ? (
+        <sphereGeometry args={[0.5, 6, 4]} />
+      ) : (
+        <boxGeometry args={[1, 1, 1]} />
+      )}
       {glow ? (
         <meshBasicMaterial toneMapped={false} />
       ) : (

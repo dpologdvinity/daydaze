@@ -3,25 +3,43 @@ import * as THREE from "three";
 import { POOL } from "../../../game/waterPark.ts";
 import { Floor, type PickHandler } from "../shared/Floor.tsx";
 import { canvasTex } from "../shared/materials.ts";
-import { Palm } from "../shared/Palm.tsx";
-import { stripes, SUNSET_FLAG, toon } from "./materials.ts";
+import { Props } from "./build.ts";
+import { Palms, type PalmSpec } from "./Palms.tsx";
+import { PROPS, stripes, SUNSET_FLAG } from "./materials.ts";
 
-// Sun-bleached sandstone tiles with pale grout.
+// Sun-bleached sandstone: a 4x4 atlas of tiles with pale grout, bevels and chips.
 const TILES = canvasTex(
-  128,
-  128,
+  256,
+  256,
   (ctx) => {
     ctx.fillStyle = "#fff4e2";
-    ctx.fillRect(0, 0, 128, 128);
+    ctx.fillRect(0, 0, 256, 256);
     const tones = ["#f7d7ae", "#f3cda0", "#f9dfbd", "#f5d2a8"];
-    for (let y = 0; y < 2; y++)
-      for (let x = 0; x < 2; x++) {
-        ctx.fillStyle = tones[y * 2 + x];
-        ctx.fillRect(x * 64 + 3, y * 64 + 3, 58, 58);
+    let seed = 11;
+    const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    for (let y = 0; y < 4; y++)
+      for (let x = 0; x < 4; x++) {
+        const px = x * 64 + 3;
+        const py = y * 64 + 3;
+        ctx.fillStyle = tones[(x + y * 2) % tones.length];
+        ctx.fillRect(px, py, 58, 58);
+        ctx.fillStyle = "rgba(255,255,255,0.35)";
+        ctx.fillRect(px, py, 58, 3);
+        ctx.fillRect(px, py, 3, 58);
+        ctx.fillStyle = "rgba(160,100,50,0.18)";
+        ctx.fillRect(px, py + 55, 58, 3);
+        ctx.fillRect(px + 55, py, 3, 58);
       }
+    for (let i = 0; i < 90; i++) {
+      ctx.fillStyle =
+        rand() < 0.5 ? "rgba(140,90,50,0.12)" : "rgba(255,255,255,0.3)";
+      ctx.fillRect(rand() * 256, rand() * 256, 2 + rand() * 2, 1 + rand());
+    }
   },
-  [16, 14],
+  [8, 7],
 );
+
+const AWNING = stripes(["#3fc2ff", "#ffffff"], 6);
 
 /** A painted wooden sign; text in the hand-lettered script. */
 export function Sign({
@@ -65,217 +83,6 @@ export function Sign({
   );
 }
 
-function Lounger({
-  position,
-  rotation = 0,
-  towel,
-}: {
-  position: [number, number, number];
-  rotation?: number;
-  towel: readonly string[];
-}) {
-  const tex = useMemo(() => {
-    const t = stripes(towel);
-    t.rotation = Math.PI / 2;
-    return t;
-  }, [towel]);
-  return (
-    <group position={position} rotation-y={rotation}>
-      <mesh position={[0, 0.3, 0.15]} material={toon("#ffffff")}>
-        <boxGeometry args={[0.7, 0.08, 1.4]} />
-      </mesh>
-      <mesh
-        position={[0, 0.55, -0.7]}
-        rotation-x={-0.65}
-        material={toon("#ffffff")}
-      >
-        <boxGeometry args={[0.7, 0.08, 0.8]} />
-      </mesh>
-      {[-0.3, 0.3].flatMap((x) =>
-        [-0.45, 0.75].map((z) => (
-          <mesh
-            key={`${x}${z}`}
-            position={[x, 0.14, z]}
-            material={toon("#d9d9e0")}
-          >
-            <cylinderGeometry args={[0.03, 0.03, 0.28, 6]} />
-          </mesh>
-        )),
-      )}
-      <mesh position={[0, 0.345, 0.2]} rotation-x={-Math.PI / 2}>
-        <planeGeometry args={[0.62, 1.3]} />
-        <meshToonMaterial map={tex} />
-      </mesh>
-    </group>
-  );
-}
-
-function Umbrella({
-  position,
-  colors,
-}: {
-  position: [number, number, number];
-  colors: readonly string[];
-}) {
-  const tex = useMemo(() => stripes(colors, 2), [colors]);
-  return (
-    <group position={position}>
-      <mesh position-y={1.2} material={toon("#ffffff")}>
-        <cylinderGeometry args={[0.035, 0.035, 2.4, 8]} />
-      </mesh>
-      <mesh position-y={2.35}>
-        <coneGeometry args={[1.3, 0.5, 12, 1, true]} />
-        <meshToonMaterial map={tex} side={THREE.DoubleSide} />
-      </mesh>
-      <mesh position-y={2.62} material={toon("#ffffff")}>
-        <sphereGeometry args={[0.07, 10, 8]} />
-      </mesh>
-    </group>
-  );
-}
-
-const AWNING = stripes(["#3fc2ff", "#ffffff"], 6);
-
-/** The snack shack off the west edge, counter facing the deck. */
-function SnackBar() {
-  return (
-    <group position={[-11.4, 0, 2.6]} rotation-y={Math.PI / 2}>
-      {/* back wall, counter and roof */}
-      <mesh position={[0, 1.5, -0.9]} material={toon("#7cf0c8")}>
-        <boxGeometry args={[4.2, 3, 0.3]} />
-      </mesh>
-      {[-2, 2].map((x) => (
-        <mesh key={x} position={[x, 1.5, 0]} material={toon("#7cf0c8")}>
-          <boxGeometry args={[0.25, 3, 2]} />
-        </mesh>
-      ))}
-      <mesh position={[0, 0.55, 0.85]} material={toon("#ff5fb4")}>
-        <boxGeometry args={[3.8, 1.1, 0.5]} />
-      </mesh>
-      <mesh position={[0, 1.13, 0.9]} material={toon("#ffffff")}>
-        <boxGeometry args={[4, 0.08, 0.65]} />
-      </mesh>
-      <mesh position={[0, 3.1, 0]} material={toon("#ffd23f")}>
-        <boxGeometry args={[4.6, 0.2, 2.4]} />
-      </mesh>
-      <mesh position={[0, 2.7, 1.55]} rotation-x={0.45}>
-        <planeGeometry args={[4.4, 1.1]} />
-        <meshToonMaterial map={AWNING} side={THREE.DoubleSide} />
-      </mesh>
-      {/* menu board, cups and a giant ice cream on the roof */}
-      <Sign
-        text="Splash Snacks"
-        width={3.2}
-        bg="#ff3f9e"
-        fg="#fff6c8"
-        position={[0, 3.75, 0.2]}
-      />
-      <mesh position={[0, 2.0, -0.74]} material={toon("#1b2a4a")}>
-        <boxGeometry args={[2.4, 1, 0.04]} />
-      </mesh>
-      {(
-        [
-          [-0.9, "#ff9a56"],
-          [-0.5, "#7cf0c8"],
-          [0.6, "#ff5fb4"],
-        ] as const
-      ).map(([x, c]) => (
-        <mesh key={x} position={[x, 1.28, 0.9]} material={toon(c)}>
-          <cylinderGeometry args={[0.07, 0.05, 0.22, 10]} />
-        </mesh>
-      ))}
-      <group position={[1.6, 3.2, 0]}>
-        <mesh position-y={0.45} rotation-x={Math.PI} material={toon("#e0a35c")}>
-          <coneGeometry args={[0.35, 0.9, 12]} />
-        </mesh>
-        <mesh position-y={1.02} material={toon("#ffb6dd")}>
-          <sphereGeometry args={[0.4, 16, 12]} />
-        </mesh>
-        <mesh position-y={1.45} material={toon("#fff6e8")}>
-          <sphereGeometry args={[0.32, 16, 12]} />
-        </mesh>
-        <mesh position-y={1.8} material={toon("#ff2f5a")}>
-          <sphereGeometry args={[0.1, 10, 8]} />
-        </mesh>
-      </group>
-    </group>
-  );
-}
-
-/** A tall lifeguard chair across the pool, facing the deck. */
-export const LIFEGUARD_SEAT: [number, number, number] = [
-  -4,
-  1.95,
-  POOL.z0 - 0.95,
-];
-
-function LifeguardStand() {
-  const [x, y, z] = LIFEGUARD_SEAT;
-  const white = toon("#ffffff");
-  return (
-    <group position={[x, 0, z]}>
-      {[-0.4, 0.4].flatMap((sx) =>
-        [-0.35, 0.35].map((sz) => (
-          <mesh
-            key={`${sx}${sz}`}
-            position={[sx, y / 2, sz]}
-            rotation-x={sz * 0.15}
-            material={white}
-          >
-            <boxGeometry args={[0.1, y, 0.1]} />
-          </mesh>
-        )),
-      )}
-      {[0.5, 1.0, 1.5].map((h) => (
-        <mesh key={h} position={[0, h, 0.37]} material={white}>
-          <boxGeometry args={[0.8, 0.06, 0.06]} />
-        </mesh>
-      ))}
-      <mesh position-y={y} material={toon("#ff4a3d")}>
-        <boxGeometry args={[0.95, 0.1, 0.7]} />
-      </mesh>
-      <mesh position={[0, y + 0.45, -0.35]} material={toon("#ff4a3d")}>
-        <boxGeometry args={[0.95, 0.8, 0.08]} />
-      </mesh>
-      <mesh position={[0.6, y - 0.4, 0.2]} rotation-y={Math.PI / 2}>
-        <torusGeometry args={[0.24, 0.07, 8, 20]} />
-        <meshToonMaterial color="#ff7a1f" />
-      </mesh>
-      <mesh position={[0, y + 1.4, -0.3]} material={white}>
-        <cylinderGeometry args={[0.03, 0.03, 1.9, 6]} />
-      </mesh>
-      <mesh position={[0, y + 2.35, -0.3]}>
-        <coneGeometry args={[1.0, 0.4, 10, 1, true]} />
-        <meshToonMaterial color="#ff4a3d" side={THREE.DoubleSide} />
-      </mesh>
-    </group>
-  );
-}
-
-/** The palm-leaf gate back to the Plaza, on the east edge of the deck. */
-function Gate() {
-  return (
-    <group position={[11.6, 0, 2.5]} rotation-y={-Math.PI / 2}>
-      {[-1.1, 1.1].map((x) => (
-        <mesh key={x} position={[x, 1.5, 0]} material={toon("#ff9a56")}>
-          <cylinderGeometry args={[0.16, 0.2, 3, 10]} />
-        </mesh>
-      ))}
-      <mesh position-y={3.0} rotation-z={Math.PI / 2}>
-        <torusGeometry args={[1.1, 0.14, 8, 20, Math.PI]} />
-        <meshToonMaterial color="#ff5fb4" />
-      </mesh>
-      <Sign
-        text="to the plaza"
-        width={2.3}
-        bg="#3fc2ff"
-        fg="#ffffff"
-        position={[0, 3.55, 0.05]}
-      />
-    </group>
-  );
-}
-
 const LOUNGERS: readonly {
   at: [number, number, number];
   rot: number;
@@ -288,8 +95,214 @@ const LOUNGERS: readonly {
   { at: [-8.4, 0, 6.0], rot: Math.PI + 0.25, towel: ["#ff9a56", "#fff1dc"] },
 ];
 
+const UMBRELLAS: readonly {
+  at: [number, number, number];
+  colors: readonly string[];
+}[] = [
+  { at: [-0.7, 0, 6.3], colors: ["#ff3f9e", "#ffffff"] },
+  { at: [3.2, 0, 6.2], colors: ["#3fc2ff", "#ffd23f"] },
+  { at: [-9.4, 0, 6.6], colors: ["#7cf0c8", "#ff9a56"] },
+];
+
+const CABANAS: readonly [number, number, number][] = [
+  [-6.2, 0, 9.4],
+  [8.2, 0, 9.0],
+];
+
+/** The palm-leaf gate back to the Plaza, on the east edge of the deck. */
+const GATE: [number, number, number] = [11.6, 0, 2.5];
+/** The snack shack off the west edge, counter facing the deck. */
+const SNACK: [number, number, number] = [-11.4, 0, 2.6];
+/** The wave pool sign on the west coping, facing the deck. */
+const POOL_SIGN: [number, number, number] = [POOL.x0 - 0.9, 0, -5.5];
+
+const PALMS: readonly PalmSpec[] = [
+  { position: [-10.9, 0, -1.0], scale: 1.7 },
+  { position: [-10.6, 0, 6.6], scale: 1.5 },
+  { position: [11.2, 0, -2.6], scale: 1.8 },
+  { position: [11.4, 0, 6.6], scale: 1.4 },
+  { position: [4.4, 0, -10.6], scale: 1.9 },
+  { position: [-9.6, 0, -10.6], scale: 1.6 },
+  { position: [1.6, 0, -10.6], scale: 1.3 },
+];
+
+/** A tall lifeguard chair across the pool, facing the deck. */
+export const LIFEGUARD_SEAT: [number, number, number] = [
+  -4,
+  1.95,
+  POOL.z0 - 0.95,
+];
+
+function loungerFrame(p: Props) {
+  p.add(new THREE.BoxGeometry(0.7, 0.08, 1.4), "#ffffff", [0, 0.3, 0.15]);
+  p.add(
+    new THREE.BoxGeometry(0.7, 0.08, 0.8),
+    "#ffffff",
+    [0, 0.55, -0.7],
+    [-0.65, 0, 0],
+  );
+  for (const x of [-0.3, 0.3]) {
+    for (const z of [-0.45, 0.75]) {
+      p.add(new THREE.CylinderGeometry(0.03, 0.03, 0.28, 6), "#d9d9e0", [
+        x,
+        0.14,
+        z,
+      ]);
+    }
+  }
+}
+
+function umbrellaPole(p: Props) {
+  p.add(
+    new THREE.CylinderGeometry(0.035, 0.035, 2.4, 8),
+    "#ffffff",
+    [0, 1.2, 0],
+  );
+  p.add(new THREE.SphereGeometry(0.07, 10, 8), "#ffffff", [0, 2.62, 0]);
+}
+
+function cabanaFrame(p: Props) {
+  p.add(new THREE.BoxGeometry(3.2, 0.12, 2.6), "#fff1dc", [0, 0.06, 0]);
+  p.add(new THREE.BoxGeometry(3.0, 1.9, 0.08), "#ff9a56", [0, 1.0, -1.2]);
+  for (const x of [-1.5, 1.5]) {
+    p.add(new THREE.BoxGeometry(0.08, 1.9, 2.6), "#ff9a56", [x, 1.0, 0]);
+    p.add(new THREE.CylinderGeometry(0.06, 0.06, 2.3, 8), "#ffffff", [
+      x,
+      1.15,
+      1.25,
+    ]);
+  }
+  p.add(new THREE.BoxGeometry(3.4, 0.1, 2.9), "#ffd23f", [0, 2.05, 0]);
+}
+
+function snackFrame(p: Props) {
+  p.add(new THREE.BoxGeometry(4.2, 3, 0.3), "#7cf0c8", [0, 1.5, -0.9]);
+  for (const x of [-2, 2])
+    p.add(new THREE.BoxGeometry(0.25, 3, 2), "#7cf0c8", [x, 1.5, 0]);
+  p.add(new THREE.BoxGeometry(3.8, 1.1, 0.5), "#ff5fb4", [0, 0.55, 0.85]);
+  p.add(new THREE.BoxGeometry(4, 0.08, 0.65), "#ffffff", [0, 1.13, 0.9]);
+  p.add(new THREE.BoxGeometry(4.6, 0.2, 2.4), "#ffd23f", [0, 3.1, 0]);
+  p.add(new THREE.BoxGeometry(2.4, 1, 0.04), "#1b2a4a", [0, 2.0, -0.74]);
+  for (const [x, c] of [
+    [-0.9, "#ff9a56"],
+    [-0.5, "#7cf0c8"],
+    [0.6, "#ff5fb4"],
+  ] as const) {
+    p.add(new THREE.CylinderGeometry(0.07, 0.05, 0.22, 10), c, [x, 1.28, 0.9]);
+  }
+  // a giant ice cream on the roof
+  p.add(
+    new THREE.ConeGeometry(0.35, 0.9, 12),
+    "#e0a35c",
+    [1.6, 3.65, 0],
+    [Math.PI, 0, 0],
+  );
+  p.add(new THREE.SphereGeometry(0.4, 16, 12), "#ffb6dd", [1.6, 4.22, 0]);
+  p.add(new THREE.SphereGeometry(0.32, 16, 12), "#fff6e8", [1.6, 4.65, 0]);
+  p.add(new THREE.SphereGeometry(0.1, 10, 8), "#ff2f5a", [1.6, 5.0, 0]);
+}
+
+function lifeguardFrame(p: Props) {
+  const [, y] = LIFEGUARD_SEAT;
+  for (const sx of [-0.4, 0.4]) {
+    for (const sz of [-0.35, 0.35]) {
+      p.add(
+        new THREE.BoxGeometry(0.1, y, 0.1),
+        "#ffffff",
+        [sx, y / 2, sz],
+        [sz * 0.15, 0, 0],
+      );
+    }
+  }
+  for (const h of [0.5, 1.0, 1.5]) {
+    p.add(new THREE.BoxGeometry(0.8, 0.06, 0.06), "#ffffff", [0, h, 0.37]);
+  }
+  // ladder on the left, rungs every 0.3 m
+  for (const x of [-0.5, -0.2]) {
+    p.add(new THREE.BoxGeometry(0.04, y, 0.04), "#ffffff", [x, y / 2, 0.55]);
+  }
+  for (let i = 0; i < 6; i++) {
+    p.add(new THREE.BoxGeometry(0.34, 0.04, 0.04), "#ffffff", [
+      -0.35,
+      0.3 + i * 0.3,
+      0.55,
+    ]);
+  }
+  p.add(new THREE.BoxGeometry(0.95, 0.1, 0.7), "#ff4a3d", [0, y, 0]);
+  p.add(new THREE.BoxGeometry(0.95, 0.8, 0.08), "#ff4a3d", [
+    0,
+    y + 0.45,
+    -0.35,
+  ]);
+  p.add(
+    new THREE.TorusGeometry(0.24, 0.07, 8, 20),
+    "#ff7a1f",
+    [0.6, y - 0.4, 0.2],
+    [0, Math.PI / 2, 0],
+  );
+  p.add(new THREE.CylinderGeometry(0.03, 0.03, 1.9, 6), "#ffffff", [
+    0,
+    y + 1.4,
+    -0.3,
+  ]);
+  p.add(new THREE.ConeGeometry(1.0, 0.4, 10, 1, true), "#ff4a3d", [
+    0,
+    y + 2.35,
+    -0.3,
+  ]);
+}
+
+function gateFrame(p: Props) {
+  for (const x of [-1.1, 1.1]) {
+    p.add(new THREE.CylinderGeometry(0.16, 0.2, 3, 10), "#ff9a56", [x, 1.5, 0]);
+  }
+  p.add(
+    new THREE.TorusGeometry(1.1, 0.14, 8, 20, Math.PI),
+    "#ff5fb4",
+    [0, 3.0, 0],
+    [0, 0, Math.PI / 2],
+  );
+}
+
+function poolSignFrame(p: Props) {
+  for (const x of [-1.0, 1.0]) {
+    p.add(new THREE.CylinderGeometry(0.07, 0.07, 2.4, 8), "#ffffff", [
+      x,
+      1.2,
+      0,
+    ]);
+  }
+}
+
+const TOWELS = LOUNGERS.map((l) => {
+  const tex = stripes(l.towel);
+  tex.rotation = Math.PI / 2;
+  return tex;
+});
+const CANOPIES = UMBRELLAS.map((u) => stripes(u.colors, 2));
+
+/** Every coloured prop on the deck, merged into one mesh. */
+function buildProps() {
+  const root = new Props();
+  LOUNGERS.forEach((l) =>
+    loungerFrame(root.within(l.at[0], l.at[1], l.at[2], l.rot)),
+  );
+  UMBRELLAS.forEach((u) =>
+    umbrellaPole(root.within(u.at[0], u.at[1], u.at[2])),
+  );
+  CABANAS.forEach((c) => cabanaFrame(root.within(c[0], c[1], c[2])));
+  snackFrame(root.within(SNACK[0], SNACK[1], SNACK[2], Math.PI / 2));
+  lifeguardFrame(root.within(LIFEGUARD_SEAT[0], 0, LIFEGUARD_SEAT[2]));
+  gateFrame(root.within(GATE[0], GATE[1], GATE[2], -Math.PI / 2));
+  poolSignFrame(
+    root.within(POOL_SIGN[0], POOL_SIGN[1], POOL_SIGN[2], -Math.PI / 2),
+  );
+  return root.geometry();
+}
+
 /** The deck around the pool: tiles, loungers, shade, snacks and palms. */
 export function Deck({ onPick }: { onPick: PickHandler }) {
+  const props = useMemo(buildProps, []);
   return (
     <>
       <Floor
@@ -305,22 +318,63 @@ export function Deck({ onPick }: { onPick: PickHandler }) {
         low={{ metalness: 0, roughness: 0.85 }}
         onPick={onPick}
       />
+      <mesh geometry={props} material={PROPS} />
       {LOUNGERS.map((l, i) => (
-        <Lounger key={i} position={l.at} rotation={l.rot} towel={l.towel} />
+        <group key={i} position={l.at} rotation-y={l.rot}>
+          <mesh position={[0, 0.345, 0.2]} rotation-x={-Math.PI / 2}>
+            <planeGeometry args={[0.62, 1.3]} />
+            <meshToonMaterial map={TOWELS[i]} />
+          </mesh>
+        </group>
       ))}
-      <Umbrella position={[-0.7, 0, 6.3]} colors={["#ff3f9e", "#ffffff"]} />
-      <Umbrella position={[3.2, 0, 6.2]} colors={["#3fc2ff", "#ffd23f"]} />
-      <Umbrella position={[-9.4, 0, 6.6]} colors={["#7cf0c8", "#ff9a56"]} />
-      <SnackBar />
-      <LifeguardStand />
-      <Gate />
-      <Palm position={[-10.9, 0, -1.0]} scale={1.7} />
-      <Palm position={[-10.6, 0, 6.6]} scale={1.5} />
-      <Palm position={[11.2, 0, -2.6]} scale={1.8} />
-      <Palm position={[11.4, 0, 6.6]} scale={1.4} />
-      <Palm position={[4.4, 0, -10.6]} scale={1.9} />
-      <Palm position={[-9.6, 0, -10.6]} scale={1.6} />
-      <Palm position={[1.6, 0, -10.6]} scale={1.3} />
+      {UMBRELLAS.map((u, i) => (
+        <group key={i} position={u.at}>
+          <mesh position-y={2.35}>
+            <coneGeometry args={[1.3, 0.5, 16, 1, true]} />
+            <meshToonMaterial map={CANOPIES[i]} side={THREE.DoubleSide} />
+          </mesh>
+        </group>
+      ))}
+      {CABANAS.map((c, i) => (
+        <group key={i} position={c}>
+          <mesh position={[0, 2.2, 0.2]} rotation-x={-0.3}>
+            <planeGeometry args={[3.4, 2.0]} />
+            <meshToonMaterial map={AWNING} side={THREE.DoubleSide} />
+          </mesh>
+        </group>
+      ))}
+      <group position={SNACK} rotation-y={Math.PI / 2}>
+        <mesh position={[0, 2.7, 1.55]} rotation-x={0.45}>
+          <planeGeometry args={[4.4, 1.1]} />
+          <meshToonMaterial map={AWNING} side={THREE.DoubleSide} />
+        </mesh>
+        <Sign
+          text="Splash Snacks"
+          width={3.2}
+          bg="#ff3f9e"
+          fg="#fff6c8"
+          position={[0, 3.75, 0.2]}
+        />
+      </group>
+      <group position={GATE} rotation-y={-Math.PI / 2}>
+        <Sign
+          text="to the plaza"
+          width={2.3}
+          bg="#3fc2ff"
+          fg="#ffffff"
+          position={[0, 3.55, 0.05]}
+        />
+      </group>
+      <group position={POOL_SIGN} rotation-y={-Math.PI / 2}>
+        <Sign
+          text="Wave Pool"
+          width={2.4}
+          bg="#1b9fd0"
+          fg="#ffffff"
+          position={[0, 2.2, 0.05]}
+        />
+      </group>
+      <Palms palms={PALMS} />
     </>
   );
 }

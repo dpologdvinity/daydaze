@@ -14,7 +14,7 @@ export type Box = {
 };
 
 /** Point `d` metres left of centreline point `i` (negative is right). */
-function offsetAt(pts: readonly Vec2[], i: number, d: number): Vec2 {
+export function offsetAt(pts: readonly Vec2[], i: number, d: number): Vec2 {
   const n = pts.length;
   const a = pts[(i - 1 + n) % n];
   const b = pts[(i + 1) % n];
@@ -66,28 +66,52 @@ export function quadBoxes(
   });
 }
 
-/** A flat, double-sided mesh of the quads, at height `y`. */
-export function quadsGeometry(
-  quads: readonly (readonly Vec2[])[],
-  y = 0,
+const UV_METRES = 12;
+
+/** One layer of flat quads at a height, each quad tinted by `colorOf`. */
+export type Ribbon = {
+  quads: readonly (readonly Vec2[])[];
+  y: number;
+  colorOf?: (i: number) => THREE.Color;
+};
+
+/**
+ * Flat, double-sided quads from several layers in one geometry, with a vertex
+ * colour per quad, so a whole road or set of kerbs is one draw call. Two
+ * triangles a quad, against twelve for a box.
+ */
+export function ribbonGeometry(
+  layers: readonly Ribbon[],
 ): THREE.BufferGeometry {
-  const positions = new Float32Array(quads.length * 18);
+  const count = layers.reduce((n, l) => n + l.quads.length, 0);
+  const positions = new Float32Array(count * 18);
+  const colors = new Float32Array(count * 18);
+  const uvs = new Float32Array(count * 12);
   let k = 0;
-  const put = (p: Vec2) => {
-    positions[k++] = p[0];
-    positions[k++] = y;
-    positions[k++] = p[1];
-  };
-  for (const [a, b, c, d] of quads) {
-    put(a);
-    put(b);
-    put(c);
-    put(a);
-    put(c);
-    put(d);
+  let t = 0;
+  for (const { quads, y, colorOf } of layers) {
+    quads.forEach((q, i) => {
+      const c = colorOf?.(i) ?? WHITE;
+      const [a, b, cc, d] = q;
+      for (const p of [a, b, cc, a, cc, d]) {
+        positions[k++] = p[0];
+        positions[k++] = y;
+        positions[k++] = p[1];
+        colors[k - 3] = c.r;
+        colors[k - 2] = c.g;
+        colors[k - 1] = c.b;
+        // planar UVs in metres, so a repeating texture tiles evenly on the road
+        uvs[t++] = p[0] / UV_METRES;
+        uvs[t++] = p[1] / UV_METRES;
+      }
+    });
   }
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  geometry.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
   geometry.computeVertexNormals();
   return geometry;
 }
+
+const WHITE = new THREE.Color("#ffffff");

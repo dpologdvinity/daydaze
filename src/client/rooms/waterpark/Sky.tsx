@@ -1,9 +1,10 @@
 import { useFrame } from "@react-three/fiber";
-import { useRef } from "react";
+import { useMemo } from "react";
 import * as THREE from "three";
 import { useReducedMotion } from "../../motion.ts";
 import { hdr } from "../shared/materials.ts";
-import { toon } from "./materials.ts";
+import { instanced, Props } from "./build.ts";
+import { PROPS, toon } from "./materials.ts";
 
 // Tropical noon: deep blue overhead, warm haze on the horizon.
 const SKY = new THREE.ShaderMaterial({
@@ -45,35 +46,76 @@ const PUFFS: readonly [number, number, number, number][] = [
   [-0.7, 0.6, 0.3, 0.8],
 ];
 
-function Clouds() {
-  const group = useRef<THREE.Group>(null);
-  const calm = useReducedMotion();
-  useFrame((_, dt) => {
-    if (!group.current || calm) return;
-    for (const c of group.current.children) {
-      c.position.x += dt * 0.6;
-      if (c.position.x > 80) c.position.x = -80;
-    }
+const HILLS = ["#3f9a55", "#2f8048", "#4fae5f", "#358c4c"];
+
+/** Each cloud puff, as its offset in the cloud and its local transform. */
+const PARTS = CLOUDS.flatMap((c, ci) =>
+  PUFFS.map(([x, y, z, r]) => ({
+    ci,
+    local: new THREE.Matrix4().compose(
+      new THREE.Vector3(x * c.s, y * c.s, z * c.s),
+      new THREE.Quaternion(),
+      new THREE.Vector3(r * c.s, r * c.s, r * c.s),
+    ),
+  })),
+);
+
+/** Writes every puff's matrix from its cloud's current x. Allocates nothing. */
+function placePuffs(
+  mesh: THREE.InstancedMesh,
+  xs: number[],
+  tmp: THREE.Matrix4,
+) {
+  PARTS.forEach((p, k) => {
+    const c = CLOUDS[p.ci];
+    tmp.makeTranslation(xs[p.ci], c.at[1], c.at[2]).multiply(p.local);
+    mesh.setMatrixAt(k, tmp);
   });
-  const white = toon("#ffffff");
-  return (
-    <group ref={group}>
-      {CLOUDS.map((c, i) => (
-        <group key={i} position={c.at} scale={c.s}>
-          {PUFFS.map(([x, y, z, r], k) => (
-            <mesh key={k} position={[x, y, z]} material={white}>
-              <sphereGeometry args={[r, 14, 10]} />
-            </mesh>
-          ))}
-        </group>
-      ))}
-    </group>
-  );
+  mesh.instanceMatrix.needsUpdate = true;
+}
+
+/** Every cloud puff is one instance; drift moves each cloud along x. */
+function Clouds() {
+  const calm = useReducedMotion();
+  const { mesh, xs, tmp } = useMemo(() => {
+    const mesh = instanced(
+      new THREE.SphereGeometry(1, 14, 10),
+      toon("#ffffff"),
+      PARTS.length,
+    );
+    const xs = CLOUDS.map((c) => c.at[0]);
+    const tmp = new THREE.Matrix4();
+    placePuffs(mesh, xs, tmp);
+    return { mesh, xs, tmp };
+  }, []);
+  useFrame((_, dt) => {
+    if (calm) return;
+    for (let c = 0; c < xs.length; c++) {
+      xs[c] += dt * 0.6;
+      if (xs[c] > 80) xs[c] = -80;
+    }
+    placePuffs(mesh, xs, tmp);
+  });
+  return <primitive object={mesh} />;
 }
 
 /** Sky dome, sun, drifting clouds and jungle hills round the park. */
 export function Sky() {
-  const hills = ["#3f9a55", "#2f8048", "#4fae5f", "#358c4c"];
+  const hills = useMemo(() => {
+    const props = new Props();
+    for (let i = 0; i < 12; i++) {
+      const a = Math.PI * 0.95 + (i / 11) * Math.PI * 1.1;
+      const r = 48 + (i % 3) * 6;
+      props.add(
+        new THREE.SphereGeometry(1, 20, 12),
+        HILLS[i % HILLS.length],
+        [Math.cos(a) * r, -2, Math.sin(a) * r],
+        [0, 0, 0],
+        [14 + (i % 4) * 3, 9 + (i % 3) * 4, 10],
+      );
+    }
+    return props.geometry();
+  }, []);
   return (
     <>
       <mesh material={SKY} renderOrder={-1}>
@@ -84,20 +126,7 @@ export function Sky() {
         <meshBasicMaterial color={hdr("#fff3c4", 2.2)} toneMapped={false} />
       </mesh>
       <Clouds />
-      {Array.from({ length: 12 }, (_, i) => {
-        const a = Math.PI * 0.95 + (i / 11) * Math.PI * 1.1;
-        const r = 48 + (i % 3) * 6;
-        return (
-          <mesh
-            key={i}
-            position={[Math.cos(a) * r, -2, Math.sin(a) * r]}
-            scale={[14 + (i % 4) * 3, 9 + (i % 3) * 4, 10]}
-            material={toon(hills[i % hills.length])}
-          >
-            <sphereGeometry args={[1, 20, 12]} />
-          </mesh>
-        );
-      })}
+      <mesh geometry={hills} material={PROPS} />
       {/* sand round the deck, out to the hills */}
       <mesh rotation-x={-Math.PI / 2} position-y={-0.02}>
         <circleGeometry args={[70, 48]} />

@@ -24,6 +24,7 @@ import {
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { BumperArena } from "./speedway/BumperArena.tsx";
+import { CarLineup } from "./speedway/CarLineup.tsx";
 import { CarMesh } from "./speedway/CarMesh.tsx";
 import { ChaseCamera } from "./speedway/ChaseCamera.tsx";
 import { Grandstand } from "./speedway/Grandstand.tsx";
@@ -266,6 +267,7 @@ export function Speedway({ onPick }: { onPick: PickHandler }) {
           />
         </mesh>
       ))}
+      <CarLineup />
       <ChaseCamera target={player} />
     </>
   );
