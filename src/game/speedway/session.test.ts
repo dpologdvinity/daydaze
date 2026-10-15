@@ -39,6 +39,32 @@ test("the HUD reports the player's place out of the field", () => {
   assert.equal(hud.bestMs, null);
 });
 
+test("the HUD clamps the lap to the last one and shows the total time once finished", () => {
+  const session = startRace(TRACKS[0], KART, 2, "easy");
+  const [player] = session.race.cars;
+  // Three laps of 30, 31 and 32 s, the last crossing the line at 93 s.
+  const finished = {
+    ...player,
+    lap: {
+      ...player.lap,
+      lap: 4,
+      lapStartMs: 93000,
+      bestLapMs: 30000,
+      lapTimesMs: [30000, 31000, 32000],
+    },
+    finishedMs: 93000,
+  };
+  session.race = {
+    ...session.race,
+    phase: "finished",
+    cars: [finished, ...session.race.cars.slice(1)],
+  };
+  const hud = hudOf(session);
+  assert.equal(hud.lap, 3);
+  assert.equal(hud.laps, 3);
+  assert.equal(hud.lapMs, 93000);
+});
+
 test("a bumper session steps six cars with the player among them and stays finite", () => {
   const session = startBumpers();
   assert.equal(session.cars.length, 6);
