@@ -1,5 +1,9 @@
 import { isIntensity, type Intensity } from "./effects/buzz.ts";
-import { DEFAULT_CRIME, validateCrime, type CrimeSave } from "./crime/record.ts";
+import {
+  DEFAULT_CRIME,
+  validateCrime,
+  type CrimeSave,
+} from "./crime/record.ts";
 import { DEFAULT_HOME, validateHome, type HomeSave } from "./home/home.ts";
 import { DEFAULT_JAIL, validateJail, type JailSave } from "./jail/jail.ts";
 import {

@@ -19,13 +19,28 @@ export function Jail({ onPick }: { onPick: PickHandler }) {
     <>
       <color attach="background" args={["#0d0d14"]} />
       <hemisphereLight args={["#c8d4ff", "#1a1a26", 0.8]} />
-      <pointLight position={[0, 2.8, 0]} color="#fff2d6" intensity={3} distance={12} />
-      <Floor width={12} depth={8} center={[0, 0]} color="#3b3f4d" onPick={onPick} />
+      <pointLight
+        position={[0, 2.8, 0]}
+        color="#fff2d6"
+        intensity={3}
+        distance={12}
+      />
+      <Floor
+        width={12}
+        depth={8}
+        center={[0, 0]}
+        color="#3b3f4d"
+        onPick={onPick}
+      />
       <PortalPads room={ROOMS.jail} color="#ff5c5c" />
       {BARS.map((x) => (
         <mesh key={x} position={[x, 1.4, -3.4]}>
           <boxGeometry args={[0.08, 2.8, 0.08]} />
-          <meshStandardMaterial color="#9aa3b5" metalness={0.6} roughness={0.4} />
+          <meshStandardMaterial
+            color="#9aa3b5"
+            metalness={0.6}
+            roughness={0.4}
+          />
         </mesh>
       ))}
       <mesh position={[0, 1.4, -3.4]}>

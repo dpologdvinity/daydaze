@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { pickLine } from "../../game/dialogue/pick.ts";
-import { ARREST_STEPS, ARREST_TOTAL_MS, arrestStepAt } from "../../game/police/arrest.ts";
+import {
+  ARREST_STEPS,
+  ARREST_TOTAL_MS,
+  arrestStepAt,
+} from "../../game/police/arrest.ts";
 
 const STEP_TEXT = {
   approach: "An officer walks over and stops right next to you.",
@@ -37,7 +41,9 @@ export function ArrestSequence({ onDone }: { onDone: () => void }) {
 
   return (
     <section className="home-panel arrest" role="alert" aria-label="Arrest">
-      <p className="arrest-line">{stepId === "warn" ? line : STEP_TEXT[stepId]}</p>
+      <p className="arrest-line">
+        {stepId === "warn" ? line : STEP_TEXT[stepId]}
+      </p>
     </section>
   );
 }

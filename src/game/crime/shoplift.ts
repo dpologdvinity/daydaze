@@ -155,9 +155,8 @@ export const START: Stealth = {
 };
 
 export function watchersFacing(store: Store, beat: number): number {
-  return store.watchers.filter(
-    (w) => (beat + w.phase) % w.period < w.cone,
-  ).length;
+  return store.watchers.filter((w) => (beat + w.phase) % w.period < w.cone)
+    .length;
 }
 
 // One beat of play. Returns a new state; the store decides who is watching.
@@ -182,7 +181,12 @@ export function stepStealth(
   } else {
     // walk-out ends the attempt at the door.
     if (store.tagAlarm && state.pocketed) suspicion += TAG_ALARM_SUSPICION;
-    const outcome = suspicion >= SUSPICION_MAX ? "stopped" : state.pocketed ? "escaped" : "left";
+    const outcome =
+      suspicion >= SUSPICION_MAX
+        ? "stopped"
+        : state.pocketed
+          ? "escaped"
+          : "left";
     return { ...next, suspicion: Math.min(suspicion, SUSPICION_MAX), outcome };
   }
 

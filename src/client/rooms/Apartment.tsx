@@ -44,7 +44,12 @@ export function Apartment({
     <>
       <color attach="background" args={["#120a1c"]} />
       <hemisphereLight args={["#ffd8f0", "#2a1830", 0.7]} />
-      <pointLight position={[0, 2.8, 0]} color="#ffd08a" intensity={3} distance={9} />
+      <pointLight
+        position={[0, 2.8, 0]}
+        color="#ffd08a"
+        intensity={3}
+        distance={9}
+      />
       <Floor
         width={8}
         depth={6}

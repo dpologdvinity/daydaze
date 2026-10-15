@@ -9,7 +9,10 @@ import {
 
 test("a warning bans that store until the ban ends", () => {
   const now = 5_000;
-  const crime = recordCaught(DEFAULT_CRIME, "bodega", now, { kind: "warning", banMs: 1_000 });
+  const crime = recordCaught(DEFAULT_CRIME, "bodega", now, {
+    kind: "warning",
+    banMs: 1_000,
+  });
   assert.equal(crime.offences, 1);
   assert.equal(isBanned(crime, "bodega", now), true);
   assert.equal(isBanned(crime, "bodega", now + 1_000), false);
@@ -17,7 +20,10 @@ test("a warning bans that store until the ban ends", () => {
 });
 
 test("a fine or a jail term counts the offence without a store ban", () => {
-  const crime = recordCaught(DEFAULT_CRIME, "mall", 0, { kind: "fine", coins: 10 });
+  const crime = recordCaught(DEFAULT_CRIME, "mall", 0, {
+    kind: "fine",
+    coins: 10,
+  });
   assert.equal(crime.offences, 1);
   assert.deepEqual(crime.bans, {});
 });
@@ -25,7 +31,10 @@ test("a fine or a jail term counts the offence without a store ban", () => {
 test("saved crime data keeps good values and drops bad ones", () => {
   assert.deepEqual(validateCrime(undefined), DEFAULT_CRIME);
   assert.deepEqual(
-    validateCrime({ offences: 2, bans: { bodega: 9, mall: "soon", x: Infinity } }),
+    validateCrime({
+      offences: 2,
+      bans: { bodega: 9, mall: "soon", x: Infinity },
+    }),
     { offences: 2, bans: { bodega: 9 } },
   );
   assert.equal(validateCrime({ offences: -4 }).offences, 0);

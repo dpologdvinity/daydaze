@@ -9,7 +9,11 @@ export type CrimeSave = {
 
 export const DEFAULT_CRIME: CrimeSave = { offences: 0, bans: {} };
 
-export function isBanned(crime: CrimeSave, storeId: string, now: number): boolean {
+export function isBanned(
+  crime: CrimeSave,
+  storeId: string,
+  now: number,
+): boolean {
   const until = crime.bans[storeId];
   return until !== undefined && until > now;
 }

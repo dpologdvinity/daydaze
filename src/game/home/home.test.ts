@@ -8,7 +8,12 @@ test("a new apartment door starts locked", () => {
 });
 
 test("toggling the lock flips it without touching the furniture", () => {
-  const home = { locked: true, furniture: [{ id: "lamp" as const, cell: [0, 0] as const, rotation: 0 as const }] };
+  const home = {
+    locked: true,
+    furniture: [
+      { id: "lamp" as const, cell: [0, 0] as const, rotation: 0 as const },
+    ],
+  };
   const open = toggleLock(home);
   assert.equal(open.locked, false);
   assert.deepEqual(open.furniture, home.furniture);

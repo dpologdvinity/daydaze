@@ -59,7 +59,9 @@ export function JailHud({
         onClick={() => {
           const paid = bailOut(jail, Date.now());
           if (paid === null) {
-            setNote(`Bail is ${bailCost(jail, now)} coins. Bail can't be paid yet, so wait it out.`);
+            setNote(
+              `Bail is ${bailCost(jail, now)} coins. Bail can't be paid yet, so wait it out.`,
+            );
             return;
           }
           onChange(paid);

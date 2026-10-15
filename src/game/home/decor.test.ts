@@ -45,7 +45,12 @@ test("pieces cannot overlap, but may touch", () => {
   const sofa = placeFurniture([], "sofa", [0, 0], 0);
   assert.ok(sofa);
   assert.equal(placeFurniture(sofa, "lamp", [0, 0], 0), null);
-  const beside = placeFurniture(sofa, "lamp", [FURNITURE_CATALOG.sofa.width, 0], 0);
+  const beside = placeFurniture(
+    sofa,
+    "lamp",
+    [FURNITURE_CATALOG.sofa.width, 0],
+    0,
+  );
   assert.ok(beside);
   assert.equal(beside.length, 2);
 });

@@ -1,6 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { ARREST_STEPS, ARREST_TOTAL_MS, arrestStepAt, jailAfterArrest } from "./arrest.ts";
+import {
+  ARREST_STEPS,
+  ARREST_TOTAL_MS,
+  arrestStepAt,
+  jailAfterArrest,
+} from "./arrest.ts";
 
 test("the arrest plays its steps in order and then ends", () => {
   assert.deepEqual(

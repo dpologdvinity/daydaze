@@ -32,6 +32,9 @@ export function arrestStepAt(elapsedMs: number): ArrestStep | null {
 }
 
 // Jail only follows a jail penalty; a fine or a warning ends the arrest at the door.
-export function jailAfterArrest(now: number, penalty: Penalty): JailSave | null {
+export function jailAfterArrest(
+  now: number,
+  penalty: Penalty,
+): JailSave | null {
   return penalty.kind === "jail" ? sentence(now, penalty.minutes) : null;
 }

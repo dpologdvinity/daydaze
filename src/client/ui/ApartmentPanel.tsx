@@ -118,7 +118,8 @@ export function ApartmentPanel({
         <button
           type="button"
           onClick={() => {
-            if (picked !== null) change(rotateFurniture(home.furniture, picked));
+            if (picked !== null)
+              change(rotateFurniture(home.furniture, picked));
           }}
         >
           Rotate

@@ -121,11 +121,7 @@ export function App() {
   const caught = useCallback(
     (found: Caught) => {
       setShopping(false);
-      const penalty = penaltyFor(
-        found.store,
-        found.price,
-        save.crime.offences,
-      );
+      const penalty = penaltyFor(found.store, found.price, save.crime.offences);
       setArrest({ caught: found, penalty });
     },
     [save.crime.offences],

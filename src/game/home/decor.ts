@@ -27,7 +27,9 @@ export type Furniture = {
 export const FURNITURE_IDS = Object.keys(FURNITURE_CATALOG) as FurnitureId[];
 
 function isFurnitureId(value: unknown): value is FurnitureId {
-  return typeof value === "string" && FURNITURE_IDS.includes(value as FurnitureId);
+  return (
+    typeof value === "string" && FURNITURE_IDS.includes(value as FurnitureId)
+  );
 }
 
 export function footprint(id: FurnitureId, rotation: Rotation) {
@@ -44,7 +46,9 @@ function fits(items: readonly Furniture[], skip: number, piece: Furniture) {
     if (index === skip) return true;
     const o = footprint(other.id, other.rotation);
     const [oc, or] = other.cell;
-    return c + size.w <= oc || oc + o.w <= c || r + size.d <= or || or + o.d <= r;
+    return (
+      c + size.w <= oc || oc + o.w <= c || r + size.d <= or || or + o.d <= r
+    );
   });
 }
 
@@ -67,9 +71,7 @@ export function pieceAt(
   return items.findIndex((item) => {
     const size = footprint(item.id, item.rotation);
     const [c, r] = item.cell;
-    return (
-      column >= c && column < c + size.w && row >= r && row < r + size.d
-    );
+    return column >= c && column < c + size.w && row >= r && row < r + size.d;
   });
 }
 

@@ -19,11 +19,17 @@ function storeNamed(id: string): Store {
 }
 
 function play(store: Store, actions: readonly Action[]): Stealth {
-  return actions.reduce((state, action) => stepStealth(store, state, action), START);
+  return actions.reduce(
+    (state, action) => stepStealth(store, state, action),
+    START,
+  );
 }
 
 // Browse until the beat the store looks away from the player, then pocket.
-function patientRun(store: Store, pocketAt: (beat: number) => boolean): Action[] {
+function patientRun(
+  store: Store,
+  pocketAt: (beat: number) => boolean,
+): Action[] {
   const actions: Action[] = [];
   let beat = 0;
   while (!pocketAt(beat)) {
@@ -39,13 +45,19 @@ test("the store list has unique ids and at least one store per difficulty", () =
   const ids = STORES.map((s) => s.id);
   assert.equal(new Set(ids).size, ids.length);
   for (const difficulty of ["easy", "medium", "hard"] as const) {
-    assert.ok(STORES.some((s) => s.difficulty === difficulty), difficulty);
+    assert.ok(
+      STORES.some((s) => s.difficulty === difficulty),
+      difficulty,
+    );
   }
 });
 
 test("the bodega is easy: a patient player walks out with the item", () => {
   const bodega = storeNamed("bodega");
-  const actions = patientRun(bodega, (beat) => watchersFacing(bodega, beat) === 0);
+  const actions = patientRun(
+    bodega,
+    (beat) => watchersFacing(bodega, beat) === 0,
+  );
   const result = play(bodega, actions);
   assert.equal(result.outcome, "escaped");
   assert.equal(result.pocketed, true);
@@ -53,7 +65,10 @@ test("the bodega is easy: a patient player walks out with the item", () => {
 
 test("the mall is medium: a patient player escapes, but the tag alarm adds suspicion", () => {
   const mall = storeNamed("mall");
-  const result = play(mall, patientRun(mall, (b) => watchersFacing(mall, b) === 0));
+  const result = play(
+    mall,
+    patientRun(mall, (b) => watchersFacing(mall, b) === 0),
+  );
   assert.equal(result.outcome, "escaped");
   assert.ok(result.suspicion > 0);
 });
