@@ -21,6 +21,8 @@ export function Sparkles(props: ComponentProps<typeof DreiSparkles>) {
     const m = ref.current?.material;
     if (!(m instanceof THREE.ShaderMaterial)) return;
     for (const [from, to] of PATCHES) {
+      // StrictMode runs this twice on one material; the second pass is a no-op
+      if (m.fragmentShader.includes(to)) continue;
       if (!m.fragmentShader.includes(from))
         console.error("Sparkles: drei's shader changed; recheck the NaN fix.");
       m.fragmentShader = m.fragmentShader.replace(from, to);
