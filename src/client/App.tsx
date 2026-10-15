@@ -1,8 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { isBanned, recordCaught } from "../game/crime/record.ts";
+import { penaltyFor, type Penalty } from "../game/crime/shoplift.ts";
 import type { DanceMoveId } from "../game/dance/moves.ts";
 import type { Intensity } from "../game/effects/buzz.ts";
 import type { MinigameId } from "../game/hotspots.ts";
+import { isJailed } from "../game/jail/jail.ts";
+import { jailAfterArrest } from "../game/police/arrest.ts";
 import type { Look, Mood, SwimLook } from "../game/look.ts";
+import type { HomeSave } from "../game/home/home.ts";
 import { arrive } from "../game/portals.ts";
 import { ROOMS, type RoomId, type Spawn } from "../game/rooms.ts";
 import {
@@ -12,14 +17,18 @@ import {
   serializeSave,
   type SaveV1,
 } from "../game/save.ts";
-import { earn, payoutFor, type PayGrade } from "../game/wallet.ts";
+import { earn, spend, payoutFor, type PayGrade } from "../game/wallet.ts";
 import { CityJoystick } from "./city/CityJoystick.tsx";
 import { readFlags } from "./flags.ts";
 import { ReducedMotionContext, usePrefersReducedMotion } from "./motion.ts";
+import { ApartmentPanel } from "./ui/ApartmentPanel.tsx";
+import { ArrestSequence } from "./ui/ArrestSequence.tsx";
 import { ChatBar } from "./ui/ChatBar.tsx";
 import { DebugPanel } from "./ui/DebugPanel.tsx";
+import { JailHud } from "./ui/JailHud.tsx";
 import { GameOverlay } from "./ui/Minigames.tsx";
 import { Overlay } from "./ui/Overlay.tsx";
+import { type Caught, ShopliftPanel } from "./ui/ShopliftPanel.tsx";
 import type { View } from "./world/CameraRig.tsx";
 import { World } from "./world/World.tsx";
 
@@ -62,7 +71,9 @@ export function App() {
   useEffect(() => writeStorage(save), [save]);
 
   const [here, setHere] = useState(() => {
-    const room = flags.room ?? "velvet-room";
+    // a sentence still running resumes in the cell block
+    const jailed = isJailed(save.jail, Date.now());
+    const room = flags.room ?? (jailed ? "jail" : "velvet-room");
     return visit(room, ROOMS[room].spawn);
   });
   const [fading, setFading] = useState(false);
@@ -99,6 +110,56 @@ export function App() {
       setSave((s) => ({ ...s, settings: { ...s.settings, panelOpen } })),
     [],
   );
+  const setHome = (home: HomeSave) => setSave((s) => ({ ...s, home }));
+  const setJail = (jail: SaveV1["jail"]) => setSave((s) => ({ ...s, jail }));
+  // Stealing opens the stub shelf; a caught attempt runs the arrest first.
+  const [shopping, setShopping] = useState(false);
+  const [arrest, setArrest] = useState<{
+    caught: Caught;
+    penalty: Penalty;
+  } | null>(null);
+  const caught = useCallback(
+    (found: Caught) => {
+      setShopping(false);
+      const penalty = penaltyFor(found.store, found.price, save.crime.offences);
+      setArrest({ caught: found, penalty });
+    },
+    [save.crime.offences],
+  );
+  const finishArrest = useCallback(() => {
+    if (!arrest) return;
+    const now = Date.now();
+    const { store } = arrest.caught;
+    const { penalty } = arrest;
+    setSave((s) => ({
+      ...s,
+      crime: recordCaught(s.crime, store.id, now, penalty),
+      jail: jailAfterArrest(now, penalty) ?? s.jail,
+      // the fine takes what the player has, up to the fine
+      coins:
+        penalty.kind === "fine"
+          ? (spend(s.coins, penalty.coins) ?? 0)
+          : s.coins,
+    }));
+    setArrest(null);
+    if (penalty.kind === "jail") {
+      travel("jail", ROOMS.jail.spawn);
+    } else {
+      setChat({
+        text:
+          penalty.kind === "warning"
+            ? `Officer: a warning, and a day's ban from ${store.name}.`
+            : `Officer: a ${penalty.coins} coin fine, paid on the spot.`,
+        at: now,
+      });
+    }
+  }, [arrest, travel]);
+  // Released players arrive outside the jail, by the gate.
+  const release = useCallback(() => {
+    setSave((s) => ({ ...s, jail: { endsAt: null } }));
+    travel("city", ROOMS.jail.portals[0].targetSpawn);
+  }, [travel]);
+  const now = Date.now();
   const [rides, setRides] = useState(0);
   const [game, setGame] = useState<MinigameId | null>(null);
   // a finished game pays its grade; quitting early (null) pays nothing
@@ -131,6 +192,8 @@ export function App() {
           quality={quality}
           still={flags.still}
           onPortal={(portal) => travel(portal.target, portal.targetSpawn)}
+          home={save.home}
+          onShelf={() => setShopping(true)}
         />
         <div className="tag" ref={tag}>
           {chat && (
@@ -161,6 +224,31 @@ export function App() {
           panelOpen={save.settings.panelOpen}
           setPanelOpen={setPanelOpen}
         />
+        {here.room === "apartment" && (
+          <ApartmentPanel
+            home={save.home}
+            onChange={setHome}
+            onShelf={() => setShopping(true)}
+          />
+        )}
+        {here.room === "apartment" && shopping && (
+          <ShopliftPanel
+            crime={save.crime}
+            now={now}
+            onCaught={caught}
+            onClose={() => setShopping(false)}
+          />
+        )}
+        {arrest && <ArrestSequence onDone={finishArrest} />}
+        {here.room === "jail" && (
+          <JailHud
+            jail={save.jail}
+            coins={save.coins}
+            onChange={setJail}
+            onPayBail={(coins) => setSave((s) => ({ ...s, coins }))}
+            onRelease={release}
+          />
+        )}
         {game && <GameOverlay game={game} onClose={endGame} />}
         {here.room === "city" && touch && <CityJoystick />}
         <ChatBar onSay={(text) => setChat({ text, at: Date.now() })} />

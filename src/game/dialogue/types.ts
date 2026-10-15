@@ -17,6 +17,8 @@ export const ROLE_IDS = [
   "carnival-barker",
   "pit-crew",
   "cotton-candy-vendor",
+  "guard",
+  "police",
 ] as const;
 
 export type DialogueRole = (typeof ROLE_IDS)[number];

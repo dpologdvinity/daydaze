@@ -194,6 +194,26 @@ const VIOLET_HOUR_DOOR: Door = {
   targetSpawn: { position: [0, 2.6], yaw: Math.PI },
 };
 
+// The apartment door is on the Glass Tower's avenue face; the jail sits on a
+// free lot west of the arcade square.
+const APARTMENT_DOOR: Door = {
+  position: [-165, 12.5],
+  radius: 2,
+  label: "Up to your apartment",
+  target: "apartment",
+  // The apartment's own arrival point; see rooms.ts
+  targetSpawn: { position: [0, 1.8], yaw: Math.PI },
+};
+
+const JAIL_DOOR: Door = {
+  position: [-86, 12.5],
+  radius: 2,
+  label: "Into City Jail",
+  target: "jail",
+  // The jail's own arrival point; see rooms.ts
+  targetSpawn: { position: [0, 2.6], yaw: Math.PI },
+};
+
 const CARNIVAL_DOOR: Door = {
   position: [185, -12.5],
   radius: 2,
@@ -230,6 +250,7 @@ export const BUILDINGS: readonly Building[] = [
     height: 64,
     style: "glass",
     sign: { text: "SKYLINE", color: "#4fe3ff" },
+    door: APARTMENT_DOOR,
   },
   {
     id: "billboard-block",
@@ -378,6 +399,15 @@ export const BUILDINGS: readonly Building[] = [
     height: 18,
     style: "warehouse",
     sign: { text: "BASSLINE", color: "#4fe3ff" },
+  },
+  {
+    id: "city-jail",
+    neighborhood: "downtown",
+    footprint: rect(-96, 14, -76, 40),
+    height: 12,
+    style: "brick",
+    sign: { text: "CITY JAIL", color: "#ff5c5c" },
+    door: JAIL_DOOR,
   },
   // Nightlife Row, north of the avenue
   {

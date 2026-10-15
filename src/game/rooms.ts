@@ -9,6 +9,8 @@ export type RoomId =
   | "amusement-park"
   | "water-park"
   | "speedway"
+  | "apartment"
+  | "jail"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -119,6 +121,24 @@ const SPEEDWAY_FLOOR: readonly Vec2[] = [
   [10, -6],
   [10, 7],
   [-10, 7],
+];
+
+// Apartment: an 8 m x 6 m flat behind the Glass Tower's door. Furniture sits on the
+// 8 x 6 grid of 1 m cells in src/game/home/decor.ts, starting at the back left.
+const APARTMENT_FLOOR: readonly Vec2[] = [
+  [-4, -3],
+  [4, -3],
+  [4, 3],
+  [-4, 3],
+];
+
+// Jail: a 12 m x 8 m cell block. The cells line the back, the yard is the
+// front strip and the guard's desk sits by the gate.
+const JAIL_FLOOR: readonly Vec2[] = [
+  [-6, -4],
+  [6, -4],
+  [6, 4],
+  [-6, 4],
 ];
 
 export const ROOMS: Record<RoomId, RoomDefinition> = {
@@ -313,6 +333,40 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
     walkable: CITY_BOUNDS,
     spawn: CITY_SPAWN,
     portals: CITY_AREA.portals,
+  },
+  apartment: {
+    id: "apartment",
+    name: "Your apartment",
+    walkable: APARTMENT_FLOOR,
+    spawn: { position: [0, 1.8], yaw: Math.PI },
+    portals: [
+      {
+        // The tower's front door, back to the sidewalk outside.
+        id: "apartment-to-city",
+        position: [0, 2.9],
+        radius: 0.7,
+        label: "Out to the street",
+        target: "city",
+        targetSpawn: { position: [-165, 9], yaw: 0 },
+      },
+    ],
+  },
+  jail: {
+    id: "jail",
+    name: "City Jail, Block C",
+    walkable: JAIL_FLOOR,
+    spawn: { position: [0, 2.6], yaw: Math.PI },
+    portals: [
+      {
+        // The gate, back out to the sidewalk. Released players arrive here.
+        id: "jail-to-city",
+        position: [0, 3.6],
+        radius: 0.7,
+        label: "Out through the gate",
+        target: "city",
+        targetSpawn: { position: [-86, 9], yaw: 0 },
+      },
+    ],
   },
 };
 
