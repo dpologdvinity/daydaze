@@ -8,6 +8,7 @@ import {
   decodeFace,
   encodeFace,
   faceOf,
+  seededFace,
   DEFAULT_LOOK,
   EYESHADOWS,
   HAIR_COLORS,
@@ -168,4 +169,11 @@ test("malformed face codes are rejected", () => {
     assert.equal(decodeFace(bad), null);
     assert.equal(validateLook({ ...DEFAULT_LOOK, face: bad }), false);
   }
+});
+
+test("seeded NPC faces are stable, valid and varied", () => {
+  const faces = Array.from({ length: 12 }, (_, i) => seededFace(i + 1));
+  assert.deepEqual(seededFace(3), faces[2]);
+  for (const f of faces) assert.notEqual(decodeFace(encodeFace(f)), null);
+  assert.ok(new Set(faces.map(encodeFace)).size > 8);
 });

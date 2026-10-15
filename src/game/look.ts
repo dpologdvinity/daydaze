@@ -158,6 +158,27 @@ export function decodeFace(code: unknown): Face | null {
   return face;
 }
 
+/**
+ * A face for a doll whose look has none (NPCs), varied by its seed so a crowd
+ * does not share one face. Same seed, same face.
+ */
+export function seededFace(seed: number): Face {
+  let x = Math.floor(seed * 9301 + 49297) >>> 0 || 1;
+  const next = () => {
+    x ^= x << 13;
+    x ^= x >>> 17;
+    x ^= x << 5;
+    return (x >>> 0) / 4294967296;
+  };
+  const face: Face = { ...DEFAULT_FACE };
+  for (const s of FACE_SLIDERS)
+    face[s.id] = Math.round((next() * 1.2 - 0.6) * 10) / 10;
+  face.body = BODY_SHAPES[Math.floor(next() * BODY_SHAPES.length)].id;
+  // natural eye colours only; violet is a closet pick
+  face.eyeColor = EYE_COLORS[Math.floor(next() * (EYE_COLORS.length - 1))].id;
+  return face;
+}
+
 /** A look's face, or the default for looks from before the 3D doll. */
 export function faceOf(look: Look): Face {
   return decodeFace(look.face) ?? DEFAULT_FACE;

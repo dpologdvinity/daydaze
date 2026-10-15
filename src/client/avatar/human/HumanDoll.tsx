@@ -15,6 +15,8 @@ import {
   BODY_SHAPES,
   FACE_SLIDERS,
   faceOf,
+  seededFace,
+  type Face,
   type Look,
   type Mood,
   type SwimLook,
@@ -90,7 +92,7 @@ function setMorph(meshes: THREE.Mesh[], name: string, value: number) {
   }
 }
 
-function useBody(look: Look) {
+function useBody(look: Look, eyeColor: Face["eyeColor"]) {
   const gltf = useGLTF(`${MODELS}/body.glb`);
   const invalidate = useThree((s) => s.invalidate);
   const body = useMemo(() => {
@@ -190,7 +192,6 @@ function useBody(look: Look) {
       tex?.dispose();
     };
   }, [body, look.skin, look.lips, look.brows, look.shadow, invalidate]);
-  const eyeColor = faceOf(look).eyeColor;
   useEffect(() => {
     const tex = paintIris(eyeColor);
     body.eye.map?.dispose();
@@ -272,7 +273,12 @@ export function HumanDoll({
   seed = 0,
   ...rest
 }: Props) {
-  const body = useBody(look);
+  // NPC looks carry no face, so their seed picks one
+  const face = useMemo(
+    () => (look.face || !seed ? faceOf(look) : seededFace(seed)),
+    [look, seed],
+  );
+  const body = useBody(look, face.eyeColor);
   const parts = partsFor(look, swim);
   const calm = useReducedMotion();
   const phase = useRef(0);
@@ -340,7 +346,6 @@ export function HumanDoll({
     const closed = tm > blinkAt.current && tm < blinkAt.current + 0.14;
     setMorph(wornList.current, "blink", closed ? 1 : 0);
     // face sliders and body shape, on every worn mesh (parts mount later)
-    const face = faceOf(look);
     for (const s of FACE_SLIDERS) setMorph(wornList.current, s.id, face[s.id]);
     for (const b of BODY_SHAPES)
       if (b.id !== "classic")
