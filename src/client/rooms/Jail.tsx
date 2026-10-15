@@ -18,7 +18,7 @@ export function Jail({ onPick }: { onPick: PickHandler }) {
   return (
     <>
       <color attach="background" args={["#0d0d14"]} />
-      <hemisphereLight args={["#c8d4ff", "#1a1a26", 0.8]} />
+      <hemisphereLight args={["#dbe4ff", "#3a3a52", 1.4]} />
       <pointLight
         position={[0, 2.8, 0]}
         color="#fff2d6"
@@ -29,7 +29,8 @@ export function Jail({ onPick }: { onPick: PickHandler }) {
         width={12}
         depth={8}
         center={[0, 0]}
-        color="#3b3f4d"
+        color="#5d6275"
+        low={{ metalness: 0, roughness: 0.9 }}
         onPick={onPick}
       />
       <PortalPads room={ROOMS.jail} color="#ff5c5c" />
@@ -58,6 +59,24 @@ export function Jail({ onPick }: { onPick: PickHandler }) {
       <mesh position={[4.6, 0.9, 1.6]}>
         <boxGeometry args={[1.4, 1.8, 0.9]} />
         <meshStandardMaterial color="#6b5a3a" />
+      </mesh>
+      {/* the yard: a painted court with a hoop at the far left */}
+      <mesh position={[-3.6, 0.01, 2]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[4, 3.4]} />
+        <meshStandardMaterial color="#4f7a52" />
+      </mesh>
+      <mesh position={[-5.4, 1.3, 2]}>
+        <boxGeometry args={[0.08, 2.6, 0.08]} />
+        <meshStandardMaterial color="#9aa3b5" />
+      </mesh>
+      <mesh position={[-5.2, 2.5, 2]}>
+        <boxGeometry args={[0.1, 0.7, 0.9]} />
+        <meshStandardMaterial color="#f4f4f8" />
+      </mesh>
+      {/* the payphone by the guard's desk */}
+      <mesh position={[5.7, 1.0, -0.4]}>
+        <boxGeometry args={[0.35, 1.2, 0.5]} />
+        <meshStandardMaterial color="#2c6bd6" emissive="#10306a" />
       </mesh>
       <TalkingNpc
         name="Officer Dee"

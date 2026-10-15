@@ -43,18 +43,19 @@ export function Apartment({
   return (
     <>
       <color attach="background" args={["#120a1c"]} />
-      <hemisphereLight args={["#ffd8f0", "#2a1830", 0.7]} />
+      <hemisphereLight args={["#ffe3f4", "#6a4a78", 1.5]} />
       <pointLight
         position={[0, 2.8, 0]}
         color="#ffd08a"
-        intensity={3}
-        distance={9}
+        intensity={6}
+        distance={11}
       />
       <Floor
         width={8}
         depth={6}
         center={[0, 0]}
-        color="#2d1d33"
+        color="#6b4a72"
+        low={{ metalness: 0, roughness: 0.9 }}
         onPick={onPick}
       />
       <PortalPads room={ROOMS.apartment} color="#ffd166" />
@@ -62,6 +63,11 @@ export function Apartment({
       {home.furniture.map((item, index) => (
         <Piece key={`${item.id}-${index}`} item={item} />
       ))}
+      {/* a window on the back wall, glowing sunset */}
+      <mesh position={[-1.5, 1.7, -2.93]}>
+        <boxGeometry args={[2, 1.2, 0.05]} />
+        <meshStandardMaterial color="#ffb37a" emissive="#ff8a4a" />
+      </mesh>
       <mesh
         position={[3.4, 1.1, -2.2]}
         onClick={onShelf}
@@ -88,7 +94,7 @@ function Piece({ item }: { item: Furniture }) {
 }
 
 function Walls() {
-  const wall = "#3a2344";
+  const wall = "#7a5a8c";
   return (
     <>
       <mesh position={[-4, 1.5, 0]}>

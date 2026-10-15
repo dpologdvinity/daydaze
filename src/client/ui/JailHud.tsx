@@ -61,6 +61,16 @@ export function JailHud({
         type="button"
         disabled={!serving || done}
         onClick={() => {
+          onChange(goodBehaviour(jail, Date.now()));
+          setNote("Push-ups in the yard: 30 seconds off.");
+        }}
+      >
+        Push-ups in the yard (-30 s)
+      </button>
+      <button
+        type="button"
+        disabled={!serving || done}
+        onClick={() => {
           const paid = bailOut(jail, Date.now(), coins);
           if (paid === null) {
             setNote(
@@ -73,7 +83,7 @@ export function JailHud({
           onRelease();
         }}
       >
-        Pay bail ({bailCost(jail, now)} coins)
+        Use the phone: bail ({bailCost(jail, now)} coins)
       </button>
       <p role="status" className="home-note">
         {note}
