@@ -3,6 +3,7 @@
 // walk rules both read it. Axis-aligned throughout, so every surface is a
 // rectangle that the cell grid can clip.
 import type { WalkArea } from "../area.ts";
+import { FOOD_STOREFRONTS } from "../food/storefronts.ts";
 import type { RoomId, Spawn } from "../rooms.ts";
 import type { Vec2 } from "../walk.ts";
 
@@ -475,6 +476,8 @@ export const BUILDINGS: readonly Building[] = [
     sign: { text: "SPEEDWAY", color: "#ff4fb3" },
     door: SPEEDWAY_DOOR,
   },
+  // The food venues: one storefront each, two of them with doors.
+  ...FOOD_STOREFRONTS,
 ];
 
 // x of each north-south street; each has two edges, so dedupe.

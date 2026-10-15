@@ -87,6 +87,21 @@ const Apartment = lazy(() =>
 );
 const Jail = lazy(() =>
   import("../rooms/Jail.tsx").then((m) => ({ default: m.Jail })),
+// The food rooms load on first arrival, each with its own staff and menu.
+const FilipinoJoint = lazy(() =>
+  import("../rooms/food/FilipinoJoint.tsx").then((m) => ({
+    default: m.FilipinoJoint,
+  })),
+);
+const BobaMatchaCafe = lazy(() =>
+  import("../rooms/food/BobaMatchaCafe.tsx").then((m) => ({
+    default: m.BobaMatchaCafe,
+  })),
+);
+const UbeBakery = lazy(() =>
+  import("../rooms/food/UbeBakery.tsx").then((m) => ({
+    default: m.UbeBakery,
+  })),
 );
 
 /**
@@ -168,6 +183,9 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   speedway: Speedway,
   apartment: Apartment,
   jail: Jail,
+  "filipino-joint": FilipinoJoint,
+  "boba-matcha": BobaMatchaCafe,
+  "ube-bakery": UbeBakery,
 };
 
 export type WorldProps = {

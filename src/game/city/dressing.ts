@@ -113,7 +113,7 @@ const TEXTS = [
   ...Object.values(ADS).map((a) => a?.text ?? ""),
 ];
 export const LABELS: readonly string[] = [...new Set(TEXTS)];
-export const LABEL_COLUMNS = 4;
+export const LABEL_COLUMNS = 6;
 export const LABEL_ROWS = Math.ceil(LABELS.length / LABEL_COLUMNS);
 
 /** The atlas rectangle of a name: u, v, width and height, in texture space. */

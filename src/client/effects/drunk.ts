@@ -4,6 +4,7 @@ import {
   type Drink,
   type DrunkLook,
 } from "../../game/effects/buzz.ts";
+import { relieveBuzz } from "../../game/food/consume.ts";
 
 // The local player's buzz. It lives in memory, so a reload sobers the doll up.
 let level = 0;
@@ -18,6 +19,12 @@ export function getBuzz(): number {
 
 export function drink(kind: Drink): void {
   level = addDrink(level, kind);
+  for (const listen of listeners) listen();
+}
+
+/** Eating or sipping a soft drink takes the edge off the buzz. */
+export function relieve(kind: "food" | "drink"): void {
+  level = relieveBuzz(level, kind);
   for (const listen of listeners) listen();
 }
 

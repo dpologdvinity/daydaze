@@ -105,6 +105,19 @@ const SHOTS: {
       });
     },
   },
+  { name: "point-and-eat-kitchen", query: "room=filipino-joint" },
+  { name: "jade-whisk-boba-matcha", query: "room=boba-matcha" },
+  { name: "purple-pandesal-ube", query: "room=ube-bakery" },
+  {
+    name: "plate-rush-app",
+    query: "room=city",
+    act: async (page) => {
+      await page.getByRole("button", { name: "Plate Rush" }).click();
+      await expect(
+        page.getByRole("dialog", { name: "Plate Rush" }),
+      ).toBeVisible();
+    },
+  },
 ];
 
 const only = process.argv.slice(2);
