@@ -29,25 +29,21 @@ function extrudeProfile(points: [number, number][]) {
 }
 
 /** Lower body: bumpers, a sloped bonnet and boot. */
-export const CAR_BODY = extrudeProfile(
-  [
-    [-0.5, -0.5],
-    [0.5, -0.5],
-    [0.5, -0.05],
-    [0.42, 0.35],
-    [0.2, 0.5],
-    [-0.3, 0.5],
-    [-0.47, 0.3],
-    [-0.5, 0.0],
-  ],
-);
+export const CAR_BODY = extrudeProfile([
+  [-0.5, -0.5],
+  [0.5, -0.5],
+  [0.5, -0.05],
+  [0.42, 0.35],
+  [0.2, 0.5],
+  [-0.3, 0.5],
+  [-0.47, 0.3],
+  [-0.5, 0.0],
+]);
 
 /** Cabin glass: raked windscreen and rear window. */
-export const CAR_CABIN = extrudeProfile(
-  [
-    [-0.5, -0.5],
-    [0.5, -0.5],
-    [0.18, 0.5],
-    [-0.32, 0.5],
-  ],
-);
+export const CAR_CABIN = extrudeProfile([
+  [-0.5, -0.5],
+  [0.5, -0.5],
+  [0.18, 0.5],
+  [-0.32, 0.5],
+]);
