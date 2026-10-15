@@ -11,6 +11,7 @@ export const CITY_CLOCK = { uTime: { value: 0 }, uMotion: { value: 1 } };
  * - blink: slow sign blinks on about 40% of the panels
  * - flicker: about one window in eight stutters, the rest hold steady
  * - drift: steam rises and fades
+ * - sway: palm fronds lift and settle, more at the tip
  * - bob: idle dolls sway in place
  * - fade: the fade also applies to alpha, for see-through steam
  * - atlas: the instance picks its name from the label atlas
@@ -20,6 +21,7 @@ export type Motion = {
   flicker?: boolean;
   drift?: boolean;
   bob?: boolean;
+  sway?: boolean;
   fade?: boolean;
   atlas?: boolean;
 };
@@ -58,6 +60,7 @@ vFx = 1.0;
 ${motion.blink ? "if (ph > 0.6) vFx = mix(1.0, step(0.3, fract(uTime * (0.25 + ph) + ph * 7.0)) * 0.75 + 0.25, uMotion);" : ""}
 ${motion.flicker ? "if (ph > 0.88) vFx = mix(1.0, 0.35 + 0.65 * step(0.45, fract(uTime * (0.7 + ph * 3.0) + ph * 11.0)), uMotion);" : ""}
 ${motion.drift ? "float life = fract(ph + uTime * 0.07 * uMotion); transformed.y += life * 4.0 / sy; vFx = (1.0 - life) * 0.9;" : ""}
+${motion.sway ? "transformed.z += sin(uTime * 1.6 + ph * 6.2831) * 0.12 * (position.y + 0.5) * uMotion;" : ""}
 ${motion.bob ? "transformed.y += sin(uTime * 2.4 + ph * 6.2831) * 0.035 * uMotion / sy;" : ""}`,
     );
     shader.fragmentShader = ["varying float vFx;", shader.fragmentShader].join(
