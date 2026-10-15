@@ -2,3 +2,7 @@ art/
 *.md
 package-lock.json
 server/worker-configuration.d.ts
+.claude/
+.agents/
+skills/
+skills-lock.json
