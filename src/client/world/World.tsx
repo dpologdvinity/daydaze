@@ -87,6 +87,7 @@ const Apartment = lazy(() =>
 );
 const Jail = lazy(() =>
   import("../rooms/Jail.tsx").then((m) => ({ default: m.Jail })),
+);
 // The food rooms load on first arrival, each with its own staff and menu.
 const FilipinoJoint = lazy(() =>
   import("../rooms/food/FilipinoJoint.tsx").then((m) => ({
