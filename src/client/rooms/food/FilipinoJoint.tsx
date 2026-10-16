@@ -77,12 +77,6 @@ export function FilipinoJoint({
           />
         </mesh>
       ))}
-      {[-2.8, -1.4, 0, 1.4, 2.8].map((x, i) => (
-        <mesh key={x} position={[x, 0.3, 3.4]}>
-          <cylinderGeometry args={[0.32, 0.36, 0.6, 14]} />
-          <meshStandardMaterial color={COLORS[i]} />
-        </mesh>
-      ))}
     </FoodRoom>
   );
 }

@@ -9,6 +9,7 @@ import { Floor, type PickHandler } from "../shared/Floor.tsx";
 import { MARQUEE, NeonText } from "../shared/Neon.tsx";
 import { PortalPads } from "../shared/PortalPads.tsx";
 import { TalkingNpc } from "../shared/TalkingNpc.tsx";
+import { Fitout } from "./Fitout.tsx";
 
 export type FoodPalette = {
   room: RoomId;
@@ -117,6 +118,7 @@ export function FoodRoom({
         context={{ venue: palette.room }}
         onTap={order}
       />
+      <Fitout palette={palette} />
       {children}
     </>
   );

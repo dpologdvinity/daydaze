@@ -45,10 +45,6 @@ export function UbeBakery({ onPick }: { onPick: PickHandler }): JSX.Element {
       }}
       onPick={onPick}
     >
-      <mesh position={[0, 1.4, -0.85]}>
-        <boxGeometry args={[5.2, 0.5, 0.5]} />
-        <meshStandardMaterial color="#e3c6ff" transparent opacity={0.35} />
-      </mesh>
       {[-2.6, -1.3, 0, 1.3, 2.6].map((x, i) => (
         <group key={x} position={[x, 2.2, -2.0]}>
           <mesh>
@@ -56,22 +52,6 @@ export function UbeBakery({ onPick }: { onPick: PickHandler }): JSX.Element {
             <meshStandardMaterial color={i % 2 ? "#ffd84f" : "#c99bff"} />
           </mesh>
         </group>
-      ))}
-      {[-2.4, 0, 2.4].map((x) => (
-        <mesh key={x} position={[x, 3.2, 0.2]}>
-          <coneGeometry args={[0.7, 0.5, 16]} />
-          <meshStandardMaterial
-            color="#b06bff"
-            emissive="#b06bff"
-            emissiveIntensity={1.6}
-          />
-        </mesh>
-      ))}
-      {[-2.6, -0.9, 0.8, 2.5].map((x) => (
-        <mesh key={x} position={[x, 0.15, 3.5]}>
-          <cylinderGeometry args={[0.45, 0.5, 0.3, 16]} />
-          <meshStandardMaterial color="#ffd84f" />
-        </mesh>
       ))}
     </FoodRoom>
   );
