@@ -426,3 +426,42 @@ test("shoplifting: the suspicion meter fills and a caught player is penalised", 
     timeout: 20_000,
   });
 });
+
+test("Plate Rush orders a dish and the courier drops it in hand", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  const errors = collectErrors(page);
+  await page.goto(STILL);
+  await page.getByRole("button", { name: "Plate Rush" }).click();
+  const app = page.getByRole("dialog", { name: "Plate Rush" });
+  await app.getByRole("button", { name: /Point and Eat Kitchen/ }).click();
+  await app
+    .getByRole("button", {
+      name: "Order Adobo rice bowl from Point and Eat Kitchen",
+    })
+    .click();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("status")).toContainText(
+    "The courier dropped off Adobo rice bowl.",
+    { timeout: 45_000 },
+  );
+  const held = page.getByRole("region", { name: "Held food" });
+  await expect(held).toContainText("Adobo rice bowl");
+  await held.getByRole("button", { name: "Eat it" }).click();
+  await expect(held).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+test("the food rooms open from a query and show their counter staff", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto("/?quality=low&still=1&room=ube-bakery");
+  await expect(roomTitle(page)).toHaveText("Purple Pandesal Bakery");
+  await expect(page.locator("canvas")).toHaveAttribute(
+    "data-frames",
+    /[4-9]|10/,
+  );
+  expect(errors).toEqual([]);
+});

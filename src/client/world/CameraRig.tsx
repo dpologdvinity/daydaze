@@ -56,6 +56,18 @@ const ROOM_SHOTS: Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }> =
       eye: new THREE.Vector3(6.4, 6.2, 11),
       look: new THREE.Vector3(0, 1.0, -2.2),
     },
+    "filipino-joint": {
+      eye: new THREE.Vector3(0, 4.4, 10.4),
+      look: new THREE.Vector3(0, 1.3, -1.2),
+    },
+    "boba-matcha": {
+      eye: new THREE.Vector3(0, 4.4, 10.4),
+      look: new THREE.Vector3(0, 1.3, -1.2),
+    },
+    "ube-bakery": {
+      eye: new THREE.Vector3(0, 4.4, 10.4),
+      look: new THREE.Vector3(0, 1.3, -1.2),
+    },
     // high over the first slice of the city; the orbit allows this far out
     city: {
       eye: new THREE.Vector3(-120, 150, 170),
@@ -90,6 +102,9 @@ const MAX_DISTANCE: Record<RoomId, number> = {
   "velvet-room": 18,
   pulse: 18,
   "violet-hour": 18,
+  "filipino-joint": 18,
+  "boba-matcha": 18,
+  "ube-bakery": 18,
   plaza: 18,
   "amusement-park": 18,
   "water-park": 18,

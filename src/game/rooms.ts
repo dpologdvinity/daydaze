@@ -1,4 +1,10 @@
 import { CITY_AREA, CITY_BOUNDS, CITY_SPAWN } from "./city/layout.ts";
+import { FOOD_ROOM_EXITS } from "./food/storefronts.ts";
+import {
+  INTERIOR_EXIT,
+  INTERIOR_FLOOR,
+  INTERIOR_SPAWN,
+} from "./food/interiors.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -11,6 +17,9 @@ export type RoomId =
   | "speedway"
   | "apartment"
   | "jail"
+  | "filipino-joint"
+  | "boba-matcha"
+  | "ube-bakery"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -140,6 +149,28 @@ const JAIL_FLOOR: readonly Vec2[] = [
   [6, 4],
   [-6, 4],
 ];
+
+/** A food interior: the shared plan, with the street as its exit. */
+function foodRoom(id: RoomId, name: string): RoomDefinition {
+  const exit = FOOD_ROOM_EXITS.find((e) => e.room === id);
+  if (!exit) throw new Error(`no street door for ${id}`);
+  return {
+    id,
+    name,
+    walkable: INTERIOR_FLOOR,
+    spawn: INTERIOR_SPAWN,
+    portals: [
+      {
+        id: `${id}-to-city`,
+        position: INTERIOR_EXIT,
+        radius: 1,
+        label: "Back out to the street",
+        target: "city",
+        targetSpawn: { position: exit.landing, yaw: Math.PI / 2 },
+      },
+    ],
+  };
+}
 
 export const ROOMS: Record<RoomId, RoomDefinition> = {
   "velvet-room": {
@@ -326,6 +357,12 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
       },
     ],
   },
+  "filipino-joint": foodRoom("filipino-joint", "Point and Eat Kitchen"),
+  "boba-matcha": foodRoom(
+    "boba-matcha",
+    "Jade Whisk Matcha and Pearl Ledger Boba",
+  ),
+  "ube-bakery": foodRoom("ube-bakery", "Purple Pandesal Bakery"),
   city: {
     id: "city",
     name: "Downtown and Nightlife Row",

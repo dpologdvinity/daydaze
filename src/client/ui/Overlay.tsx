@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   BROWS,
   EYESHADOWS,
@@ -23,6 +24,8 @@ import { RaceHud, SpeedwayMenu } from "../rooms/speedway/RaceHud.tsx";
 import { CocktailIcon, RideIcon } from "./icons.tsx";
 import { DancePicker } from "./DancePicker.tsx";
 import { Dressing } from "./Dressing.tsx";
+import { DeliveryApp } from "./phone/DeliveryApp.tsx";
+import { FoodHud } from "./phone/FoodHud.tsx";
 import { Chips, Segmented, Swatches } from "./controls.tsx";
 import { VenueGames } from "./Minigames.tsx";
 
@@ -42,6 +45,11 @@ const ROOM_HINTS: Record<RoomId, string> = {
   "amusement-park":
     "Night carnival. Tap a boarding ring to ride, or use WASD to walk.",
   "water-park": "Swimsuits on. Tap the slide tower to ride.",
+  "filipino-joint":
+    "Point and Eat Kitchen. Tap the cashier for the next dish, then eat it.",
+  "boba-matcha":
+    "Jade Whisk and Pearl Ledger. Tap the server for a drink, then sip it.",
+  "ube-bakery": "Purple Pandesal. Tap the baker for a treat, then eat it.",
   speedway: "Pit lane. Tap a spot to race or ride the bumper cars.",
   city: "Downtown after dark. Tap the street or use WASD, then walk into a lit door.",
   apartment:
@@ -203,6 +211,7 @@ export function Overlay({
   panelOpen: boolean;
   setPanelOpen: (open: boolean) => void;
 }) {
+  const [phone, setPhone] = useState(false);
   return (
     <>
       <header className="venue">
@@ -211,6 +220,17 @@ export function Overlay({
         </div>
         <p className="venue-sub">{ROOM_HINTS[room]}</p>
       </header>
+
+      <button
+        type="button"
+        className="phone-open"
+        aria-haspopup="dialog"
+        onClick={() => setPhone(true)}
+      >
+        Plate Rush
+      </button>
+      {phone && <DeliveryApp onClose={() => setPhone(false)} />}
+      <FoodHud />
 
       <Dressing open={panelOpen} onOpenChange={setPanelOpen}>
         <Mirror

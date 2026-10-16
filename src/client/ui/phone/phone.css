@@ -1,0 +1,135 @@
+/* Plate Rush, the delivery app. Maximalist but readable: neon accents on a dark card. */
+.phone-app {
+  width: min(92vw, 34rem);
+  max-height: 86vh;
+  overflow: auto;
+}
+
+.phone-app ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.phone-venues button,
+.phone-menu li,
+.phone-orders li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.phone-venues button {
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: 0.5rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid #ff4fb3;
+  background: #1c0f2e;
+  color: #fff;
+  cursor: pointer;
+}
+
+.phone-cuisine,
+.phone-price {
+  color: #ffd84f;
+  font-size: 0.85rem;
+}
+
+.phone-menu li {
+  padding: 0.4rem 0.6rem;
+  border-radius: 10px;
+  background: #2a1642;
+}
+
+.phone-menu button,
+.phone-back,
+.food-held button {
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid #4fe3ff;
+  background: #0d2a33;
+  color: #fff;
+  cursor: pointer;
+}
+
+.phone-menu button:focus-visible,
+.phone-venues button:focus-visible,
+.phone-back:focus-visible,
+.food-held button:focus-visible {
+  outline: 3px solid #ffd84f;
+  outline-offset: 2px;
+}
+
+.phone-orders progress {
+  width: 40%;
+  accent-color: #7dff6b;
+}
+
+.food-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 5.5rem;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  background: #ffd84f;
+  color: #1a0b2e;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.food-toast:empty {
+  display: none;
+}
+
+.food-held {
+  position: fixed;
+  left: 1rem;
+  bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 12px;
+  background: rgba(26, 11, 46, 0.92);
+  color: #fff;
+  border: 1px solid #ff4fb3;
+}
+
+.food-held p {
+  margin: 0;
+}
+
+.phone-open {
+  position: fixed;
+  top: 66px;
+  right: 18px;
+  z-index: 6;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 0;
+  background: linear-gradient(180deg, #7dff6b, #2ecf5c 60%, #14843a);
+  color: #0a2a10;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.phone-open:focus-visible {
+  outline: 3px solid #ffd84f;
+  outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+  .phone-open {
+    top: 60px;
+    right: 14px;
+    font-size: 13px;
+  }
+}
