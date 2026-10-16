@@ -8,6 +8,7 @@ import bmesh
 import bpy
 import numpy as np
 from mathutils import Vector
+from mathutils.kdtree import KDTree
 
 import proxies
 
@@ -16,15 +17,11 @@ PROXY = {
     "waves": "hair/long01/long01.mhclo",
     "ponytail": "hair/ponytail01/ponytail01.mhclo",
     "bob": "hair/bob01/bob01.mhclo",
-    "braids": "hair/braid01/braid01.mhclo",
-    "afro": "hair/afro01/afro01.mhclo",
 }
 TEXTURE = {
     "waves": "hair/long01/long01_diffuse.png",
     "ponytail": "hair/ponytail01/ponytail01_diffuse.png",
     "bob": "hair/bob01/bob01_diffuse.png",
-    "braids": "hair/braid01/braid01_diffuse.png",
-    "afro": "hair/afro01/afro_diffuse.png",
 }
 
 
@@ -42,10 +39,20 @@ def swing(ctx, ob, start):
             head.add([v.index], 1 - t, "REPLACE")
 
 
-def buns(ctx, mat):
-    """A slicked-back scalp shell from MakeHuman's hair helper with two
-    twisted buns on top."""
-    # the scalp: head skin above the brow line and behind the hairline
+def hairline(ctx, x, y):
+    """Height of a natural hairline around the head: high over the forehead,
+    low at the nape, eased between, so cut edges follow one smooth curve."""
+    head = ctx.JB["head"]
+    eye_z = ctx.JB["lEye"][2]
+    # 0 at the back of the head (+y), 1 at the front
+    f = (1 - np.cos(np.arctan2(x - head[0], y - head[1]))) / 2
+    return eye_z - 0.035 + 0.085 * f**1.5
+
+
+def scalp_hair(ctx, name, mat, extra):
+    """A slicked scalp shell (head skin above the brow line and behind the
+    hairline, pushed out a few millimetres) plus whatever `extra(bm, ctx)`
+    adds to the bmesh. Added verts ride the nearest scalp vertex."""
     eye_z = ctx.JB["lEye"][2]
     head_i = ctx.BONES.index("head")
     faces = []
@@ -53,13 +60,14 @@ def buns(ctx, mat):
         pts = ctx.PB[f]
         if ctx.W[f][:, head_i].min() < 0.98:
             continue
-        front = pts[:, 1].mean() < ctx.JB["head"][1] - 0.035
-        if pts[:, 2].min() > eye_z + (0.045 if front else -0.035):
+        # any face reaching above the hairline; its low corners clamp to it
+        if (pts[:, 2] > hairline(ctx, pts[:, 0], pts[:, 1])).any():
             faces.append(f)
     used = sorted({i for f in faces for i in f})
     remap = {o: n for n, o in enumerate(used)}
     verts = ctx.to_blender(ctx.P[used])
-    ob = ctx.new_object("Hair_buns", verts, [[remap[i] for i in f] for f in faces])
+    verts[:, 2] = np.maximum(verts[:, 2], hairline(ctx, verts[:, 0], verts[:, 1]))
+    ob = ctx.new_object(name, verts, [[remap[i] for i in f] for f in faces])
     ob.data.update()
     nrm = np.array([v.normal[:] for v in ob.data.vertices])
     ob.data.vertices.foreach_set("co", (verts + nrm * 0.004).ravel())
@@ -67,31 +75,19 @@ def buns(ctx, mat):
     src = np.array(used)
     bm = bmesh.new()
     bm.from_mesh(ob.data)
-    head = Vector(ctx.JB["head"])
-    top = max(v.co.z for v in bm.verts)
-    added = []
-    for side in (1, -1):
-        c = Vector((side * 0.062, 0.01, top - 0.012))
-        ret = bmesh.ops.create_uvsphere(bm, u_segments=20, v_segments=14, radius=0.045)
-        for v in ret["verts"]:
-            # a twist: ridges spiral around the bun
-            d = v.co.normalized()
-            ang = np.arctan2(d.y, d.x)
-            v.co *= 1 + 0.06 * np.sin(ang * 5 + d.z * 6)
-            v.co.z *= 0.86
-            v.co += c
-            added.append(v)
+    extra(bm, ctx)
     bm.to_mesh(ob.data)
     bm.free()
     for p in ob.data.polygons:
         p.use_smooth = True
-    # bun verts ride the nearest scalp vertex
     co = np.array([v.co[:] for v in ob.data.vertices])
     base = co[: len(used)]
-    near = np.array(
-        [np.linalg.norm(base - p, axis=1).argmin() for p in co[len(used) :]], int
-    )
-    full_src = np.concatenate([src, src[near]])
+    tree = KDTree(len(base))
+    for i, p in enumerate(base):
+        tree.insert(p, i)
+    tree.balance()
+    near = np.array([tree.find(p)[1] for p in co[len(used) :]], int)
+    full_src = np.concatenate([src, src[near]]) if len(near) else src
     proxies.attach(
         ctx,
         ob,
@@ -101,15 +97,112 @@ def buns(ctx, mat):
     return ob
 
 
+def _top(bm):
+    return max(v.co.z for v in bm.verts)
+
+
+def buns(ctx, mat):
+    """Two twisted buns on top of a slicked-back scalp."""
+
+    def extra(bm, ctx):
+        top = _top(bm)
+        for side in (1, -1):
+            c = Vector((side * 0.062, 0.01, top - 0.012))
+            ret = bmesh.ops.create_uvsphere(
+                bm, u_segments=20, v_segments=14, radius=0.045
+            )
+            for v in ret["verts"]:
+                # a twist: ridges spiral around the bun
+                d = v.co.normalized()
+                ang = np.arctan2(d.y, d.x)
+                v.co *= 1 + 0.06 * np.sin(ang * 5 + d.z * 6)
+                v.co.z *= 0.86
+                v.co += c
+
+    return scalp_hair(ctx, "Hair_buns", mat, extra)
+
+
+def afro(ctx, mat):
+    """An afro puff: one rounded cloud with fine curl texture, cut back from
+    the face and the nape so the hairline frames the face."""
+    head = ctx.JB["head"]
+    eye_z = ctx.JB["lEye"][2]
+
+    def extra(bm, ctx):
+        top = _top(bm)
+        centre = Vector((head[0], head[1] + 0.02, top - 0.035))
+        ret = bmesh.ops.create_uvsphere(bm, u_segments=56, v_segments=36, radius=1)
+        for v in ret["verts"]:
+            d = v.co.copy()
+            # fine curls: many small bumps over the surface
+            bump = 1 + 0.05 * np.sin(d.x * 53 + d.z * 17) * np.sin(d.y * 47 + d.z * 31)
+            p = Vector((d.x * 0.145, d.y * 0.15, d.z * 0.12)) * bump + centre
+            line = hairline(ctx, p.x, p.y) + 0.012
+            if p.z < line:
+                # fold the underside in onto the hairline so the puff closes
+                # on the head instead of leaving an open rim
+                k = 0.098 / max(1e-6, Vector((p.x - head[0], p.y - head[1], 0)).length)
+                p = Vector((head[0] + (p.x - head[0]) * min(1, k), head[1] + (p.y - head[1]) * min(1, k), line))
+            v.co = p
+
+    return scalp_hair(ctx, "Hair_afro", mat, extra)
+
+
+def braids(ctx, mat, count=48, length=0.5):
+    """Knotless braids: plaits from two rows round the back and sides of the
+    hairline, falling behind the shoulders. Each plait is a five-sided tube
+    whose radius pulses, so it reads as woven."""
+    head = ctx.JB["head"]
+    eye_z = ctx.JB["lEye"][2]
+    shoulder_z = ctx.JB["lArm"][2]
+
+    def extra(bm, ctx):
+        top = _top(bm)
+        scalp = [v.co.copy() for v in bm.verts]
+        for k in range(count):
+            row = k % 2
+            a = np.radians(-150 + 300 * (k // 2) / (count // 2 - 1))
+            # angle 0 is the back of the head (+y), +-150 the temples
+            d = np.array([np.sin(a), np.cos(a)])
+            z = eye_z + (0.035 if row else 0.085)
+            probe = Vector((head[0] + d[0] * 0.2, head[1] + d[1] * 0.2, z))
+            start = min(scalp, key=lambda c: (c - probe).length)
+            rings = []
+            steps = 26
+            for i in range(steps):
+                t = i / (steps - 1)
+                zz = start.z - t * length
+                # out from the scalp, then behind the shoulders below the neck
+                out = 0.012 + (0.05 * min(1, (start.z - zz) / 0.12))
+                xy = np.array([start.x, start.y]) + np.append(d, 0)[:2] * out
+                if zz < shoulder_z + 0.05:
+                    xy[1] = max(xy[1], head[1] + 0.07 + 0.05 * (shoulder_z + 0.05 - zz))
+                    xy[0] *= 0.85
+                r = 0.0075 * (1 + 0.35 * abs(np.sin(t * np.pi * 16)))
+                rings.append((Vector((xy[0], xy[1], zz)), r))
+            prev = None
+            for c, r in rings:
+                ring = []
+                for j in range(5):
+                    th = 2 * np.pi * j / 5
+                    ring.append(bm.verts.new(c + Vector((np.cos(th) * r, np.sin(th) * r, 0))))
+                if prev:
+                    for j in range(5):
+                        bm.faces.new((prev[j], prev[(j + 1) % 5], ring[(j + 1) % 5], ring[j]))
+                prev = ring
+
+    return scalp_hair(ctx, "Hair_braids", mat, extra)
+
+
 def build(ctx):
     out = []
     for style, path in PROXY.items():
         img = proxies.detail_texture(TEXTURE[style], 1024)
         mat = proxies.textured(f"hair_{style}", img, alpha=True)
         ob = proxies.build(ctx, f"Hair_{style}", path, mat)
-        if style in ("ponytail", "braids"):
+        if style == "ponytail":
             swing(ctx, ob, ctx.JB["head"] + np.array([0, 0.06, 0.02]))
         out.append(ob)
     solid = bpy.data.materials.new("hair_solid")
-    out.append(buns(ctx, solid))
+    out += [buns(ctx, solid), afro(ctx, solid), braids(ctx, solid)]
     return out

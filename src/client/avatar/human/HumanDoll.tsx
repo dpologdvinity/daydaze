@@ -312,9 +312,12 @@ function Part({
             new THREE.MeshPhysicalMaterial({
               map: old?.map ?? null,
               color: tint.colour,
-              roughness: 0.38,
-              anisotropy: 0.7,
-              sheen: 0.6,
+              // strand cards get a long anisotropic highlight; untextured
+              // sculpted hair (afro, braids, buns) has no strand direction,
+              // so it stays matte with a soft sheen
+              roughness: old?.map ? 0.38 : 0.62,
+              anisotropy: old?.map ? 0.7 : 0,
+              sheen: old?.map ? 0.6 : 0.35,
               sheenRoughness: 0.4,
               sheenColor: new THREE.Color(tint.colour).lerp(
                 new THREE.Color("#ffffff"),
