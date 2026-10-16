@@ -13,6 +13,7 @@ export const RIDE_IDS = [
   "teacups",
   "swings",
   "drop-tower",
+  "pirate-ship",
 ] as const;
 export type RideId = (typeof RIDE_IDS)[number];
 
@@ -21,6 +22,10 @@ export const CAROUSEL_AT: readonly [number, number] = [-4.5, -20];
 export const TEACUPS_AT: readonly [number, number] = [-11.5, -20];
 export const SWING_AT: readonly [number, number] = [9, -30];
 export const DROP_TOWER_AT: readonly [number, number] = [-11.5, -28];
+/** The pirate ship's pivot (x, z); it swings along z. */
+export const PIRATE_AT: readonly [number, number] = [14.5, -31];
+export const PIRATE_PIVOT = 7;
+export const PIRATE_ARM = 5.4;
 
 // Ride tuning. Calm (reduced motion) rides take longer, so the same motion reads
 // slower. `seated` rides sit the doll down (a horse, a cup, a chair, a
@@ -74,6 +79,12 @@ export const RIDES: Record<
     label: "Drop tower",
     spot: [-11.5, -25.4],
     seconds: { normal: 16, calm: 27 },
+    seated: true,
+  },
+  "pirate-ship": {
+    label: "Pirate ship",
+    spot: [12, -26],
+    seconds: { normal: 20, calm: 30 },
     seated: true,
   },
 };
@@ -232,6 +243,10 @@ export function teacupTurns(t: number, calm: boolean) {
 export function dropClock(t: number, calm: boolean): number {
   return t * (calm ? 0.6 : 1);
 }
+/** The pirate ship's swing about its pivot, radians (a 6 s pendulum). */
+export function shipSwing(t: number, calm: boolean): number {
+  return (calm ? 0.3 : 0.95) * Math.sin((t * Math.PI * 2) / 6);
+}
 
 export const CAROUSEL_RADIUS = 2.6;
 export const SWING_RADIUS = 2.8;
@@ -259,7 +274,7 @@ function onTurn(
 
 /** The seat on a turning ride at scene time `now`. */
 function turningPose(
-  ride: "carousel" | "teacups" | "swings" | "drop-tower",
+  ride: "carousel" | "teacups" | "swings" | "drop-tower" | "pirate-ship",
   now: number,
   calm: boolean,
   out: Pose,
@@ -286,6 +301,16 @@ function turningPose(
       onTurn(TEACUPS_AT, CUP_RADIUS, plate, out);
       out.y = 0.42 - SIT_HIPS;
       out.yaw = plate + cup;
+      return out;
+    }
+    case "pirate-ship": {
+      // on the middle bench, facing across the boat towards the midway side
+      const a = shipSwing(now, calm);
+      const r = PIRATE_ARM - 0.46;
+      out.x = PIRATE_AT[0] + 0.4;
+      out.y = PIRATE_PIVOT - r * Math.cos(a) - SIT_HIPS;
+      out.z = PIRATE_AT[1] + r * Math.sin(a);
+      out.yaw = -Math.PI / 2;
       return out;
     }
     case "drop-tower": {

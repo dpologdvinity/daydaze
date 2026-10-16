@@ -6,6 +6,9 @@ import {
   COASTER_TRACK,
   CUP_RADIUS,
   FERRIS,
+  PIRATE_ARM,
+  PIRATE_AT,
+  PIRATE_PIVOT,
   STARLIGHT_TRACK,
   SWING_RADIUS,
   SWING_TOP,
@@ -16,6 +19,7 @@ import {
   dropTowerHeight,
   ferrisPose,
   newPose,
+  shipSwing,
   swingTurn,
   teacupTurns,
   trackPose,
@@ -559,6 +563,87 @@ export function Teacups() {
             </group>
           );
         })}
+      </group>
+    </group>
+  );
+}
+
+// The pirate ship, in the swinging frame: the pivot at the origin, the boat's
+// keel PIRATE_ARM below, its length along z.
+const SHIP_BOXES: readonly Box[] = [
+  // hull: a deep middle and raked bow and stern
+  {
+    position: [0, -PIRATE_ARM, 0],
+    size: [2.2, 1.1, 5.2],
+    yaw: 0,
+    color: "#7a2f1f",
+  },
+  {
+    position: [0, -PIRATE_ARM + 0.35, 3],
+    size: [1.6, 1.2, 1.4],
+    yaw: 0,
+    color: "#7a2f1f",
+  },
+  {
+    position: [0, -PIRATE_ARM + 0.35, -3],
+    size: [1.6, 1.2, 1.4],
+    yaw: 0,
+    color: "#7a2f1f",
+  },
+  // gold rail and three benches
+  {
+    position: [0, -PIRATE_ARM + 0.6, 0],
+    size: [2.3, 0.1, 5.3],
+    yaw: 0,
+    color: "#ffb02e",
+  },
+  ...[-1.6, 0, 1.6].map((z): Box => ({
+    position: [0.4, -PIRATE_ARM + 0.4, z],
+    size: [1.2, 0.12, 0.5],
+    yaw: 0,
+    color: "#3a1450",
+  })),
+  // the sail on its mast
+  {
+    position: [0, -PIRATE_ARM + 2.3, 0],
+    size: [0.06, 1.8, 2.4],
+    yaw: 0,
+    color: "#fff1c8",
+  },
+];
+const SHIP_ARMS: readonly Segment[] = [-1.2, 1.2].flatMap((x): Segment[] => [
+  { from: [x, 0, 0], to: [x, -PIRATE_ARM + 0.5, 1.8], radius: 0.07 },
+  { from: [x, 0, 0], to: [x, -PIRATE_ARM + 0.5, -1.8], radius: 0.07 },
+]);
+const SHIP_MAST: readonly Segment[] = [
+  { from: [0, -PIRATE_ARM, 0], to: [0, -PIRATE_ARM + 3.4, 0], radius: 0.06 },
+];
+// the A-frame, in the ride's own frame (pivot at PIRATE_PIVOT)
+const SHIP_FRAME: readonly Segment[] = [-1.6, 1.6]
+  .flatMap((x): Segment[] => [
+    { from: [x, 0, -2.8], to: [x, PIRATE_PIVOT, 0], radius: 0.12 },
+    { from: [x, 0, 2.8], to: [x, PIRATE_PIVOT, 0], radius: 0.12 },
+  ])
+  .concat([
+    { from: [-1.7, PIRATE_PIVOT, 0], to: [1.7, PIRATE_PIVOT, 0], radius: 0.1 },
+  ]);
+
+/** A pirate ship: a boat on two arms swinging like a pendulum. */
+export function PirateShip() {
+  const calm = useReducedMotion();
+  const boat = useRef<THREE.Group>(null);
+  useFrame(({ clock }) => {
+    // positive swing carries the keel towards +z
+    if (boat.current)
+      boat.current.rotation.x = -shipSwing(clock.elapsedTime, calm);
+  });
+  return (
+    <group position={[PIRATE_AT[0], 0, PIRATE_AT[1]]}>
+      <Segments items={SHIP_FRAME} />
+      <group ref={boat} position={[0, PIRATE_PIVOT, 0]}>
+        <Segments items={SHIP_ARMS} color="#ffb02e" />
+        <Segments items={SHIP_MAST} color="#3a1d12" />
+        <Boxes items={SHIP_BOXES} />
       </group>
     </group>
   );

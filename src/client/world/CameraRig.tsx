@@ -145,6 +145,7 @@ export function CameraRig({
   const last = useRef(player.pos.clone());
   const fly = useRef<{ t: number; snap: boolean } | null>(null);
   const shown = useRef<{ view: View; player: Player } | null>(null);
+  const seated = useRef(false);
 
   useFrame((_, dt) => {
     const c = controls.current;
@@ -160,7 +161,15 @@ export function CameraRig({
     } else if (shown.current.view !== view) {
       shown.current = { view, player };
       fly.current = { t: 0, snap: calm };
+    } else if (
+      Boolean(player.seat) !== seated.current &&
+      view !== "room" &&
+      view !== "detail"
+    ) {
+      // boarding or leaving a ride turns her: frame the close view again
+      fly.current = { t: 0, snap: calm };
     }
+    seated.current = Boolean(player.seat);
     // a ride's seat carries the doll away from her walker: follow the seat
     const at = player.seat?.position ?? player.pos;
     moved.subVectors(at, last.current);
@@ -176,7 +185,10 @@ export function CameraRig({
         goalTarget.copy(shot.look);
       } else {
         const v = CLOSE[view];
-        goalPos.copy(v.off).applyAxisAngle(Y, player.yaw).add(at);
+        goalPos
+          .copy(v.off)
+          .applyAxisAngle(Y, player.seat?.yaw ?? player.yaw)
+          .add(at);
         goalTarget.copy(at).setY(at.y + v.look);
       }
       const k = f.snap ? 1 : 1 - Math.exp(-dt * 5);

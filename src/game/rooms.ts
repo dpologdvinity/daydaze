@@ -8,6 +8,7 @@ import {
 import {
   CAROUSEL_AT,
   DROP_TOWER_AT,
+  PIRATE_AT,
   SWING_AT,
   TEACUPS_AT,
 } from "./amusementPark.ts";
@@ -146,6 +147,8 @@ const AMUSEMENT_PARK_BLOCKERS: readonly (readonly Vec2[])[] = [
   round(TEACUPS_AT, 3.1),
   round(SWING_AT, 3.5),
   round(DROP_TOWER_AT, 1.2),
+  // the pirate ship's frame and its swing
+  box(PIRATE_AT[0] - 2, PIRATE_AT[1] - 6, PIRATE_AT[0] + 2, PIRATE_AT[1] + 4.2),
   // the ferris wheel's legs and low gondolas
   box(-10, -11, -3, -9),
   // the Comet coaster's towers and low track
