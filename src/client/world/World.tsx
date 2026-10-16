@@ -305,7 +305,7 @@ export function World({
               onShelf={onShelf}
             />
           ) : null}
-          <Seats room={room} player={player} area={area} />
+          <Seats room={room} player={player} area={area} home={home} />
           <PlayerController
             player={player}
             area={area}

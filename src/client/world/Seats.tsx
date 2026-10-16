@@ -1,8 +1,9 @@
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import type { RoomId } from "../../game/rooms.ts";
-import { seatsIn, type Seat } from "../../game/seats.ts";
+import { homeSeats, seatsIn, type Seat } from "../../game/seats.ts";
+import type { HomeSave } from "../../game/home/home.ts";
 import type { WalkArea } from "../../game/area.ts";
 import { walkTo, type Player } from "./PlayerController.tsx";
 
@@ -21,12 +22,18 @@ export function Seats({
   room,
   player,
   area,
+  home,
 }: {
   room: RoomId;
   player: Player;
   area: WalkArea;
+  home: HomeSave;
 }) {
-  const seats = seatsIn(room);
+  // the apartment's seats follow wherever the sofas were placed
+  const seats = useMemo(
+    () => (room === "apartment" ? homeSeats(home.furniture) : seatsIn(room)),
+    [room, home.furniture],
+  );
   const pending = useRef<Seat | null>(null);
 
   useFrame(({ gl }) => {

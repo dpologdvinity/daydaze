@@ -1,4 +1,5 @@
 import type { RoomId } from "./rooms.ts";
+import { footprint, type Furniture } from "./home/decor.ts";
 import { yawTowards, type Vec2 } from "./walk.ts";
 
 /**
@@ -78,8 +79,6 @@ const pulseBanquettes = [-2.4, 1.8].flatMap((z, b) =>
   ),
 );
 
-// shortcut: the apartment sofa moves with decorating, so it is not a seat
-// yet; derive seats from home.furniture when the apartment gets them
 export const SEATS: readonly Seat[] = [
   ...foodSeats,
   ...velvetStools,
@@ -88,4 +87,44 @@ export const SEATS: readonly Seat[] = [
 
 export function seatsIn(room: RoomId): readonly Seat[] {
   return SEATS.filter((s) => s.room === room);
+}
+
+/** Where the apartment's grid starts on the floor (matches Apartment.tsx). */
+export const HOME_ORIGIN: Vec2 = [-4, -3];
+
+/**
+ * Seats on the apartment's sofas, wherever decorating put them: two places
+ * along each sofa, facing out from its back (rotation 0 faces +z).
+ */
+const FACINGS: readonly Vec2[] = [
+  [0, 1],
+  [1, 0],
+  [0, -1],
+  [-1, 0],
+];
+
+export function homeSeats(furniture: readonly Furniture[]): Seat[] {
+  const out: Seat[] = [];
+  furniture.forEach((item, n) => {
+    if (item.id !== "sofa") return;
+    const size = footprint(item.id, item.rotation);
+    const cx = HOME_ORIGIN[0] + item.cell[0] + size.w / 2;
+    const cz = HOME_ORIGIN[1] + item.cell[1] + size.d / 2;
+    const facing = FACINGS[item.rotation];
+    const along: Vec2 = [facing[1], -facing[0]];
+    for (const k of [-0.6, 0.6]) {
+      const at: Vec2 = [cx + along[0] * k, cz + along[1] * k];
+      out.push(
+        seat(
+          `home-sofa-${n}-${k < 0 ? "l" : "r"}`,
+          "apartment",
+          at,
+          0.5,
+          [at[0] + facing[0], at[1] + facing[1]],
+          "front",
+        ),
+      );
+    }
+  });
+  return out;
 }

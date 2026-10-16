@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { ROOMS } from "./rooms.ts";
-import { SEATS, seatsIn } from "./seats.ts";
+import { SEATS, homeSeats, seatsIn } from "./seats.ts";
 import { pointInPolygon } from "./walk.ts";
 
 test("every seat's approach point is on its room's floor", () => {
@@ -23,4 +23,15 @@ test("seats face their table or bar and stand half a metre in front", () => {
   }
   assert.equal(new Set(SEATS.map((s) => s.id)).size, SEATS.length);
   assert.equal(seatsIn("velvet-room").length, 5);
+});
+
+test("a sofa in the apartment gives two seats facing out from its back", () => {
+  const seats = homeSeats([{ id: "sofa", cell: [2, 1], rotation: 0 }]);
+  assert.equal(seats.length, 2);
+  for (const s of seats) {
+    assert.equal(s.room, "apartment");
+    // facing +z, approached from the front
+    assert.ok(s.approach[1] > s.at[1]);
+  }
+  assert.equal(homeSeats([{ id: "bed", cell: [0, 0], rotation: 0 }]).length, 0);
 });

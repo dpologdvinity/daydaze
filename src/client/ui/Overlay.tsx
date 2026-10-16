@@ -544,7 +544,7 @@ export function Overlay({
       <div className="dock">
         {mood === "dance" && <DancePicker move={dance} onPick={setDance} />}
         <div className="dock-actions" role="group" aria-label="Room actions">
-          {seatsIn(room).length > 0 && (
+          {(seatsIn(room).length > 0 || room === "apartment") && (
             <button
               type="button"
               className="drink"
