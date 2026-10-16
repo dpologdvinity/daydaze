@@ -394,6 +394,20 @@ function Part({
           ? src.material
           : null;
       const hasShade = Boolean(src.geometry.getAttribute("color"));
+      // anisotropic hair needs real tangents: without them three derives a
+      // frame from screen derivatives, which degenerates on edge-on cards
+      // and blooms into a white blob (shared geometry, so once per part)
+      const g = src.geometry;
+      if (
+        rich &&
+        tint.kind === "hair" &&
+        old?.map &&
+        !g.getAttribute("tangent") &&
+        g.index &&
+        g.getAttribute("normal") &&
+        g.getAttribute("uv")
+      )
+        g.computeTangents();
       const mat =
         tint.kind === "hair"
           ? hairMaterial(tint.colour, old?.map ?? null, hasShade, rich)

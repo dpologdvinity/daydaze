@@ -1,5 +1,6 @@
 import type { JSX, ReactNode } from "react";
 import { useRef } from "react";
+import { HdriLight } from "../shared/HdriLight.tsx";
 import type { Look } from "../../../game/look.ts";
 import type { DialogueRole } from "../../../game/dialogue/types.ts";
 import { ROOMS, type RoomId } from "../../../game/rooms.ts";
@@ -58,6 +59,7 @@ export function FoodRoom({
   return (
     <>
       <color attach="background" args={[palette.background]} />
+      <HdriLight file="anniversary_lounge" intensity={0.4} />
       <fog attach="fog" args={[palette.fog, 9, 26]} />
       <hemisphereLight args={[palette.sky, palette.ground, 0.7]} />
       <pointLight

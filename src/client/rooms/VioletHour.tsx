@@ -16,6 +16,7 @@ import { VioletNpcs } from "./violethour/Npcs.tsx";
 import { BAR_CENTRE_X, BAR_Z, DANCE } from "./violethour/layout.ts";
 import { drink } from "../effects/drunk.ts";
 import { Sparkles } from "./shared/Sparkles.tsx";
+import { HdriLight } from "./shared/HdriLight.tsx";
 
 /**
  * The Violet Hour, a lesbian bar with a small dance floor on Nightlife Row.
@@ -36,6 +37,7 @@ export function VioletHour({
   return (
     <>
       <color attach="background" args={["#0a0310"]} />
+      <HdriLight file="aft_lounge" intensity={0.35} />
       <fog attach="fog" args={["#24093a", 9, 24]} />
       <hemisphereLight args={["#8a5cff", "#ff8fb0", 0.4]} />
       <pointLight

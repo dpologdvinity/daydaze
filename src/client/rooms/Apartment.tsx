@@ -6,6 +6,7 @@ import {
 } from "../../game/home/decor.ts";
 import { Suspense } from "react";
 import { Prop } from "./shared/Prop.tsx";
+import { HdriLight } from "./shared/HdriLight.tsx";
 import type { HomeSave } from "../../game/home/home.ts";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
@@ -49,6 +50,7 @@ export function Apartment({
   return (
     <>
       <color attach="background" args={["#120a1c"]} />
+      <HdriLight file="anniversary_lounge" intensity={0.45} />
       <hemisphereLight args={["#ffe3f4", "#6a4a78", 1.5]} />
       <pointLight
         position={[0, 2.8, 0]}
