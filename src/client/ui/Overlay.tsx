@@ -380,8 +380,9 @@ function Mirror({
         </section>
         <section>
           <h3>Swimsuit</h3>
-          <Chips
+          <Tiles
             label="Swimsuit"
+            tiles="swim"
             options={SWIMSUITS}
             value={swim.style}
             onPick={(style) => setSwim({ ...swim, style })}

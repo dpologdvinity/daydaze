@@ -175,6 +175,13 @@ def main():
             keys({f"tuck_{cut}": 1.0, f"tuck_{shoes}": 1.0})
             camera((0, -3.3, 0.95), (0, 0, 0.88), 30)
             render(f"outfit-{oid}")
+        for style, colour in (("one-piece", (1.0, 0.1, 0.4, 1)), ("bikini", (0.02, 0.6, 0.55, 1))):
+            CLOTH = colour
+            reset()
+            load("body", "hair-waves", f"swim-{style}")
+            keys({f"tuck_{style}": 1.0})
+            camera((0, -3.3, 0.95), (0, 0, 0.88), 30)
+            render(f"swim-{style}")
     if only:
         return
     for style in HAIR:

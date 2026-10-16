@@ -1118,7 +1118,8 @@ button:focus-visible {
 }
 
 /* outfit tiles are full length */
-.tiles[data-tiles="outfit"] .tile img {
+.tiles[data-tiles="outfit"] .tile img,
+.tiles[data-tiles="swim"] .tile img {
   aspect-ratio: 1 / 2;
 }
 
