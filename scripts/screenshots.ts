@@ -72,6 +72,7 @@ const SHOTS: {
     touch: true,
   },
   { name: "speedway-grid", query: "room=speedway" },
+  { name: "cars-lineup", query: "room=speedway&lineup=cars" },
   {
     name: "speedway-racing",
     query: "room=speedway",
