@@ -167,6 +167,11 @@ button:focus-visible {
 .dressing[data-open="true"] {
   transform: none;
   visibility: visible;
+  /* visible at once on opening, so the title can take focus straight away;
+     closing keeps the delay, so the drawer hides only after it slides out */
+  transition:
+    transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0s;
 }
 
 /* marquee bulbs riding the gold frame, twinkling in turn */

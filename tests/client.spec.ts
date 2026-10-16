@@ -361,6 +361,25 @@ test("Last Call opens from the Velvet Room bar and closes back to the world", as
   await expect(roomTitle(page)).toHaveText("The Velvet Room");
 });
 
+test("the midway opens at the Amusement Park and a ring toss pays a grade", async ({
+  page,
+}) => {
+  await page.goto(`${STILL}&room=amusement-park`);
+  await page.getByRole("button", { name: "Play the midway games" }).click();
+  const dialog = page.getByRole("dialog", { name: "The Midway" });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole("radio", { name: /Ring toss/ }).click();
+  await dialog.getByRole("button", { name: "Play Ring toss" }).click();
+  const throwRing = dialog.getByRole("button", { name: "Throw" });
+  for (let i = 0; i < 10; i++) await throwRing.click();
+  await expect(
+    dialog.getByText(/The prize counter pays \d+ coins/),
+  ).toBeVisible();
+  await dialog.getByRole("button", { name: "Collect and leave" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(roomTitle(page)).toHaveText("Amusement Park");
+});
+
 test("apartment: place, rotate and remove furniture, lock the door, and it persists", async ({
   page,
 }) => {
