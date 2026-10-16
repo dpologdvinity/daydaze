@@ -83,14 +83,17 @@ def scalp_points(ctx, count, rng, front_line=0.0):
     return out
 
 
-def build(ctx, name, mat, length=0.42, count=420, wave=0.0, curl=0.0, volume=1.0, part=0.0, seed=1):
+def build(ctx, name, mat, length=0.42, count=420, wave=0.0, curl=0.0, volume=1.0, part=0.0, seed=1, tie=None):
     """A strand-card hairstyle.
 
     length: metres from root to tip (before gravity), wave: amplitude of a
     slow S-wave (metres), curl: amplitude of tight spirals, volume: how far
     the hair lifts off the scalp, part: the parting's x offset (metres).
+    tie: (y, z) offset from the head joint of a ponytail's tie; every strand
+    is combed flat over the scalp to it, then falls `length` as one tail.
     """
     rng = np.random.default_rng(seed)
+    segments = 10
     head = np.array(ctx.JB["head"])
     # the head as an ellipsoid, a touch bigger than the skull, for collision
     top_z = max(p[2] for p in ctx.PB[[i for f in ctx.FACES["body"] for i in f if ctx.W[i, ctx.BONES.index("head")] > 0.98]])
@@ -128,12 +131,55 @@ def build(ctx, name, mat, length=0.42, count=420, wave=0.0, curl=0.0, volume=1.0
         return p
 
     verts, faces, uvs, root_src, shade = [], [], [], [], []
-    segments = 10
     gravity = np.array([0, 0, -1.0])
+
+    tie_at = None if tie is None else head + np.array([0.0, tie[0], tie[1]])
+    if tie_at is not None:
+        segments = 14
+    over = 6  # of a ponytail strand's segments, how many cross the scalp
+    if tie_at is not None:
+        # slicked hair lies on the real skull, not the collision ellipsoid
+        from mathutils import Vector
+        from mathutils.bvhtree import BVHTree
+
+        head_i = ctx.BONES.index("head")
+        scalp_f = [f for f in ctx.FACES["body"] if ctx.W[f][:, head_i].min() > 0.98]
+        skull = BVHTree.FromPolygons([tuple(p) for p in ctx.PB], [list(f) for f in scalp_f])
+
+        def on_skull(p, off):
+            loc, nrm = skull.find_nearest(Vector(p))[:2]
+            return np.array(loc) + np.array(nrm) * off
+
+    def tied(root, normal, lift, L, phase):
+        """A ponytail strand: slicked over the scalp to the tie, then out
+        and down in a tail that gathers tight at the band and loosens below."""
+        pts = [root + normal * 0.002]
+        for k in range(1, over + 1):
+            s = k / over
+            p = root + (tie_at - root) * s
+            # hugging the skull, a little proud of it towards the band
+            pts.append(on_skull(p, 0.005 + 0.004 * lift + 0.006 * s * s))
+        jitter = rng.normal(0, 1, 3) * np.array([1, 0.6, 1])
+        d = np.array([0.0, 0.8, 0.25])
+        d /= np.linalg.norm(d)
+        p = tie_at.copy()
+        for k in range(1, segments - over + 1):
+            t = k / (segments - over)
+            d = d * 0.55 + gravity * 0.45
+            d /= np.linalg.norm(d)
+            p = p + d * (L / (segments - over))
+            spread = jitter * (0.006 + 0.03 * np.sin(min(t, 1) * np.pi * 0.8))
+            q = p + spread
+            if wave:
+                q = q + np.array([np.cos(phase), 0, 0]) * wave * np.sin(t * 7 + phase)
+            pts.append(push_out(q, 0.004 + 0.006 * lift))
+        return np.array(pts)
 
     def guide(root, normal, lift, L, phase):
         """One clump's path from the scalp: combed from the parting, lifted
         off the head by `lift`, then falling under gravity."""
+        if tie_at is not None:
+            return tied(root, normal, lift, L, phase)
         side = np.sign(root[0] - part) or 1
         # crown and sides comb out from the part; the back falls straight
         back = np.clip((root[1] - head[1]) / 0.06, 0, 1)
@@ -196,8 +242,8 @@ def build(ctx, name, mat, length=0.42, count=420, wave=0.0, curl=0.0, volume=1.0
                 gather = np.linspace(1, 0.35, segments + 1)[:, None]
                 card(
                     g + spread * gather,
-                    width * rng.uniform(0.8, 1.2),
-                    rng.uniform(-0.25, 0.25),
+                    width * rng.uniform(0.8, 1.2) * (0.7 if tie_at is not None else 1),
+                    rng.uniform(-0.25, 0.25) * (0.3 if tie_at is not None else 1),
                     dark * rng.uniform(0.92, 1.05),
                     root,
                 )

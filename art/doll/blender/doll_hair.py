@@ -1,4 +1,5 @@
-"""Hair styles: MakeHuman CC0 hair proxies, plus space buns built here.
+"""Hair styles, all built here: strand cards over a scalp cap, plus sculpted
+buns, afro and braids.
 
 Each style is one object named Hair_<id> (ids match HAIR_STYLES in
 src/game/look.ts). Textures become grey strand maps the client tints.
@@ -13,13 +14,9 @@ from mathutils.kdtree import KDTree
 import proxies
 import strands
 
-# style id -> MakeHuman proxy
-PROXY = {
-    "ponytail": "hair/ponytail01/ponytail01.mhclo",
-}
-TEXTURE = {
-    "ponytail": "hair/ponytail01/ponytail01_diffuse.png",
-}
+# style id -> MakeHuman proxy (none now: every style is built here)
+PROXY = {}
+TEXTURE = {}
 
 
 def swing(ctx, ob, start):
@@ -252,6 +249,13 @@ def build(ctx):
         "pixie": dict(length=0.11, count=360, wave=0.004, volume=1.1),
     }.items():
         out.append(strand_style(ctx, f"Hair_{name}", strand, solid, seed=len(name), **style))
+    # a high ponytail: slicked back to a band at the crown's back, the tail
+    # on the pony bone so it swings
+    pony = strand_style(
+        ctx, "Hair_ponytail", strand, solid, seed=9, length=0.42, count=420, wave=0.004, tie=(0.085, 0.045)
+    )
+    swing(ctx, pony, ctx.JB["head"] + np.array([0, 0.08, 0.05]))
+    out.append(pony)
     for ob in out:
         shade_strands(ctx, ob)
     return out

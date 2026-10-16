@@ -52,22 +52,43 @@ def shell(ctx, name, groups, bands, push, mat, arms=0.3):
     """Cuts base-mesh helper shells (tights, skirt) to horizontal bands
     [(z_lo, z_hi), ...], clamps cut edges flat onto the band lines so hems
     are straight, and pushes the cloth out along its normals by `push`
-    metres. Faces mostly on the arms (bone weight > `arms`) are dropped."""
+    metres. Faces mostly on the arms (bone weight > `arms`) are dropped.
+    A band's lower edge may be a function of (x, y) instead of a height, for
+    a curved hem such as a bikini's leg line."""
+
+    def edge(lo, p):
+        return lo(p[0], p[1]) if callable(lo) else lo
+
+    def overlaps(f, lo, hi):
+        pts = ctx.PB[f]
+        return pts[:, 2].min() < hi and any(p[2] > edge(lo, p) for p in pts)
+
     faces = []
     for g in groups:
         for f in ctx.FACES[g]:
-            z = ctx.PB[f][:, 2]
             if arm_weight(ctx, f) > arms:
                 continue
-            if any(z.max() > lo and z.min() < hi for lo, hi in bands):
+            if any(overlaps(f, lo, hi) for lo, hi in bands):
                 faces.append(f)
     used = sorted({i for f in faces for i in f})
     remap = {o: n for n, o in enumerate(used)}
     co = ctx.PB[used].copy()
-    for i, z in enumerate(co[:, 2]):
+    for i, p in enumerate(co):
         # snap each vertex into the nearest band
-        lo, hi = min(bands, key=lambda b: max(b[0] - z, z - b[1], 0))
-        co[i, 2] = min(max(z, lo), hi)
+        z = p[2]
+        lo, hi = min(bands, key=lambda b: max(edge(b[0], p) - z, z - b[1], 0))
+        co[i, 2] = min(max(z, edge(lo, p)), hi)
+    # a vertex moved onto a hem may float off a curved body (a hip): put it
+    # back on the shell's surface
+    moved = np.abs(co[:, 2] - ctx.PB[used][:, 2]) > 1e-6
+    if moved.any():
+        bvh = BVHTree.FromPolygons(
+            [tuple(p) for p in ctx.PB[used]], [[remap[i] for i in f] for f in faces]
+        )
+        for i in np.nonzero(moved)[0]:
+            hit = bvh.find_nearest(Vector(co[i]))[0]
+            if hit is not None:
+                co[i] = (hit.x, hit.y, co[i, 2])
     ob = ctx.new_object(name, co, [[remap[i] for i in f] for f in faces])
     ob.data.materials.append(mat)
     me = ob.data
@@ -179,7 +200,13 @@ def build(ctx, body, body_src):
     taper(sk2, waist, hem, 0.05)
     out.append(join(coat, sk2))
 
-    # swimsuits
+    # swimsuits. The bikini's leg line dips to the crotch and rises over the
+    # hips to a thin side, lower at the back for fuller cover (front is -y)
+    def leg_line(x, y):
+        rise = 1.25 if y < 0 else 0.8
+        # never above the waistband: a 1.5 cm strap stays over each hip
+        return min(h["hip"] - 0.105 + abs(x) * rise, h["hip"] + 0.005)
+
     out.append(
         shell(ctx, "Swim_one-piece", ["helper-tights"], [(h["hip"] - 0.08, bust + 0.015)], 0.0015, cloth, arms=0.2)
     )
@@ -188,7 +215,7 @@ def build(ctx, body, body_src):
             ctx,
             "Swim_bikini",
             ["helper-tights"],
-            [(bust - 0.1, bust + 0.01), (h["hip"] - 0.08, h["hip"] + 0.03)],
+            [(bust - 0.1, bust + 0.01), (leg_line, h["hip"] + 0.02)],
             0.0015,
             cloth,
             arms=0.2,
