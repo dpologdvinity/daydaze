@@ -38,7 +38,7 @@ import {
 } from "../../game/look.ts";
 import type { DanceMoveId, Holds } from "../../game/dance/moves.ts";
 import { INTENSITIES, type Intensity } from "../../game/effects/buzz.ts";
-import type { RoomId } from "../../game/rooms.ts";
+import type { RoomId, Spawn } from "../../game/rooms.ts";
 import {
   BODY_LABELS,
   BODY_TRAITS,
@@ -53,6 +53,7 @@ import { DriveControls } from "../rooms/speedway/DriveControls.tsx";
 import { RaceHud, SpeedwayMenu } from "../rooms/speedway/RaceHud.tsx";
 import { CocktailIcon, RideIcon } from "./icons.tsx";
 import { DancePicker, HoldPicker } from "./DancePicker.tsx";
+import { CityMap } from "./CityMap.tsx";
 import { Dressing } from "./Dressing.tsx";
 import { GAITS, gaitOf } from "../../game/gaits.ts";
 import { seatsIn } from "../../game/seats.ts";
@@ -453,6 +454,7 @@ export function Overlay({
   setBody,
   onRide,
   onPlayGame,
+  onCityTravel,
   mood,
   setMood,
   dance,
@@ -478,6 +480,8 @@ export function Overlay({
   setBody: (body: BodyShape) => void;
   onRide: () => void;
   onPlayGame: (game: MinigameId) => void;
+  /** Fast travel within the city, from the city map. */
+  onCityTravel: (spawn: Spawn) => void;
   mood: Mood;
   setMood: (mood: Mood) => void;
   dance: DanceMoveId;
@@ -493,6 +497,7 @@ export function Overlay({
 }) {
   const neighborhood = useNeighborhood();
   const [phone, setPhone] = useState(false);
+  const [mapOpen, setMapOpen] = useState(false);
   const [tab, setTab] = useState<MirrorTab>("face");
   // the creator frames the doll for the tab: close on the face for face and
   // makeup, the full look for the rest; closing it restores the old view
@@ -555,6 +560,15 @@ export function Overlay({
         </>
       )}
 
+      {mapOpen && room === "city" && (
+        <CityMap
+          onGo={(spawn) => {
+            setMapOpen(false);
+            onCityTravel(spawn);
+          }}
+          onClose={() => setMapOpen(false)}
+        />
+      )}
       <div className="dock">
         {mood === "dance" && <DancePicker move={dance} onPick={setDance} />}
         {(mood === "pose" || mood === "sit") && (
@@ -565,6 +579,15 @@ export function Overlay({
           />
         )}
         <div className="dock-actions" role="group" aria-label="Room actions">
+          {room === "city" && (
+            <button
+              type="button"
+              className="drink"
+              onClick={() => setMapOpen(true)}
+            >
+              City map
+            </button>
+          )}
           {(seatsIn(room).length > 0 || room === "apartment") && (
             <button
               type="button"

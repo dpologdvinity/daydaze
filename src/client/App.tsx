@@ -226,6 +226,7 @@ export function App() {
           wardrobe={save.wardrobe}
           onRide={() => setRides((n) => n + 1)}
           onPlayGame={setGame}
+          onCityTravel={(spawn) => travel("city", spawn)}
           mood={mood}
           setMood={setMood}
           dance={dance}

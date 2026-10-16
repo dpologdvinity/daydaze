@@ -508,3 +508,14 @@ test("the food rooms open from a query and show their counter staff", async ({
   );
   expect(errors).toEqual([]);
 });
+
+test("the city map takes the player to Beachside", async ({ page }) => {
+  await page.goto(`${LOW}&room=city`);
+  await expect(roomTitle(page)).toHaveText("Downtown");
+  await page.getByRole("button", { name: "City map" }).click();
+  const map = page.getByRole("dialog", { name: "City map" });
+  await expect(map).toBeVisible();
+  await map.getByRole("button", { name: "Beachside" }).click();
+  await expect(map).toBeHidden();
+  await expect(roomTitle(page)).toHaveText("Beachside", { timeout: 60_000 });
+});

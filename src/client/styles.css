@@ -1183,3 +1183,82 @@ button:focus-visible {
   border-color: #ff2f9a;
   outline: none;
 }
+
+/* ------------------------------------------------------------ city map */
+
+.city-map-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(7 2 11 / 0.6);
+  pointer-events: auto;
+}
+
+.city-map {
+  width: min(920px, 100%);
+  max-height: 100%;
+  overflow: auto;
+  padding: 16px;
+  border: 1px solid rgb(255 207 106 / 0.35);
+  border-radius: 20px;
+  background: rgb(32 6 34 / 0.94);
+  color: var(--champagne);
+  font-family: var(--sans);
+}
+
+.city-map-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.city-map-head h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 26px;
+}
+
+.city-map-close {
+  padding: 6px 14px;
+  border: 1px solid rgb(255 207 106 / 0.4);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.city-map-canvas {
+  position: relative;
+}
+
+.city-map-canvas svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+}
+
+.city-map-place {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 4px 10px;
+  border: 1px solid rgb(255 207 106 / 0.6);
+  border-radius: 999px;
+  background: rgb(32 6 34 / 0.85);
+  color: var(--champagne);
+  font: 600 12px/1.2 var(--sans);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.city-map-place:hover,
+.city-map-place:focus-visible {
+  border-color: var(--fuchsia);
+  background: rgb(255 47 154 / 0.3);
+  outline: none;
+}
