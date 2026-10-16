@@ -919,7 +919,7 @@ def main():
     for ob in parts:
         bind(ob, rig)
         # build-time bookkeeping; glTF would ship it as (large) node extras
-        for key in ("deleted", "src"):
+        for key in ("deleted", "src", "layer_shade"):
             if key in ob:
                 del ob[key]
     # on the body, not the rig: optimisers flatten the rig node away

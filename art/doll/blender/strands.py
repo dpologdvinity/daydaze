@@ -16,32 +16,34 @@ STRAND_TEX = None
 
 
 def strand_texture(size=(256, 1024), seed=3):
-    """A strip of fine hair strands: grey lines with soft alpha edges, roots
-    at v=0 and thinning, fading tips at v=1."""
+    """A lock of hair: a soft, dense core with hundreds of fine strands over
+    it, low in contrast so the hair reads as one glossy mass that breaks
+    into strands at its edges and tips. Roots at v=0, tips at v=1."""
     global STRAND_TEX
     if STRAND_TEX is not None:
         return STRAND_TEX
     w, h = size
     rng = np.random.default_rng(seed)
-    img = np.zeros((h, w, 4), np.float32)
     v = np.linspace(0, 1, h)[:, None]
+    u = np.linspace(-1, 1, w)[None, :]
+    # the lock's body: opaque in the middle, feathering to the sides and tip
+    core = np.clip(1 - np.abs(u) ** 2.2, 0, 1) * np.clip((1 - v) / 0.35, 0, 1) ** 0.6
+    alpha = np.clip(core * 1.3, 0, 1)
+    shade = np.full((h, w), 0.86, np.float32)
     x = np.arange(w)[None, :]
-    for _ in range(140):
+    for _ in range(420):
         cx = rng.uniform(0, w)
-        drift = rng.uniform(-6, 6)
-        width = rng.uniform(0.6, 1.6)
-        length = rng.uniform(0.75, 1.0)
-        shade = rng.uniform(0.65, 1.0)
-        centre = cx + drift * v**1.5 + 2 * np.sin(v * rng.uniform(4, 9) + rng.uniform(0, 6))
-        a = np.clip(1 - np.abs(x - centre) / width, 0, 1)
-        a *= np.clip((length - v) / 0.15, 0, 1)  # strands end at different lengths
-        img[..., 3] = np.maximum(img[..., 3], a)
-        img[..., 0] = np.maximum(img[..., 0], a * shade)
-    # a little density near the roots, wispy towards the tips
-    img[..., 3] *= np.clip(1.15 - v * 0.5, 0, 1)
-    img[..., 1] = img[..., 2] = img[..., 0]
-    # grey so the client tints it; lift so a light colour stays light
-    img[..., :3] = 0.55 + 0.45 * img[..., :3]
+        drift = rng.uniform(-5, 5)
+        width = rng.uniform(0.5, 1.2)
+        length = rng.uniform(0.7, 1.0)
+        tone = rng.uniform(0.72, 1.0)
+        centre = cx + drift * v**1.4 + 1.5 * np.sin(v * rng.uniform(3, 7) + rng.uniform(0, 6))
+        a = np.clip(1 - np.abs(x - centre) / width, 0, 1) * np.clip((length - v) / 0.12, 0, 1)
+        alpha = np.maximum(alpha, a * 0.9)
+        shade = shade * (1 - a * 0.5) + tone * a * 0.5
+    img = np.zeros((h, w, 4), np.float32)
+    img[..., 0] = img[..., 1] = img[..., 2] = shade
+    img[..., 3] = alpha
     im = bpy.data.images.new("strands", w, h, alpha=True)
     im.pixels.foreach_set(img[::-1].ravel())
     im.pack()
@@ -125,62 +127,84 @@ def build(ctx, name, mat, length=0.42, count=420, wave=0.0, curl=0.0, volume=1.0
                 p[1] = max(p[1], neck_y + depth * (1 - sx))
         return p
 
-    verts, faces, uvs, root_src = [], [], [], []
-    segments = 14
+    verts, faces, uvs, root_src, shade = [], [], [], [], []
+    segments = 16
     gravity = np.array([0, 0, -1.0])
-    for root, normal in scalp_points(ctx, count, rng):
-        layer = rng.uniform(0.002, 0.008) * volume
-        # comb along the scalp: away from the parting and back, lifted only a
-        # little off the skin, then let gravity take it
+
+    def guide(root, normal, lift, L, phase):
+        """One clump's path from the scalp: combed from the parting, lifted
+        off the head by `lift`, then falling under gravity."""
         side = np.sign(root[0] - part) or 1
-        # roots on the crown and sides comb outward from the part; roots at
-        # the back of the head fall straight down so the back stays covered
+        # crown and sides comb out from the part; the back falls straight
         back = np.clip((root[1] - head[1]) / 0.06, 0, 1)
         comb = np.array([side * 0.75 * (1 - back), 0.55, -0.35 - 0.6 * back])
         comb = comb - normal * np.dot(comb, normal)
         comb /= np.linalg.norm(comb) + 1e-9
-        d = comb + normal * 0.12 * volume
+        d = comb + normal * (0.12 + 0.25 * lift) * volume
         d /= np.linalg.norm(d)
-        L = length * rng.uniform(0.82, 1.0)
-        phase = rng.uniform(0, 2 * np.pi)
-        pts = [root + normal * layer]
-        for s in range(1, segments + 1):
-            t = s / segments
-            # gravity wins quickly once the strand leaves the scalp
+        pts = [root + normal * (0.002 + lift * 0.004)]
+        for k in range(1, segments + 1):
+            t = k / segments
             pull = min(1.0, 0.2 + t * 2.2)
             d = d * (1 - pull * 0.55) + gravity * pull * 0.55
             d /= np.linalg.norm(d)
             p = pts[-1] + d * (L / segments)
-            # waves sway sideways, curls spiral around the strand
             sway = np.array([np.cos(phase), np.sin(phase), 0])
             p = p + sway * wave * np.sin(t * 9 + phase) * (L / segments) * 3
             if curl:
-                # ringlets: a spiral around the strand that grows towards the tip
                 ang = t * 40 + phase
                 p = p + np.array([np.cos(ang), np.sin(ang), 0]) * curl * (0.4 + t)
-            pts.append(push_out(p, layer + 0.004 * t))
-        pts = np.array(pts)
-        width = rng.uniform(0.012, 0.022)
+            # outer layers stand further off the head: real volume, no hollow
+            pts.append(push_out(p, (0.003 + lift * 0.014) * volume + 0.004 * t))
+        return np.array(pts)
+
+    def card(pts, width, twist, dark, root):
         base = len(verts)
-        for s, p in enumerate(pts):
-            t = s / segments
-            tan = pts[min(s + 1, segments)] - pts[max(s - 1, 0)]
+        for k, p in enumerate(pts):
+            t = k / segments
+            tan = pts[min(k + 1, segments)] - pts[max(k - 1, 0)]
             tan /= np.linalg.norm(tan) + 1e-9
             out = p - centre
             out /= np.linalg.norm(out) + 1e-9
             across = np.cross(tan, out)
             across /= np.linalg.norm(across) + 1e-9
-            half = width * (1 - 0.6 * t) / 2
-            verts += [p - across * half, p + across * half]
-            u0 = rng.uniform(0, 0.75)
-            uvs += [(u0, 1 - t), (u0 + 0.25, 1 - t)]
-        for s in range(segments):
-            a = base + 2 * s
+            # turn the card about the strand, so the hair has depth from the side
+            across = across * np.cos(twist) + np.cross(tan, across) * np.sin(twist)
+            half = width * (1 - 0.55 * t) / 2
+            verts.extend([p - across * half, p + across * half])
+            # each card is one whole lock: feathered strands at both edges,
+            # its core down the middle (mirrored at random for variety)
+            flip = root[0] > 0
+            uvs.extend([(1.0 if flip else 0.0, 1 - t), (0.0 if flip else 1.0, 1 - t)])
+            shade.extend([dark, dark])
+        for k in range(segments):
+            a = base + 2 * k
             faces.append((a, a + 1, a + 3, a + 2))
         root_src.append((base, len(verts), root))
 
+    # three layers, inside out: a dense dark under-layer that fills the
+    # volume, the main body of the hair, and fine wisps on top
+    for lift, share, width, dark in ((0.0, 0.35, 0.04, 0.6), (0.5, 0.45, 0.028, 0.85), (1.0, 0.2, 0.016, 1.0)):
+        guides = max(8, int(count * share / 5))
+        for root, normal in scalp_points(ctx, guides, rng):
+            L = length * rng.uniform(0.85, 1.0)
+            phase = rng.uniform(0, 2 * np.pi)
+            g = guide(root, normal, lift, L, phase)
+            # a clump: strands near the guide, loose at the root, gathered at the tip
+            for _ in range(5):
+                spread = rng.normal(0, 0.008, 3)
+                gather = np.linspace(1, 0.35, segments + 1)[:, None]
+                card(
+                    g + spread * gather,
+                    width * rng.uniform(0.8, 1.2),
+                    rng.uniform(-0.25, 0.25),
+                    dark * rng.uniform(0.92, 1.05),
+                    root,
+                )
+
     ob = ctx.new_object(name, np.array(verts), faces)
     ob.data.materials.append(mat)
+    ob["layer_shade"] = list(map(float, shade))
     uv = ob.data.uv_layers.new(name="UVMap").data
     for poly in ob.data.polygons:
         poly.use_smooth = True

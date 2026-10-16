@@ -318,7 +318,7 @@ function hairMaterial(
     sheenRoughness: 0.4,
     sheenColor: new THREE.Color(colour).lerp(new THREE.Color("#ffffff"), 0.35),
     side: THREE.DoubleSide,
-    alphaTest: map ? 0.5 : 0,
+    alphaTest: map ? 0.3 : 0,
   });
 }
 

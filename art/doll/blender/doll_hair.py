@@ -205,12 +205,15 @@ def shade_strands(ctx, ob):
     attr = me.color_attributes.new("Color", "FLOAT_COLOR", "POINT")
     me.color_attributes.active_color = attr
     eye_z = ctx.JB["lEye"][2]
+    layer = list(ob["layer_shade"]) if "layer_shade" in ob else None
     for v in me.vertices:
         d = tree.find(v.co)[2]
         root = np.clip(d / 0.035, 0, 1)  # 0 on the scalp, 1 a few cm out
         below = np.clip((eye_z - v.co.z) / 0.25, 0, 1)  # lengths past the face
         t = np.clip(root * 0.7 + below * 0.5, 0, 1)
         g = 0.5 + 0.5 * t**0.8
+        if layer is not None and v.index < len(layer):
+            g *= layer[v.index]
         attr.data[v.index].color = (g, g, g, 1.0)
 
 
