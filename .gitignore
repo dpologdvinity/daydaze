@@ -21,3 +21,4 @@ __pycache__/
 art/textures/.cache
 mixamo/
 art/props/.cache/
+tmp/
