@@ -123,9 +123,9 @@ const SHOTS = {
   },
   // every hair style from behind and the side, close enough to judge strands
   hair: {
-    looks: (["waves", "ponytail", "bob", "braids", "afro", "buns"] as const).map(
-      (hairStyle, i) => ({ ...LINEUP[i % LINEUP.length], hairStyle }),
-    ),
+    looks: (
+      ["waves", "ponytail", "bob", "braids", "afro", "buns"] as const
+    ).map((hairStyle, i) => ({ ...LINEUP[i % LINEUP.length], hairStyle })),
     x: (i: number) => (i - 2.5) * 0.62,
     cam: [0.6, 1.6, 4.4] as const,
     target: [0, 1.45, 0] as const,
