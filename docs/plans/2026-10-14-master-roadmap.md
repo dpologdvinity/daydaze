@@ -45,14 +45,22 @@ The look is maximalist: dense, layered, glowing, colourful, with constant small 
 | Specs and plans | Content spec, city spec (approved), online spec, client spec, Speedway plan. | `docs/specs/`, `docs/plans/` |
 | Renames | Mango Room became The Velvet Room. Mango Decks became Bassline. Mango Mixology became Last Call. | commits `9706ff2`, `ef43176`, `f1865e7` |
 
-`npm run verify` is green on `main`, with 279 unit tests. Nothing is pushed to GitHub beyond the earlier initial push; every push needs the user's OK.
+`npm run verify` is green on `main` (700+ unit tests). `main` is pushed to the private GitHub repo after each green change; deploying still needs the user's OK.
 
-### In flight
+### Landed since (2026-10-15 to 2026-10-16)
 
-Each branch lives in its own worktree under `.worktrees/`.
-
-| Branch | Content | Status |
+| Area | What exists | Evidence |
 |---|---|---|
+| City | Downtown and Nightlife Row (384 m square), cell streaming, traffic, doors into every room; Poly Haven asphalt and concrete; night-street HDRI on the high tier | `src/game/city/`, `src/client/city/` |
+| 3D doll | MakeHuman CC0 doll built in Blender: strand-card hair (12 styles), face presets, makeup, piercings, hourglass figure with sliders, six outfits and two swimsuits, LOD body | `art/doll/blender/`, `src/client/avatar/human/` |
+| Character creator | Full-screen closet with picture tiles for hair, face, outfits and swimsuits | `src/client/ui/Overlay.tsx`, `public/closet/` |
+| Motion | CMU and Mixamo motion capture: walk styles (natural, catwalk, sexy, feminine, casual), captured dances, held poses for Pose and Sit, lying on beds | `art/doll/blender/mocap.py`, `src/game/dance/` |
+| Seating | Chairs, stools, banquettes, the apartment sofa and bed | `src/game/seats.ts` |
+| Amusement Park | Nine rideable rides: ferris wheel, Comet coaster, Starlight hyper coaster (20 m, back lot), carousel, teacups, swings, drop tower, pirate ship, log flume (water-ride lot); the Midway booths | `src/game/amusementPark.ts`, `src/client/rooms/amusementpark/` |
+| Rooms | Velvet Room, Plaza, Pulse, The Violet Hour, three food rooms, shops, apartment, jail, Water Park, Speedway | `src/client/rooms/` |
+| Props | 14 Meshy-generated furniture and venue props | `public/models/props/`, `art/props/` |
+
+---|---|---|
 | `feat/water-park` | Water Park room, Plaza gate, auto-swimsuit slot in the save, slide ride, lifeguard, cashier and swimmers, screenshots | Being finished: rebasing onto `main`, carrying the Velvet rename, tests and screenshots. Merges first. |
 | `feat/npc-lines` | `src/game/dialogue/`: situation-keyed line banks for 18 roles, a picker that avoids recent repeats, a banned-word test | Being built. Merges second. |
 | `feat/amusement-park` | Night carnival: ferris wheel and roller coaster (rideable), carousel, drop tower, swings, teacups, midway booths, staff NPCs | Being built. Merges third. |
