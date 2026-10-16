@@ -1,3 +1,7 @@
+/*
+ * Based on https://gist.github.com/krazyjakee/1e3592856dd636b8043cc359ad9d66fc
+ * Files are saved as the animation's Description instead of Mixamo's name.
+ */
 (() => {
   "use strict";
 
@@ -141,11 +145,7 @@
 
   async function waitForCondition(
     condition,
-    {
-      timeoutMs = 10000,
-      intervalMs = 200,
-      description = "condition",
-    } = {},
+    { timeoutMs = 10000, intervalMs = 200, description = "condition" } = {},
   ) {
     const startedAt = Date.now();
 
@@ -169,9 +169,7 @@
       await wait(intervalMs);
     }
 
-    throw new Error(
-      `Timed out waiting for ${description}.`,
-    );
+    throw new Error(`Timed out waiting for ${description}.`);
   }
 
   /*
@@ -200,22 +198,15 @@
         state.currentPage = saved.currentPage;
       }
 
-      if (
-        Number.isInteger(saved.currentItem) &&
-        saved.currentItem >= 0
-      ) {
+      if (Number.isInteger(saved.currentItem) && saved.currentItem >= 0) {
         state.currentItem = saved.currentItem;
       }
 
       state.completedIds = new Set(
-        Array.isArray(saved.completedIds)
-          ? saved.completedIds
-          : [],
+        Array.isArray(saved.completedIds) ? saved.completedIds : [],
       );
 
-      state.failures = Array.isArray(saved.failures)
-        ? saved.failures
-        : [];
+      state.failures = Array.isArray(saved.failures) ? saved.failures : [];
 
       console.info("Restored Mixamo progress:", {
         page: state.currentPage,
@@ -224,10 +215,7 @@
         failures: state.failures.length,
       });
     } catch (error) {
-      console.warn(
-        "Could not restore saved Mixamo progress:",
-        error,
-      );
+      console.warn("Could not restore saved Mixamo progress:", error);
     }
   }
 
@@ -275,26 +263,18 @@
   }
 
   function getCardInfo(card, index) {
-    const image = card.querySelector(
-      ".product-image img",
-    );
+    const image = card.querySelector(".product-image img");
 
     const name =
-      card
-        .querySelector(".product-info p")
-        ?.textContent?.trim() ||
+      card.querySelector(".product-info p")?.textContent?.trim() ||
       `Mixamo Item ${index + 1}`;
 
     const description =
-      card
-        .querySelector(".product-metadata li")
-        ?.textContent?.trim() || "";
+      card.querySelector(".product-metadata li")?.textContent?.trim() || "";
 
     const thumbnailUrl = image?.src || "";
 
-    const isPack = card.classList.contains(
-      "product-animation-pack",
-    );
+    const isPack = card.classList.contains("product-animation-pack");
 
     const motionMatch = thumbnailUrl.match(
       /\/motions\/([^/]+)\/animated\.(?:gif|png|jpg|jpeg)/i,
@@ -306,9 +286,7 @@
 
     const animationCount = isPack
       ? Number.parseInt(
-          card
-            .querySelector(".product-count")
-            ?.textContent?.trim() || "",
+          card.querySelector(".product-count")?.textContent?.trim() || "",
           10,
         ) || null
       : 1;
@@ -316,15 +294,13 @@
     let itemId;
 
     if (isPack) {
-      itemId =
-        `pack:${packMatch?.[1] || normalizeText(name)}`;
+      itemId = `pack:${packMatch?.[1] || normalizeText(name)}`;
     } else if (motionMatch?.[1]) {
       itemId = `motion:${motionMatch[1]}`;
     } else if (thumbnailUrl) {
       itemId = `motion-url:${thumbnailUrl}`;
     } else {
-      itemId =
-        `item:${state.currentPage}:${index}:${normalizeText(name)}`;
+      itemId = `item:${state.currentPage}:${index}:${normalizeText(name)}`;
     }
 
     return {
@@ -342,15 +318,8 @@
   function findLiveItemById(itemId) {
     const cards = getDownloadableCards();
 
-    for (
-      let index = 0;
-      index < cards.length;
-      index += 1
-    ) {
-      const candidate = getCardInfo(
-        cards[index],
-        index,
-      );
+    for (let index = 0; index < cards.length; index += 1) {
+      const candidate = getCardInfo(cards[index], index);
 
       if (candidate.itemId === itemId) {
         return candidate;
@@ -369,14 +338,9 @@
       ".pagination-holder .pagination li.active a",
     );
 
-    const page = Number.parseInt(
-      active?.textContent?.trim() || "",
-      10,
-    );
+    const page = Number.parseInt(active?.textContent?.trim() || "", 10);
 
-    return Number.isFinite(page)
-      ? page
-      : null;
+    return Number.isFinite(page) ? page : null;
   }
 
   function getNextPageButton() {
@@ -409,15 +373,10 @@
       page: getCurrentPage(),
       count: cards.length,
 
-      firstImage:
-        cards[0]
-          ?.querySelector(".product-image img")
-          ?.src || "",
+      firstImage: cards[0]?.querySelector(".product-image img")?.src || "",
 
       lastImage:
-        cards[cards.length - 1]
-          ?.querySelector(".product-image img")
-          ?.src || "",
+        cards[cards.length - 1]?.querySelector(".product-image img")?.src || "",
     };
   }
 
@@ -437,11 +396,9 @@
 
         return (
           current.count > 0 &&
-          (
-            current.page !== previous.page ||
+          (current.page !== previous.page ||
             current.firstImage !== previous.firstImage ||
-            current.lastImage !== previous.lastImage
-          )
+            current.lastImage !== previous.lastImage)
         );
       },
       {
@@ -450,9 +407,7 @@
       },
     );
 
-    await wait(
-      SETTINGS.afterPageChangeDelayMs,
-    );
+    await wait(SETTINGS.afterPageChangeDelayMs);
 
     return true;
   }
@@ -461,9 +416,7 @@
     let currentPage = getCurrentPage();
 
     if (currentPage === null) {
-      throw new Error(
-        "Could not determine the current Mixamo page.",
-      );
+      throw new Error("Could not determine the current Mixamo page.");
     }
 
     if (currentPage > targetPage) {
@@ -487,9 +440,7 @@
       currentPage = getCurrentPage();
 
       if (currentPage === null) {
-        throw new Error(
-          "Lost the current page number while navigating.",
-        );
+        throw new Error("Lost the current page number while navigating.");
       }
     }
   }
@@ -501,12 +452,68 @@
   function getSelectedItemName() {
     return (
       document
-        .querySelector(
-          ".product-preview-holder .product-nav h2",
-        )
+        .querySelector(".product-preview-holder .product-nav h2")
         ?.textContent?.trim() || ""
     );
   }
+
+  // "Description: Female Jazz Dancing 'Around The World'" in the selected product panel.
+  function getSelectedDescription() {
+    const li = [
+      ...document.querySelectorAll(
+        ".product.product-selected .product-description li",
+      ),
+    ].find((el) => /^\s*Description:/i.test(el.textContent));
+
+    return li?.textContent.replace(/^\s*Description:\s*/i, "").trim() || "";
+  }
+
+  /*
+   * Mixamo saves through a programmatic <a>.click(). While a name is
+   * pending, point that click at a blob under our name. If the fetch is
+   * blocked (CORS), fall back to Mixamo's own filename.
+   */
+  const usedFileNames = new Set();
+  let pendingFileName = null;
+  const nativeAnchorClick = HTMLAnchorElement.prototype.click;
+
+  HTMLAnchorElement.prototype.click = function (...args) {
+    const base = pendingFileName;
+
+    if (!base || !this.href || this.dataset.renamed) {
+      return nativeAnchorClick.apply(this, args);
+    }
+
+    pendingFileName = null;
+    const href = this.href;
+    const extension = (href.split("?")[0].match(/\.(\w+)$/) || [])[1] || "fbx";
+    let name = base;
+
+    for (let n = 2; usedFileNames.has(name); n += 1) {
+      name = `${base} (${n})`;
+    }
+
+    usedFileNames.add(name);
+
+    fetch(href)
+      .then((response) => response.blob())
+      .then((blob) => {
+        const a = document.createElement("a");
+        a.dataset.renamed = "1";
+        a.href = URL.createObjectURL(blob);
+        a.download = `${name}.${extension}`;
+        nativeAnchorClick.call(a);
+        setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+      })
+      .catch((error) => {
+        console.warn(
+          `Could not rename "${name}"; using Mixamo's filename.`,
+          error,
+        );
+        this.dataset.renamed = "1";
+        nativeAnchorClick.apply(this, args);
+      });
+  };
 
   function getMainDownloadButton() {
     const buttons = [
@@ -517,17 +524,13 @@
 
     return (
       buttons.find(
-        (button) =>
-          normalizeText(button.textContent) ===
-          "download",
+        (button) => normalizeText(button.textContent) === "download",
       ) || null
     );
   }
 
   function getInPlaceCheckbox() {
-    return document.querySelector(
-      'input[name="inplace"]',
-    );
+    return document.querySelector('input[name="inplace"]');
   }
 
   /*
@@ -541,13 +544,9 @@
 
     const rect = element.getBoundingClientRect();
 
-    const clientX = Math.round(
-      rect.left + rect.width / 2,
-    );
+    const clientX = Math.round(rect.left + rect.width / 2);
 
-    const clientY = Math.round(
-      rect.top + rect.height / 2,
-    );
+    const clientY = Math.round(rect.top + rect.height / 2);
 
     const common = {
       bubbles: true,
@@ -635,19 +634,14 @@
 
     for (const [type, options] of events) {
       try {
-        const EventClass =
-          type.startsWith("pointer")
-            ? PointerEvent
-            : MouseEvent;
+        const EventClass = type.startsWith("pointer")
+          ? PointerEvent
+          : MouseEvent;
 
-        element.dispatchEvent(
-          new EventClass(type, options),
-        );
+        element.dispatchEvent(new EventClass(type, options));
       } catch {
         try {
-          element.dispatchEvent(
-            new MouseEvent(type, options),
-          );
+          element.dispatchEvent(new MouseEvent(type, options));
         } catch {
           element.dispatchEvent(
             new Event(type, {
@@ -667,8 +661,7 @@
   }
 
   async function selectCatalogItem(item) {
-    const liveItem =
-      findLiveItemById(item.itemId);
+    const liveItem = findLiveItemById(item.itemId);
 
     if (!liveItem) {
       throw new Error(
@@ -691,92 +684,64 @@
       inline: "nearest",
     });
 
-    await wait(
-      SETTINGS.beforeCardClickDelayMs,
-    );
+    await wait(SETTINGS.beforeCardClickDelayMs);
 
     const previousName = getSelectedItemName();
-    const previousNormalized =
-      normalizeText(previousName);
+    const previousNormalized = normalizeText(previousName);
 
-    const expectedNormalized =
-      normalizeText(item.name);
+    const expectedNormalized = normalizeText(item.name);
 
     for (const clickTarget of clickTargets) {
       dispatchActivationEvents(clickTarget);
       await wait(350);
 
-      const currentNormalized =
-        normalizeText(getSelectedItemName());
+      const currentNormalized = normalizeText(getSelectedItemName());
 
-      if (
-        currentNormalized &&
-        currentNormalized !== previousNormalized
-      ) {
+      if (currentNormalized && currentNormalized !== previousNormalized) {
         break;
       }
     }
 
-    await wait(
-      SETTINGS.afterCardClickDelayMs,
-    );
+    await wait(SETTINGS.afterCardClickDelayMs);
 
     await waitForCondition(
       () => {
-        const currentName =
-          getSelectedItemName();
+        const currentName = getSelectedItemName();
 
-        const currentNormalized =
-          normalizeText(currentName);
+        const currentNormalized = normalizeText(currentName);
 
-        if (
-          !currentNormalized ||
-          currentNormalized === "default character"
-        ) {
+        if (!currentNormalized || currentNormalized === "default character") {
           return false;
         }
 
-        const exactMatch =
-          currentNormalized === expectedNormalized;
+        const exactMatch = currentNormalized === expectedNormalized;
 
         const partialMatch =
           currentNormalized.includes(expectedNormalized) ||
           expectedNormalized.includes(currentNormalized);
 
-        const changed =
-          currentNormalized !== previousNormalized;
+        const changed = currentNormalized !== previousNormalized;
 
         return (
           Boolean(getMainDownloadButton()) &&
-          (
-            exactMatch ||
-            partialMatch ||
-            changed
-          )
+          (exactMatch || partialMatch || changed)
         );
       },
       {
-        timeoutMs:
-          SETTINGS.selectionTimeoutMs,
+        timeoutMs: SETTINGS.selectionTimeoutMs,
 
-        description:
-          `"${item.name}" to load in the preview`,
+        description: `"${item.name}" to load in the preview`,
       },
     );
 
-    await wait(
-      SETTINGS.afterSelectionDelayMs,
-    );
+    await wait(SETTINGS.afterSelectionDelayMs);
   }
 
   /*
    * In Place option
    */
 
-  async function setCheckboxState(
-    checkbox,
-    desiredState,
-  ) {
+  async function setCheckboxState(checkbox, desiredState) {
     if (!checkbox) {
       return false;
     }
@@ -784,15 +749,10 @@
     if (checkbox.checked !== desiredState) {
       dispatchActivationEvents(checkbox);
 
-      await waitForCondition(
-        () =>
-          checkbox.checked === desiredState,
-        {
-          timeoutMs: 4000,
-          description:
-            `In Place checkbox to become ${desiredState}`,
-        },
-      );
+      await waitForCondition(() => checkbox.checked === desiredState, {
+        timeoutMs: 4000,
+        description: `In Place checkbox to become ${desiredState}`,
+      });
     }
 
     return checkbox.checked === desiredState;
@@ -820,62 +780,49 @@
           return false;
         }
 
-        return Boolean(
-          modal.querySelector(
-            "select, .modal-footer, button",
-          ),
-        );
+        return Boolean(modal.querySelector("select, .modal-footer, button"));
       }) || null
     );
   }
 
   function inspectModal(modal = getVisibleDownloadModal()) {
     if (!modal) {
-      console.warn(
-        "No visible Mixamo download modal was found.",
-      );
+      console.warn("No visible Mixamo download modal was found.");
 
       return null;
     }
 
-    const selects = [
-      ...modal.querySelectorAll("select"),
-    ].map((select, index) => ({
-      index,
-      name: select.name || "",
-      id: select.id || "",
-      className: select.className || "",
-      value: select.value,
-      options: [...select.options].map(
-        (option) => ({
+    const selects = [...modal.querySelectorAll("select")].map(
+      (select, index) => ({
+        index,
+        name: select.name || "",
+        id: select.id || "",
+        className: select.className || "",
+        value: select.value,
+        options: [...select.options].map((option) => ({
           text: option.textContent.trim(),
           value: option.value,
           selected: option.selected,
-        }),
-      ),
-    }));
+        })),
+      }),
+    );
 
-    const buttons = [
-      ...modal.querySelectorAll("button, .btn"),
-    ].map((button, index) => ({
-      index,
-      text: button.textContent.trim(),
-      className: button.className || "",
-      disabled: button.disabled,
-    }));
+    const buttons = [...modal.querySelectorAll("button, .btn")].map(
+      (button, index) => ({
+        index,
+        text: button.textContent.trim(),
+        className: button.className || "",
+        disabled: button.disabled,
+      }),
+    );
 
     const result = {
-      text: modal.textContent
-        .replace(/\s+/g, " ")
-        .trim(),
+      text: modal.textContent.replace(/\s+/g, " ").trim(),
       selects,
       buttons,
     };
 
-    console.log(
-      "Mixamo modal inspection:",
-      result,
-    );
+    console.log("Mixamo modal inspection:", result);
 
     console.table(
       selects.map((select) => ({
@@ -883,53 +830,33 @@
         id: select.id,
         name: select.name,
         value: select.value,
-        options: select.options
-          .map((option) => option.text)
-          .join(" | "),
+        options: select.options.map((option) => option.text).join(" | "),
       })),
     );
 
     return result;
   }
 
-  function findSelectContainingOptions(
-    modal,
-    optionTexts,
-  ) {
-    const wanted =
-      optionTexts.map(normalizeText);
+  function findSelectContainingOptions(modal, optionTexts) {
+    const wanted = optionTexts.map(normalizeText);
 
     return (
-      [...modal.querySelectorAll("select")].find(
-        (select) => {
-          const available = [
-            ...select.options,
-          ].map((option) =>
-            normalizeText(
-              option.textContent,
-            ),
-          );
+      [...modal.querySelectorAll("select")].find((select) => {
+        const available = [...select.options].map((option) =>
+          normalizeText(option.textContent),
+        );
 
-          return wanted.some(
-            (wantedText) =>
-              available.some(
-                (availableText) =>
-                  availableText.includes(
-                    wantedText,
-                  ),
-              ),
-          );
-        },
-      ) || null
+        return wanted.some((wantedText) =>
+          available.some((availableText) => availableText.includes(wantedText)),
+        );
+      }) || null
     );
   }
 
   async function selectOptionByText(
     select,
     desiredTexts,
-    {
-      settingName = "option",
-    } = {},
+    { settingName = "option" } = {},
   ) {
     if (!select) {
       console.info(
@@ -939,15 +866,10 @@
       return false;
     }
 
-    const desired =
-      desiredTexts.map(normalizeText);
+    const desired = desiredTexts.map(normalizeText);
 
-    const matchingOption = [
-      ...select.options,
-    ].find((option) => {
-      const optionText = normalizeText(
-        option.textContent,
-      );
+    const matchingOption = [...select.options].find((option) => {
+      const optionText = normalizeText(option.textContent);
 
       return desired.some(
         (desiredText) =>
@@ -958,12 +880,8 @@
     });
 
     if (!matchingOption) {
-      const availableOptions = [
-        ...select.options,
-      ]
-        .map((option) =>
-          option.textContent.trim(),
-        )
+      const availableOptions = [...select.options]
+        .map((option) => option.textContent.trim())
         .join(", ");
 
       console.warn(
@@ -974,11 +892,8 @@
       return false;
     }
 
-    if (
-      select.value !== matchingOption.value
-    ) {
-      select.value =
-        matchingOption.value;
+    if (select.value !== matchingOption.value) {
+      select.value = matchingOption.value;
 
       select.dispatchEvent(
         new Event("input", {
@@ -992,200 +907,127 @@
         }),
       );
 
-      await wait(
-        SETTINGS.afterOptionChangeDelayMs,
-      );
+      await wait(SETTINGS.afterOptionChangeDelayMs);
     }
 
-    console.info(
-      `${settingName}: ` +
-        matchingOption.textContent.trim(),
-    );
+    console.info(`${settingName}: ` + matchingOption.textContent.trim());
 
     return true;
   }
 
-  async function configureDownloadModal(
-    modal,
-    item,
-  ) {
+  async function configureDownloadModal(modal, item) {
     /*
      * Log the controls once for diagnostic purposes.
      */
-    const selects = [
-      ...modal.querySelectorAll("select"),
-    ];
+    const selects = [...modal.querySelectorAll("select")];
 
     console.info(
       `"${item.name}" download modal contains ${selects.length} select control(s).`,
     );
 
-    const formatSelect =
-      findSelectContainingOptions(
-        modal,
-        [
-          "fbx binary",
-          "fbx",
-          "collada",
-          "dae",
-        ],
-      );
+    const formatSelect = findSelectContainingOptions(modal, [
+      "fbx binary",
+      "fbx",
+      "collada",
+      "dae",
+    ]);
 
-    await selectOptionByText(
-      formatSelect,
-      [SETTINGS.format],
-      {
-        settingName: "Format",
-      },
-    );
+    await selectOptionByText(formatSelect, [SETTINGS.format], {
+      settingName: "Format",
+    });
 
-    const skinSelect =
-      findSelectContainingOptions(
-        modal,
-        [
-          "with skin",
-          "without skin",
-        ],
-      );
+    const skinSelect = findSelectContainingOptions(modal, [
+      "with skin",
+      "without skin",
+    ]);
 
     await selectOptionByText(
       skinSelect,
-      SETTINGS.includeSkin
-        ? ["With Skin"]
-        : ["Without Skin"],
+      SETTINGS.includeSkin ? ["With Skin"] : ["Without Skin"],
       {
         settingName: "Skin",
       },
     );
 
-    const fpsSelect =
-      findSelectContainingOptions(
-        modal,
-        [
-          "24 fps",
-          "30 fps",
-          "60 fps",
-          "frames per second",
-        ],
-      );
+    const fpsSelect = findSelectContainingOptions(modal, [
+      "24 fps",
+      "30 fps",
+      "60 fps",
+      "frames per second",
+    ]);
 
     await selectOptionByText(
       fpsSelect,
-      [
-        `${SETTINGS.fps} FPS`,
-        String(SETTINGS.fps),
-      ],
+      [`${SETTINGS.fps} FPS`, String(SETTINGS.fps)],
       {
         settingName: "Frames per Second",
       },
     );
 
-    const reductionSelect =
-      findSelectContainingOptions(
-        modal,
-        [
-          "no keyframe reduction",
-          "keyframe reduction",
-          "uniform",
-          "non-uniform",
-          "non uniform",
-          "none",
-        ],
-      );
+    const reductionSelect = findSelectContainingOptions(modal, [
+      "no keyframe reduction",
+      "keyframe reduction",
+      "uniform",
+      "non-uniform",
+      "non uniform",
+      "none",
+    ]);
 
     const reductionOptions = {
-      none: [
-        "None",
-        "No Keyframe Reduction",
-      ],
+      none: ["None", "No Keyframe Reduction"],
 
-      uniform: [
-        "Uniform",
-      ],
+      uniform: ["Uniform"],
 
-      "non-uniform": [
-        "Non-uniform",
-        "Non Uniform",
-      ],
+      "non-uniform": ["Non-uniform", "Non Uniform"],
     };
 
     await selectOptionByText(
       reductionSelect,
-      reductionOptions[
-        SETTINGS.keyframeReduction
-      ] || ["None"],
+      reductionOptions[SETTINGS.keyframeReduction] || ["None"],
       {
-        settingName:
-          "Keyframe Reduction",
+        settingName: "Keyframe Reduction",
       },
     );
   }
 
   function getModalDownloadButton(modal) {
-    const buttons = [
-      ...modal.querySelectorAll(
-        "button, .btn",
-      ),
-    ].filter(isElementVisible);
+    const buttons = [...modal.querySelectorAll("button, .btn")].filter(
+      isElementVisible,
+    );
 
     return (
       buttons.find((button) => {
-        const text = normalizeText(
-          button.textContent,
-        );
+        const text = normalizeText(button.textContent);
 
-        return (
-          text === "download" ||
-          text.includes("download")
-        );
+        return text === "download" || text.includes("download");
       }) ||
-      modal.querySelector(
-        ".modal-footer .btn-primary",
-      ) ||
+      modal.querySelector(".modal-footer .btn-primary") ||
       null
     );
   }
 
   async function openDownloadModal() {
-    const mainButton =
-      await waitForCondition(
-        () => getMainDownloadButton(),
-        {
-          timeoutMs:
-            SETTINGS.modalTimeoutMs,
-          description:
-            "the main preview Download button",
-        },
-      );
+    const mainButton = await waitForCondition(() => getMainDownloadButton(), {
+      timeoutMs: SETTINGS.modalTimeoutMs,
+      description: "the main preview Download button",
+    });
 
-    dispatchActivationEvents(
-      mainButton,
-    );
+    dispatchActivationEvents(mainButton);
 
-    return await waitForCondition(
-      () => getVisibleDownloadModal(),
-      {
-        timeoutMs:
-          SETTINGS.modalTimeoutMs,
+    return await waitForCondition(() => getVisibleDownloadModal(), {
+      timeoutMs: SETTINGS.modalTimeoutMs,
 
-        description:
-          "the Mixamo download modal",
-      },
-    );
+      description: "the Mixamo download modal",
+    });
   }
 
-  async function waitForModalToClose(
-    modal,
-  ) {
+  async function waitForModalToClose(modal) {
     try {
       await waitForCondition(
-        () =>
-          !document.contains(modal) ||
-          !isElementVisible(modal),
+        () => !document.contains(modal) || !isElementVisible(modal),
         {
           timeoutMs: 12000,
-          description:
-            "the download modal to close",
+          description: "the download modal to close",
         },
       );
     } catch {
@@ -1202,34 +1044,21 @@
   async function downloadItem(item) {
     await selectCatalogItem(item);
 
-    const inPlaceCheckbox =
-      getInPlaceCheckbox();
+    const inPlaceCheckbox = getInPlaceCheckbox();
 
     if (inPlaceCheckbox) {
-      await setCheckboxState(
-        inPlaceCheckbox,
-        SETTINGS.inPlace,
-      );
+      await setCheckboxState(inPlaceCheckbox, SETTINGS.inPlace);
 
-      console.info(
-        `In Place: ${SETTINGS.inPlace}`,
-      );
+      console.info(`In Place: ${SETTINGS.inPlace}`);
     } else {
-      console.info(
-        `"${item.name}" has no In Place option.`,
-      );
+      console.info(`"${item.name}" has no In Place option.`);
     }
 
-    const modal =
-      await openDownloadModal();
+    const modal = await openDownloadModal();
 
-    await configureDownloadModal(
-      modal,
-      item,
-    );
+    await configureDownloadModal(modal, item);
 
-    const finalDownloadButton =
-      getModalDownloadButton(modal);
+    const finalDownloadButton = getModalDownloadButton(modal);
 
     if (!finalDownloadButton) {
       inspectModal(modal);
@@ -1239,9 +1068,15 @@
       );
     }
 
-    dispatchActivationEvents(
-      finalDownloadButton,
-    );
+    const description = getSelectedDescription() || item.name;
+
+    pendingFileName = description
+      .replace(/[\\/:*?"<>|\x00-\x1f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 150);
+
+    dispatchActivationEvents(finalDownloadButton);
 
     await waitForModalToClose(modal);
 
@@ -1253,11 +1088,9 @@
   }
 
   function recordFailure(item, error) {
-    state.failures =
-      state.failures.filter(
-        (failure) =>
-          failure.itemId !== item.itemId,
-      );
+    state.failures = state.failures.filter(
+      (failure) => failure.itemId !== item.itemId,
+    );
 
     state.failures.push({
       page: state.currentPage,
@@ -1265,70 +1098,46 @@
       itemId: item.itemId,
       name: item.name,
 
-      type: item.isPack
-        ? "animation-pack"
-        : "animation",
+      type: item.isPack ? "animation-pack" : "animation",
 
-      error: String(
-        error?.message || error,
-      ),
+      error: String(error?.message || error),
 
-      failedAt:
-        new Date().toISOString(),
+      failedAt: new Date().toISOString(),
     });
 
     saveState();
   }
 
   async function processItem(item) {
-    if (
-      state.completedIds.has(
-        item.itemId,
-      )
-    ) {
+    if (state.completedIds.has(item.itemId)) {
       console.info(
         `Skipping completed ${
-          item.isPack
-            ? "pack"
-            : "animation"
+          item.isPack ? "pack" : "animation"
         }: ${item.name}`,
       );
 
       return true;
     }
 
-    const totalAttempts =
-      SETTINGS.retries + 1;
+    const totalAttempts = SETTINGS.retries + 1;
 
-    for (
-      let attempt = 1;
-      attempt <= totalAttempts;
-      attempt += 1
-    ) {
+    for (let attempt = 1; attempt <= totalAttempts; attempt += 1) {
       if (state.stopped) {
-        throw new Error(
-          "Downloader stopped.",
-        );
+        throw new Error("Downloader stopped.");
       }
 
       console.group(
-        `Page ${state.currentPage}, ` +
-          `item ${item.index + 1}: ` +
-          item.name,
+        `Page ${state.currentPage}, ` + `item ${item.index + 1}: ` + item.name,
       );
 
       console.info({
-        type: item.isPack
-          ? "animation pack"
-          : "animation",
+        type: item.isPack ? "animation pack" : "animation",
 
         itemId: item.itemId,
 
-        animationCount:
-          item.animationCount,
+        animationCount: item.animationCount,
 
-        description:
-          item.description,
+        description: item.description,
 
         attempt,
         totalAttempts,
@@ -1337,16 +1146,11 @@
       try {
         await downloadItem(item);
 
-        state.completedIds.add(
-          item.itemId,
-        );
+        state.completedIds.add(item.itemId);
 
-        state.failures =
-          state.failures.filter(
-            (failure) =>
-              failure.itemId !==
-              item.itemId,
-          );
+        state.failures = state.failures.filter(
+          (failure) => failure.itemId !== item.itemId,
+        );
 
         saveState();
 
@@ -1360,24 +1164,14 @@
 
         return true;
       } catch (error) {
-        console.error(
-          `Attempt ${attempt} failed:`,
-          error,
-        );
+        console.error(`Attempt ${attempt} failed:`, error);
 
         console.groupEnd();
 
-        if (
-          attempt < totalAttempts
-        ) {
-          await wait(
-            SETTINGS.retryDelayMs,
-          );
+        if (attempt < totalAttempts) {
+          await wait(SETTINGS.retryDelayMs);
         } else {
-          recordFailure(
-            item,
-            error,
-          );
+          recordFailure(item, error);
         }
       }
     }
@@ -1394,24 +1188,17 @@
       state.stopped = true;
       saveState();
 
-      console.warn(
-        "The downloader will stop after the current operation.",
-      );
+      console.warn("The downloader will stop after the current operation.");
     },
 
     status() {
       return {
         running: state.running,
         stopped: state.stopped,
-        currentPage:
-          state.currentPage,
-        currentItem:
-          state.currentItem,
-        completedFiles:
-          state.completedIds.size,
-        failures: [
-          ...state.failures,
-        ],
+        currentPage: state.currentPage,
+        currentItem: state.currentItem,
+        completedFiles: state.completedIds.size,
+        failures: [...state.failures],
         settings: {
           ...SETTINGS,
         },
@@ -1419,13 +1206,9 @@
     },
 
     listFailures() {
-      console.table(
-        state.failures,
-      );
+      console.table(state.failures);
 
-      return [
-        ...state.failures,
-      ];
+      return [...state.failures];
     },
 
     inspectModal() {
@@ -1441,9 +1224,7 @@
 
   async function start() {
     if (state.running) {
-      console.warn(
-        "The Mixamo downloader is already running.",
-      );
+      console.warn("The Mixamo downloader is already running.");
 
       return;
     }
@@ -1453,58 +1234,37 @@
 
     loadState();
 
-    console.info(
-      "Starting Mixamo downloader.",
-      SETTINGS,
-    );
+    console.info("Starting Mixamo downloader.", SETTINGS);
 
-    console.info(
-      "Available controls:",
-      {
-        status:
-          "mixamoDownloader.status()",
+    console.info("Available controls:", {
+      status: "mixamoDownloader.status()",
 
-        stop:
-          "mixamoDownloader.stop()",
+      stop: "mixamoDownloader.stop()",
 
-        failures:
-          "mixamoDownloader.listFailures()",
+      failures: "mixamoDownloader.listFailures()",
 
-        inspectModal:
-          "mixamoDownloader.inspectModal()",
+      inspectModal: "mixamoDownloader.inspectModal()",
 
-        clear:
-          "mixamoDownloader.clearProgress()",
-      },
-    );
+      clear: "mixamoDownloader.clearProgress()",
+    });
 
     try {
-      await goToPage(
-        Math.max(
-          SETTINGS.startPage,
-          state.currentPage,
-        ),
-      );
+      await goToPage(Math.max(SETTINGS.startPage, state.currentPage));
 
       while (
         !state.stopped &&
         state.currentPage >= SETTINGS.startPage &&
         state.currentPage <= SETTINGS.endPage
       ) {
-        const visiblePage =
-          getCurrentPage();
+        const visiblePage = getCurrentPage();
 
         if (visiblePage !== null) {
-          state.currentPage =
-            visiblePage;
+          state.currentPage = visiblePage;
         }
 
-        const initialCards =
-          getDownloadableCards();
+        const initialCards = getDownloadableCards();
 
-        if (
-          initialCards.length === 0
-        ) {
+        if (initialCards.length === 0) {
           throw new Error(
             `No downloadable items found on page ${state.currentPage}.`,
           );
@@ -1513,10 +1273,7 @@
         const pageItemLimit =
           SETTINGS.maxItemsPerPage === null
             ? initialCards.length
-            : Math.min(
-                initialCards.length,
-                SETTINGS.maxItemsPerPage,
-              );
+            : Math.min(initialCards.length, SETTINGS.maxItemsPerPage);
 
         console.info(
           `Page ${state.currentPage}: ` +
@@ -1524,34 +1281,23 @@
             `${pageItemLimit} will be processed.`,
         );
 
-        const startingIndex =
-          Math.min(
-            state.currentItem,
-            pageItemLimit,
-          );
+        const startingIndex = Math.min(state.currentItem, pageItemLimit);
 
-        for (
-          let index = startingIndex;
-          index < pageItemLimit;
-          index += 1
-        ) {
+        for (let index = startingIndex; index < pageItemLimit; index += 1) {
           if (state.stopped) {
             break;
           }
 
-          const freshCards =
-            getDownloadableCards();
+          const freshCards = getDownloadableCards();
 
-          const card =
-            freshCards[index];
+          const card = freshCards[index];
 
           if (!card) {
             console.error(
               `Item ${index + 1} disappeared after a React rerender.`,
             );
 
-            state.currentItem =
-              index + 1;
+            state.currentItem = index + 1;
 
             saveState();
             continue;
@@ -1560,26 +1306,17 @@
           state.currentItem = index;
           saveState();
 
-          const item =
-            getCardInfo(
-              card,
-              index,
-            );
+          const item = getCardInfo(card, index);
 
-          const succeeded =
-            await processItem(item);
+          const succeeded = await processItem(item);
 
-          if (
-            !succeeded &&
-            !SETTINGS.skipFailedItems
-          ) {
+          if (!succeeded && !SETTINGS.skipFailedItems) {
             throw new Error(
               `"${item.name}" failed and skipFailedItems is false.`,
             );
           }
 
-          state.currentItem =
-            index + 1;
+          state.currentItem = index + 1;
 
           saveState();
         }
@@ -1591,23 +1328,17 @@
         state.currentItem = 0;
         saveState();
 
-        if (
-          state.currentPage >= SETTINGS.endPage ||
-          !hasNextPage()
-        ) {
+        if (state.currentPage >= SETTINGS.endPage || !hasNextPage()) {
           break;
         }
 
-        const moved =
-          await goToNextPage();
+        const moved = await goToNextPage();
 
         if (!moved) {
           break;
         }
 
-        state.currentPage =
-          getCurrentPage() ||
-          state.currentPage + 1;
+        state.currentPage = getCurrentPage() || state.currentPage + 1;
 
         state.currentItem = 0;
 
@@ -1615,26 +1346,18 @@
       }
 
       if (state.stopped) {
-        console.warn(
-          "Downloader stopped. Progress was saved.",
-        );
+        console.warn("Downloader stopped. Progress was saved.");
 
         return;
       }
 
-      console.info(
-        "Mixamo download pass finished.",
-        {
-          completedFiles:
-            state.completedIds.size,
+      console.info("Mixamo download pass finished.", {
+        completedFiles: state.completedIds.size,
 
-          failedFiles:
-            state.failures.length,
+        failedFiles: state.failures.length,
 
-          failures:
-            state.failures,
-        },
-      );
+        failures: state.failures,
+      });
 
       alert(
         [
@@ -1649,10 +1372,7 @@
     } catch (error) {
       saveState();
 
-      console.error(
-        "Mixamo downloader stopped with an error:",
-        error,
-      );
+      console.error("Mixamo downloader stopped with an error:", error);
     } finally {
       state.running = false;
     }
