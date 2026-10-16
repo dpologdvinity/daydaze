@@ -16,6 +16,34 @@ const SHOTS: {
 }[] = [
   { name: "club-pulse", query: "room=pulse" },
   {
+    name: "apartment",
+    query: "room=apartment",
+    act: async (page) => {
+      for (const [piece, cell] of [
+        ["Velvet sofa", "Empty cell 2, 2"],
+        ["Scalloped rug", "Empty cell 2, 4"],
+        ["Floor lamp", "Empty cell 1, 1"],
+      ]) {
+        await page.getByRole("button", { name: piece }).click();
+        await page.getByRole("button", { name: cell }).click();
+      }
+    },
+  },
+  {
+    name: "jail",
+    query: "room=jail",
+    act: async (page) => {
+      await page.evaluate(() => {
+        localStorage.setItem(
+          "daydaze-save-v1",
+          JSON.stringify({ jail: { endsAt: Date.now() + 180_000 } }),
+        );
+      });
+      await page.reload();
+      await expect(page.getByRole("timer")).toContainText("Time left");
+    },
+  },
+  {
     name: "club-pulse-mobile",
     query: "room=pulse",
     viewport: { width: 390, height: 844 },

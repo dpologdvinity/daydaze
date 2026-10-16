@@ -428,7 +428,7 @@ test("jail: the sentence counts down, cards shorten it, and bail needs coins", a
   await expect(clock).toContainText("Time left: 1:");
   await page.getByRole("button", { name: /Play cards/ }).click();
   await expect(clock).toContainText(/Time left: 1:[0-3]\d/);
-  await page.getByRole("button", { name: /Pay bail/ }).click();
+  await page.getByRole("button", { name: /Use the phone/ }).click();
   await expect(page.getByText(/you have 0/)).toBeVisible();
   await page.reload();
   await expect(page.getByRole("timer")).toContainText("Time left");
