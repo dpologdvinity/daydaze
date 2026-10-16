@@ -40,7 +40,7 @@ function seat(
   };
 }
 
-// the food rooms share one fit-out: three cafe tables with a stool each side
+// the food rooms share one fit-out: three cafe tables with a chair each side
 const FOOD_TABLES: Vec2[] = [
   [-2.5, 3.4],
   [0, 4.3],
@@ -55,7 +55,7 @@ const foodSeats = FOOD_ROOMS.flatMap((room) =>
         `${room}-table${t}-${side < 0 ? "l" : "r"}`,
         room,
         [x + side * 0.75, z],
-        0.62,
+        0.5,
         [x, z],
       ),
     ),

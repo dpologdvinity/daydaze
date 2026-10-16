@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 import * as THREE from "three";
 import { Batch } from "../shared/batch.ts";
+import { PropSet } from "../shared/Prop.tsx";
 import { GOLD, hdr, LACQUER } from "../shared/materials.ts";
 import {
   BACK_Z,
@@ -15,10 +16,6 @@ const WALL = new THREE.MeshStandardMaterial({
   color: "#2a0b3e",
   roughness: 0.5,
   metalness: 0.2,
-});
-const BANQUETTE = new THREE.MeshStandardMaterial({
-  color: "#3a0f3a",
-  roughness: 0.7,
 });
 const DARK = new THREE.MeshStandardMaterial({
   color: "#0b0310",
@@ -112,14 +109,9 @@ function buildSet() {
     ),
   );
 
-  // two banquettes along the right wall, each with a glowing pink table
+  // two banquettes along the right wall (models, see Set), each with a
+  // glowing pink table
   for (const z of [-2.4, 1.8]) {
-    b.add(new THREE.BoxGeometry(0.8, 0.6, 2.4), BANQUETTE, {
-      position: [WALL_X - 0.45, 0.3, z],
-    });
-    b.add(new THREE.BoxGeometry(0.25, 0.9, 2.4), BANQUETTE, {
-      position: [WALL_X - 0.1, 0.95, z],
-    });
     b.add(new THREE.CylinderGeometry(0.35, 0.35, 0.04, 24), glow("#ff4fb3"), {
       position: [WALL_X - 1.4, 0.82, z],
     });
@@ -160,17 +152,7 @@ function buildSet() {
     );
   });
 
-  // the DJ booth: a lacquer counter, a cyan edge and two decks
-  b.add(new THREE.BoxGeometry(3.2, 1.1, 0.9), LACQUER, {
-    position: [DJ_BOOTH.x, 0.55, DJ_BOOTH.z + 0.1],
-  });
-  b.add(new THREE.BoxGeometry(3.3, 0.04, 0.95), glow("#4fe3ff"), {
-    position: [DJ_BOOTH.x, 1.12, DJ_BOOTH.z + 0.1],
-  });
-  for (const x of [-0.75, 0.75])
-    b.add(new THREE.CylinderGeometry(0.38, 0.38, 0.05, 28), DARK, {
-      position: [DJ_BOOTH.x + x, 1.17, DJ_BOOTH.z + 0.15],
-    });
+  // the DJ booth is a model (see Set)
 
   // speaker stacks flank the DJ booth, woofers facing the floor
   for (const x of [-5.2, 5.2]) {
@@ -213,5 +195,27 @@ function buildSet() {
 /** Pulse's static dressing, built once and drawn as a few merged meshes. */
 export function PulseSet() {
   const set = useMemo(buildSet, []);
-  return <primitive object={set} />;
+  return (
+    <>
+      <primitive object={set} />
+      <Suspense fallback={null}>
+        <PropSet
+          model="banquette"
+          width={2.4}
+          depth={0.9}
+          height={1.2}
+          at={[-2.4, 1.8].map(
+            (z) => [WALL_X - 0.45, 0, z, -Math.PI / 2] as const,
+          )}
+        />
+        <PropSet
+          model="dj-booth"
+          width={3.2}
+          depth={0.9}
+          height={1.25}
+          at={[[DJ_BOOTH.x, 0, DJ_BOOTH.z + 0.1, 0]]}
+        />
+      </Suspense>
+    </>
+  );
 }

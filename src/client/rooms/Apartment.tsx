@@ -1,5 +1,11 @@
 import { ROOMS } from "../../game/rooms.ts";
-import { footprint, type Furniture } from "../../game/home/decor.ts";
+import {
+  FURNITURE_CATALOG,
+  footprint,
+  type Furniture,
+} from "../../game/home/decor.ts";
+import { Suspense } from "react";
+import { Prop } from "./shared/Prop.tsx";
 import type { HomeSave } from "../../game/home/home.ts";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
@@ -82,16 +88,42 @@ export function Apartment({
   );
 }
 
+// the tallest each generated model may stand, metres
+const MODEL_HEIGHT = {
+  sofa: 0.95,
+  bed: 1.2,
+  table: 0.55,
+  lamp: 1.7,
+  rug: 0.15,
+  plant: 1.4,
+  bookshelf: 1.1,
+  tv: 1.1,
+} as const;
+
 function Piece({ item }: { item: Furniture }) {
   const size = footprint(item.id, item.rotation);
   const x = ORIGIN.x + item.cell[0] + size.w / 2;
   const z = ORIGIN.z + item.cell[1] + size.d / 2;
   const height = HEIGHT[item.id];
-  return (
+  const { width, depth } = FURNITURE_CATALOG[item.id];
+  // the box shows while the model loads
+  const box = (
     <mesh position={[x, height / 2, z]}>
       <boxGeometry args={[size.w * 0.92, height, size.d * 0.92]} />
       <meshStandardMaterial color={COLOR[item.id]} />
     </mesh>
+  );
+  return (
+    <Suspense fallback={box}>
+      <Prop
+        model={item.id}
+        width={width * 0.92}
+        depth={depth * 0.92}
+        height={MODEL_HEIGHT[item.id]}
+        yaw={(item.rotation * Math.PI) / 2}
+        position={[x, 0, z]}
+      />
+    </Suspense>
   );
 }
 

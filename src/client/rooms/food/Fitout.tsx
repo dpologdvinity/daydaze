@@ -1,13 +1,14 @@
-import { useEffect, useMemo } from "react";
+import { Suspense, useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { makeCanvas } from "../../canvas.ts";
 import { Batch } from "../shared/batch.ts";
+import { PropSet } from "../shared/Prop.tsx";
 import type { FoodPalette } from "./FoodRoom.tsx";
 
 /**
  * The fit-out every food room shares: checker floor, tiled backsplash,
  * hanging menu boards, a glass display case with trays, the register, cafe
- * tables with stools, pendant lamps and a street window. Solid pieces carry
+ * tables with chairs, pendant lamps and a street window. Solid pieces carry
  * vertex colours and lit pieces glow, so the whole fit-out is four draw calls.
  */
 
@@ -191,10 +192,6 @@ export function Fitout({ palette }: { palette: FoodPalette }) {
       put(s, BOX, chrome, [x, 0.86, z], [0.14, 0.1, 0.08]);
       put(s, CYL, accent, [x + 0.18, 0.88, z + 0.05], [0.06, 0.16, 0.06]);
       put(s, CYL, light, [x + 0.28, 0.88, z - 0.04], [0.06, 0.16, 0.06]);
-      for (const side of [-1, 1]) {
-        put(s, CYL, chrome, [x + side * 0.75, 0.28, z], [0.05, 0.56, 0.05]);
-        put(s, CYL, accent, [x + side * 0.75, 0.58, z], [0.42, 0.08, 0.42]);
-      }
     }
 
     // pendant lamps over the side tables; one over the middle table would
@@ -256,5 +253,25 @@ export function Fitout({ palette }: { palette: FoodPalette }) {
     },
     [built],
   );
-  return <primitive object={built.group} />;
+  return (
+    <>
+      <primitive object={built.group} />
+      <Suspense fallback={null}>
+        <PropSet
+          model="cafe-chair"
+          width={0.5}
+          depth={0.5}
+          height={0.9}
+          at={CHAIRS}
+        />
+      </Suspense>
+    </>
+  );
 }
+
+// a chair each side of every table, facing it (see foodSeats in seats.ts)
+const CHAIRS = TABLES.flatMap(([x, z]) =>
+  [-1, 1].map(
+    (side) => [x + side * 0.75, 0, z, (-side * Math.PI) / 2] as const,
+  ),
+);

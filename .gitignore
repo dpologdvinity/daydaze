@@ -20,3 +20,4 @@ art/doll/blender/.cache
 __pycache__/
 art/textures/.cache
 mixamo/
+art/props/.cache/

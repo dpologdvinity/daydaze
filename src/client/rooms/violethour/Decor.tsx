@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import { Prop } from "../shared/Prop.tsx";
 import * as THREE from "three";
 import { canvasTex, GOLD, LACQUER, neonMat } from "../shared/materials.ts";
 import { MARQUEE, NeonText, SCRIPT } from "../shared/Neon.tsx";
@@ -16,10 +18,6 @@ const WALL = new THREE.MeshStandardMaterial({
   color: "#43175a",
   roughness: 0.6,
   metalness: 0.1,
-});
-const VELVET = new THREE.MeshStandardMaterial({
-  color: "#6b1d5c",
-  roughness: 0.8,
 });
 const FELT = new THREE.MeshStandardMaterial({
   color: "#0f5a4e",
@@ -250,12 +248,24 @@ export function PoolTable() {
 export function RegularsCorner() {
   return (
     <>
-      <mesh position={[-WALL_X + 0.45, 0.25, 3.6]} material={VELVET}>
-        <boxGeometry args={[0.9, 0.5, 3]} />
-      </mesh>
-      <mesh position={[-WALL_X + 0.2, 0.75, 3.6]} material={VELVET}>
-        <boxGeometry args={[0.3, 0.9, 3]} />
-      </mesh>
+      <Suspense fallback={null}>
+        {/* the regulars' sofa on the left wall, and a jukebox by the bar */}
+        <Prop
+          model="banquette"
+          width={3}
+          depth={0.9}
+          height={1.2}
+          yaw={Math.PI / 2}
+          position={[-WALL_X + 0.5, 0, 3.6]}
+        />
+        <Prop
+          model="jukebox"
+          width={0.9}
+          depth={0.6}
+          height={1.6}
+          position={[2.4, 0, BACK_Z + 0.45]}
+        />
+      </Suspense>
       <mesh position={[CORNER_TABLE.x, 0.36, CORNER_TABLE.z]} material={WOOD}>
         <cylinderGeometry args={[0.45, 0.45, 0.72, 24]} />
       </mesh>

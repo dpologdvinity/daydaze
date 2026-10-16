@@ -1,9 +1,10 @@
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { Suspense, useLayoutEffect, useMemo, useRef } from "react";
+import { PropSet } from "../shared/Prop.tsx";
 import * as THREE from "three";
 import { lathe } from "../../avatar/dollGeometry.ts";
 import { Batch } from "../shared/batch.ts";
 import { canvasTex, GOLD, gradientTex, LACQUER } from "../shared/materials.ts";
-import { MIRROR, NEON_AMBER, NEON_PINK, VELVET } from "./materials.ts";
+import { MIRROR, NEON_AMBER, NEON_PINK } from "./materials.ts";
 import { Cocktails } from "./Props.tsx";
 
 const CX = -0.8;
@@ -152,6 +153,11 @@ function Bottles() {
   );
 }
 
+// bar stools along the bar (see the velvet-stool seats in seats.ts)
+const STOOLS = [-3.2, -2.3, -0.5, 0.5, 1.4].map(
+  (x) => [x, 0, -4.05, Math.PI] as const,
+);
+
 export function Bar() {
   const fluted = useMemo(
     () =>
@@ -216,24 +222,21 @@ export function Bar() {
     batch.add(new THREE.BoxGeometry(LEN + 0.3, 0.06, 0.12), GOLD, {
       position: [CX, 3.25, -5.9],
     });
-    // bar stools: brass pole and base, velvet seat
-    for (const x of [-3.2, -2.3, -0.5, 0.5, 1.4]) {
-      batch.add(new THREE.CylinderGeometry(0.025, 0.025, 0.72, 10), GOLD, {
-        position: [x, 0.36, -4.05],
-      });
-      batch.add(new THREE.CylinderGeometry(0.18, 0.2, 0.03, 20), GOLD, {
-        position: [x, 0.02, -4.05],
-      });
-      batch.add(new THREE.CylinderGeometry(0.21, 0.19, 0.09, 24), VELVET, {
-        position: [x, 0.76, -4.05],
-      });
-    }
     return batch.build();
   }, [fluted]);
 
   return (
     <group>
       <primitive object={parts} />
+      <Suspense fallback={null}>
+        <PropSet
+          model="bar-stool"
+          width={0.45}
+          depth={0.45}
+          height={0.82}
+          at={STOOLS}
+        />
+      </Suspense>
       <Bottles />
       <Cocktails
         items={[
