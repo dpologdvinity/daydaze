@@ -8,7 +8,8 @@ import { useReducedMotion } from "../motion.ts";
 import { driving } from "./driving.ts";
 import type { Player } from "./PlayerController.tsx";
 
-export type View = "room" | "full" | "face";
+/** `detail` is only reachable with `?view=detail`, for close-up screenshots. */
+export type View = "room" | "full" | "face" | "detail";
 
 export const VIEWS: readonly { id: View; label: string }[] = [
   { id: "room", label: "Room" },
@@ -61,6 +62,28 @@ const ROOM_SHOTS: Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }> =
       look: new THREE.Vector3(0, 0, 0),
     },
   };
+
+// Close-up on a prop worth a look; rooms without one fall back to the wide shot.
+const DETAIL_SHOTS: Partial<
+  Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }>
+> = {
+  "velvet-room": {
+    eye: new THREE.Vector3(-3.6, 2.4, -2.4),
+    look: new THREE.Vector3(-0.8, 1.9, -5.8),
+  },
+  pulse: {
+    eye: new THREE.Vector3(2.5, 2.2, 1),
+    look: new THREE.Vector3(0, 2.4, -6),
+  },
+  "violet-hour": {
+    eye: new THREE.Vector3(0, 2, 2),
+    look: new THREE.Vector3(0, 2, -6),
+  },
+  plaza: {
+    eye: new THREE.Vector3(2.6, 1.8, -0.4),
+    look: new THREE.Vector3(0.8, 2.2, -3.6),
+  },
+};
 
 // The city's wide shot is high above it, so it needs far more orbit range.
 const MAX_DISTANCE: Record<RoomId, number> = {
@@ -129,9 +152,11 @@ export function CameraRig({
     c.target.add(moved);
     const f = fly.current;
     if (f) {
-      if (view === "room") {
-        goalPos.copy(ROOM_SHOTS[room].eye);
-        goalTarget.copy(ROOM_SHOTS[room].look);
+      if (view === "room" || view === "detail") {
+        const shot =
+          (view === "detail" && DETAIL_SHOTS[room]) || ROOM_SHOTS[room];
+        goalPos.copy(shot.eye);
+        goalTarget.copy(shot.look);
       } else {
         const v = CLOSE[view];
         goalPos.copy(v.off).applyAxisAngle(Y, player.yaw).add(player.pos);

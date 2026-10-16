@@ -2,64 +2,62 @@ import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useReducedMotion } from "../../motion.ts";
-import { canvasTex, GOLD, neonMat } from "../shared/materials.ts";
+import { Batch } from "../shared/batch.ts";
+import { canvasTex, GOLD } from "../shared/materials.ts";
+import {
+  NEON_AMBER,
+  NEON_WARM,
+  PLUM_VELVET,
+  ROSE_VELVET,
+} from "./materials.ts";
+import { inFrame } from "./place.ts";
 
 export function LionCrest(props: { position: [number, number, number] }) {
-  const tex = useMemo(
-    () =>
-      canvasTex(512, 512, (ctx) => {
-        const g = ctx.createRadialGradient(200, 180, 20, 256, 256, 260);
-        g.addColorStop(0, "#fff1b8");
-        g.addColorStop(0.5, "#e7a93f");
-        g.addColorStop(1, "#7a4a12");
-        ctx.fillStyle = g;
-        ctx.fillRect(0, 0, 512, 512);
-        ctx.fillStyle = "#3a1030";
-        ctx.font =
-          "320px 'DejaVu Sans', 'Segoe UI Symbol', 'Apple Symbols', serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("♌", 256, 270);
-      }),
-    [],
-  );
-  const rays = useMemo(() => Array.from({ length: 20 }, (_, i) => i), []);
+  const parts = useMemo(() => {
+    const tex = canvasTex(512, 512, (ctx) => {
+      const g = ctx.createRadialGradient(200, 180, 20, 256, 256, 260);
+      g.addColorStop(0, "#fff1b8");
+      g.addColorStop(0.5, "#e7a93f");
+      g.addColorStop(1, "#7a4a12");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, 512, 512);
+      ctx.fillStyle = "#3a1030";
+      ctx.font =
+        "320px 'DejaVu Sans', 'Segoe UI Symbol', 'Apple Symbols', serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("♌", 256, 270);
+    });
+    const disc = new THREE.MeshStandardMaterial({
+      color: "#ffffff",
+      metalness: 0.9,
+      roughness: 0.3,
+      map: tex,
+    });
+    const batch = new Batch();
+    // sunburst rays, gold ring and neon halo
+    for (let i = 0; i < 20; i++) {
+      const a = (i / 20) * Math.PI * 2;
+      const L = i % 2 ? 0.55 : 0.85;
+      batch.add(new THREE.BoxGeometry(L, 0.035, 0.02), GOLD, {
+        position: [
+          Math.cos(a) * (0.55 + L / 2),
+          Math.sin(a) * (0.55 + L / 2),
+          -0.02,
+        ],
+        rotation: [0, 0, a],
+      });
+    }
+    batch.add(new THREE.TorusGeometry(0.5, 0.045, 12, 64), GOLD);
+    batch.add(new THREE.TorusGeometry(0.6, 0.012, 8, 64), NEON_AMBER);
+    batch.add(new THREE.CylinderGeometry(0.46, 0.46, 0.05, 48), disc, {
+      rotation: [Math.PI / 2, 0, 0],
+    });
+    return batch.build();
+  }, []);
   return (
     <group {...props}>
-      {rays.map((i) => {
-        const a = (i / 20) * Math.PI * 2;
-        const L = i % 2 ? 0.55 : 0.85;
-        return (
-          <mesh
-            key={i}
-            position={[
-              Math.cos(a) * (0.55 + L / 2),
-              Math.sin(a) * (0.55 + L / 2),
-              -0.02,
-            ]}
-            rotation-z={a}
-            material={GOLD}
-          >
-            <boxGeometry args={[L, 0.035, 0.02]} />
-          </mesh>
-        );
-      })}
-      <mesh rotation-x={Math.PI / 2}>
-        <cylinderGeometry args={[0.46, 0.46, 0.05, 48]} />
-        <meshStandardMaterial
-          attach="material"
-          color="#ffffff"
-          metalness={0.9}
-          roughness={0.3}
-          map={tex}
-        />
-      </mesh>
-      <mesh material={GOLD}>
-        <torusGeometry args={[0.5, 0.045, 12, 64]} />
-      </mesh>
-      <mesh material={neonMat("#ffb02e", 3.5)}>
-        <torusGeometry args={[0.6, 0.012, 8, 64]} />
-      </mesh>
+      <primitive object={parts} />
     </group>
   );
 }
@@ -71,6 +69,7 @@ const TIERS = [
 ];
 const CRYSTALS = TIERS.reduce((a, t) => a + t.n, 0);
 
+// Brass chandelier: three tiers of crystals, one instanced draw.
 export function Chandelier({
   position,
 }: {
@@ -97,6 +96,22 @@ export function Chandelier({
       }
     m.instanceMatrix.needsUpdate = true;
   }, []);
+  const parts = useMemo(() => {
+    const batch = new Batch();
+    batch.add(new THREE.CylinderGeometry(0.012, 0.012, 1.1, 6), GOLD, {
+      position: [0, 0.6, 0],
+    });
+    for (const t of TIERS) {
+      batch.add(new THREE.TorusGeometry(t.r, 0.018, 8, 48), GOLD, {
+        position: [0, t.y, 0],
+        rotation: [Math.PI / 2, 0, 0],
+      });
+      batch.add(new THREE.TorusGeometry(t.r * 0.92, 0.01, 6, 48), NEON_WARM, {
+        position: [0, t.y + 0.06, 0],
+      });
+    }
+    return batch.build();
+  }, []);
   const g = useRef<THREE.Group>(null);
   const calm = useReducedMotion();
   useFrame(({ clock }) => {
@@ -105,28 +120,7 @@ export function Chandelier({
   });
   return (
     <group position={position} ref={g}>
-      <mesh position-y={0.6} material={GOLD}>
-        <cylinderGeometry args={[0.012, 0.012, 1.1, 6]} />
-      </mesh>
-      {TIERS.map((t) => (
-        <mesh
-          key={t.r}
-          position-y={t.y}
-          rotation-x={Math.PI / 2}
-          material={GOLD}
-        >
-          <torusGeometry args={[t.r, 0.018, 8, 48]} />
-        </mesh>
-      ))}
-      {TIERS.map((t) => (
-        <mesh
-          key={`b${t.r}`}
-          position-y={t.y + 0.06}
-          material={neonMat("#ffd6a0", 3)}
-        >
-          <torusGeometry args={[t.r * 0.92, 0.01, 6, 48]} />
-        </mesh>
-      ))}
+      <primitive object={parts} />
       <instancedMesh ref={ref} args={[undefined, undefined, CRYSTALS]}>
         <octahedronGeometry args={[1, 0]} />
         <meshStandardMaterial
@@ -143,42 +137,45 @@ export function Chandelier({
   );
 }
 
-export function Drape({
-  position,
-  color = "#2a0a4a",
+const CURTAIN = (() => {
+  // a velvet curtain gathered at the tie-back, falling into folds
+  const geo = new THREE.PlaneGeometry(1.5, 4.4, 60, 6);
+  const p = geo.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i),
+      y = p.getY(i);
+    const gather = 1 - 0.35 * Math.exp(-Math.pow((y + 0.6) / 0.5, 2));
+    p.setX(i, x * gather);
+    p.setZ(i, Math.sin(x * 15) * 0.07 + Math.sin(x * 6.5 + 1) * 0.04);
+  }
+  geo.computeVertexNormals();
+  return geo;
+})();
+
+/** Velvet curtains on the west wall. All share one fabric batch per colour. */
+export function Drapes({
+  items,
 }: {
-  position: [number, number, number];
-  color?: string;
+  items: readonly {
+    position: [number, number, number];
+    fabric: THREE.Material;
+  }[];
 }) {
-  const geo = useMemo(() => {
-    const g = new THREE.PlaneGeometry(1.5, 4.4, 60, 6);
-    const p = g.attributes.position;
-    for (let i = 0; i < p.count; i++) {
-      const x = p.getX(i),
-        y = p.getY(i);
-      // gathered at the tie-back, falling into folds
-      const gather = 1 - 0.35 * Math.exp(-Math.pow((y + 0.6) / 0.5, 2));
-      p.setX(i, x * gather);
-      p.setZ(i, Math.sin(x * 15) * 0.07 + Math.sin(x * 6.5 + 1) * 0.04);
+  const parts = useMemo(() => {
+    const batch = new Batch();
+    for (const { position, fabric } of items) {
+      const frame = inFrame(batch, {
+        x: position[0],
+        y: position[1],
+        z: position[2],
+        ry: Math.PI / 2,
+      });
+      frame.add(CURTAIN, fabric, { position: [0, 2.2, 0] });
+      frame.add(new THREE.TorusGeometry(0.55, 0.02, 8, 24, Math.PI), GOLD, {
+        position: [0, 1.6, 0.1],
+      });
     }
-    g.computeVertexNormals();
-    return g;
-  }, []);
-  return (
-    <group position={position} rotation-y={Math.PI / 2}>
-      <mesh geometry={geo} position-y={2.2}>
-        <meshPhysicalMaterial
-          color={color}
-          sheen={1}
-          sheenColor="#c77dff"
-          sheenRoughness={0.3}
-          roughness={0.7}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      <mesh position={[0, 1.6, 0.1]} material={GOLD}>
-        <torusGeometry args={[0.55, 0.02, 8, 24, Math.PI]} />
-      </mesh>
-    </group>
-  );
+    return batch.build();
+  }, [items]);
+  return <primitive object={parts} />;
 }

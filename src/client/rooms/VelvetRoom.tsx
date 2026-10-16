@@ -8,19 +8,24 @@ import { ROOMS } from "../../game/rooms.ts";
 import { Couple } from "../avatar/Couple.tsx";
 import { Doll } from "../avatar/Doll.tsx";
 import { useReducedMotion } from "../motion.ts";
-import { Bar } from "./velvet/Bar.tsx";
-import { Booth } from "./velvet/Booth.tsx";
-import { DanceFloor, DiscoBall } from "./velvet/DanceFloor.tsx";
-import { Chandelier, Drape, LionCrest } from "./velvet/Decor.tsx";
-import { BOOTH, DANCE, ROOM } from "./velvet/layout.ts";
-import { Walls } from "./velvet/Walls.tsx";
+import { useQuality } from "../world/quality.ts";
 import { Beams, type Beam } from "./shared/Beams.tsx";
+import { CrowdFigure } from "./shared/CrowdFigure.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { GamePad } from "./shared/GamePad.tsx";
 import { DECO, RingNeon, Neon, NeonText, SCRIPT } from "./shared/Neon.tsx";
-import { Palm } from "./shared/Palm.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { Sparkles } from "./shared/Sparkles.tsx";
+import { Art } from "./velvet/Art.tsx";
+import { Bar } from "./velvet/Bar.tsx";
+import { Booth } from "./velvet/Booth.tsx";
+import { DanceFloor, DiscoBall } from "./velvet/DanceFloor.tsx";
+import { Chandelier, Drapes, LionCrest } from "./velvet/Decor.tsx";
+import { BOOTH, DANCE, ROOM } from "./velvet/layout.ts";
+import { PLUM_VELVET, ROSE_VELVET } from "./velvet/materials.ts";
+import { Palms } from "./velvet/Palms.tsx";
+import { Plants } from "./velvet/Plants.tsx";
+import { Walls } from "./velvet/Walls.tsx";
 
 const BEAMS: readonly Beam[] = [
   { position: [-5.2, 4.4, 4.5], color: "#ff2f9a", phase: 0 },
@@ -28,6 +33,22 @@ const BEAMS: readonly Beam[] = [
   { position: [-5.2, 4.4, -2.5], color: "#ffb02e", phase: 4 },
 ];
 
+const DRAPES = [
+  {
+    position: [-5.85, 0, -3.4] as [number, number, number],
+    fabric: PLUM_VELVET,
+  },
+  {
+    position: [-5.85, 0, 0.4] as [number, number, number],
+    fabric: PLUM_VELVET,
+  },
+  {
+    position: [-5.85, 0, 3.6] as [number, number, number],
+    fabric: ROSE_VELVET,
+  },
+];
+
+// Four lights in total: one fill, three coloured points.
 function Lights() {
   const dance = useRef<THREE.PointLight>(null);
   const calm = useReducedMotion();
@@ -37,13 +58,7 @@ function Lights() {
   });
   return (
     <>
-      <ambientLight color="#4a2468" intensity={0.25} />
-      <hemisphereLight args={["#6b3cff", "#ff2f9a", 0.25]} />
-      <directionalLight
-        position={[-6, 3, -4]}
-        color="#3fe0d0"
-        intensity={0.5}
-      />
+      <hemisphereLight args={["#6b3cff", "#ff2f9a", 0.3]} />
       <pointLight
         position={[-0.8, 2.0, -4.0]}
         color="#ffa040"
@@ -62,12 +77,6 @@ function Lights() {
         color="#9b5cff"
         intensity={4}
         distance={5}
-      />
-      <pointLight
-        position={[-5.2, 2.6, -1.4]}
-        color="#c03cff"
-        intensity={8}
-        distance={6}
       />
       <Beams beams={BEAMS} aim={[DANCE.x, DANCE.z]} />
     </>
@@ -155,18 +164,18 @@ function PlazaDoor() {
   );
 }
 
+// Background regulars use the cheap crowd figure; a full doll is about 57 calls.
 function Regulars() {
   return (
     <>
       {NPC_LOOKS.map((n, i) => (
-        <Doll
+        <group
           key={i}
-          look={n.look}
-          mood={n.mood}
-          seed={i + 1}
           position={[n.at[0], n.at[1], n.at[2]]}
           rotation-y={n.rot}
-        />
+        >
+          <CrowdFigure look={n.look} dance seed={i + 1} />
+        </group>
       ))}
     </>
   );
@@ -180,6 +189,7 @@ export function VelvetRoom({
   onGame: (game: MinigameId) => void;
 }) {
   const calm = useReducedMotion();
+  const quality = useQuality();
   return (
     <>
       <color attach="background" args={["#07020b"]} />
@@ -194,6 +204,7 @@ export function VelvetRoom({
       />
       <PortalPads room={ROOMS["velvet-room"]} />
       <Walls />
+      <Art />
       <Bar />
       <LionCrest position={[-0.8, 3.75, -5.9]} />
       <NeonText
@@ -209,24 +220,33 @@ export function VelvetRoom({
         rotation={[0, -Math.PI / 2, 0]}
       />
       <PlazaDoor />
-      <Drape position={[-5.85, 0, -3.4]} />
-      <Drape position={[-5.85, 0, 0.4]} />
-      <Drape position={[-5.85, 0, 3.6]} color="#3a0a2e" />
+      <Drapes items={DRAPES} />
       <Booth />
+      <Plants />
       <DanceFloor />
-      <Couple
-        a={{ ...DEFAULT_LOOK, hairStyle: "buns", outfit: "mini" }}
-        b={{ ...DEFAULT_LOOK, skin: "#94603f", outfit: "fur" }}
-        centre={[DANCE.x, DANCE.z]}
-        facing={0}
-        move="slow-dance"
-      />
+      {quality === "low" ? (
+        // A full doll costs about 65 calls and 90k triangles: one dancer on
+        // the low tier, the slow-dance couple on the high tier.
+        <Doll
+          look={{ ...DEFAULT_LOOK, hairStyle: "buns", outfit: "mini" }}
+          mood="dance"
+          dance="body-roll"
+          seed={1}
+          position={[DANCE.x, 0, DANCE.z]}
+          rotation-y={0}
+        />
+      ) : (
+        <Couple
+          a={{ ...DEFAULT_LOOK, hairStyle: "buns", outfit: "mini" }}
+          b={{ ...DEFAULT_LOOK, skin: "#94603f", outfit: "fur" }}
+          centre={[DANCE.x, DANCE.z]}
+          facing={0}
+          move="slow-dance"
+        />
+      )}
       <DiscoBall />
       <Chandelier position={[2.2, 3.5, -1.0]} />
-      <Palm position={[-5.1, 0, -5.1]} />
-      <Palm position={[-5.0, 0, 3.0]} scale={0.85} />
-      <Palm position={[5.0, 0, 4.6]} scale={1.1} />
-      <Palm position={[5.1, 0, -4.9]} scale={0.9} />
+      <Palms />
       <Sparkles
         count={140}
         scale={[11, 3.8, 11]}

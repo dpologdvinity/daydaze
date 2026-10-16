@@ -1,9 +1,19 @@
 import { useMemo } from "react";
 import * as THREE from "three";
-import { canvasTex, GOLD, LACQUER, neonMat } from "../shared/materials.ts";
+import { Batch } from "../shared/batch.ts";
+import { canvasTex, GOLD, LACQUER } from "../shared/materials.ts";
+import { NEON_PINK, NEON_VIOLET } from "./materials.ts";
+import { inFrame, type Frame } from "./place.ts";
 import { ROOM } from "./layout.ts";
 
-// Tufted velvet walls with a lacquer wainscot and neon cornice.
+const H = 4.6;
+const WALLS: Frame[] = [
+  { z: -ROOM },
+  { x: -ROOM, ry: Math.PI / 2 },
+  { x: ROOM, ry: -Math.PI / 2 },
+];
+
+// Tufted velvet walls with a lacquer wainscot, gold pilasters and neon cornice.
 export function Walls() {
   const tufted = useMemo(
     () =>
@@ -49,12 +59,19 @@ export function Walls() {
           ctx.lineTo(128, 256);
           ctx.closePath();
           ctx.stroke();
+          // damask scroll and gold tuft buttons where the diamonds meet
+          ctx.strokeStyle = "rgba(246,196,106,0.22)";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.ellipse(128, 128, 34, 18, 0, 0, Math.PI * 2);
+          ctx.stroke();
           ctx.fillStyle = "#f6c46a";
           for (const [x, y] of [
             [0, 128],
             [128, 0],
             [256, 128],
             [128, 256],
+            [128, 128],
           ]) {
             ctx.beginPath();
             ctx.arc(x, y, 5, 0, Math.PI * 2);
@@ -65,47 +82,49 @@ export function Walls() {
       ),
     [],
   );
-  const velvet = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        map: tufted,
-        roughness: 0.75,
-        metalness: 0.05,
-      }),
-    [tufted],
-  );
-  const H = 4.6;
-  const wall = (pos: [number, number, number], ry: number) => (
-    <group position={pos} rotation-y={ry}>
-      <mesh position-y={H / 2} material={velvet}>
-        <planeGeometry args={[12, H]} />
-      </mesh>
-      {/* black lacquer wainscot with gold rail */}
-      <mesh position={[0, 0.5, 0.02]} material={LACQUER}>
-        <boxGeometry args={[12, 1, 0.04]} />
-      </mesh>
-      <mesh position={[0, 1.02, 0.05]} material={GOLD}>
-        <boxGeometry args={[12, 0.05, 0.06]} />
-      </mesh>
-      {[-5, -3, -1, 1, 3, 5].map((x) => (
-        <mesh key={x} position={[x, H / 2, 0.03]} material={GOLD}>
-          <boxGeometry args={[0.04, H, 0.04]} />
-        </mesh>
-      ))}
-      {/* cornice neon */}
-      <mesh position={[0, H - 0.25, 0.06]} material={neonMat("#b14dff", 3)}>
-        <boxGeometry args={[12, 0.025, 0.025]} />
-      </mesh>
-      <mesh position={[0, 0.06, 0.06]} material={neonMat("#ff2f9a", 2.2)}>
-        <boxGeometry args={[12, 0.02, 0.02]} />
-      </mesh>
-    </group>
-  );
-  return (
-    <>
-      {wall([0, 0, -ROOM], 0)}
-      {wall([-ROOM, 0, 0], Math.PI / 2)}
-      {wall([ROOM, 0, 0], -Math.PI / 2)}
-    </>
-  );
+
+  const parts = useMemo(() => {
+    const velvet = new THREE.MeshStandardMaterial({
+      map: tufted,
+      roughness: 0.75,
+      metalness: 0.05,
+    });
+    const batch = new Batch();
+    for (const frame of WALLS) {
+      const at = inFrame(batch, frame);
+      at.add(new THREE.PlaneGeometry(12, H), velvet, {
+        position: [0, H / 2, 0],
+      });
+      // black lacquer wainscot with a gold rail
+      at.add(new THREE.BoxGeometry(12, 1, 0.04), LACQUER, {
+        position: [0, 0.5, 0.02],
+      });
+      at.add(new THREE.BoxGeometry(12, 0.05, 0.06), GOLD, {
+        position: [0, 1.02, 0.05],
+      });
+      // fluted gold pilasters every two metres
+      for (let x = -5; x <= 5; x += 2) {
+        at.add(new THREE.BoxGeometry(0.1, H - 0.2, 0.06), GOLD, {
+          position: [x, H / 2, 0.03],
+        });
+        at.add(new THREE.BoxGeometry(0.16, 0.12, 0.12), GOLD, {
+          position: [x, H - 0.12, 0.06],
+        });
+      }
+      // crown moulding
+      at.add(new THREE.BoxGeometry(12, 0.12, 0.2), GOLD, {
+        position: [0, H - 0.06, 0.1],
+      });
+      // neon cornice and baseboard
+      at.add(new THREE.BoxGeometry(12, 0.025, 0.025), NEON_VIOLET, {
+        position: [0, H - 0.25, 0.06],
+      });
+      at.add(new THREE.BoxGeometry(12, 0.02, 0.02), NEON_PINK, {
+        position: [0, 0.06, 0.06],
+      });
+    }
+    return batch.build();
+  }, [tufted]);
+
+  return <primitive object={parts} />;
 }

@@ -105,32 +105,80 @@ export function DanceFloor() {
 
 // ---------------------------------------------------------------- fixtures
 
+const SPOTS = 14;
+
+/**
+ * A faceted mirror ball on a gold pole. Its spots orbit the dance floor as one
+ * instanced mesh; reduced motion freezes both the spin and the spots.
+ */
 export function DiscoBall() {
-  const ref = useRef<THREE.Group>(null);
+  const ball = useRef<THREE.Group>(null);
+  const spots = useRef<THREE.InstancedMesh>(null);
   const calm = useReducedMotion();
-  useFrame((_, dt) => {
-    if (ref.current && !calm) ref.current.rotation.y += dt * 0.35;
+  const { body, spot, spotMat } = useMemo(() => {
+    const body = new THREE.MeshStandardMaterial({
+      color: "#e8e0ff",
+      metalness: 0.9,
+      roughness: 0.18,
+      flatShading: true,
+      envMapIntensity: 2.4,
+      emissive: hdr("#ffe6ff", 2.5),
+      emissiveMap: DISCO_TEX,
+      toneMapped: false,
+    });
+    const spot = new THREE.CircleGeometry(0.2, 10);
+    spot.rotateX(-Math.PI / 2);
+    const spotMat = new THREE.MeshBasicMaterial({
+      color: hdr("#ffb8e6", 1.4),
+      transparent: true,
+      opacity: 0.45,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      toneMapped: false,
+    });
+    return { body, spot, spotMat };
+  }, []);
+  const faceted = useMemo(() => new THREE.IcosahedronGeometry(0.34, 2), []);
+  const o = useMemo(() => new THREE.Object3D(), []);
+
+  // Places every spot for time t; allocation-free so it can run each frame.
+  const place = (m: THREE.InstancedMesh, t: number) => {
+    for (let i = 0; i < SPOTS; i++) {
+      const a = t * 0.25 + (i * Math.PI * 2) / SPOTS;
+      const r = 3.6 + 0.9 * Math.sin(a * 1.7 + i);
+      o.position.set(
+        DANCE.x + Math.cos(a) * r,
+        0.02,
+        DANCE.z + Math.sin(a) * r * 0.8,
+      );
+      o.updateMatrix();
+      m.setMatrixAt(i, o.matrix);
+    }
+    m.instanceMatrix.needsUpdate = true;
+  };
+  useLayoutEffect(() => {
+    if (spots.current) place(spots.current, calm ? 1.2 : 0);
+  }, [calm]);
+  useFrame(({ clock }, dt) => {
+    if (calm) return;
+    if (ball.current) ball.current.rotation.y += dt * 0.35;
+    if (spots.current) place(spots.current, clock.elapsedTime);
   });
   return (
-    <group position={[DANCE.x, 3.55, DANCE.z]}>
-      <mesh position-y={0.6} material={GOLD}>
-        <cylinderGeometry args={[0.008, 0.008, 1.0, 6]} />
-      </mesh>
-      <group ref={ref}>
-        <mesh>
-          <sphereGeometry args={[0.34, 28, 18]} />
-          <meshStandardMaterial
-            color="#e8e0ff"
-            metalness={0.9}
-            roughness={0.18}
-            flatShading
-            envMapIntensity={2.4}
-            emissive={hdr("#ffe6ff", 2.5)}
-            emissiveMap={DISCO_TEX}
-            toneMapped={false}
-          />
+    <>
+      <group position={[DANCE.x, 3.55, DANCE.z]}>
+        <mesh position-y={0.6} material={GOLD}>
+          <cylinderGeometry args={[0.008, 0.008, 1.0, 6]} />
         </mesh>
+        <group ref={ball}>
+          <mesh geometry={faceted} material={body} />
+        </group>
       </group>
-    </group>
+      <instancedMesh
+        ref={spots}
+        args={[spot, spotMat, SPOTS]}
+        frustumCulled={false}
+      />
+    </>
   );
 }

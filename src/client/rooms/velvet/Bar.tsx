@@ -1,19 +1,18 @@
 import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { lathe } from "../../avatar/dollGeometry.ts";
-import { gradientMap } from "../../avatar/toon.ts";
-import { Cocktail } from "../shared/Cocktail.tsx";
-import {
-  canvasTex,
-  GOLD,
-  gradientTex,
-  hdr,
-  LACQUER,
-  neonMat,
-} from "../shared/materials.ts";
+import { Batch } from "../shared/batch.ts";
+import { canvasTex, GOLD, gradientTex, LACQUER } from "../shared/materials.ts";
+import { MIRROR, NEON_AMBER, NEON_PINK, VELVET } from "./materials.ts";
+import { Cocktails } from "./Props.tsx";
 
-const SHELF_GLOW = new THREE.MeshBasicMaterial({
-  color: hdr("#ff8a30", 1.5),
+const CX = -0.8;
+const LEN = 6.2;
+const Z = -4.7;
+const SHELVES = [1.4, 1.95, 2.5];
+
+const GLOW = new THREE.MeshBasicMaterial({
+  color: new THREE.Color("#ff8a30").multiplyScalar(1.5),
   map: gradientTex([
     [0, "#000"],
     [0.55, "#3a1a0a"],
@@ -22,71 +21,134 @@ const SHELF_GLOW = new THREE.MeshBasicMaterial({
   toneMapped: false,
 });
 
-const BOTTLE = lathe(
-  [
-    [0, 0],
-    [0.005, 0.038],
-    [0.2, 0.04],
-    [0.235, 0.022],
-    [0.27, 0.012],
-    [0.33, 0.012],
-    [0.335, 0],
-  ],
-  12,
-);
+const SHELF_GLASS = new THREE.MeshStandardMaterial({
+  color: "#ffd7f0",
+  transparent: true,
+  opacity: 0.35,
+  roughness: 0.05,
+});
 
-function Bottles({
-  x0,
-  x1,
-  y,
-  z,
-}: {
-  x0: number;
-  x1: number;
-  y: number[];
+// Three bottle silhouettes, so the back bar reads as a real collection.
+const SHAPES = [
+  lathe(
+    [
+      [0, 0],
+      [0.005, 0.038],
+      [0.2, 0.04],
+      [0.235, 0.022],
+      [0.27, 0.012],
+      [0.33, 0.012],
+      [0.335, 0],
+    ],
+    12,
+  ),
+  lathe(
+    [
+      [0, 0],
+      [0.005, 0.06],
+      [0.12, 0.07],
+      [0.2, 0.06],
+      [0.24, 0.02],
+      [0.25, 0],
+    ],
+    12,
+  ),
+  lathe(
+    [
+      [0, 0],
+      [0.005, 0.04],
+      [0.1, 0.05],
+      [0.14, 0.02],
+      [0.16, 0.02],
+      [0.3, 0.012],
+      [0.3, 0],
+    ],
+    12,
+  ),
+];
+
+const PALETTE = [
+  "#ffb02e",
+  "#ff2f6a",
+  "#3dff9a",
+  "#5ab0ff",
+  "#ffe6a0",
+  "#c04dff",
+  "#ff7a1f",
+];
+
+type Bottle = {
+  shape: number;
+  x: number;
+  y: number;
   z: number;
-}) {
-  const ref = useRef<THREE.InstancedMesh>(null);
-  const per = 16;
-  const count = per * y.length;
+  s: number;
+  c: THREE.Color;
+};
+
+// Bottles on every shelf: shape and colour cycle so neighbours differ.
+function bottlesFor(x0: number, x1: number, per = 16): Bottle[] {
+  const out: Bottle[] = [];
+  SHELVES.forEach((y, row) => {
+    for (let k = 0; k < per; k++) {
+      out.push({
+        shape: (k + row) % SHAPES.length,
+        x: x0 + ((x1 - x0) * (k + 0.5)) / per,
+        y,
+        z: -5.84 + (k % 2) * 0.06,
+        s: 0.75 + ((k * 7 + row * 3) % 5) * 0.09,
+        c: new THREE.Color(
+          PALETTE[(k * 3 + row * 2) % PALETTE.length],
+        ).multiplyScalar(1.35),
+      });
+    }
+  });
+  return out;
+}
+
+// Glowing bottles: one instanced mesh per silhouette.
+function Bottles() {
+  const bottles = useMemo(
+    () => bottlesFor(CX - LEN / 2 + 0.1, CX + LEN / 2 - 0.1),
+    [],
+  );
+  const refs = useRef<(THREE.InstancedMesh | null)[]>([]);
   useLayoutEffect(() => {
-    const m = ref.current;
-    if (!m) return;
     const o = new THREE.Object3D();
-    const palette = [
-      "#ffb02e",
-      "#ff2f6a",
-      "#3dff9a",
-      "#5ab0ff",
-      "#ffe6a0",
-      "#c04dff",
-      "#ff7a1f",
-    ];
-    const c = new THREE.Color();
-    let i = 0;
-    y.forEach((yy, row) => {
-      for (let k = 0; k < per; k++) {
-        const s = 0.75 + ((k * 7 + row * 3) % 5) * 0.09;
-        o.position.set(
-          x0 + ((x1 - x0) * (k + 0.5)) / per,
-          yy,
-          z + (k % 2) * 0.06,
-        );
-        o.scale.set(1, s, 1);
+    SHAPES.forEach((_, shape) => {
+      const m = refs.current[shape];
+      if (!m) return;
+      let i = 0;
+      for (const b of bottles) {
+        if (b.shape !== shape) continue;
+        o.position.set(b.x, b.y, b.z);
+        o.scale.set(1, b.s, 1);
         o.updateMatrix();
         m.setMatrixAt(i, o.matrix);
-        c.set(palette[(k * 3 + row * 2) % palette.length]).multiplyScalar(0.85);
-        m.setColorAt(i, c);
+        m.setColorAt(i, b.c);
         i++;
       }
+      m.instanceMatrix.needsUpdate = true;
+      if (m.instanceColor) m.instanceColor.needsUpdate = true;
     });
-    m.instanceMatrix.needsUpdate = true;
-    if (m.instanceColor) m.instanceColor.needsUpdate = true;
-  }, [x0, x1, y, z]);
+  }, [bottles]);
   return (
-    <instancedMesh ref={ref} args={[BOTTLE, undefined, count]}>
-      <meshBasicMaterial transparent opacity={0.92} />
-    </instancedMesh>
+    <>
+      {SHAPES.map((geo, shape) => {
+        const count = bottles.filter((b) => b.shape === shape).length;
+        return (
+          <instancedMesh
+            key={shape}
+            ref={(m) => {
+              refs.current[shape] = m;
+            }}
+            args={[geo, undefined, count]}
+          >
+            <meshBasicMaterial transparent opacity={0.92} toneMapped={false} />
+          </instancedMesh>
+        );
+      })}
+    </>
   );
 }
 
@@ -109,83 +171,76 @@ export function Bar() {
       ),
     [],
   );
-  const cx = -0.8,
-    len = 6.2,
-    z = -4.7;
+  const parts = useMemo(() => {
+    const counter = new THREE.MeshStandardMaterial({
+      map: fluted,
+      roughness: 0.45,
+      metalness: 0.2,
+    });
+    const batch = new Batch();
+    // counter, brass rail and neon strips along its front
+    batch.add(new THREE.BoxGeometry(LEN, 1, 0.62), counter, {
+      position: [CX, 0.5, Z],
+    });
+    batch.add(new THREE.BoxGeometry(LEN + 0.2, 0.06, 0.78), LACQUER, {
+      position: [CX, 1.03, Z],
+    });
+    batch.add(new THREE.BoxGeometry(LEN + 0.2, 0.03, 0.03), GOLD, {
+      position: [CX, 1.0, Z + 0.39],
+    });
+    batch.add(new THREE.CylinderGeometry(0.025, 0.025, LEN, 10), GOLD, {
+      position: [CX, 0.22, Z + 0.36],
+      rotation: [0, 0, Math.PI / 2],
+    });
+    batch.add(new THREE.BoxGeometry(LEN, 0.018, 0.018), NEON_AMBER, {
+      position: [CX, 0.96, Z + 0.36],
+    });
+    batch.add(new THREE.BoxGeometry(LEN, 0.02, 0.02), NEON_PINK, {
+      position: [CX, 0.08, Z + 0.33],
+    });
+    // back bar: mirror, glass shelves, glowing backlight, gold rails
+    batch.add(new THREE.PlaneGeometry(LEN, 2.1), MIRROR, {
+      position: [CX, 2.15, -5.96],
+    });
+    for (const y of SHELVES) {
+      batch.add(new THREE.BoxGeometry(LEN, 0.025, 0.3), SHELF_GLASS, {
+        position: [CX, y - 0.02, -5.8],
+      });
+      batch.add(new THREE.BoxGeometry(LEN, 0.02, 0.02), GOLD, {
+        position: [CX, y - 0.04, -5.66],
+      });
+      batch.add(new THREE.PlaneGeometry(LEN, 0.34), GLOW, {
+        position: [CX, y + 0.18, -5.94],
+      });
+    }
+    batch.add(new THREE.BoxGeometry(LEN + 0.3, 0.06, 0.12), GOLD, {
+      position: [CX, 3.25, -5.9],
+    });
+    // bar stools: brass pole and base, velvet seat
+    for (const x of [-3.2, -2.3, -0.5, 0.5, 1.4]) {
+      batch.add(new THREE.CylinderGeometry(0.025, 0.025, 0.72, 10), GOLD, {
+        position: [x, 0.36, -4.05],
+      });
+      batch.add(new THREE.CylinderGeometry(0.18, 0.2, 0.03, 20), GOLD, {
+        position: [x, 0.02, -4.05],
+      });
+      batch.add(new THREE.CylinderGeometry(0.21, 0.19, 0.09, 24), VELVET, {
+        position: [x, 0.76, -4.05],
+      });
+    }
+    return batch.build();
+  }, [fluted]);
+
   return (
     <group>
-      {/* counter */}
-      <mesh position={[cx, 0.5, z]}>
-        <boxGeometry args={[len, 1, 0.62]} />
-        <meshStandardMaterial map={fluted} roughness={0.45} metalness={0.2} />
-      </mesh>
-      <mesh position={[cx, 1.03, z]} material={LACQUER}>
-        <boxGeometry args={[len + 0.2, 0.06, 0.78]} />
-      </mesh>
-      <mesh position={[cx, 1.0, z + 0.39]} material={GOLD}>
-        <boxGeometry args={[len + 0.2, 0.03, 0.03]} />
-      </mesh>
-      <mesh position={[cx, 0.96, z + 0.36]} material={neonMat("#ffb02e", 4)}>
-        <boxGeometry args={[len, 0.018, 0.018]} />
-      </mesh>
-      <mesh position={[cx, 0.08, z + 0.33]} material={neonMat("#ff2f9a", 3)}>
-        <boxGeometry args={[len, 0.02, 0.02]} />
-      </mesh>
-      {/* back bar */}
-      <mesh position={[cx, 2.15, -5.96]}>
-        <planeGeometry args={[len, 2.1]} />
-        <meshStandardMaterial color="#2a1a30" metalness={1} roughness={0.12} />
-      </mesh>
-      {[1.4, 1.95, 2.5].map((y) => (
-        <group key={y}>
-          <mesh position={[cx, y - 0.02, -5.8]}>
-            <boxGeometry args={[len, 0.025, 0.3]} />
-            <meshStandardMaterial
-              color="#ffd7f0"
-              transparent
-              opacity={0.35}
-              roughness={0.05}
-            />
-          </mesh>
-          <mesh position={[cx, y - 0.04, -5.66]} material={GOLD}>
-            <boxGeometry args={[len, 0.02, 0.02]} />
-          </mesh>
-          <mesh position={[cx, y + 0.18, -5.94]} material={SHELF_GLOW}>
-            <planeGeometry args={[len, 0.34]} />
-          </mesh>
-        </group>
-      ))}
-      <Bottles
-        x0={cx - len / 2 + 0.1}
-        x1={cx + len / 2 - 0.1}
-        y={[1.39, 1.94, 2.49]}
-        z={-5.84}
+      <primitive object={parts} />
+      <Bottles />
+      <Cocktails
+        items={[
+          { position: [0.35, 1.06 + 0.0, -4.55], color: "#ff2f4a" },
+          { position: [-2.6, 1.06, -4.6], color: "#ffc21f", scale: 0.9 },
+        ]}
       />
-      <mesh position={[cx, 3.25, -5.9]} material={GOLD}>
-        <boxGeometry args={[len + 0.3, 0.06, 0.12]} />
-      </mesh>
-      {/* stools */}
-      {[-3.2, -2.3, -0.5, 0.5, 1.4].map((x) => (
-        <group key={x} position={[x, 0, -4.05]}>
-          <mesh position-y={0.36} material={GOLD}>
-            <cylinderGeometry args={[0.025, 0.025, 0.72, 10]} />
-          </mesh>
-          <mesh position-y={0.02} material={GOLD}>
-            <cylinderGeometry args={[0.18, 0.2, 0.03, 20]} />
-          </mesh>
-          <mesh position-y={0.76}>
-            <cylinderGeometry args={[0.21, 0.19, 0.09, 24]} />
-            <meshPhysicalMaterial
-              color="#7a0b4f"
-              sheen={1}
-              sheenColor="#ff7ad0"
-              roughness={0.6}
-            />
-          </mesh>
-        </group>
-      ))}
-      <Cocktail position={[0.35, 1.06, -4.55]} />
-      <Cocktail position={[-2.6, 1.06, -4.6]} scale={0.9} />
     </group>
   );
 }
