@@ -25,6 +25,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import doll_hair  # noqa: E402
 import doll_outfits  # noqa: E402
+import proxies  # noqa: E402
 
 MH = os.path.join(HERE, ".cache", "mh")
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
@@ -477,15 +478,17 @@ def add_lashes(ob, src):
     return np.array(new_src)
 
 
-def face_uvs(ob, src):
+def face_uvs(ob, src, head=None):
     """Front-of-face faces get a planar UV (x, z); everything else samples a
-    plain-skin corner. The bounds go to the client as `faceRect`."""
+    plain-skin corner. The bounds go to the client as `faceRect`. `head` is
+    each vertex's head-bone weight (default: from the base mesh via src)."""
     me = ob.data
     if not me.uv_layers:
         me.uv_layers.new(name="UVMap")
     uv = me.uv_layers.active.data
     co = np.array([v.co[:] for v in me.vertices])
-    head = W[src, BONES.index("head")]
+    if head is None:
+        head = W[src, BONES.index("head")]
     eye = (JB["lEye"] + JB["rEye"]) / 2
     half = 0.105
     cx, cz = 0.0, eye[2] - 0.035
@@ -774,6 +777,25 @@ def main():
     body["doll"] = json.dumps(meta)
     os.makedirs(OUT_DIR, exist_ok=True)
     export(rig, [body, eyes], "body")
+    # far LOD: MakeHuman's CC0 1.6k-vertex proxy, painted with the same face
+    lo = proxies.build(ctx, "Lod_body", "proxymeshes/female1605/female1605.proxy", material("skin"))
+    heads = np.zeros(len(lo.data.vertices))
+    hi = lo.vertex_groups["head"].index
+    for v in lo.data.vertices:
+        for g in v.groups:
+            if g.group == hi:
+                heads[v.index] = g.weight
+    face_uvs(lo, None, heads)
+    # same tuck keys, in the same order as the full body's
+    no_src = np.full(len(lo.data.vertices), -1)
+    for part in parts:
+        if part.name.startswith(("Outfit", "Swim", "Shoes")):
+            doll_outfits.tuck(ctx, lo, no_src, part, part.name.split("_", 1)[1])
+    bind(lo, rig)
+    for key in ("deleted", "src"):
+        if key in lo:
+            del lo[key]
+    export(rig, [lo], "body-lo")
     for ob in parts:
         kind, name = ob.name.split("_", 1)
         export(rig, [ob], f"{kind.lower()}-{name}")

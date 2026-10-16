@@ -42,6 +42,10 @@ import { paintFace, paintIris, paintLashes, readMarks } from "./faceCanvas.ts";
  */
 
 const MODELS = "/models/doll";
+// metres from the camera where a doll swaps to and from the low-poly body
+const LOD_FAR = 9;
+const LOD_NEAR = 8;
+const worldPos = new THREE.Vector3();
 const JOINTS = [
   "body",
   "head",
@@ -120,6 +124,7 @@ function setMorph(meshes: THREE.Mesh[], name: string, value: number) {
 
 function useBody(look: Look, eyeColor: Face["eyeColor"]) {
   const gltf = useGLTF(`${MODELS}/body.glb`);
+  const loGltf = useGLTF(`${MODELS}/body-lo.glb`);
   const invalidate = useThree((s) => s.invalidate);
   const body = useMemo(() => {
     const scene = cloneSkinned(gltf.scene);
@@ -171,8 +176,38 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
               ? cornea
               : skin;
     });
+    // the far LOD body: MakeHuman's 1.6k-vertex proxy on the same bones,
+    // shown instead of the full skin (and lashes) when the camera is far
+    const near: THREE.Mesh[] = [];
+    scene.traverse((o) => {
+      if (
+        o instanceof THREE.SkinnedMesh &&
+        (o.material === skin || o.material === lashes)
+      )
+        near.push(o);
+    });
+    const lods: THREE.SkinnedMesh[] = [];
+    loGltf.scene.traverse((o) => {
+      if (!(o instanceof THREE.SkinnedMesh) || lods.length) return;
+      const mesh = o.clone();
+      mesh.bind(
+        new THREE.Skeleton(
+          o.skeleton.bones.map((b) => bones.get(b.name) ?? b),
+          o.skeleton.boneInverses,
+        ),
+        o.bindMatrix,
+      );
+      mesh.morphTargetInfluences?.fill(0);
+      mesh.material = skin;
+      mesh.frustumCulled = false;
+      mesh.visible = false;
+      lods.push(mesh);
+      scene.add(mesh);
+    });
     return {
       scene,
+      near,
+      far: lods[0] ?? null,
       bones,
       rest,
       marks: readMarks(meta),
@@ -180,7 +215,7 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
       eye,
       materials: [skin, lashes, eye, cornea],
     };
-  }, [gltf]);
+  }, [gltf, loGltf]);
 
   useEffect(
     () => () => {
@@ -324,6 +359,7 @@ export function HumanDoll({
 }: Props) {
   // NPC looks carry no face, so their seed picks one
   const heightScale = bodyScales(shape).height;
+  const root = useRef<THREE.Group>(null);
   const face = useMemo(
     () => (look.face || !seed ? faceOf(look) : seededFace(seed)),
     [look, seed],
@@ -367,6 +403,16 @@ export function HumanDoll({
   }, [bodyMeshes, tucks]);
 
   useFrame((state, dt) => {
+    // far dolls swap to the low-poly body; the gap is hysteresis
+    if (root.current && body.far) {
+      root.current.getWorldPosition(worldPos);
+      const d = worldPos.distanceTo(state.camera.position);
+      const isFar = d > (body.far.visible ? LOD_NEAR : LOD_FAR);
+      if (isFar !== body.far.visible) {
+        body.far.visible = isFar;
+        for (const m of body.near) m.visible = !isFar;
+      }
+    }
     const t = state.clock.elapsedTime + seed * 7.3;
     const speed = walk?.current.speed ?? 0;
     const moving = speed > 0.05;
@@ -414,7 +460,7 @@ export function HumanDoll({
   });
 
   return (
-    <group {...rest} scale={[1, heightScale, 1]}>
+    <group {...rest} ref={root} scale={[1, heightScale, 1]}>
       <primitive object={body.scene} />
       <Suspense fallback={null}>
         <Part
@@ -461,3 +507,4 @@ export function HumanDoll({
 
 // every doll needs the body, so start fetching it with the code
 useGLTF.preload(`${MODELS}/body.glb`);
+useGLTF.preload(`${MODELS}/body-lo.glb`);

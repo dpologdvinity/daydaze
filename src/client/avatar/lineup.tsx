@@ -121,6 +121,14 @@ const SHOTS = {
     target: [0, 0.9, 0] as const,
     fov: 34,
   },
+  // the low-poly LOD body seen close up, to check its seams and face
+  lod: {
+    looks: LINEUP.slice(0, 3),
+    x: (i: number) => (i - 1) * 0.9,
+    cam: [0, 1.0, 9.5] as const,
+    target: [0, 0.9, 0] as const,
+    fov: 12,
+  },
 };
 type ShotName = keyof typeof SHOTS;
 const plan = SHOTS[shot as ShotName] ?? SHOTS.lineup;
