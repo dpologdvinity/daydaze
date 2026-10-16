@@ -319,6 +319,9 @@ function hairMaterial(
   shaded: boolean,
   rich: boolean,
 ) {
+  // hair over the back is seen edge-on: without anisotropic filtering the
+  // blurred mip's alpha breaks into specks at the cut-out threshold
+  if (map) map.anisotropy = 8;
   if (!rich)
     return new THREE.MeshStandardMaterial({
       map,

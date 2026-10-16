@@ -218,6 +218,16 @@ const SHOTS = {
     target: [0, 1.45, 0] as const,
     fov: 50,
   },
+  // long styles close up from three-quarters behind, where cards show most
+  hair3q: {
+    looks: (["waves", "long-straight", "mid-wavy"] as const).map(
+      (hairStyle, i) => ({ ...LINEUP[i], hairStyle }),
+    ),
+    x: (i: number) => (i - 1) * 0.7,
+    cam: [1.6, 1.55, -1.9] as const,
+    target: [0, 1.3, 0] as const,
+    fov: 38,
+  },
   // the low-poly LOD body seen close up, to check its seams and face
   lod: {
     looks: LINEUP.slice(0, 3),

@@ -37,10 +37,12 @@ def strand_texture(size=(256, 1024), seed=3):
         cx = rng.uniform(0, w)
         drift = rng.uniform(-5, 5)
         width = rng.uniform(0.45, 1.1)
-        length = rng.uniform(0.6, 1.0)
+        # no strand outlives the core: lone strand ends past it alias into
+        # specks floating below the hair at a distance
+        length = rng.uniform(0.6, 0.88)
         tone = rng.uniform(0.58, 1.05)
         centre = cx + drift * v**1.4 + 1.5 * np.sin(v * rng.uniform(3, 7) + rng.uniform(0, 6))
-        a = np.clip(1 - np.abs(x - centre) / width, 0, 1) * np.clip((length - v) / 0.12, 0, 1)
+        a = np.clip(1 - np.abs(x - centre) / width, 0, 1) * np.clip((length - v) / 0.2, 0, 1)
         alpha = np.maximum(alpha, a * 0.92)
         shade = shade * (1 - a * 0.6) + tone * a * 0.6
     img = np.zeros((h, w, 4), np.float32)
@@ -103,10 +105,24 @@ def build(ctx, name, mat, length=0.42, count=420, wave=0.0, curl=0.0, volume=1.0
     radii = np.array([0.077, 0.094, 0.11]) * (1 + 0.03 * volume)
     shoulder_z = ctx.JB["lArm"][2]
     shoulder_x = abs(ctx.JB["lArm"][0]) + 0.05
-    neck_y = head[1]
 
     eye_z = ctx.JB["lEye"][2]
     face_half = 0.078
+
+    # the body itself, for hair resting on the back and shoulders: a strand
+    # point inside the skin (or within the margin) moves out along the normal
+    from mathutils import Vector
+    from mathutils.bvhtree import BVHTree
+
+    skin = BVHTree.FromPolygons([tuple(p) for p in ctx.PB], [list(f) for f in ctx.FACES["body"]])
+
+    def off_body(p, margin):
+        loc, nrm = skin.find_nearest(Vector(p))[:2]
+        if loc is None:
+            return p
+        loc, nrm = np.array(loc), np.array(nrm)
+        depth = np.dot(p - loc, nrm)
+        return p if depth >= margin else p + nrm * (margin - depth)
 
     def push_out(p, layer):
         # keep the face clear: strands in front of the face below the brow
@@ -123,13 +139,10 @@ def build(ctx, name, mat, length=0.42, count=420, wave=0.0, curl=0.0, volume=1.0
             limit = shoulder_x - 0.04
             if abs(p[0]) > limit:
                 p[0] = np.sign(p[0]) * (limit + (abs(p[0]) - limit) * 0.35)
-        # behind and over the shoulders: a rounded slab below the neck
-        if p[2] < shoulder_z + 0.06:
-            depth = 0.15 + layer  # half thickness of the upper back/chest
-            sx = max(0.0, abs(p[0]) - shoulder_x)
-            if p[1] < neck_y + depth and abs(p[0]) < shoulder_x + 0.02 and p[1] > neck_y - depth:
-                # hair over the back: rest against it, not inside
-                p[1] = max(p[1], neck_y + depth * (1 - sx))
+        # behind and over the shoulders: rest on the body, never inside it
+        # (a margin for clothes and the curvier figures)
+        if p[2] < shoulder_z + 0.1:
+            p = off_body(p, 0.02 + layer)
         return p
 
     verts, faces, uvs, root_src, shade = [], [], [], [], []
@@ -235,7 +248,9 @@ def build(ctx, name, mat, length=0.42, count=420, wave=0.0, curl=0.0, volume=1.0
     for lift, share, width, dark in ((0.0, 0.35, 0.04, 0.6), (0.5, 0.45, 0.028, 0.85), (1.0, 0.2, 0.016, 1.0)):
         guides = max(8, int(count * share / 5))
         for root, normal in scalp_points(ctx, guides, rng):
-            L = length * rng.uniform(0.85, 1.0)
+            # inner layers end higher, under the outer ones: their dark tips
+            # hanging below read as specks on the back
+            L = length * rng.uniform(0.85, 1.0) * (0.85 + 0.15 * lift)
             phase = rng.uniform(0, 2 * np.pi)
             g = guide(root, normal, lift, L, phase)
             # a clump: strands near the guide, loose at the root, gathered at the tip
