@@ -170,15 +170,53 @@ LIMBS = {
 JOINT_ORDER = ["body", "head", "lArm", "lFore", "rArm", "rFore", "lLeg", "lShin", "rLeg", "rShin", "lFoot", "rFoot"]
 
 
-def retarget(path):
+def cmu_frames(path):
+    """CMU BVH as frames of {joint name: position}, Y up, at 30 fps."""
     joints, motion, dt = parse(path)
     idx = by_name(joints)
-    step = max(1, round((1 / 30) / dt))  # work at 30 fps
-    frames = [fk(joints, motion[f]) for f in range(0, len(motion), step)]
-    fdt = dt * step
+    step = max(1, round((1 / 30) / dt))
+    frames = []
+    for f in range(0, len(motion), step):
+        pos = fk(joints, motion[f])
+        frames.append({name: pos[i] for name, i in idx.items()})
+    return frames, dt * step
 
+
+MIXAMO_JOINTS = [
+    "Hips", "Spine", "Neck", "Head", "LeftUpLeg", "LeftLeg", "LeftFoot",
+    "LeftToeBase", "RightUpLeg", "RightLeg", "RightFoot", "RightToeBase",
+    "LeftArm", "LeftForeArm", "LeftHand", "RightArm", "RightForeArm", "RightHand",
+]
+
+
+def mixamo_frames(path):
+    """A Mixamo FBX as frames of {joint name: position}, Y up. Mixamo's
+    bone names match CMU's once the mixamorig: prefix is dropped."""
+    import bpy
+
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    bpy.ops.import_scene.fbx(filepath=path)
+    arm = next(o for o in bpy.data.objects if o.type == "ARMATURE")
+    scene = bpy.context.scene
+    act = arm.animation_data.action if arm.animation_data else None
+    start, end = (int(act.frame_range[0]), int(act.frame_range[1])) if act else (1, 1)
+    bones = {
+        b.name.split(":")[-1]: b for b in arm.pose.bones if b.name.split(":")[-1] in MIXAMO_JOINTS
+    }
+    frames = []
+    for f in range(start, end + 1):
+        scene.frame_set(f)
+        fr = {}
+        for name, b in bones.items():
+            w = arm.matrix_world @ b.head
+            fr[name] = np.array([w.x, w.z, -w.y])  # Blender Z up to Y up
+        frames.append(fr)
+    return frames, 1 / scene.render.fps
+
+
+def retarget(frames, fdt):
     def P(fr, name):
-        return fr[idx[name]]
+        return fr[name]
 
     # facing: the average pelvis forward over the clip, turned onto +z
     fwd = np.zeros(3)
@@ -197,7 +235,7 @@ def retarget(path):
     # body cannot hold (the doll's facing is the walker's anyway)
     heads = []
     for fr in frames:
-        fr = [turn @ p for p in fr]
+        fr = {n: turn @ p for n, p in fr.items()}
         left = P(fr, "LeftUpLeg") - P(fr, "RightUpLeg")
         up = P(fr, "Spine") - P(fr, "Hips")
         f = np.cross(norm(left), norm(up))
@@ -210,7 +248,7 @@ def retarget(path):
     poses = []
     for fi, fr in enumerate(frames):
         spin = rot("Y", -math.degrees(smooth[fi]))
-        fr = [spin @ (turn @ p) for p in fr]
+        fr = {n: spin @ (turn @ p) for n, p in fr.items()}
         left = norm(P(fr, "LeftUpLeg") - P(fr, "RightUpLeg"))
         up = P(fr, "Spine") - P(fr, "Hips")
         up = norm(up - left * np.dot(up, left))
@@ -235,19 +273,26 @@ def flat(pose):
 
 
 def best_loop(poses, fdt, window, kind):
-    """The segment whose end pose best matches its start."""
-    lo, hi = (int(window[0] / fdt), int(window[1] / fdt))
+    """The segment whose end pose best matches its start. Long takes search
+    starts near the middle; short ones anywhere a loop of that length fits."""
+    lo, hi = int(window[0] / fdt), int(window[1] / fdt)
     vec = [flat(p) for p in poses]
-    best = (1e9, 0, lo)
-    mid = len(poses) // 2
-    starts = range(max(0, mid - int(2 / fdt)), max(1, min(len(poses) - hi - 1, mid + int(2 / fdt))))
-    for s in starts:
-        for L in range(lo, hi + 1):
-            if s + L >= len(poses):
-                break
-            d = np.abs(vec[s] - vec[s + L])[1:].sum() + np.abs(vec[s + 1] - vec[s + L + 1 if s + L + 1 < len(poses) else s + L])[1:].sum()
+    n = len(poses)
+    hi = min(hi, n - 2)
+    lo = min(lo, hi)
+    mid = n // 2
+    best = (1e9, 0, max(lo, 1))
+    for L in range(lo, hi + 1):
+        first = max(0, mid - int(2 / fdt))
+        last = min(n - L - 2, mid + int(2 / fdt))
+        if last < first:
+            first, last = 0, n - L - 2
+        for s0 in range(first, last + 1):
+            d = np.abs(vec[s0] - vec[s0 + L])[1:].sum() + np.abs(vec[s0 + 1] - vec[s0 + L + 1])[1:].sum()
+            # a longer loop that matches as well is worth a little: less repetition
+            d *= 1 - 0.1 * (L - lo) / max(1, hi - lo)
             if d < best[0]:
-                best = (d, s, L)
+                best = (d, s0, L)
     return best[1], best[2]
 
 
@@ -291,6 +336,25 @@ def keys_for(poses, fdt, s, L):
     return round(period, 4), keys
 
 
+# Mixamo folders (repo-root mixamo/, git-ignored: Adobe's terms allow use in
+# a game but not redistributing the files) -> what each clip becomes
+MIXAMO = os.path.join(HERE, "..", "..", "..", "mixamo")
+FOLDER_KIND = {"walking": "walk", "dancing": "dance", "standing": "pose", "sitting": "sit", "laying": "lay"}
+# transitions, not loops
+SKIP = ("start-walking", "stop-walking", "stop-and-start")
+
+
+def label_of(stem):
+    words = stem.replace("female-", "").replace("-", " ").split()
+    return " ".join(words).capitalize()[:40]
+
+
+def still(poses):
+    """A held pose: one key, standing in for a 1 s loop."""
+    root, joints = poses[len(poses) // 2]
+    return 1.0, [{"at": 0, "root": [round(float(x), 4) for x in root], "joints": {b: [round(float(x), 3) for x in v] for b, v in joints.items()}}]
+
+
 def main():
     clips = []
     for cid, (file, kind, label, window) in CLIPS.items():
@@ -298,17 +362,39 @@ def main():
         if not os.path.exists(path):
             print("missing", path)
             continue
-        poses, fdt = retarget(path)
+        poses, fdt = retarget(*cmu_frames(path))
         s, L = best_loop(poses, fdt, window, kind)
         period, keys = keys_for(poses, fdt, s, L)
         clips.append({"id": cid, "kind": kind, "label": label, "source": f"CMU {file}", "period": period, "keys": keys})
         print(cid, "period", period, "keys", len(keys))
+    for folder, kind in FOLDER_KIND.items():
+        d = os.path.join(MIXAMO, folder)
+        if not os.path.isdir(d):
+            continue
+        for name in sorted(os.listdir(d)):
+            if not name.endswith(".fbx") or any(k in name for k in SKIP):
+                continue
+            stem = name[:-4]
+            k = "walk" if "walk" in stem and kind == "dance" else kind
+            frames, fdt = mixamo_frames(os.path.join(d, name))
+            poses, fdt = retarget(frames, fdt)
+            dur = len(poses) * fdt
+            if k in ("pose", "sit", "lay") or dur < 0.6:
+                period, keys = still(poses)
+            else:
+                window = (0.7, min(1.6, dur * 0.9)) if k == "walk" else (min(1.5, dur * 0.4), dur * 0.9)
+                s, L = best_loop(poses, fdt, window, k)
+                period, keys = keys_for(poses, fdt, s, L)
+            cid = "mx-" + stem
+            clips.append({"id": cid, "kind": k, "label": label_of(stem), "source": "Mixamo", "period": period, "keys": keys})
+            print(cid, k, "period", period, "keys", len(keys))
     body = json.dumps(clips, separators=(",", ":"))
     with open(OUT, "w") as f:
         f.write(
-            "// Generated by art/doll/blender/mocap.py from the CMU Graphics Lab\n"
-            "// Motion Capture Database (mocap.cs.cmu.edu), which may be copied,\n"
-            "// modified or redistributed without permission. Do not edit by hand.\n"
+            "// Generated by art/doll/blender/mocap.py. CMU clips: CMU Graphics Lab\n"
+            "// Motion Capture Database (mocap.cs.cmu.edu), free to copy, modify\n"
+            "// and redistribute. Mixamo clips: retargeted from Adobe Mixamo\n"
+            "// animations, used in-game under Mixamo's terms. Do not edit by hand.\n"
             'import type { MocapClip } from "./mocapTypes.ts";\n\n'
             f"export const MOCAP_CLIPS: readonly MocapClip[] = {body};\n"
         )
