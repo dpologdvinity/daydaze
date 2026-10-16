@@ -469,23 +469,30 @@
   }
 
   /*
-   * Mixamo saves through a programmatic <a>.click(). While a name is
-   * pending, point that click at a blob under our name. If the fetch is
-   * blocked (CORS), fall back to Mixamo's own filename.
+   * Mixamo hands the finished export to the browser through some
+   * programmatic navigation. While a name is pending, intercept anchor
+   * clicks, window.open and iframe loads, fetch the file and save a blob
+   * under our name. If the fetch is blocked (CORS), fall back to Mixamo's
+   * own filename. Every interception is logged with its mechanism.
    */
   const usedFileNames = new Set();
   let pendingFileName = null;
   const nativeAnchorClick = HTMLAnchorElement.prototype.click;
+  const nativeDispatchEvent = EventTarget.prototype.dispatchEvent;
+  const nativeOpen = window.open;
+  const iframeSrc = Object.getOwnPropertyDescriptor(
+    HTMLIFrameElement.prototype,
+    "src",
+  );
 
-  HTMLAnchorElement.prototype.click = function (...args) {
+  function renameDownload(href, via, fallback) {
     const base = pendingFileName;
 
-    if (!base || !this.href || this.dataset.renamed) {
-      return nativeAnchorClick.apply(this, args);
+    if (!base || !/^https?:/i.test(href)) {
+      return false;
     }
 
     pendingFileName = null;
-    const href = this.href;
     const extension = (href.split("?")[0].match(/\.(\w+)$/) || [])[1] || "fbx";
     let name = base;
 
@@ -494,6 +501,7 @@
     }
 
     usedFileNames.add(name);
+    console.info(`Renaming download via ${via}: ${name}.${extension}`, href);
 
     fetch(href)
       .then((response) => response.blob())
@@ -510,10 +518,64 @@
           `Could not rename "${name}"; using Mixamo's filename.`,
           error,
         );
+        fallback();
+      });
+
+    return true;
+  }
+
+  HTMLAnchorElement.prototype.click = function (...args) {
+    if (
+      this.dataset.renamed ||
+      !renameDownload(this.href, "a.click", () => {
         this.dataset.renamed = "1";
         nativeAnchorClick.apply(this, args);
-      });
+      })
+    ) {
+      return nativeAnchorClick.apply(this, args);
+    }
   };
+
+  EventTarget.prototype.dispatchEvent = function (event) {
+    if (
+      this instanceof HTMLAnchorElement &&
+      event.type === "click" &&
+      !this.dataset.renamed &&
+      renameDownload(this.href, "a.dispatchEvent", () => {
+        this.dataset.renamed = "1";
+        nativeDispatchEvent.call(this, event);
+      })
+    ) {
+      return true;
+    }
+
+    return nativeDispatchEvent.call(this, event);
+  };
+
+  window.open = function (url, ...rest) {
+    if (
+      renameDownload(String(url), "window.open", () =>
+        nativeOpen.call(window, url, ...rest),
+      )
+    ) {
+      return null;
+    }
+
+    return nativeOpen.call(window, url, ...rest);
+  };
+
+  Object.defineProperty(HTMLIFrameElement.prototype, "src", {
+    ...iframeSrc,
+    set(value) {
+      if (
+        !renameDownload(String(value), "iframe.src", () =>
+          iframeSrc.set.call(this, value),
+        )
+      ) {
+        iframeSrc.set.call(this, value);
+      }
+    },
+  });
 
   function getMainDownloadButton() {
     const buttons = [
