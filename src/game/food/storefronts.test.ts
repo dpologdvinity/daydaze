@@ -2,7 +2,12 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { FOOD_ROOM_EXITS, FOOD_STOREFRONTS } from "./storefronts.ts";
 import { FOOD_VENUES } from "./venues.ts";
-import { BUILDINGS, CITY_SURFACES, PROPS } from "../city/layout.ts";
+import {
+  BUILDINGS,
+  CITY_BOUNDS,
+  CITY_SURFACES,
+  PROPS,
+} from "../city/layout.ts";
 import { pointInPolygon, type Vec2 } from "../walk.ts";
 
 function rect(x0: number, z0: number, x1: number, z1: number): Vec2[] {
@@ -35,10 +40,7 @@ test("every venue gets exactly one storefront in the city", () => {
 test("storefronts stay inside the city and clear of roads and sidewalks", () => {
   for (const b of FOOD_STOREFRONTS) {
     for (const [x, z] of b.footprint) {
-      assert.ok(
-        Math.abs(x) <= 192 && Math.abs(z) <= 192,
-        `${b.id} off the map`,
-      );
+      assert.ok(pointInPolygon(CITY_BOUNDS, [x, z]), `${b.id} off the map`);
     }
     for (const surface of CITY_SURFACES) {
       assert.equal(
@@ -95,4 +97,18 @@ test("each interior room has one street door on a sidewalk, with a landing", () 
     const doors = FOOD_STOREFRONTS.filter((b) => b.door?.target === exit.room);
     assert.equal(doors.length, 1, `${exit.room} has one door`);
   }
+});
+
+test("venues stand in their own neighbourhood once it is built", () => {
+  for (const venue of FOOD_VENUES) {
+    const shop = FOOD_STOREFRONTS.find((b) => b.id === `food-${venue.id}`);
+    assert.ok(shop, venue.id);
+    if (["little-manila", "chinatown-koreatown"].includes(venue.neighborhood))
+      assert.equal(shop.neighborhood, venue.neighborhood, venue.id);
+  }
+  // the Filipino canteen's door is in Little Manila, the boba cafe's in Chinatown
+  const door = (room: string) => FOOD_ROOM_EXITS.find((e) => e.room === room);
+  assert.ok((door("filipino-joint")?.door[0] ?? 0) < -192);
+  assert.ok((door("ube-bakery")?.door[0] ?? 0) < -192);
+  assert.ok((door("boba-matcha")?.door[0] ?? 0) > 192);
 });
