@@ -240,6 +240,23 @@ for s, S in (("l", "L"), ("r", "R")):
     J[s + "Foot"] = bone_head(f"foot.{S}")
 WRIST = {s: bone_head(f"wrist.{S}") for s, S in (("l", "L"), ("r", "R"))}
 
+# Closet body sliders (src/game/body.ts): bust, hips and waist keys, driven
+# -1..1 by the client. The waist key is the hip-width target masked to a band
+# around the natural waist, so it narrows or widens only the middle.
+_hip_y = J["lLeg"][1]
+_shoulder_y = J["lArm"][1]
+_waist_y = _hip_y + 0.35 * (_shoulder_y - _hip_y)
+_band = 0.12 * (_shoulder_y - _hip_y)
+_waist_mask = np.exp(-(((P[:, 1] - _waist_y) / _band) ** 2))[:, None]
+KEYS["bust"] = target(
+    "breast/female-young-averagemuscle-averageweight-maxcup-averagefirmness.target"
+) * 0.7
+KEYS["hips"] = (
+    target("hip/hip-scale-horiz-incr.target") * 0.6
+    + target("buttocks/buttocks-volume-incr.target") * 0.6
+)
+KEYS["waist"] = target("hip/hip-scale-horiz-incr.target") * 1.4 * _waist_mask
+
 # ------------------------------------------------------------- re-posing
 
 

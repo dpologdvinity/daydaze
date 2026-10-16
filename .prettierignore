@@ -6,3 +6,6 @@ server/worker-configuration.d.ts
 .agents/
 skills/
 skills-lock.json
+.clauderc.json
+.impeccable/
+.mcp.json

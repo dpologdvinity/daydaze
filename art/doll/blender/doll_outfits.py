@@ -12,6 +12,7 @@ import bpy
 import numpy as np
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
+from mathutils.kdtree import KDTree
 
 import proxies
 
@@ -76,7 +77,17 @@ def shell(ctx, name, groups, bands, push, mat, arms=0.3):
     for p in me.polygons:
         p.use_smooth = True
     src = np.array(used)
-    proxies.attach(ctx, ob, ctx.W[src], {k: d[src] for k, d in ctx.KEYS.items()})
+    # the helper shells follow some targets less than the skin does (bust),
+    # so each key moves the cloth like the nearest skin vertex, a touch more
+    skin = np.array(sorted({i for f in ctx.FACES["body"] for i in f}))
+    tree = KDTree(len(skin))
+    for i, p in enumerate(ctx.PB[skin]):
+        tree.insert(p, i)
+    tree.balance()
+    near = skin[[tree.find(ctx.PB[i])[1] for i in src]]
+    proxies.attach(
+        ctx, ob, ctx.W[src], {k: d[near] * 1.05 for k, d in ctx.KEYS.items()}
+    )
     return ob
 
 
