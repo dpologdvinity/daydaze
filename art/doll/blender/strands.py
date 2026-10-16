@@ -27,20 +27,22 @@ def strand_texture(size=(256, 1024), seed=3):
     v = np.linspace(0, 1, h)[:, None]
     u = np.linspace(-1, 1, w)[None, :]
     # the lock's body: opaque in the middle, feathering to the sides and tip
-    core = np.clip(1 - np.abs(u) ** 2.2, 0, 1) * np.clip((1 - v) / 0.35, 0, 1) ** 0.6
-    alpha = np.clip(core * 1.3, 0, 1)
-    shade = np.full((h, w), 0.86, np.float32)
+    # a narrow solid core, so a card's outer half is separate strands and
+    # neighbouring cards read as hair, not ribbons; it thins out from mid-length
+    core = np.clip(1 - np.abs(u) ** 1.3, 0, 1) * np.clip((0.9 - v) / 0.45, 0, 1) ** 0.8
+    alpha = np.clip(core * 1.15, 0, 1)
+    shade = np.full((h, w), 0.8, np.float32)
     x = np.arange(w)[None, :]
-    for _ in range(420):
+    for _ in range(700):
         cx = rng.uniform(0, w)
         drift = rng.uniform(-5, 5)
-        width = rng.uniform(0.5, 1.2)
-        length = rng.uniform(0.7, 1.0)
-        tone = rng.uniform(0.72, 1.0)
+        width = rng.uniform(0.45, 1.1)
+        length = rng.uniform(0.6, 1.0)
+        tone = rng.uniform(0.58, 1.05)
         centre = cx + drift * v**1.4 + 1.5 * np.sin(v * rng.uniform(3, 7) + rng.uniform(0, 6))
         a = np.clip(1 - np.abs(x - centre) / width, 0, 1) * np.clip((length - v) / 0.12, 0, 1)
-        alpha = np.maximum(alpha, a * 0.9)
-        shade = shade * (1 - a * 0.5) + tone * a * 0.5
+        alpha = np.maximum(alpha, a * 0.92)
+        shade = shade * (1 - a * 0.6) + tone * a * 0.6
     img = np.zeros((h, w, 4), np.float32)
     img[..., 0] = img[..., 1] = img[..., 2] = shade
     img[..., 3] = alpha

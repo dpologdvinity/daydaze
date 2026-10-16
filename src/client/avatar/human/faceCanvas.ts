@@ -361,6 +361,29 @@ export async function paintFace(look: Look, marks: Marks) {
   ctx.fillStyle = rgba(skin);
   ctx.fillRect(0, 0, SIZE, SIZE);
 
+  // living skin is never one flat colour: faint mottling everywhere, warmer
+  // where blood sits close (nose, cheeks, chin, lips' edge), a cool soft
+  // shadow under the eyes
+  let grain = 99;
+  const noise = () => {
+    grain = (grain * 16807) % 2147483647;
+    return grain / 2147483647;
+  };
+  const warm = mixRgb(skin, [205, 92, 86], 0.5);
+  for (let i = 0; i < 260; i++) {
+    const tint = noise() < 0.5 ? warm : skin.map((v) => v * 0.9);
+    const r = 0.01 + noise() * 0.03;
+    blob(ctx, noise(), noise(), r, r * (0.6 + noise() * 0.8), tint, 0.07);
+  }
+  const { noseTip: nose, lCheek: lc, rCheek: rc, lEye: le, rEye: re } = marks;
+  blob(ctx, nose[0], nose[1] - 0.01, 0.035, 0.028, warm, 0.22);
+  for (const c of [lc, rc])
+    blob(ctx, c[0], c[1] + 0.005, 0.07, 0.05, warm, 0.16);
+  blob(ctx, 0.5, marks.mouthL[1] + 0.07, 0.05, 0.03, warm, 0.12);
+  const under = mixRgb(skin, [110, 80, 100], 0.35);
+  for (const e of [le, re])
+    blob(ctx, e[0], e[1] + 0.035, 0.045, 0.02, under, 0.3);
+
   // contour and highlight, faded well before the edge of the square so the
   // face meets the unpainted body skin without a seam
   const dark = skin.map((v) => v * 0.8);
@@ -472,7 +495,12 @@ export async function paintFace(look: Look, marks: Marks) {
   // lips: colour through the sculpted lip mask, a deeper liner edge, gloss
   const [base, liner] = lipInk(look.lips);
   const gloss = GLOSS[makeup.gloss];
+  // the liner is a soft deepening at the lip's edge, not a drawn outline
+  ctx.save();
+  ctx.globalAlpha = 0.6;
+  ctx.filter = "blur(1.5px)";
   ctx.drawImage(channel(img, 0, liner), 0, 0);
+  ctx.restore();
   ctx.save();
   ctx.filter = "blur(2px)";
   ctx.globalAlpha = 0.85;
@@ -549,22 +577,45 @@ export function paintLashes() {
     H = 64;
   const { canvas, ctx } = makeCanvas(W, H);
   ctx.clearRect(0, 0, W, H);
-  ctx.strokeStyle = "rgba(10,5,8,1)";
-  ctx.lineCap = "round";
-  for (let i = 0; i < 46; i++) {
-    const x = (i + 0.5) * (W / 46);
-    const lean = (x / W - 0.3) * 18;
-    ctx.lineWidth = 3.2;
+  ctx.fillStyle = "rgba(10,5,8,1)";
+  let seed = 77;
+  const rand = () => {
+    seed = (seed * 16807) % 2147483647;
+    return seed / 2147483647;
+  };
+  // real lashes: dense at the root, tapering to fine tips, short at the
+  // inner corner and longest past the middle (x grows to the outer corner),
+  // gathered into little clumps rather than combed evenly
+  const count = 120;
+  for (let i = 0; i < count; i++) {
+    const u = (i + rand() * 0.8) / count;
+    const x = u * W;
+    const len =
+      H * (0.35 + 0.6 * Math.sin(Math.min(1, u * 1.25) * Math.PI * 0.85));
+    const clump = Math.floor(i / 4) * 4 + 1.5;
+    const tipX = x + (clump * (W / count) - x) * 0.6 + (u - 0.25) * 26;
+    const tipY = H - len * (0.85 + rand() * 0.15);
+    const root = 1.4 + rand() * 0.8;
+    // a tapered curve: the root's width narrowing to a point at the tip
     ctx.beginPath();
-    ctx.moveTo(x, H);
+    ctx.moveTo(x - root, H);
     ctx.quadraticCurveTo(
-      x + lean * 0.3,
-      H * 0.45,
-      x + lean,
-      H * (0.05 + (i % 3) * 0.08),
+      x - root * 0.6 + (tipX - x) * 0.2,
+      H - len * 0.55,
+      tipX,
+      tipY,
     );
-    ctx.stroke();
+    ctx.quadraticCurveTo(
+      x + root * 0.6 + (tipX - x) * 0.25,
+      H - len * 0.5,
+      x + root,
+      H,
+    );
+    ctx.closePath();
+    ctx.fill();
   }
+  // the lash line itself: a soft dark band at the roots
+  ctx.fillRect(0, H - 3, W, 3);
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.flipY = false;

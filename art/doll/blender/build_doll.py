@@ -125,8 +125,9 @@ SHAPE = [
     (target("nose/nose-volume-decr.target"), 0.5),
     (target("nose/nose-point-width-decr.target"), 0.5),
     (target("nose/nose-point-up.target"), 0.6),
-    (target("mouth/mouth-upperlip-volume-incr.target"), 0.4),
-    (target("mouth/mouth-lowerlip-volume-incr.target"), 0.2),
+    # natural fullness; the Lip fullness slider and the Full preset add more
+    (target("mouth/mouth-upperlip-volume-incr.target"), 0.15),
+    (target("mouth/mouth-lowerlip-volume-incr.target"), 0.1),
     (target("mouth/mouth-cupidsbow-incr.target"), 0.5),
     (target("mouth/mouth-scale-horiz-decr.target"), 0.1),
     (pair("cheek/{s}-cheek-bones-incr.target"), 0.7),

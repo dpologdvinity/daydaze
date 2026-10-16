@@ -61,6 +61,7 @@ import { Jewellery, readAnchors } from "./Jewellery.tsx";
  */
 
 const MODELS = "/models/doll";
+const REST_LID = 0.12;
 
 // the motion-capture keys come in their own chunk, fetched once a doll exists
 void loadMocap();
@@ -175,7 +176,7 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
     // a little self-glow from the skin's own texture softens harsh room
     // lighting into the dewy glam finish
     const skin = new THREE.MeshStandardMaterial({
-      roughness: 0.5,
+      roughness: 0.58,
       emissive: "#ffffff",
       emissiveIntensity: 0.07,
     });
@@ -276,7 +277,9 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
         if (!live) return t.dispose();
         tex = t;
         skin.color.set("#ffffff");
-        skin.emissive.set("#ffffff");
+        // a warm red glow through the skin's own colours: light scattering
+        // under real skin, not a flat white sheen
+        skin.emissive.set("#ffb39c");
         skin.map = t;
         skin.emissiveMap = t;
         skin.needsUpdate = true;
@@ -414,7 +417,7 @@ function Part({
           vertexColors: hasShade,
           roughness: 0.5,
           side: THREE.DoubleSide,
-          alphaTest: 0.04,
+          alphaTest: 0.12,
           transparent: true,
           depthWrite: false,
         });
@@ -562,7 +565,8 @@ export function HumanDoll({
     // blink and a faint smile, on every mesh that carries the keys
     const tm = state.clock.elapsedTime;
     const closed = tm > blinkAt.current && tm < blinkAt.current + 0.14;
-    setMorph(wornList.current, "blink", closed ? 1 : 0);
+    // open eyes rest with the upper lid a little lowered, not wide and staring
+    setMorph(wornList.current, "blink", closed ? 1 : REST_LID);
     // face sliders and body shape, on every worn mesh (parts mount later)
     for (const s of FACE_SLIDERS) setMorph(wornList.current, s.id, face[s.id]);
     for (const b of FIGURES)
