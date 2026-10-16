@@ -22,3 +22,6 @@ art/textures/.cache
 mixamo/
 art/props/.cache/
 tmp/
+
+# Windows download metadata (WSL copies); it embeds signed download URLs
+*:Zone.Identifier
