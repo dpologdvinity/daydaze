@@ -38,6 +38,7 @@ test("a hair style picked in the closet survives a reload", async ({
   await page
     .getByRole("button", { name: "Dressing room", exact: true })
     .click();
+  await page.getByRole("tab", { name: "Hair" }).click();
   const hair = page.getByRole("radiogroup", { name: "Hair style" });
   const buns = hair.getByRole("radio", { name: "Space buns" });
   await expect(buns).toHaveAttribute("aria-checked", "false");
@@ -48,6 +49,7 @@ test("a hair style picked in the closet survives a reload", async ({
   );
   expect(saved).toContain('"hairStyle":"buns"');
   await page.reload();
+  await page.getByRole("tab", { name: "Hair" }).click();
   await expect(
     page
       .getByRole("radiogroup", { name: "Hair style" })
@@ -270,7 +272,7 @@ test("the Dance mood opens a move picker, and the picked move plays", async ({
   const canvas = canvasOf(page);
   await expect(canvas).toHaveAttribute("data-dance", "none");
   await page.getByRole("radio", { name: "Dance", exact: true }).click();
-  await expect(canvas).toHaveAttribute("data-dance", "two-step");
+  await expect(canvas).toHaveAttribute("data-dance", "groove");
   const picker = page.getByRole("radiogroup", { name: "Dance move" });
   await picker.getByRole("radio", { name: "Body roll" }).click();
   await expect(canvas).toHaveAttribute("data-dance", "body-roll");
