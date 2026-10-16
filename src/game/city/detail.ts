@@ -291,9 +291,7 @@ export function trafficLights(out: Placed[], crossX: readonly number[]): void {
       const z = side * 9;
       put(out, "pole", x, 2.2, z, 0.16, 4.4, 0.16, "#2a2440");
       put(out, "furniture", x, 4.2, z, 0.5, 1.2, 0.5, IRON);
-      put(out, "bulb", x, 4.6, z + 0.27, 0.3, 0.3, 0.1, "#ff3b4f");
-      put(out, "bulb", x, 4.2, z + 0.27, 0.3, 0.3, 0.1, "#ffd84f");
-      put(out, "bulb", x, 3.8, z + 0.27, 0.3, 0.3, 0.1, "#7dff6b");
+      // the lamps themselves cycle, so the client's Traffic layer draws them
     }
   }
 }

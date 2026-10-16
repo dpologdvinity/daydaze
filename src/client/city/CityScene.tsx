@@ -19,6 +19,7 @@ import { CitySky } from "./CitySky.tsx";
 import { createLabelAtlas } from "./labelAtlas.ts";
 import { createKindMeshes, disposeKindMeshes, writeKind } from "./meshes.ts";
 import { CITY_CLOCK } from "./shaders.ts";
+import { Traffic } from "./Traffic.tsx";
 
 // Enough for the busiest view of the whole city, so meshes never reallocate.
 const WHOLE_CITY = planCity(ALL_CELLS, 0, [0, 0]);
@@ -121,6 +122,7 @@ export function CityScene({
       {KINDS.map((kind) => (
         <primitive key={kind} object={meshes[kind]} onClick={click} />
       ))}
+      <Traffic player={player} />
     </>
   );
 }
