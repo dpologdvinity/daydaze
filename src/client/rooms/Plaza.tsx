@@ -113,7 +113,7 @@ const LOCALS: readonly {
       hairColor: "#ff4fb3",
       lips: "lips-hot-pink-glam",
       brows: "brows-fox-snatched",
-      outfit: "flares",
+      outfit: "jeans",
       outfitColor: "#e8e2ff",
       shadow: "#ff2f9a",
     },

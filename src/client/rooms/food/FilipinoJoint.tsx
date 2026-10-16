@@ -50,7 +50,7 @@ export function FilipinoJoint({
           hairColor: "#1b1014",
           lips: "lips-hot-pink-glam",
           brows: "brows-sculpted-espresso",
-          outfit: "mini",
+          outfit: "blouse",
           outfitColor: "#ffb02e",
           shadow: "#ff2f9a",
         },

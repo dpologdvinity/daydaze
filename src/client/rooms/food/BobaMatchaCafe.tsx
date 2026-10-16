@@ -42,7 +42,7 @@ export function BobaMatchaCafe({
           hairColor: "#4a2a1c",
           lips: "lips-nude-pink-gloss",
           brows: "brows-feathered-honey",
-          outfit: "flares",
+          outfit: "jeans",
           outfitColor: "#3fe0d0",
           shadow: "#3fe0d0",
         },
