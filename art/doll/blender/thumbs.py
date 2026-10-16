@@ -141,7 +141,14 @@ def main():
             reset()
             load("body", "hair-buns")
             keys({f"{group}_{o}": 1.0})
-            camera((0, -0.7, 1.55), (0, 0, 1.52), 26)
+            # frame the feature the preset changes, so tiles differ at a glance
+            shot = {
+                "eye": ((0.0, -0.45, 1.548), (0.0, 0.0, 1.546), 24),
+                "nose": ((0.2, -0.45, 1.51), (0.0, -0.13, 1.503), 22),
+                "lips": ((0.0, -0.32, 1.485), (0.0, 0.0, 1.485), 20),
+                "face": ((0.0, -0.75, 1.53), (0.0, 0.0, 1.5), 26),
+            }[group]
+            camera(*shot)
             render(f"{group}-{o}")
     for fig in FIGURES:
         reset()
