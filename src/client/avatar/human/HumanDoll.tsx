@@ -1,0 +1,463 @@
+import { useGLTF } from "@react-three/drei";
+import { useFrame, useThree, type ThreeElements } from "@react-three/fiber";
+import { Suspense, useEffect, useMemo, useRef } from "react";
+import * as THREE from "three";
+import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js";
+import { couplePoseAt, type CoupleRole } from "../../../game/dance/couple.ts";
+import {
+  createPose,
+  danceMove,
+  poseAt,
+  type DanceMoveId,
+  type Pose,
+} from "../../../game/dance/moves.ts";
+import {
+  FIGURES,
+  FACE_SLIDERS,
+  faceOf,
+  seededFace,
+  type Face,
+  silhouetteOf,
+  type Look,
+  type Silhouette,
+  type Mood,
+  type SwimLook,
+} from "../../../game/look.ts";
+import { liveDrunk } from "../../effects/drunk.ts";
+import { useReducedMotion } from "../../motion.ts";
+import {
+  DEFAULT_BODY,
+  bodyScales,
+  type BodyShape,
+} from "../../../game/body.ts";
+import { pose, type Rig } from "../pose.ts";
+import { paintFace, paintIris, paintLashes, readMarks } from "./faceCanvas.ts";
+
+/**
+ * The 3D doll: a skinned, shape-keyed body built in Blender from MakeHuman's
+ * CC0 base (art/doll/blender/), with hair and clothes as separate models on
+ * the same rig, loaded only when worn. Poses come from the same pose code as
+ * the old doll: it poses plain groups, and their transforms are copied onto
+ * the bones each frame.
+ */
+
+const MODELS = "/models/doll";
+const JOINTS = [
+  "body",
+  "head",
+  "lArm",
+  "lFore",
+  "rArm",
+  "rFore",
+  "lLeg",
+  "lShin",
+  "rLeg",
+  "rShin",
+  "lFoot",
+  "rFoot",
+  "pony",
+] as const;
+
+export type WalkState = { speed: number };
+
+type Props = {
+  /** Closet body sliders, 0 to 100 each. */
+  body?: BodyShape;
+  look: Look;
+  swim?: SwimLook | null;
+  mood: Mood;
+  dance?: DanceMoveId;
+  couple?: CoupleRole;
+  buzzed?: boolean;
+  walk?: { current: WalkState };
+  seed?: number;
+} & Omit<ThreeElements["group"], "children">;
+
+// shortcut: shoes follow the outfit until the closet has a shoe picker
+const SHOES: Record<Silhouette, string> = {
+  flares: "sneakers",
+  mini: "platforms",
+  fur: "boots",
+};
+
+/** The part files a look wears, by kind. */
+// salon styles wear the closest 3D hair until they get models of their own
+const HAIR: Partial<Record<Look["hairStyle"], string>> = {
+  "sleek-bob": "bob",
+  "curl-cloud": "afro",
+};
+
+export function partsFor(look: Look, swim: SwimLook | null) {
+  // shop outfits are cut from the three starting silhouettes
+  const cut = silhouetteOf(look.outfit);
+  return {
+    hair: `${MODELS}/hair-${HAIR[look.hairStyle] ?? look.hairStyle}.glb`,
+    outfit: swim
+      ? `${MODELS}/swim-${swim.style}.glb`
+      : `${MODELS}/outfit-${cut}.glb`,
+    shoes: swim ? null : `${MODELS}/shoes-${SHOES[cut]}.glb`,
+    tucks: swim
+      ? [`tuck_${swim.style}`]
+      : [`tuck_${cut}`, `tuck_${SHOES[cut]}`],
+  };
+}
+
+const morphMeshes = (root: THREE.Object3D) => {
+  const out: THREE.Mesh[] = [];
+  root.traverse((o) => {
+    if (o instanceof THREE.Mesh && o.morphTargetDictionary) out.push(o);
+  });
+  return out;
+};
+
+function setMorph(meshes: THREE.Mesh[], name: string, value: number) {
+  for (const m of meshes) {
+    const i = m.morphTargetDictionary?.[name];
+    if (i !== undefined && m.morphTargetInfluences)
+      m.morphTargetInfluences[i] = value;
+  }
+}
+
+function useBody(look: Look, eyeColor: Face["eyeColor"]) {
+  const gltf = useGLTF(`${MODELS}/body.glb`);
+  const invalidate = useThree((s) => s.invalidate);
+  const body = useMemo(() => {
+    const scene = cloneSkinned(gltf.scene);
+    const bones = new Map<string, THREE.Bone>();
+    scene.traverse((o) => {
+      if (o instanceof THREE.Bone) bones.set(o.name, o);
+    });
+    const rest = new Map<string, THREE.Vector3>();
+    for (const [name, bone] of bones) rest.set(name, bone.position.clone());
+    let meta: unknown = null;
+    scene.traverse((o) => {
+      if (typeof o.userData.doll === "string") meta = o.userData.doll;
+    });
+    // a little self-glow from the skin's own texture softens harsh room
+    // lighting into the dewy glam finish
+    const skin = new THREE.MeshStandardMaterial({
+      roughness: 0.42,
+      emissive: "#ffffff",
+      emissiveIntensity: 0.14,
+    });
+    const lashes = new THREE.MeshStandardMaterial({
+      color: "#0d0609",
+      map: paintLashes(),
+      alphaTest: 0.4,
+      side: THREE.DoubleSide,
+    });
+    const eye = new THREE.MeshStandardMaterial({
+      map: paintIris(),
+      roughness: 0.3,
+    });
+    const cornea = new THREE.MeshStandardMaterial({
+      color: "#ffffff",
+      roughness: 0.02,
+      metalness: 0,
+      transparent: true,
+      opacity: 0.12,
+      depthWrite: false,
+    });
+    scene.traverse((o) => {
+      if (!(o instanceof THREE.Mesh)) return;
+      o.frustumCulled = false;
+      const name = o.material instanceof THREE.Material ? o.material.name : "";
+      o.material =
+        name === "lashes"
+          ? lashes
+          : name === "eye"
+            ? eye
+            : name === "cornea"
+              ? cornea
+              : skin;
+    });
+    return {
+      scene,
+      bones,
+      rest,
+      marks: readMarks(meta),
+      skin,
+      eye,
+      materials: [skin, lashes, eye, cornea],
+    };
+  }, [gltf]);
+
+  useEffect(
+    () => () => {
+      for (const m of body.materials) {
+        if (m instanceof THREE.MeshStandardMaterial) m.map?.dispose();
+        m.dispose();
+      }
+    },
+    [body],
+  );
+
+  useEffect(() => {
+    const { marks, skin } = body;
+    // plain skin until the painted face arrives, then the texture tints both
+    skin.color.set(look.skin);
+    skin.emissive.set(look.skin);
+    if (!marks) return;
+    let live = true;
+    let tex: THREE.Texture | null = null;
+    paintFace(look, marks)
+      .then((t) => {
+        if (!live) return t.dispose();
+        tex = t;
+        skin.color.set("#ffffff");
+        skin.emissive.set("#ffffff");
+        skin.map = t;
+        skin.emissiveMap = t;
+        skin.needsUpdate = true;
+        invalidate();
+      })
+      // a missing mask leaves plain skin rather than breaking the room
+      .catch((e: unknown) => console.warn(e));
+    return () => {
+      live = false;
+      tex?.dispose();
+    };
+  }, [body, look.skin, look.lips, look.brows, look.shadow, invalidate]);
+  useEffect(() => {
+    const tex = paintIris(eyeColor);
+    body.eye.map?.dispose();
+    body.eye.map = tex;
+    body.eye.needsUpdate = true;
+    invalidate();
+  }, [body, eyeColor, invalidate]);
+  return body;
+}
+
+type Tint = { colour: string; kind: "hair" | "cloth" | "gloss" | "keep" };
+
+/** A worn part, re-bound to the body's bones and tinted. */
+function Part({
+  url,
+  bones,
+  tint,
+  onMeshes,
+}: {
+  url: string;
+  bones: Map<string, THREE.Bone>;
+  tint: Tint;
+  /** The part's meshes, and how far its soles lift the doll (metres). */
+  onMeshes: (meshes: THREE.Mesh[] | null, lift: number) => void;
+}) {
+  const gltf = useGLTF(url);
+  const part = useMemo(() => {
+    const meshes: THREE.SkinnedMesh[] = [];
+    gltf.scene.traverse((o) => {
+      if (o instanceof THREE.SkinnedMesh) meshes.push(o);
+    });
+    const group = new THREE.Group();
+    const materials: THREE.Material[] = [];
+    let lift = 0;
+    gltf.scene.traverse((o) => {
+      const v: unknown = o.userData.lift;
+      if (typeof v === "number" && Number.isFinite(v) && v >= 0 && v < 0.2)
+        lift = v;
+    });
+    for (const src of meshes) {
+      const mesh = src.clone();
+      const skeleton = new THREE.Skeleton(
+        src.skeleton.bones.map((b) => bones.get(b.name) ?? b),
+        src.skeleton.boneInverses,
+      );
+      mesh.bind(skeleton, src.bindMatrix);
+      // exports can carry non-zero default weights; the doll sets its own
+      mesh.morphTargetInfluences?.fill(0);
+      mesh.frustumCulled = false;
+      const old =
+        src.material instanceof THREE.MeshStandardMaterial
+          ? src.material
+          : null;
+      const mat =
+        tint.kind === "hair"
+          ? // strands catch a long anisotropic highlight and a soft sheen
+            new THREE.MeshPhysicalMaterial({
+              map: old?.map ?? null,
+              color: tint.colour,
+              roughness: 0.38,
+              anisotropy: 0.7,
+              sheen: 0.6,
+              sheenRoughness: 0.4,
+              sheenColor: new THREE.Color(tint.colour).lerp(
+                new THREE.Color("#ffffff"),
+                0.35,
+              ),
+              side: THREE.DoubleSide,
+              alphaTest: 0.35,
+            })
+          : new THREE.MeshStandardMaterial({
+              map: old?.map ?? null,
+              color: tint.kind === "keep" ? "#ffffff" : tint.colour,
+              roughness: tint.kind === "gloss" ? 0.22 : 0.7,
+            });
+      materials.push(mat);
+      mesh.material = mat;
+      group.add(mesh);
+    }
+    return { group, materials, lift };
+  }, [gltf, bones, tint.colour, tint.kind]);
+
+  useEffect(() => {
+    onMeshes(morphMeshes(part.group), part.lift);
+    return () => {
+      onMeshes(null, 0);
+      part.materials.forEach((m) => m.dispose());
+    };
+  }, [part, onMeshes]);
+  return <primitive object={part.group} />;
+}
+
+export function HumanDoll({
+  look,
+  swim = null,
+  mood,
+  dance = "two-step",
+  couple,
+  buzzed = false,
+  walk,
+  seed = 0,
+  body: shape = DEFAULT_BODY,
+  ...rest
+}: Props) {
+  // NPC looks carry no face, so their seed picks one
+  const heightScale = bodyScales(shape).height;
+  const face = useMemo(
+    () => (look.face || !seed ? faceOf(look) : seededFace(seed)),
+    [look, seed],
+  );
+  const body = useBody(look, face.eyeColor);
+  const parts = partsFor(look, swim);
+  const tuckKey = parts.tucks.join(",");
+  const tucks = useMemo(() => tuckKey.split(","), [tuckKey]);
+  const calm = useReducedMotion();
+  const phase = useRef(0);
+  const blinkAt = useRef(2 + seed);
+  const sampled = useMemo<Pose>(createPose, []);
+  // the pose code writes plain groups; their transforms go onto the bones
+  const proxy = useMemo(() => {
+    const rig: Rig = {};
+    for (const j of JOINTS) rig[j] = new THREE.Group();
+    return rig;
+  }, []);
+  const bodyMeshes = useMemo(() => morphMeshes(body.scene), [body]);
+  const worn = useRef(new Map<string, THREE.Mesh[]>());
+  const wornList = useRef<THREE.Mesh[]>([]);
+  const lift = useRef(0);
+  const track = useMemo(() => {
+    const make = (key: string) => (meshes: THREE.Mesh[] | null, up: number) => {
+      if (meshes) worn.current.set(key, meshes);
+      else worn.current.delete(key);
+      if (key === "shoes") lift.current = up;
+      wornList.current = [...bodyMeshes, ...[...worn.current.values()].flat()];
+    };
+    return { hair: make("hair"), outfit: make("outfit"), shoes: make("shoes") };
+  }, [bodyMeshes]);
+
+  useEffect(() => {
+    wornList.current = [...bodyMeshes, ...[...worn.current.values()].flat()];
+    for (const m of bodyMeshes) {
+      const dict = m.morphTargetDictionary ?? {};
+      for (const name of Object.keys(dict))
+        if (name.startsWith("tuck_"))
+          setMorph([m], name, tucks.includes(name) ? 1 : 0);
+    }
+  }, [bodyMeshes, tucks]);
+
+  useFrame((state, dt) => {
+    const t = state.clock.elapsedTime + seed * 7.3;
+    const speed = walk?.current.speed ?? 0;
+    const moving = speed > 0.05;
+    phase.current += dt * speed * 6.2;
+    const move = mood === "dance" && !moving ? danceMove(dance) : null;
+    const danced = !move
+      ? null
+      : couple
+        ? couplePoseAt(move, couple, t, sampled)
+        : poseAt(move, t, sampled);
+    pose(
+      proxy,
+      moving ? "walk" : mood,
+      t,
+      phase.current,
+      calm,
+      danced,
+      buzzed ? liveDrunk.wobble : 0,
+    );
+    for (const j of JOINTS) {
+      const g = proxy[j];
+      const bone = body.bones.get(j);
+      const r = body.rest.get(j);
+      if (!g || !bone || !r) continue;
+      bone.quaternion.copy(g.quaternion);
+      bone.position.copy(r).add(g.position);
+      if (j === "body") bone.position.y += lift.current;
+      bone.scale.copy(g.scale);
+    }
+    // blink and a faint smile, on every mesh that carries the keys
+    const tm = state.clock.elapsedTime;
+    const closed = tm > blinkAt.current && tm < blinkAt.current + 0.14;
+    setMorph(wornList.current, "blink", closed ? 1 : 0);
+    // face sliders and body shape, on every worn mesh (parts mount later)
+    for (const s of FACE_SLIDERS) setMorph(wornList.current, s.id, face[s.id]);
+    for (const b of FIGURES)
+      if (b.id !== "classic")
+        setMorph(wornList.current, b.id, face.figure === b.id ? 1 : 0);
+    // closet body sliders: 50 is the base shape, 0 and 100 the key at -1 and 1
+    setMorph(wornList.current, "bust", (shape.bust - 50) / 50);
+    setMorph(wornList.current, "hips", (shape.hips - 50) / 50);
+    setMorph(wornList.current, "waist", (shape.waist - 50) / 50);
+    if (tm > blinkAt.current + 0.14)
+      blinkAt.current = tm + 2.2 + ((seed * 13.7 + tm) % 3.1);
+  });
+
+  return (
+    <group {...rest} scale={[1, heightScale, 1]}>
+      <primitive object={body.scene} />
+      <Suspense fallback={null}>
+        <Part
+          key={parts.hair}
+          url={parts.hair}
+          bones={body.bones}
+          tint={{ colour: look.hairColor, kind: "hair" }}
+          onMeshes={track.hair}
+        />
+      </Suspense>
+      <Suspense fallback={null}>
+        <Part
+          key={parts.outfit}
+          url={parts.outfit}
+          bones={body.bones}
+          tint={{ colour: swim?.color ?? look.outfitColor, kind: "cloth" }}
+          onMeshes={track.outfit}
+        />
+      </Suspense>
+      {parts.shoes && (
+        <Suspense fallback={null}>
+          <Part
+            key={parts.shoes}
+            url={parts.shoes}
+            bones={body.bones}
+            tint={
+              SHOES[silhouetteOf(look.outfit)] === "sneakers"
+                ? { colour: "#ffffff", kind: "keep" }
+                : {
+                    colour:
+                      silhouetteOf(look.outfit) === "mini"
+                        ? "#f6e7ff"
+                        : look.outfitColor,
+                    kind: "gloss",
+                  }
+            }
+            onMeshes={track.shoes}
+          />
+        </Suspense>
+      )}
+    </group>
+  );
+}
+
+// every doll needs the body, so start fetching it with the code
+useGLTF.preload(`${MODELS}/body.glb`);

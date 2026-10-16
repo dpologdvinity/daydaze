@@ -96,15 +96,22 @@ export function Segmented<T extends string>({
   );
 }
 
-/** A whole 0 to 100 slider for the closet's body shape. */
+/** A labelled closet slider: whole 0 to 100 by default (body shape); the
+ * face sliders pass -1 to 1 in steps of 0.1. */
 export function Slider({
   label,
   value,
   onChange,
+  min = 0,
+  max = 100,
+  step = 1,
 }: {
   label: string;
   value: number;
   onChange: (value: number) => void;
+  min?: number;
+  max?: number;
+  step?: number;
 }) {
   const id = useId();
   return (
@@ -113,9 +120,9 @@ export function Slider({
       <input
         id={id}
         type="range"
-        min={0}
-        max={100}
-        step={1}
+        min={min}
+        max={max}
+        step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
       />

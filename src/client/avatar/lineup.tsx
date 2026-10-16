@@ -6,7 +6,13 @@ import { useRef } from "react";
 import { createRoot } from "react-dom/client";
 import * as THREE from "three";
 import { DEFAULT_LOOK, type Look } from "../../game/look.ts";
-import { Doll } from "./Doll.tsx";
+import { ToonDoll as Doll } from "./Doll.tsx";
+import { HumanDoll } from "./human/HumanDoll.tsx";
+import { Environment, Lightformer } from "@react-three/drei";
+import { Suspense } from "react";
+
+// ?human=1 shows the 3D doll built in Blender instead of the toon doll
+const human = new URLSearchParams(location.search).get("human") === "1";
 
 const shot = new URLSearchParams(location.search).get("shot") ?? "lineup";
 
@@ -47,7 +53,7 @@ const LINEUP: Look[] = [
   {
     ...DEFAULT_LOOK,
     skin: "#94603f",
-    hairStyle: "waves",
+    hairStyle: "bob",
     hairColor: "#7b4dff",
     lips: "lips-90s-caramel-ombre",
     brows: "brows-sculpted-espresso",
@@ -58,7 +64,7 @@ const LINEUP: Look[] = [
   {
     ...DEFAULT_LOOK,
     skin: "#633c29",
-    hairStyle: "ponytail",
+    hairStyle: "braids",
     hairColor: "#1b1014",
     lips: "lips-burgundy-cherry",
     brows: "brows-sculpted-espresso",
@@ -69,8 +75,8 @@ const LINEUP: Look[] = [
   {
     ...DEFAULT_LOOK,
     skin: "#633c29",
-    hairStyle: "buns",
-    hairColor: "#b77a3e",
+    hairStyle: "afro",
+    hairColor: "#1b1014",
     lips: "lips-hot-pink-glam",
     brows: "brows-fox-snatched",
     outfit: "fur",
@@ -162,12 +168,31 @@ function Lab() {
         near: 0.05,
         far: 200,
       }}
-      onCreated={({ camera, gl }) => {
+      onCreated={({ camera, gl, scene }) => {
+        // dev-only: lets a test script inspect the lab scene
+        Reflect.set(window, "labScene", scene);
         camera.lookAt(plan.target[0], plan.target[1], plan.target[2]);
         gl.setClearColor("#07020b");
       }}
     >
-      <ambientLight intensity={0.9} />
+      {human && (
+        <Environment resolution={64}>
+          <Lightformer intensity={2} position={[0, 3, 4]} scale={[6, 3, 1]} />
+          <Lightformer
+            intensity={1.2}
+            color="#ff74d4"
+            position={[-4, 1, -2]}
+            scale={[3, 3, 1]}
+          />
+          <Lightformer
+            intensity={1}
+            color="#7bdcff"
+            position={[4, 1, -1]}
+            scale={[3, 3, 1]}
+          />
+        </Environment>
+      )}
+      <ambientLight intensity={human ? 0.3 : 0.9} />
       <directionalLight position={[1.5, 2.5, 2.5]} intensity={1.6} />
       <directionalLight
         position={[-2, 1, -2]}
@@ -176,7 +201,13 @@ function Lab() {
       />
       {plan.looks.map((look, i) => (
         <group key={i} name={`doll-${i}`} position={[plan.x(i), 0, 0]}>
-          <Doll look={look} mood="idle" seed={i} />
+          {human ? (
+            <Suspense fallback={null}>
+              <HumanDoll look={look} mood="idle" seed={i} />
+            </Suspense>
+          ) : (
+            <Doll look={look} mood="idle" seed={i} />
+          )}
         </group>
       ))}
       <Probe count={plan.looks.length} />

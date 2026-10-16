@@ -1,7 +1,13 @@
 import { useState } from "react";
 import {
+  FIGURES,
   BROWS,
+  EYE_COLORS,
   EYESHADOWS,
+  FACE_SLIDERS,
+  encodeFace,
+  faceOf,
+  type Face,
   HAIR_COLORS,
   HAIR_STYLES,
   LIPS,
@@ -90,6 +96,8 @@ function Mirror({
   effects: Intensity;
   setEffects: (effects: Intensity) => void;
 }) {
+  const face = faceOf(look);
+  const setFace = (next: Face) => setLook({ ...look, face: encodeFace(next) });
   return (
     <>
       <section>
@@ -100,6 +108,26 @@ function Mirror({
           value={look.skin}
           onPick={(skin) => setLook({ ...look, skin })}
         />
+      </section>
+      <section>
+        <h3>Face</h3>
+        <Swatches
+          label="Eye colour"
+          options={EYE_COLORS}
+          value={face.eyeColor}
+          onPick={(eyeColor) => setFace({ ...face, eyeColor })}
+        />
+        {FACE_SLIDERS.map((s) => (
+          <Slider
+            key={s.id}
+            label={s.label}
+            value={face[s.id]}
+            min={-1}
+            max={1}
+            step={0.1}
+            onChange={(v) => setFace({ ...face, [s.id]: v })}
+          />
+        ))}
       </section>
       <section>
         <h3>Hair</h3>
@@ -174,6 +202,12 @@ function Mirror({
       </section>
       <section>
         <h3>Body</h3>
+        <Chips
+          label="Figure"
+          options={FIGURES}
+          value={face.figure}
+          onPick={(figure) => setFace({ ...face, figure })}
+        />
         {BODY_TRAITS.map((trait) => (
           <Slider
             key={trait}

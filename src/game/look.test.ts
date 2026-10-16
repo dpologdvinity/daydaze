@@ -2,6 +2,13 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   BROWS,
+  FIGURES,
+  DEFAULT_FACE,
+  EYE_COLORS,
+  decodeFace,
+  encodeFace,
+  faceOf,
+  seededFace,
   DEFAULT_LOOK,
   EYESHADOWS,
   HAIR_COLORS,
@@ -122,4 +129,52 @@ test("validateSwim accepts catalog swimsuits only", () => {
     { ...DEFAULT_SWIM, extra: 1 },
   ])
     assert.equal(validateSwim(bad), false, JSON.stringify(bad));
+});
+
+test("a look may carry a face code; looks without one stay valid", () => {
+  assert.equal(validateLook({ ...DEFAULT_LOOK }), true);
+  const code = encodeFace({ ...DEFAULT_FACE, lips: 0.6, figure: "curvy" });
+  assert.equal(validateLook({ ...DEFAULT_LOOK, face: code }), true);
+  assert.deepEqual(faceOf({ ...DEFAULT_LOOK, face: code }), {
+    ...DEFAULT_FACE,
+    lips: 0.6,
+    figure: "curvy",
+  });
+  assert.deepEqual(faceOf(DEFAULT_LOOK), DEFAULT_FACE);
+});
+
+test("face codes round-trip every slider step, body and eye colour", () => {
+  for (let i = -10; i <= 10; i++) {
+    const face = { ...DEFAULT_FACE, eyeSize: i / 10, jaw: (0 - i) / 10 || 0 };
+    assert.deepEqual(decodeFace(encodeFace(face)), face);
+  }
+  for (const body of FIGURES)
+    for (const eye of EYE_COLORS) {
+      const face = { ...DEFAULT_FACE, figure: body.id, eyeColor: eye.id };
+      assert.deepEqual(decodeFace(encodeFace(face)), face);
+    }
+  // out-of-range sliders clamp rather than corrupt the code
+  assert.equal(decodeFace(encodeFace({ ...DEFAULT_FACE, nose: 4 }))?.nose, 1);
+});
+
+test("malformed face codes are rejected", () => {
+  for (const bad of [
+    "",
+    "kkkkkk00x",
+    "zkkkkk00",
+    "kkkkkk90",
+    "kkkkkk09",
+    3,
+    null,
+  ]) {
+    assert.equal(decodeFace(bad), null);
+    assert.equal(validateLook({ ...DEFAULT_LOOK, face: bad }), false);
+  }
+});
+
+test("seeded NPC faces are stable, valid and varied", () => {
+  const faces = Array.from({ length: 12 }, (_, i) => seededFace(i + 1));
+  assert.deepEqual(seededFace(3), faces[2]);
+  for (const f of faces) assert.notEqual(decodeFace(encodeFace(f)), null);
+  assert.ok(new Set(faces.map(encodeFace)).size > 8);
 });

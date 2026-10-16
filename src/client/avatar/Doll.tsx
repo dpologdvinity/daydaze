@@ -1,5 +1,5 @@
 import { useFrame, useThree, type ThreeElements } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { couplePoseAt, type CoupleRole } from "../../game/dance/couple.ts";
 import {
@@ -19,6 +19,7 @@ import {
 import { liveDrunk } from "../effects/drunk.ts";
 import { useReducedMotion } from "../motion.ts";
 import {
+  farGeometry,
   hairGeometry,
   headGeometry,
   headPoint,
@@ -30,10 +31,12 @@ import {
   GOLD,
   HAIR_OUTLINE,
   DRINK_MATERIAL,
+  NAIL,
   OUTLINE,
   shadowTex,
 } from "./dollParts.ts";
 import { buildFaceTextures } from "./faceTexture.ts";
+import { HumanDoll } from "./human/HumanDoll.tsx";
 import { pose, type Rig } from "./pose.ts";
 import { hairTime, makeHair, makeToon } from "./toon.ts";
 
@@ -137,6 +140,35 @@ function useFace(look: Look, face: THREE.MeshToonMaterial) {
   return tex;
 }
 
+// ----------------------------------------------------------------- LOD
+
+// Past this many metres a doll drops its outlines and tiny jewellery and swaps
+// to coarse head and hair meshes. The gap is hysteresis, so a doll at the edge
+// does not flicker between the two.
+const FAR_RANGE = 8.5;
+const NEAR_RANGE = 7.5;
+const detailParts = new Set<THREE.BufferGeometry>([
+  G.ear,
+  G.hoop,
+  G.nails,
+  G.scrunchie,
+]);
+const nearGeometry = new WeakMap<THREE.Mesh, THREE.BufferGeometry>();
+const worldPos = new THREE.Vector3();
+
+function setLod(root: THREE.Object3D, far: boolean) {
+  root.traverse((o) => {
+    if (!(o instanceof THREE.Mesh)) return;
+    const geo: THREE.BufferGeometry | undefined = o.geometry;
+    if (!geo) return;
+    const outline = o.material === OUTLINE || o.material === HAIR_OUTLINE;
+    o.visible = !((outline || detailParts.has(geo)) && far);
+    const base = nearGeometry.get(o) ?? geo;
+    nearGeometry.set(o, base);
+    o.geometry = far ? farGeometry(base) : base;
+  });
+}
+
 // ---------------------------------------------------------------- the doll
 
 export type WalkState = { speed: number };
@@ -158,7 +190,8 @@ type DollProps = {
   seed?: number;
 } & Omit<ThreeElements["group"], "children">;
 
-export function Doll({
+/** The original toon doll, shown while the 3D doll's models load. */
+export function ToonDoll({
   look,
   swim = null,
   body = DEFAULT_BODY,
@@ -173,6 +206,8 @@ export function Doll({
   const m = useDollMaterials(look, swim);
   const face = useFace(look, m.face);
   const hair = hairGeometry(look.hairStyle);
+  const root = useRef<THREE.Group>(null);
+  const lod = useRef<boolean | null>(null);
   const rig = useRef<Rig>({});
   const set = (k: keyof Rig) => (g: THREE.Group | null) => {
     rig.current[k] = g;
@@ -183,9 +218,23 @@ export function Doll({
   // one pose buffer per doll, rewritten each frame, so the loop allocates nothing
   const sampled = useMemo<Pose>(createPose, []);
 
+  // a new look brings new meshes with near geometry, so the LOD is reapplied
+  useEffect(() => {
+    lod.current = null;
+  }, [look, hair]);
+
   useFrame((state, dt) => {
     const t = state.clock.elapsedTime + seed * 7.3;
     hairTime.value = state.clock.elapsedTime;
+    if (root.current) {
+      root.current.getWorldPosition(worldPos);
+      const far = worldPos.distanceTo(state.camera.position);
+      const isFar = far > (lod.current ? NEAR_RANGE : FAR_RANGE);
+      if (isFar !== lod.current) {
+        lod.current = isFar;
+        setLod(root.current, isFar);
+      }
+    }
     const j = rig.current;
     if (!j.body) return;
     const speed = walk?.current.speed ?? 0;
@@ -226,7 +275,7 @@ export function Doll({
   const scale = bodyScales(body);
 
   return (
-    <group {...rest} scale={[scale.hips, scale.height, scale.hips]}>
+    <group {...rest} ref={root} scale={[scale.hips, scale.height, scale.hips]}>
       <mesh
         geometry={G.shadow}
         rotation-x={-Math.PI / 2}
@@ -333,7 +382,14 @@ export function Doll({
                 geometry={G.hand}
                 material={m.skin}
                 position={[0, -0.25, 0.004]}
-                scale={[0.017, 0.042, 0.026]}
+                scale={[s * 0.017, 0.042, 0.026]}
+              />
+              <Part
+                geometry={G.nails}
+                material={NAIL}
+                outline={null}
+                position={[0, -0.25, 0.004]}
+                scale={[s * 0.017, 0.042, 0.026]}
               />
               {s === 1 && mood === "lean" && (
                 <group position={[0, -0.25, 0.04]} rotation-x={Math.PI / 2}>
@@ -418,5 +474,15 @@ function Shoe({
         rotation-x={Math.PI / 2}
       />
     </group>
+  );
+}
+
+/** A doll: the 3D Blender-built doll, with the toon doll standing in while
+ * its models load. */
+export function Doll(props: DollProps) {
+  return (
+    <Suspense fallback={<ToonDoll {...props} />}>
+      <HumanDoll {...props} />
+    </Suspense>
   );
 }
