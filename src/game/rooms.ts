@@ -5,6 +5,12 @@ import {
   INTERIOR_FLOOR,
   INTERIOR_SPAWN,
 } from "./food/interiors.ts";
+import {
+  CAROUSEL_AT,
+  DROP_TOWER_AT,
+  SWING_AT,
+  TEACUPS_AT,
+} from "./amusementPark.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -31,6 +37,8 @@ export type RoomDefinition = {
   spawn: Spawn;
   /** Dolls wear their swimsuit look here instead of their outfit. */
   swimwear?: boolean;
+  /** Solid footprints on the walkable floor (rides, carts), walked around. */
+  blockers?: readonly (readonly Vec2[])[];
   portals: readonly {
     id: string;
     position: Vec2;
@@ -101,13 +109,60 @@ const PLAZA_FLOOR: readonly Vec2[] = [
   [-12, 7],
 ];
 
-// Amusement Park: a 18 m x 15.5 m midway. Rides stand behind the back edge at
-// z = -8, beyond the walkable floor, and each boarding ring sits inside it.
+// Amusement Park: an 18 m x 15.5 m midway (x -9..9, z -8..7.5) opening at its
+// back onto the fairground among the rides, and through the carnival arch at
+// z = -30 to the back lot and the Starlight coaster. Each ride's footprint is a
+// blocker; boarding rings sit in front of them.
 const AMUSEMENT_PARK_FLOOR: readonly Vec2[] = [
+  [-9, 7.5],
   [-9, -8],
+  [-17, -8],
+  [-17, -53],
+  [17, -53],
+  [17, -8],
   [9, -8],
   [9, 7.5],
-  [-9, 7.5],
+];
+
+/** A circle as an octagon, for round footprints. */
+function round(at: readonly [number, number], r: number): Vec2[] {
+  return Array.from({ length: 8 }, (_, i): Vec2 => {
+    const a = (i / 8) * Math.PI * 2;
+    return [at[0] + r * Math.cos(a), at[1] + r * Math.sin(a)];
+  });
+}
+
+function box(x0: number, z0: number, x1: number, z1: number): Vec2[] {
+  return [
+    [x0, z0],
+    [x1, z0],
+    [x1, z1],
+    [x0, z1],
+  ];
+}
+
+const AMUSEMENT_PARK_BLOCKERS: readonly (readonly Vec2[])[] = [
+  round(CAROUSEL_AT, 4.1),
+  round(TEACUPS_AT, 3.1),
+  round(SWING_AT, 3.5),
+  round(DROP_TOWER_AT, 1.2),
+  // the ferris wheel's legs and low gondolas
+  box(-10, -11, -3, -9),
+  // the Comet coaster's towers and low track
+  [
+    [5, -9.3],
+    [12.5, -10.5],
+    [15.8, -16],
+    [13.5, -22.5],
+    [7, -24.8],
+    [1.3, -20.5],
+    [2.3, -13],
+  ],
+  // the Starlight's station, lift and towers
+  box(-15.5, -52, 16.5, -36.2),
+  // food carts at the midway's back corners
+  box(-12.4, -10.3, -10.6, -8.7),
+  box(10.6, -10.3, 12.4, -8.7),
 ];
 
 // Water Park: a sunny deck in front of the wave pool (x -10..3, z -9.5..-1.5).
@@ -282,6 +337,7 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
     id: "amusement-park",
     name: "Amusement Park",
     walkable: AMUSEMENT_PARK_FLOOR,
+    blockers: AMUSEMENT_PARK_BLOCKERS,
     spawn: { position: [0, 4.6], yaw: Math.PI },
     portals: [
       {

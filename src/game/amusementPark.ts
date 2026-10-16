@@ -5,16 +5,77 @@ import type { DialogueRole } from "./dialogue/types.ts";
 
 export type Vec3 = readonly [x: number, y: number, z: number];
 
-export const RIDE_IDS = ["ferris-wheel", "coaster"] as const;
+export const RIDE_IDS = [
+  "ferris-wheel",
+  "coaster",
+  "starlight",
+  "carousel",
+  "teacups",
+  "swings",
+  "drop-tower",
+] as const;
 export type RideId = (typeof RIDE_IDS)[number];
 
-// Ride tuning. Calm (reduced motion) rides take longer, so the same motion reads slower.
+// Where the turning rides stand on the fairground (x, z).
+export const CAROUSEL_AT: readonly [number, number] = [-4.5, -20];
+export const TEACUPS_AT: readonly [number, number] = [-11.5, -20];
+export const SWING_AT: readonly [number, number] = [9, -30];
+export const DROP_TOWER_AT: readonly [number, number] = [-11.5, -28];
+
+// Ride tuning. Calm (reduced motion) rides take longer, so the same motion reads
+// slower. `seated` rides sit the doll down (a horse, a cup, a chair, a
+// coaster car); in the wheel's gondola she stands.
 export const RIDES: Record<
   RideId,
-  { spot: readonly [number, number]; seconds: { normal: number; calm: number } }
+  {
+    label: string;
+    spot: readonly [number, number];
+    seconds: { normal: number; calm: number };
+    seated: boolean;
+  }
 > = {
-  "ferris-wheel": { spot: [-6.5, -7], seconds: { normal: 24, calm: 40 } },
-  coaster: { spot: [6.5, -7], seconds: { normal: 22, calm: 36 } },
+  "ferris-wheel": {
+    label: "Ferris wheel",
+    spot: [-6.5, -7],
+    seconds: { normal: 24, calm: 40 },
+    seated: false,
+  },
+  coaster: {
+    label: "Comet coaster",
+    spot: [6.5, -7],
+    seconds: { normal: 22, calm: 36 },
+    seated: true,
+  },
+  starlight: {
+    label: "Starlight hyper coaster",
+    spot: [-3, -34],
+    seconds: { normal: 30, calm: 48 },
+    seated: true,
+  },
+  carousel: {
+    label: "Carousel",
+    spot: [-4.5, -15.3],
+    seconds: { normal: 20, calm: 30 },
+    seated: true,
+  },
+  teacups: {
+    label: "Teacups",
+    spot: [-11.5, -16.3],
+    seconds: { normal: 18, calm: 28 },
+    seated: true,
+  },
+  swings: {
+    label: "Swing ride",
+    spot: [9, -25.6],
+    seconds: { normal: 20, calm: 30 },
+    seated: true,
+  },
+  "drop-tower": {
+    label: "Drop tower",
+    spot: [-11.5, -25.4],
+    seconds: { normal: 16, calm: 27 },
+    seated: true,
+  },
 };
 
 /** Seconds for the doll to step off a ride back onto its boarding spot. */
@@ -55,10 +116,17 @@ export function rideProgress(elapsed: number, seconds: number): number {
  * A position and facing. Motion functions write into a Pose the caller owns,
  * so a frame loop can reuse one scratch object and allocate nothing.
  */
-export type Pose = { x: number; y: number; z: number; yaw: number };
+export type Pose = {
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+  /** Nose up (+) or down along a track, radians; 0 off a track. */
+  pitch: number;
+};
 
 export function newPose(): Pose {
-  return { x: 0, y: 0, z: 0, yaw: 0 };
+  return { x: 0, y: 0, z: 0, yaw: 0, pitch: 0 };
 }
 
 /** A gondola on the rim after `progress` of one full turn, starting at the bottom. */
@@ -74,6 +142,7 @@ export function ferrisPose(
   out.z = hz;
   // gondolas stay upright and the rider faces the camera side
   out.yaw = 0;
+  out.pitch = 0;
   return out;
 }
 
@@ -129,6 +198,108 @@ export function buildTrack(controls: readonly Vec3[], steps = 16): Track {
 
 export const COASTER_TRACK = buildTrack(COASTER_CONTROLS);
 
+// The Starlight: a hyper coaster in the back lot, through the carnival arch.
+// Out of the station along +x, up a 20 m lift, a steep first drop, a camelback
+// and a turning valley home. It never inverts: the rider's seat only turns.
+export const STARLIGHT_CONTROLS: readonly Vec3[] = [
+  [-3, 1.4, -37],
+  [3, 2.6, -37],
+  [11, 20, -37.6],
+  [15, 21, -41],
+  [14, 3.2, -46.5],
+  [6, 2, -50],
+  [-2, 11, -50.5],
+  [-9, 2.6, -49.5],
+  [-14.5, 6, -45.5],
+  [-13, 4, -40.5],
+  [-8, 1.6, -37.4],
+];
+export const STARLIGHT_TRACK = buildTrack(STARLIGHT_CONTROLS, 24);
+
+// How the turning rides turn, by scene time in seconds. The scenery and the
+// rider's seat both read these, so she stays on her horse, cup or chair.
+export function carouselTurn(t: number, calm: boolean): number {
+  return t * (calm ? 0.2 : 0.55);
+}
+export function swingTurn(t: number, calm: boolean): number {
+  return t * (calm ? 0.25 : 0.9);
+}
+/** The teacup plate's turn and each cup's own spin on it. */
+export function teacupTurns(t: number, calm: boolean) {
+  const s = t * (calm ? 0.5 : 1);
+  return { plate: s * 0.35, cup: -s * 0.9 };
+}
+export function dropClock(t: number, calm: boolean): number {
+  return t * (calm ? 0.6 : 1);
+}
+
+export const CAROUSEL_RADIUS = 2.6;
+export const SWING_RADIUS = 2.8;
+export const SWING_TOP = 6.4;
+export const CUP_RADIUS = 1.7;
+export const TOWER_TOP = 17;
+export const TOWER_BASE = 1.4;
+
+// Hips above the doll's feet when she sits (src/client/avatar/pose.ts).
+const SIT_HIPS = 0.59;
+/** A coaster car's seat above the track line. */
+export const CAR_SEAT = 0.42;
+
+/** A point on a turning ride: `radius` out at angle 0 once the ride has
+ * turned `turn` (three.js y rotation), about `at`. */
+function onTurn(
+  at: readonly [number, number],
+  radius: number,
+  turn: number,
+  out: Pose,
+) {
+  out.x = at[0] + radius * Math.cos(-turn);
+  out.z = at[1] + radius * Math.sin(-turn);
+}
+
+/** The seat on a turning ride at scene time `now`. */
+function turningPose(
+  ride: "carousel" | "teacups" | "swings" | "drop-tower",
+  now: number,
+  calm: boolean,
+  out: Pose,
+): Pose {
+  out.pitch = 0;
+  switch (ride) {
+    case "carousel": {
+      const turn = carouselTurn(now, calm);
+      onTurn(CAROUSEL_AT, CAROUSEL_RADIUS, turn, out);
+      // astride the first horse's saddle
+      out.y = 1.25 - SIT_HIPS;
+      out.yaw = turn;
+      return out;
+    }
+    case "swings": {
+      const turn = swingTurn(now, calm);
+      onTurn(SWING_AT, SWING_RADIUS, turn, out);
+      out.y = SWING_TOP - 1.94 - SIT_HIPS;
+      out.yaw = turn;
+      return out;
+    }
+    case "teacups": {
+      const { plate, cup } = teacupTurns(now, calm);
+      onTurn(TEACUPS_AT, CUP_RADIUS, plate, out);
+      out.y = 0.42 - SIT_HIPS;
+      out.yaw = plate + cup;
+      return out;
+    }
+    case "drop-tower": {
+      // on the car's front edge, legs over the side, facing the midway
+      const car = dropTowerHeight(dropClock(now, calm), TOWER_BASE, TOWER_TOP);
+      out.x = DROP_TOWER_AT[0];
+      out.z = DROP_TOWER_AT[1] + 0.95;
+      out.y = car + 0.25 - SIT_HIPS;
+      out.yaw = 0;
+      return out;
+    }
+  }
+}
+
 /** The point and facing `at` metres along the track, wrapping around the loop. */
 export function trackPose(
   track: Track,
@@ -148,19 +319,37 @@ export function trackPose(
   out.y = a[1] + (b[1] - a[1]) * f;
   out.z = a[2] + (b[2] - a[2]) * f;
   out.yaw = Math.atan2(b[0] - a[0], b[2] - a[2]);
+  out.pitch = Math.atan2(b[1] - a[1], Math.hypot(b[0] - a[0], b[2] - a[2]));
   return out;
 }
 
-/** The seat on a ride `elapsed` seconds after boarding. Pure function of time. */
+/**
+ * The seat on a ride `elapsed` seconds after boarding. Pure function of time:
+ * the wheel and coasters run from boarding, the turning rides by scene time
+ * `now` (they never stop for a rider).
+ */
 export function ridePose(
   ride: RideId,
   elapsed: number,
   calm: boolean,
   out: Pose = newPose(),
+  now = elapsed,
 ): Pose {
   const progress = rideProgress(elapsed, rideSeconds(ride, calm));
-  if (ride === "ferris-wheel") return ferrisPose(FERRIS, progress, out);
-  return trackPose(COASTER_TRACK, progress * COASTER_TRACK.length, out);
+  switch (ride) {
+    case "ferris-wheel":
+      return ferrisPose(FERRIS, progress, out);
+    case "coaster":
+    case "starlight": {
+      // seated in the train's lead car (the scene puts the car there too)
+      const track = ride === "coaster" ? COASTER_TRACK : STARLIGHT_TRACK;
+      trackPose(track, progress * track.length, out);
+      out.y += CAR_SEAT - SIT_HIPS;
+      return out;
+    }
+    default:
+      return turningPose(ride, now, calm, out);
+  }
 }
 
 export type RideState =
@@ -236,13 +425,14 @@ export function seatPose(
     case "boarding":
       return null;
     case "riding":
-      return ridePose(state.ride, now - state.start, calm, out);
+      return ridePose(state.ride, now - state.start, calm, out, now);
     case "exiting": {
       const end = ridePose(
         state.ride,
         rideSeconds(state.ride, calm),
         calm,
         RIDE_END,
+        state.start,
       );
       const t = smoothstep(rideProgress(now - state.start, EXIT_SECONDS));
       const [sx, sz] = RIDES[state.ride].spot;
@@ -250,6 +440,7 @@ export function seatPose(
       out.y = end.y * (1 - t);
       out.z = end.z + (sz - end.z) * t;
       out.yaw = end.yaw;
+      out.pitch = 0;
       return out;
     }
   }

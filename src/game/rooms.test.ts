@@ -1,3 +1,5 @@
+import { areaOf, isBlocked } from "./area.ts";
+import { CAROUSEL_AT, RIDE_IDS, RIDES } from "./amusementPark.ts";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { ROOMS, isRoomId } from "./rooms.ts";
@@ -94,14 +96,23 @@ test("every room has a name and at least one portal", () => {
 });
 
 test("the Amusement Park is a walkable midway with its gate at the front", () => {
-  const { walkable, spawn } = ROOMS["amusement-park"];
-  assert.equal(pointInPolygon(walkable, spawn.position), true);
-  // the boarding rings for both rides stay on the floor
-  assert.equal(pointInPolygon(walkable, [-6.5, -7]), true);
-  assert.equal(pointInPolygon(walkable, [6, -7]), true);
-  // the rides and their supports stand behind the back edge
-  assert.equal(pointInPolygon(walkable, [-6.5, -9]), false);
-  assert.equal(pointInPolygon(walkable, [6, -10]), false);
+  const room = ROOMS["amusement-park"];
+  const area = areaOf(room);
+  assert.equal(pointInPolygon(room.walkable, room.spawn.position), true);
+  // every boarding ring is on open ground, clear of the rides
+  for (const id of RIDE_IDS) {
+    const spot = RIDES[id].spot;
+    assert.equal(pointInPolygon(room.walkable, spot), true, id);
+    assert.equal(isBlocked(area, spot), false, id);
+  }
+  // the rides themselves are solid: no walking through a ride
+  assert.equal(isBlocked(area, CAROUSEL_AT), true);
+  assert.equal(isBlocked(area, [-6.5, -10]), true);
+  assert.equal(isBlocked(area, [8, -16]), true);
+  assert.equal(isBlocked(area, [0, -45]), true);
+  // the fairground between them, and the back lot past the arch, are open
+  assert.equal(isBlocked(area, [0, -30]), false);
+  assert.equal(pointInPolygon(room.walkable, [0, -30]), true);
 });
 
 test("the Plaza gate and the park's exit lead to each other", () => {

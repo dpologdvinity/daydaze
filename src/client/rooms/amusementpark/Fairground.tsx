@@ -100,7 +100,15 @@ const LAMPS: readonly [number, number][] = [
   [9.4, -6.5],
   [9.4, -1],
   [9.4, 4.5],
+  // along the path past the rides, through the carnival arch to the Starlight
+  ...[-26, -33].flatMap((z): [number, number][] => [
+    [-2.2, z],
+    [2.2, z],
+  ]),
 ];
+
+// the lit path itself, a strip of warm paving on the dark fairground
+const PATH = { x: 1.4, z: -21, width: 1.6, length: 26 };
 const LAMP_POLES: readonly Segment[] = LAMPS.map(([x, z]): Segment => ({
   from: [x, 0, z],
   to: [x, 3.4, z],
@@ -151,6 +159,10 @@ export function Fairground() {
       <Segments items={LAMP_POLES} color="#2a1d3a" />
       <Copies geometry={LAMP_CAP} material={LACQUER} items={LAMP_ITEMS} />
       <Copies geometry={LAMP_GLOBE} material={LAMP_GLOW} items={LAMP_ITEMS} />
+      <mesh rotation-x={-Math.PI / 2} position={[PATH.x, 0.005, PATH.z]}>
+        <planeGeometry args={[PATH.width, PATH.length]} />
+        <meshStandardMaterial color="#4a2550" roughness={0.8} />
+      </mesh>
     </group>
   );
 }

@@ -2,10 +2,13 @@
 // src/game/amusementPark.ts; the midway walks x -9..9 and z -8..7.5, and the
 // rides stand just behind its back edge at z -8.
 
-export const CAROUSEL_AT: readonly [number, number] = [-4.5, -20];
-export const TEACUPS_AT: readonly [number, number] = [-11.5, -20];
-export const SWING_AT: readonly [number, number] = [-1.5, -28];
-export const DROP_TOWER_AT: readonly [number, number] = [-11.5, -28];
+// the turning rides stand where the game logic puts them (their seats too)
+export {
+  CAROUSEL_AT,
+  DROP_TOWER_AT,
+  SWING_AT,
+  TEACUPS_AT,
+} from "../../../game/amusementPark.ts";
 
 // The entrance arch stands just outside the exit portal at z 6.9.
 export const ENTRANCE_Z = 7.4;

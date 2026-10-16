@@ -1165,3 +1165,21 @@ button:focus-visible {
   font-size: 13px;
   color: var(--lilac);
 }
+
+/* ride names over the Amusement Park's boarding rings */
+.ride-sign {
+  padding: 4px 10px;
+  border: 1px solid rgb(255 207 106 / 0.5);
+  border-radius: 999px;
+  background: rgb(20 6 30 / 0.75);
+  color: #ffe9f6;
+  font: 600 12px/1.2 var(--sans);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ride-sign:hover,
+.ride-sign:focus-visible {
+  border-color: #ff2f9a;
+  outline: none;
+}

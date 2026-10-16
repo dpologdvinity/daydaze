@@ -53,7 +53,13 @@ export type Player = {
   /** Frame time not yet simulated, in seconds. */
   acc: number;
   /** Set while a ride carries the doll; walking pauses and the seat wins. */
-  seat: { position: THREE.Vector3; yaw: number; lie?: boolean } | null;
+  seat: {
+    position: THREE.Vector3;
+    yaw: number;
+    lie?: boolean;
+    /** A ride seat (horse, cup, chair): she sits while it holds her. */
+    sit?: boolean;
+  } | null;
   /** Set while seated on a chair (not a ride): the doll sits until she moves. */
   sitting: boolean;
   /** A slide ride: `t` runs 0..1 down the slide, then `swim` counts seconds. */
@@ -229,7 +235,13 @@ export function PlayerController({
     }
     const rideMood =
       ride(player, area, dt, calm) ??
-      (player.sitting ? (player.seat?.lie ? "lay" : "sit") : null);
+      (player.sitting
+        ? player.seat?.lie
+          ? "lay"
+          : "sit"
+        : player.seat?.sit
+          ? "sit"
+          : null);
     if (rideMood !== shownRide.current) {
       shownRide.current = rideMood;
       setRiding(rideMood);

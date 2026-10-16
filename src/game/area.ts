@@ -21,7 +21,11 @@ export type WalkArea = {
 };
 
 export function roomArea(room: RoomDefinition): WalkArea {
-  return { surfaces: [room.walkable], blockers: [], portals: room.portals };
+  return {
+    surfaces: [room.walkable],
+    blockers: room.blockers ?? [],
+    portals: room.portals,
+  };
 }
 
 /** The walk area of any room; the city is one area of many surfaces. */

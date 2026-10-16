@@ -3,7 +3,15 @@ import assert from "node:assert/strict";
 import { LINE_BANKS } from "./dialogue/index.ts";
 import { pickLine, seededRng } from "./dialogue/pick.ts";
 import {
+  CAROUSEL_AT,
+  CAROUSEL_RADIUS,
   COASTER_TRACK,
+  CUP_RADIUS,
+  RIDE_IDS,
+  STARLIGHT_TRACK,
+  SWING_AT,
+  SWING_RADIUS,
+  TEACUPS_AT,
   EXIT_SECONDS,
   FERRIS,
   PARK_CONTEXT,
@@ -264,5 +272,64 @@ test("every park NPC's role has tapped lines for the fairground", () => {
     });
     assert.notEqual(picked.text, "...", `${npc} (${role}) has no tapped line`);
     assert.ok(LINE_BANKS[role].tapped?.length, role);
+  }
+});
+
+test("the Starlight's track stays above the ground and climbs to a 20 m lift", () => {
+  const ys = STARLIGHT_TRACK.samples.map((p) => p[1]);
+  assert.ok(Math.min(...ys) > 0.8, `lowest ${Math.min(...ys)}`);
+  assert.ok(Math.max(...ys) > 19, `highest ${Math.max(...ys)}`);
+});
+
+test("every ride's seat is finite all the way round, and the turning rides keep her on them", () => {
+  for (const id of RIDE_IDS) {
+    for (let t = 0; t < rideSeconds(id, false); t += 0.7) {
+      const p = ridePose(id, t, false, newPose(), 100 + t);
+      for (const v of [p.x, p.y, p.z, p.yaw]) assert.ok(Number.isFinite(v), id);
+      assert.ok(p.y > -0.6 && p.y < 24, `${id} height ${p.y}`);
+    }
+  }
+  const near = (
+    at: readonly [number, number],
+    r: number,
+    p: { x: number; z: number },
+  ) => Math.abs(Math.hypot(p.x - at[0], p.z - at[1]) - r) < 1e-6;
+  for (let now = 0; now < 30; now += 1.3) {
+    assert.ok(
+      near(
+        CAROUSEL_AT,
+        CAROUSEL_RADIUS,
+        ridePose("carousel", 0, false, newPose(), now),
+      ),
+    );
+    assert.ok(
+      near(
+        SWING_AT,
+        SWING_RADIUS,
+        ridePose("swings", 0, false, newPose(), now),
+      ),
+    );
+    assert.ok(
+      near(
+        TEACUPS_AT,
+        CUP_RADIUS,
+        ridePose("teacups", 0, true, newPose(), now),
+      ),
+    );
+  }
+});
+
+test("every ride steps her off onto its boarding ring", () => {
+  for (const id of RIDE_IDS) {
+    const state = {
+      phase: "exiting" as const,
+      ride: id,
+      start: 50,
+    };
+    const end = seatPose(state, 50 + EXIT_SECONDS, false);
+    assert.ok(end, id);
+    assert.ok(Math.abs(end.x - RIDES[id].spot[0]) < 1e-6, id);
+    assert.ok(Math.abs(end.z - RIDES[id].spot[1]) < 1e-6, id);
+    assert.ok(Math.abs(end.y) < 1e-6, id);
   }
 });

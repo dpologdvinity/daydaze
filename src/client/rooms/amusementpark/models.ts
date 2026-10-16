@@ -3,6 +3,9 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import {
   COASTER_CONTROLS,
   COASTER_TRACK,
+  STARLIGHT_CONTROLS,
+  STARLIGHT_TRACK,
+  type Track,
   FERRIS,
   trackPose,
   type Vec3,
@@ -157,27 +160,39 @@ export function latticeTower(x: number, y: number, z: number): Segment[] {
   return out;
 }
 
-// Coaster: the neon line is the track; rails, ties and towers are built here.
-export const TRACK_CURVE = new THREE.CatmullRomCurve3(
-  COASTER_CONTROLS.map((p) => new THREE.Vector3(...p)),
-  true,
-  "catmullrom",
-  0.5,
-);
+// Coasters: the neon line is the track; rails, ties and towers are built here.
+export type CoasterParts = {
+  curve: THREE.CatmullRomCurve3;
+  rails: THREE.BufferGeometry;
+  ties: readonly Box[];
+  supports: readonly Segment[];
+};
 
-/** Two steel rails either side of the neon line, a little below it. */
-export function coasterRails(): THREE.BufferGeometry {
-  const N = 240;
+/** Rails, ties and lattice towers for the closed track through `controls`. */
+export function coasterParts(
+  controls: readonly Vec3[],
+  track: Track,
+  tieCount = 64,
+): CoasterParts {
+  const curve = new THREE.CatmullRomCurve3(
+    controls.map((p) => new THREE.Vector3(...p)),
+    true,
+    "catmullrom",
+    0.5,
+  );
+  const N = Math.max(240, tieCount * 4);
+  // two steel rails either side of the neon line, a little below it
   const rails = [-0.5, 0.5].map((offset) => {
     const pts: THREE.Vector3[] = [];
     for (let i = 0; i < N; i++) {
       const t = i / N;
       const side = new THREE.Vector3()
-        .crossVectors(TRACK_CURVE.getTangentAt(t), UP)
+        .crossVectors(curve.getTangentAt(t), UP)
         .normalize()
         .multiplyScalar(offset);
       pts.push(
-        TRACK_CURVE.getPointAt(t)
+        curve
+          .getPointAt(t)
           .add(side)
           .add(new THREE.Vector3(0, -0.1, 0)),
       );
@@ -192,26 +207,25 @@ export function coasterRails(): THREE.BufferGeometry {
       ),
     };
   });
-  return merged(rails);
-}
-
-/** Wooden-looking sleepers under the rails, evenly spaced along the loop. */
-export const COASTER_TIES: readonly Box[] = Array.from(
-  { length: 64 },
-  (_, i) => {
-    const p = trackPose(COASTER_TRACK, (i / 64) * COASTER_TRACK.length);
+  // wooden-looking sleepers under the rails, evenly spaced along the loop
+  const ties = Array.from({ length: tieCount }, (_, i): Box => {
+    const p = trackPose(track, (i / tieCount) * track.length);
     return {
       position: [p.x, p.y - 0.12, p.z],
       size: [1.1, 0.05, 0.14],
       yaw: p.yaw,
       color: "#4a2d5c",
     };
-  },
-);
+  });
+  // a lattice tower under every raised control point
+  const supports = controls
+    .filter(([, y]) => y > 2.5)
+    .flatMap(([x, y, z]) => latticeTower(x, y, z));
+  return { curve, rails: merged(rails), ties, supports };
+}
 
-export const COASTER_SUPPORTS: readonly Segment[] = COASTER_CONTROLS.filter(
-  ([, y]) => y > 2.5,
-).flatMap(([x, y, z]) => latticeTower(x, y, z));
+export const COMET = coasterParts(COASTER_CONTROLS, COASTER_TRACK);
+export const STARLIGHT = coasterParts(STARLIGHT_CONTROLS, STARLIGHT_TRACK, 120);
 
 // A coaster car, nose along +z so the track yaw turns it. Three draws in total:
 // painted shell (tinted per car), dark trim and glowing light strips.

@@ -2,12 +2,24 @@ import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import {
+  CAROUSEL_RADIUS,
   COASTER_TRACK,
+  CUP_RADIUS,
   FERRIS,
+  STARLIGHT_TRACK,
+  SWING_RADIUS,
+  SWING_TOP,
+  TOWER_BASE,
+  TOWER_TOP,
+  carouselTurn,
+  dropClock,
   dropTowerHeight,
   ferrisPose,
   newPose,
+  swingTurn,
+  teacupTurns,
   trackPose,
+  type Track,
 } from "../../../game/amusementPark.ts";
 import { useReducedMotion } from "../../motion.ts";
 import { canvasTex, GOLD, hdr, LACQUER } from "../shared/materials.ts";
@@ -24,13 +36,12 @@ import {
 import {
   CAROUSEL_POLE,
   COASTER_CAR,
-  COASTER_SUPPORTS,
-  COASTER_TIES,
+  COMET,
   FERRIS_FRAME,
   GONDOLA,
   HORSE,
-  TRACK_CURVE,
-  coasterRails,
+  STARLIGHT,
+  type CoasterParts,
   rimBulbs,
   rimLattice,
 } from "./models.ts";
@@ -110,7 +121,6 @@ const RIM_RADIUS = FERRIS.radius;
 const RIM_LATTICE = rimLattice(RIM_RADIUS);
 const RIM_BULBS = rimBulbs(RIM_RADIUS);
 const [HX, HY, HZ] = FERRIS.hub;
-const COASTER_RAILS = coasterRails();
 
 /** A ferris wheel that always turns. Gondolas stay upright on the rim. */
 export function FerrisWheel() {
@@ -185,7 +195,14 @@ const HORSE_ITEMS: readonly Copy[] = Array.from(
   { length: CAROUSEL_HORSES },
   (_, k): Copy => {
     const a = (k / CAROUSEL_HORSES) * TAU;
-    return { position: [Math.cos(a) * 2.6, 0, Math.sin(a) * 2.6], yaw: -a };
+    return {
+      position: [
+        Math.cos(a) * CAROUSEL_RADIUS,
+        0,
+        Math.sin(a) * CAROUSEL_RADIUS,
+      ],
+      yaw: -a,
+    };
   },
 );
 const HORSE_BODY = HORSE_ITEMS.map((h, k) => ({
@@ -224,7 +241,7 @@ export function Carousel() {
   const stripes = useStripes("#ff2f9a", "#fff1c8");
   useFrame(({ clock }) => {
     if (ring.current)
-      ring.current.rotation.y = clock.elapsedTime * (calm ? 0.2 : 0.55);
+      ring.current.rotation.y = carouselTurn(clock.elapsedTime, calm);
   });
   return (
     <group position={[CAROUSEL_AT[0], 0, CAROUSEL_AT[1]]}>
@@ -261,40 +278,56 @@ export function Carousel() {
   );
 }
 
-const CAR_COUNT = 3;
 const CAR_SPACING = 2.4;
 const CAR_COLORS = ["#ffb02e", "#ff2f9a", "#3dff9a"];
 
-/** The coaster: a glowing loop of track with a decorative train always running it. */
-export function Coaster() {
+/** Metres along each coaster's track of the player's car while she rides it;
+ * the scene writes it every frame, the train follows it. */
+export const coasterRiders: Partial<Record<"coaster" | "starlight", number>> =
+  {};
+const tilt = new THREE.Euler(0, 0, 0, "YXZ");
+
+/** A coaster: a glowing line of track with a train always running it; while
+ * the player rides, its lead car carries her. */
+function CoasterTrack({
+  id,
+  parts,
+  track,
+  neon,
+  cars,
+  speed,
+}: {
+  id: "coaster" | "starlight";
+  parts: CoasterParts;
+  track: Track;
+  neon: string;
+  cars: readonly string[];
+  /** Metres per second along the loop, and in calm mode. */
+  speed: { normal: number; calm: number };
+}) {
   const calm = useReducedMotion();
   const paint = useRef<THREE.InstancedMesh>(null);
   const trim = useRef<THREE.InstancedMesh>(null);
   const glow = useRef<THREE.InstancedMesh>(null);
-  const track = useMemo(
-    () => new THREE.TubeGeometry(TRACK_CURVE, 240, 0.07, 6, true),
-    [],
+  const line = useMemo(
+    () => new THREE.TubeGeometry(parts.curve, 480, 0.07, 6, true),
+    [parts],
   );
   useLayoutEffect(() => {
     const m = paint.current;
     if (!m) return;
-    for (let k = 0; k < CAR_COUNT; k++) {
-      m.setColorAt(k, new THREE.Color(CAR_COLORS[k]));
-    }
+    cars.forEach((c, k) => m.setColorAt(k, new THREE.Color(c)));
     if (m.instanceColor) m.instanceColor.needsUpdate = true;
-  }, []);
+  }, [cars]);
   useFrame(({ clock }) => {
-    // metres per second along the loop; calm mode runs a slow train
-    const speed = calm ? 3 : 8;
-    const { pose, matrix, position, quaternion, scale, axis } = scratch;
-    for (let k = 0; k < CAR_COUNT; k++) {
-      trackPose(
-        COASTER_TRACK,
-        clock.elapsedTime * speed - k * CAR_SPACING,
-        pose,
-      );
+    const v = calm ? speed.calm : speed.normal;
+    const lead = coasterRiders[id] ?? clock.elapsedTime * v;
+    const { pose, matrix, position, quaternion, scale } = scratch;
+    for (let k = 0; k < cars.length; k++) {
+      trackPose(track, lead - k * CAR_SPACING, pose);
       position.set(pose.x, pose.y + 0.2, pose.z);
-      quaternion.setFromAxisAngle(axis, pose.yaw);
+      // nose along +z: yaw about y, then nose up or down with the track
+      quaternion.setFromEuler(tilt.set(-pose.pitch, pose.yaw, 0));
       matrix.compose(position, quaternion, scale);
       paint.current?.setMatrixAt(k, matrix);
       trim.current?.setMatrixAt(k, matrix);
@@ -306,21 +339,50 @@ export function Coaster() {
   });
   return (
     <group>
-      <mesh geometry={track}>
-        <meshBasicMaterial color={hdr("#3fe0d0", 2)} toneMapped={false} />
+      <mesh geometry={line}>
+        <meshBasicMaterial color={hdr(neon, 2)} toneMapped={false} />
       </mesh>
-      <mesh geometry={COASTER_RAILS} material={STEEL} />
-      <Boxes items={COASTER_TIES} />
-      <Segments items={COASTER_SUPPORTS} />
-      <instancedMesh ref={paint} args={[COASTER_CAR.paint, PAINT, CAR_COUNT]} />
-      <instancedMesh ref={trim} args={[COASTER_CAR.trim, TRIM, CAR_COUNT]} />
-      <instancedMesh ref={glow} args={[COASTER_CAR.glow, GLOW, CAR_COUNT]} />
+      <mesh geometry={parts.rails} material={STEEL} />
+      <Boxes items={parts.ties} />
+      <Segments items={parts.supports} />
+      <instancedMesh
+        ref={paint}
+        args={[COASTER_CAR.paint, PAINT, cars.length]}
+      />
+      <instancedMesh ref={trim} args={[COASTER_CAR.trim, TRIM, cars.length]} />
+      <instancedMesh ref={glow} args={[COASTER_CAR.glow, GLOW, cars.length]} />
     </group>
   );
 }
 
-const TOWER_TOP = 17;
-const TOWER_BASE = 1.4;
+/** The Comet: the midway's coaster loop behind the right-hand booths. */
+export function Coaster() {
+  return (
+    <CoasterTrack
+      id="coaster"
+      parts={COMET}
+      track={COASTER_TRACK}
+      neon="#3fe0d0"
+      cars={CAR_COLORS}
+      speed={{ normal: 8, calm: 3 }}
+    />
+  );
+}
+
+/** The Starlight: the hyper coaster in the back lot, a five-car train. */
+export function Starlight() {
+  return (
+    <CoasterTrack
+      id="starlight"
+      parts={STARLIGHT}
+      track={STARLIGHT_TRACK}
+      neon="#ff2f9a"
+      cars={["#9b5cff", "#3fe0d0", "#ff2f9a", "#ffb02e", "#3dff9a"]}
+      speed={{ normal: 13, calm: 4 }}
+    />
+  );
+}
+
 const TOWER_LEGS: readonly Segment[] = [
   [-0.9, -0.9],
   [0.9, -0.9],
@@ -348,7 +410,7 @@ export function DropTower() {
   useFrame(({ clock }) => {
     if (car.current) {
       car.current.position.y = dropTowerHeight(
-        clock.elapsedTime * (calm ? 0.6 : 1),
+        dropClock(clock.elapsedTime, calm),
         TOWER_BASE,
         TOWER_TOP,
       );
@@ -371,8 +433,6 @@ export function DropTower() {
 }
 
 const SWING_ARMS = 8;
-const SWING_RADIUS = 2.8;
-const SWING_TOP = 6.4;
 
 // Each arm is a spoke from the mast, a chain and a chair. Built once in the arm's frame.
 const SWING_SEGMENTS: readonly Segment[] = Array.from(
@@ -414,7 +474,7 @@ export function SwingRide() {
   const [x, z] = SWING_AT;
   useFrame(({ clock }) => {
     if (arms.current)
-      arms.current.rotation.y = clock.elapsedTime * (calm ? 0.25 : 0.9);
+      arms.current.rotation.y = swingTurn(clock.elapsedTime, calm);
   });
   return (
     <group position={[x, 0, z]}>
@@ -433,7 +493,6 @@ export function SwingRide() {
 }
 
 const CUPS = 5;
-const CUP_RADIUS = 1.7;
 const CUP_COLORS = ["#ff6ac8", "#3fe0d0", "#ffb02e", "#3dff9a", "#9b5cff"];
 const TEACUP_RIM: [number, number, number][] = Array.from(
   { length: 16 },
@@ -450,10 +509,10 @@ export function Teacups() {
   const cups = useRef<(THREE.Group | null)[]>([]);
   const stripes = useStripes("#9b5cff", "#fff1c8");
   useFrame(({ clock }) => {
-    const t = clock.elapsedTime * (calm ? 0.5 : 1);
-    if (plate.current) plate.current.rotation.y = t * 0.35;
+    const turn = teacupTurns(clock.elapsedTime, calm);
+    if (plate.current) plate.current.rotation.y = turn.plate;
     cups.current.forEach((g) => {
-      if (g) g.rotation.y = -t * 0.9;
+      if (g) g.rotation.y = turn.cup;
     });
   });
   const [x, z] = TEACUPS_AT;

@@ -1,4 +1,4 @@
-import { Environment, Lightformer } from "@react-three/drei";
+import { Environment, Html, Lightformer } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -6,6 +6,10 @@ import {
   newPose,
   parseRide,
   RIDES,
+  RIDE_IDS,
+  COASTER_TRACK,
+  STARLIGHT_TRACK,
+  rideProgress,
   rideStep,
   seatPose,
   type RideEvent,
@@ -25,6 +29,8 @@ import { ENTRANCE_Z } from "./amusementpark/layout.ts";
 import {
   Carousel,
   Coaster,
+  Starlight,
+  coasterRiders,
   DropTower,
   FerrisWheel,
   SwingRide,
@@ -60,29 +66,39 @@ const ARRIVE_METRES = 0.3;
 function Ring({
   at,
   color,
+  label,
   onBoard,
 }: {
   at: readonly [number, number];
   color: string;
+  label: string;
   onBoard: () => void;
 }) {
   return (
-    <mesh
-      position={[at[0], 0.03, at[1]]}
-      rotation-x={-Math.PI / 2}
-      onClick={(e) => {
-        e.stopPropagation();
-        onBoard();
-      }}
-    >
-      <ringGeometry args={[0.62, 0.9, 48]} />
-      <meshBasicMaterial
-        color={hdr(color, 3)}
-        toneMapped={false}
-        transparent
-        opacity={0.9}
-      />
-    </mesh>
+    <>
+      {/* the ride's name over its ring, a button too (keyboard, tests) */}
+      <Html position={[at[0], 2.3, at[1]]} center zIndexRange={[10, 0]}>
+        <button type="button" className="ride-sign" onClick={onBoard}>
+          {label}
+        </button>
+      </Html>
+      <mesh
+        position={[at[0], 0.03, at[1]]}
+        rotation-x={-Math.PI / 2}
+        onClick={(e) => {
+          e.stopPropagation();
+          onBoard();
+        }}
+      >
+        <ringGeometry args={[0.62, 0.9, 48]} />
+        <meshBasicMaterial
+          color={hdr(color, 3)}
+          toneMapped={false}
+          transparent
+          opacity={0.9}
+        />
+      </mesh>
+    </>
   );
 }
 
@@ -92,6 +108,8 @@ function Ring({
  * their rings. Riding is a small state machine (idle, boarding, riding,
  * exiting); the seat position is a pure function of time.
  */
+const RING_COLORS = ["#3fe0d0", "#ff2f9a", "#ffb02e", "#9b5cff", "#3dff9a"];
+
 export function AmusementPark({
   onPick,
   player,
@@ -125,6 +143,7 @@ export function AmusementPark({
   const ride = useRef<RideState>({ phase: "idle" });
   // The walk target that means "still walking to the ring"; a new target cancels.
   const boardTarget = useRef<Vec2 | null>(null);
+  const arriveNow = useRef(false);
   const seat = useMemo(newPose, []);
   const cabin = useRef<THREE.Group>(null);
 
@@ -154,14 +173,20 @@ export function AmusementPark({
       new URLSearchParams(window.location.search).get("ride"),
     );
     if (!id) return;
-    // no teleport: the camera follows any move of player.pos, and the seat pose takes over
+    // no teleport: the camera follows the seat once the seat pose takes over
     dispatch({ type: "board", ride: id });
-    dispatch({ type: "arrive", now: clock.elapsedTime, calm });
+    // the ride starts on the first frame drawn, not at mount: on a slow
+    // machine the first frame can come long after
+    arriveNow.current = true;
     // runs once per visit to the park
   }, []);
 
   useFrame(() => {
     const now = clock.elapsedTime;
+    if (arriveNow.current) {
+      arriveNow.current = false;
+      dispatch({ type: "arrive", now, calm });
+    }
     const current = ride.current;
     if (current.phase === "boarding") {
       const [sx, sz] = RIDES[current.ride].spot;
@@ -173,6 +198,17 @@ export function AmusementPark({
     }
     dispatch({ type: "tick", now });
     const phase = ride.current;
+    // a coaster's lead car carries the rider: tell its train where she is
+    delete coasterRiders.coaster;
+    delete coasterRiders.starlight;
+    if (
+      phase.phase === "riding" &&
+      (phase.ride === "coaster" || phase.ride === "starlight")
+    ) {
+      const track = phase.ride === "coaster" ? COASTER_TRACK : STARLIGHT_TRACK;
+      coasterRiders[phase.ride] =
+        rideProgress(now - phase.start, phase.seconds) * track.length;
+    }
     const at = seatPose(phase, now, calm, seat);
     if (!at) {
       player.seat = null;
@@ -182,9 +218,13 @@ export function AmusementPark({
     player.seat ??= { position: new THREE.Vector3(), yaw: 0 };
     player.seat.position.set(at.x, at.y, at.z);
     player.seat.yaw = at.yaw;
+    // horses, cups and chairs sit her down until she steps off
+    const seated = phase.phase !== "idle" && RIDES[phase.ride].seated;
+    const standing = phase.phase !== "idle" && phase.ride === "ferris-wheel";
+    player.seat.sit = seated && phase.phase === "riding";
     if (cabin.current) {
       // the car is only shown while the doll is strapped in, not while stepping off
-      cabin.current.visible = phase.phase === "riding";
+      cabin.current.visible = phase.phase === "riding" && standing;
       cabin.current.position.copy(player.seat.position);
       cabin.current.rotation.y = at.yaw;
     }
@@ -230,8 +270,8 @@ export function AmusementPark({
         onPick={onPick}
       />
       {/* the fairground beyond the rides' back fence */}
-      <mesh rotation-x={-Math.PI / 2} position={[0, -0.02, -22]}>
-        <planeGeometry args={[70, 40]} />
+      <mesh rotation-x={-Math.PI / 2} position={[0, -0.02, -30]}>
+        <planeGeometry args={[70, 60]} />
         <meshStandardMaterial color="#0e0519" roughness={0.9} />
       </mesh>
       <Beams beams={BEAMS} aim={[0, -12]} aimY={12} spread={[14, 4]} />
@@ -249,19 +289,19 @@ export function AmusementPark({
       <FerrisWheel />
       <Carousel />
       <Coaster />
+      <Starlight />
       <DropTower />
       <SwingRide />
       <Teacups />
-      <Ring
-        at={RIDES["ferris-wheel"].spot}
-        color="#3fe0d0"
-        onBoard={() => board("ferris-wheel")}
-      />
-      <Ring
-        at={RIDES.coaster.spot}
-        color="#ff2f9a"
-        onBoard={() => board("coaster")}
-      />
+      {RIDE_IDS.map((id, i) => (
+        <Ring
+          key={id}
+          at={RIDES[id].spot}
+          color={RING_COLORS[i % RING_COLORS.length]}
+          label={RIDES[id].label}
+          onBoard={() => board(id)}
+        />
+      ))}
       {PARK_NPCS.map((npc, i) => (
         <ParkNpc key={npc.id} npc={npc} seed={i + 3} />
       ))}

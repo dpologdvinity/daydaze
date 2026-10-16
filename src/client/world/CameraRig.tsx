@@ -161,8 +161,10 @@ export function CameraRig({
       shown.current = { view, player };
       fly.current = { t: 0, snap: calm };
     }
-    moved.subVectors(player.pos, last.current);
-    last.current.copy(player.pos);
+    // a ride's seat carries the doll away from her walker: follow the seat
+    const at = player.seat?.position ?? player.pos;
+    moved.subVectors(at, last.current);
+    last.current.copy(at);
     camera.position.add(moved);
     c.target.add(moved);
     const f = fly.current;
@@ -174,8 +176,8 @@ export function CameraRig({
         goalTarget.copy(shot.look);
       } else {
         const v = CLOSE[view];
-        goalPos.copy(v.off).applyAxisAngle(Y, player.yaw).add(player.pos);
-        goalTarget.copy(player.pos).setY(v.look);
+        goalPos.copy(v.off).applyAxisAngle(Y, player.yaw).add(at);
+        goalTarget.copy(at).setY(at.y + v.look);
       }
       const k = f.snap ? 1 : 1 - Math.exp(-dt * 5);
       camera.position.lerp(goalPos, k);
