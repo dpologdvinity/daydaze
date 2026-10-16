@@ -15,10 +15,11 @@ export function Ocean() {
   const calm = useReducedMotion();
   const water = useMemo(() => {
     const m = new THREE.MeshStandardMaterial({
-      color: "#051a2e",
-      roughness: 0.4,
-      metalness: 0.05,
-      emissive: "#03121f",
+      // nearly black water lit from within: the night sky would grey it out
+      color: "#01060c",
+      roughness: 0.7,
+      metalness: 0,
+      emissive: "#062a4a",
     });
     m.onBeforeCompile = (shader) => {
       shader.uniforms.uTime = time;

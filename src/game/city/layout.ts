@@ -40,6 +40,8 @@ export const CITY_BOUNDS: readonly Vec2[] = [
 export const SHORE_Z = 256;
 export const BOARDWALK = { z0: 267, z1: 279 };
 export const WATER_Z = 340;
+/** The pier: planks from the sand out over the water, wider at its head. */
+export const PIER = { x: 24, half: 3, end: 378, head: 9 };
 
 export const ROAD_NODES: readonly RoadNode[] = [
   { id: "west", position: [-192, 0] },
@@ -187,6 +189,24 @@ export const CITY_SURFACES: readonly Surface[] = [
     polygon: rect(-HALF_CITY, BOARDWALK.z0, HALF_CITY, BOARDWALK.z1),
   },
   { kind: "sand", polygon: rect(-HALF_CITY, BOARDWALK.z1, HALF_CITY, WATER_Z) },
+  {
+    kind: "boardwalk",
+    polygon: rect(
+      PIER.x - PIER.half,
+      WATER_Z,
+      PIER.x + PIER.half,
+      PIER.end - 10,
+    ),
+  },
+  {
+    kind: "boardwalk",
+    polygon: rect(
+      PIER.x - PIER.head,
+      PIER.end - 10,
+      PIER.x + PIER.head,
+      PIER.end,
+    ),
+  },
 ];
 
 // In the square, facing south: the Splash Zone gate stands behind the doll, so
@@ -627,6 +647,12 @@ function buildProps(): Prop[] {
   }
   for (let x = -186; x <= 186; x += 31)
     props.push({ kind: "lamp", position: [x, BOARDWALK.z1 - 0.6] });
+  // lamps down both rails of the pier and round its head
+  for (let z = WATER_Z + 6; z < PIER.end - 10; z += 10)
+    for (const x of [PIER.x - PIER.half + 0.4, PIER.x + PIER.half - 0.4])
+      props.push({ kind: "lamp", position: [x, z] });
+  for (const x of [PIER.x - PIER.head + 0.5, PIER.x + PIER.head - 0.5])
+    props.push({ kind: "lamp", position: [x, PIER.end - 0.6] });
   for (let i = 0; i < 9; i++) {
     // a fixed scatter, not random: the same beach every visit
     const x = -170 + ((i * 113) % 340);

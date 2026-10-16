@@ -22,6 +22,7 @@ import type { Player } from "../world/PlayerController.tsx";
 import { useQuality } from "../world/quality.ts";
 import { CitySky } from "./CitySky.tsx";
 import { Ocean } from "./Ocean.tsx";
+import { WATER_Z } from "../../game/city/layout.ts";
 import { setNeighborhood } from "./here.ts";
 import { createLabelAtlas } from "./labelAtlas.ts";
 import { createKindMeshes, disposeKindMeshes, writeKind } from "./meshes.ts";
@@ -129,11 +130,12 @@ export function CityScene({
       ))}
       <mesh
         rotation-x={-Math.PI / 2}
-        position={[0, -0.01, 96]}
+        position={[0, -0.01, WATER_Z - 400]}
         onClick={click}
         name="city-ground"
       >
-        <planeGeometry args={[900, 1000]} />
+        {/* land up to the waterline; the Ocean takes over past it */}
+        <planeGeometry args={[900, 800]} />
         <meshStandardMaterial color="#120d26" roughness={0.9} />
       </mesh>
       <Ocean />

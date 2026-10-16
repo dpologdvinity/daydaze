@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import type { Vec2 } from "../walk.ts";
 import {
   ALL_CELLS,
   cellAt,
@@ -82,10 +83,23 @@ test("no light count leaves a plan with more lights than asked", () => {
   assert.ok(planCity(ALL_CELLS, 6, origin).lights.length <= 6);
 });
 
-test("the full city fits the low tier budget: under 250 draw calls and 300k triangles", () => {
-  const plan = planCity(ALL_CELLS, 2, origin);
-  assert.ok(drawCallsOf(plan) <= 250, `${drawCallsOf(plan)} draw calls`);
-  assert.ok(trianglesOf(plan) < 300_000, `${trianglesOf(plan)} triangles`);
+test("wherever she stands, the streamed city fits the low tier budget: under 250 draw calls and 300k triangles", () => {
+  // only the cells within VIEW_RADIUS are ever drawn, so the budget is per
+  // view: sample the whole city on a 32 m grid
+  let worst: { tris: number; at: Vec2 } = { tris: 0, at: [0, 0] };
+  for (let x = -176; x <= 176; x += 32) {
+    for (let z = -176; z <= 368; z += 32) {
+      const at: Vec2 = [x, z];
+      const plan = planCity(cellsWithin(at, VIEW_RADIUS), 2, at);
+      assert.ok(
+        drawCallsOf(plan) <= 250,
+        `${drawCallsOf(plan)} draw calls at ${at}`,
+      );
+      const tris = trianglesOf(plan);
+      if (tris > worst.tris) worst = { tris, at };
+    }
+  }
+  assert.ok(worst.tris < 300_000, `${worst.tris} triangles at ${worst.at}`);
   assert.ok(drawCallsOf(planCity([], 2, origin)) === 0);
 });
 
