@@ -7,8 +7,8 @@ import {
   parseRide,
   RIDES,
   RIDE_IDS,
-  COASTER_TRACK,
-  STARLIGHT_TRACK,
+  isTrackRide,
+  trackOf,
   rideProgress,
   rideStep,
   seatPose,
@@ -29,6 +29,7 @@ import { ENTRANCE_Z } from "./amusementpark/layout.ts";
 import {
   Carousel,
   Coaster,
+  LogFlume,
   PirateShip,
   Starlight,
   coasterRiders,
@@ -199,16 +200,15 @@ export function AmusementPark({
     }
     dispatch({ type: "tick", now });
     const phase = ride.current;
-    // a coaster's lead car carries the rider: tell its train where she is
+    // a coaster's lead car (or the flume's lead log) carries the rider:
+    // tell its train where she is
     delete coasterRiders.coaster;
     delete coasterRiders.starlight;
-    if (
-      phase.phase === "riding" &&
-      (phase.ride === "coaster" || phase.ride === "starlight")
-    ) {
-      const track = phase.ride === "coaster" ? COASTER_TRACK : STARLIGHT_TRACK;
+    delete coasterRiders["log-flume"];
+    if (phase.phase === "riding" && isTrackRide(phase.ride)) {
       coasterRiders[phase.ride] =
-        rideProgress(now - phase.start, phase.seconds) * track.length;
+        rideProgress(now - phase.start, phase.seconds) *
+        trackOf(phase.ride).length;
     }
     const at = seatPose(phase, now, calm, seat);
     if (!at) {
@@ -292,6 +292,7 @@ export function AmusementPark({
       <Coaster />
       <Starlight />
       <PirateShip />
+      <LogFlume />
       <DropTower />
       <SwingRide />
       <Teacups />

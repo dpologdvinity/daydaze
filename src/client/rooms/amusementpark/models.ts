@@ -3,6 +3,7 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import {
   COASTER_CONTROLS,
   COASTER_TRACK,
+  FLUME_CONTROLS,
   STARLIGHT_CONTROLS,
   STARLIGHT_TRACK,
   type Track,
@@ -180,7 +181,7 @@ export function coasterParts(
     "catmullrom",
     0.5,
   );
-  const N = Math.max(240, tieCount * 4);
+  const N = 240;
   // two steel rails either side of the neon line, a little below it
   const rails = [-0.5, 0.5].map((offset) => {
     const pts: THREE.Vector3[] = [];
@@ -224,7 +225,68 @@ export function coasterParts(
   return { curve, rails: merged(rails), ties, supports };
 }
 
+/** An open trough along `curve`: a floor `width` wide and two walls `wall`
+ * high, the water line at the floor's top. One strip of quads per side. */
+export function trough(
+  curve: THREE.CatmullRomCurve3,
+  width: number,
+  wall: number,
+  segments: number,
+): THREE.BufferGeometry {
+  // the cross-section, left to right: wall top, wall foot, floor, wall foot, wall top
+  const h = width / 2;
+  const section: [number, number][] = [
+    [-h, wall],
+    [-h, -0.15],
+    [h, -0.15],
+    [h, wall],
+  ];
+  const pos: number[] = [];
+  const idx: number[] = [];
+  const side = new THREE.Vector3();
+  for (let i = 0; i <= segments; i++) {
+    const t = (i % segments) / segments;
+    const p = curve.getPointAt(t);
+    side.crossVectors(curve.getTangentAt(t), UP).normalize();
+    for (const [x, y] of section) {
+      pos.push(p.x + side.x * x, p.y + y, p.z + side.z * x);
+    }
+  }
+  const n = section.length;
+  for (let i = 0; i < segments; i++) {
+    for (let k = 0; k < n - 1; k++) {
+      const a = i * n + k;
+      const b = (i + 1) * n + k;
+      idx.push(a, b, a + 1, a + 1, b, b + 1);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  return g;
+}
+
+/** The flume: its trough (drawn as the "rails") on lattice towers, no ties. */
+export function flumeParts(controls: readonly Vec3[]): CoasterParts {
+  const curve = new THREE.CatmullRomCurve3(
+    controls.map((p) => new THREE.Vector3(...p)),
+    true,
+    "catmullrom",
+    0.5,
+  );
+  return {
+    curve,
+    rails: trough(curve, 1.5, 0.45, 360),
+    ties: [],
+    supports: controls
+      .filter(([, y]) => y > 2.5)
+      .flatMap(([x, y, z]) => latticeTower(x, y - 0.2, z)),
+  };
+}
+
 export const COMET = coasterParts(COASTER_CONTROLS, COASTER_TRACK);
+export const FLUME = flumeParts(FLUME_CONTROLS);
 export const STARLIGHT = coasterParts(STARLIGHT_CONTROLS, STARLIGHT_TRACK, 120);
 
 // A coaster car, nose along +z so the track yaw turns it. Three draws in total:
@@ -258,6 +320,25 @@ export const COASTER_CAR = {
     ),
   ]),
   glow: merged([{ g: cube(), size: [0.5, 0.05, 0.03], at: [0, 0.02, 0.98] }]),
+};
+
+// A flume log, nose along +z: a hollowed log (painted, one tint), a dark seat
+// well and a lamp on the bow.
+export const LOG_BOAT = {
+  paint: merged([
+    {
+      g: cylinder(12),
+      size: [0.62, 2.2, 0.62],
+      rot: [Math.PI / 2, 0, 0],
+      at: [0, 0.05, 0],
+    },
+    { g: ball(10, 6), size: [0.62, 0.62, 0.5], at: [0, 0.05, 1.1] },
+  ]),
+  trim: merged([
+    { g: cube(), size: [0.5, 0.12, 1.4], at: [0, 0.32, -0.1] },
+    { g: cube(), size: [0.5, 0.3, 0.08], at: [0, 0.42, -0.75] },
+  ]),
+  glow: merged([{ g: ball(8, 6), size: [0.1, 0.1, 0.1], at: [0, 0.45, 1.3] }]),
 };
 
 // A carousel horse, standing on the floor with its nose along +z. Three draws

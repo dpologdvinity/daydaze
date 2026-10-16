@@ -6,6 +6,7 @@ import {
   CAROUSEL_AT,
   CAROUSEL_RADIUS,
   COASTER_TRACK,
+  FLUME_TRACK,
   CUP_RADIUS,
   RIDE_IDS,
   STARLIGHT_TRACK,
@@ -332,4 +333,16 @@ test("every ride steps her off onto its boarding ring", () => {
     assert.ok(Math.abs(end.z - RIDES[id].spot[1]) < 1e-6, id);
     assert.ok(Math.abs(end.y) < 1e-6, id);
   }
+});
+
+test("the log flume floats above the ground, lifts 9 m and drops steeply into the pool", () => {
+  const ys = FLUME_TRACK.samples.map((p) => p[1]);
+  assert.ok(Math.min(...ys) > 0.3, `lowest ${Math.min(...ys)}`);
+  assert.ok(Math.max(...ys) > 8.5, `highest ${Math.max(...ys)}`);
+  // the chute: somewhere the water falls at least 35 degrees
+  let steepest = 0;
+  const pose = newPose();
+  for (let d = 0; d < FLUME_TRACK.length; d += 0.5)
+    steepest = Math.min(steepest, trackPose(FLUME_TRACK, d, pose).pitch);
+  assert.ok(steepest < -0.6, `steepest ${steepest}`);
 });

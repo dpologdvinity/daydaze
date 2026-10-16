@@ -111,14 +111,15 @@ const PLAZA_FLOOR: readonly Vec2[] = [
 ];
 
 // Amusement Park: an 18 m x 15.5 m midway (x -9..9, z -8..7.5) opening at its
-// back onto the fairground among the rides, and through the carnival arch at
-// z = -30 to the back lot and the Starlight coaster. Each ride's footprint is a
+// back onto the fairground among the rides, the water-ride lot on its left
+// (x -30..-17, the log flume), and through the carnival arch at z = -30 to the
+// back lot and the Starlight coaster. Each ride's footprint is a
 // blocker; boarding rings sit in front of them.
 const AMUSEMENT_PARK_FLOOR: readonly Vec2[] = [
   [-9, 7.5],
   [-9, -8],
-  [-17, -8],
-  [-17, -53],
+  [-30, -8],
+  [-30, -53],
   [17, -53],
   [17, -8],
   [9, -8],
@@ -147,6 +148,10 @@ const AMUSEMENT_PARK_BLOCKERS: readonly (readonly Vec2[])[] = [
   round(TEACUPS_AT, 3.1),
   round(SWING_AT, 3.5),
   round(DROP_TOWER_AT, 1.2),
+  // the log flume's channel, lift and splash pool; its station end at
+  // x -21..-17.5, z -8..-17 is open to walk up to
+  box(-30, -44, -21, -8),
+  box(-21, -44, -17.5, -17),
   // the pirate ship's frame and its swing
   box(PIRATE_AT[0] - 2, PIRATE_AT[1] - 6, PIRATE_AT[0] + 2, PIRATE_AT[1] + 4.2),
   // the ferris wheel's legs and low gondolas

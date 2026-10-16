@@ -14,6 +14,7 @@ export const RIDE_IDS = [
   "swings",
   "drop-tower",
   "pirate-ship",
+  "log-flume",
 ] as const;
 export type RideId = (typeof RIDE_IDS)[number];
 
@@ -79,6 +80,12 @@ export const RIDES: Record<
     label: "Drop tower",
     spot: [-11.5, -25.4],
     seconds: { normal: 16, calm: 27 },
+    seated: true,
+  },
+  "log-flume": {
+    label: "Log flume",
+    spot: [-18.2, -12],
+    seconds: { normal: 26, calm: 40 },
     seated: true,
   },
   "pirate-ship": {
@@ -227,6 +234,26 @@ export const STARLIGHT_CONTROLS: readonly Vec3[] = [
 ];
 export const STARLIGHT_TRACK = buildTrack(STARLIGHT_CONTROLS, 24);
 
+// The log flume, in the water-ride lot left of the fairground: out of the
+// station along -z, up a 9 m lift, round the top, a steep chute into the
+// splash pool and a lazy float home. The trough's water follows this line.
+export const FLUME_CONTROLS: readonly Vec3[] = [
+  [-20, 0.6, -12],
+  [-20, 0.6, -19],
+  [-21, 4.5, -27],
+  [-22.5, 9, -33.5],
+  [-25.5, 9.2, -38],
+  [-28.5, 9, -34],
+  [-28.5, 7.8, -30.5],
+  [-28.5, 3, -26],
+  [-28.4, 0.8, -21.5],
+  [-28, 0.7, -15],
+  [-24.5, 0.6, -10.5],
+];
+export const FLUME_TRACK = buildTrack(FLUME_CONTROLS, 20);
+/** The splash pool at the foot of the chute (x, z) and its radius. */
+export const SPLASH_POOL = { at: [-28.5, -20] as const, radius: 2.6 };
+
 // How the turning rides turn, by scene time in seconds. The scenery and the
 // rider's seat both read these, so she stays on her horse, cup or chair.
 export function carouselTurn(t: number, calm: boolean): number {
@@ -259,6 +286,8 @@ export const TOWER_BASE = 1.4;
 const SIT_HIPS = 0.59;
 /** A coaster car's seat above the track line. */
 export const CAR_SEAT = 0.42;
+/** A flume log's seat above the water line. */
+export const LOG_SEAT = 0.3;
 
 /** A point on a turning ride: `radius` out at angle 0 once the ride has
  * turned `turn` (three.js y rotation), about `at`. */
@@ -348,6 +377,21 @@ export function trackPose(
   return out;
 }
 
+export type TrackRide = "coaster" | "starlight" | "log-flume";
+
+export function isTrackRide(ride: RideId): ride is TrackRide {
+  return ride === "coaster" || ride === "starlight" || ride === "log-flume";
+}
+
+/** The track a coaster or the flume runs on. */
+export function trackOf(ride: TrackRide): Track {
+  return ride === "coaster"
+    ? COASTER_TRACK
+    : ride === "starlight"
+      ? STARLIGHT_TRACK
+      : FLUME_TRACK;
+}
+
 /**
  * The seat on a ride `elapsed` seconds after boarding. Pure function of time:
  * the wheel and coasters run from boarding, the turning rides by scene time
@@ -365,11 +409,12 @@ export function ridePose(
     case "ferris-wheel":
       return ferrisPose(FERRIS, progress, out);
     case "coaster":
-    case "starlight": {
-      // seated in the train's lead car (the scene puts the car there too)
-      const track = ride === "coaster" ? COASTER_TRACK : STARLIGHT_TRACK;
+    case "starlight":
+    case "log-flume": {
+      // seated in the lead car or log (the scene puts it there too)
+      const track = trackOf(ride);
       trackPose(track, progress * track.length, out);
-      out.y += CAR_SEAT - SIT_HIPS;
+      out.y += (ride === "log-flume" ? LOG_SEAT : CAR_SEAT) - SIT_HIPS;
       return out;
     }
     default:

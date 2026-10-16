@@ -6,6 +6,9 @@ import {
   COASTER_TRACK,
   CUP_RADIUS,
   FERRIS,
+  FLUME_TRACK,
+  SPLASH_POOL,
+  type TrackRide,
   PIRATE_ARM,
   PIRATE_AT,
   PIRATE_PIVOT,
@@ -42,6 +45,8 @@ import {
   COASTER_CAR,
   COMET,
   FERRIS_FRAME,
+  FLUME,
+  LOG_BOAT,
   GONDOLA,
   HORSE,
   STARLIGHT,
@@ -287,8 +292,7 @@ const CAR_COLORS = ["#ffb02e", "#ff2f9a", "#3dff9a"];
 
 /** Metres along each coaster's track of the player's car while she rides it;
  * the scene writes it every frame, the train follows it. */
-export const coasterRiders: Partial<Record<"coaster" | "starlight", number>> =
-  {};
+export const coasterRiders: Partial<Record<TrackRide, number>> = {};
 const tilt = new THREE.Euler(0, 0, 0, "YXZ");
 
 /** A coaster: a glowing line of track with a train always running it; while
@@ -300,9 +304,21 @@ function CoasterTrack({
   neon,
   cars,
   speed,
+  car = COASTER_CAR,
+  railMaterial = STEEL,
+  lift = 0.2,
+  spacing = CAR_SPACING,
 }: {
-  id: "coaster" | "starlight";
+  id: TrackRide;
   parts: CoasterParts;
+  /** The car or boat model; a coaster car by default. */
+  car?: typeof COASTER_CAR;
+  /** What the "rails" (a trough, for the flume) are made of. */
+  railMaterial?: THREE.Material;
+  /** Car above the track line. */
+  lift?: number;
+  /** Metres between cars along the track. */
+  spacing?: number;
   track: Track;
   neon: string;
   cars: readonly string[];
@@ -314,7 +330,7 @@ function CoasterTrack({
   const trim = useRef<THREE.InstancedMesh>(null);
   const glow = useRef<THREE.InstancedMesh>(null);
   const line = useMemo(
-    () => new THREE.TubeGeometry(parts.curve, 480, 0.07, 6, true),
+    () => new THREE.TubeGeometry(parts.curve, 300, 0.07, 5, true),
     [parts],
   );
   useLayoutEffect(() => {
@@ -328,8 +344,8 @@ function CoasterTrack({
     const lead = coasterRiders[id] ?? clock.elapsedTime * v;
     const { pose, matrix, position, quaternion, scale } = scratch;
     for (let k = 0; k < cars.length; k++) {
-      trackPose(track, lead - k * CAR_SPACING, pose);
-      position.set(pose.x, pose.y + 0.2, pose.z);
+      trackPose(track, lead - k * spacing, pose);
+      position.set(pose.x, pose.y + lift, pose.z);
       // nose along +z: yaw about y, then nose up or down with the track
       quaternion.setFromEuler(tilt.set(-pose.pitch, pose.yaw, 0));
       matrix.compose(position, quaternion, scale);
@@ -346,15 +362,12 @@ function CoasterTrack({
       <mesh geometry={line}>
         <meshBasicMaterial color={hdr(neon, 2)} toneMapped={false} />
       </mesh>
-      <mesh geometry={parts.rails} material={STEEL} />
+      <mesh geometry={parts.rails} material={railMaterial} />
       <Boxes items={parts.ties} />
       <Segments items={parts.supports} />
-      <instancedMesh
-        ref={paint}
-        args={[COASTER_CAR.paint, PAINT, cars.length]}
-      />
-      <instancedMesh ref={trim} args={[COASTER_CAR.trim, TRIM, cars.length]} />
-      <instancedMesh ref={glow} args={[COASTER_CAR.glow, GLOW, cars.length]} />
+      <instancedMesh ref={paint} args={[car.paint, PAINT, cars.length]} />
+      <instancedMesh ref={trim} args={[car.trim, TRIM, cars.length]} />
+      <instancedMesh ref={glow} args={[car.glow, GLOW, cars.length]} />
     </group>
   );
 }
@@ -645,6 +658,47 @@ export function PirateShip() {
         <Segments items={SHIP_MAST} color="#3a1d12" />
         <Boxes items={SHIP_BOXES} />
       </group>
+    </group>
+  );
+}
+
+const TROUGH = new THREE.MeshStandardMaterial({
+  color: "#6b3f2a",
+  roughness: 0.8,
+  side: THREE.DoubleSide,
+});
+const WATER = new THREE.MeshStandardMaterial({
+  color: "#1fa6c9",
+  emissive: "#0b5d7a",
+  emissiveIntensity: 0.6,
+  roughness: 0.15,
+  metalness: 0.1,
+});
+
+/** The log flume: a wooden trough of glowing water on towers, logs floating
+ * round, and the splash pool at the foot of the chute. */
+export function LogFlume() {
+  return (
+    <group>
+      <CoasterTrack
+        id="log-flume"
+        parts={FLUME}
+        track={FLUME_TRACK}
+        neon="#5fe3ff"
+        cars={["#8a5a36", "#7a4a2a", "#94603a"]}
+        speed={{ normal: 6, calm: 2.5 }}
+        car={LOG_BOAT}
+        railMaterial={TROUGH}
+        lift={0.05}
+        spacing={22}
+      />
+      <mesh
+        rotation-x={-Math.PI / 2}
+        position={[SPLASH_POOL.at[0], 0.08, SPLASH_POOL.at[1]]}
+        material={WATER}
+      >
+        <circleGeometry args={[SPLASH_POOL.radius, 32]} />
+      </mesh>
     </group>
   );
 }

@@ -171,7 +171,10 @@ export function CameraRig({
     }
     seated.current = Boolean(player.seat);
     // a ride's seat carries the doll away from her walker: follow the seat
-    const at = player.seat?.position ?? player.pos;
+    // close views ride along with a seat; the room view stays an overview,
+    // watching the ride from where she boarded
+    const overview = view === "room" || view === "detail";
+    const at = (!overview && player.seat?.position) || player.pos;
     moved.subVectors(at, last.current);
     last.current.copy(at);
     camera.position.add(moved);
