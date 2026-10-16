@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { DEFAULT_LOOK, DEFAULT_SWIM, type Look } from "./look.ts";
+import { DEFAULT_BODY } from "./body.ts";
 import { STARTING_COINS } from "./wallet.ts";
 import {
   SAVE_KEY,
@@ -30,6 +31,8 @@ test("createDefaultSave uses the default look and auto quality", () => {
     look: DEFAULT_LOOK,
     swim: DEFAULT_SWIM,
     coins: STARTING_COINS,
+    wardrobe: [],
+    body: DEFAULT_BODY,
     settings: {
       quality: "auto",
       muted: false,
@@ -54,6 +57,8 @@ test("a save round-trips through serializeSave and loadSave", () => {
     look: customLook,
     swim: { style: "one-piece", color: "#ff2f9a" },
     coins: 320,
+    wardrobe: [],
+    body: DEFAULT_BODY,
     settings: { quality: "low", muted: true, effects: "off", panelOpen: true },
     home: {
       locked: false,
@@ -106,6 +111,8 @@ test("a save from before the swimsuit slot still loads", () => {
     look: customLook,
     swim: DEFAULT_SWIM,
     coins: STARTING_COINS,
+    wardrobe: [],
+    body: DEFAULT_BODY,
     settings: {
       quality: "low",
       muted: true,
@@ -155,6 +162,8 @@ test("loadSave keeps a valid name when the look is bad", () => {
     look: DEFAULT_LOOK,
     swim: DEFAULT_SWIM,
     coins: STARTING_COINS,
+    wardrobe: [],
+    body: DEFAULT_BODY,
     settings: {
       quality: "high",
       muted: true,
@@ -179,6 +188,8 @@ test("loadSave keeps a valid look when the name is bad", () => {
     look: customLook,
     swim: DEFAULT_SWIM,
     coins: STARTING_COINS,
+    wardrobe: [],
+    body: DEFAULT_BODY,
     settings: {
       quality: "auto",
       muted: false,
@@ -277,6 +288,71 @@ test("a bad coin balance falls back without touching the rest", () => {
     assert.equal(save.coins, STARTING_COINS, String(coins));
     assert.deepEqual(save.look, customLook);
   }
+});
+
+test("a save from before the wardrobe loads with nothing owned", () => {
+  const old = JSON.stringify({
+    version: 1,
+    name: "Kept Name",
+    look: customLook,
+    coins: 40,
+  });
+  assert.deepEqual(loadSave(old, "Fallback").wardrobe, []);
+});
+
+test("owned shop looks are kept and unowned ones are worn as the default", () => {
+  const shopLook: Look = {
+    ...customLook,
+    outfit: "tracksuit-y2k",
+    lips: "lips-chrome-berry",
+  };
+  const owned = JSON.stringify({
+    ...createDefaultSave("Kept Name"),
+    look: shopLook,
+    wardrobe: ["tracksuit-y2k", "lips-chrome-berry", "mystery"],
+  });
+  const loaded = loadSave(owned, "Fallback");
+  assert.deepEqual(loaded.look, shopLook);
+  assert.deepEqual(loaded.wardrobe, ["tracksuit-y2k", "lips-chrome-berry"]);
+  const unowned = JSON.stringify({
+    ...createDefaultSave("Kept Name"),
+    look: shopLook,
+    wardrobe: ["lips-chrome-berry"],
+  });
+  assert.deepEqual(loadSave(unowned, "Fallback").look, {
+    ...shopLook,
+    outfit: DEFAULT_LOOK.outfit,
+  });
+});
+
+test("body-shape sliders round-trip and a bad slider resets alone", () => {
+  const shaped = {
+    ...createDefaultSave("Kept Name"),
+    body: { bust: 70, hips: 30, waist: 55, height: 50 },
+  };
+  assert.deepEqual(
+    loadSave(serializeSave(shaped), "Fallback").body,
+    shaped.body,
+  );
+  const bad = JSON.stringify({
+    ...shaped,
+    body: { bust: 999, hips: 30, waist: 55, height: 50 },
+  });
+  assert.deepEqual(loadSave(bad, "Fallback").body, {
+    bust: 50,
+    hips: 30,
+    waist: 55,
+    height: 50,
+  });
+});
+
+test("a save from before the body sliders loads at the default body", () => {
+  const old = JSON.stringify({
+    version: 1,
+    name: "Kept Name",
+    look: customLook,
+  });
+  assert.deepEqual(loadSave(old, "Fallback").body, DEFAULT_BODY);
 });
 
 test("loadSave salvages valid fields from a wrong version", () => {

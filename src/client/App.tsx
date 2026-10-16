@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { isBanned, recordCaught } from "../game/crime/record.ts";
 import { penaltyFor, type Penalty } from "../game/crime/shoplift.ts";
+import type { BodyShape } from "../game/body.ts";
 import type { DanceMoveId } from "../game/dance/moves.ts";
 import type { Intensity } from "../game/effects/buzz.ts";
 import type { MinigameId } from "../game/hotspots.ts";
@@ -103,6 +104,7 @@ export function App() {
 
   const setLook = (look: Look) => setSave((s) => ({ ...s, look }));
   const setSwim = (swim: SwimLook) => setSave((s) => ({ ...s, swim }));
+  const setBody = (body: BodyShape) => setSave((s) => ({ ...s, body }));
   const setEffects = (effects: Intensity) =>
     setSave((s) => ({ ...s, settings: { ...s.settings, effects } }));
   const setPanelOpen = useCallback(
@@ -179,6 +181,7 @@ export function App() {
           arrival={here.arrival}
           look={save.look}
           swim={save.swim}
+          body={save.body}
           rides={rides}
           onGame={setGame}
           slideAt={flags.slide}
@@ -211,6 +214,10 @@ export function App() {
           setLook={setLook}
           swim={save.swim}
           setSwim={setSwim}
+          body={save.body}
+          setBody={setBody}
+          coins={save.coins}
+          wardrobe={save.wardrobe}
           onRide={() => setRides((n) => n + 1)}
           onPlayGame={setGame}
           mood={mood}

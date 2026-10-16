@@ -35,7 +35,9 @@ test("a hair style picked in the closet survives a reload", async ({
   page,
 }) => {
   await page.goto(STILL);
-  await page.getByRole("button", { name: "Dressing room" }).click();
+  await page
+    .getByRole("button", { name: "Dressing room", exact: true })
+    .click();
   const hair = page.getByRole("radiogroup", { name: "Hair style" });
   const buns = hair.getByRole("radio", { name: "Space buns" });
   await expect(buns).toHaveAttribute("aria-checked", "false");
@@ -103,7 +105,10 @@ test("the overlay passes an axe scan", async ({ page }) => {
 test("on a phone the dressing room opens from its toggle", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(STILL);
-  const toggle = page.getByRole("button", { name: "Dressing room" });
+  const toggle = page.getByRole("button", {
+    name: "Dressing room",
+    exact: true,
+  });
   await expect(toggle).toHaveAttribute("aria-expanded", "false");
   await expect(page.locator("#dressing")).toBeHidden();
   await toggle.click();
@@ -118,7 +123,10 @@ test("the dressing room starts closed, closes on Esc and keeps its state", async
   page,
 }) => {
   await page.goto(STILL);
-  const toggle = page.getByRole("button", { name: "Dressing room" });
+  const toggle = page.getByRole("button", {
+    name: "Dressing room",
+    exact: true,
+  });
   await expect(page.locator("#dressing")).toBeHidden();
   await toggle.click();
   await expect(page.locator("#dressing")).toBeVisible();

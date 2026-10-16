@@ -17,6 +17,7 @@ import {
   type ComponentType,
   type RefObject,
 } from "react";
+import type { BodyShape } from "../../game/body.ts";
 import type { DanceMoveId } from "../../game/dance/moves.ts";
 import type { HomeSave } from "../../game/home/home.ts";
 import type { Intensity } from "../../game/effects/buzz.ts";
@@ -194,6 +195,7 @@ export type WorldProps = {
   arrival: Spawn;
   look: Look;
   swim: SwimLook;
+  body: BodyShape;
   /** Bumped by the UI's ride button; each bump rides the next slide. */
   rides: number;
   /** Opens a minigame overlay from a room's hotspot. */
@@ -222,6 +224,7 @@ export function World({
   arrival,
   look,
   swim,
+  body,
   rides,
   onGame,
   slideAt,
@@ -305,6 +308,7 @@ export function World({
             area={area}
             look={look}
             swim={swimFor(def, swim)}
+            body={body}
             mood={mood}
             dance={dance}
             onMove={onMove}

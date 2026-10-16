@@ -45,8 +45,9 @@ test("catalogs have unique ids and the outfits from the spec", () => {
     const ids = catalog.map((option) => option.id);
     assert.equal(new Set(ids).size, ids.length);
   }
+  // the three starting outfits keep their labels; shop outfits follow them
   assert.deepEqual(
-    OUTFITS.map((outfit) => outfit.label),
+    OUTFITS.slice(0, 3).map((outfit) => outfit.label),
     ["Crop and flares", "Slip mini", "Faux fur"],
   );
 });

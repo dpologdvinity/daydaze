@@ -16,6 +16,13 @@ import {
 import type { DanceMoveId } from "../../game/dance/moves.ts";
 import { INTENSITIES, type Intensity } from "../../game/effects/buzz.ts";
 import type { RoomId } from "../../game/rooms.ts";
+import {
+  BODY_LABELS,
+  BODY_TRAITS,
+  clampTrait,
+  type BodyShape,
+} from "../../game/body.ts";
+import { wearable } from "../../game/shop.ts";
 import { drink } from "../effects/drunk.ts";
 import type { MinigameId } from "../../game/hotspots.ts";
 import { VIEWS, type View } from "../world/CameraRig.tsx";
@@ -26,7 +33,7 @@ import { DancePicker } from "./DancePicker.tsx";
 import { Dressing } from "./Dressing.tsx";
 import { DeliveryApp } from "./phone/DeliveryApp.tsx";
 import { FoodHud } from "./phone/FoodHud.tsx";
-import { Chips, Segmented, Swatches } from "./controls.tsx";
+import { Chips, Segmented, Slider, Swatches } from "./controls.tsx";
 import { VenueGames } from "./Minigames.tsx";
 
 // Sit and lean need furniture, so the player only picks these.
@@ -67,6 +74,9 @@ function Mirror({
   setLook,
   swim,
   setSwim,
+  wardrobe,
+  body,
+  setBody,
   effects,
   setEffects,
 }: {
@@ -74,6 +84,9 @@ function Mirror({
   setLook: (look: Look) => void;
   swim: SwimLook;
   setSwim: (swim: SwimLook) => void;
+  wardrobe: readonly string[];
+  body: BodyShape;
+  setBody: (body: BodyShape) => void;
   effects: Intensity;
   setEffects: (effects: Intensity) => void;
 }) {
@@ -92,13 +105,13 @@ function Mirror({
         <h3>Hair</h3>
         <Chips
           label="Hair style"
-          options={HAIR_STYLES}
+          options={wearable(HAIR_STYLES, wardrobe)}
           value={look.hairStyle}
           onPick={(hairStyle) => setLook({ ...look, hairStyle })}
         />
         <Swatches
           label="Hair colour"
-          options={HAIR_COLORS}
+          options={wearable(HAIR_COLORS, wardrobe)}
           value={look.hairColor}
           onPick={(hairColor) => setLook({ ...look, hairColor })}
         />
@@ -107,7 +120,7 @@ function Mirror({
         <h3>Lips</h3>
         <Chips
           label="Lips"
-          options={LIPS}
+          options={wearable(LIPS, wardrobe)}
           value={look.lips}
           onPick={(lips) => setLook({ ...look, lips })}
           thumbs
@@ -124,7 +137,7 @@ function Mirror({
         />
         <Swatches
           label="Eyeshadow"
-          options={EYESHADOWS}
+          options={wearable(EYESHADOWS, wardrobe)}
           value={look.shadow}
           onPick={(shadow) => setLook({ ...look, shadow })}
         />
@@ -133,7 +146,7 @@ function Mirror({
         <h3>Outfit</h3>
         <Chips
           label="Outfit"
-          options={OUTFITS}
+          options={wearable(OUTFITS, wardrobe)}
           value={look.outfit}
           onPick={(outfit) => setLook({ ...look, outfit })}
         />
@@ -160,6 +173,19 @@ function Mirror({
         />
       </section>
       <section>
+        <h3>Body</h3>
+        {BODY_TRAITS.map((trait) => (
+          <Slider
+            key={trait}
+            label={BODY_LABELS[trait]}
+            value={body[trait]}
+            onChange={(value) =>
+              setBody({ ...body, [trait]: clampTrait(value) })
+            }
+          />
+        ))}
+      </section>
+      <section>
         <h3>Drunk effects</h3>
         <Chips
           label="Drunk effects"
@@ -179,6 +205,10 @@ export function Overlay({
   setLook,
   swim,
   setSwim,
+  coins,
+  wardrobe,
+  body,
+  setBody,
   onRide,
   onPlayGame,
   mood,
@@ -198,6 +228,10 @@ export function Overlay({
   setLook: (look: Look) => void;
   swim: SwimLook;
   setSwim: (swim: SwimLook) => void;
+  coins: number;
+  wardrobe: readonly string[];
+  body: BodyShape;
+  setBody: (body: BodyShape) => void;
   onRide: () => void;
   onPlayGame: (game: MinigameId) => void;
   mood: Mood;
@@ -219,6 +253,9 @@ export function Overlay({
           <h1 className="venue-name">{roomName}</h1>
         </div>
         <p className="venue-sub">{ROOM_HINTS[room]}</p>
+        <p className="coins" aria-label={`${coins} coins`}>
+          {coins} coins
+        </p>
       </header>
 
       <button
@@ -238,6 +275,9 @@ export function Overlay({
           setLook={setLook}
           swim={swim}
           setSwim={setSwim}
+          wardrobe={wardrobe}
+          body={body}
+          setBody={setBody}
           effects={effects}
           setEffects={setEffects}
         />
