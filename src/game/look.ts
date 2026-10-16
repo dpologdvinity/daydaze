@@ -65,12 +65,16 @@ export const BROWS = [
 ] as const;
 
 /** The doll geometry each outfit is cut from. Shop outfits reuse these shapes. */
-export type Silhouette = "flares" | "mini" | "fur";
+export type Silhouette =
+  "flares" | "mini" | "fur" | "jeans" | "shorts" | "blouse";
 
 export const OUTFITS = [
   { id: "flares", label: "Crop and flares", silhouette: "flares" },
   { id: "mini", label: "Slip mini", silhouette: "mini" },
   { id: "fur", label: "Faux fur", silhouette: "fur" },
+  { id: "jeans", label: "Tee and skinny jeans", silhouette: "jeans" },
+  { id: "shorts", label: "Tee and denim shorts", silhouette: "shorts" },
+  { id: "blouse", label: "Blouse and pencil skirt", silhouette: "blouse" },
   // Boutique outfits, see shop.ts.
   { id: "tracksuit-y2k", label: "Y2K velour tracksuit", silhouette: "flares" },
   { id: "baby-tee-mini", label: "Baby tee and mini", silhouette: "mini" },

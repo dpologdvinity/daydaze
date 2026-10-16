@@ -182,6 +182,20 @@ def build(ctx, body, body_src):
     flare(ctx, flares)
     out.append(flares)
 
+    # everyday wear from the CC0 MakeHuman suits: tee and skinny jeans, tee
+    # and denim shorts, a striped blouse and pencil skirt. The tees' printed
+    # logo is painted out.
+    logo = ((0.79, 0.27, 0.105),)
+    for cut, suit, blank in (
+        ("jeans", "female_casualsuit01", logo),
+        ("shorts", "female_casualsuit02", logo),
+        ("blouse", "female_elegantsuit01", ()),
+    ):
+        img = proxies.detail_texture(f"clothes/{suit}/{suit}_diffuse.png", 1024, blank=blank)
+        out.append(
+            proxies.build(ctx, f"Outfit_{cut}", f"clothes/{suit}/{suit}.mhclo", proxies.textured(f"outfit_{cut}", img))
+        )
+
     # slip mini: a strapless satin bodice on the tights helper, a fitted skirt
     # from the skirt helper ending mid-thigh
     bust = h["shoulder"] - 0.1

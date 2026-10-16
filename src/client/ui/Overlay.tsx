@@ -364,8 +364,9 @@ function Mirror({
       <>
         <section>
           <h3>Outfit</h3>
-          <Chips
+          <Tiles
             label="Outfit"
+            tiles="outfit"
             options={wearable(OUTFITS, wardrobe)}
             value={look.outfit}
             onPick={(outfit) => setLook({ ...look, outfit })}

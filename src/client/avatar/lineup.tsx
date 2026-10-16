@@ -218,6 +218,16 @@ const SHOTS = {
     target: [0, 1.45, 0] as const,
     fov: 50,
   },
+  // every free outfit, front on
+  outfits: {
+    looks: (
+      ["flares", "mini", "fur", "jeans", "shorts", "blouse"] as const
+    ).map((outfit, i) => ({ ...LINEUP[i], outfit })),
+    x: (i: number) => (i - 2.5) * 0.9,
+    cam: [0, 1.0, 7.5] as const,
+    target: [0, 0.9, 0] as const,
+    fov: 36,
+  },
   // long styles close up from three-quarters behind, where cards show most
   hair3q: {
     looks: (["waves", "long-straight", "mid-wavy"] as const).map(

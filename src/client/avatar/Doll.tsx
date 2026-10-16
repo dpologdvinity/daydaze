@@ -12,6 +12,7 @@ import {
 import { bodyScales, DEFAULT_BODY, type BodyShape } from "../../game/body.ts";
 import {
   silhouetteOf,
+  type Silhouette,
   type Look,
   type Mood,
   type SwimLook,
@@ -66,11 +67,21 @@ function shade(hex: string, l: number) {
   return c.setHSL(hsl.h, hsl.s, THREE.MathUtils.clamp(hsl.l + l, 0, 1));
 }
 
+// the toon doll has three cuts; the 3D doll's everyday wear borrows the nearest
+const TOON_CUT: Record<Silhouette, "flares" | "mini" | "fur"> = {
+  flares: "flares",
+  mini: "mini",
+  fur: "fur",
+  jeans: "flares",
+  shorts: "mini",
+  blouse: "mini",
+};
+
 function useDollMaterials(look: Look, swim: SwimLook | null) {
   const { skin, hairColor } = look;
   const outfitColor = swim?.color ?? look.outfitColor;
   // shop outfits are cut from the three starting silhouettes
-  const outfit = swim ? "swim" : silhouetteOf(look.outfit);
+  const outfit = swim ? "swim" : TOON_CUT[silhouetteOf(look.outfit)];
   const mats = useMemo(() => {
     const rim = "#ff74d4";
     const accent = outfitColor;
@@ -273,7 +284,7 @@ export function ToonDoll({
     }
   });
 
-  const silhouette = silhouetteOf(look.outfit);
+  const silhouette = TOON_CUT[silhouetteOf(look.outfit)];
   const flares = !swim && silhouette === "flares";
   const mini = !swim && silhouette === "mini";
   const fur = !swim && silhouette === "fur";

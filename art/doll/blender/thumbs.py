@@ -30,6 +30,20 @@ PRESETS = {
     "face": ["oval", "round", "heart", "square", "diamond"],
 }
 FIGURES = ["classic", "curvy", "slim", "athletic"]
+# outfit id -> (cut, shoes, linear colour); ids match OUTFITS in src/game/look.ts
+OUTFITS = {
+    "flares": ("flares", "sneakers", (0.02, 0.6, 0.55, 1)),
+    "mini": ("mini", "platforms", (0.3, 0.1, 0.9, 1)),
+    "fur": ("fur", "boots", (0.85, 0.82, 0.95, 1)),
+    "jeans": ("jeans", "sneakers", (0.9, 0.45, 0.05, 1)),
+    "shorts": ("shorts", "sneakers", (0.03, 0.03, 0.04, 1)),
+    "blouse": ("blouse", "platforms", (1.0, 0.05, 0.35, 1)),
+    "tracksuit-y2k": ("flares", "sneakers", (1.0, 0.25, 0.6, 1)),
+    "baby-tee-mini": ("mini", "platforms", (1.0, 0.75, 0.9, 1)),
+    "sequin-slip": ("mini", "platforms", (0.95, 0.8, 0.3, 1)),
+    "glam-faux-fur": ("fur", "boots", (1.0, 0.1, 0.5, 1)),
+}
+# `-- outfits` renders only that group
 SKIN = (0.55, 0.3, 0.19, 1)  # linear: a warm medium tone
 HAIR_COLOUR = (0.035, 0.014, 0.008, 1)  # linear: dark brown
 
@@ -71,6 +85,9 @@ def paint(ob, colour, roughness=0.5):
     return m
 
 
+CLOTH = (0.75, 0.2, 0.45, 1)
+
+
 def load(*parts):
     """Imports the parts and recolours them by object: skin, hair, cloth.
     glTF import renames materials, so colours go on fresh ones per object."""
@@ -83,7 +100,22 @@ def load(*parts):
         if name.startswith("Hair"):
             mat = paint(ob, HAIR_COLOUR, 0.45)
         elif name.startswith(("Outfit", "Swim", "Shoes")):
-            mat = paint(ob, (0.75, 0.2, 0.45, 1), 0.6)
+            mat = paint(ob, CLOTH, 0.6)
+            # keep the garment's own detail map (denim, stripes) under the tint
+            old = ob.active_material
+            img = next((n.image for n in old.node_tree.nodes if n.type == "TEX_IMAGE"), None) if old and old.use_nodes else None
+            if img:
+                nt = mat.node_tree
+                tex = nt.nodes.new("ShaderNodeTexImage")
+                tex.image = img
+                mix = nt.nodes.new("ShaderNodeMix")
+                mix.data_type = "RGBA"
+                mix.blend_type = "MULTIPLY"
+                mix.inputs["Factor"].default_value = 1.0
+                mix.inputs["A"].default_value = CLOTH
+                nt.links.new(tex.outputs["Color"], mix.inputs["B"])
+                bsdf = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
+                nt.links.new(mix.outputs["Result"], bsdf.inputs["Base Color"])
         elif name.startswith("Eyes"):
             mat = None
         else:
@@ -131,6 +163,20 @@ def render(name):
 
 
 def main():
+    import sys
+
+    only = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else []
+    if not only or "outfits" in only:
+        global CLOTH
+        for oid, (cut, shoes, colour) in OUTFITS.items():
+            CLOTH = colour
+            reset()
+            load("body", "hair-waves", f"outfit-{cut}", f"shoes-{shoes}")
+            keys({f"tuck_{cut}": 1.0, f"tuck_{shoes}": 1.0})
+            camera((0, -3.3, 0.95), (0, 0, 0.88), 30)
+            render(f"outfit-{oid}")
+    if only:
+        return
     for style in HAIR:
         reset()
         load("body", f"hair-{style}")

@@ -1117,6 +1117,11 @@ button:focus-visible {
   background: radial-gradient(circle at 50% 35%, #5a2a62, #20082a 75%);
 }
 
+/* outfit tiles are full length */
+.tiles[data-tiles="outfit"] .tile img {
+  aspect-ratio: 1 / 2;
+}
+
 .tile:hover {
   border-color: rgb(255 47 154 / 0.7);
 }

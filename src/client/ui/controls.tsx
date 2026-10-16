@@ -63,7 +63,12 @@ export function Tiles<T extends string>({
   tiles,
 }: PickerProps<T> & { tiles: string }) {
   return (
-    <div className="tiles" role="radiogroup" aria-label={label}>
+    <div
+      className="tiles"
+      data-tiles={tiles}
+      role="radiogroup"
+      aria-label={label}
+    >
       {options.map((o) => (
         <button
           key={o.id}

@@ -111,6 +111,9 @@ const SHOES: Record<Silhouette, string> = {
   flares: "sneakers",
   mini: "platforms",
   fur: "boots",
+  jeans: "sneakers",
+  shorts: "sneakers",
+  blouse: "platforms",
 };
 
 /** The part files a look wears, by kind. */

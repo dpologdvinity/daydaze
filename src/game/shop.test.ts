@@ -56,7 +56,11 @@ test("every store sells something", () => {
 
 test("every shop outfit is cut from a known silhouette", () => {
   for (const option of OUTFITS) {
-    assert.ok(["flares", "mini", "fur"].includes(silhouetteOf(option.id)));
+    assert.ok(
+      ["flares", "mini", "fur", "jeans", "shorts", "blouse"].includes(
+        silhouetteOf(option.id),
+      ),
+    );
   }
   assert.equal(silhouetteOf("tracksuit-y2k"), "flares");
 });
@@ -140,6 +144,6 @@ test("the closet lists free options and owned shop items only", () => {
   assert.ok(!options.some((option) => option.id === "glam-faux-fur"));
   assert.deepEqual(
     wearable(OUTFITS, []).map((option) => option.id),
-    ["flares", "mini", "fur"],
+    ["flares", "mini", "fur", "jeans", "shorts", "blouse"],
   );
 });

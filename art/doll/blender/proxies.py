@@ -139,12 +139,26 @@ def attach(ctx, ob, weights, keys):
         sk.data.foreach_set("co", (base + ctx.to_blender(d, offset=False)).ravel())
 
 
-def detail_texture(rel_path, size=1024, keep_colour=False):
+def detail_texture(rel_path, size=1024, keep_colour=False, blank=()):
     """Loads a proxy texture, shrinks it and (unless keep_colour) turns it
-    into a light grey detail map the client tints with the chosen colour."""
+    into a light grey detail map the client tints with the chosen colour.
+    `blank`: (u, v, radius) circles, v from the image's top, painted over
+    with the ring of colour around them (a printed logo, say)."""
     img = bpy.data.images.load(os.path.join(ASSETS, rel_path))
     if img.size[0] > size:
         img.scale(size, size)
+    if blank:
+        w, h = img.size
+        px = np.empty(w * h * 4, np.float32)
+        img.pixels.foreach_get(px)
+        px = px.reshape(h, w, 4)
+        yy, xx = np.mgrid[0:h, 0:w]
+        for u, v, r in blank:
+            # Blender rows run bottom to top
+            d = np.hypot((xx - u * w) / w, (yy - (1 - v) * h) / h)
+            ring = (d > r) & (d < r * 1.25)
+            px[d <= r, :3] = np.median(px[ring, :3], axis=0)
+        img.pixels.foreach_set(px.ravel())
     if not keep_colour:
         px = np.empty(img.size[0] * img.size[1] * 4, np.float32)
         img.pixels.foreach_get(px)
