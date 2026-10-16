@@ -451,6 +451,8 @@ export const CITY_SURFACES: readonly Surface[] = [
   { kind: "square", polygon: SQUARE },
   { kind: "sidewalk", polygon: FORECOURT_SOUTH },
   { kind: "sidewalk", polygon: FORECOURT_NORTH },
+  // the Splash Zone gate's forecourt, off Shore Boulevard's north sidewalk
+  { kind: "sidewalk", polygon: rect(-91, SHORE_Z - 13, -77, SHORE_Z - 11) },
   // the Aquarium's forecourt, up to its doors from Park Avenue's sidewalk
   { kind: "sidewalk", polygon: rect(228, GALLERY_Z + 10, 248, GALLERY_Z + 12) },
   // the Fairground forecourt, either side of the Chinatown street
@@ -485,8 +487,7 @@ export const CITY_SURFACES: readonly Surface[] = [
   },
 ];
 
-// In the square, facing south: the Splash Zone gate stands behind the doll, so
-// its sign frames the first view, and no door is in trigger range.
+// In the square, facing south, with no door in trigger range.
 export const CITY_SPAWN: Spawn = { position: [8, 12], yaw: 0 };
 
 const VELVET_DOOR: Door = {
@@ -574,8 +575,10 @@ const SPEEDWAY_DOOR: Door = {
   targetSpawn: { position: [-8, 0], yaw: Math.PI / 2 },
 };
 
+// The Splash Zone gate stands on Shore Boulevard in Beachside, between the
+// Sunset Motel and the cross street, on its own strip of forecourt.
 const SPLASH_DOOR: Door = {
-  position: [4, -12.5],
+  position: [-84, SHORE_Z - 11.6],
   radius: 2,
   label: "Into the Splash Zone",
   target: "water-park",
@@ -1441,10 +1444,10 @@ export const BUILDINGS: readonly Building[] = [
     door: CARNIVAL_DOOR,
   },
   {
-    // The gate to the Water Park, on the north avenue between two blocks.
+    // The gate to the Water Park, on Shore Boulevard by the beach.
     id: "splash-gate",
-    neighborhood: "downtown",
-    footprint: rect(-6, -40, 10, -14),
+    neighborhood: "beachside",
+    footprint: rect(-91, SHORE_Z - 34, -77, SHORE_Z - 13),
     height: 12,
     style: "gate",
     sign: { text: "SPLASH ZONE", color: "#4fe3ff" },

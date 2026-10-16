@@ -425,7 +425,8 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         radius: 0.9,
         label: "Out through the gate",
         target: "city",
-        targetSpawn: { position: [4, -9], yaw: 0 },
+        // Shore Boulevard, outside the Splash Zone gate
+        targetSpawn: { position: [-84, 247.5], yaw: 0 },
       },
     ],
   },
