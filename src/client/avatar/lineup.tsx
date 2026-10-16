@@ -5,7 +5,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useRef } from "react";
 import { createRoot } from "react-dom/client";
 import * as THREE from "three";
-import { DEFAULT_LOOK, type Look } from "../../game/look.ts";
+import { DEFAULT_LOOK, HAIR_STYLES, type Look } from "../../game/look.ts";
 import { ToonDoll as Doll } from "./Doll.tsx";
 import { HumanDoll } from "./human/HumanDoll.tsx";
 import { Environment, Lightformer } from "@react-three/drei";
@@ -15,6 +15,12 @@ import { Suspense } from "react";
 const human = new URLSearchParams(location.search).get("human") === "1";
 
 const shot = new URLSearchParams(location.search).get("shot") ?? "lineup";
+
+/** `?hair=<style>` swaps the face shot's hair, for checking one style. */
+function hairParam(): Look["hairStyle"] {
+  const id = new URLSearchParams(location.search).get("hair");
+  return HAIR_STYLES.find((h) => h.id === id)?.id ?? "waves";
+}
 const DANCES = [
   "groove",
   "hip-sway",
@@ -116,7 +122,7 @@ const SHOTS = {
     fov: 32,
   },
   face: {
-    looks: [LINEUP[0]],
+    looks: [{ ...LINEUP[0], hairStyle: hairParam() }],
     x: () => 0,
     cam: [0, 1.5, 0.95] as const,
     target: [0, 1.42, 0] as const,
