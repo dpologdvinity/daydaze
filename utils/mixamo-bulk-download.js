@@ -238,6 +238,7 @@
 
   function clearProgress() {
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem("mixamoDownloaderManifest");
 
     state.currentPage = SETTINGS.startPage;
     state.currentItem = 0;
@@ -469,113 +470,72 @@
   }
 
   /*
-   * Mixamo hands the finished export to the browser through some
-   * programmatic navigation. While a name is pending, intercept anchor
-   * clicks, window.open and iframe loads, fetch the file and save a blob
-   * under our name. If the fetch is blocked (CORS), fall back to Mixamo's
-   * own filename. Every interception is logged with its mechanism.
+   * Mixamo saves with `window.location = job_result`, a signed S3 URL
+   * whose filename is baked in, and its CSP blocks fetching S3. The
+   * browser file name cannot be changed from here, so record what it
+   * will be (read from the monitor response) next to the description.
+   * utils/rename-mixamo-downloads.mjs renames the files from that manifest.
    */
-  const usedFileNames = new Set();
-  let pendingFileName = null;
-  const nativeAnchorClick = HTMLAnchorElement.prototype.click;
-  const nativeDispatchEvent = EventTarget.prototype.dispatchEvent;
-  const nativeOpen = window.open;
-  const iframeSrc = Object.getOwnPropertyDescriptor(
-    HTMLIFrameElement.prototype,
-    "src",
-  );
+  const MANIFEST_KEY = "mixamoDownloaderManifest";
+  let pendingDescription = null;
 
-  function renameDownload(href, via, fallback) {
-    const base = pendingFileName;
+  function readManifest() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(MANIFEST_KEY) || "[]");
 
-    if (!base || !/^https?:/i.test(href)) {
-      return false;
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
     }
-
-    pendingFileName = null;
-    const extension = (href.split("?")[0].match(/\.(\w+)$/) || [])[1] || "fbx";
-    let name = base;
-
-    for (let n = 2; usedFileNames.has(name); n += 1) {
-      name = `${base} (${n})`;
-    }
-
-    usedFileNames.add(name);
-    console.info(`Renaming download via ${via}: ${name}.${extension}`, href);
-
-    fetch(href)
-      .then((response) => response.blob())
-      .then((blob) => {
-        const a = document.createElement("a");
-        a.dataset.renamed = "1";
-        a.href = URL.createObjectURL(blob);
-        a.download = `${name}.${extension}`;
-        nativeAnchorClick.call(a);
-        setTimeout(() => URL.revokeObjectURL(a.href), 60000);
-      })
-      .catch((error) => {
-        console.warn(
-          `Could not rename "${name}"; using Mixamo's filename.`,
-          error,
-        );
-        fallback();
-      });
-
-    return true;
   }
 
-  HTMLAnchorElement.prototype.click = function (...args) {
-    if (
-      this.dataset.renamed ||
-      !renameDownload(this.href, "a.click", () => {
-        this.dataset.renamed = "1";
-        nativeAnchorClick.apply(this, args);
-      })
-    ) {
-      return nativeAnchorClick.apply(this, args);
-    }
-  };
+  function saveManifest() {
+    const blob = new Blob([JSON.stringify(readManifest(), null, 2)], {
+      type: "application/json",
+    });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "mixamo-manifest.json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+  }
 
-  EventTarget.prototype.dispatchEvent = function (event) {
-    if (
-      this instanceof HTMLAnchorElement &&
-      event.type === "click" &&
-      !this.dataset.renamed &&
-      renameDownload(this.href, "a.dispatchEvent", () => {
-        this.dataset.renamed = "1";
-        nativeDispatchEvent.call(this, event);
-      })
-    ) {
-      return true;
-    }
+  const nativeXhrSend = XMLHttpRequest.prototype.send;
 
-    return nativeDispatchEvent.call(this, event);
-  };
-
-  window.open = function (url, ...rest) {
-    if (
-      renameDownload(String(url), "window.open", () =>
-        nativeOpen.call(window, url, ...rest),
-      )
-    ) {
-      return null;
-    }
-
-    return nativeOpen.call(window, url, ...rest);
-  };
-
-  Object.defineProperty(HTMLIFrameElement.prototype, "src", {
-    ...iframeSrc,
-    set(value) {
-      if (
-        !renameDownload(String(value), "iframe.src", () =>
-          iframeSrc.set.call(this, value),
-        )
-      ) {
-        iframeSrc.set.call(this, value);
+  XMLHttpRequest.prototype.send = function (...args) {
+    this.addEventListener("load", () => {
+      if (!pendingDescription || !this.responseURL.includes("/monitor")) {
+        return;
       }
-    },
-  });
+
+      try {
+        const result = JSON.parse(this.responseText);
+
+        if (result.status !== "completed" || !result.job_result) {
+          return;
+        }
+
+        const disposition = new URL(result.job_result).searchParams.get(
+          "response-content-disposition",
+        );
+        const savedName = /filename="([^"]+)"/.exec(disposition || "")?.[1];
+
+        if (!savedName) {
+          return;
+        }
+
+        const manifest = readManifest();
+        manifest.push({ savedName, description: pendingDescription });
+        localStorage.setItem(MANIFEST_KEY, JSON.stringify(manifest));
+        console.info(`Manifest: ${savedName} -> ${pendingDescription}`);
+        pendingDescription = null;
+      } catch (error) {
+        console.warn("Could not read the Mixamo monitor response.", error);
+      }
+    });
+
+    return nativeXhrSend.apply(this, args);
+  };
 
   function getMainDownloadButton() {
     const buttons = [
@@ -1148,11 +1108,7 @@
 
     const description = getSelectedDescription() || item.name;
 
-    pendingFileName = description
-      .replace(/[\\/:*?"<>|\x00-\x1f]/g, "")
-      .replace(/\s+/g, " ")
-      .trim()
-      .slice(0, 150);
+    pendingDescription = description;
 
     dispatchActivationEvents(finalDownloadButton);
 
@@ -1294,6 +1250,8 @@
     },
 
     clearProgress,
+
+    saveManifest,
   };
 
   /*
@@ -1428,6 +1386,8 @@
 
         return;
       }
+
+      saveManifest();
 
       console.info("Mixamo download pass finished.", {
         completedFiles: state.completedIds.size,
