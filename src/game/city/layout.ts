@@ -451,6 +451,8 @@ export const CITY_SURFACES: readonly Surface[] = [
   { kind: "square", polygon: SQUARE },
   { kind: "sidewalk", polygon: FORECOURT_SOUTH },
   { kind: "sidewalk", polygon: FORECOURT_NORTH },
+  // the Aquarium's forecourt, up to its doors from Park Avenue's sidewalk
+  { kind: "sidewalk", polygon: rect(228, GALLERY_Z + 10, 248, GALLERY_Z + 12) },
   // the Fairground forecourt, either side of the Chinatown street
   { kind: "sidewalk", polygon: rect(200, FAIR_FORECOURT_Z, 310, SHORE_Z - 11) },
   { kind: "sidewalk", polygon: rect(330, FAIR_FORECOURT_Z, 440, SHORE_Z - 11) },
@@ -531,6 +533,16 @@ const JAIL_DOOR: Door = {
   target: "jail",
   // The jail's own arrival point; see rooms.ts
   targetSpawn: { position: [0, 2.6], yaw: Math.PI },
+};
+
+// The Aquarium's door, on a strip of pavement between Park Avenue's south
+// sidewalk and its glass front; see rooms.ts for where the exit lands.
+const AQUARIUM_CITY_DOOR: Door = {
+  position: [238, GALLERY_Z + 11.4],
+  radius: 2,
+  label: "Into the Aquarium",
+  target: "aquarium",
+  targetSpawn: { position: [0, 5.2], yaw: Math.PI },
 };
 
 const CARNIVAL_DOOR: Door = {
@@ -1080,6 +1092,8 @@ const UPTOWN_FRONT: readonly {
   color: string;
   sign?: { text: string; color: string };
   style: BuildingStyle;
+  /** The Aquarium's street door. */
+  door?: true;
 }[] = [
   {
     x: 214,
@@ -1090,7 +1104,16 @@ const UPTOWN_FRONT: readonly {
     sign: { text: "WINE BAR", color: "#ffd6a5" },
     style: "brick",
   },
-  { x: 238, w: 20, h: 18, north: false, color: "#a26769", style: "brick" },
+  {
+    x: 238,
+    w: 20,
+    h: 18,
+    north: false,
+    color: "#1d4e89",
+    sign: { text: "AQUARIUM", color: "#4fe3ff" },
+    style: "glass",
+    door: true,
+  },
   {
     x: 262,
     w: 20,
@@ -1153,8 +1176,9 @@ const UPTOWN_FRONT: readonly {
 
 const UPTOWN_BUILDINGS: readonly Building[] = UPTOWN_FRONT.map(
   (b, i): Building => ({
-    id: `uptown-${i}`,
+    id: b.door ? "aquarium" : `uptown-${i}`,
     neighborhood: "uptown",
+    ...(b.door ? { door: AQUARIUM_CITY_DOOR } : {}),
     footprint: b.north
       ? rect(b.x - b.w / 2, GALLERY_Z - 42, b.x + b.w / 2, GALLERY_Z - 12)
       : rect(b.x - b.w / 2, GALLERY_Z + 12, b.x + b.w / 2, GALLERY_Z + 52),

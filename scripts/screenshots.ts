@@ -91,6 +91,7 @@ const SHOTS: {
     query: "room=amusement-park",
     viewport: { width: 390, height: 844 },
   },
+  { name: "aquarium", query: "room=aquarium" },
   { name: "city-street", query: "room=city&view=full" },
   { name: "city-overview", query: "room=city" },
   {

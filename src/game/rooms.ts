@@ -27,6 +27,7 @@ export type RoomId =
   | "filipino-joint"
   | "boba-matcha"
   | "ube-bakery"
+  | "aquarium"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -206,6 +207,22 @@ const APARTMENT_FLOOR: readonly Vec2[] = [
 
 // Jail: a 12 m x 8 m cell block. The cells line the back, the yard is the
 // front strip and the guard's desk sits by the gate.
+// The Aquarium, behind its Park Avenue door in Uptown: a 16 m x 14 m hall.
+// The shark tunnel runs down the middle (z -6..1), the jellyfish room is the
+// left bay and the reef wall the right; the touch pool sits by the door.
+const AQUARIUM_FLOOR: readonly Vec2[] = [
+  [-8, -7],
+  [8, -7],
+  [8, 7],
+  [-8, 7],
+];
+
+/** Where the Aquarium's Park Avenue door stands and its exit lands. */
+export const AQUARIUM_DOOR = {
+  position: [238, -244.6] as const,
+  landing: [238, -248.6] as const,
+};
+
 const JAIL_FLOOR: readonly Vec2[] = [
   [-6, -4],
   [6, -4],
@@ -450,6 +467,22 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the street",
         target: "city",
         targetSpawn: { position: [-165, 9], yaw: 0 },
+      },
+    ],
+  },
+  aquarium: {
+    id: "aquarium",
+    name: "Uptown Aquarium",
+    walkable: AQUARIUM_FLOOR,
+    spawn: { position: [0, 5.2], yaw: Math.PI },
+    portals: [
+      {
+        id: "aquarium-to-city",
+        position: [0, 6.4],
+        radius: 0.8,
+        label: "Out to Park Avenue",
+        target: "city",
+        targetSpawn: { position: AQUARIUM_DOOR.landing, yaw: 0 },
       },
     ],
   },

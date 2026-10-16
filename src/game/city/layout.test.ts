@@ -260,3 +260,25 @@ test("Beachside: the cross streets run down to Shore Boulevard, and the boardwal
       b.id,
     );
 });
+
+test("the Aquarium's door fires from Park Avenue, and its exit lands back outside", () => {
+  const door = BUILDINGS.find((b) => b.id === "aquarium")?.door;
+  assert.ok(door);
+  assert.equal(door.target, "aquarium");
+  const back = ROOMS.aquarium.portals.find((p) => p.target === "city");
+  assert.ok(back);
+  assert.equal(isBlocked(CITY_AREA, back.targetSpawn.position), false);
+  assert.ok(
+    Math.hypot(
+      back.targetSpawn.position[0] - door.position[0],
+      back.targetSpawn.position[1] - door.position[1],
+    ) > door.radius,
+  );
+  let pos: Vec2 = back.targetSpawn.position;
+  let fired: string | null = null;
+  for (let step = 0; step < 200 && fired === null; step++) {
+    pos = stepInArea(CITY_AREA, pos, door.position, 0.2);
+    fired = portalAt(CITY_AREA, pos)?.target ?? null;
+  }
+  assert.equal(fired, "aquarium");
+});
