@@ -1,5 +1,6 @@
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
-import { useEffect, useMemo, useRef } from "react";
+import { Environment } from "@react-three/drei";
+import { Suspense, useEffect, useMemo, useRef } from "react";
 import type * as THREE from "three";
 import { ALL_CELLS, cellsWithin } from "../../game/city/cells.ts";
 import {
@@ -97,6 +98,15 @@ export function CityScene({
     <>
       <color attach="background" args={["#0a0618"]} />
       <fog attach="fog" args={["#1a0d30", 120, 420]} />
+      {/* high tier: a real night street lights skin, cars and glass */}
+      {tier === "high" && (
+        <Suspense fallback={null}>
+          <Environment
+            files="/hdri/cobblestone_street_night.hdr"
+            environmentIntensity={0.5}
+          />
+        </Suspense>
+      )}
       <CitySky />
       <hemisphereLight args={["#8fa6ff", "#2a1038", 1.6]} />
       {Array.from({ length: lightCount }, (_, i) => (

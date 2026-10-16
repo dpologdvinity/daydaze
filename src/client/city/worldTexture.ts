@@ -58,3 +58,24 @@ export function worldMapped<M extends THREE.MeshStandardMaterial>(
   material.customProgramCacheKey = () => `${key()}|world${scale}`;
   return material;
 }
+
+const tiled = new Map<string, ReturnType<typeof groundMaps>>();
+
+/** A Poly Haven set tiled over a plane of `width` by `depth` metres, with
+ * `scale` repeats per metre; shared by every floor that asks for the same. */
+export function tiledMaps(
+  id: string,
+  width: number,
+  depth: number,
+  scale: number,
+) {
+  const key = `${id}|${width}|${depth}|${scale}`;
+  let maps = tiled.get(key);
+  if (!maps) {
+    maps = groundMaps(id);
+    for (const t of Object.values(maps))
+      t.repeat.set(width * scale, depth * scale);
+    tiled.set(key, maps);
+  }
+  return maps;
+}

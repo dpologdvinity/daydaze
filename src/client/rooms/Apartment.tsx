@@ -54,7 +54,9 @@ export function Apartment({
         width={8}
         depth={6}
         center={[0, 0]}
-        color="#6b4a72"
+        color="#d9b8a0"
+        texture={{ id: "herringbone_parquet", scale: 0.5 }}
+        mirror={0.3}
         low={{ metalness: 0, roughness: 0.9 }}
         onPick={onPick}
       />

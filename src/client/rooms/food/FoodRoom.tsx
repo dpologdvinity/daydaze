@@ -71,6 +71,9 @@ export function FoodRoom({
         depth={6}
         center={[0, 2.4]}
         color={palette.floor}
+        texture={{ id: "checkered_pavement_tiles", scale: 0.6 }}
+        mirror={0.4}
+        low={{ metalness: 0, roughness: 0.6 }}
         onPick={onPick}
       />
       <PortalPads room={ROOMS[palette.room]} color={palette.accent} />

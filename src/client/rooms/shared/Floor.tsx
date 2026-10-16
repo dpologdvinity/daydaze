@@ -3,6 +3,7 @@ import type { ThreeEvent } from "@react-three/fiber";
 import type * as THREE from "three";
 import type { Vec2 } from "../../../game/walk.ts";
 import { useQuality } from "../../world/quality.ts";
+import { tiledMaps } from "../../city/worldTexture.ts";
 
 export type PickHandler = (point: Vec2) => void;
 
@@ -16,6 +17,7 @@ export function Floor({
   center = [0, 0],
   color,
   map,
+  texture,
   mirror = 0.7,
   mixStrength = 3.2,
   roughness = 0.55,
@@ -29,6 +31,9 @@ export function Floor({
   center?: [number, number];
   color: string;
   map?: THREE.Texture;
+  /** A Poly Haven CC0 set (public/textures/<id>), `scale` repeats a metre;
+   * `color` tints it. */
+  texture?: { id: string; scale: number };
   mirror?: number;
   mixStrength?: number;
   roughness?: number;
@@ -39,6 +44,9 @@ export function Floor({
   onPick: PickHandler;
 }) {
   const quality = useQuality();
+  const maps = texture
+    ? tiledMaps(texture.id, width, depth, texture.scale)
+    : { map, normalMap: null, roughnessMap: null };
   const click = (e: ThreeEvent<MouseEvent>) => {
     // a drag is an orbit, not a walk order
     if (e.delta > 6) return;
@@ -56,7 +64,9 @@ export function Floor({
       {quality === "low" ? (
         <meshStandardMaterial
           color={color}
-          map={map}
+          map={maps.map}
+          normalMap={maps.normalMap}
+          roughnessMap={maps.roughnessMap}
           metalness={low.metalness}
           roughness={low.roughness}
           envMapIntensity={envMapIntensity}
@@ -73,8 +83,10 @@ export function Floor({
           minDepthThreshold={0.4}
           maxDepthThreshold={1.3}
           color={color}
-          map={map}
-          metalness={0.6}
+          map={maps.map}
+          normalMap={maps.normalMap}
+          roughnessMap={maps.roughnessMap}
+          metalness={texture ? 0.1 : 0.6}
           envMapIntensity={envMapIntensity}
           mirror={mirror}
         />

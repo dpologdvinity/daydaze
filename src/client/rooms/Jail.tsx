@@ -29,7 +29,8 @@ export function Jail({ onPick }: { onPick: PickHandler }) {
         width={12}
         depth={8}
         center={[0, 0]}
-        color="#5d6275"
+        color="#9aa0b4"
+        texture={{ id: "brushed_concrete", scale: 0.35 }}
         low={{ metalness: 0, roughness: 0.9 }}
         onPick={onPick}
       />

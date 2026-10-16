@@ -54,7 +54,10 @@ export function VioletHour({
         width={12}
         depth={12}
         center={[-0.5, 1]}
-        color="#1b0a24"
+        color="#7a5a6a"
+        texture={{ id: "dark_wooden_planks", scale: 0.4 }}
+        mirror={0.4}
+        low={{ metalness: 0, roughness: 0.8 }}
         onPick={onPick}
       />
       <PortalPads room={ROOMS["violet-hour"]} color="#ffb070" />

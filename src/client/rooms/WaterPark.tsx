@@ -1,4 +1,6 @@
 import { Environment, Lightformer } from "@react-three/drei";
+import { Suspense } from "react";
+import { useQuality } from "../world/quality.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import { POOL } from "../../game/waterPark.ts";
 import { useReducedMotion } from "../motion.ts";
@@ -21,27 +23,38 @@ export function WaterPark({
   onRide: (slide: number) => void;
 }) {
   const calm = useReducedMotion();
+  const quality = useQuality();
   return (
     <>
       <color attach="background" args={["#8fdcff"]} />
       <fog attach="fog" args={["#cdeefc", 40, 110]} />
-      <Environment resolution={64} frames={1}>
-        <Lightformer
-          form="rect"
-          color="#ffffff"
-          intensity={2}
-          position={[0, 8, 0]}
-          rotation-x={Math.PI / 2}
-          scale={[20, 20, 1]}
-        />
-        <Lightformer
-          form="rect"
-          color="#7fe3ff"
-          intensity={1.5}
-          position={[0, 2, -10]}
-          scale={[24, 4, 1]}
-        />
-      </Environment>
+      {/* high tier: a real sky in the water and on wet skin */}
+      {quality === "high" ? (
+        <Suspense fallback={null}>
+          <Environment
+            files="/hdri/kloofendal_48d_partly_cloudy_puresky.hdr"
+            environmentIntensity={0.8}
+          />
+        </Suspense>
+      ) : (
+        <Environment resolution={64} frames={1}>
+          <Lightformer
+            form="rect"
+            color="#ffffff"
+            intensity={2}
+            position={[0, 8, 0]}
+            rotation-x={Math.PI / 2}
+            scale={[20, 20, 1]}
+          />
+          <Lightformer
+            form="rect"
+            color="#7fe3ff"
+            intensity={1.5}
+            position={[0, 2, -10]}
+            scale={[24, 4, 1]}
+          />
+        </Environment>
+      )}
       <ambientLight color="#ffffff" intensity={0.45} />
       <hemisphereLight args={["#d4f1ff", "#f6c58f", 1.1]} />
       <directionalLight position={[-8, 14, 6]} color="#fff0d2" intensity={2} />
