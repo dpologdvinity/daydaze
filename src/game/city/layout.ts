@@ -85,6 +85,10 @@ export const ROAD_NODES: readonly RoadNode[] = [
   { id: "up-e", position: [EAST_EDGE, GALLERY_Z] },
   { id: "sub-mid", position: [MANILA_X, GALLERY_Z] },
   { id: "sub-w", position: [WEST_EDGE, GALLERY_Z] },
+  { id: "shore-far-w", position: [WEST_EDGE, SHORE_Z] },
+  { id: "m-shore", position: [MANILA_X, SHORE_Z] },
+  { id: "asia-shore", position: [ASIA_X, SHORE_Z] },
+  { id: "shore-far-e", position: [EAST_EDGE, SHORE_Z] },
   { id: "manila-w", position: [WEST_EDGE, 0] },
   { id: "m-mid", position: [MANILA_X, 0] },
   { id: "m-north", position: [MANILA_X, -192] },
@@ -124,6 +128,20 @@ export const ROAD_EDGES: readonly RoadEdge[] = [
   { from: "sub-w", to: "sub-mid", width: 10, lanes: 1, speedLimit: 9 },
   { from: "sub-mid", to: "arts-w", width: 10, lanes: 1, speedLimit: 9 },
   { from: "sub-mid", to: "m-north", width: 10, lanes: 1, speedLimit: 9 },
+  // the coast: Shore Boulevard runs the city's whole width, and the
+  // Little Manila and Chinatown streets run down to it
+  { from: "shore-far-w", to: "m-shore", width: 14, lanes: 2, speedLimit: 11 },
+  { from: "m-shore", to: "shore-w", width: 14, lanes: 2, speedLimit: 11 },
+  { from: "shore-e", to: "asia-shore", width: 14, lanes: 2, speedLimit: 11 },
+  {
+    from: "asia-shore",
+    to: "shore-far-e",
+    width: 14,
+    lanes: 2,
+    speedLimit: 11,
+  },
+  { from: "m-south", to: "m-shore", width: 10, lanes: 1, speedLimit: 9 },
+  { from: "asia-south", to: "asia-shore", width: 10, lanes: 1, speedLimit: 9 },
   // Little Manila: the avenue carries on west, crossed by its own street
   { from: "manila-w", to: "m-mid", width: 14, lanes: 2, speedLimit: 11 },
   { from: "m-mid", to: "west", width: 14, lanes: 2, speedLimit: 11 },
@@ -431,9 +449,9 @@ export const CITY_SURFACES: readonly Surface[] = [
   { kind: "sidewalk", polygon: FORECOURT_NORTH },
   {
     kind: "boardwalk",
-    polygon: rect(-HALF_CITY, BOARDWALK.z0, HALF_CITY, BOARDWALK.z1),
+    polygon: rect(WEST_EDGE, BOARDWALK.z0, EAST_EDGE, BOARDWALK.z1),
   },
-  { kind: "sand", polygon: rect(-HALF_CITY, BOARDWALK.z1, HALF_CITY, WATER_Z) },
+  { kind: "sand", polygon: rect(WEST_EDGE, BOARDWALK.z1, EAST_EDGE, WATER_Z) },
   { kind: "lawn", polygon: rect(PARK.x0, PARK.z0, PARK.x1, PARK.z1) },
   ...SUBURB_LAWNS,
   {
@@ -1442,7 +1460,7 @@ function buildProps(): Prop[] {
       // the new districts' streets stop at the old city edge; Downtown's run
       // on to Gallery Row and Shore Boulevard
       const first = -240;
-      const last = cx === MANILA_X || cx === ASIA_X ? 180 : 240;
+      const last = 240;
       for (let z = first; z <= last; z += 60) {
         if (Math.abs(z) < 11) continue;
         props.push({ kind: "tree", position: [x, z] });
@@ -1482,12 +1500,12 @@ function buildProps(): Prop[] {
   }
   // Beachside: palms down both sides of Shore Boulevard, lamps along the
   // boardwalk's sea edge, and palms scattered over the sand
-  for (let x = -174; x <= 174; x += 36) {
+  for (let x = WEST_EDGE + 10; x <= EAST_EDGE - 10; x += 36) {
     if (nearCross(x)) continue;
     for (const z of [SHORE_Z - 9, SHORE_Z + 9])
       props.push({ kind: "palm", position: [x, z] });
   }
-  for (let x = -186; x <= 186; x += 31)
+  for (let x = WEST_EDGE + 6; x <= EAST_EDGE - 6; x += 31)
     props.push({ kind: "lamp", position: [x, BOARDWALK.z1 - 0.6] });
   // lamps down both rails of the pier and round its head
   for (let z = WATER_Z + 6; z < PIER.end - 10; z += 10)
@@ -1495,9 +1513,9 @@ function buildProps(): Prop[] {
       props.push({ kind: "lamp", position: [x, z] });
   for (const x of [PIER.x - PIER.head + 0.5, PIER.x + PIER.head - 0.5])
     props.push({ kind: "lamp", position: [x, PIER.end - 0.6] });
-  for (let i = 0; i < 9; i++) {
+  for (let i = 0; i < 20; i++) {
     // a fixed scatter, not random: the same beach every visit
-    const x = -170 + ((i * 113) % 340);
+    const x = WEST_EDGE + 20 + ((i * 113) % (EAST_EDGE - WEST_EDGE - 40));
     const z = BOARDWALK.z1 + 8 + ((i * 37) % 44);
     props.push({ kind: "palm", position: [x, z] });
   }

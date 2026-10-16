@@ -79,7 +79,7 @@ export function Ocean() {
         material={foam}
         raycast={() => {}}
       >
-        <planeGeometry args={[384, 1.2]} />
+        <planeGeometry args={[896, 1.2]} />
       </mesh>
     </>
   );
