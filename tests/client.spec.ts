@@ -327,10 +327,10 @@ test("Pulse renders within the low-tier draw call budget", async ({ page }) => {
   await page.goto(`${STILL}&room=pulse`);
   const canvas = canvasOf(page);
   // Pulse loads lazily, and the frame counter stops after ten frames, so wait
-  // for the club's frame: the player's doll alone draws well under 100 calls.
+  // for the club's frame: the player's 3D doll alone draws under 10 calls.
   await expect
     .poll(async () => Number(await canvas.getAttribute("data-calls")))
-    .toBeGreaterThan(100);
+    .toBeGreaterThan(40);
   const calls = Number(await canvas.getAttribute("data-calls"));
   expect(calls).toBeLessThan(250);
 });
