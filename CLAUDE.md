@@ -4,7 +4,7 @@ Daydaze is a multiplayer social hangout web game for adults who grew up on Club 
 
 ## Status
 
-3D (React Three Fiber). Built so far: the streamed city (Downtown and Nightlife Row) with traffic, doors and venue gates; the Velvet Room, Plaza, Pulse, The Violet Hour, food rooms, shops, apartment and jail; the Water Park, Amusement Park (with the Midway booths) and Speedway; a semi-realistic 3D doll built in Blender with a face and body closet; and 2,000+ handwritten NPC lines in `src/game/dialogue/`. The plan for everything else is `docs/plans/2026-10-14-master-roadmap.md` (milestones M0-M11); read it before starting new work. Specs live in `docs/specs/`.
+3D (React Three Fiber). Built so far: the streamed city (Downtown and Nightlife Row, with Little Manila to the west, Chinatown and Koreatown to the east, the Arts District, Uptown and Suburbia to the north, and Beachside and the Fairground to the south) with traffic, doors and venue gates; the Velvet Room, Plaza, Pulse, The Violet Hour, food rooms, shops, apartment and jail; the Water Park, Amusement Park (nine rides, two coasters, the Midway booths) and Speedway; a semi-realistic 3D doll built in Blender with a face and body closet; and 2,000+ handwritten NPC lines in `src/game/dialogue/`. The plan for everything else is `docs/plans/2026-10-14-master-roadmap.md` (milestones M0-M11); read it before starting new work. Specs live in `docs/specs/`.
 
 ## Layout
 
