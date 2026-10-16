@@ -44,6 +44,9 @@ export type DanceMove = {
 };
 
 export const DANCE_MOVE_IDS = [
+  "groove",
+  "hip-sway",
+  "shimmy",
   "two-step",
   "body-roll",
   "hair-flip",
@@ -66,6 +69,175 @@ export function createPose(): Pose {
 // Each move is a short loop. Arm and leg values follow pose.ts: a positive z
 // on an arm lifts it outward, a negative x on a leg bends it at the hip.
 export const DANCE_MOVES: readonly DanceMove[] = [
+  {
+    // the club default: weight from foot to foot on the beat, hips rolling
+    // with it, arms loose at the sides and lifting a little on the off-beat
+    id: "groove",
+    label: "Groove",
+    period: 2,
+    keys: [
+      {
+        at: 0,
+        joints: {
+          body: [0.02, 0.12, 0.07],
+          lLeg: [-0.08, 0, 0.03],
+          rLeg: [0.04, 0, -0.06],
+          lShin: [0.18, 0, 0],
+          rShin: [0.02, 0, 0],
+          lArm: [-0.25, 0, 0.05],
+          rArm: [0.1, 0, -0.05],
+          lFore: [-1.0, 0, 0.2],
+          rFore: [-0.6, 0, -0.1],
+          head: [0.04, -0.1, -0.06],
+        },
+      },
+      {
+        at: 0.5,
+        joints: {
+          body: [0.03, 0, 0],
+          lArm: [-0.45, 0, 0.25],
+          rArm: [-0.15, 0, -0.1],
+          lFore: [-1.3, 0, 0.3],
+          rFore: [-0.9, 0, -0.2],
+          head: [-0.04, 0, 0],
+        },
+      },
+      {
+        at: 1,
+        joints: {
+          body: [0.02, -0.12, -0.07],
+          lLeg: [0.04, 0, 0.06],
+          rLeg: [-0.08, 0, -0.03],
+          lShin: [0.02, 0, 0],
+          rShin: [0.18, 0, 0],
+          lArm: [0.1, 0, 0.05],
+          rArm: [-0.25, 0, -0.05],
+          lFore: [-0.6, 0, 0.1],
+          rFore: [-1.0, 0, -0.2],
+          head: [0.04, 0.1, 0.06],
+        },
+      },
+      {
+        at: 1.5,
+        joints: {
+          body: [0.03, 0, 0],
+          lArm: [-0.15, 0, 0.1],
+          rArm: [-0.45, 0, -0.25],
+          lFore: [-0.9, 0, 0.2],
+          rFore: [-1.3, 0, -0.3],
+          head: [-0.04, 0, 0],
+        },
+      },
+    ],
+  },
+  {
+    // a slow figure-eight with the hips, hands drifting over them
+    id: "hip-sway",
+    label: "Hip sway",
+    period: 2.4,
+    keys: [
+      {
+        at: 0,
+        root: [0.03, 0, 0],
+        joints: {
+          body: [0, 0.18, -0.1],
+          lLeg: [0, 0, 0.08],
+          rLeg: [-0.12, 0, -0.02],
+          rShin: [0.25, 0, 0],
+          lArm: [-0.3, 0, 0.1],
+          rArm: [-0.2, 0, -0.15],
+          lFore: [-1.1, 0, 0.6],
+          rFore: [-0.5, 0, -0.2],
+          head: [0.08, -0.15, 0.1],
+        },
+      },
+      {
+        at: 0.6,
+        root: [0, -0.015, 0],
+        joints: { body: [0.06, 0, 0], head: [0.1, 0, 0] },
+      },
+      {
+        at: 1.2,
+        root: [-0.03, 0, 0],
+        joints: {
+          body: [0, -0.18, 0.1],
+          lLeg: [-0.12, 0, 0.02],
+          rLeg: [0, 0, -0.08],
+          lShin: [0.25, 0, 0],
+          lArm: [-0.2, 0, 0.15],
+          rArm: [-0.3, 0, -0.1],
+          lFore: [-0.5, 0, 0.2],
+          rFore: [-1.1, 0, -0.6],
+          head: [0.08, 0.15, -0.1],
+        },
+      },
+      {
+        at: 1.8,
+        root: [0, -0.015, 0],
+        joints: { body: [0.06, 0, 0], head: [0.1, 0, 0] },
+      },
+    ],
+  },
+  {
+    // shoulders shimmy fast while the hips keep a slow sway
+    id: "shimmy",
+    label: "Shimmy",
+    period: 1,
+    keys: [
+      {
+        at: 0,
+        joints: {
+          body: [0.08, 0.15, 0.04],
+          lArm: [-0.55, 0, 0.12],
+          rArm: [-0.55, 0, -0.12],
+          lFore: [-1.4, 0, 0],
+          rFore: [-1.4, 0, 0],
+          lShin: [0.2, 0, 0],
+          rShin: [0.2, 0, 0],
+          head: [-0.05, -0.1, 0],
+        },
+      },
+      {
+        at: 0.25,
+        joints: {
+          body: [0.08, -0.15, -0.04],
+          lArm: [-0.6, 0, 0.2],
+          rArm: [-0.6, 0, -0.2],
+          lFore: [-1.4, 0, 0],
+          rFore: [-1.4, 0, 0],
+          lShin: [0.2, 0, 0],
+          rShin: [0.2, 0, 0],
+          head: [-0.05, 0.1, 0],
+        },
+      },
+      {
+        at: 0.5,
+        joints: {
+          body: [0.08, 0.15, -0.04],
+          lArm: [-0.55, 0, 0.12],
+          rArm: [-0.55, 0, -0.12],
+          lFore: [-1.4, 0, 0],
+          rFore: [-1.4, 0, 0],
+          lShin: [0.2, 0, 0],
+          rShin: [0.2, 0, 0],
+          head: [-0.05, -0.1, 0],
+        },
+      },
+      {
+        at: 0.75,
+        joints: {
+          body: [0.08, -0.15, 0.04],
+          lArm: [-0.6, 0, 0.2],
+          rArm: [-0.6, 0, -0.2],
+          lFore: [-1.4, 0, 0],
+          rFore: [-1.4, 0, 0],
+          lShin: [0.2, 0, 0],
+          rShin: [0.2, 0, 0],
+          head: [-0.05, 0.1, 0],
+        },
+      },
+    ],
+  },
   {
     id: "two-step",
     label: "Two-step",
@@ -115,25 +287,25 @@ export const DANCE_MOVES: readonly DanceMove[] = [
       {
         at: 0,
         joints: {
-          body: [0.1, 0, 0.3],
+          body: [0.06, 0, 0.12],
           lArm: [-1.8, 0, 2.2],
-          rArm: [-0.2, 0, -0.9],
+          rArm: [-0.3, 0, -0.25],
           head: [-0.1, 0, 0],
         },
       },
       {
         at: 0.8,
         joints: {
-          body: [0.25, 0, 0],
-          lArm: [-0.4, 0, 1.2],
+          body: [0.12, 0, 0],
+          lArm: [-0.5, 0, 0.5],
           rArm: [-1.8, 0, -2.2],
         },
       },
       {
         at: 1.6,
         joints: {
-          body: [0.1, 0, -0.3],
-          lArm: [-0.2, 0, 0.9],
+          body: [0.06, 0, -0.12],
+          lArm: [-0.3, 0, 0.25],
           rArm: [-1.8, 0, -2.2],
           head: [-0.1, 0, 0],
         },
@@ -308,35 +480,100 @@ export function isDanceMoveId(value: unknown): value is DanceMoveId {
   return typeof value === "string" && BY_ID.has(value);
 }
 
-const smooth = (u: number) => u * u * (3 - 2 * u);
+const scratch: Vec3[] = [
+  [0, 0, 0],
+  [0, 0, 0],
+  [0, 0, 0],
+  [0, 0, 0],
+];
 
-function lerp3(out: Vec3, a: Vec3, b: Vec3, e: number) {
-  out[0] = a[0] + (b[0] - a[0]) * e;
-  out[1] = a[1] + (b[1] - a[1]) * e;
-  out[2] = a[2] + (b[2] - a[2]) * e;
+/** Cubic Hermite through b and c, with tangents from a and d (Catmull-Rom). */
+function curve3(
+  out: Vec3,
+  a: Vec3,
+  b: Vec3,
+  c: Vec3,
+  d: Vec3,
+  u: number,
+  ta: number,
+  tb: number,
+  tc: number,
+  td: number,
+) {
+  const u2 = u * u;
+  const u3 = u2 * u;
+  const span = tc - tb;
+  for (let k = 0; k < 3; k++) {
+    // tangents scaled to this segment's length, so uneven key spacing flows
+    const m0 = ((c[k] - a[k]) / (tc - ta)) * span;
+    const m1 = ((d[k] - b[k]) / (td - tb)) * span;
+    out[k] =
+      (2 * u3 - 3 * u2 + 1) * b[k] +
+      (u3 - 2 * u2 + u) * m0 +
+      (-2 * u3 + 3 * u2) * c[k] +
+      (u3 - u2) * m1;
+  }
 }
 
 /**
  * Samples a move at time `t` (seconds, any value, looped) into `out`.
- * Writes in place so a doll can reuse one pose per frame without allocating.
+ * Motion flows through every key on a smooth curve rather than stopping at
+ * each one. Writes in place so a doll reuses one pose per frame.
  */
 export function poseAt(move: DanceMove, t: number, out = createPose()): Pose {
   const { keys, period } = move;
+  const n = keys.length;
   const local = ((t % period) + period) % period;
-  // the segment from the last key at or before `local` to the next one (or
-  // back to the first key, one period later, when the loop wraps)
   let i = 0;
-  while (i + 1 < keys.length && keys[i + 1].at <= local) i += 1;
-  const a = keys[i];
-  const next = keys[i + 1];
-  const b = next ?? keys[0];
-  const bAt = next ? next.at : keys[0].at + period;
-  const span = bAt - a.at;
-  const u = span > 0 ? (local - a.at) / span : 0;
-  const e = smooth(Math.min(1, Math.max(0, u)));
-  lerp3(out.root, a.root ?? ZERO, b.root ?? ZERO, e);
+  while (i + 1 < n && keys[i + 1].at <= local) i += 1;
+  // the four keys around this segment, wrapping the loop at both ends
+  const key = (k: number) => keys[((k % n) + n) % n];
+  const time = (k: number) => {
+    const wraps = Math.floor(k / n);
+    return keys[((k % n) + n) % n].at + wraps * period;
+  };
+  const [ta, tb, tc, td] = [time(i - 1), time(i), time(i + 1), time(i + 2)];
+  const span = tc - tb;
+  const u = span > 0 ? Math.min(1, Math.max(0, (local - tb) / span)) : 0;
+  const [ka, kb, kc, kd] = [key(i - 1), key(i), key(i + 1), key(i + 2)];
+  if (n === 1) {
+    out.root = [...(kb.root ?? ZERO)];
+    for (const j of JOINTS) out.joints[j] = [...(kb.joints?.[j] ?? ZERO)];
+    return out;
+  }
+  const [a, b, c, d] = scratch;
+  const pick = (k: Key, j: Joint | null, into: Vec3) => {
+    const v = (j ? k.joints?.[j] : k.root) ?? ZERO;
+    into[0] = v[0];
+    into[1] = v[1];
+    into[2] = v[2];
+    return into;
+  };
+  curve3(
+    out.root,
+    pick(ka, null, a),
+    pick(kb, null, b),
+    pick(kc, null, c),
+    pick(kd, null, d),
+    u,
+    ta,
+    tb,
+    tc,
+    td,
+  );
   for (const j of JOINTS) {
-    lerp3(out.joints[j], a.joints?.[j] ?? ZERO, b.joints?.[j] ?? ZERO, e);
+    curve3(
+      out.joints[j],
+      pick(ka, j, a),
+      pick(kb, j, b),
+      pick(kc, j, c),
+      pick(kd, j, d),
+      u,
+      ta,
+      tb,
+      tc,
+      td,
+    );
   }
   return out;
 }

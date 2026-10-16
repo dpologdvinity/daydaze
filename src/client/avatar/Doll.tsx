@@ -197,7 +197,7 @@ export function ToonDoll({
   swim = null,
   body = DEFAULT_BODY,
   mood,
-  dance = "two-step",
+  dance = "groove",
   couple,
   buzzed = false,
   walk,

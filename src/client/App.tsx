@@ -93,7 +93,7 @@ export function App() {
 
   const tag = useRef<HTMLDivElement>(null);
   const [mood, setMood] = useState<Mood>("idle");
-  const [dance, setDance] = useState<DanceMoveId>("two-step");
+  const [dance, setDance] = useState<DanceMoveId>("groove");
   const [view, setView] = useState<View>(flags.view ?? "room");
   const [chat, setChat] = useState<{ text: string; at: number } | null>(null);
   useEffect(() => {

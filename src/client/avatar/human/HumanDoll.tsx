@@ -419,7 +419,7 @@ export function HumanDoll({
   look,
   swim = null,
   mood,
-  dance = "two-step",
+  dance = "groove",
   couple,
   buzzed = false,
   walk,

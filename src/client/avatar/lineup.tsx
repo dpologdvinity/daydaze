@@ -15,6 +15,13 @@ import { Suspense } from "react";
 const human = new URLSearchParams(location.search).get("human") === "1";
 
 const shot = new URLSearchParams(location.search).get("shot") ?? "lineup";
+const DANCES = [
+  "groove",
+  "hip-sway",
+  "shimmy",
+  "body-roll",
+  "voguing",
+] as const;
 // a steady walking pace for the walk shot
 const WALKING = { current: { speed: 1.4 } };
 
@@ -122,6 +129,14 @@ const SHOTS = {
     cam: [0, 1.0, 26] as const,
     target: [0, 0.9, 0] as const,
     fov: 34,
+  },
+  // five dance moves side by side
+  dance: {
+    looks: LINEUP.slice(0, 5),
+    x: (i: number) => (i - 2) * 1.0,
+    cam: [0, 1.1, 7.2] as const,
+    target: [0, 0.95, 0] as const,
+    fov: 36,
   },
   // every walk style, walking in place, side on
   walk: {
@@ -258,7 +273,8 @@ function Lab() {
             <Suspense fallback={null}>
               <HumanDoll
                 look={look}
-                mood="idle"
+                mood={shot === "dance" ? "dance" : "idle"}
+                dance={DANCES[i % DANCES.length]}
                 seed={i}
                 walk={shot === "walk" ? WALKING : undefined}
                 rotation-y={shot === "walk" ? Math.PI / 2 : 0}
