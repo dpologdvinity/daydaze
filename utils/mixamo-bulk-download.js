@@ -746,9 +746,25 @@
       return false;
     }
 
-    if (checkbox.checked !== desiredState) {
-      dispatchActivationEvents(checkbox);
+    // The synthetic event sequence did not toggle Mixamo's React checkbox;
+    // try a native click, then its label/parent, then the synthetic events.
+    const attempts = [
+      () => checkbox.click(),
+      () => (checkbox.closest("label") || checkbox.parentElement)?.click(),
+      () => dispatchActivationEvents(checkbox),
+    ];
 
+    for (const attempt of attempts) {
+      if (checkbox.checked === desiredState) {
+        break;
+      }
+
+      attempt();
+
+      await wait(SETTINGS.afterOptionChangeDelayMs);
+    }
+
+    if (checkbox.checked !== desiredState) {
       await waitForCondition(() => checkbox.checked === desiredState, {
         timeoutMs: 4000,
         description: `In Place checkbox to become ${desiredState}`,
