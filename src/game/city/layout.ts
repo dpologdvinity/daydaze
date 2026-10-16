@@ -8,7 +8,11 @@ import type { RoomId, Spawn } from "../rooms.ts";
 import type { Vec2 } from "../walk.ts";
 
 export type Neighborhood =
-  "downtown" | "nightlife-row" | "beachside" | "little-manila";
+  | "downtown"
+  | "nightlife-row"
+  | "beachside"
+  | "little-manila"
+  | "arts-district";
 
 export type RoadNode = { id: string; position: Vec2 };
 export type RoadEdge = {
@@ -29,12 +33,15 @@ const SOUTH_EDGE = 384;
 export const WEST_EDGE = -448;
 /** Little Manila's cross street. */
 export const MANILA_X = -320;
+/** The Arts District runs north of Downtown to Gallery Row and beyond. */
+const NORTH_EDGE = -320;
+export const GALLERY_Z = -256;
 /** Sidewalk width, outside the kerb. */
 const SIDEWALK = 4;
 
 export const CITY_BOUNDS: readonly Vec2[] = [
-  [WEST_EDGE, -HALF_CITY],
-  [HALF_CITY, -HALF_CITY],
+  [WEST_EDGE, NORTH_EDGE],
+  [HALF_CITY, NORTH_EDGE],
   [HALF_CITY, SOUTH_EDGE],
   [WEST_EDGE, SOUTH_EDGE],
 ];
@@ -58,6 +65,10 @@ export const ROAD_NODES: readonly RoadNode[] = [
   { id: "b-north", position: [64, -192] },
   { id: "b-south", position: [64, 192] },
   { id: "shore-w", position: [-192, SHORE_Z] },
+  { id: "arts-w", position: [-192, GALLERY_Z] },
+  { id: "a-arts", position: [-64, GALLERY_Z] },
+  { id: "b-arts", position: [64, GALLERY_Z] },
+  { id: "arts-e", position: [192, GALLERY_Z] },
   { id: "manila-w", position: [WEST_EDGE, 0] },
   { id: "m-mid", position: [MANILA_X, 0] },
   { id: "m-north", position: [MANILA_X, -192] },
@@ -76,6 +87,12 @@ export const ROAD_EDGES: readonly RoadEdge[] = [
   { from: "a-mid", to: "a-south", width: 10, lanes: 1, speedLimit: 9 },
   { from: "b-north", to: "b-mid", width: 10, lanes: 1, speedLimit: 9 },
   { from: "b-mid", to: "b-south", width: 10, lanes: 1, speedLimit: 9 },
+  // Arts District: the cross streets run north to Gallery Row
+  { from: "a-arts", to: "a-north", width: 10, lanes: 1, speedLimit: 9 },
+  { from: "b-arts", to: "b-north", width: 10, lanes: 1, speedLimit: 9 },
+  { from: "arts-w", to: "a-arts", width: 12, lanes: 2, speedLimit: 10 },
+  { from: "a-arts", to: "b-arts", width: 12, lanes: 2, speedLimit: 10 },
+  { from: "b-arts", to: "arts-e", width: 12, lanes: 2, speedLimit: 10 },
   // Little Manila: the avenue carries on west, crossed by its own street
   { from: "manila-w", to: "m-mid", width: 14, lanes: 2, speedLimit: 11 },
   { from: "m-mid", to: "west", width: 14, lanes: 2, speedLimit: 11 },
@@ -507,6 +524,138 @@ const MANILA_FRONT: readonly {
   },
 ];
 
+// The Arts District: warehouses and studios either side of Gallery Row,
+// painted fronts for the murals, record and thrift shops, the tattoo studio
+// and the techno warehouse club.
+const ARTS_FRONT: readonly {
+  x: number;
+  w: number;
+  h: number;
+  north: boolean;
+  color: string;
+  sign?: { text: string; color: string };
+  style: BuildingStyle;
+}[] = [
+  {
+    x: -170,
+    w: 30,
+    h: 16,
+    north: false,
+    color: "#ff6b6b",
+    sign: { text: "VINYL VAULT", color: "#ffe066" },
+    style: "warehouse",
+  },
+  { x: -132, w: 30, h: 22, north: false, color: "#4ecdc4", style: "warehouse" },
+  {
+    x: -96,
+    w: 26,
+    h: 14,
+    north: false,
+    color: "#ffe066",
+    sign: { text: "THRIFT TEMPLE", color: "#ff2f9a" },
+    style: "brick",
+  },
+  {
+    x: -32,
+    w: 28,
+    h: 12,
+    north: false,
+    color: "#c77dff",
+    sign: { text: "ESPRESSO LAB", color: "#ffd166" },
+    style: "storefront",
+  },
+  { x: 2, w: 24, h: 18, north: false, color: "#ff9f1c", style: "warehouse" },
+  {
+    x: 36,
+    w: 28,
+    h: 14,
+    north: false,
+    color: "#2ec4b6",
+    sign: { text: "GALLERY 44", color: "#ffffff" },
+    style: "glass",
+  },
+  {
+    x: 104,
+    w: 40,
+    h: 24,
+    north: false,
+    color: "#3a0ca3",
+    sign: { text: "WAREHOUSE", color: "#4fe3ff" },
+    style: "club",
+  },
+  { x: 156, w: 30, h: 16, north: false, color: "#f72585", style: "warehouse" },
+  {
+    x: -168,
+    w: 32,
+    h: 20,
+    north: true,
+    color: "#b5179e",
+    sign: { text: "LOFT STUDIOS", color: "#ffe066" },
+    style: "brick",
+  },
+  {
+    x: -126,
+    w: 26,
+    h: 12,
+    north: true,
+    color: "#90be6d",
+    sign: { text: "INK & NEEDLE", color: "#ff2f9a" },
+    style: "storefront",
+  },
+  {
+    x: -90,
+    w: 22,
+    h: 10,
+    north: true,
+    color: "#f9c74f",
+    sign: { text: "ZINE SHOP", color: "#3fe0d0" },
+    style: "storefront",
+  },
+  { x: -30, w: 30, h: 26, north: true, color: "#577590", style: "warehouse" },
+  {
+    x: 10,
+    w: 26,
+    h: 14,
+    north: true,
+    color: "#f94144",
+    sign: { text: "PRINT HOUSE", color: "#ffffff" },
+    style: "warehouse",
+  },
+  {
+    x: 100,
+    w: 30,
+    h: 18,
+    north: true,
+    color: "#43aa8b",
+    sign: { text: "CLAY & KILN", color: "#ffd166" },
+    style: "brick",
+  },
+  {
+    x: 150,
+    w: 34,
+    h: 14,
+    north: true,
+    color: "#ff70a6",
+    sign: { text: "FLEA MARKET", color: "#ffe066" },
+    style: "warehouse",
+  },
+];
+
+const ARTS_BUILDINGS: readonly Building[] = ARTS_FRONT.map(
+  (b, i): Building => ({
+    id: `arts-${i}`,
+    neighborhood: "arts-district",
+    // Gallery Row's sidewalks end 10 m from its centreline
+    footprint: b.north
+      ? rect(b.x - b.w / 2, GALLERY_Z - 42, b.x + b.w / 2, GALLERY_Z - 12)
+      : rect(b.x - b.w / 2, GALLERY_Z + 12, b.x + b.w / 2, GALLERY_Z + 52),
+    height: b.h,
+    style: b.style,
+    color: b.color,
+    sign: b.sign,
+  }),
+);
+
 const MANILA_BUILDINGS: readonly Building[] = MANILA_FRONT.map(
   (b, i): Building => ({
     id: `manila-${i}`,
@@ -771,6 +920,7 @@ export const BUILDINGS: readonly Building[] = [
   ...FOOD_STOREFRONTS,
   ...BEACH_BUILDINGS,
   ...MANILA_BUILDINGS,
+  ...ARTS_BUILDINGS,
 ];
 
 // x of each north-south street; each has two edges, so dedupe.
@@ -802,12 +952,19 @@ function buildProps(): Prop[] {
     for (const x of [cx - 7, cx + 7]) {
       // Little Manila's street stops at the old city edge; the others run on
       // down to Shore Boulevard
+      const first = cx === MANILA_X ? -180 : -240;
       const last = cx === MANILA_X ? 180 : 240;
-      for (let z = -180; z <= last; z += 60) {
+      for (let z = first; z <= last; z += 60) {
         if (Math.abs(z) < 11) continue;
         props.push({ kind: "tree", position: [x, z] });
       }
     }
+  }
+  // Arts District: lamps down both sides of Gallery Row
+  for (let x = -180; x <= 180; x += 30) {
+    if (nearCross(x)) continue;
+    for (const z of [GALLERY_Z - 8, GALLERY_Z + 8])
+      props.push({ kind: "lamp", position: [x, z] });
   }
   // Little Manila: lamps down the avenue sidewalks
   for (let x = WEST_EDGE + 12; x < -196; x += 30) {

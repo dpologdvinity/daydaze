@@ -10,16 +10,17 @@ import {
 } from "./cells.ts";
 import { CITY_SPAWN } from "./layout.ts";
 
-test("the grid is 10 cells across and 9 down, 64 m each: Little Manila west, Beachside south", () => {
-  assert.equal(ALL_CELLS.length, 90);
+test("the grid is 10 cells across and 11 down, 64 m each: Little Manila west, Beachside south", () => {
+  assert.equal(ALL_CELLS.length, 110);
   assert.equal(CELL_SIZE, 64);
   const xs = ALL_CELLS.map((c) => c.x0);
   const zs = ALL_CELLS.map((c) => c.z0);
   assert.equal(Math.min(...xs), -448);
   assert.equal(Math.max(...xs) + CELL_SIZE, 192);
-  assert.equal(Math.min(...zs), -192);
+  assert.equal(Math.min(...zs), -320);
   assert.equal(Math.max(...zs) + CELL_SIZE, 384);
-  assert.equal(new Set(ALL_CELLS.map((c) => c.key)).size, 90);
+  assert.equal(new Set(ALL_CELLS.map((c) => c.key)).size, 110);
+  assert.equal(neighborhoodAt([0, -256]), "arts-district");
   assert.equal(neighborhoodAt([-320, 0]), "little-manila");
   // the old city is Downtown and Nightlife Row; south of z 192 is Beachside
   assert.equal(neighborhoodAt([0, 300]), "beachside");
@@ -28,8 +29,8 @@ test("the grid is 10 cells across and 9 down, 64 m each: Little Manila west, Bea
 });
 
 test("a point maps to the cell that holds it, clamped at the edge", () => {
-  assert.equal(cellAt([-447, -191]).key, "0,0");
-  assert.equal(cellAt([0, 0]).key, "7,3");
+  assert.equal(cellAt([-447, -319]).key, "0,0");
+  assert.equal(cellAt([0, 0]).key, "7,5");
   assert.equal(cellAt([500, -500]).key, "9,0");
 });
 

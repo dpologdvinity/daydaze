@@ -8,6 +8,7 @@ import {
   BOARDWALK,
   BUILDINGS,
   CITY_AREA,
+  CITY_BOUNDS,
   CITY_SPAWN,
   CITY_SURFACES,
   PROPS,
@@ -124,7 +125,12 @@ test("no building footprint overlaps a road, a sidewalk or another footprint", (
 });
 
 test("every surface and footprint sits inside the city bounds", () => {
-  const bounds = boxOf(CITY_AREA.surfaces.flatMap((s) => [...s]));
+  const bounds = boxOf(CITY_BOUNDS);
+  for (const s of CITY_AREA.surfaces) {
+    const box = boxOf(s);
+    assert.ok(box.x0 >= bounds.x0 && box.x1 <= bounds.x1, "surface x");
+    assert.ok(box.z0 >= bounds.z0 && box.z1 <= bounds.z1, "surface z");
+  }
   for (const b of BUILDINGS) {
     const box = boxOf(b.footprint);
     assert.ok(box.x0 >= bounds.x0 && box.x1 <= bounds.x1, `${b.id} x`);

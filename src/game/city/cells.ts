@@ -8,7 +8,7 @@ import { CELL_SIZE } from "./tuning.ts";
 
 /** Cells across (x) and down (z); Beachside makes the city taller than wide. */
 export const CELLS_X = 10;
-export const CELLS_Z = 9;
+export const CELLS_Z = 11;
 
 const ORIGIN = CITY_BOUNDS[0][0];
 const ORIGIN_Z = CITY_BOUNDS[0][1];
@@ -29,6 +29,7 @@ export type Cell = {
  * of the cross street at x = 64. */
 export function neighborhoodAt(p: Vec2): Neighborhood {
   if (p[1] > 192) return "beachside";
+  if (p[1] < -192) return "arts-district";
   if (p[0] < -192) return "little-manila";
   return p[0] >= 64 ? "nightlife-row" : "downtown";
 }
