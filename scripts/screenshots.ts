@@ -92,6 +92,7 @@ const SHOTS: {
     viewport: { width: 390, height: 844 },
   },
   { name: "aquarium", query: "room=aquarium" },
+  { name: "ice-rink", query: "room=ice-rink" },
   { name: "city-street", query: "room=city&view=full" },
   { name: "city-overview", query: "room=city" },
   {

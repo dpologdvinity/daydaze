@@ -14,6 +14,7 @@ test("every room is registered under its own id", () => {
     "boba-matcha",
     "city",
     "filipino-joint",
+    "ice-rink",
     "jail",
     "plaza",
     "pulse",

@@ -91,6 +91,9 @@ const Apartment = lazy(() =>
 const Jail = lazy(() =>
   import("../rooms/Jail.tsx").then((m) => ({ default: m.Jail })),
 );
+const IceRink = lazy(() =>
+  import("../rooms/IceRink.tsx").then((m) => ({ default: m.IceRink })),
+);
 const Aquarium = lazy(() =>
   import("../rooms/Aquarium.tsx").then((m) => ({ default: m.Aquarium })),
 );
@@ -191,6 +194,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   apartment: Apartment,
   jail: Jail,
   aquarium: Aquarium,
+  "ice-rink": IceRink,
   "filipino-joint": FilipinoJoint,
   "boba-matcha": BobaMatchaCafe,
   "ube-bakery": UbeBakery,

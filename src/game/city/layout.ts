@@ -461,7 +461,9 @@ export const CITY_SURFACES: readonly Surface[] = [
     polygon: rect(WEST_EDGE, BOARDWALK.z0, EAST_EDGE, BOARDWALK.z1),
   },
   { kind: "sand", polygon: rect(WEST_EDGE, BOARDWALK.z1, EAST_EDGE, WATER_Z) },
-  { kind: "lawn", polygon: rect(PARK.x0, PARK.z0, PARK.x1, PARK.z1) },
+  // the park's lawn, round the Ice Rink lodge in its north-east corner
+  { kind: "lawn", polygon: rect(PARK.x0, PARK.z0, 272, PARK.z1) },
+  { kind: "lawn", polygon: rect(272, -290, PARK.x1, PARK.z1) },
   ...SUBURB_LAWNS,
   {
     kind: "boardwalk",
@@ -543,6 +545,15 @@ const AQUARIUM_CITY_DOOR: Door = {
   label: "Into the Aquarium",
   target: "aquarium",
   targetSpawn: { position: [0, 5.2], yaw: Math.PI },
+};
+
+// The Ice Rink's lodge door, on the park lawn; see rooms.ts for its exit.
+const ICE_RINK_CITY_DOOR: Door = {
+  position: [287, -289.5],
+  radius: 2,
+  label: "Into the Ice Rink",
+  target: "ice-rink",
+  targetSpawn: { position: [0, 6.2], yaw: Math.PI },
 };
 
 const CARNIVAL_DOOR: Door = {
@@ -1456,6 +1467,17 @@ export const BUILDINGS: readonly Building[] = [
   ...ARTS_BUILDINGS,
   ...ASIA_BUILDINGS,
   ...UPTOWN_BUILDINGS,
+  {
+    // the Ice Rink's timber lodge, in the park's north-east corner
+    id: "ice-rink",
+    neighborhood: "uptown",
+    footprint: rect(274, -316, 300, -292),
+    height: 9,
+    style: "deck",
+    color: "#cfe8ff",
+    sign: { text: "ICE RINK", color: "#9ad8ff" },
+    door: ICE_RINK_CITY_DOOR,
+  },
   ...SUBURB_BUILDINGS,
 ];
 
@@ -1516,7 +1538,7 @@ function buildProps(): Prop[] {
     for (const z of [GALLERY_Z - 8, GALLERY_Z + 8])
       props.push({ kind: "lamp", position: [x, z] });
   }
-  for (let x = PARK.x0 + 8; x < PARK.x1 - 4; x += 16)
+  for (let x = PARK.x0 + 8; x < 268; x += 16)
     for (let z = PARK.z0 + 8; z < PARK.z1 - 4; z += 14)
       if ((x + z) % 3 !== 0) props.push({ kind: "tree", position: [x, z] });
   // Chinatown and Koreatown: lamps down the avenue sidewalks

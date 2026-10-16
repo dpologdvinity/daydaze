@@ -28,6 +28,7 @@ export type RoomId =
   | "boba-matcha"
   | "ube-bakery"
   | "aquarium"
+  | "ice-rink"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -221,6 +222,21 @@ const AQUARIUM_FLOOR: readonly Vec2[] = [
 export const AQUARIUM_DOOR = {
   position: [238, -244.6] as const,
   landing: [238, -248.6] as const,
+};
+
+// The Ice Rink, through its lodge in Uptown's park: an oval of ice (the
+// RINK ellipse, skated on) inside a walkable hall with a cocoa stand.
+const ICE_RINK_FLOOR: readonly Vec2[] = [
+  [-11, -8],
+  [11, -8],
+  [11, 8],
+  [-11, 8],
+];
+
+/** Where the Ice Rink's park door stands and its exit lands. */
+export const ICE_RINK_DOOR = {
+  position: [287, -289.5] as const,
+  landing: [287, -284.5] as const,
 };
 
 const JAIL_FLOOR: readonly Vec2[] = [
@@ -483,6 +499,22 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to Park Avenue",
         target: "city",
         targetSpawn: { position: AQUARIUM_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  "ice-rink": {
+    id: "ice-rink",
+    name: "Park Ice Rink",
+    walkable: ICE_RINK_FLOOR,
+    spawn: { position: [0, 6.2], yaw: Math.PI },
+    portals: [
+      {
+        id: "ice-rink-to-city",
+        position: [0, 7.4],
+        radius: 0.8,
+        label: "Out to the park",
+        target: "city",
+        targetSpawn: { position: ICE_RINK_DOOR.landing, yaw: 0 },
       },
     ],
   },

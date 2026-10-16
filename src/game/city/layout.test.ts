@@ -282,3 +282,18 @@ test("the Aquarium's door fires from Park Avenue, and its exit lands back outsid
   }
   assert.equal(fired, "aquarium");
 });
+
+test("the Ice Rink's lodge door fires from the park, and its exit lands back outside", () => {
+  const door = BUILDINGS.find((b) => b.id === "ice-rink")?.door;
+  assert.ok(door);
+  const back = ROOMS["ice-rink"].portals.find((p) => p.target === "city");
+  assert.ok(back);
+  assert.equal(isBlocked(CITY_AREA, back.targetSpawn.position), false);
+  let pos: Vec2 = back.targetSpawn.position;
+  let fired: string | null = null;
+  for (let step = 0; step < 200 && fired === null; step++) {
+    pos = stepInArea(CITY_AREA, pos, door.position, 0.2);
+    fired = portalAt(CITY_AREA, pos)?.target ?? null;
+  }
+  assert.equal(fired, "ice-rink");
+});
