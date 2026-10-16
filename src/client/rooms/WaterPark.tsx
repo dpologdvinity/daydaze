@@ -1,4 +1,4 @@
-import { Environment, Lightformer, Sparkles } from "@react-three/drei";
+import { Environment, Lightformer } from "@react-three/drei";
 import { ROOMS } from "../../game/rooms.ts";
 import { POOL } from "../../game/waterPark.ts";
 import { useReducedMotion } from "../motion.ts";
@@ -10,6 +10,7 @@ import { Pool, POOL_CENTER } from "./waterpark/Pool.tsx";
 import { Sky } from "./waterpark/Sky.tsx";
 import { SplashZone } from "./waterpark/SplashZone.tsx";
 import { Tower } from "./waterpark/Tower.tsx";
+import { Sparkles } from "./shared/Sparkles.tsx";
 
 /** The Water Park: wave pool, slide tower and a sunny deck. */
 export function WaterPark({

@@ -1,4 +1,3 @@
-import { Sparkles } from "@react-three/drei";
 import { ROOMS } from "../../game/rooms.ts";
 import { useReducedMotion } from "../motion.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
@@ -16,6 +15,7 @@ import {
 import { VioletNpcs } from "./violethour/Npcs.tsx";
 import { BAR_CENTRE_X, BAR_Z, DANCE } from "./violethour/layout.ts";
 import { drink } from "../effects/drunk.ts";
+import { Sparkles } from "./shared/Sparkles.tsx";
 
 /**
  * The Violet Hour, a lesbian bar with a small dance floor on Nightlife Row.
