@@ -21,13 +21,12 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 CMU = os.path.join(HERE, ".cache", "cmu")
 OUT = os.path.join(HERE, "..", "..", "..", "src", "game", "dance", "mocap.ts")
+KEYS_OUT = os.path.join(os.path.dirname(OUT), "mocapKeys.ts")
 
 # clip id -> (file, kind, label, loop search window in seconds)
 CLIPS = {
-    "walk-natural": ("07_01", "walk", "Natural", (0.9, 1.4)),
     "walk-relaxed": ("07_04", "walk", "Relaxed", (1.0, 1.7)),
     "walk-brisk": ("07_12", "walk", "Brisk", (0.8, 1.3)),
-    "walk-stride": ("08_07", "walk", "Long stride", (0.9, 1.5)),
     "salsa": ("60_01", "dance", "Salsa", (2.5, 4.5)),
     "salsa-turns": ("61_01", "dance", "Salsa turns", (2.5, 4.5)),
     "lambada": ("55_02", "dance", "Lambada", (2.5, 4.5)),
@@ -214,7 +213,10 @@ def mixamo_frames(path):
     return frames, 1 / scene.render.fps
 
 
-def retarget(frames, fdt):
+def retarget(frames, fdt, held=False):
+    """`held`: a still pose (sitting, lying), where the clip's own hip height
+    is not standing height, so standing height comes from leg length."""
+
     def P(fr, name):
         return fr[name]
 
@@ -228,6 +230,12 @@ def retarget(frames, fdt):
     yaw = math.atan2(fwd[0], fwd[2])
     turn = rot("Y", -math.degrees(yaw))
     stand = np.median([P(fr, "Hips")[1] for fr in frames])
+    if held:
+        fr = frames[len(frames) // 2]
+        L = lambda a, b: float(np.linalg.norm(P(fr, a) - P(fr, b)))
+        hip = float(np.linalg.norm(P(fr, "Hips") - (P(fr, "LeftUpLeg") + P(fr, "RightUpLeg")) / 2))
+        ankle = min(min(P(f, "LeftFoot")[1], P(f, "RightFoot")[1]) for f in frames)
+        stand = hip + L("LeftUpLeg", "LeftLeg") + L("LeftLeg", "LeftFoot") + max(ankle, 0.05 * stand)
     scale = HIP_HEIGHT / stand
 
     # heading per frame, smoothed over about a second: subtracting it keeps
@@ -328,7 +336,7 @@ def keys_for(poses, fdt, s, L):
     keys = []
     for k in range(n):
         v = rows[k]
-        root = [round(float(x), 4) for x in v[:3]]
+        root = [round(float(x), 3) for x in v[:3]]
         joints = {}
         for i, b in enumerate(JOINT_ORDER):
             joints[b] = [round(float(x), 3) for x in v[3 + i * 3 : 6 + i * 3]]
@@ -341,7 +349,36 @@ def keys_for(poses, fdt, s, L):
 MIXAMO = os.path.join(HERE, "..", "..", "..", "mixamo")
 FOLDER_KIND = {"walking": "walk", "dancing": "dance", "standing": "pose", "sitting": "sit", "laying": "lay"}
 # transitions, not loops
-SKIP = ("start-walking", "stop-walking", "stop-and-start")
+SKIP = ("start-walking", "stop-walking", "stop-and-start",
+        # leans the chest over one leg; the doll's single torso bone tips her over
+        "on-right-foot-left-leg-raised")
+# file stem -> (clip id, label); stems not listed become mx-<stem>
+NAMES = {
+    "belly-dancing-variation-3": ("belly-dance", "Belly dance"),
+    "breakdance-ending-1": ("breakdance", "Breakdance"),
+    "dancing-female-african-noodle-fance": ("afrobeat", "Afrobeat"),
+    "female-hip-hip-body-wave-dancing": ("body-wave", "Body wave"),
+    "female-salsa-dancing": ("salsa-solo", "Salsa solo"),
+    "hip-hop-dancing-bboy-variation-one": ("hip-hop", "Hip-hop"),
+    "hip-hop-dancing-side-to-side": ("side-to-side", "Side to side"),
+    "samba-dancing-funky-pocoto-variation-1": ("samba", "Samba"),
+    "female-sexy-walk": ("walk-sexy", "Sexy"),
+    "catwalk": ("walk-catwalk", "Catwalk"),
+    "feminine-walk-forward": ("walk-feminine", "Feminine"),
+    "female-normal-walk": ("walk-normal", "Normal"),
+    "female-walk-normal": ("walk-easy", "Easy"),
+    "walking": ("walk-casual", "Casual"),
+    "female-standing-pose-arms-down": ("pose-arms-down", "Arms down"),
+    "female-standing-pose-arms-on-hip-looking-over-shoulder": ("pose-over-shoulder", "Over the shoulder"),
+    "female-standing-pose-legs-crossed-arms-raised": ("pose-arms-raised", "Arms raised"),
+    "female-standing-pose-right-hand-on-hip-left-arm-raised": ("pose-wave", "Hand on hip"),
+    "female-sitting-pose-arms-supporting": ("sit-lean-back", "Lean back"),
+    "female-sitting-pose-leaning-forward-elbows-on-knees": ("sit-elbows", "Elbows on knees"),
+    "female-sitting-pose-legs-crossed-right-arm-over-knee": ("sit-crossed", "Legs crossed"),
+    "female-laying-pose-back-arched-arms-supporting": ("lay-arched", "Lounging"),
+}
+# dance loops longer than this repeat a shorter section: the file stays small
+MAX_LOOP = 6.5
 
 
 def label_of(stem):
@@ -352,7 +389,7 @@ def label_of(stem):
 def still(poses):
     """A held pose: one key, standing in for a 1 s loop."""
     root, joints = poses[len(poses) // 2]
-    return 1.0, [{"at": 0, "root": [round(float(x), 4) for x in root], "joints": {b: [round(float(x), 3) for x in v] for b, v in joints.items()}}]
+    return 1.0, [{"at": 0, "root": [round(float(x), 3) for x in root], "joints": {b: [round(float(x), 3) for x in v] for b, v in joints.items()}}]
 
 
 def main():
@@ -372,32 +409,51 @@ def main():
         if not os.path.isdir(d):
             continue
         for name in sorted(os.listdir(d)):
-            if not name.endswith(".fbx") or any(k in name for k in SKIP):
+            stem = name[:-4].lower().replace(" ", "-")
+            if not name.lower().endswith(".fbx") or any(k in stem for k in SKIP):
                 continue
-            stem = name[:-4]
             k = "walk" if "walk" in stem and kind == "dance" else kind
+            # walks only play when a gait names them (src/game/gaits.ts)
+            if k == "walk" and stem not in NAMES:
+                print("unused walk, add to NAMES to use:", stem)
+                continue
+            if NAMES.get(stem, ("mx-" + stem,))[0] in {c["id"] for c in clips}:
+                continue
             frames, fdt = mixamo_frames(os.path.join(d, name))
-            poses, fdt = retarget(frames, fdt)
+            held = k in ("pose", "sit", "lay") or len(frames) * fdt < 0.6
+            poses, fdt = retarget(frames, fdt, held)
             dur = len(poses) * fdt
-            if k in ("pose", "sit", "lay") or dur < 0.6:
+            if held:
                 period, keys = still(poses)
             else:
-                window = (0.7, min(1.6, dur * 0.9)) if k == "walk" else (min(1.5, dur * 0.4), dur * 0.9)
+                window = (0.7, min(1.6, dur * 0.9)) if k == "walk" else (min(1.5, dur * 0.4), min(MAX_LOOP, dur * 0.9))
                 s, L = best_loop(poses, fdt, window, k)
                 period, keys = keys_for(poses, fdt, s, L)
-            cid = "mx-" + stem
-            clips.append({"id": cid, "kind": k, "label": label_of(stem), "source": "Mixamo", "period": period, "keys": keys})
+            cid, label = NAMES.get(stem, ("mx-" + stem, label_of(stem)))
+            clips.append({"id": cid, "kind": k, "label": label, "source": "Mixamo", "period": period, "keys": keys})
             print(cid, k, "period", period, "keys", len(keys))
-    body = json.dumps(clips, separators=(",", ":"))
+    head = (
+        "// Generated by art/doll/blender/mocap.py. CMU clips: CMU Graphics Lab\n"
+        "// Motion Capture Database (mocap.cs.cmu.edu), free to copy, modify\n"
+        "// and redistribute. Mixamo clips: retargeted from Adobe Mixamo\n"
+        "// animations, used in-game under Mixamo's terms. Do not edit by hand.\n"
+    )
+    meta = [{k: v for k, v in c.items() if k != "keys"} for c in clips]
+    dances = [c["id"] for c in clips if c["kind"] == "dance"]
     with open(OUT, "w") as f:
         f.write(
-            "// Generated by art/doll/blender/mocap.py. CMU clips: CMU Graphics Lab\n"
-            "// Motion Capture Database (mocap.cs.cmu.edu), free to copy, modify\n"
-            "// and redistribute. Mixamo clips: retargeted from Adobe Mixamo\n"
-            "// animations, used in-game under Mixamo's terms. Do not edit by hand.\n"
-            'import type { MocapClip } from "./mocapTypes.ts";\n\n'
-            f"export const MOCAP_CLIPS: readonly MocapClip[] = {body};\n"
+            head + 'import type { MocapClip } from "./mocapTypes.ts";\n\n'
+            "// the keys load later, from mocapKeys.ts (see loadMocap in moves.ts)\n"
+            f"export const MOCAP_CLIPS: readonly MocapClip[] = {json.dumps(meta)};\n\n"
+            f"export const MOCAP_DANCE_IDS = {json.dumps(dances)} as const;\n"
         )
+    # one line per clip, left out of Prettier, so the file stays small
+    with open(KEYS_OUT, "w") as f:
+        f.write(head + 'import type { MocapKey } from "./mocapTypes.ts";\n\n')
+        f.write("export const MOCAP_KEYS: Record<string, readonly MocapKey[]> = {\n")
+        for c in clips:
+            f.write(f"  {json.dumps(c['id'])}: {json.dumps(c['keys'], separators=(',', ':'))},\n")
+        f.write("};\n")
     print("wrote", OUT)
 
 

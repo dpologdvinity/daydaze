@@ -18,7 +18,7 @@ import {
   type RefObject,
 } from "react";
 import type { BodyShape } from "../../game/body.ts";
-import type { DanceMoveId } from "../../game/dance/moves.ts";
+import type { DanceMoveId, Holds } from "../../game/dance/moves.ts";
 import type { HomeSave } from "../../game/home/home.ts";
 import type { Intensity } from "../../game/effects/buzz.ts";
 import {
@@ -206,6 +206,7 @@ export type WorldProps = {
   slideAt: number | null;
   mood: Mood;
   dance: DanceMoveId;
+  holds: Holds;
   /** The local player's drunk setting; off, low or full. */
   effects: Intensity;
   /** Called when the player starts walking. */
@@ -232,6 +233,7 @@ export function World({
   slideAt,
   mood,
   dance,
+  holds,
   effects,
   onMove,
   view,
@@ -314,6 +316,7 @@ export function World({
             body={body}
             mood={mood}
             dance={dance}
+            holds={holds}
             onMove={onMove}
             tag={tag}
             onPortal={onPortal}

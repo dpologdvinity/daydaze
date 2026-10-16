@@ -3,7 +3,14 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import * as THREE from "three";
 import { clampToArea, type WalkArea } from "../../game/area.ts";
 import type { BodyShape } from "../../game/body.ts";
-import type { DanceMoveId } from "../../game/dance/moves.ts";
+import {
+  stillClipsOf,
+  type DanceMoveId,
+  type Holds,
+} from "../../game/dance/moves.ts";
+
+// the pose for lying on a bed
+const LAY_HOLD = stillClipsOf("lay")[0]?.id ?? "built";
 import type { Look, Mood, SwimLook } from "../../game/look.ts";
 import { moveAction, MOVE_CODES } from "../../game/input.ts";
 import type { Portal, Spawn } from "../../game/rooms.ts";
@@ -46,7 +53,7 @@ export type Player = {
   /** Frame time not yet simulated, in seconds. */
   acc: number;
   /** Set while a ride carries the doll; walking pauses and the seat wins. */
-  seat: { position: THREE.Vector3; yaw: number } | null;
+  seat: { position: THREE.Vector3; yaw: number; lie?: boolean } | null;
   /** Set while seated on a chair (not a ride): the doll sits until she moves. */
   sitting: boolean;
   /** A slide ride: `t` runs 0..1 down the slide, then `swim` counts seconds. */
@@ -180,6 +187,7 @@ export function PlayerController({
   body,
   mood,
   dance,
+  holds,
   onMove,
   tag,
   onPortal,
@@ -191,6 +199,8 @@ export function PlayerController({
   body: BodyShape;
   mood: Mood;
   dance: DanceMoveId;
+  /** The player's picked held pose for the Pose and Sit moods (and seats). */
+  holds: Holds;
   /** Fires when the player starts walking, so a dance can end. */
   onMove: () => void;
   /** DOM name tag and chat bubble, pinned above the doll's head each frame. */
@@ -202,8 +212,9 @@ export function PlayerController({
   const marker = useRef<THREE.Mesh>(null);
   const held = useHeldKeys();
   const calm = useReducedMotion();
-  const [riding, setRiding] = useState<Mood | null>(null);
-  const shownRide = useRef<Mood | null>(null);
+  // "lay": lying on a bed, the Sit mood with the lying pose
+  const [riding, setRiding] = useState<Mood | "lay" | null>(null);
+  const shownRide = useRef<Mood | "lay" | null>(null);
   const walking = useRef(false);
 
   useFrame((state, dt) => {
@@ -217,7 +228,8 @@ export function PlayerController({
       player.seat = null;
     }
     const rideMood =
-      ride(player, area, dt, calm) ?? (player.sitting ? "sit" : null);
+      ride(player, area, dt, calm) ??
+      (player.sitting ? (player.seat?.lie ? "lay" : "sit") : null);
     if (rideMood !== shownRide.current) {
       shownRide.current = rideMood;
       setRiding(rideMood);
@@ -299,8 +311,17 @@ export function PlayerController({
           look={look}
           swim={swim}
           body={body}
-          mood={riding ?? mood}
+          mood={riding === "lay" ? "sit" : (riding ?? mood)}
           dance={dance}
+          hold={
+            riding === "lay"
+              ? LAY_HOLD
+              : (riding ?? mood) === "sit"
+                ? holds.sit
+                : (riding ?? mood) === "pose"
+                  ? holds.pose
+                  : "built"
+          }
           buzzed
           walk={gait}
         />

@@ -185,6 +185,8 @@ type DollProps = {
   dance?: DanceMoveId;
   /** Set on one partner of a couple dance; the other doll takes the other role. */
   couple?: CoupleRole;
+  /** A held motion-capture pose (STILL_CLIPS id) for the pose and sit moods. */
+  hold?: string;
   /** Wobbles with the local player's buzz. */
   buzzed?: boolean;
   walk?: { current: WalkState };
@@ -199,6 +201,7 @@ export function ToonDoll({
   mood,
   dance = "groove",
   couple,
+  hold: _hold, // the 3D doll's alone
   buzzed = false,
   walk,
   seed = 0,

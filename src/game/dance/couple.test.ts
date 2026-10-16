@@ -1,7 +1,15 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { coupleSpots, couplePoseAt } from "./couple.ts";
-import { ALL_DANCE_MOVES, createPose, danceMove, poseAt } from "./moves.ts";
+import {
+  ALL_DANCE_MOVES,
+  createPose,
+  danceMove,
+  loadMocap,
+  poseAt,
+} from "./moves.ts";
+
+await loadMocap();
 
 const dist = (a: [number, number], b: [number, number]) =>
   Math.hypot(a[0] - b[0], a[1] - b[1]);

@@ -106,7 +106,7 @@ function poseMood(
     return;
   }
   if (mood === "sit") {
-    body.position.y = -0.33;
+    body.position.y = SIT_DROP;
     r(body, -0.08, 0, 0);
     r(j.lLeg, -1.45, 0, 0.12);
     r(j.rLeg, -1.55, 0, -0.18);
@@ -161,6 +161,9 @@ function poseMood(
   r(j.rFore, -0.2, 0, -0.05);
   r(j.head, Math.sin(t * 0.4) * 0.04, Math.sin(t * 0.27) * 0.18, shift * 0.06);
 }
+
+/** How far sitting lowers the hips; every seat is built to this height. */
+export const SIT_DROP = -0.33;
 
 // the 3D doll's arms rest angled out to clear her hips; this much inward
 // brings them to hang naturally at her sides

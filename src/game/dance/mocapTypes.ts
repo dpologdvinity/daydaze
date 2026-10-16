@@ -5,12 +5,14 @@ export type MocapClip = {
   id: string;
   kind: "walk" | "dance" | "pose" | "sit" | "lay";
   label: string;
-  /** The CMU take it came from. */
+  /** The take it came from. */
   source: string;
   period: number;
-  keys: readonly {
-    at: number;
-    root: Vec3;
-    joints: Partial<Record<Joint, Vec3>>;
-  }[];
+};
+
+/** One sampled pose of a clip (see mocapKeys.ts). */
+export type MocapKey = {
+  at: number;
+  root: Vec3;
+  joints: Partial<Record<Joint, Vec3>>;
 };

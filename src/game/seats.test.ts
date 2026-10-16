@@ -33,5 +33,16 @@ test("a sofa in the apartment gives two seats facing out from its back", () => {
     // facing +z, approached from the front
     assert.ok(s.approach[1] > s.at[1]);
   }
-  assert.equal(homeSeats([{ id: "bed", cell: [0, 0], rotation: 0 }]).length, 0);
+  assert.equal(
+    homeSeats([{ id: "lamp", cell: [0, 0], rotation: 0 }]).length,
+    0,
+  );
+});
+
+test("a bed is one spot to lie on, walked up to from the side nearer the middle", () => {
+  const [bed] = homeSeats([{ id: "bed", cell: [0, 0], rotation: 0 }]);
+  assert.ok(bed?.lie);
+  // the bed's left edge is on the room's left wall: approach from its right
+  assert.ok(bed.approach[0] > bed.at[0] + 1);
+  assert.ok(pointInPolygon(ROOMS.apartment.walkable, bed.approach));
 });

@@ -8,6 +8,8 @@ import * as THREE from "three";
 import { DEFAULT_LOOK, HAIR_STYLES, type Look } from "../../game/look.ts";
 import { ToonDoll as Doll } from "./Doll.tsx";
 import { HumanDoll } from "./human/HumanDoll.tsx";
+import { isDanceMoveId, stillClipsOf } from "../../game/dance/moves.ts";
+import { GAITS } from "../../game/gaits.ts";
 import { Environment, Lightformer } from "@react-three/drei";
 import { Suspense } from "react";
 
@@ -21,13 +23,22 @@ function hairParam(): Look["hairStyle"] {
   const id = new URLSearchParams(location.search).get("hair");
   return HAIR_STYLES.find((h) => h.id === id)?.id ?? "waves";
 }
-const DANCES = [
-  "salsa",
-  "lambada",
-  "expressive",
-  "salsa-turns",
-  "groove",
-] as const;
+// `?moves=a,b` picks the dance shot's moves
+const DANCES = (
+  new URLSearchParams(location.search).get("moves")?.split(",") ?? [
+    "salsa",
+    "lambada",
+    "expressive",
+    "salsa-turns",
+    "groove",
+  ]
+).filter(isDanceMoveId);
+// held poses for the pose, sit and lay shots, one per doll
+const HOLDS = {
+  pose: stillClipsOf("pose").map((c) => c.id),
+  sit: stillClipsOf("sit").map((c) => c.id),
+  lay: stillClipsOf("lay").map((c) => c.id),
+};
 // a steady walking pace for the walk shot
 const WALKING = { current: { speed: 1.4 } };
 
@@ -146,13 +157,33 @@ const SHOTS = {
   },
   // every walk style, walking in place, side on
   walk: {
-    looks: (
-      ["natural", "relaxed", "confident", "runway", "sassy"] as const
-    ).map((gait, i) => ({ ...LINEUP[i], gait })),
-    x: (i: number) => (i - 2) * 1.0,
+    looks: GAITS.map((g, i) => ({ ...LINEUP[i % LINEUP.length], gait: g.id })),
+    x: (i: number) => (i - (GAITS.length - 1) / 2) * 0.9,
+    cam: [0, 1.0, 9] as const,
+    target: [0, 0.9, 0] as const,
+    fov: 36,
+  },
+  // every held motion-capture pose, front on
+  pose: {
+    looks: HOLDS.pose.map((_, i) => LINEUP[i % LINEUP.length]),
+    x: (i: number) => (i - (HOLDS.pose.length - 1) / 2) * 1.0,
     cam: [0, 1.0, 7.5] as const,
     target: [0, 0.9, 0] as const,
     fov: 36,
+  },
+  sit: {
+    looks: HOLDS.sit.map((_, i) => LINEUP[i % LINEUP.length]),
+    x: (i: number) => (i - (HOLDS.sit.length - 1) / 2) * 1.1,
+    cam: [2.5, 1.2, 5] as const,
+    target: [0, 0.6, 0] as const,
+    fov: 36,
+  },
+  lay: {
+    looks: HOLDS.lay.map((_, i) => LINEUP[i % LINEUP.length]),
+    x: () => 0,
+    cam: [2.5, 1.5, 3.5] as const,
+    target: [0, 0.4, 0] as const,
+    fov: 40,
   },
   // every piercing, close up: lip, nose and brow on one, navel on another
   pierce: {
@@ -279,7 +310,20 @@ function Lab() {
             <Suspense fallback={null}>
               <HumanDoll
                 look={look}
-                mood={shot === "dance" ? "dance" : "idle"}
+                mood={
+                  shot === "dance"
+                    ? "dance"
+                    : shot === "sit" || shot === "lay"
+                      ? "sit"
+                      : shot === "pose"
+                        ? "pose"
+                        : "idle"
+                }
+                hold={
+                  shot === "pose" || shot === "sit" || shot === "lay"
+                    ? HOLDS[shot][i]
+                    : "none"
+                }
                 dance={DANCES[i % DANCES.length]}
                 seed={i}
                 walk={shot === "walk" ? WALKING : undefined}

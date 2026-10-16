@@ -14,6 +14,8 @@ export type Seat = {
   height: number;
   yaw: number;
   approach: Vec2;
+  /** A bed: she lies back on it instead of sitting. */
+  lie?: true;
 };
 
 /** A seat at `at` facing `facing`. `from` is the open side you walk up from:
@@ -106,12 +108,28 @@ const FACINGS: readonly Vec2[] = [
 export function homeSeats(furniture: readonly Furniture[]): Seat[] {
   const out: Seat[] = [];
   furniture.forEach((item, n) => {
-    if (item.id !== "sofa") return;
+    if (item.id !== "sofa" && item.id !== "bed") return;
     const size = footprint(item.id, item.rotation);
     const cx = HOME_ORIGIN[0] + item.cell[0] + size.w / 2;
     const cz = HOME_ORIGIN[1] + item.cell[1] + size.d / 2;
     const facing = FACINGS[item.rotation];
     const along: Vec2 = [facing[1], -facing[0]];
+    if (item.id === "bed") {
+      // lie down the middle, head to the headboard, feet toward the facing
+      // side; walk up from whichever long side is nearer the room's middle
+      const half = Math.min(size.w, size.d) / 2 + 0.35;
+      const side = along[0] * cx + along[1] * cz > 0 ? -1 : 1;
+      out.push({
+        id: `home-bed-${n}`,
+        room: "apartment",
+        at: [cx, cz],
+        height: 0.6,
+        yaw: yawTowards([cx, cz], [cx + facing[0], cz + facing[1]]),
+        approach: [cx + along[0] * half * side, cz + along[1] * half * side],
+        lie: true,
+      });
+      return;
+    }
     for (const k of [-0.6, 0.6]) {
       const at: Vec2 = [cx + along[0] * k, cz + along[1] * k];
       out.push(

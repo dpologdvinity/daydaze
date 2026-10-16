@@ -2,7 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { isBanned, recordCaught } from "../game/crime/record.ts";
 import { penaltyFor, type Penalty } from "../game/crime/shoplift.ts";
 import type { BodyShape } from "../game/body.ts";
-import type { DanceMoveId } from "../game/dance/moves.ts";
+import {
+  DEFAULT_HOLDS,
+  type DanceMoveId,
+  type Holds,
+} from "../game/dance/moves.ts";
 import type { Intensity } from "../game/effects/buzz.ts";
 import type { MinigameId } from "../game/hotspots.ts";
 import { isJailed } from "../game/jail/jail.ts";
@@ -94,6 +98,7 @@ export function App() {
   const tag = useRef<HTMLDivElement>(null);
   const [mood, setMood] = useState<Mood>("idle");
   const [dance, setDance] = useState<DanceMoveId>("groove");
+  const [holds, setHolds] = useState<Holds>(DEFAULT_HOLDS);
   const [view, setView] = useState<View>(flags.view ?? "room");
   const [chat, setChat] = useState<{ text: string; at: number } | null>(null);
   useEffect(() => {
@@ -187,6 +192,7 @@ export function App() {
           slideAt={flags.slide}
           mood={mood}
           dance={dance}
+          holds={holds}
           effects={save.settings.effects}
           // walking ends a dance, so the Dance mood drops back to idle
           onMove={() => setMood((m) => (m === "dance" ? "idle" : m))}
@@ -224,6 +230,8 @@ export function App() {
           setMood={setMood}
           dance={dance}
           setDance={setDance}
+          holds={holds}
+          setHolds={setHolds}
           effects={save.settings.effects}
           setEffects={setEffects}
           view={view}

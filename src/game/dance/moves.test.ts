@@ -7,10 +7,15 @@ import {
   createPose,
   danceMove,
   isDanceMoveId,
+  loadMocap,
+  STILL_CLIPS,
+  WALK_CLIPS,
   poseAt,
   type DanceMove,
   type Pose,
 } from "./moves.ts";
+
+await loadMocap();
 
 const FRAME = 1 / 60;
 const EPS = 1e-9;
@@ -132,4 +137,16 @@ test("danceMove finds a move by id and rejects unknown ids", () => {
   assert.equal(isDanceMoveId("body-roll"), true);
   assert.equal(isDanceMoveId("__proto__"), false);
   assert.equal(isDanceMoveId(3), false);
+});
+
+test("motion capture loads: dances get keys, walks and held poses appear", async () => {
+  await loadMocap();
+  for (const m of ALL_DANCE_MOVES)
+    if (m.captured) assert.ok(m.keys.length > 4, `${m.id} keys`);
+  assert.ok(WALK_CLIPS.has("walk-catwalk"));
+  assert.ok(STILL_CLIPS.has("sit-crossed"));
+  assert.ok(
+    ALL_DANCE_MOVES.every((m) => m.period < 7),
+    "loops capped",
+  );
 });

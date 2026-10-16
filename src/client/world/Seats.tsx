@@ -70,12 +70,14 @@ export function Seats({
     pending.current = null;
     player.walk.target = null;
     player.seat = {
+      // lying, she rests on the mattress; sitting, on her thighs
       position: new THREE.Vector3(
         seat.at[0],
-        seat.height - THIGH_HEIGHT,
+        seat.height - (seat.lie ? 0 : THIGH_HEIGHT),
         seat.at[1],
       ),
       yaw: seat.yaw,
+      lie: seat.lie,
     };
     player.sitting = true;
     player.walk.yaw = seat.yaw;

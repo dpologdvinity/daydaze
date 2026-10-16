@@ -36,7 +36,7 @@ import {
   type Mood,
   type SwimLook,
 } from "../../game/look.ts";
-import type { DanceMoveId } from "../../game/dance/moves.ts";
+import type { DanceMoveId, Holds } from "../../game/dance/moves.ts";
 import { INTENSITIES, type Intensity } from "../../game/effects/buzz.ts";
 import type { RoomId } from "../../game/rooms.ts";
 import {
@@ -52,7 +52,7 @@ import { VIEWS, type View } from "../world/CameraRig.tsx";
 import { DriveControls } from "../rooms/speedway/DriveControls.tsx";
 import { RaceHud, SpeedwayMenu } from "../rooms/speedway/RaceHud.tsx";
 import { CocktailIcon, RideIcon } from "./icons.tsx";
-import { DancePicker } from "./DancePicker.tsx";
+import { DancePicker, HoldPicker } from "./DancePicker.tsx";
 import { Dressing } from "./Dressing.tsx";
 import { GAITS, gaitOf } from "../../game/gaits.ts";
 import { seatsIn } from "../../game/seats.ts";
@@ -450,6 +450,8 @@ export function Overlay({
   setMood,
   dance,
   setDance,
+  holds,
+  setHolds,
   effects,
   setEffects,
   view,
@@ -473,6 +475,8 @@ export function Overlay({
   setMood: (mood: Mood) => void;
   dance: DanceMoveId;
   setDance: (move: DanceMoveId) => void;
+  holds: Holds;
+  setHolds: (holds: Holds) => void;
   effects: Intensity;
   setEffects: (effects: Intensity) => void;
   view: View;
@@ -543,6 +547,13 @@ export function Overlay({
 
       <div className="dock">
         {mood === "dance" && <DancePicker move={dance} onPick={setDance} />}
+        {(mood === "pose" || mood === "sit") && (
+          <HoldPicker
+            kind={mood}
+            hold={holds[mood]}
+            onPick={(id) => setHolds({ ...holds, [mood]: id })}
+          />
+        )}
         <div className="dock-actions" role="group" aria-label="Room actions">
           {(seatsIn(room).length > 0 || room === "apartment") && (
             <button

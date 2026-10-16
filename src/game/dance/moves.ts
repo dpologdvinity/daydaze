@@ -1,4 +1,5 @@
-import { MOCAP_CLIPS } from "./mocap.ts";
+import { MOCAP_CLIPS, MOCAP_DANCE_IDS } from "./mocap.ts";
+import type { MocapClip, MocapKey } from "./mocapTypes.ts";
 // Dance moves are data: looped clips of joint angles on the doll rig. The
 // sampler eases between keys and wraps at the end, so a move loops forever.
 // Angles are radians in the rig's own axes (see src/client/avatar/pose.ts).
@@ -59,10 +60,8 @@ export const DANCE_MOVE_IDS = [
   "voguing",
   "twerk",
   "slow-dance",
-  "salsa",
-  "salsa-turns",
-  "lambada",
-  "expressive",
+  // motion capture (see mocap.ts)
+  ...MOCAP_DANCE_IDS,
 ] as const;
 
 export type DanceMoveId = (typeof DANCE_MOVE_IDS)[number];
@@ -477,40 +476,56 @@ export const DANCE_MOVES: readonly DanceMove[] = [
   },
 ];
 
-// motion-capture dances, from the CMU database
-const CAPTURED: readonly DanceMove[] = MOCAP_CLIPS.filter(
-  (c) => c.kind === "dance",
-).flatMap((c) =>
-  isMoveId(c.id)
-    ? [
-        {
-          id: c.id,
-          label: c.label,
-          period: c.period,
-          keys: c.keys,
-          captured: true,
-        },
-      ]
-    : [],
+// motion capture: the clips are listed up front, their keys load with
+// loadMocap(). Until then a captured dance holds still and walks use the
+// built stride, so nothing waits on the download.
+const STILL: readonly Key[] = [{ at: 0 }];
+
+function capturedMove(c: MocapClip, id: DanceMoveId): DanceMove {
+  return { id, label: c.label, period: c.period, keys: STILL, captured: true };
+}
+
+const CAPTURED: readonly DanceMove[] = MOCAP_CLIPS.flatMap((c) =>
+  c.kind === "dance" && isMoveId(c.id) ? [capturedMove(c, c.id)] : [],
 );
 
 function isMoveId(id: string): id is DanceMoveId {
   return DANCE_MOVE_IDS.some((m) => m === id);
 }
 
-/** Motion-capture walk loops, by clip id (see gaits.ts). */
-export const WALK_CLIPS: ReadonlyMap<string, DanceMove> = new Map(
-  MOCAP_CLIPS.filter((c) => c.kind === "walk").map((c) => [
-    c.id,
-    {
-      id: "groove",
-      label: c.label,
-      period: c.period,
-      keys: c.keys,
-      captured: true,
-    },
-  ]),
-);
+const walkClips = new Map<string, DanceMove>();
+const stillClips = new Map<string, DanceMove>();
+
+/** Motion-capture walk loops by clip id, once loaded (see gaits.ts). */
+export const WALK_CLIPS: ReadonlyMap<string, DanceMove> = walkClips;
+
+/** Held poses (standing, sitting, lying) by clip id, once loaded. */
+export const STILL_CLIPS: ReadonlyMap<string, DanceMove> = stillClips;
+
+/** The player's picked held pose per mood; "built" is the hand-made one. */
+export type Holds = Record<"pose" | "sit", string>;
+export const DEFAULT_HOLDS: Holds = { pose: "built", sit: "built" };
+
+/** The held-pose clips of one kind, for pickers. */
+export function stillClipsOf(kind: "pose" | "sit" | "lay") {
+  return MOCAP_CLIPS.filter((c) => c.kind === kind);
+}
+
+let loading: Promise<void> | null = null;
+
+/** Fetches the motion-capture keys (a separate chunk) and fills the moves. */
+export function loadMocap(): Promise<void> {
+  loading ??= import("./mocapKeys.ts").then(({ MOCAP_KEYS }) => {
+    const keysOf = (id: string): readonly MocapKey[] => MOCAP_KEYS[id] ?? STILL;
+    for (const m of CAPTURED) m.keys = keysOf(m.id);
+    for (const c of MOCAP_CLIPS) {
+      if (c.kind === "dance") continue;
+      const move = { ...capturedMove(c, "groove"), keys: keysOf(c.id) };
+      (c.kind === "walk" ? walkClips : stillClips).set(c.id, move);
+    }
+  });
+  return loading;
+}
 
 export const ALL_DANCE_MOVES: readonly DanceMove[] = [
   ...DANCE_MOVES,

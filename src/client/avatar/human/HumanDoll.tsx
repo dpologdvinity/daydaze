@@ -5,8 +5,11 @@ import * as THREE from "three";
 import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { couplePoseAt, type CoupleRole } from "../../../game/dance/couple.ts";
 import {
+  STILL_CLIPS,
+  stillClipsOf,
   createPose,
   danceMove,
+  loadMocap,
   poseAt,
   type DanceMoveId,
   type Pose,
@@ -34,7 +37,7 @@ import {
   bodyScales,
   type BodyShape,
 } from "../../../game/body.ts";
-import { pose, type Rig } from "../pose.ts";
+import { SIT_DROP, pose, type Rig } from "../pose.ts";
 import { useQuality } from "../../world/quality.ts";
 import { gaitOf, type GaitId } from "../../../game/gaits.ts";
 
@@ -58,6 +61,13 @@ import { Jewellery, readAnchors } from "./Jewellery.tsx";
  */
 
 const MODELS = "/models/doll";
+
+// the motion-capture keys come in their own chunk, fetched once a doll exists
+void loadMocap();
+
+// a doll given no held pose (an NPC) strikes one of these, by seed; the
+// first, none, keeps the built hip-pop pose
+const POSE_HOLDS = [undefined, ...stillClipsOf("pose").map((c) => c.id)];
 // metres from the camera where a doll swaps to and from the low-poly body
 const LOD_FAR = 9;
 const LOD_NEAR = 8;
@@ -88,6 +98,8 @@ type Props = {
   mood: Mood;
   dance?: DanceMoveId;
   couple?: CoupleRole;
+  /** A held motion-capture pose (STILL_CLIPS id) for the pose and sit moods. */
+  hold?: string;
   buzzed?: boolean;
   walk?: { current: WalkState };
   seed?: number;
@@ -434,6 +446,7 @@ export function HumanDoll({
   mood,
   dance = "groove",
   couple,
+  hold: picked,
   buzzed = false,
   walk,
   seed = 0,
@@ -512,15 +525,23 @@ export function HumanDoll({
     const speed = walk?.current.speed ?? 0;
     const moving = speed > 0.05;
     phase.current += dt * speed * 6.2 * gait.cadence;
-    const move = mood === "dance" && !moving ? danceMove(dance) : null;
+    const hold = picked ?? POSE_HOLDS[seed % POSE_HOLDS.length];
+    const held =
+      !moving && hold && (mood === "pose" || mood === "sit")
+        ? STILL_CLIPS.get(hold)
+        : undefined;
+    const move =
+      held ?? (mood === "dance" && !moving ? danceMove(dance) : null);
     const danced = !move
       ? null
-      : couple
+      : couple && !held
         ? couplePoseAt(move, couple, t, sampled)
         : poseAt(move, t, sampled);
+    // a captured sit keeps its legs but sits at the game's seat height
+    if (danced && held && mood === "sit") danced.root[1] = SIT_DROP;
     pose(
       proxy,
-      moving ? "walk" : mood,
+      moving ? "walk" : held ? "dance" : mood,
       t,
       phase.current,
       calm,
