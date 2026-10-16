@@ -121,6 +121,18 @@ const SHOTS = {
     target: [0, 0.9, 0] as const,
     fov: 34,
   },
+  // three makeup looks, close up
+  makeup: {
+    looks: [
+      { ...LINEUP[0], makeup: "220100" },
+      { ...LINEUP[3], lips: "lips-red-carpet" as const, makeup: "432232" },
+      { ...LINEUP[5], lips: "lips-mauve-velvet" as const, makeup: "135123" },
+    ],
+    x: (i: number) => (i - 1) * 0.32,
+    cam: [0, 1.56, 1.25] as const,
+    target: [0, 1.53, 0] as const,
+    fov: 30,
+  },
   // every hair style from behind and the side, close enough to judge strands
   hair: {
     looks: (

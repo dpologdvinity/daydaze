@@ -252,7 +252,15 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
       live = false;
       tex?.dispose();
     };
-  }, [body, look.skin, look.lips, look.brows, look.shadow, invalidate]);
+  }, [
+    body,
+    look.skin,
+    look.lips,
+    look.brows,
+    look.shadow,
+    look.makeup,
+    invalidate,
+  ]);
   useEffect(() => {
     const tex = paintIris(eyeColor);
     body.eye.map?.dispose();

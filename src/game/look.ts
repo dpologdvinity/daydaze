@@ -28,14 +28,26 @@ export const HAIR_COLORS = [
   { id: "#7ee8a2", label: "Mint soda" },
 ] as const;
 
+/** Lipsticks; `swatch` is the colour the closet shows. */
 export const LIPS = [
-  { id: "lips-hot-pink-glam", label: "Hot pink glam" },
-  { id: "lips-burgundy-cherry", label: "Cherry" },
-  { id: "lips-nude-pink-gloss", label: "Nude gloss" },
-  { id: "lips-90s-caramel-ombre", label: "90s caramel" },
+  { id: "lips-hot-pink-glam", label: "Hot pink glam", swatch: "#e8338a" },
+  { id: "lips-burgundy-cherry", label: "Cherry", swatch: "#7d1030" },
+  { id: "lips-nude-pink-gloss", label: "Nude gloss", swatch: "#d38f8a" },
+  { id: "lips-90s-caramel-ombre", label: "90s caramel", swatch: "#b06a4a" },
   // Beauty supply testers, see shop.ts.
-  { id: "lips-chrome-berry", label: "Chrome berry" },
-  { id: "lips-blue-raspberry-gloss", label: "Blue raspberry gloss" },
+  { id: "lips-chrome-berry", label: "Chrome berry", swatch: "#9b2a6e" },
+  {
+    id: "lips-blue-raspberry-gloss",
+    label: "Blue raspberry gloss",
+    swatch: "#3d6fe0",
+  },
+  { id: "lips-red-carpet", label: "Red carpet", swatch: "#c8102e" },
+  { id: "lips-mauve-velvet", label: "Mauve velvet", swatch: "#a0607a" },
+  { id: "lips-coral-pop", label: "Coral pop", swatch: "#ff6f61" },
+  { id: "lips-plum-noir", label: "Plum noir", swatch: "#4a1030" },
+  { id: "lips-peach-fizz", label: "Peach fizz", swatch: "#f2a07b" },
+  { id: "lips-brick-matte", label: "Brick matte", swatch: "#9c3b2a" },
+  { id: "lips-bare-balm", label: "Bare balm", swatch: "#c98f86" },
 ] as const;
 
 export const BROWS = [
@@ -206,6 +218,106 @@ export function faceOf(look: Look): Face {
   return decodeFace(look.face) ?? DEFAULT_FACE;
 }
 
+export const LINERS = [
+  { id: "none", label: "No liner" },
+  { id: "thin", label: "Thin line" },
+  { id: "winged", label: "Winged" },
+  { id: "smoky", label: "Smoky" },
+  { id: "graphic", label: "Graphic" },
+] as const;
+
+export const GLOSSES = [
+  { id: "matte", label: "Matte" },
+  { id: "satin", label: "Satin" },
+  { id: "glossy", label: "Glossy" },
+  { id: "glass", label: "Glass" },
+] as const;
+
+export const BLUSHES = [
+  { id: "none", label: "No blush", swatch: "#00000000" },
+  { id: "rose", label: "Rose", swatch: "#ff6c9a" },
+  { id: "peach", label: "Peach", swatch: "#ff9a76" },
+  { id: "berry", label: "Berry", swatch: "#c2306e" },
+  { id: "coral", label: "Coral", swatch: "#ff5a5a" },
+  { id: "bronze", label: "Bronze", swatch: "#b5653a" },
+] as const;
+
+export const STRENGTHS = [
+  { id: "soft", label: "Soft" },
+  { id: "medium", label: "Medium" },
+  { id: "bold", label: "Bold" },
+] as const;
+
+export const HIGHLIGHTERS = [
+  { id: "none", label: "No highlighter", swatch: "#00000000" },
+  { id: "champagne", label: "Champagne", swatch: "#f7e2b5" },
+  { id: "rose-gold", label: "Rose gold", swatch: "#f2b8a2" },
+  { id: "icy", label: "Icy pearl", swatch: "#e6f2ff" },
+  { id: "bronze", label: "Bronze glow", swatch: "#d79a5c" },
+] as const;
+
+export const SHADOW_STYLES = [
+  { id: "wash", label: "Wash" },
+  { id: "cut-crease", label: "Cut crease" },
+  { id: "smoky", label: "Smoky" },
+  { id: "halo", label: "Halo" },
+] as const;
+
+export type Makeup = {
+  liner: IdOf<typeof LINERS>;
+  gloss: IdOf<typeof GLOSSES>;
+  blush: IdOf<typeof BLUSHES>;
+  blushStrength: IdOf<typeof STRENGTHS>;
+  highlight: IdOf<typeof HIGHLIGHTERS>;
+  shadowStyle: IdOf<typeof SHADOW_STYLES>;
+};
+
+export const DEFAULT_MAKEUP: Makeup = {
+  liner: "winged",
+  gloss: "glossy",
+  blush: "rose",
+  blushStrength: "soft",
+  highlight: "champagne",
+  shadowStyle: "wash",
+};
+
+// Makeup travels as one short code, like the face: one digit per choice,
+// each the option's index in its catalog.
+const MAKEUP_PARTS = [
+  ["liner", LINERS],
+  ["gloss", GLOSSES],
+  ["blush", BLUSHES],
+  ["blushStrength", STRENGTHS],
+  ["highlight", HIGHLIGHTERS],
+  ["shadowStyle", SHADOW_STYLES],
+] as const;
+
+export function encodeMakeup(m: Makeup): string {
+  return MAKEUP_PARTS.map(([key, list]) =>
+    Math.max(
+      0,
+      list.findIndex((o) => o.id === m[key]),
+    ),
+  ).join("");
+}
+
+export function decodeMakeup(code: unknown): Makeup | null {
+  if (typeof code !== "string" || code.length !== MAKEUP_PARTS.length)
+    return null;
+  const out: Makeup = { ...DEFAULT_MAKEUP };
+  for (const [i, [key, list]] of MAKEUP_PARTS.entries()) {
+    const option = list[Number(code[i])];
+    if (!option || !/^[0-9]$/.test(code[i])) return null;
+    Object.assign(out, { [key]: option.id });
+  }
+  return out;
+}
+
+/** A look's makeup, or the default for looks from before the makeup bag. */
+export function makeupOf(look: Look): Makeup {
+  return decodeMakeup(look.makeup) ?? DEFAULT_MAKEUP;
+}
+
 export type Look = {
   skin: IdOf<typeof SKINS>;
   hairStyle: HairStyle;
@@ -218,10 +330,12 @@ export type Look = {
   /** encodeFace's code for the face sliders, body shape and eye colour;
    * looks from before the 3D doll have none and wear DEFAULT_FACE. */
   face?: string;
+  /** encodeMakeup's code; looks without one wear DEFAULT_MAKEUP. */
+  makeup?: string;
 };
 
 const LOOK_CATALOGS: {
-  [K in Exclude<keyof Look, "face">]: readonly {
+  [K in Exclude<keyof Look, "face" | "makeup">]: readonly {
     readonly id: Look[K];
     readonly label: string;
   }[];
@@ -246,9 +360,11 @@ export function validateLook(value: unknown): value is Look {
   const fields = new Map<string, unknown>(Object.entries(value));
   const catalogs = Object.entries(LOOK_CATALOGS);
   const hasFace = fields.has("face");
+  const hasMakeup = fields.has("makeup");
   return (
-    fields.size === catalogs.length + (hasFace ? 1 : 0) &&
+    fields.size === catalogs.length + (hasFace ? 1 : 0) + (hasMakeup ? 1 : 0) &&
     (!hasFace || decodeFace(fields.get("face")) !== null) &&
+    (!hasMakeup || decodeMakeup(fields.get("makeup")) !== null) &&
     catalogs.every(([key, catalog]) => isId(catalog, fields.get(key)))
   );
 }

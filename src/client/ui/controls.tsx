@@ -7,7 +7,12 @@ declare module "react" {
   }
 }
 
-type Option<T extends string> = { readonly id: T; readonly label: string };
+type Option<T extends string> = {
+  readonly id: T;
+  readonly label: string;
+  /** The colour a swatch shows when the id itself is not a colour. */
+  readonly swatch?: string;
+};
 
 type PickerProps<T extends string> = {
   label: string;
@@ -26,7 +31,7 @@ export function Swatches<T extends string>({
   return (
     <div className="row" role="radiogroup" aria-label={label}>
       {options.map((o) => {
-        const style: CSSProperties = { "--c": o.id };
+        const style: CSSProperties = { "--c": o.swatch ?? o.id };
         return (
           <button
             key={o.id}

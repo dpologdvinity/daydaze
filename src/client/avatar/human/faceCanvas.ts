@@ -1,5 +1,12 @@
 import * as THREE from "three";
-import type { Look } from "../../../game/look.ts";
+import {
+  BLUSHES,
+  HIGHLIGHTERS,
+  LIPS,
+  makeupOf,
+  type Look,
+  type Makeup,
+} from "../../../game/look.ts";
 import { makeCanvas } from "../../canvas.ts";
 
 /**
@@ -82,15 +89,20 @@ export function readMarks(json: unknown): Marks | null {
 
 const SIZE = 1024;
 
-// Lip colours for each lipstick in the closet: [base, liner, gloss strength].
-const LIP_INK: Record<Look["lips"], [string, string, number]> = {
-  "lips-hot-pink-glam": ["#e8338a", "#a3145a", 0.9],
-  "lips-burgundy-cherry": ["#7d1030", "#4a0618", 0.55],
-  "lips-nude-pink-gloss": ["#d38f8a", "#a8625e", 1],
-  "lips-90s-caramel-ombre": ["#b06a4a", "#5e2c1a", 0.7],
-  "lips-chrome-berry": ["#9b2a6e", "#4f0f38", 1],
-  "lips-blue-raspberry-gloss": ["#3d6fe0", "#1e3a8a", 1],
+// how much shine each finish puts on the lips
+const GLOSS: Record<Makeup["gloss"], number> = {
+  matte: 0,
+  satin: 0.35,
+  glossy: 0.8,
+  glass: 1.25,
 };
+
+/** A lipstick's base colour and its deeper liner, from the closet swatch. */
+function lipInk(id: Look["lips"]): [string, string] {
+  const swatch = LIPS.find((l) => l.id === id)?.swatch ?? "#c98f86";
+  const liner = `#${new THREE.Color(swatch).multiplyScalar(0.55).getHexString()}`;
+  return [swatch, liner];
+}
 
 // Brow shapes: thickness (canvas units), arch lift, tail lift, colour.
 const BROW: Record<Look["brows"], [number, number, number, string]> = {
@@ -186,47 +198,96 @@ function winged(lid: readonly [number, number][], wing: number) {
   ][];
 }
 
+// [lift above the lash line, width, opacity] bands per shadow style
+const SHADOW_BANDS: Record<Makeup["shadowStyle"], [number, number, number][]> =
+  {
+    wash: [
+      [0.012, 0.03, 0.5],
+      [0.006, 0.016, 0.65],
+    ],
+    "cut-crease": [
+      [0.022, 0.008, 0.85],
+      [0.008, 0.018, 0.55],
+    ],
+    smoky: [
+      [0.014, 0.038, 0.6],
+      [0.006, 0.022, 0.85],
+      [0.002, 0.012, 0.9],
+    ],
+    halo: [
+      [0.012, 0.03, 0.55],
+      [0.008, 0.012, 0.0],
+    ],
+  };
+
 function paintShadow(
   ctx: CanvasRenderingContext2D,
   lid: readonly [number, number][],
   colour: string,
+  style: Makeup["shadowStyle"],
 ) {
   const c = hexRgb(colour);
   ctx.save();
-  ctx.filter = "blur(10px)";
+  ctx.filter = style === "cut-crease" ? "blur(4px)" : "blur(10px)";
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
-  // a wide wash over the lid, then a deeper crease band
-  for (const [lift, width, alpha] of [
-    [0.012, 0.03, 0.5],
-    [0.006, 0.016, 0.65],
-  ] as const) {
+  // smoky goes deeper near the lashes
+  const ink = style === "smoky" ? c.map((v) => v * 0.55) : c;
+  for (const [lift, width, alpha] of SHADOW_BANDS[style]) {
     const raised = winged(lid, 0.018).map(
       ([x, y]) => [x, y - lift] as [number, number],
     );
-    ctx.strokeStyle = rgba(c, alpha);
+    ctx.strokeStyle = rgba(lift < 0.005 ? ink : c, alpha);
     ctx.lineWidth = width * SIZE;
     path(ctx, raised);
     ctx.stroke();
   }
   ctx.restore();
+  // halo: a bright spot in the middle of the lid
+  if (style === "halo") {
+    const mid = lid[Math.floor(lid.length / 2)];
+    blob(ctx, mid[0], mid[1] - 0.01, 0.018, 0.01, [255, 240, 250], 0.7);
+  }
   // shimmer on the brow bone
   const mid = lid[Math.floor(lid.length / 2)];
   blob(ctx, mid[0], mid[1] - 0.04, 0.03, 0.012, [255, 236, 246], 0.35);
 }
 
+// [width, wing length, blur px] per liner style
+const LINER: Record<
+  Exclude<Makeup["liner"], "none">,
+  [number, number, number]
+> = {
+  thin: [0.004, 0.006, 1],
+  winged: [0.0085, 0.03, 1],
+  smoky: [0.011, 0.012, 5],
+  graphic: [0.012, 0.045, 0.5],
+};
+
 function paintLiner(
   ctx: CanvasRenderingContext2D,
   lid: readonly [number, number][],
+  style: Makeup["liner"],
 ) {
+  if (style === "none") return;
+  const [width, wing, blur] = LINER[style];
   ctx.save();
   ctx.strokeStyle = "rgba(14,6,10,0.95)";
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
-  ctx.filter = "blur(1px)";
-  ctx.lineWidth = 0.0085 * SIZE;
-  path(ctx, winged(lid, 0.03));
+  ctx.filter = `blur(${blur}px)`;
+  ctx.lineWidth = width * SIZE;
+  path(ctx, winged(lid, wing));
   ctx.stroke();
+  // graphic: a floating line above the crease, echoing the wing
+  if (style === "graphic") {
+    ctx.lineWidth = 0.004 * SIZE;
+    path(
+      ctx,
+      winged(lid, wing).map(([x, y]) => [x, y - 0.03] as [number, number]),
+    );
+    ctx.stroke();
+  }
   ctx.restore();
 }
 
@@ -294,6 +355,7 @@ function paintBrow(
 /** The face texture: skin, contour, blush, shadow, liner, brows, lips. */
 export async function paintFace(look: Look, marks: Marks) {
   const img = await loadMask();
+  const makeup = makeupOf(look);
   const skin = hexRgb(look.skin);
   const { canvas, ctx } = makeCanvas(SIZE, SIZE);
   ctx.fillStyle = rgba(skin);
@@ -322,22 +384,47 @@ export async function paintFace(look: Look, marks: Marks) {
     blob(ctx, c[0] - out * 0.01, c[1] - 0.045, 0.04, 0.018, light, 0.5);
   }
 
-  // blush, warmer and stronger on deeper skin
+  // blush in the chosen colour, a touch deeper on deeper skin
   const deep = Math.max(0, Math.min(1, (200 - skin[0]) / 110));
-  const blush = mixRgb([255, 98, 140], [196, 44, 92], deep);
-  const cheekMask = channel(
-    img,
-    1,
-    `#${blush.map((v) => (v | 0).toString(16).padStart(2, "0")).join("")}`,
-  );
-  ctx.save();
-  ctx.globalAlpha = 0.2;
-  ctx.filter = "blur(22px)";
-  ctx.drawImage(cheekMask, 0, 0);
-  ctx.restore();
+  const blushSwatch = BLUSHES.find((b) => b.id === makeup.blush)?.swatch;
+  if (makeup.blush !== "none" && blushSwatch) {
+    const tone = mixRgb(hexRgb(blushSwatch), [150, 30, 70], deep * 0.35);
+    const cheekMask = channel(
+      img,
+      1,
+      `#${tone.map((v) => (v | 0).toString(16).padStart(2, "0")).join("")}`,
+    );
+    ctx.save();
+    ctx.globalAlpha = { soft: 0.16, medium: 0.28, bold: 0.42 }[
+      makeup.blushStrength
+    ];
+    ctx.filter = "blur(22px)";
+    ctx.drawImage(cheekMask, 0, 0);
+    ctx.restore();
+  }
 
-  paintShadow(ctx, marks.lLidUpper, look.shadow);
-  paintShadow(ctx, marks.rLidUpper, look.shadow);
+  // highlighter: cheekbone tops, nose bridge, cupid's bow and brow bone
+  const glow = HIGHLIGHTERS.find((h) => h.id === makeup.highlight)?.swatch;
+  if (makeup.highlight !== "none" && glow) {
+    const g = hexRgb(glow);
+    for (const c of [lCheek, rCheek]) {
+      const out = c[0] > 0.5 ? 1 : -1;
+      blob(ctx, c[0] - out * 0.005, c[1] - 0.05, 0.055, 0.02, g, 0.32);
+    }
+    blob(ctx, noseTip[0], noseTip[1] - 0.09, 0.009, 0.06, g, 0.3);
+    blob(
+      ctx,
+      (mouthL[0] + mouthR[0]) / 2,
+      mouthL[1] - 0.035,
+      0.012,
+      0.006,
+      g,
+      0.6,
+    );
+  }
+
+  paintShadow(ctx, marks.lLidUpper, look.shadow, makeup.shadowStyle);
+  paintShadow(ctx, marks.rLidUpper, look.shadow, makeup.shadowStyle);
   // lower lash line smudge
   ctx.save();
   ctx.filter = "blur(2px)";
@@ -351,8 +438,8 @@ export async function paintFace(look: Look, marks: Marks) {
     ctx.stroke();
   }
   ctx.restore();
-  paintLiner(ctx, marks.lLidUpper);
-  paintLiner(ctx, marks.rLidUpper);
+  paintLiner(ctx, marks.lLidUpper, makeup.liner);
+  paintLiner(ctx, marks.rLidUpper, makeup.liner);
 
   let seed = 1234;
   const rand = () => {
@@ -383,7 +470,8 @@ export async function paintFace(look: Look, marks: Marks) {
   );
 
   // lips: colour through the sculpted lip mask, a deeper liner edge, gloss
-  const [base, liner, gloss] = LIP_INK[look.lips];
+  const [base, liner] = lipInk(look.lips);
+  const gloss = GLOSS[makeup.gloss];
   ctx.drawImage(channel(img, 0, liner), 0, 0);
   ctx.save();
   ctx.filter = "blur(2px)";

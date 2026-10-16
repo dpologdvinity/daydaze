@@ -1,6 +1,15 @@
 import { useState } from "react";
 import {
   FIGURES,
+  BLUSHES,
+  GLOSSES,
+  HIGHLIGHTERS,
+  LINERS,
+  SHADOW_STYLES,
+  STRENGTHS,
+  encodeMakeup,
+  makeupOf,
+  type Makeup,
   BROWS,
   EYE_COLORS,
   EYESHADOWS,
@@ -97,6 +106,9 @@ function Mirror({
   setEffects: (effects: Intensity) => void;
 }) {
   const face = faceOf(look);
+  const makeup = makeupOf(look);
+  const setMakeup = (next: Makeup) =>
+    setLook({ ...look, makeup: encodeMakeup(next) });
   const setFace = (next: Face) => setLook({ ...look, face: encodeFace(next) });
   return (
     <>
@@ -146,12 +158,17 @@ function Mirror({
       </section>
       <section>
         <h3>Lips</h3>
-        <Chips
-          label="Lips"
+        <Swatches
+          label="Lipstick"
           options={wearable(LIPS, wardrobe)}
           value={look.lips}
           onPick={(lips) => setLook({ ...look, lips })}
-          thumbs
+        />
+        <Chips
+          label="Lip finish"
+          options={GLOSSES}
+          value={makeup.gloss}
+          onPick={(gloss) => setMakeup({ ...makeup, gloss })}
         />
       </section>
       <section>
@@ -168,6 +185,39 @@ function Mirror({
           options={wearable(EYESHADOWS, wardrobe)}
           value={look.shadow}
           onPick={(shadow) => setLook({ ...look, shadow })}
+        />
+      </section>
+      <section>
+        <h3>Makeup</h3>
+        <Chips
+          label="Eyeliner"
+          options={LINERS}
+          value={makeup.liner}
+          onPick={(liner) => setMakeup({ ...makeup, liner })}
+        />
+        <Chips
+          label="Eyeshadow style"
+          options={SHADOW_STYLES}
+          value={makeup.shadowStyle}
+          onPick={(shadowStyle) => setMakeup({ ...makeup, shadowStyle })}
+        />
+        <Swatches
+          label="Blush"
+          options={BLUSHES}
+          value={makeup.blush}
+          onPick={(blush) => setMakeup({ ...makeup, blush })}
+        />
+        <Chips
+          label="Blush strength"
+          options={STRENGTHS}
+          value={makeup.blushStrength}
+          onPick={(blushStrength) => setMakeup({ ...makeup, blushStrength })}
+        />
+        <Swatches
+          label="Highlighter"
+          options={HIGHLIGHTERS}
+          value={makeup.highlight}
+          onPick={(highlight) => setMakeup({ ...makeup, highlight })}
         />
       </section>
       <section>

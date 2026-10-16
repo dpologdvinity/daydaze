@@ -4,6 +4,10 @@ import {
   BROWS,
   FIGURES,
   DEFAULT_FACE,
+  DEFAULT_MAKEUP,
+  decodeMakeup,
+  encodeMakeup,
+  makeupOf,
   EYE_COLORS,
   decodeFace,
   encodeFace,
@@ -177,4 +181,21 @@ test("seeded NPC faces are stable, valid and varied", () => {
   assert.deepEqual(seededFace(3), faces[2]);
   for (const f of faces) assert.notEqual(decodeFace(encodeFace(f)), null);
   assert.ok(new Set(faces.map(encodeFace)).size > 8);
+});
+
+test("makeup codes round-trip and old looks wear the default", () => {
+  const m = {
+    ...DEFAULT_MAKEUP,
+    liner: "graphic" as const,
+    blush: "berry" as const,
+    highlight: "icy" as const,
+  };
+  assert.deepEqual(decodeMakeup(encodeMakeup(m)), m);
+  assert.equal(
+    validateLook({ ...DEFAULT_LOOK, makeup: encodeMakeup(m) }),
+    true,
+  );
+  assert.deepEqual(makeupOf(DEFAULT_LOOK), DEFAULT_MAKEUP);
+  for (const bad of ["", "99999", "9999999", "abcdef", 5, null])
+    assert.equal(validateLook({ ...DEFAULT_LOOK, makeup: bad }), false);
 });
