@@ -4,7 +4,7 @@ Daydaze is a multiplayer social hangout web game for adults who grew up on Club 
 
 ## Status
 
-3D (React Three Fiber). Built so far: the streamed city (Downtown and Nightlife Row) with doors and venue gates, the Velvet Room, Plaza, Water Park, Amusement Park and Speedway, plus 2,000+ handwritten NPC lines in `src/game/dialogue/`. The plan for everything else is `docs/plans/2026-10-14-master-roadmap.md` (milestones M0-M11); read it before starting new work. Specs live in `docs/specs/`.
+3D (React Three Fiber). Built so far: the streamed city (Downtown and Nightlife Row) with traffic, doors and venue gates; the Velvet Room, Plaza, Pulse, The Violet Hour, food rooms, shops, apartment and jail; the Water Park, Amusement Park (with the Midway booths) and Speedway; a semi-realistic 3D doll built in Blender with a face and body closet; and 2,000+ handwritten NPC lines in `src/game/dialogue/`. The plan for everything else is `docs/plans/2026-10-14-master-roadmap.md` (milestones M0-M11); read it before starting new work. Specs live in `docs/specs/`.
 
 ## Layout
 
@@ -13,7 +13,8 @@ Daydaze is a multiplayer social hangout web game for adults who grew up on Club 
 - `src/net/`: network protocol and room server (pure TypeScript, tested).
 - `server/`: Cloudflare Worker, Durable Objects and D1 schema. Pure, Node-tested modules sit in `server/src/`; the thin runtime adapters in `server/src/worker/` are type-checked with `server/tsconfig.json` against generated Workers types.
 - `src/audio/`: procedural Web Audio synthesis (tested).
-- `art/doll/`: layered 2D doll art and its compositor. Open `art/doll/compositor.html` in a browser to preview combinations.
+- `art/doll/blender/`: the 3D doll, built from MakeHuman's CC0 base mesh and asset pack. `fetch_makehuman.sh` downloads the inputs into `.cache/` (git-ignored); `blender --background --factory-startup --python art/doll/blender/build_doll.py` writes one GLB per part (body, each hair, outfit, swimsuit and shoe) to `.cache/out/`; `scripts/optimize-doll.sh` compresses them into `public/models/doll/`. `preview.py` renders a part combination for a quick look. The client side is `src/client/avatar/human/` (`HumanDoll.tsx`, makeup painted in `faceCanvas.ts`); the lab page is `/src/client/avatar/lineup.html?human=1&shot=face|body`.
+- `art/doll/` (the rest): the older layered 2D doll art and its compositor (`art/doll/compositor.html`).
 - `docs/VISION.md`: product decisions.
 - `docs/specs/`: design specs. `docs/plans/`: implementation plans.
 
@@ -85,7 +86,9 @@ State-changing requests and room sockets must come from the Worker's own origin 
 - NPC lines come from `pickLine` in `src/game/dialogue/`; add lines to the role files (10+ per situation, handwritten). Venue-specific lines use `when: { venue: "<room-id>" }`.
 - Free resources when done: stop dev servers, delete `dist/` and `test-results/`, remove merged worktrees.
 - 3D assets: optimize GLB files with `npx -y @gltf-transform/cli@4.5.1 optimize in.glb out.glb --compress meshopt --texture-compress webp` (run on demand, not a dependency: its `braces` dep has an unpatched advisory). Profile scenes with the Chrome DevTools MCP (telemetry off via env in `~/.claude/settings.json`).
-- Blender: `blender-mcp-headless` (in `~/.local/bin`) starts Blender on a virtual display with the MCP add-on listening on port 9876; the `blender` MCP server (user scope) talks to it.
+- Blender: the `blender` MCP server (user scope) runs `~/.local/bin/blender-mcp-launch`, which starts headless Blender (`blender-mcp-headless`, virtual display, add-on on port 9876) when nothing listens there. Batch builds don't need it: `blender --background` runs the doll scripts directly.
+- glTF gotchas: run gltf-transform with `--flatten false --palette false --prune-attributes false` (as `scripts/optimize-doll.sh` does), or node extras, material names and the UVs the client paints on disappear; set Blender shape keys' `value = 0` before export, or glTF writes them as default weights of 1.
+- Dev servers: kill a stray `vite` by the node PID; `pkill -f vite` also matches and kills the shell running it.
 
 ## Commits
 
