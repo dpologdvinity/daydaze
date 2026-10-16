@@ -364,7 +364,8 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         radius: 0.9,
         label: "Out through the gate",
         target: "city",
-        targetSpawn: { position: [185, -9], yaw: 0 },
+        // the Fairground forecourt, outside the carnival gate
+        targetSpawn: { position: [256, 244.5], yaw: 0 },
       },
     ],
   },
@@ -411,13 +412,13 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         targetSpawn: { position: [-9.2, 1.5], yaw: Math.PI / 2 },
       },
       {
-        // The gate out to the city, on the north avenue sidewalk.
+        // The gate out to the city, on the Fairground forecourt.
         id: "speedway-to-city",
         position: [9.4, 5.8],
         radius: 0.9,
         label: "Out through the gate",
         target: "city",
-        targetSpawn: { position: [81, -9], yaw: 0 },
+        targetSpawn: { position: [384, 244.5], yaw: 0 },
       },
     ],
   },

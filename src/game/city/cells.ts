@@ -28,6 +28,7 @@ export type Cell = {
  * edge at z = 192, Little Manila west of x = -192, else Nightlife Row east
  * of the cross street at x = 64. */
 export function neighborhoodAt(p: Vec2): Neighborhood {
+  if (p[1] > 192 && p[1] < 249 && p[0] > 192) return "fairground";
   if (p[1] > 192) return "beachside";
   if (p[1] < -192)
     return p[0] > 192 ? "uptown" : p[0] < -192 ? "suburbia" : "arts-district";

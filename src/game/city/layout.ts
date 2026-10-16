@@ -15,7 +15,8 @@ export type Neighborhood =
   | "arts-district"
   | "chinatown-koreatown"
   | "uptown"
-  | "suburbia";
+  | "suburbia"
+  | "fairground";
 
 export type RoadNode = { id: string; position: Vec2 };
 export type RoadEdge = {
@@ -56,6 +57,9 @@ export const CITY_BOUNDS: readonly Vec2[] = [
 // SHORE_Z with the two cross streets coming down to it; south of its
 // sidewalk the boardwalk, then the sand, then the water from WATER_Z.
 export const SHORE_Z = 256;
+// The Fairground, south-east between the avenue's old edge and Shore
+// Boulevard: its gates stand on a forecourt along the boulevard's north side.
+export const FAIR_FORECOURT_Z = 239;
 export const BOARDWALK = { z0: 267, z1: 279 };
 export const WATER_Z = 340;
 /** The pier: planks from the sand out over the water, wider at its head. */
@@ -447,6 +451,9 @@ export const CITY_SURFACES: readonly Surface[] = [
   { kind: "square", polygon: SQUARE },
   { kind: "sidewalk", polygon: FORECOURT_SOUTH },
   { kind: "sidewalk", polygon: FORECOURT_NORTH },
+  // the Fairground forecourt, either side of the Chinatown street
+  { kind: "sidewalk", polygon: rect(200, FAIR_FORECOURT_Z, 310, SHORE_Z - 11) },
+  { kind: "sidewalk", polygon: rect(330, FAIR_FORECOURT_Z, 440, SHORE_Z - 11) },
   {
     kind: "boardwalk",
     polygon: rect(WEST_EDGE, BOARDWALK.z0, EAST_EDGE, BOARDWALK.z1),
@@ -527,7 +534,7 @@ const JAIL_DOOR: Door = {
 };
 
 const CARNIVAL_DOOR: Door = {
-  position: [185, -12.5],
+  position: [256, FAIR_FORECOURT_Z + 1.5],
   radius: 2,
   label: "Into the Night Carnival",
   target: "amusement-park",
@@ -536,7 +543,7 @@ const CARNIVAL_DOOR: Door = {
 };
 
 const SPEEDWAY_DOOR: Door = {
-  position: [81, -12.5],
+  position: [384, FAIR_FORECOURT_Z + 1.5],
   radius: 2,
   label: "Into the Speedway",
   target: "speedway",
@@ -1391,8 +1398,8 @@ export const BUILDINGS: readonly Building[] = [
   {
     // The gate to the Amusement Park: walking through its door loads the park.
     id: "carnival-gate",
-    neighborhood: "nightlife-row",
-    footprint: rect(180, -40, 190, -14),
+    neighborhood: "fairground",
+    footprint: rect(244, FAIR_FORECOURT_Z - 26, 268, FAIR_FORECOURT_Z),
     height: 16,
     style: "gate",
     sign: { text: "NIGHT CARNIVAL", color: "#ff8a3d" },
@@ -1409,10 +1416,10 @@ export const BUILDINGS: readonly Building[] = [
     door: SPLASH_DOOR,
   },
   {
-    // The gate to the Speedway, on the north avenue sidewalk past the cross street.
+    // The gate to the Speedway, along the Fairground forecourt.
     id: "speedway-gate",
-    neighborhood: "nightlife-row",
-    footprint: rect(76, -40, 86, -14),
+    neighborhood: "fairground",
+    footprint: rect(372, FAIR_FORECOURT_Z - 26, 396, FAIR_FORECOURT_Z),
     height: 14,
     style: "gate",
     sign: { text: "SPEEDWAY", color: "#ff4fb3" },

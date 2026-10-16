@@ -23,6 +23,7 @@ function cityHood(hood: NeighborhoodId): Neighborhood {
     case "beachside":
     case "uptown":
     case "suburbia":
+    case "fairground":
     case "nightlife-row":
       return hood;
     default:
@@ -89,6 +90,11 @@ const HOOD_ROWS: Partial<Record<NeighborhoodId, readonly Row[]>> = {
   uptown: [
     { x0: 330, x1: 337, z0: -242, count: 7, street: "west" },
     { x0: 303, x1: 310, z0: -242, count: 7, street: "east" },
+  ],
+  // beside the Chinatown street's run south, behind the Fairground forecourt
+  fairground: [
+    { x0: 330, x1: 337, z0: 196, count: 6, street: "west" },
+    { x0: 303, x1: 310, z0: 196, count: 6, street: "east" },
   ],
   // the cross streets between the old city edge and Shore Boulevard
   beachside: [

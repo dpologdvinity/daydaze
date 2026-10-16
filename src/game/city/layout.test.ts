@@ -207,15 +207,16 @@ test("each venue gate's door fires from the sidewalk, and the venue's exit leads
     const door = BUILDINGS.find((b) => b.id === gateId)?.door;
     assert.ok(door, `${gateId} has a door`);
     assert.equal(door.target, venue);
-    let pos: Vec2 = [door.position[0], -9];
+    const back = ROOMS[venue].portals.find((p) => p.target === "city");
+    assert.ok(back, `${venue} has a way back to the city`);
+    // from where the venue's exit leaves you, walking up fires the door
+    let pos: Vec2 = back.targetSpawn.position;
     let fired: string | null = null;
     for (let step = 0; step < 200 && fired === null; step++) {
       pos = stepInArea(CITY_AREA, pos, door.position, 0.2);
       fired = portalAt(CITY_AREA, pos)?.target ?? null;
     }
     assert.equal(fired, venue, gateId);
-    const back = ROOMS[venue].portals.find((p) => p.target === "city");
-    assert.ok(back, `${venue} has a way back to the city`);
     assert.equal(
       isBlocked(CITY_AREA, back.targetSpawn.position),
       false,
