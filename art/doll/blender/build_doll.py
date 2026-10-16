@@ -298,6 +298,47 @@ for s, S in (("l", "L"), ("r", "R")):
     J[s + "Foot"] = bone_head(f"foot.{S}")
 WRIST = {s: bone_head(f"wrist.{S}") for s, S in (("l", "L"), ("r", "R"))}
 
+# Closet face presets (FACE_PRESETS in src/game/look.ts): one key each, at 1
+# when picked. The default of each group (almond eyes, straight nose, natural
+# lips, oval face) is the base mesh and has no key.
+KEYS.update(
+    {
+        "eye_round": pair("eyes/{s}-eye-height1-incr.target") * 0.6
+        + pair("eyes/{s}-eye-height2-incr.target") * 0.5,
+        "eye_hooded": pair("eyes/{s}-eye-eyefold-down.target") * 0.7
+        + pair("eyes/{s}-eye-height2-decr.target") * 0.3,
+        "eye_upturned": pair("eyes/{s}-eye-corner2-up.target") * 0.8,
+        "eye_downturned": pair("eyes/{s}-eye-corner2-down.target") * 0.7,
+        "nose_button": target("nose/nose-point-up.target") * 0.6
+        + target("nose/nose-scale-vert-decr.target") * 0.4
+        + target("nose/nose-volume-decr.target") * 0.3,
+        "nose_narrow": target("nose/nose-width1-decr.target") * 0.6
+        + target("nose/nose-width2-decr.target") * 0.6
+        + target("nose/nose-width3-decr.target") * 0.6
+        + target("nose/nose-scale-horiz-decr.target") * 0.4,
+        "nose_wide": target("nose/nose-scale-horiz-incr.target") * 0.6
+        + target("nose/nose-nostrils-width-incr.target") * 0.5
+        + target("nose/nose-flaring-incr.target") * 0.3,
+        "nose_roman": target("nose/nose-hump-incr.target") * 0.6
+        + target("nose/nose-point-down.target") * 0.3,
+        "lips_full": target("mouth/mouth-upperlip-volume-incr.target") * 0.6
+        + target("mouth/mouth-lowerlip-volume-incr.target") * 0.55,
+        "lips_thin": target("mouth/mouth-upperlip-volume-decr.target") * 0.5
+        + target("mouth/mouth-lowerlip-volume-decr.target") * 0.5,
+        "lips_heart": target("mouth/mouth-cupidsbow-incr.target") * 0.8
+        + target("mouth/mouth-upperlip-volume-incr.target") * 0.35
+        + target("mouth/mouth-scale-horiz-decr.target") * 0.3,
+        "lips_wide": target("mouth/mouth-scale-horiz-incr.target") * 0.6,
+        "face_round": target("head/head-round.target") * 0.6
+        + target("head/head-fat-incr.target") * 0.3,
+        "face_heart": target("head/head-invertedtriangular.target") * 0.6
+        + target("chin/chin-width-decr.target") * 0.4,
+        "face_square": target("head/head-square.target") * 0.6
+        + target("chin/chin-width-incr.target") * 0.3,
+        "face_diamond": target("head/head-diamond.target") * 0.6,
+    }
+)
+
 # Closet body sliders (src/game/body.ts): bust, hips and waist keys, driven
 # -1..1 by the client. The waist key is the hip-width target masked to a band
 # around the natural waist, so it narrows or widens only the middle.

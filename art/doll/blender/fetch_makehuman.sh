@@ -90,6 +90,24 @@ FILES=(
   $T/eyes/r-eye-height1-incr.target
   $T/eyes/l-eye-eyefold-up.target
   $T/eyes/r-eye-eyefold-up.target
+  $T/eyes/l-eye-height2-decr.target
+  $T/eyes/r-eye-height2-decr.target
+  $T/eyes/l-eye-corner2-down.target
+  $T/eyes/r-eye-corner2-down.target
+  $T/eyes/l-eye-eyefold-down.target
+  $T/eyes/r-eye-eyefold-down.target
+  $T/nose/nose-point-down.target
+  $T/nose/nose-hump-incr.target
+  $T/nose/nose-flaring-incr.target
+  $T/nose/nose-nostrils-width-incr.target
+  $T/nose/nose-width3-decr.target
+  $T/mouth/mouth-upperlip-volume-decr.target
+  $T/mouth/mouth-lowerlip-volume-decr.target
+  $T/mouth/mouth-scale-horiz-incr.target
+  $T/head/head-round.target
+  $T/head/head-square.target
+  $T/head/head-diamond.target
+  $T/head/head-fat-incr.target
   $T/expression/units/caucasian/eye-left-closure.target
   $T/expression/units/caucasian/eye-right-closure.target
   $T/expression/units/caucasian/mouth-corner-puller.target

@@ -12,6 +12,7 @@ import {
   type Pose,
 } from "../../../game/dance/moves.ts";
 import {
+  FACE_PRESETS,
   FIGURES,
   FACE_SLIDERS,
   faceOf,
@@ -462,6 +463,14 @@ export function HumanDoll({
     for (const b of FIGURES)
       if (b.id !== "classic")
         setMorph(wornList.current, b.id, face.figure === b.id ? 1 : 0);
+    // face presets: the picked option's key at 1, the group's others at 0
+    for (const g of FACE_PRESETS)
+      for (const o of g.options.slice(1))
+        setMorph(
+          wornList.current,
+          `${g.key}_${o.id}`,
+          face[g.field] === o.id ? 1 : 0,
+        );
     // closet body sliders: 50 is the base shape, 0 and 100 the key at -1 and 1
     setMorph(wornList.current, "bust", (shape.bust - 50) / 50);
     setMorph(wornList.current, "hips", (shape.hips - 50) / 50);

@@ -1,6 +1,10 @@
 import { useState } from "react";
 import {
   FIGURES,
+  EYE_SHAPES,
+  FACE_SHAPES,
+  LIP_SHAPES,
+  NOSES,
   BLUSHES,
   GLOSSES,
   HIGHLIGHTERS,
@@ -128,6 +132,30 @@ function Mirror({
           options={EYE_COLORS}
           value={face.eyeColor}
           onPick={(eyeColor) => setFace({ ...face, eyeColor })}
+        />
+        <Chips
+          label="Eye shape"
+          options={EYE_SHAPES}
+          value={face.eyeShape}
+          onPick={(eyeShape) => setFace({ ...face, eyeShape })}
+        />
+        <Chips
+          label="Nose"
+          options={NOSES}
+          value={face.noseShape}
+          onPick={(noseShape) => setFace({ ...face, noseShape })}
+        />
+        <Chips
+          label="Lip shape"
+          options={LIP_SHAPES}
+          value={face.lipShape}
+          onPick={(lipShape) => setFace({ ...face, lipShape })}
+        />
+        <Chips
+          label="Face shape"
+          options={FACE_SHAPES}
+          value={face.faceShape}
+          onPick={(faceShape) => setFace({ ...face, faceShape })}
         />
         {FACE_SLIDERS.map((s) => (
           <Slider

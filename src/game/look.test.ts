@@ -167,7 +167,7 @@ test("malformed face codes are rejected", () => {
     "kkkkkk00x",
     "zkkkkk00",
     "kkkkkk90",
-    "kkkkkk09",
+    "kkkkkk009999",
     3,
     null,
   ]) {
@@ -198,4 +198,16 @@ test("makeup codes round-trip and old looks wear the default", () => {
   assert.deepEqual(makeupOf(DEFAULT_LOOK), DEFAULT_MAKEUP);
   for (const bad of ["", "99999", "9999999", "abcdef", 5, null])
     assert.equal(validateLook({ ...DEFAULT_LOOK, makeup: bad }), false);
+});
+
+test("face presets ride in the code; 8-character codes still decode", () => {
+  const face = {
+    ...DEFAULT_FACE,
+    eyeShape: "hooded" as const,
+    noseShape: "roman" as const,
+    lipShape: "heart" as const,
+    faceShape: "diamond" as const,
+  };
+  assert.deepEqual(decodeFace(encodeFace(face)), face);
+  assert.deepEqual(decodeFace("kkkkkk00"), DEFAULT_FACE);
 });

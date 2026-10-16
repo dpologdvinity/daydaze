@@ -121,6 +121,9 @@ export const EYE_COLORS = [
   { id: "#3d6fa8", label: "Blue" },
   { id: "#7d8790", label: "Grey" },
   { id: "#8e4dff", label: "Violet" },
+  { id: "#b5762a", label: "Honey amber" },
+  { id: "#9fc8e8", label: "Ice blue" },
+  { id: "#1f8a5a", label: "Emerald" },
 ] as const;
 
 export const FIGURES = [
@@ -140,12 +143,55 @@ export const FACE_SLIDERS = [
   { id: "jaw", label: "Jaw" },
 ] as const;
 
+/** Face presets: the first of each group is the base face (no shape key);
+ * the rest are the doll model's keys `<group>_<id>`. */
+export const EYE_SHAPES = [
+  { id: "almond", label: "Almond" },
+  { id: "round", label: "Round" },
+  { id: "hooded", label: "Hooded" },
+  { id: "upturned", label: "Upturned" },
+  { id: "downturned", label: "Downturned" },
+] as const;
+export const NOSES = [
+  { id: "straight", label: "Straight" },
+  { id: "button", label: "Button" },
+  { id: "narrow", label: "Narrow" },
+  { id: "wide", label: "Wide" },
+  { id: "roman", label: "Roman" },
+] as const;
+export const LIP_SHAPES = [
+  { id: "natural", label: "Natural" },
+  { id: "full", label: "Full" },
+  { id: "thin", label: "Thin" },
+  { id: "heart", label: "Heart" },
+  { id: "wide", label: "Wide" },
+] as const;
+export const FACE_SHAPES = [
+  { id: "oval", label: "Oval" },
+  { id: "round", label: "Round" },
+  { id: "heart", label: "Heart" },
+  { id: "square", label: "Square" },
+  { id: "diamond", label: "Diamond" },
+] as const;
+
+/** Each preset group, its face field and its shape-key prefix. */
+export const FACE_PRESETS = [
+  { field: "eyeShape", key: "eye", options: EYE_SHAPES },
+  { field: "noseShape", key: "nose", options: NOSES },
+  { field: "lipShape", key: "lips", options: LIP_SHAPES },
+  { field: "faceShape", key: "face", options: FACE_SHAPES },
+] as const;
+
 export type FaceSlider = IdOf<typeof FACE_SLIDERS>;
 export type Figure = IdOf<typeof FIGURES>;
 
 export type Face = Record<FaceSlider, number> & {
   figure: Figure;
   eyeColor: IdOf<typeof EYE_COLORS>;
+  eyeShape: IdOf<typeof EYE_SHAPES>;
+  noseShape: IdOf<typeof NOSES>;
+  lipShape: IdOf<typeof LIP_SHAPES>;
+  faceShape: IdOf<typeof FACE_SHAPES>;
 };
 
 export const DEFAULT_FACE: Face = {
@@ -157,6 +203,10 @@ export const DEFAULT_FACE: Face = {
   jaw: 0,
   figure: "classic",
   eyeColor: "#6b3f22",
+  eyeShape: "almond",
+  noseShape: "straight",
+  lipShape: "natural",
+  faceShape: "oval",
 };
 
 // A face travels inside the look as one short string, because looks go over
@@ -170,13 +220,25 @@ export function encodeFace(face: Face): string {
   return (
     FACE_SLIDERS.map((s) => slider(face[s.id])).join("") +
     FIGURES.findIndex((b) => b.id === face.figure) +
-    EYE_COLORS.findIndex((c) => c.id === face.eyeColor)
+    EYE_COLORS.findIndex((c) => c.id === face.eyeColor) +
+    FACE_PRESETS.map((g) =>
+      Math.max(
+        0,
+        g.options.findIndex((o) => o.id === face[g.field]),
+      ),
+    ).join("")
   );
 }
 
 /** The face a look's code describes; null when the code is malformed. */
 export function decodeFace(code: unknown): Face | null {
-  if (typeof code !== "string" || code.length !== FACE_SLIDERS.length + 2)
+  const base = FACE_SLIDERS.length + 2;
+  // codes from before the face presets stop after the eye colour
+  if (
+    typeof code !== "string" ||
+    (code.length !== base && code.length !== base + FACE_PRESETS.length) ||
+    !/^[a-u]+[0-9]+$/.test(code)
+  )
     return null;
   const face: Face = { ...DEFAULT_FACE };
   for (const [i, s] of FACE_SLIDERS.entries()) {
@@ -189,6 +251,12 @@ export function decodeFace(code: unknown): Face | null {
   if (!body || !eye) return null;
   face.figure = body.id;
   face.eyeColor = eye.id;
+  for (const [i, g] of FACE_PRESETS.entries()) {
+    if (code.length === base) break;
+    const option = g.options[Number(code[base + i])];
+    if (!option) return null;
+    Object.assign(face, { [g.field]: option.id });
+  }
   return face;
 }
 
@@ -209,7 +277,13 @@ export function seededFace(seed: number): Face {
     face[s.id] = Math.round((next() * 1.2 - 0.6) * 10) / 10;
   face.figure = FIGURES[Math.floor(next() * FIGURES.length)].id;
   // natural eye colours only; violet is a closet pick
-  face.eyeColor = EYE_COLORS[Math.floor(next() * (EYE_COLORS.length - 1))].id;
+  // natural eye colours only; violet is a closet pick
+  const natural = EYE_COLORS.filter((c) => c.id !== "#8e4dff");
+  face.eyeColor = natural[Math.floor(next() * natural.length)].id;
+  for (const g of FACE_PRESETS)
+    Object.assign(face, {
+      [g.field]: g.options[Math.floor(next() * g.options.length)].id,
+    });
   return face;
 }
 
