@@ -133,6 +133,7 @@ const SURFACE_COLOR = {
   // Beachside at night: weathered planks, moonlit sand
   boardwalk: "#9a6a4a",
   sand: "#c9a274",
+  lawn: "#2e5e3a",
 };
 
 type Box = { x0: number; z0: number; x1: number; z1: number };
@@ -208,7 +209,9 @@ function surfaceStyle(surface: Surface): {
   }
   // sand and boardwalk planks are plain ground, not concrete paving
   const kind =
-    surface.kind === "sand" || surface.kind === "boardwalk"
+    surface.kind === "sand" ||
+    surface.kind === "boardwalk" ||
+    surface.kind === "lawn"
       ? "ground"
       : "sidewalk";
   return { kind, y: 0.07, h: 0.14, color: SURFACE_COLOR[surface.kind] };
@@ -267,7 +270,7 @@ const SIDEWALK_BOXES: readonly Box[] = CITY_SURFACES.filter(
   (s) => s.kind !== "road",
 ).map((s) => boundsOf(s.polygon));
 const PAVED_BOXES: readonly Box[] = CITY_SURFACES.filter(
-  (s) => s.kind !== "road" && s.kind !== "sand",
+  (s) => s.kind !== "road" && s.kind !== "sand" && s.kind !== "lawn",
 ).map((s) => boundsOf(s.polygon));
 const CURB_COLOR = "#8c80c0";
 const SEAM_COLOR = "#3d2f6e";

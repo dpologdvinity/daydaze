@@ -13,7 +13,8 @@ export type Neighborhood =
   | "beachside"
   | "little-manila"
   | "arts-district"
-  | "chinatown-koreatown";
+  | "chinatown-koreatown"
+  | "uptown";
 
 export type RoadNode = { id: string; position: Vec2 };
 export type RoadEdge = {
@@ -58,6 +59,8 @@ export const BOARDWALK = { z0: 267, z1: 279 };
 export const WATER_Z = 340;
 /** The pier: planks from the sand out over the water, wider at its head. */
 export const PIER = { x: 24, half: 3, end: 378, head: 9 };
+/** Uptown's Park and Gardens: a lawn north of Park Avenue. */
+export const PARK = { x0: 204, x1: 300, z0: -316, z1: -266 };
 
 export const ROAD_NODES: readonly RoadNode[] = [
   { id: "west", position: [-192, 0] },
@@ -77,6 +80,8 @@ export const ROAD_NODES: readonly RoadNode[] = [
   { id: "asia-e", position: [EAST_EDGE, 0] },
   { id: "asia-north", position: [ASIA_X, -192] },
   { id: "asia-south", position: [ASIA_X, 192] },
+  { id: "up-mid", position: [ASIA_X, GALLERY_Z] },
+  { id: "up-e", position: [EAST_EDGE, GALLERY_Z] },
   { id: "manila-w", position: [WEST_EDGE, 0] },
   { id: "m-mid", position: [MANILA_X, 0] },
   { id: "m-north", position: [MANILA_X, -192] },
@@ -106,6 +111,11 @@ export const ROAD_EDGES: readonly RoadEdge[] = [
   { from: "asia-mid", to: "asia-e", width: 14, lanes: 2, speedLimit: 11 },
   { from: "asia-north", to: "asia-mid", width: 10, lanes: 1, speedLimit: 9 },
   { from: "asia-mid", to: "asia-south", width: 10, lanes: 1, speedLimit: 9 },
+  // Uptown: Gallery Row carries on east as Park Avenue, and the Chinatown
+  // street runs north to meet it
+  { from: "arts-e", to: "up-mid", width: 12, lanes: 2, speedLimit: 10 },
+  { from: "up-mid", to: "up-e", width: 12, lanes: 2, speedLimit: 10 },
+  { from: "up-mid", to: "asia-north", width: 10, lanes: 1, speedLimit: 9 },
   // Little Manila: the avenue carries on west, crossed by its own street
   { from: "manila-w", to: "m-mid", width: 14, lanes: 2, speedLimit: 11 },
   { from: "m-mid", to: "west", width: 14, lanes: 2, speedLimit: 11 },
@@ -154,7 +164,7 @@ export type Building = {
 };
 
 export type Surface = {
-  kind: "road" | "sidewalk" | "square" | "boardwalk" | "sand";
+  kind: "road" | "sidewalk" | "square" | "boardwalk" | "sand" | "lawn";
   polygon: readonly Vec2[];
 };
 
@@ -233,6 +243,7 @@ export const CITY_SURFACES: readonly Surface[] = [
     polygon: rect(-HALF_CITY, BOARDWALK.z0, HALF_CITY, BOARDWALK.z1),
   },
   { kind: "sand", polygon: rect(-HALF_CITY, BOARDWALK.z1, HALF_CITY, WATER_Z) },
+  { kind: "lawn", polygon: rect(PARK.x0, PARK.z0, PARK.x1, PARK.z1) },
   {
     kind: "boardwalk",
     polygon: rect(
@@ -842,6 +853,101 @@ const ASIA_BUILDINGS: readonly Building[] = ASIA_FRONT.map(
   }),
 );
 
+// Uptown, along Park Avenue: brownstones, wine bars, a patisserie, a
+// bistro and a tasting-menu restaurant; the park on its north side.
+const UPTOWN_FRONT: readonly {
+  x: number;
+  w: number;
+  h: number;
+  north: boolean;
+  color: string;
+  sign?: { text: string; color: string };
+  style: BuildingStyle;
+}[] = [
+  {
+    x: 214,
+    w: 20,
+    h: 16,
+    north: false,
+    color: "#8d5b4c",
+    sign: { text: "WINE BAR", color: "#ffd6a5" },
+    style: "brick",
+  },
+  { x: 238, w: 20, h: 18, north: false, color: "#a26769", style: "brick" },
+  {
+    x: 262,
+    w: 20,
+    h: 16,
+    north: false,
+    color: "#7b4b3a",
+    sign: { text: "PATISSERIE", color: "#ffc8dd" },
+    style: "brick",
+  },
+  { x: 290, w: 22, h: 20, north: false, color: "#9c6644", style: "brick" },
+  {
+    x: 351,
+    w: 22,
+    h: 14,
+    north: false,
+    color: "#6d597a",
+    sign: { text: "BISTRO", color: "#ffe066" },
+    style: "storefront",
+  },
+  { x: 374, w: 22, h: 22, north: false, color: "#8e7dbe", style: "brick" },
+  {
+    x: 402,
+    w: 24,
+    h: 18,
+    north: false,
+    color: "#b56576",
+    sign: { text: "TASTING ROOM", color: "#ffd6a5" },
+    style: "glass",
+  },
+  { x: 430, w: 22, h: 26, north: false, color: "#5f0f40", style: "tower" },
+  {
+    x: 351,
+    w: 22,
+    h: 20,
+    north: true,
+    color: "#9a8c98",
+    sign: { text: "BOOKSHOP", color: "#ffffff" },
+    style: "brick",
+  },
+  { x: 374, w: 22, h: 16, north: true, color: "#c9ada7", style: "brick" },
+  {
+    x: 402,
+    w: 24,
+    h: 14,
+    north: true,
+    color: "#4a4e69",
+    sign: { text: "JAZZ CLUB", color: "#4fe3ff" },
+    style: "club",
+  },
+  {
+    x: 430,
+    w: 22,
+    h: 24,
+    north: true,
+    color: "#22223b",
+    sign: { text: "THE PLAZA HOTEL", color: "#ffd166" },
+    style: "tower",
+  },
+];
+
+const UPTOWN_BUILDINGS: readonly Building[] = UPTOWN_FRONT.map(
+  (b, i): Building => ({
+    id: `uptown-${i}`,
+    neighborhood: "uptown",
+    footprint: b.north
+      ? rect(b.x - b.w / 2, GALLERY_Z - 42, b.x + b.w / 2, GALLERY_Z - 12)
+      : rect(b.x - b.w / 2, GALLERY_Z + 12, b.x + b.w / 2, GALLERY_Z + 52),
+    height: b.h,
+    style: b.style,
+    color: b.color,
+    sign: b.sign,
+  }),
+);
+
 const MANILA_BUILDINGS: readonly Building[] = MANILA_FRONT.map(
   (b, i): Building => ({
     id: `manila-${i}`,
@@ -1108,6 +1214,7 @@ export const BUILDINGS: readonly Building[] = [
   ...MANILA_BUILDINGS,
   ...ARTS_BUILDINGS,
   ...ASIA_BUILDINGS,
+  ...UPTOWN_BUILDINGS,
 ];
 
 // x of each north-south street; each has two edges, so dedupe.
@@ -1141,9 +1248,8 @@ function buildProps(): Prop[] {
       // down to Shore Boulevard
       // the new districts' streets stop at the old city edge; Downtown's run
       // on to Gallery Row and Shore Boulevard
-      const short = cx === MANILA_X || cx === ASIA_X;
-      const first = short ? -180 : -240;
-      const last = short ? 180 : 240;
+      const first = cx === MANILA_X ? -180 : -240;
+      const last = cx === MANILA_X || cx === ASIA_X ? 180 : 240;
       for (let z = first; z <= last; z += 60) {
         if (Math.abs(z) < 11) continue;
         props.push({ kind: "tree", position: [x, z] });
@@ -1156,6 +1262,15 @@ function buildProps(): Prop[] {
     for (const z of [GALLERY_Z - 8, GALLERY_Z + 8])
       props.push({ kind: "lamp", position: [x, z] });
   }
+  // Uptown: lamps down Park Avenue, trees over the park lawn
+  for (let x = 204; x < EAST_EDGE - 6; x += 30) {
+    if (nearCross(x)) continue;
+    for (const z of [GALLERY_Z - 8, GALLERY_Z + 8])
+      props.push({ kind: "lamp", position: [x, z] });
+  }
+  for (let x = PARK.x0 + 8; x < PARK.x1 - 4; x += 16)
+    for (let z = PARK.z0 + 8; z < PARK.z1 - 4; z += 14)
+      if ((x + z) % 3 !== 0) props.push({ kind: "tree", position: [x, z] });
   // Chinatown and Koreatown: lamps down the avenue sidewalks
   for (let x = 204; x < EAST_EDGE - 6; x += 30) {
     if (nearCross(x)) continue;
