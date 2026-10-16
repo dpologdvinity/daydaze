@@ -22,6 +22,7 @@ function cityHood(hood: NeighborhoodId): Neighborhood {
     case "arts-district":
     case "beachside":
     case "uptown":
+    case "suburbia":
     case "nightlife-row":
       return hood;
     default:
@@ -78,6 +79,11 @@ const HOOD_ROWS: Partial<Record<NeighborhoodId, readonly Row[]>> = {
   "arts-district": [
     { x0: 74, x1: 81, z0: -242, count: 7, street: "west" },
     { x0: -81, x1: -74, z0: -242, count: 7, street: "east" },
+  ],
+  // either side of Little Manila's street's run north to Maple Drive
+  suburbia: [
+    { x0: -310, x1: -303, z0: -242, count: 7, street: "west" },
+    { x0: -337, x1: -330, z0: -242, count: 7, street: "east" },
   ],
   // either side of the Chinatown street's run north to Park Avenue
   uptown: [

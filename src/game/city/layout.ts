@@ -14,7 +14,8 @@ export type Neighborhood =
   | "little-manila"
   | "arts-district"
   | "chinatown-koreatown"
-  | "uptown";
+  | "uptown"
+  | "suburbia";
 
 export type RoadNode = { id: string; position: Vec2 };
 export type RoadEdge = {
@@ -82,6 +83,8 @@ export const ROAD_NODES: readonly RoadNode[] = [
   { id: "asia-south", position: [ASIA_X, 192] },
   { id: "up-mid", position: [ASIA_X, GALLERY_Z] },
   { id: "up-e", position: [EAST_EDGE, GALLERY_Z] },
+  { id: "sub-mid", position: [MANILA_X, GALLERY_Z] },
+  { id: "sub-w", position: [WEST_EDGE, GALLERY_Z] },
   { id: "manila-w", position: [WEST_EDGE, 0] },
   { id: "m-mid", position: [MANILA_X, 0] },
   { id: "m-north", position: [MANILA_X, -192] },
@@ -116,6 +119,11 @@ export const ROAD_EDGES: readonly RoadEdge[] = [
   { from: "arts-e", to: "up-mid", width: 12, lanes: 2, speedLimit: 10 },
   { from: "up-mid", to: "up-e", width: 12, lanes: 2, speedLimit: 10 },
   { from: "up-mid", to: "asia-north", width: 10, lanes: 1, speedLimit: 9 },
+  // Suburbia: Gallery Row carries on west as Maple Drive, and Little
+  // Manila's street runs north to meet it
+  { from: "sub-w", to: "sub-mid", width: 10, lanes: 1, speedLimit: 9 },
+  { from: "sub-mid", to: "arts-w", width: 10, lanes: 1, speedLimit: 9 },
+  { from: "sub-mid", to: "m-north", width: 10, lanes: 1, speedLimit: 9 },
   // Little Manila: the avenue carries on west, crossed by its own street
   { from: "manila-w", to: "m-mid", width: 14, lanes: 2, speedLimit: 11 },
   { from: "m-mid", to: "west", width: 14, lanes: 2, speedLimit: 11 },
@@ -224,6 +232,189 @@ const SQUARE = rect(-50, 11, 50, 44);
 const FORECOURT_SOUTH = rect(73, 11, 192, 14);
 const FORECOURT_NORTH = rect(73, -14, 192, -11);
 
+// Suburbia, along Maple Drive: pastel two-storey houses behind front lawns,
+// a 2000s strip mall, the supermarket, a drive-in diner and the high school.
+const SUBURB_FRONT: readonly {
+  x: number;
+  w: number;
+  h: number;
+  north: boolean;
+  color: string;
+  sign?: { text: string; color: string };
+  style: BuildingStyle;
+  /** Houses sit back behind a lawn; shops come up to the sidewalk. */
+  house?: boolean;
+}[] = [
+  {
+    x: -436,
+    w: 14,
+    h: 8,
+    north: false,
+    color: "#ffd6e0",
+    style: "deck",
+    house: true,
+  },
+  {
+    x: -416,
+    w: 14,
+    h: 8,
+    north: false,
+    color: "#c1fba4",
+    style: "deck",
+    house: true,
+  },
+  {
+    x: -396,
+    w: 14,
+    h: 9,
+    north: false,
+    color: "#a0c4ff",
+    style: "deck",
+    house: true,
+  },
+  {
+    x: -374,
+    w: 16,
+    h: 8,
+    north: false,
+    color: "#fdffb6",
+    style: "deck",
+    house: true,
+  },
+  {
+    x: -352,
+    w: 14,
+    h: 8,
+    north: false,
+    color: "#ffc6ff",
+    style: "deck",
+    house: true,
+  },
+  {
+    x: -282,
+    w: 30,
+    h: 10,
+    north: false,
+    color: "#ffadad",
+    sign: { text: "STRIP MALL", color: "#4fe3ff" },
+    style: "storefront",
+  },
+  {
+    x: -246,
+    w: 34,
+    h: 12,
+    north: false,
+    color: "#caffbf",
+    sign: { text: "SUPERMARKET", color: "#ff2f9a" },
+    style: "warehouse",
+  },
+  {
+    x: -210,
+    w: 22,
+    h: 8,
+    north: false,
+    color: "#ffd166",
+    sign: { text: "DRIVE-IN DINER", color: "#ff2f9a" },
+    style: "storefront",
+  },
+  {
+    x: -432,
+    w: 18,
+    h: 9,
+    north: true,
+    color: "#bdb2ff",
+    style: "deck",
+    house: true,
+  },
+  {
+    x: -408,
+    w: 16,
+    h: 8,
+    north: true,
+    color: "#ffd6a5",
+    style: "deck",
+    house: true,
+  },
+  {
+    x: -384,
+    w: 18,
+    h: 9,
+    north: true,
+    color: "#9bf6ff",
+    style: "deck",
+    house: true,
+  },
+  {
+    x: -358,
+    w: 16,
+    h: 8,
+    north: true,
+    color: "#fffffc",
+    style: "deck",
+    house: true,
+  },
+  {
+    x: -270,
+    w: 60,
+    h: 14,
+    north: true,
+    color: "#e5989b",
+    sign: { text: "HIGH SCHOOL", color: "#ffd166" },
+    style: "brick",
+  },
+  {
+    x: -216,
+    w: 22,
+    h: 10,
+    north: true,
+    color: "#b5838d",
+    sign: { text: "VIDEO RENTALS", color: "#4fe3ff" },
+    style: "storefront",
+  },
+];
+
+// front lawns: houses stand 9 m back from the sidewalk behind one
+const SUBURB_BUILDINGS: readonly Building[] = SUBURB_FRONT.map(
+  (b, i): Building => {
+    const back = b.house ? 9 : 0;
+    return {
+      id: `suburb-${i}`,
+      neighborhood: "suburbia",
+      footprint: b.north
+        ? rect(
+            b.x - b.w / 2,
+            GALLERY_Z - 40 - back,
+            b.x + b.w / 2,
+            GALLERY_Z - 10 - back,
+          )
+        : rect(
+            b.x - b.w / 2,
+            GALLERY_Z + 10 + back,
+            b.x + b.w / 2,
+            GALLERY_Z + 40 + back,
+          ),
+      height: b.h,
+      style: b.style,
+      color: b.color,
+      sign: b.sign,
+    };
+  },
+);
+
+const SUBURB_LAWNS: readonly Surface[] = SUBURB_FRONT.filter(
+  (b) => b.house,
+).map((b): Surface => ({
+  kind: "lawn",
+  polygon: b.north
+    ? rect(b.x - b.w / 2 - 1, GALLERY_Z - 19, b.x + b.w / 2 + 1, GALLERY_Z - 10)
+    : rect(
+        b.x - b.w / 2 - 1,
+        GALLERY_Z + 10,
+        b.x + b.w / 2 + 1,
+        GALLERY_Z + 19,
+      ),
+}));
+
 export const CITY_SURFACES: readonly Surface[] = [
   ...ROAD_EDGES.map((edge): Surface => ({
     kind: "road",
@@ -244,6 +435,7 @@ export const CITY_SURFACES: readonly Surface[] = [
   },
   { kind: "sand", polygon: rect(-HALF_CITY, BOARDWALK.z1, HALF_CITY, WATER_Z) },
   { kind: "lawn", polygon: rect(PARK.x0, PARK.z0, PARK.x1, PARK.z1) },
+  ...SUBURB_LAWNS,
   {
     kind: "boardwalk",
     polygon: rect(
@@ -1215,6 +1407,7 @@ export const BUILDINGS: readonly Building[] = [
   ...ARTS_BUILDINGS,
   ...ASIA_BUILDINGS,
   ...UPTOWN_BUILDINGS,
+  ...SUBURB_BUILDINGS,
 ];
 
 // x of each north-south street; each has two edges, so dedupe.
@@ -1248,7 +1441,7 @@ function buildProps(): Prop[] {
       // down to Shore Boulevard
       // the new districts' streets stop at the old city edge; Downtown's run
       // on to Gallery Row and Shore Boulevard
-      const first = cx === MANILA_X ? -180 : -240;
+      const first = -240;
       const last = cx === MANILA_X || cx === ASIA_X ? 180 : 240;
       for (let z = first; z <= last; z += 60) {
         if (Math.abs(z) < 11) continue;
@@ -1261,6 +1454,12 @@ function buildProps(): Prop[] {
     if (nearCross(x)) continue;
     for (const z of [GALLERY_Z - 8, GALLERY_Z + 8])
       props.push({ kind: "lamp", position: [x, z] });
+  }
+  // Suburbia: street trees down Maple Drive
+  for (let x = WEST_EDGE + 10; x < -196; x += 24) {
+    if (nearCross(x)) continue;
+    for (const z of [GALLERY_Z - 7, GALLERY_Z + 7])
+      props.push({ kind: "tree", position: [x, z] });
   }
   // Uptown: lamps down Park Avenue, trees over the park lawn
   for (let x = 204; x < EAST_EDGE - 6; x += 30) {

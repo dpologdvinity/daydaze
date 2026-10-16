@@ -22,6 +22,7 @@ test("the grid is 14 cells across and 11 down, 64 m each: Little Manila west, Ch
   assert.equal(new Set(ALL_CELLS.map((c) => c.key)).size, 154);
   assert.equal(neighborhoodAt([320, 0]), "chinatown-koreatown");
   assert.equal(neighborhoodAt([320, -260]), "uptown");
+  assert.equal(neighborhoodAt([-320, -260]), "suburbia");
   assert.equal(neighborhoodAt([0, -256]), "arts-district");
   assert.equal(neighborhoodAt([-320, 0]), "little-manila");
   // the old city is Downtown and Nightlife Row; south of z 192 is Beachside

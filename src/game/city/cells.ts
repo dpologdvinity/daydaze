@@ -29,7 +29,8 @@ export type Cell = {
  * of the cross street at x = 64. */
 export function neighborhoodAt(p: Vec2): Neighborhood {
   if (p[1] > 192) return "beachside";
-  if (p[1] < -192) return p[0] > 192 ? "uptown" : "arts-district";
+  if (p[1] < -192)
+    return p[0] > 192 ? "uptown" : p[0] < -192 ? "suburbia" : "arts-district";
   if (p[0] < -192) return "little-manila";
   if (p[0] > 192) return "chinatown-koreatown";
   return p[0] >= 64 ? "nightlife-row" : "downtown";
