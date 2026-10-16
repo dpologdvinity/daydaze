@@ -1,20 +1,30 @@
-// Usage: node utils/rename-mixamo-downloads.mjs <dir> <mixamo-manifest.json> [--apply]
+// Usage: node utils/rename-mixamo-downloads.mjs <dir> <mixamo-manifest.json> [--apply] [--dupes-only]
 // Renames Mixamo downloads (saved under the animation name, with Chrome's
-// " (1)" suffix on repeats) to their descriptions. Dry run unless --apply.
+// " (1)" suffix on repeats) to their descriptions. Zips (packs) are skipped.
+// --dupes-only renames just the names that were downloaded more than once.
+// Dry run unless --apply.
 // Assumes <dir> had no same-named files before the run.
 import { existsSync, readFileSync, renameSync } from "node:fs";
 import { extname, join } from "node:path";
 
-const [dir, manifestPath, flag] = process.argv.slice(2);
+const [dir, manifestPath, ...flags] = process.argv.slice(2);
+const apply = flags.includes("--apply");
+const dupesOnly = flags.includes("--dupes-only");
 
 if (!dir || !manifestPath) {
   console.error(
-    "Usage: rename-mixamo-downloads.mjs <dir> <manifest.json> [--apply]",
+    "Usage: rename-mixamo-downloads.mjs <dir> <manifest.json> [--apply] [--dupes-only]",
   );
   process.exit(1);
 }
 
 const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+const totals = new Map();
+
+for (const { savedName } of manifest) {
+  totals.set(savedName, (totals.get(savedName) ?? 0) + 1);
+}
+
 const seen = new Map();
 const taken = new Set();
 let renamed = 0;
@@ -24,8 +34,17 @@ for (const { savedName, description } of manifest) {
   seen.set(savedName, count + 1);
 
   const ext = extname(savedName);
-  const stem = savedName.slice(0, -ext.length);
-  const from = count === 0 ? savedName : `${stem} (${count})${ext}`;
+
+  if (ext === ".zip" || (dupesOnly && totals.get(savedName) === 1)) {
+    continue;
+  }
+
+  // Chrome saves "/" etc. in the Mixamo name as "_".
+  const safeName = savedName.replace(/[\\/:*?"<>|]/g, "_");
+  const from =
+    count === 0
+      ? safeName
+      : `${safeName.slice(0, -ext.length)} (${count})${ext}`;
   const base = description
     .replace(/[\\/:*?"<>|\x00-\x1f]/g, "")
     .replace(/\s+/g, " ")
@@ -45,10 +64,10 @@ for (const { savedName, description } of manifest) {
   taken.add(to);
   console.log(`${from} -> ${to}`);
 
-  if (flag === "--apply") {
+  if (apply) {
     renameSync(join(dir, from), join(dir, to));
     renamed += 1;
   }
 }
 
-console.log(flag === "--apply" ? `renamed ${renamed}` : "dry run; add --apply");
+console.log(apply ? `renamed ${renamed}` : "dry run; add --apply");
