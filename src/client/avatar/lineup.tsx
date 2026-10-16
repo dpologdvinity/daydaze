@@ -139,9 +139,9 @@ const SHOTS = {
       ["waves", "ponytail", "bob", "braids", "afro", "buns"] as const
     ).map((hairStyle, i) => ({ ...LINEUP[i % LINEUP.length], hairStyle })),
     x: (i: number) => (i - 2.5) * 0.62,
-    cam: [0.6, 1.6, 4.4] as const,
+    cam: [0.6, 1.6, 2.6] as const,
     target: [0, 1.45, 0] as const,
-    fov: 34,
+    fov: 50,
   },
   // the low-poly LOD body seen close up, to check its seams and face
   lod: {

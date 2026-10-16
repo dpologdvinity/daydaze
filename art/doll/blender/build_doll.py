@@ -99,9 +99,22 @@ SHAPE = [
         target(
             "breast/female-young-averagemuscle-averageweight-maxcup-averagefirmness.target"
         ),
-        0.3,
+        0.45,
     ),
-    (target("bodyshapes/bodyshapes-elvs-fem-neat-hourglass.target"), 0.4),
+    (target("bodyshapes/bodyshapes-elvs-fem-neat-hourglass.target"), 0.6),
+    # a woman's build, not an athlete's: softer muscle, narrower shoulders,
+    # softer arms, wider hips, fuller bum and thighs, a lifted bust
+    (target(UNI + "minmuscle-averageweight.target") - AVG, 0.7),
+    (target("torso/torso-scale-horiz-decr.target"), 0.35),
+    (target("torso/torso-vshape-decr.target"), 0.5),
+    (pair("armslegs/{s}-upperarm-muscle-decr.target"), 0.6),
+    (pair("armslegs/{s}-upperarm-shoulder-muscle-decr.target"), 0.6),
+    (pair("armslegs/{s}-lowerarm-muscle-decr.target"), 0.5),
+    (target("hip/hip-scale-horiz-incr.target"), 0.25),
+    (target("buttocks/buttocks-volume-incr.target"), 0.5),
+    (pair("armslegs/{s}-upperleg-fat-incr.target"), 0.6),
+    (pair("armslegs/{s}-upperleg-muscle-decr.target"), 0.4),
+    (target("breast/breast-volume-vert-up.target"), 0.3),
     (target("hip/hip-waist-up.target"), 0.15),
     (target("stomach/stomach-tone-incr.target"), 0.15),
     (pair("eyes/{s}-eye-scale-incr.target"), 0.9),
@@ -389,7 +402,8 @@ def repose():
         Rf = rot_between(wr - el, el - sh)
         fore = about(Rf, el)
         wr2 = (fore @ np.append(wr, 1))[:3]
-        down = np.array([sign * 0.2, -1.0, 0.04])
+        # a little out from the hips, so hands clear the curves
+        down = np.array([sign * 0.3, -1.0, 0.04])
         Ra = rot_between(wr2 - sh, down)
         arm = about(Ra, sh)
         T[s + "Arm"] = arm
@@ -843,6 +857,8 @@ def export(rig, objects, name):
         export_extras=True,
         export_animations=False,
         export_materials="EXPORT",
+        # hair carries root-to-tip shading as vertex colours
+        export_vertex_color="ACTIVE",
     )
 
 

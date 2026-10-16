@@ -11,17 +11,14 @@ from mathutils import Vector
 from mathutils.kdtree import KDTree
 
 import proxies
+import strands
 
 # style id -> MakeHuman proxy
 PROXY = {
-    "waves": "hair/long01/long01.mhclo",
     "ponytail": "hair/ponytail01/ponytail01.mhclo",
-    "bob": "hair/bob01/bob01.mhclo",
 }
 TEXTURE = {
-    "waves": "hair/long01/long01_diffuse.png",
     "ponytail": "hair/ponytail01/ponytail01_diffuse.png",
-    "bob": "hair/bob01/bob01_diffuse.png",
 }
 
 
@@ -194,6 +191,39 @@ def braids(ctx, mat, count=48, length=0.5):
     return scalp_hair(ctx, "Hair_braids", mat, extra)
 
 
+def shade_strands(ctx, ob):
+    """Root-to-tip shading as vertex colours: hair near the scalp sits in its
+    own shadow and reads darker and denser; lengths and tips catch the light.
+    The client multiplies these into the hair colour."""
+    head_i = ctx.BONES.index("head")
+    scalp = ctx.PB[[i for f in ctx.FACES["body"] for i in f if ctx.W[i, head_i] > 0.98]]
+    tree = KDTree(len(scalp))
+    for i, p in enumerate(scalp):
+        tree.insert(p, i)
+    tree.balance()
+    me = ob.data
+    attr = me.color_attributes.new("Color", "FLOAT_COLOR", "POINT")
+    me.color_attributes.active_color = attr
+    eye_z = ctx.JB["lEye"][2]
+    for v in me.vertices:
+        d = tree.find(v.co)[2]
+        root = np.clip(d / 0.035, 0, 1)  # 0 on the scalp, 1 a few cm out
+        below = np.clip((eye_z - v.co.z) / 0.25, 0, 1)  # lengths past the face
+        t = np.clip(root * 0.7 + below * 0.5, 0, 1)
+        g = 0.5 + 0.5 * t**0.8
+        attr.data[v.index].color = (g, g, g, 1.0)
+
+
+def strand_style(ctx, name, strand_mat, cap_mat, **style):
+    """Strand cards over a hair-coloured scalp cap, so no skin shows through
+    the parting or between cards."""
+    import doll_outfits
+
+    cap = scalp_hair(ctx, name + "_cap", cap_mat, lambda bm, ctx: None)
+    cards = strands.build(ctx, name, strand_mat, **style)
+    return doll_outfits.join(cards, cap)
+
+
 def build(ctx):
     out = []
     for style, path in PROXY.items():
@@ -205,4 +235,20 @@ def build(ctx):
         out.append(ob)
     solid = bpy.data.materials.new("hair_solid")
     out += [buns(ctx, solid), afro(ctx, solid), braids(ctx, solid)]
+    strand = strands.material("hair_strands")
+    # strand-card styles: length (m), wave (slow S), curl (tight spirals),
+    # volume (lift off the scalp); ids match HAIR_STYLES in src/game/look.ts
+    for name, style in {
+        "waves": dict(length=0.56, count=760, wave=0.01),
+        "long-straight": dict(length=0.6, count=780, wave=0.002),
+        "long-curly": dict(length=0.5, count=820, curl=0.022, volume=1.8),
+        "mid-straight": dict(length=0.36, count=700, wave=0.002),
+        "mid-wavy": dict(length=0.36, count=700, wave=0.012),
+        "mid-curly": dict(length=0.3, count=760, curl=0.022, volume=1.9),
+        "bob": dict(length=0.24, count=650, wave=0.002, volume=1.2),
+        "pixie": dict(length=0.11, count=600, wave=0.004, volume=1.1),
+    }.items():
+        out.append(strand_style(ctx, f"Hair_{name}", strand, solid, seed=len(name), **style))
+    for ob in out:
+        shade_strands(ctx, ob)
     return out

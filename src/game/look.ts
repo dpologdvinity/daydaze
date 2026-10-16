@@ -16,6 +16,12 @@ export const HAIR_STYLES = [
   { id: "bob", label: "Bob" },
   { id: "braids", label: "Knotless braids" },
   { id: "afro", label: "Afro puff" },
+  { id: "long-straight", label: "Long and sleek" },
+  { id: "long-curly", label: "Long curls" },
+  { id: "mid-straight", label: "Shoulder-length" },
+  { id: "mid-wavy", label: "Shoulder waves" },
+  { id: "mid-curly", label: "Shoulder curls" },
+  { id: "pixie", label: "Pixie" },
 ] as const;
 
 export const HAIR_COLORS = [
@@ -272,19 +278,33 @@ export function seededFace(seed: number): Face {
     x ^= x << 5;
     return (x >>> 0) / 4294967296;
   };
+  const pick = <T>(list: readonly T[]): T =>
+    list[Math.floor(next() * list.length)];
   const face: Face = { ...DEFAULT_FACE };
+  // gentle variety only: strangers should all look good
   for (const s of FACE_SLIDERS)
-    face[s.id] = Math.round((next() * 1.2 - 0.6) * 10) / 10;
-  face.figure = FIGURES[Math.floor(next() * FIGURES.length)].id;
+    face[s.id] = Math.round((next() * 0.6 - 0.3) * 10) / 10;
+  face.figure = pick(FIGURES).id;
   // natural eye colours only; violet is a closet pick
-  // natural eye colours only; violet is a closet pick
-  const natural = EYE_COLORS.filter((c) => c.id !== "#8e4dff");
-  face.eyeColor = natural[Math.floor(next() * natural.length)].id;
-  for (const g of FACE_PRESETS)
-    Object.assign(face, {
-      [g.field]: g.options[Math.floor(next() * g.options.length)].id,
-    });
+  face.eyeColor = pick(EYE_COLORS.filter((c) => c.id !== "#8e4dff")).id;
+  face.eyeShape = pick(["almond", "upturned", "round"] as const);
+  face.noseShape = pick(["straight", "button", "narrow"] as const);
+  face.lipShape = pick(["natural", "full", "heart"] as const);
+  face.faceShape = pick(["oval", "heart", "diamond", "round"] as const);
   return face;
+}
+
+/** Makeup for an NPC: a polished look, varied by seed. */
+export function seededMakeup(seed: number): Makeup {
+  const n = Math.floor(seed * 7919) >>> 0;
+  return {
+    liner: (["thin", "winged", "winged", "smoky"] as const)[n % 4],
+    gloss: (["satin", "glossy", "glass"] as const)[(n >> 2) % 3],
+    blush: (["rose", "peach", "berry", "coral"] as const)[(n >> 4) % 4],
+    blushStrength: "soft",
+    highlight: (["champagne", "rose-gold", "icy"] as const)[(n >> 6) % 3],
+    shadowStyle: (["wash", "smoky", "halo"] as const)[(n >> 8) % 3],
+  };
 }
 
 /** A look's face, or the default for looks from before the 3D doll. */

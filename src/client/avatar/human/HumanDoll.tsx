@@ -17,6 +17,8 @@ import {
   FACE_SLIDERS,
   faceOf,
   seededFace,
+  seededMakeup,
+  encodeMakeup,
   type Face,
   silhouetteOf,
   type Look,
@@ -89,7 +91,7 @@ const SHOES: Record<Silhouette, string> = {
 // salon styles wear the closest 3D hair until they get models of their own
 const HAIR: Partial<Record<Look["hairStyle"], string>> = {
   "sleek-bob": "bob",
-  "curl-cloud": "afro",
+  "curl-cloud": "mid-curly",
 };
 
 export function partsFor(look: Look, swim: SwimLook | null) {
@@ -272,6 +274,34 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
   return body;
 }
 
+/** Hair: strand cards catch a long anisotropic highlight; untextured
+ * sculpted hair (afro, braids, buns) has no strand direction, so it stays
+ * matte with a soft sheen. Baked root-to-tip shading tints both. */
+function hairMaterial(
+  colour: string,
+  map: THREE.Texture | null,
+  shaded: boolean,
+) {
+  return new THREE.MeshPhysicalMaterial({
+    map,
+    color: colour,
+    vertexColors: shaded,
+    roughness: map ? 0.34 : 0.62,
+    anisotropy: map ? 0.85 : 0,
+    anisotropyRotation: Math.PI / 2,
+    specularIntensity: map ? 0.9 : 0.4,
+    specularColor: new THREE.Color(colour).lerp(
+      new THREE.Color("#ffffff"),
+      0.6,
+    ),
+    sheen: map ? 0.5 : 0.35,
+    sheenRoughness: 0.4,
+    sheenColor: new THREE.Color(colour).lerp(new THREE.Color("#ffffff"), 0.35),
+    side: THREE.DoubleSide,
+    alphaTest: map ? 0.5 : 0,
+  });
+}
+
 type Tint = { colour: string; kind: "hair" | "cloth" | "gloss" | "keep" };
 
 /** A worn part, re-bound to the body's bones and tinted. */
@@ -315,26 +345,10 @@ function Part({
         src.material instanceof THREE.MeshStandardMaterial
           ? src.material
           : null;
+      const hasShade = Boolean(src.geometry.getAttribute("color"));
       const mat =
         tint.kind === "hair"
-          ? // strands catch a long anisotropic highlight and a soft sheen
-            new THREE.MeshPhysicalMaterial({
-              map: old?.map ?? null,
-              color: tint.colour,
-              // strand cards get a long anisotropic highlight; untextured
-              // sculpted hair (afro, braids, buns) has no strand direction,
-              // so it stays matte with a soft sheen
-              roughness: old?.map ? 0.38 : 0.62,
-              anisotropy: old?.map ? 0.7 : 0,
-              sheen: old?.map ? 0.6 : 0.35,
-              sheenRoughness: 0.4,
-              sheenColor: new THREE.Color(tint.colour).lerp(
-                new THREE.Color("#ffffff"),
-                0.35,
-              ),
-              side: THREE.DoubleSide,
-              alphaTest: 0.35,
-            })
+          ? hairMaterial(tint.colour, old?.map ?? null, hasShade)
           : new THREE.MeshStandardMaterial({
               map: old?.map ?? null,
               color: tint.kind === "keep" ? "#ffffff" : tint.colour,
@@ -343,6 +357,30 @@ function Part({
       materials.push(mat);
       mesh.material = mat;
       group.add(mesh);
+      // strand cards draw twice: a solid core that writes depth, then the
+      // thin wisps at the card edges blended on top, so the hairline and ends
+      // read soft instead of cut out
+      if (tint.kind === "hair" && old?.map) {
+        // the wisps pass is plain standard shading: thin edges show no
+        // highlight anyway, and blended overdraw is the costly part
+        const wisps = new THREE.MeshStandardMaterial({
+          map: old.map,
+          color: tint.colour,
+          vertexColors: hasShade,
+          roughness: 0.5,
+          side: THREE.DoubleSide,
+          alphaTest: 0.04,
+          transparent: true,
+          depthWrite: false,
+        });
+        materials.push(wisps);
+        const soft = mesh.clone();
+        soft.bind(skeleton, src.bindMatrix);
+        soft.morphTargetInfluences?.fill(0);
+        soft.material = wisps;
+        soft.renderOrder = 1;
+        group.add(soft);
+      }
     }
     return { group, materials, lift };
   }, [gltf, bones, tint.colour, tint.kind]);
@@ -376,7 +414,15 @@ export function HumanDoll({
     () => (look.face || !seed ? faceOf(look) : seededFace(seed)),
     [look, seed],
   );
-  const body = useBody(look, face.eyeColor);
+  // NPC looks carry no makeup either; their seed picks a polished one
+  const painted = useMemo(
+    () =>
+      look.makeup || !seed
+        ? look
+        : { ...look, makeup: encodeMakeup(seededMakeup(seed)) },
+    [look, seed],
+  );
+  const body = useBody(painted, face.eyeColor);
   const parts = partsFor(look, swim);
   const tuckKey = parts.tucks.join(",");
   const tucks = useMemo(() => tuckKey.split(","), [tuckKey]);

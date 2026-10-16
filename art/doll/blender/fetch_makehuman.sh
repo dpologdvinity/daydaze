@@ -108,6 +108,20 @@ FILES=(
   $T/head/head-square.target
   $T/head/head-diamond.target
   $T/head/head-fat-incr.target
+  $T/macrodetails/universal-female-young-minmuscle-averageweight.target
+  $T/torso/torso-scale-horiz-decr.target
+  $T/torso/torso-vshape-decr.target
+  $T/armslegs/l-upperarm-muscle-decr.target
+  $T/armslegs/r-upperarm-muscle-decr.target
+  $T/armslegs/l-upperarm-shoulder-muscle-decr.target
+  $T/armslegs/r-upperarm-shoulder-muscle-decr.target
+  $T/armslegs/l-lowerarm-muscle-decr.target
+  $T/armslegs/r-lowerarm-muscle-decr.target
+  $T/armslegs/l-upperleg-fat-incr.target
+  $T/armslegs/r-upperleg-fat-incr.target
+  $T/armslegs/l-upperleg-muscle-decr.target
+  $T/armslegs/r-upperleg-muscle-decr.target
+  $T/breast/breast-volume-vert-up.target
   $T/expression/units/caucasian/eye-left-closure.target
   $T/expression/units/caucasian/eye-right-closure.target
   $T/expression/units/caucasian/mouth-corner-puller.target
