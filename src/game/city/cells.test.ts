@@ -10,15 +10,20 @@ import {
 } from "./cells.ts";
 import { CITY_SPAWN } from "./layout.ts";
 
-test("the grid is 6 by 6 cells of 64 m, centred on the city", () => {
-  assert.equal(ALL_CELLS.length, 36);
+test("the grid is 6 cells across and 9 down, 64 m each, Beachside to the south", () => {
+  assert.equal(ALL_CELLS.length, 54);
   assert.equal(CELL_SIZE, 64);
   const xs = ALL_CELLS.map((c) => c.x0);
   const zs = ALL_CELLS.map((c) => c.z0);
   assert.equal(Math.min(...xs), -192);
   assert.equal(Math.max(...xs) + CELL_SIZE, 192);
   assert.equal(Math.min(...zs), -192);
-  assert.equal(new Set(ALL_CELLS.map((c) => c.key)).size, 36);
+  assert.equal(Math.max(...zs) + CELL_SIZE, 384);
+  assert.equal(new Set(ALL_CELLS.map((c) => c.key)).size, 54);
+  // the old city is Downtown and Nightlife Row; south of z 192 is Beachside
+  assert.equal(neighborhoodAt([0, 300]), "beachside");
+  assert.equal(neighborhoodAt([0, 100]), "downtown");
+  assert.equal(cellAt([0, 300]).neighborhood, "beachside");
 });
 
 test("a point maps to the cell that holds it, clamped at the edge", () => {

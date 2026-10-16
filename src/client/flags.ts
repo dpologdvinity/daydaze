@@ -1,4 +1,4 @@
-import { isRoomId, type RoomId } from "../game/rooms.ts";
+import { isRoomId, type RoomId, type Spawn } from "../game/rooms.ts";
 import type { View } from "./world/CameraRig.tsx";
 import type { QualityTier } from "./world/quality.ts";
 
@@ -15,6 +15,8 @@ export type Flags = {
   view: View | null;
   /** `?slide=0.4` starts the Water Park's first slide 40% of the way down. */
   slide: number | null;
+  /** `?at=0,300` starts the room at that point (x, z), facing `yaw` (0). */
+  at: Spawn | null;
 };
 
 const VIEW_IDS: readonly View[] = ["room", "full", "face", "detail"];
@@ -32,5 +34,16 @@ export function readFlags(search: string): Flags {
     room: isRoomId(room) ? room : null,
     view,
     slide: slide >= 0 && slide <= 1 ? slide : null,
+    at: spawnAt(q.get("at"), Number(q.get("yaw") ?? 0)),
+  };
+}
+
+function spawnAt(value: string | null, yaw: number): Spawn | null {
+  const parts = value?.split(",").map(Number);
+  if (!parts || parts.length !== 2 || !parts.every(Number.isFinite))
+    return null;
+  return {
+    position: [parts[0], parts[1]],
+    yaw: Number.isFinite(yaw) ? yaw : 0,
   };
 }

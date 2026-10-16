@@ -5,6 +5,7 @@ import { isRoomId, ROOMS } from "../rooms.ts";
 import { portalAt } from "../portals.ts";
 import { pointInPolygon, type Vec2 } from "../walk.ts";
 import {
+  BOARDWALK,
   BUILDINGS,
   CITY_AREA,
   CITY_SPAWN,
@@ -12,6 +13,8 @@ import {
   PROPS,
   ROAD_EDGES,
   ROAD_NODES,
+  SHORE_Z,
+  WATER_Z,
   roadRect,
   sidewalkRects,
 } from "./layout.ts";
@@ -225,4 +228,27 @@ test("the water park's swimwear flag applies to arrivals through its gate", () =
   // the doll's outfit is chosen from the room a visit lands in, so the gate's
   // arrival is a swimwear room exactly when the water park is
   assert.equal(ROOMS[door.target].swimwear, true);
+});
+
+test("Beachside: the cross streets run down to Shore Boulevard, and the boardwalk and sand are walkable", () => {
+  for (const id of ["a-shore", "b-shore"]) {
+    const edges = ROAD_EDGES.filter((e) => e.from === id || e.to === id);
+    assert.equal(edges.length, 3, `${id} is a T junction`);
+  }
+  for (const p of [
+    [0, BOARDWALK.z0 + 1],
+    [0, (BOARDWALK.z1 + WATER_Z) / 2],
+  ] as const)
+    assert.equal(isBlocked(CITY_AREA, p), false, `${p}`);
+  assert.deepEqual(clampToArea(CITY_AREA, [0, 300]), [0, 300]);
+  // the water itself is not walkable
+  assert.notDeepEqual(clampToArea(CITY_AREA, [0, WATER_Z + 10]), [
+    0,
+    WATER_Z + 10,
+  ]);
+  for (const b of BUILDINGS.filter((b) => b.neighborhood === "beachside"))
+    assert.ok(
+      b.footprint.every(([, z]) => z < SHORE_Z),
+      b.id,
+    );
 });

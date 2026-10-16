@@ -7,7 +7,7 @@ import { FOOD_STOREFRONTS } from "../food/storefronts.ts";
 import type { RoomId, Spawn } from "../rooms.ts";
 import type { Vec2 } from "../walk.ts";
 
-export type Neighborhood = "downtown" | "nightlife-row";
+export type Neighborhood = "downtown" | "nightlife-row" | "beachside";
 
 export type RoadNode = { id: string; position: Vec2 };
 export type RoadEdge = {
@@ -22,15 +22,24 @@ export type RoadEdge = {
 };
 
 const HALF_CITY = 192;
+/** Beachside runs south of the old city edge to the water. */
+const SOUTH_EDGE = 384;
 /** Sidewalk width, outside the kerb. */
 const SIDEWALK = 4;
 
 export const CITY_BOUNDS: readonly Vec2[] = [
   [-HALF_CITY, -HALF_CITY],
   [HALF_CITY, -HALF_CITY],
-  [HALF_CITY, HALF_CITY],
-  [-HALF_CITY, HALF_CITY],
+  [HALF_CITY, SOUTH_EDGE],
+  [-HALF_CITY, SOUTH_EDGE],
 ];
+
+// Beachside, south of the old city: the Shore Boulevard runs east-west at
+// SHORE_Z with the two cross streets coming down to it; south of its
+// sidewalk the boardwalk, then the sand, then the water from WATER_Z.
+export const SHORE_Z = 256;
+export const BOARDWALK = { z0: 267, z1: 279 };
+export const WATER_Z = 340;
 
 export const ROAD_NODES: readonly RoadNode[] = [
   { id: "west", position: [-192, 0] },
@@ -41,6 +50,10 @@ export const ROAD_NODES: readonly RoadNode[] = [
   { id: "a-south", position: [-64, 192] },
   { id: "b-north", position: [64, -192] },
   { id: "b-south", position: [64, 192] },
+  { id: "shore-w", position: [-192, SHORE_Z] },
+  { id: "a-shore", position: [-64, SHORE_Z] },
+  { id: "b-shore", position: [64, SHORE_Z] },
+  { id: "shore-e", position: [192, SHORE_Z] },
 ];
 
 /** Main Avenue runs east-west; two cross streets run north-south. */
@@ -52,6 +65,12 @@ export const ROAD_EDGES: readonly RoadEdge[] = [
   { from: "a-mid", to: "a-south", width: 10, lanes: 1, speedLimit: 9 },
   { from: "b-north", to: "b-mid", width: 10, lanes: 1, speedLimit: 9 },
   { from: "b-mid", to: "b-south", width: 10, lanes: 1, speedLimit: 9 },
+  // Beachside: the cross streets run on down to Shore Boulevard
+  { from: "a-south", to: "a-shore", width: 10, lanes: 1, speedLimit: 9 },
+  { from: "b-south", to: "b-shore", width: 10, lanes: 1, speedLimit: 9 },
+  { from: "shore-w", to: "a-shore", width: 14, lanes: 2, speedLimit: 11 },
+  { from: "a-shore", to: "b-shore", width: 14, lanes: 2, speedLimit: 11 },
+  { from: "b-shore", to: "shore-e", width: 14, lanes: 2, speedLimit: 11 },
 ];
 
 export type BuildingStyle =
@@ -80,6 +99,8 @@ export type Building = {
   footprint: readonly Vec2[];
   height: number;
   style: BuildingStyle;
+  /** Paint over the style's own colour (pastel beach houses). */
+  color?: string;
   sign?: { text: string; color: string };
   /** A line of people waits on the forecourt. */
   queue?: boolean;
@@ -87,7 +108,7 @@ export type Building = {
 };
 
 export type Surface = {
-  kind: "road" | "sidewalk" | "square";
+  kind: "road" | "sidewalk" | "square" | "boardwalk" | "sand";
   polygon: readonly Vec2[];
 };
 
@@ -161,6 +182,11 @@ export const CITY_SURFACES: readonly Surface[] = [
   { kind: "square", polygon: SQUARE },
   { kind: "sidewalk", polygon: FORECOURT_SOUTH },
   { kind: "sidewalk", polygon: FORECOURT_NORTH },
+  {
+    kind: "boardwalk",
+    polygon: rect(-HALF_CITY, BOARDWALK.z0, HALF_CITY, BOARDWALK.z1),
+  },
+  { kind: "sand", polygon: rect(-HALF_CITY, BOARDWALK.z1, HALF_CITY, WATER_Z) },
 ];
 
 // In the square, facing south: the Splash Zone gate stands behind the doll, so
@@ -241,6 +267,84 @@ const SPLASH_DOOR: Door = {
   // the water park's arrival point; see rooms.ts
   targetSpawn: { position: [6.5, 2.5], yaw: -2.4 },
 };
+
+// Beachside, along the north side of Shore Boulevard: pastel houses and
+// beach shops facing the water.
+const BEACH_FRONT: readonly {
+  x: number;
+  w: number;
+  h: number;
+  color: string;
+  sign?: { text: string; color: string };
+  style?: BuildingStyle;
+}[] = [
+  { x: -176, w: 18, h: 9, color: "#ffb3c7" },
+  {
+    x: -152,
+    w: 20,
+    h: 11,
+    color: "#bfe8ff",
+    sign: { text: "SURF SHACK", color: "#3fe0d0" },
+    style: "storefront",
+  },
+  { x: -128, w: 18, h: 8, color: "#fff0a8" },
+  {
+    x: -104,
+    w: 22,
+    h: 13,
+    color: "#c9b3ff",
+    sign: { text: "SUNSET MOTEL", color: "#ff8a3d" },
+    style: "brick",
+  },
+  {
+    x: -40,
+    w: 18,
+    h: 9,
+    color: "#a8f0d0",
+    sign: { text: "SHAVE ICE", color: "#ff6ac8" },
+    style: "storefront",
+  },
+  { x: -16, w: 18, h: 10, color: "#ffc9a8" },
+  {
+    x: 16,
+    w: 22,
+    h: 12,
+    color: "#ff9ec2",
+    sign: { text: "TIKI BAR", color: "#ffb02e" },
+    style: "storefront",
+  },
+  { x: 40, w: 16, h: 8, color: "#b3e5ff" },
+  {
+    x: 96,
+    w: 24,
+    h: 14,
+    color: "#d9b3ff",
+    sign: { text: "BOARDWALK ARCADE", color: "#4fe3ff" },
+    style: "billboard",
+  },
+  { x: 124, w: 18, h: 9, color: "#fff3c9" },
+  {
+    x: 148,
+    w: 18,
+    h: 11,
+    color: "#ffb3b3",
+    sign: { text: "SWIMWEAR", color: "#ff2f9a" },
+    style: "storefront",
+  },
+  { x: 174, w: 16, h: 8, color: "#b3ffd9" },
+];
+
+const BEACH_BUILDINGS: readonly Building[] = [
+  ...BEACH_FRONT.map((b, i): Building => ({
+    id: `beach-${i}`,
+    neighborhood: "beachside",
+    footprint: rect(b.x - b.w / 2, SHORE_Z - 34, b.x + b.w / 2, SHORE_Z - 13),
+    height: b.h,
+    style: b.style ?? "deck",
+    color: b.color,
+    sign: b.sign,
+  })),
+];
 
 export const BUILDINGS: readonly Building[] = [
   // Downtown, south of the avenue
@@ -478,6 +582,7 @@ export const BUILDINGS: readonly Building[] = [
   },
   // The food venues: one storefront each, two of them with doors.
   ...FOOD_STOREFRONTS,
+  ...BEACH_BUILDINGS,
 ];
 
 // x of each north-south street; each has two edges, so dedupe.
@@ -507,11 +612,26 @@ function buildProps(): Prop[] {
   }
   for (const cx of CROSS_STREETS) {
     for (const x of [cx - 7, cx + 7]) {
-      for (let z = -180; z <= 180; z += 60) {
+      for (let z = -180; z <= 240; z += 60) {
         if (Math.abs(z) < 11) continue;
         props.push({ kind: "tree", position: [x, z] });
       }
     }
+  }
+  // Beachside: palms down both sides of Shore Boulevard, lamps along the
+  // boardwalk's sea edge, and palms scattered over the sand
+  for (let x = -174; x <= 174; x += 36) {
+    if (nearCross(x)) continue;
+    for (const z of [SHORE_Z - 9, SHORE_Z + 9])
+      props.push({ kind: "palm", position: [x, z] });
+  }
+  for (let x = -186; x <= 186; x += 31)
+    props.push({ kind: "lamp", position: [x, BOARDWALK.z1 - 0.6] });
+  for (let i = 0; i < 9; i++) {
+    // a fixed scatter, not random: the same beach every visit
+    const x = -170 + ((i * 113) % 340);
+    const z = BOARDWALK.z1 + 8 + ((i * 37) % 44);
+    props.push({ kind: "palm", position: [x, z] });
   }
   return props;
 }

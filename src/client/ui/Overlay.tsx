@@ -57,6 +57,7 @@ import { Dressing } from "./Dressing.tsx";
 import { GAITS, gaitOf } from "../../game/gaits.ts";
 import { seatsIn } from "../../game/seats.ts";
 import { seatRequest } from "../world/Seats.tsx";
+import { NEIGHBORHOOD_NAMES, useNeighborhood } from "../city/here.ts";
 import { DeliveryApp } from "./phone/DeliveryApp.tsx";
 import { FoodHud } from "./phone/FoodHud.tsx";
 import { Chips, Segmented, Slider, Swatches, Tiles } from "./controls.tsx";
@@ -84,7 +85,7 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Jade Whisk and Pearl Ledger. Tap the server for a drink, then sip it.",
   "ube-bakery": "Purple Pandesal. Tap the baker for a treat, then eat it.",
   speedway: "Pit lane. Tap a spot to race or ride the bumper cars.",
-  city: "Downtown after dark. Tap the street or use WASD, then walk into a lit door.",
+  city: "The city after dark. Tap the street or use WASD, walk into a lit door, or head south to the beach.",
   apartment:
     "Your flat. Use the decorating panel to place furniture and lock the door. Tap the blue shelf to try a shoplift.",
   jail: "City Jail. Wait out the sentence, play cards with the guard, or talk to Officer Dee.",
@@ -486,6 +487,7 @@ export function Overlay({
   panelOpen: boolean;
   setPanelOpen: (open: boolean) => void;
 }) {
+  const neighborhood = useNeighborhood();
   const [phone, setPhone] = useState(false);
   const [tab, setTab] = useState<MirrorTab>("face");
   // the creator frames the doll for the tab: close on the face for face and
@@ -504,7 +506,9 @@ export function Overlay({
     <>
       <header className="venue">
         <div aria-live="polite" aria-atomic="true">
-          <h1 className="venue-name">{roomName}</h1>
+          <h1 className="venue-name">
+            {room === "city" ? NEIGHBORHOOD_NAMES[neighborhood] : roomName}
+          </h1>
         </div>
         <p className="venue-sub">{ROOM_HINTS[room]}</p>
         <p className="coins" aria-label={`${coins} coins`}>

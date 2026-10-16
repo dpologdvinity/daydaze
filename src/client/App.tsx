@@ -79,7 +79,7 @@ export function App() {
     // a sentence still running resumes in the cell block
     const jailed = isJailed(save.jail, Date.now());
     const room = flags.room ?? (jailed ? "jail" : "velvet-room");
-    return visit(room, ROOMS[room].spawn);
+    return visit(room, flags.at ?? ROOMS[room].spawn);
   });
   const [fading, setFading] = useState(false);
   const travelling = useRef(false);

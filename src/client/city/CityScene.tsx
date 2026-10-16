@@ -2,7 +2,11 @@ import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { Environment } from "@react-three/drei";
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import type * as THREE from "three";
-import { ALL_CELLS, cellsWithin } from "../../game/city/cells.ts";
+import {
+  ALL_CELLS,
+  cellsWithin,
+  neighborhoodAt,
+} from "../../game/city/cells.ts";
 import {
   LIGHT_DISTANCE,
   LIGHT_INTENSITY,
@@ -17,6 +21,8 @@ import { useReducedMotion } from "../motion.ts";
 import type { Player } from "../world/PlayerController.tsx";
 import { useQuality } from "../world/quality.ts";
 import { CitySky } from "./CitySky.tsx";
+import { Ocean } from "./Ocean.tsx";
+import { setNeighborhood } from "./here.ts";
 import { createLabelAtlas } from "./labelAtlas.ts";
 import { createKindMeshes, disposeKindMeshes, writeKind } from "./meshes.ts";
 import { CITY_CLOCK } from "./shaders.ts";
@@ -85,6 +91,7 @@ export function CityScene({
     const dom = gl.domElement.dataset;
     dom.playerX = x.toFixed(2);
     dom.playerZ = z.toFixed(2);
+    setNeighborhood(neighborhoodAt([x, z]));
   });
 
   // a drag orbits the camera; only a click walks the player
@@ -122,13 +129,14 @@ export function CityScene({
       ))}
       <mesh
         rotation-x={-Math.PI / 2}
-        position={[0, -0.01, 0]}
+        position={[0, -0.01, 96]}
         onClick={click}
         name="city-ground"
       >
-        <planeGeometry args={[900, 900]} />
+        <planeGeometry args={[900, 1000]} />
         <meshStandardMaterial color="#120d26" roughness={0.9} />
       </mesh>
+      <Ocean />
       {KINDS.map((kind) => (
         <primitive key={kind} object={meshes[kind]} onClick={click} />
       ))}

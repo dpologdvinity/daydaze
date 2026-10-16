@@ -196,7 +196,7 @@ test("the city loads, the player walks with the keys, and the scene renders", as
 }) => {
   const errors = collectErrors(page);
   await page.goto(`${LOW}&room=city`);
-  await expect(roomTitle(page)).toHaveText("Downtown and Nightlife Row");
+  await expect(roomTitle(page)).toHaveText("Downtown");
   const view = page.getByRole("img", { name: "3D room view" });
   await expect(view).toHaveAttribute("data-frames", "10");
   // the lazy city writes its position from its first frame; wait for it

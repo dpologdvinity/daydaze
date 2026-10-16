@@ -6,9 +6,12 @@ import { CITY_BOUNDS, type Neighborhood } from "./layout.ts";
 export { CELL_SIZE, VIEW_RADIUS } from "./tuning.ts";
 import { CELL_SIZE } from "./tuning.ts";
 
-export const CELLS_PER_SIDE = 6;
+/** Cells across (x) and down (z); Beachside makes the city taller than wide. */
+export const CELLS_X = 6;
+export const CELLS_Z = 9;
 
 const ORIGIN = CITY_BOUNDS[0][0];
+const ORIGIN_Z = CITY_BOUNDS[0][1];
 
 export type Cell = {
   key: string;
@@ -21,14 +24,16 @@ export type Cell = {
   neighborhood: Neighborhood;
 };
 
-/** The neighborhood a point belongs to: Nightlife Row east of the cross street at x = 64. */
+/** The neighborhood a point belongs to: Beachside south of the old city
+ * edge at z = 192, else Nightlife Row east of the cross street at x = 64. */
 export function neighborhoodAt(p: Vec2): Neighborhood {
+  if (p[1] > 192) return "beachside";
   return p[0] >= 64 ? "nightlife-row" : "downtown";
 }
 
 function cellOf(cx: number, cz: number): Cell {
   const x0 = ORIGIN + cx * CELL_SIZE;
-  const z0 = ORIGIN + cz * CELL_SIZE;
+  const z0 = ORIGIN_Z + cz * CELL_SIZE;
   const x1 = x0 + CELL_SIZE;
   const z1 = z0 + CELL_SIZE;
   return {
@@ -44,18 +49,15 @@ function cellOf(cx: number, cz: number): Cell {
 }
 
 export const ALL_CELLS: readonly Cell[] = Array.from(
-  { length: CELLS_PER_SIDE * CELLS_PER_SIDE },
-  (_, i) => cellOf(i % CELLS_PER_SIDE, Math.floor(i / CELLS_PER_SIDE)),
+  { length: CELLS_X * CELLS_Z },
+  (_, i) => cellOf(i % CELLS_X, Math.floor(i / CELLS_X)),
 );
 
 /** The cell holding a point, clamped to the grid at the city edge. */
 export function cellAt(p: Vec2): Cell {
-  const index = (v: number) =>
-    Math.min(
-      CELLS_PER_SIDE - 1,
-      Math.max(0, Math.floor((v - ORIGIN) / CELL_SIZE)),
-    );
-  return cellOf(index(p[0]), index(p[1]));
+  const index = (v: number, origin: number, count: number) =>
+    Math.min(count - 1, Math.max(0, Math.floor((v - origin) / CELL_SIZE)));
+  return cellOf(index(p[0], ORIGIN, CELLS_X), index(p[1], ORIGIN_Z, CELLS_Z));
 }
 
 /** Every cell whose square comes within `radius` metres of `center`. */

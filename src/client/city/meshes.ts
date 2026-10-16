@@ -94,6 +94,7 @@ function leafTexture(): THREE.Texture {
 const GEOMETRY: Record<Shared, THREE.BufferGeometry> = {
   road: BOX,
   sidewalk: BOX,
+  ground: BOX,
   lane: BOX,
   body: BOX,
   band: BOX,
@@ -147,6 +148,12 @@ const MATERIAL: Record<Shared, THREE.Material> = {
     }),
     0.35,
   ),
+  // sand and boardwalk: matte, tinted per instance, no paving texture
+  ground: new THREE.MeshStandardMaterial({
+    roughness: 0.95,
+    emissive: "#2a1d3a",
+    emissiveIntensity: 0.35,
+  }),
   lane: new THREE.MeshBasicMaterial({ toneMapped: false }),
   // the faint emissive keeps facades readable on the night side of the street
   body: new THREE.MeshStandardMaterial({
@@ -282,6 +289,7 @@ export function createKindMeshes(
   return {
     road: make("road"),
     sidewalk: make("sidewalk"),
+    ground: make("ground"),
     lane: make("lane"),
     body: make("body"),
     band: make("band"),

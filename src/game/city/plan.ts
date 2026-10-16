@@ -17,6 +17,7 @@ import { dressBuilding, frontOf, signSpec, STREET_DRESS } from "./dressing.ts";
 export const KINDS = [
   "road",
   "sidewalk",
+  "ground",
   "lane",
   "body",
   "band",
@@ -76,6 +77,7 @@ export type CityPlan = {
 export const TRIANGLES: Record<Kind, number> = {
   road: 12,
   sidewalk: 12,
+  ground: 12,
   lane: 12,
   body: 12,
   band: 12,
@@ -128,6 +130,9 @@ const SURFACE_COLOR = {
   road: "#2a2050",
   sidewalk: "#5a4a8a",
   square: "#6a5a9a",
+  // Beachside at night: weathered planks, moonlit sand
+  boardwalk: "#9a6a4a",
+  sand: "#c9a274",
 };
 
 type Box = { x0: number; z0: number; x1: number; z1: number };
@@ -157,6 +162,7 @@ function emptyInstances(): Record<Kind, Instance[]> {
   return {
     road: [],
     sidewalk: [],
+    ground: [],
     lane: [],
     body: [],
     band: [],
@@ -200,9 +206,12 @@ function surfaceStyle(surface: Surface): {
   if (surface.kind === "road") {
     return { kind: "road", y: 0.02, h: 0.04, color: SURFACE_COLOR.road };
   }
-  const color =
-    surface.kind === "square" ? SURFACE_COLOR.square : SURFACE_COLOR.sidewalk;
-  return { kind: "sidewalk", y: 0.07, h: 0.14, color };
+  // sand and boardwalk planks are plain ground, not concrete paving
+  const kind =
+    surface.kind === "sand" || surface.kind === "boardwalk"
+      ? "ground"
+      : "sidewalk";
+  return { kind, y: 0.07, h: 0.14, color: SURFACE_COLOR[surface.kind] };
 }
 
 const ROAD_SURFACES = CITY_SURFACES.filter((s) => s.kind === "road").map((s) =>
@@ -256,6 +265,9 @@ function laneDashes(cells: readonly Cell[], out: Instance[]): void {
 
 const SIDEWALK_BOXES: readonly Box[] = CITY_SURFACES.filter(
   (s) => s.kind !== "road",
+).map((s) => boundsOf(s.polygon));
+const PAVED_BOXES: readonly Box[] = CITY_SURFACES.filter(
+  (s) => s.kind !== "road" && s.kind !== "sand",
 ).map((s) => boundsOf(s.polygon));
 const CURB_COLOR = "#8c80c0";
 const SEAM_COLOR = "#3d2f6e";
@@ -420,8 +432,8 @@ function streetMarks(
     }
   }
 
-  // paving joints across every sidewalk, every 2.5 m
-  for (const s of SIDEWALK_BOXES) {
+  // paving joints across every sidewalk, every 2.5 m (sand has none)
+  for (const s of PAVED_BOXES) {
     const along = s.x1 - s.x0 >= s.z1 - s.z0;
     const from = along ? s.x0 : s.z0;
     const to = along ? s.x1 : s.z1;
@@ -450,7 +462,7 @@ function buildingInstances(
     sx: f.w,
     sy: f.h,
     sz: f.z1 - f.z0,
-    color: BODY_COLOR[b.style],
+    color: b.color ?? BODY_COLOR[b.style],
   });
   // neon tubes up the four corners: cheap glow on every facade
   for (const [x, z] of [
