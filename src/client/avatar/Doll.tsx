@@ -38,6 +38,7 @@ import {
 import { buildFaceTextures } from "./faceTexture.ts";
 import { HumanDoll } from "./human/HumanDoll.tsx";
 import { pose, type Rig } from "./pose.ts";
+import { gaitOf } from "../../game/gaits.ts";
 import { hairTime, makeHair, makeToon } from "./toon.ts";
 
 type Mat = THREE.Material;
@@ -204,6 +205,7 @@ export function ToonDoll({
   ...rest
 }: DollProps) {
   const m = useDollMaterials(look, swim);
+  const gait = gaitOf(look.gait);
   const face = useFace(look, m.face);
   const hair = hairGeometry(look.hairStyle);
   const root = useRef<THREE.Group>(null);
@@ -239,7 +241,7 @@ export function ToonDoll({
     if (!j.body) return;
     const speed = walk?.current.speed ?? 0;
     const moving = speed > 0.05;
-    phase.current += dt * speed * 6.2;
+    phase.current += dt * speed * 6.2 * gait.cadence;
     // walking ends the dance, so a move only plays while the doll stands still
     const move = mood === "dance" && !moving ? danceMove(dance) : null;
     const danced = !move
@@ -255,6 +257,7 @@ export function ToonDoll({
       calm,
       danced,
       buzzed ? liveDrunk.wobble : 0,
+      gait,
     );
     // blink
     if (face) {

@@ -35,6 +35,16 @@ import {
   type BodyShape,
 } from "../../../game/body.ts";
 import { pose, type Rig } from "../pose.ts";
+import { gaitOf, type GaitId } from "../../../game/gaits.ts";
+
+// strangers walk naturally, a few with more swing
+const NPC_GAITS: GaitId[] = [
+  "natural",
+  "relaxed",
+  "natural",
+  "confident",
+  "sassy",
+];
 import { paintFace, paintIris, paintLashes, readMarks } from "./faceCanvas.ts";
 import { Jewellery, readAnchors } from "./Jewellery.tsx";
 
@@ -433,6 +443,9 @@ export function HumanDoll({
     [look, seed],
   );
   const body = useBody(painted, face.eyeColor);
+  const gait = gaitOf(
+    look.gait ?? (seed ? NPC_GAITS[seed % NPC_GAITS.length] : undefined),
+  );
   const piercings = useMemo(() => piercingsOf(look), [look.piercings]);
   const parts = partsFor(look, swim);
   const tuckKey = parts.tucks.join(",");
@@ -485,7 +498,7 @@ export function HumanDoll({
     const t = state.clock.elapsedTime + seed * 7.3;
     const speed = walk?.current.speed ?? 0;
     const moving = speed > 0.05;
-    phase.current += dt * speed * 6.2;
+    phase.current += dt * speed * 6.2 * gait.cadence;
     const move = mood === "dance" && !moving ? danceMove(dance) : null;
     const danced = !move
       ? null
@@ -500,6 +513,7 @@ export function HumanDoll({
       calm,
       danced,
       buzzed ? liveDrunk.wobble : 0,
+      gait,
     );
     for (const j of JOINTS) {
       const g = proxy[j];

@@ -15,6 +15,8 @@ import { Suspense } from "react";
 const human = new URLSearchParams(location.search).get("human") === "1";
 
 const shot = new URLSearchParams(location.search).get("shot") ?? "lineup";
+// a steady walking pace for the walk shot
+const WALKING = { current: { speed: 1.4 } };
 
 const LINEUP: Look[] = [
   {
@@ -120,6 +122,16 @@ const SHOTS = {
     cam: [0, 1.0, 26] as const,
     target: [0, 0.9, 0] as const,
     fov: 34,
+  },
+  // every walk style, walking in place, side on
+  walk: {
+    looks: (
+      ["natural", "relaxed", "confident", "runway", "sassy"] as const
+    ).map((gait, i) => ({ ...LINEUP[i], gait })),
+    x: (i: number) => (i - 2) * 1.0,
+    cam: [0, 1.0, 7.5] as const,
+    target: [0, 0.9, 0] as const,
+    fov: 36,
   },
   // every piercing, close up: lip, nose and brow on one, navel on another
   pierce: {
@@ -244,7 +256,13 @@ function Lab() {
         <group key={i} name={`doll-${i}`} position={[plan.x(i), 0, 0]}>
           {human ? (
             <Suspense fallback={null}>
-              <HumanDoll look={look} mood="idle" seed={i} />
+              <HumanDoll
+                look={look}
+                mood="idle"
+                seed={i}
+                walk={shot === "walk" ? WALKING : undefined}
+                rotation-y={shot === "walk" ? Math.PI / 2 : 0}
+              />
             </Suspense>
           ) : (
             <Doll look={look} mood="idle" seed={i} />

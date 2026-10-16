@@ -1,3 +1,4 @@
+import { isGait } from "./gaits.ts";
 export const SKINS = [
   { id: "#f3d4c4", label: "Porcelain" },
   { id: "#e6b48e", label: "Golden" },
@@ -481,10 +482,14 @@ export type Look = {
   makeup?: string;
   /** encodePiercings' code; looks without one have none. */
   piercings?: string;
+  /** A walk style from GAITS; looks without one walk naturally. */
+  gait?: string;
 };
 
 const LOOK_CATALOGS: {
-  [K in Exclude<keyof Look, "face" | "makeup" | "piercings">]: readonly {
+  [
+    K in Exclude<keyof Look, "face" | "makeup" | "piercings" | "gait">
+  ]: readonly {
     readonly id: Look[K];
     readonly label: string;
   }[];
@@ -511,12 +516,15 @@ export function validateLook(value: unknown): value is Look {
   const hasFace = fields.has("face");
   const hasMakeup = fields.has("makeup");
   const hasPiercings = fields.has("piercings");
+  const hasGait = fields.has("gait");
   return (
     fields.size ===
       catalogs.length +
         (hasFace ? 1 : 0) +
         (hasMakeup ? 1 : 0) +
-        (hasPiercings ? 1 : 0) &&
+        (hasPiercings ? 1 : 0) +
+        (hasGait ? 1 : 0) &&
+    (!hasGait || isGait(fields.get("gait"))) &&
     (!hasPiercings || decodePiercings(fields.get("piercings")) !== null) &&
     (!hasFace || decodeFace(fields.get("face")) !== null) &&
     (!hasMakeup || decodeMakeup(fields.get("makeup")) !== null) &&

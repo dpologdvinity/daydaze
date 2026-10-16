@@ -54,6 +54,7 @@ import { RaceHud, SpeedwayMenu } from "../rooms/speedway/RaceHud.tsx";
 import { CocktailIcon, RideIcon } from "./icons.tsx";
 import { DancePicker } from "./DancePicker.tsx";
 import { Dressing } from "./Dressing.tsx";
+import { GAITS, gaitOf } from "../../game/gaits.ts";
 import { seatsIn } from "../../game/seats.ts";
 import { seatRequest } from "../world/Seats.tsx";
 import { DeliveryApp } from "./phone/DeliveryApp.tsx";
@@ -328,6 +329,15 @@ function Mirror({
     ),
     body: (
       <>
+        <section>
+          <h3>Walk</h3>
+          <Chips
+            label="Walk style"
+            options={GAITS}
+            value={gaitOf(look.gait).id}
+            onPick={(gait) => setLook({ ...look, gait })}
+          />
+        </section>
         <section>
           <h3>Figure</h3>
           <Tiles

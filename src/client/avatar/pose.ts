@@ -1,6 +1,7 @@
 import type * as THREE from "three";
 import type { Mood } from "../../game/look.ts";
 import { JOINTS, type Pose } from "../../game/dance/moves.ts";
+import { GAITS, type Gait } from "../../game/gaits.ts";
 
 type JointName =
   | "body"
@@ -36,8 +37,9 @@ export function pose(
   calm: boolean,
   dance: Pose | null = null,
   wobble = 0,
+  gait: Gait = GAITS[0],
 ) {
-  poseMood(j, mood, t, ph, calm, dance);
+  poseMood(j, mood, t, ph, calm, dance, gait);
   const body = j.body;
   if (!body || wobble <= 0) return;
   body.rotation.z += wobble * 0.08 * Math.sin(t * 1.3);
@@ -52,6 +54,7 @@ function poseMood(
   ph: number,
   calm: boolean,
   dance: Pose | null,
+  gait: Gait,
 ) {
   const breath = Math.sin(t * 1.7);
   const body = j.body;
@@ -67,22 +70,7 @@ function poseMood(
   }
 
   if (mood === "walk") {
-    const s = Math.sin(ph),
-      c = Math.cos(ph);
-    body.position.y = Math.abs(c) * 0.025 - 0.012;
-    r(body, 0.04, s * 0.12, s * 0.04);
-    r(j.lLeg, -s * 0.5, 0, 0.02);
-    r(j.rLeg, s * 0.5, 0, -0.02);
-    r(j.lShin, 0.15 + Math.max(0, c) * 0.75);
-    r(j.rShin, 0.15 + Math.max(0, -c) * 0.75);
-    r(j.lFoot, s * 0.2 - 0.1);
-    r(j.rFoot, -s * 0.2 - 0.1);
-    r(j.lArm, s * 0.45, 0, 0.13);
-    r(j.rArm, -s * 0.45, 0, -0.13);
-    r(j.lFore, -0.35);
-    r(j.rFore, -0.35);
-    r(j.head, -0.02, -s * 0.08, 0);
-    r(j.pony, 0.15 + c * 0.12, 0, s * 0.15);
+    walk(j, ph, gait);
     return;
   }
   if (mood === "sit") {
@@ -134,9 +122,50 @@ function poseMood(
   r(j.rShin, 0.12 + Math.max(0, -shift) * 0.08);
   r(j.lFoot, 0);
   r(j.rFoot, -0.06);
-  r(j.lArm, 0.04 + breath * 0.01, 0, 0.16);
-  r(j.rArm, 0.04 + breath * 0.01, 0, -0.16);
+  // the model's arms rest a little out from the hips; draw them in to hang
+  r(j.lArm, 0.04 + breath * 0.01, 0, -ARM_IN);
+  r(j.rArm, 0.04 + breath * 0.01, 0, ARM_IN);
   r(j.lFore, -0.2, 0, 0.05);
   r(j.rFore, -0.2, 0, -0.05);
   r(j.head, Math.sin(t * 0.4) * 0.04, Math.sin(t * 0.27) * 0.18, shift * 0.06);
+}
+
+// the 3D doll's arms rest angled out to clear her hips; this much inward
+// brings them to hang naturally at her sides
+const ARM_IN = 0.14;
+
+/**
+ * One stride. `ph` advances a full turn every two steps. The body bone is
+ * hips and chest at once, so its sway stays small and the head and arms
+ * counter it, keeping the shoulders and gaze level as a real walker does.
+ */
+function walk(j: Rig, ph: number, g: Gait) {
+  const s = Math.sin(ph);
+  const c = Math.cos(ph);
+  const body = j.body;
+  if (!body) return;
+  // lowest when the legs are spread, highest as one passes the other
+  body.position.y = g.bounce * (Math.abs(c) - 0.6);
+  body.position.x = s * g.hipSway * 0.18;
+  const tilt = s * g.hipSway * 0.45;
+  const turn = s * g.twist;
+  r(body, 0.02, turn, tilt);
+  // legs swing opposite, stepping in toward the midline (all the way on a runway)
+  const inward = 0.04 + g.cross * 0.07;
+  r(j.lLeg, -s * g.stride, 0, -inward + tilt);
+  r(j.rLeg, s * g.stride, 0, inward + tilt);
+  // the knee folds as the leg swings through, and straightens to land
+  r(j.lShin, 0.06 + Math.max(0, c) * g.knee);
+  r(j.rShin, 0.06 + Math.max(0, -c) * g.knee);
+  // heel strike in front, toe-off behind
+  r(j.lFoot, s * 0.22 - 0.04);
+  r(j.rFoot, -s * 0.22 - 0.04);
+  // arms swing against the legs, close to the body, elbows softly bent
+  r(j.lArm, s * g.armSwing, 0, -ARM_IN - tilt);
+  r(j.rArm, -s * g.armSwing, 0, ARM_IN - tilt);
+  r(j.lFore, -g.elbow - Math.max(0, s) * g.armSwing * 0.6, 0, 0);
+  r(j.rFore, -g.elbow - Math.max(0, -s) * g.armSwing * 0.6, 0, 0);
+  // gaze level: the head undoes the body's tilt and twist
+  r(j.head, -g.chin, -turn * 0.8, -tilt);
+  r(j.pony, 0.12 + c * 0.08, 0, s * 0.12);
 }
