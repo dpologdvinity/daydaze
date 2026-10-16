@@ -104,24 +104,81 @@ SHAPE = [
     (target("bodyshapes/bodyshapes-elvs-fem-neat-hourglass.target"), 0.4),
     (target("hip/hip-waist-up.target"), 0.15),
     (target("stomach/stomach-tone-incr.target"), 0.15),
-    (pair("eyes/{s}-eye-scale-incr.target"), 0.6),
+    (pair("eyes/{s}-eye-scale-incr.target"), 0.9),
     (pair("eyes/{s}-eye-bag-decr.target"), 0.6),
-    (pair("eyes/{s}-eye-height2-incr.target"), 0.25),
+    # doll glam: outer corners lifted into an almond cat-eye
+    (pair("eyes/{s}-eye-corner2-up.target"), 0.45),
+    (pair("eyes/{s}-eye-height2-incr.target"), 0.3),
     (target("nose/nose-volume-decr.target"), 0.5),
-    (target("nose/nose-point-width-decr.target"), 0.4),
-    (target("nose/nose-point-up.target"), 0.25),
-    (target("mouth/mouth-upperlip-volume-incr.target"), 0.45),
-    (target("mouth/mouth-lowerlip-volume-incr.target"), 0.45),
-    (target("mouth/mouth-cupidsbow-incr.target"), 0.4),
+    (target("nose/nose-point-width-decr.target"), 0.5),
+    (target("nose/nose-point-up.target"), 0.6),
+    (target("mouth/mouth-upperlip-volume-incr.target"), 0.4),
+    (target("mouth/mouth-lowerlip-volume-incr.target"), 0.2),
+    (target("mouth/mouth-cupidsbow-incr.target"), 0.5),
     (target("mouth/mouth-scale-horiz-decr.target"), 0.1),
-    (pair("cheek/{s}-cheek-bones-incr.target"), 0.45),
-    (pair("cheek/{s}-cheek-volume-decr.target"), 0.35),
-    (target("chin/chin-prominent-decr.target"), 0.25),
+    (pair("cheek/{s}-cheek-bones-incr.target"), 0.7),
+        (target("chin/chin-prominent-decr.target"), 0.5),
     (target("head/head-oval.target"), 0.45),
     (target("head/head-fat-decr.target"), 0.3),
-    (target("neck/neck-scale-horiz-decr.target"), 0.35),
+    (target("neck/neck-scale-horiz-decr.target"), 0.6),
+    # doll glam: a tiny button nose, a V jaw and pointed chin, soft young
+    # cheeks, a pout, and tall almond eyes
+    (target("nose/nose-scale-horiz-decr.target"), 0.4),
+    (target("nose/nose-scale-vert-decr.target"), 0.25),
+    (target("nose/nose-scale-depth-decr.target"), 0.25),
+    (target("nose/nose-nostrils-width-decr.target"), 0.4),
+    (target("nose/nose-width1-decr.target"), 0.3),
+    (target("nose/nose-width2-decr.target"), 0.3),
+    (target("chin/chin-width-decr.target"), 0.3),
+    (target("chin/chin-height-decr.target"), 0.15),
+    (target("chin/chin-triangle.target"), 0.0),
+    (target("head/head-invertedtriangular.target"), 0.2),
+    (target("head/head-age-decr.target"), 0.2),
+    (pair("cheek/{s}-cheek-volume-decr.target"), 0.3),
+    (pair("cheek/{s}-cheek-inner-decr.target"), 0.0),
+    (target("mouth/mouth-upperlip-ext-up.target"), 0.0),
+    (target("mouth/mouth-lowerlip-height-incr.target"), 0.0),
+    (target("mouth/mouth-angles-up.target"), 0.25),
+    (pair("eyes/{s}-eye-height1-incr.target"), 0.0),
+    (pair("eyes/{s}-eye-eyefold-up.target"), 0.0),
 ]
 P = BASE + sum(t * w for t, w in SHAPE)
+
+
+def _centre(group):
+    return P[sorted({i for f in FACES[group] for i in f})].mean(axis=0)
+
+
+def _falloff(points, centre, radius):
+    """1 at the centre easing to 0 at `radius` (MakeHuman decimetres)."""
+    d = np.linalg.norm(points - centre, axis=1) / radius
+    t = np.clip(1 - d, 0, 1)
+    return t * t * (3 - 2 * t)
+
+
+def refine(P):
+    """Gentle refinements sculpted straight onto the shaped mesh with smooth
+    falloffs, where stacking MakeHuman targets turns uncanny: slightly fuller
+    lips, a finer nose and a softly tapered jaw. MakeHuman space: y up,
+    z forward."""
+    P = P.copy()
+    lips = np.abs(target("mouth/mouth-upperlip-volume-incr.target")).sum(1) + np.abs(
+        target("mouth/mouth-lowerlip-volume-incr.target")
+    ).sum(1)
+    mouth = P[lips > lips.max() * 0.2].mean(axis=0)
+    w = _falloff(P, mouth, 0.45)[:, None]
+    P = P + (P - mouth) * np.array([0.04, 0.05, 0.0]) * w
+    nose_w = np.abs(target("nose/nose-volume-decr.target")).sum(1)
+    nose = P[nose_w > nose_w.max() * 0.3].mean(axis=0)
+    w = _falloff(P, nose, 0.42)[:, None]
+    P = P + (P - nose) * -0.1 * w
+    # taper the lower face from the mouth down to the chin
+    below = np.clip((mouth[1] - P[:, 1]) / 0.55, 0, 1) * _falloff(P, mouth, 1.1)
+    P[:, 0] = P[:, 0] - (P[:, 0] - mouth[0]) * 0.08 * below
+    return P
+
+
+P = refine(P)
 
 # Shape keys the client drives. Face sliders run -1..1, so a negative influence
 # undoes the target; body keys run 0..1.

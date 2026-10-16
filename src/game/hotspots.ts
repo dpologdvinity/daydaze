@@ -3,7 +3,12 @@
 import type { RoomId } from "./rooms.ts";
 import type { Vec2 } from "./walk.ts";
 
-export const MINIGAME_IDS = ["bassline", "last-call", "midway"] as const;
+export const MINIGAME_IDS = [
+  "bassline",
+  "last-call",
+  "midway",
+  "gem-glam",
+] as const;
 
 export type MinigameId = (typeof MINIGAME_IDS)[number];
 
@@ -44,6 +49,15 @@ export const HOTSPOTS: readonly Hotspot[] = [
     label: "Play the midway games",
     position: [-8.3, 1.4],
     radius: 1,
+  },
+  {
+    // At the Arcade's door, the first storefront on the strip's west end.
+    id: "plaza-arcade",
+    room: "plaza",
+    game: "gem-glam",
+    label: "Play Gem Glam at the arcade",
+    position: [-10.1, -6],
+    radius: 0.9,
   },
 ];
 

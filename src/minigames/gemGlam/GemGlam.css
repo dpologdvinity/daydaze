@@ -1,0 +1,184 @@
+/* Gem Glam: jewel-box board, gems slide with transforms. */
+.gg {
+  --gg-cell: min(9.2vw, 52px);
+  --gg-gold: #ffd84f;
+}
+
+.gg-intro,
+.gg-play,
+.gg-result {
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+  color: #f7e7c6;
+  text-align: center;
+}
+
+.gg-intro p {
+  max-width: 34em;
+  margin: 0;
+}
+
+.gg-levels {
+  display: flex;
+  gap: 8px;
+}
+
+.gg-levels button,
+.gg-actions button {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid rgb(255 216 79 / 0.5);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.gg-levels button[aria-checked="true"] {
+  background: var(--gg-gold);
+  color: #1a0d1d;
+}
+
+.gg-go {
+  padding: 12px 30px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #b26bff, #7b2bd6 60%, #4f1494);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  box-shadow:
+    0 0 16px rgb(178 107 255 / 0.6),
+    inset 0 1px 0 rgb(255 255 255 / 0.5);
+  cursor: pointer;
+}
+
+.gg-hud {
+  display: flex;
+  gap: 18px;
+  align-items: baseline;
+  font-variant-numeric: tabular-nums;
+}
+
+.gg-score {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--gg-gold);
+}
+
+.gg-board {
+  position: relative;
+  width: calc(var(--gg-cell) * 8);
+  height: calc(var(--gg-cell) * 8);
+  border-radius: 14px;
+  background:
+    repeating-conic-gradient(rgb(255 255 255 / 0.05) 0 25%, transparent 0 50%) 0
+      0 / calc(var(--gg-cell) * 2) calc(var(--gg-cell) * 2),
+    radial-gradient(circle at 50% 0, #4a1c6e, #1d0a2c 70%);
+  box-shadow:
+    0 0 0 2px rgb(255 216 79 / 0.5),
+    0 0 30px rgb(178 107 255 / 0.35);
+  touch-action: manipulation;
+}
+
+.gg-gem {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--gg-cell);
+  height: var(--gg-cell);
+  padding: 4px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  transition: transform 0.22s cubic-bezier(0.3, 1.4, 0.5, 1);
+  animation: gg-in 0.25s ease-out;
+}
+
+.gg-gem svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 2px 0 rgb(0 0 0 / 0.4));
+}
+
+.gg-gem[aria-pressed="true"] {
+  background: rgb(255 216 79 / 0.25);
+  box-shadow: inset 0 0 0 2px var(--gg-gold);
+}
+
+.gg-gem:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: -3px;
+}
+
+@keyframes gg-in {
+  from {
+    opacity: 0;
+    scale: 0.4;
+  }
+}
+
+.gg-shape {
+  stroke: rgb(255 255 255 / 0.55);
+  stroke-width: 1.5;
+}
+.gg-c0 {
+  fill: #ff4fb3;
+}
+.gg-c1 {
+  fill: #ffd84f;
+}
+.gg-c2 {
+  fill: #3fe0d0;
+}
+.gg-c3 {
+  fill: #9b5cff;
+}
+.gg-c4 {
+  fill: #7dff6b;
+}
+.gg-c5 {
+  fill: #ff7a4d;
+}
+
+.gg-sparkle {
+  stroke: #fff;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.gg-disco {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 3;
+  stroke-dasharray: 3 3;
+}
+
+.gg-note {
+  min-height: 1.4em;
+  margin: 0;
+}
+
+.gg-grade {
+  margin: 0;
+  font-size: 72px;
+  font-weight: 800;
+  color: var(--gg-gold);
+  text-shadow: 0 0 24px rgb(255 216 79 / 0.6);
+}
+
+.gg-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gg-gem {
+    transition: none;
+    animation: none;
+  }
+}

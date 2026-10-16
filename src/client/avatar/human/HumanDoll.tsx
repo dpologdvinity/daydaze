@@ -141,9 +141,9 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
     // a little self-glow from the skin's own texture softens harsh room
     // lighting into the dewy glam finish
     const skin = new THREE.MeshStandardMaterial({
-      roughness: 0.42,
+      roughness: 0.5,
       emissive: "#ffffff",
-      emissiveIntensity: 0.14,
+      emissiveIntensity: 0.07,
     });
     const lashes = new THREE.MeshStandardMaterial({
       color: "#0d0609",

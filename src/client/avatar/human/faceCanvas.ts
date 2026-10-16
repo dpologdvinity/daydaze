@@ -94,10 +94,10 @@ const LIP_INK: Record<Look["lips"], [string, string, number]> = {
 
 // Brow shapes: thickness (canvas units), arch lift, tail lift, colour.
 const BROW: Record<Look["brows"], [number, number, number, string]> = {
-  "brows-y2k-thin": [0.0075, 0.022, 0.006, "#2a1712"],
-  "brows-fox-snatched": [0.012, 0.012, 0.03, "#2f1b14"],
-  "brows-sculpted-espresso": [0.016, 0.02, 0.004, "#2b1710"],
-  "brows-feathered-honey": [0.017, 0.014, 0.0, "#7a5230"],
+  "brows-y2k-thin": [0.009, 0.024, 0.006, "#24130e"],
+  "brows-fox-snatched": [0.014, 0.014, 0.03, "#26150f"],
+  "brows-sculpted-espresso": [0.019, 0.022, 0.004, "#22120c"],
+  "brows-feathered-honey": [0.02, 0.016, 0.0, "#5e3c22"],
 };
 
 function hexRgb(hex: string): [number, number, number] {
@@ -331,8 +331,8 @@ export async function paintFace(look: Look, marks: Marks) {
     `#${blush.map((v) => (v | 0).toString(16).padStart(2, "0")).join("")}`,
   );
   ctx.save();
-  ctx.globalAlpha = 0.32;
-  ctx.filter = "blur(18px)";
+  ctx.globalAlpha = 0.2;
+  ctx.filter = "blur(22px)";
   ctx.drawImage(cheekMask, 0, 0);
   ctx.restore();
 
@@ -417,14 +417,14 @@ export function paintIris(colour = "#6b3f22") {
   ctx.fillRect(0, 0, S, S);
   const c = S / 2;
   const iris = hexRgb(colour);
-  const g = ctx.createRadialGradient(c, c, 0, c, c, S * 0.235);
+  const g = ctx.createRadialGradient(c, c, 0, c, c, S * 0.27);
   g.addColorStop(0, rgba(mixRgb(iris, [255, 210, 120], 0.35)));
   g.addColorStop(0.55, rgba(iris));
   g.addColorStop(0.9, rgba(iris.map((v) => v * 0.55)));
   g.addColorStop(1, "rgba(20,10,8,1)");
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.arc(c, c, S * 0.235, 0, Math.PI * 2);
+  ctx.arc(c, c, S * 0.27, 0, Math.PI * 2);
   ctx.fill();
   // fibres
   ctx.strokeStyle = rgba(mixRgb(iris, [255, 255, 255], 0.25), 0.35);

@@ -68,6 +68,28 @@ FILES=(
   $T/chin/chin-height-decr.target
   $T/head/head-fat-decr.target
   $T/neck/neck-scale-horiz-decr.target
+  $T/nose/nose-scale-horiz-decr.target
+  $T/nose/nose-scale-vert-decr.target
+  $T/nose/nose-scale-depth-decr.target
+  $T/nose/nose-nostrils-width-decr.target
+  $T/nose/nose-width1-decr.target
+  $T/nose/nose-width2-decr.target
+  $T/chin/chin-width-decr.target
+  $T/chin/chin-height-decr.target
+  $T/chin/chin-triangle.target
+  $T/head/head-invertedtriangular.target
+  $T/head/head-age-decr.target
+  $T/cheek/l-cheek-volume-decr.target
+  $T/cheek/r-cheek-volume-decr.target
+  $T/cheek/l-cheek-inner-decr.target
+  $T/cheek/r-cheek-inner-decr.target
+  $T/mouth/mouth-upperlip-ext-up.target
+  $T/mouth/mouth-lowerlip-height-incr.target
+  $T/mouth/mouth-angles-up.target
+  $T/eyes/l-eye-height1-incr.target
+  $T/eyes/r-eye-height1-incr.target
+  $T/eyes/l-eye-eyefold-up.target
+  $T/eyes/r-eye-eyefold-up.target
   $T/expression/units/caucasian/eye-left-closure.target
   $T/expression/units/caucasian/eye-right-closure.target
   $T/expression/units/caucasian/mouth-corner-puller.target

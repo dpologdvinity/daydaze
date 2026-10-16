@@ -22,6 +22,12 @@ const Midway = lazy(() =>
   })),
 );
 
+const GemGlam = lazy(() =>
+  import("../../minigames/gemGlam/GemGlam.tsx").then((m) => ({
+    default: m.GemGlam,
+  })),
+);
+
 /** The keyboard route to each hotspot in this room, as plain buttons. */
 export function VenueGames({
   room,
@@ -61,6 +67,8 @@ export function GameOverlay({
         <Bassline onClose={done} reducedMotion={reducedMotion} />
       ) : game === "midway" ? (
         <Midway onClose={done} reducedMotion={reducedMotion} />
+      ) : game === "gem-glam" ? (
+        <GemGlam onClose={done} reducedMotion={reducedMotion} />
       ) : (
         <LastCall onClose={done} reducedMotion={reducedMotion} />
       )}
