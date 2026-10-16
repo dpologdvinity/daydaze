@@ -7,7 +7,7 @@ export { CELL_SIZE, VIEW_RADIUS } from "./tuning.ts";
 import { CELL_SIZE } from "./tuning.ts";
 
 /** Cells across (x) and down (z); Beachside makes the city taller than wide. */
-export const CELLS_X = 6;
+export const CELLS_X = 10;
 export const CELLS_Z = 9;
 
 const ORIGIN = CITY_BOUNDS[0][0];
@@ -25,9 +25,11 @@ export type Cell = {
 };
 
 /** The neighborhood a point belongs to: Beachside south of the old city
- * edge at z = 192, else Nightlife Row east of the cross street at x = 64. */
+ * edge at z = 192, Little Manila west of x = -192, else Nightlife Row east
+ * of the cross street at x = 64. */
 export function neighborhoodAt(p: Vec2): Neighborhood {
   if (p[1] > 192) return "beachside";
+  if (p[0] < -192) return "little-manila";
   return p[0] >= 64 ? "nightlife-row" : "downtown";
 }
 

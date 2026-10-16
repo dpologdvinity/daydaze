@@ -87,7 +87,7 @@ test("wherever she stands, the streamed city fits the low tier budget: under 250
   // only the cells within VIEW_RADIUS are ever drawn, so the budget is per
   // view: sample the whole city on a 32 m grid
   let worst: { tris: number; at: Vec2 } = { tris: 0, at: [0, 0] };
-  for (let x = -176; x <= 176; x += 32) {
+  for (let x = -432; x <= 176; x += 32) {
     for (let z = -176; z <= 368; z += 32) {
       const at: Vec2 = [x, z];
       const plan = planCity(cellsWithin(at, VIEW_RADIUS), 2, at);

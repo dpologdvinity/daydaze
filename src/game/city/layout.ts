@@ -7,7 +7,8 @@ import { FOOD_STOREFRONTS } from "../food/storefronts.ts";
 import type { RoomId, Spawn } from "../rooms.ts";
 import type { Vec2 } from "../walk.ts";
 
-export type Neighborhood = "downtown" | "nightlife-row" | "beachside";
+export type Neighborhood =
+  "downtown" | "nightlife-row" | "beachside" | "little-manila";
 
 export type RoadNode = { id: string; position: Vec2 };
 export type RoadEdge = {
@@ -24,14 +25,18 @@ export type RoadEdge = {
 const HALF_CITY = 192;
 /** Beachside runs south of the old city edge to the water. */
 const SOUTH_EDGE = 384;
+/** Little Manila runs west of Downtown along the avenue. */
+export const WEST_EDGE = -448;
+/** Little Manila's cross street. */
+export const MANILA_X = -320;
 /** Sidewalk width, outside the kerb. */
 const SIDEWALK = 4;
 
 export const CITY_BOUNDS: readonly Vec2[] = [
-  [-HALF_CITY, -HALF_CITY],
+  [WEST_EDGE, -HALF_CITY],
   [HALF_CITY, -HALF_CITY],
   [HALF_CITY, SOUTH_EDGE],
-  [-HALF_CITY, SOUTH_EDGE],
+  [WEST_EDGE, SOUTH_EDGE],
 ];
 
 // Beachside, south of the old city: the Shore Boulevard runs east-west at
@@ -53,6 +58,10 @@ export const ROAD_NODES: readonly RoadNode[] = [
   { id: "b-north", position: [64, -192] },
   { id: "b-south", position: [64, 192] },
   { id: "shore-w", position: [-192, SHORE_Z] },
+  { id: "manila-w", position: [WEST_EDGE, 0] },
+  { id: "m-mid", position: [MANILA_X, 0] },
+  { id: "m-north", position: [MANILA_X, -192] },
+  { id: "m-south", position: [MANILA_X, 192] },
   { id: "a-shore", position: [-64, SHORE_Z] },
   { id: "b-shore", position: [64, SHORE_Z] },
   { id: "shore-e", position: [192, SHORE_Z] },
@@ -67,6 +76,11 @@ export const ROAD_EDGES: readonly RoadEdge[] = [
   { from: "a-mid", to: "a-south", width: 10, lanes: 1, speedLimit: 9 },
   { from: "b-north", to: "b-mid", width: 10, lanes: 1, speedLimit: 9 },
   { from: "b-mid", to: "b-south", width: 10, lanes: 1, speedLimit: 9 },
+  // Little Manila: the avenue carries on west, crossed by its own street
+  { from: "manila-w", to: "m-mid", width: 14, lanes: 2, speedLimit: 11 },
+  { from: "m-mid", to: "west", width: 14, lanes: 2, speedLimit: 11 },
+  { from: "m-north", to: "m-mid", width: 10, lanes: 1, speedLimit: 9 },
+  { from: "m-mid", to: "m-south", width: 10, lanes: 1, speedLimit: 9 },
   // Beachside: the cross streets run on down to Shore Boulevard
   { from: "a-south", to: "a-shore", width: 10, lanes: 1, speedLimit: 9 },
   { from: "b-south", to: "b-shore", width: 10, lanes: 1, speedLimit: 9 },
@@ -354,6 +368,159 @@ const BEACH_FRONT: readonly {
   { x: 174, w: 16, h: 8, color: "#b3ffd9" },
 ];
 
+// Little Manila, both sides of the avenue west of Downtown: bakeries,
+// canteens, karaoke and a sari-sari store under parol lanterns.
+const MANILA_FRONT: readonly {
+  x: number;
+  w: number;
+  h: number;
+  north: boolean;
+  color: string;
+  sign: { text: string; color: string };
+  style: BuildingStyle;
+}[] = [
+  {
+    x: -432,
+    w: 20,
+    h: 12,
+    north: false,
+    color: "#ffd166",
+    sign: { text: "PANADERYA", color: "#ff8a3d" },
+    style: "storefront",
+  },
+  {
+    x: -406,
+    w: 24,
+    h: 16,
+    north: false,
+    color: "#ff6b8b",
+    sign: { text: "KARAOKE GABI", color: "#4fe3ff" },
+    style: "club",
+  },
+  {
+    x: -378,
+    w: 22,
+    h: 10,
+    north: false,
+    color: "#7fd1ae",
+    sign: { text: "SARI-SARI", color: "#ffe066" },
+    style: "storefront",
+  },
+  {
+    x: -350,
+    w: 22,
+    h: 13,
+    north: false,
+    color: "#c39bd3",
+    sign: { text: "TURO-TURO", color: "#ff2f9a" },
+    style: "storefront",
+  },
+  {
+    x: -290,
+    w: 24,
+    h: 14,
+    north: false,
+    color: "#f7a072",
+    sign: { text: "LECHON MANOK", color: "#ffd166" },
+    style: "storefront",
+  },
+  {
+    x: -262,
+    w: 22,
+    h: 18,
+    north: false,
+    color: "#9bd1f7",
+    sign: { text: "BALIKBAYAN BOXES", color: "#ffffff" },
+    style: "brick",
+  },
+  {
+    x: -230,
+    w: 26,
+    h: 11,
+    north: false,
+    color: "#ffb3c7",
+    sign: { text: "HALO-HALO", color: "#9b5cff" },
+    style: "storefront",
+  },
+  {
+    x: -432,
+    w: 20,
+    h: 14,
+    north: true,
+    color: "#a8e6cf",
+    sign: { text: "SIOPAO", color: "#ff6b8b" },
+    style: "storefront",
+  },
+  {
+    x: -404,
+    w: 26,
+    h: 20,
+    north: true,
+    color: "#ffaaa5",
+    sign: { text: "BARANGAY HALL", color: "#ffd166" },
+    style: "brick",
+  },
+  {
+    x: -374,
+    w: 22,
+    h: 12,
+    north: true,
+    color: "#dcedc1",
+    sign: { text: "UBE & CO", color: "#9b5cff" },
+    style: "storefront",
+  },
+  {
+    x: -348,
+    w: 18,
+    h: 10,
+    north: true,
+    color: "#ffd3b6",
+    sign: { text: "PALENGKE", color: "#3fe0d0" },
+    style: "warehouse",
+  },
+  {
+    x: -292,
+    w: 22,
+    h: 16,
+    north: true,
+    color: "#bdb2ff",
+    sign: { text: "TITA'S KITCHEN", color: "#ff8a3d" },
+    style: "storefront",
+  },
+  {
+    x: -264,
+    w: 22,
+    h: 12,
+    north: true,
+    color: "#ffc6ff",
+    sign: { text: "BIBINGKA", color: "#ffe066" },
+    style: "storefront",
+  },
+  {
+    x: -232,
+    w: 26,
+    h: 22,
+    north: true,
+    color: "#caffbf",
+    sign: { text: "PADALA", color: "#4fe3ff" },
+    style: "tower",
+  },
+];
+
+const MANILA_BUILDINGS: readonly Building[] = MANILA_FRONT.map(
+  (b, i): Building => ({
+    id: `manila-${i}`,
+    neighborhood: "little-manila",
+    footprint: b.north
+      ? rect(b.x - b.w / 2, -38, b.x + b.w / 2, -14)
+      : rect(b.x - b.w / 2, 14, b.x + b.w / 2, 38),
+    height: b.h,
+    style: b.style,
+    color: b.color,
+    sign: b.sign,
+  }),
+);
+
 const BEACH_BUILDINGS: readonly Building[] = [
   ...BEACH_FRONT.map((b, i): Building => ({
     id: `beach-${i}`,
@@ -603,6 +770,7 @@ export const BUILDINGS: readonly Building[] = [
   // The food venues: one storefront each, two of them with doors.
   ...FOOD_STOREFRONTS,
   ...BEACH_BUILDINGS,
+  ...MANILA_BUILDINGS,
 ];
 
 // x of each north-south street; each has two edges, so dedupe.
@@ -632,11 +800,19 @@ function buildProps(): Prop[] {
   }
   for (const cx of CROSS_STREETS) {
     for (const x of [cx - 7, cx + 7]) {
-      for (let z = -180; z <= 240; z += 60) {
+      // Little Manila's street stops at the old city edge; the others run on
+      // down to Shore Boulevard
+      const last = cx === MANILA_X ? 180 : 240;
+      for (let z = -180; z <= last; z += 60) {
         if (Math.abs(z) < 11) continue;
         props.push({ kind: "tree", position: [x, z] });
       }
     }
+  }
+  // Little Manila: lamps down the avenue sidewalks
+  for (let x = WEST_EDGE + 12; x < -196; x += 30) {
+    if (nearCross(x)) continue;
+    for (const z of [-9, 9]) props.push({ kind: "lamp", position: [x, z] });
   }
   // Beachside: palms down both sides of Shore Boulevard, lamps along the
   // boardwalk's sea edge, and palms scattered over the sand

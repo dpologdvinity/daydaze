@@ -130,12 +130,12 @@ export function CityScene({
       ))}
       <mesh
         rotation-x={-Math.PI / 2}
-        position={[0, -0.01, WATER_Z - 400]}
+        position={[-128, -0.01, WATER_Z - 400]}
         onClick={click}
         name="city-ground"
       >
         {/* land up to the waterline; the Ocean takes over past it */}
-        <planeGeometry args={[900, 800]} />
+        <planeGeometry args={[1100, 800]} />
         <meshStandardMaterial color="#120d26" roughness={0.9} />
       </mesh>
       <Ocean />

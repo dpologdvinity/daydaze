@@ -706,6 +706,11 @@ function strings(out: Placed[]): void {
   for (const z of [18, 28, 38]) {
     garland(out, [-48, z], [48, z], 6.6, 1, 40, z);
   }
+  // Little Manila: lantern strings across the avenue
+  for (let x = -440; x <= -204; x += 22) {
+    if (Math.abs(x + 320) < 12) continue;
+    garland(out, [x, -13.5], [x, 13.5], 6.8, 0.9, 18, x);
+  }
 }
 
 /** Everything on the streets and squares, placed once for the whole city. */
