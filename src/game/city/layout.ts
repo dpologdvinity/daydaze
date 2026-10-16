@@ -62,6 +62,15 @@ export const SHORE_Z = 256;
 export const FAIR_FORECOURT_Z = 239;
 export const BOARDWALK = { z0: 267, z1: 279 };
 export const WATER_Z = 340;
+/** Things on the sand: bonfires ringed by log seats, a volleyball net. */
+export const BONFIRES: readonly Vec2[] = [
+  [-150, 312],
+  [-30, 318],
+  [130, 310],
+  [-330, 314],
+  [330, 316],
+];
+export const VOLLEYBALL = { x: 70, z: 312, half: 5 };
 /** The pier: planks from the sand out over the water, wider at its head. */
 export const PIER = { x: 24, half: 3, end: 378, head: 9 };
 /** Uptown's Park and Gardens: a lawn north of Park Avenue. */
@@ -1582,9 +1591,15 @@ export const PROPS: readonly Prop[] = buildProps();
 
 const PROP_HALF = 0.25;
 
-/** Everything solid: building footprints, then the prop posts. */
+/** Everything solid: building footprints, the prop posts, and the fires and
+ * net out on the sand. */
 const CITY_BLOCKERS: readonly (readonly Vec2[])[] = [
   ...BUILDINGS.map((b) => b.footprint),
+  ...BONFIRES.map(([x, z]) => rect(x - 0.9, z - 0.9, x + 0.9, z + 0.9)),
+  ...[-1, 1].map((side) => {
+    const x = VOLLEYBALL.x + side * VOLLEYBALL.half;
+    return rect(x - 0.15, VOLLEYBALL.z - 0.15, x + 0.15, VOLLEYBALL.z + 0.15);
+  }),
   ...PROPS.map(({ position: [x, z] }) =>
     rect(x - PROP_HALF, z - PROP_HALF, x + PROP_HALF, z + PROP_HALF),
   ),

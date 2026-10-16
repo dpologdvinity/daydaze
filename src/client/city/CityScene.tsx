@@ -22,6 +22,7 @@ import type { Player } from "../world/PlayerController.tsx";
 import { useQuality } from "../world/quality.ts";
 import { CitySky } from "./CitySky.tsx";
 import { Ocean } from "./Ocean.tsx";
+import { BeachLife } from "./BeachLife.tsx";
 import { Pedestrians } from "./Pedestrians.tsx";
 import { WATER_Z } from "../../game/city/layout.ts";
 import { setNeighborhood } from "./here.ts";
@@ -140,6 +141,7 @@ export function CityScene({
         <meshStandardMaterial color="#120d26" roughness={0.9} />
       </mesh>
       <Ocean />
+      <BeachLife />
       {KINDS.map((kind) => (
         <primitive key={kind} object={meshes[kind]} onClick={click} />
       ))}
