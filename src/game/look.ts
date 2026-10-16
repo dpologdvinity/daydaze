@@ -134,7 +134,7 @@ export const EYE_COLORS = [
 ] as const;
 
 export const FIGURES = [
-  { id: "classic", label: "Classic" },
+  { id: "classic", label: "Hourglass" },
   { id: "curvy", label: "Curvy" },
   { id: "slim", label: "Slim" },
   { id: "athletic", label: "Athletic" },
