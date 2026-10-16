@@ -52,7 +52,7 @@ export function Swatches<T extends string>({
 
 /**
  * Option buttons. `tiles` shows each option as a picture card from
- * `/closet/<tiles>-<id>.png` with its name under it; options without a
+ * `/closet/<tiles>-<id>.webp` with its name under it; options without a
  * picture fall back to a lettered card.
  */
 export function Tiles<T extends string>({
@@ -74,7 +74,7 @@ export function Tiles<T extends string>({
           onClick={() => onPick(o.id)}
         >
           <img
-            src={`/closet/${tiles}-${o.id}.png`}
+            src={`/closet/${tiles}-${o.id}.webp`}
             alt=""
             loading="lazy"
             onError={(e) => {

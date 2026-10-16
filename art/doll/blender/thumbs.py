@@ -4,7 +4,8 @@ shows options instead of words.
 
     blender --background --factory-startup --python art/doll/blender/thumbs.py
 
-Run after build_doll.py. Hair tiles are three-quarter views in a warm brown;
+Run after build_doll.py, then convert to WebP (192 px) with sharp, as the
+commit that added it did; the client loads `/closet/<group>-<id>.webp`. Hair tiles are three-quarter views in a warm brown;
 face tiles are tight front views with only that preset's key on.
 """
 
