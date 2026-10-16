@@ -128,7 +128,7 @@ def build(ctx, name, mat, length=0.42, count=420, wave=0.0, curl=0.0, volume=1.0
         return p
 
     verts, faces, uvs, root_src, shade = [], [], [], [], []
-    segments = 16
+    segments = 10
     gravity = np.array([0, 0, -1.0])
 
     def guide(root, normal, lift, L, phase):

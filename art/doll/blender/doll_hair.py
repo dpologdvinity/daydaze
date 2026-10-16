@@ -242,14 +242,14 @@ def build(ctx):
     # strand-card styles: length (m), wave (slow S), curl (tight spirals),
     # volume (lift off the scalp); ids match HAIR_STYLES in src/game/look.ts
     for name, style in {
-        "waves": dict(length=0.56, count=760, wave=0.01),
-        "long-straight": dict(length=0.6, count=780, wave=0.002),
-        "long-curly": dict(length=0.5, count=820, curl=0.022, volume=1.8),
-        "mid-straight": dict(length=0.36, count=700, wave=0.002),
-        "mid-wavy": dict(length=0.36, count=700, wave=0.012),
-        "mid-curly": dict(length=0.3, count=760, curl=0.022, volume=1.9),
-        "bob": dict(length=0.24, count=650, wave=0.002, volume=1.2),
-        "pixie": dict(length=0.11, count=600, wave=0.004, volume=1.1),
+        "waves": dict(length=0.56, count=456, wave=0.01),
+        "long-straight": dict(length=0.6, count=468, wave=0.002),
+        "long-curly": dict(length=0.5, count=492, curl=0.022, volume=1.8),
+        "mid-straight": dict(length=0.36, count=420, wave=0.002),
+        "mid-wavy": dict(length=0.36, count=420, wave=0.012),
+        "mid-curly": dict(length=0.3, count=456, curl=0.022, volume=1.9),
+        "bob": dict(length=0.24, count=390, wave=0.002, volume=1.2),
+        "pixie": dict(length=0.11, count=360, wave=0.004, volume=1.1),
     }.items():
         out.append(strand_style(ctx, f"Hair_{name}", strand, solid, seed=len(name), **style))
     for ob in out:

@@ -35,6 +35,7 @@ import {
   type BodyShape,
 } from "../../../game/body.ts";
 import { pose, type Rig } from "../pose.ts";
+import { useQuality } from "../../world/quality.ts";
 import { gaitOf, type GaitId } from "../../../game/gaits.ts";
 
 // strangers walk naturally, a few with more swing
@@ -301,7 +302,17 @@ function hairMaterial(
   colour: string,
   map: THREE.Texture | null,
   shaded: boolean,
+  rich: boolean,
 ) {
+  if (!rich)
+    return new THREE.MeshStandardMaterial({
+      map,
+      color: colour,
+      vertexColors: shaded,
+      roughness: 0.5,
+      side: THREE.DoubleSide,
+      alphaTest: map ? 0.4 : 0,
+    });
   return new THREE.MeshPhysicalMaterial({
     map,
     color: colour,
@@ -338,6 +349,8 @@ function Part({
   onMeshes: (meshes: THREE.Mesh[] | null, lift: number) => void;
 }) {
   const gltf = useGLTF(url);
+  // the glossy hair shading and its soft-edge pass are for capable GPUs
+  const rich = useQuality() === "high";
   const part = useMemo(() => {
     const meshes: THREE.SkinnedMesh[] = [];
     gltf.scene.traverse((o) => {
@@ -368,7 +381,7 @@ function Part({
       const hasShade = Boolean(src.geometry.getAttribute("color"));
       const mat =
         tint.kind === "hair"
-          ? hairMaterial(tint.colour, old?.map ?? null, hasShade)
+          ? hairMaterial(tint.colour, old?.map ?? null, hasShade, rich)
           : new THREE.MeshStandardMaterial({
               map: old?.map ?? null,
               color: tint.kind === "keep" ? "#ffffff" : tint.colour,
@@ -380,7 +393,7 @@ function Part({
       // strand cards draw twice: a solid core that writes depth, then the
       // thin wisps at the card edges blended on top, so the hairline and ends
       // read soft instead of cut out
-      if (tint.kind === "hair" && old?.map) {
+      if (rich && tint.kind === "hair" && old?.map) {
         // the wisps pass is plain standard shading: thin edges show no
         // highlight anyway, and blended overdraw is the costly part
         const wisps = new THREE.MeshStandardMaterial({
@@ -403,7 +416,7 @@ function Part({
       }
     }
     return { group, materials, lift };
-  }, [gltf, bones, tint.colour, tint.kind]);
+  }, [gltf, bones, tint.colour, tint.kind, rich]);
 
   useEffect(() => {
     onMeshes(morphMeshes(part.group), part.lift);
