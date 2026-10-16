@@ -1,4 +1,4 @@
-import { areaOf, isBlocked } from "./area.ts";
+import { areaOf, isBlocked, stepInArea } from "./area.ts";
 import { CAROUSEL_AT, RIDE_IDS, RIDES } from "./amusementPark.ts";
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -14,6 +14,7 @@ test("every room is registered under its own id", () => {
     "boba-matcha",
     "city",
     "filipino-joint",
+    "haunted-house",
     "ice-rink",
     "jail",
     "plaza",
@@ -173,4 +174,30 @@ test("every Speedway spot lies on the walkable floor", () => {
       spot.id,
     );
   }
+});
+
+test("the Haunted House winds from its door to the back room and out again", () => {
+  const room = ROOMS["haunted-house"];
+  const area = areaOf(room);
+  // a short S: in at the front, round the walls' gaps to the back
+  let pos: Vec2 = room.spawn.position;
+  for (const goal of [
+    [-5.5, 0.9],
+    [-5.5, -1],
+    [5.5, -2.7],
+    [5, -5],
+  ] as const) {
+    for (let k = 0; k < 400; k++) pos = stepInArea(area, pos, goal, 0.05);
+    assert.ok(
+      Math.hypot(pos[0] - goal[0], pos[1] - goal[1]) < 0.2,
+      `reached ${goal}`,
+    );
+  }
+  const back = room.portals[0];
+  assert.equal(back.target, "amusement-park");
+  const park = areaOf(ROOMS["amusement-park"]);
+  assert.equal(isBlocked(park, back.targetSpawn.position), false);
+  assert.ok(
+    pointInPolygon(ROOMS["amusement-park"].walkable, back.targetSpawn.position),
+  );
 });

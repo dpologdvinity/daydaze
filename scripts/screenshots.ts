@@ -93,6 +93,7 @@ const SHOTS: {
   },
   { name: "aquarium", query: "room=aquarium" },
   { name: "ice-rink", query: "room=ice-rink" },
+  { name: "haunted-house", query: "room=haunted-house" },
   { name: "city-street", query: "room=city&view=full" },
   { name: "city-overview", query: "room=city" },
   {

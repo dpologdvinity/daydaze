@@ -30,7 +30,7 @@ import {
 } from "../../../game/amusementPark.ts";
 import { useReducedMotion } from "../../motion.ts";
 import { canvasTex, GOLD, hdr, LACQUER } from "../shared/materials.ts";
-import { Neon } from "../shared/Neon.tsx";
+import { MARQUEE, Neon, NeonText } from "../shared/Neon.tsx";
 import { Bulbs } from "./Bulbs.tsx";
 import {
   Boxes,
@@ -699,6 +699,51 @@ export function LogFlume() {
       >
         <circleGeometry args={[SPLASH_POOL.radius, 32]} />
       </mesh>
+    </group>
+  );
+}
+
+/** The Haunted House in the east lot: a crooked dark manor with lit windows,
+ * a pointed roof and its sign over the door on the west face. */
+export function HauntedFacade() {
+  return (
+    <group position={[25, 0, -16]}>
+      <mesh position={[0, 3, 0]}>
+        <boxGeometry args={[8, 6, 10]} />
+        <meshStandardMaterial color="#231a2e" roughness={0.9} />
+      </mesh>
+      <mesh position={[0, 7.4, 0]} rotation-y={Math.PI / 4}>
+        <coneGeometry args={[6.4, 3, 4]} />
+        <meshStandardMaterial color="#141018" roughness={0.8} />
+      </mesh>
+      {[-3, 0, 3].flatMap((z) =>
+        [2.2, 4.4].map((y) => (
+          <mesh
+            key={`${z}-${y}`}
+            position={[-4.02, y, z]}
+            rotation-y={-Math.PI / 2}
+          >
+            <planeGeometry args={[1, 1.3]} />
+            <meshBasicMaterial
+              color={hdr(y > 3 ? "#7a5cff" : "#ffb02e", 1.6)}
+              toneMapped={false}
+            />
+          </mesh>
+        )),
+      )}
+      <mesh position={[-4.02, 1.1, 0]} rotation-y={-Math.PI / 2}>
+        <planeGeometry args={[1.4, 2.2]} />
+        <meshBasicMaterial color="#0a0610" />
+      </mesh>
+      <NeonText
+        text="HAUNTED HOUSE"
+        color="#9b5cff"
+        font={MARQUEE}
+        width={6}
+        flicker
+        position={[-4.1, 6.4, 0]}
+        rotation-y={-Math.PI / 2}
+      />
     </group>
   );
 }

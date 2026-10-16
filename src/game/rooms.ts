@@ -29,6 +29,7 @@ export type RoomId =
   | "ube-bakery"
   | "aquarium"
   | "ice-rink"
+  | "haunted-house"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -122,8 +123,8 @@ const AMUSEMENT_PARK_FLOOR: readonly Vec2[] = [
   [-9, -8],
   [-30, -8],
   [-30, -53],
-  [17, -53],
-  [17, -8],
+  [30, -53],
+  [30, -8],
   [9, -8],
   [9, 7.5],
 ];
@@ -170,6 +171,8 @@ const AMUSEMENT_PARK_BLOCKERS: readonly (readonly Vec2[])[] = [
   ],
   // the Starlight's station, lift and towers
   box(-15.5, -52, 16.5, -36.2),
+  // the Haunted House, in the east lot past the coasters
+  box(21, -21, 29, -11),
   // food carts at the midway's back corners
   box(-12.4, -10.3, -10.6, -8.7),
   box(10.6, -10.3, 12.4, -8.7),
@@ -238,6 +241,21 @@ export const ICE_RINK_DOOR = {
   position: [287, -289.5] as const,
   landing: [287, -284.5] as const,
 };
+
+// The Haunted House: a 14 m x 12 m warren of dark rooms behind the park's
+// east lot door. Its inner walls are blockers, so the way through winds.
+const HAUNTED_FLOOR: readonly Vec2[] = [
+  [-7, -6],
+  [7, -6],
+  [7, 6],
+  [-7, 6],
+];
+export const HAUNTED_WALLS: readonly (readonly Vec2[])[] = [
+  // a wall across the middle with a gap on the left, and one splitting the
+  // back half with a gap on the right: a short S-shaped route to the back
+  box(-3.5, 0.6, 7, 1.2),
+  box(-7, -3, 3.5, -2.4),
+];
 
 const JAIL_FLOOR: readonly Vec2[] = [
   [-6, -4],
@@ -391,6 +409,15 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         targetSpawn: { position: [9.5, 4.2], yaw: Math.PI },
       },
       {
+        // The Haunted House's door, on its west face in the east lot.
+        id: "park-to-haunted-house",
+        position: [20.3, -16],
+        radius: 0.9,
+        label: "Into the Haunted House",
+        target: "haunted-house",
+        targetSpawn: { position: [0, 4.4], yaw: Math.PI },
+      },
+      {
         // The gate out to the city, a little west of the entrance arch.
         id: "park-to-city",
         position: [-6.5, 6.9],
@@ -516,6 +543,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the park",
         target: "city",
         targetSpawn: { position: ICE_RINK_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  "haunted-house": {
+    id: "haunted-house",
+    name: "The Haunted House",
+    walkable: HAUNTED_FLOOR,
+    blockers: HAUNTED_WALLS,
+    spawn: { position: [0, 4.4], yaw: Math.PI },
+    portals: [
+      {
+        id: "haunted-house-to-park",
+        position: [0, 5.6],
+        radius: 0.8,
+        label: "Back out to the park",
+        target: "amusement-park",
+        targetSpawn: { position: [18.6, -16], yaw: -Math.PI / 2 },
       },
     ],
   },

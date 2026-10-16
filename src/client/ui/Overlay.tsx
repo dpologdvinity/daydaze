@@ -89,6 +89,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
   city: "The city after dark. Tap the street or use WASD, walk into a lit door, or head south to the beach.",
   apartment:
     "Your flat. Use the decorating panel to place furniture and lock the door. Tap the blue shelf to try a shoplift.",
+  "haunted-house":
+    "The Haunted House. Find your way through the dark rooms past the ghosts, then back out to the park.",
   "ice-rink":
     "Park Ice Rink. Glide onto the ice through the gap in the boards, then warm up with cocoa by the door.",
   aquarium:

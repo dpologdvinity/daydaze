@@ -29,6 +29,7 @@ import { ENTRANCE_Z } from "./amusementpark/layout.ts";
 import {
   Carousel,
   Coaster,
+  HauntedFacade,
   LogFlume,
   PirateShip,
   Starlight,
@@ -292,6 +293,7 @@ export function AmusementPark({
       <Coaster />
       <Starlight />
       <PirateShip />
+      <HauntedFacade />
       <LogFlume />
       <DropTower />
       <SwingRide />
