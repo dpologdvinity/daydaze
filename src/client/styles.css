@@ -998,3 +998,158 @@ button:focus-visible {
   margin: 6px 0;
   font-size: 13px;
 }
+
+/* ------------------------------------------------- the character creator */
+
+/* Open, the dressing room takes over the screen: a dimmed stage on the left
+   where the doll stands in the 3D view, and a tall panel of picture tiles on
+   the right. Everything else on screen hides while she gets ready. */
+.app:has(.dressing[data-open="true"]) .venue,
+.app:has(.dressing[data-open="true"]) .dock,
+.app:has(.dressing[data-open="true"]) .chat,
+.app:has(.dressing[data-open="true"]) .venue-games,
+.app:has(.dressing[data-open="true"]) .views {
+  visibility: hidden;
+}
+
+.dressing[data-open="true"] {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(620px, 56vw);
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.dressing[data-open="true"]::before,
+.dressing[data-open="true"]::after {
+  display: none;
+}
+
+.dressing[data-open="true"] .dressing-glass {
+  border-radius: 0;
+  padding: 22px 26px 26px;
+  background:
+    radial-gradient(
+      100% 50% at 80% 0%,
+      rgb(255 140 210 / 0.22),
+      transparent 60%
+    ),
+    rgb(24 4 28 / 0.94);
+  box-shadow:
+    inset 1px 0 0 rgb(255 220 160 / 0.4),
+    -40px 0 80px rgb(0 0 0 / 0.55);
+}
+
+/* a vignette over the rest of the screen frames the doll */
+.app:has(.dressing[data-open="true"])::after {
+  content: "";
+  position: fixed;
+  inset: 0 min(620px, 56vw) 0 0;
+  z-index: 5;
+  pointer-events: none;
+  background: radial-gradient(
+    60% 70% at 50% 55%,
+    transparent 40%,
+    rgb(7 2 11 / 0.75)
+  );
+}
+
+.mirror-tabs {
+  position: sticky;
+  top: -22px;
+  z-index: 1;
+  display: flex;
+  gap: 4px;
+  margin: 0 -26px 10px;
+  padding: 10px 26px;
+  background: rgb(24 4 28 / 0.96);
+  border-bottom: 1px solid rgb(255 207 106 / 0.25);
+}
+
+.mirror-tabs button {
+  flex: 1;
+  padding: 10px 6px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--champagne);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.mirror-tabs button[aria-selected="true"] {
+  background: var(--glow-button);
+  color: #fff;
+  box-shadow: 0 0 14px rgb(255 47 154 / 0.6);
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 10px;
+}
+
+.tile {
+  display: grid;
+  gap: 6px;
+  padding: 6px 6px 8px;
+  border: 1px solid rgb(255 207 106 / 0.3);
+  border-radius: 14px;
+  background: rgb(255 255 255 / 0.05);
+  color: var(--champagne);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    transform 0.15s;
+}
+
+.tile img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 10px;
+  background: radial-gradient(circle at 50% 35%, #5a2a62, #20082a 75%);
+}
+
+.tile:hover {
+  border-color: rgb(255 47 154 / 0.7);
+}
+
+.tile[aria-checked="true"] {
+  border-color: transparent;
+  background: rgb(255 47 154 / 0.2);
+  box-shadow:
+    0 0 0 2px var(--fuchsia),
+    0 0 18px rgb(255 47 154 / 0.55);
+}
+
+.tiles + .row,
+.row + .tiles,
+.tiles + .tiles {
+  margin-top: 12px;
+}
+
+@media (max-width: 720px) {
+  /* on a phone the creator is a tall bottom sheet over the doll */
+  .dressing[data-open="true"] {
+    width: auto;
+    height: 62vh;
+    top: auto;
+  }
+  .app:has(.dressing[data-open="true"])::after {
+    inset: 0 0 62vh 0;
+  }
+  .tiles {
+    grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  }
+  .mirror-tabs button {
+    font-size: 13px;
+    padding: 9px 2px;
+  }
+}

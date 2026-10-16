@@ -380,6 +380,20 @@ test("the midway opens at the Amusement Park and a ring toss pays a grade", asyn
   await expect(roomTitle(page)).toHaveText("Amusement Park");
 });
 
+test("the player takes a seat at the Velvet Room bar and stands to walk", async ({
+  page,
+}) => {
+  await page.goto(`${LOW}&room=velvet-room`);
+  const canvas = canvasOf(page);
+  await page.getByRole("button", { name: "Take a seat" }).click();
+  await expect(canvas).toHaveAttribute("data-seated", /velvet-stool/, {
+    timeout: 60_000,
+  });
+  await page.keyboard.down("KeyS");
+  await expect(canvas).not.toHaveAttribute("data-seated", /.+/);
+  await page.keyboard.up("KeyS");
+});
+
 test("apartment: place, rotate and remove furniture, lock the door, and it persists", async ({
   page,
 }) => {

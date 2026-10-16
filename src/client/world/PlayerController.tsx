@@ -47,6 +47,8 @@ export type Player = {
   acc: number;
   /** Set while a ride carries the doll; walking pauses and the seat wins. */
   seat: { position: THREE.Vector3; yaw: number } | null;
+  /** Set while seated on a chair (not a ride): the doll sits until she moves. */
+  sitting: boolean;
   /** A slide ride: `t` runs 0..1 down the slide, then `swim` counts seconds. */
   ride: { slide: Slide; length: number; t: number; swim: number } | null;
 };
@@ -61,6 +63,7 @@ export function createPlayer(spawn: Spawn): Player {
     before: { pos: walk.pos, yaw: walk.yaw },
     acc: 0,
     seat: null,
+    sitting: false,
     ride: null,
   };
 }
@@ -208,7 +211,13 @@ export function PlayerController({
     if (driving.session) return;
     const local = moveAction(held.current, stick);
     const intent = local && worldDirection(local, state.camera);
-    const rideMood = ride(player, area, dt, calm);
+    // seated on a chair: a key press or a new walk target stands her up
+    if (player.sitting && (intent || player.walk.target)) {
+      player.sitting = false;
+      player.seat = null;
+    }
+    const rideMood =
+      ride(player, area, dt, calm) ?? (player.sitting ? "sit" : null);
     if (rideMood !== shownRide.current) {
       shownRide.current = rideMood;
       setRiding(rideMood);

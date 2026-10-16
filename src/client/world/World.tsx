@@ -53,6 +53,8 @@ import {
   type Player,
 } from "./PlayerController.tsx";
 import { QualityContext, type QualityTier } from "./quality.ts";
+import { Seats } from "./Seats.tsx";
+import { CreatorFrame } from "./CreatorFrame.tsx";
 
 // The city is the heaviest scene, so it loads on first visit only.
 const CityScene = lazy(() =>
@@ -303,6 +305,7 @@ export function World({
               onShelf={onShelf}
             />
           ) : null}
+          <Seats room={room} player={player} area={area} />
           <PlayerController
             player={player}
             area={area}
@@ -316,6 +319,7 @@ export function World({
             onPortal={onPortal}
           />
           <CameraRig player={player} view={view} room={room} />
+          <CreatorFrame />
           {tier === "high" ? <Effects /> : <NeonClamp key={`clamp-${room}`} />}
         </Suspense>
       </QualityContext.Provider>

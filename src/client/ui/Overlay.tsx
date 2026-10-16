@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   FIGURES,
   EYE_SHAPES,
@@ -50,9 +50,11 @@ import { RaceHud, SpeedwayMenu } from "../rooms/speedway/RaceHud.tsx";
 import { CocktailIcon, RideIcon } from "./icons.tsx";
 import { DancePicker } from "./DancePicker.tsx";
 import { Dressing } from "./Dressing.tsx";
+import { seatsIn } from "../../game/seats.ts";
+import { seatRequest } from "../world/Seats.tsx";
 import { DeliveryApp } from "./phone/DeliveryApp.tsx";
 import { FoodHud } from "./phone/FoodHud.tsx";
-import { Chips, Segmented, Slider, Swatches } from "./controls.tsx";
+import { Chips, Segmented, Slider, Swatches, Tiles } from "./controls.tsx";
 import { VenueGames } from "./Minigames.tsx";
 
 // Sit and lean need furniture, so the player only picks these.
@@ -88,7 +90,18 @@ const EFFECT_LEVELS = INTENSITIES.map((id) => ({
   label: id === "off" ? "Off" : id === "low" ? "Low" : "Full",
 }));
 
+export const MIRROR_TABS = [
+  { id: "face", label: "Face" },
+  { id: "makeup", label: "Makeup" },
+  { id: "hair", label: "Hair" },
+  { id: "body", label: "Body" },
+  { id: "outfit", label: "Outfit" },
+] as const;
+export type MirrorTab = (typeof MIRROR_TABS)[number]["id"];
+
 function Mirror({
+  tab,
+  setTab,
   look,
   setLook,
   swim,
@@ -99,6 +112,8 @@ function Mirror({
   effects,
   setEffects,
 }: {
+  tab: MirrorTab;
+  setTab: (tab: MirrorTab) => void;
   look: Look;
   setLook: (look: Look) => void;
   swim: SwimLook;
@@ -114,198 +129,268 @@ function Mirror({
   const setMakeup = (next: Makeup) =>
     setLook({ ...look, makeup: encodeMakeup(next) });
   const setFace = (next: Face) => setLook({ ...look, face: encodeFace(next) });
+  const tabs: Record<MirrorTab, ReactNode> = {
+    face: (
+      <>
+        <section>
+          <h3>Skin</h3>
+          <Swatches
+            label="Skin tone"
+            options={SKINS}
+            value={look.skin}
+            onPick={(skin) => setLook({ ...look, skin })}
+          />
+        </section>
+        <section>
+          <h3>Face shape</h3>
+          <Tiles
+            label="Face shape"
+            options={FACE_SHAPES}
+            value={face.faceShape}
+            onPick={(faceShape) => setFace({ ...face, faceShape })}
+            tiles="face"
+          />
+        </section>
+        <section>
+          <h3>Eyes</h3>
+          <Tiles
+            label="Eye shape"
+            options={EYE_SHAPES}
+            value={face.eyeShape}
+            onPick={(eyeShape) => setFace({ ...face, eyeShape })}
+            tiles="eye"
+          />
+          <Swatches
+            label="Eye colour"
+            options={EYE_COLORS}
+            value={face.eyeColor}
+            onPick={(eyeColor) => setFace({ ...face, eyeColor })}
+          />
+        </section>
+        <section>
+          <h3>Nose</h3>
+          <Tiles
+            label="Nose"
+            options={NOSES}
+            value={face.noseShape}
+            onPick={(noseShape) => setFace({ ...face, noseShape })}
+            tiles="nose"
+          />
+        </section>
+        <section>
+          <h3>Lips</h3>
+          <Tiles
+            label="Lip shape"
+            options={LIP_SHAPES}
+            value={face.lipShape}
+            onPick={(lipShape) => setFace({ ...face, lipShape })}
+            tiles="lips"
+          />
+        </section>
+        <section>
+          <h3>Fine tune</h3>
+          {FACE_SLIDERS.map((s) => (
+            <Slider
+              key={s.id}
+              label={s.label}
+              value={face[s.id]}
+              min={-1}
+              max={1}
+              step={0.1}
+              onChange={(v) => setFace({ ...face, [s.id]: v })}
+            />
+          ))}
+        </section>
+      </>
+    ),
+    makeup: (
+      <>
+        <section>
+          <h3>Lipstick</h3>
+          <Swatches
+            label="Lipstick"
+            options={wearable(LIPS, wardrobe)}
+            value={look.lips}
+            onPick={(lips) => setLook({ ...look, lips })}
+          />
+          <Tiles
+            label="Lip finish"
+            options={GLOSSES}
+            value={makeup.gloss}
+            onPick={(gloss) => setMakeup({ ...makeup, gloss })}
+            tiles="gloss"
+          />
+        </section>
+        <section>
+          <h3>Eyes</h3>
+          <Swatches
+            label="Eyeshadow"
+            options={wearable(EYESHADOWS, wardrobe)}
+            value={look.shadow}
+            onPick={(shadow) => setLook({ ...look, shadow })}
+          />
+          <Tiles
+            label="Eyeshadow style"
+            options={SHADOW_STYLES}
+            value={makeup.shadowStyle}
+            onPick={(shadowStyle) => setMakeup({ ...makeup, shadowStyle })}
+            tiles="shadow"
+          />
+          <Tiles
+            label="Eyeliner"
+            options={LINERS}
+            value={makeup.liner}
+            onPick={(liner) => setMakeup({ ...makeup, liner })}
+            tiles="liner"
+          />
+          <Chips
+            label="Brows"
+            options={BROWS}
+            value={look.brows}
+            onPick={(brows) => setLook({ ...look, brows })}
+            thumbs
+          />
+        </section>
+        <section>
+          <h3>Cheeks</h3>
+          <Swatches
+            label="Blush"
+            options={BLUSHES}
+            value={makeup.blush}
+            onPick={(blush) => setMakeup({ ...makeup, blush })}
+          />
+          <Segmented
+            label="Blush strength"
+            options={STRENGTHS}
+            value={makeup.blushStrength}
+            onPick={(blushStrength) => setMakeup({ ...makeup, blushStrength })}
+            className="strength"
+          />
+          <Swatches
+            label="Highlighter"
+            options={HIGHLIGHTERS}
+            value={makeup.highlight}
+            onPick={(highlight) => setMakeup({ ...makeup, highlight })}
+          />
+        </section>
+      </>
+    ),
+    hair: (
+      <>
+        <section>
+          <h3>Style</h3>
+          <Tiles
+            label="Hair style"
+            options={wearable(HAIR_STYLES, wardrobe)}
+            value={look.hairStyle}
+            onPick={(hairStyle) => setLook({ ...look, hairStyle })}
+            tiles="hair"
+          />
+        </section>
+        <section>
+          <h3>Colour</h3>
+          <Swatches
+            label="Hair colour"
+            options={wearable(HAIR_COLORS, wardrobe)}
+            value={look.hairColor}
+            onPick={(hairColor) => setLook({ ...look, hairColor })}
+          />
+        </section>
+      </>
+    ),
+    body: (
+      <>
+        <section>
+          <h3>Figure</h3>
+          <Tiles
+            label="Figure"
+            options={FIGURES}
+            value={face.figure}
+            onPick={(figure) => setFace({ ...face, figure })}
+            tiles="figure"
+          />
+          {BODY_TRAITS.map((trait) => (
+            <Slider
+              key={trait}
+              label={BODY_LABELS[trait]}
+              value={body[trait]}
+              onChange={(value) =>
+                setBody({ ...body, [trait]: clampTrait(value) })
+              }
+            />
+          ))}
+        </section>
+      </>
+    ),
+    outfit: (
+      <>
+        <section>
+          <h3>Outfit</h3>
+          <Chips
+            label="Outfit"
+            options={wearable(OUTFITS, wardrobe)}
+            value={look.outfit}
+            onPick={(outfit) => setLook({ ...look, outfit })}
+          />
+          <Swatches
+            label="Outfit colour"
+            options={OUTFIT_COLORS}
+            value={look.outfitColor}
+            onPick={(outfitColor) => setLook({ ...look, outfitColor })}
+          />
+        </section>
+        <section>
+          <h3>Swimsuit</h3>
+          <Chips
+            label="Swimsuit"
+            options={SWIMSUITS}
+            value={swim.style}
+            onPick={(style) => setSwim({ ...swim, style })}
+          />
+          <Swatches
+            label="Swimsuit colour"
+            options={OUTFIT_COLORS}
+            value={swim.color}
+            onPick={(color) => setSwim({ ...swim, color })}
+          />
+        </section>
+        <section>
+          <h3>Drunk effects</h3>
+          <Chips
+            label="Drunk effects"
+            options={EFFECT_LEVELS}
+            value={effects}
+            onPick={setEffects}
+          />
+        </section>
+      </>
+    ),
+  };
   return (
     <>
-      <section>
-        <h3>Skin</h3>
-        <Swatches
-          label="Skin tone"
-          options={SKINS}
-          value={look.skin}
-          onPick={(skin) => setLook({ ...look, skin })}
-        />
-      </section>
-      <section>
-        <h3>Face</h3>
-        <Swatches
-          label="Eye colour"
-          options={EYE_COLORS}
-          value={face.eyeColor}
-          onPick={(eyeColor) => setFace({ ...face, eyeColor })}
-        />
-        <Chips
-          label="Eye shape"
-          options={EYE_SHAPES}
-          value={face.eyeShape}
-          onPick={(eyeShape) => setFace({ ...face, eyeShape })}
-        />
-        <Chips
-          label="Nose"
-          options={NOSES}
-          value={face.noseShape}
-          onPick={(noseShape) => setFace({ ...face, noseShape })}
-        />
-        <Chips
-          label="Lip shape"
-          options={LIP_SHAPES}
-          value={face.lipShape}
-          onPick={(lipShape) => setFace({ ...face, lipShape })}
-        />
-        <Chips
-          label="Face shape"
-          options={FACE_SHAPES}
-          value={face.faceShape}
-          onPick={(faceShape) => setFace({ ...face, faceShape })}
-        />
-        {FACE_SLIDERS.map((s) => (
-          <Slider
-            key={s.id}
-            label={s.label}
-            value={face[s.id]}
-            min={-1}
-            max={1}
-            step={0.1}
-            onChange={(v) => setFace({ ...face, [s.id]: v })}
-          />
+      <div className="mirror-tabs" role="tablist" aria-label="Closet">
+        {MIRROR_TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            id={`mirror-tab-${t.id}`}
+            aria-selected={tab === t.id}
+            aria-controls="mirror-panel"
+            onClick={() => setTab(t.id)}
+          >
+            {t.label}
+          </button>
         ))}
-      </section>
-      <section>
-        <h3>Hair</h3>
-        <Chips
-          label="Hair style"
-          options={wearable(HAIR_STYLES, wardrobe)}
-          value={look.hairStyle}
-          onPick={(hairStyle) => setLook({ ...look, hairStyle })}
-        />
-        <Swatches
-          label="Hair colour"
-          options={wearable(HAIR_COLORS, wardrobe)}
-          value={look.hairColor}
-          onPick={(hairColor) => setLook({ ...look, hairColor })}
-        />
-      </section>
-      <section>
-        <h3>Lips</h3>
-        <Swatches
-          label="Lipstick"
-          options={wearable(LIPS, wardrobe)}
-          value={look.lips}
-          onPick={(lips) => setLook({ ...look, lips })}
-        />
-        <Chips
-          label="Lip finish"
-          options={GLOSSES}
-          value={makeup.gloss}
-          onPick={(gloss) => setMakeup({ ...makeup, gloss })}
-        />
-      </section>
-      <section>
-        <h3>Brows and lids</h3>
-        <Chips
-          label="Brows"
-          options={BROWS}
-          value={look.brows}
-          onPick={(brows) => setLook({ ...look, brows })}
-          thumbs
-        />
-        <Swatches
-          label="Eyeshadow"
-          options={wearable(EYESHADOWS, wardrobe)}
-          value={look.shadow}
-          onPick={(shadow) => setLook({ ...look, shadow })}
-        />
-      </section>
-      <section>
-        <h3>Makeup</h3>
-        <Chips
-          label="Eyeliner"
-          options={LINERS}
-          value={makeup.liner}
-          onPick={(liner) => setMakeup({ ...makeup, liner })}
-        />
-        <Chips
-          label="Eyeshadow style"
-          options={SHADOW_STYLES}
-          value={makeup.shadowStyle}
-          onPick={(shadowStyle) => setMakeup({ ...makeup, shadowStyle })}
-        />
-        <Swatches
-          label="Blush"
-          options={BLUSHES}
-          value={makeup.blush}
-          onPick={(blush) => setMakeup({ ...makeup, blush })}
-        />
-        <Chips
-          label="Blush strength"
-          options={STRENGTHS}
-          value={makeup.blushStrength}
-          onPick={(blushStrength) => setMakeup({ ...makeup, blushStrength })}
-        />
-        <Swatches
-          label="Highlighter"
-          options={HIGHLIGHTERS}
-          value={makeup.highlight}
-          onPick={(highlight) => setMakeup({ ...makeup, highlight })}
-        />
-      </section>
-      <section>
-        <h3>Outfit</h3>
-        <Chips
-          label="Outfit"
-          options={wearable(OUTFITS, wardrobe)}
-          value={look.outfit}
-          onPick={(outfit) => setLook({ ...look, outfit })}
-        />
-        <Swatches
-          label="Outfit colour"
-          options={OUTFIT_COLORS}
-          value={look.outfitColor}
-          onPick={(outfitColor) => setLook({ ...look, outfitColor })}
-        />
-      </section>
-      <section>
-        <h3>Swimsuit</h3>
-        <Chips
-          label="Swimsuit"
-          options={SWIMSUITS}
-          value={swim.style}
-          onPick={(style) => setSwim({ ...swim, style })}
-        />
-        <Swatches
-          label="Swimsuit colour"
-          options={OUTFIT_COLORS}
-          value={swim.color}
-          onPick={(color) => setSwim({ ...swim, color })}
-        />
-      </section>
-      <section>
-        <h3>Body</h3>
-        <Chips
-          label="Figure"
-          options={FIGURES}
-          value={face.figure}
-          onPick={(figure) => setFace({ ...face, figure })}
-        />
-        {BODY_TRAITS.map((trait) => (
-          <Slider
-            key={trait}
-            label={BODY_LABELS[trait]}
-            value={body[trait]}
-            onChange={(value) =>
-              setBody({ ...body, [trait]: clampTrait(value) })
-            }
-          />
-        ))}
-      </section>
-      <section>
-        <h3>Drunk effects</h3>
-        <Chips
-          label="Drunk effects"
-          options={EFFECT_LEVELS}
-          value={effects}
-          onPick={setEffects}
-        />
-      </section>
+      </div>
+      <div
+        id="mirror-panel"
+        className="mirror-panel"
+        role="tabpanel"
+        aria-labelledby={`mirror-tab-${tab}`}
+      >
+        {tabs[tab]}
+      </div>
     </>
   );
 }
@@ -358,6 +443,19 @@ export function Overlay({
   setPanelOpen: (open: boolean) => void;
 }) {
   const [phone, setPhone] = useState(false);
+  const [tab, setTab] = useState<MirrorTab>("face");
+  // the creator frames the doll for the tab: close on the face for face and
+  // makeup, the full look for the rest; closing it restores the old view
+  const before = useRef<View | null>(null);
+  useEffect(() => {
+    if (panelOpen) {
+      before.current ??= view;
+      setView(tab === "face" || tab === "makeup" ? "face" : "full");
+    } else if (before.current) {
+      setView(before.current);
+      before.current = null;
+    }
+  }, [panelOpen, tab]);
   return (
     <>
       <header className="venue">
@@ -383,6 +481,8 @@ export function Overlay({
 
       <Dressing open={panelOpen} onOpenChange={setPanelOpen}>
         <Mirror
+          tab={tab}
+          setTab={setTab}
           look={look}
           setLook={setLook}
           swim={swim}
@@ -406,6 +506,15 @@ export function Overlay({
       <div className="dock">
         {mood === "dance" && <DancePicker move={dance} onPick={setDance} />}
         <div className="dock-actions" role="group" aria-label="Room actions">
+          {seatsIn(room).length > 0 && (
+            <button
+              type="button"
+              className="drink"
+              onClick={() => (seatRequest.nearest = true)}
+            >
+              Take a seat
+            </button>
+          )}
           {room === "water-park" && (
             <button type="button" className="ride" onClick={onRide}>
               <RideIcon />

@@ -15,22 +15,25 @@ export type Seat = {
   approach: Vec2;
 };
 
-/** Where to stand to sit down: half a metre out from the seat, facing away. */
+/** A seat at `at` facing `facing`. `from` is the open side you walk up from:
+ * behind a stool at a bar or table, in front of a sofa against a wall. */
 function seat(
   id: string,
   room: RoomId,
   at: Vec2,
   height: number,
   facing: Vec2,
+  from: "behind" | "front" = "behind",
 ): Seat {
   const yaw = yawTowards(at, facing);
+  const out = from === "front" ? 0.5 : -0.5;
   return {
     id,
     room,
     at,
     height,
     yaw,
-    approach: [at[0] - Math.sin(yaw) * 0.5, at[1] - Math.cos(yaw) * 0.5],
+    approach: [at[0] + Math.sin(yaw) * out, at[1] + Math.cos(yaw) * out],
   };
 }
 
@@ -61,7 +64,27 @@ const velvetStools = [-3.2, -2.3, -0.5, 0.5, 1.4].map((x, i) =>
   seat(`velvet-stool-${i}`, "velvet-room", [x, -4.05], 0.8, [x, -5]),
 );
 
-export const SEATS: readonly Seat[] = [...foodSeats, ...velvetStools];
+// Pulse: two banquettes along the right wall (seat front at x = 5.85), facing into the club
+const pulseBanquettes = [-2.4, 1.8].flatMap((z, b) =>
+  [-0.6, 0.6].map((dz, i) =>
+    seat(
+      `pulse-banquette-${b}-${i}`,
+      "pulse",
+      [5.85, z + dz],
+      0.6,
+      [0, z + dz],
+      "front",
+    ),
+  ),
+);
+
+// shortcut: the apartment sofa moves with decorating, so it is not a seat
+// yet; derive seats from home.furniture when the apartment gets them
+export const SEATS: readonly Seat[] = [
+  ...foodSeats,
+  ...velvetStools,
+  ...pulseBanquettes,
+];
 
 export function seatsIn(room: RoomId): readonly Seat[] {
   return SEATS.filter((s) => s.room === room);

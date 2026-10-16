@@ -50,6 +50,44 @@ export function Swatches<T extends string>({
   );
 }
 
+/**
+ * Option buttons. `tiles` shows each option as a picture card from
+ * `/closet/<tiles>-<id>.png` with its name under it; options without a
+ * picture fall back to a lettered card.
+ */
+export function Tiles<T extends string>({
+  label,
+  options,
+  value,
+  onPick,
+  tiles,
+}: PickerProps<T> & { tiles: string }) {
+  return (
+    <div className="tiles" role="radiogroup" aria-label={label}>
+      {options.map((o) => (
+        <button
+          key={o.id}
+          type="button"
+          role="radio"
+          aria-checked={o.id === value}
+          className="tile"
+          onClick={() => onPick(o.id)}
+        >
+          <img
+            src={`/closet/${tiles}-${o.id}.png`}
+            alt=""
+            loading="lazy"
+            onError={(e) => {
+              e.currentTarget.hidden = true;
+            }}
+          />
+          <span>{o.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /** Pill buttons, or image tiles from `public/doll/` when `thumbs` is set. */
 export function Chips<T extends string>({
   label,
