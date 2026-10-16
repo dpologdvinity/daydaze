@@ -26,6 +26,8 @@ export type Gait = {
   cadence: number;
   /** Chin up (+) or down (-). */
   chin: number;
+  /** A motion-capture walk loop that replaces the built stride. */
+  clip?: string;
 };
 
 export const GAITS = [
@@ -42,6 +44,7 @@ export const GAITS = [
     bounce: 0.012,
     cadence: 1,
     chin: 0,
+    clip: "walk-natural",
   },
   {
     id: "relaxed",
@@ -56,6 +59,7 @@ export const GAITS = [
     bounce: 0.009,
     cadence: 0.9,
     chin: -0.03,
+    clip: "walk-relaxed",
   },
   {
     id: "confident",
@@ -70,6 +74,7 @@ export const GAITS = [
     bounce: 0.01,
     cadence: 1.05,
     chin: 0.05,
+    clip: "walk-brisk",
   },
   {
     id: "runway",

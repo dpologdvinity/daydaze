@@ -1,3 +1,4 @@
+import { MOCAP_CLIPS } from "./mocap.ts";
 // Dance moves are data: looped clips of joint angles on the doll rig. The
 // sampler eases between keys and wraps at the end, so a move loops forever.
 // Angles are radians in the rig's own axes (see src/client/avatar/pose.ts).
@@ -25,6 +26,8 @@ export type Pose = {
   /** Body offset in metres, added to the doll's root. */
   root: Vec3;
   joints: Record<Joint, Vec3>;
+  /** Set for motion capture: already exact for the 3D doll, no extra groove. */
+  captured: boolean;
 };
 
 type Key = {
@@ -38,6 +41,8 @@ type Key = {
 export type DanceMove = {
   id: DanceMoveId;
   label: string;
+  /** Motion capture, retargeted (see mocap.ts). */
+  captured?: boolean;
   /** Loop length in seconds. */
   period: number;
   keys: readonly Key[];
@@ -54,6 +59,10 @@ export const DANCE_MOVE_IDS = [
   "voguing",
   "twerk",
   "slow-dance",
+  "salsa",
+  "salsa-turns",
+  "lambada",
+  "expressive",
 ] as const;
 
 export type DanceMoveId = (typeof DANCE_MOVE_IDS)[number];
@@ -63,7 +72,7 @@ const ZERO: Vec3 = [0, 0, 0];
 export function createPose(): Pose {
   const joints = {} as Record<Joint, Vec3>;
   for (const j of JOINTS) joints[j] = [0, 0, 0];
-  return { root: [0, 0, 0], joints };
+  return { root: [0, 0, 0], joints, captured: false };
 }
 
 // Each move is a short loop. Arm and leg values follow pose.ts: a positive z
@@ -468,7 +477,47 @@ export const DANCE_MOVES: readonly DanceMove[] = [
   },
 ];
 
-const BY_ID = new Map<string, DanceMove>(DANCE_MOVES.map((m) => [m.id, m]));
+// motion-capture dances, from the CMU database
+const CAPTURED: readonly DanceMove[] = MOCAP_CLIPS.filter(
+  (c) => c.kind === "dance",
+).flatMap((c) =>
+  isMoveId(c.id)
+    ? [
+        {
+          id: c.id,
+          label: c.label,
+          period: c.period,
+          keys: c.keys,
+          captured: true,
+        },
+      ]
+    : [],
+);
+
+function isMoveId(id: string): id is DanceMoveId {
+  return DANCE_MOVE_IDS.some((m) => m === id);
+}
+
+/** Motion-capture walk loops, by clip id (see gaits.ts). */
+export const WALK_CLIPS: ReadonlyMap<string, DanceMove> = new Map(
+  MOCAP_CLIPS.filter((c) => c.kind === "walk").map((c) => [
+    c.id,
+    {
+      id: "groove",
+      label: c.label,
+      period: c.period,
+      keys: c.keys,
+      captured: true,
+    },
+  ]),
+);
+
+export const ALL_DANCE_MOVES: readonly DanceMove[] = [
+  ...DANCE_MOVES,
+  ...CAPTURED,
+];
+
+const BY_ID = new Map<string, DanceMove>(ALL_DANCE_MOVES.map((m) => [m.id, m]));
 
 export function danceMove(id: DanceMoveId): DanceMove {
   const move = BY_ID.get(id);
@@ -522,6 +571,7 @@ function curve3(
  */
 export function poseAt(move: DanceMove, t: number, out = createPose()): Pose {
   const { keys, period } = move;
+  out.captured = move.captured === true;
   const n = keys.length;
   const local = ((t % period) + period) % period;
   let i = 0;

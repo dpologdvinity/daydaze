@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { coupleSpots, couplePoseAt } from "./couple.ts";
-import { DANCE_MOVES, createPose, danceMove, poseAt } from "./moves.ts";
+import { ALL_DANCE_MOVES, createPose, danceMove, poseAt } from "./moves.ts";
 
 const dist = (a: [number, number], b: [number, number]) =>
   Math.hypot(a[0] - b[0], a[1] - b[1]);
@@ -57,7 +57,7 @@ test("the follow is half a loop behind with the arms mirrored", () => {
 });
 
 test("every move gives the partners different poses", () => {
-  for (const m of DANCE_MOVES) {
+  for (const m of ALL_DANCE_MOVES) {
     const lead = poseAt(m, 0.2);
     const follow = couplePoseAt(m, "follow", 0.2, createPose());
     assert.notDeepEqual(lead.joints, follow.joints, m.id);

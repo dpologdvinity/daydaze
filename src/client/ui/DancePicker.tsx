@@ -1,4 +1,4 @@
-import { DANCE_MOVES, type DanceMoveId } from "../../game/dance/moves.ts";
+import { ALL_DANCE_MOVES, type DanceMoveId } from "../../game/dance/moves.ts";
 import { Chips } from "./controls.tsx";
 
 /** The dance moves, shown while the Dance mood is on. Keyboard: Tab, then Space or Enter. */
@@ -13,7 +13,7 @@ export function DancePicker({
     <div className="dance-picker">
       <Chips
         label="Dance move"
-        options={DANCE_MOVES}
+        options={ALL_DANCE_MOVES}
         value={move}
         onPick={onPick}
       />

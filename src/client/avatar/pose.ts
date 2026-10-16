@@ -1,6 +1,15 @@
 import type * as THREE from "three";
 import type { Mood } from "../../game/look.ts";
-import { JOINTS, type Pose } from "../../game/dance/moves.ts";
+import {
+  JOINTS,
+  WALK_CLIPS,
+  createPose,
+  poseAt,
+  type Pose,
+} from "../../game/dance/moves.ts";
+
+// one reused pose for sampling walk clips, so walking allocates nothing
+const walkPose = createPose();
 import { GAITS, type Gait } from "../../game/gaits.ts";
 
 type JointName =
@@ -66,6 +75,8 @@ function poseMood(
     // a move drives every joint; reduced motion keeps its sway but not its bounce
     body.position.set(dance.root[0], calm ? 0 : dance.root[1], dance.root[2]);
     for (const name of JOINTS) r(j[name], ...dance.joints[name]);
+    // captured motion is already exact for the 3D doll
+    if (dance.captured) return;
     // the 3D doll's arms rest angled out; draw them in like the other poses
     if (j.lArm) j.lArm.rotation.z -= ARM_IN;
     if (j.rArm) j.rArm.rotation.z += ARM_IN;
@@ -82,6 +93,15 @@ function poseMood(
   }
 
   if (mood === "walk") {
+    const clip = gait.clip ? WALK_CLIPS.get(gait.clip) : undefined;
+    if (clip) {
+      // one loop of the clip is two steps, a full turn of the phase
+      const sample = poseAt(clip, (ph / (Math.PI * 2)) * clip.period, walkPose);
+      body.position.set(0, sample.root[1], 0);
+      for (const name of JOINTS) r(j[name], ...sample.joints[name]);
+      r(j.pony, 0.12 + Math.cos(ph) * 0.08, 0, Math.sin(ph) * 0.12);
+      return;
+    }
     walk(j, ph, gait);
     return;
   }

@@ -22,11 +22,11 @@ function hairParam(): Look["hairStyle"] {
   return HAIR_STYLES.find((h) => h.id === id)?.id ?? "waves";
 }
 const DANCES = [
+  "salsa",
+  "lambada",
+  "expressive",
+  "salsa-turns",
   "groove",
-  "hip-sway",
-  "shimmy",
-  "body-roll",
-  "voguing",
 ] as const;
 // a steady walking pace for the walk shot
 const WALKING = { current: { speed: 1.4 } };

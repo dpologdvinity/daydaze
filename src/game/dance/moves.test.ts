@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  DANCE_MOVES,
+  ALL_DANCE_MOVES,
   DANCE_MOVE_IDS,
   JOINTS,
   createPose,
@@ -27,15 +27,15 @@ function maxDelta(a: Pose, b: Pose): number {
 
 test("every move in the picker has a matching id, label and clip", () => {
   assert.deepEqual(
-    DANCE_MOVES.map((m) => m.id),
+    ALL_DANCE_MOVES.map((m) => m.id),
     [...DANCE_MOVE_IDS],
   );
   assert.equal(new Set(DANCE_MOVE_IDS).size, DANCE_MOVE_IDS.length);
-  for (const m of DANCE_MOVES) assert.notEqual(m.label.trim(), "");
+  for (const m of ALL_DANCE_MOVES) assert.notEqual(m.label.trim(), "");
 });
 
 test("every clip loops: positive period, keys start at 0 and stay inside it", () => {
-  for (const m of DANCE_MOVES) {
+  for (const m of ALL_DANCE_MOVES) {
     assert.ok(m.period > 0, `${m.id} period`);
     assert.equal(m.keys[0]?.at, 0, `${m.id} first key`);
     for (let i = 1; i < m.keys.length; i++) {
@@ -48,7 +48,7 @@ test("every clip loops: positive period, keys start at 0 and stay inside it", ()
 });
 
 test("every joint named in a clip is a rig joint", () => {
-  for (const m of DANCE_MOVES) {
+  for (const m of ALL_DANCE_MOVES) {
     for (const key of m.keys) {
       for (const name of Object.keys(key.joints ?? {})) {
         assert.ok(
@@ -61,7 +61,7 @@ test("every joint named in a clip is a rig joint", () => {
 });
 
 test("a sampled pose is finite and has every joint", () => {
-  for (const m of DANCE_MOVES) {
+  for (const m of ALL_DANCE_MOVES) {
     const p = poseAt(m, 0.37);
     for (const v of flatten(p)) assert.ok(Number.isFinite(v), m.id);
     assert.equal(Object.keys(p.joints).length, JOINTS.length);
@@ -69,7 +69,7 @@ test("a sampled pose is finite and has every joint", () => {
 });
 
 test("sampling one period later or earlier gives the same pose", () => {
-  for (const m of DANCE_MOVES) {
+  for (const m of ALL_DANCE_MOVES) {
     const t = m.period * 0.31;
     assert.ok(maxDelta(poseAt(m, t), poseAt(m, t + m.period)) < 1e-6, m.id);
     assert.ok(maxDelta(poseAt(m, t), poseAt(m, t - m.period)) < 1e-6, m.id);
@@ -77,20 +77,22 @@ test("sampling one period later or earlier gives the same pose", () => {
 });
 
 test("the wrap from the last key back to the first is continuous", () => {
-  for (const m of DANCE_MOVES) {
+  for (const m of ALL_DANCE_MOVES) {
     const before = poseAt(m, m.period - FRAME / 10);
     const after = poseAt(m, m.period + FRAME / 10);
-    assert.ok(maxDelta(before, after) < 0.02, m.id);
+    assert.ok(maxDelta(before, after) < (m.captured ? 0.08 : 0.02), m.id);
   }
 });
 
 test("moves ease between keys with no frame-to-frame jumps", () => {
   // 0.15 rad per frame is a fast flick; anything bigger would read as a glitch
-  for (const m of DANCE_MOVES) {
+  for (const m of ALL_DANCE_MOVES) {
     let prev = poseAt(m, 0);
     for (let t = FRAME; t < m.period * 2; t += FRAME) {
       const now = poseAt(m, t);
-      assert.ok(maxDelta(prev, now) < 0.15, `${m.id} at ${t.toFixed(3)}`);
+      // captured dances keep real flicks (a salsa forearm, a body snap)
+      const limit = m.captured ? 0.5 : 0.15;
+      assert.ok(maxDelta(prev, now) < limit, `${m.id} at ${t.toFixed(3)}`);
       prev = now;
     }
   }

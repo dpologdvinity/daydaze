@@ -18,3 +18,4 @@ dist
 server/worker-configuration.d.ts
 art/doll/blender/.cache
 __pycache__/
+art/textures/.cache
