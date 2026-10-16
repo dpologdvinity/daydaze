@@ -245,6 +245,30 @@ def build(ctx, body, body_src):
 PLATFORM = 0.05  # sole height in metres; the client lifts the doll by this
 
 
+def hull2d(pts):
+    """Convex hull of 2D points, counter-clockwise (monotone chain)."""
+    p = sorted(map(tuple, pts))
+    cross = lambda o, a, b: (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+    lower, upper = [], []
+    for q in p:
+        while len(lower) >= 2 and cross(lower[-2], lower[-1], q) <= 0:
+            lower.pop()
+        lower.append(q)
+    for q in reversed(p):
+        while len(upper) >= 2 and cross(upper[-2], upper[-1], q) <= 0:
+            upper.pop()
+        upper.append(q)
+    return np.array(lower[:-1] + upper[:-1])
+
+
+def chaikin(ring, rounds):
+    """Rounds a closed polygon's corners by corner cutting."""
+    for _ in range(rounds):
+        nxt = np.roll(ring, -1, axis=0)
+        ring = np.stack([ring * 0.75 + nxt * 0.25, ring * 0.25 + nxt * 0.75], 1).reshape(-1, 2)
+    return ring
+
+
 def platforms(ctx, name, top, mat):
     """Y2K platforms: an upper cut from the tights helper around the foot (up
     to `top`, so ankle pumps or knee boots) on a chunky sole block per foot.
@@ -256,15 +280,21 @@ def platforms(ctx, name, top, mat):
     for side, bone in (("l", "lFoot"), ("r", "rFoot")):
         sel = co[(co[:, 0] > 0) == (side == "l")]
         sel = sel[sel[:, 2] < ctx.JB[bone][2] + 0.01]
-        lo, hi = sel.min(0), sel.max(0)
+        # the sole follows the foot's own outline (rounded toe, narrower
+        # heel), a few millimetres proud of it, extruded straight down
+        mid = sel[:, :2].mean(0)
+        out = mid + (sel[:, :2] - mid) * 1.06
+        ring = chaikin(hull2d(out), 3)
         bm = bmesh.new()
-        bmesh.ops.create_cube(bm, size=1.0)
-        for v in bm.verts:
-            # a block under the whole foot, a touch wider, toe slightly rounded
-            x = (v.co.x + 0.5) * (hi[0] - lo[0] + 0.012) + lo[0] - 0.006
-            y = (v.co.y + 0.5) * (hi[1] - lo[1] + 0.012) + lo[1] - 0.006
-            z = (v.co.z + 0.5) * (PLATFORM + 0.012) - PLATFORM
-            v.co = Vector((x, y, z))
+        top = [bm.verts.new((x, y, 0.012)) for x, y in ring]
+        bot = [bm.verts.new((x, y, -PLATFORM)) for x, y in ring]
+        n = len(ring)
+        for i in range(n):
+            j = (i + 1) % n
+            bm.faces.new((bot[i], bot[j], top[j], top[i]))
+        bm.faces.new(top)
+        bm.faces.new(bot[::-1])
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
         me = bpy.data.meshes.new(f"{name}_{side}_sole")
         bm.to_mesh(me)
         bm.free()
@@ -273,10 +303,13 @@ def platforms(ctx, name, top, mat):
         mod = sole.modifiers.new("bevel", "BEVEL")
         mod.width = 0.008
         mod.segments = 3
+        mod.limit_method = "ANGLE"  # round the rims, not the hull's facets
         bpy.context.view_layer.objects.active = sole
         bpy.ops.object.select_all(action="DESELECT")
         sole.select_set(True)
         bpy.ops.object.modifier_apply(modifier="bevel")
+        for poly in sole.data.polygons:
+            poly.use_smooth = True
         sole.data.materials.append(mat)
         n = len(sole.data.vertices)
         w = np.zeros((n, len(ctx.BONES)))
