@@ -1,6 +1,10 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import {
   FIGURES,
+  PIERCING_SPOTS,
+  PIERCING_STYLES,
+  encodePiercings,
+  piercingsOf,
   EYE_SHAPES,
   FACE_SHAPES,
   LIP_SHAPES,
@@ -126,6 +130,7 @@ function Mirror({
 }) {
   const face = faceOf(look);
   const makeup = makeupOf(look);
+  const piercings = piercingsOf(look);
   const setMakeup = (next: Makeup) =>
     setLook({ ...look, makeup: encodeMakeup(next) });
   const setFace = (next: Face) => setLook({ ...look, face: encodeFace(next) });
@@ -272,6 +277,29 @@ function Mirror({
             value={makeup.highlight}
             onPick={(highlight) => setMakeup({ ...makeup, highlight })}
           />
+        </section>
+        <section>
+          <h3>Piercings</h3>
+          {PIERCING_SPOTS.map((spot) => (
+            <Fragment key={spot.id}>
+              <p className="tiles-label">{spot.label}</p>
+              <Tiles
+                label={`${spot.label} piercing`}
+                options={PIERCING_STYLES}
+                value={piercings[spot.id]}
+                onPick={(style) =>
+                  setLook({
+                    ...look,
+                    piercings: encodePiercings({
+                      ...piercings,
+                      [spot.id]: style,
+                    }),
+                  })
+                }
+                tiles={`pierce-${spot.id}`}
+              />
+            </Fragment>
+          ))}
         </section>
       </>
     ),

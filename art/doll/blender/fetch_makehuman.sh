@@ -122,6 +122,7 @@ FILES=(
   $T/armslegs/l-upperleg-muscle-decr.target
   $T/armslegs/r-upperleg-muscle-decr.target
   $T/breast/breast-volume-vert-up.target
+  $T/stomach/stomach-navel-in.target
   $T/expression/units/caucasian/eye-left-closure.target
   $T/expression/units/caucasian/eye-right-closure.target
   $T/expression/units/caucasian/mouth-corner-puller.target

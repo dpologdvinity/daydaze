@@ -862,6 +862,40 @@ def export(rig, objects, name):
     )
 
 
+def piercing_anchors(body):
+    """Where piercings sit, in Blender space (Z up), on the base shape: the
+    middle of the lower lip, the left nostril, the outer end of the left
+    brow, and the navel. Each also carries its outward normal."""
+    co = np.array([v.co[:] for v in body.data.vertices])
+    nrm = np.array([v.normal[:] for v in body.data.vertices])
+    src = BODY_SRC
+    lips = np.abs(KB["lips"][src]).sum(1)
+    lip_pts = np.where(lips > lips.max() * 0.25)[0]
+    centre = lip_pts[np.abs(co[lip_pts, 0]) < 0.006]
+    lower = centre[co[centre, 2] < co[lip_pts, 2].mean()]
+    lip = lower[co[lower, 1].argmin()]
+    nose_d = np.abs(to_blender(target("nose/nose-volume-decr.target"), offset=False)[src]).sum(1)
+    nose_pts = np.where(nose_d > nose_d.max() * 0.3)[0]
+    # the nostril wing: beside and a little behind and below the tip, on
+    # the skin nearest that point
+    tip = co[nose_pts[co[nose_pts, 1].argmin()]]
+    nostril = np.linalg.norm(co - (tip + np.array([0.014, 0.012, -0.006])), axis=1).argmin()
+    upper = LIDS["lEye"][0]
+    outer = upper[np.argmax(np.abs(upper[:, 0]))]
+    brow_p = outer + np.array([0.004, -0.006, 0.016])
+    brow = np.linalg.norm(co - brow_p, axis=1).argmin()
+    navel_d = np.abs(to_blender(target("stomach/stomach-navel-in.target"), offset=False)[src]).sum(1)
+    navel = navel_d.argmax()
+
+    def at(i):
+        return {
+            "p": [round(float(x), 4) for x in co[i]],
+            "n": [round(float(x), 3) for x in nrm[i]],
+        }
+
+    return {"lip": at(lip), "nose": at(nostril), "brow": at(brow), "navel": at(navel)}
+
+
 def main():
     reset()
     rig = build_armature()
@@ -875,6 +909,7 @@ def main():
         "eyeRadius": EYE["lEye"][1],
         "marks": MARKS,
         "joints": {b: list(map(float, JB[b])) for b in BONES},
+        "anchors": piercing_anchors(body),
     }
     ctx = SimpleNamespace(
         P=P, PB=PB, W=W, BONES=BONES, KEYS=KEYS, FACES=FACES, JB=JB,

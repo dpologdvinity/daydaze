@@ -5,6 +5,10 @@ import {
   FIGURES,
   DEFAULT_FACE,
   DEFAULT_MAKEUP,
+  NO_PIERCINGS,
+  decodePiercings,
+  encodePiercings,
+  piercingsOf,
   decodeMakeup,
   encodeMakeup,
   makeupOf,
@@ -210,4 +214,20 @@ test("face presets ride in the code; 8-character codes still decode", () => {
   };
   assert.deepEqual(decodeFace(encodeFace(face)), face);
   assert.deepEqual(decodeFace("kkkkkk00"), DEFAULT_FACE);
+});
+
+test("piercings round-trip and old looks have none", () => {
+  const p = {
+    ...NO_PIERCINGS,
+    lip: "gold-ring" as const,
+    navel: "silver-stud" as const,
+  };
+  assert.deepEqual(decodePiercings(encodePiercings(p)), p);
+  assert.equal(
+    validateLook({ ...DEFAULT_LOOK, piercings: encodePiercings(p) }),
+    true,
+  );
+  assert.deepEqual(piercingsOf(DEFAULT_LOOK), NO_PIERCINGS);
+  for (const bad of ["", "9000", "00000", "a000", 0])
+    assert.equal(validateLook({ ...DEFAULT_LOOK, piercings: bad }), false);
 });

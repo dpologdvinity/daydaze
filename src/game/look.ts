@@ -412,6 +412,59 @@ export function makeupOf(look: Look): Makeup {
   return decodeMakeup(look.makeup) ?? DEFAULT_MAKEUP;
 }
 
+/** Piercing spots on the doll; each takes one of PIERCING_STYLES. */
+export const PIERCING_SPOTS = [
+  { id: "lip", label: "Lip" },
+  { id: "nose", label: "Nose" },
+  { id: "brow", label: "Eyebrow" },
+  { id: "navel", label: "Belly button" },
+] as const;
+
+export const PIERCING_STYLES = [
+  { id: "none", label: "None" },
+  { id: "silver-stud", label: "Silver stud" },
+  { id: "silver-ring", label: "Silver ring" },
+  { id: "gold-stud", label: "Gold stud" },
+  { id: "gold-ring", label: "Gold ring" },
+] as const;
+
+export type PiercingSpot = IdOf<typeof PIERCING_SPOTS>;
+export type PiercingStyle = IdOf<typeof PIERCING_STYLES>;
+export type Piercings = Record<PiercingSpot, PiercingStyle>;
+
+export const NO_PIERCINGS: Piercings = {
+  lip: "none",
+  nose: "none",
+  brow: "none",
+  navel: "none",
+};
+
+/** One digit per spot: the style's index in PIERCING_STYLES. */
+export function encodePiercings(p: Piercings): string {
+  return PIERCING_SPOTS.map((s) =>
+    Math.max(
+      0,
+      PIERCING_STYLES.findIndex((o) => o.id === p[s.id]),
+    ),
+  ).join("");
+}
+
+export function decodePiercings(code: unknown): Piercings | null {
+  if (typeof code !== "string" || !/^[0-9]+$/.test(code)) return null;
+  if (code.length !== PIERCING_SPOTS.length) return null;
+  const out: Piercings = { ...NO_PIERCINGS };
+  for (const [i, s] of PIERCING_SPOTS.entries()) {
+    const style = PIERCING_STYLES[Number(code[i])];
+    if (!style) return null;
+    out[s.id] = style.id;
+  }
+  return out;
+}
+
+export function piercingsOf(look: Look): Piercings {
+  return decodePiercings(look.piercings) ?? NO_PIERCINGS;
+}
+
 export type Look = {
   skin: IdOf<typeof SKINS>;
   hairStyle: HairStyle;
@@ -426,10 +479,12 @@ export type Look = {
   face?: string;
   /** encodeMakeup's code; looks without one wear DEFAULT_MAKEUP. */
   makeup?: string;
+  /** encodePiercings' code; looks without one have none. */
+  piercings?: string;
 };
 
 const LOOK_CATALOGS: {
-  [K in Exclude<keyof Look, "face" | "makeup">]: readonly {
+  [K in Exclude<keyof Look, "face" | "makeup" | "piercings">]: readonly {
     readonly id: Look[K];
     readonly label: string;
   }[];
@@ -455,8 +510,14 @@ export function validateLook(value: unknown): value is Look {
   const catalogs = Object.entries(LOOK_CATALOGS);
   const hasFace = fields.has("face");
   const hasMakeup = fields.has("makeup");
+  const hasPiercings = fields.has("piercings");
   return (
-    fields.size === catalogs.length + (hasFace ? 1 : 0) + (hasMakeup ? 1 : 0) &&
+    fields.size ===
+      catalogs.length +
+        (hasFace ? 1 : 0) +
+        (hasMakeup ? 1 : 0) +
+        (hasPiercings ? 1 : 0) &&
+    (!hasPiercings || decodePiercings(fields.get("piercings")) !== null) &&
     (!hasFace || decodeFace(fields.get("face")) !== null) &&
     (!hasMakeup || decodeMakeup(fields.get("makeup")) !== null) &&
     catalogs.every(([key, catalog]) => isId(catalog, fields.get(key)))

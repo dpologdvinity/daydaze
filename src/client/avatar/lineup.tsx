@@ -121,6 +121,17 @@ const SHOTS = {
     target: [0, 0.9, 0] as const,
     fov: 34,
   },
+  // every piercing, close up: lip, nose and brow on one, navel on another
+  pierce: {
+    looks: [
+      { ...LINEUP[1], hairStyle: "buns" as const, piercings: "4321" },
+      { ...LINEUP[3], outfit: "flares" as const, piercings: "0002" },
+    ],
+    x: (i: number) => (i - 0.5) * 0.5,
+    cam: [0, 1.3, 1.6] as const,
+    target: [0, 1.25, 0] as const,
+    fov: 40,
+  },
   // three makeup looks, close up
   makeup: {
     looks: [

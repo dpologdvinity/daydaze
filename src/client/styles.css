@@ -1153,3 +1153,9 @@ button:focus-visible {
     padding: 9px 2px;
   }
 }
+
+.tiles-label {
+  margin: 12px 0 6px;
+  font-size: 13px;
+  color: var(--lilac);
+}

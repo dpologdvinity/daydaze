@@ -168,7 +168,7 @@ def build(ctx, body, body_src):
     hem = h["hip"] - 0.2
     top = shell(ctx, "Outfit_mini", ["helper-tights"], [(waist - 0.04, bust)], 0.002, satin)
     sk = shell(ctx, "mini_skirt", ["helper-skirt"], [(hem, waist)], 0.003, satin)
-    taper(sk, waist, hem, 0.16)
+    taper(sk, waist, hem, 0.05)
     out.append(join(top, sk))
 
     # faux fur: a cropped jacket with sleeves to the wrist, over a skirt
@@ -176,7 +176,7 @@ def build(ctx, body, body_src):
         ctx, "Outfit_fur", ["helper-tights"], [(waist + 0.02, h["neck"] - 0.04)], 0.022, fur, arms=1.1
     )
     sk2 = shell(ctx, "fur_skirt", ["helper-skirt"], [(hem, waist)], 0.003, satin)
-    taper(sk2, waist, hem, 0.16)
+    taper(sk2, waist, hem, 0.05)
     out.append(join(coat, sk2))
 
     # swimsuits

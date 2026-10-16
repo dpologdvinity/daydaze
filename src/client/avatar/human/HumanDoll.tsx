@@ -17,6 +17,7 @@ import {
   FACE_SLIDERS,
   faceOf,
   seededFace,
+  piercingsOf,
   seededMakeup,
   encodeMakeup,
   type Face,
@@ -35,6 +36,7 @@ import {
 } from "../../../game/body.ts";
 import { pose, type Rig } from "../pose.ts";
 import { paintFace, paintIris, paintLashes, readMarks } from "./faceCanvas.ts";
+import { Jewellery, readAnchors } from "./Jewellery.tsx";
 
 /**
  * The 3D doll: a skinned, shape-keyed body built in Blender from MakeHuman's
@@ -137,6 +139,12 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
     });
     const rest = new Map<string, THREE.Vector3>();
     for (const [name, bone] of bones) rest.set(name, bone.position.clone());
+    // model space to each bone's rest frame, for jewellery hung on bones;
+    // the fresh clone is unparented, so its world space is model space
+    scene.updateMatrixWorld(true);
+    const restInverse = new Map<string, THREE.Matrix4>();
+    for (const [name, bone] of bones)
+      restInverse.set(name, bone.matrixWorld.clone().invert());
     let meta: unknown = null;
     scene.traverse((o) => {
       if (typeof o.userData.doll === "string") meta = o.userData.doll;
@@ -214,6 +222,8 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
       bones,
       rest,
       marks: readMarks(meta),
+      anchors: readAnchors(meta),
+      restInverse,
       skin,
       eye,
       materials: [skin, lashes, eye, cornea],
@@ -423,6 +433,7 @@ export function HumanDoll({
     [look, seed],
   );
   const body = useBody(painted, face.eyeColor);
+  const piercings = useMemo(() => piercingsOf(look), [look.piercings]);
   const parts = partsFor(look, swim);
   const tuckKey = parts.tucks.join(",");
   const tucks = useMemo(() => tuckKey.split(","), [tuckKey]);
@@ -528,6 +539,12 @@ export function HumanDoll({
   return (
     <group {...rest} ref={root} scale={[1, heightScale, 1]}>
       <primitive object={body.scene} />
+      <Jewellery
+        piercings={piercings}
+        anchors={body.anchors}
+        bones={body.bones}
+        restInverse={body.restInverse}
+      />
       <Suspense fallback={null}>
         <Part
           key={parts.hair}
