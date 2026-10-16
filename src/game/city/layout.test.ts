@@ -137,7 +137,7 @@ test("every surface and footprint sits inside the city bounds", () => {
     assert.ok(box.z0 >= bounds.z0 && box.z1 <= bounds.z1, `${b.id} z`);
   }
   // Little Manila to the west, Downtown and Nightlife Row, Beachside south
-  assert.ok(bounds.x1 - bounds.x0 >= 630 && bounds.x1 - bounds.x0 <= 650);
+  assert.equal(bounds.x1 - bounds.x0, 896);
 });
 
 test("the spawn is walkable and not blocked", () => {

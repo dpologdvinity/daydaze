@@ -12,6 +12,7 @@ export const NEIGHBORHOOD_NAMES: Record<Neighborhood, string> = {
   beachside: "Beachside",
   "little-manila": "Little Manila",
   "arts-district": "Arts District",
+  "chinatown-koreatown": "Chinatown & Koreatown",
 };
 
 export function setNeighborhood(next: Neighborhood): void {

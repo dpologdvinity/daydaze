@@ -12,7 +12,8 @@ export type Neighborhood =
   | "nightlife-row"
   | "beachside"
   | "little-manila"
-  | "arts-district";
+  | "arts-district"
+  | "chinatown-koreatown";
 
 export type RoadNode = { id: string; position: Vec2 };
 export type RoadEdge = {
@@ -33,6 +34,9 @@ const SOUTH_EDGE = 384;
 export const WEST_EDGE = -448;
 /** Little Manila's cross street. */
 export const MANILA_X = -320;
+/** Chinatown and Koreatown run east of Nightlife Row along the avenue. */
+export const EAST_EDGE = 448;
+export const ASIA_X = 320;
 /** The Arts District runs north of Downtown to Gallery Row and beyond. */
 const NORTH_EDGE = -320;
 export const GALLERY_Z = -256;
@@ -41,8 +45,8 @@ const SIDEWALK = 4;
 
 export const CITY_BOUNDS: readonly Vec2[] = [
   [WEST_EDGE, NORTH_EDGE],
-  [HALF_CITY, NORTH_EDGE],
-  [HALF_CITY, SOUTH_EDGE],
+  [EAST_EDGE, NORTH_EDGE],
+  [EAST_EDGE, SOUTH_EDGE],
   [WEST_EDGE, SOUTH_EDGE],
 ];
 
@@ -69,6 +73,10 @@ export const ROAD_NODES: readonly RoadNode[] = [
   { id: "a-arts", position: [-64, GALLERY_Z] },
   { id: "b-arts", position: [64, GALLERY_Z] },
   { id: "arts-e", position: [192, GALLERY_Z] },
+  { id: "asia-mid", position: [ASIA_X, 0] },
+  { id: "asia-e", position: [EAST_EDGE, 0] },
+  { id: "asia-north", position: [ASIA_X, -192] },
+  { id: "asia-south", position: [ASIA_X, 192] },
   { id: "manila-w", position: [WEST_EDGE, 0] },
   { id: "m-mid", position: [MANILA_X, 0] },
   { id: "m-north", position: [MANILA_X, -192] },
@@ -93,6 +101,11 @@ export const ROAD_EDGES: readonly RoadEdge[] = [
   { from: "arts-w", to: "a-arts", width: 12, lanes: 2, speedLimit: 10 },
   { from: "a-arts", to: "b-arts", width: 12, lanes: 2, speedLimit: 10 },
   { from: "b-arts", to: "arts-e", width: 12, lanes: 2, speedLimit: 10 },
+  // Chinatown and Koreatown: the avenue carries on east past Nightlife Row
+  { from: "east", to: "asia-mid", width: 14, lanes: 2, speedLimit: 11 },
+  { from: "asia-mid", to: "asia-e", width: 14, lanes: 2, speedLimit: 11 },
+  { from: "asia-north", to: "asia-mid", width: 10, lanes: 1, speedLimit: 9 },
+  { from: "asia-mid", to: "asia-south", width: 10, lanes: 1, speedLimit: 9 },
   // Little Manila: the avenue carries on west, crossed by its own street
   { from: "manila-w", to: "m-mid", width: 14, lanes: 2, speedLimit: 11 },
   { from: "m-mid", to: "west", width: 14, lanes: 2, speedLimit: 11 },
@@ -656,6 +669,179 @@ const ARTS_BUILDINGS: readonly Building[] = ARTS_FRONT.map(
   }),
 );
 
+// Chinatown (west of its cross street) and Koreatown (east of it), both
+// sides of the avenue: dim sum, hot pot, noodles, a tea house and a night
+// market hall; KBBQ, a K-pop shop, a noraebang, fried chicken and a soju
+// bar. Ids match the dialogue's "chinatown-koreatown" neighbourhood.
+const ASIA_FRONT: readonly {
+  x: number;
+  w: number;
+  h: number;
+  north: boolean;
+  color: string;
+  sign: { text: string; color: string };
+  style: BuildingStyle;
+}[] = [
+  {
+    x: 214,
+    w: 24,
+    h: 14,
+    north: false,
+    color: "#c1121f",
+    sign: { text: "DIM SUM PALACE", color: "#ffd166" },
+    style: "storefront",
+  },
+  {
+    x: 242,
+    w: 22,
+    h: 18,
+    north: false,
+    color: "#9d0208",
+    sign: { text: "HOT POT", color: "#ffe066" },
+    style: "brick",
+  },
+  {
+    x: 268,
+    w: 20,
+    h: 12,
+    north: false,
+    color: "#e85d04",
+    sign: { text: "NOODLE BAR", color: "#ffffff" },
+    style: "storefront",
+  },
+  {
+    x: 296,
+    w: 22,
+    h: 10,
+    north: false,
+    color: "#d00000",
+    sign: { text: "NIGHT MARKET", color: "#ffd166" },
+    style: "warehouse",
+  },
+  {
+    x: 344,
+    w: 24,
+    h: 16,
+    north: false,
+    color: "#7209b7",
+    sign: { text: "K-BBQ HOUSE", color: "#4fe3ff" },
+    style: "storefront",
+  },
+  {
+    x: 372,
+    w: 22,
+    h: 20,
+    north: false,
+    color: "#f72585",
+    sign: { text: "NORAEBANG", color: "#ffe066" },
+    style: "club",
+  },
+  {
+    x: 400,
+    w: 24,
+    h: 12,
+    north: false,
+    color: "#4361ee",
+    sign: { text: "SOJU BAR", color: "#ff2f9a" },
+    style: "storefront",
+  },
+  {
+    x: 430,
+    w: 22,
+    h: 14,
+    north: false,
+    color: "#3a0ca3",
+    sign: { text: "HANBOK", color: "#ffd6ff" },
+    style: "storefront",
+  },
+  {
+    x: 214,
+    w: 24,
+    h: 22,
+    north: true,
+    color: "#ae2012",
+    sign: { text: "JADE TEA HOUSE", color: "#95d5b2" },
+    style: "brick",
+  },
+  {
+    x: 242,
+    w: 22,
+    h: 12,
+    north: true,
+    color: "#bb3e03",
+    sign: { text: "BAKERY", color: "#ffe066" },
+    style: "storefront",
+  },
+  {
+    x: 268,
+    w: 20,
+    h: 16,
+    north: true,
+    color: "#9b2226",
+    sign: { text: "HERBS & TEA", color: "#ffd166" },
+    style: "storefront",
+  },
+  {
+    x: 296,
+    w: 22,
+    h: 26,
+    north: true,
+    color: "#ca6702",
+    sign: { text: "ASIAN MARKET", color: "#ffffff" },
+    style: "tower",
+  },
+  {
+    x: 344,
+    w: 24,
+    h: 14,
+    north: true,
+    color: "#b5179e",
+    sign: { text: "K-POP STORE", color: "#4fe3ff" },
+    style: "billboard",
+  },
+  {
+    x: 372,
+    w: 22,
+    h: 12,
+    north: true,
+    color: "#560bad",
+    sign: { text: "FRIED CHICKEN", color: "#ffd166" },
+    style: "storefront",
+  },
+  {
+    x: 400,
+    w: 24,
+    h: 18,
+    north: true,
+    color: "#480ca8",
+    sign: { text: "SKIN CARE", color: "#ffc8dd" },
+    style: "glass",
+  },
+  {
+    x: 430,
+    w: 22,
+    h: 12,
+    north: true,
+    color: "#4895ef",
+    sign: { text: "BINGSU", color: "#ffffff" },
+    style: "storefront",
+  },
+];
+
+const ASIA_BUILDINGS: readonly Building[] = ASIA_FRONT.map(
+  (b, i): Building => ({
+    id: `asia-${i}`,
+    neighborhood: "chinatown-koreatown",
+    footprint: b.north
+      ? rect(b.x - b.w / 2, -38, b.x + b.w / 2, -14)
+      : rect(b.x - b.w / 2, 14, b.x + b.w / 2, 38),
+    height: b.h,
+    style: b.style,
+    color: b.color,
+    sign: b.sign,
+  }),
+);
+
 const MANILA_BUILDINGS: readonly Building[] = MANILA_FRONT.map(
   (b, i): Building => ({
     id: `manila-${i}`,
@@ -921,6 +1107,7 @@ export const BUILDINGS: readonly Building[] = [
   ...BEACH_BUILDINGS,
   ...MANILA_BUILDINGS,
   ...ARTS_BUILDINGS,
+  ...ASIA_BUILDINGS,
 ];
 
 // x of each north-south street; each has two edges, so dedupe.
@@ -952,8 +1139,11 @@ function buildProps(): Prop[] {
     for (const x of [cx - 7, cx + 7]) {
       // Little Manila's street stops at the old city edge; the others run on
       // down to Shore Boulevard
-      const first = cx === MANILA_X ? -180 : -240;
-      const last = cx === MANILA_X ? 180 : 240;
+      // the new districts' streets stop at the old city edge; Downtown's run
+      // on to Gallery Row and Shore Boulevard
+      const short = cx === MANILA_X || cx === ASIA_X;
+      const first = short ? -180 : -240;
+      const last = short ? 180 : 240;
       for (let z = first; z <= last; z += 60) {
         if (Math.abs(z) < 11) continue;
         props.push({ kind: "tree", position: [x, z] });
@@ -965,6 +1155,11 @@ function buildProps(): Prop[] {
     if (nearCross(x)) continue;
     for (const z of [GALLERY_Z - 8, GALLERY_Z + 8])
       props.push({ kind: "lamp", position: [x, z] });
+  }
+  // Chinatown and Koreatown: lamps down the avenue sidewalks
+  for (let x = 204; x < EAST_EDGE - 6; x += 30) {
+    if (nearCross(x)) continue;
+    for (const z of [-9, 9]) props.push({ kind: "lamp", position: [x, z] });
   }
   // Little Manila: lamps down the avenue sidewalks
   for (let x = WEST_EDGE + 12; x < -196; x += 30) {

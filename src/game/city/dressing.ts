@@ -706,6 +706,11 @@ function strings(out: Placed[]): void {
   for (const z of [18, 28, 38]) {
     garland(out, [-48, z], [48, z], 6.6, 1, 40, z);
   }
+  // Chinatown and Koreatown: red lantern strings across the avenue
+  for (let x = 206; x <= 440; x += 18) {
+    if (Math.abs(x - 320) < 12) continue;
+    garland(out, [x, -13.5], [x, 13.5], 7, 1.1, 14, x + 7);
+  }
   // Little Manila: lantern strings across the avenue
   for (let x = -440; x <= -204; x += 22) {
     if (Math.abs(x + 320) < 12) continue;
