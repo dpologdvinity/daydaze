@@ -16,6 +16,10 @@ export type Bank = {
  * settles back on its own. */
 export const crowd = { cheer: 0 };
 
+/** Seconds between Mexican waves, and how long one takes to go round. */
+const WAVE_EVERY = 45;
+const WAVE_SECONDS = 7;
+
 const STEP_DEPTH = 0.9;
 const STEP_RISE = 0.5;
 const SEAT_GAP = 0.65;
@@ -31,7 +35,14 @@ const COLORS = [
 ];
 const SKIN = ["#f3d4c4", "#e6b48e", "#c48d68", "#94603f", "#633c29"];
 
-type Fan = { x: number; y: number; z: number; phase: number };
+type Fan = {
+  x: number;
+  y: number;
+  z: number;
+  phase: number;
+  /** Where round the ground she sits, 0..1. */
+  turn: number;
+};
 
 const scratch = {
   m: new THREE.Matrix4(),
@@ -100,10 +111,16 @@ export function Stands({
             y: (row + 0.5) * STEP_RISE,
             z: fz,
             phase: rand() * 6,
+            turn: 0,
           });
         }
       }
     }
+    // each fan's place round the ground, 0..1, for the wave to sweep
+    const cx = fans.reduce((t, f) => t + f.x, 0) / Math.max(1, fans.length);
+    const cz = fans.reduce((t, f) => t + f.z, 0) / Math.max(1, fans.length);
+    for (const f of fans)
+      f.turn = (Math.atan2(f.z - cz, f.x - cx) / (Math.PI * 2) + 1) % 1;
     return { steps, fans };
   }, [banks, fill, seed]);
 
@@ -126,13 +143,17 @@ export function Stands({
     if (!b || !h) return;
     const { m, q, p, s } = scratch;
     const jump = calm ? 0 : crowd.cheer;
+    // a Mexican wave goes round every so often
+    const front = ((t % WAVE_EVERY) / WAVE_SECONDS) * 1.3 - 0.15;
     for (let i = 0; i < fans.length; i++) {
       const f = fans[i];
       const bob = calm
         ? 0
         : Math.max(0, Math.sin(t * (2 + jump * 6) + f.phase)) *
           (0.03 + jump * 0.35);
-      p.set(f.x, f.y + 0.35 + bob, f.z);
+      const d = (f.turn - front) * 10;
+      const wave = calm || front > 1.2 ? 0 : Math.exp(-d * d) * 0.45;
+      p.set(f.x, f.y + 0.35 + bob + wave, f.z);
       b.setMatrixAt(i, m.compose(p, q, s));
       p.y += 0.42;
       h.setMatrixAt(i, m.compose(p, q, s));

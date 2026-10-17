@@ -46,7 +46,7 @@ export function SkatePanel(): JSX.Element {
       </p>
       <p className="game-call" role="status">
         {s.phase === "over"
-          ? `Run over: ${s.run.score}${s.run.score >= s.best && s.run.score > 0 ? ", your best!" : ""}`
+          ? `Run over: ${s.run.score}`
           : last
             ? last.grade === "bail"
               ? "Bail!"

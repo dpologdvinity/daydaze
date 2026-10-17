@@ -66,7 +66,7 @@ export function HoopsPanel(): JSX.Element {
       </p>
       <p className="game-call" role="status">
         {s.phase === "over"
-          ? `${s.game.made} of ${s.game.shots}: ${s.game.points} points${s.game.points >= s.best && s.game.points > 0 ? ", your best!" : ""}`
+          ? `${s.game.made} of ${s.game.shots}: ${s.game.points} points`
           : s.phase === "flying"
             ? ""
             : s.last

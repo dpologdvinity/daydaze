@@ -47,7 +47,7 @@ export function RangePanel(): JSX.Element {
       </p>
       <p className="game-call" role="status">
         {s.phase === "over"
-          ? `Bucket done: ${bucketScore(s.bucket)}${bucketScore(s.bucket) >= s.best && s.best > 0 ? ", your best!" : ""}`
+          ? `Bucket done: ${bucketScore(s.bucket)}`
           : s.phase === "flying" || !last
             ? ""
             : `${Math.round(last.rest[1])} m${last.points ? ` · +${last.points}` : ""}`}

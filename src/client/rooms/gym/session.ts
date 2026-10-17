@@ -16,7 +16,6 @@ const OFF = {
   phase: "off" as Phase,
   routine: NEW_ROUTINE as Routine,
   startAt: 0,
-  best: 0,
 };
 
 export const gym = createStore(OFF);
@@ -26,10 +25,10 @@ export function routineTime(now: number): number {
   return s.phase === "routine" ? (now - s.startAt) / 1000 : 0;
 }
 export function start(now: number) {
-  gym.set({ ...OFF, best: gym.get().best, phase: "routine", startAt: now });
+  gym.set({ ...OFF, phase: "routine", startAt: now });
 }
 export function leave() {
-  gym.set({ ...OFF, best: gym.get().best });
+  gym.set(OFF);
 }
 export function press(now: number) {
   const s = gym.get();
@@ -48,7 +47,6 @@ export function tick(now: number) {
     gym.set({
       routine,
       phase: "over",
-      best: Math.max(s.best, judgesScore(routine)),
     });
   } else if (routine.marks.some((m, i) => m !== s.routine.marks[i]))
     gym.set({ routine });

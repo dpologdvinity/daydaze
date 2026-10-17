@@ -56,7 +56,7 @@ export function RoutinePanel(): JSX.Element {
       </p>
       <p className="game-call" role="status">
         {s.phase === "over"
-          ? `The judges: ${judgesScore(s.routine).toFixed(3)}${judgesScore(s.routine) >= s.best ? ", your best!" : ""}`
+          ? `The judges: ${judgesScore(s.routine).toFixed(3)}`
           : lastMark && lastIndex >= 0
             ? `${ROUTINE[lastIndex].name}: ${MARK[lastMark]}`
             : "Here we go…"}

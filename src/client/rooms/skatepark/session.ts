@@ -17,7 +17,6 @@ const OFF = {
   run: NEW_RUN as Run,
   /** performance.now() when she dropped in. */
   startAt: 0,
-  best: 0,
 };
 
 export const skate = createStore(OFF);
@@ -29,11 +28,11 @@ export function runTime(now: number): number {
 }
 
 export function dropIn(now: number) {
-  skate.set({ ...OFF, best: skate.get().best, phase: "riding", startAt: now });
+  skate.set({ ...OFF, phase: "riding", startAt: now });
 }
 
 export function bail() {
-  skate.set({ ...OFF, best: skate.get().best });
+  skate.set(OFF);
 }
 
 export function trick(now: number) {
@@ -52,6 +51,6 @@ export function tick(now: number) {
   const s = skate.get();
   if (s.phase === "riding" && runTime(now) >= RUN_SECONDS) {
     award("skate", s.run.score);
-    skate.set({ phase: "over", best: Math.max(s.best, s.run.score) });
+    skate.set({ phase: "over" });
   }
 }

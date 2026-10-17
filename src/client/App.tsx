@@ -191,6 +191,7 @@ export function App() {
   };
   // a finished sports game pays its grade, and a bonus for a personal best
   const { pending } = prizeDesk.use();
+  useEffect(() => prizeDesk.set({ bests: save.bests }), [save.bests]);
   useEffect(() => {
     if (!pending) return;
     const prize = prizeFor(

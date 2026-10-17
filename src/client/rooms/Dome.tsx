@@ -12,6 +12,7 @@ import {
   SPOTS,
   type ShotResult,
 } from "../../game/hoops.ts";
+import { prizeDesk } from "../ui/prizeDesk.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import { useReducedMotion } from "../motion.ts";
 import { cameraHold } from "../world/cameraHold.ts";
@@ -156,6 +157,7 @@ function Spots() {
 /** The hanging scoreboard: score and clock while you play. */
 function Board() {
   const s = hoops.use();
+  const best = prizeDesk.use().bests.hoops;
   // the clock face only shows whole seconds: re-read it four times a second
   const [, setBeat] = useState(0);
   const running = s.phase !== "off" && s.phase !== "over";
@@ -172,7 +174,7 @@ function Board() {
       width={4.4}
       lines={
         s.phase === "off"
-          ? ["THE DOME", `BEST ${s.best}`]
+          ? ["THE DOME", `BEST ${best ?? 0}`]
           : [
               `${s.game.points} PTS`,
               s.phase === "over"

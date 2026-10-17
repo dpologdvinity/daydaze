@@ -13,6 +13,7 @@ import {
   VAULT,
 } from "../../game/gym.ts";
 import type { Look } from "../../game/look.ts";
+import { prizeDesk } from "../ui/prizeDesk.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import { useReducedMotion } from "../motion.ts";
 import { cameraHold } from "../world/cameraHold.ts";
@@ -148,6 +149,7 @@ function Apparatus() {
 /** The judges at their table, the score shown on the board over them. */
 function Judges() {
   const s = gym.use();
+  const best = prizeDesk.use().bests.gymnastics;
   return (
     <>
       <mesh position={[0, 0.4, JUDGES.z]}>
@@ -165,7 +167,7 @@ function Judges() {
         width={4}
         lines={
           s.phase === "off"
-            ? ["FLOOR", s.best ? `BEST ${s.best.toFixed(3)}` : "STEP UP"]
+            ? ["FLOOR", best ? `BEST ${best.toFixed(3)}` : "STEP UP"]
             : [
                 judgesScore(s.routine).toFixed(3),
                 s.phase === "over" ? "FINAL" : "ROUTINE",

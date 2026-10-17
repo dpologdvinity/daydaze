@@ -1,4 +1,4 @@
-import type { Prize, PrizeGame } from "../../game/prizes.ts";
+import type { Bests, Prize, PrizeGame } from "../../game/prizes.ts";
 import { createStore } from "../rooms/shared/store.ts";
 
 /**
@@ -11,6 +11,8 @@ export const prizeDesk = createStore({
   shown: null as Prize | null,
   /** Coins a daily challenge paid on top, 0 when none was reached. */
   challenge: 0,
+  /** The saved personal bests, mirrored here for the scoreboards. */
+  bests: {} as Bests,
   /** performance.now() when `shown` was posted. */
   at: 0,
 });

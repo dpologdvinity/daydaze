@@ -30,7 +30,6 @@ const OFF = {
   aim: 0,
   shot: null as ShotResult | null,
   last: null as ShotKind | null,
-  best: 0,
 };
 
 export const hoops = createStore(OFF);
@@ -54,7 +53,6 @@ export function timeLeft(now: number): number {
 export function start(now: number) {
   hoops.set({
     ...OFF,
-    best: hoops.get().best,
     phase: "aim",
     endsAt: now + GAME_SECONDS * 1000,
     since: now,
@@ -62,7 +60,7 @@ export function start(now: number) {
 }
 
 export function leave() {
-  hoops.set({ ...OFF, best: hoops.get().best });
+  hoops.set(OFF);
 }
 
 export function press(now: number) {
@@ -94,10 +92,9 @@ export function tick(now: number) {
       last: s.shot.kind,
       phase: over ? "over" : "aim",
       since: now,
-      best: over ? Math.max(s.best, game.points) : s.best,
     });
   } else if ((s.phase === "aim" || s.phase === "power") && now >= s.endsAt) {
     award("hoops", s.game.points);
-    hoops.set({ phase: "over", best: Math.max(s.best, s.game.points) });
+    hoops.set({ phase: "over" });
   }
 }

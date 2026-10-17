@@ -19,7 +19,6 @@ const OFF = {
   since: 0,
   power: 0,
   shot: null as Shot | null,
-  best: 0,
 };
 
 export const range = createStore(OFF);
@@ -33,10 +32,10 @@ export function strikeAt(now: number, since: number): number {
 }
 
 export function start(now: number) {
-  range.set({ ...OFF, best: range.get().best, phase: "power", since: now });
+  range.set({ ...OFF, phase: "power", since: now });
 }
 export function leave() {
-  range.set({ ...OFF, best: range.get().best });
+  range.set(OFF);
 }
 export function press(now: number) {
   const s = range.get();
@@ -60,6 +59,5 @@ export function tick(now: number) {
     shot: null,
     phase: over ? "over" : "power",
     since: now,
-    best: over ? Math.max(s.best, score) : s.best,
   });
 }
