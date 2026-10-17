@@ -27,6 +27,7 @@ test("every room is registered under its own id", () => {
     "haunted-house",
     "ice-rink",
     "jail",
+    "kamayan-hall",
     "karaoke",
     "la-noche",
     "mini-golf",
@@ -391,5 +392,23 @@ test("the Dome and the Stadium: every spot, the benches and the penalty spot are
         `${id} reached ${goal}`,
       );
     }
+  }
+});
+
+test("Lechon and Kamayan Hall: every seat at the boodle table and the sofa is reachable", () => {
+  const room = ROOMS["kamayan-hall"];
+  const area = areaOf(room);
+  assert.equal(isBlocked(area, room.spawn.position), false);
+  for (const goal of seatsIn("kamayan-hall").map((s) => s.approach)) {
+    let pos: Vec2 = room.spawn.position;
+    // the far side's benches are reached round the table's west end
+    const route: Vec2[] =
+      goal[1] < -1.6 ? [[-5.4, 1.2], [-5.4, -3.6], goal] : [goal];
+    for (const via of route)
+      for (let k = 0; k < 400; k++) pos = stepInArea(area, pos, via, 0.05);
+    assert.ok(
+      Math.hypot(pos[0] - goal[0], pos[1] - goal[1]) < 0.3,
+      `reached ${goal}`,
+    );
   }
 });

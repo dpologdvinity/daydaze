@@ -345,6 +345,7 @@ const RESTAURANTS: readonly FoodVenue[] = [
       ["Garlic rice, big bowl", 4],
       ["Sago gulaman", 3, "drink"],
     ],
+    "kamayan-hall",
   ),
   venue(
     "skewer-yard-manila",

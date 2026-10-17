@@ -70,6 +70,7 @@ const SHOTS: {
   { name: "la-noche", query: "room=la-noche" },
   { name: "mini-golf", query: "room=mini-golf" },
   { name: "dome", query: "room=dome" },
+  { name: "kamayan-hall", query: "room=kamayan-hall" },
   { name: "stadium", query: "room=stadium" },
   { name: "velvet-room-full-look", query: "room=velvet-room&view=full" },
   { name: "velvet-room-detail", query: "room=velvet-room&view=detail" },

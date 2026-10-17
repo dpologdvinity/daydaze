@@ -68,6 +68,7 @@ import {
   SPAWN as LINKS_SPAWN,
 } from "./lagoonLinks.ts";
 import * as DOME from "./dome.ts";
+import * as KAMAYAN from "./kamayanHall.ts";
 import * as STADIUM from "./stadium.ts";
 import type { Vec2 } from "./walk.ts";
 
@@ -97,6 +98,7 @@ export type RoomId =
   | "mini-golf"
   | "dome"
   | "stadium"
+  | "kamayan-hall"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -556,6 +558,12 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
     "Jade Whisk Matcha and Pearl Ledger Boba",
   ),
   "ube-bakery": foodRoom("ube-bakery", "Purple Pandesal Bakery"),
+  // the sit-down restaurant: the food rooms' door, its own bigger floor
+  "kamayan-hall": {
+    ...foodRoom("kamayan-hall", "Lechon and Kamayan Hall"),
+    walkable: KAMAYAN.FLOOR,
+    blockers: KAMAYAN.BLOCKERS,
+  },
   city: {
     id: "city",
     name: "Downtown and Nightlife Row",

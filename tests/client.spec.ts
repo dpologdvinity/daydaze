@@ -446,6 +446,16 @@ for (const [room, region, start, first, second, done] of [
   });
 }
 
+test("the debug buttons take the player into Kamayan Hall", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&debug=1`);
+  await page.getByRole("button", { name: "Go to Kamayan Hall" }).click();
+  await expect(roomTitle(page)).toHaveText("Lechon and Kamayan Hall");
+  expect(errors).toEqual([]);
+});
+
 test("the debug buttons take the player into La Noche", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto(`${STILL}&debug=1`);
@@ -483,6 +493,7 @@ for (const room of [
   "mini-golf",
   "dome",
   "stadium",
+  "kamayan-hall",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

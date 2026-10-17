@@ -5,6 +5,7 @@ import { CHAIR_X, CHAIR_ZS, STOOL_X, STOOL_ZS } from "./sugarRush.ts";
 import * as ARCADE from "./arcadeBar.ts";
 import * as LA_NOCHE from "./laNoche.ts";
 import * as DOME from "./dome.ts";
+import * as KAMAYAN from "./kamayanHall.ts";
 import * as STADIUM from "./stadium.ts";
 import { BENCH_SEATS as LINKS_BENCH } from "./lagoonLinks.ts";
 import { FOUNTAIN, SQUARE_BENCHES } from "./city/layout.ts";
@@ -196,6 +197,24 @@ const sportsSeats = [
   ),
 ];
 
+// Lechon and Kamayan Hall: the benches down both sides of the boodle table,
+// and the videoke sofa
+const kamayanSeats = [
+  ...KAMAYAN.TABLE_SEATS.map(({ at, facing }, i) =>
+    seat(`kamayan-bench-${i}`, "kamayan-hall", at, 0.45, facing),
+  ),
+  ...[4.8, 5.6].map((x, i) =>
+    seat(
+      `kamayan-sofa-${i}`,
+      "kamayan-hall",
+      [x, KAMAYAN.SOFA.z1 - 0.1],
+      0.45,
+      KAMAYAN.VIDEOKE,
+      "front",
+    ),
+  ),
+];
+
 export const SEATS: readonly Seat[] = [
   ...foodSeats,
   ...velvetStools,
@@ -210,6 +229,7 @@ export const SEATS: readonly Seat[] = [
   ...squareSeats,
   ...linksSeats,
   ...sportsSeats,
+  ...kamayanSeats,
 ];
 
 export function seatsIn(room: RoomId): readonly Seat[] {

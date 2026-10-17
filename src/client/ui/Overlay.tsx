@@ -96,6 +96,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Your flat. Use the decorating panel to place furniture and lock the door. Tap the blue shelf to try a shoplift.",
   "haunted-house":
     "The Haunted House. Find your way through the dark rooms past the ghosts, then back out to the park.",
+  "kamayan-hall":
+    "Lechon and Kamayan Hall. Grab a seat at the boodle table, tap Tess at the carving station for the next dish, or sing videoke with Tita Joy.",
   dome: "The Dome. Play Hot Shots: sixty seconds to score from the spots round the arc. Bree sells snacks courtside.",
   stadium:
     "Seaside Stadium. Take five penalties against the keeper: pick your spot, then strike.",

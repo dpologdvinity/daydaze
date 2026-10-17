@@ -65,6 +65,11 @@ const ROOM_SHOTS: Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }> =
       eye: new THREE.Vector3(0, 8.5, 15),
       look: new THREE.Vector3(0, 0.8, -1),
     },
+    // from over the door, along the boodle table to the capiz windows
+    "kamayan-hall": {
+      eye: new THREE.Vector3(4.5, 4.6, 9.5),
+      look: new THREE.Vector3(-0.8, 0.8, -2),
+    },
     // from the tunnel end, down the court to the hoop and the stands
     dome: {
       eye: new THREE.Vector3(3, 5.5, 13),
@@ -184,6 +189,7 @@ const MAX_DISTANCE: Record<RoomId, number> = {
   "la-noche": 18,
   "mini-golf": 24,
   dome: 24,
+  "kamayan-hall": 16,
   stadium: 30,
   "haunted-house": 16,
   // the track sits far back, so the Speedway's wide shot needs more orbit range
