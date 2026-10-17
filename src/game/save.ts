@@ -15,6 +15,7 @@ import {
   type SwimLook,
 } from "./look.ts";
 import { cleanBody, DEFAULT_BODY, type BodyShape } from "./body.ts";
+import { cleanBests, type Bests } from "./prizes.ts";
 import { cleanWardrobe, unlockedLook } from "./shop.ts";
 import { isCoins, STARTING_COINS } from "./wallet.ts";
 
@@ -40,6 +41,8 @@ export type SaveV1 = {
   home: HomeSave;
   jail: JailSave;
   crime: CrimeSave;
+  /** Each game's personal best. */
+  bests: Bests;
 };
 
 export const SAVE_KEY = "daydaze-save-v1";
@@ -72,6 +75,7 @@ export function createDefaultSave(name: string): SaveV1 {
     home: { ...DEFAULT_HOME, furniture: [] },
     jail: { ...DEFAULT_JAIL },
     crime: { ...DEFAULT_CRIME, bans: {} },
+    bests: {},
   };
 }
 
@@ -126,6 +130,7 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
     home: validateHome(save.get("home")),
     jail: validateJail(save.get("jail")),
     crime: validateCrime(save.get("crime")),
+    bests: cleanBests(save.get("bests")),
   };
 }
 

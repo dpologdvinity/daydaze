@@ -2,6 +2,7 @@ import { useSyncExternalStore } from "react";
 import {
   bowl,
   freshRack,
+  frameTotals,
   NEW_GAME,
   PIN_SPOTS,
   position,
@@ -10,6 +11,7 @@ import {
   type Game,
   type Roll,
 } from "../../../game/bowling.ts";
+import { award } from "../../ui/prizeDesk.ts";
 
 /**
  * One player's game on the lane, shared by the alley's 3D scene (which
@@ -136,6 +138,13 @@ export function settle() {
   const standing = freshRack(game)
     ? RACK
     : lane.standing.map((up, i) => up && !lane.roll?.knocked.includes(i));
+  if (position(game).over)
+    award(
+      "bowling",
+      frameTotals(game)
+        .filter((t) => t !== null)
+        .at(-1) ?? 0,
+    );
   set({
     phase: position(game).over ? "over" : "place",
     game,

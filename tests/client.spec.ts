@@ -446,6 +446,32 @@ for (const [room, region, start, first, second, done] of [
   });
 }
 
+test("stadium: five penalties end in a prize card that pays coins", async ({
+  page,
+}) => {
+  test.setTimeout(600_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=stadium`);
+  await expect(canvasOf(page)).toHaveAttribute("data-frames", "10");
+  const panel = page.getByRole("region", { name: "Penalties" });
+  await panel.getByRole("button", { name: "Take penalties" }).click();
+  for (let kick = 0; kick < 5; kick++) {
+    await panel.getByRole("button", { name: "Pick your spot" }).click();
+    await panel.getByRole("button", { name: "Strike!" }).click();
+    await expect(
+      panel.getByRole("button", {
+        name: kick < 4 ? "Pick your spot" : "Go again",
+      }),
+    ).toBeVisible({ timeout: 120_000 });
+  }
+  const prize = page.getByRole("status", { name: "Prize" });
+  await expect(prize).toContainText("Penalties");
+  await expect(prize).toContainText("New personal best!");
+  // a first game pays its grade plus the personal-best bonus
+  await expect(page.getByLabel(/coins$/)).not.toHaveText("100 coins");
+  expect(errors).toEqual([]);
+});
+
 test("the debug buttons take the player into Kamayan Hall", async ({
   page,
 }) => {

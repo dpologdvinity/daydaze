@@ -6,6 +6,7 @@ import {
   type Bucket,
   type Shot,
 } from "../../../game/golfRange.ts";
+import { award } from "../../ui/prizeDesk.ts";
 import { createStore } from "../shared/store.ts";
 
 /** A bucket of balls: press to start the backswing, press at the top for
@@ -53,6 +54,7 @@ export function tick(now: number) {
   const bucket = addShot(s.bucket, s.shot);
   const over = bucketEmpty(bucket);
   const score = bucket.shots.reduce((t, x) => t + x.points, 0);
+  if (over) award("driving-range", score);
   range.set({
     bucket,
     shot: null,

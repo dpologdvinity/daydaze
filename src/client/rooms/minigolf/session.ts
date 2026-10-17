@@ -7,9 +7,11 @@ import {
   putt,
   roundOver,
   scorePutt,
+  totals,
   type PuttResult,
   type Round,
 } from "../../../game/minigolf.ts";
+import { award } from "../../ui/prizeDesk.ts";
 
 /**
  * A round on the course, shared by the scene (which draws the ball and
@@ -107,6 +109,7 @@ export function press(now: number) {
 export function settle() {
   if (course.phase !== "rolling" || !course.putt) return;
   const round = scorePutt(course.round, course.putt);
+  if (roundOver(round)) award("mini-golf", totals(round).toPar);
   set({
     round,
     putt: null,

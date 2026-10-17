@@ -39,7 +39,10 @@ import type { View } from "./world/CameraRig.tsx";
 import { LoadingVeil } from "./ui/LoadingVeil.tsx";
 import { preloadLook } from "./avatar/human/HumanDoll.tsx";
 import { RoomAudio } from "./RoomAudio.tsx";
-import { playWhoosh } from "../audio/worldSounds.ts";
+import { playFanfare, playWhoosh } from "../audio/worldSounds.ts";
+import { prizeFor } from "../game/prizes.ts";
+import { PrizeCard } from "./ui/PrizeCard.tsx";
+import { postPrize, prizeDesk } from "./ui/prizeDesk.ts";
 import { World } from "./world/World.tsx";
 
 const FADE_MS = 300;
@@ -185,6 +188,23 @@ export function App() {
     if (grade)
       setSave((s) => ({ ...s, coins: earn(s.coins, payoutFor(grade)) }));
   };
+  // a finished sports game pays its grade, and a bonus for a personal best
+  const { pending } = prizeDesk.use();
+  useEffect(() => {
+    if (!pending) return;
+    const prize = prizeFor(
+      pending.game,
+      pending.score,
+      save.bests[pending.game],
+    );
+    setSave((s) => ({
+      ...s,
+      coins: earn(s.coins, prize.coins),
+      bests: prize.best ? { ...s.bests, [prize.game]: prize.score } : s.bests,
+    }));
+    postPrize(prize);
+    playFanfare(prize.grade === "S" ? 1 : prize.grade === "A" ? 0.6 : 0);
+  }, [pending]);
   const saved = save.settings.quality;
   const quality = flags.quality ?? (saved === "auto" ? null : saved);
 
@@ -192,6 +212,7 @@ export function App() {
     <ReducedMotionContext.Provider value={reducedMotion}>
       <main className="app">
         <LoadingVeil />
+        <PrizeCard />
         <RoomAudio room={here.room} muted={save.settings.muted} />
         <World
           room={here.room}

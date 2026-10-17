@@ -22,6 +22,7 @@ import type { Player } from "../world/PlayerController.tsx";
 import { useQuality } from "../world/quality.ts";
 import { CitySky } from "./CitySky.tsx";
 import { Ocean } from "./Ocean.tsx";
+import { Fireworks } from "./Fireworks.tsx";
 import { BeachLife } from "./BeachLife.tsx";
 import { SquareLife } from "./SquareLife.tsx";
 import { Pedestrians } from "./Pedestrians.tsx";
@@ -143,6 +144,7 @@ export function CityScene({
       </mesh>
       <Ocean />
       <BeachLife />
+      <Fireworks />
       <SquareLife />
       {KINDS.map((kind) => (
         <primitive key={kind} object={meshes[kind]} onClick={click} />

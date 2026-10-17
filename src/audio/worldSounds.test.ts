@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { resetSharedAudioBusForTests } from "./audioBus.ts";
 import {
   playClick,
+  playFanfare,
+  playFireworkBoom,
   playStep,
   playWhoosh,
   startAmbience,
@@ -15,6 +17,8 @@ test("world sounds stay silent and never throw without Web Audio", () => {
   assert.equal(playStep("soft"), false);
   assert.equal(playWhoosh(), false);
   assert.equal(playClick(), false);
+  assert.equal(playFanfare(1), false);
+  assert.equal(playFireworkBoom(1), false);
   const stop = startAmbience("beach");
   assert.equal(typeof stop, "function");
   assert.doesNotThrow(stop);

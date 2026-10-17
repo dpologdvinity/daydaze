@@ -1,4 +1,5 @@
 import {
+  goals,
   kick,
   NEW_SHOOTOUT,
   scoreKick,
@@ -6,6 +7,7 @@ import {
   type KickResult,
   type Shootout,
 } from "../../../game/penalty.ts";
+import { award } from "../../ui/prizeDesk.ts";
 import { createStore } from "../shared/store.ts";
 import { crowd } from "../shared/Stands.tsx";
 
@@ -73,6 +75,7 @@ export function tick(now: number) {
   if ((now - s.since) / 1000 < s.kick.frames.length / 30 + 0.9) return;
   const game = scoreKick(s.game, s.kick);
   if (s.kick.outcome === "goal") crowd.cheer = 1;
+  if (shootoutOver(game)) award("penalties", goals(game));
   penalties.set({
     game,
     kick: null,

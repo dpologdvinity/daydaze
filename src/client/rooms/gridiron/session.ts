@@ -2,12 +2,14 @@ import {
   AIM_LIMIT,
   kick,
   KICKS,
+  made,
   NEW_SERIES,
   scoreKick,
   seriesOver,
   type KickResult,
   type Series,
 } from "../../../game/fieldGoal.ts";
+import { award } from "../../ui/prizeDesk.ts";
 import { createStore } from "../shared/store.ts";
 import { crowd } from "../shared/Stands.tsx";
 
@@ -61,6 +63,7 @@ export function tick(now: number) {
   if ((now - s.since) / 1000 < s.kick.frames.length / 30 + 0.8) return;
   const series = scoreKick(s.series, s.kick);
   if (s.kick.result === "good") crowd.cheer = 1;
+  if (seriesOver(series)) award("field-goals", made(series));
   fieldGoals.set({
     series,
     kick: null,

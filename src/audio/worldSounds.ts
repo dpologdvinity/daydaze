@@ -123,6 +123,49 @@ export function playClick(): boolean {
   return true;
 }
 
+/** A prize fanfare: a rising major arpeggio, brighter for a better grade
+ * (`level` 0..1), with a sparkle of noise on top. */
+export function playFanfare(level: number): boolean {
+  const out = sfx();
+  if (!out) return false;
+  const { ctx, dest } = out;
+  const now = ctx.currentTime;
+  // C E G C', and a high E for the top grades
+  const notes = [523.25, 659.25, 783.99, 1046.5, 1318.5];
+  const count = 3 + Math.round(Math.max(0, Math.min(1, level)) * 2);
+  for (let i = 0; i < count; i++) {
+    const at = now + i * 0.09;
+    const last = i === count - 1;
+    const hold = last ? 0.6 : 0.16;
+    for (const type of ["square", "triangle"] as const) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(notes[i], at);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.setValueAtTime(type === "square" ? 0.025 : 0.06, at);
+      gain.gain.exponentialRampToValueAtTime(0.0001, at + hold);
+      osc.connect(gain).connect(dest);
+      osc.start(at);
+      osc.stop(at + hold + 0.02);
+    }
+  }
+  burst(ctx, dest, "highpass", 6000, 0.05, 0.5);
+  return true;
+}
+
+/** A firework bursting far off: a low thump and a crackle, `level` 0..1 by
+ * how near it is. */
+export function playFireworkBoom(level: number): boolean {
+  const out = sfx();
+  if (!out || level <= 0) return false;
+  const { ctx, dest } = out;
+  const l = Math.min(1, level);
+  burst(ctx, dest, "lowpass", 160, 0.5 * l, 0.9);
+  burst(ctx, dest, "bandpass", 2400, 0.08 * l, 1.4);
+  return true;
+}
+
 /** A bowling ball rolling down the lane: a low rumble for `seconds`,
  * swelling as it goes. */
 export function playBowlRoll(seconds: number): boolean {

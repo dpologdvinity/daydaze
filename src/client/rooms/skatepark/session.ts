@@ -4,6 +4,7 @@ import {
   RUN_SECONDS,
   type Run,
 } from "../../../game/skate.ts";
+import { award } from "../../ui/prizeDesk.ts";
 import { createStore } from "../shared/store.ts";
 import { crowd } from "../shared/Stands.tsx";
 
@@ -49,6 +50,8 @@ export function trick(now: number) {
 /** The scene calls this each frame: the clock runs the run out. */
 export function tick(now: number) {
   const s = skate.get();
-  if (s.phase === "riding" && runTime(now) >= RUN_SECONDS)
+  if (s.phase === "riding" && runTime(now) >= RUN_SECONDS) {
+    award("skate", s.run.score);
     skate.set({ phase: "over", best: Math.max(s.best, s.run.score) });
+  }
 }

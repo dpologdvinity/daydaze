@@ -44,6 +44,7 @@ import {
 import { QualityContext, type QualityTier } from "./quality.ts";
 import { Seats } from "./Seats.tsx";
 import { isSceneReady, setSceneReady } from "./ready.ts";
+import { Confetti } from "./Confetti.tsx";
 import { CreatorFrame } from "./CreatorFrame.tsx";
 
 // The city is the heaviest scene, so it loads on first visit only.
@@ -431,6 +432,7 @@ export function World({
           />
           <CameraRig player={player} view={view} room={room} />
           <CreatorFrame />
+          <Confetti />
           {tier === "high" ? <Effects /> : <NeonClamp key={`clamp-${room}`} />}
           <Warmup key={`warm-${room}`} />
         </Suspense>

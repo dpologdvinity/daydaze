@@ -9,6 +9,7 @@ import {
   type ShotResult,
   type Shootout,
 } from "../../../game/hoops.ts";
+import { award } from "../../ui/prizeDesk.ts";
 import { createStore } from "../shared/store.ts";
 import { crowd } from "../shared/Stands.tsx";
 
@@ -86,6 +87,7 @@ export function tick(now: number) {
     const game = scoreShot(s.game, s.shot);
     if (s.shot.made) crowd.cheer = s.shot.kind === "swish" ? 1 : 0.7;
     const over = now >= s.endsAt;
+    if (over) award("hoops", game.points);
     hoops.set({
       game,
       shot: null,
@@ -94,6 +96,8 @@ export function tick(now: number) {
       since: now,
       best: over ? Math.max(s.best, game.points) : s.best,
     });
-  } else if ((s.phase === "aim" || s.phase === "power") && now >= s.endsAt)
+  } else if ((s.phase === "aim" || s.phase === "power") && now >= s.endsAt) {
+    award("hoops", s.game.points);
     hoops.set({ phase: "over", best: Math.max(s.best, s.game.points) });
+  }
 }

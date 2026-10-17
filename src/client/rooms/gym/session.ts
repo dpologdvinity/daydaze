@@ -6,6 +6,7 @@ import {
   ROUTINE_SECONDS,
   type Routine,
 } from "../../../game/gymnastics.ts";
+import { award } from "../../ui/prizeDesk.ts";
 import { createStore } from "../shared/store.ts";
 
 /** A floor routine: press as each element's ring closes. */
@@ -42,12 +43,13 @@ export function tick(now: number) {
   if (s.phase !== "routine") return;
   const t = routineTime(now);
   const routine = closeOut(s.routine, t);
-  if (t >= ROUTINE_SECONDS)
+  if (t >= ROUTINE_SECONDS) {
+    award("gymnastics", judgesScore(routine));
     gym.set({
       routine,
       phase: "over",
       best: Math.max(s.best, judgesScore(routine)),
     });
-  else if (routine.marks.some((m, i) => m !== s.routine.marks[i]))
+  } else if (routine.marks.some((m, i) => m !== s.routine.marks[i]))
     gym.set({ routine });
 }
