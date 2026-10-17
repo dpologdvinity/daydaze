@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { CITY_BOUNDS, CITY_SURFACES, WATER_Z } from "../../game/city/layout.ts";
-import { CITY_PLACES } from "../../game/city/places.ts";
+import { CITY_PLACES, VENUE_PLACES } from "../../game/city/places.ts";
+import { NEIGHBORHOOD_NAMES } from "../city/here.ts";
 import {
   CHALLENGE_PAY,
   challengesFor,
@@ -98,6 +99,29 @@ export function CityMap({
             </button>
           ))}
         </div>
+        <section className="city-places" aria-label="Places">
+          <h3>Places</h3>
+          {CITY_PLACES.map((hood) => {
+            const here = VENUE_PLACES.filter((v) => v.neighborhood === hood.id);
+            if (!here.length) return null;
+            return (
+              <details key={hood.id}>
+                <summary>
+                  {NEIGHBORHOOD_NAMES[hood.id]} <small>({here.length})</small>
+                </summary>
+                <ul>
+                  {here.map((v) => (
+                    <li key={v.room}>
+                      <button type="button" onClick={() => onGo(v.spawn)}>
+                        {v.label}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            );
+          })}
+        </section>
         <section className="challenges" aria-label="Today's challenges">
           <h3>Today&apos;s challenges · {CHALLENGE_PAY} coins each</h3>
           <ul>

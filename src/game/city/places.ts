@@ -1,6 +1,12 @@
 // Fast-travel spots: one sidewalk point per neighbourhood, for the city map.
-import type { Spawn } from "../rooms.ts";
-import { CITY_SPAWN, GALLERY_Z, SHORE_Z, type Neighborhood } from "./layout.ts";
+import { ROOMS, type RoomId, type Spawn } from "../rooms.ts";
+import {
+  BUILDINGS,
+  CITY_SPAWN,
+  GALLERY_Z,
+  SHORE_Z,
+  type Neighborhood,
+} from "./layout.ts";
 
 export type Place = { id: Neighborhood; label: string; spawn: Spawn };
 
@@ -43,3 +49,30 @@ export const CITY_PLACES: readonly Place[] = [
     spawn: { position: [300, SHORE_Z - 13.5], yaw: 0 },
   },
 ];
+
+export type VenuePlace = {
+  room: RoomId;
+  label: string;
+  neighborhood: Neighborhood;
+  /** Just outside its city door, facing away from it. */
+  spawn: Spawn;
+};
+
+/** Every venue with a door on the city's streets, for the map's directory:
+ * you land on the sidewalk outside it, where its exit puts you. */
+export const VENUE_PLACES: readonly VenuePlace[] = BUILDINGS.flatMap(
+  (b): VenuePlace[] => {
+    const room = b.door?.target;
+    if (!room || room === "city") return [];
+    const out = ROOMS[room].portals.find((p) => p.target === "city");
+    if (!out) return [];
+    return [
+      {
+        room,
+        label: ROOMS[room].name,
+        neighborhood: b.neighborhood,
+        spawn: out.targetSpawn,
+      },
+    ];
+  },
+).filter((p, i, all) => all.findIndex((q) => q.room === p.room) === i);

@@ -611,7 +611,7 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         radius: 0.7,
         label: "Out to the street",
         target: "city",
-        targetSpawn: { position: [-165, 9], yaw: 0 },
+        targetSpawn: { position: [-163, 9], yaw: 0 },
       },
     ],
   },

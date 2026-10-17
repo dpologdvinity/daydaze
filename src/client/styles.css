@@ -1755,3 +1755,38 @@ button:focus-visible {
 .shell-pad:disabled {
   cursor: default;
 }
+
+/* the map's directory of venues, by neighbourhood */
+.city-places h3 {
+  margin: 14px 0 6px;
+  font-size: 15px;
+  color: var(--amber);
+}
+
+.city-places details {
+  margin: 4px 0;
+}
+
+.city-places summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.city-places ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 4px;
+  padding: 0;
+  list-style: none;
+}
+
+.city-places li button {
+  padding: 4px 10px;
+  border: 1px solid rgb(255 207 106 / 0.5);
+  border-radius: 999px;
+  background: rgb(32 6 34 / 0.85);
+  color: var(--champagne);
+  font: 600 12px/1.2 var(--sans);
+  cursor: pointer;
+}

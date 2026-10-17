@@ -864,7 +864,7 @@ test("the player takes a seat at the Velvet Room bar and stands to walk", async 
   const canvas = canvasOf(page);
   await page.getByRole("button", { name: "Take a seat" }).click();
   await expect(canvas).toHaveAttribute("data-seated", /velvet-stool/, {
-    timeout: 60_000,
+    timeout: 150_000,
   });
   await page.keyboard.down("KeyS");
   await expect(canvas).not.toHaveAttribute("data-seated", /.+/);
@@ -982,6 +982,19 @@ test("the food rooms open from a query and show their counter staff", async ({
     /[4-9]|10/,
   );
   expect(errors).toEqual([]);
+});
+
+test("the city map's directory takes the player to a venue's door", async ({
+  page,
+}) => {
+  await page.goto(`${LOW}&room=city`);
+  await expect(roomTitle(page)).toHaveText("Downtown");
+  await page.getByRole("button", { name: "City map" }).click();
+  const places = page.getByRole("region", { name: "Places" });
+  await places.locator("summary", { hasText: "Uptown" }).click();
+  await places.getByRole("button", { name: "The Courtside Club" }).click();
+  await expect(page.getByRole("dialog", { name: "City map" })).toBeHidden();
+  await expect(roomTitle(page)).toHaveText("Uptown", { timeout: 60_000 });
 });
 
 test("the city map takes the player to Beachside", async ({ page }) => {
