@@ -2,7 +2,7 @@
 per hair style and face preset, on the built doll, so the character creator
 shows options instead of words.
 
-    blender --background --factory-startup --python art/doll/blender/thumbs.py
+    blender --background --factory-startup --python art/doll/blender/thumbs.py [-- outfits hair]
 
 Run after build_doll.py, then convert to WebP (192 px) with sharp, as the
 commit that added it did; the client loads `/closet/<group>-<id>.webp`. Hair tiles are three-quarter views in a warm brown;
@@ -98,7 +98,32 @@ def load(*parts):
             continue
         name = ob.name
         if name.startswith("Hair"):
-            mat = paint(ob, HAIR_COLOUR, 0.45)
+            # each slot keeps its strand image under the tint, and the cards
+            # their cut-out alpha, so the tile shows strands, not solid sheets
+            for slot in ob.material_slots:
+                old = slot.material
+                mat = paint(ob, HAIR_COLOUR, 0.75)
+                # the tile's sun turns glossy strands grey at grazing angles
+                spec = next(n for n in mat.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+                spec.inputs["Specular IOR Level"].default_value = 0.2
+                nodes = old.node_tree.nodes if old and old.use_nodes else []
+                tex_old = next((n for n in nodes if n.type == "TEX_IMAGE"), None)
+                if tex_old:
+                    nt = mat.node_tree
+                    bsdf = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
+                    tex = nt.nodes.new("ShaderNodeTexImage")
+                    tex.image = tex_old.image
+                    mix = nt.nodes.new("ShaderNodeMix")
+                    mix.data_type = "RGBA"
+                    mix.blend_type = "MULTIPLY"
+                    mix.inputs["Factor"].default_value = 1.0
+                    mix.inputs["A"].default_value = HAIR_COLOUR
+                    nt.links.new(tex.outputs["Color"], mix.inputs["B"])
+                    nt.links.new(mix.outputs["Result"], bsdf.inputs["Base Color"])
+                    if any(l.to_socket.name == "Alpha" for l in old.node_tree.links):
+                        nt.links.new(tex.outputs["Alpha"], bsdf.inputs["Alpha"])
+                slot.material = mat
+            continue
         elif name.startswith(("Outfit", "Swim", "Shoes")):
             mat = paint(ob, CLOTH, 0.6)
             # keep the garment's own detail map (denim, stripes) under the tint
@@ -182,13 +207,14 @@ def main():
             keys({f"tuck_{style}": 1.0})
             camera((0, -3.3, 0.95), (0, 0, 0.88), 30)
             render(f"swim-{style}")
+    if not only or "hair" in only:
+        for style in HAIR:
+            reset()
+            load("body", f"hair-{style}")
+            camera((0.55, -0.95, 1.6), (0, 0, 1.47), 34)
+            render(f"hair-{style}")
     if only:
         return
-    for style in HAIR:
-        reset()
-        load("body", f"hair-{style}")
-        camera((0.55, -0.95, 1.6), (0, 0, 1.47), 34)
-        render(f"hair-{style}")
     for group, options in PRESETS.items():
         for o in options:
             reset()

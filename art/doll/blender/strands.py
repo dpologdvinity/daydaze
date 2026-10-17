@@ -228,8 +228,10 @@ def build(ctx, name, mat, length=0.42, count=420, wave=0.0, curl=0.0, volume=1.0
             pts.append(push_out(p, (0.003 + lift * 0.014) * volume + 0.004 * t))
         # the clamps in push_out leave corners; relax them, then re-clear
         # the head and body, so every strand falls in one smooth curve
+        # (not curls: their spiral turns most of a circle per segment, and
+        # relaxing would comb them straight)
         pts = np.array(pts)
-        for _ in range(3):
+        for _ in range(0 if curl else 3):
             pts[1:-1] = pts[1:-1] * 0.5 + (pts[:-2] + pts[2:]) * 0.25
             for k in range(1, len(pts)):
                 pts[k] = push_out(pts[k], (0.003 + lift * 0.014) * volume + 0.004 * k / segments)
