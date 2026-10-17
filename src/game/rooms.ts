@@ -46,6 +46,13 @@ import {
   FLOOR as BOWLING_FLOOR,
   SPAWN as BOWLING_SPAWN,
 } from "./bowlingAlley.ts";
+import {
+  ARCADE_DOOR,
+  BLOCKERS as ARCADE_BLOCKERS,
+  EXIT as ARCADE_EXIT,
+  FLOOR as ARCADE_FLOOR,
+  SPAWN as ARCADE_SPAWN,
+} from "./arcadeBar.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -69,6 +76,7 @@ export type RoomId =
   | "warehouse"
   | "karaoke"
   | "bowling"
+  | "arcade-bar"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -582,6 +590,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the park",
         target: "city",
         targetSpawn: { position: ICE_RINK_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  "arcade-bar": {
+    id: "arcade-bar",
+    name: "Player 2",
+    walkable: ARCADE_FLOOR,
+    blockers: ARCADE_BLOCKERS,
+    spawn: { position: ARCADE_SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "arcade-bar-to-city",
+        position: ARCADE_EXIT,
+        radius: 0.8,
+        label: "Out to Gallery Row",
+        target: "city",
+        targetSpawn: { position: ARCADE_DOOR.landing, yaw: Math.PI },
       },
     ],
   },

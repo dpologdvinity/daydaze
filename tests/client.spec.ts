@@ -394,12 +394,31 @@ test("Glow Bowl: start a game, bowl a ball, and the scoreboard counts it", async
   expect(errors).toEqual([]);
 });
 
+test("Player 2's cabinet opens Gem Glam and closes back to the bar", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&debug=1`);
+  await page.getByRole("button", { name: "Go to Player 2" }).click();
+  await expect(roomTitle(page)).toHaveText("Player 2");
+  await page
+    .getByRole("button", { name: "Play Gem Glam on the cabinet" })
+    .click();
+  const dialog = page.getByRole("dialog", { name: "Gem Glam" });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole("button", { name: "Close Gem Glam" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(roomTitle(page)).toHaveText("Player 2");
+  expect(errors).toEqual([]);
+});
+
 for (const room of [
   "rooftop-bar",
   "sugar-rush",
   "warehouse",
   "karaoke",
   "bowling",
+  "arcade-bar",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

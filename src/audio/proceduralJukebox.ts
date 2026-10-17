@@ -6,7 +6,8 @@ export type TrackId =
   | "waterhole-twilight"
   | "carnival-calliope"
   | "sugar-rush-pop"
-  | "warehouse-acid";
+  | "warehouse-acid"
+  | "player-two-chiptune";
 
 export type TrackMetadata = {
   id: TrackId;
@@ -70,6 +71,15 @@ export const JUKEBOX_TRACKS: readonly TrackMetadata[] = [
     description:
       "Warehouse techno: a deep rolling kick, offbeat rumble, open hats and a squelching acid line that opens and closes.",
     mood: "Driving",
+  },
+  {
+    id: "player-two-chiptune",
+    title: "Player Two",
+    genre: "Chiptune",
+    bpm: 150,
+    description:
+      "An arcade cabinet's song: a square-wave lead, a triangle bass and noise drums, round C, A minor, F and G.",
+    mood: "Playful",
   },
 ];
 
@@ -663,6 +673,97 @@ export function warehouseAcidStep(
   if (beat === 1 || beat === 3) playClap(ctx, dest, now);
 }
 
+// Player Two: an eight-bar chiptune loop. The lead, by eighth note, in
+// semitones above C5 (null rests); the bass's root for each bar.
+const CHIP_LEAD: readonly (number | null)[] = [
+  0,
+  4,
+  7,
+  12,
+  7,
+  4,
+  7,
+  null,
+  9,
+  12,
+  16,
+  12,
+  9,
+  7,
+  4,
+  null,
+  5,
+  9,
+  12,
+  17,
+  12,
+  9,
+  12,
+  null,
+  7,
+  11,
+  14,
+  19,
+  14,
+  11,
+  7,
+  2,
+];
+const CHIP_BASS = [130.81, 110, 87.31, 98];
+
+/** A plain wave with a quick, clicky envelope: the sound of the chips. */
+function playChip(
+  ctx: AudioContext,
+  dest: AnyNode,
+  now: number,
+  frequency: number,
+  type: OscillatorType,
+  level: number,
+  length: number,
+) {
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(frequency, now);
+  gain.gain.setValueAtTime(level, now);
+  gain.gain.setValueAtTime(level, now + length * 0.7);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + length);
+  osc.connect(gain);
+  gain.connect(dest);
+  osc.start(now);
+  osc.stop(now + length);
+}
+
+export function playerTwoChiptuneStep(
+  ctx: AudioContext,
+  dest: AnyNode,
+  step: number,
+  now: number,
+) {
+  const note = CHIP_LEAD[step % CHIP_LEAD.length];
+  if (note !== null)
+    playChip(ctx, dest, now, 523.25 * 2 ** (note / 12), "square", 0.06, 0.16);
+  // a bar is eight eighths; the bass changes every two bars
+  const root = CHIP_BASS[Math.floor(step / 16) % CHIP_BASS.length];
+  if (step % 2 === 0)
+    playChip(
+      ctx,
+      dest,
+      now,
+      step % 4 === 0 ? root : root * 2,
+      "triangle",
+      0.22,
+      0.18,
+    );
+  if (step % 2) {
+    playHiHatHit(ctx, dest, now);
+    return;
+  }
+  const beat = (step / 2) % 4;
+  if (beat === 0) playKick(ctx, dest, now);
+  if (beat === 2) playSnareHit(ctx, dest, now);
+}
+
 type TrackProgram = {
   stepSeconds: (bpm: number) => number;
   step: (ctx: AudioContext, dest: AnyNode, step: number, time: number) => void;
@@ -692,6 +793,10 @@ export const TRACK_PROGRAMS: Record<TrackId, TrackProgram> = {
   "warehouse-acid": {
     stepSeconds: (bpm) => 60 / bpm / 2,
     step: warehouseAcidStep,
+  },
+  "player-two-chiptune": {
+    stepSeconds: (bpm) => 60 / bpm / 2,
+    step: playerTwoChiptuneStep,
   },
 };
 

@@ -7,6 +7,7 @@ import { FOOD_STOREFRONTS } from "../food/storefronts.ts";
 import type { RoomId, Spawn } from "../rooms.ts";
 import { LIFT, SKYLARK_DOOR } from "../rooftop.ts";
 import { SPAWN as SUGAR_RUSH_SPAWN, SUGAR_RUSH_DOOR } from "../sugarRush.ts";
+import { ARCADE_DOOR, SPAWN as ARCADE_SPAWN } from "../arcadeBar.ts";
 import { BOWLING_DOOR, SPAWN as BOWLING_SPAWN } from "../bowlingAlley.ts";
 import { KARAOKE_DOOR, SPAWN as KARAOKE_SPAWN } from "../karaoke.ts";
 import {
@@ -871,6 +872,7 @@ const ARTS_FRONT: readonly {
   color: string;
   sign?: { text: string; color: string };
   style: BuildingStyle;
+  door?: Door;
 }[] = [
   {
     x: -170,
@@ -881,7 +883,23 @@ const ARTS_FRONT: readonly {
     sign: { text: "VINYL VAULT", color: "#ffe066" },
     style: "warehouse",
   },
-  { x: -132, w: 30, h: 22, north: false, color: "#4ecdc4", style: "warehouse" },
+  {
+    x: -132,
+    w: 30,
+    h: 22,
+    north: false,
+    color: "#4ecdc4",
+    sign: { text: "PLAYER 2", color: "#7dff6b" },
+    style: "warehouse",
+    // Player 2, the arcade bar
+    door: {
+      position: ARCADE_DOOR.position,
+      radius: 1.5,
+      label: "Into Player 2",
+      target: "arcade-bar",
+      targetSpawn: { position: ARCADE_SPAWN, yaw: Math.PI },
+    },
+  },
   {
     x: -96,
     w: 26,
@@ -989,6 +1007,7 @@ const ARTS_BUILDINGS: readonly Building[] = ARTS_FRONT.map(
     style: b.style,
     color: b.color,
     sign: b.sign,
+    ...(b.door ? { door: b.door } : {}),
   }),
 );
 

@@ -327,3 +327,18 @@ test("Glow Bowl's door fires from Maple Drive, and its exit lands back outside",
   }
   assert.equal(fired, "bowling");
 });
+
+test("Player 2's door fires from Gallery Row, and its exit lands back outside", () => {
+  const door = BUILDINGS.find((b) => b.door?.target === "arcade-bar")?.door;
+  assert.ok(door);
+  const back = ROOMS["arcade-bar"].portals.find((p) => p.target === "city");
+  assert.ok(back);
+  assert.equal(isBlocked(CITY_AREA, back.targetSpawn.position), false);
+  let pos: Vec2 = back.targetSpawn.position;
+  let fired: string | null = null;
+  for (let step = 0; step < 200 && fired === null; step++) {
+    pos = stepInArea(CITY_AREA, pos, door.position, 0.2);
+    fired = portalAt(CITY_AREA, pos)?.target ?? null;
+  }
+  assert.equal(fired, "arcade-bar");
+});

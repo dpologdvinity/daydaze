@@ -3,6 +3,7 @@
 import type { RoomId } from "./rooms.ts";
 import type { Vec2 } from "./walk.ts";
 import { DECKS_SPOT } from "./warehouse.ts";
+import { LAST_CALL_SPOT, PLAYABLE, playSpot } from "./arcadeBar.ts";
 
 export const MINIGAME_IDS = [
   "bassline",
@@ -41,6 +42,39 @@ export const HOTSPOTS: readonly Hotspot[] = [
     label: "Play Last Call at the bar",
     position: [-1, -3.1],
     radius: 0.9,
+  },
+  // Player 2's cabinets, and Last Call past the end of its bar
+  {
+    id: "arcade-gem-glam",
+    room: "arcade-bar",
+    game: "gem-glam",
+    label: "Play Gem Glam on the cabinet",
+    position: playSpot(PLAYABLE.gemGlam),
+    radius: 0.6,
+  },
+  {
+    id: "arcade-bassline",
+    room: "arcade-bar",
+    game: "bassline",
+    label: "Play Bassline on the cabinet",
+    position: playSpot(PLAYABLE.bassline),
+    radius: 0.6,
+  },
+  {
+    id: "arcade-midway",
+    room: "arcade-bar",
+    game: "midway",
+    label: "Play the midway games on the cabinet",
+    position: playSpot(PLAYABLE.midway),
+    radius: 0.6,
+  },
+  {
+    id: "arcade-last-call",
+    room: "arcade-bar",
+    game: "last-call",
+    label: "Play Last Call at the bar",
+    position: LAST_CALL_SPOT,
+    radius: 0.6,
   },
   {
     // In front of the shipping container the DJ plays from.

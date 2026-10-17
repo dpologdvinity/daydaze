@@ -4,6 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { ROOMS, isRoomId } from "./rooms.ts";
 import { SPEEDWAY_SPOTS } from "./speedway/spots.ts";
+import { hotspotsIn } from "./hotspots.ts";
 import { MIC } from "./karaoke.ts";
 import { seatsIn } from "./seats.ts";
 import { pointInPolygon, type Vec2 } from "./walk.ts";
@@ -13,6 +14,7 @@ test("every room is registered under its own id", () => {
     "amusement-park",
     "apartment",
     "aquarium",
+    "arcade-bar",
     "boba-matcha",
     "bowling",
     "city",
@@ -293,6 +295,26 @@ test("Glow Bowl's door opens onto the concourse, and its benches and lanes are r
     ...seatsIn("bowling").map((s) => s.approach),
   ];
   for (const goal of goals) {
+    let pos: Vec2 = room.spawn.position;
+    for (let k = 0; k < 600; k++) pos = stepInArea(area, pos, goal, 0.05);
+    assert.ok(
+      Math.hypot(pos[0] - goal[0], pos[1] - goal[1]) < 0.3,
+      `reached ${goal}`,
+    );
+  }
+});
+
+test("Player 2's door opens onto its floor, and every cabinet, stool and the bar game are reachable", () => {
+  const room = ROOMS["arcade-bar"];
+  const area = areaOf(room);
+  assert.equal(isBlocked(area, room.spawn.position), false);
+  const goals: Vec2[] = [
+    ...hotspotsIn("arcade-bar").map((h) => h.position),
+    ...seatsIn("arcade-bar").map((s) => s.approach),
+  ];
+  assert.equal(hotspotsIn("arcade-bar").length, 4);
+  for (const goal of goals) {
+    assert.equal(isBlocked(area, goal), false, `clear at ${goal}`);
     let pos: Vec2 = room.spawn.position;
     for (let k = 0; k < 600; k++) pos = stepInArea(area, pos, goal, 0.05);
     assert.ok(

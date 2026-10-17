@@ -17,10 +17,11 @@ const TRACK_IDS: TrackId[] = [
   "carnival-calliope",
   "sugar-rush-pop",
   "warehouse-acid",
+  "player-two-chiptune",
 ];
 
-test("JUKEBOX_TRACKS has exactly 6 tracks with full metadata", () => {
-  assert.equal(JUKEBOX_TRACKS.length, 6);
+test("JUKEBOX_TRACKS has exactly 7 tracks with full metadata", () => {
+  assert.equal(JUKEBOX_TRACKS.length, 7);
   for (const track of JUKEBOX_TRACKS) {
     assert.ok(TRACK_IDS.includes(track.id));
     assert.equal(typeof track.title, "string");
@@ -57,6 +58,8 @@ test("track metadata matches design spec (title, bpm)", () => {
   assert.equal(byId["sugar-rush-pop"].bpm, 124);
   assert.equal(byId["warehouse-acid"].title, "Warehouse Acid");
   assert.equal(byId["warehouse-acid"].bpm, 132);
+  assert.equal(byId["player-two-chiptune"].title, "Player Two");
+  assert.equal(byId["player-two-chiptune"].bpm, 150);
 });
 
 test("createJukeboxController falls back safely when AudioContext is null", () => {
