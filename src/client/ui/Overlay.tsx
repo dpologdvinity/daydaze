@@ -51,6 +51,7 @@ import type { MinigameId } from "../../game/hotspots.ts";
 import { VIEWS, type View } from "../world/CameraRig.tsx";
 import { DriveControls } from "../rooms/speedway/DriveControls.tsx";
 import { BowlingPanel } from "../rooms/bowling/BowlingPanel.tsx";
+import { clearCityMapRequest, useCityMapRequest } from "./cityMapRequest.ts";
 import { RaceHud, SpeedwayMenu } from "../rooms/speedway/RaceHud.tsx";
 import { CocktailIcon, RideIcon } from "./icons.tsx";
 import { DancePicker, HoldPicker } from "./DancePicker.tsx";
@@ -519,6 +520,13 @@ export function Overlay({
   const neighborhood = useNeighborhood();
   const [phone, setPhone] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
+  // the bus stop's map board asks for the map from inside the world
+  const mapRequested = useCityMapRequest();
+  useEffect(() => {
+    if (!mapRequested) return;
+    clearCityMapRequest();
+    setMapOpen(true);
+  }, [mapRequested]);
   const [tab, setTab] = useState<MirrorTab>("face");
   // the creator frames the doll for the tab: close on the face for face and
   // makeup, the full look for the rest; closing it restores the old view

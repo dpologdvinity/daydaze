@@ -77,6 +77,24 @@ export const SHORE_Z = 256;
 export const FAIR_FORECOURT_Z = 239;
 export const BOARDWALK = { z0: 267, z1: 279 };
 export const WATER_Z = 340;
+/** Downtown Plaza, the city square between the avenue and the arcade: a
+ * tiered fountain in the middle, benches round it facing in, and a bus
+ * stop on the avenue side whose board is the city map. */
+export const FOUNTAIN = { x: 0, z: 29, r: 3.6 } as const;
+export const SQUARE_BENCHES: readonly { at: Vec2; yaw: number }[] = [
+  0, 1, 2, 3, 4, 5,
+].map((i) => {
+  // round the fountain, leaving gaps on the avenue and arcade axes
+  const a = ((i + 0.5) / 6) * Math.PI * 2;
+  const r = FOUNTAIN.r + 3.2;
+  return {
+    at: [FOUNTAIN.x + Math.sin(a) * r, FOUNTAIN.z + Math.cos(a) * r],
+    // facing the fountain: (sin yaw, cos yaw) points at it
+    yaw: a + Math.PI,
+  };
+});
+export const SQUARE_BUS_STOP: Vec2 = [-30, 15.5];
+
 /** Things on the sand: bonfires ringed by log seats, a volleyball net. */
 export const BONFIRES: readonly Vec2[] = [
   [-150, 312],
@@ -1630,6 +1648,9 @@ function nearCross(x: number): boolean {
 // and cross streets get trees every 60 m. Props block the walk like a post.
 function buildProps(): Prop[] {
   const props: Prop[] = [];
+  // palms at the square's four corners
+  for (const x of [-44, 44])
+    for (const z of [17, 40]) props.push({ kind: "palm", position: [x, z] });
   for (let x = -180; x <= 180; x += 30) {
     if (nearCross(x)) continue;
     for (const z of [-9, 9]) props.push({ kind: "lamp", position: [x, z] });
@@ -1715,6 +1736,21 @@ const PROP_HALF = 0.25;
  * net out on the sand. */
 const CITY_BLOCKERS: readonly (readonly Vec2[])[] = [
   ...BUILDINGS.map((b) => b.footprint),
+  // the fountain's basin, as an octagon
+  Array.from({ length: 8 }, (_, i): Vec2 => {
+    const a = (i / 8) * Math.PI * 2;
+    return [
+      FOUNTAIN.x + Math.sin(a) * FOUNTAIN.r,
+      FOUNTAIN.z + Math.cos(a) * FOUNTAIN.r,
+    ];
+  }),
+  // the bus shelter's back panel
+  rect(
+    SQUARE_BUS_STOP[0] - 1.8,
+    SQUARE_BUS_STOP[1] + 0.5,
+    SQUARE_BUS_STOP[0] + 1.8,
+    SQUARE_BUS_STOP[1] + 0.8,
+  ),
   ...BONFIRES.map(([x, z]) => rect(x - 0.9, z - 0.9, x + 0.9, z + 0.9)),
   ...[-1, 1].map((side) => {
     const x = VOLLEYBALL.x + side * VOLLEYBALL.half;

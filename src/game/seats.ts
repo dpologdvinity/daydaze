@@ -4,6 +4,7 @@ import { SOFA, STOOL_XS, STOOL_Z } from "./rooftop.ts";
 import { CHAIR_X, CHAIR_ZS, STOOL_X, STOOL_ZS } from "./sugarRush.ts";
 import * as ARCADE from "./arcadeBar.ts";
 import * as LA_NOCHE from "./laNoche.ts";
+import { FOUNTAIN, SQUARE_BENCHES } from "./city/layout.ts";
 import { BENCH_SEATS } from "./bowlingAlley.ts";
 import { BOOTH_SEATS, MIC } from "./karaoke.ts";
 import * as WAREHOUSE from "./warehouse.ts";
@@ -161,6 +162,22 @@ const laNocheSeats = [
   ),
 ];
 
+// Downtown Plaza: benches round the fountain, two to a bench, facing it
+const squareSeats = SQUARE_BENCHES.flatMap(({ at: [x, z], yaw }, b) =>
+  [-0.5, 0.5].map((along, i) => {
+    // along the bench: perpendicular to the way it faces
+    const at: Vec2 = [x + Math.cos(yaw) * along, z - Math.sin(yaw) * along];
+    return seat(
+      `square-bench-${b}-${i}`,
+      "city",
+      at,
+      0.45,
+      [FOUNTAIN.x, FOUNTAIN.z],
+      "front",
+    );
+  }),
+);
+
 export const SEATS: readonly Seat[] = [
   ...foodSeats,
   ...velvetStools,
@@ -172,6 +189,7 @@ export const SEATS: readonly Seat[] = [
   ...bowlingSeats,
   ...arcadeSeats,
   ...laNocheSeats,
+  ...squareSeats,
 ];
 
 export function seatsIn(room: RoomId): readonly Seat[] {
