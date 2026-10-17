@@ -58,6 +58,7 @@ import { STORES as GALLERIA_STORES } from "../../game/galleria.ts";
 import { CocktailIcon, RideIcon } from "./icons.tsx";
 import { DancePicker, HoldPicker } from "./DancePicker.tsx";
 import { CityMap } from "./CityMap.tsx";
+import type { ChallengeSave } from "../../game/challenges.ts";
 import { FireworksTicker } from "../city/FireworksTicker.tsx";
 import { Dressing } from "./Dressing.tsx";
 import { GAITS, gaitOf } from "../../game/gaits.ts";
@@ -509,6 +510,7 @@ export function Overlay({
   setView,
   panelOpen,
   setPanelOpen,
+  challenges,
 }: {
   room: RoomId;
   roomName: string;
@@ -539,6 +541,7 @@ export function Overlay({
   setView: (view: View) => void;
   panelOpen: boolean;
   setPanelOpen: (open: boolean) => void;
+  challenges: ChallengeSave;
 }) {
   const neighborhood = useNeighborhood();
   const [phone, setPhone] = useState(false);
@@ -626,6 +629,7 @@ export function Overlay({
             onCityTravel(spawn);
           }}
           onClose={() => setMapOpen(false)}
+          challenges={challenges}
         />
       )}
       <div className="dock">

@@ -803,6 +803,12 @@ test("the city map takes the player to Beachside", async ({ page }) => {
   await page.getByRole("button", { name: "City map" }).click();
   const map = page.getByRole("dialog", { name: "City map" });
   await expect(map).toBeVisible();
+  // today's three challenges sit under the map
+  await expect(
+    map
+      .getByRole("region", { name: "Today's challenges" })
+      .getByRole("listitem"),
+  ).toHaveCount(3);
   await map.getByRole("button", { name: "Beachside" }).click();
   await expect(map).toBeHidden();
   await expect(roomTitle(page)).toHaveText("Beachside", { timeout: 60_000 });

@@ -2,6 +2,7 @@
 // graded S to C on its score, pays coins for the grade, and a personal best
 // pays a bonus on top. Pure; the save keeps each game's best.
 
+import type { RoomId } from "./rooms.ts";
 import { payoutFor, type PayGrade } from "./wallet.ts";
 
 export const PRIZE_GAMES = [
@@ -18,6 +19,8 @@ export type PrizeGame = (typeof PRIZE_GAMES)[number];
 
 type Table = {
   label: string;
+  /** Where it's played. */
+  room: RoomId;
   /** The least score for S, A and B; anything less is a C. */
   grades: readonly [number, number, number];
   /** Mini golf counts strokes against par: lower is better. */
@@ -29,32 +32,53 @@ type Table = {
 const plain = (unit: string) => (score: number) => `${score} ${unit}`;
 
 export const PRIZE_TABLES: Record<PrizeGame, Table> = {
-  hoops: { label: "Hot Shots", grades: [18, 12, 6], format: plain("points") },
-  penalties: { label: "Penalties", grades: [5, 4, 3], format: plain("goals") },
+  hoops: {
+    label: "Hot Shots",
+    room: "dome",
+    grades: [18, 12, 6],
+    format: plain("points"),
+  },
+  penalties: {
+    label: "Penalties",
+    room: "stadium",
+    grades: [5, 4, 3],
+    format: plain("goals"),
+  },
   "field-goals": {
     label: "Field goals",
+    room: "gridiron",
     grades: [5, 4, 2],
     format: plain("good"),
   },
-  bowling: { label: "Bowling", grades: [180, 130, 80], format: plain("pins") },
+  bowling: {
+    label: "Bowling",
+    room: "bowling",
+    grades: [180, 130, 80],
+    format: plain("pins"),
+  },
   "mini-golf": {
     label: "Lagoon Links",
+    room: "mini-golf",
     grades: [-2, 0, 3],
     lower: true,
-    format: (s) => (s === 0 ? "level par" : s < 0 ? `${s} under` : `+${s}`),
+    format: (s) =>
+      s === 0 ? "level par" : s < 0 ? `${-s} under` : `${s} over`,
   },
   "driving-range": {
     label: "Driving range",
+    room: "driving-range",
     grades: [1500, 900, 400],
     format: plain("points"),
   },
   skate: {
     label: "Half-pipe",
+    room: "skatepark",
     grades: [12000, 5000, 1500],
     format: plain("points"),
   },
   gymnastics: {
     label: "Floor routine",
+    room: "gym",
     grades: [11, 10, 9],
     format: (s) => s.toFixed(3),
   },

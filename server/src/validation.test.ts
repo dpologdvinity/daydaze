@@ -60,6 +60,7 @@ test("saves are stored only when loadSave keeps every field as sent", () => {
   const reordered = JSON.stringify({
     settings: { muted: true, quality: "low", effects: "low", panelOpen: false },
     bests: save.bests,
+    challenges: save.challenges,
     crime: save.crime,
     jail: save.jail,
     home: save.home,

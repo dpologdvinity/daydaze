@@ -9,6 +9,8 @@ import { createStore } from "../rooms/shared/store.ts";
 export const prizeDesk = createStore({
   pending: null as { game: PrizeGame; score: number } | null,
   shown: null as Prize | null,
+  /** Coins a daily challenge paid on top, 0 when none was reached. */
+  challenge: 0,
   /** performance.now() when `shown` was posted. */
   at: 0,
 });
@@ -17,8 +19,13 @@ export function award(game: PrizeGame, score: number) {
   prizeDesk.set({ pending: { game, score } });
 }
 
-export function postPrize(prize: Prize) {
-  prizeDesk.set({ pending: null, shown: prize, at: performance.now() });
+export function postPrize(prize: Prize, challenge: number) {
+  prizeDesk.set({
+    pending: null,
+    shown: prize,
+    challenge,
+    at: performance.now(),
+  });
 }
 
 export function dismissPrize() {

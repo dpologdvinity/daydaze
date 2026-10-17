@@ -40,6 +40,7 @@ import { LoadingVeil } from "./ui/LoadingVeil.tsx";
 import { preloadLook } from "./avatar/human/HumanDoll.tsx";
 import { RoomAudio } from "./RoomAudio.tsx";
 import { playFanfare, playWhoosh } from "../audio/worldSounds.ts";
+import { completeChallenge, dayOf } from "../game/challenges.ts";
 import { prizeFor } from "../game/prizes.ts";
 import { PrizeCard } from "./ui/PrizeCard.tsx";
 import { postPrize, prizeDesk } from "./ui/prizeDesk.ts";
@@ -197,12 +198,19 @@ export function App() {
       pending.score,
       save.bests[pending.game],
     );
+    const daily = completeChallenge(
+      save.challenges,
+      dayOf(Date.now()),
+      pending.game,
+      pending.score,
+    );
     setSave((s) => ({
       ...s,
-      coins: earn(s.coins, prize.coins),
+      coins: earn(s.coins, prize.coins + daily.coins),
       bests: prize.best ? { ...s.bests, [prize.game]: prize.score } : s.bests,
+      challenges: daily.save,
     }));
-    postPrize(prize);
+    postPrize(prize, daily.coins);
     playFanfare(prize.grade === "S" ? 1 : prize.grade === "A" ? 0.6 : 0);
   }, [pending]);
   const saved = save.settings.quality;
@@ -286,6 +294,7 @@ export function App() {
           view={view}
           setView={setView}
           panelOpen={save.settings.panelOpen}
+          challenges={save.challenges}
           setPanelOpen={setPanelOpen}
         />
         {here.room === "apartment" && (

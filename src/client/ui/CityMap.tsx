@@ -1,7 +1,14 @@
 import { useEffect, useRef } from "react";
 import { CITY_BOUNDS, CITY_SURFACES, WATER_Z } from "../../game/city/layout.ts";
 import { CITY_PLACES } from "../../game/city/places.ts";
-import type { Spawn } from "../../game/rooms.ts";
+import {
+  CHALLENGE_PAY,
+  challengesFor,
+  dayOf,
+  type ChallengeSave,
+} from "../../game/challenges.ts";
+import { PRIZE_TABLES } from "../../game/prizes.ts";
+import { ROOMS, type Spawn } from "../../game/rooms.ts";
 
 const [X0, Z0] = CITY_BOUNDS[0];
 const [X1, Z1] = CITY_BOUNDS[2];
@@ -30,10 +37,15 @@ const FILL: Record<(typeof PATHS)[number]["kind"], string> = {
 export function CityMap({
   onGo,
   onClose,
+  challenges,
 }: {
   onGo: (spawn: Spawn) => void;
   onClose: () => void;
+  /** Today's challenges already reached. */
+  challenges: ChallengeSave;
 }) {
+  const day = dayOf(Date.now());
+  const done = challenges.day === day ? challenges.done : [];
   const panel = useRef<HTMLDivElement>(null);
   useEffect(() => {
     panel.current?.querySelector("button")?.focus();
@@ -86,6 +98,24 @@ export function CityMap({
             </button>
           ))}
         </div>
+        <section className="challenges" aria-label="Today's challenges">
+          <h3>Today&apos;s challenges · {CHALLENGE_PAY} coins each</h3>
+          <ul>
+            {challengesFor(day).map((c) => {
+              const table = PRIZE_TABLES[c.game];
+              const hit = done.includes(c.game);
+              return (
+                <li key={c.game} data-done={hit}>
+                  <span aria-hidden="true">{hit ? "★" : "☆"}</span>
+                  {table.label}: {table.format(c.target)}
+                  {table.lower ? " or better" : " or more"}
+                  <small> at {ROOMS[table.room].name}</small>
+                  {hit && <span className="sr-only"> (done)</span>}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
       </div>
     </div>
   );
