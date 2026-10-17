@@ -29,6 +29,10 @@ const PANELS: Partial<Record<RoomId, ComponentType>> = {
     () => import("../rooms/range/RangePanel.tsx"),
     "RangePanel",
   ),
+  marina: panel(
+    () => import("../rooms/marina/FishingPanel.tsx"),
+    "FishingPanel",
+  ),
   gym: panel(() => import("../rooms/gym/RoutinePanel.tsx"), "RoutinePanel"),
   stadium: panel(
     () => import("../rooms/stadium/PenaltyPanel.tsx"),

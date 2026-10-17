@@ -13,6 +13,7 @@ import * as DOME from "../dome.ts";
 import * as GALLERIA from "../galleria.ts";
 import * as RINK from "../rollerRink.ts";
 import * as SKATEPARK from "../skatepark.ts";
+import * as MARINA from "../marina.ts";
 import * as GRIDIRON from "../gridiron.ts";
 import * as RANGE from "../drivingRange.ts";
 import * as GYM from "../gym.ts";
@@ -781,7 +782,22 @@ const BEACH_FRONT: readonly {
     sign: { text: "TIKI BAR", color: "#ffb02e" },
     style: "storefront",
   },
-  { x: 40, w: 16, h: 8, color: "#b3e5ff" },
+  {
+    // Starboard Marina's gate, east of the pier
+    x: MARINA.MARINA_DOOR.position[0],
+    w: 16,
+    h: 9,
+    color: "#b3e5ff",
+    sign: { text: "STARBOARD MARINA", color: "#3fe0d0" },
+    style: "gate",
+    door: {
+      position: MARINA.MARINA_DOOR.position,
+      radius: 1.5,
+      label: "Into Starboard Marina",
+      target: "marina",
+      targetSpawn: { position: MARINA.SPAWN, yaw: Math.PI },
+    },
+  },
   {
     x: 96,
     w: 24,

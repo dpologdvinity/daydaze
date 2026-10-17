@@ -76,6 +76,7 @@ const SHOTS: {
   { name: "skatepark", query: "room=skatepark" },
   { name: "gridiron", query: "room=gridiron" },
   { name: "driving-range", query: "room=driving-range" },
+  { name: "marina", query: "room=marina" },
   { name: "gym", query: "room=gym" },
   { name: "stadium", query: "room=stadium" },
   { name: "velvet-room-full-look", query: "room=velvet-room&view=full" },

@@ -12,6 +12,7 @@ import * as SKATEPARK from "./skatepark.ts";
 import * as GRIDIRON from "./gridiron.ts";
 import * as RANGE from "./drivingRange.ts";
 import * as GYM from "./gym.ts";
+import * as MARINA from "./marina.ts";
 import * as STADIUM from "./stadium.ts";
 import { BENCH_SEATS as LINKS_BENCH } from "./lagoonLinks.ts";
 import { FOUNTAIN, SQUARE_BENCHES } from "./city/layout.ts";
@@ -275,6 +276,13 @@ const moreSportsSeats = [
   ),
   ...GYM.BENCH_SEATS.map((at, i) =>
     seat(`gym-bench-${i}`, "gym", at, 0.45, [at[0], 0], "front"),
+  ),
+  // Starboard Marina: stools at the yacht club bar, benches facing the yachts
+  ...MARINA.BAR_STOOLS.map((at, i) =>
+    seat(`marina-stool-${i}`, "marina", at, 0.75, [at[0], MARINA.BAR.z1]),
+  ),
+  ...MARINA.BENCH_SEATS.map((at, i) =>
+    seat(`marina-bench-${i}`, "marina", at, 0.45, [at[0], 0], "front"),
   ),
 ];
 

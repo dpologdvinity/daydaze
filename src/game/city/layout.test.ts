@@ -358,7 +358,13 @@ test("Lagoon Links' gate fires from Shore Boulevard, and its exit lands back out
   assert.equal(fired, "mini-golf");
 });
 
-for (const target of ["dome", "stadium", "roller-rink", "skatepark"] as const) {
+for (const target of [
+  "dome",
+  "stadium",
+  "roller-rink",
+  "skatepark",
+  "marina",
+] as const) {
   test(`the ${target}'s gate fires from the forecourt, and its exit lands back outside`, () => {
     const door = BUILDINGS.find((b) => b.door?.target === target)?.door;
     assert.ok(door);

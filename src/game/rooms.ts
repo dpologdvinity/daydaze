@@ -76,6 +76,7 @@ import * as GRIDIRON from "./gridiron.ts";
 import * as RANGE from "./drivingRange.ts";
 import * as GYM from "./gym.ts";
 import * as STADIUM from "./stadium.ts";
+import * as MARINA from "./marina.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -111,6 +112,7 @@ export type RoomId =
   | "gridiron"
   | "driving-range"
   | "gym"
+  | "marina"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -664,6 +666,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to Gallery Row",
         target: "city",
         targetSpawn: { position: RANGE.RANGE_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  marina: {
+    id: "marina",
+    name: "Starboard Marina",
+    walkable: MARINA.FLOOR,
+    blockers: MARINA.BLOCKERS,
+    spawn: { position: MARINA.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "marina-to-city",
+        position: MARINA.EXIT,
+        radius: 0.8,
+        label: "Out to Shore Boulevard",
+        target: "city",
+        targetSpawn: { position: MARINA.MARINA_DOOR.landing, yaw: 0 },
       },
     ],
   },

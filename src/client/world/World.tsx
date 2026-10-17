@@ -99,6 +99,9 @@ const HauntedHouse = lazy(() =>
 const Gridiron = lazy(() =>
   import("../rooms/Gridiron.tsx").then((m) => ({ default: m.Gridiron })),
 );
+const Marina = lazy(() =>
+  import("../rooms/Marina.tsx").then((m) => ({ default: m.Marina })),
+);
 const DrivingRange = lazy(() =>
   import("../rooms/DrivingRange.tsx").then((m) => ({
     default: m.DrivingRange,
@@ -288,6 +291,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   skatepark: Skatepark,
   gridiron: Gridiron,
   "driving-range": DrivingRange,
+  marina: Marina,
   gym: Gym,
   stadium: Stadium,
   "haunted-house": HauntedHouse,

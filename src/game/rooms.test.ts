@@ -19,6 +19,7 @@ import { TEE as RANGE_TEE } from "./drivingRange.ts";
 import { SPOT as PENALTY_SPOT } from "./stadium.ts";
 import { HOLE_XS as LINKS_HOLE_XS } from "./lagoonLinks.ts";
 import { MIC } from "./karaoke.ts";
+import { FISH_SPOT as MARINA_FISH_SPOT } from "./marina.ts";
 import { seatsIn } from "./seats.ts";
 import { pointInPolygon, type Vec2 } from "./walk.ts";
 
@@ -43,6 +44,7 @@ test("every room is registered under its own id", () => {
     "kamayan-hall",
     "karaoke",
     "la-noche",
+    "marina",
     "mini-golf",
     "plaza",
     "pulse",
@@ -496,7 +498,7 @@ test("Concrete Wave: the drop-in, the bleachers and the edges are reachable", ()
   }
 });
 
-for (const id of ["gridiron", "driving-range", "gym"] as const) {
+for (const id of ["gridiron", "driving-range", "gym", "marina"] as const) {
   test(`${id}: every seat is reachable from the door`, () => {
     const room = ROOMS[id];
     const area = areaOf(room);
@@ -515,4 +517,10 @@ for (const id of ["gridiron", "driving-range", "gym"] as const) {
 test("the driving range's tee is on its floor and clear", () => {
   const area = areaOf(ROOMS["driving-range"]);
   assert.equal(isBlocked(area, RANGE_TEE), false);
+});
+
+test("the marina's fishing spot is on the dock and clear", () => {
+  const area = areaOf(ROOMS.marina);
+  assert.equal(isBlocked(area, MARINA_FISH_SPOT), false);
+  assert.equal(isBlocked(area, ROOMS.marina.spawn.position), false);
 });
