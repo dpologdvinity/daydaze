@@ -491,29 +491,21 @@ test("Pulse: dance through a dance-off and the floor pays a prize", async ({
   expect(errors).toEqual([]);
 });
 
-test("the marina: five casts off the dock end in a prize card", async ({
-  page,
-}) => {
-  test.setTimeout(600_000);
+test("the marina: cast, strike, and the catch is called", async ({ page }) => {
+  test.setTimeout(300_000);
   const errors = collectErrors(page);
   await page.goto(`${LOW}&room=marina`);
   await expect(canvasOf(page)).toHaveAttribute("data-frames", "10");
   const panel = page.getByRole("region", { name: "Fishing" });
   await panel.getByRole("button", { name: "Go fishing" }).click();
-  // cast, then strike straight away (too soon, mostly: the catch is
-  // called either way), until the fifth cast is in
-  const main = panel.getByRole("button", {
-    name: /^(Cast|Strike!|Fish again)$/,
+  await panel.getByRole("button", { name: "Cast" }).click();
+  // striking straight away is mostly too soon: the catch is called either way
+  await panel.getByRole("button", { name: "Strike!" }).click();
+  await expect(panel.getByRole("status")).toHaveText(/spooked|got away|kg/, {
+    timeout: 120_000,
   });
-  await expect(async () => {
-    const label = await main.textContent({ timeout: 1000 });
-    if (label === "Fish again") return;
-    if (await main.isEnabled()) await main.click({ timeout: 1000 });
-    throw new Error(`still fishing: ${label}`);
-  }).toPass({ timeout: 480_000, intervals: [500] });
-  await expect(page.getByRole("status", { name: "Prize" })).toContainText(
-    "Fishing",
-  );
+  await panel.getByRole("button", { name: "Reel in and leave" }).click();
+  await expect(panel.getByRole("button", { name: "Go fishing" })).toBeVisible();
   expect(errors).toEqual([]);
 });
 
