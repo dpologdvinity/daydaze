@@ -341,7 +341,12 @@
 
     const page = Number.parseInt(active?.textContent?.trim() || "", 10);
 
-    return Number.isFinite(page) ? page : null;
+    if (Number.isFinite(page)) {
+      return page;
+    }
+
+    // Mixamo hides the pager when all results fit on one page.
+    return document.querySelector(".pagination-holder .pagination") ? null : 1;
   }
 
   function getNextPageButton() {
