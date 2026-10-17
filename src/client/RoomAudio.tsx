@@ -41,6 +41,7 @@ const MUSIC: Partial<Record<RoomId, TrackId>> = {
   "driving-range": "canopy-lofi",
   marina: "canopy-lofi",
   courtside: "sugar-rush-pop",
+  catwalk: "sugar-rush-pop",
   "mermaid-cove": "waterhole-twilight",
   "skate-diner": "roller-disco",
   // a backing track to sing over

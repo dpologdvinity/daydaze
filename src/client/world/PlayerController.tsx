@@ -64,6 +64,8 @@ export type Player = {
     sit?: boolean;
     /** Head over heels, radians, about her hips: flips and tumbles. */
     flip?: number;
+    /** Her legs keep walking while the seat carries her (a runway strut). */
+    stride?: boolean;
   } | null;
   /** Set while seated on a chair (not a ride): the doll sits until she moves. */
   sitting: boolean;
@@ -339,7 +341,7 @@ export function PlayerController({
     gait.current.speed = THREE.MathUtils.damp(
       gait.current.speed,
       // on skates the legs swing slow and long: pushes, not steps
-      moving ? STRIDE * (skates.get().on ? 0.45 : 1) : 0,
+      moving || player.seat?.stride ? STRIDE * (skates.get().on ? 0.45 : 1) : 0,
       10,
       dt,
     );

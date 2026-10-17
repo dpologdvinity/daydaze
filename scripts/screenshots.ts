@@ -78,6 +78,7 @@ const SHOTS: {
   { name: "driving-range", query: "room=driving-range" },
   { name: "marina", query: "room=marina" },
   { name: "courtside", query: "room=courtside" },
+  { name: "catwalk", query: "room=catwalk" },
   { name: "mermaid-cove", query: "room=mermaid-cove" },
   { name: "skate-diner", query: "room=skate-diner" },
   { name: "gym", query: "room=gym" },

@@ -106,6 +106,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Skate-Up Drive-In Diner. Tap Dottie at the pass to order, grab a booth or a stool, and mind the servers gliding by on skates.",
   "mermaid-cove":
     "Mermaid Cove. The mermaids sing on the shells at the waterline: sing it back, one note longer each round. Or sit on a log and watch them swim.",
+  catwalk:
+    "The Catwalk. Walk the runway for the judges: strut, pose and twirl as each cue's ring closes.",
   courtside:
     "The Courtside Club. Play seven points against the club pro: swing as the ball reaches you, and a perfect swing deep in a rally is a winner.",
   marina:
