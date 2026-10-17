@@ -691,6 +691,7 @@ for (const room of [
   "marina",
   "courtside",
   "mermaid-cove",
+  "amusement-park",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

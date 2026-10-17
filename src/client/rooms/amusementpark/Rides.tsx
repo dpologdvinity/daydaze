@@ -28,6 +28,8 @@ import {
   trackPose,
   type Track,
 } from "../../../game/amusementPark.ts";
+import type { Look } from "../../../game/look.ts";
+import { Doll } from "../../avatar/Doll.tsx";
 import { useReducedMotion } from "../../motion.ts";
 import { canvasTex, GOLD, hdr, LACQUER } from "../shared/materials.ts";
 import { MARQUEE, Neon, NeonText } from "../shared/Neon.tsx";
@@ -131,13 +133,37 @@ const RIM_LATTICE = rimLattice(RIM_RADIUS);
 const RIM_BULBS = rimBulbs(RIM_RADIUS);
 const [HX, HY, HZ] = FERRIS.hub;
 
-/** A ferris wheel that always turns. Gondolas stay upright on the rim. */
+/** Riders in a few of the gondolas: which gondola, and who. */
+const RIDERS: readonly { gondola: number; look: Look }[] = (
+  [
+    [2, "#f3d4c4", "pigtails", "#ff4fb3", "baby-tee-mini", "#3fe0d0"],
+    [5, "#633c29", "afro", "#1b1014", "jeans", "#ffb02e"],
+    [8, "#c48d68", "mid-wavy", "#4a2a1c", "mini", "#ff2f9a"],
+    [11, "#e6b48e", "sleek-bob", "#7b4dff", "shorts", "#9b5cff"],
+  ] as const
+).map(([gondola, skin, hairStyle, hairColor, outfit, outfitColor]) => ({
+  gondola,
+  look: {
+    skin,
+    hairStyle,
+    hairColor,
+    outfit,
+    outfitColor,
+    lips: "lips-nude-pink-gloss",
+    brows: "brows-feathered-honey",
+    shadow: "#ffd1f0",
+  },
+}));
+
+/** A ferris wheel that always turns. Gondolas stay upright on the rim, a
+ * few of them with riders. */
 export function FerrisWheel() {
   const calm = useReducedMotion();
   const rim = useRef<THREE.Group>(null);
   const paint = useRef<THREE.InstancedMesh>(null);
   const glass = useRef<THREE.InstancedMesh>(null);
   const trim = useRef<THREE.InstancedMesh>(null);
+  const riders = useRef<(THREE.Group | null)[]>([]);
   useLayoutEffect(() => {
     const m = paint.current;
     if (!m) return;
@@ -158,6 +184,12 @@ export function FerrisWheel() {
       glass.current?.setMatrixAt(k, matrix);
       trim.current?.setMatrixAt(k, matrix);
     }
+    RIDERS.forEach((r, i) => {
+      const g = riders.current[i];
+      if (!g) return;
+      ferrisPose(FERRIS, r.gondola / GONDOLAS + turn, pose);
+      g.position.set(pose.x, pose.y, pose.z);
+    });
     if (paint.current) paint.current.instanceMatrix.needsUpdate = true;
     if (glass.current) glass.current.instanceMatrix.needsUpdate = true;
     if (trim.current) trim.current.instanceMatrix.needsUpdate = true;
@@ -186,6 +218,16 @@ export function FerrisWheel() {
       <instancedMesh ref={paint} args={[GONDOLA.paint, PAINT, GONDOLAS]} />
       <instancedMesh ref={glass} args={[GONDOLA.glass, GLASS, GONDOLAS]} />
       <instancedMesh ref={trim} args={[GONDOLA.trim, TRIM, GONDOLAS]} />
+      {RIDERS.map((r, i) => (
+        <group
+          key={r.gondola}
+          ref={(g) => {
+            riders.current[i] = g;
+          }}
+        >
+          <Doll look={r.look} mood="sit" seed={281 + i} />
+        </group>
+      ))}
     </group>
   );
 }
