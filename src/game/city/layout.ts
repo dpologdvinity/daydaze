@@ -10,6 +10,7 @@ import { SPAWN as SUGAR_RUSH_SPAWN, SUGAR_RUSH_DOOR } from "../sugarRush.ts";
 import { ARCADE_DOOR, SPAWN as ARCADE_SPAWN } from "../arcadeBar.ts";
 import { LINKS_DOOR, SPAWN as LINKS_SPAWN } from "../lagoonLinks.ts";
 import * as DOME from "../dome.ts";
+import * as GALLERIA from "../galleria.ts";
 import * as STADIUM from "../stadium.ts";
 import {
   LA_NOCHE_DOOR,
@@ -512,6 +513,16 @@ export const CITY_SURFACES: readonly Surface[] = [
   { kind: "sidewalk", polygon: BASSLINE_ALLEY },
   // the Splash Zone gate's forecourt, off Shore Boulevard's north sidewalk
   { kind: "sidewalk", polygon: rect(-91, SHORE_Z - 13, -77, SHORE_Z - 11) },
+  // up to the Galleria's doors
+  {
+    kind: "sidewalk",
+    polygon: rect(
+      GALLERIA.GALLERIA_DOOR.position[0] - 4,
+      SHORE_Z - 13,
+      GALLERIA.GALLERIA_DOOR.position[0] + 4,
+      SHORE_Z - 11,
+    ),
+  },
   // up to Lagoon Links' gate
   { kind: "sidewalk", polygon: rect(-131, SHORE_Z - 13, -125, SHORE_Z - 11) },
   // the Aquarium's forecourt, up to its doors from Park Avenue's sidewalk
@@ -1350,6 +1361,28 @@ const MANILA_BUILDINGS: readonly Building[] = MANILA_FRONT.map(
 );
 
 const BEACH_BUILDINGS: readonly Building[] = [
+  {
+    // the Starlight Galleria, the big mall on the west end of the boulevard
+    id: "galleria",
+    neighborhood: "beachside",
+    footprint: rect(
+      GALLERIA.GALLERIA_LOT.x0,
+      GALLERIA.GALLERIA_LOT.z0,
+      GALLERIA.GALLERIA_LOT.x1,
+      GALLERIA.GALLERIA_LOT.z1,
+    ),
+    height: 26,
+    style: "glass",
+    color: "#cfe8ff",
+    sign: { text: "STARLIGHT GALLERIA", color: "#ff4fb3" },
+    door: {
+      position: GALLERIA.GALLERIA_DOOR.position,
+      radius: 2,
+      label: "Into the Starlight Galleria",
+      target: "galleria",
+      targetSpawn: { position: GALLERIA.SPAWN, yaw: Math.PI },
+    },
+  },
   ...BEACH_FRONT.map((b, i): Building => ({
     id: `beach-${i}`,
     neighborhood: "beachside",

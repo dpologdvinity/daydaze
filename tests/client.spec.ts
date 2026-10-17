@@ -456,6 +456,29 @@ test("the debug buttons take the player into Kamayan Hall", async ({
   expect(errors).toEqual([]);
 });
 
+test("the Galleria: buy at Glitterbox, pay for it, and it's yours to wear", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&debug=1`);
+  await page.getByRole("button", { name: "Go to the Galleria" }).click();
+  await expect(roomTitle(page)).toHaveText("Starlight Galleria");
+  await page.getByRole("button", { name: "Shop at Glitterbox" }).click();
+  const shop = page.getByRole("dialog", { name: "Glitterbox" });
+  await expect(shop).toBeVisible();
+  await expect(shop).toContainText("100 coins");
+  // the baby tee and mini is 45 coins
+  const row = shop
+    .getByRole("listitem")
+    .filter({ hasText: "Baby tee and mini" });
+  await row.getByRole("button", { name: "Buy" }).click();
+  await expect(shop).toContainText("55 coins");
+  await expect(row.getByRole("button", { name: "Wear" })).toBeVisible();
+  await shop.getByRole("button", { name: "Close" }).click();
+  await expect(shop).toBeHidden();
+  expect(errors).toEqual([]);
+});
+
 test("the debug buttons take the player into La Noche", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto(`${STILL}&debug=1`);
@@ -494,6 +517,7 @@ for (const room of [
   "dome",
   "stadium",
   "kamayan-hall",
+  "galleria",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

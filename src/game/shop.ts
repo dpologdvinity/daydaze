@@ -1,4 +1,12 @@
-import { DEFAULT_LOOK, type Look } from "./look.ts";
+import {
+  DEFAULT_LOOK,
+  EYESHADOWS,
+  HAIR_COLORS,
+  HAIR_STYLES,
+  LIPS,
+  OUTFITS,
+  type Look,
+} from "./look.ts";
 import { spend } from "./wallet.ts";
 
 export type ShopId = "boutique" | "beauty" | "salon";
@@ -35,6 +43,50 @@ export const SHOP_ITEMS: readonly ShopItem[] = [
   { id: "curl-cloud", slot: "hairStyle", store: "salon", price: 90 },
   { id: "#7ee8a2", slot: "hairColor", store: "salon", price: 30 },
 ];
+
+/** Every item a store sells, in catalogue order. */
+export function itemsIn(store: ShopId): ShopItem[] {
+  return SHOP_ITEMS.filter((item) => item.store === store);
+}
+
+const CATALOGUES: Record<ShopSlot, readonly { id: string; label: string }[]> = {
+  outfit: OUTFITS,
+  hairStyle: HAIR_STYLES,
+  hairColor: HAIR_COLORS,
+  lips: LIPS,
+  shadow: EYESHADOWS,
+};
+
+/** An item's name on the shelf, from its catalogue. */
+export function itemLabel(item: ShopItem): string {
+  return CATALOGUES[item.slot].find((o) => o.id === item.id)?.label ?? item.id;
+}
+
+/** The look with the item put on, when it's a real option for its slot. */
+export function wearItem(look: Look, item: ShopItem): Look {
+  switch (item.slot) {
+    case "outfit": {
+      const o = OUTFITS.find((x) => x.id === item.id);
+      return o ? { ...look, outfit: o.id } : look;
+    }
+    case "hairStyle": {
+      const o = HAIR_STYLES.find((x) => x.id === item.id);
+      return o ? { ...look, hairStyle: o.id } : look;
+    }
+    case "hairColor": {
+      const o = HAIR_COLORS.find((x) => x.id === item.id);
+      return o ? { ...look, hairColor: o.id } : look;
+    }
+    case "lips": {
+      const o = LIPS.find((x) => x.id === item.id);
+      return o ? { ...look, lips: o.id } : look;
+    }
+    case "shadow": {
+      const o = EYESHADOWS.find((x) => x.id === item.id);
+      return o ? { ...look, shadow: o.id } : look;
+    }
+  }
+}
 
 export function shopItem(id: string): ShopItem | undefined {
   return SHOP_ITEMS.find((item) => item.id === id);

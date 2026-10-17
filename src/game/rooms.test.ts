@@ -5,6 +5,12 @@ import assert from "node:assert/strict";
 import { ROOMS, isRoomId } from "./rooms.ts";
 import { SPEEDWAY_SPOTS } from "./speedway/spots.ts";
 import { courtToRoom } from "./dome.ts";
+import { FOOD_VENUES } from "./food/venues.ts";
+import {
+  clerkSpot as galleriaClerk,
+  STALLS as GALLERIA_STALLS,
+  STORES as GALLERIA_STORES,
+} from "./galleria.ts";
 import { SPOTS as HOOP_SPOTS } from "./hoops.ts";
 import { hotspotsIn } from "./hotspots.ts";
 import { SPOT as PENALTY_SPOT } from "./stadium.ts";
@@ -24,6 +30,7 @@ test("every room is registered under its own id", () => {
     "city",
     "dome",
     "filipino-joint",
+    "galleria",
     "haunted-house",
     "ice-rink",
     "jail",
@@ -406,6 +413,39 @@ test("Lechon and Kamayan Hall: every seat at the boodle table and the sofa is re
       goal[1] < -1.6 ? [[-5.4, 1.2], [-5.4, -3.6], goal] : [goal];
     for (const via of route)
       for (let k = 0; k < 400; k++) pos = stepInArea(area, pos, via, 0.05);
+    assert.ok(
+      Math.hypot(pos[0] - goal[0], pos[1] - goal[1]) < 0.3,
+      `reached ${goal}`,
+    );
+  }
+});
+
+test("the Galleria's food court stalls are real venues", () => {
+  for (const stall of GALLERIA_STALLS)
+    assert.ok(
+      FOOD_VENUES.some((v) => v.id === stall.venue),
+      stall.venue,
+    );
+});
+
+test("the Galleria: every clerk, bench and food court seat is reachable from the doors", () => {
+  const room = ROOMS.galleria;
+  const area = areaOf(room);
+  assert.equal(isBlocked(area, room.spawn.position), false);
+  const goals: Vec2[] = [
+    ...GALLERIA_STORES.map((s) => galleriaClerk(s)).map(([x, z]): Vec2 => [
+      x,
+      z + 0.7,
+    ]),
+    ...seatsIn("galleria").map((s) => s.approach),
+  ];
+  for (const goal of goals) {
+    assert.equal(isBlocked(area, goal), false, `clear at ${goal}`);
+    let pos: Vec2 = room.spawn.position;
+    // the food court's far chairs are reached up its east aisle
+    const route: Vec2[] = goal[0] > 9 ? [[11.2, 7.6], goal] : [goal];
+    for (const via of route)
+      for (let k = 0; k < 800; k++) pos = stepInArea(area, pos, via, 0.05);
     assert.ok(
       Math.hypot(pos[0] - goal[0], pos[1] - goal[1]) < 0.3,
       `reached ${goal}`,

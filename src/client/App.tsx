@@ -23,6 +23,7 @@ import {
   type SaveV1,
 } from "../game/save.ts";
 import { earn, spend, payoutFor, type PayGrade } from "../game/wallet.ts";
+import { buyItem } from "../game/shop.ts";
 import { CityJoystick } from "./city/CityJoystick.tsx";
 import { readFlags } from "./flags.ts";
 import { ReducedMotionContext, usePrefersReducedMotion } from "./motion.ts";
@@ -235,6 +236,19 @@ export function App() {
           setBody={setBody}
           coins={save.coins}
           wardrobe={save.wardrobe}
+          onBuy={(id) => {
+            const r = buyItem(
+              { coins: save.coins, wardrobe: save.wardrobe },
+              id,
+            );
+            if (r.ok)
+              setSave((s) => ({
+                ...s,
+                coins: r.state.coins,
+                wardrobe: [...r.state.wardrobe],
+              }));
+            return r;
+          }}
           onRide={() => setRides((n) => n + 1)}
           onPlayGame={setGame}
           onCityTravel={(spawn) => travel("city", spawn)}

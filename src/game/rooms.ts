@@ -69,6 +69,7 @@ import {
 } from "./lagoonLinks.ts";
 import * as DOME from "./dome.ts";
 import * as KAMAYAN from "./kamayanHall.ts";
+import * as GALLERIA from "./galleria.ts";
 import * as STADIUM from "./stadium.ts";
 import type { Vec2 } from "./walk.ts";
 
@@ -99,6 +100,7 @@ export type RoomId =
   | "dome"
   | "stadium"
   | "kamayan-hall"
+  | "galleria"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -618,6 +620,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the park",
         target: "city",
         targetSpawn: { position: ICE_RINK_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  galleria: {
+    id: "galleria",
+    name: "Starlight Galleria",
+    walkable: GALLERIA.FLOOR,
+    blockers: GALLERIA.BLOCKERS,
+    spawn: { position: GALLERIA.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "galleria-to-city",
+        position: GALLERIA.EXIT,
+        radius: 0.8,
+        label: "Out to Shore Boulevard",
+        target: "city",
+        targetSpawn: { position: GALLERIA.GALLERIA_DOOR.landing, yaw: 0 },
       },
     ],
   },

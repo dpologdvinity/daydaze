@@ -95,6 +95,9 @@ const HauntedHouse = lazy(() =>
     default: m.HauntedHouse,
   })),
 );
+const Galleria = lazy(() =>
+  import("../rooms/Galleria.tsx").then((m) => ({ default: m.Galleria })),
+);
 const KamayanHall = lazy(() =>
   import("../rooms/KamayanHall.tsx").then((m) => ({ default: m.KamayanHall })),
 );
@@ -262,6 +265,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   "mini-golf": MiniGolf,
   dome: Dome,
   "kamayan-hall": KamayanHall,
+  galleria: Galleria,
   stadium: Stadium,
   "haunted-house": HauntedHouse,
   "filipino-joint": FilipinoJoint,

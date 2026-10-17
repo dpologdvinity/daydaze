@@ -14,9 +14,12 @@ import {
   SHOP_ITEMS,
   buyItem,
   cleanWardrobe,
+  itemLabel,
+  itemsIn,
   shopItem,
   unlockedLook,
   wearable,
+  wearItem,
 } from "./shop.ts";
 
 const catalogs = {
@@ -146,4 +149,16 @@ test("the closet lists free options and owned shop items only", () => {
     wearable(OUTFITS, []).map((option) => option.id),
     ["flares", "mini", "fur", "jeans", "shorts", "blouse"],
   );
+});
+
+test("every store's items have shelf names and can be worn", () => {
+  for (const store of ["boutique", "beauty", "salon"] as const) {
+    const items = itemsIn(store);
+    assert.ok(items.length > 0, store);
+    for (const item of items) {
+      assert.notEqual(itemLabel(item), item.id, item.id);
+      const worn = wearItem(DEFAULT_LOOK, item);
+      assert.equal(worn[item.slot], item.id);
+    }
+  }
 });

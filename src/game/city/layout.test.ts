@@ -374,3 +374,18 @@ for (const target of ["dome", "stadium"] as const) {
     assert.equal(fired, target);
   });
 }
+
+test("the Galleria's doors fire from Shore Boulevard, and its exit lands back outside", () => {
+  const door = BUILDINGS.find((b) => b.door?.target === "galleria")?.door;
+  assert.ok(door);
+  const back = ROOMS.galleria.portals.find((p) => p.target === "city");
+  assert.ok(back);
+  assert.equal(isBlocked(CITY_AREA, back.targetSpawn.position), false);
+  let pos: Vec2 = back.targetSpawn.position;
+  let fired: string | null = null;
+  for (let step = 0; step < 200 && fired === null; step++) {
+    pos = stepInArea(CITY_AREA, pos, door.position, 0.2);
+    fired = portalAt(CITY_AREA, pos)?.target ?? null;
+  }
+  assert.equal(fired, "galleria");
+});

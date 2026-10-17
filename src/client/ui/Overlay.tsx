@@ -45,7 +45,7 @@ import {
   clampTrait,
   type BodyShape,
 } from "../../game/body.ts";
-import { wearable } from "../../game/shop.ts";
+import { wearable, type PurchaseResult } from "../../game/shop.ts";
 import { drink } from "../effects/drunk.ts";
 import type { MinigameId } from "../../game/hotspots.ts";
 import { VIEWS, type View } from "../world/CameraRig.tsx";
@@ -55,6 +55,9 @@ import { GolfPanel } from "../rooms/minigolf/GolfPanel.tsx";
 import { HoopsPanel } from "../rooms/dome/HoopsPanel.tsx";
 import { PenaltyPanel } from "../rooms/stadium/PenaltyPanel.tsx";
 import { clearCityMapRequest, useCityMapRequest } from "./cityMapRequest.ts";
+import { ShopPanel } from "./ShopPanel.tsx";
+import { openShop } from "./shopRequest.ts";
+import { STORES as GALLERIA_STORES } from "../../game/galleria.ts";
 import { RaceHud, SpeedwayMenu } from "../rooms/speedway/RaceHud.tsx";
 import { CocktailIcon, RideIcon } from "./icons.tsx";
 import { DancePicker, HoldPicker } from "./DancePicker.tsx";
@@ -96,6 +99,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Your flat. Use the decorating panel to place furniture and lock the door. Tap the blue shelf to try a shoplift.",
   "haunted-house":
     "The Haunted House. Find your way through the dark rooms past the ghosts, then back out to the park.",
+  galleria:
+    "The Starlight Galleria. Tap a clerk at Glitterbox, Gloss & Glow or Curl & Chrome to shop, grab food at the food court, or ride the escalators' view.",
   "kamayan-hall":
     "Lechon and Kamayan Hall. Grab a seat at the boodle table, tap Tess at the carving station for the next dish, or sing videoke with Tita Joy.",
   dome: "The Dome. Play Hot Shots: sixty seconds to score from the spots round the arc. Bree sells snacks courtside.",
@@ -478,6 +483,7 @@ export function Overlay({
   setSwim,
   coins,
   wardrobe,
+  onBuy,
   body,
   setBody,
   onRide,
@@ -506,6 +512,7 @@ export function Overlay({
   setSwim: (swim: SwimLook) => void;
   coins: number;
   wardrobe: readonly string[];
+  onBuy: (id: string) => PurchaseResult;
   body: BodyShape;
   setBody: (body: BodyShape) => void;
   onRide: () => void;
@@ -591,6 +598,13 @@ export function Overlay({
         />
       </Dressing>
 
+      <ShopPanel
+        coins={coins}
+        wardrobe={wardrobe}
+        look={look}
+        setLook={setLook}
+        onBuy={onBuy}
+      />
       {room === "bowling" && <BowlingPanel />}
       {room === "mini-golf" && <GolfPanel />}
       {room === "dome" && <HoopsPanel />}
@@ -666,6 +680,23 @@ export function Overlay({
             </button>
           )}
           <VenueGames room={room} onPlay={onPlayGame} />
+          {room === "galleria" && (
+            <nav className="venue-games" aria-label="Shops in this mall">
+              {GALLERIA_STORES.map((store) =>
+                store.shop ? (
+                  <button
+                    key={store.id}
+                    type="button"
+                    onClick={() =>
+                      store.shop && openShop(store.shop, store.name)
+                    }
+                  >
+                    Shop at {store.name}
+                  </button>
+                ) : null,
+              )}
+            </nav>
+          )}
         </div>
         <div className="dock-modes">
           <Segmented

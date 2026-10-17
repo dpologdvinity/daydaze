@@ -6,6 +6,7 @@ import * as ARCADE from "./arcadeBar.ts";
 import * as LA_NOCHE from "./laNoche.ts";
 import * as DOME from "./dome.ts";
 import * as KAMAYAN from "./kamayanHall.ts";
+import * as GALLERIA from "./galleria.ts";
 import * as STADIUM from "./stadium.ts";
 import { BENCH_SEATS as LINKS_BENCH } from "./lagoonLinks.ts";
 import { FOUNTAIN, SQUARE_BENCHES } from "./city/layout.ts";
@@ -215,6 +216,24 @@ const kamayanSeats = [
   ),
 ];
 
+// The Galleria: benches round the atrium fountain, chairs in the food court
+const galleriaSeats = [
+  ...GALLERIA.ATRIUM_BENCHES.flatMap(([x, z], b) =>
+    [-0.5, 0.5].map((dx, i) =>
+      seat(
+        `galleria-bench-${b}-${i}`,
+        "galleria",
+        [x + dx, z],
+        0.45,
+        GALLERIA.FOUNTAIN,
+      ),
+    ),
+  ),
+  ...GALLERIA.TABLE_SEATS.map(({ at, facing }, i) =>
+    seat(`galleria-chair-${i}`, "galleria", at, 0.45, facing),
+  ),
+];
+
 export const SEATS: readonly Seat[] = [
   ...foodSeats,
   ...velvetStools,
@@ -230,6 +249,7 @@ export const SEATS: readonly Seat[] = [
   ...linksSeats,
   ...sportsSeats,
   ...kamayanSeats,
+  ...galleriaSeats,
 ];
 
 export function seatsIn(room: RoomId): readonly Seat[] {
