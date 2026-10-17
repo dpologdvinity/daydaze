@@ -2,6 +2,7 @@ import type { RoomId } from "./rooms.ts";
 import { footprint, type Furniture } from "./home/decor.ts";
 import { SOFA, STOOL_XS, STOOL_Z } from "./rooftop.ts";
 import { CHAIR_X, CHAIR_ZS, STOOL_X, STOOL_ZS } from "./sugarRush.ts";
+import { BOOTH_SEATS, MIC } from "./karaoke.ts";
 import * as WAREHOUSE from "./warehouse.ts";
 import { yawTowards, type Vec2 } from "./walk.ts";
 
@@ -132,6 +133,11 @@ const warehouseSeats = [
   ),
 ];
 
+// The Karaoke Loft: booth seats along both walls, turned to watch the stage
+const karaokeSeats = BOOTH_SEATS.map((at, i) =>
+  seat(`karaoke-booth-${i}`, "karaoke", at, 0.45, MIC, "front"),
+);
+
 export const SEATS: readonly Seat[] = [
   ...foodSeats,
   ...velvetStools,
@@ -139,6 +145,7 @@ export const SEATS: readonly Seat[] = [
   ...skylarkSeats,
   ...sugarRushSeats,
   ...warehouseSeats,
+  ...karaokeSeats,
 ];
 
 export function seatsIn(room: RoomId): readonly Seat[] {

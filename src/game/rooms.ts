@@ -32,6 +32,13 @@ import {
   SPAWN as WAREHOUSE_SPAWN,
   WAREHOUSE_DOOR,
 } from "./warehouse.ts";
+import {
+  EXIT as KARAOKE_EXIT,
+  FLOOR as KARAOKE_FLOOR,
+  BLOCKERS as KARAOKE_BLOCKERS,
+  KARAOKE_DOOR,
+  SPAWN as KARAOKE_SPAWN,
+} from "./karaoke.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -53,6 +60,7 @@ export type RoomId =
   | "rooftop-bar"
   | "sugar-rush"
   | "warehouse"
+  | "karaoke"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -566,6 +574,24 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the park",
         target: "city",
         targetSpawn: { position: ICE_RINK_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  karaoke: {
+    id: "karaoke",
+    name: "Karaoke Loft",
+    walkable: KARAOKE_FLOOR,
+    blockers: KARAOKE_BLOCKERS,
+    spawn: { position: KARAOKE_SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        // Down the stair to the alley.
+        id: "karaoke-to-city",
+        position: KARAOKE_EXIT,
+        radius: 0.9,
+        label: "Down to the alley",
+        target: "city",
+        targetSpawn: { position: KARAOKE_DOOR.landing, yaw: Math.PI / 2 },
       },
     ],
   },

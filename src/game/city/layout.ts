@@ -7,6 +7,7 @@ import { FOOD_STOREFRONTS } from "../food/storefronts.ts";
 import type { RoomId, Spawn } from "../rooms.ts";
 import { LIFT, SKYLARK_DOOR } from "../rooftop.ts";
 import { SPAWN as SUGAR_RUSH_SPAWN, SUGAR_RUSH_DOOR } from "../sugarRush.ts";
+import { KARAOKE_DOOR, SPAWN as KARAOKE_SPAWN } from "../karaoke.ts";
 import {
   ALLEY,
   SPAWN as WAREHOUSE_SPAWN,
@@ -537,6 +538,15 @@ const SKYLARK_CITY_DOOR: Door = {
   label: "Up to the Skylark",
   target: "rooftop-bar",
   targetSpawn: { position: LIFT.spawn, yaw: Math.PI },
+};
+
+// The Karaoke Loft's stair door, across the alley from Bassline's.
+const KARAOKE_CITY_DOOR: Door = {
+  position: KARAOKE_DOOR.position,
+  radius: 2,
+  label: "Up to the Karaoke Loft",
+  target: "karaoke",
+  targetSpawn: { position: KARAOKE_SPAWN, yaw: Math.PI },
 };
 
 // Bassline's steel door, halfway down the alley behind Sugar Rush.
@@ -1428,6 +1438,7 @@ export const BUILDINGS: readonly Building[] = [
     height: 30,
     style: "brick",
     sign: { text: "KARAOKE LOFT", color: "#b06bff" },
+    door: KARAOKE_CITY_DOOR,
   },
   {
     id: "bassline",

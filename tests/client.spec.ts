@@ -359,7 +359,22 @@ test("the debug buttons take the player into Bassline, with its decks", async ({
   expect(errors).toEqual([]);
 });
 
-for (const room of ["rooftop-bar", "sugar-rush", "warehouse"] as const) {
+test("the debug buttons take the player up to the Karaoke Loft", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&debug=1`);
+  await page.getByRole("button", { name: "Go to Karaoke Loft" }).click();
+  await expect(roomTitle(page)).toHaveText("Karaoke Loft");
+  expect(errors).toEqual([]);
+});
+
+for (const room of [
+  "rooftop-bar",
+  "sugar-rush",
+  "warehouse",
+  "karaoke",
+] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,
   }) => {
