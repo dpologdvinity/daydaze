@@ -5,7 +5,8 @@ export type TrackId =
   | "canopy-lofi"
   | "waterhole-twilight"
   | "carnival-calliope"
-  | "sugar-rush-pop";
+  | "sugar-rush-pop"
+  | "warehouse-acid";
 
 export type TrackMetadata = {
   id: TrackId;
@@ -60,6 +61,15 @@ export const JUKEBOX_TRACKS: readonly TrackMetadata[] = [
     description:
       "Y2K bubblegum pop: bouncing octave bass, square-wave arpeggios, handclaps and a glassy chime on every bar.",
     mood: "Giddy",
+  },
+  {
+    id: "warehouse-acid",
+    title: "Warehouse Acid",
+    genre: "Techno",
+    bpm: 132,
+    description:
+      "Warehouse techno: a deep rolling kick, offbeat rumble, open hats and a squelching acid line that opens and closes.",
+    mood: "Driving",
   },
 ];
 
@@ -568,6 +578,91 @@ export function sugarRushPopStep(
   if (step % 8 === 0) playPluck(ctx, dest, now, root * 8, 0.04);
 }
 
+// Warehouse Acid: a two-bar acid riff in A minor over a rolling kick.
+// Each eighth: a semitone above A1 (or null for a rest) and an accent.
+const ACID_RIFF: readonly (readonly [number | null, boolean])[] = [
+  [0, true],
+  [0, false],
+  [12, false],
+  [null, false],
+  [0, true],
+  [3, false],
+  [0, false],
+  [10, true],
+  [0, true],
+  [0, false],
+  [7, false],
+  [null, false],
+  [12, true],
+  [0, false],
+  [3, true],
+  [5, false],
+];
+
+/** A 303-ish acid note: a sawtooth through a resonant lowpass that snaps
+ * open and shut; `open` (0..1) sets how far it opens. */
+function playAcidNote(
+  ctx: AudioContext,
+  dest: AnyNode,
+  now: number,
+  frequency: number,
+  open: number,
+  accent: boolean,
+) {
+  const osc = ctx.createOscillator();
+  const filter = ctx.createBiquadFilter();
+  const gain = ctx.createGain();
+  osc.type = "sawtooth";
+  osc.frequency.setValueAtTime(frequency, now);
+  filter.type = "lowpass";
+  filter.Q.value = 14;
+  const peak = 400 + open * 2600 * (accent ? 1.4 : 1);
+  filter.frequency.setValueAtTime(peak, now);
+  filter.frequency.exponentialRampToValueAtTime(260, now + 0.16);
+  gain.gain.setValueAtTime(accent ? 0.16 : 0.1, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(dest);
+  osc.start(now);
+  osc.stop(now + 0.2);
+}
+
+/** A low sine thump on the offbeat, under the kick's tail: the rumble. */
+function playRumble(ctx: AudioContext, dest: AnyNode, now: number) {
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(55, now);
+  gain.gain.setValueAtTime(0.28, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+  osc.connect(gain);
+  gain.connect(dest);
+  osc.start(now);
+  osc.stop(now + 0.16);
+}
+
+export function warehouseAcidStep(
+  ctx: AudioContext,
+  dest: AnyNode,
+  step: number,
+  now: number,
+) {
+  const [semitone, accent] = ACID_RIFF[step % ACID_RIFF.length];
+  // the filter breathes over eight bars
+  const open = 0.5 - Math.cos((step / 64) * Math.PI * 2) * 0.5;
+  if (semitone !== null)
+    playAcidNote(ctx, dest, now, 55 * 2 ** (semitone / 12), open, accent);
+  if (step % 2) {
+    playHiHatHit(ctx, dest, now);
+    playRumble(ctx, dest, now);
+    return;
+  }
+  playKick(ctx, dest, now);
+  const beat = (step / 2) % 4;
+  if (beat === 1 || beat === 3) playClap(ctx, dest, now);
+}
+
 type TrackProgram = {
   stepSeconds: (bpm: number) => number;
   step: (ctx: AudioContext, dest: AnyNode, step: number, time: number) => void;
@@ -593,6 +688,10 @@ export const TRACK_PROGRAMS: Record<TrackId, TrackProgram> = {
   "sugar-rush-pop": {
     stepSeconds: (bpm) => 60 / bpm / 2,
     step: sugarRushPopStep,
+  },
+  "warehouse-acid": {
+    stepSeconds: (bpm) => 60 / bpm / 2,
+    step: warehouseAcidStep,
   },
 };
 

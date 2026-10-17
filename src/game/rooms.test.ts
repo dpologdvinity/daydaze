@@ -25,6 +25,7 @@ test("every room is registered under its own id", () => {
     "ube-bakery",
     "velvet-room",
     "violet-hour",
+    "warehouse",
     "water-park",
   ]);
   for (const [id, room] of Object.entries(ROOMS)) assert.equal(room.id, id);
@@ -234,6 +235,26 @@ test("Sugar Rush's door opens onto its floor, and its chairs, stools and decks a
     [3.85, -1.3],
     [3.85, 2.3],
     [0, -3.8],
+  ] as const) {
+    let pos: Vec2 = room.spawn.position;
+    for (let k = 0; k < 600; k++) pos = stepInArea(area, pos, goal, 0.05);
+    assert.ok(
+      Math.hypot(pos[0] - goal[0], pos[1] - goal[1]) < 0.3,
+      `reached ${goal}`,
+    );
+  }
+});
+
+test("Bassline's door opens onto its floor, and its stools, benches and decks are reachable", () => {
+  const room = ROOMS.warehouse;
+  const area = areaOf(room);
+  assert.equal(isBlocked(area, room.spawn.position), false);
+  for (const goal of [
+    [-5.35, -0.6],
+    [-5.35, 2.2],
+    [6.4, -1.8],
+    [6.4, 3.2],
+    [2.2, -3.8],
   ] as const) {
     let pos: Vec2 = room.spawn.position;
     for (let k = 0; k < 600; k++) pos = stepInArea(area, pos, goal, 0.05);

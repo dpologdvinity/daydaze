@@ -64,6 +64,11 @@ const ROOM_SHOTS: Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }> =
       eye: new THREE.Vector3(0, 8.5, 15),
       look: new THREE.Vector3(0, 0.8, -1),
     },
+    // from over the alley door, down the floor to the container
+    warehouse: {
+      eye: new THREE.Vector3(3.2, 4.4, 11.5),
+      look: new THREE.Vector3(-0.4, 2, -3),
+    },
     // from over the door, down the room to the DJ and the neon
     "sugar-rush": {
       eye: new THREE.Vector3(3.2, 5.4, 10.5),
@@ -136,6 +141,7 @@ const MAX_DISTANCE: Record<RoomId, number> = {
   "ice-rink": 22,
   "rooftop-bar": 20,
   "sugar-rush": 18,
+  warehouse: 20,
   "haunted-house": 16,
   // the track sits far back, so the Speedway's wide shot needs more orbit range
   speedway: 60,

@@ -7,6 +7,11 @@ import { FOOD_STOREFRONTS } from "../food/storefronts.ts";
 import type { RoomId, Spawn } from "../rooms.ts";
 import { LIFT, SKYLARK_DOOR } from "../rooftop.ts";
 import { SPAWN as SUGAR_RUSH_SPAWN, SUGAR_RUSH_DOOR } from "../sugarRush.ts";
+import {
+  ALLEY,
+  SPAWN as WAREHOUSE_SPAWN,
+  WAREHOUSE_DOOR,
+} from "../warehouse.ts";
 import type { Vec2 } from "../walk.ts";
 
 export type Neighborhood =
@@ -264,6 +269,9 @@ export function sidewalkRects(edge: RoadEdge): Vec2[][] {
 const SQUARE = rect(-50, 11, 50, 44);
 const FORECOURT_SOUTH = rect(73, 11, 192, 14);
 const FORECOURT_NORTH = rect(73, -14, 192, -11);
+// Bassline Alley: back from the south forecourt between the club blocks,
+// to the warehouse's steel door and the karaoke loft's side
+const BASSLINE_ALLEY = rect(ALLEY.x0, ALLEY.z0, ALLEY.x1, ALLEY.z1);
 
 // Suburbia, along Maple Drive: pastel two-storey houses behind front lawns,
 // a 2000s strip mall, the supermarket, a drive-in diner and the high school.
@@ -462,6 +470,7 @@ export const CITY_SURFACES: readonly Surface[] = [
   { kind: "square", polygon: SQUARE },
   { kind: "sidewalk", polygon: FORECOURT_SOUTH },
   { kind: "sidewalk", polygon: FORECOURT_NORTH },
+  { kind: "sidewalk", polygon: BASSLINE_ALLEY },
   // the Splash Zone gate's forecourt, off Shore Boulevard's north sidewalk
   { kind: "sidewalk", polygon: rect(-91, SHORE_Z - 13, -77, SHORE_Z - 11) },
   // the Aquarium's forecourt, up to its doors from Park Avenue's sidewalk
@@ -528,6 +537,15 @@ const SKYLARK_CITY_DOOR: Door = {
   label: "Up to the Skylark",
   target: "rooftop-bar",
   targetSpawn: { position: LIFT.spawn, yaw: Math.PI },
+};
+
+// Bassline's steel door, halfway down the alley behind Sugar Rush.
+const WAREHOUSE_CITY_DOOR: Door = {
+  position: WAREHOUSE_DOOR.position,
+  radius: 2,
+  label: "Into Bassline",
+  target: "warehouse",
+  targetSpawn: { position: WAREHOUSE_SPAWN, yaw: Math.PI },
 };
 
 // Sugar Rush opens onto the south sidewalk, two doors east of Pulse.
@@ -1418,6 +1436,7 @@ export const BUILDINGS: readonly Building[] = [
     height: 18,
     style: "warehouse",
     sign: { text: "BASSLINE", color: "#4fe3ff" },
+    door: WAREHOUSE_CITY_DOOR,
   },
   {
     id: "city-jail",

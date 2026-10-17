@@ -346,7 +346,20 @@ test("the debug buttons take the player into Sugar Rush", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-for (const room of ["rooftop-bar", "sugar-rush"] as const) {
+test("the debug buttons take the player into Bassline, with its decks", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&debug=1`);
+  await page.getByRole("button", { name: "Go to Bassline" }).click();
+  await expect(roomTitle(page)).toHaveText("Bassline");
+  await expect(
+    page.getByRole("button", { name: "Play Bassline at the decks" }),
+  ).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+for (const room of ["rooftop-bar", "sugar-rush", "warehouse"] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,
   }) => {

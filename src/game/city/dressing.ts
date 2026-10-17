@@ -413,6 +413,46 @@ function arch(out: Buckets, f: Front, color: string): void {
   }
 }
 
+/** A door on a side wall (off an alley, not the avenue front): a lit
+ * doorway, a lamp over it and its light spilling onto the ground, so it can
+ * be found. Front doors are dressed by the frontage itself. */
+function sideDoor(b: Building, f: Front, out: Buckets, accent: string): void {
+  const door = b.door;
+  if (!door || Math.abs(door.position[1] - f.faceZ) < 3) return;
+  const [dx, dz] = door.position;
+  const west = Math.abs(dx - f.x0) < Math.abs(dx - f.x1);
+  const wallX = west ? f.x0 : f.x1;
+  const out1 = west ? -1 : 1;
+  out.glow.push({
+    x: wallX + out1 * 0.06,
+    y: 1.3,
+    z: dz,
+    sx: 0.06,
+    sy: 2.6,
+    sz: 1.6,
+    color: accent,
+  });
+  out.glow.push({
+    x: wallX + out1 * 0.25,
+    y: 3.1,
+    z: dz,
+    sx: 0.4,
+    sy: 0.16,
+    sz: 0.5,
+    color: "#ffd2a0",
+  });
+  out.puddle.push({
+    x: wallX + out1 * 1.4,
+    y: 0.05,
+    z: dz,
+    sx: 2.4,
+    sy: 2.6,
+    sz: 1,
+    rot: [-Math.PI / 2, 0, 0],
+    color: accent,
+  });
+}
+
 /** Everything a building adds to its own frontage, after its body is drawn. */
 export function dressBuilding(b: Building, out: Buckets): void {
   const f = frontOf(b);
@@ -456,6 +496,7 @@ export function dressBuilding(b: Building, out: Buckets): void {
     );
   detailBuilding(b, f, out);
   if (b.style === "gate") arch(out, f, b.sign?.color ?? accent);
+  sideDoor(b, f, out, accent);
 }
 
 function put(out: Placed[], kind: Kind, instance: Instance): void {

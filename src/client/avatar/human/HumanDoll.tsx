@@ -365,14 +365,17 @@ function hairShine<M extends THREE.MeshStandardMaterial>(material: M): M {
           "  float strand = 0.5;",
           "  #endif",
           "  float shift = (strand - 0.5) * 0.35;",
+          // straight locks sit near the highlight angle all along, so the
+          // white lobe is kept faint and broken up strand by strand
+          "  float glint = 0.3 + 0.7 * fract(strand * 7.13);",
           "  vec3 T1 = normalize(T + normal * (0.08 + shift));",
           "  vec3 T2 = normalize(T + normal * (-0.12 + shift));",
           "  for (int i = 0; i < NUM_DIR_LIGHTS; i++) {",
           "    vec3 L = directionalLights[i].direction;",
           "    vec3 H = normalize(L + V);",
           "    float lit = smoothstep(-0.25, 0.5, dot(normal, L));",
-          "    float a = hairLobe(T1, H, 90.0) * 0.55;",
-          "    float b = hairLobe(T2, H, 22.0) * 0.45;",
+          "    float a = hairLobe(T1, H, 90.0) * 0.22 * glint;",
+          "    float b = hairLobe(T2, H, 22.0) * 0.35;",
           "    reflectedLight.directSpecular += directionalLights[i].color * lit *",
           "      (vec3(a) + b * diffuseColor.rgb * 1.6);",
           "  }",
@@ -408,7 +411,9 @@ function hairMaterial(
     side: THREE.DoubleSide,
     alphaTest: map && cutout ? (rich ? 0.3 : 0.4) : 0,
   });
-  return map ? hairShine(material) : material;
+  // the shine bands run along strand cards; on the broad, smooth scalp cap
+  // they would read as white streaks, so the cap stays matte
+  return map && cutout ? hairShine(material) : material;
 }
 
 type Tint = { colour: string; kind: "hair" | "cloth" | "gloss" | "keep" };

@@ -2,6 +2,7 @@ import type { RoomId } from "./rooms.ts";
 import { footprint, type Furniture } from "./home/decor.ts";
 import { SOFA, STOOL_XS, STOOL_Z } from "./rooftop.ts";
 import { CHAIR_X, CHAIR_ZS, STOOL_X, STOOL_ZS } from "./sugarRush.ts";
+import * as WAREHOUSE from "./warehouse.ts";
 import { yawTowards, type Vec2 } from "./walk.ts";
 
 /**
@@ -111,12 +112,33 @@ const sugarRushSeats = [
   ),
 ];
 
+// Bassline: stools at the pallet bar, crate benches along the east wall
+const warehouseSeats = [
+  ...WAREHOUSE.STOOL_ZS.map((z, i) =>
+    seat(`warehouse-stool-${i}`, "warehouse", [WAREHOUSE.STOOL_X, z], 0.8, [
+      -7,
+      z,
+    ]),
+  ),
+  ...WAREHOUSE.BENCH_ZS.map((z, i) =>
+    seat(
+      `warehouse-bench-${i}`,
+      "warehouse",
+      [WAREHOUSE.BENCH_X, z],
+      0.45,
+      [0, z],
+      "front",
+    ),
+  ),
+];
+
 export const SEATS: readonly Seat[] = [
   ...foodSeats,
   ...velvetStools,
   ...pulseBanquettes,
   ...skylarkSeats,
   ...sugarRushSeats,
+  ...warehouseSeats,
 ];
 
 export function seatsIn(room: RoomId): readonly Seat[] {

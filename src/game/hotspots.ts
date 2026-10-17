@@ -2,6 +2,7 @@
 // world. Tapping the spot and the keyboard button both launch the same game.
 import type { RoomId } from "./rooms.ts";
 import type { Vec2 } from "./walk.ts";
+import { DECKS_SPOT } from "./warehouse.ts";
 
 export const MINIGAME_IDS = [
   "bassline",
@@ -39,6 +40,15 @@ export const HOTSPOTS: readonly Hotspot[] = [
     game: "last-call",
     label: "Play Last Call at the bar",
     position: [-1, -3.1],
+    radius: 0.9,
+  },
+  {
+    // In front of the shipping container the DJ plays from.
+    id: "warehouse-decks",
+    room: "warehouse",
+    game: "bassline",
+    label: "Play Bassline at the decks",
+    position: DECKS_SPOT,
     radius: 0.9,
   },
   {

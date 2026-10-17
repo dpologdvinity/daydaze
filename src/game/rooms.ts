@@ -25,6 +25,13 @@ import {
   SPAWN as SUGAR_RUSH_SPAWN,
   SUGAR_RUSH_DOOR,
 } from "./sugarRush.ts";
+import {
+  BLOCKERS as WAREHOUSE_BLOCKERS,
+  EXIT as WAREHOUSE_EXIT,
+  FLOOR as WAREHOUSE_FLOOR,
+  SPAWN as WAREHOUSE_SPAWN,
+  WAREHOUSE_DOOR,
+} from "./warehouse.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -45,6 +52,7 @@ export type RoomId =
   | "haunted-house"
   | "rooftop-bar"
   | "sugar-rush"
+  | "warehouse"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -558,6 +566,24 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the park",
         target: "city",
         targetSpawn: { position: ICE_RINK_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  warehouse: {
+    id: "warehouse",
+    name: "Bassline",
+    walkable: WAREHOUSE_FLOOR,
+    blockers: WAREHOUSE_BLOCKERS,
+    spawn: { position: WAREHOUSE_SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        // The steel door back out to the alley.
+        id: "warehouse-to-city",
+        position: WAREHOUSE_EXIT,
+        radius: 0.9,
+        label: "Out to the alley",
+        target: "city",
+        targetSpawn: { position: WAREHOUSE_DOOR.landing, yaw: -Math.PI / 2 },
       },
     ],
   },
