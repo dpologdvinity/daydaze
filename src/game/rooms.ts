@@ -18,6 +18,13 @@ import {
   LIFT,
   SKYLARK_DOOR,
 } from "./rooftop.ts";
+import {
+  BLOCKERS as SUGAR_RUSH_BLOCKERS,
+  EXIT as SUGAR_RUSH_EXIT,
+  FLOOR as SUGAR_RUSH_FLOOR,
+  SPAWN as SUGAR_RUSH_SPAWN,
+  SUGAR_RUSH_DOOR,
+} from "./sugarRush.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -37,6 +44,7 @@ export type RoomId =
   | "ice-rink"
   | "haunted-house"
   | "rooftop-bar"
+  | "sugar-rush"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -550,6 +558,24 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the park",
         target: "city",
         targetSpawn: { position: ICE_RINK_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  "sugar-rush": {
+    id: "sugar-rush",
+    name: "Sugar Rush",
+    walkable: SUGAR_RUSH_FLOOR,
+    blockers: SUGAR_RUSH_BLOCKERS,
+    spawn: { position: SUGAR_RUSH_SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        // The street door the player came in through, back to the sidewalk.
+        id: "sugar-rush-to-city",
+        position: SUGAR_RUSH_EXIT,
+        radius: 0.9,
+        label: "Out to the street",
+        target: "city",
+        targetSpawn: { position: SUGAR_RUSH_DOOR.landing, yaw: Math.PI },
       },
     ],
   },

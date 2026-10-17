@@ -95,6 +95,9 @@ const HauntedHouse = lazy(() =>
     default: m.HauntedHouse,
   })),
 );
+const SugarRush = lazy(() =>
+  import("../rooms/SugarRush.tsx").then((m) => ({ default: m.SugarRush })),
+);
 const RooftopBar = lazy(() =>
   import("../rooms/RooftopBar.tsx").then((m) => ({ default: m.RooftopBar })),
 );
@@ -223,6 +226,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   aquarium: Aquarium,
   "ice-rink": IceRink,
   "rooftop-bar": RooftopBar,
+  "sugar-rush": SugarRush,
   "haunted-house": HauntedHouse,
   "filipino-joint": FilipinoJoint,
   "boba-matcha": BobaMatchaCafe,

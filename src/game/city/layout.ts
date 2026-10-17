@@ -6,6 +6,7 @@ import type { WalkArea } from "../area.ts";
 import { FOOD_STOREFRONTS } from "../food/storefronts.ts";
 import type { RoomId, Spawn } from "../rooms.ts";
 import { LIFT, SKYLARK_DOOR } from "../rooftop.ts";
+import { SPAWN as SUGAR_RUSH_SPAWN, SUGAR_RUSH_DOOR } from "../sugarRush.ts";
 import type { Vec2 } from "../walk.ts";
 
 export type Neighborhood =
@@ -527,6 +528,15 @@ const SKYLARK_CITY_DOOR: Door = {
   label: "Up to the Skylark",
   target: "rooftop-bar",
   targetSpawn: { position: LIFT.spawn, yaw: Math.PI },
+};
+
+// Sugar Rush opens onto the south sidewalk, two doors east of Pulse.
+const SUGAR_RUSH_CITY_DOOR: Door = {
+  position: SUGAR_RUSH_DOOR.position,
+  radius: 2,
+  label: "Into Sugar Rush",
+  target: "sugar-rush",
+  targetSpawn: { position: SUGAR_RUSH_SPAWN, yaw: Math.PI },
 };
 
 const VIOLET_HOUR_DOOR: Door = {
@@ -1391,6 +1401,7 @@ export const BUILDINGS: readonly Building[] = [
     style: "club",
     queue: true,
     sign: { text: "SUGAR RUSH", color: "#ffd84f" },
+    door: SUGAR_RUSH_CITY_DOOR,
   },
   {
     id: "karaoke-loft",

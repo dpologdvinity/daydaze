@@ -1,6 +1,7 @@
 import type { RoomId } from "./rooms.ts";
 import { footprint, type Furniture } from "./home/decor.ts";
 import { SOFA, STOOL_XS, STOOL_Z } from "./rooftop.ts";
+import { CHAIR_X, CHAIR_ZS, STOOL_X, STOOL_ZS } from "./sugarRush.ts";
 import { yawTowards, type Vec2 } from "./walk.ts";
 
 /**
@@ -92,11 +93,30 @@ const skylarkSeats = [
   ),
 ];
 
+// Sugar Rush: stools at the bar on the east wall, inflatable chairs facing
+// the dance floor along the west
+const sugarRushSeats = [
+  ...STOOL_ZS.map((z, i) =>
+    seat(`sugar-rush-stool-${i}`, "sugar-rush", [STOOL_X, z], 0.8, [5.5, z]),
+  ),
+  ...CHAIR_ZS.map((z, i) =>
+    seat(
+      `sugar-rush-chair-${i}`,
+      "sugar-rush",
+      [CHAIR_X, z],
+      0.45,
+      [0, z],
+      "front",
+    ),
+  ),
+];
+
 export const SEATS: readonly Seat[] = [
   ...foodSeats,
   ...velvetStools,
   ...pulseBanquettes,
   ...skylarkSeats,
+  ...sugarRushSeats,
 ];
 
 export function seatsIn(room: RoomId): readonly Seat[] {

@@ -91,6 +91,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Your flat. Use the decorating panel to place furniture and lock the door. Tap the blue shelf to try a shoplift.",
   "haunted-house":
     "The Haunted House. Find your way through the dark rooms past the ghosts, then back out to the park.",
+  "sugar-rush":
+    "Sugar Rush, the Y2K pop club. Dance on the LED floor, tap Kiki at the bar for a drink, or flop into a blow-up chair.",
   "rooftop-bar":
     "The Skylark, up on the roof. Tap the bartender for a drink, sit by the fire, or play Last Call at the end of the bar.",
   "ice-rink":

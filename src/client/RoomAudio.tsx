@@ -26,6 +26,7 @@ const MUSIC: Partial<Record<RoomId, TrackId>> = {
   "ube-bakery": "canopy-lofi",
   "ice-rink": "waterhole-twilight",
   "rooftop-bar": "canopy-lofi",
+  "sugar-rush": "sugar-rush-pop",
 };
 const AMBIENCE: Partial<Record<RoomId, Ambience>> = {
   aquarium: "aquarium",

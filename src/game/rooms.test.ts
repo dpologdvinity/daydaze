@@ -21,6 +21,7 @@ test("every room is registered under its own id", () => {
     "pulse",
     "rooftop-bar",
     "speedway",
+    "sugar-rush",
     "ube-bakery",
     "velvet-room",
     "violet-hour",
@@ -213,6 +214,26 @@ test("the Skylark's lift lands on its deck, and every seat and spot is reachable
     [-2.1, -3.35],
     [2.6, -3.5],
     [5.4, -2.2],
+  ] as const) {
+    let pos: Vec2 = room.spawn.position;
+    for (let k = 0; k < 600; k++) pos = stepInArea(area, pos, goal, 0.05);
+    assert.ok(
+      Math.hypot(pos[0] - goal[0], pos[1] - goal[1]) < 0.3,
+      `reached ${goal}`,
+    );
+  }
+});
+
+test("Sugar Rush's door opens onto its floor, and its chairs, stools and decks are reachable", () => {
+  const room = ROOMS["sugar-rush"];
+  const area = areaOf(room);
+  assert.equal(isBlocked(area, room.spawn.position), false);
+  for (const goal of [
+    [-4.7, -1.6],
+    [-4.7, 2.4],
+    [3.85, -1.3],
+    [3.85, 2.3],
+    [0, -3.8],
   ] as const) {
     let pos: Vec2 = room.spawn.position;
     for (let k = 0; k < 600; k++) pos = stepInArea(area, pos, goal, 0.05);

@@ -325,7 +325,7 @@ test("the debug buttons take the player into The Violet Hour", async ({
   expect(errors).toEqual([]);
 });
 
-test("the Skylark's lift opens onto the roof, and Last Call is at its bar", async ({
+test("the debug buttons take the player up to the Skylark, with Last Call at its bar", async ({
   page,
 }) => {
   const errors = collectErrors(page);
@@ -335,16 +335,33 @@ test("the Skylark's lift opens onto the roof, and Last Call is at its bar", asyn
   await expect(
     page.getByRole("button", { name: "Play Last Call at the bar" }),
   ).toBeVisible();
-  // the frame stats count a page's first frames: load the roof directly,
-  // then wait for its frame (the doll alone draws under 10 calls)
-  await page.goto(`${STILL}&room=rooftop-bar`);
-  const canvas = canvasOf(page);
-  await expect
-    .poll(async () => Number(await canvas.getAttribute("data-calls")))
-    .toBeGreaterThan(40);
-  expect(Number(await canvas.getAttribute("data-calls"))).toBeLessThan(250);
   expect(errors).toEqual([]);
 });
+
+test("the debug buttons take the player into Sugar Rush", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&debug=1`);
+  await page.getByRole("button", { name: "Go to Sugar Rush" }).click();
+  await expect(roomTitle(page)).toHaveText("Sugar Rush");
+  expect(errors).toEqual([]);
+});
+
+for (const room of ["rooftop-bar", "sugar-rush"] as const) {
+  test(`${room} renders within the low-tier draw call budget`, async ({
+    page,
+  }) => {
+    await page.goto(`${STILL}&room=${room}`);
+    const canvas = canvasOf(page);
+    // the doll alone draws under 10 calls: wait for the room's own frame,
+    // which takes a while to compile on the CPU renderer
+    await expect
+      .poll(async () => Number(await canvas.getAttribute("data-calls")), {
+        timeout: 120_000,
+      })
+      .toBeGreaterThan(40);
+    expect(Number(await canvas.getAttribute("data-calls"))).toBeLessThan(250);
+  });
+}
 
 test("Pulse renders within the low-tier draw call budget", async ({ page }) => {
   await page.goto(`${STILL}&room=pulse`);

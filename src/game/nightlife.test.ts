@@ -7,7 +7,7 @@ import { ROOMS, type RoomId } from "./rooms.ts";
 import { HOTSPOTS, hotspotsIn } from "./hotspots.ts";
 import { pointInPolygon, type Vec2 } from "./walk.ts";
 
-const NIGHTLIFE_ROOMS = ["pulse", "violet-hour"] as const;
+const NIGHTLIFE_ROOMS = ["pulse", "violet-hour", "sugar-rush"] as const;
 
 function onCityStreet(p: Vec2): boolean {
   return CITY_SURFACES.some((s) => pointInPolygon(s.polygon, p));

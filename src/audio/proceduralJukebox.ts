@@ -4,7 +4,8 @@ export type TrackId =
   | "savanna-nightclub"
   | "canopy-lofi"
   | "waterhole-twilight"
-  | "carnival-calliope";
+  | "carnival-calliope"
+  | "sugar-rush-pop";
 
 export type TrackMetadata = {
   id: TrackId;
@@ -50,6 +51,15 @@ export const JUKEBOX_TRACKS: readonly TrackMetadata[] = [
     bpm: 132,
     description: "Nostalgic mechanical carousel organ waltz in 3/4 time.",
     mood: "Whimsical",
+  },
+  {
+    id: "sugar-rush-pop",
+    title: "Sugar Rush",
+    genre: "Bubblegum Pop",
+    bpm: 124,
+    description:
+      "Y2K bubblegum pop: bouncing octave bass, square-wave arpeggios, handclaps and a glassy chime on every bar.",
+    mood: "Giddy",
   },
 ];
 
@@ -481,6 +491,83 @@ export function carnivalCalliopeStep(
   }
 }
 
+// Sugar Rush: four bars round A, E, F#m and D, an eighth-note grid.
+const SUGAR_ROOTS = [110, 82.41, 92.5, 73.42];
+const MAJOR = [1, 1.26, 1.498, 2];
+const MINOR = [1, 1.189, 1.498, 2];
+const SUGAR_CHORDS = [MAJOR, MAJOR, MINOR, MAJOR];
+// which chord tone the arpeggio plays on each eighth of a bar
+const SUGAR_ARP = [0, 1, 2, 3, 2, 1, 2, 3];
+
+/** A bright square-wave pluck whose filter snaps shut. */
+function playPluck(
+  ctx: AudioContext,
+  dest: AnyNode,
+  now: number,
+  frequency: number,
+  level: number,
+) {
+  const osc = ctx.createOscillator();
+  const filter = ctx.createBiquadFilter();
+  const gain = ctx.createGain();
+  osc.type = "square";
+  osc.frequency.setValueAtTime(frequency, now);
+  filter.type = "lowpass";
+  filter.frequency.setValueAtTime(4200, now);
+  filter.frequency.exponentialRampToValueAtTime(900, now + 0.15);
+  gain.gain.setValueAtTime(level, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(dest);
+  osc.start(now);
+  osc.stop(now + 0.2);
+}
+
+/** A handclap: two quick noise bursts, the second one ringing a little. */
+function playClap(ctx: AudioContext, dest: AnyNode, now: number) {
+  for (const [at, decay] of [
+    [0, 0.03],
+    [0.012, 0.13],
+  ] as const) {
+    const noise = ctx.createBufferSource();
+    noise.buffer = whiteNoiseBuffer(ctx, 0.15);
+    const filter = ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.value = 1300;
+    filter.Q.value = 0.8;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.45, now + at);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + at + decay);
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(dest);
+    noise.start(now + at);
+  }
+}
+
+export function sugarRushPopStep(
+  ctx: AudioContext,
+  dest: AnyNode,
+  step: number,
+  now: number,
+) {
+  const bar = Math.floor(step / 8) % SUGAR_ROOTS.length;
+  const root = SUGAR_ROOTS[bar];
+  const chord = SUGAR_CHORDS[bar];
+  playPluck(ctx, dest, now, root * 4 * chord[SUGAR_ARP[step % 8]], 0.08);
+  // the bass bounces between the root and its octave on every eighth
+  playBassNote(ctx, dest, now, step % 2 ? root * 2 : root);
+  if (step % 2) {
+    playHiHatHit(ctx, dest, now);
+    return;
+  }
+  playKick(ctx, dest, now);
+  const beat = (step / 2) % 4;
+  if (beat === 1 || beat === 3) playClap(ctx, dest, now);
+  if (step % 8 === 0) playPluck(ctx, dest, now, root * 8, 0.04);
+}
+
 type TrackProgram = {
   stepSeconds: (bpm: number) => number;
   step: (ctx: AudioContext, dest: AnyNode, step: number, time: number) => void;
@@ -502,6 +589,10 @@ export const TRACK_PROGRAMS: Record<TrackId, TrackProgram> = {
   "carnival-calliope": {
     stepSeconds: (bpm) => 60 / bpm / 2,
     step: carnivalCalliopeStep,
+  },
+  "sugar-rush-pop": {
+    stepSeconds: (bpm) => 60 / bpm / 2,
+    step: sugarRushPopStep,
   },
 };
 
