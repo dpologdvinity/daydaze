@@ -36,6 +36,8 @@ test("loads the Velvet Room with no errors and mounts the canvas", async ({
 test("a hair style picked in the closet survives a reload", async ({
   page,
 }) => {
+  // the closet and a reload are slow on CI's SwiftShader
+  test.setTimeout(300_000);
   await page.goto(STILL);
   await page
     .getByRole("button", { name: "Dressing room", exact: true })
@@ -126,6 +128,8 @@ test("on a phone the dressing room opens from its toggle", async ({ page }) => {
 test("the dressing room starts closed, closes on Esc and keeps its state", async ({
   page,
 }) => {
+  // the closet and a reload are slow on CI's SwiftShader
+  test.setTimeout(300_000);
   await page.goto(STILL);
   const toggle = page.getByRole("button", {
     name: "Dressing room",
