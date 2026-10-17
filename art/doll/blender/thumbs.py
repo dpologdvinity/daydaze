@@ -22,6 +22,7 @@ DEST = os.path.join(HERE, "..", "..", "..", "public", "closet")
 HAIR = [
     "waves", "ponytail", "buns", "bob", "braids", "afro", "long-straight",
     "long-curly", "mid-straight", "mid-wavy", "mid-curly", "pixie",
+    "mermaid", "shag", "coils", "low-pony", "pigtails", "top-knot",
 ]
 PRESETS = {
     "eye": ["almond", "round", "hooded", "upturned", "downturned"],

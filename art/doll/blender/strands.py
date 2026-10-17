@@ -91,14 +91,18 @@ def scalp_points(ctx, count, rng, front_line=0.0):
     return out
 
 
-def build(ctx, name, mat, length=0.42, count=420, wave=0.0, curl=0.0, volume=1.0, part=0.0, seed=1, tie=None):
+def build(
+    ctx, name, mat, length=0.42, count=420, wave=0.0, curl=0.0, volume=1.0, part=0.0, seed=1, tie=None, side=None
+):
     """A strand-card hairstyle.
 
     length: metres from root to tip (before gravity), wave: amplitude of a
     slow S-wave (metres), curl: amplitude of tight spirals, volume: how far
     the hair lifts off the scalp, part: the parting's x offset (metres).
-    tie: (y, z) offset from the head joint of a ponytail's tie; every strand
-    is combed flat over the scalp to it, then falls `length` as one tail.
+    tie: (y, z) offset from the head joint of a ponytail's tie, or (x, y, z)
+    for one off to the side (a pigtail); every strand is combed flat over
+    the scalp to it, then falls `length` as one tail, out the way the tie
+    points. side: +1 or -1 keeps only the roots on that side of the part.
     """
     rng = np.random.default_rng(seed)
     # about one segment per 4.5 cm, so long hair bends smoothly, not in
@@ -154,7 +158,14 @@ def build(ctx, name, mat, length=0.42, count=420, wave=0.0, curl=0.0, volume=1.0
     verts, faces, uvs, root_src, shade = [], [], [], [], []
     gravity = np.array([0, 0, -1.0])
 
-    tie_at = None if tie is None else head + np.array([0.0, tie[0], tie[1]])
+    if tie is not None and len(tie) == 2:
+        tie = (0.0, tie[0], tie[1])
+    tie_at = None if tie is None else head + np.array(tie, float)
+    # a tail leaves the band back and a little up, or out to its side
+    tail_dir = np.array([0.0, 0.8, 0.25])
+    if tie is not None and abs(tie[0]) > 0.02:
+        tail_dir = np.array([np.sign(tie[0]) * 0.8, 0.35, 0.1])
+    tail_dir /= np.linalg.norm(tail_dir)
     if tie_at is not None:
         segments = 14
     over = 6  # of a ponytail strand's segments, how many cross the scalp
@@ -181,8 +192,7 @@ def build(ctx, name, mat, length=0.42, count=420, wave=0.0, curl=0.0, volume=1.0
             # hugging the skull, a little proud of it towards the band
             pts.append(on_skull(p, 0.005 + 0.004 * lift + 0.006 * s * s))
         jitter = rng.normal(0, 1, 3) * np.array([1, 0.6, 1])
-        d = np.array([0.0, 0.8, 0.25])
-        d /= np.linalg.norm(d)
+        d = tail_dir.copy()
         p = tie_at.copy()
         for k in range(1, segments - over + 1):
             t = k / (segments - over)
@@ -305,7 +315,11 @@ def build(ctx, name, mat, length=0.42, count=420, wave=0.0, curl=0.0, volume=1.0
         # hairline is made of their ragged roots, not the cap's cut (slicked
         # strands would project onto the face from there)
         below = -0.008 if tie_at is None else 0.0
-        for root, normal in scalp_points(ctx, guides, rng, front_line=below):
+        roots = scalp_points(ctx, guides * (2 if side else 1), rng, front_line=below)
+        if side:
+            # one side of the part only (a hair over, so the part closes)
+            roots = [(r, n) for r, n in roots if (r[0] - part) * side > -0.004][:guides]
+        for root, normal in roots:
             # inner layers end higher, under the outer ones: their dark tips
             # hanging below read as specks on the back
             L = length * rng.uniform(0.85, 1.0) * (0.85 + 0.15 * lift)

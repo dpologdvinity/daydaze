@@ -117,6 +117,23 @@ def buns(ctx, mat):
     return scalp_hair(ctx, "Hair_buns", mat, extra)
 
 
+def top_knot(ctx, mat):
+    """Slicked up into one big twisted bun on the crown."""
+
+    def extra(bm, ctx):
+        top = _top(bm)
+        c = Vector((0.0, 0.02, top + 0.02))
+        ret = bmesh.ops.create_uvsphere(bm, u_segments=22, v_segments=16, radius=0.062)
+        for v in ret["verts"]:
+            d = v.co.normalized()
+            ang = np.arctan2(d.y, d.x)
+            v.co *= 1 + 0.07 * np.sin(ang * 6 + d.z * 7)
+            v.co.z *= 0.8
+            v.co += c
+
+    return scalp_hair(ctx, "Hair_top-knot", mat, extra)
+
+
 def afro(ctx, mat):
     """An afro puff: one rounded cloud with fine curl texture, cut back from
     the face and the nape so the hairline frames the face."""
@@ -227,6 +244,37 @@ def strand_style(ctx, name, strand_mat, cap_mat, **style):
     return doll_outfits.join(cards, cap)
 
 
+def pigtails(ctx, strand_mat, cap_mat):
+    """Two tails tied behind the ears, parted down the middle."""
+    import doll_outfits
+
+    halves = [
+        strands.build(
+            ctx,
+            f"Hair_pigtails_{side}",
+            strand_mat,
+            seed=13 + side,
+            length=0.32,
+            # half a head of hair each, so the pair costs one style
+            count=228,
+            wave=0.008,
+            tie=(side * 0.07, 0.035, -0.005),
+            side=side,
+        )
+        for side in (1, -1)
+    ]
+    # joining appends the others' vertices after the active object's, so the
+    # strands' layer shading runs on in the same order; the cap goes last
+    shade = list(halves[0]["layer_shade"]) + list(halves[1]["layer_shade"])
+    out = doll_outfits.join(halves[0], halves[1])
+    out["layer_shade"] = shade
+    cap = scalp_hair(ctx, "Hair_pigtails_cap", cap_mat, lambda bm, ctx: None, rise=0.008)
+    strands.comb_cap(ctx, cap)
+    out = doll_outfits.join(out, cap)
+    out.name = "Hair_pigtails"
+    return out
+
+
 def build(ctx):
     out = []
     for style, path in PROXY.items():
@@ -237,7 +285,7 @@ def build(ctx):
             swing(ctx, ob, ctx.JB["head"] + np.array([0, 0.06, 0.02]))
         out.append(ob)
     solid = bpy.data.materials.new("hair_solid")
-    out += [buns(ctx, solid), afro(ctx, solid), braids(ctx, solid)]
+    out += [buns(ctx, solid), afro(ctx, solid), braids(ctx, solid), top_knot(ctx, solid)]
     strand = strands.material("hair_strands")
     combed = strands.cap_material("hair_cap")
     # strand-card styles: length (m), wave (slow S), curl (tight spirals),
@@ -251,6 +299,10 @@ def build(ctx):
         "mid-curly": dict(length=0.3, count=456, curl=0.022, volume=1.9),
         "bob": dict(length=0.24, count=390, wave=0.002, volume=1.2),
         "pixie": dict(length=0.11, count=360, wave=0.004, volume=1.1),
+        # waist-skimming waves, a choppy layered shag, and short springy coils
+        "mermaid": dict(length=0.76, count=480, wave=0.024),
+        "shag": dict(length=0.27, count=432, wave=0.009, volume=1.5),
+        "coils": dict(length=0.2, count=468, curl=0.016, volume=1.7),
     }.items():
         out.append(strand_style(ctx, f"Hair_{name}", strand, combed, seed=len(name), **style))
     # a high ponytail: slicked back to a band at the crown's back, the tail
@@ -260,6 +312,13 @@ def build(ctx):
     )
     swing(ctx, pony, ctx.JB["head"] + np.array([0, 0.08, 0.05]))
     out.append(pony)
+    # a low ponytail, tied at the nape
+    low = strand_style(
+        ctx, "Hair_low-pony", strand, combed, seed=11, length=0.38, count=420, wave=0.006, tie=(0.075, -0.045)
+    )
+    swing(ctx, low, ctx.JB["head"] + np.array([0, 0.07, -0.05]))
+    out.append(low)
+    out.append(pigtails(ctx, strand, combed))
     for ob in out:
         shade_strands(ctx, ob)
     return out

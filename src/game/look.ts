@@ -23,6 +23,12 @@ export const HAIR_STYLES = [
   { id: "mid-wavy", label: "Shoulder waves" },
   { id: "mid-curly", label: "Shoulder curls" },
   { id: "pixie", label: "Pixie" },
+  { id: "mermaid", label: "Mermaid waves" },
+  { id: "shag", label: "Shag" },
+  { id: "coils", label: "Coils" },
+  { id: "low-pony", label: "Low pony" },
+  { id: "pigtails", label: "Pigtails" },
+  { id: "top-knot", label: "Top knot" },
 ] as const;
 
 export const HAIR_COLORS = [

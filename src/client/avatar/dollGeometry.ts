@@ -479,7 +479,24 @@ function buildHair(style: HairStyle, k: number, src: THREE.BufferGeometry) {
   };
 }
 
-export function hairGeometry(style: HairStyle): HairGeo {
+// the 3D-only styles stand in as the nearest toon shape while models load
+const TOON_HAIR: Partial<Record<HairStyle, HairStyle>> = {
+  "long-straight": "waves",
+  "long-curly": "curl-cloud",
+  "mid-straight": "bob",
+  "mid-wavy": "bob",
+  "mid-curly": "curl-cloud",
+  pixie: "sleek-bob",
+  mermaid: "waves",
+  shag: "bob",
+  coils: "curl-cloud",
+  "low-pony": "ponytail",
+  pigtails: "braids",
+  "top-knot": "buns",
+};
+
+export function hairGeometry(asked: HairStyle): HairGeo {
+  const style = TOON_HAIR[asked] ?? asked;
   const hit = hairCache.get(style);
   if (hit) return hit;
   const near = buildHair(style, NEAR, headBase);
