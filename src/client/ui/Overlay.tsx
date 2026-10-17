@@ -51,6 +51,7 @@ import type { MinigameId } from "../../game/hotspots.ts";
 import { VIEWS, type View } from "../world/CameraRig.tsx";
 import { DriveControls } from "../rooms/speedway/DriveControls.tsx";
 import { BowlingPanel } from "../rooms/bowling/BowlingPanel.tsx";
+import { GolfPanel } from "../rooms/minigolf/GolfPanel.tsx";
 import { clearCityMapRequest, useCityMapRequest } from "./cityMapRequest.ts";
 import { RaceHud, SpeedwayMenu } from "../rooms/speedway/RaceHud.tsx";
 import { CocktailIcon, RideIcon } from "./icons.tsx";
@@ -93,6 +94,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Your flat. Use the decorating panel to place furniture and lock the door. Tap the blue shelf to try a shoplift.",
   "haunted-house":
     "The Haunted House. Find your way through the dark rooms past the ghosts, then back out to the park.",
+  "mini-golf":
+    "Lagoon Links, three holes on the sand. Press Play a round: turn your aim, then time the power and putt. Leilani runs the hut.",
   "la-noche":
     "La Noche, the Latin club. The band's playing salsa: dance on the floor, take a table, or tap Yara for a drink.",
   "arcade-bar":
@@ -582,6 +585,7 @@ export function Overlay({
       </Dressing>
 
       {room === "bowling" && <BowlingPanel />}
+      {room === "mini-golf" && <GolfPanel />}
 
       {room === "speedway" && (
         <>

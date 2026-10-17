@@ -60,6 +60,13 @@ import {
   LA_NOCHE_DOOR,
   SPAWN as LA_NOCHE_SPAWN,
 } from "./laNoche.ts";
+import {
+  BLOCKERS as LINKS_BLOCKERS,
+  EXIT as LINKS_EXIT,
+  FLOOR as LINKS_FLOOR,
+  LINKS_DOOR,
+  SPAWN as LINKS_SPAWN,
+} from "./lagoonLinks.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -85,6 +92,7 @@ export type RoomId =
   | "bowling"
   | "arcade-bar"
   | "la-noche"
+  | "mini-golf"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -598,6 +606,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the park",
         target: "city",
         targetSpawn: { position: ICE_RINK_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  "mini-golf": {
+    id: "mini-golf",
+    name: "Lagoon Links",
+    walkable: LINKS_FLOOR,
+    blockers: LINKS_BLOCKERS,
+    spawn: { position: LINKS_SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "mini-golf-to-city",
+        position: LINKS_EXIT,
+        radius: 0.8,
+        label: "Out to Shore Boulevard",
+        target: "city",
+        targetSpawn: { position: LINKS_DOOR.landing, yaw: 0 },
       },
     ],
   },

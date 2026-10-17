@@ -394,6 +394,30 @@ test("Glow Bowl: start a game, bowl a ball, and the scoreboard counts it", async
   expect(errors).toEqual([]);
 });
 
+test("Lagoon Links: start a round, putt, and the card counts the stroke", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=mini-golf`);
+  await expect(canvasOf(page)).toHaveAttribute("data-frames", "10");
+  const panel = page.getByRole("region", { name: "Mini golf" });
+  await panel.getByRole("button", { name: "Play a round" }).click();
+  await expect(panel.getByRole("status")).toHaveText(/Hole 1/);
+  await panel.getByRole("button", { name: "Aim left" }).click();
+  await panel.getByRole("button", { name: "Putt" }).click();
+  await panel.getByRole("button", { name: "Hit!" }).click();
+  // the putt plays out, then the card shows one stroke on the first hole
+  const card = page.getByRole("table", { name: "Score card" });
+  await expect(card.getByRole("row", { name: /You/ })).toContainText("1", {
+    timeout: 120_000,
+  });
+  await panel.getByRole("button", { name: "Leave the course" }).click();
+  await expect(
+    panel.getByRole("button", { name: "Play a round" }),
+  ).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test("the debug buttons take the player into La Noche", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto(`${STILL}&debug=1`);
@@ -428,6 +452,7 @@ for (const room of [
   "bowling",
   "arcade-bar",
   "la-noche",
+  "mini-golf",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

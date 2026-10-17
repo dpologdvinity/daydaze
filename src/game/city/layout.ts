@@ -8,6 +8,7 @@ import type { RoomId, Spawn } from "../rooms.ts";
 import { LIFT, SKYLARK_DOOR } from "../rooftop.ts";
 import { SPAWN as SUGAR_RUSH_SPAWN, SUGAR_RUSH_DOOR } from "../sugarRush.ts";
 import { ARCADE_DOOR, SPAWN as ARCADE_SPAWN } from "../arcadeBar.ts";
+import { LINKS_DOOR, SPAWN as LINKS_SPAWN } from "../lagoonLinks.ts";
 import {
   LA_NOCHE_DOOR,
   LA_NOCHE_LOT,
@@ -509,6 +510,8 @@ export const CITY_SURFACES: readonly Surface[] = [
   { kind: "sidewalk", polygon: BASSLINE_ALLEY },
   // the Splash Zone gate's forecourt, off Shore Boulevard's north sidewalk
   { kind: "sidewalk", polygon: rect(-91, SHORE_Z - 13, -77, SHORE_Z - 11) },
+  // up to Lagoon Links' gate
+  { kind: "sidewalk", polygon: rect(-131, SHORE_Z - 13, -125, SHORE_Z - 11) },
   // the Aquarium's forecourt, up to its doors from Park Avenue's sidewalk
   { kind: "sidewalk", polygon: rect(228, GALLERY_Z + 10, 248, GALLERY_Z + 12) },
   // the Fairground forecourt, either side of the Chinatown street
@@ -688,6 +691,7 @@ const BEACH_FRONT: readonly {
   color: string;
   sign?: { text: string; color: string };
   style?: BuildingStyle;
+  door?: Door;
 }[] = [
   { x: -176, w: 18, h: 9, color: "#ffb3c7" },
   {
@@ -698,7 +702,22 @@ const BEACH_FRONT: readonly {
     sign: { text: "SURF SHACK", color: "#3fe0d0" },
     style: "storefront",
   },
-  { x: -128, w: 18, h: 8, color: "#fff0a8" },
+  {
+    // Lagoon Links, the mini golf course out on the sand behind
+    x: -128,
+    w: 18,
+    h: 8,
+    color: "#fff0a8",
+    sign: { text: "LAGOON LINKS", color: "#3fe0d0" },
+    style: "gate",
+    door: {
+      position: LINKS_DOOR.position,
+      radius: 1.5,
+      label: "Into Lagoon Links",
+      target: "mini-golf",
+      targetSpawn: { position: LINKS_SPAWN, yaw: Math.PI },
+    },
+  },
   {
     x: -104,
     w: 22,
@@ -1337,6 +1356,7 @@ const BEACH_BUILDINGS: readonly Building[] = [
     style: b.style ?? "deck",
     color: b.color,
     sign: b.sign,
+    ...(b.door ? { door: b.door } : {}),
   })),
 ];
 

@@ -57,7 +57,7 @@ function Scoreboard(): JSX.Element {
   const totals = frameTotals(lane.game);
   const at = position(lane.game);
   return (
-    <table className="bowl-score" aria-label="Scoreboard">
+    <table className="game-card" aria-label="Scoreboard">
       <thead>
         <tr>
           {Array.from({ length: 10 }, (_, f) => (
@@ -75,8 +75,8 @@ function Scoreboard(): JSX.Element {
         <tr>
           {Array.from({ length: 10 }, (_, f) => (
             <td key={f}>
-              <span className="bowl-balls">{(shown[f] ?? []).join(" ")}</span>
-              <span className="bowl-total">{totals[f] ?? ""}</span>
+              <span className="card-balls">{(shown[f] ?? []).join(" ")}</span>
+              <span className="card-total">{totals[f] ?? ""}</span>
             </td>
           ))}
         </tr>
@@ -118,8 +118,8 @@ export function BowlingPanel(): JSX.Element {
 
   if (lane.phase === "off")
     return (
-      <section className="bowl-panel" aria-label="Bowling">
-        <button type="button" className="bowl-main" onClick={startGame}>
+      <section className="game-panel" aria-label="Bowling">
+        <button type="button" className="game-main" onClick={startGame}>
           Bowl a game
         </button>
       </section>
@@ -141,15 +141,15 @@ export function BowlingPanel(): JSX.Element {
   return (
     <>
       <Scoreboard />
-      <section className="bowl-panel" aria-label="Bowling">
-        <p className="bowl-call" role="status">
+      <section className="game-panel" aria-label="Bowling">
+        <p className="game-call" role="status">
           {lane.phase === "over"
             ? `Game over: ${total ?? 0}`
             : lane.phase === "rolling"
               ? ""
               : (call ?? "Slide, then aim")}
         </p>
-        <div className="bowl-row" role="group" aria-label="Position">
+        <div className="game-row" role="group" aria-label="Position">
           <button
             type="button"
             aria-label="Slide left"
@@ -158,7 +158,7 @@ export function BowlingPanel(): JSX.Element {
           >
             ◀
           </button>
-          <span className="bowl-label">Position</span>
+          <span className="game-label">Position</span>
           <button
             type="button"
             aria-label="Slide right"
@@ -168,7 +168,7 @@ export function BowlingPanel(): JSX.Element {
             ▶
           </button>
         </div>
-        <div className="bowl-row" role="group" aria-label="Hook">
+        <div className="game-row" role="group" aria-label="Hook">
           {HOOKS.map((h) => (
             <button
               key={h.id}
@@ -181,7 +181,7 @@ export function BowlingPanel(): JSX.Element {
             </button>
           ))}
         </div>
-        <label className="bowl-meter">
+        <label className="game-meter">
           Aim
           <meter
             min={-THROW_LIMITS.angle}
@@ -189,7 +189,7 @@ export function BowlingPanel(): JSX.Element {
             value={aim}
           />
         </label>
-        <label className="bowl-meter">
+        <label className="game-meter">
           Power
           <meter
             min={0}
@@ -202,13 +202,13 @@ export function BowlingPanel(): JSX.Element {
         </label>
         <button
           type="button"
-          className="bowl-main"
+          className="game-main"
           disabled={lane.phase === "rolling"}
           onClick={() => press(performance.now())}
         >
           {ACTION[lane.phase]}
         </button>
-        <button type="button" className="bowl-leave" onClick={leaveLane}>
+        <button type="button" className="game-leave" onClick={leaveLane}>
           Leave the lane
         </button>
       </section>

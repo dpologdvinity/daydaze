@@ -4,6 +4,7 @@ import { SOFA, STOOL_XS, STOOL_Z } from "./rooftop.ts";
 import { CHAIR_X, CHAIR_ZS, STOOL_X, STOOL_ZS } from "./sugarRush.ts";
 import * as ARCADE from "./arcadeBar.ts";
 import * as LA_NOCHE from "./laNoche.ts";
+import { BENCH_SEATS as LINKS_BENCH } from "./lagoonLinks.ts";
 import { FOUNTAIN, SQUARE_BENCHES } from "./city/layout.ts";
 import { BENCH_SEATS } from "./bowlingAlley.ts";
 import { BOOTH_SEATS, MIC } from "./karaoke.ts";
@@ -178,6 +179,11 @@ const squareSeats = SQUARE_BENCHES.flatMap(({ at: [x, z], yaw }, b) =>
   }),
 );
 
+// Lagoon Links: the bench on the concourse, facing the course
+const linksSeats = LINKS_BENCH.map((at, i) =>
+  seat(`mini-golf-bench-${i}`, "mini-golf", at, 0.45, [at[0], 0], "front"),
+);
+
 export const SEATS: readonly Seat[] = [
   ...foodSeats,
   ...velvetStools,
@@ -190,6 +196,7 @@ export const SEATS: readonly Seat[] = [
   ...arcadeSeats,
   ...laNocheSeats,
   ...squareSeats,
+  ...linksSeats,
 ];
 
 export function seatsIn(room: RoomId): readonly Seat[] {

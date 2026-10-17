@@ -104,7 +104,12 @@ test("every sign name has its own rectangle on the label atlas", () => {
 test("each gate raises two tall arches either side of its door", () => {
   const gates = BUILDINGS.filter((b) => b.style === "gate");
   const venues = gates.map((b) => b.door?.target).sort();
-  assert.deepEqual(venues, ["amusement-park", "speedway", "water-park"]);
+  assert.deepEqual(venues, [
+    "amusement-park",
+    "mini-golf",
+    "speedway",
+    "water-park",
+  ]);
   for (const b of gates) {
     const out = dressed(b.id);
     // two posts and a beam across the top

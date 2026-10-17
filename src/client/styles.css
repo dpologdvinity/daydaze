@@ -1303,8 +1303,9 @@ button:focus-visible {
   }
 }
 
-/* Glow Bowl: the lane's scoreboard across the top, its controls at the side. */
-.bowl-score {
+/* Games played in a room (Glow Bowl, Lagoon Links): the score card across
+   the top, the controls at the side. */
+.game-card {
   position: fixed;
   top: 16px;
   left: 50%;
@@ -1317,34 +1318,34 @@ button:focus-visible {
   box-shadow: 0 0 18px rgb(255 79 179 / 0.45);
 }
 
-.bowl-score th,
-.bowl-score td {
+.game-card th,
+.game-card td {
   min-width: 42px;
   padding: 2px 6px;
   border: 1px solid rgb(79 227 255 / 0.55);
   text-align: center;
 }
 
-.bowl-score th {
+.game-card th {
   font-size: 12px;
   color: #4fe3ff;
 }
 
-.bowl-score th[aria-current="step"] {
+.game-card th[aria-current="step"] {
   background: rgb(255 79 179 / 0.35);
 }
 
-.bowl-balls,
-.bowl-total {
+.card-balls,
+.card-total {
   display: block;
   min-height: 1.2em;
 }
 
-.bowl-total {
+.card-total {
   font-weight: 700;
 }
 
-.bowl-panel {
+.game-panel {
   position: fixed;
   right: 28px;
   top: 150px;
@@ -1359,7 +1360,7 @@ button:focus-visible {
   color: var(--champagne);
 }
 
-.bowl-panel button {
+.game-panel button {
   padding: 8px 12px;
   border: 0;
   border-radius: 999px;
@@ -1369,16 +1370,16 @@ button:focus-visible {
   cursor: pointer;
 }
 
-.bowl-panel button:disabled {
+.game-panel button:disabled {
   opacity: 0.45;
   cursor: default;
 }
 
-.bowl-panel button[aria-pressed="true"] {
+.game-panel button[aria-pressed="true"] {
   background: rgb(79 227 255 / 0.35);
 }
 
-.bowl-panel .bowl-main {
+.game-panel .game-main {
   padding: 12px 18px;
   background: #ff4fb3;
   color: #14051f;
@@ -1386,35 +1387,35 @@ button:focus-visible {
   box-shadow: 0 0 14px rgb(255 79 179 / 0.7);
 }
 
-.bowl-row {
+.game-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
 }
 
-.bowl-row button {
+.game-row button {
   flex: 1;
   padding: 6px 4px;
   font-size: 13px;
 }
 
-.bowl-label {
+.game-label {
   font-size: 13px;
   opacity: 0.8;
 }
 
-.bowl-meter {
+.game-meter {
   display: grid;
   gap: 2px;
   font-size: 13px;
 }
 
-.bowl-meter meter {
+.game-meter meter {
   width: 100%;
 }
 
-.bowl-call {
+.game-call {
   min-height: 1.4em;
   margin: 0;
   font-weight: 700;
@@ -1423,18 +1424,18 @@ button:focus-visible {
 }
 
 @media (max-width: 720px) {
-  .bowl-score {
+  .game-card {
     top: 64px;
     font-size: 11px;
   }
 
-  .bowl-score th,
-  .bowl-score td {
+  .game-card th,
+  .game-card td {
     min-width: 26px;
     padding: 1px 2px;
   }
 
-  .bowl-panel {
+  .game-panel {
     top: auto;
     bottom: 150px;
     right: 12px;

@@ -68,6 +68,7 @@ const SHOTS: {
   { name: "bowling", query: "room=bowling" },
   { name: "arcade-bar", query: "room=arcade-bar" },
   { name: "la-noche", query: "room=la-noche" },
+  { name: "mini-golf", query: "room=mini-golf" },
   { name: "velvet-room-full-look", query: "room=velvet-room&view=full" },
   { name: "velvet-room-detail", query: "room=velvet-room&view=detail" },
   { name: "club-pulse-detail", query: "room=pulse&view=detail" },
