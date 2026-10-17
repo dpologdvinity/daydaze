@@ -9,6 +9,7 @@ import {
   GUTTER_HALF_WIDTH,
   LANE_HALF_WIDTH,
   marks,
+  HEADPIN_Z,
   PIN_SPOTS,
 } from "../../game/bowling.ts";
 import {
@@ -204,38 +205,95 @@ function Lanes() {
   );
 }
 
-/** The static racks on the other three lanes, one draw call. */
+/** Seconds from one bowl to the next on the other lanes, the ball's roll
+ * and how long the knocked pins lie before the sweep racks them again. */
+const OTHER_EVERY = 9;
+const OTHER_ROLL = 2.4;
+const OTHER_DOWN = 3;
+
+/** The other three lanes, bowled by the regulars: a ball rolls down every
+ * few seconds and knocks some pins flat, then the rack comes back. Pins and
+ * balls are one draw call each. */
 function OtherRacks({ geometry }: { geometry: THREE.BufferGeometry }) {
-  const spots = useMemo(
-    () =>
-      LANE_XS.flatMap((_, lane) =>
-        lane === PLAY_LANE ? [] : PIN_SPOTS.map((s) => laneToRoom(lane, s)),
-      ),
+  const calm = useReducedMotion();
+  const pins = useRef<THREE.InstancedMesh>(null);
+  const balls = useRef<THREE.InstancedMesh>(null);
+  const lanes = useMemo(
+    () => LANE_XS.map((_, lane) => lane).filter((l) => l !== PLAY_LANE),
     [],
   );
-  return (
-    <instancedMesh
-      ref={(m) => {
-        if (!m) return;
-        const { m: mat, q, p, s } = scratch;
-        spots.forEach(([x, z], i) =>
-          m.setMatrixAt(
-            i,
-            mat.compose(p.set(x, 0, z), q.identity(), s.set(1, 1, 1)),
-          ),
+  useFrame(({ clock }) => {
+    const pm = pins.current;
+    const bm = balls.current;
+    if (!pm || !bm) return;
+    const { m, q, p, s, axis } = scratch;
+    const t = clock.elapsedTime;
+    lanes.forEach((lane, li) => {
+      const k = (t + li * 3.1) / OTHER_EVERY;
+      const into = calm ? OTHER_EVERY : (k % 1) * OTHER_EVERY;
+      // how many this bowl takes down, the same all cycle long
+      const n = Math.floor(k) * 3 + li;
+      const knocked = 4 + ((n * 7) % 7);
+      const roll = Math.min(1, into / OTHER_ROLL);
+      const [bx, bz] = laneToRoom(lane, [
+        Math.sin(n) * 0.08 * roll,
+        roll * HEADPIN_Z + 0.4,
+      ]);
+      const gone = into > OTHER_ROLL + 0.3;
+      bm.setMatrixAt(
+        li,
+        m.compose(
+          p.set(bx, gone ? -1 : BALL_RADIUS, bz),
+          q.identity(),
+          s.set(1, 1, 1),
+        ),
+      );
+      const fall = Math.min(1, Math.max(0, (into - OTHER_ROLL) / 0.35));
+      const swept = into > OTHER_ROLL + OTHER_DOWN;
+      PIN_SPOTS.forEach((spot, i) => {
+        const [x, z] = laneToRoom(lane, spot);
+        const down = !swept && (i * 5 + n) % 10 < knocked ? fall : 0;
+        axis.set(Math.cos(i + n), 0, Math.sin(i + n)).normalize();
+        q.setFromAxisAngle(axis, down * Math.PI * 0.5);
+        m.compose(
+          p.set(x + axis.z * down * 0.2, 0, z - axis.x * down * 0.2),
+          q,
+          s.set(1, 1, 1),
         );
-        m.instanceMatrix.needsUpdate = true;
-        m.computeBoundingSphere();
-      }}
-      args={[geometry, undefined, spots.length]}
-    >
-      <meshStandardMaterial
-        color="#f4f0ff"
-        emissive="#c9b7ff"
-        emissiveIntensity={0.35}
-        roughness={0.3}
-      />
-    </instancedMesh>
+        pm.setMatrixAt(li * PIN_SPOTS.length + i, m);
+      });
+    });
+    pm.instanceMatrix.needsUpdate = true;
+    bm.instanceMatrix.needsUpdate = true;
+  });
+  return (
+    <>
+      <instancedMesh
+        ref={pins}
+        args={[geometry, undefined, lanes.length * PIN_SPOTS.length]}
+        frustumCulled={false}
+      >
+        <meshStandardMaterial
+          color="#f4f0ff"
+          emissive="#c9b7ff"
+          emissiveIntensity={0.35}
+          roughness={0.3}
+        />
+      </instancedMesh>
+      <instancedMesh
+        ref={balls}
+        args={[undefined, undefined, lanes.length]}
+        frustumCulled={false}
+      >
+        <sphereGeometry args={[BALL_RADIUS, 20, 14]} />
+        <meshStandardMaterial
+          color="#7b4dff"
+          emissive="#ff2f9a"
+          emissiveIntensity={0.4}
+          roughness={0.2}
+        />
+      </instancedMesh>
+    </>
   );
 }
 
