@@ -34,7 +34,8 @@ import { Doll, type WalkState } from "../avatar/Doll.tsx";
 import { hdr } from "../rooms/shared/materials.ts";
 import { driving } from "./driving.ts";
 import { ignoresKeys } from "./keyTargets.ts";
-import { playStep } from "../../audio/worldSounds.ts";
+import { playGlide, playStep } from "../../audio/worldSounds.ts";
+import { SKATE_SPEED, skates } from "./skates.ts";
 import { BOARDWALK, CITY_AREA, PARK, WATER_Z } from "../../game/city/layout.ts";
 import { stick } from "./joystick.ts";
 
@@ -144,6 +145,7 @@ function ride(
 
 /** Metres between footsteps. */
 const STEP_METRES = 0.72;
+const GLIDE_METRES = 2.2;
 
 /** In the city, sand and the park lawn take a softer step than pavement. */
 function softGround(x: number, z: number): boolean {
@@ -280,7 +282,13 @@ export function PlayerController({
         player.acc -= SIM_STEP;
         player.before.pos = player.walk.pos;
         player.before.yaw = player.walk.yaw;
-        const step = stepWalker(player.walk, area, intent, SIM_STEP);
+        const step = stepWalker(
+          player.walk,
+          area,
+          intent,
+          SIM_STEP,
+          skates.get().on ? SKATE_SPEED : 1,
+        );
         moving = moving || step.moved;
         if (step.portal) {
           // the walker is leaving; drop the rest of this frame's time
@@ -304,13 +312,17 @@ export function PlayerController({
         player.pos.x - lastPos.current.x,
         player.pos.z - lastPos.current.z,
       );
-      if (stepDist.current > STEP_METRES) {
+      // on skates: a long glide per push, and the wheels' hiss
+      const skating = skates.get().on;
+      if (stepDist.current > (skating ? GLIDE_METRES : STEP_METRES)) {
         stepDist.current = 0;
-        playStep(
-          area === CITY_AREA && softGround(player.pos.x, player.pos.z)
-            ? "soft"
-            : "hard",
-        );
+        if (skating) playGlide();
+        else
+          playStep(
+            area === CITY_AREA && softGround(player.pos.x, player.pos.z)
+              ? "soft"
+              : "hard",
+          );
       }
     }
     lastPos.current.copy(player.pos);
@@ -322,7 +334,8 @@ export function PlayerController({
     }
     gait.current.speed = THREE.MathUtils.damp(
       gait.current.speed,
-      moving ? STRIDE : 0,
+      // on skates the legs swing slow and long: pushes, not steps
+      moving ? STRIDE * (skates.get().on ? 0.45 : 1) : 0,
       10,
       dt,
     );
@@ -387,6 +400,7 @@ export function PlayerController({
           buzzed
           walk={gait}
         />
+        <Skates />
       </group>
       <mesh ref={marker} rotation-x={-Math.PI / 2} visible={false}>
         <ringGeometry args={[0.16, 0.2, 40]} />
@@ -398,5 +412,39 @@ export function PlayerController({
         />
       </mesh>
     </>
+  );
+}
+
+/** Roller skates under her feet while they're on: a pink boot plate on
+ * four glowing wheels each. */
+function Skates() {
+  const { on } = skates.use();
+  if (!on) return null;
+  return (
+    <group>
+      {[-0.1, 0.1].map((x) => (
+        <group key={x} position={[x, 0, 0.02]}>
+          <mesh position-y={0.07}>
+            <boxGeometry args={[0.1, 0.05, 0.26]} />
+            <meshStandardMaterial color="#ff4fb3" roughness={0.4} />
+          </mesh>
+          {[-0.08, 0.08].flatMap((z) =>
+            [-0.04, 0.04].map((wx) => (
+              <mesh
+                key={`${z}${wx}`}
+                position={[wx, 0.03, z]}
+                rotation-z={Math.PI / 2}
+              >
+                <cylinderGeometry args={[0.03, 0.03, 0.025, 10]} />
+                <meshBasicMaterial
+                  color={hdr("#4fe3ff", 2)}
+                  toneMapped={false}
+                />
+              </mesh>
+            )),
+          )}
+        </group>
+      ))}
+    </group>
   );
 }

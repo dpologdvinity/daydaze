@@ -35,6 +35,8 @@ const MUSIC: Partial<Record<RoomId, TrackId>> = {
   dome: "savanna-nightclub",
   "kamayan-hall": "canopy-lofi",
   galleria: "sugar-rush-pop",
+  "roller-rink": "roller-disco",
+  skatepark: "warehouse-acid",
   // a backing track to sing over
   karaoke: "sugar-rush-pop",
 };

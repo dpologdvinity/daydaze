@@ -95,6 +95,12 @@ const HauntedHouse = lazy(() =>
     default: m.HauntedHouse,
   })),
 );
+const Skatepark = lazy(() =>
+  import("../rooms/Skatepark.tsx").then((m) => ({ default: m.Skatepark })),
+);
+const RollerRink = lazy(() =>
+  import("../rooms/RollerRink.tsx").then((m) => ({ default: m.RollerRink })),
+);
 const Galleria = lazy(() =>
   import("../rooms/Galleria.tsx").then((m) => ({ default: m.Galleria })),
 );
@@ -266,6 +272,8 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   dome: Dome,
   "kamayan-hall": KamayanHall,
   galleria: Galleria,
+  "roller-rink": RollerRink,
+  skatepark: Skatepark,
   stadium: Stadium,
   "haunted-house": HauntedHouse,
   "filipino-joint": FilipinoJoint,

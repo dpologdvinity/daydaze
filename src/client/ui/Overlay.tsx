@@ -53,9 +53,11 @@ import { DriveControls } from "../rooms/speedway/DriveControls.tsx";
 import { BowlingPanel } from "../rooms/bowling/BowlingPanel.tsx";
 import { GolfPanel } from "../rooms/minigolf/GolfPanel.tsx";
 import { HoopsPanel } from "../rooms/dome/HoopsPanel.tsx";
+import { SkatePanel } from "../rooms/skatepark/SkatePanel.tsx";
 import { PenaltyPanel } from "../rooms/stadium/PenaltyPanel.tsx";
 import { clearCityMapRequest, useCityMapRequest } from "./cityMapRequest.ts";
 import { ShopPanel } from "./ShopPanel.tsx";
+import { setSkates, skates, SKATE_ROOMS } from "../world/skates.ts";
 import { openShop } from "./shopRequest.ts";
 import { STORES as GALLERIA_STORES } from "../../game/galleria.ts";
 import { RaceHud, SpeedwayMenu } from "../rooms/speedway/RaceHud.tsx";
@@ -99,6 +101,10 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Your flat. Use the decorating panel to place furniture and lock the door. Tap the blue shelf to try a shoplift.",
   "haunted-house":
     "The Haunted House. Find your way through the dark rooms past the ghosts, then back out to the park.",
+  skatepark:
+    "Concrete Wave Skatepark. Drop in on the half-pipe and time your tricks at the lip, or put on skates and roll around.",
+  "roller-rink":
+    "The Starlite Roller Disco. Put on skates (tap Roxy at the rental counter, or the dock button) and roll laps to the disco.",
   galleria:
     "The Starlight Galleria. Tap a clerk at Glitterbox, Gloss & Glow or Curl & Chrome to shop, grab food at the food court, or ride the escalators' view.",
   "kamayan-hall":
@@ -537,6 +543,11 @@ export function Overlay({
   const neighborhood = useNeighborhood();
   const [phone, setPhone] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
+  // skates come off indoors, where rolling isn't allowed
+  const { on: skating } = skates.use();
+  useEffect(() => {
+    if (!SKATE_ROOMS.has(room)) setSkates(false);
+  }, [room]);
   // the bus stop's map board asks for the map from inside the world
   const mapRequested = useCityMapRequest();
   useEffect(() => {
@@ -608,6 +619,7 @@ export function Overlay({
       {room === "bowling" && <BowlingPanel />}
       {room === "mini-golf" && <GolfPanel />}
       {room === "dome" && <HoopsPanel />}
+      {room === "skatepark" && <SkatePanel />}
       {room === "stadium" && <PenaltyPanel />}
 
       {room === "speedway" && (
@@ -645,6 +657,16 @@ export function Overlay({
           >
             {muted ? "Sound off" : "Sound on"}
           </button>
+          {SKATE_ROOMS.has(room) && (
+            <button
+              type="button"
+              className="drink"
+              aria-pressed={skating}
+              onClick={() => setSkates(!skating)}
+            >
+              {skating ? "Take off skates" : "Put on skates"}
+            </button>
+          )}
           {room === "city" && (
             <button
               type="button"

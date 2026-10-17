@@ -13,6 +13,8 @@ import {
 } from "./galleria.ts";
 import { SPOTS as HOOP_SPOTS } from "./hoops.ts";
 import { hotspotsIn } from "./hotspots.ts";
+import { RENTAL as RINK_RENTAL } from "./rollerRink.ts";
+import { DROP_IN } from "./skatepark.ts";
 import { SPOT as PENALTY_SPOT } from "./stadium.ts";
 import { HOLE_XS as LINKS_HOLE_XS } from "./lagoonLinks.ts";
 import { MIC } from "./karaoke.ts";
@@ -40,7 +42,9 @@ test("every room is registered under its own id", () => {
     "mini-golf",
     "plaza",
     "pulse",
+    "roller-rink",
     "rooftop-bar",
+    "skatepark",
     "speedway",
     "stadium",
     "sugar-rush",
@@ -446,6 +450,41 @@ test("the Galleria: every clerk, bench and food court seat is reachable from the
     const route: Vec2[] = goal[0] > 9 ? [[11.2, 7.6], goal] : [goal];
     for (const via of route)
       for (let k = 0; k < 800; k++) pos = stepInArea(area, pos, via, 0.05);
+    assert.ok(
+      Math.hypot(pos[0] - goal[0], pos[1] - goal[1]) < 0.3,
+      `reached ${goal}`,
+    );
+  }
+});
+
+test("the Roller Disco: the rental clerk and the benches are reachable", () => {
+  const room = ROOMS["roller-rink"];
+  const area = areaOf(room);
+  assert.equal(isBlocked(area, room.spawn.position), false);
+  for (const goal of [
+    [RINK_RENTAL[0] + 0.7, RINK_RENTAL[1]] as Vec2,
+    ...seatsIn("roller-rink").map((s) => s.approach),
+  ]) {
+    let pos: Vec2 = room.spawn.position;
+    for (let k = 0; k < 800; k++) pos = stepInArea(area, pos, goal, 0.05);
+    assert.ok(
+      Math.hypot(pos[0] - goal[0], pos[1] - goal[1]) < 0.3,
+      `reached ${goal}`,
+    );
+  }
+});
+
+test("Concrete Wave: the drop-in, the bleachers and the edges are reachable", () => {
+  const room = ROOMS.skatepark;
+  const area = areaOf(room);
+  assert.equal(isBlocked(area, room.spawn.position), false);
+  for (const goal of [
+    DROP_IN,
+    ...seatsIn("skatepark").map((s) => s.approach),
+  ]) {
+    assert.equal(isBlocked(area, goal), false, `clear at ${goal}`);
+    let pos: Vec2 = room.spawn.position;
+    for (let k = 0; k < 800; k++) pos = stepInArea(area, pos, goal, 0.05);
     assert.ok(
       Math.hypot(pos[0] - goal[0], pos[1] - goal[1]) < 0.3,
       `reached ${goal}`,

@@ -8,7 +8,8 @@ export type TrackId =
   | "sugar-rush-pop"
   | "warehouse-acid"
   | "player-two-chiptune"
-  | "la-noche-salsa";
+  | "la-noche-salsa"
+  | "roller-disco";
 
 export type TrackMetadata = {
   id: TrackId;
@@ -90,6 +91,15 @@ export const JUKEBOX_TRACKS: readonly TrackMetadata[] = [
     description:
       "Salsa in 2-3 son clave: a piano montuno, conga tumbao, cowbell and an anticipated bass, round C, F and G.",
     mood: "Hot",
+  },
+  {
+    id: "roller-disco",
+    title: "Roller Disco",
+    genre: "Disco",
+    bpm: 118,
+    description:
+      "Roller-rink disco: four on the floor, open offbeat hats, an octave-walking bass and string stabs on two and four.",
+    mood: "Groovy",
   },
 ];
 
@@ -844,6 +854,67 @@ export function laNocheSalsaStep(
   if (beat8 % 2 === 0) playKnock(ctx, dest, now, 800, 0.05, 0.08);
 }
 
+// Roller Disco: two bars each of Am7, Dm7, G and Cmaj7.
+const DISCO_ROOTS = [110, 73.42, 98, 65.41];
+const DISCO_CHORDS: readonly (readonly number[])[] = [
+  [220, 261.63, 329.63, 392],
+  [293.66, 349.23, 440, 523.25],
+  [196, 246.94, 293.66, 392],
+  [261.63, 329.63, 392, 493.88],
+];
+
+/** A short string stab: detuned saws through a soft lowpass. */
+function playStab(
+  ctx: AudioContext,
+  dest: AnyNode,
+  now: number,
+  chord: readonly number[],
+) {
+  const filter = ctx.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.setValueAtTime(2600, now);
+  filter.frequency.exponentialRampToValueAtTime(900, now + 0.25);
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.05, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+  filter.connect(gain);
+  gain.connect(dest);
+  for (const f of chord)
+    for (const detune of [-6, 6]) {
+      const osc = ctx.createOscillator();
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(f, now);
+      osc.detune.setValueAtTime(detune, now);
+      osc.connect(filter);
+      osc.start(now);
+      osc.stop(now + 0.3);
+    }
+}
+
+export function rollerDiscoStep(
+  ctx: AudioContext,
+  dest: AnyNode,
+  step: number,
+  now: number,
+) {
+  const chordIndex = Math.floor(step / 16) % DISCO_ROOTS.length;
+  const root = DISCO_ROOTS[chordIndex];
+  // the bass walks root and octave on every eighth
+  playBassNote(ctx, dest, now, step % 2 ? root * 2 : root);
+  if (step % 2) {
+    // the open hat on the offbeat: a longer, brighter hiss
+    playHiHatHit(ctx, dest, now);
+    playHiHatHit(ctx, dest, now + 0.03);
+    return;
+  }
+  playKick(ctx, dest, now);
+  const beat = (step / 2) % 4;
+  if (beat === 1 || beat === 3) {
+    playClap(ctx, dest, now);
+    playStab(ctx, dest, now, DISCO_CHORDS[chordIndex]);
+  }
+}
+
 type TrackProgram = {
   stepSeconds: (bpm: number) => number;
   step: (ctx: AudioContext, dest: AnyNode, step: number, time: number) => void;
@@ -881,6 +952,10 @@ export const TRACK_PROGRAMS: Record<TrackId, TrackProgram> = {
   "la-noche-salsa": {
     stepSeconds: (bpm) => 60 / bpm / 2,
     step: laNocheSalsaStep,
+  },
+  "roller-disco": {
+    stepSeconds: (bpm) => 60 / bpm / 2,
+    step: rollerDiscoStep,
   },
 };
 

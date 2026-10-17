@@ -72,6 +72,14 @@ export function playStep(surface: Surface = "hard"): boolean {
   return true;
 }
 
+/** A skate's push: a low rolling hiss of wheels on the ground. */
+export function playGlide(): boolean {
+  const out = sfx();
+  if (!out) return false;
+  burst(out.ctx, out.dest, "bandpass", 380 + Math.random() * 120, 0.07, 0.32);
+  return true;
+}
+
 /** Through a door: noise swept up then down, like air rushing past. */
 export function playWhoosh(): boolean {
   const out = sfx();

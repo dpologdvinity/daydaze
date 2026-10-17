@@ -479,6 +479,37 @@ test("the Galleria: buy at Glitterbox, pay for it, and it's yours to wear", asyn
   expect(errors).toEqual([]);
 });
 
+test("the Roller Disco: put on skates, and they come off indoors", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&debug=1`);
+  await page.getByRole("button", { name: "Go to the Roller Disco" }).click();
+  await expect(roomTitle(page)).toHaveText("Starlite Roller Disco");
+  const skates = page.getByRole("button", { name: /skates/ });
+  await page.getByRole("button", { name: "Put on skates" }).click();
+  await expect(skates).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "Go to Pulse" }).click();
+  await expect(roomTitle(page)).toHaveText("Pulse");
+  await expect(skates).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+test("Concrete Wave: drop in, and a run starts on the clock", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=skatepark`);
+  await expect(canvasOf(page)).toHaveAttribute("data-frames", "10");
+  const panel = page.getByRole("region", { name: "Half-pipe" });
+  await panel.getByRole("button", { name: "Drop in" }).click();
+  await expect(panel.getByRole("button", { name: "Trick!" })).toBeVisible();
+  await expect(panel.getByLabel("Score")).toContainText("0:");
+  await panel.getByRole("button", { name: "Step off" }).click();
+  await expect(panel.getByRole("button", { name: "Drop in" })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test("the debug buttons take the player into La Noche", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto(`${STILL}&debug=1`);
@@ -518,6 +549,8 @@ for (const room of [
   "stadium",
   "kamayan-hall",
   "galleria",
+  "roller-rink",
+  "skatepark",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

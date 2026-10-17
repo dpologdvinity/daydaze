@@ -70,6 +70,8 @@ import {
 import * as DOME from "./dome.ts";
 import * as KAMAYAN from "./kamayanHall.ts";
 import * as GALLERIA from "./galleria.ts";
+import * as RINK from "./rollerRink.ts";
+import * as SKATEPARK from "./skatepark.ts";
 import * as STADIUM from "./stadium.ts";
 import type { Vec2 } from "./walk.ts";
 
@@ -101,6 +103,8 @@ export type RoomId =
   | "stadium"
   | "kamayan-hall"
   | "galleria"
+  | "roller-rink"
+  | "skatepark"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -620,6 +624,40 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the park",
         target: "city",
         targetSpawn: { position: ICE_RINK_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  skatepark: {
+    id: "skatepark",
+    name: "Concrete Wave Skatepark",
+    walkable: SKATEPARK.FLOOR,
+    blockers: SKATEPARK.BLOCKERS,
+    spawn: { position: SKATEPARK.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "skatepark-to-city",
+        position: SKATEPARK.EXIT,
+        radius: 0.8,
+        label: "Out to Shore Boulevard",
+        target: "city",
+        targetSpawn: { position: SKATEPARK.SKATEPARK_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  "roller-rink": {
+    id: "roller-rink",
+    name: "Starlite Roller Disco",
+    walkable: RINK.FLOOR,
+    blockers: RINK.BLOCKERS,
+    spawn: { position: RINK.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "roller-rink-to-city",
+        position: RINK.EXIT,
+        radius: 0.8,
+        label: "Out to Shore Boulevard",
+        target: "city",
+        targetSpawn: { position: RINK.RINK_DOOR.landing, yaw: 0 },
       },
     ],
   },

@@ -7,6 +7,8 @@ import * as LA_NOCHE from "./laNoche.ts";
 import * as DOME from "./dome.ts";
 import * as KAMAYAN from "./kamayanHall.ts";
 import * as GALLERIA from "./galleria.ts";
+import * as RINK from "./rollerRink.ts";
+import * as SKATEPARK from "./skatepark.ts";
 import * as STADIUM from "./stadium.ts";
 import { BENCH_SEATS as LINKS_BENCH } from "./lagoonLinks.ts";
 import { FOUNTAIN, SQUARE_BENCHES } from "./city/layout.ts";
@@ -234,6 +236,16 @@ const galleriaSeats = [
   ),
 ];
 
+// The Roller Disco: benches along the south wall, facing the rink
+const rinkSeats = RINK.BENCH_SEATS.map((at, i) =>
+  seat(`roller-rink-bench-${i}`, "roller-rink", at, 0.45, [at[0], 0], "front"),
+);
+
+// Concrete Wave: the bleachers, facing the half-pipe
+const skateparkSeats = SKATEPARK.BLEACHER_SEATS.map((at, i) =>
+  seat(`skatepark-bleacher-${i}`, "skatepark", at, 0.45, [at[0], 0], "front"),
+);
+
 export const SEATS: readonly Seat[] = [
   ...foodSeats,
   ...velvetStools,
@@ -250,6 +262,8 @@ export const SEATS: readonly Seat[] = [
   ...sportsSeats,
   ...kamayanSeats,
   ...galleriaSeats,
+  ...rinkSeats,
+  ...skateparkSeats,
 ];
 
 export function seatsIn(room: RoomId): readonly Seat[] {

@@ -72,6 +72,8 @@ const SHOTS: {
   { name: "dome", query: "room=dome" },
   { name: "kamayan-hall", query: "room=kamayan-hall" },
   { name: "galleria", query: "room=galleria" },
+  { name: "roller-rink", query: "room=roller-rink" },
+  { name: "skatepark", query: "room=skatepark" },
   { name: "stadium", query: "room=stadium" },
   { name: "velvet-room-full-look", query: "room=velvet-room&view=full" },
   { name: "velvet-room-detail", query: "room=velvet-room&view=detail" },

@@ -65,6 +65,16 @@ const ROOM_SHOTS: Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }> =
       eye: new THREE.Vector3(0, 8.5, 15),
       look: new THREE.Vector3(0, 0.8, -1),
     },
+    // from the bleachers, over the bowl and funbox to the half-pipe
+    skatepark: {
+      eye: new THREE.Vector3(2, 7.5, 14),
+      look: new THREE.Vector3(0, 1, -3),
+    },
+    // from over the benches, across the rink to the DJ and the neon
+    "roller-rink": {
+      eye: new THREE.Vector3(3, 6.5, 13.5),
+      look: new THREE.Vector3(0, 1, -2),
+    },
     // from over the doors, up the hall to the stores, balcony and neon
     galleria: {
       eye: new THREE.Vector3(4, 7, 14),
@@ -196,6 +206,8 @@ const MAX_DISTANCE: Record<RoomId, number> = {
   dome: 24,
   "kamayan-hall": 16,
   galleria: 24,
+  "roller-rink": 22,
+  skatepark: 26,
   stadium: 30,
   "haunted-house": 16,
   // the track sits far back, so the Speedway's wide shot needs more orbit range

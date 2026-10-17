@@ -40,6 +40,8 @@ export function stepWalker(
   area: WalkArea,
   intent: Vec2 | null,
   dt: number,
+  /** Faster than walking (on skates), slower, or 1. */
+  speedScale = 1,
 ): { moved: boolean; portal: Portal | null } {
   const from = walker.pos;
   let goal = walker.target;
@@ -52,7 +54,7 @@ export function stepWalker(
   const diff = turnBetween(walker.yaw, yawTowards(from, goal));
   walker.yaw += diff * Math.min(1, dt * 9);
   // pivot first on sharp turns, then stride
-  const step = WALK_SPEED * dt * (Math.abs(diff) < 1.2 ? 1 : 0.3);
+  const step = WALK_SPEED * speedScale * dt * (Math.abs(diff) < 1.2 ? 1 : 0.3);
   const next = stepInArea(area, from, goal, step);
   const progress = Math.hypot(next[0] - from[0], next[1] - from[1]);
   const moved = progress > 1e-4;

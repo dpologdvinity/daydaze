@@ -11,6 +11,8 @@ import { ARCADE_DOOR, SPAWN as ARCADE_SPAWN } from "../arcadeBar.ts";
 import { LINKS_DOOR, SPAWN as LINKS_SPAWN } from "../lagoonLinks.ts";
 import * as DOME from "../dome.ts";
 import * as GALLERIA from "../galleria.ts";
+import * as RINK from "../rollerRink.ts";
+import * as SKATEPARK from "../skatepark.ts";
 import * as STADIUM from "../stadium.ts";
 import {
   LA_NOCHE_DOOR,
@@ -513,6 +515,26 @@ export const CITY_SURFACES: readonly Surface[] = [
   { kind: "sidewalk", polygon: BASSLINE_ALLEY },
   // the Splash Zone gate's forecourt, off Shore Boulevard's north sidewalk
   { kind: "sidewalk", polygon: rect(-91, SHORE_Z - 13, -77, SHORE_Z - 11) },
+  // up to the skatepark's gate
+  {
+    kind: "sidewalk",
+    polygon: rect(
+      SKATEPARK.SKATEPARK_DOOR.position[0] - 3,
+      SHORE_Z - 13,
+      SKATEPARK.SKATEPARK_DOOR.position[0] + 3,
+      SHORE_Z - 11,
+    ),
+  },
+  // up to the Roller Disco's doors
+  {
+    kind: "sidewalk",
+    polygon: rect(
+      RINK.RINK_DOOR.position[0] - 3,
+      SHORE_Z - 13,
+      RINK.RINK_DOOR.position[0] + 3,
+      SHORE_Z - 11,
+    ),
+  },
   // up to the Galleria's doors
   {
     kind: "sidewalk",
@@ -1361,6 +1383,49 @@ const MANILA_BUILDINGS: readonly Building[] = MANILA_FRONT.map(
 );
 
 const BEACH_BUILDINGS: readonly Building[] = [
+  {
+    // Concrete Wave, the skatepark, beside the Roller Disco
+    id: "skatepark-gate",
+    neighborhood: "beachside",
+    footprint: rect(
+      RINK.SKATEPARK_LOT.x0,
+      RINK.SKATEPARK_LOT.z0,
+      RINK.SKATEPARK_LOT.x1,
+      RINK.SKATEPARK_LOT.z1,
+    ),
+    height: 12,
+    style: "gate",
+    sign: { text: "CONCRETE WAVE", color: "#7dff6b" },
+    door: {
+      position: SKATEPARK.SKATEPARK_DOOR.position,
+      radius: 2,
+      label: "Into Concrete Wave",
+      target: "skatepark",
+      targetSpawn: { position: SKATEPARK.SPAWN, yaw: Math.PI },
+    },
+  },
+  {
+    // the Starlite Roller Disco, at the far west of the boulevard
+    id: "roller-rink",
+    neighborhood: "beachside",
+    footprint: rect(
+      RINK.RINK_LOT.x0,
+      RINK.RINK_LOT.z0,
+      RINK.RINK_LOT.x1,
+      RINK.RINK_LOT.z1,
+    ),
+    height: 12,
+    style: "club",
+    color: "#ff9ec2",
+    sign: { text: "ROLLER DISCO", color: "#4fe3ff" },
+    door: {
+      position: RINK.RINK_DOOR.position,
+      radius: 2,
+      label: "Into the Roller Disco",
+      target: "roller-rink",
+      targetSpawn: { position: RINK.SPAWN, yaw: Math.PI },
+    },
+  },
   {
     // the Starlight Galleria, the big mall on the west end of the boulevard
     id: "galleria",

@@ -4,7 +4,7 @@ import { roomArea } from "./area.ts";
 import { CITY_AREA } from "./city/layout.ts";
 import { ROOMS } from "./rooms.ts";
 import { createWalker, SIM_STEP, setTarget, stepWalker } from "./walker.ts";
-import { WALK_SPEED } from "./walk.ts";
+import { WALK_SPEED, type Vec2 } from "./walk.ts";
 
 const plaza = roomArea(ROOMS.plaza);
 
@@ -68,4 +68,22 @@ test("the city door fires from the sidewalk without any frame timing", () => {
     portal = stepWalker(w, CITY_AREA, [0, -1], SIM_STEP).portal;
   }
   assert.equal(portal?.target, "velvet-room");
+});
+
+test("a speed scale covers ground faster, as on skates", () => {
+  const open: Vec2[] = [
+    [-50, -50],
+    [50, -50],
+    [50, 50],
+    [-50, 50],
+  ];
+  const area = { surfaces: [open], blockers: [], portals: [] };
+  const a = createWalker({ position: [0, 0], yaw: 0 });
+  const b = createWalker({ position: [0, 0], yaw: 0 });
+  a.target = b.target = [0, 40];
+  for (let i = 0; i < 60; i++) {
+    stepWalker(a, area, null, 1 / 60);
+    stepWalker(b, area, null, 1 / 60, 1.8);
+  }
+  assert.ok(b.pos[1] > a.pos[1] * 1.6, `${b.pos[1]} vs ${a.pos[1]}`);
 });
