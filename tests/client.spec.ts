@@ -472,6 +472,23 @@ test("stadium: five penalties end in a prize card that pays coins", async ({
   expect(errors).toEqual([]);
 });
 
+test("Pulse: dance through a dance-off and the floor pays a prize", async ({
+  page,
+}) => {
+  test.setTimeout(240_000);
+  const errors = collectErrors(page);
+  // the clock starts a few seconds before the DJ calls one
+  await page.goto(`${STILL}&room=pulse&danceoff=-4`);
+  const call = page.getByRole("region", { name: "Dance-off" });
+  await expect(call).toContainText("calls a dance-off");
+  await page.getByRole("radio", { name: "Dance", exact: true }).click();
+  await expect(call).toContainText("Keep dancing", { timeout: 30_000 });
+  const prize = page.getByRole("status", { name: "Prize" });
+  await expect(prize).toContainText("Dance-off", { timeout: 90_000 });
+  await expect(prize).toContainText("s on the floor");
+  expect(errors).toEqual([]);
+});
+
 test("the debug buttons take the player into Kamayan Hall", async ({
   page,
 }) => {

@@ -1686,3 +1686,39 @@ button:focus-visible {
   opacity: 0.7;
   text-decoration: line-through;
 }
+
+/* Pulse's dance-off call, top centre under the room name */
+.dance-off {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  z-index: 6;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgb(20 10 40 / 0.8);
+  color: var(--lilac);
+  font-size: 13px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.dance-off[data-on="true"] {
+  box-shadow:
+    0 0 0 2px var(--fuchsia),
+    0 0 24px rgb(255 47 154 / 0.6);
+  color: var(--champagne);
+}
+
+.dance-off strong {
+  color: var(--fuchsia);
+}
+
+@media (max-width: 640px) {
+  .dance-off {
+    top: auto;
+    bottom: 196px;
+    white-space: normal;
+    width: max-content;
+    max-width: 90vw;
+  }
+}

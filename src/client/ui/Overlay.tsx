@@ -51,6 +51,7 @@ import type { MinigameId } from "../../game/hotspots.ts";
 import { VIEWS, type View } from "../world/CameraRig.tsx";
 import { clearCityMapRequest, useCityMapRequest } from "./cityMapRequest.ts";
 import { RoomPanel } from "./RoomPanels.tsx";
+import { DanceOffHud } from "../rooms/pulse/DanceOffHud.tsx";
 import { ShopPanel } from "./ShopPanel.tsx";
 import { setSkates, skates, SKATE_ROOMS } from "../world/skates.ts";
 import { openShop } from "./shopRequest.ts";
@@ -621,6 +622,7 @@ export function Overlay({
         onBuy={onBuy}
       />
       <RoomPanel room={room} />
+      {room === "pulse" && <DanceOffHud dancing={mood === "dance"} />}
 
       {mapOpen && room === "city" && (
         <CityMap
