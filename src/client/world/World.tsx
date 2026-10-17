@@ -99,6 +99,11 @@ const HauntedHouse = lazy(() =>
 const Gridiron = lazy(() =>
   import("../rooms/Gridiron.tsx").then((m) => ({ default: m.Gridiron })),
 );
+const MermaidCove = lazy(() =>
+  import("../rooms/MermaidCove.tsx").then((m) => ({
+    default: m.MermaidCove,
+  })),
+);
 const Courtside = lazy(() =>
   import("../rooms/Courtside.tsx").then((m) => ({ default: m.Courtside })),
 );
@@ -296,6 +301,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   "driving-range": DrivingRange,
   marina: Marina,
   courtside: Courtside,
+  "mermaid-cove": MermaidCove,
   gym: Gym,
   stadium: Stadium,
   "haunted-house": HauntedHouse,

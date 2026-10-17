@@ -166,6 +166,37 @@ export function playFireworkBoom(level: number): boolean {
   return true;
 }
 
+/** The singing shells' notes: a bell-like tone on a pentatonic step
+ * (shell 0..3), or a sour low chord for a wrong note (`shell` -1). */
+export function playShellNote(shell: number): boolean {
+  const out = sfx();
+  if (!out) return false;
+  const { ctx, dest } = out;
+  const now = ctx.currentTime;
+  const tones =
+    shell < 0 ? [196, 207.65] : [[523.25, 587.33, 659.25, 783.99][shell % 4]];
+  for (const f of tones)
+    for (const [mult, level] of [
+      [1, 0.09],
+      [2, 0.03],
+      [3.01, 0.015],
+    ] as const) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(f * mult, now);
+      gain.gain.setValueAtTime(level, now);
+      gain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        now + (shell < 0 ? 0.6 : 1.2),
+      );
+      osc.connect(gain).connect(dest);
+      osc.start(now);
+      osc.stop(now + 1.25);
+    }
+  return true;
+}
+
 /** A bowling ball rolling down the lane: a low rumble for `seconds`,
  * swelling as it goes. */
 export function playBowlRoll(seconds: number): boolean {

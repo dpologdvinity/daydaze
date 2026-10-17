@@ -15,6 +15,7 @@ import * as RINK from "../rollerRink.ts";
 import * as SKATEPARK from "../skatepark.ts";
 import * as MARINA from "../marina.ts";
 import * as COURTSIDE from "../courtside.ts";
+import * as COVE from "../mermaidCove.ts";
 import * as GRIDIRON from "../gridiron.ts";
 import * as RANGE from "../drivingRange.ts";
 import * as GYM from "../gym.ts";
@@ -816,7 +817,22 @@ const BEACH_FRONT: readonly {
     sign: { text: "SWIMWEAR", color: "#ff2f9a" },
     style: "storefront",
   },
-  { x: 174, w: 16, h: 8, color: "#b3ffd9" },
+  {
+    // Mermaid Cove's gate, out at the boulevard's east end
+    x: COVE.COVE_DOOR.position[0],
+    w: 16,
+    h: 9,
+    color: "#b3ffd9",
+    sign: { text: "MERMAID COVE", color: "#ff4fb3" },
+    style: "gate",
+    door: {
+      position: COVE.COVE_DOOR.position,
+      radius: 1.5,
+      label: "Into Mermaid Cove",
+      target: "mermaid-cove",
+      targetSpawn: { position: COVE.SPAWN, yaw: Math.PI },
+    },
+  },
 ];
 
 // Little Manila, both sides of the avenue west of Downtown: bakeries,

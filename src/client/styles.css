@@ -1722,3 +1722,31 @@ button:focus-visible {
     max-width: 90vw;
   }
 }
+
+/* Siren Song's four singing shells */
+.shell-pads {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.shell-pad {
+  aspect-ratio: 1;
+  border: 2px solid currentColor;
+  border-radius: 50% 50% 12px 12px;
+  background: rgb(20 10 40 / 0.6);
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background 120ms,
+    box-shadow 120ms;
+}
+
+.shell-pad[data-lit="true"] {
+  background: currentColor;
+  box-shadow: 0 0 18px currentColor;
+}
+
+.shell-pad:disabled {
+  cursor: default;
+}

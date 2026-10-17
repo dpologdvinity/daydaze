@@ -78,6 +78,7 @@ import * as GYM from "./gym.ts";
 import * as STADIUM from "./stadium.ts";
 import * as MARINA from "./marina.ts";
 import * as COURTSIDE from "./courtside.ts";
+import * as COVE from "./mermaidCove.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -115,6 +116,7 @@ export type RoomId =
   | "gym"
   | "marina"
   | "courtside"
+  | "mermaid-cove"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -668,6 +670,22 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to Gallery Row",
         target: "city",
         targetSpawn: { position: RANGE.RANGE_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  "mermaid-cove": {
+    id: "mermaid-cove",
+    name: "Mermaid Cove",
+    walkable: COVE.FLOOR,
+    spawn: { position: COVE.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "mermaid-cove-to-city",
+        position: COVE.EXIT,
+        radius: 0.8,
+        label: "Out to Shore Boulevard",
+        target: "city",
+        targetSpawn: { position: COVE.COVE_DOOR.landing, yaw: 0 },
       },
     ],
   },

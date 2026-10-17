@@ -538,6 +538,30 @@ test("the Courtside Club: seven points end in a prize card", async ({
   expect(errors).toEqual([]);
 });
 
+test("Mermaid Cove: a Siren Song ends on a wrong note with a prize", async ({
+  page,
+}) => {
+  test.setTimeout(600_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=mermaid-cove`);
+  await expect(canvasOf(page)).toHaveAttribute("data-frames", "10");
+  const panel = page.getByRole("region", { name: "Siren Song" });
+  await panel.getByRole("button", { name: "Sing with the mermaids" }).click();
+  await expect(panel.getByRole("status")).toHaveText(/Listen/);
+  // sing the pink shell every turn: sooner or later it's the wrong note
+  const pink = panel.getByRole("button", { name: "Pink shell" });
+  await expect(async () => {
+    if (await panel.getByRole("button", { name: "Sing again" }).isVisible())
+      return;
+    if (await pink.isEnabled()) await pink.click({ timeout: 1000 });
+    throw new Error("still singing");
+  }).toPass({ timeout: 480_000, intervals: [300] });
+  await expect(page.getByRole("status", { name: "Prize" })).toContainText(
+    "Siren Song",
+  );
+  expect(errors).toEqual([]);
+});
+
 test("the debug buttons take the player into Kamayan Hall", async ({
   page,
 }) => {
@@ -666,6 +690,7 @@ for (const room of [
   "boba-matcha",
   "marina",
   "courtside",
+  "mermaid-cove",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,
