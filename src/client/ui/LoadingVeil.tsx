@@ -9,6 +9,9 @@ const FADE_MS = 600;
 export function LoadingVeil() {
   const ready = useSceneReady();
   const [gone, setGone] = useState(false);
+  // index.html paints a copy of this veil before any script runs; this one
+  // now covers the same spot, so the static copy can go
+  useEffect(() => document.getElementById("boot-veil")?.remove(), []);
   useEffect(() => {
     if (!ready) {
       setGone(false);

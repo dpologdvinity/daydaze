@@ -4,9 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#07020b" />
+    <meta
+      name="description"
+      content="Daydaze: a 3D social hangout for grown-ups who came up on Club Penguin and Fantage. Dress up, go out, dance, ride and play."
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>Daydaze</title>
   </head>
   <body>
+    <!-- painted with the first byte of CSS, before any script runs; the
+         app's own LoadingVeil takes over and removes this one -->
+    <div class="loading-veil" id="boot-veil" aria-hidden="true">
+      <p class="loading-veil-name">Daydaze</p>
+      <p class="loading-veil-note">Setting the scene…</p>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/client/main.tsx"></script>
   </body>
