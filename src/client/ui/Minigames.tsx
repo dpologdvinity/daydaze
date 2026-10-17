@@ -28,6 +28,12 @@ const GemGlam = lazy(() =>
   })),
 );
 
+const StarSiege = lazy(() =>
+  import("../../minigames/starSiege/StarSiege.tsx").then((m) => ({
+    default: m.StarSiege,
+  })),
+);
+
 /** The keyboard route to each hotspot in this room, as plain buttons. */
 export function VenueGames({
   room,
@@ -69,6 +75,8 @@ export function GameOverlay({
         <Midway onClose={done} reducedMotion={reducedMotion} />
       ) : game === "gem-glam" ? (
         <GemGlam onClose={done} reducedMotion={reducedMotion} />
+      ) : game === "star-siege" ? (
+        <StarSiege onClose={done} reducedMotion={reducedMotion} />
       ) : (
         <LastCall onClose={done} reducedMotion={reducedMotion} />
       )}

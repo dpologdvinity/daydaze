@@ -1,5 +1,5 @@
 // Player 2: an arcade bar in the Arts District, in the warehouse on Gallery
-// Row's south side. Cabinets down the back wall (three of them play the
+// Row's south side. Cabinets down the back wall (four of them play the
 // minigames), pinball along the left, the bar on the right and an air
 // hockey table on the floor. One layout, shared by the room's floor and
 // blockers (rooms.ts), its seats, hotspots and the client's scene.
@@ -15,7 +15,12 @@ export const CABINET_XS: readonly number[] = Array.from(
   (_, i) => -4.9 + i * 1.4,
 );
 /** The cabinets that play a minigame, by index into CABINET_XS. */
-export const PLAYABLE = { gemGlam: 1, bassline: 3, midway: 5 } as const;
+export const PLAYABLE = {
+  gemGlam: 1,
+  bassline: 3,
+  midway: 5,
+  starSiege: 7,
+} as const;
 /** Where you stand to play a cabinet. */
 export const playSpot = (i: number): Vec2 => [CABINET_XS[i], -3.8];
 

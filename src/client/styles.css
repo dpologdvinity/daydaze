@@ -661,7 +661,9 @@ button:focus-visible {
   top: 150px;
   left: 28px;
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+  max-width: calc(100vw - 340px);
 }
 
 .debug button {

@@ -114,6 +114,21 @@ function screen(game: MinigameId | "attract") {
       });
       ctx.fillStyle = "#e8e2ff";
       ctx.fillText("BASSLINE", 64, 22);
+    } else if (game === "star-siege") {
+      // the fleet in rows, and a ship at the bottom
+      const rows = ["#ff4fb3", "#b06bff", "#4fe3ff", "#7dff6b"];
+      rows.forEach((color, r) => {
+        ctx.fillStyle = color;
+        for (let c = 0; c < 5; c++)
+          ctx.fillRect(20 + c * 20, 40 + r * 16, 10, 7);
+      });
+      ctx.fillStyle = "#ffd84f";
+      ctx.beginPath();
+      ctx.moveTo(64, 128);
+      ctx.lineTo(74, 144);
+      ctx.lineTo(54, 144);
+      ctx.fill();
+      ctx.fillText("STAR SIEGE", 64, 22);
     } else if (game === "midway") {
       for (let r = 5; r > 0; r--) {
         ctx.fillStyle = r % 2 ? "#ff2f4f" : "#fff1d6";
@@ -186,6 +201,7 @@ const PLAYABLE_GAMES: Partial<Record<number, MinigameId>> = {
   [PLAYABLE.gemGlam]: "gem-glam",
   [PLAYABLE.bassline]: "bassline",
   [PLAYABLE.midway]: "midway",
+  [PLAYABLE.starSiege]: "star-siege",
 };
 
 /** The cabinets down the back wall: bodies, lit marquees, control decks
@@ -197,6 +213,7 @@ function Cabinets() {
       "gem-glam": screen("gem-glam"),
       bassline: screen("bassline"),
       midway: screen("midway"),
+      "star-siege": screen("star-siege"),
       "last-call": attract,
       attract,
     };

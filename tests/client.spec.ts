@@ -668,6 +668,26 @@ test("Player 2's cabinet opens Gem Glam and closes back to the bar", async ({
   expect(errors).toEqual([]);
 });
 
+test("Star Siege: the fleet marches, a shot flies, and the game closes", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&debug=1`);
+  await page.getByRole("button", { name: "Go to Player 2" }).click();
+  await page
+    .getByRole("button", { name: "Play Star Siege on the cabinet" })
+    .click();
+  const dialog = page.getByRole("dialog", { name: "Star Siege" });
+  await dialog.getByRole("button", { name: "Play" }).click();
+  await expect(dialog.getByLabel("The field")).toBeVisible();
+  await expect(dialog.getByLabel("3 ships left")).toBeVisible();
+  await dialog.getByRole("button", { name: "Fire" }).click();
+  await dialog.getByRole("button", { name: "Close Star Siege" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(roomTitle(page)).toHaveText("Player 2");
+  expect(errors).toEqual([]);
+});
+
 for (const room of [
   "rooftop-bar",
   "sugar-rush",

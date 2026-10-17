@@ -10,6 +10,7 @@ export const MINIGAME_IDS = [
   "last-call",
   "midway",
   "gem-glam",
+  "star-siege",
 ] as const;
 
 export type MinigameId = (typeof MINIGAME_IDS)[number];
@@ -66,6 +67,14 @@ export const HOTSPOTS: readonly Hotspot[] = [
     game: "midway",
     label: "Play the midway games on the cabinet",
     position: playSpot(PLAYABLE.midway),
+    radius: 0.6,
+  },
+  {
+    id: "arcade-star-siege",
+    room: "arcade-bar",
+    game: "star-siege",
+    label: "Play Star Siege on the cabinet",
+    position: playSpot(PLAYABLE.starSiege),
     radius: 0.6,
   },
   {
