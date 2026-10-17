@@ -11,7 +11,7 @@ import {
   type Shell,
 } from "../../game/city/fireworks.ts";
 import { useReducedMotion } from "../motion.ts";
-import { showClock } from "./fireworksClock.ts";
+import { showClock } from "./eventClocks.ts";
 
 const SLOTS = 12;
 const STARS = 72;
