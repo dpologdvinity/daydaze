@@ -95,6 +95,9 @@ const HauntedHouse = lazy(() =>
     default: m.HauntedHouse,
   })),
 );
+const RooftopBar = lazy(() =>
+  import("../rooms/RooftopBar.tsx").then((m) => ({ default: m.RooftopBar })),
+);
 const IceRink = lazy(() =>
   import("../rooms/IceRink.tsx").then((m) => ({ default: m.IceRink })),
 );
@@ -219,6 +222,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   jail: Jail,
   aquarium: Aquarium,
   "ice-rink": IceRink,
+  "rooftop-bar": RooftopBar,
   "haunted-house": HauntedHouse,
   "filipino-joint": FilipinoJoint,
   "boba-matcha": BobaMatchaCafe,

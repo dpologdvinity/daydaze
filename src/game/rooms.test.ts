@@ -19,6 +19,7 @@ test("every room is registered under its own id", () => {
     "jail",
     "plaza",
     "pulse",
+    "rooftop-bar",
     "speedway",
     "ube-bakery",
     "velvet-room",
@@ -200,4 +201,24 @@ test("the Haunted House winds from its door to the back room and out again", () 
   assert.ok(
     pointInPolygon(ROOMS["amusement-park"].walkable, back.targetSpawn.position),
   );
+});
+
+test("the Skylark's lift lands on its deck, and every seat and spot is reachable from it", () => {
+  const room = ROOMS["rooftop-bar"];
+  const area = areaOf(room);
+  assert.equal(isBlocked(area, room.spawn.position), false);
+  for (const goal of [
+    [-6.35, 0.5],
+    [-6.35, 2.5],
+    [-2.1, -3.35],
+    [2.6, -3.5],
+    [5.4, -2.2],
+  ] as const) {
+    let pos: Vec2 = room.spawn.position;
+    for (let k = 0; k < 600; k++) pos = stepInArea(area, pos, goal, 0.05);
+    assert.ok(
+      Math.hypot(pos[0] - goal[0], pos[1] - goal[1]) < 0.3,
+      `reached ${goal}`,
+    );
+  }
 });

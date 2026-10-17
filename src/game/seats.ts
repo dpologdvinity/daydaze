@@ -1,5 +1,6 @@
 import type { RoomId } from "./rooms.ts";
 import { footprint, type Furniture } from "./home/decor.ts";
+import { SOFA, STOOL_XS, STOOL_Z } from "./rooftop.ts";
 import { yawTowards, type Vec2 } from "./walk.ts";
 
 /**
@@ -81,10 +82,21 @@ const pulseBanquettes = [-2.4, 1.8].flatMap((z, b) =>
   ),
 );
 
+// The Skylark: stools along the bar, and the lounge sofa facing the deck
+const skylarkSeats = [
+  ...STOOL_XS.map((x, i) =>
+    seat(`skylark-stool-${i}`, "rooftop-bar", [x, STOOL_Z], 0.8, [x, -5]),
+  ),
+  ...SOFA.cushions.map((at, i) =>
+    seat(`skylark-sofa-${i}`, "rooftop-bar", at, 0.45, [0, at[1]], "front"),
+  ),
+];
+
 export const SEATS: readonly Seat[] = [
   ...foodSeats,
   ...velvetStools,
   ...pulseBanquettes,
+  ...skylarkSeats,
 ];
 
 export function seatsIn(room: RoomId): readonly Seat[] {

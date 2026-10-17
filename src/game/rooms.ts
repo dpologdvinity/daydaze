@@ -12,6 +12,12 @@ import {
   SWING_AT,
   TEACUPS_AT,
 } from "./amusementPark.ts";
+import {
+  BLOCKERS as ROOFTOP_BLOCKERS,
+  FLOOR as ROOFTOP_FLOOR,
+  LIFT,
+  SKYLARK_DOOR,
+} from "./rooftop.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -30,6 +36,7 @@ export type RoomId =
   | "aquarium"
   | "ice-rink"
   | "haunted-house"
+  | "rooftop-bar"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -543,6 +550,24 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the park",
         target: "city",
         targetSpawn: { position: ICE_RINK_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  "rooftop-bar": {
+    id: "rooftop-bar",
+    name: "The Skylark",
+    walkable: ROOFTOP_FLOOR,
+    blockers: ROOFTOP_BLOCKERS,
+    spawn: { position: LIFT.spawn, yaw: Math.PI },
+    portals: [
+      {
+        // The lift back down to the tower's street door.
+        id: "rooftop-bar-to-city",
+        position: LIFT.door,
+        radius: 0.8,
+        label: "Take the lift down",
+        target: "city",
+        targetSpawn: { position: SKYLARK_DOOR.landing, yaw: 0 },
       },
     ],
   },

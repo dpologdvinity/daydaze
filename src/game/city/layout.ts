@@ -5,6 +5,7 @@
 import type { WalkArea } from "../area.ts";
 import { FOOD_STOREFRONTS } from "../food/storefronts.ts";
 import type { RoomId, Spawn } from "../rooms.ts";
+import { LIFT, SKYLARK_DOOR } from "../rooftop.ts";
 import type { Vec2 } from "../walk.ts";
 
 export type Neighborhood =
@@ -516,6 +517,16 @@ const PULSE_DOOR: Door = {
   target: "pulse",
   // Pulse's own arrival point; see rooms.ts
   targetSpawn: { position: [0, 2.6], yaw: Math.PI },
+};
+
+// The Skylark's lift lobby, at the east end of the Back Room's block; the
+// bar itself is on the roof (see rooftop.ts).
+const SKYLARK_CITY_DOOR: Door = {
+  position: SKYLARK_DOOR.position,
+  radius: 2,
+  label: "Up to the Skylark",
+  target: "rooftop-bar",
+  targetSpawn: { position: LIFT.spawn, yaw: Math.PI },
 };
 
 const VIOLET_HOUR_DOOR: Door = {
@@ -1429,10 +1440,20 @@ export const BUILDINGS: readonly Building[] = [
   {
     id: "speakeasy",
     neighborhood: "nightlife-row",
-    footprint: rect(136, -60, 176, -14),
+    footprint: rect(136, -60, 166, -14),
     height: 20,
     style: "brick",
     sign: { text: "BACK ROOM", color: "#ff8a3d" },
+  },
+  {
+    // A slim glass tower with the Skylark rooftop bar on top
+    id: "skylark",
+    neighborhood: "nightlife-row",
+    footprint: rect(168, -40, 176, -14),
+    height: 30,
+    style: "glass",
+    sign: { text: "SKYLARK", color: "#7fd8ff" },
+    door: SKYLARK_CITY_DOOR,
   },
   {
     id: "glitter-bar",

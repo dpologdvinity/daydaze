@@ -25,11 +25,14 @@ const MUSIC: Partial<Record<RoomId, TrackId>> = {
   "boba-matcha": "canopy-lofi",
   "ube-bakery": "canopy-lofi",
   "ice-rink": "waterhole-twilight",
+  "rooftop-bar": "canopy-lofi",
 };
 const AMBIENCE: Partial<Record<RoomId, Ambience>> = {
   aquarium: "aquarium",
   "ice-rink": "rink",
   "haunted-house": "haunted",
+  // the city's hum, thirty floors down
+  "rooftop-bar": "city",
 };
 
 /**

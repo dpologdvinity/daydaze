@@ -325,6 +325,27 @@ test("the debug buttons take the player into The Violet Hour", async ({
   expect(errors).toEqual([]);
 });
 
+test("the Skylark's lift opens onto the roof, and Last Call is at its bar", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&debug=1`);
+  await page.getByRole("button", { name: "Go to Skylark" }).click();
+  await expect(roomTitle(page)).toHaveText("The Skylark");
+  await expect(
+    page.getByRole("button", { name: "Play Last Call at the bar" }),
+  ).toBeVisible();
+  // the frame stats count a page's first frames: load the roof directly,
+  // then wait for its frame (the doll alone draws under 10 calls)
+  await page.goto(`${STILL}&room=rooftop-bar`);
+  const canvas = canvasOf(page);
+  await expect
+    .poll(async () => Number(await canvas.getAttribute("data-calls")))
+    .toBeGreaterThan(40);
+  expect(Number(await canvas.getAttribute("data-calls"))).toBeLessThan(250);
+  expect(errors).toEqual([]);
+});
+
 test("Pulse renders within the low-tier draw call budget", async ({ page }) => {
   await page.goto(`${STILL}&room=pulse`);
   const canvas = canvasOf(page);

@@ -42,6 +42,15 @@ export const HOTSPOTS: readonly Hotspot[] = [
     radius: 0.9,
   },
   {
+    // At the Skylark's bar, past the last stool.
+    id: "skylark-bar",
+    room: "rooftop-bar",
+    game: "last-call",
+    label: "Play Last Call at the bar",
+    position: [2.6, -3.5],
+    radius: 0.8,
+  },
+  {
     // In front of the STEP RIGHT UP booth on the midway's west side.
     id: "carnival-midway",
     room: "amusement-park",

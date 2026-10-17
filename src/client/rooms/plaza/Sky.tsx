@@ -6,7 +6,7 @@ import { useReducedMotion } from "../../motion.ts";
 import { canvasTex, hdr } from "../shared/materials.ts";
 
 // Night sky: violet overhead, a sodium-pink city glow on the horizon.
-const SKY = new THREE.ShaderMaterial({
+export const SKY = new THREE.ShaderMaterial({
   uniforms: {
     uTop: { value: new THREE.Color("#04020c") },
     uMid: { value: new THREE.Color("#1c0a3a") },
@@ -32,7 +32,7 @@ const SKY = new THREE.ShaderMaterial({
 });
 
 // Office towers far behind the shops: lit windows in warm and pink.
-const WINDOWS = canvasTex(
+export const WINDOWS = canvasTex(
   64,
   64,
   (ctx) => {
