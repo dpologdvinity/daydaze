@@ -515,6 +515,29 @@ test("the marina: five casts off the dock end in a prize card", async ({
   expect(errors).toEqual([]);
 });
 
+test("the Courtside Club: seven points end in a prize card", async ({
+  page,
+}) => {
+  test.setTimeout(600_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=courtside`);
+  await expect(canvasOf(page)).toHaveAttribute("data-frames", "10");
+  const panel = page.getByRole("region", { name: "Tennis" });
+  await panel.getByRole("button", { name: "Play a match" }).click();
+  // swing whenever the ball's coming; the match ends either way
+  const main = panel.getByRole("button", { name: /^(Swing!|Play again)$/ });
+  await expect(async () => {
+    const label = await main.textContent({ timeout: 1000 });
+    if (label === "Play again") return;
+    if (await main.isEnabled()) await main.click({ timeout: 1000 });
+    throw new Error(`still playing: ${label}`);
+  }).toPass({ timeout: 480_000, intervals: [300] });
+  await expect(page.getByRole("status", { name: "Prize" })).toContainText(
+    "Tennis",
+  );
+  expect(errors).toEqual([]);
+});
+
 test("the debug buttons take the player into Kamayan Hall", async ({
   page,
 }) => {
@@ -642,6 +665,7 @@ for (const room of [
   "violet-hour",
   "boba-matcha",
   "marina",
+  "courtside",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

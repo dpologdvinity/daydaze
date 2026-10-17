@@ -77,6 +77,7 @@ import * as RANGE from "./drivingRange.ts";
 import * as GYM from "./gym.ts";
 import * as STADIUM from "./stadium.ts";
 import * as MARINA from "./marina.ts";
+import * as COURTSIDE from "./courtside.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -113,6 +114,7 @@ export type RoomId =
   | "driving-range"
   | "gym"
   | "marina"
+  | "courtside"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -666,6 +668,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to Gallery Row",
         target: "city",
         targetSpawn: { position: RANGE.RANGE_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  courtside: {
+    id: "courtside",
+    name: "The Courtside Club",
+    walkable: COURTSIDE.FLOOR,
+    blockers: COURTSIDE.BLOCKERS,
+    spawn: { position: COURTSIDE.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "courtside-to-city",
+        position: COURTSIDE.EXIT,
+        radius: 0.8,
+        label: "Out to Park Avenue",
+        target: "city",
+        targetSpawn: { position: COURTSIDE.COURTSIDE_DOOR.landing, yaw: 0 },
       },
     ],
   },

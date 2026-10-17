@@ -32,6 +32,7 @@ test("every room is registered under its own id", () => {
     "boba-matcha",
     "bowling",
     "city",
+    "courtside",
     "dome",
     "driving-range",
     "filipino-joint",
@@ -498,7 +499,13 @@ test("Concrete Wave: the drop-in, the bleachers and the edges are reachable", ()
   }
 });
 
-for (const id of ["gridiron", "driving-range", "gym", "marina"] as const) {
+for (const id of [
+  "gridiron",
+  "driving-range",
+  "gym",
+  "marina",
+  "courtside",
+] as const) {
   test(`${id}: every seat is reachable from the door`, () => {
     const room = ROOMS[id];
     const area = areaOf(room);

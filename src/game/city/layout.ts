@@ -14,6 +14,7 @@ import * as GALLERIA from "../galleria.ts";
 import * as RINK from "../rollerRink.ts";
 import * as SKATEPARK from "../skatepark.ts";
 import * as MARINA from "../marina.ts";
+import * as COURTSIDE from "../courtside.ts";
 import * as GRIDIRON from "../gridiron.ts";
 import * as RANGE from "../drivingRange.ts";
 import * as GYM from "../gym.ts";
@@ -1290,8 +1291,8 @@ const UPTOWN_FRONT: readonly {
   color: string;
   sign?: { text: string; color: string };
   style: BuildingStyle;
-  /** The Aquarium's street door. */
-  door?: true;
+  /** A venue's street door: its building takes the venue's id. */
+  venue?: { id: string; door: Door };
 }[] = [
   {
     x: 214,
@@ -1310,7 +1311,7 @@ const UPTOWN_FRONT: readonly {
     color: "#1d4e89",
     sign: { text: "AQUARIUM", color: "#4fe3ff" },
     style: "glass",
-    door: true,
+    venue: { id: "aquarium", door: AQUARIUM_CITY_DOOR },
   },
   {
     x: 262,
@@ -1351,7 +1352,25 @@ const UPTOWN_FRONT: readonly {
     sign: { text: "BOOKSHOP", color: "#ffffff" },
     style: "brick",
   },
-  { x: 374, w: 22, h: 16, north: true, color: "#c9ada7", style: "brick" },
+  {
+    x: COURTSIDE.COURTSIDE_DOOR.position[0],
+    w: 22,
+    h: 16,
+    north: true,
+    color: "#e9f5db",
+    sign: { text: "COURTSIDE CLUB", color: "#c6ff4f" },
+    style: "glass",
+    venue: {
+      id: "courtside",
+      door: {
+        position: COURTSIDE.COURTSIDE_DOOR.position,
+        radius: 2,
+        label: "Into the Courtside Club",
+        target: "courtside",
+        targetSpawn: { position: COURTSIDE.SPAWN, yaw: Math.PI },
+      },
+    },
+  },
   {
     x: 402,
     w: 24,
@@ -1374,9 +1393,9 @@ const UPTOWN_FRONT: readonly {
 
 const UPTOWN_BUILDINGS: readonly Building[] = UPTOWN_FRONT.map(
   (b, i): Building => ({
-    id: b.door ? "aquarium" : `uptown-${i}`,
+    id: b.venue?.id ?? `uptown-${i}`,
     neighborhood: "uptown",
-    ...(b.door ? { door: AQUARIUM_CITY_DOOR } : {}),
+    ...(b.venue ? { door: b.venue.door } : {}),
     footprint: b.north
       ? rect(b.x - b.w / 2, GALLERY_Z - 42, b.x + b.w / 2, GALLERY_Z - 12)
       : rect(b.x - b.w / 2, GALLERY_Z + 12, b.x + b.w / 2, GALLERY_Z + 52),

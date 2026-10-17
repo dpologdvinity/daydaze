@@ -77,6 +77,7 @@ const SHOTS: {
   { name: "gridiron", query: "room=gridiron" },
   { name: "driving-range", query: "room=driving-range" },
   { name: "marina", query: "room=marina" },
+  { name: "courtside", query: "room=courtside" },
   { name: "gym", query: "room=gym" },
   { name: "stadium", query: "room=stadium" },
   { name: "velvet-room-full-look", query: "room=velvet-room&view=full" },

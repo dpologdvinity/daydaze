@@ -40,6 +40,7 @@ const MUSIC: Partial<Record<RoomId, TrackId>> = {
   gym: "sugar-rush-pop",
   "driving-range": "canopy-lofi",
   marina: "canopy-lofi",
+  courtside: "sugar-rush-pop",
   // a backing track to sing over
   karaoke: "sugar-rush-pop",
 };
@@ -49,6 +50,7 @@ const AMBIENCE: Partial<Record<RoomId, Ambience>> = {
   "haunted-house": "haunted",
   "mini-golf": "beach",
   marina: "beach",
+  courtside: "city",
   stadium: "city",
   gridiron: "city",
   // the city's hum, thirty floors down

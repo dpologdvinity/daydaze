@@ -102,6 +102,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "The Gridiron. Kick five field goals, each from further out: aim into the wind, then put your leg into it.",
   "driving-range":
     "Skyline Driving Range. Get a bucket of ten: set your backswing, strike it pure, and land them on the greens.",
+  courtside:
+    "The Courtside Club. Play seven points against the club pro: swing as the ball reaches you, and a perfect swing deep in a rally is a winner.",
   marina:
     "Starboard Marina. Fish off the end of the long dock: cast out, then strike the moment the bobber dips. Coral pours at the yacht club.",
   gym: "Flip City Gymnastics. Start the floor routine and press as each ring closes to stick your tumbles for the judges.",
