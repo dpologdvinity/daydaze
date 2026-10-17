@@ -11,6 +11,59 @@ import { MARQUEE, NeonText } from "../shared/Neon.tsx";
 import { PortalPads } from "../shared/PortalPads.tsx";
 import { TalkingNpc } from "../shared/TalkingNpc.tsx";
 import { Fitout } from "./Fitout.tsx";
+import {
+  FOOD_CHAIR_HEIGHT,
+  FOOD_DINERS,
+  FOOD_TABLES,
+} from "../../../game/seats.ts";
+import { Doll } from "../../avatar/Doll.tsx";
+
+/** Regulars at the tables; each room seats a different pair. */
+const DINER_LOOKS: readonly Look[] = (
+  [
+    ["#f3d4c4", "mid-wavy", "#b77a3e", "blouse", "#e8e2ff"],
+    ["#94603f", "braids", "#1b1014", "jeans", "#ff2f9a"],
+    ["#c48d68", "sleek-bob", "#1b1014", "baby-tee-mini", "#3fe0d0"],
+    ["#633c29", "curl-cloud", "#4a2a1c", "shorts", "#ffb02e"],
+    ["#e6b48e", "shag", "#ff4fb3", "jeans", "#9b5cff"],
+    ["#f3d4c4", "low-pony", "#f1d78f", "blouse", "#141018"],
+  ] as const
+).map(([skin, hairStyle, hairColor, outfit, outfitColor]) => ({
+  skin,
+  hairStyle,
+  hairColor,
+  outfit,
+  outfitColor,
+  lips: "lips-nude-pink-gloss",
+  brows: "brows-feathered-honey",
+  shadow: "#ffd1f0",
+}));
+
+/** Two regulars sitting at the tables, facing across them. */
+function Diners({ room }: { room: RoomId }) {
+  const base = [...room].reduce((h, c) => h + c.charCodeAt(0), 0);
+  return (
+    <>
+      {FOOD_DINERS.map((d, i) => {
+        const [x, z] = FOOD_TABLES[d.table];
+        return (
+          <group
+            key={i}
+            // a chair's height, less where a sitting doll's thighs come to
+            position={[x + d.side * 0.75, FOOD_CHAIR_HEIGHT - 0.48, z]}
+            rotation-y={(-d.side * Math.PI) / 2}
+          >
+            <Doll
+              look={DINER_LOOKS[(base + i * 3) % DINER_LOOKS.length]}
+              mood="sit"
+              seed={base + i}
+            />
+          </group>
+        );
+      })}
+    </>
+  );
+}
 
 export type FoodPalette = {
   room: RoomId;
@@ -121,6 +174,7 @@ export function FoodRoom({
         onTap={order}
       />
       <Fitout palette={palette} />
+      <Diners room={palette.room} />
       {children}
     </>
   );

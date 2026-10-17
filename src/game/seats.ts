@@ -59,24 +59,35 @@ function seat(
 }
 
 // the food rooms share one fit-out: three cafe tables with a chair each side
-const FOOD_TABLES: Vec2[] = [
+export const FOOD_TABLES: readonly Vec2[] = [
   [-2.5, 3.4],
   [0, 4.3],
   [2.5, 3.4],
+];
+export const FOOD_CHAIR_HEIGHT = 0.5;
+/** Chairs a regular already sits in: one at the left table, one at the
+ * right, so they aren't offered to the player. */
+export const FOOD_DINERS: readonly { table: number; side: -1 | 1 }[] = [
+  { table: 0, side: -1 },
+  { table: 2, side: 1 },
 ];
 const FOOD_ROOMS: RoomId[] = ["filipino-joint", "boba-matcha", "ube-bakery"];
 
 const foodSeats = FOOD_ROOMS.flatMap((room) =>
   FOOD_TABLES.flatMap(([x, z], t) =>
-    [-1, 1].map((side) =>
-      seat(
-        `${room}-table${t}-${side < 0 ? "l" : "r"}`,
-        room,
-        [x + side * 0.75, z],
-        0.5,
-        [x, z],
+    ([-1, 1] as const)
+      .filter(
+        (side) => !FOOD_DINERS.some((d) => d.table === t && d.side === side),
+      )
+      .map((side) =>
+        seat(
+          `${room}-table${t}-${side < 0 ? "l" : "r"}`,
+          room,
+          [x + side * 0.75, z],
+          FOOD_CHAIR_HEIGHT,
+          [x, z],
+        ),
       ),
-    ),
   ),
 );
 

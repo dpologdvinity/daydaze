@@ -596,6 +596,8 @@ for (const room of [
   "gridiron",
   "driving-range",
   "gym",
+  "violet-hour",
+  "boba-matcha",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

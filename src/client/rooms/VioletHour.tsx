@@ -1,4 +1,7 @@
+import type { Look } from "../../game/look.ts";
 import { ROOMS } from "../../game/rooms.ts";
+import { Couple } from "../avatar/Couple.tsx";
+import { Doll } from "../avatar/Doll.tsx";
 import { useReducedMotion } from "../motion.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { LedFloor } from "./shared/LedFloor.tsx";
@@ -25,6 +28,63 @@ import { HdriLight } from "./shared/HdriLight.tsx";
  */
 // The bartender pours a free cocktail; the buzz system takes it from there.
 const orderCocktail = () => drink("cocktail");
+
+const COUPLE: readonly [Look, Look] = [
+  {
+    skin: "#c48d68",
+    hairStyle: "mermaid",
+    hairColor: "#7b4dff",
+    lips: "lips-burgundy-cherry",
+    brows: "brows-feathered-honey",
+    outfit: "sequin-slip",
+    outfitColor: "#9b5cff",
+    shadow: "#d23cff",
+  },
+  {
+    skin: "#633c29",
+    hairStyle: "pixie",
+    hairColor: "#1b1014",
+    lips: "lips-nude-pink-gloss",
+    brows: "brows-sculpted-espresso",
+    outfit: "jeans",
+    outfitColor: "#141018",
+    shadow: "#ffd1f0",
+  },
+];
+
+const SOLO: Look = {
+  skin: "#f3d4c4",
+  hairStyle: "shag",
+  hairColor: "#ff4fb3",
+  lips: "lips-hot-pink-glam",
+  brows: "brows-y2k-thin",
+  outfit: "baby-tee-mini",
+  outfitColor: "#ff2f9a",
+  shadow: "#ff2f9a",
+};
+
+/** Two women slow-dancing on the little floor, and one on her own. */
+function DanceFloorPair() {
+  return (
+    <>
+      <Couple
+        a={COUPLE[0]}
+        b={COUPLE[1]}
+        centre={[DANCE.x - 1.3, DANCE.y - 0.5]}
+        facing={0.4}
+        move="slow-dance"
+      />
+      <Doll
+        look={SOLO}
+        mood="dance"
+        dance="hair-flip"
+        seed={41}
+        position={[DANCE.x + 1.7, 0, DANCE.y - 0.5]}
+        rotation-y={-0.5}
+      />
+    </>
+  );
+}
 
 export function VioletHour({
   onPick,
@@ -69,6 +129,7 @@ export function VioletHour({
       <Bar />
       <PoolTable />
       <RegularsCorner />
+      <DanceFloorPair />
       <LedFloor
         center={[DANCE.x, DANCE.y]}
         cols={5}
