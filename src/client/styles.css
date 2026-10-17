@@ -664,6 +664,9 @@ button:focus-visible {
   flex-wrap: wrap;
   gap: 8px;
   max-width: calc(100vw - 340px);
+  /* a long list scrolls rather than running off the screen */
+  max-height: calc(100vh - 320px);
+  overflow-y: auto;
 }
 
 .debug button {

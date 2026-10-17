@@ -20,6 +20,11 @@ jobs:
     needs: verify
     timeout-minutes: 45
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      # the client suite is long on SwiftShader: four runners share it
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,11 +34,29 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       # Headless WebGL runs on SwiftShader, so these are slow but real.
-      - run: npm run test:e2e:client
+      - run: npm run test:e2e:client -- --shard=${{ matrix.shard }}/4
+      - uses: actions/upload-artifact@v4
+        if: ${{ failure() }}
+        with:
+          name: playwright-report-${{ matrix.shard }}
+          path: test-results/
+          retention-days: 14
+  minigames:
+    needs: verify
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v4
         if: ${{ failure() }}
         with:
-          name: playwright-report
+          name: playwright-report-minigames
           path: test-results/
           retention-days: 14

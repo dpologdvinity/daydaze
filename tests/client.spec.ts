@@ -10,6 +10,8 @@ function collectErrors(page: Page) {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
   page.on("console", (m) => {
+    // headless machines with no sound card: the browser's own complaint
+    if (m.text().includes("error from the audio device")) return;
     if (m.type() === "error") errors.push(`console: ${m.text()}`);
   });
   return errors;
