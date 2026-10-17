@@ -3,6 +3,7 @@ import { footprint, type Furniture } from "./home/decor.ts";
 import { SOFA, STOOL_XS, STOOL_Z } from "./rooftop.ts";
 import { CHAIR_X, CHAIR_ZS, STOOL_X, STOOL_ZS } from "./sugarRush.ts";
 import * as ARCADE from "./arcadeBar.ts";
+import * as LA_NOCHE from "./laNoche.ts";
 import { BENCH_SEATS } from "./bowlingAlley.ts";
 import { BOOTH_SEATS, MIC } from "./karaoke.ts";
 import * as WAREHOUSE from "./warehouse.ts";
@@ -150,6 +151,16 @@ const arcadeSeats = ARCADE.STOOL_ZS.map((z, i) =>
   seat(`arcade-stool-${i}`, "arcade-bar", [ARCADE.STOOL_X, z], 0.8, [6, z]),
 );
 
+// La Noche: stools at the bar, and chairs at the tables facing the floor
+const laNocheSeats = [
+  ...LA_NOCHE.STOOL_ZS.map((z, i) =>
+    seat(`la-noche-stool-${i}`, "la-noche", [LA_NOCHE.STOOL_X, z], 0.8, [6, z]),
+  ),
+  ...LA_NOCHE.TABLE_SEATS.map((at, i) =>
+    seat(`la-noche-chair-${i}`, "la-noche", at, 0.45, LA_NOCHE.DANCE, "front"),
+  ),
+];
+
 export const SEATS: readonly Seat[] = [
   ...foodSeats,
   ...velvetStools,
@@ -160,6 +171,7 @@ export const SEATS: readonly Seat[] = [
   ...karaokeSeats,
   ...bowlingSeats,
   ...arcadeSeats,
+  ...laNocheSeats,
 ];
 
 export function seatsIn(room: RoomId): readonly Seat[] {

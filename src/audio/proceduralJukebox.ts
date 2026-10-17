@@ -7,7 +7,8 @@ export type TrackId =
   | "carnival-calliope"
   | "sugar-rush-pop"
   | "warehouse-acid"
-  | "player-two-chiptune";
+  | "player-two-chiptune"
+  | "la-noche-salsa";
 
 export type TrackMetadata = {
   id: TrackId;
@@ -80,6 +81,15 @@ export const JUKEBOX_TRACKS: readonly TrackMetadata[] = [
     description:
       "An arcade cabinet's song: a square-wave lead, a triangle bass and noise drums, round C, A minor, F and G.",
     mood: "Playful",
+  },
+  {
+    id: "la-noche-salsa",
+    title: "La Noche",
+    genre: "Salsa",
+    bpm: 190,
+    description:
+      "Salsa in 2-3 son clave: a piano montuno, conga tumbao, cowbell and an anticipated bass, round C, F and G.",
+    mood: "Hot",
   },
 ];
 
@@ -764,6 +774,76 @@ export function playerTwoChiptuneStep(
   if (beat === 2) playSnareHit(ctx, dest, now);
 }
 
+// La Noche: two bars of 2-3 son clave on a sixteen-eighth grid, with a
+// piano montuno and the bass's tumbao (it lands on the "and" of two and
+// on four, anticipating the next chord).
+const CLAVE = new Set([2, 4, 8, 11, 14]);
+const SALSA_CHORDS: readonly (readonly number[])[] = [
+  [261.63, 329.63, 392],
+  [349.23, 440, 523.25],
+  [392, 493.88, 587.33],
+  [349.23, 440, 523.25],
+];
+const SALSA_BASS = [65.41, 87.31, 98, 87.31];
+// which chord tone the montuno strikes, by eighth (-1 a rest)
+const MONTUNO = [0, 2, 1, 2, -1, 2, 1, 2];
+
+/** A short knock: clave, cowbell or a conga's slap, by pitch and decay. */
+function playKnock(
+  ctx: AudioContext,
+  dest: AnyNode,
+  now: number,
+  frequency: number,
+  level: number,
+  decay: number,
+  drop = 1,
+) {
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(frequency, now);
+  osc.frequency.exponentialRampToValueAtTime(frequency * drop, now + decay);
+  gain.gain.setValueAtTime(level, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + decay);
+  osc.connect(gain);
+  gain.connect(dest);
+  osc.start(now);
+  osc.stop(now + decay);
+}
+
+export function laNocheSalsaStep(
+  ctx: AudioContext,
+  dest: AnyNode,
+  step: number,
+  now: number,
+) {
+  const inBars = step % 16;
+  // a chord per bar, two bars per pass of the clave
+  const bar = Math.floor(step / 8) % SALSA_CHORDS.length;
+  const chord = SALSA_CHORDS[bar];
+  if (CLAVE.has(inBars)) playKnock(ctx, dest, now, 2500, 0.14, 0.05);
+  const tone = MONTUNO[step % 8];
+  if (tone >= 0)
+    playChip(ctx, dest, now, chord[tone] * 2, "triangle", 0.07, 0.14);
+  // the bass anticipates: the "and" of two and the fourth beat
+  const beat8 = step % 8;
+  if (beat8 === 3 || beat8 === 6)
+    playChip(
+      ctx,
+      dest,
+      now,
+      beat8 === 6 ? SALSA_BASS[(bar + 1) % SALSA_BASS.length] : SALSA_BASS[bar],
+      "sine",
+      0.3,
+      0.3,
+    );
+  // conga tumbao: open tones on the "and" of four, a slap on two
+  if (beat8 === 7) playKnock(ctx, dest, now, 330, 0.22, 0.18, 0.92);
+  if (beat8 === 2) playKnock(ctx, dest, now, 520, 0.16, 0.06);
+  // cowbell on the beat
+  if (beat8 % 2 === 0) playKnock(ctx, dest, now, 800, 0.05, 0.08);
+}
+
 type TrackProgram = {
   stepSeconds: (bpm: number) => number;
   step: (ctx: AudioContext, dest: AnyNode, step: number, time: number) => void;
@@ -797,6 +877,10 @@ export const TRACK_PROGRAMS: Record<TrackId, TrackProgram> = {
   "player-two-chiptune": {
     stepSeconds: (bpm) => 60 / bpm / 2,
     step: playerTwoChiptuneStep,
+  },
+  "la-noche-salsa": {
+    stepSeconds: (bpm) => 60 / bpm / 2,
+    step: laNocheSalsaStep,
   },
 };
 

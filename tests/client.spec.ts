@@ -394,6 +394,14 @@ test("Glow Bowl: start a game, bowl a ball, and the scoreboard counts it", async
   expect(errors).toEqual([]);
 });
 
+test("the debug buttons take the player into La Noche", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&debug=1`);
+  await page.getByRole("button", { name: "Go to La Noche" }).click();
+  await expect(roomTitle(page)).toHaveText("La Noche");
+  expect(errors).toEqual([]);
+});
+
 test("Player 2's cabinet opens Gem Glam and closes back to the bar", async ({
   page,
 }) => {
@@ -419,6 +427,7 @@ for (const room of [
   "karaoke",
   "bowling",
   "arcade-bar",
+  "la-noche",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

@@ -13,6 +13,7 @@ const NIGHTLIFE_ROOMS = [
   "sugar-rush",
   "warehouse",
   "karaoke",
+  "la-noche",
 ] as const;
 
 function onCityStreet(p: Vec2): boolean {

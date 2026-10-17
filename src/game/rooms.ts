@@ -53,6 +53,13 @@ import {
   FLOOR as ARCADE_FLOOR,
   SPAWN as ARCADE_SPAWN,
 } from "./arcadeBar.ts";
+import {
+  BLOCKERS as LA_NOCHE_BLOCKERS,
+  EXIT as LA_NOCHE_EXIT,
+  FLOOR as LA_NOCHE_FLOOR,
+  LA_NOCHE_DOOR,
+  SPAWN as LA_NOCHE_SPAWN,
+} from "./laNoche.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -77,6 +84,7 @@ export type RoomId =
   | "karaoke"
   | "bowling"
   | "arcade-bar"
+  | "la-noche"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -590,6 +598,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the park",
         target: "city",
         targetSpawn: { position: ICE_RINK_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  "la-noche": {
+    id: "la-noche",
+    name: "La Noche",
+    walkable: LA_NOCHE_FLOOR,
+    blockers: LA_NOCHE_BLOCKERS,
+    spawn: { position: LA_NOCHE_SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "la-noche-to-city",
+        position: LA_NOCHE_EXIT,
+        radius: 0.8,
+        label: "Out to the street",
+        target: "city",
+        targetSpawn: { position: LA_NOCHE_DOOR.landing, yaw: -Math.PI / 2 },
       },
     ],
   },

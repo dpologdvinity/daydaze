@@ -8,6 +8,11 @@ import type { RoomId, Spawn } from "../rooms.ts";
 import { LIFT, SKYLARK_DOOR } from "../rooftop.ts";
 import { SPAWN as SUGAR_RUSH_SPAWN, SUGAR_RUSH_DOOR } from "../sugarRush.ts";
 import { ARCADE_DOOR, SPAWN as ARCADE_SPAWN } from "../arcadeBar.ts";
+import {
+  LA_NOCHE_DOOR,
+  LA_NOCHE_LOT,
+  SPAWN as LA_NOCHE_SPAWN,
+} from "../laNoche.ts";
 import { BOWLING_DOOR, SPAWN as BOWLING_SPAWN } from "../bowlingAlley.ts";
 import { KARAOKE_DOOR, SPAWN as KARAOKE_SPAWN } from "../karaoke.ts";
 import {
@@ -1497,6 +1502,29 @@ export const BUILDINGS: readonly Building[] = [
     style: "velvet",
     sign: { text: "THE VELVET ROOM", color: "#f6c46a" },
     door: VELVET_DOOR,
+  },
+  {
+    // La Noche, the Latin club, fronting the west street beside the Velvet Room
+    id: "la-noche",
+    neighborhood: "nightlife-row",
+    footprint: rect(
+      LA_NOCHE_LOT.x0,
+      LA_NOCHE_LOT.z0,
+      LA_NOCHE_LOT.x1,
+      LA_NOCHE_LOT.z1,
+    ),
+    height: 18,
+    style: "club",
+    color: "#7a1e2c",
+    queue: true,
+    sign: { text: "LA NOCHE", color: "#ff8a3d" },
+    door: {
+      position: LA_NOCHE_DOOR.position,
+      radius: 1.5,
+      label: "Into La Noche",
+      target: "la-noche",
+      targetSpawn: { position: LA_NOCHE_SPAWN, yaw: Math.PI },
+    },
   },
   {
     // A narrow frontage in the gap between the Velvet Room and the Back Room.
