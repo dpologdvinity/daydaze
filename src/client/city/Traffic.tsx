@@ -83,13 +83,36 @@ function signalBulbs(): Bulb[] {
 }
 
 const pose = { x: 0, z: 0, yaw: 0 };
-const m = new THREE.Matrix4();
-const local = new THREE.Matrix4();
 const pos = new THREE.Vector3();
 const quat = new THREE.Quaternion();
 const scl = new THREE.Vector3();
 const yAxis = new THREE.Vector3(0, 1, 0);
 const colour = new THREE.Color();
+
+const carMatrix = new THREE.Matrix4();
+const partMatrix = new THREE.Matrix4();
+const partPos = new THREE.Vector3();
+const partScale = new THREE.Vector3();
+const noTurn = new THREE.Quaternion();
+
+/** One car part: its car-local offset and size, on the current car. */
+function placePart(
+  mesh: THREE.InstancedMesh,
+  index: number,
+  lx: number,
+  ly: number,
+  lz: number,
+  sx: number,
+  sy: number,
+  sz: number,
+) {
+  partMatrix.compose(
+    partPos.set(lx, ly, lz),
+    noTurn,
+    partScale.set(sx, sy, sz),
+  );
+  mesh.setMatrixAt(index, partMatrix.premultiply(carMatrix));
+}
 
 export function Traffic({ player }: { player: Player }) {
   const tier = useQuality();
@@ -164,41 +187,25 @@ export function Traffic({ player }: { player: Player }) {
       stepTraffic(traffic, 1 / 50, here.current),
     );
     const { body, cabin, wheels, lamps, signals } = meshes;
-    traffic.cars.forEach((car, i) => {
-      carPose(car, pose);
-      quat.setFromAxisAngle(yAxis, pose.yaw);
-      const place = (
-        mesh: THREE.InstancedMesh,
-        index: number,
-        lx: number,
-        ly: number,
-        lz: number,
-        sx: number,
-        sy: number,
-        sz: number,
-      ) => {
-        // car-local offset, turned by the car's heading
-        local.compose(
-          pos.set(lx, ly, lz),
-          quat.identity(),
-          scl.set(sx, sy, sz),
-        );
-        m.compose(
-          pos.set(pose.x, 0, pose.z),
-          quat.setFromAxisAngle(yAxis, pose.yaw),
-          scl.set(1, 1, 1),
-        ).multiply(local);
-        mesh.setMatrixAt(index, m);
-      };
-      place(body, i, 0, 0.62, 0, 4.3, 0.95, 1.9);
-      place(cabin, i, -0.25, 1.38, 0, 2.4, 0.62, 1.7);
-      WHEELS.forEach(([x, y, z], k) =>
-        place(wheels, i * WHEELS.length + k, x, y, z, 1, 1, 1),
+    for (let i = 0; i < traffic.cars.length; i++) {
+      carPose(traffic.cars[i], pose);
+      // the car's own matrix once; each part is a car-local offset on it
+      carMatrix.compose(
+        pos.set(pose.x, 0, pose.z),
+        quat.setFromAxisAngle(yAxis, pose.yaw),
+        scl.set(1, 1, 1),
       );
-      LAMPS.forEach(([x, y, z], k) =>
-        place(lamps, i * LAMPS.length + k, x, y, z, 1, 1, 1),
-      );
-    });
+      placePart(body, i, 0, 0.62, 0, 4.3, 0.95, 1.9);
+      placePart(cabin, i, -0.25, 1.38, 0, 2.4, 0.62, 1.7);
+      for (let k = 0; k < WHEELS.length; k++) {
+        const [x, y, z] = WHEELS[k];
+        placePart(wheels, i * WHEELS.length + k, x, y, z, 1, 1, 1);
+      }
+      for (let k = 0; k < LAMPS.length; k++) {
+        const [x, y, z] = LAMPS[k];
+        placePart(lamps, i * LAMPS.length + k, x, y, z, 1, 1, 1);
+      }
+    }
     for (const mesh of [body, cabin, wheels, lamps])
       mesh.instanceMatrix.needsUpdate = true;
 

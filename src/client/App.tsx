@@ -37,6 +37,8 @@ import { type Caught, ShopliftPanel } from "./ui/ShopliftPanel.tsx";
 import type { View } from "./world/CameraRig.tsx";
 import { LoadingVeil } from "./ui/LoadingVeil.tsx";
 import { preloadLook } from "./avatar/human/HumanDoll.tsx";
+import { RoomAudio } from "./RoomAudio.tsx";
+import { playWhoosh } from "../audio/worldSounds.ts";
 import { World } from "./world/World.tsx";
 
 const FADE_MS = 300;
@@ -91,6 +93,7 @@ export function App() {
   const travel = useCallback((room: RoomId, spawn: Spawn) => {
     if (travelling.current) return;
     travelling.current = true;
+    playWhoosh();
     setFading(true);
     window.setTimeout(() => {
       setHere(visit(room, spawn));
@@ -114,6 +117,8 @@ export function App() {
   const setLook = (look: Look) => setSave((s) => ({ ...s, look }));
   const setSwim = (swim: SwimLook) => setSave((s) => ({ ...s, swim }));
   const setBody = (body: BodyShape) => setSave((s) => ({ ...s, body }));
+  const setMuted = (muted: boolean) =>
+    setSave((s) => ({ ...s, settings: { ...s.settings, muted } }));
   const setEffects = (effects: Intensity) =>
     setSave((s) => ({ ...s, settings: { ...s.settings, effects } }));
   const setPanelOpen = useCallback(
@@ -186,6 +191,7 @@ export function App() {
     <ReducedMotionContext.Provider value={reducedMotion}>
       <main className="app">
         <LoadingVeil />
+        <RoomAudio room={here.room} muted={save.settings.muted} />
         <World
           room={here.room}
           arrival={here.arrival}
@@ -232,6 +238,8 @@ export function App() {
           onRide={() => setRides((n) => n + 1)}
           onPlayGame={setGame}
           onCityTravel={(spawn) => travel("city", spawn)}
+          muted={save.settings.muted}
+          setMuted={setMuted}
           mood={mood}
           setMood={setMood}
           dance={dance}

@@ -34,6 +34,11 @@ function r(j: Joint, x = 0, y = 0, z = 0) {
   j?.rotation.set(x, y, z);
 }
 
+/** `r` for a sampled angle triple, without spreading it (no per-frame garbage). */
+function rv(j: Joint, v: readonly [number, number, number]) {
+  j?.rotation.set(v[0], v[1], v[2]);
+}
+
 /**
  * Poses the rig. A dance move's sampled `dance` pose wins over the mood's
  * own dance; `wobble` (0..1, from the buzz) tips the body on top of any mood.
@@ -74,7 +79,7 @@ function poseMood(
   if (mood === "dance" && dance) {
     // a move drives every joint; reduced motion keeps its sway but not its bounce
     body.position.set(dance.root[0], calm ? 0 : dance.root[1], dance.root[2]);
-    for (const name of JOINTS) r(j[name], ...dance.joints[name]);
+    for (const name of JOINTS) rv(j[name], dance.joints[name]);
     // captured motion is already exact for the 3D doll
     if (dance.captured) return;
     // the 3D doll's arms rest angled out; draw them in like the other poses
@@ -98,7 +103,7 @@ function poseMood(
       // one loop of the clip is two steps, a full turn of the phase
       const sample = poseAt(clip, (ph / (Math.PI * 2)) * clip.period, walkPose);
       body.position.set(0, sample.root[1], 0);
-      for (const name of JOINTS) r(j[name], ...sample.joints[name]);
+      for (const name of JOINTS) rv(j[name], sample.joints[name]);
       r(j.pony, 0.12 + Math.cos(ph) * 0.08, 0, Math.sin(ph) * 0.12);
       return;
     }

@@ -1,4 +1,5 @@
 import { useFrame } from "@react-three/fiber";
+import { useRef } from "react";
 import * as THREE from "three";
 
 function clamp(color: THREE.Color) {
@@ -14,18 +15,28 @@ function clamp(color: THREE.Color) {
  * Mount it last so it runs after the rooms' own frame callbacks.
  */
 export function NeonClamp() {
+  // the unlit neon materials, re-collected now and then as dolls and props
+  // mount (walking the whole scene every frame was the low tier's costliest
+  // per-frame job); clamping the list itself stays per frame, since rooms
+  // animate their neon colours
+  const neon = useRef<THREE.MeshBasicMaterial[]>([]);
+  const frame = useRef(0);
   useFrame(({ scene }) => {
-    scene.traverse((obj) => {
-      if (!(obj instanceof THREE.Mesh)) return;
-      const mats: THREE.Material[] = Array.isArray(obj.material)
-        ? obj.material
-        : [obj.material];
-      for (const m of mats) {
-        if (m instanceof THREE.MeshBasicMaterial && !m.toneMapped) {
-          clamp(m.color);
-        }
-      }
-    });
+    if (frame.current++ % 30 === 0) {
+      const found = new Set<THREE.MeshBasicMaterial>();
+      scene.traverse((obj) => {
+        if (!(obj instanceof THREE.Mesh)) return;
+        const m = obj.material;
+        if (Array.isArray(m)) {
+          for (const x of m)
+            if (x instanceof THREE.MeshBasicMaterial && !x.toneMapped)
+              found.add(x);
+        } else if (m instanceof THREE.MeshBasicMaterial && !m.toneMapped)
+          found.add(m);
+      });
+      neon.current = [...found];
+    }
+    for (const m of neon.current) clamp(m.color);
   });
   return null;
 }

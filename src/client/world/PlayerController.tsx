@@ -34,6 +34,8 @@ import { Doll, type WalkState } from "../avatar/Doll.tsx";
 import { hdr } from "../rooms/shared/materials.ts";
 import { driving } from "./driving.ts";
 import { ignoresKeys } from "./keyTargets.ts";
+import { playStep } from "../../audio/worldSounds.ts";
+import { BOARDWALK, CITY_AREA, PARK, WATER_Z } from "../../game/city/layout.ts";
 import { stick } from "./joystick.ts";
 
 /** Frame time the simulation may catch up on; longer gaps (a hidden tab) are dropped. */
@@ -140,6 +142,15 @@ function ride(
   return null;
 }
 
+/** Metres between footsteps. */
+const STEP_METRES = 0.72;
+
+/** In the city, sand and the park lawn take a softer step than pavement. */
+function softGround(x: number, z: number): boolean {
+  if (z > BOARDWALK.z1 && z < WATER_Z) return true;
+  return x >= PARK.x0 && x <= PARK.x1 && z >= PARK.z0 && z <= PARK.z1;
+}
+
 // The prototype's walk cycle was tuned for 1.35 m/s; scale the stride rate so
 // feet keep up with the spec's faster walking speed.
 const STRIDE = WALK_SPEED / 1.35;
@@ -222,6 +233,8 @@ export function PlayerController({
   const [riding, setRiding] = useState<Mood | "lay" | null>(null);
   const shownRide = useRef<Mood | "lay" | null>(null);
   const walking = useRef(false);
+  const stepDist = useRef(0);
+  const lastPos = useRef(new THREE.Vector3().copy(player.pos));
 
   useFrame((state, dt) => {
     // a driven car takes the keys; the doll stands at the pit wall
@@ -278,6 +291,23 @@ export function PlayerController({
       player.yaw =
         player.before.yaw + turnBetween(player.before.yaw, player.walk.yaw) * a;
     }
+
+    // footsteps: one every stride's half, softer on sand and grass
+    if (moving) {
+      stepDist.current += Math.hypot(
+        player.pos.x - lastPos.current.x,
+        player.pos.z - lastPos.current.z,
+      );
+      if (stepDist.current > STEP_METRES) {
+        stepDist.current = 0;
+        playStep(
+          area === CITY_AREA && softGround(player.pos.x, player.pos.z)
+            ? "soft"
+            : "hard",
+        );
+      }
+    }
+    lastPos.current.copy(player.pos);
 
     // only the start of a walk matters, so the state is set once, not per frame
     if (moving !== walking.current) {

@@ -374,11 +374,15 @@ function Marquee({ w, h, y }: { w: number; h: number; y: number }) {
   }, [spots]);
   const calm = useReducedMotion();
   const on = useMemo(() => hdr("#ffe6a0", 5), []);
+  const shown = useRef(-1);
   const off = useMemo(() => hdr("#ffb02e", 0.8), []);
   useFrame(({ clock }) => {
     const m = ref.current;
     if (!m) return;
     const step = calm ? 0 : Math.floor(clock.elapsedTime * 6);
+    // the chase steps six times a second: upload only when it moves
+    if (step === shown.current) return;
+    shown.current = step;
     spots.forEach((_, i) => m.setColorAt(i, (i + step) % 3 ? on : off));
     if (m.instanceColor) m.instanceColor.needsUpdate = true;
   });

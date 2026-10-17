@@ -243,7 +243,9 @@ export function ToonDoll({
     const t = state.clock.elapsedTime + seed * 7.3;
     hairTime.value = state.clock.elapsedTime;
     if (root.current) {
-      root.current.getWorldPosition(worldPos);
+      // last frame's world matrix is close enough for picking a LOD, and
+      // reading it costs nothing (getWorldPosition re-walks every parent)
+      worldPos.setFromMatrixPosition(root.current.matrixWorld);
       const far = worldPos.distanceTo(state.camera.position);
       const isFar = far > (lod.current ? NEAR_RANGE : FAR_RANGE);
       if (isFar !== lod.current) {

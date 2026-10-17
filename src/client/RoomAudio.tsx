@@ -1,0 +1,100 @@
+import { useEffect, useState } from "react";
+import { getSharedAudioBus } from "../audio/audioBus.ts";
+import {
+  getSharedJukeboxController,
+  type TrackId,
+} from "../audio/proceduralJukebox.ts";
+import {
+  playClick,
+  startAmbience,
+  unlockAudio,
+  type Ambience,
+} from "../audio/worldSounds.ts";
+import type { RoomId } from "../game/rooms.ts";
+import { useNeighborhood } from "./city/here.ts";
+
+// what plays where: venues get a jukebox track, open places an ambience bed
+const MUSIC: Partial<Record<RoomId, TrackId>> = {
+  "velvet-room": "canopy-lofi",
+  "violet-hour": "canopy-lofi",
+  pulse: "savanna-nightclub",
+  plaza: "canopy-lofi",
+  "amusement-park": "carnival-calliope",
+  "water-park": "waterhole-twilight",
+  "filipino-joint": "canopy-lofi",
+  "boba-matcha": "canopy-lofi",
+  "ube-bakery": "canopy-lofi",
+  "ice-rink": "waterhole-twilight",
+};
+const AMBIENCE: Partial<Record<RoomId, Ambience>> = {
+  aquarium: "aquarium",
+  "ice-rink": "rink",
+  "haunted-house": "haunted",
+};
+
+/**
+ * The world's sound: music for the room you're in, an ambience bed for open
+ * places (surf on the beach, a hum in the city), a tick on every button,
+ * and the master mute. Browsers only start audio from a gesture, so nothing
+ * plays until the first tap or key press.
+ */
+export function RoomAudio({ room, muted }: { room: RoomId; muted: boolean }) {
+  const [unlocked, setUnlocked] = useState(false);
+  const neighborhood = useNeighborhood();
+
+  useEffect(() => {
+    const unlock = () => {
+      unlockAudio();
+      const ctx = getSharedAudioBus().getContext();
+      if (!ctx) return;
+      if (ctx.state === "running") setUnlocked(true);
+      else
+        ctx.addEventListener(
+          "statechange",
+          () => setUnlocked(ctx.state === "running"),
+          { once: true },
+        );
+    };
+    const click = (e: Event) => {
+      if (e.target instanceof Element && e.target.closest("button"))
+        playClick();
+    };
+    window.addEventListener("pointerdown", unlock);
+    window.addEventListener("keydown", unlock);
+    window.addEventListener("click", click);
+    return () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+      window.removeEventListener("click", click);
+    };
+  }, []);
+
+  useEffect(() => {
+    getSharedAudioBus().setMasterMuted(muted);
+  }, [muted]);
+
+  useEffect(() => {
+    if (!unlocked) return;
+    const jukebox = getSharedJukeboxController();
+    // music sits under the room, not over it
+    jukebox.setMusicVolume(0.35);
+    const track = MUSIC[room];
+    if (track) {
+      if (jukebox.getCurrentTrack() !== track || !jukebox.isPlaying())
+        jukebox.playTrack(track);
+    } else jukebox.stopTrack();
+  }, [room, unlocked]);
+
+  const bed: Ambience | null =
+    room === "city"
+      ? neighborhood === "beachside"
+        ? "beach"
+        : "city"
+      : (AMBIENCE[room] ?? null);
+  useEffect(() => {
+    if (!unlocked || !bed) return;
+    return startAmbience(bed);
+  }, [bed, unlocked]);
+
+  return null;
+}

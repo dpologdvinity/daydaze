@@ -321,8 +321,10 @@ export function World({
     <Canvas
       className="world"
       frameloop={still ? "demand" : "always"}
-      dpr={tier === "high" && sharp ? [1, 1.5] : 1}
-      gl={{ antialias: false, powerPreference: "high-performance" }}
+      // sharp: full device resolution (up to 2x) on the high tier, stepping
+      // down to 1x before the effects go; native MSAA smooths edges on low
+      dpr={tier === "high" && sharp ? [1, 2] : 1}
+      gl={{ antialias: true, powerPreference: "high-performance" }}
       camera={{ position: [6.4, 5.4, 10], fov: 38, near: 0.05, far: 600 }}
       onCreated={({ gl }) => {
         gl.domElement.setAttribute("role", "img");

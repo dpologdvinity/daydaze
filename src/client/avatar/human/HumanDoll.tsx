@@ -569,6 +569,24 @@ export function HumanDoll({
   const bodyMeshes = useMemo(() => morphMeshes(body.scene), [body]);
   const worn = useRef(new Map<string, THREE.Mesh[]>());
   const wornList = useRef<THREE.Mesh[]>([]);
+  // every face and body key with its value: face sliders, figure, face
+  // presets (the picked option at 1, the group's others at 0) and the closet
+  // body sliders (50 is the base shape, 0 and 100 the key at -1 and 1)
+  const shapeKeys = useMemo((): readonly (readonly [string, number])[] => {
+    const keys: [string, number][] = [];
+    for (const s of FACE_SLIDERS) keys.push([s.id, face[s.id]]);
+    for (const b of FIGURES)
+      if (b.id !== "classic") keys.push([b.id, face.figure === b.id ? 1 : 0]);
+    for (const g of FACE_PRESETS)
+      for (const o of g.options.slice(1))
+        keys.push([`${g.key}_${o.id}`, face[g.field] === o.id ? 1 : 0]);
+    keys.push(["bust", (shape.bust - 50) / 50]);
+    keys.push(["hips", (shape.hips - 50) / 50]);
+    keys.push(["waist", (shape.waist - 50) / 50]);
+    return keys;
+  }, [face, shape]);
+  const shapedFor = useRef<THREE.Mesh[] | null>(null);
+  const shapedWith = useRef<typeof shapeKeys | null>(null);
   const lift = useRef(0);
   const track = useMemo(() => {
     const make = (key: string) => (meshes: THREE.Mesh[] | null, up: number) => {
@@ -593,7 +611,9 @@ export function HumanDoll({
   useFrame((state, dt) => {
     // far dolls swap to the low-poly body; the gap is hysteresis
     if (root.current && body.far) {
-      root.current.getWorldPosition(worldPos);
+      // last frame's world matrix is close enough for picking a LOD, and
+      // reading it costs nothing (getWorldPosition re-walks every parent)
+      worldPos.setFromMatrixPosition(root.current.matrixWorld);
       const d = worldPos.distanceTo(state.camera.position);
       const isFar = d > (body.far.visible ? LOD_NEAR : LOD_FAR);
       if (isFar !== body.far.visible) {
@@ -644,23 +664,17 @@ export function HumanDoll({
     const closed = tm > blinkAt.current && tm < blinkAt.current + 0.14;
     // open eyes rest with the upper lid a little lowered, not wide and staring
     setMorph(wornList.current, "blink", closed ? 1 : REST_LID);
-    // face sliders and body shape, on every worn mesh (parts mount later)
-    for (const s of FACE_SLIDERS) setMorph(wornList.current, s.id, face[s.id]);
-    for (const b of FIGURES)
-      if (b.id !== "classic")
-        setMorph(wornList.current, b.id, face.figure === b.id ? 1 : 0);
-    // face presets: the picked option's key at 1, the group's others at 0
-    for (const g of FACE_PRESETS)
-      for (const o of g.options.slice(1))
-        setMorph(
-          wornList.current,
-          `${g.key}_${o.id}`,
-          face[g.field] === o.id ? 1 : 0,
-        );
-    // closet body sliders: 50 is the base shape, 0 and 100 the key at -1 and 1
-    setMorph(wornList.current, "bust", (shape.bust - 50) / 50);
-    setMorph(wornList.current, "hips", (shape.hips - 50) / 50);
-    setMorph(wornList.current, "waist", (shape.waist - 50) / 50);
+    // face and body shape change rarely: set them only when they, or the
+    // worn meshes (parts mount later), change, never every frame
+    if (
+      shapedFor.current !== wornList.current ||
+      shapedWith.current !== shapeKeys
+    ) {
+      shapedFor.current = wornList.current;
+      shapedWith.current = shapeKeys;
+      for (const [name, value] of shapeKeys)
+        setMorph(wornList.current, name, value);
+    }
     if (tm > blinkAt.current + 0.14)
       blinkAt.current = tm + 2.2 + ((seed * 13.7 + tm) % 3.1);
   });

@@ -457,6 +457,8 @@ export function Overlay({
   onRide,
   onPlayGame,
   onCityTravel,
+  muted,
+  setMuted,
   mood,
   setMood,
   dance,
@@ -484,6 +486,8 @@ export function Overlay({
   onPlayGame: (game: MinigameId) => void;
   /** Fast travel within the city, from the city map. */
   onCityTravel: (spawn: Spawn) => void;
+  muted: boolean;
+  setMuted: (muted: boolean) => void;
   mood: Mood;
   setMood: (mood: Mood) => void;
   dance: DanceMoveId;
@@ -581,6 +585,14 @@ export function Overlay({
           />
         )}
         <div className="dock-actions" role="group" aria-label="Room actions">
+          <button
+            type="button"
+            className="drink"
+            aria-pressed={!muted}
+            onClick={() => setMuted(!muted)}
+          >
+            {muted ? "Sound off" : "Sound on"}
+          </button>
           {room === "city" && (
             <button
               type="button"

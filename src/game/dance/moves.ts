@@ -602,8 +602,18 @@ export function poseAt(move: DanceMove, t: number, out = createPose()): Pose {
   const u = span > 0 ? Math.min(1, Math.max(0, (local - tb) / span)) : 0;
   const [ka, kb, kc, kd] = [key(i - 1), key(i), key(i + 1), key(i + 2)];
   if (n === 1) {
-    out.root = [...(kb.root ?? ZERO)];
-    for (const j of JOINTS) out.joints[j] = [...(kb.joints?.[j] ?? ZERO)];
+    // a held pose: copy in place, so a posing doll allocates nothing
+    const r = kb.root ?? ZERO;
+    out.root[0] = r[0];
+    out.root[1] = r[1];
+    out.root[2] = r[2];
+    for (const j of JOINTS) {
+      const v = kb.joints?.[j] ?? ZERO;
+      const o = out.joints[j];
+      o[0] = v[0];
+      o[1] = v[1];
+      o[2] = v[2];
+    }
     return out;
   }
   const [a, b, c, d] = scratch;

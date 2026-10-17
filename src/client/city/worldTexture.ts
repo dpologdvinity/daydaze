@@ -10,7 +10,7 @@ const loader = new THREE.TextureLoader();
 function tex(path: string, srgb: boolean) {
   const t = loader.load(path);
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
-  t.anisotropy = 4;
+  t.anisotropy = 8;
   if (srgb) t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
