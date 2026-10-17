@@ -102,6 +102,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "The Gridiron. Kick five field goals, each from further out: aim into the wind, then put your leg into it.",
   "driving-range":
     "Skyline Driving Range. Get a bucket of ten: set your backswing, strike it pure, and land them on the greens.",
+  "skate-diner":
+    "Skate-Up Drive-In Diner. Tap Dottie at the pass to order, grab a booth or a stool, and mind the servers gliding by on skates.",
   "mermaid-cove":
     "Mermaid Cove. The mermaids sing on the shells at the waterline: sing it back, one note longer each round. Or sit on a log and watch them swim.",
   courtside:

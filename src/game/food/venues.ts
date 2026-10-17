@@ -968,6 +968,7 @@ const RESTAURANTS: readonly FoodVenue[] = [
       ["Banana split", 6],
       ["Chocolate malt", 5, "drink"],
     ],
+    "skate-diner",
   ),
 ];
 

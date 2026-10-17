@@ -75,6 +75,11 @@ const ROOM_SHOTS: Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }> =
       eye: new THREE.Vector3(2, 4.5, 9),
       look: new THREE.Vector3(0, 0.5, -30),
     },
+    // from by the door, over the booths and the skaters' loop to the counter
+    "skate-diner": {
+      eye: new THREE.Vector3(4, 6, 10),
+      look: new THREE.Vector3(-0.5, 0, -2),
+    },
     // from up the beach, out over the shells to the lagoon and the cave
     "mermaid-cove": {
       eye: new THREE.Vector3(3, 4.5, 13),
@@ -243,6 +248,7 @@ const MAX_DISTANCE: Record<RoomId, number> = {
   marina: 30,
   courtside: 32,
   "mermaid-cove": 24,
+  "skate-diner": 20,
   gym: 22,
   stadium: 30,
   "haunted-house": 16,

@@ -15,6 +15,7 @@ import * as GYM from "./gym.ts";
 import * as MARINA from "./marina.ts";
 import * as COURTSIDE from "./courtside.ts";
 import * as COVE from "./mermaidCove.ts";
+import * as DINER from "./skateDiner.ts";
 import * as STADIUM from "./stadium.ts";
 import { BENCH_SEATS as LINKS_BENCH } from "./lagoonLinks.ts";
 import { FOUNTAIN, SQUARE_BENCHES } from "./city/layout.ts";
@@ -282,6 +283,13 @@ const moreSportsSeats = [
   // Starboard Marina: stools at the yacht club bar, benches facing the yachts
   ...MARINA.BAR_STOOLS.map((at, i) =>
     seat(`marina-stool-${i}`, "marina", at, 0.75, [at[0], MARINA.BAR.z1]),
+  ),
+  // the diner's counter stools and booth benches
+  ...DINER.STOOLS.map((at, i) =>
+    seat(`skate-diner-stool-${i}`, "skate-diner", at, 0.75, [at[0], -5]),
+  ),
+  ...DINER.BOOTH_SEATS.map(({ at, facing }, i) =>
+    seat(`skate-diner-booth-${i}`, "skate-diner", at, 0.45, facing),
   ),
   ...COVE.LOG_SEATS.map((at, i) =>
     seat(`mermaid-cove-log-${i}`, "mermaid-cove", at, 0.4, [at[0], 0], "front"),

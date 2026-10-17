@@ -80,6 +80,7 @@ import * as MARINA from "./marina.ts";
 import * as COURTSIDE from "./courtside.ts";
 import * as COVE from "./mermaidCove.ts";
 import { POOL_BLOCKER } from "./sealShow.ts";
+import * as DINER from "./skateDiner.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -118,6 +119,7 @@ export type RoomId =
   | "marina"
   | "courtside"
   | "mermaid-cove"
+  | "skate-diner"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -582,6 +584,11 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
     ...foodRoom("kamayan-hall", "Lechon and Kamayan Hall"),
     walkable: KAMAYAN.FLOOR,
     blockers: KAMAYAN.BLOCKERS,
+  },
+  "skate-diner": {
+    ...foodRoom("skate-diner", "Skate-Up Drive-In Diner"),
+    walkable: DINER.FLOOR,
+    blockers: DINER.BLOCKERS,
   },
   city: {
     id: "city",

@@ -52,6 +52,7 @@ test("every room is registered under its own id", () => {
     "pulse",
     "roller-rink",
     "rooftop-bar",
+    "skate-diner",
     "skatepark",
     "speedway",
     "stadium",
@@ -507,6 +508,7 @@ for (const id of [
   "marina",
   "courtside",
   "mermaid-cove",
+  "skate-diner",
 ] as const) {
   test(`${id}: every seat is reachable from the door`, () => {
     const room = ROOMS[id];

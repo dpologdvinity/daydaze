@@ -79,6 +79,7 @@ const SHOTS: {
   { name: "marina", query: "room=marina" },
   { name: "courtside", query: "room=courtside" },
   { name: "mermaid-cove", query: "room=mermaid-cove" },
+  { name: "skate-diner", query: "room=skate-diner" },
   { name: "gym", query: "room=gym" },
   { name: "stadium", query: "room=stadium" },
   { name: "velvet-room-full-look", query: "room=velvet-room&view=full" },
