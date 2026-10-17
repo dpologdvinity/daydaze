@@ -16,6 +16,21 @@ setConsoleFunction((type, message, ...params) => {
   console[type](message, ...params);
 });
 
+// Rooms load as their own chunks. A deploy can delete the chunks an open tab
+// still points at; reload once to pick up the new build instead of leaving
+// the room unloaded. A second failure within a minute is left to show.
+window.addEventListener("vite:preloadError", (event) => {
+  try {
+    const last = Number(sessionStorage.getItem("daydaze:chunk-reload"));
+    if (Number.isFinite(last) && Date.now() - last < 60_000) return;
+    sessionStorage.setItem("daydaze:chunk-reload", String(Date.now()));
+  } catch {
+    return; // no storage to guard a reload loop with
+  }
+  event.preventDefault();
+  location.reload();
+});
+
 const root = document.getElementById("root");
 if (!root) throw new Error("index.html is missing #root.");
 createRoot(root).render(
