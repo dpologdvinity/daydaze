@@ -2,9 +2,10 @@
 // blade signs, awnings, string lights, parked cars, street furniture, queues,
 // puddles and steam. Pure and deterministic, so the city looks the same on
 // every load. Layout decides where buildings and roads stand; this dresses them.
-import type { Vec2 } from "../walk.ts";
+import { pointInPolygon, type Vec2 } from "../walk.ts";
 import {
   BUILDINGS,
+  CITY_SURFACES,
   PROPS,
   ROAD_EDGES,
   ROAD_NODES,
@@ -149,28 +150,107 @@ function nearCross(x: number, margin: number): boolean {
   return CROSS_X.some((cx) => Math.abs(x - cx) < margin);
 }
 
-export function frontOf(b: Building): Front {
+/** Pavement (not lawn or sand) at this point: somewhere a front can face. */
+function paved(p: Vec2): boolean {
+  return CITY_SURFACES.some(
+    (s) =>
+      s.kind !== "lawn" && s.kind !== "sand" && pointInPolygon(s.polygon, p),
+  );
+}
+
+/**
+ * Which way a building faces, and its front in that frame. Fronts that face
+ * north or south are in world space (yaw 0, out1 picks the side). A front
+ * facing east or west is described as if it faced +z, in a frame turned
+ * `yaw` about the building's centre: dress it there, then turn what it
+ * dresses by `yaw` (see plan.ts).
+ */
+export type Facing = { front: Front; yaw: number };
+
+const facings = new WeakMap<Building, Facing>();
+
+/** The face a building's dressing goes on: the one with its door, else the
+ * one on a street (the avenue-facing side first), else the avenue side. */
+export function facingOf(b: Building): Facing {
+  const known = facings.get(b);
+  if (known) return known;
   const xs = b.footprint.map(([x]) => x);
   const zs = b.footprint.map(([, z]) => z);
   const x0 = Math.min(...xs);
   const x1 = Math.max(...xs);
   const z0 = Math.min(...zs);
   const z1 = Math.max(...zs);
+  const cx = (x0 + x1) / 2;
   const cz = (z0 + z1) / 2;
-  // the face nearest the avenue, and the way out of it
-  const south = cz > 0;
-  return {
-    x0,
-    x1,
-    z0,
-    z1,
-    cx: (x0 + x1) / 2,
-    cz,
-    w: x1 - x0,
-    h: b.height,
-    faceZ: south ? z0 : z1,
-    out1: south ? -1 : 1,
+  type Face = "zmin" | "zmax" | "xmin" | "xmax";
+  const outside: Record<Face, Vec2> = {
+    zmin: [cx, z0 - 2],
+    zmax: [cx, z1 + 2],
+    xmin: [x0 - 2, cz],
+    xmax: [x1 + 2, cz],
   };
+  const avenue: Face = cz > 0 ? "zmin" : "zmax";
+  let face: Face = avenue;
+  if (b.door) {
+    const [dx, dz] = b.door.position;
+    const gaps: Record<Face, number> = {
+      zmin: Math.abs(dz - z0),
+      zmax: Math.abs(dz - z1),
+      xmin: Math.abs(dx - x0),
+      xmax: Math.abs(dx - x1),
+    };
+    face = (Object.keys(gaps) as Face[]).reduce((a, c) =>
+      gaps[c] < gaps[a] ? c : a,
+    );
+  } else if (!paved(outside[avenue])) {
+    const order: Face[] = [avenue === "zmin" ? "zmax" : "zmin", "xmin", "xmax"];
+    face = order.find((f) => paved(outside[f])) ?? avenue;
+  }
+  let facing: Facing;
+  if (face === "zmin" || face === "zmax") {
+    facing = {
+      yaw: 0,
+      front: {
+        x0,
+        x1,
+        z0,
+        z1,
+        cx,
+        cz,
+        w: x1 - x0,
+        h: b.height,
+        faceZ: face === "zmin" ? z0 : z1,
+        out1: face === "zmin" ? -1 : 1,
+      },
+    };
+  } else {
+    // turned so the face lies along x, facing +z: half its length across,
+    // half the building's depth out to the face
+    const hw = (z1 - z0) / 2;
+    const hd = (x1 - x0) / 2;
+    facing = {
+      yaw: face === "xmax" ? Math.PI / 2 : -Math.PI / 2,
+      front: {
+        x0: cx - hw,
+        x1: cx + hw,
+        z0: cz - hd,
+        z1: cz + hd,
+        cx,
+        cz,
+        w: hw * 2,
+        h: b.height,
+        faceZ: cz + hd,
+        out1: 1,
+      },
+    };
+  }
+  facings.set(b, facing);
+  return facing;
+}
+
+/** A building's dressed front, in its facing's frame (see facingOf). */
+export function frontOf(b: Building): Front {
+  return facingOf(b).front;
 }
 
 /** Where a building's main sign hangs: its height and the panel's size. */
@@ -413,38 +493,46 @@ function arch(out: Buckets, f: Front, color: string): void {
   }
 }
 
-/** A door on a side wall (off an alley, not the avenue front): a lit
- * doorway, a lamp over it and its light spilling onto the ground, so it can
- * be found. Front doors are dressed by the frontage itself. */
+/** A door on a wall other than the dressed front (off an alley, or on the
+ * street side of a block whose front faces away): a lit doorway, a lamp
+ * over it and its light spilling onto the ground, so it can be found. */
 function sideDoor(b: Building, f: Front, out: Buckets, accent: string): void {
   const door = b.door;
-  if (!door || Math.abs(door.position[1] - f.faceZ) < 3) return;
+  // a turned front is the door's own face; a north or south one may not be
+  if (!door || facingOf(b).yaw !== 0) return;
+  if (Math.abs(door.position[1] - f.faceZ) < 3) return;
   const [dx, dz] = door.position;
-  const west = Math.abs(dx - f.x0) < Math.abs(dx - f.x1);
-  const wallX = west ? f.x0 : f.x1;
-  const out1 = west ? -1 : 1;
+  // the wall the door is nearest, and which way is out of it
+  const walls = [
+    { d: Math.abs(dx - f.x0), x: f.x0, z: dz, ox: -1, oz: 0 },
+    { d: Math.abs(dx - f.x1), x: f.x1, z: dz, ox: 1, oz: 0 },
+    { d: Math.abs(dz - f.z0), x: dx, z: f.z0, ox: 0, oz: -1 },
+    { d: Math.abs(dz - f.z1), x: dx, z: f.z1, ox: 0, oz: 1 },
+  ];
+  const w = walls.reduce((a, c) => (c.d < a.d ? c : a));
+  const across = w.ox !== 0;
   out.glow.push({
-    x: wallX + out1 * 0.06,
+    x: w.x + w.ox * 0.06,
     y: 1.3,
-    z: dz,
-    sx: 0.06,
+    z: w.z + w.oz * 0.06,
+    sx: across ? 0.06 : 1.6,
     sy: 2.6,
-    sz: 1.6,
+    sz: across ? 1.6 : 0.06,
     color: accent,
   });
   out.glow.push({
-    x: wallX + out1 * 0.25,
+    x: w.x + w.ox * 0.25,
     y: 3.1,
-    z: dz,
-    sx: 0.4,
+    z: w.z + w.oz * 0.25,
+    sx: across ? 0.4 : 0.5,
     sy: 0.16,
-    sz: 0.5,
+    sz: across ? 0.5 : 0.4,
     color: "#ffd2a0",
   });
   out.puddle.push({
-    x: wallX + out1 * 1.4,
+    x: w.x + w.ox * 1.4,
     y: 0.05,
-    z: dz,
+    z: w.z + w.oz * 1.4,
     sx: 2.4,
     sy: 2.6,
     sz: 1,

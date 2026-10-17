@@ -12,7 +12,13 @@ import {
   type PropKind,
   type Surface,
 } from "./layout.ts";
-import { dressBuilding, frontOf, signSpec, STREET_DRESS } from "./dressing.ts";
+import {
+  dressBuilding,
+  facingOf,
+  frontOf,
+  signSpec,
+  STREET_DRESS,
+} from "./dressing.ts";
 
 export const KINDS = [
   "road",
@@ -449,8 +455,44 @@ function streetMarks(
   }
 }
 
-/** Every instance a building contributes; its light, when it has a sign. */
+/** Every instance a building contributes; its light, when it has a sign.
+ * A building facing east or west is dressed as if it faced +z, then turned
+ * into place about its centre. */
 function buildingInstances(
+  b: Building,
+  out: Record<Kind, Instance[]>,
+  lights: Light[],
+): void {
+  const { yaw, front } = facingOf(b);
+  if (yaw === 0) {
+    buildingInstancesFacing(b, out, lights);
+    return;
+  }
+  const local = emptyInstances();
+  const localLights: Light[] = [];
+  buildingInstancesFacing(b, local, localLights);
+  const cos = Math.cos(yaw);
+  const sin = Math.sin(yaw);
+  // three.js turns (x, z) about y as (x cos + z sin, -x sin + z cos)
+  const turn = (x: number, z: number): [number, number] => {
+    const dx = x - front.cx;
+    const dz = z - front.cz;
+    return [front.cx + dx * cos + dz * sin, front.cz - dx * sin + dz * cos];
+  };
+  for (const kind of KINDS)
+    for (const item of local[kind]) {
+      const [x, z] = turn(item.x, item.z);
+      const [rx = 0, ry = 0, rz = 0] = item.rot ?? [];
+      out[kind].push({ ...item, x, z, rot: [rx, ry + yaw, rz] });
+    }
+  for (const light of localLights) {
+    const [x, z] = turn(light.x, light.z);
+    lights.push({ ...light, x, z });
+  }
+}
+
+/** A building's instances in its facing's frame (see facingOf). */
+function buildingInstancesFacing(
   b: Building,
   out: Record<Kind, Instance[]>,
   lights: Light[],
