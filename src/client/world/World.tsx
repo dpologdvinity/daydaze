@@ -95,6 +95,17 @@ const HauntedHouse = lazy(() =>
     default: m.HauntedHouse,
   })),
 );
+const Gridiron = lazy(() =>
+  import("../rooms/Gridiron.tsx").then((m) => ({ default: m.Gridiron })),
+);
+const DrivingRange = lazy(() =>
+  import("../rooms/DrivingRange.tsx").then((m) => ({
+    default: m.DrivingRange,
+  })),
+);
+const Gym = lazy(() =>
+  import("../rooms/Gym.tsx").then((m) => ({ default: m.Gym })),
+);
 const Skatepark = lazy(() =>
   import("../rooms/Skatepark.tsx").then((m) => ({ default: m.Skatepark })),
 );
@@ -274,6 +285,9 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   galleria: Galleria,
   "roller-rink": RollerRink,
   skatepark: Skatepark,
+  gridiron: Gridiron,
+  "driving-range": DrivingRange,
+  gym: Gym,
   stadium: Stadium,
   "haunted-house": HauntedHouse,
   "filipino-joint": FilipinoJoint,

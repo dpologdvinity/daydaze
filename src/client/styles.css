@@ -1535,3 +1535,35 @@ button:focus-visible {
   min-height: 1.4em;
   margin: 6px 0 0;
 }
+
+/* The floor routine's cue: a ring closing on a target. */
+.routine-cue {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 110px;
+}
+
+.routine-name {
+  position: absolute;
+  top: 0;
+  font-weight: 700;
+}
+
+.routine-ring,
+.routine-target {
+  position: absolute;
+  top: 34px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+}
+
+.routine-ring {
+  border: 4px solid #ff4fb3;
+  box-shadow: 0 0 12px rgb(255 79 179 / 0.7);
+}
+
+.routine-target {
+  border: 3px dashed rgb(255 255 255 / 0.7);
+}

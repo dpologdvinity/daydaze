@@ -54,6 +54,9 @@ import { BowlingPanel } from "../rooms/bowling/BowlingPanel.tsx";
 import { GolfPanel } from "../rooms/minigolf/GolfPanel.tsx";
 import { HoopsPanel } from "../rooms/dome/HoopsPanel.tsx";
 import { SkatePanel } from "../rooms/skatepark/SkatePanel.tsx";
+import { FieldGoalPanel } from "../rooms/gridiron/FieldGoalPanel.tsx";
+import { RangePanel } from "../rooms/range/RangePanel.tsx";
+import { RoutinePanel } from "../rooms/gym/RoutinePanel.tsx";
 import { PenaltyPanel } from "../rooms/stadium/PenaltyPanel.tsx";
 import { clearCityMapRequest, useCityMapRequest } from "./cityMapRequest.ts";
 import { ShopPanel } from "./ShopPanel.tsx";
@@ -101,6 +104,11 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Your flat. Use the decorating panel to place furniture and lock the door. Tap the blue shelf to try a shoplift.",
   "haunted-house":
     "The Haunted House. Find your way through the dark rooms past the ghosts, then back out to the park.",
+  gridiron:
+    "The Gridiron. Kick five field goals, each from further out: aim into the wind, then put your leg into it.",
+  "driving-range":
+    "Skyline Driving Range. Get a bucket of ten: set your backswing, strike it pure, and land them on the greens.",
+  gym: "Flip City Gymnastics. Start the floor routine and press as each ring closes to stick your tumbles for the judges.",
   skatepark:
     "Concrete Wave Skatepark. Drop in on the half-pipe and time your tricks at the lip, or put on skates and roll around.",
   "roller-rink":
@@ -620,6 +628,9 @@ export function Overlay({
       {room === "mini-golf" && <GolfPanel />}
       {room === "dome" && <HoopsPanel />}
       {room === "skatepark" && <SkatePanel />}
+      {room === "gridiron" && <FieldGoalPanel />}
+      {room === "driving-range" && <RangePanel />}
+      {room === "gym" && <RoutinePanel />}
       {room === "stadium" && <PenaltyPanel />}
 
       {room === "speedway" && (

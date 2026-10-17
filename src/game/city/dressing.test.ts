@@ -107,6 +107,7 @@ test("each gate raises two tall arches either side of its door", () => {
   assert.deepEqual(venues, [
     "amusement-park",
     "dome",
+    "gridiron",
     "mini-golf",
     "skatepark",
     "speedway",

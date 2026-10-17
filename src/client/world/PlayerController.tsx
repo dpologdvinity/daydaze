@@ -62,6 +62,8 @@ export type Player = {
     lie?: boolean;
     /** A ride seat (horse, cup, chair): she sits while it holds her. */
     sit?: boolean;
+    /** Head over heels, radians, about her hips: flips and tumbles. */
+    flip?: number;
   } | null;
   /** Set while seated on a chair (not a ride): the doll sits until she moves. */
   sitting: boolean;
@@ -146,6 +148,8 @@ function ride(
 /** Metres between footsteps. */
 const STEP_METRES = 0.72;
 const GLIDE_METRES = 2.2;
+/** Where a flip pivots: about her hips. */
+const HIP = 0.95;
 
 /** In the city, sand and the park lawn take a softer step than pavement. */
 function softGround(x: number, z: number): boolean {
@@ -342,8 +346,16 @@ export function PlayerController({
     // a seated or sliding doll is drawn on the seat or the slide, feet and all
     const drawnPos = player.seat?.position ?? player.pos;
     if (g.current) {
+      const yaw = player.seat?.yaw ?? player.yaw;
+      const flip = player.seat?.flip ?? 0;
       g.current.position.copy(drawnPos);
-      g.current.rotation.y = player.seat?.yaw ?? player.yaw;
+      // turn, then tumble about her own side axis, pivoting at the hips
+      g.current.rotation.set(flip, yaw, 0, "YXZ");
+      if (flip !== 0) {
+        g.current.position.y += HIP * (1 - Math.cos(flip));
+        g.current.position.x -= HIP * Math.sin(flip) * Math.sin(yaw);
+        g.current.position.z -= HIP * Math.sin(flip) * Math.cos(yaw);
+      }
     }
     const el = tag.current;
     if (el) {

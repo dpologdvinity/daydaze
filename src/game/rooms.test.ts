@@ -15,6 +15,7 @@ import { SPOTS as HOOP_SPOTS } from "./hoops.ts";
 import { hotspotsIn } from "./hotspots.ts";
 import { RENTAL as RINK_RENTAL } from "./rollerRink.ts";
 import { DROP_IN } from "./skatepark.ts";
+import { TEE as RANGE_TEE } from "./drivingRange.ts";
 import { SPOT as PENALTY_SPOT } from "./stadium.ts";
 import { HOLE_XS as LINKS_HOLE_XS } from "./lagoonLinks.ts";
 import { MIC } from "./karaoke.ts";
@@ -31,8 +32,11 @@ test("every room is registered under its own id", () => {
     "bowling",
     "city",
     "dome",
+    "driving-range",
     "filipino-joint",
     "galleria",
+    "gridiron",
+    "gym",
     "haunted-house",
     "ice-rink",
     "jail",
@@ -490,4 +494,25 @@ test("Concrete Wave: the drop-in, the bleachers and the edges are reachable", ()
       `reached ${goal}`,
     );
   }
+});
+
+for (const id of ["gridiron", "driving-range", "gym"] as const) {
+  test(`${id}: every seat is reachable from the door`, () => {
+    const room = ROOMS[id];
+    const area = areaOf(room);
+    assert.equal(isBlocked(area, room.spawn.position), false);
+    for (const goal of seatsIn(id).map((s) => s.approach)) {
+      let pos: Vec2 = room.spawn.position;
+      for (let k = 0; k < 800; k++) pos = stepInArea(area, pos, goal, 0.05);
+      assert.ok(
+        Math.hypot(pos[0] - goal[0], pos[1] - goal[1]) < 0.3,
+        `reached ${goal}`,
+      );
+    }
+  });
+}
+
+test("the driving range's tee is on its floor and clear", () => {
+  const area = areaOf(ROOMS["driving-range"]);
+  assert.equal(isBlocked(area, RANGE_TEE), false);
 });

@@ -72,6 +72,9 @@ import * as KAMAYAN from "./kamayanHall.ts";
 import * as GALLERIA from "./galleria.ts";
 import * as RINK from "./rollerRink.ts";
 import * as SKATEPARK from "./skatepark.ts";
+import * as GRIDIRON from "./gridiron.ts";
+import * as RANGE from "./drivingRange.ts";
+import * as GYM from "./gym.ts";
 import * as STADIUM from "./stadium.ts";
 import type { Vec2 } from "./walk.ts";
 
@@ -105,6 +108,9 @@ export type RoomId =
   | "galleria"
   | "roller-rink"
   | "skatepark"
+  | "gridiron"
+  | "driving-range"
+  | "gym"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -624,6 +630,57 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the park",
         target: "city",
         targetSpawn: { position: ICE_RINK_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  gridiron: {
+    id: "gridiron",
+    name: "The Gridiron",
+    walkable: GRIDIRON.FLOOR,
+    blockers: GRIDIRON.BLOCKERS,
+    spawn: { position: GRIDIRON.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "gridiron-to-city",
+        position: GRIDIRON.EXIT,
+        radius: 0.8,
+        label: "Out to the forecourt",
+        target: "city",
+        targetSpawn: { position: GRIDIRON.GRIDIRON_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  "driving-range": {
+    id: "driving-range",
+    name: "Skyline Driving Range",
+    walkable: RANGE.FLOOR,
+    blockers: RANGE.BLOCKERS,
+    spawn: { position: RANGE.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "driving-range-to-city",
+        position: RANGE.EXIT,
+        radius: 0.8,
+        label: "Out to Gallery Row",
+        target: "city",
+        targetSpawn: { position: RANGE.RANGE_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  gym: {
+    id: "gym",
+    name: "Flip City Gymnastics",
+    walkable: GYM.FLOOR,
+    blockers: GYM.BLOCKERS,
+    spawn: { position: GYM.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "gym-to-city",
+        position: GYM.EXIT,
+        radius: 0.8,
+        label: "Out to the forecourt",
+        target: "city",
+        targetSpawn: { position: GYM.GYM_DOOR.landing, yaw: 0 },
       },
     ],
   },

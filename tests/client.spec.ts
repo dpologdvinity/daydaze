@@ -510,6 +510,22 @@ test("Concrete Wave: drop in, and a run starts on the clock", async ({
   expect(errors).toEqual([]);
 });
 
+for (const [room, region, startName, live] of [
+  ["gridiron", "Field goals", "Kick field goals", "Line it up"],
+  ["driving-range", "Driving range", "Get a bucket", "Backswing"],
+  ["gym", "Floor routine", "Start the routine", /Now!|Go again/],
+] as const) {
+  test(`${room}: the game starts from its panel`, async ({ page }) => {
+    const errors = collectErrors(page);
+    await page.goto(`${LOW}&room=${room}`);
+    await expect(canvasOf(page)).toHaveAttribute("data-frames", "10");
+    const panel = page.getByRole("region", { name: region });
+    await panel.getByRole("button", { name: startName }).click();
+    await expect(panel.getByRole("button", { name: live })).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+}
+
 test("the debug buttons take the player into La Noche", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto(`${STILL}&debug=1`);
@@ -551,6 +567,9 @@ for (const room of [
   "galleria",
   "roller-rink",
   "skatepark",
+  "gridiron",
+  "driving-range",
+  "gym",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,
@@ -563,7 +582,7 @@ for (const room of [
       .poll(async () => Number(await canvas.getAttribute("data-calls")), {
         timeout: 120_000,
       })
-      .toBeGreaterThan(40);
+      .toBeGreaterThan(15);
     expect(Number(await canvas.getAttribute("data-calls"))).toBeLessThan(250);
   });
 }

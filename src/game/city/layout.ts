@@ -13,6 +13,9 @@ import * as DOME from "../dome.ts";
 import * as GALLERIA from "../galleria.ts";
 import * as RINK from "../rollerRink.ts";
 import * as SKATEPARK from "../skatepark.ts";
+import * as GRIDIRON from "../gridiron.ts";
+import * as RANGE from "../drivingRange.ts";
+import * as GYM from "../gym.ts";
 import * as STADIUM from "../stadium.ts";
 import {
   LA_NOCHE_DOOR,
@@ -1721,6 +1724,46 @@ export const BUILDINGS: readonly Building[] = [
     door: SPLASH_DOOR,
   },
   {
+    id: "gridiron-gate",
+    neighborhood: "fairground",
+    footprint: rect(
+      GRIDIRON.GRIDIRON_LOT.x0,
+      GRIDIRON.GRIDIRON_LOT.z0,
+      GRIDIRON.GRIDIRON_LOT.x1,
+      GRIDIRON.GRIDIRON_LOT.z1,
+    ),
+    height: 16,
+    style: "gate",
+    sign: { text: "THE GRIDIRON", color: "#ffd84f" },
+    door: {
+      position: GRIDIRON.GRIDIRON_DOOR.position,
+      radius: 2,
+      label: "Into the Gridiron",
+      target: "gridiron",
+      targetSpawn: { position: GRIDIRON.SPAWN, yaw: Math.PI },
+    },
+  },
+  {
+    id: "gym-gate",
+    neighborhood: "fairground",
+    footprint: rect(
+      GYM.GYM_LOT.x0,
+      GYM.GYM_LOT.z0,
+      GYM.GYM_LOT.x1,
+      GYM.GYM_LOT.z1,
+    ),
+    height: 14,
+    style: "club",
+    sign: { text: "FLIP CITY", color: "#ff4fb3" },
+    door: {
+      position: GYM.GYM_DOOR.position,
+      radius: 2,
+      label: "Into Flip City Gymnastics",
+      target: "gym",
+      targetSpawn: { position: GYM.SPAWN, yaw: Math.PI },
+    },
+  },
+  {
     // The Dome, the basketball arena, between the carnival and the Speedway
     id: "dome-gate",
     neighborhood: "fairground",
@@ -1777,6 +1820,26 @@ export const BUILDINGS: readonly Building[] = [
   ...BEACH_BUILDINGS,
   ...MANILA_BUILDINGS,
   ...ARTS_BUILDINGS,
+  {
+    id: "driving-range",
+    neighborhood: "arts-district",
+    footprint: rect(
+      RANGE.RANGE_LOT.x0,
+      RANGE.RANGE_LOT.z0,
+      RANGE.RANGE_LOT.x1,
+      RANGE.RANGE_LOT.z1,
+    ),
+    height: 12,
+    style: "warehouse",
+    sign: { text: "SKYLINE RANGE", color: "#7dff6b" },
+    door: {
+      position: RANGE.RANGE_DOOR.position,
+      radius: 2,
+      label: "Into the Skyline Driving Range",
+      target: "driving-range",
+      targetSpawn: { position: RANGE.SPAWN, yaw: Math.PI },
+    },
+  },
   ...ASIA_BUILDINGS,
   ...UPTOWN_BUILDINGS,
   {

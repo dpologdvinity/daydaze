@@ -9,6 +9,9 @@ import * as KAMAYAN from "./kamayanHall.ts";
 import * as GALLERIA from "./galleria.ts";
 import * as RINK from "./rollerRink.ts";
 import * as SKATEPARK from "./skatepark.ts";
+import * as GRIDIRON from "./gridiron.ts";
+import * as RANGE from "./drivingRange.ts";
+import * as GYM from "./gym.ts";
 import * as STADIUM from "./stadium.ts";
 import { BENCH_SEATS as LINKS_BENCH } from "./lagoonLinks.ts";
 import { FOUNTAIN, SQUARE_BENCHES } from "./city/layout.ts";
@@ -246,6 +249,20 @@ const skateparkSeats = SKATEPARK.BLEACHER_SEATS.map((at, i) =>
   seat(`skatepark-bleacher-${i}`, "skatepark", at, 0.45, [at[0], 0], "front"),
 );
 
+// The Gridiron's sideline bench, the range's benches behind the bays and
+// the gym's benches by its door, all facing the play
+const moreSportsSeats = [
+  ...GRIDIRON.BENCH_SEATS.map((at, i) =>
+    seat(`gridiron-bench-${i}`, "gridiron", at, 0.45, [0, at[1]], "front"),
+  ),
+  ...RANGE.BENCH_SEATS.map((at, i) =>
+    seat(`driving-range-bench-${i}`, "driving-range", at, 0.45, [at[0], -10]),
+  ),
+  ...GYM.BENCH_SEATS.map((at, i) =>
+    seat(`gym-bench-${i}`, "gym", at, 0.45, [at[0], 0], "front"),
+  ),
+];
+
 export const SEATS: readonly Seat[] = [
   ...foodSeats,
   ...velvetStools,
@@ -264,6 +281,7 @@ export const SEATS: readonly Seat[] = [
   ...galleriaSeats,
   ...rinkSeats,
   ...skateparkSeats,
+  ...moreSportsSeats,
 ];
 
 export function seatsIn(room: RoomId): readonly Seat[] {

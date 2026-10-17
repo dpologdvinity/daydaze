@@ -17,6 +17,15 @@ export function DebugPanel({ onGo }: { onGo: (room: RoomId) => void }) {
       <button type="button" onClick={() => onGo("violet-hour")}>
         Go to Violet Hour
       </button>
+      <button type="button" onClick={() => onGo("gridiron")}>
+        Go to the Gridiron
+      </button>
+      <button type="button" onClick={() => onGo("driving-range")}>
+        Go to the Driving Range
+      </button>
+      <button type="button" onClick={() => onGo("gym")}>
+        Go to the Gym
+      </button>
       <button type="button" onClick={() => onGo("skatepark")}>
         Go to the Skatepark
       </button>
