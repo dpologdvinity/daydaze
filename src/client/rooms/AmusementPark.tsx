@@ -156,6 +156,11 @@ export function AmusementPark({
     if (next.phase !== ride.current.phase) {
       // tests and screenshots wait on this instead of a fixed delay
       gl.domElement.dataset.rideState = next.phase;
+      // and on this, which a slow frame can't skip past: rides ridden so far
+      if (ride.current.phase === "riding")
+        gl.domElement.dataset.ridden = String(
+          Number(gl.domElement.dataset.ridden ?? 0) + 1,
+        );
     }
     ride.current = next;
   };
