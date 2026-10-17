@@ -21,6 +21,7 @@ import { ROOMS } from "../../game/rooms.ts";
 import type { Vec2 } from "../../game/walk.ts";
 import { useReducedMotion } from "../motion.ts";
 import { walkTo, type Player } from "../world/PlayerController.tsx";
+import { isSceneReady } from "../world/ready.ts";
 import { Bulbs } from "./amusementpark/Bulbs.tsx";
 import { Fairground } from "./amusementpark/Fairground.tsx";
 import { Midway } from "./amusementpark/Midway.tsx";
@@ -186,7 +187,8 @@ export function AmusementPark({
 
   useFrame(() => {
     const now = clock.elapsedTime;
-    if (arriveNow.current) {
+    // a ride booked by the URL starts once the park is showing
+    if (arriveNow.current && isSceneReady()) {
       arriveNow.current = false;
       dispatch({ type: "arrive", now, calm });
     }

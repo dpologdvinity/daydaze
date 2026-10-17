@@ -54,6 +54,7 @@ import {
 } from "./PlayerController.tsx";
 import { QualityContext, type QualityTier } from "./quality.ts";
 import { Seats } from "./Seats.tsx";
+import { isSceneReady, setSceneReady } from "./ready.ts";
 import { CreatorFrame } from "./CreatorFrame.tsx";
 
 // The city is the heaviest scene, so it loads on first visit only.
@@ -129,13 +130,48 @@ function FrameCount({ still }: { still: boolean }) {
   const invalidate = useThree((s) => s.invalidate);
   const count = useRef(0);
   useFrame(({ gl }) => {
-    if (count.current >= 10) return;
+    // frames under the loading veil (scene hidden, compiling) do not count
+    if (count.current >= 10 || !isSceneReady()) return;
     count.current += 1;
     gl.domElement.dataset.frames = String(count.current);
     gl.domElement.dataset.calls = String(gl.info.render.calls);
     gl.domElement.dataset.triangles = String(gl.info.render.triangles);
     if (still && count.current < STILL_FRAMES) invalidate();
   });
+  return null;
+}
+
+/**
+ * Compiles every shader in the freshly loaded room off the main thread
+ * (KHR_parallel_shader_compile) before showing it. Drawing a room for the
+ * first time otherwise compiles 30-odd shader programs in one blocking
+ * frame, and the screen sits black until it ends. Meanwhile the scene stays
+ * hidden (the room's background colour shows) under the loading veil.
+ */
+function Warmup() {
+  const gl = useThree((s) => s.gl);
+  const scene = useThree((s) => s.scene);
+  const camera = useThree((s) => s.camera);
+  const invalidate = useThree((s) => s.invalidate);
+  useEffect(() => {
+    let live = true;
+    setSceneReady(false);
+    // compileAsync starts every compile now, then resolves as they finish
+    const pending = gl.compileAsync(scene, camera);
+    scene.visible = false;
+    pending
+      .catch(() => undefined)
+      .then(() => {
+        if (!live) return;
+        scene.visible = true;
+        setSceneReady(true);
+        invalidate();
+      });
+    return () => {
+      live = false;
+      scene.visible = true;
+    };
+  }, [gl, scene, camera, invalidate]);
   return null;
 }
 
@@ -259,6 +295,9 @@ export function World({
   onShelf,
 }: WorldProps) {
   const [auto, setAuto] = useState<QualityTier>("high");
+  // a struggling machine first gives up the extra resolution, then the
+  // high tier's effects: two steps down instead of one big one
+  const [sharp, setSharp] = useState(true);
   const tier = quality ?? auto;
   const def = ROOMS[room];
   const area = useMemo(() => areaOf(def), [def]);
@@ -282,7 +321,7 @@ export function World({
     <Canvas
       className="world"
       frameloop={still ? "demand" : "always"}
-      dpr={tier === "high" ? [1, 1.5] : 1}
+      dpr={tier === "high" && sharp ? [1, 1.5] : 1}
       gl={{ antialias: false, powerPreference: "high-performance" }}
       camera={{ position: [6.4, 5.4, 10], fov: 38, near: 0.05, far: 600 }}
       onCreated={({ gl }) => {
@@ -294,7 +333,7 @@ export function World({
         {quality === null && !still && (
           <PerformanceMonitor
             bounds={() => [45, 60]}
-            onDecline={() => setAuto("low")}
+            onDecline={() => (sharp ? setSharp(false) : setAuto("low"))}
           />
         )}
         <FrameCount still={still} />
@@ -338,6 +377,7 @@ export function World({
           <CameraRig player={player} view={view} room={room} />
           <CreatorFrame />
           {tier === "high" ? <Effects /> : <NeonClamp key={`clamp-${room}`} />}
+          <Warmup key={`warm-${room}`} />
         </Suspense>
       </QualityContext.Provider>
     </Canvas>

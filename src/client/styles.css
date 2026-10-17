@@ -1262,3 +1262,43 @@ button:focus-visible {
   background: rgb(255 47 154 / 0.3);
   outline: none;
 }
+
+/* ------------------------------------------------------------ loading veil */
+
+.loading-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-content: center;
+  gap: 6px;
+  text-align: center;
+  background: radial-gradient(circle at 50% 40%, #4a1046, #120414 70%);
+  color: var(--champagne);
+  transition: opacity 0.5s ease;
+}
+
+.loading-veil[data-ready="true"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-veil-name {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(40px, 8vw, 72px);
+  color: #ffd1f0;
+}
+
+.loading-veil-note {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 15px;
+  opacity: 0.8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-veil {
+    transition: none;
+  }
+}

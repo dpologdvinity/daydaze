@@ -313,7 +313,79 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
   return body;
 }
 
-/** Hair: strand cards catch a long anisotropic highlight; untextured
+/**
+ * Real hair's look is its shine: two highlight bands running across the
+ * strands (Kajiya-Kay), a bright white one and a broader one tinted with the
+ * hair's own colour, each broken up strand by strand. Adds them to a standard
+ * material; needs the card geometry's `hairTangent` (across the lock).
+ */
+function hairShine<M extends THREE.MeshStandardMaterial>(material: M): M {
+  material.onBeforeCompile = (shader) => {
+    shader.vertexShader = shader.vertexShader
+      .replace(
+        "void main() {",
+        "attribute vec4 hairTangent;\nvarying vec3 vHairDir;\nvoid main() {",
+      )
+      .replace(
+        "#include <defaultnormal_vertex>",
+        [
+          "#include <defaultnormal_vertex>",
+          "vec3 hairT = hairTangent.xyz;",
+          "#ifdef USE_SKINNING",
+          "hairT = (skinMatrix * vec4(hairT, 0.0)).xyz;",
+          "#endif",
+          // along the strand, root to tip
+          "vHairDir = normalize(normalMatrix * (cross(objectNormal, hairT) * hairTangent.w));",
+        ].join("\n"),
+      );
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        "void main() {",
+        [
+          "varying vec3 vHairDir;",
+          "float hairLobe(vec3 T, vec3 H, float e) {",
+          "  float d = dot(T, H);",
+          "  return pow(sqrt(max(0.0, 1.0 - d * d)), e);",
+          "}",
+          "void main() {",
+        ].join("\n"),
+      )
+      .replace(
+        "#include <lights_fragment_end>",
+        [
+          "#include <lights_fragment_end>",
+          "#if NUM_DIR_LIGHTS > 0",
+          "{",
+          "  vec3 V = normalize(vViewPosition);",
+          "  vec3 T = normalize(vHairDir);",
+          // each strand's highlight sits a little higher or lower
+          "  #ifdef USE_MAP",
+          "  float strand = fract(sin(floor(vMapUv.x * 40.0) * 12.9898) * 43758.5453);",
+          "  #else",
+          "  float strand = 0.5;",
+          "  #endif",
+          "  float shift = (strand - 0.5) * 0.35;",
+          "  vec3 T1 = normalize(T + normal * (0.08 + shift));",
+          "  vec3 T2 = normalize(T + normal * (-0.12 + shift));",
+          "  for (int i = 0; i < NUM_DIR_LIGHTS; i++) {",
+          "    vec3 L = directionalLights[i].direction;",
+          "    vec3 H = normalize(L + V);",
+          "    float lit = smoothstep(-0.25, 0.5, dot(normal, L));",
+          "    float a = hairLobe(T1, H, 90.0) * 0.55;",
+          "    float b = hairLobe(T2, H, 22.0) * 0.45;",
+          "    reflectedLight.directSpecular += directionalLights[i].color * lit *",
+          "      (vec3(a) + b * diffuseColor.rgb * 1.6);",
+          "  }",
+          "}",
+          "#endif",
+        ].join("\n"),
+      );
+  };
+  material.customProgramCacheKey = () => "hair-shine";
+  return material;
+}
+
+/** Hair: strand cards shine with two highlight bands (hairShine); untextured
  * sculpted hair (afro, braids, buns) has no strand direction, so it stays
  * matte with a soft sheen. Baked root-to-tip shading tints both. */
 function hairMaterial(
@@ -325,33 +397,16 @@ function hairMaterial(
   // hair over the back is seen edge-on: without anisotropic filtering the
   // blurred mip's alpha breaks into specks at the cut-out threshold
   if (map) map.anisotropy = 8;
-  if (!rich)
-    return new THREE.MeshStandardMaterial({
-      map,
-      color: colour,
-      vertexColors: shaded,
-      roughness: 0.5,
-      side: THREE.DoubleSide,
-      alphaTest: map ? 0.4 : 0,
-    });
-  return new THREE.MeshPhysicalMaterial({
+  const material = new THREE.MeshStandardMaterial({
     map,
     color: colour,
     vertexColors: shaded,
-    roughness: map ? 0.34 : 0.62,
-    anisotropy: map ? 0.85 : 0,
-    anisotropyRotation: Math.PI / 2,
-    specularIntensity: map ? 0.9 : 0.4,
-    specularColor: new THREE.Color(colour).lerp(
-      new THREE.Color("#ffffff"),
-      0.6,
-    ),
-    sheen: map ? 0.5 : 0.35,
-    sheenRoughness: 0.4,
-    sheenColor: new THREE.Color(colour).lerp(new THREE.Color("#ffffff"), 0.35),
+    // the shine comes from the bands; the base lighting stays soft
+    roughness: map ? 0.7 : 0.55,
     side: THREE.DoubleSide,
-    alphaTest: map ? 0.3 : 0,
+    alphaTest: map ? (rich ? 0.3 : 0.4) : 0,
   });
+  return map ? hairShine(material) : material;
 }
 
 type Tint = { colour: string; kind: "hair" | "cloth" | "gloss" | "keep" };
@@ -400,20 +455,22 @@ function Part({
           ? src.material
           : null;
       const hasShade = Boolean(src.geometry.getAttribute("color"));
-      // anisotropic hair needs real tangents: without them three derives a
-      // frame from screen derivatives, which degenerates on edge-on cards
-      // and blooms into a white blob (shared geometry, so once per part)
+      // the hair shine runs across each strand: it needs the cards' real
+      // tangents (shared geometry, so once per part), kept under their own
+      // name so no material takes them for a normal-map frame
       const g = src.geometry;
       if (
-        rich &&
         tint.kind === "hair" &&
         old?.map &&
-        !g.getAttribute("tangent") &&
+        !g.getAttribute("hairTangent") &&
         g.index &&
         g.getAttribute("normal") &&
         g.getAttribute("uv")
-      )
+      ) {
         g.computeTangents();
+        g.setAttribute("hairTangent", g.getAttribute("tangent"));
+        g.deleteAttribute("tangent");
+      }
       const mat =
         tint.kind === "hair"
           ? hairMaterial(tint.colour, old?.map ?? null, hasShade, rich)
@@ -663,3 +720,11 @@ export function HumanDoll({
 // every doll needs the body, so start fetching it with the code
 useGLTF.preload(`${MODELS}/body.glb`);
 useGLTF.preload(`${MODELS}/body-lo.glb`);
+
+/** Starts fetching a look's hair, outfit and shoes before any doll mounts:
+ * the player's own parts download alongside the body instead of after it. */
+export function preloadLook(look: Look, swim: SwimLook | null = null) {
+  const parts = partsFor(look, swim);
+  for (const url of [parts.hair, parts.outfit, parts.shoes])
+    if (url) useGLTF.preload(url);
+}

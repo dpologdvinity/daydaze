@@ -243,6 +243,36 @@ def build(ctx, name, mat, length=0.42, count=420, wave=0.0, curl=0.0, volume=1.0
             faces.append((a, a + 1, a + 3, a + 2))
         root_src.append((base, len(verts), root))
 
+    # the mass: one continuous sheet woven between guide strands rooted round
+    # the sides and back of the head, wearing the strand texture tiled round
+    # it. Cards alone leave gaps and stiff blades; real hair falls as a body.
+    if tie_at is None and length > 0.15:
+        ring = 56
+        tiles = 14
+        centre_z = centre[2] + 0.015
+        rows = []
+        for i in range(ring + 1):
+            # -105 to 105 degrees from the back (+y), clear of the face
+            th = np.radians(-105 + 210 * i / ring)
+            d = np.array([np.sin(th), np.cos(th), 0.0])
+            root = centre + d * radii * np.array([1.0, 1.0, 0]) + np.array([0, 0, centre_z - centre[2]])
+            normal = d.copy()
+            g = guide(root, normal, 0.35, length * 0.97, i * 0.37)
+            rows.append(g)
+        for i in range(ring + 1):
+            base = len(verts)
+            for k, p in enumerate(rows[i]):
+                t = k / segments
+                verts.append(p)
+                uvs.append((tiles * i / ring, 1 - t))
+                shade.append(0.78)
+            if i:
+                prev = base - (segments + 1)
+                for k in range(segments):
+                    faces.append((prev + k, base + k, base + k + 1, prev + k + 1))
+            # rides the scalp vertex under its root, like the cards
+            root_src.append((base, len(verts), rows[i][0]))
+
     # three layers, inside out: a dense dark under-layer that fills the
     # volume, the main body of the hair, and fine wisps on top
     for lift, share, width, dark in ((0.0, 0.35, 0.04, 0.6), (0.5, 0.45, 0.028, 0.85), (1.0, 0.2, 0.016, 1.0)):

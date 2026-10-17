@@ -35,6 +35,8 @@ import { GameOverlay } from "./ui/Minigames.tsx";
 import { Overlay } from "./ui/Overlay.tsx";
 import { type Caught, ShopliftPanel } from "./ui/ShopliftPanel.tsx";
 import type { View } from "./world/CameraRig.tsx";
+import { LoadingVeil } from "./ui/LoadingVeil.tsx";
+import { preloadLook } from "./avatar/human/HumanDoll.tsx";
 import { World } from "./world/World.tsx";
 
 const FADE_MS = 300;
@@ -73,6 +75,8 @@ export function App() {
   const [save, setSave] = useState(() =>
     loadSave(readStorage(), generateGuestName(Math.random)),
   );
+  // the player's own doll parts start downloading with the page
+  useEffect(() => preloadLook(save.look), []);
   useEffect(() => writeStorage(save), [save]);
 
   const [here, setHere] = useState(() => {
@@ -181,6 +185,7 @@ export function App() {
   return (
     <ReducedMotionContext.Provider value={reducedMotion}>
       <main className="app">
+        <LoadingVeil />
         <World
           room={here.room}
           arrival={here.arrival}
