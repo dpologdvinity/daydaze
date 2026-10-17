@@ -6,7 +6,14 @@ import type {
   DialogueRole,
 } from "../../../game/dialogue/types.ts";
 import { FOOD_VENUES } from "../../../game/food/venues.ts";
-import { clerkSpot, STALL_X, STALLS, STORES } from "../../../game/galleria.ts";
+import {
+  clerkSpot,
+  DINER_SEATS,
+  STALL_X,
+  STALLS,
+  STORES,
+  TABLE_SEATS,
+} from "../../../game/galleria.ts";
 import type { Look } from "../../../game/look.ts";
 import { Doll } from "../../avatar/Doll.tsx";
 import { holdItem } from "../../food/store.ts";
@@ -135,6 +142,30 @@ function Stroller({
 
 /** The clerks at the store doors (tap one at a selling store to shop), the
  * food court's staff, shoppers strolling the hall and more on the balcony. */
+/** Shoppers taking a break at the food court tables. */
+const DINER_LOOKS: readonly Look[] = [
+  {
+    skin: "#94603f",
+    hairStyle: "long-curly",
+    hairColor: "#1b1014",
+    lips: "lips-burgundy-cherry",
+    brows: "brows-sculpted-espresso",
+    outfit: "blouse",
+    outfitColor: "#e8e2ff",
+    shadow: "#d23cff",
+  },
+  {
+    skin: "#f3d4c4",
+    hairStyle: "bob",
+    hairColor: "#ff4fb3",
+    lips: "lips-hot-pink-glam",
+    brows: "brows-y2k-thin",
+    outfit: "baby-tee-mini",
+    outfitColor: "#3fe0d0",
+    shadow: "#3fe0d0",
+  },
+];
+
 export function GalleriaNpcs(): JSX.Element {
   const served = useRef<Record<string, number>>({});
   return (
@@ -197,6 +228,23 @@ export function GalleriaNpcs(): JSX.Element {
           <CrowdFigure look={LOOKS[(i + 2) % LOOKS.length]} seed={195 + i} />
         </group>
       ))}
+      {DINER_SEATS.map((seat, i) => {
+        const { at, facing } = TABLE_SEATS[seat];
+        return (
+          <group
+            key={seat}
+            // a chair's height, less where a sitting doll's thighs come to
+            position={[at[0], 0.45 - 0.48, at[1]]}
+            rotation-y={Math.atan2(facing[0] - at[0], facing[1] - at[1])}
+          >
+            <Doll
+              look={DINER_LOOKS[i % DINER_LOOKS.length]}
+              mood="sit"
+              seed={241 + i}
+            />
+          </group>
+        );
+      })}
     </>
   );
 }

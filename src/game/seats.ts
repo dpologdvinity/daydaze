@@ -217,8 +217,10 @@ const sportsSeats = [
 // Lechon and Kamayan Hall: the benches down both sides of the boodle table,
 // and the videoke sofa
 const kamayanSeats = [
-  ...KAMAYAN.TABLE_SEATS.map(({ at, facing }, i) =>
-    seat(`kamayan-bench-${i}`, "kamayan-hall", at, 0.45, facing),
+  ...KAMAYAN.TABLE_SEATS.flatMap(({ at, facing }, i) =>
+    KAMAYAN.DINER_SEATS.includes(i)
+      ? []
+      : [seat(`kamayan-bench-${i}`, "kamayan-hall", at, 0.45, facing)],
   ),
   ...[4.8, 5.6].map((x, i) =>
     seat(
@@ -245,8 +247,10 @@ const galleriaSeats = [
       ),
     ),
   ),
-  ...GALLERIA.TABLE_SEATS.map(({ at, facing }, i) =>
-    seat(`galleria-chair-${i}`, "galleria", at, 0.45, facing),
+  ...GALLERIA.TABLE_SEATS.flatMap(({ at, facing }, i) =>
+    GALLERIA.DINER_SEATS.includes(i)
+      ? []
+      : [seat(`galleria-chair-${i}`, "galleria", at, 0.45, facing)],
   ),
 ];
 

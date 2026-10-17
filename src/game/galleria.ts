@@ -84,6 +84,8 @@ export const TABLE_SEATS: readonly { at: Vec2; facing: Vec2 }[] =
       facing: [x, z] as Vec2,
     })),
   );
+/** Food court chairs shoppers already sit in, kept from the player. */
+export const DINER_SEATS: readonly number[] = [1, 4];
 
 /** The cinema's doors and box office on the west wall, south end. */
 export const CINEMA = { z0: 1.5, z1: 8 } as const;

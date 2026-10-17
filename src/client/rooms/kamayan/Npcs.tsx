@@ -48,7 +48,8 @@ const SINGER_LOOK: Look = {
   shadow: "#ffb02e",
 };
 
-/** Family and friends round the boodle table, by bench seat index. */
+/** Family and friends round the boodle table, by bench seat index; these
+ * seats are listed in DINER_SEATS so the player isn't offered them. */
 const DINERS: readonly { seat: number; look: Look }[] = [
   {
     seat: 3,

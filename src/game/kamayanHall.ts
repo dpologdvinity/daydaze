@@ -22,6 +22,9 @@ export const TABLE_SEATS: readonly { at: Vec2; facing: Vec2 }[] = [
     };
   }),
 );
+/** Bench seats the family already sit in (Lola Nena at 9), so they aren't
+ * offered to the player. */
+export const DINER_SEATS: readonly number[] = [3, 5, 9, 12, 16];
 
 /** The carving station on the west wall, the server in front of it. */
 export const CARVING = { x0: -7, x1: -5.9, z0: -4.5, z1: 0.5 } as const;

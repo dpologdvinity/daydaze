@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { ROOMS } from "./rooms.ts";
 import { SEATS, homeSeats, seatsIn } from "./seats.ts";
 import { pointInPolygon } from "./walk.ts";
+import { DINER_SEATS as KAMAYAN_DINERS } from "./kamayanHall.ts";
+import { DINER_SEATS as GALLERIA_DINERS } from "./galleria.ts";
 
 test("every seat's approach point is on its room's floor", () => {
   for (const s of SEATS) {
@@ -45,4 +47,15 @@ test("a bed is one spot to lie on, walked up to from the side nearer the middle"
   // the bed's left edge is on the room's left wall: approach from its right
   assert.ok(bed.approach[0] > bed.at[0] + 1);
   assert.ok(pointInPolygon(ROOMS.apartment.walkable, bed.approach));
+});
+
+test("chairs the regulars sit in are never offered to the player", () => {
+  const ids = (room: Parameters<typeof seatsIn>[0]) =>
+    seatsIn(room).map((s) => s.id);
+  for (const i of KAMAYAN_DINERS)
+    assert.ok(!ids("kamayan-hall").includes(`kamayan-bench-${i}`));
+  for (const i of GALLERIA_DINERS)
+    assert.ok(!ids("galleria").includes(`galleria-chair-${i}`));
+  assert.ok(!ids("boba-matcha").includes("boba-matcha-table0-l"));
+  assert.ok(ids("boba-matcha").includes("boba-matcha-table0-r"));
 });
