@@ -9,6 +9,8 @@ import { LIFT, SKYLARK_DOOR } from "../rooftop.ts";
 import { SPAWN as SUGAR_RUSH_SPAWN, SUGAR_RUSH_DOOR } from "../sugarRush.ts";
 import { ARCADE_DOOR, SPAWN as ARCADE_SPAWN } from "../arcadeBar.ts";
 import { LINKS_DOOR, SPAWN as LINKS_SPAWN } from "../lagoonLinks.ts";
+import * as DOME from "../dome.ts";
+import * as STADIUM from "../stadium.ts";
 import {
   LA_NOCHE_DOOR,
   LA_NOCHE_LOT,
@@ -1619,6 +1621,48 @@ export const BUILDINGS: readonly Building[] = [
     style: "gate",
     sign: { text: "SPLASH ZONE", color: "#4fe3ff" },
     door: SPLASH_DOOR,
+  },
+  {
+    // The Dome, the basketball arena, between the carnival and the Speedway
+    id: "dome-gate",
+    neighborhood: "fairground",
+    footprint: rect(
+      DOME.DOME_LOT.x0,
+      DOME.DOME_LOT.z0,
+      DOME.DOME_LOT.x1,
+      DOME.DOME_LOT.z1,
+    ),
+    height: 18,
+    style: "gate",
+    sign: { text: "THE DOME", color: "#ff8a3d" },
+    door: {
+      position: DOME.DOME_DOOR.position,
+      radius: 2,
+      label: "Into the Dome",
+      target: "dome",
+      targetSpawn: { position: DOME.SPAWN, yaw: Math.PI },
+    },
+  },
+  {
+    // Seaside Stadium, the football ground, east of the Speedway
+    id: "stadium-gate",
+    neighborhood: "fairground",
+    footprint: rect(
+      STADIUM.STADIUM_LOT.x0,
+      STADIUM.STADIUM_LOT.z0,
+      STADIUM.STADIUM_LOT.x1,
+      STADIUM.STADIUM_LOT.z1,
+    ),
+    height: 18,
+    style: "gate",
+    sign: { text: "SEASIDE STADIUM", color: "#4fe3ff" },
+    door: {
+      position: STADIUM.STADIUM_DOOR.position,
+      radius: 2,
+      label: "Into Seaside Stadium",
+      target: "stadium",
+      targetSpawn: { position: STADIUM.SPAWN, yaw: Math.PI },
+    },
   },
   {
     // The gate to the Speedway, along the Fairground forecourt.

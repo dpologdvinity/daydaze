@@ -357,3 +357,20 @@ test("Lagoon Links' gate fires from Shore Boulevard, and its exit lands back out
   }
   assert.equal(fired, "mini-golf");
 });
+
+for (const target of ["dome", "stadium"] as const) {
+  test(`the ${target}'s gate fires from the forecourt, and its exit lands back outside`, () => {
+    const door = BUILDINGS.find((b) => b.door?.target === target)?.door;
+    assert.ok(door);
+    const back = ROOMS[target].portals.find((p) => p.target === "city");
+    assert.ok(back);
+    assert.equal(isBlocked(CITY_AREA, back.targetSpawn.position), false);
+    let pos: Vec2 = back.targetSpawn.position;
+    let fired: string | null = null;
+    for (let step = 0; step < 200 && fired === null; step++) {
+      pos = stepInArea(CITY_AREA, pos, door.position, 0.2);
+      fired = portalAt(CITY_AREA, pos)?.target ?? null;
+    }
+    assert.equal(fired, target);
+  });
+}

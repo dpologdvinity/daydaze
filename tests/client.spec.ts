@@ -418,6 +418,34 @@ test("Lagoon Links: start a round, putt, and the card counts the stroke", async 
   expect(errors).toEqual([]);
 });
 
+for (const [room, region, start, first, second, done] of [
+  ["dome", "Hot Shots", "Start the clock", "Aim", "Shoot!", /pts/],
+  [
+    "stadium",
+    "Penalties",
+    "Take penalties",
+    "Pick your spot",
+    "Strike!",
+    /[●✕]/,
+  ],
+] as const) {
+  test(`${room}: start the game, take a shot, and it's scored`, async ({
+    page,
+  }) => {
+    const errors = collectErrors(page);
+    await page.goto(`${LOW}&room=${room}`);
+    await expect(canvasOf(page)).toHaveAttribute("data-frames", "10");
+    const panel = page.getByRole("region", { name: region });
+    await panel.getByRole("button", { name: start }).click();
+    await panel.getByRole("button", { name: first }).click();
+    await panel.getByRole("button", { name: second }).click();
+    // the shot plays out in the scene, then the panel calls it
+    await expect(panel.getByRole("status")).not.toBeEmpty({ timeout: 120_000 });
+    await expect(panel.getByLabel(/Score|Kicks/)).toHaveText(done);
+    expect(errors).toEqual([]);
+  });
+}
+
 test("the debug buttons take the player into La Noche", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto(`${STILL}&debug=1`);
@@ -453,6 +481,8 @@ for (const room of [
   "arcade-bar",
   "la-noche",
   "mini-golf",
+  "dome",
+  "stadium",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

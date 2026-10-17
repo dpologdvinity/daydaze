@@ -52,6 +52,8 @@ import { VIEWS, type View } from "../world/CameraRig.tsx";
 import { DriveControls } from "../rooms/speedway/DriveControls.tsx";
 import { BowlingPanel } from "../rooms/bowling/BowlingPanel.tsx";
 import { GolfPanel } from "../rooms/minigolf/GolfPanel.tsx";
+import { HoopsPanel } from "../rooms/dome/HoopsPanel.tsx";
+import { PenaltyPanel } from "../rooms/stadium/PenaltyPanel.tsx";
 import { clearCityMapRequest, useCityMapRequest } from "./cityMapRequest.ts";
 import { RaceHud, SpeedwayMenu } from "../rooms/speedway/RaceHud.tsx";
 import { CocktailIcon, RideIcon } from "./icons.tsx";
@@ -94,6 +96,9 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Your flat. Use the decorating panel to place furniture and lock the door. Tap the blue shelf to try a shoplift.",
   "haunted-house":
     "The Haunted House. Find your way through the dark rooms past the ghosts, then back out to the park.",
+  dome: "The Dome. Play Hot Shots: sixty seconds to score from the spots round the arc. Bree sells snacks courtside.",
+  stadium:
+    "Seaside Stadium. Take five penalties against the keeper: pick your spot, then strike.",
   "mini-golf":
     "Lagoon Links, three holes on the sand. Press Play a round: turn your aim, then time the power and putt. Leilani runs the hut.",
   "la-noche":
@@ -586,6 +591,8 @@ export function Overlay({
 
       {room === "bowling" && <BowlingPanel />}
       {room === "mini-golf" && <GolfPanel />}
+      {room === "dome" && <HoopsPanel />}
+      {room === "stadium" && <PenaltyPanel />}
 
       {room === "speedway" && (
         <>

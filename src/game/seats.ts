@@ -4,6 +4,8 @@ import { SOFA, STOOL_XS, STOOL_Z } from "./rooftop.ts";
 import { CHAIR_X, CHAIR_ZS, STOOL_X, STOOL_ZS } from "./sugarRush.ts";
 import * as ARCADE from "./arcadeBar.ts";
 import * as LA_NOCHE from "./laNoche.ts";
+import * as DOME from "./dome.ts";
+import * as STADIUM from "./stadium.ts";
 import { BENCH_SEATS as LINKS_BENCH } from "./lagoonLinks.ts";
 import { FOUNTAIN, SQUARE_BENCHES } from "./city/layout.ts";
 import { BENCH_SEATS } from "./bowlingAlley.ts";
@@ -184,6 +186,16 @@ const linksSeats = LINKS_BENCH.map((at, i) =>
   seat(`mini-golf-bench-${i}`, "mini-golf", at, 0.45, [at[0], 0], "front"),
 );
 
+// The Dome's courtside bench and the Stadium's dugout, facing the play
+const sportsSeats = [
+  ...DOME.BENCH_SEATS.map((at, i) =>
+    seat(`dome-bench-${i}`, "dome", at, 0.45, [0, at[1]], "front"),
+  ),
+  ...STADIUM.DUGOUT_SEATS.map((at, i) =>
+    seat(`stadium-dugout-${i}`, "stadium", at, 0.45, [0, at[1]], "front"),
+  ),
+];
+
 export const SEATS: readonly Seat[] = [
   ...foodSeats,
   ...velvetStools,
@@ -197,6 +209,7 @@ export const SEATS: readonly Seat[] = [
   ...laNocheSeats,
   ...squareSeats,
   ...linksSeats,
+  ...sportsSeats,
 ];
 
 export function seatsIn(room: RoomId): readonly Seat[] {

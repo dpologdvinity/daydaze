@@ -106,8 +106,10 @@ test("each gate raises two tall arches either side of its door", () => {
   const venues = gates.map((b) => b.door?.target).sort();
   assert.deepEqual(venues, [
     "amusement-park",
+    "dome",
     "mini-golf",
     "speedway",
+    "stadium",
     "water-park",
   ]);
   for (const b of gates) {

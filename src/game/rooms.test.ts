@@ -4,7 +4,10 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { ROOMS, isRoomId } from "./rooms.ts";
 import { SPEEDWAY_SPOTS } from "./speedway/spots.ts";
+import { courtToRoom } from "./dome.ts";
+import { SPOTS as HOOP_SPOTS } from "./hoops.ts";
 import { hotspotsIn } from "./hotspots.ts";
+import { SPOT as PENALTY_SPOT } from "./stadium.ts";
 import { HOLE_XS as LINKS_HOLE_XS } from "./lagoonLinks.ts";
 import { MIC } from "./karaoke.ts";
 import { seatsIn } from "./seats.ts";
@@ -19,6 +22,7 @@ test("every room is registered under its own id", () => {
     "boba-matcha",
     "bowling",
     "city",
+    "dome",
     "filipino-joint",
     "haunted-house",
     "ice-rink",
@@ -30,6 +34,7 @@ test("every room is registered under its own id", () => {
     "pulse",
     "rooftop-bar",
     "speedway",
+    "stadium",
     "sugar-rush",
     "ube-bakery",
     "velvet-room",
@@ -361,5 +366,30 @@ test("Lagoon Links' gate opens onto the concourse, and every tee and the bench a
       Math.hypot(pos[0] - goal[0], pos[1] - goal[1]) < 0.3,
       `reached ${goal}`,
     );
+  }
+});
+
+test("the Dome and the Stadium: every spot, the benches and the penalty spot are reachable", () => {
+  for (const [id, goals] of [
+    [
+      "dome",
+      [
+        ...HOOP_SPOTS.map((s) => courtToRoom(s.at)),
+        ...seatsIn("dome").map((s) => s.approach),
+      ],
+    ],
+    ["stadium", [PENALTY_SPOT, ...seatsIn("stadium").map((s) => s.approach)]],
+  ] as const) {
+    const room = ROOMS[id];
+    const area = areaOf(room);
+    assert.equal(isBlocked(area, room.spawn.position), false);
+    for (const goal of goals) {
+      let pos: Vec2 = room.spawn.position;
+      for (let k = 0; k < 800; k++) pos = stepInArea(area, pos, goal, 0.05);
+      assert.ok(
+        Math.hypot(pos[0] - goal[0], pos[1] - goal[1]) < 0.3,
+        `${id} reached ${goal}`,
+      );
+    }
   }
 });

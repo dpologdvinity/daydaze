@@ -95,6 +95,12 @@ const HauntedHouse = lazy(() =>
     default: m.HauntedHouse,
   })),
 );
+const Dome = lazy(() =>
+  import("../rooms/Dome.tsx").then((m) => ({ default: m.Dome })),
+);
+const Stadium = lazy(() =>
+  import("../rooms/Stadium.tsx").then((m) => ({ default: m.Stadium })),
+);
 const MiniGolf = lazy(() =>
   import("../rooms/MiniGolf.tsx").then((m) => ({ default: m.MiniGolf })),
 );
@@ -251,6 +257,8 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   "arcade-bar": ArcadeBar,
   "la-noche": LaNoche,
   "mini-golf": MiniGolf,
+  dome: Dome,
+  stadium: Stadium,
   "haunted-house": HauntedHouse,
   "filipino-joint": FilipinoJoint,
   "boba-matcha": BobaMatchaCafe,

@@ -1442,3 +1442,21 @@ button:focus-visible {
     width: 190px;
   }
 }
+
+.game-score {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.game-score .kick-in {
+  color: #7dff6b;
+}
+
+.game-score .kick-out {
+  color: #ff5c5c;
+}

@@ -67,6 +67,8 @@ import {
   LINKS_DOOR,
   SPAWN as LINKS_SPAWN,
 } from "./lagoonLinks.ts";
+import * as DOME from "./dome.ts";
+import * as STADIUM from "./stadium.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -93,6 +95,8 @@ export type RoomId =
   | "arcade-bar"
   | "la-noche"
   | "mini-golf"
+  | "dome"
+  | "stadium"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -606,6 +610,40 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the park",
         target: "city",
         targetSpawn: { position: ICE_RINK_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  dome: {
+    id: "dome",
+    name: "The Dome",
+    walkable: DOME.FLOOR,
+    blockers: DOME.BLOCKERS,
+    spawn: { position: DOME.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "dome-to-city",
+        position: DOME.EXIT,
+        radius: 0.8,
+        label: "Out to the forecourt",
+        target: "city",
+        targetSpawn: { position: DOME.DOME_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  stadium: {
+    id: "stadium",
+    name: "Seaside Stadium",
+    walkable: STADIUM.FLOOR,
+    blockers: STADIUM.BLOCKERS,
+    spawn: { position: STADIUM.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "stadium-to-city",
+        position: STADIUM.EXIT,
+        radius: 0.8,
+        label: "Out to the forecourt",
+        target: "city",
+        targetSpawn: { position: STADIUM.STADIUM_DOOR.landing, yaw: 0 },
       },
     ],
   },
