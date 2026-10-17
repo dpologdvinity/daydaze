@@ -13,6 +13,7 @@ import { BENCH_X, fieldToRoom, GOAL } from "../../game/gridiron.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import { useReducedMotion } from "../motion.ts";
 import { cameraHold } from "../world/cameraHold.ts";
+import { GridironNpcs } from "./gridiron/Npcs.tsx";
 import { current, fieldGoals, leave, tick } from "./gridiron/session.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { Jumbotron } from "./shared/Jumbotron.tsx";
@@ -245,6 +246,7 @@ export function Gridiron({ onPick }: { onPick: PickHandler }) {
         <boxGeometry args={[0.45, 0.08, 3.6]} />
         <meshStandardMaterial color="#c2185b" />
       </mesh>
+      <GridironNpcs />
       <Kick />
     </>
   );

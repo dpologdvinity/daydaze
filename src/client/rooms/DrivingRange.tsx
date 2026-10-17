@@ -16,6 +16,7 @@ import { ROOMS } from "../../game/rooms.ts";
 import { useReducedMotion } from "../motion.ts";
 import { cameraHold } from "../world/cameraHold.ts";
 import { WINDOWS } from "./plaza/Sky.tsx";
+import { RangeNpcs } from "./range/Npcs.tsx";
 import { leave, range, tick } from "./range/session.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { hdr } from "./shared/materials.ts";
@@ -255,6 +256,7 @@ export function DrivingRange({ onPick }: { onPick: PickHandler }) {
       ))}
       <Targets />
       <Skyline />
+      <RangeNpcs />
       <Shot />
     </>
   );

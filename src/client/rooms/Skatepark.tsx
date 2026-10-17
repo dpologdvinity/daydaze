@@ -18,6 +18,7 @@ import { useReducedMotion } from "../motion.ts";
 import { cameraHold } from "../world/cameraHold.ts";
 import type { Player } from "../world/PlayerController.tsx";
 import { bail, runTime, skate, tick } from "./skatepark/session.ts";
+import { Doll } from "../avatar/Doll.tsx";
 import { CrowdFigure } from "./shared/CrowdFigure.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { canvasTex, hdr } from "./shared/materials.ts";
@@ -159,6 +160,31 @@ function Board({ color }: { color: string }) {
     </group>
   );
 }
+
+/** Locals up in the bleachers watching the pipe: row, x, look. */
+const SPECTATORS: readonly { row: 1 | 2; x: number; look: Look }[] = (
+  [
+    [1, -2.4, "#f3d4c4", "shag", "#ff4fb3", "jeans", "#141018"],
+    [1, -0.6, "#94603f", "coils", "#1b1014", "shorts", "#3fe0d0"],
+    [1, 1.8, "#e6b48e", "top-knot", "#b77a3e", "baby-tee-mini", "#9b5cff"],
+    [2, -1.4, "#633c29", "afro", "#1b1014", "tracksuit-y2k", "#ffb02e"],
+    [2, 0.8, "#c48d68", "pigtails", "#7ee8a2", "jeans", "#ff2f9a"],
+    [2, 2.6, "#f3d4c4", "pixie", "#f1d78f", "shorts", "#e8e2ff"],
+  ] as const
+).map(([row, x, skin, hairStyle, hairColor, outfit, outfitColor]) => ({
+  row,
+  x,
+  look: {
+    skin,
+    hairStyle,
+    hairColor,
+    outfit,
+    outfitColor,
+    lips: "lips-90s-caramel-ombre",
+    brows: "brows-feathered-honey",
+    shadow: "#3fe0d0",
+  },
+}));
 
 const LOCALS: readonly Look[] = [
   {
@@ -426,6 +452,20 @@ export function Skatepark({
       >
         <CrowdFigure look={LOCALS[1]} seed={213} />
       </group>
+      {SPECTATORS.map((sp, i) => (
+        <group
+          key={i}
+          // a row's top, less where a sitting doll's thighs come to
+          position={[
+            sp.x,
+            0.44 + sp.row * 0.7 - 0.48,
+            BLEACHER_Z + sp.row * 0.5,
+          ]}
+          rotation-y={Math.PI}
+        >
+          <Doll look={sp.look} mood="sit" seed={221 + i} />
+        </group>
+      ))}
       <Palm position={[-13, 0, 8]} />
       <Palm position={[13, 0, 8]} scale={0.9} />
       <BowlSkater />
