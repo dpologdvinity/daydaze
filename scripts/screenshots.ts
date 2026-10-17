@@ -65,6 +65,7 @@ const SHOTS: {
   { name: "sugar-rush", query: "room=sugar-rush" },
   { name: "warehouse", query: "room=warehouse" },
   { name: "karaoke", query: "room=karaoke" },
+  { name: "bowling", query: "room=bowling" },
   { name: "velvet-room-full-look", query: "room=velvet-room&view=full" },
   { name: "velvet-room-detail", query: "room=velvet-room&view=detail" },
   { name: "club-pulse-detail", query: "room=pulse&view=detail" },

@@ -5,6 +5,7 @@ import * as THREE from "three";
 import type { OrbitControls as OrbitImpl } from "three-stdlib";
 import type { RoomId } from "../../game/rooms.ts";
 import { useReducedMotion } from "../motion.ts";
+import { cameraHold } from "./cameraHold.ts";
 import { driving } from "./driving.ts";
 import type { Player } from "./PlayerController.tsx";
 
@@ -63,6 +64,11 @@ const ROOM_SHOTS: Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }> =
     "ice-rink": {
       eye: new THREE.Vector3(0, 8.5, 15),
       look: new THREE.Vector3(0, 0.8, -1),
+    },
+    // from over the concourse, down the lanes to the pins and the hood
+    bowling: {
+      eye: new THREE.Vector3(-2.5, 4.8, 11.5),
+      look: new THREE.Vector3(0.4, 0.6, -3),
     },
     // from over the door, across the booths to the stage and its screen
     karaoke: {
@@ -148,6 +154,7 @@ const MAX_DISTANCE: Record<RoomId, number> = {
   "sugar-rush": 18,
   warehouse: 20,
   karaoke: 16,
+  bowling: 22,
   "haunted-house": 16,
   // the track sits far back, so the Speedway's wide shot needs more orbit range
   speedway: 60,
@@ -185,13 +192,23 @@ export function CameraRig({
   const fly = useRef<{ t: number; snap: boolean } | null>(null);
   const shown = useRef<{ view: View; player: Player } | null>(null);
   const seated = useRef(false);
+  const held = useRef(false);
 
   useFrame((_, dt) => {
     const c = controls.current;
     if (!c) return;
-    // the Speedway's chase camera owns the view while a car is driven
-    c.enabled = driving.session === null;
-    if (!c.enabled) return;
+    // the Speedway's chase camera owns the view while a car is driven, and
+    // a room may hold it (a bowling lane's shot)
+    c.enabled = driving.session === null && cameraHold.by === null;
+    if (!c.enabled) {
+      held.current = true;
+      return;
+    }
+    if (held.current) {
+      // handed back: fly from wherever the room left it to the usual shot
+      held.current = false;
+      fly.current = { t: 0, snap: calm };
+    }
     if (shown.current?.player !== player) {
       // new room or first frame: cut straight to the shot
       shown.current = { view, player };

@@ -115,6 +115,57 @@ export function playClick(): boolean {
   return true;
 }
 
+/** A bowling ball rolling down the lane: a low rumble for `seconds`,
+ * swelling as it goes. */
+export function playBowlRoll(seconds: number): boolean {
+  const out = sfx();
+  if (!out) return false;
+  const { ctx, dest } = out;
+  const now = ctx.currentTime;
+  const end = now + Math.max(0.3, Math.min(seconds, 4));
+  const source = ctx.createBufferSource();
+  source.buffer = noiseBuffer(ctx);
+  source.loop = true;
+  const filter = ctx.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.setValueAtTime(140, now);
+  filter.frequency.linearRampToValueAtTime(220, end);
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.3, now + 0.25);
+  gain.gain.setValueAtTime(0.3, end - 0.1);
+  gain.gain.exponentialRampToValueAtTime(0.0001, end);
+  source.connect(filter).connect(gain).connect(dest);
+  source.start(now);
+  source.stop(end + 0.05);
+  return true;
+}
+
+/** Pins going down: a wooden clatter, fuller and longer the more fall. */
+export function playPinCrash(pins: number): boolean {
+  const out = sfx();
+  if (!out || pins <= 0) return false;
+  const { ctx, dest } = out;
+  const n = Math.min(10, pins);
+  const now = ctx.currentTime;
+  // the hit itself, then a scatter of clacks as pins knock each other
+  burst(ctx, dest, "bandpass", 900, 0.35, 0.18);
+  for (let i = 0; i < n + 2; i++) {
+    const at = now + 0.02 + Math.random() * (0.15 + n * 0.05);
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(700 + Math.random() * 900, at);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.setValueAtTime(0.09, at);
+    gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.06);
+    osc.connect(gain).connect(dest);
+    osc.start(at);
+    osc.stop(at + 0.08);
+  }
+  return true;
+}
+
 /** How each bed is built: filtered looping noise, slowly swelling, plus
  * an optional low drone. */
 const BEDS: Record<

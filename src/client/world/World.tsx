@@ -95,6 +95,9 @@ const HauntedHouse = lazy(() =>
     default: m.HauntedHouse,
   })),
 );
+const Bowling = lazy(() =>
+  import("../rooms/Bowling.tsx").then((m) => ({ default: m.Bowling })),
+);
 const Karaoke = lazy(() =>
   import("../rooms/Karaoke.tsx").then((m) => ({ default: m.Karaoke })),
 );
@@ -235,6 +238,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   "sugar-rush": SugarRush,
   warehouse: Warehouse,
   karaoke: Karaoke,
+  bowling: Bowling,
   "haunted-house": HauntedHouse,
   "filipino-joint": FilipinoJoint,
   "boba-matcha": BobaMatchaCafe,

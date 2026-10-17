@@ -2,6 +2,7 @@ import type { RoomId } from "./rooms.ts";
 import { footprint, type Furniture } from "./home/decor.ts";
 import { SOFA, STOOL_XS, STOOL_Z } from "./rooftop.ts";
 import { CHAIR_X, CHAIR_ZS, STOOL_X, STOOL_ZS } from "./sugarRush.ts";
+import { BENCH_SEATS } from "./bowlingAlley.ts";
 import { BOOTH_SEATS, MIC } from "./karaoke.ts";
 import * as WAREHOUSE from "./warehouse.ts";
 import { yawTowards, type Vec2 } from "./walk.ts";
@@ -138,6 +139,11 @@ const karaokeSeats = BOOTH_SEATS.map((at, i) =>
   seat(`karaoke-booth-${i}`, "karaoke", at, 0.45, MIC, "front"),
 );
 
+// Glow Bowl: benches behind the approaches, facing the lanes
+const bowlingSeats = BENCH_SEATS.map((at, i) =>
+  seat(`bowling-bench-${i}`, "bowling", at, 0.45, [at[0], 0]),
+);
+
 export const SEATS: readonly Seat[] = [
   ...foodSeats,
   ...velvetStools,
@@ -146,6 +152,7 @@ export const SEATS: readonly Seat[] = [
   ...sugarRushSeats,
   ...warehouseSeats,
   ...karaokeSeats,
+  ...bowlingSeats,
 ];
 
 export function seatsIn(room: RoomId): readonly Seat[] {

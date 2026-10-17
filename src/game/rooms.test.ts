@@ -14,6 +14,7 @@ test("every room is registered under its own id", () => {
     "apartment",
     "aquarium",
     "boba-matcha",
+    "bowling",
     "city",
     "filipino-joint",
     "haunted-house",
@@ -273,6 +274,24 @@ test("the Karaoke Loft's door opens onto its floor, and the mic and booths are r
   const area = areaOf(room);
   assert.equal(isBlocked(area, room.spawn.position), false);
   const goals: Vec2[] = [MIC, ...seatsIn("karaoke").map((s) => s.approach)];
+  for (const goal of goals) {
+    let pos: Vec2 = room.spawn.position;
+    for (let k = 0; k < 600; k++) pos = stepInArea(area, pos, goal, 0.05);
+    assert.ok(
+      Math.hypot(pos[0] - goal[0], pos[1] - goal[1]) < 0.3,
+      `reached ${goal}`,
+    );
+  }
+});
+
+test("Glow Bowl's door opens onto the concourse, and its benches and lanes are reachable", () => {
+  const room = ROOMS.bowling;
+  const area = areaOf(room);
+  assert.equal(isBlocked(area, room.spawn.position), false);
+  const goals: Vec2[] = [
+    [1.1, 2.6],
+    ...seatsIn("bowling").map((s) => s.approach),
+  ];
   for (const goal of goals) {
     let pos: Vec2 = room.spawn.position;
     for (let k = 0; k < 600; k++) pos = stepInArea(area, pos, goal, 0.05);

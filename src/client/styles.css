@@ -1302,3 +1302,142 @@ button:focus-visible {
     transition: none;
   }
 }
+
+/* Glow Bowl: the lane's scoreboard across the top, its controls at the side. */
+.bowl-score {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  border-collapse: collapse;
+  background: rgb(10 6 20 / 0.82);
+  color: var(--champagne);
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 18px rgb(255 79 179 / 0.45);
+}
+
+.bowl-score th,
+.bowl-score td {
+  min-width: 42px;
+  padding: 2px 6px;
+  border: 1px solid rgb(79 227 255 / 0.55);
+  text-align: center;
+}
+
+.bowl-score th {
+  font-size: 12px;
+  color: #4fe3ff;
+}
+
+.bowl-score th[aria-current="step"] {
+  background: rgb(255 79 179 / 0.35);
+}
+
+.bowl-balls,
+.bowl-total {
+  display: block;
+  min-height: 1.2em;
+}
+
+.bowl-total {
+  font-weight: 700;
+}
+
+.bowl-panel {
+  position: fixed;
+  right: 28px;
+  top: 150px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 230px;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgb(20 10 40 / 0.78);
+  color: var(--champagne);
+}
+
+.bowl-panel button {
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.1);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.bowl-panel button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.bowl-panel button[aria-pressed="true"] {
+  background: rgb(79 227 255 / 0.35);
+}
+
+.bowl-panel .bowl-main {
+  padding: 12px 18px;
+  background: #ff4fb3;
+  color: #14051f;
+  font-weight: 700;
+  box-shadow: 0 0 14px rgb(255 79 179 / 0.7);
+}
+
+.bowl-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.bowl-row button {
+  flex: 1;
+  padding: 6px 4px;
+  font-size: 13px;
+}
+
+.bowl-label {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.bowl-meter {
+  display: grid;
+  gap: 2px;
+  font-size: 13px;
+}
+
+.bowl-meter meter {
+  width: 100%;
+}
+
+.bowl-call {
+  min-height: 1.4em;
+  margin: 0;
+  font-weight: 700;
+  font-size: 18px;
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  .bowl-score {
+    top: 64px;
+    font-size: 11px;
+  }
+
+  .bowl-score th,
+  .bowl-score td {
+    min-width: 26px;
+    padding: 1px 2px;
+  }
+
+  .bowl-panel {
+    top: auto;
+    bottom: 150px;
+    right: 12px;
+    width: 190px;
+  }
+}

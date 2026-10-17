@@ -39,6 +39,13 @@ import {
   KARAOKE_DOOR,
   SPAWN as KARAOKE_SPAWN,
 } from "./karaoke.ts";
+import {
+  BLOCKERS as BOWLING_BLOCKERS,
+  BOWLING_DOOR,
+  EXIT as BOWLING_EXIT,
+  FLOOR as BOWLING_FLOOR,
+  SPAWN as BOWLING_SPAWN,
+} from "./bowlingAlley.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -61,6 +68,7 @@ export type RoomId =
   | "sugar-rush"
   | "warehouse"
   | "karaoke"
+  | "bowling"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -574,6 +582,24 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the park",
         target: "city",
         targetSpawn: { position: ICE_RINK_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  bowling: {
+    id: "bowling",
+    name: "Glow Bowl",
+    walkable: BOWLING_FLOOR,
+    blockers: BOWLING_BLOCKERS,
+    spawn: { position: BOWLING_SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        // Back out through the strip mall to Maple Drive.
+        id: "bowling-to-city",
+        position: BOWLING_EXIT,
+        radius: 0.8,
+        label: "Out to Maple Drive",
+        target: "city",
+        targetSpawn: { position: BOWLING_DOOR.landing, yaw: Math.PI },
       },
     ],
   },

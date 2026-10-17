@@ -7,6 +7,7 @@ import { FOOD_STOREFRONTS } from "../food/storefronts.ts";
 import type { RoomId, Spawn } from "../rooms.ts";
 import { LIFT, SKYLARK_DOOR } from "../rooftop.ts";
 import { SPAWN as SUGAR_RUSH_SPAWN, SUGAR_RUSH_DOOR } from "../sugarRush.ts";
+import { BOWLING_DOOR, SPAWN as BOWLING_SPAWN } from "../bowlingAlley.ts";
 import { KARAOKE_DOOR, SPAWN as KARAOKE_SPAWN } from "../karaoke.ts";
 import {
   ALLEY,
@@ -286,6 +287,7 @@ const SUBURB_FRONT: readonly {
   style: BuildingStyle;
   /** Houses sit back behind a lawn; shops come up to the sidewalk. */
   house?: boolean;
+  door?: Door;
 }[] = [
   {
     x: -436,
@@ -340,6 +342,14 @@ const SUBURB_FRONT: readonly {
     color: "#ffadad",
     sign: { text: "STRIP MALL", color: "#4fe3ff" },
     style: "storefront",
+    // Glow Bowl, the bowling alley at the back of the mall
+    door: {
+      position: BOWLING_DOOR.position,
+      radius: 1.5,
+      label: "Into Glow Bowl",
+      target: "bowling",
+      targetSpawn: { position: BOWLING_SPAWN, yaw: Math.PI },
+    },
   },
   {
     x: -246,
@@ -439,6 +449,7 @@ const SUBURB_BUILDINGS: readonly Building[] = SUBURB_FRONT.map(
       style: b.style,
       color: b.color,
       sign: b.sign,
+      ...(b.door ? { door: b.door } : {}),
     };
   },
 );

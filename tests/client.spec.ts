@@ -369,11 +369,37 @@ test("the debug buttons take the player up to the Karaoke Loft", async ({
   expect(errors).toEqual([]);
 });
 
+test("Glow Bowl: start a game, bowl a ball, and the scoreboard counts it", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  // live frames: the roll plays back in the scene before it's scored
+  await page.goto(`${LOW}&room=bowling`);
+  await expect(canvasOf(page)).toHaveAttribute("data-frames", "10");
+  const panel = page.getByRole("region", { name: "Bowling" });
+  await panel.getByRole("button", { name: "Bowl a game" }).click();
+  await panel.getByRole("button", { name: "Aim" }).click();
+  await panel.getByRole("button", { name: "Lock aim" }).click();
+  await panel.getByRole("button", { name: "Bowl!" }).click();
+  await expect(panel.getByRole("status")).toHaveText(
+    /pins?|Strike|Spare|Gutter/,
+    { timeout: 120_000 },
+  );
+  const board = page.getByRole("table", { name: "Scoreboard" });
+  await expect(board.getByRole("cell").first()).not.toHaveText("");
+  await panel.getByRole("button", { name: "Leave the lane" }).click();
+  await expect(
+    panel.getByRole("button", { name: "Bowl a game" }),
+  ).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 for (const room of [
   "rooftop-bar",
   "sugar-rush",
   "warehouse",
   "karaoke",
+  "bowling",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

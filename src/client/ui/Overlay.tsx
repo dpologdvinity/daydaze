@@ -50,6 +50,7 @@ import { drink } from "../effects/drunk.ts";
 import type { MinigameId } from "../../game/hotspots.ts";
 import { VIEWS, type View } from "../world/CameraRig.tsx";
 import { DriveControls } from "../rooms/speedway/DriveControls.tsx";
+import { BowlingPanel } from "../rooms/bowling/BowlingPanel.tsx";
 import { RaceHud, SpeedwayMenu } from "../rooms/speedway/RaceHud.tsx";
 import { CocktailIcon, RideIcon } from "./icons.tsx";
 import { DancePicker, HoldPicker } from "./DancePicker.tsx";
@@ -91,6 +92,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Your flat. Use the decorating panel to place furniture and lock the door. Tap the blue shelf to try a shoplift.",
   "haunted-house":
     "The Haunted House. Find your way through the dark rooms past the ghosts, then back out to the park.",
+  bowling:
+    "Glow Bowl. Press Bowl a game for lane three: slide along the line, pick a hook, then time the aim and the power. Rent shoes from Dana.",
   karaoke:
     "The Karaoke Loft. Step up to the mic and sing along with the ball, cheer from a booth, or tap Jo for a drink.",
   warehouse:
@@ -565,6 +568,8 @@ export function Overlay({
           setEffects={setEffects}
         />
       </Dressing>
+
+      {room === "bowling" && <BowlingPanel />}
 
       {room === "speedway" && (
         <>
