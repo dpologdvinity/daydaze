@@ -137,7 +137,7 @@ const ROOM_HINTS: Record<RoomId, string> = {
   "rooftop-bar":
     "The Skylark, up on the roof. Tap the bartender for a drink, sit by the fire, or play Last Call at the end of the bar.",
   "ice-rink":
-    "Park Ice Rink. Glide onto the ice through the gap in the boards, then warm up with cocoa by the door.",
+    "Park Ice Rink. Glide onto the ice, skate the ice show for the judges, then warm up with cocoa by the door.",
   aquarium:
     "Uptown Aquarium. Walk the shark tunnel, watch the jellyfish and the reef, and say hi at the desk.",
   jail: "City Jail. Wait out the sentence, play cards with the guard, or talk to Officer Dee.",

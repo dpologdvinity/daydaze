@@ -29,6 +29,10 @@ const PANELS: Partial<Record<RoomId, ComponentType>> = {
     () => import("../rooms/range/RangePanel.tsx"),
     "RangePanel",
   ),
+  "ice-rink": panel(
+    () => import("../rooms/icerink/ShowPanel.tsx"),
+    "ShowPanel",
+  ),
   "mermaid-cove": panel(
     () => import("../rooms/cove/SirenPanel.tsx"),
     "SirenPanel",

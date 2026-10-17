@@ -564,6 +564,26 @@ test("Mermaid Cove: a Siren Song ends on a wrong note with a prize", async ({
   expect(errors).toEqual([]);
 });
 
+test("the Park Ice Rink: the ice show starts and its first cue comes", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=ice-rink`);
+  await expect(canvasOf(page)).toHaveAttribute("data-frames", "10");
+  const panel = page.getByRole("region", { name: "Ice show" });
+  await panel.getByRole("button", { name: "Skate the program" }).click();
+  await panel.getByRole("button", { name: "Now!" }).click();
+  // pressed off the cue, or not at all: the first element is called
+  await expect(panel.getByRole("status")).toHaveText(/Waltz jump|Sit spin/, {
+    timeout: 120_000,
+  });
+  await panel.getByRole("button", { name: "Leave the ice" }).click();
+  await expect(
+    panel.getByRole("button", { name: "Skate the program" }),
+  ).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test("the debug buttons take the player into Kamayan Hall", async ({
   page,
 }) => {
@@ -714,6 +734,7 @@ for (const room of [
   "courtside",
   "mermaid-cove",
   "amusement-park",
+  "ice-rink",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

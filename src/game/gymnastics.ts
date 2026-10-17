@@ -1,4 +1,4 @@
-// A floor routine: a run of elements, each with its cue on the music.
+// A routine (the gym's floor routine, the rink's ice show): a run of elements, each with its cue on the music.
 // Press as each element's ring closes to stick it; the judges take a
 // tenth off for a near miss and half a point for a missed one, from a
 // start value of 10. Pure and deterministic.
@@ -34,10 +34,13 @@ const PERFECT = 0.1;
 const NEAR = 0.25;
 
 /** The element a press at `t` is aimed at, and how well it's timed. */
-export function judgePress(t: number): { element: number; mark: Mark } | null {
+export function judgePress(
+  t: number,
+  program: readonly Element[] = ROUTINE,
+): { element: number; mark: Mark } | null {
   let best = -1;
   let off = Infinity;
-  ROUTINE.forEach((e, i) => {
+  program.forEach((e, i) => {
     const d = Math.abs(t - e.at);
     if (d < off) {
       off = d;
@@ -52,11 +55,18 @@ export function judgePress(t: number): { element: number; mark: Mark } | null {
 }
 
 export type Routine = { marks: readonly (Mark | null)[] };
-export const NEW_ROUTINE: Routine = { marks: ROUTINE.map(() => null) };
+export function newRoutine(program: readonly Element[]): Routine {
+  return { marks: program.map(() => null) };
+}
+export const NEW_ROUTINE: Routine = newRoutine(ROUTINE);
 
 /** Scores a press; each element is judged once. */
-export function press(r: Routine, t: number): Routine {
-  const j = judgePress(t);
+export function press(
+  r: Routine,
+  t: number,
+  program: readonly Element[] = ROUTINE,
+): Routine {
+  const j = judgePress(t, program);
   if (!j || r.marks[j.element] !== null) return r;
   const marks = [...r.marks];
   marks[j.element] = j.mark;
@@ -64,21 +74,28 @@ export function press(r: Routine, t: number): Routine {
 }
 
 /** Elements the clock has passed unpressed count as missed. */
-export function closeOut(r: Routine, t: number): Routine {
+export function closeOut(
+  r: Routine,
+  t: number,
+  program: readonly Element[] = ROUTINE,
+): Routine {
   const marks = r.marks.map((m, i) =>
-    m === null && t > ROUTINE[i].at + NEAR ? ("miss" as const) : m,
+    m === null && t > program[i].at + NEAR ? ("miss" as const) : m,
   );
   return { marks };
 }
 
 /** The judges' score: 10.0 less deductions, plus difficulty for stuck
  * elements, never below 0. */
-export function judgesScore(r: Routine): number {
+export function judgesScore(
+  r: Routine,
+  program: readonly Element[] = ROUTINE,
+): number {
   let score = 10;
   r.marks.forEach((m, i) => {
     if (m === "near") score -= 0.1;
     if (m === "miss") score -= 0.5;
-    if (m === "stuck") score += ROUTINE[i].difficulty;
+    if (m === "stuck") score += program[i].difficulty;
   });
   return Math.max(0, Math.round(score * 1000) / 1000);
 }

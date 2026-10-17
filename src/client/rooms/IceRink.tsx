@@ -1,10 +1,15 @@
-import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { DEFAULT_LOOK, type Look } from "../../game/look.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import type { DialogueContext } from "../../game/dialogue/types.ts";
 import { Doll } from "../avatar/Doll.tsx";
+import { PROGRAM } from "../../game/iceShow.ts";
+import type { Player } from "../world/PlayerController.tsx";
+import { placePlayer } from "../world/PlayerController.tsx";
+import { cameraHold } from "../world/cameraHold.ts";
+import { show } from "./icerink/session.ts";
 import { useReducedMotion } from "../motion.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
@@ -109,12 +114,75 @@ function Skater({
   );
 }
 
+/** Your program on the ice: a lap of the rink on the music; a stuck jump
+ * lifts you into turns in the air, a stuck spin spins you on the spot,
+ * and the camera follows from the middle of the ice. */
+function IceShow({ player }: { player: Player }) {
+  const calm = useReducedMotion();
+  const camera = useThree((st) => st.camera);
+  const eye = useMemo(() => new THREE.Vector3(), []);
+  const look = useMemo(() => new THREE.Vector3(), []);
+  useEffect(
+    () => () => {
+      show.leave();
+      player.seat = null;
+      if (cameraHold.by === "ice-rink") cameraHold.by = null;
+    },
+    [player],
+  );
+  useFrame((_, dt) => {
+    const now = performance.now();
+    show.tick(now);
+    const s = show.store.get();
+    cameraHold.by = s.phase !== "off" ? "ice-rink" : null;
+    if (s.phase === "off") {
+      if (player.seat) {
+        player.seat = null;
+        placePlayer(player, 0, RINK.rz * 0.55);
+      }
+      return;
+    }
+    const t = show.routineTime(now);
+    const a = Math.PI / 2 + (t / 18) * Math.PI * 2;
+    const x = Math.cos(a) * RINK.rx * 0.55;
+    const z = Math.sin(a) * RINK.rz * 0.55;
+    let lift = 0;
+    let turn = 0;
+    PROGRAM.forEach((e, i) => {
+      if (s.routine.marks[i] !== "stuck" || calm) return;
+      const f = (t - (e.at - 0.35)) / 0.7;
+      if (f < 0 || f > 1) return;
+      if (e.kind === "jump") {
+        lift = Math.sin(f * Math.PI) * 0.7;
+        turn = f * Math.PI * 2 * (e.difficulty >= 0.3 ? 3 : 2);
+      } else if (e.kind === "spin") turn = f * Math.PI * 6;
+    });
+    player.seat ??= { position: new THREE.Vector3(), yaw: 0 };
+    player.seat.position.set(x, 0.06 + lift, z);
+    // facing along the lap, plus any turns in the air
+    player.seat.yaw =
+      Math.atan2(-Math.sin(a) * RINK.rx, Math.cos(a) * RINK.rz) + turn;
+    player.seat.sit = false;
+    eye.set(x * 0.25, 4.5, z * 0.25 + 9);
+    look.set(x, 0.8, z);
+    camera.position.lerp(eye, calm ? 1 : 1 - Math.exp(-dt * 2));
+    camera.lookAt(look);
+  });
+  return null;
+}
+
 /**
  * The Park Ice Rink: a white oval of ice under string lights, rink boards
  * round it, snow drifting down, skaters gliding laps and a hot cocoa stand by
  * the door. The player walks the ice like anyone else.
  */
-export function IceRink({ onPick }: { onPick: PickHandler }) {
+export function IceRink({
+  onPick,
+  player,
+}: {
+  onPick: PickHandler;
+  player: Player;
+}) {
   const calm = useReducedMotion();
   const lights = useMemo(
     () =>
@@ -215,6 +283,7 @@ export function IceRink({ onPick }: { onPick: PickHandler }) {
         context={CONTEXT}
       />
       <PortalPads room={ROOMS["ice-rink"]} color="#9ad8ff" />
+      <IceShow player={player} />
     </>
   );
 }
