@@ -79,6 +79,7 @@ import * as STADIUM from "./stadium.ts";
 import * as MARINA from "./marina.ts";
 import * as COURTSIDE from "./courtside.ts";
 import * as COVE from "./mermaidCove.ts";
+import { POOL_BLOCKER } from "./sealShow.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -611,6 +612,7 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
     id: "aquarium",
     name: "Uptown Aquarium",
     walkable: AQUARIUM_FLOOR,
+    blockers: [POOL_BLOCKER],
     spawn: { position: [0, 5.2], yaw: Math.PI },
     portals: [
       {

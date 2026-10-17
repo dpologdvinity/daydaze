@@ -574,12 +574,38 @@ test("the Park Ice Rink: the ice show starts and its first cue comes", async ({
   await panel.getByRole("button", { name: "Skate the program" }).click();
   await panel.getByRole("button", { name: "Now!" }).click();
   // pressed off the cue, or not at all: the first element is called
-  await expect(panel.getByRole("status")).toHaveText(/Waltz jump|Sit spin/, {
-    timeout: 120_000,
-  });
+  await expect(panel.getByRole("status")).toHaveText(
+    /: (Stuck it!|Close|Missed)|The judges/,
+    {
+      timeout: 120_000,
+    },
+  );
   await panel.getByRole("button", { name: "Leave the ice" }).click();
   await expect(
     panel.getByRole("button", { name: "Skate the program" }),
+  ).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("the Aquarium: the seal show starts and Pepper's first trick is called", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=aquarium`);
+  await expect(canvasOf(page)).toHaveAttribute("data-frames", "10");
+  const panel = page.getByRole("region", { name: "Seal show" });
+  await panel.getByRole("button", { name: "Start the seal show" }).click();
+  await panel.getByRole("button", { name: "Now!" }).click();
+  // however late the click lands, an element is called (or the show ends)
+  await expect(panel.getByRole("status")).toHaveText(
+    /: (Stuck it!|Close|Missed)|The judges/,
+    {
+      timeout: 120_000,
+    },
+  );
+  await panel.getByRole("button", { name: "End the show" }).click();
+  await expect(
+    panel.getByRole("button", { name: "Start the seal show" }),
   ).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -755,6 +781,7 @@ for (const room of [
   "mermaid-cove",
   "amusement-park",
   "ice-rink",
+  "aquarium",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

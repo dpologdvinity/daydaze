@@ -1,3 +1,4 @@
+import { SealShow } from "./aquarium/SealShow.tsx";
 import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -241,6 +242,7 @@ export function Aquarium({ onPick }: { onPick: PickHandler }) {
       <instancedMesh ref={fish} args={[fishShape, undefined, FISH]}>
         <meshBasicMaterial toneMapped={false} />
       </instancedMesh>
+      <SealShow />
       {/* the touch pool by the door */}
       <mesh position={[-3.6, 0.35, 4.4]}>
         <cylinderGeometry args={[1.4, 1.5, 0.7, 28]} />
