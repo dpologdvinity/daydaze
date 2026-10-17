@@ -393,6 +393,8 @@ function hairMaterial(
   map: THREE.Texture | null,
   shaded: boolean,
   rich: boolean,
+  /** Cut out by its alpha: strand cards are; a textured scalp cap is not. */
+  cutout: boolean,
 ) {
   // hair over the back is seen edge-on: without anisotropic filtering the
   // blurred mip's alpha breaks into specks at the cut-out threshold
@@ -404,7 +406,7 @@ function hairMaterial(
     // the shine comes from the bands; the base lighting stays soft
     roughness: map ? 0.7 : 0.55,
     side: THREE.DoubleSide,
-    alphaTest: map ? (rich ? 0.3 : 0.4) : 0,
+    alphaTest: map && cutout ? (rich ? 0.3 : 0.4) : 0,
   });
   return map ? hairShine(material) : material;
 }
@@ -455,6 +457,8 @@ function Part({
           ? src.material
           : null;
       const hasShade = Boolean(src.geometry.getAttribute("color"));
+      // glTF marks cut-out parts as blend or mask; an opaque one keeps its fill
+      const cutout = Boolean(old && (old.transparent || old.alphaTest > 0));
       // the hair shine runs across each strand: it needs the cards' real
       // tangents (shared geometry, so once per part), kept under their own
       // name so no material takes them for a normal-map frame
@@ -473,7 +477,7 @@ function Part({
       }
       const mat =
         tint.kind === "hair"
-          ? hairMaterial(tint.colour, old?.map ?? null, hasShade, rich)
+          ? hairMaterial(tint.colour, old?.map ?? null, hasShade, rich, cutout)
           : new THREE.MeshStandardMaterial({
               map: old?.map ?? null,
               color: tint.kind === "keep" ? "#ffffff" : tint.colour,
@@ -485,7 +489,7 @@ function Part({
       // strand cards draw twice: a solid core that writes depth, then the
       // thin wisps at the card edges blended on top, so the hairline and ends
       // read soft instead of cut out
-      if (rich && tint.kind === "hair" && old?.map) {
+      if (rich && tint.kind === "hair" && old?.map && cutout) {
         // the wisps pass is plain standard shading: thin edges show no
         // highlight anyway, and blended overdraw is the costly part
         const wisps = new THREE.MeshStandardMaterial({

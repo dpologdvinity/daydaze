@@ -43,10 +43,11 @@ def hairline(ctx, x, y):
     return eye_z - 0.035 + 0.085 * f**1.5
 
 
-def scalp_hair(ctx, name, mat, extra):
+def scalp_hair(ctx, name, mat, extra, rise=0.0):
     """A slicked scalp shell (head skin above the brow line and behind the
     hairline, pushed out a few millimetres) plus whatever `extra(bm, ctx)`
-    adds to the bmesh. Added verts ride the nearest scalp vertex."""
+    adds to the bmesh. Added verts ride the nearest scalp vertex. `rise`
+    lifts the hairline, for a cap whose edge hides under strand roots."""
     eye_z = ctx.JB["lEye"][2]
     head_i = ctx.BONES.index("head")
     faces = []
@@ -55,12 +56,12 @@ def scalp_hair(ctx, name, mat, extra):
         if ctx.W[f][:, head_i].min() < 0.98:
             continue
         # any face reaching above the hairline; its low corners clamp to it
-        if (pts[:, 2] > hairline(ctx, pts[:, 0], pts[:, 1])).any():
+        if (pts[:, 2] > hairline(ctx, pts[:, 0], pts[:, 1]) + rise).any():
             faces.append(f)
     used = sorted({i for f in faces for i in f})
     remap = {o: n for n, o in enumerate(used)}
     verts = ctx.to_blender(ctx.P[used])
-    verts[:, 2] = np.maximum(verts[:, 2], hairline(ctx, verts[:, 0], verts[:, 1]))
+    verts[:, 2] = np.maximum(verts[:, 2], hairline(ctx, verts[:, 0], verts[:, 1]) + rise)
     ob = ctx.new_object(name, verts, [[remap[i] for i in f] for f in faces])
     ob.data.update()
     nrm = np.array([v.normal[:] for v in ob.data.vertices])
@@ -215,11 +216,13 @@ def shade_strands(ctx, ob):
 
 
 def strand_style(ctx, name, strand_mat, cap_mat, **style):
-    """Strand cards over a hair-coloured scalp cap, so no skin shows through
-    the parting or between cards."""
+    """Strand cards over a scalp cap combed with the same strand image, so
+    no skin shows through the parting or between cards, and what does show
+    reads as hair."""
     import doll_outfits
 
-    cap = scalp_hair(ctx, name + "_cap", cap_mat, lambda bm, ctx: None)
+    cap = scalp_hair(ctx, name + "_cap", cap_mat, lambda bm, ctx: None, rise=0.008)
+    strands.comb_cap(ctx, cap, style.get("tie"))
     cards = strands.build(ctx, name, strand_mat, **style)
     return doll_outfits.join(cards, cap)
 
@@ -236,6 +239,7 @@ def build(ctx):
     solid = bpy.data.materials.new("hair_solid")
     out += [buns(ctx, solid), afro(ctx, solid), braids(ctx, solid)]
     strand = strands.material("hair_strands")
+    combed = strands.cap_material("hair_cap")
     # strand-card styles: length (m), wave (slow S), curl (tight spirals),
     # volume (lift off the scalp); ids match HAIR_STYLES in src/game/look.ts
     for name, style in {
@@ -248,11 +252,11 @@ def build(ctx):
         "bob": dict(length=0.24, count=390, wave=0.002, volume=1.2),
         "pixie": dict(length=0.11, count=360, wave=0.004, volume=1.1),
     }.items():
-        out.append(strand_style(ctx, f"Hair_{name}", strand, solid, seed=len(name), **style))
+        out.append(strand_style(ctx, f"Hair_{name}", strand, combed, seed=len(name), **style))
     # a high ponytail: slicked back to a band at the crown's back, the tail
     # on the pony bone so it swings
     pony = strand_style(
-        ctx, "Hair_ponytail", strand, solid, seed=9, length=0.42, count=420, wave=0.004, tie=(0.085, 0.045)
+        ctx, "Hair_ponytail", strand, combed, seed=9, length=0.42, count=420, wave=0.004, tie=(0.085, 0.045)
     )
     swing(ctx, pony, ctx.JB["head"] + np.array([0, 0.08, 0.05]))
     out.append(pony)

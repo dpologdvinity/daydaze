@@ -17,6 +17,9 @@ import { Suspense } from "react";
 const human = new URLSearchParams(location.search).get("human") === "1";
 
 const shot = new URLSearchParams(location.search).get("shot") ?? "lineup";
+// ?still=1 draws 8 frames on demand and stops: SwiftShader queues GPU work,
+// so a live loop leaves a capture minutes behind
+const still = new URLSearchParams(location.search).get("still") === "1";
 
 /** `?hair=<style>` swaps the face shot's hair, for checking one style. */
 function hairParam(): Look["hairStyle"] {
@@ -138,6 +141,14 @@ const SHOTS = {
     cam: [0, 1.5, 0.95] as const,
     target: [0, 1.42, 0] as const,
     fov: 22,
+  },
+  // head and shoulders with the crown in frame, for judging hair
+  portrait: {
+    looks: [{ ...LINEUP[0], hairStyle: hairParam() }],
+    x: () => 0,
+    cam: [0, 1.5, 1.25] as const,
+    target: [0, 1.45, 0] as const,
+    fov: 24,
   },
   // distant crowd: what a doll costs when it is far from the camera
   far: {
@@ -267,9 +278,11 @@ function measure(root: THREE.Object3D) {
 
 function Probe({ count }: { count: number }) {
   const scene = useThree((s) => s.scene);
+  const invalidate = useThree((s) => s.invalidate);
   const frames = useRef(0);
   useFrame(() => {
     frames.current += 1;
+    if (still && frames.current < 8) invalidate();
     document.body.dataset.frames = String(frames.current);
     if (frames.current !== 12) return;
     const dolls = Array.from({ length: count }, (_, i) =>
@@ -284,7 +297,7 @@ function Probe({ count }: { count: number }) {
 function Lab() {
   return (
     <Canvas
-      frameloop="always"
+      frameloop={still ? "demand" : "always"}
       dpr={1}
       gl={{ antialias: true, preserveDrawingBuffer: true }}
       camera={{
