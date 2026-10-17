@@ -8,6 +8,8 @@ const PORT = Number(process.env.PORT ?? 5195);
 export default defineConfig({
   testDir: "tests",
   testMatch: "client.spec.ts",
+  // tests are independent pages, so CI's shards can split the one file
+  fullyParallel: true,
   workers: 2,
   timeout: 180_000,
   expect: { timeout: 60_000 },
