@@ -49,24 +49,16 @@ import { wearable, type PurchaseResult } from "../../game/shop.ts";
 import { drink } from "../effects/drunk.ts";
 import type { MinigameId } from "../../game/hotspots.ts";
 import { VIEWS, type View } from "../world/CameraRig.tsx";
-import { DriveControls } from "../rooms/speedway/DriveControls.tsx";
-import { BowlingPanel } from "../rooms/bowling/BowlingPanel.tsx";
-import { GolfPanel } from "../rooms/minigolf/GolfPanel.tsx";
-import { HoopsPanel } from "../rooms/dome/HoopsPanel.tsx";
-import { SkatePanel } from "../rooms/skatepark/SkatePanel.tsx";
-import { FieldGoalPanel } from "../rooms/gridiron/FieldGoalPanel.tsx";
-import { RangePanel } from "../rooms/range/RangePanel.tsx";
-import { RoutinePanel } from "../rooms/gym/RoutinePanel.tsx";
-import { PenaltyPanel } from "../rooms/stadium/PenaltyPanel.tsx";
 import { clearCityMapRequest, useCityMapRequest } from "./cityMapRequest.ts";
+import { RoomPanel } from "./RoomPanels.tsx";
 import { ShopPanel } from "./ShopPanel.tsx";
 import { setSkates, skates, SKATE_ROOMS } from "../world/skates.ts";
 import { openShop } from "./shopRequest.ts";
 import { STORES as GALLERIA_STORES } from "../../game/galleria.ts";
-import { RaceHud, SpeedwayMenu } from "../rooms/speedway/RaceHud.tsx";
 import { CocktailIcon, RideIcon } from "./icons.tsx";
 import { DancePicker, HoldPicker } from "./DancePicker.tsx";
 import { CityMap } from "./CityMap.tsx";
+import { FireworksTicker } from "../city/FireworksTicker.tsx";
 import { Dressing } from "./Dressing.tsx";
 import { GAITS, gaitOf } from "../../game/gaits.ts";
 import { seatsIn } from "../../game/seats.ts";
@@ -585,6 +577,7 @@ export function Overlay({
           </h1>
         </div>
         <p className="venue-sub">{ROOM_HINTS[room]}</p>
+        {room === "city" && <FireworksTicker />}
         <p className="coins" aria-label={`${coins} coins`}>
           {coins} coins
         </p>
@@ -624,22 +617,7 @@ export function Overlay({
         setLook={setLook}
         onBuy={onBuy}
       />
-      {room === "bowling" && <BowlingPanel />}
-      {room === "mini-golf" && <GolfPanel />}
-      {room === "dome" && <HoopsPanel />}
-      {room === "skatepark" && <SkatePanel />}
-      {room === "gridiron" && <FieldGoalPanel />}
-      {room === "driving-range" && <RangePanel />}
-      {room === "gym" && <RoutinePanel />}
-      {room === "stadium" && <PenaltyPanel />}
-
-      {room === "speedway" && (
-        <>
-          <SpeedwayMenu />
-          <RaceHud />
-          <DriveControls />
-        </>
-      )}
+      <RoomPanel room={room} />
 
       {mapOpen && room === "city" && (
         <CityMap

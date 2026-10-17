@@ -1648,3 +1648,11 @@ button:focus-visible {
     animation: none;
   }
 }
+
+/* the city's next event, under the hint */
+.venue-event {
+  margin-top: 4px !important;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--amber);
+}

@@ -6,12 +6,12 @@ import {
   BURN,
   RISE,
   SHELL_COLORS,
-  SHOW_EVERY,
   shellsAt,
   showOn,
   type Shell,
 } from "../../game/city/fireworks.ts";
 import { useReducedMotion } from "../motion.ts";
+import { showClock } from "./fireworksClock.ts";
 
 const SLOTS = 12;
 const STARS = 72;
@@ -48,14 +48,6 @@ function starTexture() {
   return new THREE.CanvasTexture(c);
 }
 
-/** `?fireworks=20` shifts the clock so a show is 20 s in, for screenshots. */
-const PREVIEW = Number(
-  new URLSearchParams(window.location.search).get("fireworks") ?? Number.NaN,
-);
-const OFFSET = Number.isFinite(PREVIEW)
-  ? SHOW_EVERY - ((Date.now() / 1000) % SHOW_EVERY) + PREVIEW
-  : 0;
-
 /**
  * The fireworks show over the sea off Beachside: every few minutes, shells
  * climb from the water and burst into peonies, rings and drooping willows,
@@ -87,7 +79,7 @@ export function Fireworks() {
   useFrame(() => {
     const p = points.current;
     if (!p) return;
-    const t = Date.now() / 1000 + OFFSET;
+    const t = showClock();
     // the last shells burn on a little after the show stops launching
     p.visible = !calm && (showOn(t) || showOn(t - RISE - BURN));
     if (!p.visible) return;

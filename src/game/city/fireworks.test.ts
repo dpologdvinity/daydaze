@@ -5,6 +5,7 @@ import {
   RISE,
   SHOW_EVERY,
   SHOW_LENGTH,
+  nextShowIn,
   shellsAt,
   showOn,
 } from "./fireworks.ts";
@@ -32,4 +33,11 @@ test("the finale fires in threes, and never more than a dozen at once", () => {
   for (let s = 0; s < SHOW_LENGTH + 5; s += 0.1)
     most = Math.max(most, shellsAt(SHOW_EVERY * 3 + s).length);
   assert.ok(most > 4 && most <= 12, `${most}`);
+});
+
+test("the countdown runs to the next show and reads 0 during one", () => {
+  const t0 = SHOW_EVERY * 50;
+  assert.equal(nextShowIn(t0 + 10), 0);
+  assert.equal(nextShowIn(t0 + SHOW_LENGTH), SHOW_EVERY - SHOW_LENGTH);
+  assert.equal(nextShowIn(t0 + SHOW_EVERY - 1), 1);
 });

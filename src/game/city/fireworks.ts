@@ -94,3 +94,10 @@ const BLANK: Shell = {
   kind: "peony",
   size: 0,
 };
+
+/** Seconds until the next show starts; 0 while one is on. */
+export function nextShowIn(t: number): number {
+  if (showOn(t)) return 0;
+  const into = ((t % SHOW_EVERY) + SHOW_EVERY) % SHOW_EVERY;
+  return SHOW_EVERY - into;
+}
