@@ -27,6 +27,7 @@ import { Parade } from "./Parade.tsx";
 import { BeachLife } from "./BeachLife.tsx";
 import { SquareLife } from "./SquareLife.tsx";
 import { Pedestrians } from "./Pedestrians.tsx";
+import { NightMarket } from "./NightMarket.tsx";
 import { WATER_Z } from "../../game/city/layout.ts";
 import { setNeighborhood } from "./here.ts";
 import { createLabelAtlas } from "./labelAtlas.ts";
@@ -153,6 +154,7 @@ export function CityScene({
       ))}
       <Traffic player={player} />
       <Pedestrians player={player} />
+      <NightMarket player={player} />
     </>
   );
 }

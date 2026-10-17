@@ -74,7 +74,8 @@ const HOOD_ROWS: Partial<Record<NeighborhoodId, readonly Row[]>> = {
   // either side of the Chinatown and Koreatown street (x 320)
   "chinatown-koreatown": [
     { x0: 330, x1: 337, z0: 46, count: 20, street: "west" },
-    { x0: 303, x1: 310, z0: 46, count: 20, street: "east" },
+    // south of the night market's square (city/nightMarket.ts)
+    { x0: 303, x1: 310, z0: 66, count: 17, street: "east" },
   ],
   // the cross streets between the avenue's edge and Gallery Row
   "arts-district": [

@@ -4,6 +4,7 @@
 // rectangle that the cell grid can clip.
 import type { WalkArea } from "../area.ts";
 import { FOOD_STOREFRONTS } from "../food/storefronts.ts";
+import { MARKET, MARKET_BLOCKERS } from "./nightMarket.ts";
 import type { RoomId, Spawn } from "../rooms.ts";
 import { LIFT, SKYLARK_DOOR } from "../rooftop.ts";
 import { SPAWN as SUGAR_RUSH_SPAWN, SUGAR_RUSH_DOOR } from "../sugarRush.ts";
@@ -555,6 +556,11 @@ export const CITY_SURFACES: readonly Surface[] = [
   { kind: "sidewalk", polygon: rect(-131, SHORE_Z - 13, -125, SHORE_Z - 11) },
   // the Aquarium's forecourt, up to its doors from Park Avenue's sidewalk
   { kind: "sidewalk", polygon: rect(228, GALLERY_Z + 10, 248, GALLERY_Z + 12) },
+  // the Chinatown and Koreatown night market, off the cross street
+  {
+    kind: "square",
+    polygon: rect(MARKET.x0, MARKET.z0, MARKET.x1, MARKET.z1),
+  },
   // the Fairground forecourt, either side of the Chinatown street
   { kind: "sidewalk", polygon: rect(200, FAIR_FORECOURT_Z, 310, SHORE_Z - 11) },
   { kind: "sidewalk", polygon: rect(330, FAIR_FORECOURT_Z, 440, SHORE_Z - 11) },
@@ -2035,6 +2041,7 @@ const CITY_BLOCKERS: readonly (readonly Vec2[])[] = [
   ...PROPS.map(({ position: [x, z] }) =>
     rect(x - PROP_HALF, z - PROP_HALF, x + PROP_HALF, z + PROP_HALF),
   ),
+  ...MARKET_BLOCKERS,
 ];
 
 /** The walk rules for the whole city: surfaces, solid blockers and doors. */
