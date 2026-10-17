@@ -1,13 +1,6 @@
 import { PerformanceMonitor } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
-  Bloom,
-  EffectComposer,
-  ToneMapping,
-  Vignette,
-} from "@react-three/postprocessing";
-import { ToneMappingMode } from "postprocessing";
-import {
   lazy,
   Suspense,
   useEffect,
@@ -36,13 +29,9 @@ import {
 import type { Vec2 } from "../../game/walk.ts";
 import { SLIDES } from "../../game/waterPark.ts";
 import { areaOf } from "../../game/area.ts";
-import { DrunkPost } from "../effects/DrunkPost.tsx";
 import { DrunkState } from "../effects/DrunkState.tsx";
 import type { MinigameId } from "../../game/hotspots.ts";
-import { VelvetRoom } from "../rooms/VelvetRoom.tsx";
-import { Plaza } from "../rooms/Plaza.tsx";
 import type { PickHandler } from "../rooms/shared/Floor.tsx";
-import { WaterPark } from "../rooms/WaterPark.tsx";
 import { CameraRig, type View } from "./CameraRig.tsx";
 import { NeonClamp } from "./NeonClamp.tsx";
 import {
@@ -58,6 +47,15 @@ import { isSceneReady, setSceneReady } from "./ready.ts";
 import { CreatorFrame } from "./CreatorFrame.tsx";
 
 // The city is the heaviest scene, so it loads on first visit only.
+const VelvetRoom = lazy(() =>
+  import("../rooms/VelvetRoom.tsx").then((m) => ({ default: m.VelvetRoom })),
+);
+const Plaza = lazy(() =>
+  import("../rooms/Plaza.tsx").then((m) => ({ default: m.Plaza })),
+);
+const WaterPark = lazy(() =>
+  import("../rooms/WaterPark.tsx").then((m) => ({ default: m.WaterPark })),
+);
 const CityScene = lazy(() =>
   import("../city/CityScene.tsx").then((m) => ({ default: m.CityScene })),
 );
@@ -197,22 +195,7 @@ function Dancing({ mood, move }: { mood: Mood; move: DanceMoveId }) {
   return null;
 }
 
-function Effects() {
-  return (
-    <EffectComposer multisampling={4}>
-      <Bloom
-        mipmapBlur
-        luminanceThreshold={1}
-        luminanceSmoothing={0.2}
-        intensity={1.15}
-        radius={0.72}
-      />
-      <DrunkPost />
-      <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
-      <Vignette offset={0.28} darkness={0.72} />
-    </EffectComposer>
-  );
-}
+const Effects = lazy(() => import("./Effects.tsx"));
 
 type SceneProps = {
   onPick: PickHandler;

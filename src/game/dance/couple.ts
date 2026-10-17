@@ -65,7 +65,8 @@ export function couplePoseAt(
   }
   // the follow leans the other way, so the pair reads as a mirror
   negateYZ(out.root);
-  for (const j of ["body", "head"] as const) negateYZ(out.joints[j]);
+  negateYZ(out.joints.body);
+  negateYZ(out.joints.head);
   return out;
 }
 

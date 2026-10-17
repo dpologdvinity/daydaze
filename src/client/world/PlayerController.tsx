@@ -233,6 +233,12 @@ export function PlayerController({
   const [riding, setRiding] = useState<Mood | "lay" | null>(null);
   const shownRide = useRef<Mood | "lay" | null>(null);
   const walking = useRef(false);
+  const tagAt = useRef<{
+    el: HTMLDivElement | null;
+    shown: boolean;
+    x: number;
+    y: number;
+  }>({ el: null, shown: false, x: NaN, y: NaN });
   const stepDist = useRef(0);
   const lastPos = useRef(new THREE.Vector3().copy(player.pos));
 
@@ -321,21 +327,35 @@ export function PlayerController({
       dt,
     );
     // a seated or sliding doll is drawn on the seat or the slide, feet and all
-    const drawn = player.seat ?? { position: player.pos, yaw: player.yaw };
+    const drawnPos = player.seat?.position ?? player.pos;
     if (g.current) {
-      g.current.position.copy(drawn.position);
-      g.current.rotation.y = drawn.yaw;
+      g.current.position.copy(drawnPos);
+      g.current.rotation.y = player.seat?.yaw ?? player.yaw;
     }
     const el = tag.current;
     if (el) {
       // above the doll's feet, which sit on the seat while riding
-      head.copy(drawn.position);
+      head.copy(drawnPos);
       head.y += 1.95;
       head.project(state.camera);
       const px = ((head.x + 1) / 2) * state.size.width;
       const py = ((1 - head.y) / 2) * state.size.height;
-      el.style.visibility = head.z < 1 ? "visible" : "hidden";
-      el.style.transform = `translate(${px}px, ${py}px) translate(-50%, -100%)`;
+      const shown = head.z < 1;
+      // touch the DOM only when the tag moves, so a still frame costs no style work
+      const last = tagAt.current;
+      if (
+        el !== last.el ||
+        shown !== last.shown ||
+        Math.abs(px - last.x) > 0.25 ||
+        Math.abs(py - last.y) > 0.25
+      ) {
+        last.el = el;
+        last.shown = shown;
+        last.x = px;
+        last.y = py;
+        el.style.visibility = shown ? "visible" : "hidden";
+        el.style.transform = `translate(${px}px, ${py}px) translate(-50%, -100%)`;
+      }
     }
     if (marker.current) {
       const t = player.walk.target;
