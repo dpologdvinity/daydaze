@@ -78,6 +78,7 @@ import * as GYM from "./gym.ts";
 import * as STADIUM from "./stadium.ts";
 import * as MARINA from "./marina.ts";
 import * as COURTSIDE from "./courtside.ts";
+import * as CATWALK from "./catwalk.ts";
 import * as COVE from "./mermaidCove.ts";
 import { POOL_BLOCKER } from "./sealShow.ts";
 import * as DINER from "./skateDiner.ts";
@@ -118,6 +119,7 @@ export type RoomId =
   | "gym"
   | "marina"
   | "courtside"
+  | "catwalk"
   | "mermaid-cove"
   | "skate-diner"
   | "city";
@@ -712,6 +714,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to Park Avenue",
         target: "city",
         targetSpawn: { position: COURTSIDE.COURTSIDE_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  catwalk: {
+    id: "catwalk",
+    name: "The Catwalk",
+    walkable: CATWALK.FLOOR,
+    blockers: CATWALK.BLOCKERS,
+    spawn: { position: CATWALK.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "catwalk-to-city",
+        position: CATWALK.EXIT,
+        radius: 0.8,
+        label: "Out to Gallery Row",
+        target: "city",
+        targetSpawn: { position: CATWALK.CATWALK_DOOR.landing, yaw: Math.PI },
       },
     ],
   },

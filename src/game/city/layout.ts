@@ -9,6 +9,7 @@ import type { RoomId, Spawn } from "../rooms.ts";
 import { LIFT, SKYLARK_DOOR } from "../rooftop.ts";
 import { SPAWN as SUGAR_RUSH_SPAWN, SUGAR_RUSH_DOOR } from "../sugarRush.ts";
 import { ARCADE_DOOR, SPAWN as ARCADE_SPAWN } from "../arcadeBar.ts";
+import { CATWALK_DOOR, SPAWN as CATWALK_SPAWN } from "../catwalk.ts";
 import { LINKS_DOOR, SPAWN as LINKS_SPAWN } from "../lagoonLinks.ts";
 import * as DOME from "../dome.ts";
 import * as GALLERIA from "../galleria.ts";
@@ -1037,7 +1038,23 @@ const ARTS_FRONT: readonly {
     sign: { text: "ESPRESSO LAB", color: "#ffd166" },
     style: "storefront",
   },
-  { x: 2, w: 24, h: 18, north: false, color: "#ff9f1c", style: "warehouse" },
+  {
+    x: CATWALK_DOOR.position[0],
+    w: 24,
+    h: 18,
+    north: false,
+    color: "#ff9f1c",
+    sign: { text: "THE CATWALK", color: "#ff4fb3" },
+    style: "warehouse",
+    // the Catwalk, the fashion house's runway
+    door: {
+      position: CATWALK_DOOR.position,
+      radius: 1.5,
+      label: "Into the Catwalk",
+      target: "catwalk",
+      targetSpawn: { position: CATWALK_SPAWN, yaw: Math.PI },
+    },
+  },
   {
     x: 36,
     w: 28,

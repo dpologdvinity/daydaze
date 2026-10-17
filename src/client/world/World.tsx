@@ -110,6 +110,9 @@ const MermaidCove = lazy(() =>
 const Courtside = lazy(() =>
   import("../rooms/Courtside.tsx").then((m) => ({ default: m.Courtside })),
 );
+const Catwalk = lazy(() =>
+  import("../rooms/Catwalk.tsx").then((m) => ({ default: m.Catwalk })),
+);
 const Marina = lazy(() =>
   import("../rooms/Marina.tsx").then((m) => ({ default: m.Marina })),
 );
@@ -304,6 +307,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   "driving-range": DrivingRange,
   marina: Marina,
   courtside: Courtside,
+  catwalk: Catwalk,
   "mermaid-cove": MermaidCove,
   "skate-diner": SkateDiner,
   gym: Gym,

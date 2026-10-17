@@ -90,6 +90,11 @@ const ROOM_SHOTS: Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }> =
       eye: new THREE.Vector3(6, 7, 20),
       look: new THREE.Vector3(0, 0, -2),
     },
+    // from by the door, past the judges and up the runway to backstage
+    catwalk: {
+      eye: new THREE.Vector3(5.5, 6, 14),
+      look: new THREE.Vector3(0, 0.4, -2.5),
+    },
     // from the landing, down the long dock to the yachts and the sea
     marina: {
       eye: new THREE.Vector3(5, 6, 13),
@@ -247,6 +252,7 @@ const MAX_DISTANCE: Record<RoomId, number> = {
   "driving-range": 60,
   marina: 30,
   courtside: 32,
+  catwalk: 20,
   "mermaid-cove": 24,
   "skate-diner": 20,
   gym: 22,

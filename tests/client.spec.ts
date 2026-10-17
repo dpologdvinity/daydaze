@@ -587,6 +587,27 @@ test("the Park Ice Rink: the ice show starts and its first cue comes", async ({
   expect(errors).toEqual([]);
 });
 
+test("the Catwalk: Runway Walk starts and its first cue comes", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=catwalk`);
+  await expect(canvasOf(page)).toHaveAttribute("data-frames", "10");
+  const panel = page.getByRole("region", { name: "Runway Walk" });
+  await panel.getByRole("button", { name: "Walk the runway" }).click();
+  await panel.getByRole("button", { name: "Now!" }).click();
+  // pressed off the cue, or not at all: the first cue is called
+  await expect(panel.getByRole("status")).toHaveText(
+    /: (Stuck it!|Close|Missed)|The judges/,
+    { timeout: 120_000 },
+  );
+  await panel.getByRole("button", { name: "Step off the runway" }).click();
+  await expect(
+    panel.getByRole("button", { name: "Walk the runway" }),
+  ).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test("the Aquarium: the seal show starts and Pepper's first trick is called", async ({
   page,
 }) => {
@@ -778,6 +799,7 @@ for (const room of [
   "boba-matcha",
   "marina",
   "courtside",
+  "catwalk",
   "mermaid-cove",
   "amusement-park",
   "ice-rink",
