@@ -340,7 +340,7 @@ test("Player 2's door opens onto its floor, and every cabinet, stool and the bar
     ...hotspotsIn("arcade-bar").map((h) => h.position),
     ...seatsIn("arcade-bar").map((s) => s.approach),
   ];
-  assert.equal(hotspotsIn("arcade-bar").length, 5);
+  assert.equal(hotspotsIn("arcade-bar").length, 6);
   for (const goal of goals) {
     assert.equal(isBlocked(area, goal), false, `clear at ${goal}`);
     let pos: Vec2 = room.spawn.position;

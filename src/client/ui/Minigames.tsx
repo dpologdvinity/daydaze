@@ -34,6 +34,12 @@ const StarSiege = lazy(() =>
   })),
 );
 
+const Trivia = lazy(() =>
+  import("../../minigames/trivia/Trivia.tsx").then((m) => ({
+    default: m.Trivia,
+  })),
+);
+
 /** The keyboard route to each hotspot in this room, as plain buttons. */
 export function VenueGames({
   room,
@@ -75,6 +81,8 @@ export function GameOverlay({
         <Midway onClose={done} reducedMotion={reducedMotion} />
       ) : game === "gem-glam" ? (
         <GemGlam onClose={done} reducedMotion={reducedMotion} />
+      ) : game === "trivia" ? (
+        <Trivia onClose={done} reducedMotion={reducedMotion} />
       ) : game === "star-siege" ? (
         <StarSiege onClose={done} reducedMotion={reducedMotion} />
       ) : (

@@ -710,6 +710,26 @@ test("Star Siege: the fleet marches, a shot flies, and the game closes", async (
   expect(errors).toEqual([]);
 });
 
+test("Throwback Trivia: answer a question and the right one lights up", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&debug=1`);
+  await page.getByRole("button", { name: "Go to Player 2" }).click();
+  await page
+    .getByRole("button", { name: "Play Throwback Trivia on the cabinet" })
+    .click();
+  const dialog = page.getByRole("dialog", { name: "Throwback Trivia" });
+  await dialog.getByRole("button", { name: "Play" }).click();
+  await expect(dialog.getByText("Question 1 of 10")).toBeVisible();
+  await dialog.locator(".tt-answer").first().click();
+  await expect(dialog.locator('.tt-answer[data-state="right"]')).toBeVisible();
+  await expect(dialog.getByText("Question 2 of 10")).toBeVisible();
+  await dialog.getByRole("button", { name: "Close Throwback Trivia" }).click();
+  await expect(dialog).toBeHidden();
+  expect(errors).toEqual([]);
+});
+
 for (const room of [
   "rooftop-bar",
   "sugar-rush",

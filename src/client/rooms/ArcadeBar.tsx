@@ -114,6 +114,14 @@ function screen(game: MinigameId | "attract") {
       });
       ctx.fillStyle = "#e8e2ff";
       ctx.fillText("BASSLINE", 64, 22);
+    } else if (game === "trivia") {
+      ctx.fillStyle = "#ffd84f";
+      ctx.font = "900 56px sans-serif";
+      ctx.fillText("?", 64, 100);
+      ctx.font = "700 14px sans-serif";
+      ctx.fillStyle = "#4fe3ff";
+      ctx.fillText("THROWBACK", 64, 22);
+      ctx.fillText("TRIVIA", 64, 40);
     } else if (game === "star-siege") {
       // the fleet in rows, and a ship at the bottom
       const rows = ["#ff4fb3", "#b06bff", "#4fe3ff", "#7dff6b"];
@@ -202,6 +210,7 @@ const PLAYABLE_GAMES: Partial<Record<number, MinigameId>> = {
   [PLAYABLE.bassline]: "bassline",
   [PLAYABLE.midway]: "midway",
   [PLAYABLE.starSiege]: "star-siege",
+  [PLAYABLE.trivia]: "trivia",
 };
 
 /** The cabinets down the back wall: bodies, lit marquees, control decks
@@ -214,6 +223,7 @@ function Cabinets() {
       bassline: screen("bassline"),
       midway: screen("midway"),
       "star-siege": screen("star-siege"),
+      trivia: screen("trivia"),
       "last-call": attract,
       attract,
     };
