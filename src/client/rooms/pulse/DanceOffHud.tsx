@@ -1,19 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  DANCE_OFF_EVERY,
-  danceOffAt,
-  danceOffIndex,
-} from "../../../game/danceOff.ts";
+import { danceOffAt, danceOffIndex } from "../../../game/danceOff.ts";
+import { danceOffClock as clock } from "./danceOffClock.ts";
 import { award } from "../../ui/prizeDesk.ts";
-
-/** `?danceoff=5` shifts the clock so a dance-off is 5 s in at load. */
-const PREVIEW = Number(
-  new URLSearchParams(window.location.search).get("danceoff") ?? Number.NaN,
-);
-const OFFSET = Number.isFinite(PREVIEW)
-  ? DANCE_OFF_EVERY - ((Date.now() / 1000) % DANCE_OFF_EVERY) + PREVIEW
-  : 0;
-const clock = () => Date.now() / 1000 + OFFSET;
 
 const TICK_MS = 250;
 

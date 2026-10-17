@@ -1,3 +1,4 @@
+import { DanceOffSign } from "./pulse/DanceOffSign.tsx";
 import type { MinigameId } from "../../game/hotspots.ts";
 import { hotspotsIn } from "../../game/hotspots.ts";
 import { ROOMS } from "../../game/rooms.ts";
@@ -60,6 +61,7 @@ export function Pulse({
       <PulseSet />
       <MirrorBall />
       <PulseNpcs onDrink={onDrink} />
+      <DanceOffSign />
       <PulseCrowd />
       {hotspotsIn("pulse").map((spot) => (
         <GamePad key={spot.id} spot={spot} onGame={onGame} />

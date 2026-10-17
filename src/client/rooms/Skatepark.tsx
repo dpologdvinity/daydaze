@@ -447,7 +447,7 @@ export function Skatepark({
         </mesh>
       ))}
       <group
-        position={[BLEACHER_SEATS[4][0], 0.35, BLEACHER_Z + 0.5]}
+        position={[BLEACHER_SEATS[4][0] + 0.7, 0.35, BLEACHER_Z + 0.5]}
         rotation-y={Math.PI}
       >
         <CrowdFigure look={LOCALS[1]} seed={213} />
