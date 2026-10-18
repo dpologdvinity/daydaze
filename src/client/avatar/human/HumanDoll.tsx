@@ -69,7 +69,7 @@ void loadMocap();
 // a doll given no held pose (an NPC) strikes one of these, by seed; the
 // first, none, keeps the built hip-pop pose
 const POSE_HOLDS = [undefined, ...stillClipsOf("pose").map((c) => c.id)];
-// metres from the camera where a doll swaps to and from the low-poly body
+// meters from the camera where a doll swaps to and from the low-poly body
 const LOD_FAR = 9;
 const LOD_NEAR = 8;
 const worldPos = new THREE.Vector3();
@@ -280,7 +280,7 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
         if (!live) return t.dispose();
         tex = t;
         skin.color.set("#ffffff");
-        // a warm red glow through the skin's own colours: light scattering
+        // a warm red glow through the skin's own colors: light scattering
         // under real skin, not a flat white sheen
         skin.emissive.set("#ffb39c");
         skin.map = t;
@@ -316,7 +316,7 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
 /**
  * Real hair's look is its shine: two highlight bands running across the
  * strands (Kajiya-Kay), a bright white one and a broader one tinted with the
- * hair's own colour, each broken up strand by strand. Adds them to a standard
+ * hair's own color, each broken up strand by strand. Adds them to a standard
  * material; needs the card geometry's `hairTangent` (across the lock).
  */
 function hairShine<M extends THREE.MeshStandardMaterial>(material: M): M {
@@ -392,7 +392,7 @@ function hairShine<M extends THREE.MeshStandardMaterial>(material: M): M {
  * sculpted hair (afro, braids, buns) has no strand direction, so it stays
  * matte with a soft sheen. Baked root-to-tip shading tints both. */
 function hairMaterial(
-  colour: string,
+  color: string,
   map: THREE.Texture | null,
   shaded: boolean,
   rich: boolean,
@@ -404,7 +404,7 @@ function hairMaterial(
   if (map) map.anisotropy = 8;
   const material = new THREE.MeshStandardMaterial({
     map,
-    color: colour,
+    color: color,
     vertexColors: shaded,
     // the shine comes from the bands; the base lighting stays soft
     roughness: map ? 0.7 : 0.55,
@@ -416,7 +416,7 @@ function hairMaterial(
   return map && cutout ? hairShine(material) : material;
 }
 
-type Tint = { colour: string; kind: "hair" | "cloth" | "gloss" | "keep" };
+type Tint = { color: string; kind: "hair" | "cloth" | "gloss" | "keep" };
 
 /** A worn part, re-bound to the body's bones and tinted. */
 function Part({
@@ -428,7 +428,7 @@ function Part({
   url: string;
   bones: Map<string, THREE.Bone>;
   tint: Tint;
-  /** The part's meshes, and how far its soles lift the doll (metres). */
+  /** The part's meshes, and how far its soles lift the doll (meters). */
   onMeshes: (meshes: THREE.Mesh[] | null, lift: number) => void;
 }) {
   const gltf = useGLTF(url);
@@ -482,10 +482,10 @@ function Part({
       }
       const mat =
         tint.kind === "hair"
-          ? hairMaterial(tint.colour, old?.map ?? null, hasShade, rich, cutout)
+          ? hairMaterial(tint.color, old?.map ?? null, hasShade, rich, cutout)
           : new THREE.MeshStandardMaterial({
               map: old?.map ?? null,
-              color: tint.kind === "keep" ? "#ffffff" : tint.colour,
+              color: tint.kind === "keep" ? "#ffffff" : tint.color,
               roughness: tint.kind === "gloss" ? 0.22 : 0.7,
             });
       materials.push(mat);
@@ -499,7 +499,7 @@ function Part({
         // highlight anyway, and blended overdraw is the costly part
         const wisps = new THREE.MeshStandardMaterial({
           map: old.map,
-          color: tint.colour,
+          color: tint.color,
           vertexColors: hasShade,
           roughness: 0.5,
           side: THREE.DoubleSide,
@@ -517,7 +517,7 @@ function Part({
       }
     }
     return { group, materials, lift };
-  }, [gltf, bones, tint.colour, tint.kind, rich]);
+  }, [gltf, bones, tint.color, tint.kind, rich]);
 
   useEffect(() => {
     onMeshes(morphMeshes(part.group), part.lift);
@@ -702,7 +702,7 @@ export function HumanDoll({
           key={parts.hair}
           url={parts.hair}
           bones={body.bones}
-          tint={{ colour: look.hairColor, kind: "hair" }}
+          tint={{ color: look.hairColor, kind: "hair" }}
           onMeshes={track.hair}
         />
       </Suspense>
@@ -711,7 +711,7 @@ export function HumanDoll({
           key={parts.outfit}
           url={parts.outfit}
           bones={body.bones}
-          tint={{ colour: swim?.color ?? look.outfitColor, kind: "cloth" }}
+          tint={{ color: swim?.color ?? look.outfitColor, kind: "cloth" }}
           onMeshes={track.outfit}
         />
       </Suspense>
@@ -723,9 +723,9 @@ export function HumanDoll({
             bones={body.bones}
             tint={
               SHOES[silhouetteOf(look.outfit)] === "sneakers"
-                ? { colour: "#ffffff", kind: "keep" }
+                ? { color: "#ffffff", kind: "keep" }
                 : {
-                    colour:
+                    color:
                       silhouetteOf(look.outfit) === "mini"
                         ? "#f6e7ff"
                         : look.outfitColor,

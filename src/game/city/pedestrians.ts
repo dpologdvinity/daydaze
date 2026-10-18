@@ -115,7 +115,7 @@ export function pedestrianAt(
 const scratch: PedestrianPose = { x: 0, z: 0, yaw: 0 };
 
 /** The indices of the `count` pedestrians nearest `at` at `time`, within
- * `radius` metres, nearest first. */
+ * `radius` meters, nearest first. */
 export function nearestPedestrians(
   at: Vec2,
   time: number,

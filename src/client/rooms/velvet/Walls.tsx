@@ -102,7 +102,7 @@ export function Walls() {
       at.add(new THREE.BoxGeometry(12, 0.05, 0.06), GOLD, {
         position: [0, 1.02, 0.05],
       });
-      // fluted gold pilasters every two metres
+      // fluted gold pilasters every two meters
       for (let x = -5; x <= 5; x += 2) {
         at.add(new THREE.BoxGeometry(0.1, H - 0.2, 0.06), GOLD, {
           position: [x, H / 2, 0.03],

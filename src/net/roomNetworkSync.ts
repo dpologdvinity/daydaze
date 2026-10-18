@@ -19,7 +19,7 @@ export interface NetworkTransport {
 }
 
 const MAX_EXTRAPOLATION_MS = 200;
-// Metres: dead reckoning may guess at most one stride past the latest state.
+// Meters: dead reckoning may guess at most one stride past the latest state.
 const MAX_EXTRAPOLATION_DISPLACEMENT = 1;
 
 function lerp(start: number, end: number, ratio: number): number {

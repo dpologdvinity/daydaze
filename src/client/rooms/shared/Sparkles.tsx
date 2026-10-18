@@ -2,7 +2,7 @@ import { Sparkles as DreiSparkles } from "@react-three/drei";
 import { useLayoutEffect, useRef, type ComponentProps } from "react";
 import * as THREE from "three";
 
-// drei's shader divides by the distance to the point centre, so the centre
+// drei's shader divides by the distance to the point center, so the center
 // pixel gets an infinite alpha. Blending turns that into NaN in the high
 // tier's half-float buffer, and the bloom blur spreads one NaN pixel over
 // the whole frame: a black canvas. Clamp it like an 8-bit buffer would.

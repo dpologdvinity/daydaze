@@ -2,7 +2,7 @@ import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import type { Vec2 } from "../../../game/walk.ts";
 
-/** A tyre centre: `at` on the ground in metres, `y` the height of its centre. */
+/** A tyre center: `at` on the ground in meters, `y` the height of its center. */
 export type Tyre = { at: Vec2; y: number };
 
 const TYRE_RADIUS = 0.42;

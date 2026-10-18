@@ -98,7 +98,7 @@ export const BLADE_SIGNS: Partial<
   "karaoke-loft": { text: "KARAOKE BAR", color: "#4fe3ff" },
 };
 
-/** Flat-colour ads on the faces of the towers. */
+/** Flat-color ads on the faces of the towers. */
 export const ADS: Partial<Record<string, { text: string; color: string }>> = {
   "glass-tower": { text: "MANGO FIZZ", color: "#ffd84f" },
   "vesper-hotel": { text: "NIGHT BUS PASS", color: "#7dff6b" },
@@ -162,7 +162,7 @@ function paved(p: Vec2): boolean {
  * Which way a building faces, and its front in that frame. Fronts that face
  * north or south are in world space (yaw 0, out1 picks the side). A front
  * facing east or west is described as if it faced +z, in a frame turned
- * `yaw` about the building's centre: dress it there, then turn what it
+ * `yaw` about the building's center: dress it there, then turn what it
  * dresses by `yaw` (see plan.ts).
  */
 export type Facing = { front: Front; yaw: number };
@@ -388,7 +388,7 @@ function windows(b: Building, f: Front, out: Buckets): void {
   }
 }
 
-/** Striped awnings: the accent colour and cream, four stripes across the front. */
+/** Striped awnings: the accent color and cream, four stripes across the front. */
 function awning(out: Buckets, f: Front, accent: string): void {
   const width = Math.min(f.w * 0.7, 9);
   const stripe = width / 4;

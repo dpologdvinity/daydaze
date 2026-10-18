@@ -99,7 +99,7 @@ test("each interior room has one street door on a sidewalk, with a landing", () 
   }
 });
 
-test("venues stand in their own neighbourhood once it is built", () => {
+test("venues stand in their own neighborhood once it is built", () => {
   for (const venue of FOOD_VENUES) {
     const shop = FOOD_STOREFRONTS.find((b) => b.id === `food-${venue.id}`);
     assert.ok(shop, venue.id);

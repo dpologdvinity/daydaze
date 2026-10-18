@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { Uniform } from "three";
 import { liveDrunk } from "./drunk.ts";
 
-// Sway moves the screen UVs; warmth tints the colour; edge darkens the corners
+// Sway moves the screen UVs; warmth tints the color; edge darkens the corners
 // (the vignette stands in for an edge blur). All three are scaled by the buzz.
 const SHADER = /* glsl */ `
 uniform float sway;

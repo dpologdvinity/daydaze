@@ -2,7 +2,7 @@ import type { JSX } from "react";
 import type { Look, Mood } from "../../../game/look.ts";
 import type { DialogueContext } from "../../../game/dialogue/types.ts";
 import { TalkingNpc } from "../shared/TalkingNpc.tsx";
-import { BAR_CENTRE_X, BAR_Z, CORNER_TABLE } from "./layout.ts";
+import { BAR_CENTER_X, BAR_Z, CORNER_TABLE } from "./layout.ts";
 
 const CONTEXT: DialogueContext = {
   venue: "violet-hour",
@@ -82,7 +82,7 @@ const REGULARS: readonly {
       outfitColor: "#3fe0d0",
       shadow: "#3fe0d0",
     },
-    at: [BAR_CENTRE_X + 1.2, 0, BAR_Z + 1.0],
+    at: [BAR_CENTER_X + 1.2, 0, BAR_Z + 1.0],
     rot: Math.PI,
     mood: "lean",
   },
@@ -108,7 +108,7 @@ export function VioletNpcs({ onDrink }: { onDrink?: () => void }): JSX.Element {
         role="bartender"
         look={BARTENDER_LOOK}
         mood="idle"
-        at={[BAR_CENTRE_X - 0.6, 0, BAR_Z - 0.7]}
+        at={[BAR_CENTER_X - 0.6, 0, BAR_Z - 0.7]}
         rot={0}
         seed={32}
         situation="action-ordering"

@@ -4,7 +4,7 @@
 import { BOARDWALK } from "./layout.ts";
 
 export const PARADE_EVERY = 360;
-/** Metres a second the floats roll at. */
+/** Meters a second the floats roll at. */
 export const PARADE_SPEED = 5;
 /** Where the floats start and finish, and their gap. */
 export const PARADE_FROM = -330;

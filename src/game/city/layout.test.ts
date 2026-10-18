@@ -298,7 +298,7 @@ test("the Ice Rink's lodge door fires from the park, and its exit lands back out
   assert.equal(fired, "ice-rink");
 });
 
-test("the Skylark's lift door fires from Nightlife Row, and its exit lands back outside", () => {
+test("the Skylark's elevator door fires from Nightlife Row, and its exit lands back outside", () => {
   const door = BUILDINGS.find((b) => b.id === "skylark")?.door;
   assert.ok(door);
   const back = ROOMS["rooftop-bar"].portals.find((p) => p.target === "city");

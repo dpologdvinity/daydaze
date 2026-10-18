@@ -17,9 +17,9 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import type { CarSpec } from "../../../game/driving/car.ts";
 import { NEON } from "./neon.ts";
 
-// Side profiles are [z as a share of length, height in metres]. Nose at +z.
+// Side profiles are [z as a share of length, height in meters]. Nose at +z.
 type Pt = [number, number];
-// [width, height, depth, x, y, z] in metres.
+// [width, height, depth, x, y, z] in meters.
 type Box = [number, number, number, number, number, number];
 
 type Profile = {
@@ -251,7 +251,7 @@ const TO_WORLD = new Matrix4().set(
   1,
 );
 
-// Extrudes a z-y outline across the width, centred on x. Det +1, so normals stay outward.
+// Extrudes a z-y outline across the width, centered on x. Det +1, so normals stay outward.
 function sideShell(pts: Pt[], length: number, depth: number): BufferGeometry {
   const shape = new Shape(pts.map(([z, y]) => new Vector2(z * length, y)));
   const g = new ExtrudeGeometry(shape, {
@@ -319,7 +319,7 @@ export const RIM = new MeshStandardMaterial({
   roughness: 0.28,
   metalness: 0.55,
 });
-// Vertex colour carries the lamp hue, so one draw call covers head- and tail-lights.
+// Vertex color carries the lamp hue, so one draw call covers head- and tail-lights.
 export const LIGHT = new MeshBasicMaterial({
   vertexColors: true,
   toneMapped: false,

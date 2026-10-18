@@ -1,4 +1,4 @@
-// The Skylark: a rooftop bar 30 m above Nightlife Row, up the lift in the
+// The Skylark: a rooftop bar 30 m above Nightlife Row, up the elevator in the
 // tower at the east end of the Back Room's block. One layout, shared by the
 // room's floor and blockers (rooms.ts), its seats and the client's scene.
 import type { Vec2 } from "./walk.ts";
@@ -15,7 +15,7 @@ export const STOOL_Z = -3.85;
 
 /** The lounge: a long sofa against the west rail, facing across the deck
  * (+x), with a fire pit at its north end. Nothing stands in front of it, so
- * a straight walk from the lift reaches every cushion. */
+ * a straight walk from the elevator reaches every cushion. */
 export const SOFA = {
   at: [-7.0, 1.5] as Vec2,
   cushions: [
@@ -35,7 +35,7 @@ export const HIGH_TABLES: readonly Vec2[] = [
 /** The DJ booth in the north-east corner, facing the deck. */
 export const DJ_BOOTH = { x0: 4.3, x1: 6.5, z0: -4, z1: -2.7 } as const;
 
-/** The lift: a kiosk in the deck's south-west corner (x from KIOSK.x0 to
+/** The elevator: a kiosk in the deck's south-west corner (x from KIOSK.x0 to
  * KIOSK.x1), its doors facing north, and where you step out of them. */
 export const KIOSK = { x0: -8.2, x1: -4.8, front: 5.9 } as const;
 export const LIFT = { door: [-6.5, 5.5] as Vec2, spawn: [-5.6, 4.6] as Vec2 };

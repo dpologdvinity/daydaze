@@ -1,4 +1,4 @@
-// Fast-travel spots: one sidewalk point per neighbourhood, for the city map.
+// Fast-travel spots: one sidewalk point per neighborhood, for the city map.
 import { ROOMS, type RoomId, type Spawn } from "../rooms.ts";
 import {
   BUILDINGS,

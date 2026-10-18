@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import {
   bailCost,
   bailOut,
-  goodBehaviour,
+  goodBehavior,
   remainingMs,
   type JailSave,
 } from "../../game/jail/jail.ts";
@@ -51,7 +51,7 @@ export function JailHud({
         type="button"
         disabled={!serving || done}
         onClick={() => {
-          onChange(goodBehaviour(jail, Date.now()));
+          onChange(goodBehavior(jail, Date.now()));
           setNote("Cards with the guard: 30 seconds off.");
         }}
       >
@@ -61,7 +61,7 @@ export function JailHud({
         type="button"
         disabled={!serving || done}
         onClick={() => {
-          onChange(goodBehaviour(jail, Date.now()));
+          onChange(goodBehavior(jail, Date.now()));
           setNote("Push-ups in the yard: 30 seconds off.");
         }}
       >

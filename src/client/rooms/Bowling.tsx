@@ -409,7 +409,7 @@ function PlayLane({ geometry }: { geometry: THREE.BufferGeometry }) {
         const lx = at ? at[0] : sx;
         const lz = at ? at[1] : sz;
         const fall = at ? at[2] : 0;
-        // the way it's travelling, in the room (down the lane is -z)
+        // the way it's traveling, in the room (down the lane is -z)
         const dx = lx - sx;
         const dz = -(lz - sz);
         const len = Math.hypot(dx, dz);

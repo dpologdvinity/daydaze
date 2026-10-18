@@ -281,7 +281,7 @@ const TOWELS = LOUNGERS.map((l) => {
 });
 const CANOPIES = UMBRELLAS.map((u) => stripes(u.colors, 2));
 
-/** Every coloured prop on the deck, merged into one mesh. */
+/** Every colored prop on the deck, merged into one mesh. */
 function buildProps() {
   const root = new Props();
   LOUNGERS.forEach((l) =>

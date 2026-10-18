@@ -44,8 +44,8 @@ test("a new board is full, has no ready matches and has a move", () => {
 });
 
 test("the same seed deals the same board", () => {
-  const colours = (g: Game) => g.board.map((row) => row.map((x) => x?.colour));
-  assert.deepEqual(colours(newGame("easy", 5)), colours(newGame("easy", 5)));
+  const colors = (g: Game) => g.board.map((row) => row.map((x) => x?.color));
+  assert.deepEqual(colors(newGame("easy", 5)), colors(newGame("easy", 5)));
 });
 
 test("an illegal swap changes nothing and costs no move", () => {
@@ -74,21 +74,21 @@ test("four in a row leaves a sparkle gem that clears its row and column", () => 
   for (let c = 0; c < SIZE; c++)
     for (let r = 0; r < SIZE; r++) {
       const cell = g.board[r][c];
-      if (cell) cell.colour = (r * 3 + c * 2) % 6;
+      if (cell) cell.color = (r * 3 + c * 2) % 6;
     }
   // the board above may have runs; build the case on row 7 explicitly
   const row = SIZE - 1;
   for (const c of [0, 1, 3]) {
     const cell = g.board[row][c];
-    if (cell) cell.colour = 5;
+    if (cell) cell.color = 5;
   }
   const above = g.board[row - 1][2];
-  if (above) above.colour = 5;
+  if (above) above.color = 5;
   // col 4 must not extend the run to five (that would make a disco gem)
   const fifth = g.board[row][4];
-  if (fifth) fifth.colour = 0;
+  if (fifth) fifth.color = 0;
   const gap = g.board[row][2];
-  if (gap) gap.colour = 4;
+  if (gap) gap.color = 4;
   const steps = play(g, [row - 1, 2], [row, 2]);
   assert.ok(steps);
   const madeSparkle = g.board.some((r) =>

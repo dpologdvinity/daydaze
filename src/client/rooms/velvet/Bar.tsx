@@ -87,7 +87,7 @@ type Bottle = {
   c: THREE.Color;
 };
 
-// Bottles on every shelf: shape and colour cycle so neighbours differ.
+// Bottles on every shelf: shape and color cycle so neighbours differ.
 function bottlesFor(x0: number, x1: number, per = 16): Bottle[] {
   const out: Bottle[] = [];
   SHELVES.forEach((y, row) => {

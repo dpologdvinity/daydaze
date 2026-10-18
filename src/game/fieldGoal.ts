@@ -2,7 +2,7 @@
 // crossbar, with a crosswind to aim into. Pure and deterministic.
 //
 // Field space: x across (the posts at ±UPRIGHT_X), y up, z out from the
-// goal line towards the kicker. Metres and seconds.
+// goal line towards the kicker. Meters and seconds.
 
 export type Vec3 = readonly [x: number, y: number, z: number];
 

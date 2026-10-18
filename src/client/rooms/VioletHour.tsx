@@ -16,7 +16,7 @@ import {
   Walls,
 } from "./violethour/Decor.tsx";
 import { VioletNpcs } from "./violethour/Npcs.tsx";
-import { BAR_CENTRE_X, BAR_Z, DANCE } from "./violethour/layout.ts";
+import { BAR_CENTER_X, BAR_Z, DANCE } from "./violethour/layout.ts";
 import { drink } from "../effects/drunk.ts";
 import { Sparkles } from "./shared/Sparkles.tsx";
 import { HdriLight } from "./shared/HdriLight.tsx";
@@ -70,7 +70,7 @@ function DanceFloorPair() {
       <Couple
         a={COUPLE[0]}
         b={COUPLE[1]}
-        centre={[DANCE.x - 1.3, DANCE.y - 0.5]}
+        center={[DANCE.x - 1.3, DANCE.y - 0.5]}
         facing={0.4}
         move="slow-dance"
       />
@@ -101,7 +101,7 @@ export function VioletHour({
       <fog attach="fog" args={["#24093a", 9, 24]} />
       <hemisphereLight args={["#8a5cff", "#ff8fb0", 0.4]} />
       <pointLight
-        position={[BAR_CENTRE_X, 2.6, BAR_Z + 1.4]}
+        position={[BAR_CENTER_X, 2.6, BAR_Z + 1.4]}
         color="#ff9a56"
         intensity={4}
         distance={7}

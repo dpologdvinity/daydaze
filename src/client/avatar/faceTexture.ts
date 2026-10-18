@@ -10,7 +10,7 @@ export const FACE_W = 500;
 export const FACE_H = 710;
 const SCALE = 1.6;
 
-// Mean skin colour of the golden template, used to re-tint the cropped art.
+// Mean skin color of the golden template, used to re-tint the cropped art.
 const TEMPLATE_SKIN: [number, number, number] = [240, 176, 104];
 
 const EYE_L = { x: 381, y: 463, rx: 112, ry: 64 };
@@ -50,9 +50,9 @@ function ellipseD(x: number, y: number, e: typeof EYE_L) {
   return Math.hypot((x - e.x) / e.rx, (y - e.y) / e.ry);
 }
 
-// Crops eyes + nose from the template and re-tints the skin-coloured pixels.
+// Crops eyes + nose from the template and re-tints the skin-colored pixels.
 // A pixel counts as skin when it is (nearly) a scalar multiple of the
-// template skin colour, which keeps whites, irises and liner untouched.
+// template skin color, which keeps whites, irises and liner untouched.
 let featureCache: { key: string; canvas: HTMLCanvasElement } | null = null;
 async function featureLayer(skin: [number, number, number]) {
   const key = skin.join(",");
@@ -143,7 +143,7 @@ function paintBase(
   hl(668, 600, 86, blush, 0.42);
 }
 
-// Lid colour as a per-pixel multiply on skin-like pixels only, so it never
+// Lid color as a per-pixel multiply on skin-like pixels only, so it never
 // stains the whites of the eyes and needs no hard clip.
 function paintShadow(
   ctx: CanvasRenderingContext2D,

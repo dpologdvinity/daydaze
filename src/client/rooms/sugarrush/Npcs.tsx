@@ -83,7 +83,7 @@ const COAT_CHECK_LOOK: Look = {
   shadow: "#ffd1f0",
 };
 
-/** Dancers on the LED floor, round its centre. */
+/** Dancers on the LED floor, round its center. */
 const CROWD: readonly { look: Look; at: [number, number]; rot: number }[] = [
   {
     look: {

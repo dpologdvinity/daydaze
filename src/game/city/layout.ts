@@ -53,11 +53,11 @@ export type RoadNode = { id: string; position: Vec2 };
 export type RoadEdge = {
   from: string;
   to: string;
-  /** Metres of asphalt across the edge. */
+  /** Meters of asphalt across the edge. */
   width: number;
   /** Lanes in both directions. */
   lanes: number;
-  /** Metres per second. */
+  /** Meters per second. */
   speedLimit: number;
 };
 
@@ -243,7 +243,7 @@ export type Building = {
   footprint: readonly Vec2[];
   height: number;
   style: BuildingStyle;
-  /** Paint over the style's own colour (pastel beach houses). */
+  /** Paint over the style's own color (pastel beach houses). */
   color?: string;
   sign?: { text: string; color: string };
   /** A line of people waits on the forecourt. */
@@ -274,7 +274,7 @@ function nodeAt(id: string): Vec2 {
   return node.position;
 }
 
-/** The asphalt of one road edge, a rectangle along its centreline. */
+/** The asphalt of one road edge, a rectangle along its centerline. */
 export function roadRect(edge: RoadEdge): Vec2[] {
   const [ax, az] = nodeAt(edge.from);
   const [bx, bz] = nodeAt(edge.to);
@@ -1171,7 +1171,7 @@ const ARTS_BUILDINGS: readonly Building[] = ARTS_FRONT.map(
   (b, i): Building => ({
     id: `arts-${i}`,
     neighborhood: "arts-district",
-    // Gallery Row's sidewalks end 10 m from its centreline
+    // Gallery Row's sidewalks end 10 m from its centerline
     footprint: b.north
       ? rect(b.x - b.w / 2, GALLERY_Z - 42, b.x + b.w / 2, GALLERY_Z - 12)
       : rect(b.x - b.w / 2, GALLERY_Z + 12, b.x + b.w / 2, GALLERY_Z + 52),
@@ -1186,7 +1186,7 @@ const ARTS_BUILDINGS: readonly Building[] = ARTS_FRONT.map(
 // Chinatown (west of its cross street) and Koreatown (east of it), both
 // sides of the avenue: dim sum, hot pot, noodles, a tea house and a night
 // market hall; KBBQ, a K-pop shop, a noraebang, fried chicken and a soju
-// bar. Ids match the dialogue's "chinatown-koreatown" neighbourhood.
+// bar. Ids match the dialogue's "chinatown-koreatown" neighborhood.
 const ASIA_FRONT: readonly {
   x: number;
   w: number;

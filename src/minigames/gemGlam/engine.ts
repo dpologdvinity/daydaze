@@ -3,15 +3,15 @@
  * three or more of a kind; matches clear, gems fall and new ones drop in, and
  * cascades score more. Four in a line leaves a sparkle gem that clears its
  * row and column when matched; five leaves a disco gem that clears every gem
- * of the colour it is swapped with. Pure and seeded, so every rule is tested.
+ * of the color it is swapped with. Pure and seeded, so every rule is tested.
  */
 import type { PayGrade } from "../../game/wallet.ts";
 
 export const SIZE = 8;
-export const COLOURS = 6;
+export const COLORS = 6;
 
 export type Special = "sparkle" | "disco" | null;
-export type Gem = { colour: number; special: Special; id: number };
+export type Gem = { color: number; special: Special; id: number };
 export type Board = (Gem | null)[][]; // [row][col], row 0 at the top
 
 export type Level = "easy" | "medium" | "hard";
@@ -47,8 +47,8 @@ function seeded(seed: number): () => number {
   };
 }
 
-function gem(g: Game, colour: number, special: Special = null): Gem {
-  return { colour, special, id: g.nextId++ };
+function gem(g: Game, color: number, special: Special = null): Gem {
+  return { color, special, id: g.nextId++ };
 }
 
 /** A fresh board with no ready-made matches and at least one legal move. */
@@ -64,17 +64,17 @@ export function newGame(level: Level, seed: number): Game {
     g.board = Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
     for (let r = 0; r < SIZE; r++)
       for (let c = 0; c < SIZE; c++) {
-        let colour: number;
-        do colour = Math.floor(g.rand() * COLOURS);
+        let color: number;
+        do color = Math.floor(g.rand() * COLORS);
         while (
           (c >= 2 &&
-            g.board[r][c - 1]?.colour === colour &&
-            g.board[r][c - 2]?.colour === colour) ||
+            g.board[r][c - 1]?.color === color &&
+            g.board[r][c - 2]?.color === color) ||
           (r >= 2 &&
-            g.board[r - 1][c]?.colour === colour &&
-            g.board[r - 2][c]?.colour === colour)
+            g.board[r - 1][c]?.color === color &&
+            g.board[r - 2][c]?.color === color)
         );
-        g.board[r][c] = gem(g, colour);
+        g.board[r][c] = gem(g, color);
       }
   } while (!hasMove(g.board));
   return g;
@@ -95,7 +95,7 @@ export function findRuns(board: Board): Cell[][] {
         const cell: Cell = horizontal ? [i, j] : [j, i];
         const g = j < SIZE ? board[cell[0]][cell[1]] : null;
         const prev = run.length ? board[run[0][0]][run[0][1]] : null;
-        if (g && prev && g.colour === prev.colour) run.push(cell);
+        if (g && prev && g.color === prev.color) run.push(cell);
         else {
           if (run.length >= 3) runs.push(run);
           run = g ? [cell] : [];
@@ -142,7 +142,7 @@ function clearAndDrop(
   g: Game,
   cells: Cell[],
   chain: number,
-  make: { at: Cell; colour: number; special: Special }[],
+  make: { at: Cell; color: number; special: Special }[],
 ): Step {
   const doomed = new Set(cells.map(([r, c]) => r * SIZE + c));
   // specials caught in a clear fire too, spreading the clear
@@ -162,7 +162,7 @@ function clearAndDrop(
   }
   const points = doomed.size * 20 * chain;
   for (const k of doomed) g.board[Math.floor(k / SIZE)][k % SIZE] = null;
-  for (const m of make) g.board[m.at[0]][m.at[1]] = gem(g, m.colour, m.special);
+  for (const m of make) g.board[m.at[0]][m.at[1]] = gem(g, m.color, m.special);
   // gravity, then refill from the top
   for (let c = 0; c < SIZE; c++) {
     let write = SIZE - 1;
@@ -173,7 +173,7 @@ function clearAndDrop(
       g.board[write--][c] = cell;
     }
     for (let r = write; r >= 0; r--)
-      g.board[r][c] = gem(g, Math.floor(g.rand() * COLOURS));
+      g.board[r][c] = gem(g, Math.floor(g.rand() * COLORS));
   }
   g.score += points;
   return {
@@ -192,14 +192,14 @@ export function play(g: Game, a: Cell, b: Cell): Step[] | null {
   const gb = g.board[b[0]][b[1]];
   if (!ga || !gb) return null;
   const steps: Step[] = [];
-  // a disco gem clears every gem of the colour it is swapped with
+  // a disco gem clears every gem of the color it is swapped with
   const disco = ga.special === "disco" ? a : gb.special === "disco" ? b : null;
   if (disco) {
     const other = disco === a ? gb : ga;
     const cells: Cell[] = [disco];
     for (let r = 0; r < SIZE; r++)
       for (let c = 0; c < SIZE; c++)
-        if (g.board[r][c]?.colour === other.colour) cells.push([r, c]);
+        if (g.board[r][c]?.color === other.color) cells.push([r, c]);
     g.moves -= 1;
     steps.push(clearAndDrop(g, cells, 1, []));
   } else {
@@ -210,19 +210,19 @@ export function play(g: Game, a: Cell, b: Cell): Step[] | null {
     }
     g.moves -= 1;
   }
-  // resolve cascades; long runs leave a special at the swapped cell or centre
+  // resolve cascades; long runs leave a special at the swapped cell or center
   for (let chain = steps.length + 1; ; chain++) {
     const runs = findRuns(g.board);
     if (!runs.length) break;
-    const make: { at: Cell; colour: number; special: Special }[] = [];
+    const make: { at: Cell; color: number; special: Special }[] = [];
     for (const run of runs) {
       if (run.length < 4) continue;
       const at =
         run.find(
           ([r, c]) => (r === a[0] && c === a[1]) || (r === b[0] && c === b[1]),
         ) ?? run[Math.floor(run.length / 2)];
-      const colour = g.board[at[0]][at[1]]?.colour ?? 0;
-      make.push({ at, colour, special: run.length >= 5 ? "disco" : "sparkle" });
+      const color = g.board[at[0]][at[1]]?.color ?? 0;
+      make.push({ at, color, special: run.length >= 5 ? "disco" : "sparkle" });
     }
     steps.push(clearAndDrop(g, runs.flat(), chain, make));
   }
@@ -230,12 +230,12 @@ export function play(g: Game, a: Cell, b: Cell): Step[] | null {
   return steps;
 }
 
-/** Reshuffles colours in place until a move exists (specials are kept). */
+/** Reshuffles colors in place until a move exists (specials are kept). */
 export function shuffle(g: Game) {
   do {
     for (const row of g.board)
       for (const cell of row)
-        if (cell && !cell.special) cell.colour = Math.floor(g.rand() * COLOURS);
+        if (cell && !cell.special) cell.color = Math.floor(g.rand() * COLORS);
   } while (findRuns(g.board).length || !hasMove(g.board));
 }
 

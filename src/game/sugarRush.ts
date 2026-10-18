@@ -6,7 +6,7 @@ import type { Vec2 } from "./walk.ts";
 /** The walkable floor: back wall at z = -6, the street door at the front. */
 export const FLOOR_BOUNDS = { x0: -5.6, x1: 5.6, z0: -5.6, z1: 6.2 } as const;
 
-/** The dance floor's centre, in front of the DJ. */
+/** The dance floor's center, in front of the DJ. */
 export const DANCE: Vec2 = [0, 0.4];
 
 /** The DJ booth at the back, between two dancers' podiums. */

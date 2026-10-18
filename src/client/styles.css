@@ -1573,7 +1573,7 @@ button:focus-visible {
   border: 3px dashed rgb(255 255 255 / 0.7);
 }
 
-/* The prize card a finished game slides in, top centre. */
+/* The prize card a finished game slides in, top center. */
 .prize-card {
   position: fixed;
   top: 84px;
@@ -1692,7 +1692,7 @@ button:focus-visible {
   text-decoration: line-through;
 }
 
-/* Pulse's dance-off call, top centre under the room name */
+/* Pulse's dance-off call, top center under the room name */
 .dance-off {
   position: fixed;
   top: 18px;
@@ -1756,7 +1756,7 @@ button:focus-visible {
   cursor: default;
 }
 
-/* the map's directory of venues, by neighbourhood */
+/* the map's directory of venues, by neighborhood */
 .city-places h3 {
   margin: 14px 0 6px;
   font-size: 15px;

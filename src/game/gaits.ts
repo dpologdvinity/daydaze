@@ -20,9 +20,9 @@ export type Gait = {
   cross: number;
   /** Shoulders turning against the hips. */
   twist: number;
-  /** Up-and-down bounce, metres. */
+  /** Up-and-down bounce, meters. */
   bounce: number;
-  /** Steps per metre, relative to natural. */
+  /** Steps per meter, relative to natural. */
   cadence: number;
   /** Chin up (+) or down (-). */
   chin: number;

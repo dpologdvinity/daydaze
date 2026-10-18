@@ -9,10 +9,10 @@ type CoupleProps = {
   a: Look;
   b: Look;
   /** Ground point between the two partners. */
-  centre: [number, number];
+  center: [number, number];
   /** Direction the pair faces, as a yaw in radians. */
   facing: number;
-  /** Metres between the two partners. */
+  /** Meters between the two partners. */
   gap?: number;
   move: DanceMoveId;
 } & Omit<ThreeElements["group"], "children">;
@@ -21,13 +21,13 @@ type CoupleProps = {
 export function Couple({
   a,
   b,
-  centre,
+  center,
   facing,
   gap = 0.8,
   move,
   ...rest
 }: CoupleProps) {
-  const [lead, follow] = coupleSpots(centre, facing, gap);
+  const [lead, follow] = coupleSpots(center, facing, gap);
   return (
     <group {...rest}>
       <Doll

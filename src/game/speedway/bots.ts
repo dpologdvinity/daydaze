@@ -26,7 +26,7 @@ function nearestIndex(line: readonly Vec2[], p: Vec2): number {
   return best;
 }
 
-/** Walks `distance` metres along the closed centerline from index `from`. */
+/** Walks `distance` meters along the closed centerline from index `from`. */
 function pointAhead(
   line: readonly Vec2[],
   from: number,

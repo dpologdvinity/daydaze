@@ -2,7 +2,7 @@
 // to dive. Pure and deterministic: the keeper's guesses come from a seed.
 //
 // Goal space: x across the goal line (posts at ±POST_X), y up, z out from
-// the line towards the spot at SPOT_Z. Metres and seconds.
+// the line towards the spot at SPOT_Z. Meters and seconds.
 
 export type Vec3 = readonly [x: number, y: number, z: number];
 

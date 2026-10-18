@@ -1,7 +1,7 @@
 import type { Paint } from "./canvasTextures.ts";
 import { seeded } from "./canvasTextures.ts";
 
-/** Grey grain for the road; the material colour tints it. Tiles every UV_METRES. */
+/** Gray grain for the road; the material color tints it. Tiles every UV_METRES. */
 export const asphaltPaint: Paint = (ctx, w, h) => {
   const rand = seeded(7);
   ctx.fillStyle = "#8a8a8a";
@@ -20,7 +20,7 @@ export const asphaltPaint: Paint = (ctx, w, h) => {
   ctx.globalAlpha = 1;
 };
 
-/** A hung banner: a dark field with a colour bar, a neon border and a label. */
+/** A hung banner: a dark field with a color bar, a neon border and a label. */
 export function bannerPaint(label: string, color: string): Paint {
   return (ctx, w, h) => {
     const field = ctx.createLinearGradient(0, 0, 0, h);

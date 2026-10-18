@@ -66,7 +66,7 @@ export function cellAt(p: Vec2): Cell {
   return cellOf(index(p[0], ORIGIN, CELLS_X), index(p[1], ORIGIN_Z, CELLS_Z));
 }
 
-/** Every cell whose square comes within `radius` metres of `center`. */
+/** Every cell whose square comes within `radius` meters of `center`. */
 export function cellsWithin(center: Vec2, radius: number): Cell[] {
   return ALL_CELLS.filter((cell) => {
     const nx = Math.min(Math.max(center[0], cell.x0), cell.x1);

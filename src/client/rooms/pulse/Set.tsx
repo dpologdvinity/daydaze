@@ -28,8 +28,8 @@ const TRUSS = new THREE.MeshStandardMaterial({
   metalness: 1,
 });
 
-// One shared glow material per colour, so every piece of that colour merges
-// into a single draw call. Brightness is one value so the colours stay shared.
+// One shared glow material per color, so every piece of that color merges
+// into a single draw call. Brightness is one value so the colors stay shared.
 const glows = new Map<string, THREE.MeshBasicMaterial>();
 function glow(hex: string) {
   let m = glows.get(hex);
@@ -117,7 +117,7 @@ function buildSet() {
     });
   }
 
-  // coat rail and counter by the street door, with coloured tags above
+  // coat rail and counter by the street door, with colored tags above
   b.add(new THREE.BoxGeometry(1.6, 1.1, 0.5), LACQUER, {
     position: [-4.9, 0.55, 6],
   });

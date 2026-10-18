@@ -56,7 +56,7 @@ export function Dressing({
         id="dressing"
         className="dressing"
         data-open={open}
-        aria-labelledby="dressing-title"
+        aria-labeledby="dressing-title"
       >
         <div className="dressing-glass">
           <header className="dressing-head">

@@ -8,7 +8,7 @@ import type { Element } from "./gymnastics.ts";
 import type { Vec2 } from "./walk.ts";
 
 export const FLOOR_BOUNDS = { x0: -8, x1: 8, z0: -11, z1: 9 } as const;
-/** The runway: raised, centred on x = 0, from backstage to its end. */
+/** The runway: raised, centered on x = 0, from backstage to its end. */
 export const RUNWAY = { half: 1.1, z0: -10, z1: 3, height: 0.4 } as const;
 /** The judges' table, facing the runway's end; they sit on its door side. */
 export const JUDGES = { x0: -2.1, x1: 2.1, z0: 5.2, z1: 5.9 } as const;

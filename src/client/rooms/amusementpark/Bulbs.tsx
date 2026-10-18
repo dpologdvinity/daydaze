@@ -12,8 +12,8 @@ export const BULB_PALETTE = [
 ];
 
 /**
- * One instanced draw call for every bulb in `points`, each glowing in a colour
- * from `colors`. The points and colours must be stable (module-level or memoised).
+ * One instanced draw call for every bulb in `points`, each glowing in a color
+ * from `colors`. The points and colors must be stable (module-level or memoised).
  */
 export function Bulbs({
   points,

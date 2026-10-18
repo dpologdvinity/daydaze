@@ -13,7 +13,7 @@ export const DOCK = { x0: -1.6, x1: 1.6, z0: -12, z1: 3 } as const;
 export const CROSS = { x0: -8, x1: 8, z0: -7.4, z1: -5 } as const;
 /** Where you stand to fish, at the end of the long dock, facing out. */
 export const FISH_SPOT: Vec2 = [0, -11.2];
-/** The yachts' berths: hull centre, length along z, beam. */
+/** The yachts' berths: hull center, length along z, beam. */
 export const YACHTS: readonly {
   at: Vec2;
   length: number;

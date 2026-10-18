@@ -9,18 +9,18 @@ import {
 export type CoupleRole = "lead" | "follow";
 export type CoupleSpot = {
   role: CoupleRole;
-  /** Ground position, in the same units as the centre. */
+  /** Ground position, in the same units as the center. */
   at: [number, number];
   /** Rotation about Y. The two spots face each other. */
   yaw: number;
 };
 
 /**
- * Two spots facing each other, `gap` metres apart, centred on `centre` and
+ * Two spots facing each other, `gap` meters apart, centered on `center` and
  * turned by `facing`. Works for any two dolls, NPC or player.
  */
 export function coupleSpots(
-  centre: [number, number],
+  center: [number, number],
   facing: number,
   gap: number,
 ): [CoupleSpot, CoupleSpot] {
@@ -29,8 +29,8 @@ export function coupleSpots(
   const cos = Math.cos(facing);
   const half = gap / 2;
   const at = (side: number): [number, number] => [
-    centre[0] + side * half * cos,
-    centre[1] - side * half * sin,
+    center[0] + side * half * cos,
+    center[1] - side * half * sin,
   ];
   return [
     { role: "lead", at: at(-1), yaw: facing + Math.PI / 2 },

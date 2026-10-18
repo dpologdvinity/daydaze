@@ -32,7 +32,7 @@ const FILL: Record<(typeof PATHS)[number]["kind"], string> = {
 };
 
 /**
- * The city map: every street, the coast and a button per neighbourhood that
+ * The city map: every street, the coast and a button per neighborhood that
  * takes you there. Closes on Escape or a tap outside the map.
  */
 export function CityMap({

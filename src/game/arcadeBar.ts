@@ -34,7 +34,7 @@ export const LAST_CALL_SPOT: Vec2 = [4.3, -2.7];
 
 /** Pinball machines down the left wall. */
 export const PINBALL = { x0: -6, x1: -5, z0: -2.2, z1: 3.2 } as const;
-/** The air hockey table, on the floor left of centre. */
+/** The air hockey table, on the floor left of center. */
 export const HOCKEY: Vec2 = [-2.6, 1.4];
 
 export const EXIT: Vec2 = [0, 5.2];

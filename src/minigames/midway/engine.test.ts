@@ -71,8 +71,8 @@ test("harder levels give fewer corks", () => {
   assert.ok(CORKS.easy > CORKS.medium && CORKS.medium > CORKS.hard);
 });
 
-test("ring toss: a dead-centre throw rings, the edge misses", () => {
-  // the centre of the middle bottle's cell
+test("ring toss: a dead-center throw rings, the edge misses", () => {
+  // the center of the middle bottle's cell
   const hit = toss("hard", 0.5, 0.5);
   assert.deepEqual(hit.ringer, [1, 1]);
   assert.equal(hit.points, 20);

@@ -62,7 +62,7 @@ function Skyline() {
 }
 
 /** The target greens out on the range, each ringed in its own neon, with a
- * flag; distance boards every fifty metres. */
+ * flag; distance boards every fifty meters. */
 function Targets() {
   return (
     <>
@@ -171,7 +171,7 @@ function Shot() {
 /**
  * Skyline Driving Range on Gallery Row: a deck of tee bays under a neon
  * sign, looking out over a floodlit range of target greens ringed in neon,
- * distance boards out to two hundred metres, and the city's towers lit up
+ * distance boards out to two hundred meters, and the city's towers lit up
  * beyond. Hit a bucket of ten at the greens.
  */
 export function DrivingRange({ onPick }: { onPick: PickHandler }) {

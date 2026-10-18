@@ -154,7 +154,7 @@ function useFace(look: Look, face: THREE.MeshToonMaterial) {
 
 // ----------------------------------------------------------------- LOD
 
-// Past this many metres a doll drops its outlines and tiny jewelry and swaps
+// Past this many meters a doll drops its outlines and tiny jewelry and swaps
 // to coarse head and hair meshes. The gap is hysteresis, so a doll at the edge
 // does not flicker between the two.
 const FAR_RANGE = 8.5;

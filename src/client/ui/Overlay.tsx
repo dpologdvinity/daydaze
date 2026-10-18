@@ -233,7 +233,7 @@ function Mirror({
             tiles="eye"
           />
           <Swatches
-            label="Eye colour"
+            label="Eye color"
             options={EYE_COLORS}
             value={face.eyeColor}
             onPick={(eyeColor) => setFace({ ...face, eyeColor })}
@@ -383,9 +383,9 @@ function Mirror({
           />
         </section>
         <section>
-          <h3>Colour</h3>
+          <h3>Color</h3>
           <Swatches
-            label="Hair colour"
+            label="Hair color"
             options={wearable(HAIR_COLORS, wardrobe)}
             value={look.hairColor}
             onPick={(hairColor) => setLook({ ...look, hairColor })}
@@ -438,7 +438,7 @@ function Mirror({
             onPick={(outfit) => setLook({ ...look, outfit })}
           />
           <Swatches
-            label="Outfit colour"
+            label="Outfit color"
             options={OUTFIT_COLORS}
             value={look.outfitColor}
             onPick={(outfitColor) => setLook({ ...look, outfitColor })}
@@ -454,7 +454,7 @@ function Mirror({
             onPick={(style) => setSwim({ ...swim, style })}
           />
           <Swatches
-            label="Swimsuit colour"
+            label="Swimsuit color"
             options={OUTFIT_COLORS}
             value={swim.color}
             onPick={(color) => setSwim({ ...swim, color })}
@@ -493,7 +493,7 @@ function Mirror({
         id="mirror-panel"
         className="mirror-panel"
         role="tabpanel"
-        aria-labelledby={`mirror-tab-${tab}`}
+        aria-labeledby={`mirror-tab-${tab}`}
       >
         {tabs[tab]}
       </div>

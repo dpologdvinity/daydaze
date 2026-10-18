@@ -9,17 +9,17 @@ import type { FoodPalette } from "./FoodRoom.tsx";
  * The fit-out every food room shares: checker floor, tiled backsplash,
  * hanging menu boards, a glass display case with trays, the register, cafe
  * tables with chairs, pendant lamps and a street window. Solid pieces carry
- * vertex colours and lit pieces glow, so the whole fit-out is four draw calls.
+ * vertex colors and lit pieces glow, so the whole fit-out is four draw calls.
  */
 
 type Rgb = THREE.Color;
 
-/** A geometry painted one colour through a vertex colour attribute. */
-function painted(geometry: THREE.BufferGeometry, colour: Rgb) {
+/** A geometry painted one color through a vertex color attribute. */
+function painted(geometry: THREE.BufferGeometry, color: Rgb) {
   const g = geometry.index ? geometry.toNonIndexed() : geometry.clone();
   const n = g.getAttribute("position").count;
   const c = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) c.set([colour.r, colour.g, colour.b], i * 3);
+  for (let i = 0; i < n; i++) c.set([color.r, color.g, color.b], i * 3);
   g.setAttribute("color", new THREE.BufferAttribute(c, 3));
   return g;
 }

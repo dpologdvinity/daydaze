@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { makeCanvas } from "../../canvas.ts";
 
-/** A colour pushed past 1.0 so bloom picks it up. */
+/** A color pushed past 1.0 so bloom picks it up. */
 export const hdr = (hex: string, k: number) =>
   new THREE.Color(hex).multiplyScalar(k);
 

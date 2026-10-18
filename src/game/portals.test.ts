@@ -110,7 +110,7 @@ test("every portal is reachable from inside its room", () => {
       assert.equal(
         pointInPolygon(r.walkable, portal.position),
         true,
-        `${portal.id} centre is not walkable`,
+        `${portal.id} center is not walkable`,
       );
     }
   }

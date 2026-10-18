@@ -5,7 +5,7 @@ import { neighborhoodAt } from "./cells.ts";
 import { CITY_AREA } from "./layout.ts";
 import { CITY_PLACES } from "./places.ts";
 
-test("every neighbourhood has one fast-travel spot, on open ground inside it", () => {
+test("every neighborhood has one fast-travel spot, on open ground inside it", () => {
   assert.equal(new Set(CITY_PLACES.map((p) => p.id)).size, CITY_PLACES.length);
   for (const place of CITY_PLACES) {
     const at = place.spawn.position;

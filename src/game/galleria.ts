@@ -13,7 +13,7 @@ export const NORTH_Z = -10;
 export type Store = {
   id: string;
   name: string;
-  /** The store's centre along the north wall. */
+  /** The store's center along the north wall. */
   x: number;
   color: string;
   /** Which shop.ts store it sells from, if it sells. */

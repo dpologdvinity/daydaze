@@ -5,7 +5,7 @@ import { canvasTex, GOLD, LACQUER, neonMat } from "../shared/materials.ts";
 import { MARQUEE, NeonText, SCRIPT } from "../shared/Neon.tsx";
 import {
   BACK_Z,
-  BAR_CENTRE_X,
+  BAR_CENTER_X,
   BAR_LENGTH,
   BAR_Z,
   CORNER_TABLE,
@@ -183,10 +183,10 @@ export function Posters() {
 export function Bar() {
   return (
     <>
-      <mesh position={[BAR_CENTRE_X, 0.5, BAR_Z]} material={LACQUER}>
+      <mesh position={[BAR_CENTER_X, 0.5, BAR_Z]} material={LACQUER}>
         <boxGeometry args={[BAR_LENGTH, 1, 0.7]} />
       </mesh>
-      <mesh position={[BAR_CENTRE_X, 1.02, BAR_Z]} material={GOLD}>
+      <mesh position={[BAR_CENTER_X, 1.02, BAR_Z]} material={GOLD}>
         <boxGeometry args={[BAR_LENGTH + 0.06, 0.04, 0.74]} />
       </mesh>
       {/* warm bottles on the back shelf, each lit from inside */}
@@ -205,7 +205,7 @@ export function Bar() {
       {[1.6, 2.2].map((y, i) => (
         <mesh
           key={y}
-          position={[BAR_CENTRE_X, y, BACK_Z + 0.14]}
+          position={[BAR_CENTER_X, y, BACK_Z + 0.14]}
           material={neonMat(i === 0 ? "#ff8a3d" : "#c58cff", 2)}
         >
           <boxGeometry args={[BAR_LENGTH, 0.05, 0.04]} />

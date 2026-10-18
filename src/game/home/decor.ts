@@ -1,4 +1,4 @@
-// Apartment decorating: a starter catalogue placed on a grid of 1 m cells.
+// Apartment decorating: a starter catalog placed on a grid of 1 m cells.
 // Pure data and rules; the room renders whatever these functions return.
 
 export const HOME_GRID = { columns: 8, rows: 6 } as const;

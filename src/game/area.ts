@@ -7,7 +7,7 @@ import {
   type Vec2,
 } from "./walk.ts";
 
-/** Metres the player's body keeps clear of a blocker's edge. */
+/** Meters the player's body keeps clear of a blocker's edge. */
 export const BODY_RADIUS = 0.35;
 
 /**
@@ -105,7 +105,7 @@ export function isBlocked(area: WalkArea, p: Vec2): boolean {
 }
 
 /**
- * One frame of walking towards `goal`: at most `maxStep` metres, clamped to
+ * One frame of walking towards `goal`: at most `maxStep` meters, clamped to
  * the walkable surfaces, and slid along whichever axis is still open when a
  * blocker is in the way. Bad input or no open axis leaves you at `from`.
  */

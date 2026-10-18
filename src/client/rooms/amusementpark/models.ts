@@ -343,7 +343,7 @@ export const LOG_BOAT = {
 
 // A carousel horse, standing on the floor with its nose along +z. Three draws
 // for all horses: a painted body (tinted per horse), a trim (tinted with the
-// accent colour) and gilt saddlery.
+// accent color) and gilt saddlery.
 export const HORSE = {
   paint: merged([
     { g: ball(14, 10), size: [0.36, 0.34, 0.78], at: [0, 0.9, 0] },

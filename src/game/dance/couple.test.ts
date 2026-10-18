@@ -14,20 +14,20 @@ await loadMocap();
 const dist = (a: [number, number], b: [number, number]) =>
   Math.hypot(a[0] - b[0], a[1] - b[1]);
 
-test("a couple stands gap metres apart, centred on the given point", () => {
+test("a couple stands gap meters apart, centered on the given point", () => {
   const cases: [[number, number], number][] = [
     [[0, 0], 0],
     [[10, -4], 0.7],
     [[-3, 2], Math.PI],
   ];
-  for (const [centre, facing] of cases) {
-    const [lead, follow] = coupleSpots(centre, facing, 0.8);
+  for (const [center, facing] of cases) {
+    const [lead, follow] = coupleSpots(center, facing, 0.8);
     assert.ok(Math.abs(dist(lead.at, follow.at) - 0.8) < 1e-9);
     const mid = [
       (lead.at[0] + follow.at[0]) / 2,
       (lead.at[1] + follow.at[1]) / 2,
     ];
-    assert.ok(dist([mid[0] ?? 0, mid[1] ?? 0], centre) < 1e-9);
+    assert.ok(dist([mid[0] ?? 0, mid[1] ?? 0], center) < 1e-9);
   }
 });
 

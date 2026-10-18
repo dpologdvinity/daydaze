@@ -3,7 +3,7 @@
 // same putt from the same spot always ends the same way.
 //
 // Hole space: x across, z along the hole (the tee near 0, the cup towards
-// -z). Metres and seconds.
+// -z). Meters and seconds.
 
 export type Vec2 = readonly [x: number, z: number];
 
@@ -92,7 +92,7 @@ export type Putt = {
 };
 
 export type PuttResult = {
-  /** Where it came to rest (the cup's centre if it dropped). */
+  /** Where it came to rest (the cup's center if it dropped). */
   rest: Vec2;
   holed: boolean;
   /** Ball positions for playback, SAMPLE_RATE per second. */

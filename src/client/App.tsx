@@ -93,17 +93,17 @@ export function App() {
     return visit(room, flags.at ?? ROOMS[room].spawn);
   });
   const [fading, setFading] = useState(false);
-  const travelling = useRef(false);
+  const traveling = useRef(false);
   // Fade out, swap rooms behind the curtain, then fade back in.
   const travel = useCallback((room: RoomId, spawn: Spawn) => {
-    if (travelling.current) return;
-    travelling.current = true;
+    if (traveling.current) return;
+    traveling.current = true;
     playWhoosh();
     setFading(true);
     window.setTimeout(() => {
       setHere(visit(room, spawn));
       setFading(false);
-      travelling.current = false;
+      traveling.current = false;
     }, FADE_MS);
   }, []);
 

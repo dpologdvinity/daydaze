@@ -83,7 +83,7 @@ type Piece = readonly [
   d: number,
 ];
 
-/** Boxes of one material in one draw call: each piece is a centre and size. */
+/** Boxes of one material in one draw call: each piece is a center and size. */
 function Boxes({
   pieces,
   children,

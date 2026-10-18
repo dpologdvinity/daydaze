@@ -11,7 +11,7 @@ import type { HomeSave } from "../../game/home/home.ts";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 
-// Grid origin: the floor runs x -4..4 and z -3..3, one cell per metre.
+// Grid origin: the floor runs x -4..4 and z -3..3, one cell per meter.
 const ORIGIN = { x: -4, z: -3 };
 
 const HEIGHT = {
@@ -90,7 +90,7 @@ export function Apartment({
   );
 }
 
-// the tallest each generated model may stand, metres
+// the tallest each generated model may stand, meters
 const MODEL_HEIGHT = {
   sofa: 0.95,
   bed: 1.2,

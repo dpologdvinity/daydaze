@@ -3,7 +3,7 @@
 // late) bends the ball left or right and costs distance. Pure and
 // deterministic.
 //
-// Range space: x across, z out from the tee (+z downrange). Metres.
+// Range space: x across, z out from the tee (+z downrange). Meters.
 
 export type Vec3 = readonly [x: number, y: number, z: number];
 export type Vec2 = readonly [x: number, z: number];

@@ -76,7 +76,7 @@ function resolveWalls(
     const dz = c[1] - nearest[1];
     const d = Math.hypot(dx, dz);
     if (pointInPolygon(wall, c)) {
-      // Centre is inside: leave through the nearest edge.
+      // Center is inside: leave through the nearest edge.
       const n: Vec2 = d > 1e-9 ? [-dx / d, -dz / d] : [0, -1];
       c = [nearest[0] + n[0] * radius, nearest[1] + n[1] * radius];
       normal = n;

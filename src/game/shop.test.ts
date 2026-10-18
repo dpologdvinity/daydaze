@@ -34,7 +34,7 @@ const catalogs = {
   piercing: PIERCING_STYLES,
 } as const;
 
-test("every shop item is a real catalogue option in its slot", () => {
+test("every shop item is a real catalog option in its slot", () => {
   for (const item of SHOP_ITEMS) {
     const options = catalogs[item.slot] as readonly { id: string }[];
     assert.ok(
@@ -125,12 +125,12 @@ test("locked shop looks fall back to the default until owned", () => {
   });
 });
 
-test("free catalogue looks are never locked", () => {
+test("free catalog looks are never locked", () => {
   const look: Look = { ...DEFAULT_LOOK, hairStyle: "buns", outfit: "fur" };
   assert.deepEqual(unlockedLook(look, []), look);
 });
 
-test("a locked hair colour falls back to the default too", () => {
+test("a locked hair color falls back to the default too", () => {
   const look: Look = { ...DEFAULT_LOOK, hairColor: "#7ee8a2" };
   assert.equal(unlockedLook(look, []).hairColor, DEFAULT_LOOK.hairColor);
   assert.equal(unlockedLook(look, ["#7ee8a2"]).hairColor, "#7ee8a2");

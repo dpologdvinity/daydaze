@@ -120,7 +120,7 @@ function Stage() {
           </mesh>
         ))}
       </group>
-      {/* the singer's mic stand, centre stage */}
+      {/* the singer's mic stand, center stage */}
       <mesh position={[0, y + 0.75, STAGE.z1 - 0.35]}>
         <cylinderGeometry args={[0.012, 0.012, 1.5, 6]} />
         <meshStandardMaterial color="#c9c9d4" metalness={0.9} roughness={0.3} />
@@ -254,7 +254,7 @@ function Lights() {
 /**
  * La Noche, the Latin club beside the Velvet Room: deep red plaster and a
  * gold rail, swags of warm festoon lights, a band on a red stage under the
- * club's name in orange script, a tiled dance floor glowing sunset colours,
+ * club's name in orange script, a tiled dance floor glowing sunset colors,
  * a gold-topped bar of rum and mezcal, candlelit tables and palms in the
  * corners. Salsa all night.
  */

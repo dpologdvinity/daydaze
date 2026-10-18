@@ -17,7 +17,7 @@ export const CLOSE_CODES = {
   replaced: 4009,
 } as const;
 
-/** Floor position in metres on the XZ plane; yaw in radians within (-π, π]. */
+/** Floor position in meters on the XZ plane; yaw in radians within (-π, π]. */
 export type EntityDelta = {
   id: string;
   x: number;

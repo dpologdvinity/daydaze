@@ -10,7 +10,7 @@ import { createStore } from "../shared/store.ts";
  */
 export type Phase = "off" | "listen" | "sing" | "over";
 
-/** The shells' colours, pink, blue, gold and violet. */
+/** The shells' colors, pink, blue, gold and violet. */
 export const SHELL_COLORS = ["#ff4fb3", "#4fe3ff", "#ffd84f", "#b48cff"];
 
 /** Milliseconds per note while the mermaids sing, and the pause first. */

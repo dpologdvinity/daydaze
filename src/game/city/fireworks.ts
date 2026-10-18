@@ -35,7 +35,7 @@ export type Shell = {
   age: number;
   color: number;
   kind: ShellKind;
-  /** Burst radius, metres. */
+  /** Burst radius, meters. */
   size: number;
 };
 

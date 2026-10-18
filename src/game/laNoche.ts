@@ -10,7 +10,7 @@ export const FLOOR_BOUNDS = { x0: -6, x1: 6, z0: -3.6, z1: 5.8 } as const;
 /** The band's stage, raised across the back. */
 export const STAGE = { x0: -4, x1: 4, z0: -6, z1: -3.8, height: 0.45 } as const;
 
-/** The dance floor's centre and half size. */
+/** The dance floor's center and half size. */
 export const DANCE: Vec2 = [-0.4, 0.4];
 export const DANCE_HALF = 2.4;
 

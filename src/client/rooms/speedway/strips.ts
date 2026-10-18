@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import type { Vec2 } from "../../../game/walk.ts";
 
-/** One instanced box: its base centre, heading, and size in metres. */
+/** One instanced box: its base center, heading, and size in meters. */
 export type Box = {
   x: number;
   y: number;
@@ -13,7 +13,7 @@ export type Box = {
   color?: THREE.Color;
 };
 
-/** Point `d` metres left of centreline point `i` (negative is right). */
+/** Point `d` meters left of centerline point `i` (negative is right). */
 export function offsetAt(pts: readonly Vec2[], i: number, d: number): Vec2 {
   const n = pts.length;
   const a = pts[(i - 1 + n) % n];
@@ -24,7 +24,7 @@ export function offsetAt(pts: readonly Vec2[], i: number, d: number): Vec2 {
   return [pts[i][0] - tz * d, pts[i][1] + tx * d];
 }
 
-/** Quads along one side of a closed centreline, from `r0` to `r1` metres out. */
+/** Quads along one side of a closed centerline, from `r0` to `r1` meters out. */
 export function strips(
   pts: readonly Vec2[],
   side: 1 | -1,
@@ -77,7 +77,7 @@ export type Ribbon = {
 
 /**
  * Flat, double-sided quads from several layers in one geometry, with a vertex
- * colour per quad, so a whole road or set of kerbs is one draw call. Two
+ * color per quad, so a whole road or set of kerbs is one draw call. Two
  * triangles a quad, against twelve for a box.
  */
 export function ribbonGeometry(
@@ -100,7 +100,7 @@ export function ribbonGeometry(
         colors[k - 3] = c.r;
         colors[k - 2] = c.g;
         colors[k - 1] = c.b;
-        // planar UVs in metres, so a repeating texture tiles evenly on the road
+        // planar UVs in meters, so a repeating texture tiles evenly on the road
         uvs[t++] = p[0] / UV_METRES;
         uvs[t++] = p[1] / UV_METRES;
       }

@@ -229,7 +229,7 @@ function FrameCount({ still }: { still: boolean }) {
  * (KHR_parallel_shader_compile) before showing it. Drawing a room for the
  * first time otherwise compiles 30-odd shader programs in one blocking
  * frame, and the screen sits black until it ends. Meanwhile the scene stays
- * hidden (the room's background colour shows) under the loading veil.
+ * hidden (the room's background color shows) under the loading veil.
  */
 function Warmup() {
   const gl = useThree((s) => s.gl);

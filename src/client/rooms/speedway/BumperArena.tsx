@@ -13,7 +13,7 @@ const DARK = new THREE.Color("#15122b");
 const WALL = new THREE.Color("#1a1530");
 const BEAM = 0.14;
 const SPARKS = 48;
-const SPARK_COLOURS = [NEON.gold, NEON.pink, NEON.cyan];
+const SPARK_COLORS = [NEON.gold, NEON.pink, NEON.cyan];
 
 /** A glowing floor with neon grid lines, neon-topped walls and a pole grid ceiling with sparks. */
 export function BumperArena() {
@@ -90,7 +90,7 @@ export function BumperArena() {
     along(-w / 2, d / 2, w / 2, d / 2);
     along(-w / 2, -d / 2, -w / 2, d / 2);
     along(w / 2, -d / 2, w / 2, d / 2);
-    // solid boxes share one draw call, so each one carries its colour
+    // solid boxes share one draw call, so each one carries its color
     const solid = [
       ...ceiling.map((b) => ({ ...b, color: DARK })),
       ...poles.map((b) => ({ ...b, color: DARK })),
@@ -143,7 +143,7 @@ function Sparks() {
     const m = mesh.current;
     if (!m) return;
     for (let i = 0; i < SPARKS; i++) {
-      m.setColorAt(i, SPARK_COLOURS[i % SPARK_COLOURS.length]);
+      m.setColorAt(i, SPARK_COLORS[i % SPARK_COLORS.length]);
     }
     if (m.instanceColor) m.instanceColor.needsUpdate = true;
   }, []);

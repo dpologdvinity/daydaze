@@ -194,7 +194,7 @@ test("walking into the Plaza's glowing door enters the Velvet Room", async ({
     /[3-9]|10/,
   );
   // The spawn shot is fixed at 1280x800: this pixel is the floor at the
-  // door's centre (0, -6.3), inside the portal's 0.7 m radius.
+  // door's center (0, -6.3), inside the portal's 0.7 m radius.
   await page.mouse.click(613, 488);
   await expect(roomTitle(page)).toHaveText("The Velvet Room", {
     timeout: 120_000,

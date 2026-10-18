@@ -147,7 +147,7 @@ function ride(
   return null;
 }
 
-/** Metres between footsteps. */
+/** Meters between footsteps. */
 const STEP_METRES = 0.72;
 const GLIDE_METRES = 2.2;
 /** Where a flip pivots: about her hips. */

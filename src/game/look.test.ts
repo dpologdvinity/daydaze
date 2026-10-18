@@ -93,7 +93,7 @@ test("validateLook rejects missing, extra and off-catalog fields", () => {
   assert.equal(validateLook({ ...DEFAULT_LOOK, skin: "#000000" }), false);
   assert.equal(validateLook({ ...DEFAULT_LOOK, hairStyle: "mohawk" }), false);
   assert.equal(validateLook({ ...DEFAULT_LOOK, outfitColor: 7 }), false);
-  // Mixing catalogs: a hair colour is not an outfit colour.
+  // Mixing catalogs: a hair color is not an outfit color.
   assert.equal(
     validateLook({ ...DEFAULT_LOOK, outfitColor: "#1b1014" }),
     false,
@@ -151,7 +151,7 @@ test("a look may carry a face code; looks without one stay valid", () => {
   assert.deepEqual(faceOf(DEFAULT_LOOK), DEFAULT_FACE);
 });
 
-test("face codes round-trip every slider step, body and eye colour", () => {
+test("face codes round-trip every slider step, body and eye color", () => {
   for (let i = -10; i <= 10; i++) {
     const face = { ...DEFAULT_FACE, eyeSize: i / 10, jaw: (0 - i) / 10 || 0 };
     assert.deepEqual(decodeFace(encodeFace(face)), face);

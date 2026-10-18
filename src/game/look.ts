@@ -39,14 +39,14 @@ export const HAIR_COLORS = [
   { id: "#ff4fb3", label: "Bubblegum" },
   { id: "#7b4dff", label: "Ultraviolet" },
   { id: "#7ee8a2", label: "Mint soda" },
-  // the Blowout Bar's colours, sold at the salon
+  // the Blowout Bar's colors, sold at the salon
   { id: "#c0c0c8", label: "Silver fox" },
   { id: "#ff8a3d", label: "Copper" },
   { id: "#3a6bff", label: "Sapphire" },
   { id: "#ffb3d9", label: "Cotton candy" },
 ] as const;
 
-/** Lipsticks; `swatch` is the colour the closet shows. */
+/** Lipsticks; `swatch` is the color the closet shows. */
 export const LIPS = [
   { id: "lips-hot-pink-glam", label: "Hot pink glam", swatch: "#e8338a" },
   { id: "lips-burgundy-cherry", label: "Cherry", swatch: "#7d1030" },
@@ -134,14 +134,14 @@ export function silhouetteOf(outfit: Outfit): Silhouette {
 }
 export type Mood = IdOf<typeof MOODS>;
 
-/** Eye colours for the 3D doll's irises. */
+/** Eye colors for the 3D doll's irises. */
 export const EYE_COLORS = [
   { id: "#6b3f22", label: "Brown" },
   { id: "#3a2216", label: "Deep brown" },
   { id: "#8a6a2e", label: "Hazel" },
   { id: "#3f7a4a", label: "Green" },
   { id: "#3d6fa8", label: "Blue" },
-  { id: "#7d8790", label: "Grey" },
+  { id: "#7d8790", label: "Gray" },
   { id: "#8e4dff", label: "Violet" },
   { id: "#b5762a", label: "Honey amber" },
   { id: "#9fc8e8", label: "Ice blue" },
@@ -233,7 +233,7 @@ export const DEFAULT_FACE: Face = {
 
 // A face travels inside the look as one short string, because looks go over
 // the network as flat maps of short strings. One letter per slider (a..u is
-// -1..1 in steps of 0.1), then the body shape's and eye colour's indexes.
+// -1..1 in steps of 0.1), then the body shape's and eye color's indexes.
 const STEPS = "abcdefghijklmnopqrstu";
 
 export function encodeFace(face: Face): string {
@@ -255,7 +255,7 @@ export function encodeFace(face: Face): string {
 /** The face a look's code describes; null when the code is malformed. */
 export function decodeFace(code: unknown): Face | null {
   const base = FACE_SLIDERS.length + 2;
-  // codes from before the face presets stop after the eye colour
+  // codes from before the face presets stop after the eye color
   if (
     typeof code !== "string" ||
     (code.length !== base && code.length !== base + FACE_PRESETS.length) ||
@@ -301,7 +301,7 @@ export function seededFace(seed: number): Face {
   for (const s of FACE_SLIDERS)
     face[s.id] = Math.round((next() * 0.6 - 0.3) * 10) / 10;
   face.figure = pick(FIGURES).id;
-  // natural eye colours only; violet is a closet pick
+  // natural eye colors only; violet is a closet pick
   face.eyeColor = pick(EYE_COLORS.filter((c) => c.id !== "#8e4dff")).id;
   face.eyeShape = pick(["almond", "upturned", "round"] as const);
   face.noseShape = pick(["straight", "button", "narrow"] as const);
@@ -495,7 +495,7 @@ export type Look = {
   outfit: Outfit;
   outfitColor: IdOf<typeof OUTFIT_COLORS>;
   shadow: IdOf<typeof EYESHADOWS>;
-  /** encodeFace's code for the face sliders, body shape and eye colour;
+  /** encodeFace's code for the face sliders, body shape and eye color;
    * looks from before the 3D doll have none and wear DEFAULT_FACE. */
   face?: string;
   /** encodeMakeup's code; looks without one wear DEFAULT_MAKEUP. */
@@ -600,7 +600,7 @@ export const DEFAULT_LOOK: Look = {
   shadow: "#d23cff",
 };
 
-// Velvet Room regulars from the prototype; `at` is [x, y, z] in metres.
+// Velvet Room regulars from the prototype; `at` is [x, y, z] in meters.
 export const NPC_LOOKS: readonly {
   look: Look;
   mood: Mood;

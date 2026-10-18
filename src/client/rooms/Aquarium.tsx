@@ -74,7 +74,7 @@ export function Aquarium({ onPick }: { onPick: PickHandler }) {
   );
   const coralShape = useMemo(() => new THREE.IcosahedronGeometry(0.35, 1), []);
 
-  // the reef never moves: place it once, a colour per piece
+  // the reef never moves: place it once, a color per piece
   useLayoutEffect(() => {
     const m = coral.current;
     if (!m) return;

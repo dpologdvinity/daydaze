@@ -4,7 +4,7 @@ import { neighborhoodAt } from "./cells.ts";
 import { CITY_SURFACES } from "./layout.ts";
 import {
   EDGES,
-  JEEPNEY_COLOURS,
+  JEEPNEY_COLORS,
   SIGNAL_PHASES,
   VEHICLE_LENGTH,
   carPose,
@@ -91,7 +91,7 @@ test("jeepneys are longer, brightly painted, and start in Little Manila", () => 
       (from[1] + to[1]) / 2,
     ];
     assert.equal(neighborhoodAt(mid), "little-manila");
-    assert.ok(JEEPNEY_COLOURS.some((colour) => colour === c.colour));
+    assert.ok(JEEPNEY_COLORS.some((color) => color === c.color));
   }
 });
 

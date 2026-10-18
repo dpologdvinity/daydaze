@@ -109,7 +109,7 @@ test("intensity off switches every drunk visual off", () => {
   assert.deepEqual(look, { sway: 0, wobble: 0, warm: 0, edge: 0 });
 });
 
-test("reduced motion keeps only the colour and edge changes", () => {
+test("reduced motion keeps only the color and edge changes", () => {
   const look = visualParams(1, "full", true);
   assert.equal(look.sway, 0);
   assert.equal(look.wobble, 0);

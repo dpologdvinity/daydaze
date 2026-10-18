@@ -2,7 +2,7 @@ import { useId, type CSSProperties } from "react";
 
 declare module "react" {
   interface CSSProperties {
-    /** Swatch colour read by `.gem` in styles.css. */
+    /** Swatch color read by `.gem` in styles.css. */
     "--c"?: string;
   }
 }
@@ -10,7 +10,7 @@ declare module "react" {
 type Option<T extends string> = {
   readonly id: T;
   readonly label: string;
-  /** The colour a swatch shows when the id itself is not a colour. */
+  /** The color a swatch shows when the id itself is not a color. */
   readonly swatch?: string;
 };
 
@@ -21,7 +21,7 @@ type PickerProps<T extends string> = {
   onPick: (id: T) => void;
 };
 
-/** Round colour gems; the option label is the accessible name. */
+/** Round color gems; the option label is the accessible name. */
 export function Swatches<T extends string>({
   label,
   options,
@@ -144,7 +144,7 @@ export function Segmented<T extends string>({
   );
 }
 
-/** A labelled closet slider: whole 0 to 100 by default (body shape); the
+/** A labeled closet slider: whole 0 to 100 by default (body shape); the
  * face sliders pass -1 to 1 in steps of 0.1. */
 export function Slider({
   label,

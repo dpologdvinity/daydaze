@@ -3,7 +3,7 @@
 // deterministic: the same throw always knocks down the same pins.
 //
 // Lane space: x across the lane (0 down the middle), z from the foul line
-// (0) towards the pins. Metres and seconds.
+// (0) towards the pins. Meters and seconds.
 
 export const LANE_HALF_WIDTH = 0.525;
 /** The gutters run outside the lane to this half width. */

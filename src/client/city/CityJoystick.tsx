@@ -1,9 +1,9 @@
 import { useRef, type JSX, type PointerEvent } from "react";
 import { stick } from "../world/joystick.ts";
 
-// How far the knob can travel from the centre, in CSS pixels.
+// How far the knob can travel from the center, in CSS pixels.
 const RANGE = 48;
-// Inside this fraction of the range the stick reads as centred.
+// Inside this fraction of the range the stick reads as centered.
 const DEADZONE = 0.15;
 
 /** On-screen stick for touch: walks like the arrow keys, camera-relative. */

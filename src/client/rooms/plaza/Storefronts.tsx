@@ -101,7 +101,7 @@ const HEART = [
   "...X...",
 ];
 
-// Velvet ropes: [shop, x0, x1, z], x relative to the shop centre.
+// Velvet ropes: [shop, x0, x1, z], x relative to the shop center.
 const ROPES = [
   ["velvet-room", -1.9, -1.0, 0.55],
   ["velvet-room", 1.0, 1.9, 0.55],
@@ -127,7 +127,7 @@ const MANNEQUIN: Look = {
   shadow: "#ff2f9a",
 };
 
-/** A lit shop window: colour wash, ceiling glow and blind slats. */
+/** A lit shop window: color wash, ceiling glow and blind slats. */
 function windowTex(color: string) {
   return canvasTex(256, 160, (ctx) => {
     const g = ctx.createLinearGradient(0, 0, 0, 160);
@@ -146,7 +146,7 @@ function windowTex(color: string) {
   });
 }
 
-/** Striped canvas awning in the shop colour and cream. */
+/** Striped canvas awning in the shop color and cream. */
 function awningTex(color: string) {
   return canvasTex(256, 32, (ctx) => {
     for (let x = 0; x < 256; x += 32) {

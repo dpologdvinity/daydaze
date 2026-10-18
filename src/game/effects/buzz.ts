@@ -60,7 +60,7 @@ export type DrunkLook = {
   sway: number;
   /** How far the doll's walk and idle lean wobble, 0..1. Zero under reduced motion. */
   wobble: number;
-  /** Warm colour shift, 0..1. Kept under reduced motion. */
+  /** Warm color shift, 0..1. Kept under reduced motion. */
   warm: number;
   /** Edge darkening, 0..1. Kept under reduced motion. */
   edge: number;

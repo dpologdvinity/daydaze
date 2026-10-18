@@ -5,7 +5,7 @@ import { canvasTex } from "../shared/materials.ts";
 
 const cache = new Map<string, THREE.MeshToonMaterial>();
 
-/** A shared flat toon material per colour, like the doll's shading. */
+/** A shared flat toon material per color, like the doll's shading. */
 export function toon(hex: string) {
   let m = cache.get(hex);
   if (!m) {
@@ -15,7 +15,7 @@ export function toon(hex: string) {
   return m;
 }
 
-/** Toon shading for `Props` meshes: colours come from the vertex colours. */
+/** Toon shading for `Props` meshes: colors come from the vertex colors. */
 export const PROPS = new THREE.MeshToonMaterial({
   vertexColors: true,
   gradientMap,
@@ -60,7 +60,7 @@ function waves(seed: number, count: number, maxK: number): Wave[] {
 
 /**
  * A tileable canvas texture: each texel is `shade(height, slopeX, slopeY)` of
- * the normalised wave field.
+ * the normalized wave field.
  */
 function waveTex(
   size: number,

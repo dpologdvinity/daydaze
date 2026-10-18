@@ -242,7 +242,7 @@ export function toss(level: Level, aim: number, power: number): Toss {
   const row = Math.floor(at[1]);
   if (col < 0 || col >= BOTTLE_COLUMNS || row < 0 || row >= BOTTLE_ROWS)
     return { at, ringer: null, points: 0 };
-  // a ringer needs to drop near the bottle's neck, the centre of its cell
+  // a ringer needs to drop near the bottle's neck, the center of its cell
   const d = Math.hypot(at[0] - (col + 0.5), at[1] - (row + 0.5));
   if (d > RINGER[level]) return { at, ringer: null, points: 0 };
   // the back row is the hardest reach and pays the most

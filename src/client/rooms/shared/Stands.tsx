@@ -4,7 +4,7 @@ import * as THREE from "three";
 import { useReducedMotion } from "../../motion.ts";
 
 /** A bank of stands: `rows` steps rising away from the field, `length`
- * metres long, centred on `at` and facing the way `yaw` turns +z. */
+ * meters long, centered on `at` and facing the way `yaw` turns +z. */
 export type Bank = {
   at: readonly [number, number];
   yaw: number;

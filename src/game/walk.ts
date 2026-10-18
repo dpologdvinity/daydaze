@@ -1,6 +1,6 @@
 export type Vec2 = readonly [x: number, z: number];
 
-/** Metres per second. */
+/** Meters per second. */
 export const WALK_SPEED = 2.2;
 
 // Points this close to an edge count as on it, so clamped points test inside.

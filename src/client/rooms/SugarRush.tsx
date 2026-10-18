@@ -73,21 +73,21 @@ const butterflyScratch = {
 };
 
 /** Where each butterfly rests: on the side and back walls, high up. */
-const PERCHES: readonly { at: THREE.Vector3; yaw: number; colour: string }[] =
+const PERCHES: readonly { at: THREE.Vector3; yaw: number; color: string }[] =
   Array.from({ length: BUTTERFLIES }, (_, i) => {
     const n = Math.sin(i * 78.233) * 43758.5453;
     const r = n - Math.floor(n);
     const wall = i % 3;
     const along = -4.6 + ((i * 0.83) % 1) * 9.2;
     const y = 1.9 + r * 1.9;
-    const colour = [PINK, BABY_BLUE, "#c9a2ff", "#fff1fb"][i % 4];
+    const color = [PINK, BABY_BLUE, "#c9a2ff", "#fff1fb"][i % 4];
     if (wall === 0)
-      return { at: new THREE.Vector3(along, y, BACK_Z + 0.08), yaw: 0, colour };
+      return { at: new THREE.Vector3(along, y, BACK_Z + 0.08), yaw: 0, color };
     const x = wall === 1 ? -WALL_X + 0.08 : WALL_X - 0.08;
     return {
       at: new THREE.Vector3(x, y, along * 0.9),
       yaw: wall === 1 ? Math.PI / 2 : -Math.PI / 2,
-      colour,
+      color,
     };
   });
 
@@ -117,7 +117,7 @@ function Butterflies() {
         ref.current = mesh;
         if (!mesh) return;
         PERCHES.forEach((perch, i) =>
-          mesh.setColorAt(i, hdr(perch.colour, 1.3)),
+          mesh.setColorAt(i, hdr(perch.color, 1.3)),
         );
         if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
       }}

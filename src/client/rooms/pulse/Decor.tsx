@@ -9,7 +9,7 @@ import { BACK_Z, DJ_BOOTH } from "./layout.ts";
 const WALL_HEIGHT = 4;
 const LED_COLORS = ["#ff2f9a", "#9b5cff", "#4fe3ff", "#ffb02e", "#3dff9a"];
 
-// the back wall: violet panels with a glowing pink seam every half metre
+// the back wall: violet panels with a glowing pink seam every half meter
 const BACK_WALL_TEX = canvasTex(
   256,
   128,
@@ -68,7 +68,7 @@ export function Walls() {
 }
 
 /**
- * A grid of coloured LED pixels that scrolls sideways. Only the texture
+ * A grid of colored LED pixels that scrolls sideways. Only the texture
  * offset moves, so it costs one draw call and no allocation per frame.
  */
 function LedWall() {

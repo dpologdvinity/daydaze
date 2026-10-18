@@ -80,7 +80,7 @@ function Storefronts() {
               side={THREE.BackSide}
             />
           </mesh>
-          {/* racks or shelves inside, in the store's colour */}
+          {/* racks or shelves inside, in the store's color */}
           {[-1.4, 0, 1.4].map((dx) => (
             <mesh key={dx} position={[dx, 0.8, -1.3]}>
               <boxGeometry args={[0.9, 1.6, 0.4]} />

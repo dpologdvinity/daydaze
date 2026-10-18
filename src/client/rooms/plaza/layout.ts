@@ -9,13 +9,13 @@ export const HALF_WIDTH = 12;
 export const SHOP_HEIGHT = 5.6;
 
 const [door] = ROOMS.plaza.portals;
-/** The Velvet Room entrance, centred on its portal. */
+/** The Velvet Room entrance, centered on its portal. */
 export const VELVET_DOOR_X = door.position[0];
 
 export type Shop = {
   id: string;
   name: string;
-  /** Centre and width along x. */
+  /** Center and width along x. */
   x: number;
   width: number;
   color: string;

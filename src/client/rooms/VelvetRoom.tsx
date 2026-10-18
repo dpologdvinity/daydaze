@@ -48,7 +48,7 @@ const DRAPES = [
   },
 ];
 
-// Four lights in total: one fill, three coloured points.
+// Four lights in total: one fill, three colored points.
 function Lights() {
   const dance = useRef<THREE.PointLight>(null);
   const calm = useReducedMotion();
@@ -239,7 +239,7 @@ export function VelvetRoom({
         <Couple
           a={{ ...DEFAULT_LOOK, hairStyle: "buns", outfit: "mini" }}
           b={{ ...DEFAULT_LOOK, skin: "#94603f", outfit: "fur" }}
-          centre={[DANCE.x, DANCE.z]}
+          center={[DANCE.x, DANCE.z]}
           facing={0}
           move="slow-dance"
         />

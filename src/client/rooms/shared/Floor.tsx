@@ -9,7 +9,7 @@ export type PickHandler = (point: Vec2) => void;
 
 /**
  * The walkable ground. High quality mirrors the room in it; low quality
- * keeps the same colour as a plain glossy surface.
+ * keeps the same color as a plain glossy surface.
  */
 export function Floor({
   width,
@@ -27,11 +27,11 @@ export function Floor({
 }: {
   width: number;
   depth: number;
-  /** Centre of the floor on the XZ plane. */
+  /** Center of the floor on the XZ plane. */
   center?: [number, number];
   color: string;
   map?: THREE.Texture;
-  /** A Poly Haven CC0 set (public/textures/<id>), `scale` repeats a metre;
+  /** A Poly Haven CC0 set (public/textures/<id>), `scale` repeats a meter;
    * `color` tints it. */
   texture?: { id: string; scale: number };
   mirror?: number;

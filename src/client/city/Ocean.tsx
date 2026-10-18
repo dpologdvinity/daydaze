@@ -15,7 +15,7 @@ export function Ocean() {
   const calm = useReducedMotion();
   const water = useMemo(() => {
     const m = new THREE.MeshStandardMaterial({
-      // nearly black water lit from within: the night sky would grey it out
+      // nearly black water lit from within: the night sky would gray it out
       color: "#01060c",
       roughness: 0.7,
       metalness: 0,

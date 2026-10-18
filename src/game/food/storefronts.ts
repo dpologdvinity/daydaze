@@ -1,6 +1,6 @@
 // The food venues as storefronts in the city. Each venue gets one building on
-// a sidewalk row beside a north-south street: in its own neighbourhood when
-// that neighbourhood is built, else on Downtown's rows, in data order. A
+// a sidewalk row beside a north-south street: in its own neighborhood when
+// that neighborhood is built, else on Downtown's rows, in data order. A
 // venue with an interior room gets a street door on its row's sidewalk.
 import type { Building } from "../city/layout.ts";
 import type { RoomId } from "../rooms.ts";
@@ -14,7 +14,7 @@ function isNeighborhoodId(value: string): value is NeighborhoodId {
   return NEIGHBORHOOD_IDS.some((n) => n === value);
 }
 
-/** The city neighbourhood a storefront stands in: its own when built. */
+/** The city neighborhood a storefront stands in: its own when built. */
 function cityHood(hood: NeighborhoodId): Neighborhood {
   switch (hood) {
     case "little-manila":
@@ -44,7 +44,7 @@ type Row = {
 // and every storefront stops short of them.
 const STEP = 6.5;
 const DEPTH = 6;
-// Downtown's rows, for its own venues and those of neighbourhoods not yet
+// Downtown's rows, for its own venues and those of neighborhoods not yet
 // built (they move out as each one lands)
 const DOWNTOWN_ROWS: readonly Row[] = [
   // east of b-south
@@ -63,7 +63,7 @@ const DOWNTOWN_ROWS: readonly Row[] = [
   { x0: -54, x1: -47, z0: -188, count: 13, street: "west" },
 ];
 
-// The built neighbourhoods' rows, beside their cross streets and clear of the
+// The built neighborhoods' rows, beside their cross streets and clear of the
 // buildings on their main streets (see layout.ts)
 const HOOD_ROWS: Partial<Record<NeighborhoodId, readonly Row[]>> = {
   // either side of Little Manila's street (x -320), south of the avenue
@@ -135,7 +135,7 @@ function slotsOf(rows: readonly Row[]): Slot[] {
   );
 }
 
-/** Each venue's slot, in data order: its own neighbourhood's next free slot,
+/** Each venue's slot, in data order: its own neighborhood's next free slot,
  * else Downtown's. */
 const SLOTS: readonly Slot[] = (() => {
   const pools = new Map<NeighborhoodId | "downtown-pool", Slot[]>();

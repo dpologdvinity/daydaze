@@ -18,7 +18,7 @@ function noise(ctx: AudioContext, seconds: number): AudioBufferSourceNode {
   return source;
 }
 
-/** Band-passed noise whose centre wobbles down, like liquid glugging out. */
+/** Band-passed noise whose center wobbles down, like liquid glugging out. */
 function playPour(ctx: AudioContext, dest: AudioNode) {
   const now = ctx.currentTime;
   const source = noise(ctx, 0.45);

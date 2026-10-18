@@ -93,7 +93,7 @@ test("the Velvet Room keeps the player out of the bar and the booth", () => {
     assert.equal(pointInPolygon(walkable, [x, -4.05]), false);
     assert.equal(pointInPolygon(walkable, [x, -4.7]), false);
   }
-  // The booth seats everything within 1.9 m of its centre.
+  // The booth seats everything within 1.9 m of its center.
   const booth: Vec2 = [4.2, 0.7];
   for (let a = 0; a < 360; a += 5) {
     const r = (a * Math.PI) / 180;
@@ -245,7 +245,7 @@ test("the Haunted House winds from its door to the back room and out again", () 
   );
 });
 
-test("the Skylark's lift lands on its deck, and every seat and spot is reachable from it", () => {
+test("the Skylark's elevator lands on its deck, and every seat and spot is reachable from it", () => {
   const room = ROOMS["rooftop-bar"];
   const area = areaOf(room);
   assert.equal(isBlocked(area, room.spawn.position), false);

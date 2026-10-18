@@ -53,7 +53,7 @@ export type Box = {
   color: string;
 };
 
-/** Boxes with a colour each, one instanced draw call. */
+/** Boxes with a color each, one instanced draw call. */
 export function Boxes({ items }: { items: readonly Box[] }) {
   const ref = useRef<THREE.InstancedMesh>(null);
   useLayoutEffect(() => {
@@ -82,8 +82,8 @@ export function Boxes({ items }: { items: readonly Box[] }) {
 export type Copy = { position: Vec3; yaw?: number; color?: string };
 
 /**
- * One instanced draw of `geometry` at each copy. A copy's colour multiplies the
- * material colour, so a white material takes the colour as its paint.
+ * One instanced draw of `geometry` at each copy. A copy's color multiplies the
+ * material color, so a white material takes the color as its paint.
  */
 export function Copies({
   geometry,

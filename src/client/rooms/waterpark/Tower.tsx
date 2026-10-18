@@ -25,7 +25,7 @@ function curveOf(path: readonly Vec3[]) {
 }
 
 /**
- * The trough's centre at arc length u, with its frame: `side` across the path,
+ * The trough's center at arc length u, with its frame: `side` across the path,
  * `down` and `t` along it. The rider's hips sit `r` above the path.
  */
 function frameAt(curve: THREE.CatmullRomCurve3, u: number, r: number) {
@@ -66,7 +66,7 @@ function troughGeometry(curve: THREE.CatmullRomCurve3, r: number) {
   return g;
 }
 
-/** Posts under a slide every few metres, down to the deck. */
+/** Posts under a slide every few meters, down to the deck. */
 function supports(path: readonly Vec3[]) {
   return path.filter((p, i) => i % 10 === 5 && p[1] > 0.9);
 }

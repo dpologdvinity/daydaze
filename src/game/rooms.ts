@@ -157,7 +157,7 @@ export type Portal = RoomDefinition["portals"][number];
 // camera at z = +6. The prototype clamped walking to x +-5.3, z -3.9..5.5,
 // which keeps the player in front of the bar counter. The notch on the right
 // wall wraps the round booth at (4.2, 0.7); every vertex and chord stays at
-// least 1.9 m from its centre, the prototype's keep-out radius.
+// least 1.9 m from its center, the prototype's keep-out radius.
 const VELVET_ROOM_FLOOR: readonly Vec2[] = [
   [-5.3, -3.9],
   [5.3, -3.9],
@@ -290,7 +290,7 @@ const WATER_PARK_FLOOR: readonly Vec2[] = [
 
 // Speedway: a 20 m x 13 m pit apron in front of the track. The grandstand and
 // the track sit behind the back edge; the bumper arena is off the right side.
-// The gate to the city is on the front edge, right of centre.
+// The gate to the city is on the front edge, right of center.
 const SPEEDWAY_FLOOR: readonly Vec2[] = [
   [-10, -6],
   [10, -6],
@@ -453,7 +453,7 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
     spawn: { position: [0, 2], yaw: Math.PI },
     portals: [
       {
-        // The Velvet Room storefront, centred on the back row.
+        // The Velvet Room storefront, centered on the back row.
         id: "to-velvet-room",
         position: [0, -6.3],
         radius: 0.7,
@@ -1042,11 +1042,11 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
     spawn: { position: LIFT.spawn, yaw: Math.PI },
     portals: [
       {
-        // The lift back down to the tower's street door.
+        // The elevator back down to the tower's street door.
         id: "rooftop-bar-to-city",
         position: LIFT.door,
         radius: 0.8,
-        label: "Take the lift down",
+        label: "Take the elevator down",
         target: "city",
         targetSpawn: { position: SKYLARK_DOOR.landing, yaw: 0 },
       },

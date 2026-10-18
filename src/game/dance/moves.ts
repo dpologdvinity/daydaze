@@ -24,7 +24,7 @@ export type Joint = (typeof JOINTS)[number];
 export type Vec3 = [number, number, number];
 
 export type Pose = {
-  /** Body offset in metres, added to the doll's root. */
+  /** Body offset in meters, added to the doll's root. */
   root: Vec3;
   joints: Record<Joint, Vec3>;
   /** Set for motion capture: already exact for the 3D doll, no extra groove. */

@@ -65,7 +65,7 @@ function signAtlas(): THREE.CanvasTexture {
   return texture;
 }
 
-/** A geometry with every vertex tinted, so one material draws many colours. */
+/** A geometry with every vertex tinted, so one material draws many colors. */
 function tinted(g: THREE.BufferGeometry, color: string): THREE.BufferGeometry {
   const c = new THREE.Color(color);
   const n = g.getAttribute("position").count;
@@ -136,7 +136,7 @@ function buildStalls(atlas: THREE.Texture): THREE.Group {
       "#efe2c8",
       part(stallM, [0, 1.03, front - 0.38], [STALL_W + 0.1, 0.06, 0.8]),
     );
-    // back cloth, and its inside face lit warm in the awning's colour
+    // back cloth, and its inside face lit warm in the awning's color
     add(box, "#2b1838", part(stallM, [0, 1.15, -front], [STALL_W, 2.3, 0.08]));
     add(
       backGlow,
@@ -251,7 +251,7 @@ function buildCords(): THREE.LineSegments {
   );
 }
 
-/** A paper lantern: a glowing red body between dark caps, coloured per
+/** A paper lantern: a glowing red body between dark caps, colored per
  * vertex so the one instanced draw needs no lighting. */
 function lanternGeometry(): THREE.BufferGeometry {
   const g = new THREE.SphereGeometry(0.24, 10, 8).scale(1, 1.15, 1);

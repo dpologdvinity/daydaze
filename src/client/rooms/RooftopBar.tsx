@@ -26,7 +26,7 @@ import { NeonText, SCRIPT } from "./shared/Neon.tsx";
 import { Prop, PropSet } from "./shared/Prop.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 
-// the deck's edges: glass rails all round, the lift kiosk in the south-west
+// the deck's edges: glass rails all round, the elevator kiosk in the south-west
 const RAIL_X = 8.2;
 const RAIL_Z = -6;
 const LOBBY_Z = 7.1;
@@ -152,7 +152,7 @@ function Rails() {
           {glass}
         </mesh>
       ))}
-      {/* the south rail runs from the lift kiosk to the east corner */}
+      {/* the south rail runs from the elevator kiosk to the east corner */}
       <mesh position={[(KIOSK.x1 + RAIL_X) / 2, 0.55, LOBBY_Z]}>
         <boxGeometry args={[RAIL_X - KIOSK.x1, 1.1, 0.04]} />
         {glass}
@@ -180,7 +180,7 @@ function Rails() {
   );
 }
 
-/** The lift kiosk in the south-west corner: dark panelling, brass doors in
+/** The elevator kiosk in the south-west corner: dark panelling, brass doors in
  * a glowing frame, and the bar's name in neon over them. */
 function Kiosk() {
   const width = KIOSK.x1 - KIOSK.x0;

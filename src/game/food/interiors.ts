@@ -14,7 +14,7 @@ export const INTERIOR_FLOOR: readonly Vec2[] = [
 /** Where the doll arrives from the street, facing the counter. */
 export const INTERIOR_SPAWN = { position: [0, 3.8] as Vec2, yaw: Math.PI };
 
-/** The step back out to the street, one metre past the spawn. */
+/** The step back out to the street, one meter past the spawn. */
 export const INTERIOR_EXIT: Vec2 = [0, 5.0];
 
 export const INTERIOR_COUNTER_Z = -0.6;

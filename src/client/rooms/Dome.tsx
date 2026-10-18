@@ -69,7 +69,7 @@ function courtTexture() {
     ctx.beginPath();
     ctx.arc(rx, rz, 6.75 * px, 0.1, Math.PI - 0.1);
     ctx.stroke();
-    // the centre circle at the near end
+    // the center circle at the near end
     const [mx, mz] = at(0, 12.6);
     ctx.beginPath();
     ctx.arc(mx, mz, 1.8 * px, 0, Math.PI * 2);

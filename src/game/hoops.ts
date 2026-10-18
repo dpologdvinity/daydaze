@@ -2,8 +2,8 @@
 // one hoop, the ball flying under gravity, off the board and the rim and
 // (when it's good) down through the net. Pure and deterministic.
 //
-// Court space: the rim's centre is above the origin at RIM_Y, the board
-// behind it towards -z, the spots out in front (+z). Metres and seconds.
+// Court space: the rim's center is above the origin at RIM_Y, the board
+// behind it towards -z, the spots out in front (+z). Meters and seconds.
 
 export type Vec3 = readonly [x: number, y: number, z: number];
 export type Vec2 = readonly [x: number, z: number];
@@ -51,7 +51,7 @@ export type ShotResult = {
 
 const finite = (v: number) => (Number.isFinite(v) ? v : 0);
 
-/** The launch speed that drops the ball through the rim's centre. */
+/** The launch speed that drops the ball through the rim's center. */
 export function idealSpeed(from: Vec2): number {
   const d = Math.hypot(from[0], from[1]);
   const h = RIM_Y - RELEASE_Y;

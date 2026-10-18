@@ -354,7 +354,7 @@ function turningPose(
   }
 }
 
-/** The point and facing `at` metres along the track, wrapping around the loop. */
+/** The point and facing `at` meters along the track, wrapping around the loop. */
 export function trackPose(
   track: Track,
   at: number,
@@ -575,5 +575,5 @@ export const PARK_NPC_ROLES = {
   ayo: "regular",
 } as const satisfies Record<ParkNpcId, DialogueRole>;
 
-/** The neighbourhood context that unlocks the park's own tapped lines. */
+/** The neighborhood context that unlocks the park's own tapped lines. */
 export const PARK_CONTEXT = { neighborhood: "fairground" } as const;

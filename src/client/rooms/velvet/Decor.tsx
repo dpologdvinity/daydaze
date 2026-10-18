@@ -152,7 +152,7 @@ const CURTAIN = (() => {
   return geo;
 })();
 
-/** Velvet curtains on the west wall. All share one fabric batch per colour. */
+/** Velvet curtains on the west wall. All share one fabric batch per color. */
 export function Drapes({
   items,
 }: {

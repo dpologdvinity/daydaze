@@ -14,7 +14,7 @@ import { hdr } from "../rooms/shared/materials.ts";
  * drawn unless the camera is in or near Little Manila.
  */
 
-const COLOURS = ["#ff2f4f", "#ffd84f", "#4fe3ff", "#7dff6b", "#ff4fb3"];
+const COLORS = ["#ff2f4f", "#ffd84f", "#4fe3ff", "#7dff6b", "#ff4fb3"];
 /** Strings run from the west edge to Downtown, clear of the crossing. */
 const STRING_X: number[] = [];
 for (let x = WEST_EDGE + 8; x < -200; x += 12)
@@ -80,7 +80,7 @@ export function Parols() {
       SPOTS.length,
     );
     SPOTS.forEach((_, i) =>
-      m.setColorAt(i, hdr(COLOURS[i % COLOURS.length], 1.8)),
+      m.setColorAt(i, hdr(COLORS[i % COLORS.length], 1.8)),
     );
     m.frustumCulled = false;
     return m;

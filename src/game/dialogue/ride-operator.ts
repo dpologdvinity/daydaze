@@ -53,7 +53,7 @@ export const rideOperatorBank: RoleBank = {
       when: { neighborhood: "fairground" },
     },
     {
-      text: "The coaster hill is nine metres. It feels like twice that, I promise.",
+      text: "The coaster hill is nine meters. It feels like twice that, I promise.",
       when: { neighborhood: "fairground" },
     },
     {

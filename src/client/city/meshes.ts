@@ -4,7 +4,7 @@ import { groundMaps, worldMapped } from "./worldTexture.ts";
 import { KINDS, type Instance, type Kind } from "../../game/city/plan.ts";
 import { animate } from "./shaders.ts";
 
-// Kinds that glow: their colours run past 1.0 so bloom picks them up on high.
+// Kinds that glow: their colors run past 1.0 so bloom picks them up on high.
 const GLOW: ReadonlySet<Kind> = new Set<Kind>([
   "band",
   "sign",
@@ -31,8 +31,8 @@ const PUFF = new THREE.SphereGeometry(0.5, 6, 4);
 
 /**
  * A window: a dark frame round two panes, a mullion and a transom, with blinds
- * across the top pane. Instance colours multiply through it, so the frame stays
- * dark on every lit window and the glass takes the window's colour.
+ * across the top pane. Instance colors multiply through it, so the frame stays
+ * dark on every lit window and the glass takes the window's color.
  */
 function windowTexture(): THREE.Texture {
   const canvas = document.createElement("canvas");
@@ -166,7 +166,7 @@ const MATERIAL: Record<Shared, THREE.Material> = {
   roof: new THREE.MeshStandardMaterial({ roughness: 0.6 }),
   ledge: new THREE.MeshStandardMaterial({ roughness: 0.55, metalness: 0.1 }),
   glow: new THREE.MeshBasicMaterial({ toneMapped: false }),
-  // flat-lit, so the striped colours read at night without a lamp on them
+  // flat-lit, so the striped colors read at night without a lamp on them
   awning: new THREE.MeshBasicMaterial({ toneMapped: false }),
   sign: animate(new THREE.MeshBasicMaterial({ toneMapped: false }), {
     blink: true,
@@ -181,7 +181,7 @@ const MATERIAL: Record<Shared, THREE.Material> = {
     color: "#6b4a2b",
     roughness: 0.9,
   }),
-  // the leaf colour comes from each frond's instance colour, the shape from the alpha card
+  // the leaf color comes from each frond's instance color, the shape from the alpha card
   palmFrond: animate(
     new THREE.MeshStandardMaterial({
       roughness: 0.6,

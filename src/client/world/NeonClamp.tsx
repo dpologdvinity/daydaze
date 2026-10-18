@@ -8,17 +8,17 @@ function clamp(color: THREE.Color) {
 }
 
 /**
- * Low quality has no bloom, so neon colours pushed past 1.0 would clip
+ * Low quality has no bloom, so neon colors pushed past 1.0 would clip
  * channel by channel (orange turns yellow, pink turns white). Each frame,
- * scale every unlit, untone-mapped colour back so its brightest channel is
- * 1.0: same hue, full brightness. Idempotent, so animated colours are fine.
+ * scale every unlit, untone-mapped color back so its brightest channel is
+ * 1.0: same hue, full brightness. Idempotent, so animated colors are fine.
  * Mount it last so it runs after the rooms' own frame callbacks.
  */
 export function NeonClamp() {
   // the unlit neon materials, re-collected now and then as dolls and props
   // mount (walking the whole scene every frame was the low tier's costliest
   // per-frame job); clamping the list itself stays per frame, since rooms
-  // animate their neon colours
+  // animate their neon colors
   const neon = useRef<THREE.MeshBasicMaterial[]>([]);
   const frame = useRef(0);
   useFrame(({ scene }) => {

@@ -16,7 +16,7 @@ export const STAGE = {
   height: 0.06,
 } as const;
 
-/** Where you stand to sing: the mic stand, centre stage. */
+/** Where you stand to sing: the mic stand, center stage. */
 export const MIC: Vec2 = [0, -4.4];
 
 /** Booths along both side walls: a banquette against the wall, its two

@@ -1258,7 +1258,7 @@ const CAFES: readonly FoodVenue[] = [
       ["Full afternoon tea for two", 16],
       ["Cucumber sandwiches", 6],
       ["Clotted cream scone", 4],
-      ["Earl grey pot", 4, "drink"],
+      ["Earl gray pot", 4, "drink"],
     ],
   ),
   venue(

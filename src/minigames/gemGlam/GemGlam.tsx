@@ -54,7 +54,7 @@ function GemArt({ gem }: { gem: Gem }) {
   ];
   return (
     <svg viewBox="0 0 40 40" aria-hidden="true">
-      <g className={`gg-shape gg-c${gem.colour}`}>{shapes[gem.colour]}</g>
+      <g className={`gg-shape gg-c${gem.color}`}>{shapes[gem.color]}</g>
       {gem.special === "sparkle" && (
         <path className="gg-sparkle" d="M20 8v24M8 20h24" />
       )}
@@ -126,7 +126,7 @@ function Board({
             }}
             tabIndex={focus[0] === r && focus[1] === c ? 0 : -1}
             aria-pressed={isPicked}
-            aria-label={`${NAMES[gem.colour]}${gem.special ? ` ${gem.special} gem` : ""}, row ${r + 1}, column ${c + 1}`}
+            aria-label={`${NAMES[gem.color]}${gem.special ? ` ${gem.special} gem` : ""}, row ${r + 1}, column ${c + 1}`}
             onFocus={() => setFocus([r, c])}
             onKeyDown={(e) => onKey(e, [r, c])}
             onClick={() => choose([r, c])}
@@ -201,7 +201,7 @@ export function GemGlam({ onClose }: Props) {
           <p>
             Match three or more. Four in a line leaves a sparkle gem that clears
             its row and column; five leaves a disco gem that clears a whole
-            colour.
+            color.
           </p>
           <div className="gg-levels" role="radiogroup" aria-label="Difficulty">
             {LEVELS.map((l) => (

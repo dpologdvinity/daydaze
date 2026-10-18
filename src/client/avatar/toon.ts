@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 // 4-step ramp; the darkest step stays fairly high so skin never goes muddy
-// under the coloured club lights.
+// under the colored club lights.
 export const gradientMap = (() => {
   const t = new THREE.DataTexture(
     new Uint8Array([110, 170, 225, 255]),

@@ -27,7 +27,7 @@ import {
  * simulation in src/game/city/traffic.ts at the fixed 50 Hz step; here they
  * are instanced meshes (car bodies and cabins; jeepney shells, trim, chrome
  * and interiors; everyone's wheels and lamps) and the signal bulbs, which
- * change colour only when the phase does.
+ * change color only when the phase does.
  */
 
 const WHEEL = new THREE.CylinderGeometry(0.36, 0.36, 0.26, 12).rotateX(
@@ -65,10 +65,10 @@ const LAMPS: Record<VehicleKind, [number, number, number][]> = {
     [-2.84, 0.8, -0.72],
   ],
 };
-const LAMP_COLOURS = ["#fff3dc", "#fff3dc", "#ff2040", "#ff2040"];
+const LAMP_COLORS = ["#fff3dc", "#fff3dc", "#ff2040", "#ff2040"];
 const PER_VEHICLE = 4;
 /** Jeepney stripes: one of these per jeepney, never its own paint. */
-const TRIM_COLOURS = ["#ffd84f", "#ff2f4f", "#2f8aff", "#9b5cff", "#7dff6b"];
+const TRIM_COLORS = ["#ffd84f", "#ff2f4f", "#2f8aff", "#9b5cff", "#7dff6b"];
 
 const LIT: Record<Signal, string> = {
   red: "#ff3b4f",
@@ -116,7 +116,7 @@ const pos = new THREE.Vector3();
 const quat = new THREE.Quaternion();
 const scl = new THREE.Vector3();
 const yAxis = new THREE.Vector3(0, 1, 0);
-const colour = new THREE.Color();
+const color = new THREE.Color();
 
 const carMatrix = new THREE.Matrix4();
 const partMatrix = new THREE.Matrix4();
@@ -240,16 +240,16 @@ export function Traffic({ player }: { player: Player }) {
     );
     traffic.cars.forEach((car, i) => {
       const slot = slots.slot[i];
-      if (car.kind === "car") body.setColorAt(slot, colour.set(car.colour));
+      if (car.kind === "car") body.setColorAt(slot, color.set(car.color));
       else {
-        shell.setColorAt(slot, colour.set(car.colour));
-        const n = TRIM_COLOURS.length;
-        let stripe = TRIM_COLOURS[car.id % n];
-        if (stripe === car.colour) stripe = TRIM_COLOURS[(car.id + 1) % n];
-        trim.setColorAt(slot, colour.set(stripe));
+        shell.setColorAt(slot, color.set(car.color));
+        const n = TRIM_COLORS.length;
+        let stripe = TRIM_COLORS[car.id % n];
+        if (stripe === car.color) stripe = TRIM_COLORS[(car.id + 1) % n];
+        trim.setColorAt(slot, color.set(stripe));
       }
-      LAMP_COLOURS.forEach((c, k) =>
-        lamps.setColorAt(i * PER_VEHICLE + k, colour.set(c).multiplyScalar(2)),
+      LAMP_COLORS.forEach((c, k) =>
+        lamps.setColorAt(i * PER_VEHICLE + k, color.set(c).multiplyScalar(2)),
       );
     });
     bulbs.forEach((b, i) => signals.setMatrixAt(i, b.matrix));
@@ -291,7 +291,7 @@ export function Traffic({ player }: { player: Player }) {
         placePart(body, slot, 0, 0.62, 0, 4.3, 0.95, 1.9);
         placePart(cabin, slot, -0.25, 1.38, 0, 2.4, 0.62, 1.7);
       } else {
-        // jeepney parts are modelled full size
+        // jeepney parts are modeled full size
         for (const mesh of [shell, trim, chrome, dark])
           mesh.setMatrixAt(slot, carMatrix);
       }
@@ -317,7 +317,7 @@ export function Traffic({ player }: { player: Player }) {
         const on = (b.axis === "ew" ? ew : ns) === b.light;
         signals.setColorAt(
           i,
-          on ? colour.set(LIT[b.light]).multiplyScalar(2.5) : colour.set(DARK),
+          on ? color.set(LIT[b.light]).multiplyScalar(2.5) : color.set(DARK),
         );
       });
       if (signals.instanceColor) signals.instanceColor.needsUpdate = true;

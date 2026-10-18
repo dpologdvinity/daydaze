@@ -25,7 +25,7 @@ const NEON_STRIP = new THREE.MeshBasicMaterial({
   toneMapped: false,
 });
 const SOIL = new THREE.MeshStandardMaterial({ color: "#1a0f0c", roughness: 1 });
-// The lamp globes breathe: the colour is rewritten each frame, never the material.
+// The lamp globes breathe: the color is rewritten each frame, never the material.
 const LAMP_BASE = hdr("#ffe0f0", 1.5);
 const LAMP_GLOW = new THREE.MeshBasicMaterial({
   color: LAMP_BASE.clone(),

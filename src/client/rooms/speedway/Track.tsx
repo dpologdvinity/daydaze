@@ -43,7 +43,7 @@ function tyreWalls(track: Track): Tyre[] {
     let bend = 0;
     for (let k = -2; k <= 2; k++) bend += turnAt(pts, i + k + pts.length);
     if (Math.abs(bend) < CORNER_TURN) continue;
-    // the outer side of a bend is the side the centreline bends away from
+    // the outer side of a bend is the side the centerline bends away from
     const side = bend > 0 ? -1 : 1;
     const [x, z] = offsetAt(pts, i, side * reach);
     out.push({ at: [x, z], y: 0.16 }, { at: [x, z], y: 0.48 });
@@ -52,7 +52,7 @@ function tyreWalls(track: Track): Tyre[] {
 }
 
 /**
- * A race track at `origin`: grained asphalt with white edge and dashed centre
+ * A race track at `origin`: grained asphalt with white edge and dashed center
  * lines, kerbs striped in red and white, solid barriers with neon along their
  * tops, and tyre walls on the outside of the corners. Road and glow are one
  * draw call each.
@@ -64,7 +64,7 @@ export function RaceTrack({ track, origin }: { track: Track; origin: Vec2 }) {
     const line = track.centerline;
     const walls = trackWalls(track);
     const inner = half - KERB;
-    // dashed centre line: three segments on, three off
+    // dashed center line: three segments on, three off
     const dashes = strips(line, 1, -0.12, 0.12).filter((_, i) => i % 6 < 3);
     const edges = [
       ...strips(line, 1, inner - 0.2, inner - 0.12),

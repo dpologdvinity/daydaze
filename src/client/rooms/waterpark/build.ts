@@ -4,7 +4,7 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 type V3 = readonly [number, number, number];
 
 /**
- * Unit geometry placed, tinted and merged into one mesh with vertex colours
+ * Unit geometry placed, tinted and merged into one mesh with vertex colors
  * (see `PROPS`), so a whole prop or area costs one draw call. `within` opens a
  * sub-frame for a prop's own parts.
  */

@@ -5,7 +5,7 @@
 // seed fixes when it bites and what's on the line.
 
 export const CASTS = 5;
-/** How far a cast lands, metres, from no power to full. */
+/** How far a cast lands, meters, from no power to full. */
 export const CAST_RANGE = [6, 26] as const;
 /** Seconds the bobber stays under once it dips: strike within this. */
 export const HOOK_WINDOW = 0.8;
@@ -16,7 +16,7 @@ export type Species = {
   name: string;
   /** Weight range, kg. */
   kg: readonly [number, number];
-  /** Only bites casts at least this far out, metres. */
+  /** Only bites casts at least this far out, meters. */
   reach: number;
   /** Relative chance among the species in reach. */
   weight: number;
@@ -39,7 +39,7 @@ function rand(n: number): number {
 const clamp01 = (v: number) =>
   Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : 0;
 
-/** Where a cast with `power` (0..1) lands, metres out. */
+/** Where a cast with `power` (0..1) lands, meters out. */
 export function castDistance(power: number): number {
   const p = clamp01(power);
   return CAST_RANGE[0] + (CAST_RANGE[1] - CAST_RANGE[0]) * p;

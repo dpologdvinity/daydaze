@@ -3,7 +3,7 @@ import * as THREE from "three";
 /**
  * Ground textures for instanced city surfaces. The road and sidewalk are a
  * few huge stretched boxes, so their UVs mean nothing; the shader samples
- * the maps by world position instead, `scale` repeats per metre.
+ * the maps by world position instead, `scale` repeats per meter.
  */
 const loader = new THREE.TextureLoader();
 
@@ -61,8 +61,8 @@ export function worldMapped<M extends THREE.MeshStandardMaterial>(
 
 const tiled = new Map<string, ReturnType<typeof groundMaps>>();
 
-/** A Poly Haven set tiled over a plane of `width` by `depth` metres, with
- * `scale` repeats per metre; shared by every floor that asks for the same. */
+/** A Poly Haven set tiled over a plane of `width` by `depth` meters, with
+ * `scale` repeats per meter; shared by every floor that asks for the same. */
 export function tiledMaps(
   id: string,
   width: number,

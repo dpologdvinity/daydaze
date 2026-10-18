@@ -14,7 +14,7 @@ export function Boxes({
 }: {
   boxes: readonly Box[];
   glow?: boolean;
-  /** Base colour of the solid boxes, multiplied by each box's colour. */
+  /** Base color of the solid boxes, multiplied by each box's color. */
   color?: string;
   /** Low-poly spheres in the same boxes, for heads. */
   ball?: boolean;

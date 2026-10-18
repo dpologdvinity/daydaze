@@ -56,27 +56,26 @@ export class FakeSocket implements SocketLike {
 
 export class FakeTimers {
   now = 0;
-  private queue: { at: number; callback: () => void; cancelled: boolean }[] =
-    [];
+  private queue: { at: number; callback: () => void; canceled: boolean }[] = [];
   readonly delays: number[] = [];
 
   readonly schedule: Schedule = (callback, delayMs) => {
-    const entry = { at: this.now + delayMs, callback, cancelled: false };
+    const entry = { at: this.now + delayMs, callback, canceled: false };
     this.queue.push(entry);
     this.delays.push(delayMs);
     return () => {
-      entry.cancelled = true;
+      entry.canceled = true;
     };
   };
   pending(): number {
-    return this.queue.filter((entry) => !entry.cancelled).length;
+    return this.queue.filter((entry) => !entry.canceled).length;
   }
   /** Advances the clock, running due callbacks in time order. */
   advance(ms: number): void {
     const until = this.now + ms;
     for (;;) {
       const next = this.queue
-        .filter((entry) => !entry.cancelled && entry.at <= until)
+        .filter((entry) => !entry.canceled && entry.at <= until)
         .sort((a, b) => a.at - b.at)[0];
       if (!next) break;
       this.queue = this.queue.filter((entry) => entry !== next);

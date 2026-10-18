@@ -45,7 +45,7 @@ type Edge = {
   toId: string;
   length: number;
   dir: Vec2;
-  /** Metres from the centre line to each lane's centre. */
+  /** Meters from the center line to each lane's center. */
   laneOffset: number;
   speedLimit: number;
   axis: "ew" | "ns";
@@ -117,10 +117,10 @@ export type VehicleKind = "car" | "jeepney";
 export type TrafficCar = {
   kind: VehicleKind;
   lane: Lane;
-  /** Metres travelled along the lane from its start node. */
+  /** Meters traveled along the lane from its start node. */
   s: number;
   speed: number;
-  colour: string;
+  color: string;
   /** Picks the next turn; advances at every junction. */
   turns: number;
   id: number;
@@ -130,7 +130,7 @@ export type TrafficCar = {
 
 export type Traffic = { cars: TrafficCar[]; time: number };
 
-export const CAR_COLOURS = [
+export const CAR_COLORS = [
   "#ff2f9a",
   "#3fe0d0",
   "#ffb02e",
@@ -141,8 +141,8 @@ export const CAR_COLOURS = [
   "#7dff6b",
 ] as const;
 
-/** Bright jeepney paint: the stripes are drawn in a second colour. */
-export const JEEPNEY_COLOURS = [
+/** Bright jeepney paint: the stripes are drawn in a second color. */
+export const JEEPNEY_COLORS = [
   "#ff2f4f",
   "#ffd84f",
   "#2f8aff",
@@ -200,13 +200,13 @@ export function createTraffic(count: number, seed = 1): Traffic {
     const len = laneLength(lane);
     const s =
       TURN + 12 + ((round * 37 + hash(i, seed) * 20) % (len - 2 * TURN - 24));
-    const paint = kind === "jeepney" ? JEEPNEY_COLOURS : CAR_COLOURS;
+    const paint = kind === "jeepney" ? JEEPNEY_COLORS : CAR_COLORS;
     cars.push({
       kind,
       lane: { ...lane },
       s,
       speed: 0,
-      colour: paint[Math.floor(hash(seed, i) * paint.length)],
+      color: paint[Math.floor(hash(seed, i) * paint.length)],
       turns: Math.floor(hash(i * 3, seed) * 1000),
       id: i,
       next: null,
@@ -226,7 +226,7 @@ function chooseNext(car: TrafficCar): Lane {
   return { edge, way: EDGES[edge].fromId === node ? 1 : -1 };
 }
 
-/** Lane centre at distance s along a lane, written into out. */
+/** Lane center at distance s along a lane, written into out. */
 function lanePoint(
   l: Lane,
   s: number,
@@ -247,7 +247,7 @@ const b = { x: 0, z: 0, yaw: 0 };
 
 /**
  * A car's position and heading: on its lane, or on the curve across a
- * junction from its lane's last TURN metres into the next lane's first.
+ * junction from its lane's last TURN meters into the next lane's first.
  */
 export function carPose(
   car: TrafficCar,
@@ -276,7 +276,7 @@ export function carPose(
 
 const pose = { x: 0, z: 0, yaw: 0 };
 
-/** Free road ahead of a car, in metres, up to `look`. */
+/** Free road ahead of a car, in meters, up to `look`. */
 function headroom(t: Traffic, car: TrafficCar, look: number): number {
   let room = look;
   for (const other of t.cars) {
@@ -298,7 +298,7 @@ function headroom(t: Traffic, car: TrafficCar, look: number): number {
     )
       // both turning into the same lane: the one nearer it goes first
       ahead = laneLength(car.lane) - car.s - (laneLength(other.lane) - other.s);
-    // s is each vehicle's centre: half of each length lies between them
+    // s is each vehicle's center: half of each length lies between them
     const bumpers = (VEHICLE_LENGTH[car.kind] + VEHICLE_LENGTH[other.kind]) / 2;
     if (ahead > 0) room = Math.min(room, ahead - bumpers - GAP);
   }

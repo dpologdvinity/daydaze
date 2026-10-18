@@ -8,7 +8,7 @@ import type { Box } from "./strips.ts";
 const TOWER_HEIGHT = 15;
 const LEG = 0.22;
 const SPAN = 0.9;
-// how far past the oval's outer edge the towers stand, in metres
+// how far past the oval's outer edge the towers stand, in meters
 const MARGIN = 14;
 
 /**

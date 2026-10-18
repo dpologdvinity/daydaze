@@ -28,7 +28,7 @@ import { yawTowards, type Vec2 } from "./walk.ts";
 /**
  * Chairs, stools and sofas a player can sit on. Tapping one walks the player
  * to `approach` (on the floor, in front of the seat), then seats them at
- * `at` facing `yaw`. `height` is the top of the seat cushion in metres.
+ * `at` facing `yaw`. `height` is the top of the seat cushion in meters.
  */
 export type Seat = {
   id: string;

@@ -334,7 +334,7 @@ function pieces(
 
 /**
  * Curbs, zebra crossings, manholes and sidewalk seams: the marks that make a
- * street read as a street rather than a flat stripe of colour.
+ * street read as a street rather than a flat stripe of color.
  */
 function streetMarks(
   cells: readonly Cell[],
@@ -457,7 +457,7 @@ function streetMarks(
 
 /** Every instance a building contributes; its light, when it has a sign.
  * A building facing east or west is dressed as if it faced +z, then turned
- * into place about its centre. */
+ * into place about its center. */
 function buildingInstances(
   b: Building,
   out: Record<Kind, Instance[]>,
@@ -553,7 +553,7 @@ function buildingInstancesFacing(
     sx: f.w * 0.86,
     sy: 2.6,
     sz: 0.12,
-    // shopfronts glow warm; signed fronts stay dim so the neon carries the colour
+    // shopfronts glow warm; signed fronts stay dim so the neon carries the color
     color: b.style === "storefront" ? "#f2b26b" : "#3a2452",
   });
 

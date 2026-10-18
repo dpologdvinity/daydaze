@@ -19,7 +19,7 @@ import { Bulbs } from "./amusementpark/Bulbs.tsx";
 
 const CONTEXT: DialogueContext = { venue: "ice-rink", neighborhood: "uptown" };
 
-/** The ice: an ellipse with these half-widths, centred on the hall. */
+/** The ice: an ellipse with these half-widths, centered on the hall. */
 const RINK = { rx: 8.4, rz: 5 };
 
 // skaters lap the ice in a loose line, each in her own lane and pace

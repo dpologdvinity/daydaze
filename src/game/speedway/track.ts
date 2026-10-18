@@ -61,7 +61,7 @@ function roundedLoop(halfX: number, halfZ: number, r: number): Vec2[] {
   return pts;
 }
 
-/** Smooth 0..1..0 bump over [start, end] with ramps of `ramp` metres. */
+/** Smooth 0..1..0 bump over [start, end] with ramps of `ramp` meters. */
 function bump(x: number, start: number, end: number, ramp: number): number {
   const smooth = (t: number) => t * t * (3 - 2 * t);
   if (x <= start || x >= end) return 0;

@@ -5,7 +5,7 @@ import {
   GOOD_BEHAVIOUR_MS,
   bailCost,
   bailOut,
-  goodBehaviour,
+  goodBehavior,
   isJailed,
   remainingMs,
   sentence,
@@ -38,12 +38,12 @@ test("bail costs more the more time is left", () => {
   assert.ok(short > 0);
 });
 
-test("good behaviour shortens the sentence and never goes below release", () => {
+test("good behavior shortens the sentence and never goes below release", () => {
   const jail = sentence(NOW, 1);
-  const cut = goodBehaviour(jail, NOW);
+  const cut = goodBehavior(jail, NOW);
   assert.equal(remainingMs(cut, NOW), 60_000 - GOOD_BEHAVIOUR_MS);
-  assert.equal(goodBehaviour({ endsAt: NOW + 5_000 }, NOW).endsAt, null);
-  assert.equal(goodBehaviour(DEFAULT_JAIL, NOW), DEFAULT_JAIL);
+  assert.equal(goodBehavior({ endsAt: NOW + 5_000 }, NOW).endsAt, null);
+  assert.equal(goodBehavior(DEFAULT_JAIL, NOW), DEFAULT_JAIL);
 });
 
 test("bail is paid from the wallet or refused", () => {

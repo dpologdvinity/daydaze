@@ -17,7 +17,7 @@ test("every seat's approach point is on its room's floor", () => {
   }
 });
 
-test("seats face their table or bar and stand half a metre in front", () => {
+test("seats face their table or bar and stand half a meter in front", () => {
   for (const s of SEATS) {
     const d = Math.hypot(s.approach[0] - s.at[0], s.approach[1] - s.at[1]);
     assert.ok(Math.abs(d - 0.5) < 1e-9);

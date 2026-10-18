@@ -6,7 +6,7 @@
 import { POST_X, SPOT_Z } from "./penalty.ts";
 import type { Vec2 } from "./walk.ts";
 
-/** The goal line's centre: goal space's origin. */
+/** The goal line's center: goal space's origin. */
 export const GOAL: Vec2 = [0, -8];
 
 /** A point in goal space (x across, z out from the line) in the room. */

@@ -17,7 +17,7 @@ function extrudeProfile(points: [number, number][]) {
     bevelEnabled: false,
     curveSegments: 1,
   });
-  // centre the depth and squash everything back into the unit cube
+  // center the depth and squash everything back into the unit cube
   g.translate(0, 0, -0.5);
   g.computeBoundingBox();
   const box = g.boundingBox ?? new THREE.Box3();
@@ -51,7 +51,7 @@ export const CAR_CABIN = extrudeProfile([
 
 // ---------------------------------------------------------------- jeepneys
 
-/** A box in metres, from its min to its max corner, unindexed for merging. */
+/** A box in meters, from its min to its max corner, unindexed for merging. */
 function slab(
   x0: number,
   y0: number,
@@ -73,7 +73,7 @@ function pair(x0: number, y0: number, z0: number, x1: number, y1: number) {
   ];
 }
 
-/** A side profile in metres, extruded to `width` and centred across it. */
+/** A side profile in meters, extruded to `width` and centered across it. */
 function extrudeSide(points: [number, number][], width: number) {
   const shape = new THREE.Shape(
     points.map(([x, y]) => new THREE.Vector2(x, y)),
@@ -120,7 +120,7 @@ function horse() {
 }
 
 /**
- * Jeepney parts, full-size in metres with the nose at +x and the road at y 0:
+ * Jeepney parts, full-size in meters with the nose at +x and the road at y 0:
  * 5.6 m long, the open passenger bay under a long flat roof behind a bonnet.
  * Each is merged into one geometry, so every jeepney part is one draw.
  */

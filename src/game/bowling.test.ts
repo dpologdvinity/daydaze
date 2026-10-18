@@ -29,7 +29,7 @@ test("a ball off the lane drops into the gutter and touches nothing", () => {
 });
 
 test("a ball into the pocket knocks most of the rack down", () => {
-  // from right of centre, angled in, curling into the 1-3 pocket
+  // from right of center, angled in, curling into the 1-3 pocket
   const r = roll(ALL, { offset: 0.3, angle: -0.012, speed: 8, hook: -0.25 });
   assert.equal(r.gutter, false);
   assert.ok(r.knocked.length >= 7, `knocked ${r.knocked.length}`);

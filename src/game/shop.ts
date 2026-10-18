@@ -16,7 +16,7 @@ import { spend } from "./wallet.ts";
 
 export type ShopId = "boutique" | "beauty" | "salon" | "piercing";
 
-/** A Look slot a shop item fills; its id is the catalogue option in that slot. */
+/** A Look slot a shop item fills; its id is the catalog option in that slot. */
 export type ShopSlot =
   "outfit" | "hairStyle" | "hairColor" | "lips" | "shadow" | "piercing";
 
@@ -27,7 +27,7 @@ export type ShopItem = {
   price: number;
 };
 
-// Original names only. Each id is a catalogue option in look.ts.
+// Original names only. Each id is a catalog option in look.ts.
 export const SHOP_ITEMS: readonly ShopItem[] = [
   // Pixel Mall Boutique: outfits and glam wear
   { id: "tracksuit-y2k", slot: "outfit", store: "boutique", price: 60 },
@@ -44,7 +44,7 @@ export const SHOP_ITEMS: readonly ShopItem[] = [
   },
   { id: "#ffd1f0", slot: "shadow", store: "beauty", price: 15 },
   { id: "#2e7dff", slot: "shadow", store: "beauty", price: 15 },
-  // Curl and Chrome Salon: paid styles and colour
+  // Curl and Chrome Salon: paid styles and color
   { id: "sleek-bob", slot: "hairStyle", store: "salon", price: 80 },
   { id: "curl-cloud", slot: "hairStyle", store: "salon", price: 90 },
   { id: "#7ee8a2", slot: "hairColor", store: "salon", price: 30 },
@@ -59,7 +59,7 @@ export const SHOP_ITEMS: readonly ShopItem[] = [
   { id: "opal-stud", slot: "piercing", store: "piercing", price: 40 },
 ];
 
-/** Every item a store sells, in catalogue order. */
+/** Every item a store sells, in catalog order. */
 export function itemsIn(store: ShopId): ShopItem[] {
   return SHOP_ITEMS.filter((item) => item.store === store);
 }
@@ -73,7 +73,7 @@ const CATALOGUES: Record<ShopSlot, readonly { id: string; label: string }[]> = {
   piercing: PIERCING_STYLES,
 };
 
-/** An item's name on the shelf, from its catalogue. */
+/** An item's name on the shelf, from its catalog. */
 export function itemLabel(item: ShopItem): string {
   return CATALOGUES[item.slot].find((o) => o.id === item.id)?.label ?? item.id;
 }
@@ -136,7 +136,7 @@ export function buyItem(state: Wallet, id: string): PurchaseResult {
   return { ok: true, state: { coins, wardrobe: [...state.wardrobe, id] } };
 }
 
-/** Shop items the wardrobe does not own; free catalogue options are never locked. */
+/** Shop items the wardrobe does not own; free catalog options are never locked. */
 function locked(id: string, wardrobe: readonly string[]): boolean {
   return shopItem(id) !== undefined && !wardrobe.includes(id);
 }
@@ -169,7 +169,7 @@ function unlockedPiercings(look: Look, wardrobe: readonly string[]): string {
   return encodePiercings(out);
 }
 
-/** The catalogue options the wardrobe can wear: free ones plus owned shop items. */
+/** The catalog options the wardrobe can wear: free ones plus owned shop items. */
 export function wearable<T extends { id: string }>(
   options: readonly T[],
   wardrobe: readonly string[],

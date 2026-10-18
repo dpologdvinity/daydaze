@@ -17,7 +17,7 @@ export const CONTAINER = {
   height: 2.6,
 } as const;
 
-/** The dance floor's centre, under the trusses. */
+/** The dance floor's center, under the trusses. */
 export const DANCE: Vec2 = [0, -0.6];
 
 /** The bar along the west wall, built from pallets: its front at x = front. */

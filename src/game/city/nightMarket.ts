@@ -1,5 +1,5 @@
 // The Chinatown and Koreatown night market: a paved square off the west
-// sidewalk of the neighbourhood's cross street (x 320), just south of the
+// sidewalk of the neighborhood's cross street (x 320), just south of the
 // avenue's shopfronts. Two rows of stalls face each other across a lane,
 // red lanterns hang over the lane and across the street, and a vendor works
 // each stall. Pure data: layout.ts makes the square walkable and the stalls
@@ -133,7 +133,7 @@ export const LANTERN_POLES: readonly Vec2[] = [
 ];
 export const POLE_HALF = 0.12;
 
-/** A lantern every LANTERN_GAP metres along each string, hanging from it. */
+/** A lantern every LANTERN_GAP meters along each string, hanging from it. */
 const LANTERN_GAP = 1.9;
 export type Lantern = { x: number; y: number; z: number; phase: number };
 
@@ -195,7 +195,7 @@ export const MARKET_PEOPLE: readonly MarketPerson[] = [
 ];
 
 /** The indices of the `count` market people nearest `at`, within `radius`
- * metres, nearest first. */
+ * meters, nearest first. */
 export function nearestMarketPeople(
   at: Vec2,
   count: number,

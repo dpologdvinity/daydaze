@@ -46,7 +46,7 @@ export function Dialog({
     <dialog
       ref={ref}
       className={`mg-dialog ${className}`}
-      aria-labelledby={titleId}
+      aria-labeledby={titleId}
       aria-describedby={subtitle ? subtitleId : undefined}
       onCancel={(event) => {
         event.preventDefault();

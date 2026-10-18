@@ -65,7 +65,7 @@ const STEEL = new THREE.MeshStandardMaterial({
 });
 const TAU = Math.PI * 2;
 
-// Shared materials for the detailed ride parts. Colours come per instance, so
+// Shared materials for the detailed ride parts. Colors come per instance, so
 // the materials stay white.
 const PAINT = new THREE.MeshStandardMaterial({
   roughness: 0.45,
@@ -107,7 +107,7 @@ const scratch = {
   axis: new THREE.Vector3(0, 1, 0),
 };
 
-/** Stripes for awnings and canopies: alternating colours around the canopy. */
+/** Stripes for awnings and canopies: alternating colors around the canopy. */
 export function useStripes(a: string, b: string) {
   return useMemo(
     () =>
@@ -241,7 +241,7 @@ const CANOPY_BULBS: [number, number, number][] = Array.from(
   },
 );
 
-// Each horse stands on a ring around the carousel's centre, facing along the tangent.
+// Each horse stands on a ring around the carousel's center, facing along the tangent.
 const HORSE_ITEMS: readonly Copy[] = Array.from(
   { length: CAROUSEL_HORSES },
   (_, k): Copy => {
@@ -267,7 +267,7 @@ const HORSE_TRIM = HORSE_ITEMS.map((h, k) => ({
 const HORSE_POLES: readonly Copy[] = HORSE_ITEMS.map((h) => ({
   position: h.position,
 }));
-// Scallops hang from the canopy's lower edge, alternating two stripe colours.
+// Scallops hang from the canopy's lower edge, alternating two stripe colors.
 const SCALLOP_GEOMETRY = new THREE.SphereGeometry(
   0.3,
   10,
@@ -300,7 +300,7 @@ export function Carousel() {
         <cylinderGeometry args={[3.9, 3.9, 0.24, 24]} />
         <meshStandardMaterial color="#3a1450" roughness={0.5} />
       </mesh>
-      {/* a mirrored drum at the centre and a mirrored skirt round the platform */}
+      {/* a mirrored drum at the center and a mirrored skirt round the platform */}
       <mesh position={[0, 0.9, 0]} material={MIRROR}>
         <cylinderGeometry args={[1.1, 1.1, 1.8, 16, 1, true]} />
       </mesh>
@@ -332,7 +332,7 @@ export function Carousel() {
 const CAR_SPACING = 2.4;
 const CAR_COLORS = ["#ffb02e", "#ff2f9a", "#3dff9a"];
 
-/** Metres along each coaster's track of the player's car while she rides it;
+/** Meters along each coaster's track of the player's car while she rides it;
  * the scene writes it every frame, the train follows it. */
 export const coasterRiders: Partial<Record<TrackRide, number>> = {};
 const tilt = new THREE.Euler(0, 0, 0, "YXZ");
@@ -359,12 +359,12 @@ function CoasterTrack({
   railMaterial?: THREE.Material;
   /** Car above the track line. */
   lift?: number;
-  /** Metres between cars along the track. */
+  /** Meters between cars along the track. */
   spacing?: number;
   track: Track;
   neon: string;
   cars: readonly string[];
-  /** Metres per second along the loop, and in calm mode. */
+  /** Meters per second along the loop, and in calm mode. */
   speed: { normal: number; calm: number };
 }) {
   const calm = useReducedMotion();

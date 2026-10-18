@@ -80,7 +80,7 @@ export const cottonCandyVendorBank: RoleBank = {
     "Every cone is a little cloud for somebody who needs a hug.",
     "Sweet tip: eat your cloud fast before the humidity makes it sad.",
     "Rainbow sprinkles are the best. Glitter is a ten, star sprinkles are a five.",
-    "Sugar on the pavement, glitter in the air. Living my best life.",
+    "Sugar on the sidewalk, glitter in the air. Living my best life.",
     {
       text: "Fairground sugar hits different. The carnival air makes the cloud fluffier.",
       when: { neighborhood: "fairground" },

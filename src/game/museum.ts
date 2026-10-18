@@ -1,4 +1,4 @@
-// Museo ng Little Manila, the neighbourhood's heritage museum: one hall of
+// Museo ng Little Manila, the neighborhood's heritage museum: one hall of
 // exhibits round the walls, each on its plinth with a plaque, and a docent
 // by the door. One layout, shared by the room's floor and blockers
 // (rooms.ts) and the client's scene and exhibit panel.
@@ -27,7 +27,7 @@ export type Exhibit = {
   kind: ExhibitKind;
   title: string;
   plaque: string;
-  /** The plinth's centre. */
+  /** The plinth's center. */
   at: Vec2;
   /** Which way the exhibit faces: towards the middle of the hall. */
   yaw: number;
@@ -86,7 +86,7 @@ export const EXHIBITS: readonly Exhibit[] = [
     kind: "barong",
     title: "Barong and terno",
     plaque:
-      "The barong tagalog is a sheer, embroidered formal shirt, often of piña fibre from pineapple leaves; the terno is a gown known for its butterfly sleeves.",
+      "The barong tagalog is a sheer, embroidered formal shirt, often of piña fiber from pineapple leaves; the terno is a gown known for its butterfly sleeves.",
     at: [-5.6, 3],
     yaw: Math.PI * 0.8,
   },
@@ -94,7 +94,7 @@ export const EXHIBITS: readonly Exhibit[] = [
     kind: "sari-sari",
     title: "The sari-sari store",
     plaque:
-      "A sari-sari store is the neighbourhood corner shop, selling a little of everything: snacks, soap and single sachets through a window in the front of a house.",
+      "A sari-sari store is the neighborhood corner shop, selling a little of everything: snacks, soap and single sachets through a window in the front of a house.",
     at: [5.6, 3],
     yaw: -Math.PI * 0.8,
   },
@@ -121,7 +121,7 @@ export const FLOOR: readonly Vec2[] = box(
   FLOOR_BOUNDS.z1,
 );
 
-/** Each plinth, a metre and a bit square. */
+/** Each plinth, a meter and a bit square. */
 export const BLOCKERS: readonly (readonly Vec2[])[] = EXHIBITS.map(
   ({ at: [x, z] }) => box(x - 0.7, z - 0.7, x + 0.7, z + 0.7),
 );

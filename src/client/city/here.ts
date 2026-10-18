@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react";
 import type { Neighborhood } from "../../game/city/layout.ts";
 
-// The city neighbourhood the player is walking through, for the HUD title.
+// The city neighborhood the player is walking through, for the HUD title.
 // The city scene writes it each frame; it only notifies on a change.
 const listeners = new Set<() => void>();
 let current: Neighborhood = "downtown";

@@ -32,7 +32,7 @@ const BANNERS: readonly { label: string; color: string; x: number }[] = [
   { label: "FAST LANE", color: "#ffd84f", x: 14 },
 ];
 
-/** Gives each box without its own colour the given one. */
+/** Gives each box without its own color the given one. */
 function tint(boxes: readonly Box[], color: THREE.Color): Box[] {
   return boxes.map((b) => ({ ...b, color: b.color ?? color }));
 }
@@ -76,9 +76,9 @@ export function Grandstand() {
           depth: 1,
           color: SHADOW,
         });
-        // most seats hold a fan in colour; a few are empty and stay in shadow
+        // most seats hold a fan in color; a few are empty and stay in shadow
         if ((row * 5 + k) % 6 === 5) continue;
-        const colour = FANS[(row * 3 + k) % FANS.length];
+        const color = FANS[(row * 3 + k) % FANS.length];
         const seat: Box = { x, y, z, yaw: 0, length: 1, height: 1, depth: 1 };
         bodies.push({
           ...seat,
@@ -87,7 +87,7 @@ export function Grandstand() {
           length: 1.1,
           height: 0.75,
           depth: 0.7,
-          color: colour,
+          color: color,
         });
         // every fourth fan has an arm up
         if ((row + k) % 4 === 0) {
@@ -99,7 +99,7 @@ export function Grandstand() {
             length: 0.22,
             height: 0.8,
             depth: 0.22,
-            color: colour,
+            color: color,
           });
         }
         heads.push({
@@ -112,7 +112,7 @@ export function Grandstand() {
           color: SKIN,
         });
       }
-      // a steel rail at the front of every tier, with posts every metre
+      // a steel rail at the front of every tier, with posts every meter
       rails.push({
         x: 0,
         y: y + 0.9,
@@ -219,7 +219,7 @@ export function Grandstand() {
       depth: 0.06,
       color: NEON.white,
     }));
-    // solid boxes share one draw call, so each one carries its colour
+    // solid boxes share one draw call, so each one carries its color
     const solid = [
       ...seats,
       ...bodies,

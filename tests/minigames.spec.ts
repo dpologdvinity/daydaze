@@ -173,7 +173,7 @@ async function build(page: Page, ticket: Ticket, garnish = ticket.garnish) {
   }
 }
 
-/** Stops the needle dead centre: it sweeps across and back every 1.6 s. */
+/** Stops the needle dead center: it sweeps across and back every 1.6 s. */
 async function mixPerfectly(page: Page) {
   await page.getByRole("button", { name: /^(Shake|Stir) it$/ }).click();
   await page.clock.runFor(400);

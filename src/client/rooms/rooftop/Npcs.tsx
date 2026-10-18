@@ -117,7 +117,7 @@ const REGULARS: readonly {
   },
 ];
 
-/** The Skylark's host at the lift, the bartender, the DJ and the regulars.
+/** The Skylark's host at the elevator, the bartender, the DJ and the regulars.
  * `onDrink` is what the bartender's tap pours; see RooftopBar. */
 export function SkylarkNpcs({
   onDrink,

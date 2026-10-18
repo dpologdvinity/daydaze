@@ -2,7 +2,7 @@ import type { Vec2 } from "./walk.ts";
 
 export type Vec3 = readonly [x: number, y: number, z: number];
 
-// Water Park layout in metres, shared by the room data, the scene and the
+// Water Park layout in meters, shared by the room data, the scene and the
 // slide ride. The wave pool sits behind the deck, the slide tower to its east.
 export const POOL = { x0: -10, x1: 3, z0: -9.5, z1: -1.5, water: 0.06 };
 export const TOWER = { x: 7.5, z: -6.6, top: 6.6 };
@@ -11,7 +11,7 @@ export type Slide = {
   id: string;
   label: string;
   color: string;
-  /** Where the rider's hips go, top to splash, in metres. */
+  /** Where the rider's hips go, top to splash, in meters. */
   path: readonly Vec3[];
   /** Where the rider climbs out onto the deck after the splash. */
   exit: Vec2;

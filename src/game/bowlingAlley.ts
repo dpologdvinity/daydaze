@@ -5,7 +5,7 @@
 import { HEADPIN_Z, PIT_Z } from "./bowling.ts";
 import type { Vec2 } from "./walk.ts";
 
-/** Lane centres across the room; PLAY_LANE is the one you bowl on. */
+/** Lane centers across the room; PLAY_LANE is the one you bowl on. */
 export const LANE_XS: readonly number[] = [-3.3, -1.1, 1.1, 3.3];
 export const PLAY_LANE = 2;
 /** The foul line, where the lanes meet the concourse. */

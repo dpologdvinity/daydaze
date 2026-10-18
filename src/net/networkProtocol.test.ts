@@ -24,7 +24,7 @@ const entity: EntityDelta = {
 const rounded = { ...entity, x: 12.34, z: -8.07, yaw: 1.571 };
 const look = { hair: "bob", top: "tee-pink" };
 
-test("standard delta is under 48 UTF-8 bytes and rounds to centimetres and milliradians", () => {
+test("standard delta is under 48 UTF-8 bytes and rounds to centimeters and milliradians", () => {
   const raw = encodeEntityDelta(entity);
   assert.ok(new TextEncoder().encode(raw).length < 48);
   assert.deepEqual(decodeEntityDelta(raw), rounded);
@@ -58,7 +58,7 @@ test("delta decoder validates every field and never coerces corrupt values", () 
   });
 });
 
-test("delta decoder normalises yaw into (-π, π]", () => {
+test("delta decoder normalizes yaw into (-π, π]", () => {
   const yawOf = (yaw: number) =>
     decodeEntityDelta({ ...rounded, yaw })?.yaw ?? NaN;
   assert.equal(yawOf(Math.PI), Math.PI);

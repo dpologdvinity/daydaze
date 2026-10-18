@@ -31,7 +31,7 @@ function tilesOf(
 }
 
 /**
- * One phase group of LED tiles. Its brightness is a single material colour
+ * One phase group of LED tiles. Its brightness is a single material color
  * that moves every frame, so the whole floor costs four draw calls.
  */
 function LedGroup({
@@ -88,7 +88,7 @@ function LedGroup({
 
 /**
  * A grid of glowing LED tiles on the floor, pulsing on the beat. `colors`
- * gives the four phase groups their colours.
+ * gives the four phase groups their colors.
  */
 export function LedFloor({
   center,
