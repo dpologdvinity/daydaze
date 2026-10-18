@@ -1,5 +1,5 @@
 import { useFrame } from "@react-three/fiber";
-import { Suspense, useMemo, useRef, type ReactNode } from "react";
+import { useMemo, useRef, type ReactNode } from "react";
 import * as THREE from "three";
 import {
   BAR,
@@ -21,7 +21,7 @@ import { GamePad } from "./shared/GamePad.tsx";
 import { canvasTex, hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
-import { PropSet } from "./shared/Prop.tsx";
+import { BarStools } from "./shared/BarStools.tsx";
 
 const WALL_X0 = -6.2;
 const WALL_X1 = 6.2;
@@ -385,15 +385,7 @@ function Bar() {
         <boxGeometry args={[BAR.back - BAR.front + 0.1, 0.05, length + 0.1]} />
         <meshStandardMaterial color="#2a2440" metalness={0.6} roughness={0.3} />
       </mesh>
-      <Suspense fallback={null}>
-        <PropSet
-          model="bar-stool"
-          width={0.42}
-          depth={0.42}
-          height={0.82}
-          at={stools}
-        />
-      </Suspense>
+      <BarStools at={stools} color="#2fd0ff" />
     </>
   );
 }

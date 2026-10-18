@@ -1,11 +1,11 @@
-import { Suspense, useLayoutEffect, useMemo, useRef } from "react";
-import { PropSet } from "../shared/Prop.tsx";
+import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { lathe } from "../../avatar/dollGeometry.ts";
 import { Batch } from "../shared/batch.ts";
 import { canvasTex, GOLD, gradientTex, LACQUER } from "../shared/materials.ts";
 import { MIRROR, NEON_AMBER, NEON_PINK } from "./materials.ts";
 import { Cocktails } from "./Props.tsx";
+import { BarStools } from "../shared/BarStools.tsx";
 
 const CX = -0.8;
 const LEN = 6.2;
@@ -228,15 +228,7 @@ export function Bar() {
   return (
     <group>
       <primitive object={parts} />
-      <Suspense fallback={null}>
-        <PropSet
-          model="bar-stool"
-          width={0.45}
-          depth={0.45}
-          height={0.82}
-          at={STOOLS}
-        />
-      </Suspense>
+      <BarStools at={STOOLS} color="#b0123a" />
       <Bottles />
       <Cocktails
         items={[

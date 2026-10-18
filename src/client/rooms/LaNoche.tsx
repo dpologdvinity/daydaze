@@ -23,6 +23,7 @@ import { NeonText, SCRIPT } from "./shared/Neon.tsx";
 import { Palm } from "./shared/Palm.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { PropSet } from "./shared/Prop.tsx";
+import { BarStools } from "./shared/BarStools.tsx";
 
 const WALL_X = 6.2;
 const BACK_Z = -6.2;
@@ -169,15 +170,7 @@ function Bar() {
           />
         </mesh>
       ))}
-      <Suspense fallback={null}>
-        <PropSet
-          model="bar-stool"
-          width={0.42}
-          depth={0.42}
-          height={0.82}
-          at={stools}
-        />
-      </Suspense>
+      <BarStools at={stools} color="#e0402a" />
     </>
   );
 }

@@ -18,9 +18,10 @@ import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { canvasTex, hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
-import { Prop, PropSet } from "./shared/Prop.tsx";
+import { Prop } from "./shared/Prop.tsx";
 import { Sparkles } from "./shared/Sparkles.tsx";
 import { WarehouseNpcs } from "./warehouse/Npcs.tsx";
+import { BarStools } from "./shared/BarStools.tsx";
 
 const WALL_X = 7.6;
 const BACK_Z = -7.2;
@@ -312,15 +313,7 @@ function Bar() {
         position={[-WALL_X + 0.17, 3, cz]}
         rotation-y={Math.PI / 2}
       />
-      <Suspense fallback={null}>
-        <PropSet
-          model="bar-stool"
-          width={0.42}
-          depth={0.42}
-          height={0.82}
-          at={stools}
-        />
-      </Suspense>
+      <BarStools at={stools} color="#ff8a1f" />
     </>
   );
 }

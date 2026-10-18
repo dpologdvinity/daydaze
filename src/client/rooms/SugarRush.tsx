@@ -23,9 +23,10 @@ import { LedFloor } from "./shared/LedFloor.tsx";
 import { canvasTex, gradientTex, hdr } from "./shared/materials.ts";
 import { NeonText, SCRIPT } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
-import { Prop, PropSet } from "./shared/Prop.tsx";
+import { Prop } from "./shared/Prop.tsx";
 import { Sparkles } from "./shared/Sparkles.tsx";
 import { SugarRushNpcs } from "./sugarrush/Npcs.tsx";
+import { BarStools } from "./shared/BarStools.tsx";
 
 const WALL_X = 6;
 const BACK_Z = -6;
@@ -225,15 +226,7 @@ function Bar() {
         <boxGeometry args={[BAR.back - BAR.front + 0.1, 0.06, length + 0.1]} />
         <meshStandardMaterial color="#fff1fb" roughness={0.25} />
       </mesh>
-      <Suspense fallback={null}>
-        <PropSet
-          model="bar-stool"
-          width={0.42}
-          depth={0.42}
-          height={0.82}
-          at={stools}
-        />
-      </Suspense>
+      <BarStools at={stools} color="#ff5fb8" />
     </>
   );
 }

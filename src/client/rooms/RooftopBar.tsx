@@ -25,6 +25,7 @@ import { hdr } from "./shared/materials.ts";
 import { NeonText, SCRIPT } from "./shared/Neon.tsx";
 import { Prop, PropSet } from "./shared/Prop.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
+import { BarStools } from "./shared/BarStools.tsx";
 
 // the deck's edges: glass rails all round, the elevator kiosk in the south-west
 const RAIL_X = 8.2;
@@ -351,13 +352,7 @@ function Furniture() {
   );
   return (
     <Suspense fallback={null}>
-      <PropSet
-        model="bar-stool"
-        width={0.42}
-        depth={0.42}
-        height={0.82}
-        at={stools}
-      />
+      <BarStools at={stools} color="#f2e6d0" />
       <Prop
         model="sofa"
         width={3}
