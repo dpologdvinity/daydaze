@@ -206,6 +206,18 @@ test("Loft Studios: pick an instrument and play notes from the panel and keys", 
   expect(errors).toEqual([]);
 });
 
+test("the zoo's gate on Park Avenue leads in, and its animals walk", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=zoo`);
+  await expect(roomTitle(page)).toHaveText("Daydaze Zoo", { timeout: 150_000 });
+  await expect(page.locator("canvas")).toHaveAttribute("data-frames", "10", {
+    timeout: 150_000,
+  });
+  expect(errors).toEqual([]);
+});
+
 test("loads the Velvet Room with no errors and mounts the canvas", async ({
   page,
 }) => {
@@ -1037,6 +1049,7 @@ for (const room of [
   "market",
   "paintball",
   "music-studio",
+  "zoo",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

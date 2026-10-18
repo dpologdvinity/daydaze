@@ -25,6 +25,7 @@ import { PHOTON_DOOR, SPAWN as PHOTON_SPAWN } from "../laserTag.ts";
 import { MARKET_DOOR, SPAWN as MARKET_SPAWN } from "../market.ts";
 import { SPLAT_DOOR, SPAWN as SPLAT_SPAWN } from "../paintball.ts";
 import { STUDIO_DOOR, SPAWN as STUDIO_SPAWN } from "../studio.ts";
+import * as ZOO from "../zoo.ts";
 import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
 import * as RANGE from "../drivingRange.ts";
@@ -1447,7 +1448,25 @@ const UPTOWN_FRONT: readonly {
     sign: { text: "BISTRO", color: "#ffe066" },
     style: "storefront",
   },
-  { x: 374, w: 22, h: 22, north: false, color: "#8e7dbe", style: "brick" },
+  {
+    x: ZOO.ZOO_DOOR.position[0],
+    w: 22,
+    h: 10,
+    north: false,
+    color: "#2d6a4f",
+    sign: { text: "DAYDAZE ZOO", color: "#7dff6b" },
+    style: "gate",
+    venue: {
+      id: "zoo",
+      door: {
+        position: ZOO.ZOO_DOOR.position,
+        radius: 1.5,
+        label: "Into the Daydaze Zoo",
+        target: "zoo",
+        targetSpawn: { position: ZOO.SPAWN, yaw: Math.PI },
+      },
+    },
+  },
   {
     x: 402,
     w: 24,

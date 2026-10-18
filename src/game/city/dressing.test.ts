@@ -115,6 +115,7 @@ test("each gate raises two tall arches either side of its door", () => {
     "speedway",
     "stadium",
     "water-park",
+    "zoo",
   ]);
   for (const b of gates) {
     const out = dressed(b.id);

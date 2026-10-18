@@ -89,6 +89,7 @@ import * as TAG from "./laserTag.ts";
 import * as MARKET from "./market.ts";
 import * as PAINT from "./paintball.ts";
 import * as STUDIO from "./studio.ts";
+import * as ZOO from "./zoo.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -138,6 +139,7 @@ export type RoomId =
   | "market"
   | "paintball"
   | "music-studio"
+  | "zoo"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -618,6 +620,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to Gallery Row",
         target: "city",
         targetSpawn: { position: SALON.SALON.door.landing, yaw: 0 },
+      },
+    ],
+  },
+  zoo: {
+    id: "zoo",
+    name: "Daydaze Zoo",
+    walkable: ZOO.FLOOR,
+    blockers: ZOO.BLOCKERS,
+    spawn: { position: ZOO.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "zoo-to-city",
+        position: ZOO.EXIT,
+        radius: 0.8,
+        label: "Out to Park Avenue",
+        target: "city",
+        targetSpawn: { position: ZOO.ZOO_DOOR.landing, yaw: Math.PI },
       },
     ],
   },
