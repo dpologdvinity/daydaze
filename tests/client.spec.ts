@@ -309,6 +309,18 @@ test("the Back Room pours a drink and seats the player at the bar", async ({
   expect(errors).toEqual([]);
 });
 
+test("Rewind Video opens Throwback Trivia at the counter", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&room=video-store`);
+  await page
+    .getByRole("button", { name: "Play Throwback Trivia at the counter" })
+    .click({ timeout: 150_000 });
+  await expect(
+    page.getByRole("dialog", { name: "Throwback Trivia" }),
+  ).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test("loads the Velvet Room with no errors and mounts the canvas", async ({
   page,
 }) => {
@@ -1145,6 +1157,7 @@ for (const room of [
   "jazz-club",
   "vinyl-vault",
   "back-room",
+  "video-store",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

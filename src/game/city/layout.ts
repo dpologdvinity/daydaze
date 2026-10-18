@@ -30,6 +30,7 @@ import * as MOTORS from "../dealership.ts";
 import * as HORN from "../jazzClub.ts";
 import * as VAULT from "../vinylVault.ts";
 import * as BACK from "../backRoom.ts";
+import * as REWIND from "../videoStore.ts";
 import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
 import * as RANGE from "../drivingRange.ts";
@@ -471,8 +472,15 @@ const SUBURB_FRONT: readonly {
     h: 10,
     north: true,
     color: "#b5838d",
-    sign: { text: "VIDEO RENTALS", color: "#4fe3ff" },
+    sign: { text: "REWIND VIDEO", color: "#4fe3ff" },
     style: "storefront",
+    door: {
+      position: REWIND.REWIND_DOOR.position,
+      radius: 1.5,
+      label: "Into Rewind Video",
+      target: "video-store",
+      targetSpawn: { position: REWIND.SPAWN, yaw: Math.PI },
+    },
   },
 ];
 

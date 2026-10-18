@@ -96,6 +96,7 @@ import * as MOTORS from "./dealership.ts";
 import * as HORN from "./jazzClub.ts";
 import * as VAULT from "./vinylVault.ts";
 import * as BACK from "./backRoom.ts";
+import * as REWIND from "./videoStore.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -150,6 +151,7 @@ export type RoomId =
   | "jazz-club"
   | "vinyl-vault"
   | "back-room"
+  | "video-store"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -632,6 +634,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to Gallery Row",
         target: "city",
         targetSpawn: { position: SALON.SALON.door.landing, yaw: 0 },
+      },
+    ],
+  },
+  "video-store": {
+    id: "video-store",
+    name: "Rewind Video",
+    walkable: REWIND.FLOOR,
+    blockers: REWIND.BLOCKERS,
+    spawn: { position: REWIND.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "video-store-to-city",
+        position: REWIND.EXIT,
+        radius: 0.8,
+        label: "Out to Maple Drive",
+        target: "city",
+        targetSpawn: { position: REWIND.REWIND_DOOR.landing, yaw: 0 },
       },
     ],
   },

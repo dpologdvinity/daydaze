@@ -89,50 +89,46 @@ export function boxMapped<M extends THREE.MeshStandardMaterial>(
   material: M,
   scale: number,
 ): M {
+  // the scale rides in each map's own transform (repeat), so every
+  // box-mapped material shares one shader program; the maps must be this
+  // material's own (clones share the GPU image)
+  for (const t of [material.map, material.normalMap, material.roughnessMap])
+    t?.repeat.set(scale, scale);
   material.onBeforeCompile = (shader) => {
-    shader.uniforms.uBoxScale = { value: scale };
-    shader.vertexShader = shader.vertexShader
-      .replace(
-        "void main() {",
-        "varying vec3 vBoxPos;\nvarying vec3 vBoxNormal;\nvoid main() {",
-      )
-      .replace(
+    shader.vertexShader = shader.vertexShader.replace(
+      "#include <worldpos_vertex>",
+      [
         "#include <worldpos_vertex>",
-        [
-          "#include <worldpos_vertex>",
-          "vec4 boxPos = vec4(transformed, 1.0);",
-          "vec3 boxN = objectNormal;",
-          "#ifdef USE_INSTANCING",
-          "boxPos = instanceMatrix * boxPos;",
-          "boxN = mat3(instanceMatrix) * boxN;",
-          "#endif",
-          "vBoxPos = (modelMatrix * boxPos).xyz;",
-          "vBoxNormal = mat3(modelMatrix) * boxN;",
-        ].join("\n"),
-      );
-    shader.fragmentShader = shader.fragmentShader
-      .replace(
-        "void main() {",
-        [
-          "uniform float uBoxScale;",
-          "varying vec3 vBoxPos;",
-          "varying vec3 vBoxNormal;",
-          "void main() {",
-          "vec3 boxA = abs(vBoxNormal);",
-          "vec2 boxUv = (boxA.y >= max(boxA.x, boxA.z) ? vBoxPos.xz",
-          "  : boxA.x >= boxA.z ? vBoxPos.zy : vBoxPos.xy) * uBoxScale;",
-        ].join("\n"),
-      )
-      .replaceAll("vMapUv", "boxUv")
-      .replaceAll("vNormalMapUv", "boxUv")
-      .replaceAll("vRoughnessMapUv", "boxUv");
+        "vec4 boxPos = vec4(transformed, 1.0);",
+        "vec3 boxN = objectNormal;",
+        "#ifdef USE_INSTANCING",
+        "boxPos = instanceMatrix * boxPos;",
+        "boxN = mat3(instanceMatrix) * boxN;",
+        "#endif",
+        "vec3 boxP = (modelMatrix * boxPos).xyz;",
+        "vec3 boxA = abs(mat3(modelMatrix) * boxN);",
+        // planar per face: exact for flat faces, which box mapping is for
+        "vec2 boxUv = boxA.y >= max(boxA.x, boxA.z) ? boxP.xz",
+        "  : boxA.x >= boxA.z ? boxP.zy : boxP.xy;",
+        "#ifdef USE_MAP",
+        "vMapUv = (mapTransform * vec3(boxUv, 1.0)).xy;",
+        "#endif",
+        "#ifdef USE_NORMALMAP",
+        "vNormalMapUv = (normalMapTransform * vec3(boxUv, 1.0)).xy;",
+        "#endif",
+        "#ifdef USE_ROUGHNESSMAP",
+        "vRoughnessMapUv = (roughnessMapTransform * vec3(boxUv, 1.0)).xy;",
+        "#endif",
+      ].join("\n"),
+    );
   };
-  material.customProgramCacheKey = () => `box${scale}`;
+  material.customProgramCacheKey = () => "box";
   return material;
 }
 
 const surfaces = new Map<string, THREE.MeshStandardMaterial>();
-// box mapping ignores a texture's repeat, so every surface of a set shares one
+// each surface clones its set's textures (sharing the GPU image) to carry
+// its own repeat
 const boxMaps = new Map<string, ReturnType<typeof groundMaps>>();
 
 /**
@@ -179,7 +175,9 @@ export function surface(
     }
     m = boxMapped(
       new THREE.MeshStandardMaterial({
-        ...maps,
+        map: maps.map.clone(),
+        normalMap: maps.normalMap.clone(),
+        roughnessMap: maps.roughnessMap.clone(),
         color,
         metalness,
         roughness,

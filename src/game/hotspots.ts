@@ -4,6 +4,7 @@ import type { RoomId } from "./rooms.ts";
 import type { Vec2 } from "./walk.ts";
 import { DECKS_SPOT } from "./warehouse.ts";
 import { LAST_CALL_SPOT, PLAYABLE, playSpot } from "./arcadeBar.ts";
+import { TRIVIA_SPOT as REWIND_TRIVIA } from "./videoStore.ts";
 
 export const MINIGAME_IDS = [
   "bassline",
@@ -27,6 +28,15 @@ export type Hotspot = {
 };
 
 export const HOTSPOTS: readonly Hotspot[] = [
+  {
+    // Rewind Video's counter: movie-night trivia with the clerk
+    id: "rewind-trivia",
+    room: "video-store",
+    game: "trivia",
+    label: "Play Throwback Trivia at the counter",
+    position: REWIND_TRIVIA,
+    radius: 1,
+  },
   {
     // In front of the DJ booth, on the dance floor's back edge.
     id: "pulse-decks",
