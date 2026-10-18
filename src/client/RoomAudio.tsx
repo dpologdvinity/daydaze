@@ -12,6 +12,7 @@ import {
 } from "../audio/worldSounds.ts";
 import type { RoomId } from "../game/rooms.ts";
 import { useNeighborhood } from "./city/here.ts";
+import { musicPick } from "./musicPick.ts";
 
 // what plays where: venues get a jukebox track, open places an ambience bed
 const MUSIC: Partial<Record<RoomId, TrackId>> = {
@@ -54,6 +55,7 @@ const MUSIC: Partial<Record<RoomId, TrackId>> = {
   zoo: "canopy-lofi",
   dealership: "sugar-rush-pop",
   "jazz-club": "waterhole-twilight",
+  "vinyl-vault": "canopy-lofi",
   "halo-halo-cafe": "canopy-lofi",
   // a backing track to sing over
   karaoke: "sugar-rush-pop",
@@ -81,6 +83,9 @@ const AMBIENCE: Partial<Record<RoomId, Ambience>> = {
 export function RoomAudio({ room, muted }: { room: RoomId; muted: boolean }) {
   const [unlocked, setUnlocked] = useState(false);
   const neighborhood = useNeighborhood();
+  const picked = musicPick.use().track;
+  // a record on at the shop or the record player at home wins
+  const pick = room === "vinyl-vault" || room === "apartment" ? picked : null;
 
   useEffect(() => {
     const unlock = () => {
@@ -118,12 +123,12 @@ export function RoomAudio({ room, muted }: { room: RoomId; muted: boolean }) {
     const jukebox = getSharedJukeboxController();
     // music sits under the room, not over it
     jukebox.setMusicVolume(0.35);
-    const track = MUSIC[room];
+    const track = pick ?? MUSIC[room];
     if (track) {
       if (jukebox.getCurrentTrack() !== track || !jukebox.isPlaying())
         jukebox.playTrack(track);
     } else jukebox.stopTrack();
-  }, [room, unlocked]);
+  }, [room, unlocked, pick]);
 
   const bed: Ambience | null =
     room === "city"

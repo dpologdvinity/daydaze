@@ -41,6 +41,7 @@ import { INTENSITIES, type Intensity } from "../../game/effects/buzz.ts";
 import { CarPicker } from "../city/CarPicker.tsx";
 import { FuelStop } from "../city/FuelStop.tsx";
 import { DealershipPanel } from "../city/DealershipPanel.tsx";
+import { RecordPlayer, RecordsPanel } from "../city/RecordsPanel.tsx";
 import type { ParkedCar } from "../../game/city/drive.ts";
 import type { RoomId, Spawn } from "../../game/rooms.ts";
 import {
@@ -111,6 +112,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Skyline Driving Range. Get a bucket of ten: set your backswing, strike it pure, and land them on the greens.",
   salon:
     "The Blowout Bar. Book with Dani for the salon's colors, or take a chair by the mirrors.",
+  "vinyl-vault":
+    "Vinyl Vault. Dig the crates, play a sample of any record and buy the ones you love for the record player at home.",
   "jazz-club":
     "The Midnight Horn. A four-piece band plays under the spotlight; take a candlelit table or a stool at the bar.",
   dealership:
@@ -557,6 +560,8 @@ export function Overlay({
   onSpend,
   garage,
   onBuyCar,
+  records,
+  onBuyRecord,
 }: {
   room: RoomId;
   roomName: string;
@@ -596,6 +601,9 @@ export function Overlay({
   /** The road cars you own, and buying one at the dealership. */
   garage: readonly string[];
   onBuyCar: (id: string) => void;
+  /** Records you own, and buying one at Vinyl Vault. */
+  records: readonly string[];
+  onBuyRecord: (id: string) => void;
 }) {
   const neighborhood = useNeighborhood();
   const [phone, setPhone] = useState(false);
@@ -676,6 +684,9 @@ export function Overlay({
       />
       <RoomPanel room={room} />
       {room === "city" && <FuelStop coins={coins} onSpend={onSpend} />}
+      {room === "vinyl-vault" && (
+        <RecordsPanel coins={coins} records={records} onBuy={onBuyRecord} />
+      )}
       {room === "dealership" && (
         <DealershipPanel coins={coins} garage={garage} onBuy={onBuyCar} />
       )}
@@ -736,6 +747,7 @@ export function Overlay({
               City map
             </button>
           )}
+          {room === "apartment" && <RecordPlayer records={records} />}
           {room === "city" && (
             <CarPicker car={car} garage={garage} onChange={setCar} />
           )}

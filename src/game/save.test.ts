@@ -46,6 +46,7 @@ test("createDefaultSave uses the default look and auto quality", () => {
     challenges: { day: 0, done: [] },
     car: null,
     garage: ["quill-lite"],
+    records: [],
   });
 });
 
@@ -80,6 +81,7 @@ test("a save round-trips through serializeSave and loadSave", () => {
       fuel: 0.5,
     },
     garage: ["quill-lite"],
+    records: [],
   };
   assert.deepEqual(loadSave(serializeSave(save), "Fallback"), save);
 });
@@ -140,6 +142,7 @@ test("a save from before the swimsuit slot still loads", () => {
     challenges: { day: 0, done: [] },
     car: null,
     garage: ["quill-lite"],
+    records: [],
   });
 });
 
@@ -195,6 +198,7 @@ test("loadSave keeps a valid name when the look is bad", () => {
     challenges: { day: 0, done: [] },
     car: null,
     garage: ["quill-lite"],
+    records: [],
   });
 });
 
@@ -225,6 +229,7 @@ test("loadSave keeps a valid look when the name is bad", () => {
     challenges: { day: 0, done: [] },
     car: null,
     garage: ["quill-lite"],
+    records: [],
   });
 });
 

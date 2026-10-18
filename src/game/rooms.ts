@@ -94,6 +94,7 @@ import * as STUDIO from "./studio.ts";
 import * as ZOO from "./zoo.ts";
 import * as MOTORS from "./dealership.ts";
 import * as HORN from "./jazzClub.ts";
+import * as VAULT from "./vinylVault.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -146,6 +147,7 @@ export type RoomId =
   | "zoo"
   | "dealership"
   | "jazz-club"
+  | "vinyl-vault"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -628,6 +630,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to Gallery Row",
         target: "city",
         targetSpawn: { position: SALON.SALON.door.landing, yaw: 0 },
+      },
+    ],
+  },
+  "vinyl-vault": {
+    id: "vinyl-vault",
+    name: "Vinyl Vault",
+    walkable: VAULT.FLOOR,
+    blockers: VAULT.BLOCKERS,
+    spawn: { position: VAULT.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "vinyl-vault-to-city",
+        position: VAULT.EXIT,
+        radius: 0.8,
+        label: "Out to Gallery Row",
+        target: "city",
+        targetSpawn: { position: VAULT.VAULT_DOOR.landing, yaw: Math.PI },
       },
     ],
   },

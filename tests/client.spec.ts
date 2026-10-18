@@ -268,6 +268,28 @@ test("the Midnight Horn seats the player at a candlelit table", async ({
   expect(errors).toEqual([]);
 });
 
+test("Vinyl Vault sells a record that plays at home", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&room=vinyl-vault&debug=1`);
+  const racks = page.getByRole("region", { name: "Records" });
+  await racks
+    .getByRole("button", { name: "Buy Roller Disco" })
+    .click({ timeout: 150_000 });
+  await expect(
+    racks.getByRole("button", { name: "Roller Disco: owned" }),
+  ).toBeDisabled();
+  await page.getByRole("button", { name: "Go to Apartment" }).click();
+  await page
+    .getByRole("combobox", { name: "Record" })
+    .selectOption({ label: "Roller Disco" }, { timeout: 150_000 });
+  const saved = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("daydaze-save-v1") ?? "{}"),
+  );
+  expect(saved.records).toEqual(["roller-disco"]);
+  expect(saved.coins).toBe(70);
+  expect(errors).toEqual([]);
+});
+
 test("loads the Velvet Room with no errors and mounts the canvas", async ({
   page,
 }) => {
@@ -1102,6 +1124,7 @@ for (const room of [
   "zoo",
   "dealership",
   "jazz-club",
+  "vinyl-vault",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

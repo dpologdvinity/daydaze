@@ -435,3 +435,11 @@ test("Carnival Calliope advances the waltz beat once per quarter note in 3/4 met
   const stepsPerMinute = 60 / stepSeconds;
   assert.equal(stepsPerMinute / 2, 132);
 });
+
+test("the game's record list matches the jukebox's tracks", async () => {
+  const { RECORD_IDS } = await import("../game/records.ts");
+  assert.deepEqual(
+    [...RECORD_IDS],
+    JUKEBOX_TRACKS.map((t) => t.id),
+  );
+});

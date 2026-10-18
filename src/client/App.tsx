@@ -16,6 +16,7 @@ import type { HomeSave } from "../game/home/home.ts";
 import { parkedOrHome, type ParkedCar } from "../game/city/drive.ts";
 import { mayEnter } from "../game/age.ts";
 import { buyCar } from "../game/garage.ts";
+import { buyRecord } from "../game/records.ts";
 import { ADULT_NOTICE, ADULT_OK } from "./adult.ts";
 import { arrive } from "../game/portals.ts";
 import { ROOMS, type RoomId, type Spawn } from "../game/rooms.ts";
@@ -324,6 +325,12 @@ export function App() {
           setPanelOpen={setPanelOpen}
           car={parkedOrHome(save.car)}
           setCar={setCar}
+          records={save.records}
+          onBuyRecord={(id) => {
+            const r = buyRecord(save.coins, save.records, id);
+            if (r.ok)
+              setSave((s) => ({ ...s, coins: r.coins, records: r.records }));
+          }}
           garage={save.garage}
           onBuyCar={(id) => {
             const r = buyCar(save.coins, save.garage, id);
