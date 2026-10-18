@@ -619,9 +619,11 @@ export function HumanDoll({
   }, [bodyMeshes, tucks]);
 
   useFrame((state, dt) => {
-    // never show the body before its outfit (or swimsuit) has loaded: a doll
-    // stays hidden for the moment its clothes are still downloading
-    if (root.current) root.current.visible = worn.current.has("outfit");
+    // never show the body before its outfit (or swimsuit) and hair have
+    // loaded: a doll stays hidden while they're still downloading
+    if (root.current)
+      root.current.visible =
+        worn.current.has("outfit") && worn.current.has("hair");
     // far dolls swap to the low-poly body; the gap is hysteresis
     if (root.current && body.far) {
       // last frame's world matrix is close enough for picking a LOD, and
