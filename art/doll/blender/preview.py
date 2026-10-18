@@ -28,8 +28,8 @@ for ob in bpy.data.objects:
     if ob.type == "MESH" and ob.data.shape_keys:
         for kb in ob.data.shape_keys.key_blocks:
             shown = {"tuck_" + n.split("_", 1)[1] for n in keys.get("show", "").split(",") if n}
-            if kb.name in shown:
-                kb.value = 1.0
+            if kb.name.startswith("tuck_"):
+                kb.value = 1.0 if kb.name in shown else 0.0
             if kb.name in keys:
                 kb.value = float(keys[kb.name])
 
@@ -55,7 +55,7 @@ scene.render.engine = "CYCLES"
 scene.cycles.samples = 24
 scene.cycles.device = "CPU"
 scene.render.resolution_x = 640
-scene.render.resolution_y = 640 if view != "body" else 960
+scene.render.resolution_y = 640 if view not in ("body", "back", "side") else 960
 scene.render.filepath = out
 world = bpy.data.worlds.new("w")
 world.use_nodes = True
@@ -68,6 +68,7 @@ VIEWS = {
     "eye": ((0.03, -0.3, 1.565), (0.03, 0, 1.56), 22),
     "body": ((0, -3.6, 1.0), (0, 0, 0.88), 30),
     "back": ((0, 3.6, 1.0), (0, 0, 0.88), 30),
+    "side": ((-3.6, 0, 1.0), (0, 0, 0.88), 30),
 }
 loc, aim, fov = VIEWS[view]
 cam = bpy.data.objects.new("cam", bpy.data.cameras.new("cam"))

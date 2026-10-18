@@ -99,22 +99,22 @@ SHAPE = [
         target(
             "breast/female-young-averagemuscle-averageweight-maxcup-averagefirmness.target"
         ),
-        0.6,
+        0.3,
     ),
-    (target("bodyshapes/bodyshapes-elvs-fem-neat-hourglass.target"), 0.6),
+    (target("bodyshapes/bodyshapes-elvs-fem-neat-hourglass.target"), 0.35),
     # a woman's build, not an athlete's: softer muscle, narrower shoulders,
     # softer arms, wider hips, fuller bum and thighs, a lifted bust
     (target(UNI + "minmuscle-averageweight.target") - AVG, 0.5),
-    (target("torso/torso-scale-horiz-decr.target"), 0.35),
-    (target("torso/torso-vshape-decr.target"), 0.5),
+    (target("torso/torso-scale-horiz-decr.target"), 0.12),
+    (target("torso/torso-vshape-decr.target"), 0.3),
     (pair("armslegs/{s}-upperarm-muscle-decr.target"), 0.6),
     (pair("armslegs/{s}-upperarm-shoulder-muscle-decr.target"), 0.6),
     (pair("armslegs/{s}-lowerarm-muscle-decr.target"), 0.5),
     (target("hip/hip-scale-horiz-incr.target"), 0.08),
-    (target("buttocks/buttocks-volume-incr.target"), 0.4),
-    (pair("armslegs/{s}-upperleg-fat-incr.target"), 0.3),
+    (target("buttocks/buttocks-volume-incr.target"), 0.25),
+    (pair("armslegs/{s}-upperleg-fat-incr.target"), 0.1),
     (pair("armslegs/{s}-upperleg-muscle-decr.target"), 0.4),
-    (target("breast/breast-volume-vert-up.target"), 0.3),
+    (target("breast/breast-volume-vert-up.target"), 0.15),
     (target("hip/hip-waist-up.target"), 0.15),
     (target("stomach/stomach-tone-incr.target"), 0.15),
     (pair("eyes/{s}-eye-scale-incr.target"), 0.9),
@@ -207,10 +207,10 @@ KEYS = {
     * 0.7,
     "cheeks": pair("cheek/{s}-cheek-bones-incr.target") * 0.8,
     "jaw": target("chin/chin-width-incr.target") * 0.8,
-    "curvy": (target(UNI + "averagemuscle-maxweight.target") - AVG) * 0.55
-    + target("bodyshapes/bodyshapes-elvs-fem-full-hourglass.target") * 0.6
-    + target("buttocks/buttocks-volume-incr.target") * 0.5
-    + target("hip/hip-scale-horiz-incr.target") * 0.3,
+    "curvy": (target(UNI + "averagemuscle-maxweight.target") - AVG) * 0.4
+    + target("bodyshapes/bodyshapes-elvs-fem-full-hourglass.target") * 0.4
+    + target("buttocks/buttocks-volume-incr.target") * 0.3
+    + target("hip/hip-scale-horiz-incr.target") * 0.15,
     "slim": (target(UNI + "averagemuscle-minweight.target") - AVG) * 0.6
     + target("bodyshapes/bodyshapes-elvs-fem-lean-column.target") * 0.4,
     "athletic": (target(UNI + "maxmuscle-averageweight.target") - AVG) * 0.6,
