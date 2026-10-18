@@ -4,6 +4,7 @@ import { SOFA, STOOL_XS, STOOL_Z } from "./rooftop.ts";
 import { CHAIR_X, CHAIR_ZS, STOOL_X, STOOL_ZS } from "./sugarRush.ts";
 import * as ARCADE from "./arcadeBar.ts";
 import * as LA_NOCHE from "./laNoche.ts";
+import * as HORN from "./jazzClub.ts";
 import * as DOME from "./dome.ts";
 import * as KAMAYAN from "./kamayanHall.ts";
 import * as GALLERIA from "./galleria.ts";
@@ -178,6 +179,20 @@ const arcadeSeats = ARCADE.STOOL_ZS.map((z, i) =>
   seat(`arcade-stool-${i}`, "arcade-bar", [ARCADE.STOOL_X, z], 0.8, [6, z]),
 );
 
+// the Midnight Horn: stools at the bar, a chair at each table facing the
+// stage across it
+const jazzSeats = [
+  ...HORN.STOOL_ZS.map((z, i) =>
+    seat(`jazz-stool-${i}`, "jazz-club", [HORN.STOOL_X, z], 0.8, [
+      HORN.BAR.x0,
+      z,
+    ]),
+  ),
+  ...HORN.TABLES.map(([x, z], i) =>
+    seat(`jazz-chair-${i}`, "jazz-club", [x, z + 0.85], 0.45, [x, z]),
+  ),
+];
+
 // La Noche: stools at the bar, and chairs at the tables facing the floor
 const laNocheSeats = [
   ...LA_NOCHE.STOOL_ZS.map((z, i) =>
@@ -326,6 +341,7 @@ export const SEATS: readonly Seat[] = [
   ...bowlingSeats,
   ...arcadeSeats,
   ...laNocheSeats,
+  ...jazzSeats,
   ...squareSeats,
   ...linksSeats,
   ...sportsSeats,

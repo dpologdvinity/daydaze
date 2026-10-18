@@ -93,6 +93,7 @@ import * as PAINT from "./paintball.ts";
 import * as STUDIO from "./studio.ts";
 import * as ZOO from "./zoo.ts";
 import * as MOTORS from "./dealership.ts";
+import * as HORN from "./jazzClub.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -144,6 +145,7 @@ export type RoomId =
   | "music-studio"
   | "zoo"
   | "dealership"
+  | "jazz-club"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -626,6 +628,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to Gallery Row",
         target: "city",
         targetSpawn: { position: SALON.SALON.door.landing, yaw: 0 },
+      },
+    ],
+  },
+  "jazz-club": {
+    id: "jazz-club",
+    name: "The Midnight Horn",
+    walkable: HORN.FLOOR,
+    blockers: HORN.BLOCKERS,
+    spawn: { position: HORN.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "jazz-club-to-city",
+        position: HORN.EXIT,
+        radius: 0.8,
+        label: "Out to Park Avenue",
+        target: "city",
+        targetSpawn: { position: HORN.HORN_DOOR.landing, yaw: 0 },
       },
     ],
   },

@@ -27,6 +27,7 @@ import { SPLAT_DOOR, SPAWN as SPLAT_SPAWN } from "../paintball.ts";
 import { STUDIO_DOOR, SPAWN as STUDIO_SPAWN } from "../studio.ts";
 import * as ZOO from "../zoo.ts";
 import * as MOTORS from "../dealership.ts";
+import * as HORN from "../jazzClub.ts";
 import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
 import * as RANGE from "../drivingRange.ts";
@@ -1525,13 +1526,23 @@ const UPTOWN_FRONT: readonly {
     },
   },
   {
-    x: 402,
+    x: HORN.HORN_DOOR.position[0],
     w: 24,
     h: 14,
     north: true,
     color: "#4a4e69",
-    sign: { text: "JAZZ CLUB", color: "#4fe3ff" },
+    sign: { text: "THE MIDNIGHT HORN", color: "#4fe3ff" },
     style: "club",
+    venue: {
+      id: "jazz-club",
+      door: {
+        position: HORN.HORN_DOOR.position,
+        radius: 2,
+        label: "Into the Midnight Horn",
+        target: "jazz-club",
+        targetSpawn: { position: HORN.SPAWN, yaw: Math.PI },
+      },
+    },
   },
   {
     x: 430,

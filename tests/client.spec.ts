@@ -253,6 +253,21 @@ test("Daydaze Motors sells a car into your garage", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("the Midnight Horn seats the player at a candlelit table", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=jazz-club`);
+  await page
+    .getByRole("button", { name: "Take a seat" })
+    .click({ timeout: 150_000 });
+  await expect(canvasOf(page)).toHaveAttribute("data-seated", /jazz-/, {
+    timeout: 120_000,
+  });
+  expect(errors).toEqual([]);
+});
+
 test("loads the Velvet Room with no errors and mounts the canvas", async ({
   page,
 }) => {
@@ -1086,6 +1101,7 @@ for (const room of [
   "music-studio",
   "zoo",
   "dealership",
+  "jazz-club",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

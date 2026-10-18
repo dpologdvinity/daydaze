@@ -89,6 +89,7 @@ const SHOTS: {
   { name: "music-studio", query: "room=music-studio" },
   { name: "zoo", query: "room=zoo" },
   { name: "dealership", query: "room=dealership" },
+  { name: "jazz-club", query: "room=jazz-club" },
   { name: "green-haze", query: "room=green-haze&adult=1" },
   { name: "piercing", query: "room=piercing" },
   { name: "halo-halo-cafe", query: "room=halo-halo-cafe" },

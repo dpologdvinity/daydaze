@@ -46,6 +46,7 @@ test("every room is registered under its own id", () => {
     "haunted-house",
     "ice-rink",
     "jail",
+    "jazz-club",
     "kamayan-hall",
     "karaoke",
     "la-noche",

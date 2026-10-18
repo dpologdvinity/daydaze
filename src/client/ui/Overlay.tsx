@@ -111,6 +111,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Skyline Driving Range. Get a bucket of ten: set your backswing, strike it pure, and land them on the greens.",
   salon:
     "The Blowout Bar. Book with Dani for the salon's colors, or take a chair by the mirrors.",
+  "jazz-club":
+    "The Midnight Horn. A four-piece band plays under the spotlight; take a candlelit table or a stool at the bar.",
   dealership:
     "Daydaze Motors. Every road car turns on its own turntable: buy one from the price list and it waits at the curb.",
   zoo: "The Daydaze Zoo. Stroll the paths past giraffes and zebras, elephants, lions, penguins and flamingos.",
