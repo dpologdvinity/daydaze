@@ -19,6 +19,7 @@ import * as MARINA from "../marina.ts";
 import * as COURTSIDE from "../courtside.ts";
 import * as COVE from "../mermaidCove.ts";
 import * as MUSEUM from "../museum.ts";
+import * as SALON from "../salon.ts";
 import * as GRIDIRON from "../gridiron.ts";
 import * as RANGE from "../drivingRange.ts";
 import * as GYM from "../gym.ts";
@@ -1104,6 +1105,13 @@ const ARTS_FRONT: readonly {
     color: "#90be6d",
     sign: { text: "INK & NEEDLE", color: "#ff2f9a" },
     style: "storefront",
+    door: {
+      position: SALON.PARLOR.door.position,
+      radius: 2,
+      label: "Into Ink & Needle",
+      target: "piercing",
+      targetSpawn: { position: SALON.PARLOR.spawn, yaw: Math.PI },
+    },
   },
   {
     x: -90,
@@ -1114,7 +1122,22 @@ const ARTS_FRONT: readonly {
     sign: { text: "ZINE SHOP", color: "#3fe0d0" },
     style: "storefront",
   },
-  { x: -30, w: 30, h: 26, north: true, color: "#577590", style: "warehouse" },
+  {
+    x: SALON.SALON.door.position[0],
+    w: 30,
+    h: 14,
+    north: true,
+    color: "#ffd1e8",
+    sign: { text: "THE BLOWOUT BAR", color: "#ff4fb3" },
+    style: "glass",
+    door: {
+      position: SALON.SALON.door.position,
+      radius: 2,
+      label: "Into the Blowout Bar",
+      target: "salon",
+      targetSpawn: { position: SALON.SALON.spawn, yaw: Math.PI },
+    },
+  },
   {
     x: 10,
     w: 26,

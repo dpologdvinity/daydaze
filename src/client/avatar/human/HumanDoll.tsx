@@ -50,7 +50,7 @@ const NPC_GAITS: GaitId[] = [
   "sassy",
 ];
 import { paintFace, paintIris, paintLashes, readMarks } from "./faceCanvas.ts";
-import { Jewellery, readAnchors } from "./Jewellery.tsx";
+import { Jewelry, readAnchors } from "./Jewelry.tsx";
 
 /**
  * The 3D doll: a skinned, shape-keyed body built in Blender from MakeHuman's
@@ -166,7 +166,7 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
     });
     const rest = new Map<string, THREE.Vector3>();
     for (const [name, bone] of bones) rest.set(name, bone.position.clone());
-    // model space to each bone's rest frame, for jewellery hung on bones;
+    // model space to each bone's rest frame, for jewelry hung on bones;
     // the fresh clone is unparented, so its world space is model space
     scene.updateMatrixWorld(true);
     const restInverse = new Map<string, THREE.Matrix4>();
@@ -691,7 +691,7 @@ export function HumanDoll({
   return (
     <group {...rest} ref={root} scale={[1, heightScale, 1]}>
       <primitive object={body.scene} />
-      <Jewellery
+      <Jewelry
         piercings={piercings}
         anchors={body.anchors}
         bones={body.bones}

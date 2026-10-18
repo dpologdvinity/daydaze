@@ -1823,3 +1823,43 @@ button:focus-visible {
   display: flex;
   gap: 8px;
 }
+
+/* Ink & Needle's counter */
+.parlor-spots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.parlor-spots button,
+.parlor-pieces button {
+  padding: 5px 10px;
+  border: 1px solid rgb(255 207 106 / 0.45);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.parlor-spots button[aria-checked="true"],
+.parlor-pieces button[aria-pressed="true"] {
+  background: var(--fuchsia);
+  color: var(--ink);
+}
+
+.parlor-pieces {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.parlor-pieces button {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  border-radius: 12px;
+}

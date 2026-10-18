@@ -51,6 +51,7 @@ import type { MinigameId } from "../../game/hotspots.ts";
 import { VIEWS, type View } from "../world/CameraRig.tsx";
 import { clearCityMapRequest, useCityMapRequest } from "./cityMapRequest.ts";
 import { RoomPanel } from "./RoomPanels.tsx";
+import { PiercingPanel } from "./PiercingPanel.tsx";
 import { DanceOffHud } from "../rooms/pulse/DanceOffHud.tsx";
 import { ShopPanel } from "./ShopPanel.tsx";
 import { setSkates, skates, SKATE_ROOMS } from "../world/skates.ts";
@@ -102,6 +103,10 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "The Gridiron. Kick five field goals, each from further out: aim into the wind, then put your leg into it.",
   "driving-range":
     "Skyline Driving Range. Get a bucket of ten: set your backswing, strike it pure, and land them on the greens.",
+  salon:
+    "The Blowout Bar. Book with Dani for the salon's colors, or take a chair by the mirrors.",
+  piercing:
+    "Ink & Needle. Pick a spot and a piece of fine jewelry at the counter; Vix does the rest.",
   museum:
     "Museo ng Little Manila. Walk the hall, or pick an exhibit from the guide to read its plaque: the bahay kubo, the jeepney, the parol and more.",
   "halo-halo-cafe":
@@ -347,7 +352,7 @@ function Mirror({
               <p className="tiles-label">{spot.label}</p>
               <Tiles
                 label={`${spot.label} piercing`}
-                options={PIERCING_STYLES}
+                options={wearable(PIERCING_STYLES, wardrobe)}
                 value={piercings[spot.id]}
                 onPick={(style) =>
                   setLook({
@@ -636,6 +641,14 @@ export function Overlay({
         onBuy={onBuy}
       />
       <RoomPanel room={room} />
+      {room === "piercing" && (
+        <PiercingPanel
+          look={look}
+          setLook={setLook}
+          wardrobe={wardrobe}
+          onBuy={onBuy}
+        />
+      )}
       {room === "pulse" && <DanceOffHud dancing={mood === "dance"} />}
 
       {mapOpen && room === "city" && (
@@ -711,6 +724,15 @@ export function Overlay({
             </button>
           )}
           <VenueGames room={room} onPlay={onPlayGame} />
+          {room === "salon" && (
+            <button
+              type="button"
+              className="drink"
+              onClick={() => openShop("salon", "The Blowout Bar")}
+            >
+              Shop at the Blowout Bar
+            </button>
+          )}
           {room === "galleria" && (
             <nav className="venue-games" aria-label="Shops in this mall">
               {GALLERIA_STORES.map((store) =>

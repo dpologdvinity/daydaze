@@ -59,7 +59,35 @@ const METAL = {
     metalness: 1,
     roughness: 0.25,
   }),
+  rose: new THREE.MeshStandardMaterial({
+    color: "#f2a98f",
+    metalness: 1,
+    roughness: 0.25,
+  }),
+  // the fine jewelry's stones, catching the light
+  diamond: new THREE.MeshStandardMaterial({
+    color: "#ffffff",
+    emissive: "#dff4ff",
+    emissiveIntensity: 0.7,
+    metalness: 0.2,
+    roughness: 0.02,
+  }),
+  opal: new THREE.MeshStandardMaterial({
+    color: "#cfe9ff",
+    emissive: "#ffb3d9",
+    emissiveIntensity: 0.35,
+    roughness: 0.15,
+  }),
 };
+
+/** The material a style is made of. */
+function metalOf(style: PiercingStyle): THREE.MeshStandardMaterial {
+  if (style.startsWith("rose")) return METAL.rose;
+  if (style.startsWith("gold")) return METAL.gold;
+  if (style.startsWith("diamond")) return METAL.diamond;
+  if (style.startsWith("opal")) return METAL.opal;
+  return METAL.silver;
+}
 const GEMSTONE = new THREE.MeshStandardMaterial({
   color: "#ff5fc8",
   emissive: "#ff2f9a",
@@ -77,9 +105,9 @@ const BONE: Record<PiercingSpot, string> = {
 
 const X = new THREE.Vector3(1, 0, 0);
 
-/** One piece of jewellery at a spot, as a group in model space. */
+/** One piece of jewelry at a spot, as a group in model space. */
 function piece(spot: PiercingSpot, style: PiercingStyle, at: Anchor) {
-  const metal = style.startsWith("gold") ? METAL.gold : METAL.silver;
+  const metal = metalOf(style);
   const ring = style.endsWith("ring");
   const g = new THREE.Group();
   g.position.copy(at.p).addScaledVector(at.n, 0.0008);
@@ -119,7 +147,7 @@ function piece(spot: PiercingSpot, style: PiercingStyle, at: Anchor) {
  * The doll's piercings, parented to her head and body bones so they move
  * with every pose.
  */
-export function Jewellery({
+export function Jewelry({
   piercings,
   anchors,
   bones,

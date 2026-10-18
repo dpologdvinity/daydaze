@@ -39,6 +39,11 @@ export const HAIR_COLORS = [
   { id: "#ff4fb3", label: "Bubblegum" },
   { id: "#7b4dff", label: "Ultraviolet" },
   { id: "#7ee8a2", label: "Mint soda" },
+  // the Blowout Bar's colours, sold at the salon
+  { id: "#c0c0c8", label: "Silver fox" },
+  { id: "#ff8a3d", label: "Copper" },
+  { id: "#3a6bff", label: "Sapphire" },
+  { id: "#ffb3d9", label: "Cotton candy" },
 ] as const;
 
 /** Lipsticks; `swatch` is the colour the closet shows. */
@@ -437,6 +442,11 @@ export const PIERCING_STYLES = [
   { id: "silver-ring", label: "Silver ring" },
   { id: "gold-stud", label: "Gold stud" },
   { id: "gold-ring", label: "Gold ring" },
+  // Ink & Needle's fine jewelry, sold at the piercing parlor
+  { id: "rose-gold-stud", label: "Rose gold stud" },
+  { id: "rose-gold-ring", label: "Rose gold ring" },
+  { id: "diamond-stud", label: "Diamond stud" },
+  { id: "opal-stud", label: "Opal stud" },
 ] as const;
 
 export type PiercingSpot = IdOf<typeof PIERCING_SPOTS>;

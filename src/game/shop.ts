@@ -3,16 +3,22 @@ import {
   EYESHADOWS,
   HAIR_COLORS,
   HAIR_STYLES,
+  encodePiercings,
   LIPS,
   OUTFITS,
+  PIERCING_SPOTS,
+  PIERCING_STYLES,
+  piercingsOf,
   type Look,
+  type PiercingSpot,
 } from "./look.ts";
 import { spend } from "./wallet.ts";
 
-export type ShopId = "boutique" | "beauty" | "salon";
+export type ShopId = "boutique" | "beauty" | "salon" | "piercing";
 
 /** A Look slot a shop item fills; its id is the catalogue option in that slot. */
-export type ShopSlot = "outfit" | "hairStyle" | "hairColor" | "lips" | "shadow";
+export type ShopSlot =
+  "outfit" | "hairStyle" | "hairColor" | "lips" | "shadow" | "piercing";
 
 export type ShopItem = {
   id: string;
@@ -42,6 +48,15 @@ export const SHOP_ITEMS: readonly ShopItem[] = [
   { id: "sleek-bob", slot: "hairStyle", store: "salon", price: 80 },
   { id: "curl-cloud", slot: "hairStyle", store: "salon", price: 90 },
   { id: "#7ee8a2", slot: "hairColor", store: "salon", price: 30 },
+  { id: "#c0c0c8", slot: "hairColor", store: "salon", price: 35 },
+  { id: "#ff8a3d", slot: "hairColor", store: "salon", price: 35 },
+  { id: "#3a6bff", slot: "hairColor", store: "salon", price: 35 },
+  { id: "#ffb3d9", slot: "hairColor", store: "salon", price: 35 },
+  // Ink and Needle: fine jewelry for any piercing spot
+  { id: "rose-gold-stud", slot: "piercing", store: "piercing", price: 25 },
+  { id: "rose-gold-ring", slot: "piercing", store: "piercing", price: 30 },
+  { id: "diamond-stud", slot: "piercing", store: "piercing", price: 45 },
+  { id: "opal-stud", slot: "piercing", store: "piercing", price: 40 },
 ];
 
 /** Every item a store sells, in catalogue order. */
@@ -55,6 +70,7 @@ const CATALOGUES: Record<ShopSlot, readonly { id: string; label: string }[]> = {
   hairColor: HAIR_COLORS,
   lips: LIPS,
   shadow: EYESHADOWS,
+  piercing: PIERCING_STYLES,
 };
 
 /** An item's name on the shelf, from its catalogue. */
@@ -85,7 +101,19 @@ export function wearItem(look: Look, item: ShopItem): Look {
       const o = EYESHADOWS.find((x) => x.id === item.id);
       return o ? { ...look, shadow: o.id } : look;
     }
+    case "piercing":
+      return pierce(look, "nose", item.id);
   }
+}
+
+/** The look with `style` put in at `spot`, when it's a real style. */
+export function pierce(look: Look, spot: PiercingSpot, style: string): Look {
+  const o = PIERCING_STYLES.find((x) => x.id === style);
+  if (!o) return look;
+  return {
+    ...look,
+    piercings: encodePiercings({ ...piercingsOf(look), [spot]: o.id }),
+  };
 }
 
 export function shopItem(id: string): ShopItem | undefined {
@@ -126,7 +154,19 @@ export function unlockedLook(look: Look, wardrobe: readonly string[]): Look {
       : look.hairColor,
     lips: locked(look.lips, wardrobe) ? DEFAULT_LOOK.lips : look.lips,
     shadow: locked(look.shadow, wardrobe) ? DEFAULT_LOOK.shadow : look.shadow,
+    ...(look.piercings === undefined
+      ? {}
+      : { piercings: unlockedPiercings(look, wardrobe) }),
   };
+}
+
+/** The look's piercings with any unowned jewelry taken out. */
+function unlockedPiercings(look: Look, wardrobe: readonly string[]): string {
+  const p = piercingsOf(look);
+  const out = { ...p };
+  for (const spot of PIERCING_SPOTS)
+    if (locked(p[spot.id], wardrobe)) out[spot.id] = "none";
+  return encodePiercings(out);
 }
 
 /** The catalogue options the wardrobe can wear: free ones plus owned shop items. */

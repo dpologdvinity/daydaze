@@ -1,6 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  PIERCING_STYLES,
+  piercingsOf,
   DEFAULT_LOOK,
   EYESHADOWS,
   HAIR_COLORS,
@@ -11,6 +13,7 @@ import {
   type Look,
 } from "./look.ts";
 import {
+  pierce,
   SHOP_ITEMS,
   buyItem,
   cleanWardrobe,
@@ -28,6 +31,7 @@ const catalogs = {
   hairColor: HAIR_COLORS,
   lips: LIPS,
   shadow: EYESHADOWS,
+  piercing: PIERCING_STYLES,
 } as const;
 
 test("every shop item is a real catalogue option in its slot", () => {
@@ -49,7 +53,7 @@ test("shop item ids are unique and every price is a positive whole number", () =
 });
 
 test("every store sells something", () => {
-  for (const store of ["boutique", "beauty", "salon"] as const) {
+  for (const store of ["boutique", "beauty", "salon", "piercing"] as const) {
     assert.ok(
       SHOP_ITEMS.some((item) => item.store === store),
       store,
@@ -158,7 +162,23 @@ test("every store's items have shelf names and can be worn", () => {
     for (const item of items) {
       assert.notEqual(itemLabel(item), item.id, item.id);
       const worn = wearItem(DEFAULT_LOOK, item);
-      assert.equal(worn[item.slot], item.id);
+      assert.equal(
+        item.slot === "piercing" ? piercingsOf(worn).nose : worn[item.slot],
+        item.id,
+      );
     }
   }
+});
+
+test("fine jewelry goes in at any spot, and comes out when it isn't owned", () => {
+  const look = pierce(DEFAULT_LOOK, "brow", "diamond-stud");
+  assert.equal(piercingsOf(look).brow, "diamond-stud");
+  assert.equal(piercingsOf(unlockedLook(look, [])).brow, "none");
+  assert.equal(
+    piercingsOf(unlockedLook(look, ["diamond-stud"])).brow,
+    "diamond-stud",
+  );
+  const silver = pierce(DEFAULT_LOOK, "lip", "silver-ring");
+  assert.equal(piercingsOf(unlockedLook(silver, [])).lip, "silver-ring");
+  assert.equal(pierce(DEFAULT_LOOK, "lip", "made-up"), DEFAULT_LOOK);
 });

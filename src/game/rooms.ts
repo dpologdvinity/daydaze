@@ -83,6 +83,7 @@ import * as COVE from "./mermaidCove.ts";
 import { POOL_BLOCKER } from "./sealShow.ts";
 import * as DINER from "./skateDiner.ts";
 import * as MUSEUM from "./museum.ts";
+import * as SALON from "./salon.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -125,6 +126,8 @@ export type RoomId =
   | "skate-diner"
   | "halo-halo-cafe"
   | "museum"
+  | "salon"
+  | "piercing"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -591,6 +594,40 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
     blockers: KAMAYAN.BLOCKERS,
   },
   "halo-halo-cafe": foodRoom("halo-halo-cafe", "Halo-Halo Haus"),
+  salon: {
+    id: "salon",
+    name: "The Blowout Bar",
+    walkable: SALON.SALON_FLOOR,
+    blockers: SALON.SALON_BLOCKERS,
+    spawn: { position: SALON.SALON.spawn, yaw: Math.PI },
+    portals: [
+      {
+        id: "salon-to-city",
+        position: SALON.SALON.exit,
+        radius: 0.8,
+        label: "Out to Gallery Row",
+        target: "city",
+        targetSpawn: { position: SALON.SALON.door.landing, yaw: 0 },
+      },
+    ],
+  },
+  piercing: {
+    id: "piercing",
+    name: "Ink & Needle",
+    walkable: SALON.PARLOR_FLOOR,
+    blockers: SALON.PARLOR_BLOCKERS,
+    spawn: { position: SALON.PARLOR.spawn, yaw: Math.PI },
+    portals: [
+      {
+        id: "piercing-to-city",
+        position: SALON.PARLOR.exit,
+        radius: 0.8,
+        label: "Out to Gallery Row",
+        target: "city",
+        targetSpawn: { position: SALON.PARLOR.door.landing, yaw: 0 },
+      },
+    ],
+  },
   museum: {
     id: "museum",
     name: "Museo ng Little Manila",

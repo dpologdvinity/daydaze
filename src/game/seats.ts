@@ -16,6 +16,7 @@ import * as MARINA from "./marina.ts";
 import * as COURTSIDE from "./courtside.ts";
 import * as COVE from "./mermaidCove.ts";
 import * as DINER from "./skateDiner.ts";
+import { PARLOR, SALON } from "./salon.ts";
 import * as STADIUM from "./stadium.ts";
 import { BENCH_SEATS as LINKS_BENCH } from "./lagoonLinks.ts";
 import { FOUNTAIN, SQUARE_BENCHES } from "./city/layout.ts";
@@ -284,6 +285,18 @@ const moreSportsSeats = [
   ...MARINA.BAR_STOOLS.map((at, i) =>
     seat(`marina-stool-${i}`, "marina", at, 0.75, [at[0], MARINA.BAR.z1]),
   ),
+  // the salon's styling chairs face the mirrors; the parlor's piercing chair
+  ...SALON.chairs.map((at, i) =>
+    seat(
+      `salon-chair-${i}`,
+      "salon",
+      at,
+      0.55,
+      [at[0], SALON.bounds.z0],
+      "front",
+    ),
+  ),
+  seat("piercing-chair", "piercing", PARLOR.chair, 0.55, [0, 0], "front"),
   // the diner's counter stools and booth benches
   ...DINER.STOOLS.map((at, i) =>
     seat(`skate-diner-stool-${i}`, "skate-diner", at, 0.75, [at[0], -5]),

@@ -651,6 +651,25 @@ test("the museum: the guide reads an exhibit's plaque and moves on", async ({
   expect(errors).toEqual([]);
 });
 
+test("Ink & Needle: buy a rose gold stud for the belly button", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&room=piercing`);
+  await expect(roomTitle(page)).toHaveText("Ink & Needle");
+  const counter = page.getByRole("region", { name: "Piercing counter" });
+  await counter.getByRole("radio", { name: "Belly button" }).click();
+  await counter.getByRole("button", { name: /Rose gold stud/ }).click();
+  await expect(counter.getByRole("status")).toHaveText(
+    "Rose gold stud in your belly button!",
+  );
+  await expect(page.getByLabel(/coins$/).first()).toHaveText("75 coins");
+  await expect(
+    counter.getByRole("button", { name: /Rose gold stud/ }),
+  ).toContainText("Wearing");
+  expect(errors).toEqual([]);
+});
+
 test("the debug buttons take the player into Kamayan Hall", async ({
   page,
 }) => {
@@ -827,6 +846,8 @@ for (const room of [
   "skate-diner",
   "museum",
   "halo-halo-cafe",
+  "salon",
+  "piercing",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,
