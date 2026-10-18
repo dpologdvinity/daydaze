@@ -49,7 +49,10 @@ export function Pulse({
         width={13}
         depth={14}
         center={[0, 0.5]}
-        color="#1d0b2a"
+        color="#6a4a80"
+        texture={{ id: "brushed_concrete", scale: 0.4 }}
+        low={{ metalness: 0.2, roughness: 0.45 }}
+        mirror={0.5}
         onPick={onPick}
       />
       <PortalPads room={ROOMS.pulse} color="#ff4fb3" />

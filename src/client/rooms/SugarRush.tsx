@@ -27,6 +27,10 @@ import { Prop } from "./shared/Prop.tsx";
 import { Sparkles } from "./shared/Sparkles.tsx";
 import { SugarRushNpcs } from "./sugarrush/Npcs.tsx";
 import { BarStools } from "./shared/BarStools.tsx";
+import { Batch } from "./shared/batch.ts";
+import { Bottles, type ShelfRow } from "./shared/Bottles.tsx";
+import { poster, rug, shelf, stringLights } from "./shared/details.ts";
+import { groundMaps, surface } from "../city/worldTexture.ts";
 
 const WALL_X = 6;
 const BACK_Z = -6;
@@ -47,6 +51,70 @@ const WALL_TEX = gradientTex([
   [0.5, "#c9a2ff"],
   [1, "#ff9ad8"],
 ]);
+
+// glossy little tiles under the gradient, from a CC0 scan
+const WALL_TILES = groundMaps("rounded_square_tiled_wall").normalMap;
+WALL_TILES.repeat.set(10, 3.5);
+const WALL_MAT = new THREE.MeshStandardMaterial({
+  map: WALL_TEX,
+  normalMap: WALL_TILES,
+  roughness: 0.35,
+});
+const BAR_TOP = surface("marble_01", {
+  scale: 0.8,
+  color: "#fff4fb",
+  roughness: 0.2,
+});
+const SHELF_GLASS = new THREE.MeshStandardMaterial({
+  color: "#d8f4ff",
+  metalness: 0.4,
+  roughness: 0.05,
+});
+// the back bar high on the east wall, over the bartender's head, in the
+// frame of <Bottles>: x runs along the wall (room z), z out from it
+const SHELVES = [1.95, 2.5];
+const ROWS: readonly ShelfRow[] = SHELVES.map((y) => ({
+  x0: BAR.z0 + 0.1,
+  x1: BAR.z1 - 0.1,
+  y,
+  z: 0.16,
+  count: 14,
+}));
+
+/** Flyers, a fluffy rug under the chairs, bulbs and the back bar's shelves. */
+function buildDressing() {
+  const b = new Batch();
+  for (const y of SHELVES)
+    shelf(
+      b,
+      { x: WALL_X - 0.16, y, z: (BAR.z0 + BAR.z1) / 2, ry: -Math.PI / 2 },
+      5,
+      SHELF_GLASS,
+      0.24,
+    );
+  // a wall of Y2K flyers over the blow-up chairs
+  [
+    [-2.6, 1.7, 6],
+    [-1.6, 2.0, 7],
+    [-0.6, 1.65, 4],
+    [0.4, 1.95, 5],
+    [1.4, 1.7, 0],
+    [2.4, 2.0, 6],
+  ].forEach(([z, y, d]) =>
+    poster(b, { x: -WALL_X + 0.03, y, z, ry: Math.PI / 2 }, d, 0.55, 0.72),
+  );
+  rug(
+    b,
+    { x: CHAIR_X + 0.2, z: (CHAIR_ZS[0] + CHAIR_ZS[2]) / 2 },
+    1.4,
+    5.4,
+    "#ffb8e8",
+  );
+  // pink and baby-blue bulbs criss-crossing over the dance floor
+  stringLights(b, [-5.8, 4, -5.8], [5.8, 4, 5.8], 24, PINK, 0.5);
+  stringLights(b, [5.8, 4, -5.8], [-5.8, 4, 5.8], 24, BABY_BLUE, 0.5);
+  return b.build();
+}
 
 // a butterfly, wings open, for the swarm on the walls
 const BUTTERFLY = canvasTex(128, 128, (ctx) => {
@@ -137,20 +205,24 @@ function Butterflies() {
 }
 
 function Walls() {
+  const dressing = useMemo(buildDressing, []);
   return (
     <>
-      <mesh position={[0, HEIGHT / 2, BACK_Z]}>
+      <primitive object={dressing} />
+      <group position={[WALL_X, 0, 0]} rotation-y={-Math.PI / 2}>
+        <Bottles rows={ROWS} seed={13} />
+      </group>
+      <mesh position={[0, HEIGHT / 2, BACK_Z]} material={WALL_MAT}>
         <planeGeometry args={[WALL_X * 2, HEIGHT]} />
-        <meshStandardMaterial map={WALL_TEX} roughness={0.6} />
       </mesh>
       {[-1, 1].map((side) => (
         <group key={side}>
           <mesh
             position={[side * WALL_X, HEIGHT / 2, 0]}
             rotation-y={-side * (Math.PI / 2)}
+            material={WALL_MAT}
           >
             <planeGeometry args={[12.4, HEIGHT]} />
-            <meshStandardMaterial map={WALL_TEX} roughness={0.6} />
           </mesh>
           {/* baby-blue neon running the length of each wall */}
           {[0.25, 3.3].map((y) => (
@@ -222,9 +294,8 @@ function Bar() {
           roughness={0.2}
         />
       </mesh>
-      <mesh position={[cx - 0.05, 1.07, cz]}>
+      <mesh position={[cx - 0.05, 1.07, cz]} material={BAR_TOP}>
         <boxGeometry args={[BAR.back - BAR.front + 0.1, 0.06, length + 0.1]} />
-        <meshStandardMaterial color="#fff1fb" roughness={0.25} />
       </mesh>
       <BarStools at={stools} color="#ff5fb8" />
     </>
@@ -325,8 +396,10 @@ export function SugarRush({ onPick }: { onPick: PickHandler }) {
         width={WALL_X * 2}
         depth={12.4}
         center={[0, 0.2]}
-        color="#2a1440"
+        color="#a07ac8"
+        texture={{ id: "terrazzo_tiles", scale: 0.5 }}
         mirror={0.5}
+        low={{ metalness: 0.2, roughness: 0.4 }}
         onPick={onPick}
       />
       <PortalPads room={ROOMS["sugar-rush"]} color={PINK} />

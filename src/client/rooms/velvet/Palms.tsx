@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { gradientMap } from "../../avatar/toon.ts";
 import { Batch } from "../shared/batch.ts";
 import { GOLD } from "../shared/materials.ts";
-import { inFrame } from "./place.ts";
+import { inFrame } from "../shared/place.ts";
 
 const TRUNK = new THREE.MeshToonMaterial({ color: "#3a2418", gradientMap });
 const LEAF_DARK = new THREE.MeshToonMaterial({

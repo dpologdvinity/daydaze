@@ -4,7 +4,7 @@ import { groundMaps, surface } from "../../city/worldTexture.ts";
 import { Batch } from "../shared/batch.ts";
 import { canvasTex, GOLD } from "../shared/materials.ts";
 import { NEON_PINK, NEON_VIOLET } from "./materials.ts";
-import { inFrame, type Frame } from "./place.ts";
+import { inFrame, type Frame } from "../shared/place.ts";
 import { ROOM } from "./layout.ts";
 
 const H = 4.6;

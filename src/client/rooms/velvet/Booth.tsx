@@ -4,7 +4,7 @@ import { Batch } from "../shared/batch.ts";
 import { GOLD, LACQUER } from "../shared/materials.ts";
 import { BOOTH } from "./layout.ts";
 import { Cocktails } from "./Props.tsx";
-import { inFrame } from "./place.ts";
+import { inFrame } from "../shared/place.ts";
 import { NEON_WARM, VELVET } from "./materials.ts";
 
 const SPAN = 1.85;

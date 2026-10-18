@@ -38,6 +38,7 @@ const SETS: readonly (readonly [string, Source, string?])[] = [
   // walls
   ["velour_velvet", "polyhaven"],
   ["quatrefoil_jacquard_fabric", "polyhaven"],
+  ["fabric_pattern_05", "polyhaven"],
   ["painted_plaster_wall", "polyhaven"],
   ["white_plaster_02", "polyhaven"],
   ["beige_wall_001", "polyhaven"],
@@ -103,7 +104,9 @@ async function fetchSet(id: string, from: Source, srcId = id) {
       if (typeof u !== "string") throw new Error(`${srcId}: no 1k ${map}`);
       return u;
     };
-    await download(url("Diffuse"), files.diff);
+    // a set with color variants has no Diffuse, only col_01, col_02...
+    const hasDiffuse = typeof j === "object" && j !== null && "Diffuse" in j;
+    await download(url(hasDiffuse ? "Diffuse" : "col_01"), files.diff);
     await download(url("nor_gl"), files.nor);
     await download(url("Rough"), files.rough);
   } else {

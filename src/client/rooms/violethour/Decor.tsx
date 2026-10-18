@@ -1,7 +1,12 @@
-import { Suspense } from "react";
+import { Suspense, useMemo } from "react";
 import { Prop } from "../shared/Prop.tsx";
 import * as THREE from "three";
-import { canvasTex, GOLD, LACQUER, neonMat } from "../shared/materials.ts";
+import { surface } from "../../city/worldTexture.ts";
+import { BarStools } from "../shared/BarStools.tsx";
+import { Batch } from "../shared/batch.ts";
+import { Bottles, type ShelfRow } from "../shared/Bottles.tsx";
+import { plant, poster, rug, shelf, stringLights } from "../shared/details.ts";
+import { canvasTex, GOLD, neonMat } from "../shared/materials.ts";
 import { MARQUEE, NeonText, SCRIPT } from "../shared/Neon.tsx";
 import {
   BACK_Z,
@@ -14,19 +19,113 @@ import {
   WALL_X,
 } from "./layout.ts";
 
-const WALL = new THREE.MeshStandardMaterial({
-  color: "#43175a",
-  roughness: 0.6,
-  metalness: 0.1,
-});
-const FELT = new THREE.MeshStandardMaterial({
-  color: "#0f5a4e",
+// a damask wallcovering tinted violet, over a walnut wainscot
+const WALL = surface("quatrefoil_jacquard_fabric", {
+  scale: 1.2,
+  color: "#c890f0",
   roughness: 0.9,
 });
-const WOOD = new THREE.MeshStandardMaterial({
-  color: "#4a2414",
+const FELT = surface("leather_white", {
+  scale: 2,
+  color: "#1f8a6e",
+  roughness: 1,
+});
+const WOOD = surface("wood_veneer", {
+  scale: 1.2,
+  color: "#8a4a2a",
   roughness: 0.5,
 });
+const BAR_TOP = surface("marble_01", {
+  scale: 0.8,
+  color: "#4a3a48",
+  roughness: 0.3,
+});
+const SHELF_GLASS = new THREE.MeshStandardMaterial({
+  color: "#ffe0c8",
+  metalness: 0.4,
+  roughness: 0.05,
+});
+const SHELVES = [1.6, 2.2];
+const ROWS: readonly ShelfRow[] = SHELVES.map((y) => ({
+  x0: -5.2,
+  x1: 0.6,
+  y: y + 0.03,
+  z: BACK_Z + 0.3,
+  count: 14,
+}));
+const STOOLS = [-4.6, -3.5, -2.4, -1.3, -0.2].map(
+  (x) => [x, 0, BAR_Z + 0.65, Math.PI] as const,
+);
+
+/** Wainscot, rails, more posters, plants, a rug and bulbs over the bar. */
+function buildDressing() {
+  const b = new Batch();
+  for (const [x, z, w, ry] of [
+    [0, BACK_Z + 0.11, WALL_X * 2, 0],
+    [-WALL_X + 0.11, 0, WALL_X * 2, Math.PI / 2],
+    [WALL_X - 0.11, 0, WALL_X * 2, -Math.PI / 2],
+  ] as const) {
+    b.add(new THREE.BoxGeometry(w, 1.1, 0.04), WOOD, {
+      position: [x, 0.55, z],
+      rotation: [0, ry, 0],
+    });
+    b.add(new THREE.BoxGeometry(w, 0.05, 0.07), GOLD, {
+      position: [x, 1.12, z],
+      rotation: [0, ry, 0],
+    });
+    b.add(new THREE.BoxGeometry(w, 0.12, 0.06), WOOD, {
+      position: [x, HEIGHT - 0.2, z],
+      rotation: [0, ry, 0],
+    });
+  }
+  for (const y of SHELVES)
+    shelf(b, { x: -2.3, y, z: BACK_Z + 0.3 }, 6, SHELF_GLASS, 0.32);
+  // a gallery wall of gig bills and art by the pool table and the sofa
+  [
+    [-1.2, 1.9, 0.5],
+    [-2.0, 2.15, 0.4],
+    [-2.8, 1.85, 0.55],
+  ].forEach(([z, y, s], i) =>
+    poster(
+      b,
+      { x: -WALL_X + 0.14, y, z, ry: Math.PI / 2 },
+      i + 4,
+      s,
+      s * 1.3,
+      GOLD,
+    ),
+  );
+  [
+    [0.4, 1.9, 0.55],
+    [1.3, 2.2, 0.45],
+    [2.1, 1.8, 0.5],
+  ].forEach(([z, y, s], i) =>
+    poster(
+      b,
+      { x: WALL_X - 0.14, y, z, ry: -Math.PI / 2 },
+      i,
+      s,
+      s * 1.3,
+      GOLD,
+    ),
+  );
+  plant(b, { x: 0.9, z: BACK_Z + 0.5 }, 1.2);
+  plant(b, { x: -5.4, z: 1.7 }, 1);
+  plant(b, { x: 5.4, z: 1.2 }, 1.1);
+  rug(b, { x: CORNER_TABLE.x + 0.4, z: CORNER_TABLE.z }, 2.2, 3, "#e0a0c8");
+  rug(b, { x: POOL_TABLE.x, z: POOL_TABLE.z }, 3.6, 2.6, "#c8a0e8");
+  // warm bulbs swagged along the back wall and across to the pool table
+  stringLights(
+    b,
+    [-5.8, 3.6, BACK_Z + 0.3],
+    [5.8, 3.6, BACK_Z + 0.3],
+    22,
+    "#ffcf8a",
+    0.3,
+  );
+  stringLights(b, [-5.8, 3.7, -1], [5.8, 3.7, 3], 18, "#ffb0d8", 0.5);
+  return b.build();
+}
 
 /** The pride and lesbian sunset flags, as flat cloth on the back wall. */
 const PRIDE_STRIPES = [
@@ -79,8 +178,10 @@ function posterTexture(title: string, tag: string, accent: string) {
 
 /** The walls, their pink and violet trim, and the neon signs and puns. */
 export function Walls() {
+  const dressing = useMemo(buildDressing, []);
   return (
     <>
+      <primitive object={dressing} />
       <mesh position={[0, HEIGHT / 2, BACK_Z]} material={WALL}>
         <boxGeometry args={[WALL_X * 2, HEIGHT, 0.2]} />
       </mesh>
@@ -183,25 +284,17 @@ export function Posters() {
 export function Bar() {
   return (
     <>
-      <mesh position={[BAR_CENTER_X, 0.5, BAR_Z]} material={LACQUER}>
+      <mesh position={[BAR_CENTER_X, 0.5, BAR_Z]} material={WOOD}>
         <boxGeometry args={[BAR_LENGTH, 1, 0.7]} />
       </mesh>
-      <mesh position={[BAR_CENTER_X, 1.02, BAR_Z]} material={GOLD}>
-        <boxGeometry args={[BAR_LENGTH + 0.06, 0.04, 0.74]} />
+      <mesh position={[BAR_CENTER_X, 1.025, BAR_Z]} material={BAR_TOP}>
+        <boxGeometry args={[BAR_LENGTH + 0.06, 0.05, 0.74]} />
       </mesh>
-      {/* warm bottles on the back shelf, each lit from inside */}
-      {[-5.2, -4.5, -3.8, -3.1, -2.4, -1.7, -1, -0.3, 0.4].map((x, i) => (
-        <mesh
-          key={x}
-          position={[x, 1.72, BACK_Z + 0.32]}
-          material={neonMat(
-            ["#ff8a3d", "#ff6fb5", "#ffb070", "#c58cff"][i % 4],
-            2,
-          )}
-        >
-          <cylinderGeometry args={[0.07, 0.09, 0.4, 8]} />
-        </mesh>
-      ))}
+      <mesh position={[BAR_CENTER_X, 0.12, BAR_Z + 0.4]} material={GOLD}>
+        <boxGeometry args={[BAR_LENGTH, 0.03, 0.03]} />
+      </mesh>
+      <Bottles rows={ROWS} seed={7} />
+      <BarStools at={STOOLS} color="#8a3ac0" />
       {[1.6, 2.2].map((y, i) => (
         <mesh
           key={y}

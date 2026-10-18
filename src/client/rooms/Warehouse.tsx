@@ -15,13 +15,17 @@ import { drink } from "../effects/drunk.ts";
 import { useReducedMotion } from "../motion.ts";
 import { type Beam, Beams } from "./shared/Beams.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
-import { canvasTex, hdr } from "./shared/materials.ts";
+import { hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { Prop } from "./shared/Prop.tsx";
 import { Sparkles } from "./shared/Sparkles.tsx";
 import { WarehouseNpcs } from "./warehouse/Npcs.tsx";
 import { BarStools } from "./shared/BarStools.tsx";
+import { Batch } from "./shared/batch.ts";
+import { Bottles, type ShelfRow } from "./shared/Bottles.tsx";
+import { poster, shelf, stringLights } from "./shared/details.ts";
+import { surface } from "../city/worldTexture.ts";
 
 const WALL_X = 7.6;
 const BACK_Z = -7.2;
@@ -40,32 +44,107 @@ const BEAMS: readonly Beam[] = TRUSS_ZS.slice(0, 3).flatMap((z, i) => [
   { position: [4.5, TRUSS_Y - 0.2, z], color: RED, phase: i + 2.5 },
 ]);
 
-// corrugated steel: ridges down the container's sides
-const CORRUGATED = canvasTex(
-  64,
-  64,
-  (ctx) => {
-    for (let x = 0; x < 64; x++) {
-      const v = 120 + Math.round(Math.sin((x / 64) * Math.PI * 8) * 60);
-      ctx.fillStyle = `rgb(${v},${v},${v})`;
-      ctx.fillRect(x, 0, 1, 64);
-    }
-  },
-  [4, 1],
-);
+// old red brick, a rusty-red corrugated container, rough pallet wood
+const BRICK = surface("brick_wall_02", { scale: 0.45, color: "#8a6a72" });
+const CONTAINER_STEEL = surface("corrugated_iron", {
+  scale: 0.8,
+  color: "#c04a36",
+  metalness: 0.5,
+  roughness: 0.8,
+});
+const PALLET = surface("wood_plank_wall", {
+  scale: 0.9,
+  color: "#c8a080",
+  roughness: 0.9,
+});
+const STEEL_TOP = surface("metal_plate", {
+  scale: 1.5,
+  color: "#9a9aa8",
+  metalness: 0.8,
+  roughness: 0.5,
+});
+const SPEAKER_CLOTH = surface("carpet", { scale: 3, color: "#3a3640" });
+const FLIGHT_CASE = surface("rubber_tiles", { scale: 2, color: "#5a5a66" });
+const SHELF_STEEL = new THREE.MeshStandardMaterial({
+  color: "#5a5a64",
+  metalness: 0.8,
+  roughness: 0.4,
+});
+// the back bar on the west wall over the pallets, in the frame of
+// <Bottles>: x runs along the wall (minus room z), z out from it
+const ROWS: readonly ShelfRow[] = [
+  { x0: -3.3, x1: 1.3, y: 1.095, z: 0.22, count: 16 },
+  { x0: -3.1, x1: 1.1, y: 1.7, z: 0.16, count: 14 },
+  { x0: -3.1, x1: 1.1, y: 2.25, z: 0.16, count: 14 },
+];
 
-// pallet slats for the bar's front
-const SLATS = canvasTex(
-  64,
-  64,
-  (ctx) => {
-    ctx.fillStyle = "#6a4a2e";
-    ctx.fillRect(0, 0, 64, 64);
-    ctx.fillStyle = "#2a1a10";
-    for (let y = 0; y < 64; y += 16) ctx.fillRect(0, y, 64, 3);
-  },
-  [3, 1],
-);
+/** Steel shelves, wheat-pasted flyers, flight cases, pallets and work
+ * lamps on a cable. */
+function buildDressing() {
+  const b = new Batch();
+  const cz = (BAR.z0 + BAR.z1) / 2;
+  for (const y of [1.7, 2.25])
+    shelf(
+      b,
+      { x: -WALL_X + 0.31, y, z: cz, ry: Math.PI / 2 },
+      4.8,
+      SHELF_STEEL,
+      0.28,
+    );
+  // flyers pasted up in clusters, a little crooked
+  const flyers: [number, number, number, number][] = [
+    [6.2, 1.5, -6.9, 0],
+    [6.85, 1.9, -6.9, 1],
+    [5.6, 2.1, -6.9, 5],
+    [-6.2, 1.6, -6.9, 2],
+    [-5.5, 2.05, -6.9, 7],
+  ];
+  flyers.forEach(([x, y, z, d], i) =>
+    poster(b, { x, y, z: z + 0.15, ry: i % 2 ? 0.04 : -0.03 }, d, 0.5, 0.7),
+  );
+  [-3.4, -2.6, 0.4, 1.2, 4.6, 5.4].forEach((z, i) =>
+    poster(
+      b,
+      { x: WALL_X - 0.16, y: 1.7 + (i % 2) * 0.3, z, ry: -Math.PI / 2 },
+      i + 3,
+      0.5,
+      0.7,
+    ),
+  );
+  // flight cases stacked by the speakers, chrome corners on each
+  const caseGeo = new THREE.BoxGeometry(1, 1, 1);
+  for (const [x, y, z, w, h, d] of [
+    [-5.9, 0.3, -6.2, 1, 0.6, 0.7],
+    [-5.9, 0.85, -6.25, 0.8, 0.5, 0.6],
+    [5.9, 0.35, -6.1, 1.1, 0.7, 0.7],
+    [5.2, 0.25, -4.4, 0.7, 0.5, 0.5],
+  ] as const) {
+    b.add(caseGeo, FLIGHT_CASE, { position: [x, y, z], scale: [w, h, d] });
+    for (const sx of [-1, 1])
+      b.add(caseGeo, STEEL_TOP, {
+        position: [x + (sx * w) / 2, y, z],
+        scale: [0.03, h + 0.01, d + 0.01],
+      });
+  }
+  // a stack of spare pallets in the front corner
+  for (let i = 0; i < 6; i++)
+    b.add(caseGeo, PALLET, {
+      position: [6.6, 0.07 + i * 0.15, 5.6],
+      rotation: [0, (i % 2) * 0.08, 0],
+      scale: [1.2, 0.12, 1],
+    });
+  // work lamps on a cable along each truss
+  for (const z of [-1, 5.2])
+    stringLights(
+      b,
+      [-7.2, TRUSS_Y - 0.1, z],
+      [7.2, TRUSS_Y - 0.1, z],
+      9,
+      "#ffb070",
+      0.6,
+    );
+  return b.build();
+}
 
 const scratch = {
   m: new THREE.Matrix4(),
@@ -129,17 +208,23 @@ const TRUSSES: Piece[] = TRUSS_ZS.flatMap((z) => [
 ]);
 
 function Shell() {
-  const brick = <meshStandardMaterial color="#2a2026" roughness={0.95} />;
+  const dressing = useMemo(buildDressing, []);
   return (
     <>
-      <mesh position={[0, HEIGHT / 2, BACK_Z]}>
+      <primitive object={dressing} />
+      <group position={[-WALL_X + 0.15, 0, 0]} rotation-y={Math.PI / 2}>
+        <Bottles rows={ROWS} seed={17} />
+      </group>
+      <mesh position={[0, HEIGHT / 2, BACK_Z]} material={BRICK}>
         <boxGeometry args={[WALL_X * 2, HEIGHT, 0.3]} />
-        {brick}
       </mesh>
       {[-1, 1].map((side) => (
-        <mesh key={side} position={[side * WALL_X, HEIGHT / 2, -0.25]}>
+        <mesh
+          key={side}
+          position={[side * WALL_X, HEIGHT / 2, -0.25]}
+          material={BRICK}
+        >
           <boxGeometry args={[0.3, HEIGHT, 14]} />
-          {brick}
         </mesh>
       ))}
       <Boxes pieces={TRUSSES}>
@@ -155,14 +240,7 @@ function Container() {
   const d = CONTAINER.z1 - CONTAINER.z0;
   const h = CONTAINER.height;
   const cz = (CONTAINER.z0 + CONTAINER.z1) / 2;
-  const steel = (
-    <meshStandardMaterial
-      color="#8a2a1e"
-      map={CORRUGATED}
-      metalness={0.5}
-      roughness={0.6}
-    />
-  );
+  const steel = <primitive object={CONTAINER_STEEL} attach="material" />;
   return (
     <group position={[0, 0, cz]}>
       <mesh position={[0, h / 2, -d / 2]}>
@@ -219,7 +297,7 @@ function Speakers() {
           [4.4, 1.5, -5.6, 1.3, 3, 1],
         ]}
       >
-        <meshStandardMaterial color="#121014" roughness={0.8} />
+        <primitive object={SPEAKER_CLOTH} attach="material" />
       </Boxes>
       {cones.map((at, i) => (
         <mesh key={i} position={at}>
@@ -292,17 +370,11 @@ function Bar() {
   );
   return (
     <>
-      <mesh position={[cx, 0.52, cz]}>
+      <mesh position={[cx, 0.52, cz]} material={PALLET}>
         <boxGeometry args={[BAR.front - BAR.back, 1.04, length]} />
-        <meshStandardMaterial map={SLATS} roughness={0.9} />
       </mesh>
-      <mesh position={[cx + 0.05, 1.07, cz]}>
+      <mesh position={[cx + 0.05, 1.07, cz]} material={STEEL_TOP}>
         <boxGeometry args={[BAR.front - BAR.back + 0.1, 0.05, length + 0.1]} />
-        <meshStandardMaterial
-          color="#6a6a74"
-          metalness={0.9}
-          roughness={0.35}
-        />
       </mesh>
       <NeonText
         text="BAR"
@@ -326,7 +398,7 @@ function Benches() {
   );
   return (
     <Boxes pieces={crates}>
-      <meshStandardMaterial map={SLATS} roughness={0.9} />
+      <primitive object={PALLET} attach="material" />
     </Boxes>
   );
 }

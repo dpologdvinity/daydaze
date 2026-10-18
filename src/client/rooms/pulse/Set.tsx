@@ -1,8 +1,11 @@
 import { Suspense, useMemo } from "react";
 import * as THREE from "three";
+import { surface } from "../../city/worldTexture.ts";
 import { Batch } from "../shared/batch.ts";
+import { Bottles, type ShelfRow } from "../shared/Bottles.tsx";
+import { poster, shelf } from "../shared/details.ts";
 import { PropSet } from "../shared/Prop.tsx";
-import { GOLD, hdr, LACQUER } from "../shared/materials.ts";
+import { GOLD, hdr } from "../shared/materials.ts";
 import {
   BACK_Z,
   BAR_X,
@@ -12,10 +15,33 @@ import {
   WALL_X,
 } from "./layout.ts";
 
-const WALL = new THREE.MeshStandardMaterial({
-  color: "#2a0b3e",
-  roughness: 0.5,
-  metalness: 0.2,
+// rough-cast concrete painted violet
+const WALL = surface("concrete_wall_008", {
+  scale: 0.5,
+  color: "#7a3aa0",
+  roughness: 0.9,
+});
+// the bar: a brushed-steel front under a black marble top
+const BAR_FRONT = surface("metal_plate", {
+  scale: 1.5,
+  color: "#6a4a8a",
+  metalness: 0.7,
+  roughness: 0.7,
+});
+const BAR_TOP = surface("marble_01", {
+  scale: 0.8,
+  color: "#3a3040",
+  roughness: 0.35,
+});
+const SHELF_GLASS = new THREE.MeshStandardMaterial({
+  color: "#c8e8ff",
+  metalness: 0.4,
+  roughness: 0.05,
+});
+const PODIUM = surface("marble_tiles", {
+  scale: 1.2,
+  color: "#4a3058",
+  roughness: 0.4,
 });
 const DARK = new THREE.MeshStandardMaterial({
   color: "#0b0310",
@@ -47,9 +73,16 @@ const TUBE_Z = [-4.2, -1.4, 1.4, 4.2];
 const TRUSS_Z = [-2.2, 3.2];
 const LAMP_X = [-4, -2, 0, 2, 4];
 const LAMP_COLORS = ["#ff2f9a", "#4fe3ff", "#9b5cff", "#ffb02e", "#4fe3ff"];
-const BOTTLE_TALL = new THREE.CylinderGeometry(0.07, 0.09, 0.4, 8);
-const BOTTLE_SQUAT = new THREE.CylinderGeometry(0.11, 0.12, 0.22, 8);
-const BOTTLE_NECK = new THREE.CylinderGeometry(0.025, 0.04, 0.14, 6);
+const SHELVES = [1.5, 2.1];
+// the back bar on the left wall, in the frame of <Bottles>: x runs along
+// the wall (minus room z), z out from it
+const ROWS: readonly ShelfRow[] = SHELVES.map((y) => ({
+  x0: -2.7,
+  x1: 2.7,
+  y,
+  z: 0.24,
+  count: 5,
+}));
 
 /**
  * Every static piece of Pulse, merged into one mesh per material. Walls, the
@@ -82,23 +115,36 @@ function buildSet() {
     position: [WALL_X - 0.12, 3.92, 0],
   });
 
-  // the bar counter, its brass top, and bottles of three shapes lit from inside
-  b.add(new THREE.BoxGeometry(0.6, 1, 6.4), LACQUER, {
+  // the bar counter, its marble top and brass rail; glass shelves of
+  // bottles behind it (see Bottles)
+  b.add(new THREE.BoxGeometry(0.6, 1, 6.4), BAR_FRONT, {
     position: [BAR_X, 0.5, 0],
   });
-  b.add(new THREE.BoxGeometry(0.66, 0.04, 6.44), GOLD, {
-    position: [BAR_X, 1.02, 0],
+  b.add(new THREE.BoxGeometry(0.66, 0.05, 6.44), BAR_TOP, {
+    position: [BAR_X, 1.025, 0],
   });
-  const bottleColors = ["#ff8a3d", "#ff2f9a", "#4fe3ff", "#ffb02e"];
-  [-2.4, -1.6, -0.8, 0, 0.8, 1.6, 2.4].forEach((z, i) => {
-    const color = glow(bottleColors[i % 4]);
-    const pos: [number, number, number] = [-WALL_X + 0.35, 1.7, z];
-    if (i % 3 === 1) b.add(BOTTLE_SQUAT, color, { position: pos });
-    else {
-      b.add(BOTTLE_TALL, color, { position: pos });
-      b.add(BOTTLE_NECK, color, { position: [pos[0], 1.97, z] });
-    }
+  b.add(new THREE.BoxGeometry(0.03, 0.03, 6.44), GOLD, {
+    position: [BAR_X + 0.34, 0.9, 0],
   });
+  for (const y of SHELVES)
+    shelf(b, { x: -WALL_X + 0.24, y, ry: Math.PI / 2 }, 5.6, SHELF_GLASS, 0.3);
+  // gig flyers over the banquettes and by the door
+  [-4.4, -0.3, 4.2].forEach((z, i) =>
+    poster(
+      b,
+      { x: WALL_X - 0.12, y: 2.2, z, ry: -Math.PI / 2 },
+      i * 2,
+      0.7,
+      0.95,
+    ),
+  );
+  poster(
+    b,
+    { x: -WALL_X + 0.12, y: 2.3, z: 4.6, ry: Math.PI / 2 },
+    5,
+    0.6,
+    0.8,
+  );
   [1.5, 2.1, 2.7].forEach((y, i) =>
     b.add(
       new THREE.BoxGeometry(0.04, 0.05, 5.6),
@@ -112,13 +158,13 @@ function buildSet() {
   // two banquettes along the right wall (models, see Set), each with a
   // glowing pink table
   for (const z of [-2.4, 1.8]) {
-    b.add(new THREE.CylinderGeometry(0.35, 0.35, 0.04, 24), glow("#ff4fb3"), {
+    b.add(new THREE.CylinderGeometry(0.35, 0.35, 0.04, 16), glow("#ff4fb3"), {
       position: [WALL_X - 1.4, 0.82, z],
     });
   }
 
   // coat rail and counter by the street door, with colored tags above
-  b.add(new THREE.BoxGeometry(1.6, 1.1, 0.5), LACQUER, {
+  b.add(new THREE.BoxGeometry(1.6, 1.1, 0.5), BAR_FRONT, {
     position: [-4.9, 0.55, 6],
   });
   b.add(new THREE.BoxGeometry(1.66, 0.04, 0.54), GOLD, {
@@ -140,11 +186,11 @@ function buildSet() {
 
   // dancers' podiums with a lit rim each
   PODIUMS.forEach((p, i) => {
-    b.add(new THREE.CylinderGeometry(0.8, 0.9, PODIUM_TOP, 32), LACQUER, {
+    b.add(new THREE.CylinderGeometry(0.8, 0.9, PODIUM_TOP, 24), PODIUM, {
       position: [p.x, PODIUM_TOP / 2, p.z],
     });
     b.add(
-      new THREE.CylinderGeometry(0.82, 0.82, 0.02, 32),
+      new THREE.CylinderGeometry(0.82, 0.82, 0.02, 24),
       glow(i === 0 ? "#ffb02e" : "#9b5cff"),
       {
         position: [p.x, PODIUM_TOP + 0.01, p.z],
@@ -160,11 +206,11 @@ function buildSet() {
       position: [x, 0.75, -6.2],
     });
     for (const y of [0.5, 1.1]) {
-      b.add(new THREE.CylinderGeometry(0.3, 0.3, 0.06, 24), DARK, {
+      b.add(new THREE.CylinderGeometry(0.3, 0.3, 0.06, 16), DARK, {
         position: [x, y, -5.79],
         rotation: [Math.PI / 2, 0, 0],
       });
-      b.add(new THREE.CylinderGeometry(0.33, 0.33, 0.02, 24), glow("#4fe3ff"), {
+      b.add(new THREE.CylinderGeometry(0.33, 0.33, 0.02, 16), glow("#4fe3ff"), {
         position: [x, y, -5.77],
         rotation: [Math.PI / 2, 0, 0],
       });
@@ -177,11 +223,11 @@ function buildSet() {
       position: [0, 3.55, z],
     });
     LAMP_X.forEach((x, i) => {
-      b.add(new THREE.CylinderGeometry(0.12, 0.1, 0.18, 12), DARK, {
+      b.add(new THREE.CylinderGeometry(0.12, 0.1, 0.18, 8), DARK, {
         position: [x, 3.4, z],
       });
       b.add(
-        new THREE.CylinderGeometry(0.1, 0.1, 0.02, 12),
+        new THREE.CylinderGeometry(0.1, 0.1, 0.02, 8),
         glow(LAMP_COLORS[i]),
         {
           position: [x, 3.3, z],
@@ -198,6 +244,9 @@ export function PulseSet() {
   return (
     <>
       <primitive object={set} />
+      <group position={[-WALL_X, 0, 0]} rotation-y={Math.PI / 2}>
+        <Bottles rows={ROWS} seed={5} />
+      </group>
       <Suspense fallback={null}>
         <PropSet
           model="banquette"

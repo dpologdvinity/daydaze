@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { Batch } from "../shared/batch.ts";
 import { canvasTex, GOLD } from "../shared/materials.ts";
 import { ROOM } from "./layout.ts";
-import { inFrame, type Frame } from "./place.ts";
+import { inFrame, type Frame } from "../shared/place.ts";
 
 // Two paintings share one atlas: left half sunburst, right half moon.
 function drawAtlas(ctx: CanvasRenderingContext2D) {

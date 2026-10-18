@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { lathe } from "../../avatar/dollGeometry.ts";
 import { Batch } from "../shared/batch.ts";
 import { FOLIAGE, TERRACOTTA } from "./materials.ts";
-import { inFrame } from "./place.ts";
+import { inFrame } from "../shared/place.ts";
 
 const POTS: { x: number; z: number; s: number }[] = [
   { x: 3.1, z: -4.4, s: 1 },

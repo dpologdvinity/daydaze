@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Batch, type Pose } from "../shared/batch.ts";
+import { Batch, type Pose } from "./batch.ts";
 
 const UP = new THREE.Vector3(0, 1, 0);
 

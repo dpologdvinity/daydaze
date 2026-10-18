@@ -133,7 +133,7 @@ const SHAPES: readonly Shape[] = [
   },
 ];
 
-const SEGMENTS = 14;
+const SEGMENTS = 10;
 const lathe = (pts: readonly (readonly [number, number])[]) =>
   new THREE.LatheGeometry(
     pts.map(([y, r]) => new THREE.Vector2(Math.max(r, 0.0001), y)),
@@ -229,7 +229,7 @@ const cap = (s: Shape, tall: boolean) =>
     s.neck + 0.002,
     s.neck + 0.002,
     tall ? 0.045 : 0.022,
-    10,
+    8,
   ).translate(0, s.h - (tall ? 0.018 : 0.006), 0);
 
 const GLASS_TINTS = ["#ffffff", "#2f6b3a", "#8a4a12", "#3a5aa8", "#e8f0ff"];

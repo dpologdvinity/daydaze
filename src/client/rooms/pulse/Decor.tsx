@@ -3,6 +3,7 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useReducedMotion } from "../../motion.ts";
 import { DECO, NeonText } from "../shared/Neon.tsx";
+import { groundMaps } from "../../city/worldTexture.ts";
 import { canvasTex, neonMat } from "../shared/materials.ts";
 import { BACK_Z, DJ_BOOTH } from "./layout.ts";
 
@@ -30,8 +31,12 @@ const BACK_WALL_TEX = canvasTex(
   },
   [3, 1],
 );
+// the panels' plaster grain from a CC0 scan, under the painted seams
+const BACK_WALL_NORMAL = groundMaps("concrete_wall_008").normalMap;
+BACK_WALL_NORMAL.repeat.set(6, 2);
 const BACK_WALL = new THREE.MeshStandardMaterial({
   map: BACK_WALL_TEX,
+  normalMap: BACK_WALL_NORMAL,
   roughness: 0.6,
 });
 // the mirror ball's facets, as a scatter of bright and dim squares
@@ -111,7 +116,7 @@ export function MirrorBall() {
   return (
     <group position={[0, 3.2, 1.2]}>
       <mesh ref={ball} material={DISCO}>
-        <sphereGeometry args={[0.38, 20, 14]} />
+        <sphereGeometry args={[0.38, 14, 10]} />
       </mesh>
       <mesh position-y={0.55} material={neonMat("#c9b7d8", 0.6)}>
         <cylinderGeometry args={[0.012, 0.012, 0.6, 6]} />

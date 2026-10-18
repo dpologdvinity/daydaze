@@ -26,6 +26,10 @@ import { NeonText, SCRIPT } from "./shared/Neon.tsx";
 import { Prop, PropSet } from "./shared/Prop.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { BarStools } from "./shared/BarStools.tsx";
+import { Batch } from "./shared/batch.ts";
+import { Bottles, type ShelfRow } from "./shared/Bottles.tsx";
+import { bulb, plant, rug } from "./shared/details.ts";
+import { surface } from "../city/worldTexture.ts";
 
 // the deck's edges: glass rails all round, the elevator kiosk in the south-west
 const RAIL_X = 8.2;
@@ -93,8 +97,63 @@ const POSTS: Vec3[] = POST_ZS.flatMap((z) => [
   [RAIL_X, 1.8, z] as Vec3,
 ]);
 const BULB_COLORS = ["#ffc878", "#ffb45a", "#ffd9a0"];
-// amber, bottle-green and clear glass, lit from below
-const BOTTLE_COLORS = ["#c87a2a", "#3a8a5a", "#d8c8a8", "#8a4a2a"];
+// a plum-stained walnut bar under a white marble top, a stone fire bowl
+const BAR_WOOD = surface("wood_veneer", {
+  scale: 1.2,
+  color: "#a87aa8",
+  roughness: 0.5,
+});
+const CABINET = surface("wood_veneer", {
+  scale: 1.2,
+  color: "#6a4a6a",
+  roughness: 0.6,
+});
+const MARBLE = surface("marble_01", {
+  scale: 0.8,
+  color: "#fff8fc",
+  roughness: 0.25,
+});
+const KIOSK_PANEL = surface("wood_plank_wall", {
+  scale: 0.8,
+  color: "#8a6a90",
+  roughness: 0.8,
+});
+const STONE = surface("rock_face", { scale: 1.5, color: "#a8949c" });
+
+// two tiers of bottles on the back cabinet: one on its top, one on a riser
+const ROWS: readonly ShelfRow[] = [
+  { x0: BAR.x0 + 0.2, x1: BAR.x1 - 0.2, y: 1, z: -5.68, count: 22 },
+  { x0: BAR.x0 + 0.3, x1: BAR.x1 - 0.3, y: 1.22, z: -5.86, count: 20 },
+];
+
+/** Planters along the rails, rugs in the lounge and candles on every
+ * table and along the bar. */
+function buildDressing() {
+  const b = new Batch();
+  for (const [x, z, s] of [
+    [-7.6, -3.6, 1.3],
+    [7.6, -1.2, 1.1],
+    [7.6, 3.6, 1.2],
+    [2.4, -5.5, 1.2],
+    [-4.4, 6.4, 1.1],
+  ] as const)
+    plant(b, { x, z }, s);
+  rug(b, { x: -6, z: 1.4 }, 2, 3.4, "#f0b8d8");
+  rug(b, { x: 5.4, z: 1.7 }, 3, 3.4, "#b8d0f0");
+  const glass = new THREE.CylinderGeometry(0.035, 0.03, 0.08, 8);
+  const flame = new THREE.SphereGeometry(0.018, 6, 4);
+  const candles: Vec3[] = [
+    ...HIGH_TABLES.map(([x, z]): Vec3 => [x, 1.1, z]),
+    [-3.6, 1.1, -4.6],
+    [-1.6, 1.1, -4.6],
+    [0.4, 1.1, -4.6],
+  ];
+  for (const [x, y, z] of candles) {
+    b.add(glass, MARBLE, { position: [x, y + 0.04, z] });
+    b.add(flame, bulb("#ffb050"), { position: [x, y + 0.1, z] });
+  }
+  return b.build();
+}
 
 /** One draw call for a set of identical pieces placed at `at`. */
 function Instanced({
@@ -187,9 +246,8 @@ function Kiosk() {
   const width = KIOSK.x1 - KIOSK.x0;
   return (
     <group position={[(KIOSK.x0 + KIOSK.x1) / 2, 0, KIOSK.front + 0.6]}>
-      <mesh position-y={1.45}>
+      <mesh position-y={1.45} material={KIOSK_PANEL}>
         <boxGeometry args={[width, 2.9, 1.2]} />
-        <meshStandardMaterial color="#2a1830" roughness={0.8} />
       </mesh>
       {[-0.42, 0.42].map((x) => (
         <mesh key={x} position={[x, 1.15, -0.62]}>
@@ -222,22 +280,16 @@ function Bar() {
   const length = BAR.x1 - BAR.x0;
   const cx = (BAR.x0 + BAR.x1) / 2;
   const cz = (BAR.front + BAR.back) / 2;
-  const bottles = useMemo(() => {
-    const out: Vec3[] = [];
-    for (let x = BAR.x0 + 0.2; x < BAR.x1 - 0.1; x += 0.24)
-      out.push([x, 1.17, -5.75]);
-    return out;
-  }, []);
+  const dressing = useMemo(buildDressing, []);
   return (
     <>
-      <mesh position={[cx, 0.52, cz]}>
+      <primitive object={dressing} />
+      <mesh position={[cx, 0.52, cz]} material={BAR_WOOD}>
         <boxGeometry args={[length, 1.04, BAR.front - BAR.back]} />
-        <meshStandardMaterial color="#3a1f3c" roughness={0.6} />
       </mesh>
-      {/* a pale stone top, lipped over the front */}
-      <mesh position={[cx, 1.07, cz + 0.05]}>
+      {/* a pale marble top, lipped over the front */}
+      <mesh position={[cx, 1.07, cz + 0.05]} material={MARBLE}>
         <boxGeometry args={[length + 0.1, 0.06, BAR.front - BAR.back + 0.1]} />
-        <meshStandardMaterial color="#efe6ee" roughness={0.25} />
       </mesh>
       {/* the underglow along the foot rail */}
       <mesh position={[cx, 0.1, BAR.front + 0.02]}>
@@ -245,36 +297,14 @@ function Bar() {
         <meshBasicMaterial color={hdr("#ff6ac8", 3)} toneMapped={false} />
       </mesh>
       {/* the back bar: a low cabinet with a row of lit bottles */}
-      <mesh position={[cx, 0.5, -5.75]}>
+      <mesh position={[cx, 0.5, -5.75]} material={CABINET}>
         <boxGeometry args={[length, 1, 0.35]} />
-        <meshStandardMaterial color="#24142a" roughness={0.7} />
       </mesh>
-      <Bottles at={bottles} />
+      <mesh position={[cx, 1.1, -5.86]} material={CABINET}>
+        <boxGeometry args={[length - 0.4, 0.2, 0.14]} />
+      </mesh>
+      <Bottles rows={ROWS} seed={11} />
     </>
-  );
-}
-
-function Bottles({ at }: { at: readonly Vec3[] }) {
-  return (
-    <instancedMesh
-      ref={(m) => {
-        if (!m) return;
-        const o = new THREE.Object3D();
-        at.forEach((p, i) => {
-          o.position.set(...p);
-          o.updateMatrix();
-          m.setMatrixAt(i, o.matrix);
-          m.setColorAt(i, hdr(BOTTLE_COLORS[i % BOTTLE_COLORS.length], 0.9));
-        });
-        m.instanceMatrix.needsUpdate = true;
-        if (m.instanceColor) m.instanceColor.needsUpdate = true;
-        m.computeBoundingSphere();
-      }}
-      args={[undefined, undefined, at.length]}
-    >
-      <cylinderGeometry args={[0.05, 0.05, 0.3, 8]} />
-      <meshBasicMaterial toneMapped={false} />
-    </instancedMesh>
   );
 }
 
@@ -296,9 +326,8 @@ function FirePit() {
   });
   return (
     <group position={[FIRE[0], 0, FIRE[1]]}>
-      <mesh position-y={0.2}>
+      <mesh position-y={0.2} material={STONE}>
         <cylinderGeometry args={[0.45, 0.38, 0.4, 20]} />
-        <meshStandardMaterial color="#4a3a44" roughness={0.9} />
       </mesh>
       <group ref={flames} position-y={0.4}>
         {[
@@ -335,7 +364,7 @@ function HighTables() {
     <>
       <Instanced at={tops}>
         <cylinderGeometry args={[0.38, 0.38, 0.04, 20]} />
-        <meshStandardMaterial color="#efe6ee" roughness={0.3} />
+        <primitive object={MARBLE} attach="material" />
       </Instanced>
       <Instanced at={poles}>
         <cylinderGeometry args={[0.04, 0.2, 1.08, 10]} />

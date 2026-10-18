@@ -10,7 +10,7 @@ import {
   PLUM_VELVET,
   ROSE_VELVET,
 } from "./materials.ts";
-import { inFrame } from "./place.ts";
+import { inFrame } from "../shared/place.ts";
 
 export function LionCrest(props: { position: [number, number, number] }) {
   const parts = useMemo(() => {
