@@ -106,6 +106,9 @@ const Gridiron = lazy(() =>
 const Salon = lazy(() =>
   import("../rooms/Salon.tsx").then((m) => ({ default: m.Salon })),
 );
+const BackRoom = lazy(() =>
+  import("../rooms/BackRoom.tsx").then((m) => ({ default: m.BackRoom })),
+);
 const VinylVault = lazy(() =>
   import("../rooms/VinylVault.tsx").then((m) => ({ default: m.VinylVault })),
 );
@@ -367,6 +370,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   dealership: Dealership,
   "jazz-club": JazzClub,
   "vinyl-vault": VinylVault,
+  "back-room": BackRoom,
   "halo-halo-cafe": HaloHaloCafe,
   gym: Gym,
   stadium: Stadium,

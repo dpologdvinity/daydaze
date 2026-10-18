@@ -1,10 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { ROOMS } from "./rooms.ts";
+import { isRoomId, ROOMS } from "./rooms.ts";
 import { SEATS, homeSeats, seatsIn } from "./seats.ts";
 import { pointInPolygon } from "./walk.ts";
 import { DINER_SEATS as KAMAYAN_DINERS } from "./kamayanHall.ts";
 import { DINER_SEATS as GALLERIA_DINERS } from "./galleria.ts";
+import { areaOf, isBlocked } from "./area.ts";
 
 test("every seat's approach point is on its room's floor", () => {
   for (const s of SEATS) {
@@ -58,4 +59,13 @@ test("chairs the regulars sit in are never offered to the player", () => {
     assert.ok(!ids("galleria").includes(`galleria-chair-${i}`));
   assert.ok(!ids("boba-matcha").includes("boba-matcha-table0-l"));
   assert.ok(ids("boba-matcha").includes("boba-matcha-table0-r"));
+});
+
+test("every seat in every room is walked up to from open floor", () => {
+  for (const id of Object.keys(ROOMS)) {
+    if (!isRoomId(id) || id === "apartment") continue;
+    const area = areaOf(ROOMS[id]);
+    for (const s of seatsIn(id))
+      assert.equal(isBlocked(area, s.approach), false, `${s.id} approach`);
+  }
 });

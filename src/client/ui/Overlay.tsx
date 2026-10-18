@@ -112,6 +112,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Skyline Driving Range. Get a bucket of ten: set your backswing, strike it pure, and land them on the greens.",
   salon:
     "The Blowout Bar. Book with Dani for the salon's colors, or take a chair by the mirrors.",
+  "back-room":
+    "The Back Room. A speakeasy behind an unmarked door: order a drink from Odette, then take a stool or a leather booth.",
   "vinyl-vault":
     "Vinyl Vault. Dig the crates, play a sample of any record and buy the ones you love for the record player at home.",
   "jazz-club":
@@ -766,7 +768,7 @@ export function Overlay({
               Ride a slide
             </button>
           )}
-          {room === "velvet-room" && (
+          {(room === "velvet-room" || room === "back-room") && (
             <button
               type="button"
               className="drink"

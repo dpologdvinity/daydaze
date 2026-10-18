@@ -91,6 +91,7 @@ const SHOTS: {
   { name: "dealership", query: "room=dealership" },
   { name: "jazz-club", query: "room=jazz-club" },
   { name: "vinyl-vault", query: "room=vinyl-vault" },
+  { name: "back-room", query: "room=back-room" },
   { name: "green-haze", query: "room=green-haze&adult=1" },
   { name: "piercing", query: "room=piercing" },
   { name: "halo-halo-cafe", query: "room=halo-halo-cafe" },

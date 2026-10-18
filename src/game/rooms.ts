@@ -95,6 +95,7 @@ import * as ZOO from "./zoo.ts";
 import * as MOTORS from "./dealership.ts";
 import * as HORN from "./jazzClub.ts";
 import * as VAULT from "./vinylVault.ts";
+import * as BACK from "./backRoom.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -148,6 +149,7 @@ export type RoomId =
   | "dealership"
   | "jazz-club"
   | "vinyl-vault"
+  | "back-room"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -630,6 +632,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to Gallery Row",
         target: "city",
         targetSpawn: { position: SALON.SALON.door.landing, yaw: 0 },
+      },
+    ],
+  },
+  "back-room": {
+    id: "back-room",
+    name: "The Back Room",
+    walkable: BACK.FLOOR,
+    blockers: BACK.BLOCKERS,
+    spawn: { position: BACK.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "back-room-to-city",
+        position: BACK.EXIT,
+        radius: 0.8,
+        label: "Out to the avenue",
+        target: "city",
+        targetSpawn: { position: BACK.BACK_ROOM_DOOR.landing, yaw: 0 },
       },
     ],
   },

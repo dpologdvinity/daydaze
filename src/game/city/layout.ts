@@ -29,6 +29,7 @@ import * as ZOO from "../zoo.ts";
 import * as MOTORS from "../dealership.ts";
 import * as HORN from "../jazzClub.ts";
 import * as VAULT from "../vinylVault.ts";
+import * as BACK from "../backRoom.ts";
 import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
 import * as RANGE from "../drivingRange.ts";
@@ -1909,6 +1910,14 @@ export const BUILDINGS: readonly Building[] = [
     height: 20,
     style: "brick",
     sign: { text: "BACK ROOM", color: "#ff8a3d" },
+    // the speakeasy, behind its unmarked door
+    door: {
+      position: BACK.BACK_ROOM_DOOR.position,
+      radius: 2,
+      label: "Through the unmarked door",
+      target: "back-room",
+      targetSpawn: { position: BACK.SPAWN, yaw: Math.PI },
+    },
   },
   {
     // A slim glass tower with the Skylark rooftop bar on top
