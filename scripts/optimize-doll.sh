@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Compresses the doll parts Blender wrote to art/doll/blender/.cache/out into
-# public/models/doll/ (meshopt geometry, WebP textures). Simplify stays off:
+# public/models/doll/ (meshopt geometry, WebP textures), plus a simplified
+# -lo twin of every worn part for dolls past the LOD distance. Simplify stays off:
 # it would tear the shape keys the sliders and tucks rely on. Flatten and
 # palette stay off so node extras and material names survive, and UVs stay
 # on the untextured skin and eyes, which the client paints at runtime.
@@ -8,9 +9,20 @@ set -euo pipefail
 IN="$(dirname "$0")/../art/doll/blender/.cache/out"
 OUT="$(dirname "$0")/../public/models/doll"
 mkdir -p "$OUT"
+OPTS=(--compress meshopt --texture-compress webp --texture-size 1024
+  --simplify false --join false --instance false --flatten false --palette false --prune-attributes false)
+LO="$(mktemp -d)"
 for f in "$IN"/*.glb; do
-  npx -y @gltf-transform/cli@4.5.1 optimize "$f" "$OUT/$(basename "$f")" \
-    --compress meshopt --texture-compress webp --texture-size 1024 \
-    --simplify false --join false --instance false --flatten false --palette false --prune-attributes false
+  name="$(basename "$f" .glb)"
+  npx -y @gltf-transform/cli@4.5.1 optimize "$f" "$OUT/$name.glb" "${OPTS[@]}"
+  # worn parts get a low-poly twin for far-off dolls: the same vertices'
+  # attributes (skin weights, shape keys) on about a fifth of the triangles
+  case "$name" in
+    hair-* | outfit-* | shoes-* | swim-*)
+      npx -y @gltf-transform/cli@4.5.1 simplify "$f" "$LO/$name.glb" --ratio 0.2 --error 0.02
+      npx -y @gltf-transform/cli@4.5.1 optimize "$LO/$name.glb" "$OUT/$name-lo.glb" "${OPTS[@]}"
+      ;;
+  esac
 done
+rm -rf "$LO"
 ls -la "$OUT"

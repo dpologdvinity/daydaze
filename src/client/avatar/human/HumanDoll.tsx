@@ -419,31 +419,78 @@ function hairMaterial(
 
 type Tint = { color: string; kind: "hair" | "cloth" | "gloss" | "keep" };
 
-/** A worn part, re-bound to the body's bones and tinted. */
+/** A part's low-poly twin, worn while the doll is far off (optimize-doll.sh
+ * simplifies every hair, outfit and shoe file into one). */
+const lodOf = (url: string) => url.replace(/\.glb$/, "-lo.glb");
+
+/** A worn part, re-bound to the body's bones and tinted; past the doll's
+ * LOD distance its low-poly twin shows instead. */
 function Part({
   url,
   bones,
   tint,
+  far,
   onMeshes,
 }: {
   url: string;
   bones: Map<string, THREE.Bone>;
   tint: Tint;
+  /** Set while the doll wears its far LOD. */
+  far: { current: boolean };
   /** The part's meshes, and how far its soles lift the doll (meters). */
   onMeshes: (meshes: THREE.Mesh[] | null, lift: number) => void;
 }) {
   const gltf = useGLTF(url);
+  const gltfLo = useGLTF(lodOf(url));
   // the glossy hair shading and its soft-edge pass are for capable GPUs
   const rich = useQuality() === "high";
   const part = useMemo(() => {
+    const near = buildPart(gltf.scene, bones, tint, rich);
+    const lo = buildPart(gltfLo.scene, bones, tint, false);
+    lo.group.visible = false;
+    const group = new THREE.Group();
+    group.add(near.group, lo.group);
+    return {
+      group,
+      near: near.group,
+      lo: lo.group,
+      materials: [...near.materials, ...lo.materials],
+      lift: near.lift,
+    };
+  }, [gltf, gltfLo, bones, tint.color, tint.kind, rich]);
+  useFrame(() => {
+    if (part.lo.visible !== far.current) {
+      part.lo.visible = far.current;
+      part.near.visible = !far.current;
+    }
+  });
+
+  useEffect(() => {
+    onMeshes(morphMeshes(part.group), part.lift);
+    return () => {
+      onMeshes(null, 0);
+      part.materials.forEach((m) => m.dispose());
+    };
+  }, [part, onMeshes]);
+  return <primitive object={part.group} />;
+}
+
+/** A part's scene re-bound to the body's bones, with the doll's materials. */
+function buildPart(
+  scene: THREE.Object3D,
+  bones: Map<string, THREE.Bone>,
+  tint: Tint,
+  rich: boolean,
+) {
+  {
     const meshes: THREE.SkinnedMesh[] = [];
-    gltf.scene.traverse((o) => {
+    scene.traverse((o) => {
       if (o instanceof THREE.SkinnedMesh) meshes.push(o);
     });
     const group = new THREE.Group();
     const materials: THREE.Material[] = [];
     let lift = 0;
-    gltf.scene.traverse((o) => {
+    scene.traverse((o) => {
       const v: unknown = o.userData.lift;
       if (typeof v === "number" && Number.isFinite(v) && v >= 0 && v < 0.2)
         lift = v;
@@ -518,16 +565,7 @@ function Part({
       }
     }
     return { group, materials, lift };
-  }, [gltf, bones, tint.color, tint.kind, rich]);
-
-  useEffect(() => {
-    onMeshes(morphMeshes(part.group), part.lift);
-    return () => {
-      onMeshes(null, 0);
-      part.materials.forEach((m) => m.dispose());
-    };
-  }, [part, onMeshes]);
-  return <primitive object={part.group} />;
+  }
 }
 
 export function HumanDoll({
@@ -598,6 +636,8 @@ export function HumanDoll({
   const shapedFor = useRef<THREE.Mesh[] | null>(null);
   const shapedWith = useRef<typeof shapeKeys | null>(null);
   const lift = useRef(0);
+  // read by each worn part, to swap in its low-poly twin
+  const farParts = useRef(false);
   const track = useMemo(() => {
     const make = (key: string) => (meshes: THREE.Mesh[] | null, up: number) => {
       if (meshes) worn.current.set(key, meshes);
@@ -635,6 +675,7 @@ export function HumanDoll({
         body.far.visible = isFar;
         for (const m of body.near) m.visible = !isFar;
       }
+      farParts.current = isFar;
     }
     const t = state.clock.elapsedTime + seed * 7.3;
     const speed = walk?.current.speed ?? 0;
@@ -711,6 +752,7 @@ export function HumanDoll({
           url={parts.hair}
           bones={body.bones}
           tint={{ color: look.hairColor, kind: "hair" }}
+          far={farParts}
           onMeshes={track.hair}
         />
       </Suspense>
@@ -720,6 +762,7 @@ export function HumanDoll({
           url={parts.outfit}
           bones={body.bones}
           tint={{ color: swim?.color ?? look.outfitColor, kind: "cloth" }}
+          far={farParts}
           onMeshes={track.outfit}
         />
       </Suspense>
@@ -740,6 +783,7 @@ export function HumanDoll({
                     kind: "gloss",
                   }
             }
+            far={farParts}
             onMeshes={track.shoes}
           />
         </Suspense>
@@ -757,5 +801,8 @@ useGLTF.preload(`${MODELS}/body-lo.glb`);
 export function preloadLook(look: Look, swim: SwimLook | null = null) {
   const parts = partsFor(look, swim);
   for (const url of [parts.hair, parts.outfit, parts.shoes])
-    if (url) useGLTF.preload(url);
+    if (url) {
+      useGLTF.preload(url);
+      useGLTF.preload(lodOf(url));
+    }
 }
