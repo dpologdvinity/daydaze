@@ -1,9 +1,8 @@
 name: Tests
+# Runs only when started by hand (Actions tab, "Run workflow"), to save the
+# private repo's Actions minutes; checks run locally before every push.
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
 jobs:
   verify:
     timeout-minutes: 20
