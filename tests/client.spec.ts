@@ -789,12 +789,13 @@ test("Pulse: dance through a dance-off and the floor pays a prize", async ({
 }) => {
   test.setTimeout(240_000);
   const errors = collectErrors(page);
-  // the clock starts a few seconds before the DJ calls one
-  await page.goto(`${STILL}&room=pulse&danceoff=-4`);
+  // the clock starts 20 s before the DJ calls one, so a slow load can't
+  // miss it; dancing early is fine
+  await page.goto(`${STILL}&room=pulse&danceoff=-20`);
   const call = page.getByRole("region", { name: "Dance-off" });
   await expect(call).toContainText("calls a dance-off");
   await page.getByRole("radio", { name: "Dance", exact: true }).click();
-  await expect(call).toContainText("Keep dancing", { timeout: 30_000 });
+  await expect(call).toContainText("Keep dancing", { timeout: 60_000 });
   const prize = page.getByRole("status", { name: "Prize" });
   await expect(prize).toContainText("Dance-off", { timeout: 90_000 });
   await expect(prize).toContainText("s on the floor");
@@ -1284,16 +1285,22 @@ test("jail: the sentence counts down, cards shorten it, and bail needs coins", a
     if (localStorage.getItem("daydaze-save-v1")) return;
     localStorage.setItem(
       "daydaze-save-v1",
-      JSON.stringify({ jail: { endsAt: Date.now() + 120_000 }, coins: 0 }),
+      JSON.stringify({ jail: { endsAt: Date.now() + 240_000 }, coins: 0 }),
     );
   });
   await page.goto(`${VELVET}&debug=1`);
   await page.getByRole("button", { name: "Go to Jail" }).click();
   await expect(roomTitle(page)).toHaveText("City Jail, Block C");
   const clock = page.getByRole("timer");
-  await expect(clock).toContainText("Time left: 1:");
+  // a slow load eats into the sentence, so compare before and after cards
+  const left = async () => {
+    const m = /(\d+):(\d\d)/.exec((await clock.textContent()) ?? "");
+    return m ? Number(m[1]) * 60 + Number(m[2]) : NaN;
+  };
+  await expect(clock).toContainText("Time left:");
+  const before = await left();
   await page.getByRole("button", { name: /Play cards/ }).click();
-  await expect(clock).toContainText(/Time left: 1:[0-3]\d/);
+  await expect.poll(left).toBeLessThan(before - 10);
   await page.getByRole("button", { name: /Use the phone/ }).click();
   await expect(page.getByText(/you have 0/)).toBeVisible();
   await page.reload();

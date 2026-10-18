@@ -95,7 +95,8 @@ export function App() {
     // a sentence still running resumes in the cell block
     const jailed = isJailed(save.jail, Date.now());
     // new players (and returning ones) start out on Downtown's square
-    const asked = flags.room ?? (jailed ? "jail" : "city");
+    // a sentence can't be skipped with ?room=
+    const asked = jailed ? "jail" : (flags.room ?? "city");
     const room = mayEnter(asked, ADULT_OK) ? asked : "city";
     return visit(room, (room === asked && flags.at) || ROOMS[room].spawn);
   });
