@@ -92,6 +92,7 @@ import * as MARKET from "./market.ts";
 import * as PAINT from "./paintball.ts";
 import * as STUDIO from "./studio.ts";
 import * as ZOO from "./zoo.ts";
+import * as MOTORS from "./dealership.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -142,6 +143,7 @@ export type RoomId =
   | "paintball"
   | "music-studio"
   | "zoo"
+  | "dealership"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -624,6 +626,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to Gallery Row",
         target: "city",
         targetSpawn: { position: SALON.SALON.door.landing, yaw: 0 },
+      },
+    ],
+  },
+  dealership: {
+    id: "dealership",
+    name: "Daydaze Motors",
+    walkable: MOTORS.FLOOR,
+    blockers: MOTORS.BLOCKERS,
+    spawn: { position: MOTORS.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "dealership-to-city",
+        position: MOTORS.EXIT,
+        radius: 0.8,
+        label: "Out to Park Avenue",
+        target: "city",
+        targetSpawn: { position: MOTORS.MOTORS_DOOR.landing, yaw: Math.PI },
       },
     ],
   },

@@ -43,7 +43,6 @@ test("the player drives their car down the avenue and parks it", async ({
   await expect(canvas).toHaveAttribute("data-city-car", "parked", {
     timeout: 180_000,
   });
-  await page.getByRole("combobox", { name: "Car" }).selectOption("kestrel-rs");
   await page.getByRole("button", { name: "Drive your car" }).click();
   // she walks over from the square and gets in
   await expect(canvas).toHaveAttribute("data-city-car", "driving", {
@@ -64,7 +63,7 @@ test("the player drives their car down the avenue and parks it", async ({
   const saved = await page.evaluate(() =>
     JSON.parse(localStorage.getItem("daydaze-save-v1") ?? "{}"),
   );
-  expect(saved.car.id).toBe("kestrel-rs");
+  expect(saved.car.id).toBe("quill-lite");
   expect(saved.car.at[0]).toBeGreaterThan(20);
   expect(errors).toEqual([]);
 });
@@ -228,6 +227,29 @@ test("the Scrambler and the Starship take riders", async ({ page }) => {
       timeout: 200_000,
     });
   }
+  expect(errors).toEqual([]);
+});
+
+test("Daydaze Motors sells a car into your garage", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.addInitScript(() => {
+    if (localStorage.getItem("daydaze-save-v1")) return;
+    localStorage.setItem("daydaze-save-v1", JSON.stringify({ coins: 500 }));
+  });
+  await page.goto(`${STILL}&room=dealership`);
+  const list = page.getByRole("region", { name: "Cars for sale" });
+  await list
+    .getByRole("button", { name: "Buy the Pebble for 140 coins" })
+    .click({ timeout: 150_000 });
+  await expect(
+    list.getByRole("button", { name: "Pebble: owned" }),
+  ).toBeDisabled();
+  const saved = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("daydaze-save-v1") ?? "{}"),
+  );
+  expect(saved.coins).toBe(360);
+  expect(saved.garage).toContain("pebble");
+  expect(saved.car.id).toBe("pebble");
   expect(errors).toEqual([]);
 });
 
@@ -1063,6 +1085,7 @@ for (const room of [
   "paintball",
   "music-studio",
   "zoo",
+  "dealership",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

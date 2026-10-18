@@ -40,6 +40,7 @@ import type { DanceMoveId, Holds } from "../../game/dance/moves.ts";
 import { INTENSITIES, type Intensity } from "../../game/effects/buzz.ts";
 import { CarPicker } from "../city/CarPicker.tsx";
 import { FuelStop } from "../city/FuelStop.tsx";
+import { DealershipPanel } from "../city/DealershipPanel.tsx";
 import type { ParkedCar } from "../../game/city/drive.ts";
 import type { RoomId, Spawn } from "../../game/rooms.ts";
 import {
@@ -110,6 +111,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Skyline Driving Range. Get a bucket of ten: set your backswing, strike it pure, and land them on the greens.",
   salon:
     "The Blowout Bar. Book with Dani for the salon's colors, or take a chair by the mirrors.",
+  dealership:
+    "Daydaze Motors. Every road car turns on its own turntable: buy one from the price list and it waits at the curb.",
   zoo: "The Daydaze Zoo. Stroll the paths past giraffes and zebras, elephants, lions, penguins and flamingos.",
   "music-studio":
     "Loft Studios. Walk up to the piano, the drums, the marimba or the floor piano and play: tap the notes or press 1 to 8.",
@@ -550,6 +553,8 @@ export function Overlay({
   car,
   setCar,
   onSpend,
+  garage,
+  onBuyCar,
 }: {
   room: RoomId;
   roomName: string;
@@ -586,6 +591,9 @@ export function Overlay({
   setCar: (car: ParkedCar) => void;
   /** Takes coins for a purchase; false when there aren't enough. */
   onSpend: (price: number) => boolean;
+  /** The road cars you own, and buying one at the dealership. */
+  garage: readonly string[];
+  onBuyCar: (id: string) => void;
 }) {
   const neighborhood = useNeighborhood();
   const [phone, setPhone] = useState(false);
@@ -666,6 +674,9 @@ export function Overlay({
       />
       <RoomPanel room={room} />
       {room === "city" && <FuelStop coins={coins} onSpend={onSpend} />}
+      {room === "dealership" && (
+        <DealershipPanel coins={coins} garage={garage} onBuy={onBuyCar} />
+      )}
       {room === "piercing" && (
         <PiercingPanel
           look={look}
@@ -723,7 +734,9 @@ export function Overlay({
               City map
             </button>
           )}
-          {room === "city" && <CarPicker car={car} onChange={setCar} />}
+          {room === "city" && (
+            <CarPicker car={car} garage={garage} onChange={setCar} />
+          )}
           {(seatsIn(room).length > 0 || room === "apartment") && (
             <button
               type="button"

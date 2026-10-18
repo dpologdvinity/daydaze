@@ -15,6 +15,7 @@ import type { Look, Mood, SwimLook } from "../game/look.ts";
 import type { HomeSave } from "../game/home/home.ts";
 import { parkedOrHome, type ParkedCar } from "../game/city/drive.ts";
 import { mayEnter } from "../game/age.ts";
+import { buyCar } from "../game/garage.ts";
 import { ADULT_NOTICE, ADULT_OK } from "./adult.ts";
 import { arrive } from "../game/portals.ts";
 import { ROOMS, type RoomId, type Spawn } from "../game/rooms.ts";
@@ -323,6 +324,22 @@ export function App() {
           setPanelOpen={setPanelOpen}
           car={parkedOrHome(save.car)}
           setCar={setCar}
+          garage={save.garage}
+          onBuyCar={(id) => {
+            const r = buyCar(save.coins, save.garage, id);
+            if (!r.ok) return;
+            // the new car waits at the home curb, ready to drive
+            setSave((s) => ({
+              ...s,
+              coins: r.coins,
+              garage: r.garage,
+              car: {
+                ...parkedOrHome(null),
+                id,
+                color: s.car?.color ?? "#ff4fb3",
+              },
+            }));
+          }}
           onSpend={(price) => {
             const left = spend(save.coins, price);
             if (left === null) return false;

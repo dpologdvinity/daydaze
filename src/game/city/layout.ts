@@ -26,6 +26,7 @@ import { MARKET_DOOR, SPAWN as MARKET_SPAWN } from "../market.ts";
 import { SPLAT_DOOR, SPAWN as SPLAT_SPAWN } from "../paintball.ts";
 import { STUDIO_DOOR, SPAWN as STUDIO_SPAWN } from "../studio.ts";
 import * as ZOO from "../zoo.ts";
+import * as MOTORS from "../dealership.ts";
 import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
 import * as RANGE from "../drivingRange.ts";
@@ -1476,7 +1477,25 @@ const UPTOWN_FRONT: readonly {
     sign: { text: "TASTING ROOM", color: "#ffd6a5" },
     style: "glass",
   },
-  { x: 430, w: 22, h: 26, north: false, color: "#5f0f40", style: "tower" },
+  {
+    x: MOTORS.MOTORS_DOOR.position[0],
+    w: 22,
+    h: 14,
+    north: false,
+    color: "#e8e8f4",
+    sign: { text: "DAYDAZE MOTORS", color: "#4fe3ff" },
+    style: "glass",
+    venue: {
+      id: "dealership",
+      door: {
+        position: MOTORS.MOTORS_DOOR.position,
+        radius: 1.5,
+        label: "Into Daydaze Motors",
+        target: "dealership",
+        targetSpawn: { position: MOTORS.SPAWN, yaw: Math.PI },
+      },
+    },
+  },
   {
     x: 351,
     w: 22,

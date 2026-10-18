@@ -7,9 +7,12 @@ import { driving } from "../world/driving.ts";
  * Drive walks you over to it and puts you behind the wheel. */
 export function CarPicker({
   car,
+  garage,
   onChange,
 }: {
   car: ParkedCar;
+  /** The cars you own: only these are on the list. */
+  garage: readonly string[];
   onChange: (car: ParkedCar) => void;
 }): JSX.Element {
   return (
@@ -26,7 +29,7 @@ export function CarPicker({
         value={car.id}
         onChange={(e) => onChange({ ...car, id: e.target.value })}
       >
-        {ROAD_CARS.map((c) => (
+        {ROAD_CARS.filter((c) => garage.includes(c.id)).map((c) => (
           <option key={c.id} value={c.id}>
             {c.name} ({c.class})
           </option>

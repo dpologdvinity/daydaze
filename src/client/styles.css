@@ -628,6 +628,23 @@ button:focus-visible {
   box-shadow: 0 0 18px rgb(255 176 46 / 0.6);
 }
 
+/* the dealership's price list */
+.price-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 46vh;
+  overflow-y: auto;
+}
+
+.price-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+
 /* a shut door's line, such as an 18+ venue's, under the room card */
 .notice {
   position: fixed;

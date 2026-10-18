@@ -22,7 +22,7 @@ import {
 } from "./challenges.ts";
 import { cleanBests, type Bests } from "./prizes.ts";
 import { cleanParkedCar, type ParkedCar } from "./city/drive.ts";
-import { ROAD_CARS } from "./driving/roster.ts";
+import { cleanGarage, STARTER } from "./garage.ts";
 import { cleanWardrobe, unlockedLook } from "./shop.ts";
 import { isCoins, STARTING_COINS } from "./wallet.ts";
 
@@ -54,6 +54,8 @@ export type SaveV1 = {
   challenges: ChallengeSave;
   /** Your car where you last parked it; null waits at the home spot. */
   car: ParkedCar | null;
+  /** The road cars you own; the starter always. */
+  garage: string[];
 };
 
 export const SAVE_KEY = "daydaze-save-v1";
@@ -89,6 +91,7 @@ export function createDefaultSave(name: string): SaveV1 {
     bests: {},
     challenges: { ...NO_CHALLENGES, done: [] },
     car: null,
+    garage: [STARTER],
   };
 }
 
@@ -113,6 +116,7 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
   const swim = save.get("swim");
   const coins = save.get("coins");
   const wardrobe = cleanWardrobe(save.get("wardrobe"));
+  const garage = cleanGarage(save.get("garage"));
   const quality = settings.get("quality");
   const muted = settings.get("muted");
   const effects = settings.get("effects");
@@ -145,9 +149,8 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
     crime: validateCrime(save.get("crime")),
     bests: cleanBests(save.get("bests")),
     challenges: cleanChallenges(save.get("challenges")),
-    car: cleanParkedCar(save.get("car"), (id) =>
-      ROAD_CARS.some((c) => c.id === id),
-    ),
+    car: cleanParkedCar(save.get("car"), (id) => garage.includes(id)),
+    garage,
   };
 }
 
