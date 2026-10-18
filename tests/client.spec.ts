@@ -218,6 +218,19 @@ test("the zoo's gate on Park Avenue leads in, and its animals walk", async ({
   expect(errors).toEqual([]);
 });
 
+test("the Scrambler and the Starship take riders", async ({ page }) => {
+  test.setTimeout(480_000);
+  const errors = collectErrors(page);
+  for (const ride of ["scrambler", "starship"]) {
+    await page.goto(`${LOW}&room=amusement-park&ride=${ride}`);
+    // a slow frame can skip past "riding": wait on the rides finished
+    await expect(canvasOf(page)).toHaveAttribute("data-ridden", "1", {
+      timeout: 200_000,
+    });
+  }
+  expect(errors).toEqual([]);
+});
+
 test("loads the Velvet Room with no errors and mounts the canvas", async ({
   page,
 }) => {

@@ -45,6 +45,7 @@ import { Beams, type Beam } from "./shared/Beams.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { canvasTex, hdr } from "./shared/materials.ts";
+import { Scrambler, Starship } from "./amusementpark/MoreRides.tsx";
 
 // A starfield over the back of the park, fixed so the scene never reshuffles.
 const STARS: [number, number, number][] = Array.from(
@@ -305,6 +306,8 @@ export function AmusementPark({
       <DropTower />
       <SwingRide />
       <Teacups />
+      <Scrambler />
+      <Starship />
       {RIDE_IDS.map((id, i) => (
         <Ring
           key={id}

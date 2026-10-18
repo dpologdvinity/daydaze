@@ -9,6 +9,8 @@ import {
   CAROUSEL_AT,
   DROP_TOWER_AT,
   PIRATE_AT,
+  SCRAMBLER_AT,
+  STARSHIP_AT,
   SWING_AT,
   TEACUPS_AT,
 } from "./amusementPark.ts";
@@ -261,6 +263,8 @@ const AMUSEMENT_PARK_BLOCKERS: readonly (readonly Vec2[])[] = [
   round(TEACUPS_AT, 3.1),
   round(SWING_AT, 3.5),
   round(DROP_TOWER_AT, 1.2),
+  round(SCRAMBLER_AT, 3.6),
+  round(STARSHIP_AT, 3.4),
   // the log flume's channel, lift and splash pool; its station end at
   // x -21..-17.5, z -8..-17 is open to walk up to
   box(-30, -44, -21, -8),

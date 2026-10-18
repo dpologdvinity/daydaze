@@ -15,6 +15,8 @@ export const RIDE_IDS = [
   "drop-tower",
   "pirate-ship",
   "log-flume",
+  "scrambler",
+  "starship",
 ] as const;
 export type RideId = (typeof RIDE_IDS)[number];
 
@@ -27,6 +29,10 @@ export const DROP_TOWER_AT: readonly [number, number] = [-11.5, -28];
 export const PIRATE_AT: readonly [number, number] = [14.5, -31];
 export const PIRATE_PIVOT = 7;
 export const PIRATE_ARM = 5.4;
+/** The Scrambler in the east lot past the coasters, and the Starship rotor
+ * in the southwest corner by the flume's splash pool. */
+export const SCRAMBLER_AT: readonly [number, number] = [24, -28];
+export const STARSHIP_AT: readonly [number, number] = [-22.5, -48.5];
 
 // Ride tuning. Calm (reduced motion) rides take longer, so the same motion reads
 // slower. `seated` rides sit the doll down (a horse, a cup, a chair, a
@@ -93,6 +99,19 @@ export const RIDES: Record<
     spot: [12, -26],
     seconds: { normal: 20, calm: 30 },
     seated: true,
+  },
+  scrambler: {
+    label: "Scrambler",
+    spot: [24, -23.4],
+    seconds: { normal: 18, calm: 28 },
+    seated: true,
+  },
+  // the rotor pins her to the wall standing
+  starship: {
+    label: "Starship",
+    spot: [-22.5, -44.4],
+    seconds: { normal: 18, calm: 30 },
+    seated: false,
   },
 };
 
@@ -270,6 +289,15 @@ export function teacupTurns(t: number, calm: boolean) {
 export function dropClock(t: number, calm: boolean): number {
   return t * (calm ? 0.6 : 1);
 }
+/** The Scrambler's hub turn and each pair of cars' spin the other way. */
+export function scramblerTurns(t: number, calm: boolean) {
+  const s = t * (calm ? 0.45 : 1);
+  return { hub: s * 0.6, car: -s * 1.5 };
+}
+/** The Starship rotor's turn. */
+export function starshipTurn(t: number, calm: boolean): number {
+  return t * (calm ? 0.6 : 2.2);
+}
 /** The pirate ship's swing about its pivot, radians (a 6 s pendulum). */
 export function shipSwing(t: number, calm: boolean): number {
   return (calm ? 0.3 : 0.95) * Math.sin((t * Math.PI * 2) / 6);
@@ -281,6 +309,12 @@ export const SWING_TOP = 6.4;
 export const CUP_RADIUS = 1.7;
 export const TOWER_TOP = 17;
 export const TOWER_BASE = 1.4;
+/** The Scrambler's arms reach this far; each car rides this far out on its
+ * arm's own spinner. */
+export const SCRAMBLER_ARM = 2.2;
+export const SCRAMBLER_CAR = 0.85;
+/** The Starship's wall, where she stands pinned. */
+export const STARSHIP_RADIUS = 2.5;
 
 // Hips above the doll's feet when she sits (src/client/avatar/pose.ts).
 const SIT_HIPS = 0.59;
@@ -303,7 +337,14 @@ function onTurn(
 
 /** The seat on a turning ride at scene time `now`. */
 function turningPose(
-  ride: "carousel" | "teacups" | "swings" | "drop-tower" | "pirate-ship",
+  ride:
+    | "carousel"
+    | "teacups"
+    | "swings"
+    | "drop-tower"
+    | "pirate-ship"
+    | "scrambler"
+    | "starship",
   now: number,
   calm: boolean,
   out: Pose,
@@ -340,6 +381,25 @@ function turningPose(
       out.y = PIRATE_PIVOT - r * Math.cos(a) - SIT_HIPS;
       out.z = PIRATE_AT[1] + r * Math.sin(a);
       out.yaw = -Math.PI / 2;
+      return out;
+    }
+    case "scrambler": {
+      // the first arm's first car
+      const { hub, car } = scramblerTurns(now, calm);
+      const ax = SCRAMBLER_AT[0] + SCRAMBLER_ARM * Math.cos(-hub);
+      const az = SCRAMBLER_AT[1] + SCRAMBLER_ARM * Math.sin(-hub);
+      onTurn([ax, az], SCRAMBLER_CAR, hub + car, out);
+      out.y = 0.45 - SIT_HIPS;
+      out.yaw = hub + car;
+      return out;
+    }
+    case "starship": {
+      // standing against the spinning wall, facing the middle, leaning back
+      const turn = starshipTurn(now, calm);
+      onTurn(STARSHIP_AT, STARSHIP_RADIUS, turn, out);
+      out.y = 0.2;
+      out.yaw = Math.atan2(-Math.cos(-turn), -Math.sin(-turn));
+      out.pitch = -0.25;
       return out;
     }
     case "drop-tower": {
