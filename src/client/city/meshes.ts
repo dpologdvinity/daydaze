@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { CAR_BODY, CAR_CABIN } from "./carGeometry.ts";
-import { groundMaps, worldMapped } from "./worldTexture.ts";
+import { boxMapped, groundMaps, worldMapped } from "./worldTexture.ts";
 import { KINDS, type Instance, type Kind } from "../../game/city/plan.ts";
 import { animate } from "./shaders.ts";
 
@@ -155,15 +155,27 @@ const MATERIAL: Record<Shared, THREE.Material> = {
     emissiveIntensity: 0.35,
   }),
   lane: new THREE.MeshBasicMaterial({ toneMapped: false }),
-  // the faint emissive keeps facades readable on the night side of the street
-  body: new THREE.MeshStandardMaterial({
-    roughness: 0.35,
-    metalness: 0.3,
-    emissive: "#3b2b7a",
-    emissiveIntensity: 1,
-  }),
+  // the faint emissive keeps facades readable on the night side of the street;
+  // a CC0 plaster scan, box-mapped by world position, gives every facade
+  // texture under its instance color
+  body: boxMapped(
+    new THREE.MeshStandardMaterial({
+      ...groundMaps("painted_plaster_wall"),
+      roughness: 0.6,
+      metalness: 0.15,
+      emissive: "#3b2b7a",
+      emissiveIntensity: 1,
+    }),
+    0.35,
+  ),
   band: new THREE.MeshBasicMaterial({ toneMapped: false }),
-  roof: new THREE.MeshStandardMaterial({ roughness: 0.6 }),
+  roof: boxMapped(
+    new THREE.MeshStandardMaterial({
+      ...groundMaps("concrete_wall_008"),
+      roughness: 0.8,
+    }),
+    0.25,
+  ),
   ledge: new THREE.MeshStandardMaterial({ roughness: 0.55, metalness: 0.1 }),
   glow: new THREE.MeshBasicMaterial({ toneMapped: false }),
   // flat-lit, so the striped colors read at night without a lamp on them
