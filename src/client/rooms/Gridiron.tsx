@@ -16,6 +16,62 @@ import { cameraHold } from "../world/cameraHold.ts";
 import { GridironNpcs } from "./gridiron/Npcs.tsx";
 import { current, fieldGoals, leave, tick } from "./gridiron/session.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
+import { Batch } from "./shared/batch.ts";
+import { GLOSS, painted, poster } from "./shared/details.ts";
+import { surface } from "../city/worldTexture.ts";
+
+const BENCH = surface("plastic", { scale: 1, color: "#c2185b" });
+
+/** A Gatorade-style cooler table, footballs and helmets by the bench, and
+ * ad boards along the sideline. */
+function buildDressing() {
+  const b = new Batch();
+  const box = new THREE.BoxGeometry(1, 1, 1);
+  const ball = new THREE.SphereGeometry(0.1, 10, 8);
+  const helmet = new THREE.SphereGeometry(
+    0.14,
+    12,
+    8,
+    0,
+    Math.PI * 2,
+    0,
+    Math.PI * 0.6,
+  );
+  const cooler = new THREE.CylinderGeometry(0.18, 0.18, 0.45, 12);
+  b.add(painted(box, "#e8e8f0"), GLOSS, {
+    position: [BENCH_X + 0.3, 0.4, 3.2],
+    scale: [0.6, 0.04, 1.2],
+  });
+  for (const z of [2.9, 3.5])
+    b.add(painted(cooler, "#ff8a3d"), GLOSS, {
+      position: [BENCH_X + 0.3, 0.65, z],
+    });
+  for (let k = 0; k < 4; k++) {
+    b.add(painted(helmet, k % 2 ? GOLD : "#c2185b"), GLOSS, {
+      position: [BENCH_X + 0.1, 0.02, -1.2 + k * 0.6],
+    });
+    b.add(painted(ball, "#7a3a14"), GLOSS, {
+      position: [BENCH_X - 0.15, 0.07, -1 + k * 0.6],
+      scale: [1, 1, 1.6],
+    });
+  }
+  for (let k = 0; k < 6; k++) {
+    const z = -6 + k * 2.8;
+    b.add(painted(box, "#141020"), GLOSS, {
+      position: [-FIELD_EDGE, 0.4, z],
+      scale: [0.1, 0.8, 2.6],
+    });
+    poster(
+      b,
+      { x: -FIELD_EDGE + 0.07, y: 0.4, z, ry: Math.PI / 2 },
+      k + 1,
+      2.4,
+      0.6,
+    );
+  }
+  return b.build();
+}
+const FIELD_EDGE = 11;
 import { Jumbotron } from "./shared/Jumbotron.tsx";
 import { canvasTex, hdr } from "./shared/materials.ts";
 import { PortalPads } from "./shared/PortalPads.tsx";
@@ -199,6 +255,7 @@ function Kick() {
 export function Gridiron({ onPick }: { onPick: PickHandler }) {
   const calm = useReducedMotion();
   const turf = useMemo(fieldTexture, []);
+  const dressing = useMemo(buildDressing, []);
   return (
     <>
       <color attach="background" args={["#060818"]} />
@@ -224,9 +281,11 @@ export function Gridiron({ onPick }: { onPick: PickHandler }) {
         center={[0, GOAL[1] - 10 + PITCH_D / 2]}
         color="#ffffff"
         map={turf}
+        texture={{ id: "leafy_grass", scale: 0.5 }}
         low={{ metalness: 0, roughness: 0.95 }}
         onPick={onPick}
       />
+      <primitive object={dressing} />
       <PortalPads room={ROOMS.gridiron} color={GOLD} />
       <Goalposts />
       <Stands banks={BANKS} fill={0.85} seed={13} />
@@ -242,9 +301,8 @@ export function Gridiron({ onPick }: { onPick: PickHandler }) {
           <meshBasicMaterial color={hdr("#f4f8ff", 2.4)} toneMapped={false} />
         </mesh>
       ))}
-      <mesh position={[BENCH_X + 0.35, 0.42, 0.5]}>
+      <mesh position={[BENCH_X + 0.35, 0.42, 0.5]} material={BENCH}>
         <boxGeometry args={[0.45, 0.08, 3.6]} />
-        <meshStandardMaterial color="#c2185b" />
       </mesh>
       <GridironNpcs />
       <Kick />

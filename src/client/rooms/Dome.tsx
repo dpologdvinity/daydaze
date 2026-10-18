@@ -19,6 +19,9 @@ import { cameraHold } from "../world/cameraHold.ts";
 import { DomeNpcs } from "./dome/Npcs.tsx";
 import { aimAt, hoops, leave, tick, timeLeft } from "./dome/session.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
+import { Batch } from "./shared/batch.ts";
+import { GLOSS, painted, plant, poster } from "./shared/details.ts";
+import { surface } from "../city/worldTexture.ts";
 import { Jumbotron } from "./shared/Jumbotron.tsx";
 import { canvasTex, hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
@@ -35,6 +38,59 @@ const BANKS: readonly Bank[] = [
   { at: [COURT.x1 + 0.6, 1.2], yaw: -Math.PI / 2, length: 15, rows: 6 },
   { at: [0, COURT.z0 - 0.8], yaw: 0, length: 15, rows: 7 },
 ];
+
+const BENCH = surface("wood_veneer", {
+  scale: 1.5,
+  color: "#c08a5a",
+  roughness: 0.4,
+});
+
+/** A ball cart and water by the bench, banners round the bowl. */
+function buildDressing() {
+  const b = new Batch();
+  const ball = new THREE.SphereGeometry(0.12, 12, 8);
+  const box = new THREE.BoxGeometry(1, 1, 1);
+  // a rolling ball cart: two rails of basketballs on a chrome frame
+  const cart: [number, number] = [BENCH_X - 0.2, 6.4];
+  for (const y of [0.35, 0.7]) {
+    b.add(box, BENCH, {
+      position: [cart[0], y - 0.08, cart[1]],
+      scale: [0.5, 0.03, 1.1],
+    });
+    for (let k = 0; k < 4; k++)
+      b.add(painted(ball, ORANGE), GLOSS, {
+        position: [cart[0], y + 0.05, cart[1] - 0.39 + k * 0.26],
+      });
+  }
+  // water bottles and towels along the bench
+  for (let k = 0; k < 6; k++) {
+    b.add(
+      painted(
+        new THREE.CylinderGeometry(0.035, 0.035, 0.22, 8),
+        k % 2 ? "#4fe3ff" : "#ff4fb3",
+      ),
+      GLOSS,
+      {
+        position: [BENCH_X + 0.3, 0.57, 2.4 + k * 0.5],
+      },
+    );
+    b.add(painted(box, "#f4f0ff"), GLOSS, {
+      position: [BENCH_X + 0.3, 0.47, 2.6 + k * 0.5],
+      scale: [0.3, 0.02, 0.2],
+    });
+  }
+  // championship banners hung round the bowl
+  for (const [x, z, d] of [
+    [-6, -8.2, 5],
+    [-2, -8.6, 0],
+    [2, -8.6, 4],
+    [6, -8.2, 1],
+  ] as const)
+    poster(b, { x, y: 5.2, z }, d, 1, 1.6);
+  plant(b, { x: 7.2, z: 8.4 }, 1.3);
+  plant(b, { x: -7.2, z: 8.4 }, 1.3);
+  return b.build();
+}
 
 /** The court's paint: maple boards with the key, the arc and the spots. */
 function courtTexture() {
@@ -260,6 +316,7 @@ function Play() {
  */
 export function Dome({ onPick }: { onPick: PickHandler }) {
   const floor = useMemo(courtTexture, []);
+  const dressing = useMemo(buildDressing, []);
   return (
     <>
       <color attach="background" args={["#08061a"]} />
@@ -283,6 +340,7 @@ export function Dome({ onPick }: { onPick: PickHandler }) {
         center={[(COURT.x0 + COURT.x1) / 2, COURT_CZ]}
         color="#ffffff"
         map={floor}
+        texture={{ id: "wood_floor", scale: 0.8 }}
         mirror={0.25}
         low={{ metalness: 0, roughness: 0.45 }}
         onPick={onPick}
@@ -314,10 +372,10 @@ export function Dome({ onPick }: { onPick: PickHandler }) {
         position={[0, 6.6, COURT.z0 - 5]}
       />
       {/* the courtside bench */}
-      <mesh position={[BENCH_X + 0.3, 0.42, 3.8]}>
+      <mesh position={[BENCH_X + 0.3, 0.42, 3.8]} material={BENCH}>
         <boxGeometry args={[0.45, 0.08, 3.4]} />
-        <meshStandardMaterial color="#2a2440" />
       </mesh>
+      <primitive object={dressing} />
       <Play />
       <DomeNpcs />
     </>

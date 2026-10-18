@@ -40,6 +40,9 @@ import { canvasTex, hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { Sparkles } from "./shared/Sparkles.tsx";
+import { Batch } from "./shared/batch.ts";
+import { GLOSS, painted, plant, poster, shelf } from "./shared/details.ts";
+import { surface } from "../city/worldTexture.ts";
 
 const WALL_X = 6;
 const FRONT_Z = 10.4;
@@ -81,20 +84,93 @@ const scratch = {
   look: new THREE.Vector3(),
 };
 
-// the dark maple of a cosmic lane: its boards in faint stripes
-const LANE_TEX = canvasTex(
-  64,
-  256,
-  (ctx) => {
-    ctx.fillStyle = "#3a2420";
-    ctx.fillRect(0, 0, 64, 256);
-    for (let x = 0; x < 64; x += 4) {
-      ctx.fillStyle = x % 8 ? "#43291f" : "#33201c";
-      ctx.fillRect(x, 0, 2, 256);
-    }
-  },
-  [1, 6],
-);
+// maple lanes, cosmic-painted walls, vinyl benches, laminate counters
+const MAPLE = surface("wood_floor", {
+  scale: 0.8,
+  color: "#d8a878",
+  roughness: 0.2,
+});
+const WALL = surface("concrete_wall_008", {
+  scale: 0.5,
+  color: "#5a4088",
+  roughness: 0.9,
+});
+const VINYL = surface("leather_white", {
+  scale: 2.5,
+  color: "#9b4dff",
+  roughness: 0.4,
+});
+const LAMINATE = surface("wood_veneer", {
+  scale: 1.5,
+  color: "#5a3a6a",
+  roughness: 0.4,
+});
+const RETURN = surface("plastic", {
+  scale: 1,
+  color: "#6a4aa0",
+  roughness: 0.3,
+});
+const BALL_COLORS = [PINK, CYAN, LIME, "#ffb02e", "#9b5cff", "#ff2f4f"];
+
+/** A ball rack by the benches, shoe cubbies behind the counter, league
+ * posters and plants. */
+function buildDressing() {
+  const b = new Batch();
+  const box = new THREE.BoxGeometry(1, 1, 1);
+  const ball = new THREE.SphereGeometry(0.11, 12, 8);
+  // two-tier ball rack along the left wall, every ball a different color
+  const rackX = -WALL_X + 0.35;
+  for (const [tier, y] of [0.45, 0.85].entries()) {
+    b.add(box, LAMINATE, {
+      position: [rackX, y - 0.06, 6.6],
+      scale: [0.4, 0.04, 2.6],
+    });
+    for (let k = 0; k < 10; k++)
+      b.add(
+        painted(ball, BALL_COLORS[(k * 3 + tier) % BALL_COLORS.length] ?? PINK),
+        GLOSS,
+        {
+          position: [rackX, y + 0.07, 5.45 + k * 0.25],
+        },
+      );
+  }
+  for (const z of [5.35, 7.85])
+    b.add(box, LAMINATE, {
+      position: [rackX, 0.45, z],
+      scale: [0.4, 0.9, 0.04],
+    });
+  // shoe cubbies on the wall behind the counter, a pair in every other one
+  for (const y of [1.3, 1.65, 2.0])
+    shelf(
+      b,
+      { x: WALL_X - 0.2, y, z: 8, ry: -Math.PI / 2 },
+      1.8,
+      LAMINATE,
+      0.3,
+    );
+  const shoe = new THREE.BoxGeometry(0.1, 0.08, 0.26);
+  for (const [r, y] of [1.3, 1.65, 2.0].entries())
+    for (let k = 0; k < 5; k++)
+      if ((k + r) % 2 === 0)
+        for (const dz of [-0.06, 0.06])
+          b.add(painted(shoe, k % 3 ? "#d8323a" : "#3a6ad8"), GLOSS, {
+            position: [WALL_X - 0.2, y + 0.04, 7.3 + k * 0.35 + dz],
+            rotation: [0, Math.PI / 2, 0],
+          });
+  [3.2, 4.6].forEach((z, i) =>
+    poster(
+      b,
+      { x: -WALL_X + 0.12, y: 2.2, z, ry: Math.PI / 2 },
+      i ? 5 : 0,
+      0.7,
+      0.95,
+    ),
+  );
+  poster(b, { x: WALL_X - 0.12, y: 2.2, z: 4, ry: -Math.PI / 2 }, 4, 0.7, 0.95);
+  plant(b, { x: -5.4, z: 9.6 }, 1.2);
+  plant(b, { x: 5.4, z: 3 }, 1.2);
+  return b.build();
+}
 
 /** The lanes: decks, gutters, the dividers between them, the arrows and
  * dots that glow under the blacklight, and the pinsetters' hood. */
@@ -118,11 +194,7 @@ function Lanes() {
             rotation-x={-Math.PI / 2}
           >
             <planeGeometry args={[LANE_HALF_WIDTH * 2, LANE_LEN]} />
-            <meshStandardMaterial
-              map={LANE_TEX}
-              roughness={0.18}
-              metalness={0.1}
-            />
+            <primitive object={MAPLE} attach="material" />
           </mesh>
           {[-1, 1].map((side) => (
             <mesh
@@ -196,9 +268,8 @@ function Lanes() {
       </mesh>
       {/* ball returns, between the lanes just past the foul line */}
       {[-2.2, 0, 2.2].map((x) => (
-        <mesh key={x} position={[x, 0.32, FOUL_Z - 0.6]}>
+        <mesh key={x} position={[x, 0.32, FOUL_Z - 0.6]} material={RETURN}>
           <boxGeometry args={[0.5, 0.42, 1]} />
-          <meshStandardMaterial color="#2a1840" roughness={0.4} />
         </mesh>
       ))}
     </>
@@ -513,9 +584,8 @@ function Concourse() {
   return (
     <>
       {BENCH_XS.map((x) => (
-        <mesh key={x} position={[x, 0.22, BENCH_Z]}>
+        <mesh key={x} position={[x, 0.22, BENCH_Z]} material={VINYL}>
           <boxGeometry args={[1.8, 0.44, 0.42]} />
-          <meshStandardMaterial color="#7b2dbd" roughness={0.35} />
         </mesh>
       ))}
       {/* the shoe counter, its cubbies glowing behind it */}
@@ -525,11 +595,11 @@ function Concourse() {
           0.55,
           (COUNTER.z0 + COUNTER.z1) / 2,
         ]}
+        material={LAMINATE}
       >
         <boxGeometry
           args={[COUNTER.x1 - COUNTER.x0, 1.1, COUNTER.z1 - COUNTER.z0]}
         />
-        <meshStandardMaterial color="#1c1030" roughness={0.5} />
       </mesh>
       <mesh
         position={[
@@ -555,10 +625,12 @@ function Concourse() {
 }
 
 function Shell() {
-  const wall = <meshStandardMaterial color="#140a24" roughness={0.9} />;
+  const wall = <primitive object={WALL} attach="material" />;
   const depth = FRONT_Z - BACK_Z;
+  const dressing = useMemo(buildDressing, []);
   return (
     <>
+      <primitive object={dressing} />
       {[-1, 1].map((side) => (
         <mesh
           key={side}
@@ -619,9 +691,10 @@ export function Bowling({ onPick }: { onPick: PickHandler }) {
         width={WALL_X * 2}
         depth={FRONT_Z - FOUL_Z}
         center={[0, (FRONT_Z + FOUL_Z) / 2]}
-        color="#2a1440"
+        color="#a080d0"
+        texture={{ id: "carpet", scale: 0.6 }}
         mirror={0.2}
-        low={{ metalness: 0, roughness: 0.6 }}
+        low={{ metalness: 0, roughness: 0.9 }}
         onPick={onPick}
       />
       <PortalPads room={ROOMS.bowling} color={PINK} />

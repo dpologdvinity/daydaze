@@ -2,6 +2,14 @@ import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useReducedMotion } from "../../motion.ts";
+import { surface } from "../../city/worldTexture.ts";
+
+// poured-concrete steps, painted
+const STEPS = surface("brushed_concrete", {
+  scale: 0.8,
+  color: "#7a7090",
+  roughness: 0.9,
+});
 
 /** A bank of stands: `rows` steps rising away from the field, `length`
  * meters long, centered on `at` and facing the way `yaw` turns +z. */
@@ -187,7 +195,7 @@ export function Stands({
         }}
       >
         <boxGeometry />
-        <meshStandardMaterial color="#2a2440" roughness={0.8} />
+        <primitive object={STEPS} attach="material" />
       </instancedMesh>
       <instancedMesh
         ref={(mesh) => {
@@ -197,7 +205,7 @@ export function Stands({
         args={[undefined, undefined, fans.length]}
         frustumCulled={false}
       >
-        <capsuleGeometry args={[0.17, 0.36, 2, 6]} />
+        <capsuleGeometry args={[0.17, 0.36, 1, 5]} />
         <meshStandardMaterial roughness={0.7} />
       </instancedMesh>
       <instancedMesh
@@ -208,7 +216,7 @@ export function Stands({
         args={[undefined, undefined, fans.length]}
         frustumCulled={false}
       >
-        <sphereGeometry args={[0.12, 8, 6]} />
+        <sphereGeometry args={[0.12, 6, 4]} />
         <meshStandardMaterial roughness={0.6} />
       </instancedMesh>
     </>

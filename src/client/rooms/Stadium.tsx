@@ -16,6 +16,65 @@ import { canvasTex, hdr } from "./shared/materials.ts";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { Stands, type Bank } from "./shared/Stands.tsx";
 import { StadiumNpcs } from "./stadium/Npcs.tsx";
+import { Batch } from "./shared/batch.ts";
+import { GLOSS, painted, poster } from "./shared/details.ts";
+import { surface } from "../city/worldTexture.ts";
+
+const OUTFIELD = surface("leafy_grass", {
+  scale: 0.6,
+  color: "#7ab87a",
+  roughness: 1,
+});
+const SEAT_BLUE = surface("plastic", { scale: 1, color: "#2e7dff" });
+
+/** Ad boards round the pitch, corner flags and a row of kit by the dugout. */
+function buildDressing() {
+  const b = new Batch();
+  const box = new THREE.BoxGeometry(1, 1, 1);
+  for (let k = 0; k < 9; k++) {
+    const x = -10.4 + k * 2.6;
+    b.add(box, SEAT_BLUE, {
+      position: [x, 0.4, PITCH.z0 - 1.05],
+      scale: [2.5, 0.8, 0.1],
+    });
+    poster(b, { x, y: 0.4, z: PITCH.z0 - 0.98 }, k, 2.3, 0.6);
+  }
+  for (let k = 0; k < 6; k++) {
+    const z = -6 + k * 2.6;
+    if (Math.abs(z) < 2.2) continue;
+    b.add(box, SEAT_BLUE, {
+      position: [PITCH.x1 + 1.05, 0.4, z],
+      scale: [0.1, 0.8, 2.5],
+    });
+    poster(
+      b,
+      { x: PITCH.x1 + 0.98, y: 0.4, z, ry: -Math.PI / 2 },
+      k + 3,
+      2.3,
+      0.6,
+    );
+  }
+  // corner flags
+  const pole = new THREE.CylinderGeometry(0.015, 0.015, 1.5, 6);
+  const flag = new THREE.BoxGeometry(0.3, 0.2, 0.005);
+  for (const x of [PITCH.x0, PITCH.x1])
+    for (const z of [PITCH.z0, PITCH.z1]) {
+      b.add(painted(pole, "#f8f8f8"), GLOSS, { position: [x, 0.75, z] });
+      b.add(painted(flag, "#ff4fb3"), GLOSS, { position: [x + 0.15, 1.38, z] });
+    }
+  // water bottles and kit bags along the dugout bench
+  const bottle = new THREE.CylinderGeometry(0.035, 0.035, 0.22, 8);
+  for (let k = 0; k < 6; k++) {
+    b.add(painted(bottle, k % 2 ? "#4fe3ff" : "#ffd84f"), GLOSS, {
+      position: [DUGOUT_X - 0.35, 0.57, -1.4 + k * 0.55],
+    });
+    b.add(painted(box, k % 3 ? "#1a1a2a" : "#2e7dff"), GLOSS, {
+      position: [DUGOUT_X - 0.1, 0.12, -1.2 + k * 0.5],
+      scale: [0.3, 0.24, 0.4],
+    });
+  }
+  return b.build();
+}
 import { directionAt, leave, penalties, tick } from "./stadium/session.ts";
 
 const CYAN = "#4fe3ff";
@@ -285,6 +344,7 @@ function Play() {
 export function Stadium({ onPick }: { onPick: PickHandler }) {
   const calm = useReducedMotion();
   const grass = useMemo(pitchTexture, []);
+  const dressing = useMemo(buildDressing, []);
   return (
     <>
       <color attach="background" args={["#060818"]} />
@@ -310,23 +370,27 @@ export function Stadium({ onPick }: { onPick: PickHandler }) {
         center={[(PITCH.x0 + PITCH.x1) / 2, (PITCH.z0 + PITCH.z1) / 2]}
         color="#ffffff"
         map={grass}
+        texture={{ id: "leafy_grass", scale: 0.5 }}
         low={{ metalness: 0, roughness: 0.95 }}
         onPick={onPick}
       />
       {/* grass beyond the walkable pitch, under the stands */}
-      <mesh position={[0, -0.01, 0]} rotation-x={-Math.PI / 2}>
+      <mesh
+        position={[0, -0.01, 0]}
+        rotation-x={-Math.PI / 2}
+        material={OUTFIELD}
+      >
         <planeGeometry args={[60, 60]} />
-        <meshStandardMaterial color="#1f5a2a" roughness={1} />
       </mesh>
+      <primitive object={dressing} />
       <PortalPads room={ROOMS.stadium} color={CYAN} />
       <Goal />
       <Floodlights />
       <Stands banks={BANKS} fill={0.85} seed={7} />
       <Board />
       {/* the dugout's bench, under a perspex roof */}
-      <mesh position={[DUGOUT_X - 0.35, 0.42, 0]}>
+      <mesh position={[DUGOUT_X - 0.35, 0.42, 0]} material={SEAT_BLUE}>
         <boxGeometry args={[0.45, 0.08, 3.4]} />
-        <meshStandardMaterial color="#2e7dff" />
       </mesh>
       <mesh position={[DUGOUT_X - 0.4, 2, 0]}>
         <boxGeometry args={[1, 0.06, 3.8]} />

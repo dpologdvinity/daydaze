@@ -365,7 +365,6 @@ export function bunting(
   sag = 0.3,
   size = 0.22,
 ) {
-  const c = new THREE.Color();
   const dx = b[0] - a[0];
   const dz = b[2] - a[2];
   const yaw = Math.atan2(-dz, dx);
@@ -376,12 +375,7 @@ export function bunting(
       -size * 0.6,
       0,
     );
-    c.set(colors[i % colors.length] ?? "#ffffff");
-    const n = flag.attributes.position.count;
-    const rgb = new Float32Array(n * 3);
-    for (let k = 0; k < n; k++) rgb.set([c.r, c.g, c.b], k * 3);
-    flag.setAttribute("color", new THREE.BufferAttribute(rgb, 3));
-    batch.add(flag, FLAG, {
+    batch.add(painted(flag, colors[i % colors.length] ?? "#ffffff"), FLAG, {
       position: [
         a[0] + dx * t,
         a[1] + (b[1] - a[1]) * t - Math.sin(t * Math.PI) * sag,
@@ -390,6 +384,26 @@ export function bunting(
       rotation: [0, yaw, 0],
     });
   }
+}
+
+/** Glossy plastic in each piece's own color (see `painted`): a room's balls,
+ * bins or toys of every color in one draw call. */
+export const GLOSS = new THREE.MeshStandardMaterial({
+  vertexColors: true,
+  roughness: 0.2,
+  metalness: 0.1,
+});
+
+/** A copy of `geometry` colored `hex` through a vertex color attribute,
+ * for the vertex-colored materials (GLOSS). */
+export function painted(geometry: THREE.BufferGeometry, hex: string) {
+  const g = geometry.index ? geometry.toNonIndexed() : geometry.clone();
+  const c = new THREE.Color(hex);
+  const n = g.attributes.position.count;
+  const rgb = new Float32Array(n * 3);
+  for (let k = 0; k < n; k++) rgb.set([c.r, c.g, c.b], k * 3);
+  g.setAttribute("color", new THREE.BufferAttribute(rgb, 3));
+  return g;
 }
 
 /** A rug of `w` by `d` meters at `frame`, a woven pattern tinted `color`. */

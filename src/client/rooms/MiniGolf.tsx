@@ -27,6 +27,50 @@ import { hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { Palm } from "./shared/Palm.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
+import { Batch } from "./shared/batch.ts";
+import { plant, stringLights } from "./shared/details.ts";
+import { surface } from "../city/worldTexture.ts";
+
+// turf greens, plaster curbs, real rock, a bamboo starter's hut
+const TURF = surface("leafy_grass", {
+  scale: 2,
+  color: "#8ae890",
+  roughness: 1,
+});
+const TEE_MAT = surface("leafy_grass", {
+  scale: 3,
+  color: "#5aa860",
+  roughness: 1,
+});
+const CURB_MAT = surface("white_plaster_02", {
+  scale: 2,
+  color: "#f4ecd8",
+  roughness: 0.6,
+});
+const ROCK = surface("rock_face", { scale: 1.5, color: "#c0b0a0" });
+const TEAK = surface("wood_veneer", {
+  scale: 1.5,
+  color: "#b07a4a",
+  roughness: 0.6,
+});
+const BAMBOO = surface("bamboo_wall", { scale: 1, color: "#f0d8a8" });
+const THATCH = surface("bamboo_wall", { scale: 2, color: "#a8885a" });
+
+/** Tropical plants round the course and bulbs strung from the hut. */
+function buildDressing() {
+  const b = new Batch();
+  for (const [x, z, s] of [
+    [-9.2, -6.2, 1.8],
+    [8.2, 2.2, 1.6],
+    [-9.4, 2.6, 1.5],
+    [4.2, 8.4, 1.4],
+    [-3.4, 8.6, 1.3],
+  ] as const)
+    plant(b, { x, z }, s, ROCK);
+  stringLights(b, [5, 2.6, 6.2], [-9.6, 2.6, 7.8], 20, "#ffd27a", 0.5);
+  stringLights(b, [8, 2.6, 6.2], [8.6, 3, -6.6], 22, "#ff9ad8", 0.6);
+  return b.build();
+}
 
 const TEAL = "#3fe0d0";
 const CURB = 0.12;
@@ -65,22 +109,28 @@ function Green({ index }: { index: number }) {
   const [ox, oz] = holeToRoom(index, [0, 0]);
   return (
     <group position={[ox, 0, oz]}>
-      <mesh geometry={felt} position-y={0.03}>
-        <meshStandardMaterial color="#1f8a4c" roughness={0.9} />
-      </mesh>
+      <mesh geometry={felt} position-y={0.03} material={TURF} />
       {curbs.map((c, i) => (
-        <mesh key={i} position={[c.x, 0.08, c.z]} rotation-y={c.yaw}>
+        <mesh
+          key={i}
+          position={[c.x, 0.08, c.z]}
+          rotation-y={c.yaw}
+          material={CURB_MAT}
+        >
           <boxGeometry args={[CURB, 0.12, c.len]} />
-          <meshStandardMaterial color="#f4ecd8" roughness={0.6} />
         </mesh>
       ))}
       {hole.bumpers.map(({ at: [x, z], r }, i) =>
         index === 2 && i === 0 ? (
           <Lighthouse key={i} x={x} z={z} r={r} />
         ) : (
-          <mesh key={i} position={[x, r * 0.6, z]} scale={[1, 0.7, 1]}>
+          <mesh
+            key={i}
+            position={[x, r * 0.6, z]}
+            scale={[1, 0.7, 1]}
+            material={ROCK}
+          >
             <dodecahedronGeometry args={[r, 0]} />
-            <meshStandardMaterial color="#8a7a6a" roughness={0.95} />
           </mesh>
         ),
       )}
@@ -110,7 +160,7 @@ function Green({ index }: { index: number }) {
         rotation-x={-Math.PI / 2}
       >
         <planeGeometry args={[0.5, 0.5]} />
-        <meshStandardMaterial color="#14602f" roughness={1} />
+        <primitive object={TEE_MAT} attach="material" />
       </mesh>
     </group>
   );
@@ -301,6 +351,7 @@ function Play() {
  */
 export function MiniGolf({ onPick }: { onPick: PickHandler }) {
   const calm = useReducedMotion();
+  const dressing = useMemo(buildDressing, []);
   return (
     <>
       <color attach="background" args={["#0a0820"]} />
@@ -325,10 +376,12 @@ export function MiniGolf({ onPick }: { onPick: PickHandler }) {
         width={26}
         depth={26}
         center={[-0.5, 1]}
-        color="#c9a274"
+        color="#f0d8b0"
+        texture={{ id: "coast_sand_01", scale: 0.4 }}
         low={{ metalness: 0, roughness: 1 }}
         onPick={onPick}
       />
+      <primitive object={dressing} />
       {/* the sea beyond the course, a moon's path across it */}
       <mesh position={[0, 0.01, -40]} rotation-x={-Math.PI / 2}>
         <planeGeometry args={[200, 54]} />
@@ -375,22 +428,18 @@ export function MiniGolf({ onPick }: { onPick: PickHandler }) {
       <Torches />
       <Play />
       {/* the bench and the starter's hut */}
-      <mesh position={[BENCH[0], 0.42, BENCH[1]]}>
+      <mesh position={[BENCH[0], 0.42, BENCH[1]]} material={TEAK}>
         <boxGeometry args={[1.8, 0.08, 0.42]} />
-        <meshStandardMaterial color="#8a5a3a" roughness={0.7} />
       </mesh>
-      <mesh position={[BENCH[0], 0.7, BENCH[1] + 0.22]}>
+      <mesh position={[BENCH[0], 0.7, BENCH[1] + 0.22]} material={TEAK}>
         <boxGeometry args={[1.8, 0.4, 0.06]} />
-        <meshStandardMaterial color="#8a5a3a" roughness={0.7} />
       </mesh>
       <group position={[(HUT.x0 + HUT.x1) / 2, 0, (HUT.z0 + HUT.z1) / 2]}>
-        <mesh position-y={1.1}>
+        <mesh position-y={1.1} material={BAMBOO}>
           <boxGeometry args={[HUT.x1 - HUT.x0, 2.2, HUT.z1 - HUT.z0]} />
-          <meshStandardMaterial color="#d8b88a" roughness={0.9} />
         </mesh>
-        <mesh position-y={2.45} rotation-y={Math.PI / 4}>
+        <mesh position-y={2.45} rotation-y={Math.PI / 4} material={THATCH}>
           <coneGeometry args={[2.4, 0.9, 4]} />
-          <meshStandardMaterial color="#b89a5a" roughness={1} />
         </mesh>
         <NeonText
           text="LAGOON LINKS"
