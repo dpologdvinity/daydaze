@@ -87,6 +87,7 @@ import * as SALON from "./salon.ts";
 import * as HAZE from "./greenHaze.ts";
 import * as TAG from "./laserTag.ts";
 import * as MARKET from "./market.ts";
+import * as PAINT from "./paintball.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -134,6 +135,7 @@ export type RoomId =
   | "green-haze"
   | "laser-tag"
   | "market"
+  | "paintball"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -614,6 +616,33 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to Gallery Row",
         target: "city",
         targetSpawn: { position: SALON.SALON.door.landing, yaw: 0 },
+      },
+    ],
+  },
+  paintball: {
+    id: "paintball",
+    name: "Splat City",
+    walkable: [
+      [PAINT.PAINT_ARENA.x0, PAINT.PAINT_ARENA.z0],
+      [PAINT.PAINT_ARENA.x1, PAINT.PAINT_ARENA.z0],
+      [PAINT.PAINT_ARENA.x1, PAINT.PAINT_ARENA.z1],
+      [PAINT.PAINT_ARENA.x0, PAINT.PAINT_ARENA.z1],
+    ],
+    blockers: PAINT.BUNKERS.map((c): Vec2[] => [
+      [c.x0, c.z0],
+      [c.x1, c.z0],
+      [c.x1, c.z1],
+      [c.x0, c.z1],
+    ]),
+    spawn: { position: PAINT.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "paintball-to-city",
+        position: PAINT.EXIT,
+        radius: 0.8,
+        label: "Out to the avenue",
+        target: "city",
+        targetSpawn: { position: PAINT.SPLAT_DOOR.landing, yaw: 0 },
       },
     ],
   },

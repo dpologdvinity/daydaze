@@ -166,6 +166,27 @@ test("Skyline Supply sells a snack and a water for coins", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("Splat City: a paintball round marks a rival for points", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=paintball`);
+  await page
+    .getByRole("button", { name: "Gear up" })
+    .click({ timeout: 150_000 });
+  const score = page.getByLabel("Score");
+  await expect(async () => {
+    for (const name of ["Red", "Blue", "Orange", "Purple", "Green"])
+      await page.getByRole("button", { name: `Fire at ${name}` }).click();
+    // hits can outweigh tags in the score, so look for the tag itself
+    await expect(
+      page.getByRole("region", { name: "Paintball" }).getByRole("status"),
+    ).toContainText(/Tagged!|Tags [1-9]/, { timeout: 500 });
+  }).toPass({ timeout: 120_000 });
+  expect(errors).toEqual([]);
+});
+
 test("loads the Velvet Room with no errors and mounts the canvas", async ({
   page,
 }) => {
@@ -995,6 +1016,7 @@ for (const room of [
   "piercing",
   "laser-tag",
   "market",
+  "paintball",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

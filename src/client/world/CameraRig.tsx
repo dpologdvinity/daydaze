@@ -79,6 +79,11 @@ const ROOM_SHOTS: Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }> =
       eye: new THREE.Vector3(3, 4.6, 8.6),
       look: new THREE.Vector3(0, 1, -2),
     },
+    // from behind the net, high over the whole field
+    paintball: {
+      eye: new THREE.Vector3(0, 10, 15),
+      look: new THREE.Vector3(0, 0, -2),
+    },
     // from over the checkouts, down the aisles to the freezers
     market: {
       eye: new THREE.Vector3(4, 6.5, 11),
@@ -293,6 +298,7 @@ const MAX_DISTANCE: Record<RoomId, number> = {
   "green-haze": 16,
   "laser-tag": 22,
   market: 20,
+  paintball: 24,
   "halo-halo-cafe": 14,
   gym: 22,
   stadium: 30,

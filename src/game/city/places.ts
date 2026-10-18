@@ -7,6 +7,7 @@ import {
   SHORE_Z,
   type Neighborhood,
 } from "./layout.ts";
+import { ADULT_ROOMS } from "../age.ts";
 
 export type Place = { id: Neighborhood; label: string; spawn: Spawn };
 
@@ -63,7 +64,8 @@ export type VenuePlace = {
 export const VENUE_PLACES: readonly VenuePlace[] = BUILDINGS.flatMap(
   (b): VenuePlace[] => {
     const room = b.door?.target;
-    if (!room || room === "city") return [];
+    // the 18+ rooms stay off the map until the age check ships
+    if (!room || room === "city" || ADULT_ROOMS.has(room)) return [];
     const out = ROOMS[room].portals.find((p) => p.target === "city");
     if (!out) return [];
     return [

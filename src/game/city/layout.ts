@@ -23,6 +23,7 @@ import * as MUSEUM from "../museum.ts";
 import * as SALON from "../salon.ts";
 import { PHOTON_DOOR, SPAWN as PHOTON_SPAWN } from "../laserTag.ts";
 import { MARKET_DOOR, SPAWN as MARKET_SPAWN } from "../market.ts";
+import { SPLAT_DOOR, SPAWN as SPLAT_SPAWN } from "../paintball.ts";
 import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
 import * as RANGE from "../drivingRange.ts";
@@ -1717,7 +1718,15 @@ export const BUILDINGS: readonly Building[] = [
     footprint: rect(-140, -40, -100, -16),
     height: 14,
     style: "storefront",
-    sign: { text: "PAWN AND GADGETS", color: "#ffd84f" },
+    sign: { text: "SPLAT CITY PAINTBALL", color: "#ff8a3d" },
+    // indoor paintball in the old pawn shop
+    door: {
+      position: SPLAT_DOOR.position,
+      radius: 2,
+      label: "Into Splat City",
+      target: "paintball",
+      targetSpawn: { position: SPLAT_SPAWN, yaw: Math.PI },
+    },
   },
   {
     id: "cine-noir",

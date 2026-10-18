@@ -22,6 +22,7 @@ export const PRIZE_GAMES = [
   "seal-show",
   "runway",
   "laser-tag",
+  "paintball",
 ] as const;
 export type PrizeGame = (typeof PRIZE_GAMES)[number];
 
@@ -136,6 +137,12 @@ export const PRIZE_TABLES: Record<PrizeGame, Table> = {
     label: "Laser tag",
     room: "laser-tag",
     grades: [900, 600, 300],
+    format: plain("points"),
+  },
+  paintball: {
+    label: "Paintball",
+    room: "paintball",
+    grades: [1000, 650, 300],
     format: plain("points"),
   },
 };

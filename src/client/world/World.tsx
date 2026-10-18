@@ -106,6 +106,9 @@ const Gridiron = lazy(() =>
 const Salon = lazy(() =>
   import("../rooms/Salon.tsx").then((m) => ({ default: m.Salon })),
 );
+const Paintball = lazy(() =>
+  import("../rooms/Paintball.tsx").then((m) => ({ default: m.Paintball })),
+);
 const Market = lazy(() =>
   import("../rooms/Market.tsx").then((m) => ({ default: m.Market })),
 );
@@ -343,6 +346,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   "green-haze": GreenHaze,
   "laser-tag": LaserTag,
   market: Market,
+  paintball: Paintball,
   "halo-halo-cafe": HaloHaloCafe,
   gym: Gym,
   stadium: Stadium,

@@ -60,6 +60,10 @@ const PANELS: Partial<Record<RoomId, ComponentType>> = {
     () => import("../rooms/stadium/PenaltyPanel.tsx"),
     "PenaltyPanel",
   ),
+  paintball: panel(
+    () => import("../rooms/lasertag/LaserTagPanel.tsx"),
+    "PaintballPanel",
+  ),
   "laser-tag": panel(
     () => import("../rooms/lasertag/LaserTagPanel.tsx"),
     "LaserTagPanel",

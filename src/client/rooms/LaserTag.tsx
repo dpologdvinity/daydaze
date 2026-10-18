@@ -1,7 +1,7 @@
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";
-import { ARENA, COVER, RIVALS, rivalAt } from "../../game/laserTag.ts";
+import { ARENA, COVER, rivalAt } from "../../game/laserTag.ts";
 import type { Look } from "../../game/look.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import { surface } from "../city/worldTexture.ts";
@@ -14,7 +14,9 @@ import { canvasTex, hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { Sparkles } from "./shared/Sparkles.tsx";
-import { fire, RIVAL_COLORS, tag, tick, you } from "./lasertag/session.ts";
+import { laserTag, type TagGame } from "./lasertag/session.ts";
+
+const RIVAL_COLORS = laserTag.colors;
 
 const { x0, x1, z0, z1 } = ARENA;
 const W = x1 - x0;
@@ -138,12 +140,15 @@ function useShell(paint: THREE.Texture) {
 
 /** The four rivals, moving between cover and their peek spots, with a
  * tap target each and their vests glowing. */
-function Rivals() {
+/** A tag game's rivals, moving between cover and their peek spots, each
+ * with a tap target and a glowing vest. */
+export function Rivals({ game, seed = 401 }: { game: TagGame; seed?: number }) {
+  const { store: tag, you, fire, colors } = game;
   const groups = useRef<(THREE.Group | null)[]>([]);
   const vests = useRef<(THREE.MeshBasicMaterial | null)[]>([]);
   useFrame((_, dt) => {
     const { round, phase } = tag.get();
-    RIVALS.forEach((spot, i) => {
+    game.field.rivals.forEach((spot, i) => {
       const g = groups.current[i];
       if (!g) return;
       const { at, open } =
@@ -162,7 +167,7 @@ function Rivals() {
       const vest = vests.current[i];
       if (vest)
         vest.color
-          .set(RIVAL_COLORS[i] ?? "#ffffff")
+          .set(colors[i] ?? "#ffffff")
           .multiplyScalar(down ? 0.3 : open ? 3 : 1.6);
     });
   });
@@ -173,7 +178,7 @@ function Rivals() {
   };
   return (
     <>
-      {RIVALS.map((spot, i) => (
+      {game.field.rivals.map((spot, i) => (
         <group
           key={i}
           ref={(g) => {
@@ -181,7 +186,10 @@ function Rivals() {
           }}
           position={[spot.hide[0], 0, spot.hide[1]]}
         >
-          <CrowdFigure look={RIVAL_LOOKS[i] ?? RIVAL_BASE} seed={401 + i} />
+          <CrowdFigure
+            look={RIVAL_LOOKS[i % RIVAL_LOOKS.length] ?? RIVAL_BASE}
+            seed={seed + i}
+          />
           {/* the sensor vest: chest and shoulder pads that light up */}
           <mesh position={[0, 1.02, 0.02]}>
             <boxGeometry args={[0.36, 0.3, 0.22]} />
@@ -202,7 +210,9 @@ function Rivals() {
 }
 
 /** Your shots and theirs: a beam that flashes for a moment. */
-function Beams({ player }: { player: Player }) {
+/** A tag game's shots, yours and theirs: a beam that flashes a moment. */
+export function Beams({ game, player }: { game: TagGame; player: Player }) {
+  const { store: tag, colors } = game;
   const geo = useMemo(
     () =>
       new THREE.BufferGeometry().setAttribute(
@@ -250,7 +260,7 @@ function Beams({ player }: { player: Player }) {
     p.setXYZ(1, r.at[0], 1.2, r.at[1]);
     p.needsUpdate = true;
     mat.color
-      .set(mine ? (RIVAL_COLORS[who] ?? "#ffffff") : "#ff3040")
+      .set(mine ? (colors[who] ?? "#ffffff") : "#ff3040")
       .multiplyScalar(3);
   });
   return <primitive object={beam} />;
@@ -272,10 +282,10 @@ export function LaserTag({
   const paint = useMemo(splatter, []);
   useEffect(() => () => paint.dispose(), [paint]);
   const shell = useShell(paint);
-  useEffect(() => () => tag.set({ phase: "off" }), []);
+  useEffect(() => () => laserTag.leave(), []);
   useFrame((_, dt) => {
-    you.at = [player.pos.x, player.pos.z];
-    tick(Math.min(dt, 0.5));
+    laserTag.you.at = [player.pos.x, player.pos.z];
+    laserTag.tick(Math.min(dt, 0.5));
   });
   return (
     <>
@@ -298,8 +308,8 @@ export function LaserTag({
       />
       <PortalPads room={ROOMS["laser-tag"]} color="#4fe3ff" />
       <primitive object={shell} />
-      <Rivals />
-      <Beams player={player} />
+      <Rivals game={laserTag} />
+      <Beams game={laserTag} player={player} />
       <NeonText
         text="PHOTON ZONE"
         color="#4fe3ff"

@@ -13,7 +13,7 @@ export const HIT_POINTS = 50;
  * stun after you're hit. */
 export const DOWN_SECONDS = 3;
 export const RECHARGE = 0.4;
-export const STUN = 1.5;
+export const STUN = 1;
 
 export const ARENA = { x0: -10, x1: 10, z0: -8, z1: 8 } as const;
 export const SPAWN: Vec2 = [0, 6.6];
@@ -70,9 +70,22 @@ export function popOut(seed: number, i: number, t: number) {
   return { window, out: local - window * p < EXPOSED };
 }
 
+/** A field to play on: its cover and its rivals' spots. Laser tag's is
+ * below; paintball.ts brings another. */
+export type Field = {
+  cover: readonly Box[];
+  rivals: readonly { hide: Vec2; peek: Vec2 }[];
+};
+
+export const LASER_FIELD: Field = { cover: COVER, rivals: RIVALS };
+
 /** Whether the straight line from `a` to `b` clears every piece of cover. */
-export function clearLine(a: Vec2, b: Vec2): boolean {
-  for (const c of COVER) {
+export function clearLine(
+  a: Vec2,
+  b: Vec2,
+  cover: readonly Box[] = COVER,
+): boolean {
+  for (const c of cover) {
     // slab test of the segment against the box
     let lo = 0;
     let hi = 1;
@@ -98,6 +111,7 @@ export function clearLine(a: Vec2, b: Vec2): boolean {
 }
 
 export type Round = {
+  field: Field;
   seed: number;
   t: number;
   tags: number;
@@ -110,14 +124,15 @@ export type Round = {
   stunUntil: number;
 };
 
-export function newRound(seed: number): Round {
+export function newRound(seed: number, field: Field = LASER_FIELD): Round {
   return {
+    field,
     seed,
     t: 0,
     tags: 0,
     hits: 0,
-    downUntil: RIVALS.map(() => 0),
-    fired: RIVALS.map(() => -1),
+    downUntil: field.rivals.map(() => 0),
+    fired: field.rivals.map(() => -1),
     nextShot: 0,
     stunUntil: 0,
   };
@@ -127,7 +142,7 @@ export const roundOver = (r: Round) => r.t >= ROUND_SECONDS;
 
 /** Where rival `i` stands now, and whether she's out and up. */
 export function rivalAt(r: Round, i: number): { at: Vec2; open: boolean } {
-  const spot = RIVALS[i];
+  const spot = r.field.rivals[i];
   if (!spot) return { at: [0, 0], open: false };
   const { out } = popOut(r.seed, i, r.t);
   const up = r.t >= (r.downUntil[i] ?? 0);
@@ -136,19 +151,19 @@ export function rivalAt(r: Round, i: number): { at: Vec2; open: boolean } {
 }
 
 /** Advances the round by `dt` seconds with you at `you`: each rival that's
- * out with a clear line fires once per pop-out, and about two in five land. */
+ * out with a clear line fires once per pop-out, and about three in ten land. */
 export function stepRound(r: Round, dt: number, you: Vec2): Round {
   if (roundOver(r)) return r;
   const t = Math.min(ROUND_SECONDS, r.t + Math.max(0, dt));
   let next: Round = { ...r, t };
-  RIVALS.forEach((_, i) => {
+  r.field.rivals.forEach((_, i) => {
     const { window, out } = popOut(r.seed, i, t);
     if (!out || window <= (next.fired[i] ?? -1)) return;
     const { at, open } = rivalAt(next, i);
-    if (!open || !clearLine(at, you)) return;
+    if (!open || !clearLine(at, you, r.field.cover)) return;
     const fired = [...next.fired];
     fired[i] = window;
-    const lands = rand(r.seed + i * 13.7 + window * 1.9) < 0.4;
+    const lands = rand(r.seed + i * 13.7 + window * 1.9) < 0.3;
     next = lands
       ? { ...next, fired, hits: next.hits + 1, stunUntil: t + STUN }
       : { ...next, fired };
@@ -169,7 +184,8 @@ export function shoot(
   const fired = { ...r, nextShot: r.t + RECHARGE };
   const { at, open } = rivalAt(r, i);
   if (!open) return { round: fired, shot: "miss" };
-  if (!clearLine(you, at)) return { round: fired, shot: "blocked" };
+  if (!clearLine(you, at, r.field.cover))
+    return { round: fired, shot: "blocked" };
   const downUntil = [...r.downUntil];
   downUntil[i] = r.t + DOWN_SECONDS;
   return { round: { ...fired, tags: r.tags + 1, downUntil }, shot: "tag" };
