@@ -135,6 +135,25 @@ test("Green Haze (18+, dev flag): a joint and shroom tea raise the high and the 
   expect(errors).toEqual([]);
 });
 
+test("Photon Zone: a laser tag round tags a rival for points", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=laser-tag`);
+  await page
+    .getByRole("button", { name: "Suit up" })
+    .click({ timeout: 150_000 });
+  const score = page.getByLabel("Score");
+  // rivals pop out every few seconds: keep firing at all four until a tag
+  await expect(async () => {
+    for (const name of ["Cyan", "Pink", "Lime", "Gold"])
+      await page.getByRole("button", { name: `Fire at ${name}` }).click();
+    await expect(score).not.toContainText(/^0 points/, { timeout: 500 });
+  }).toPass({ timeout: 120_000 });
+  expect(errors).toEqual([]);
+});
+
 test("loads the Velvet Room with no errors and mounts the canvas", async ({
   page,
 }) => {
@@ -962,6 +981,7 @@ for (const room of [
   "halo-halo-cafe",
   "salon",
   "piercing",
+  "laser-tag",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

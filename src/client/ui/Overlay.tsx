@@ -109,6 +109,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Skyline Driving Range. Get a bucket of ten: set your backswing, strike it pure, and land them on the greens.",
   salon:
     "The Blowout Bar. Book with Dani for the salon's colors, or take a chair by the mirrors.",
+  "laser-tag":
+    "Photon Zone. Suit up for a 60-second round: tag rivals when they pop out of cover, and keep cover between you when they fire.",
   "green-haze":
     "Green Haze, 18+. Light up, try an edible or sip shroom tea at the counter, then sink into a couch.",
   piercing:

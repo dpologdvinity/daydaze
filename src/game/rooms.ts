@@ -85,6 +85,7 @@ import * as DINER from "./skateDiner.ts";
 import * as MUSEUM from "./museum.ts";
 import * as SALON from "./salon.ts";
 import * as HAZE from "./greenHaze.ts";
+import * as TAG from "./laserTag.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -130,6 +131,7 @@ export type RoomId =
   | "salon"
   | "piercing"
   | "green-haze"
+  | "laser-tag"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -610,6 +612,33 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to Gallery Row",
         target: "city",
         targetSpawn: { position: SALON.SALON.door.landing, yaw: 0 },
+      },
+    ],
+  },
+  "laser-tag": {
+    id: "laser-tag",
+    name: "Photon Zone",
+    walkable: [
+      [TAG.ARENA.x0, TAG.ARENA.z0],
+      [TAG.ARENA.x1, TAG.ARENA.z0],
+      [TAG.ARENA.x1, TAG.ARENA.z1],
+      [TAG.ARENA.x0, TAG.ARENA.z1],
+    ],
+    blockers: TAG.COVER.map((c): Vec2[] => [
+      [c.x0, c.z0],
+      [c.x1, c.z0],
+      [c.x1, c.z1],
+      [c.x0, c.z1],
+    ]),
+    spawn: { position: TAG.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "laser-tag-to-city",
+        position: TAG.EXIT,
+        radius: 0.8,
+        label: "Out to Gallery Row",
+        target: "city",
+        targetSpawn: { position: TAG.PHOTON_DOOR.landing, yaw: 0 },
       },
     ],
   },

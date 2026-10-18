@@ -21,6 +21,7 @@ import * as COURTSIDE from "../courtside.ts";
 import * as COVE from "../mermaidCove.ts";
 import * as MUSEUM from "../museum.ts";
 import * as SALON from "../salon.ts";
+import { PHOTON_DOOR, SPAWN as PHOTON_SPAWN } from "../laserTag.ts";
 import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
 import * as RANGE from "../drivingRange.ts";
@@ -1181,9 +1182,17 @@ const ARTS_FRONT: readonly {
     w: 34,
     h: 14,
     north: true,
-    color: "#ff70a6",
-    sign: { text: "FLEA MARKET", color: "#ffe066" },
+    color: "#3a0ca3",
+    sign: { text: "PHOTON ZONE", color: "#4fe3ff" },
     style: "warehouse",
+    // laser tag in the old flea market hall
+    door: {
+      position: PHOTON_DOOR.position,
+      radius: 2,
+      label: "Into Photon Zone",
+      target: "laser-tag",
+      targetSpawn: { position: PHOTON_SPAWN, yaw: Math.PI },
+    },
   },
 ];
 
