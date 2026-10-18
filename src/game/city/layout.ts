@@ -5,6 +5,7 @@
 import type { WalkArea } from "../area.ts";
 import { FOOD_STOREFRONTS } from "../food/storefronts.ts";
 import { MARKET, MARKET_BLOCKERS } from "./nightMarket.ts";
+import { GAS_BLOCKERS, GAS_SURFACES } from "./gasStations.ts";
 import type { RoomId, Spawn } from "../rooms.ts";
 import { LIFT, SKYLARK_DOOR } from "../rooftop.ts";
 import { SPAWN as SUGAR_RUSH_SPAWN, SUGAR_RUSH_DOOR } from "../sugarRush.ts";
@@ -509,6 +510,8 @@ const SUBURB_LAWNS: readonly Surface[] = SUBURB_FRONT.filter(
 }));
 
 export const CITY_SURFACES: readonly Surface[] = [
+  // gas station forecourts, off the cross streets
+  ...GAS_SURFACES.map((polygon): Surface => ({ kind: "square", polygon })),
   ...ROAD_EDGES.map((edge): Surface => ({
     kind: "road",
     polygon: roadRect(edge),
@@ -2096,6 +2099,8 @@ const CITY_BLOCKERS: readonly (readonly Vec2[])[] = [
     rect(x - PROP_HALF, z - PROP_HALF, x + PROP_HALF, z + PROP_HALF),
   ),
   ...MARKET_BLOCKERS,
+  // gas station mini-marts and pump islands
+  ...GAS_BLOCKERS,
 ];
 
 /** The walk rules for the whole city: surfaces, solid blockers and doors. */

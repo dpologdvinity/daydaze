@@ -304,6 +304,12 @@ export function App() {
           setPanelOpen={setPanelOpen}
           car={parkedOrHome(save.car)}
           setCar={setCar}
+          onSpend={(price) => {
+            const left = spend(save.coins, price);
+            if (left === null) return false;
+            setSave((s) => ({ ...s, coins: left }));
+            return true;
+          }}
         />
         {here.room === "apartment" && (
           <ApartmentPanel

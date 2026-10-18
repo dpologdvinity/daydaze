@@ -9,6 +9,7 @@ import {
 } from "../driving/car.ts";
 import { pointInPolygon, type Vec2 } from "../walk.ts";
 import { ROAD_EDGES, roadRect, rect } from "./layout.ts";
+import { GAS_STATIONS, islandsOf, apronOf, SIDEWALK } from "./gasStations.ts";
 
 /** The player's car waits here until it's first driven: the avenue's curb by
  * Downtown's square, nose east. */
@@ -23,7 +24,7 @@ export const REACH = 4;
 /** Each road's asphalt, kept a car's half width inside the curbs (but not
  * shortened at its ends, so junctions stay joined). */
 function driveRects(halfWidth: number): Vec2[][] {
-  return ROAD_EDGES.map((edge) => {
+  const roads = ROAD_EDGES.map((edge) => {
     const r = roadRect(edge);
     const xs = r.map((p) => p[0]);
     const zs = r.map((p) => p[1]);
@@ -36,7 +37,27 @@ function driveRects(halfWidth: number): Vec2[][] {
       ? rect(x0, z0 + halfWidth, x1, z1 - halfWidth)
       : rect(x0 + halfWidth, z0, x1 - halfWidth, z1);
   });
+  // a gas station's forecourt, from the curb in, a car's half width clear of
+  // the mini-mart and the lot's ends
+  const stations = GAS_STATIONS.map((s) => {
+    const r = apronOf(s);
+    const xs = r.map((p) => p[0]);
+    const zs = r.map((p) => p[1]);
+    const inner = s.side > 0 ? Math.max(...xs) : Math.min(...xs);
+    // reaching back into the street, so the driveway joins the lane
+    const street = s.street - s.side * SIDEWALK;
+    return rect(
+      Math.min(street, inner - s.side * halfWidth),
+      Math.min(...zs) + halfWidth,
+      Math.max(street, inner - s.side * halfWidth),
+      Math.max(...zs) - halfWidth,
+    );
+  });
+  return [...roads, ...stations];
 }
+
+/** The pump islands a car can't drive through. */
+const ISLANDS: readonly Vec2[][] = GAS_STATIONS.flatMap(islandsOf);
 
 const rectsFor = new Map<number, Vec2[][]>();
 
@@ -64,7 +85,7 @@ export function stepCityCar(
   traffic: readonly Vec2[] = [],
 ): CarState {
   const half = spec.width / 2;
-  const next = stepCar(spec, state, input, []);
+  const next = stepCar(spec, state, input, ISLANDS);
   let out: CarState;
   if (onRoad(next.position, half)) out = next;
   else {
@@ -101,7 +122,14 @@ export function exitPoint(state: CarState): Vec2 {
   return [x + Math.cos(state.yaw) * 2.2, z - Math.sin(state.yaw) * 2.2];
 }
 
-export type ParkedCar = { id: string; color: string; at: Vec2; yaw: number };
+export type ParkedCar = {
+  id: string;
+  color: string;
+  at: Vec2;
+  yaw: number;
+  /** The tank, 0 (empty) to 1 (full). */
+  fuel: number;
+};
 
 const isNum = (v: unknown): v is number =>
   typeof v === "number" && Number.isFinite(v);
@@ -117,6 +145,7 @@ export function cleanParkedCar(
   const color = f.get("color");
   const at = f.get("at");
   const yaw = f.get("yaw");
+  const fuel = f.get("fuel");
   if (typeof id !== "string" || !known(id)) return null;
   if (typeof color !== "string" || !/^#[0-9a-f]{6}$/i.test(color)) return null;
   if (!Array.isArray(at) || at.length !== 2) return null;
@@ -124,7 +153,9 @@ export function cleanParkedCar(
   if (!isNum(x) || !isNum(z) || !isNum(yaw)) return null;
   // a car saved off the asphalt (an old layout) goes back home
   if (!onRoad([x, z], 0.5)) return null;
-  return { id, color, at: [x, z], yaw };
+  // saves from before gas stations have a full tank
+  const tank = isNum(fuel) ? Math.min(1, Math.max(0, fuel)) : 1;
+  return { id, color, at: [x, z], yaw, fuel: tank };
 }
 
 /** Your car as saved, or the starter sedan waiting at the home spot. */
@@ -135,6 +166,7 @@ export function parkedOrHome(car: ParkedCar | null): ParkedCar {
       color: "#ff4fb3",
       at: HOME_PARKING.at,
       yaw: HOME_PARKING.yaw,
+      fuel: 1,
     }
   );
 }

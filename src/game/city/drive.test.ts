@@ -9,6 +9,15 @@ import {
   onRoad,
   stepCityCar,
 } from "./drive.ts";
+import {
+  fillCost,
+  FULL_TANK_COINS,
+  GAS_STATIONS,
+  islandsOf,
+  pumpBays,
+  stationAt,
+} from "./gasStations.ts";
+import { startCity, stepSession } from "../speedway/session.ts";
 
 const sedan = carById("quill-lite");
 if (!sedan) throw new Error("starter sedan missing");
@@ -73,11 +82,81 @@ test("you step out on the car's left", () => {
 
 test("a saved parked car is checked before use", () => {
   const known = (id: string) => id === "quill-lite";
-  const good = { id: "quill-lite", color: "#ff4fb3", at: [30, 3], yaw: 1 };
+  const good = {
+    id: "quill-lite",
+    color: "#ff4fb3",
+    at: [30, 3],
+    yaw: 1,
+    fuel: 0.25,
+  };
   assert.deepEqual(cleanParkedCar(good, known), good);
+  // saves from before gas stations fill the tank
+  const { fuel: _, ...old } = good;
+  assert.equal(cleanParkedCar(old, known)?.fuel, 1);
   assert.equal(cleanParkedCar({ ...good, id: "rocket" }, known), null);
   assert.equal(cleanParkedCar({ ...good, color: "red" }, known), null);
   assert.equal(cleanParkedCar({ ...good, at: [30, 50] }, known), null);
   assert.equal(cleanParkedCar({ ...good, yaw: NaN }, known), null);
   assert.equal(cleanParkedCar("car", known), null);
+});
+
+test("a car drives off the street onto a gas station's forecourt", () => {
+  const glow = GAS_STATIONS[0];
+  // southbound on Cross Street A, a right turn west, then straight in
+  let s: CarState = { position: [-63, -125], yaw: 0, speed: 0 };
+  s = run(s, GAS, 40);
+  while (s.yaw > -Math.PI / 2)
+    s = stepCityCar(spec, s, { throttle: 0.5, brake: 0, steer: -1 });
+  s = run(s, GAS, 100);
+  assert.ok(
+    s.position[0] < glow.street,
+    `still on the street at ${s.position}`,
+  );
+});
+
+test("the pump islands are solid", () => {
+  for (const island of islandsOf(GAS_STATIONS[0])) {
+    const xs = island.map((p) => p[0]);
+    const zs = island.map((p) => p[1]);
+    const c: [number, number] = [
+      (Math.min(...xs) + Math.max(...xs)) / 2,
+      (Math.min(...zs) + Math.max(...zs)) / 2,
+    ];
+    let s: CarState = {
+      position: [c[0] + 4, c[1]],
+      yaw: -Math.PI / 2,
+      speed: 0,
+    };
+    s = run(s, GAS, 120);
+    assert.ok(
+      s.position[0] > Math.max(...xs),
+      `drove through at ${s.position}`,
+    );
+  }
+});
+
+test("pump bays find their station; filling costs coins by the empty share", () => {
+  const glow = GAS_STATIONS[0];
+  for (const bay of pumpBays(glow)) assert.equal(stationAt(bay), glow);
+  assert.equal(stationAt([0, 0]), null);
+  assert.equal(fillCost(0), FULL_TANK_COINS);
+  assert.equal(fillCost(1), 1);
+  assert.equal(fillCost(0.5), FULL_TANK_COINS / 2);
+  assert.equal(fillCost(NaN), FULL_TANK_COINS);
+});
+
+test("driving burns gas, and an empty tank won't take the pedal", () => {
+  const s = startCity(spec, "#ff4fb3", HOME_PARKING.at, HOME_PARKING.yaw, 1);
+  for (let i = 0; i < 200; i++) stepSession(s, GAS);
+  assert.ok(s.fuel < 1);
+  const empty = startCity(
+    spec,
+    "#ff4fb3",
+    HOME_PARKING.at,
+    HOME_PARKING.yaw,
+    0,
+  );
+  for (let i = 0; i < 100; i++) stepSession(empty, GAS);
+  assert.equal(empty.car.speed, 0);
+  assert.deepEqual(empty.car.position, HOME_PARKING.at);
 });

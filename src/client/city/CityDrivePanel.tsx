@@ -15,6 +15,10 @@ export function CityDrivePanel(): JSX.Element {
             {Math.round(Math.abs(hud.speed) * MPH)} mph
             {hud.speed < -0.1 ? " (reverse)" : ""}
           </p>
+          <p className="fuel" data-low={hud.fuel < 0.15}>
+            Gas {Math.round(hud.fuel * 100)}%
+            {hud.fuel <= 0 ? ": empty, coast to a pump" : ""}
+          </p>
         </section>
       )}
       <DriveControls />

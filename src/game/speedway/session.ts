@@ -1,6 +1,7 @@
 import { TICK_HZ, type StepClock } from "../driving/fixedStep.ts";
 import type { CarInput, CarSpec, CarState } from "../driving/car.ts";
 import { stepCityCar } from "../city/drive.ts";
+import { TANK_RANGE } from "../city/gasStations.ts";
 import type { Vec2 } from "../walk.ts";
 import { BUMPER_CAR } from "../driving/roster.ts";
 import { stepBumpers, type Bumper } from "./bumper.ts";
@@ -40,6 +41,8 @@ export type CitySession = {
   car: CarState;
   prev: CarState;
   traffic: [number, number][];
+  /** The tank, 0..1; an empty tank won't take the gas pedal. */
+  fuel: number;
   ticks: number;
   clock: StepClock;
 };
@@ -51,6 +54,7 @@ export function startCity(
   color: string,
   at: Vec2,
   yaw: number,
+  fuel = 1,
 ): CitySession {
   const car: CarState = { position: at, yaw, speed: 0 };
   return {
@@ -60,6 +64,7 @@ export function startCity(
     car,
     prev: car,
     traffic: [],
+    fuel,
     ticks: 0,
     clock: { accumulator: 0 },
   };
@@ -113,11 +118,18 @@ export function stepSession(session: Session, input: CarInput): void {
     session.race = stepRace(session.race, input, session.ticks * TICK_MS);
   } else if (session.kind === "city") {
     session.prev = session.car;
+    const pedals = session.fuel > 0 ? input : { ...input, throttle: 0 };
     session.car = stepCityCar(
       session.spec,
       session.car,
-      input,
+      pedals,
       session.traffic,
+    );
+    const [ax, az] = session.prev.position;
+    const [bx, bz] = session.car.position;
+    session.fuel = Math.max(
+      0,
+      session.fuel - Math.hypot(bx - ax, bz - az) / TANK_RANGE,
     );
   } else {
     session.prev = session.cars;
@@ -138,6 +150,8 @@ export type Hud = {
   hits: number;
   /** The player's car, m/s; negative in reverse. */
   speed: number;
+  /** The city car's tank, 0..1; 1 elsewhere. */
+  fuel: number;
 };
 
 /** What the HUD shows. The player is always the first car. */
@@ -153,6 +167,7 @@ export function hudOf(session: Session): Hud {
       field: 1,
       hits: 0,
       speed: session.car.speed,
+      fuel: session.fuel,
     };
   }
   if (session.kind === "bumpers") {
@@ -166,6 +181,7 @@ export function hudOf(session: Session): Hud {
       field: session.cars.length,
       hits: session.cars[0].hits,
       speed: session.cars[0].state.speed,
+      fuel: 1,
     };
   }
   const { race, ticks } = session;
@@ -187,5 +203,6 @@ export function hudOf(session: Session): Hud {
     field: race.cars.length,
     hits: 0,
     speed: me.state.speed,
+    fuel: 1,
   };
 }

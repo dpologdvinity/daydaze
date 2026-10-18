@@ -59,7 +59,7 @@ export function PlayerCar({
 
   const getIn = () => {
     if (!spec) return;
-    const s = startCity(spec, parked.color, parked.at, parked.yaw);
+    const s = startCity(spec, parked.color, parked.at, parked.yaw, parked.fuel);
     session.current = s;
     driving.session = s;
     heading.current = false;
@@ -77,6 +77,7 @@ export function PlayerCar({
       color: s.color,
       at: s.car.position,
       yaw: s.car.yaw,
+      fuel: s.fuel,
     });
   };
 

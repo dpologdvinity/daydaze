@@ -71,7 +71,13 @@ test("a save round-trips through serializeSave and loadSave", () => {
     crime: { offences: 3, bans: { bodega: 1_900_000_000_000 } },
     bests: {},
     challenges: { day: 0, done: [] },
-    car: { id: "quill-lite", color: "#ff4fb3", at: [30, 3], yaw: 1 },
+    car: {
+      id: "quill-lite",
+      color: "#ff4fb3",
+      at: [30, 3],
+      yaw: 1,
+      fuel: 0.5,
+    },
   };
   assert.deepEqual(loadSave(serializeSave(save), "Fallback"), save);
 });

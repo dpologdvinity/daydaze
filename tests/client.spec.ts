@@ -69,6 +69,42 @@ test("the player drives their car down the avenue and parks it", async ({
   expect(errors).toEqual([]);
 });
 
+test("a car low on gas fills up at a pump for coins", async ({ page }) => {
+  test.setTimeout(420_000);
+  const errors = collectErrors(page);
+  // the car waits at Glow Gas's first pump with a fifth of a tank
+  await page.addInitScript(() => {
+    if (localStorage.getItem("daydaze-save-v1")) return;
+    localStorage.setItem(
+      "daydaze-save-v1",
+      JSON.stringify({
+        car: {
+          id: "quill-lite",
+          color: "#3a6bff",
+          at: [-76.8, -121],
+          yaw: 0,
+          fuel: 0.2,
+        },
+      }),
+    );
+  });
+  await page.goto(`${LOW}&room=city&at=-74,-118`);
+  const canvas = canvasOf(page);
+  await expect(canvas).toHaveAttribute("data-city-car", "parked", {
+    timeout: 180_000,
+  });
+  await page.getByRole("button", { name: "Drive your car" }).click();
+  await expect(canvas).toHaveAttribute("data-city-car", "driving", {
+    timeout: 120_000,
+  });
+  await expect(page.getByLabel("Speedometer")).toContainText("Gas 20%");
+  const fill = page.getByRole("button", { name: "Fill up: 32 coins" });
+  await fill.click();
+  await expect(page.getByLabel("Speedometer")).toContainText("Gas 100%");
+  await expect(page.getByText("68 coins")).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test("loads the Velvet Room with no errors and mounts the canvas", async ({
   page,
 }) => {

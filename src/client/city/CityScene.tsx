@@ -36,6 +36,7 @@ import { createKindMeshes, disposeKindMeshes, writeKind } from "./meshes.ts";
 import { CITY_CLOCK } from "./shaders.ts";
 import { Traffic } from "./Traffic.tsx";
 import { PlayerCar } from "./PlayerCar.tsx";
+import { GasStations } from "./GasStations.tsx";
 import type { ParkedCar } from "../../game/city/drive.ts";
 
 // Enough for the busiest view of the whole city, so meshes never reallocate.
@@ -162,6 +163,7 @@ export function CityScene({
       ))}
       <Traffic player={player} />
       <PlayerCar player={player} parked={car} onPark={onPark} />
+      <GasStations player={player} />
       <Pedestrians player={player} />
       <NightMarket player={player} />
     </>
