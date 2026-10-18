@@ -582,7 +582,7 @@ export function LastCall({
             </dl>
           </div>
 
-          <article className="mx-ticket" aria-labeledby="mx-order-name">
+          <article className="mx-ticket" aria-labelledby="mx-order-name">
             <GuestDoll guest={order.guest} />
             <p className="mx-ticket-guest">{order.guest.name} would like</p>
             <h3 id="mx-order-name">{order.recipe.name}</h3>
