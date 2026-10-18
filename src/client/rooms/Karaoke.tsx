@@ -1,5 +1,5 @@
 import { useFrame } from "@react-three/fiber";
-import { Suspense, useRef } from "react";
+import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
 import {
   BOOTH_SEAT_X,
@@ -18,6 +18,10 @@ import { canvasTex, hdr } from "./shared/materials.ts";
 import { NeonText, SCRIPT } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { Prop } from "./shared/Prop.tsx";
+import { Batch } from "./shared/batch.ts";
+import { Bottles, type ShelfRow } from "./shared/Bottles.tsx";
+import { plant, poster, stringLights } from "./shared/details.ts";
+import { groundMaps, surface } from "../city/worldTexture.ts";
 
 const WALL_X = 5.8;
 const BACK_Z = -6;
@@ -96,21 +100,115 @@ function Screen() {
   );
 }
 
+// violet velvet with a real pile, from a CC0 scan
+const VELVET_PILE = groundMaps("velour_velvet");
+for (const t of [VELVET_PILE.normalMap, VELVET_PILE.roughnessMap])
+  t.repeat.set(10, 4);
+const VELVET = new THREE.MeshStandardMaterial({
+  color: "#5a2478",
+  normalMap: VELVET_PILE.normalMap,
+  roughnessMap: VELVET_PILE.roughnessMap,
+  roughness: 1,
+});
+// quilted leather sound panels, alternating violet and pink
+const PANEL_VIOLET = surface("leather_white", {
+  scale: 2,
+  color: "#8a4ac8",
+  roughness: 0.7,
+});
+const PANEL_PINK = surface("leather_white", {
+  scale: 2,
+  color: "#d04a98",
+  roughness: 0.7,
+});
+const STAGE_DECK = surface("dark_wooden_planks", {
+  scale: 0.8,
+  color: "#a080a8",
+  roughness: 0.5,
+});
+const CART = surface("wood_veneer", { scale: 1.5, color: "#7a4a3a" });
+const BRASS = new THREE.MeshStandardMaterial({
+  color: "#c9a26a",
+  metalness: 0.8,
+  roughness: 0.3,
+});
+const MONITOR = surface("metal_plate", {
+  scale: 2,
+  color: "#3a3440",
+  metalness: 0.6,
+  roughness: 0.6,
+});
+// a brass drinks cart by the door, two tiers of bottles
+const CART_AT = [-4.6, 4.4] as const;
+const ROWS: readonly ShelfRow[] = [0.42, 0.86].map((y) => ({
+  x0: CART_AT[0] - 0.45,
+  x1: CART_AT[0] + 0.45,
+  y,
+  z: CART_AT[1] - 0.05,
+  count: 7,
+}));
+
+/** Sound panels, album sleeves, stage monitors, the cart, plants and bulbs. */
+function buildDressing() {
+  const b = new Batch();
+  const box = new THREE.BoxGeometry(1, 1, 1);
+  // two rows of quilted panels down each side wall, over the ledge
+  for (const side of [-1, 1])
+    for (let i = 0; i < 7; i++)
+      for (const [row, y] of [1.95, 2.95].entries()) {
+        // leave the neon sign on the left wall clear
+        if (side < 0 && row === 1 && i <= 2) continue;
+        b.add(box, (i + row) % 2 ? PANEL_PINK : PANEL_VIOLET, {
+          position: [side * (WALL_X - 0.04), y, -4.6 + i * 1.5],
+          scale: [0.06, 0.85, 1.3],
+        });
+      }
+  // framed album sleeves on the back wall either side of the screen
+  [-4.6, -3.6, 3.6, 4.6].forEach((x, i) =>
+    poster(
+      b,
+      { x, y: 2.2 + (i % 2) * 0.5, z: BACK_Z + 0.03 },
+      i * 2 + 1,
+      0.6,
+      0.6,
+      BRASS,
+    ),
+  );
+  // wedge monitors on the stage lip
+  for (const x of [-1.6, 1.6])
+    b.add(box, MONITOR, {
+      position: [x, STAGE.height + 0.14, STAGE.z1 - 0.3],
+      rotation: [-0.5, 0, 0],
+      scale: [0.6, 0.3, 0.4],
+    });
+  b.add(box, STAGE_DECK, {
+    position: [0, STAGE.height / 2, (STAGE.z0 + STAGE.z1) / 2],
+    scale: [STAGE.x1 - STAGE.x0, STAGE.height, STAGE.z1 - STAGE.z0],
+  });
+  // the drinks cart: two wooden tiers on brass legs
+  for (const y of [0.4, 0.84])
+    b.add(box, CART, {
+      position: [CART_AT[0], y - 0.02, CART_AT[1]],
+      scale: [1.1, 0.04, 0.5],
+    });
+  for (const dx of [-0.52, 0.52])
+    for (const dz of [-0.22, 0.22])
+      b.add(box, BRASS, {
+        position: [CART_AT[0] + dx, 0.45, CART_AT[1] + dz],
+        scale: [0.03, 0.9, 0.03],
+      });
+  plant(b, { x: 4.9, z: 4.6 }, 1.3);
+  plant(b, { x: -5.2, z: -4.4 }, 1.1);
+  plant(b, { x: 5.2, z: -4.4 }, 1.1);
+  stringLights(b, [-5.6, 4.1, -5.8], [5.6, 4.1, -5.8], 20, "#ffd2f0", 0.25);
+  return b.build();
+}
+
 function Stage() {
   const w = STAGE.x1 - STAGE.x0;
-  const d = STAGE.z1 - STAGE.z0;
-  const cz = (STAGE.z0 + STAGE.z1) / 2;
   const lights = [-2.5, -1.5, -0.5, 0.5, 1.5, 2.5];
   return (
     <>
-      <mesh position={[0, STAGE.height / 2, cz]}>
-        <boxGeometry args={[w, STAGE.height, d]} />
-        <meshStandardMaterial
-          color="#120a18"
-          metalness={0.3}
-          roughness={0.25}
-        />
-      </mesh>
       <mesh position={[0, STAGE.height, STAGE.z1]}>
         <boxGeometry args={[w, 0.025, 0.04]} />
         <meshBasicMaterial color={hdr(PINK, 3)} toneMapped={false} />
@@ -150,9 +248,12 @@ function Stage() {
 }
 
 function Walls() {
-  const velvet = <meshStandardMaterial color="#3a1650" roughness={0.9} />;
+  const velvet = <primitive object={VELVET} attach="material" />;
+  const dressing = useMemo(buildDressing, []);
   return (
     <>
+      <primitive object={dressing} />
+      <Bottles rows={ROWS} seed={19} />
       <mesh position={[0, HEIGHT / 2, BACK_Z]}>
         <planeGeometry args={[WALL_X * 2, HEIGHT]} />
         {velvet}

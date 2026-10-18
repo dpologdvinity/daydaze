@@ -32,7 +32,8 @@ export function Floor({
   color: string;
   map?: THREE.Texture;
   /** A Poly Haven CC0 set (public/textures/<id>), `scale` repeats a meter;
-   * `color` tints it. */
+   * `color` tints it. With `map` too, `map` stays the color and the set
+   * adds its relief (normal and roughness). */
   texture?: { id: string; scale: number };
   mirror?: number;
   mixStrength?: number;
@@ -44,8 +45,9 @@ export function Floor({
   onPick: PickHandler;
 }) {
   const quality = useQuality();
-  const maps = texture
-    ? tiledMaps(texture.id, width, depth, texture.scale)
+  const set = texture && tiledMaps(texture.id, width, depth, texture.scale);
+  const maps = set
+    ? { ...set, map: map ?? set.map }
     : { map, normalMap: null, roughnessMap: null };
   const click = (e: ThreeEvent<MouseEvent>) => {
     // a drag is an orbit, not a walk order

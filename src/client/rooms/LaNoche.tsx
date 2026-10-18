@@ -24,6 +24,10 @@ import { Palm } from "./shared/Palm.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { PropSet } from "./shared/Prop.tsx";
 import { BarStools } from "./shared/BarStools.tsx";
+import { Batch } from "./shared/batch.ts";
+import { Bottles, type ShelfRow } from "./shared/Bottles.tsx";
+import { bunting, plant, poster, shelf } from "./shared/details.ts";
+import { surface } from "../city/worldTexture.ts";
 
 const WALL_X = 6.2;
 const BACK_Z = -6.2;
@@ -49,10 +53,120 @@ function swags(): Vec3[] {
 }
 const SWAGS = swags();
 
+// red plaster over a wainscot of glazed tiles, a red-carpeted stage
+const PLASTER = surface("painted_plaster_wall", {
+  scale: 0.6,
+  color: "#c8444e",
+  roughness: 0.9,
+});
+const TILES = surface("rounded_square_tiled_wall", {
+  scale: 1.2,
+  color: "#5ac8c0",
+  roughness: 0.3,
+});
+const STAGE_CARPET = surface("velour_velvet", { scale: 1.5, color: "#ff8a8a" });
+const BAR_WOOD = surface("wood_veneer", {
+  scale: 1.2,
+  color: "#9a5a3a",
+  roughness: 0.5,
+});
+const CONGA = surface("wood_veneer", { scale: 2, color: "#e09050" });
+const TABLE_TOP = surface("marble_01", {
+  scale: 1,
+  color: "#fff4ec",
+  roughness: 0.3,
+});
+const SHELF_WOOD = surface("wood_veneer", { scale: 1.5, color: "#5a2a1a" });
+// rum and mezcal on two shelves over the bar, in the frame of <Bottles>:
+// x runs along the right wall (room z), z out from it
+const ROWS: readonly ShelfRow[] = [1.6, 2.15].map((y) => ({
+  x0: BAR.z0 + 0.2,
+  x1: BAR.z1 - 0.2,
+  y,
+  z: 0.12,
+  count: 15,
+}));
+const GOLD_FRAME = new THREE.MeshStandardMaterial({
+  color: GOLD,
+  metalness: 0.8,
+  roughness: 0.3,
+});
+const PAPEL = [
+  "#ff2f6a",
+  "#ffb02e",
+  "#2fd0c8",
+  "#b06bff",
+  "#7dd84a",
+  "#ff7ac8",
+];
+
+/** Tile wainscot, shelves, papel picado, salsa posters and plants. */
+function buildDressing() {
+  const b = new Batch();
+  const box = new THREE.BoxGeometry(1, 1, 1);
+  b.add(box, TILES, {
+    position: [0, 0.55, BACK_Z + 0.11],
+    scale: [WALL_X * 2, 1.1, 0.02],
+  });
+  for (const side of [-1, 1])
+    b.add(box, TILES, {
+      position: [side * (WALL_X - 0.11), 0.55, (FRONT_Z + BACK_Z) / 2],
+      scale: [0.02, 1.1, FRONT_Z - BACK_Z],
+    });
+  for (const y of [1.6, 2.15])
+    shelf(
+      b,
+      { x: WALL_X - 0.22, y, z: (BAR.z0 + BAR.z1) / 2, ry: Math.PI / 2 },
+      BAR.z1 - BAR.z0,
+      SHELF_WOOD,
+      0.24,
+    );
+  // papel picado strung across the room under the bulbs
+  for (const z of [-3.6, -0.9, 2.1])
+    bunting(
+      b,
+      [-WALL_X + 0.1, 3.7, z],
+      [WALL_X - 0.1, 3.7, z],
+      34,
+      PAPEL,
+      0.45,
+      0.14,
+    );
+  // salsa night posters over the tables, a pair either side of the stage
+  [-2.6, 0.1, 3.2].forEach((z, i) =>
+    poster(
+      b,
+      { x: -WALL_X + 0.13, y: 2.1, z, ry: Math.PI / 2 },
+      [0, 1, 4][i] ?? 0,
+      0.7,
+      0.95,
+      GOLD_FRAME,
+    ),
+  );
+  for (const x of [-5.2, 5.2])
+    poster(
+      b,
+      { x, y: 2.3, z: BACK_Z + 0.13 },
+      x < 0 ? 3 : 6,
+      0.7,
+      0.95,
+      GOLD_FRAME,
+    );
+  plant(b, { x: -4.6, z: -4.8 }, 1.3);
+  plant(b, { x: 4.6, z: -4.8 }, 1.3);
+  plant(b, { x: 5.6, z: 4.9 }, 1.1);
+  return b.build();
+}
+
 function Shell() {
-  const plaster = <meshStandardMaterial color="#6a1a24" roughness={0.85} />;
+  const plaster = <primitive object={PLASTER} attach="material" />;
+  const dressing = useMemo(buildDressing, []);
   return (
     <>
+      <primitive object={dressing} />
+      <group position={[WALL_X - 0.1, 0, 0]} rotation-y={-Math.PI / 2}>
+        <Bottles rows={ROWS} seed={23} />
+      </group>
       <mesh position={[0, HEIGHT / 2, BACK_Z]}>
         <boxGeometry args={[WALL_X * 2, HEIGHT, 0.2]} />
         {plaster}
@@ -89,9 +203,8 @@ function Stage() {
   const y = STAGE.height;
   return (
     <>
-      <mesh position={[0, y / 2, cz]}>
+      <mesh position={[0, y / 2, cz]} material={STAGE_CARPET}>
         <boxGeometry args={[w, y, d]} />
-        <meshStandardMaterial color="#8a1424" roughness={0.9} />
       </mesh>
       <mesh position={[0, y, STAGE.z1]}>
         <boxGeometry args={[w, 0.04, 0.06]} />
@@ -99,9 +212,12 @@ function Stage() {
       </mesh>
       {/* the conga pair, stage left */}
       {[-0.22, 0.22].map((dx, i) => (
-        <mesh key={dx} position={[-2.6 + dx, y + 0.38 + i * 0.03, cz - 0.1]}>
+        <mesh
+          key={dx}
+          position={[-2.6 + dx, y + 0.38 + i * 0.03, cz - 0.1]}
+          material={CONGA}
+        >
           <cylinderGeometry args={[0.14, 0.1, 0.76 + i * 0.06, 16]} />
-          <meshStandardMaterial color="#9a5a2a" roughness={0.5} />
         </mesh>
       ))}
       {/* the keyboard, stage right */}
@@ -148,28 +264,14 @@ function Bar() {
   );
   return (
     <>
-      <mesh position={[cx, 0.52, cz]}>
+      <mesh position={[cx, 0.52, cz]} material={BAR_WOOD}>
         <boxGeometry args={[BAR.back - BAR.front, 1.04, length]} />
-        <meshStandardMaterial color="#3a1a14" roughness={0.6} />
       </mesh>
       <mesh position={[cx - 0.05, 1.07, cz]}>
         <boxGeometry args={[BAR.back - BAR.front + 0.1, 0.05, length + 0.1]} />
         <meshStandardMaterial color={GOLD} metalness={0.7} roughness={0.25} />
       </mesh>
-      {/* a shelf of rum and mezcal bottles behind, lit amber */}
-      <mesh position={[WALL_X - 0.15, 1.6, cz]}>
-        <boxGeometry args={[0.2, 0.04, length]} />
-        <meshStandardMaterial color="#2a140e" />
-      </mesh>
-      {Array.from({ length: 12 }, (_, i) => (
-        <mesh key={i} position={[WALL_X - 0.15, 1.76, BAR.z0 + 0.3 + i * 0.42]}>
-          <cylinderGeometry args={[0.04, 0.045, 0.28, 8]} />
-          <meshBasicMaterial
-            color={hdr(i % 3 ? "#c87a2a" : "#e8d8a8", 0.9)}
-            toneMapped={false}
-          />
-        </mesh>
-      ))}
+
       <BarStools at={stools} color="#e0402a" />
     </>
   );
@@ -188,9 +290,8 @@ function Tables() {
     <>
       {TABLES.map(([x, z]) => (
         <group key={z} position={[x, 0, z]}>
-          <mesh position-y={0.74}>
+          <mesh position-y={0.74} material={TABLE_TOP}>
             <cylinderGeometry args={[0.42, 0.42, 0.04, 24]} />
-            <meshStandardMaterial color="#e8d8c8" roughness={0.4} />
           </mesh>
           <mesh position-y={0.37}>
             <cylinderGeometry args={[0.04, 0.2, 0.74, 10]} />

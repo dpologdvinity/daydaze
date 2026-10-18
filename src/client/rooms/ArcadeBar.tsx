@@ -22,6 +22,10 @@ import { canvasTex, hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { BarStools } from "./shared/BarStools.tsx";
+import { Batch } from "./shared/batch.ts";
+import { Bottles, type ShelfRow } from "./shared/Bottles.tsx";
+import { plant, poster, shelf, stringLights } from "./shared/details.ts";
+import { surface } from "../city/worldTexture.ts";
 
 const WALL_X0 = -6.2;
 const WALL_X1 = 6.2;
@@ -81,6 +85,78 @@ const CARPET = canvasTex(
   },
   [3, 3],
 );
+
+// violet-painted brick, wood-grain cabinets, a diamond-plate bar under a
+// terrazzo top
+const WALL = surface("brick_wall_13", { scale: 0.5, color: "#7a62b0" });
+const CABINET = surface("wood_veneer", {
+  scale: 1.5,
+  color: "#5a4a7a",
+  roughness: 0.5,
+});
+const BAR_FRONT = surface("metal_plate", {
+  scale: 1.5,
+  color: "#8a7ac0",
+  metalness: 0.7,
+  roughness: 0.6,
+});
+const BAR_TOP = surface("terrazzo_tiles", {
+  scale: 1,
+  color: "#e0d8ff",
+  roughness: 0.3,
+});
+const SHELF_GLASS = new THREE.MeshStandardMaterial({
+  color: "#c8fff0",
+  metalness: 0.4,
+  roughness: 0.05,
+});
+// the back bar on the right wall, in the frame of <Bottles>: x runs along
+// the wall (room z), z out from it
+const ROWS: readonly ShelfRow[] = [1.55, 2.1].map((y) => ({
+  x0: BAR.z0 + 0.2,
+  x1: BAR.z1 - 0.2,
+  y,
+  z: 0.12,
+  count: 16,
+}));
+
+/** Shelves, high-score posters, plants and bulbs. */
+function buildDressing() {
+  const b = new Batch();
+  for (const y of [1.55, 2.1])
+    shelf(
+      b,
+      { x: WALL_X1 - 0.22, y, z: (BAR.z0 + BAR.z1) / 2, ry: -Math.PI / 2 },
+      BAR.z1 - BAR.z0,
+      SHELF_GLASS,
+      0.24,
+    );
+  // game posters over the pinball machines and by the door
+  [-1.6, -0.2, 1.2, 2.6].forEach((z, i) =>
+    poster(
+      b,
+      { x: WALL_X0 + 0.13, y: 2.55, z, ry: Math.PI / 2 },
+      [5, 2, 7, 0][i] ?? 0,
+      0.55,
+      0.75,
+    ),
+  );
+  for (const z of [4.4, 5.2])
+    poster(
+      b,
+      { x: WALL_X1 - 0.13, y: 1.8, z, ry: -Math.PI / 2 },
+      z > 5 ? 4 : 1,
+      0.5,
+      0.7,
+    );
+  plant(b, { x: -5.5, z: 5.2 }, 1.2);
+  plant(b, { x: 5.5, z: -3.2 }, 1.1);
+  // colored bulbs zigzagging over the floor
+  stringLights(b, [-6, 3.7, -4], [6, 3.7, 0], 20, "#7dff6b", 0.4);
+  stringLights(b, [-6, 3.7, 0], [6, 3.7, 4], 20, "#ff4fb3", 0.4);
+  stringLights(b, [-6, 3.7, 4], [6, 3.7, 5.8], 20, "#4fe3ff", 0.4);
+  return b.build();
+}
 
 /** Attract-mode screens: one per playable cabinet, and one shared by the
  * rest (tinted per cabinet). No logos: each draws its own game's look. */
@@ -232,7 +308,7 @@ function Cabinets() {
   return (
     <>
       <Boxes boxes={CABINET_XS.map((x): Box => [x, 0.9, z, 0.78, 1.8, 0.8])}>
-        <meshStandardMaterial color="#14102a" roughness={0.6} />
+        <primitive object={CABINET} attach="material" />
       </Boxes>
       <Boxes
         boxes={CABINET_XS.map((x): Box => [x, 1.95, z + 0.12, 0.78, 0.3, 0.56])}
@@ -287,7 +363,7 @@ function Pinball() {
           [PINBALL.x0 + 0.1, 1.4, z, 0.2, 0.9, 0.62],
         ])}
       >
-        <meshStandardMaterial color="#1c1430" roughness={0.5} />
+        <primitive object={CABINET} attach="material" />
       </Boxes>
       <Boxes
         boxes={zs.map((z): Box => [x + 0.02, 0.905, z, 0.9, 0.01, 0.52])}
@@ -337,9 +413,8 @@ function AirHockey() {
   });
   return (
     <group>
-      <mesh position={[HOCKEY[0], 0.4, HOCKEY[1]]}>
+      <mesh position={[HOCKEY[0], 0.4, HOCKEY[1]]} material={CABINET}>
         <boxGeometry args={[1, 0.8, 2]} />
-        <meshStandardMaterial color="#1c1430" roughness={0.6} />
       </mesh>
       <mesh position={[HOCKEY[0], 0.81, HOCKEY[1]]} rotation-x={-Math.PI / 2}>
         <planeGeometry args={[0.92, 1.92]} />
@@ -371,19 +446,22 @@ function Bar() {
     () => STOOL_ZS.map((z) => [STOOL_X, 0, z, Math.PI / 2] as const),
     [],
   );
+  const dressing = useMemo(buildDressing, []);
   return (
     <>
-      <mesh position={[cx, 0.52, cz]}>
+      <primitive object={dressing} />
+      <group position={[WALL_X1 - 0.1, 0, 0]} rotation-y={-Math.PI / 2}>
+        <Bottles rows={ROWS} seed={29} />
+      </group>
+      <mesh position={[cx, 0.52, cz]} material={BAR_FRONT}>
         <boxGeometry args={[BAR.back - BAR.front, 1.04, length]} />
-        <meshStandardMaterial color="#1c1430" roughness={0.5} />
       </mesh>
       <mesh position={[BAR.front - 0.01, 0.6, cz]}>
         <boxGeometry args={[0.02, 0.04, length]} />
         <meshBasicMaterial color={hdr(GREEN, 2.4)} toneMapped={false} />
       </mesh>
-      <mesh position={[cx - 0.05, 1.07, cz]}>
+      <mesh position={[cx - 0.05, 1.07, cz]} material={BAR_TOP}>
         <boxGeometry args={[BAR.back - BAR.front + 0.1, 0.05, length + 0.1]} />
-        <meshStandardMaterial color="#2a2440" metalness={0.6} roughness={0.3} />
       </mesh>
       <BarStools at={stools} color="#2fd0ff" />
     </>
@@ -391,7 +469,7 @@ function Bar() {
 }
 
 function Shell() {
-  const wall = <meshStandardMaterial color="#120c24" roughness={0.9} />;
+  const wall = <primitive object={WALL} attach="material" />;
   const depth = FRONT_Z - BACK_Z;
   return (
     <>
@@ -452,6 +530,7 @@ export function ArcadeBar({
         center={[(WALL_X0 + WALL_X1) / 2, 0]}
         color="#ffffff"
         map={CARPET}
+        texture={{ id: "carpet", scale: 0.8 }}
         low={{ metalness: 0, roughness: 0.95 }}
         onPick={onPick}
       />

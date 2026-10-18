@@ -342,6 +342,56 @@ export function tableSetting(b: Batch, frame: Frame) {
     });
 }
 
+// paper flags in their own colors (vertex colors), so a whole room of
+// bunting is one draw call
+const FLAG = new THREE.MeshStandardMaterial({
+  vertexColors: true,
+  side: THREE.DoubleSide,
+  roughness: 0.8,
+  emissive: "#ffffff",
+  emissiveIntensity: 0.08,
+});
+
+/**
+ * Bunting or papel picado: `count` paper flags hanging from a line sagging
+ * from `a` to `b`, cycling through `colors`.
+ */
+export function bunting(
+  batch: Batch,
+  a: readonly [number, number, number],
+  b: readonly [number, number, number],
+  count: number,
+  colors: readonly string[],
+  sag = 0.3,
+  size = 0.22,
+) {
+  const c = new THREE.Color();
+  const dx = b[0] - a[0];
+  const dz = b[2] - a[2];
+  const yaw = Math.atan2(-dz, dx);
+  for (let i = 0; i < count; i++) {
+    const t = (i + 0.5) / count;
+    const flag = new THREE.PlaneGeometry(size, size * 1.2).translate(
+      0,
+      -size * 0.6,
+      0,
+    );
+    c.set(colors[i % colors.length] ?? "#ffffff");
+    const n = flag.attributes.position.count;
+    const rgb = new Float32Array(n * 3);
+    for (let k = 0; k < n; k++) rgb.set([c.r, c.g, c.b], k * 3);
+    flag.setAttribute("color", new THREE.BufferAttribute(rgb, 3));
+    batch.add(flag, FLAG, {
+      position: [
+        a[0] + dx * t,
+        a[1] + (b[1] - a[1]) * t - Math.sin(t * Math.PI) * sag,
+        a[2] + dz * t,
+      ],
+      rotation: [0, yaw, 0],
+    });
+  }
+}
+
 /** A rug of `w` by `d` meters at `frame`, a woven pattern tinted `color`. */
 export function rug(
   b: Batch,
