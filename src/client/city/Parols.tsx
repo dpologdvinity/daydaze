@@ -26,7 +26,7 @@ const WIRE_HALF = 14;
 const ACROSS = [-8, -4, 0, 4, 8];
 
 /** A five-pointed star with two tails, hung from its top point. */
-function parolGeometry() {
+export function parolGeometry() {
   const shape = new THREE.Shape();
   for (let i = 0; i < 10; i++) {
     const a = (i / 10) * Math.PI * 2 + Math.PI / 2;

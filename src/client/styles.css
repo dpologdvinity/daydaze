@@ -1790,3 +1790,36 @@ button:focus-visible {
   font: 600 12px/1.2 var(--sans);
   cursor: pointer;
 }
+
+/* the museum guide */
+.museum-plaque {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.museum-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.museum-list button,
+.museum-nav button {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid rgb(255 207 106 / 0.45);
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.museum-nav {
+  display: flex;
+  gap: 8px;
+}

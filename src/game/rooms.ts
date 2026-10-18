@@ -82,6 +82,7 @@ import * as CATWALK from "./catwalk.ts";
 import * as COVE from "./mermaidCove.ts";
 import { POOL_BLOCKER } from "./sealShow.ts";
 import * as DINER from "./skateDiner.ts";
+import * as MUSEUM from "./museum.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -122,6 +123,8 @@ export type RoomId =
   | "catwalk"
   | "mermaid-cove"
   | "skate-diner"
+  | "halo-halo-cafe"
+  | "museum"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -586,6 +589,24 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
     ...foodRoom("kamayan-hall", "Lechon and Kamayan Hall"),
     walkable: KAMAYAN.FLOOR,
     blockers: KAMAYAN.BLOCKERS,
+  },
+  "halo-halo-cafe": foodRoom("halo-halo-cafe", "Halo-Halo Haus"),
+  museum: {
+    id: "museum",
+    name: "Museo ng Little Manila",
+    walkable: MUSEUM.FLOOR,
+    blockers: MUSEUM.BLOCKERS,
+    spawn: { position: MUSEUM.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "museum-to-city",
+        position: MUSEUM.EXIT,
+        radius: 0.8,
+        label: "Out to the avenue",
+        target: "city",
+        targetSpawn: { position: MUSEUM.MUSEUM_DOOR.landing, yaw: 0 },
+      },
+    ],
   },
   "skate-diner": {
     ...foodRoom("skate-diner", "Skate-Up Drive-In Diner"),

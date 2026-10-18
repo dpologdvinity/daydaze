@@ -81,6 +81,8 @@ const SHOTS: {
   { name: "catwalk", query: "room=catwalk" },
   { name: "mermaid-cove", query: "room=mermaid-cove" },
   { name: "skate-diner", query: "room=skate-diner" },
+  { name: "museum", query: "room=museum" },
+  { name: "halo-halo-cafe", query: "room=halo-halo-cafe" },
   { name: "gym", query: "room=gym" },
   { name: "stadium", query: "room=stadium" },
   { name: "velvet-room-full-look", query: "room=velvet-room&view=full" },

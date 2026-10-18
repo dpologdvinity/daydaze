@@ -633,6 +633,24 @@ test("the Aquarium: the seal show starts and Pepper's first trick is called", as
   expect(errors).toEqual([]);
 });
 
+test("the museum: the guide reads an exhibit's plaque and moves on", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=museum`);
+  await expect(roomTitle(page)).toHaveText("Museo ng Little Manila");
+  const guide = page.getByRole("region", { name: "Exhibits" });
+  await guide.getByRole("button", { name: "The jeepney" }).click();
+  await expect(guide.getByRole("status")).toContainText("Second World War");
+  await guide.getByRole("button", { name: "Next" }).click();
+  await expect(guide.getByRole("status")).toContainText("star lantern");
+  await guide.getByRole("button", { name: "Back to the hall" }).click();
+  await expect(
+    guide.getByRole("button", { name: "The bahay kubo" }),
+  ).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test("the debug buttons take the player into Kamayan Hall", async ({
   page,
 }) => {
@@ -807,6 +825,8 @@ for (const room of [
   "ice-rink",
   "aquarium",
   "skate-diner",
+  "museum",
+  "halo-halo-cafe",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

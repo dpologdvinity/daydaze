@@ -18,6 +18,7 @@ import * as SKATEPARK from "../skatepark.ts";
 import * as MARINA from "../marina.ts";
 import * as COURTSIDE from "../courtside.ts";
 import * as COVE from "../mermaidCove.ts";
+import * as MUSEUM from "../museum.ts";
 import * as GRIDIRON from "../gridiron.ts";
 import * as RANGE from "../drivingRange.ts";
 import * as GYM from "../gym.ts";
@@ -852,6 +853,8 @@ const MANILA_FRONT: readonly {
   color: string;
   sign: { text: string; color: string };
   style: BuildingStyle;
+  /** A venue's street door: its building takes the venue's id. */
+  venue?: { id: string; door: Door };
 }[] = [
   {
     x: -432,
@@ -904,8 +907,18 @@ const MANILA_FRONT: readonly {
     h: 18,
     north: false,
     color: "#9bd1f7",
-    sign: { text: "BALIKBAYAN BOXES", color: "#ffffff" },
+    sign: { text: "MUSEO", color: "#ffd166" },
     style: "brick",
+    venue: {
+      id: "museum",
+      door: {
+        position: MUSEUM.MUSEUM_DOOR.position,
+        radius: 2,
+        label: "Into the Museo ng Little Manila",
+        target: "museum",
+        targetSpawn: { position: MUSEUM.SPAWN, yaw: Math.PI },
+      },
+    },
   },
   {
     x: -230,
@@ -1447,8 +1460,9 @@ const UPTOWN_BUILDINGS: readonly Building[] = UPTOWN_FRONT.map(
 
 const MANILA_BUILDINGS: readonly Building[] = MANILA_FRONT.map(
   (b, i): Building => ({
-    id: `manila-${i}`,
+    id: b.venue?.id ?? `manila-${i}`,
     neighborhood: "little-manila",
+    ...(b.venue ? { door: b.venue.door } : {}),
     footprint: b.north
       ? rect(b.x - b.w / 2, -38, b.x + b.w / 2, -14)
       : rect(b.x - b.w / 2, 14, b.x + b.w / 2, 38),

@@ -99,6 +99,14 @@ const HauntedHouse = lazy(() =>
 const Gridiron = lazy(() =>
   import("../rooms/Gridiron.tsx").then((m) => ({ default: m.Gridiron })),
 );
+const Museum = lazy(() =>
+  import("../rooms/Museum.tsx").then((m) => ({ default: m.Museum })),
+);
+const HaloHaloCafe = lazy(() =>
+  import("../rooms/food/HaloHaloCafe.tsx").then((m) => ({
+    default: m.HaloHaloCafe,
+  })),
+);
 const SkateDiner = lazy(() =>
   import("../rooms/SkateDiner.tsx").then((m) => ({ default: m.SkateDiner })),
 );
@@ -310,6 +318,8 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   catwalk: Catwalk,
   "mermaid-cove": MermaidCove,
   "skate-diner": SkateDiner,
+  museum: Museum,
+  "halo-halo-cafe": HaloHaloCafe,
   gym: Gym,
   stadium: Stadium,
   "haunted-house": HauntedHouse,

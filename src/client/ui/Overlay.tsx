@@ -102,6 +102,10 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "The Gridiron. Kick five field goals, each from further out: aim into the wind, then put your leg into it.",
   "driving-range":
     "Skyline Driving Range. Get a bucket of ten: set your backswing, strike it pure, and land them on the greens.",
+  museum:
+    "Museo ng Little Manila. Walk the hall, or pick an exhibit from the guide to read its plaque: the bahay kubo, the jeepney, the parol and more.",
+  "halo-halo-cafe":
+    "Halo-Halo Haus. Tap Joy at the counter for halo-halo, ube or leche flan.",
   "skate-diner":
     "Skate-Up Drive-In Diner. Tap Dottie at the pass to order, grab a booth or a stool, and mind the servers gliding by on skates.",
   "mermaid-cove":
