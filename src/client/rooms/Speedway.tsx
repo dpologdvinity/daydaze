@@ -63,6 +63,7 @@ const CAR_COLORS = [
 function setupFor(
   request: Exclude<DriveRequest, "leave">,
 ): { session: Session; origin: Vec2 } | null {
+  if (request === "city-drive") return null;
   if (request === "bumper-cars") {
     return { session: startBumpers(), origin: ARENA_ORIGIN };
   }
@@ -169,7 +170,7 @@ export function Speedway({ onPick }: { onPick: PickHandler }) {
       }
       for (const g of bumperCars.current) if (g) g.visible = false;
       player.current = raceCars.current[0] ?? null;
-    } else {
+    } else if (session.kind === "bumpers") {
       const cars = session.cars;
       for (let i = 0; i < cars.length; i++) {
         place(

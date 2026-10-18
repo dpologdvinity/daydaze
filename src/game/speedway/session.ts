@@ -1,5 +1,7 @@
 import { TICK_HZ, type StepClock } from "../driving/fixedStep.ts";
-import type { CarInput, CarSpec } from "../driving/car.ts";
+import type { CarInput, CarSpec, CarState } from "../driving/car.ts";
+import { stepCityCar } from "../city/drive.ts";
+import type { Vec2 } from "../walk.ts";
 import { BUMPER_CAR } from "../driving/roster.ts";
 import { stepBumpers, type Bumper } from "./bumper.ts";
 import { type BotSkill } from "./bots.ts";
@@ -29,7 +31,39 @@ export type BumperSession = {
   clock: StepClock;
 };
 
-export type Session = RaceSession | BumperSession;
+/** Your own car out on the city streets. `traffic` is refreshed by the
+ * client each frame with the other cars' centers. */
+export type CitySession = {
+  kind: "city";
+  spec: CarSpec;
+  color: string;
+  car: CarState;
+  prev: CarState;
+  traffic: [number, number][];
+  ticks: number;
+  clock: StepClock;
+};
+
+export type Session = RaceSession | BumperSession | CitySession;
+
+export function startCity(
+  spec: CarSpec,
+  color: string,
+  at: Vec2,
+  yaw: number,
+): CitySession {
+  const car: CarState = { position: at, yaw, speed: 0 };
+  return {
+    kind: "city",
+    spec,
+    color,
+    car,
+    prev: car,
+    traffic: [],
+    ticks: 0,
+    clock: { accumulator: 0 },
+  };
+}
 
 export function startRace(
   track: Track,
@@ -77,6 +111,14 @@ export function stepSession(session: Session, input: CarInput): void {
   if (session.kind === "race") {
     session.prev = session.race;
     session.race = stepRace(session.race, input, session.ticks * TICK_MS);
+  } else if (session.kind === "city") {
+    session.prev = session.car;
+    session.car = stepCityCar(
+      session.spec,
+      session.car,
+      input,
+      session.traffic,
+    );
   } else {
     session.prev = session.cars;
     session.cars = stepBumpers(session.cars, input, session.ticks);
@@ -94,10 +136,25 @@ export type Hud = {
   place: number;
   field: number;
   hits: number;
+  /** The player's car, m/s; negative in reverse. */
+  speed: number;
 };
 
 /** What the HUD shows. The player is always the first car. */
 export function hudOf(session: Session): Hud {
+  if (session.kind === "city") {
+    return {
+      phase: "city",
+      lap: 0,
+      laps: 0,
+      lapMs: 0,
+      bestMs: null,
+      place: 1,
+      field: 1,
+      hits: 0,
+      speed: session.car.speed,
+    };
+  }
   if (session.kind === "bumpers") {
     return {
       phase: "bumpers",
@@ -108,6 +165,7 @@ export function hudOf(session: Session): Hud {
       place: 1,
       field: session.cars.length,
       hits: session.cars[0].hits,
+      speed: session.cars[0].state.speed,
     };
   }
   const { race, ticks } = session;
@@ -128,5 +186,6 @@ export function hudOf(session: Session): Hud {
     place: standings(race).indexOf("player") + 1,
     field: race.cars.length,
     hits: 0,
+    speed: me.state.speed,
   };
 }

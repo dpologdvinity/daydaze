@@ -33,6 +33,42 @@ test("a new player starts in the city, on Downtown's square", async ({
   expect(errors).toEqual([]);
 });
 
+test("the player drives their car down the avenue and parks it", async ({
+  page,
+}) => {
+  test.setTimeout(420_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=city`);
+  const canvas = canvasOf(page);
+  await expect(canvas).toHaveAttribute("data-city-car", "parked", {
+    timeout: 180_000,
+  });
+  await page.getByRole("combobox", { name: "Car" }).selectOption("kestrel-rs");
+  await page.getByRole("button", { name: "Drive your car" }).click();
+  // she walks over from the square and gets in
+  await expect(canvas).toHaveAttribute("data-city-car", "driving", {
+    timeout: 120_000,
+  });
+  // on a desktop the car drives on the keys; the pedals are for touch
+  await page.keyboard.down("w");
+  await expect
+    .poll(async () => Number(await canvas.getAttribute("data-car-x")), {
+      timeout: 120_000,
+    })
+    .toBeGreaterThan(24);
+  await page.keyboard.up("w");
+  await expect(page.getByLabel("Speedometer")).toContainText("mph");
+  await page.getByRole("button", { name: "Leave the car" }).click();
+  await expect(canvas).toHaveAttribute("data-city-car", "parked");
+  // parked where it stopped: the save remembers the car and the spot
+  const saved = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("daydaze-save-v1") ?? "{}"),
+  );
+  expect(saved.car.id).toBe("kestrel-rs");
+  expect(saved.car.at[0]).toBeGreaterThan(20);
+  expect(errors).toEqual([]);
+});
+
 test("loads the Velvet Room with no errors and mounts the canvas", async ({
   page,
 }) => {

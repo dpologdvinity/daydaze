@@ -251,8 +251,18 @@ export function PlayerController({
   const lastPos = useRef(new THREE.Vector3().copy(player.pos));
 
   useFrame((state, dt) => {
-    // a driven car takes the keys; the doll stands at the pit wall
-    if (driving.session) return;
+    // in the city she's in the car, out of sight; at the Speedway she
+    // stands at the pit wall
+    if (g.current) g.current.visible = driving.session?.kind !== "city";
+    // a driven car takes the keys
+    if (driving.session) {
+      const el = tag.current;
+      if (driving.session.kind === "city" && el && tagAt.current.shown) {
+        tagAt.current.shown = false;
+        el.style.visibility = "hidden";
+      }
+      return;
+    }
     const local = moveAction(held.current, stick);
     const intent = local && worldDirection(local, state.camera);
     // seated on a chair: a key press or a new walk target stands her up

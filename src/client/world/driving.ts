@@ -3,7 +3,12 @@ import type { Session } from "../../game/speedway/session.ts";
 
 /** A Speedway control's request for the scene to take on its next frame. */
 export type DriveRequest =
-  "race-oval" | "race-boardwalk" | "bumper-cars" | "leave";
+  | "race-oval"
+  | "race-boardwalk"
+  | "bumper-cars"
+  | "leave"
+  /** Walk to your car in the city and get in. */
+  | "city-drive";
 
 export type Control = "throttle" | "brake" | "left" | "right";
 

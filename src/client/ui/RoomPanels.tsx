@@ -8,6 +8,7 @@ const panel = <K extends string>(
 
 /** Each game room's controls, loaded with the room rather than up front. */
 const PANELS: Partial<Record<RoomId, ComponentType>> = {
+  city: panel(() => import("../city/CityDrivePanel.tsx"), "CityDrivePanel"),
   bowling: panel(
     () => import("../rooms/bowling/BowlingPanel.tsx"),
     "BowlingPanel",

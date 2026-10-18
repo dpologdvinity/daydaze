@@ -628,6 +628,25 @@ button:focus-visible {
   box-shadow: 0 0 18px rgb(255 176 46 / 0.6);
 }
 
+/* your car in the city: Drive, then which car and its paint */
+.car-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.car-picker select {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--amber);
+  border-radius: 999px;
+  background: rgb(7 2 11 / 0.78);
+  color: var(--champagne);
+  font: inherit;
+  font-size: 14px;
+}
+
 /* the keyboard route to a room's minigame hotspots, inside the capsule */
 .venue-games {
   display: flex;
@@ -803,6 +822,16 @@ button:focus-visible {
 
 .race-hud p {
   margin: 0;
+}
+
+/* the city's speedometer sits above the chat, clear of the room card */
+.race-hud.city-speed {
+  top: auto;
+  bottom: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  font-weight: 700;
 }
 
 .drive-controls {

@@ -13,6 +13,7 @@ import {
 import type { BodyShape } from "../../game/body.ts";
 import type { DanceMoveId, Holds } from "../../game/dance/moves.ts";
 import type { HomeSave } from "../../game/home/home.ts";
+import type { ParkedCar } from "../../game/city/drive.ts";
 import type { Intensity } from "../../game/effects/buzz.ts";
 import {
   swimFor,
@@ -364,6 +365,9 @@ export type WorldProps = {
   home: HomeSave;
   /** The stub shop shelf in the apartment opens the shoplifting test. */
   onShelf: () => void;
+  /** Your car, parked in the city, and where to save it when you park. */
+  car: ParkedCar;
+  onPark: (car: ParkedCar) => void;
 };
 
 export function World({
@@ -387,6 +391,8 @@ export function World({
   onPortal,
   home,
   onShelf,
+  car,
+  onPark,
 }: WorldProps) {
   const [auto, setAuto] = useState<QualityTier>("high");
   // a struggling machine first gives up the extra resolution, then the
@@ -444,7 +450,13 @@ export function World({
         />
         <Suspense fallback={null}>
           {room === "city" ? (
-            <CityScene key={room} player={player} onPick={onPick} />
+            <CityScene
+              key={room}
+              player={player}
+              onPick={onPick}
+              car={car}
+              onPark={onPark}
+            />
           ) : Room ? (
             <Room
               key={room}

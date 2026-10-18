@@ -1,6 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { BANNED_BRANDS, BUMPER_CAR, CARS, carById } from "./roster.ts";
+import {
+  BANNED_BRANDS,
+  BUMPER_CAR,
+  CARS,
+  carById,
+  ROAD_CARS,
+} from "./roster.ts";
 
 test("car ids are unique and carById finds each", () => {
   const ids = CARS.map((c) => c.id);
@@ -10,7 +16,7 @@ test("car ids are unique and carById finds each", () => {
 });
 
 test("the roster runs cheap to expensive across classes", () => {
-  const order = ["beater", "everyday", "luxury", "exotic"] as const;
+  const order = ["beater", "everyday", "luxury", "sports", "exotic"] as const;
   const cheapest = order.map((cls) =>
     Math.min(...CARS.filter((c) => c.class === cls).map((c) => c.price)),
   );
@@ -45,4 +51,10 @@ test("every spec has sane positive numbers", () => {
     }
     assert.ok(car.grip > 0 && car.grip <= 1, car.id);
   }
+});
+
+test("the city has at least ten road cars, sports cars among them", () => {
+  assert.ok(ROAD_CARS.length >= 10);
+  assert.ok(ROAD_CARS.filter((c) => c.class === "sports").length >= 3);
+  assert.ok(ROAD_CARS.every((c) => c.class !== "kart" && c.class !== "bumper"));
 });

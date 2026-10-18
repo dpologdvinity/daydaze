@@ -12,6 +12,7 @@ import {
   type VehicleKind,
 } from "../../game/city/traffic.ts";
 import type { Player } from "../world/PlayerController.tsx";
+import { driving } from "../world/driving.ts";
 import { useQuality } from "../world/quality.ts";
 import {
   CAR_BODY,
@@ -277,10 +278,19 @@ export function Traffic({ player }: { player: Player }) {
     );
     const { body, cabin, shell, trim, chrome, dark, wheels, lamps, signals } =
       meshes;
+    const city = driving.session?.kind === "city" ? driving.session : null;
     for (let i = 0; i < traffic.cars.length; i++) {
       const car = traffic.cars[i];
       const slot = slots.slot[i];
       carPose(car, pose);
+      // your own car out on the street bumps into this one
+      if (city) {
+        const c = city.traffic[i];
+        if (c) {
+          c[0] = pose.x;
+          c[1] = pose.z;
+        } else city.traffic[i] = [pose.x, pose.z];
+      }
       // the car's own matrix once; each part is a car-local offset on it
       carMatrix.compose(
         pos.set(pose.x, 0, pose.z),

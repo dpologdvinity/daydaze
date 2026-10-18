@@ -44,6 +44,7 @@ test("createDefaultSave uses the default look and auto quality", () => {
     crime: { offences: 0, bans: {} },
     bests: {},
     challenges: { day: 0, done: [] },
+    car: null,
   });
 });
 
@@ -70,6 +71,7 @@ test("a save round-trips through serializeSave and loadSave", () => {
     crime: { offences: 3, bans: { bodega: 1_900_000_000_000 } },
     bests: {},
     challenges: { day: 0, done: [] },
+    car: { id: "quill-lite", color: "#ff4fb3", at: [30, 3], yaw: 1 },
   };
   assert.deepEqual(loadSave(serializeSave(save), "Fallback"), save);
 });
@@ -128,6 +130,7 @@ test("a save from before the swimsuit slot still loads", () => {
     crime: { offences: 0, bans: {} },
     bests: {},
     challenges: { day: 0, done: [] },
+    car: null,
   });
 });
 
@@ -181,6 +184,7 @@ test("loadSave keeps a valid name when the look is bad", () => {
     crime: { offences: 0, bans: {} },
     bests: {},
     challenges: { day: 0, done: [] },
+    car: null,
   });
 });
 
@@ -209,6 +213,7 @@ test("loadSave keeps a valid look when the name is bad", () => {
     crime: { offences: 0, bans: {} },
     bests: {},
     challenges: { day: 0, done: [] },
+    car: null,
   });
 });
 

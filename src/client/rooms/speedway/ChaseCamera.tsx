@@ -41,7 +41,9 @@ export function ChaseCamera({
     const speed =
       session.kind === "race"
         ? session.race.cars[0].state.speed
-        : session.cars[0].state.speed;
+        : session.kind === "city"
+          ? session.car.speed
+          : session.cars[0].state.speed;
     const shake =
       base.shake *
       Math.min(1, Math.abs(speed) / 20) *

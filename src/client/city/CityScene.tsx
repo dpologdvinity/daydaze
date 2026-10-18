@@ -35,6 +35,8 @@ import { createLabelAtlas } from "./labelAtlas.ts";
 import { createKindMeshes, disposeKindMeshes, writeKind } from "./meshes.ts";
 import { CITY_CLOCK } from "./shaders.ts";
 import { Traffic } from "./Traffic.tsx";
+import { PlayerCar } from "./PlayerCar.tsx";
+import type { ParkedCar } from "../../game/city/drive.ts";
 
 // Enough for the busiest view of the whole city, so meshes never reallocate.
 const WHOLE_CITY = planCity(ALL_CELLS, 0, [0, 0]);
@@ -51,9 +53,13 @@ const CAPACITY = Object.fromEntries(
 export function CityScene({
   player,
   onPick,
+  car,
+  onPark,
 }: {
   player: Player;
   onPick: PickHandler;
+  car: ParkedCar;
+  onPark: (car: ParkedCar) => void;
 }) {
   const tier = useQuality();
   const reduced = useReducedMotion();
@@ -155,6 +161,7 @@ export function CityScene({
         <primitive key={kind} object={meshes[kind]} onClick={click} />
       ))}
       <Traffic player={player} />
+      <PlayerCar player={player} parked={car} onPark={onPark} />
       <Pedestrians player={player} />
       <NightMarket player={player} />
     </>

@@ -13,6 +13,7 @@ import { isJailed } from "../game/jail/jail.ts";
 import { jailAfterArrest } from "../game/police/arrest.ts";
 import type { Look, Mood, SwimLook } from "../game/look.ts";
 import type { HomeSave } from "../game/home/home.ts";
+import { parkedOrHome, type ParkedCar } from "../game/city/drive.ts";
 import { arrive } from "../game/portals.ts";
 import { ROOMS, type RoomId, type Spawn } from "../game/rooms.ts";
 import {
@@ -133,6 +134,7 @@ export function App() {
     [],
   );
   const setHome = (home: HomeSave) => setSave((s) => ({ ...s, home }));
+  const setCar = (car: ParkedCar) => setSave((s) => ({ ...s, car }));
   const setJail = (jail: SaveV1["jail"]) => setSave((s) => ({ ...s, jail }));
   // Stealing opens the stub shelf; a caught attempt runs the arrest first.
   const [shopping, setShopping] = useState(false);
@@ -246,6 +248,8 @@ export function App() {
           onPortal={(portal) => travel(portal.target, portal.targetSpawn)}
           home={save.home}
           onShelf={() => setShopping(true)}
+          car={parkedOrHome(save.car)}
+          onPark={setCar}
         />
         <div className="tag" ref={tag}>
           {chat && (
@@ -298,6 +302,8 @@ export function App() {
           panelOpen={save.settings.panelOpen}
           challenges={save.challenges}
           setPanelOpen={setPanelOpen}
+          car={parkedOrHome(save.car)}
+          setCar={setCar}
         />
         {here.room === "apartment" && (
           <ApartmentPanel

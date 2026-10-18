@@ -2,7 +2,14 @@ import { nearestPointOnPolygon, pointInPolygon, type Vec2 } from "../walk.ts";
 import { TICK_HZ } from "./fixedStep.ts";
 
 export type CarClass =
-  "beater" | "everyday" | "y2k" | "luxury" | "exotic" | "kart" | "bumper";
+  | "beater"
+  | "everyday"
+  | "y2k"
+  | "luxury"
+  | "sports"
+  | "exotic"
+  | "kart"
+  | "bumper";
 
 /** Units: m/s, m/s², rad/s, 0..1, m, coins. `basedOn` is a designer note, never shown in the UI. */
 export type CarSpec = {

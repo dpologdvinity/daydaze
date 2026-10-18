@@ -61,6 +61,7 @@ test("saves are stored only when loadSave keeps every field as sent", () => {
     settings: { muted: true, quality: "low", effects: "low", panelOpen: false },
     bests: save.bests,
     challenges: save.challenges,
+    car: save.car,
     crime: save.crime,
     jail: save.jail,
     home: save.home,

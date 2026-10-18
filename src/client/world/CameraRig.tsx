@@ -325,6 +325,8 @@ export function CameraRig({
     c.enabled = driving.session === null && cameraHold.by === null;
     if (!c.enabled) {
       held.current = true;
+      // a car carries her across the city meanwhile: don't replay that move
+      last.current.copy(player.pos);
       return;
     }
     if (held.current) {

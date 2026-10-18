@@ -38,6 +38,8 @@ import {
 } from "../../game/look.ts";
 import type { DanceMoveId, Holds } from "../../game/dance/moves.ts";
 import { INTENSITIES, type Intensity } from "../../game/effects/buzz.ts";
+import { CarPicker } from "../city/CarPicker.tsx";
+import type { ParkedCar } from "../../game/city/drive.ts";
 import type { RoomId, Spawn } from "../../game/rooms.ts";
 import {
   BODY_LABELS,
@@ -531,6 +533,8 @@ export function Overlay({
   panelOpen,
   setPanelOpen,
   challenges,
+  car,
+  setCar,
 }: {
   room: RoomId;
   roomName: string;
@@ -562,6 +566,9 @@ export function Overlay({
   panelOpen: boolean;
   setPanelOpen: (open: boolean) => void;
   challenges: ChallengeSave;
+  /** Your car in the city, and its picker's changes. */
+  car: ParkedCar;
+  setCar: (car: ParkedCar) => void;
 }) {
   const neighborhood = useNeighborhood();
   const [phone, setPhone] = useState(false);
@@ -698,6 +705,7 @@ export function Overlay({
               City map
             </button>
           )}
+          {room === "city" && <CarPicker car={car} onChange={setCar} />}
           {(seatsIn(room).length > 0 || room === "apartment") && (
             <button
               type="button"
