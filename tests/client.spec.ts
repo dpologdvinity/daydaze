@@ -154,6 +154,18 @@ test("Photon Zone: a laser tag round tags a rival for points", async ({
   expect(errors).toEqual([]);
 });
 
+test("Skyline Supply sells a snack and a water for coins", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&room=market`);
+  await expect(roomTitle(page)).toHaveText("Skyline Supply", {
+    timeout: 150_000,
+  });
+  await page.getByRole("button", { name: "Buy a snack (3 coins)" }).click();
+  await page.getByRole("button", { name: "Buy a water (2 coins)" }).click();
+  await expect(page.getByText("95 coins")).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test("loads the Velvet Room with no errors and mounts the canvas", async ({
   page,
 }) => {
@@ -982,6 +994,7 @@ for (const room of [
   "salon",
   "piercing",
   "laser-tag",
+  "market",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

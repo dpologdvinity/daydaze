@@ -22,6 +22,7 @@ import * as COVE from "../mermaidCove.ts";
 import * as MUSEUM from "../museum.ts";
 import * as SALON from "../salon.ts";
 import { PHOTON_DOOR, SPAWN as PHOTON_SPAWN } from "../laserTag.ts";
+import { MARKET_DOOR, SPAWN as MARKET_SPAWN } from "../market.ts";
 import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
 import * as RANGE from "../drivingRange.ts";
@@ -1621,6 +1622,14 @@ export const BUILDINGS: readonly Building[] = [
     height: 36,
     style: "billboard",
     sign: { text: "SKYLINE SUPPLY", color: "#ff4fb3" },
+    // the grocery store on the ground floor
+    door: {
+      position: MARKET_DOOR.position,
+      radius: 2,
+      label: "Into Skyline Supply",
+      target: "market",
+      targetSpawn: { position: MARKET_SPAWN, yaw: Math.PI },
+    },
   },
   {
     id: "pixel-arcade",

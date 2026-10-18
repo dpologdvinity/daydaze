@@ -84,6 +84,7 @@ const SHOTS: {
   { name: "museum", query: "room=museum" },
   { name: "salon", query: "room=salon" },
   { name: "laser-tag", query: "room=laser-tag" },
+  { name: "market", query: "room=market" },
   { name: "green-haze", query: "room=green-haze&adult=1" },
   { name: "piercing", query: "room=piercing" },
   { name: "halo-halo-cafe", query: "room=halo-halo-cafe" },

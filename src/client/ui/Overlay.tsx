@@ -49,7 +49,8 @@ import {
   type BodyShape,
 } from "../../game/body.ts";
 import { wearable, type PurchaseResult } from "../../game/shop.ts";
-import { drink } from "../effects/drunk.ts";
+import { drink, relieve } from "../effects/drunk.ts";
+import { PRICES } from "../../game/market.ts";
 import { sipTea, takeHit } from "../effects/high.ts";
 import type { MinigameId } from "../../game/hotspots.ts";
 import { VIEWS, type View } from "../world/CameraRig.tsx";
@@ -109,6 +110,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Skyline Driving Range. Get a bucket of ten: set your backswing, strike it pure, and land them on the greens.",
   salon:
     "The Blowout Bar. Book with Dani for the salon's colors, or take a chair by the mirrors.",
+  market:
+    "Skyline Supply. Wander the aisles, then grab a snack or a water at Rosa's till: either takes the edge off a buzz.",
   "laser-tag":
     "Photon Zone. Suit up for a 60-second round: tag rivals when they pop out of cover, and keep cover between you when they fire.",
   "green-haze":
@@ -740,6 +743,28 @@ export function Overlay({
               <CocktailIcon />
               Have a drink
             </button>
+          )}
+          {room === "market" && (
+            <>
+              <button
+                type="button"
+                className="drink"
+                onClick={() => {
+                  if (onSpend(PRICES.snack)) relieve("food");
+                }}
+              >
+                Buy a snack ({PRICES.snack} coins)
+              </button>
+              <button
+                type="button"
+                className="drink"
+                onClick={() => {
+                  if (onSpend(PRICES.water)) relieve("drink");
+                }}
+              >
+                Buy a water ({PRICES.water} coins)
+              </button>
+            </>
           )}
           {room === "green-haze" && (
             <>

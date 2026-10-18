@@ -86,6 +86,7 @@ import * as MUSEUM from "./museum.ts";
 import * as SALON from "./salon.ts";
 import * as HAZE from "./greenHaze.ts";
 import * as TAG from "./laserTag.ts";
+import * as MARKET from "./market.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -132,6 +133,7 @@ export type RoomId =
   | "piercing"
   | "green-haze"
   | "laser-tag"
+  | "market"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -612,6 +614,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to Gallery Row",
         target: "city",
         targetSpawn: { position: SALON.SALON.door.landing, yaw: 0 },
+      },
+    ],
+  },
+  market: {
+    id: "market",
+    name: "Skyline Supply",
+    walkable: MARKET.FLOOR,
+    blockers: MARKET.BLOCKERS,
+    spawn: { position: MARKET.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "market-to-city",
+        position: MARKET.EXIT,
+        radius: 0.8,
+        label: "Out to the avenue",
+        target: "city",
+        targetSpawn: { position: MARKET.MARKET_DOOR.landing, yaw: 0 },
       },
     ],
   },

@@ -50,6 +50,7 @@ test("every room is registered under its own id", () => {
     "la-noche",
     "laser-tag",
     "marina",
+    "market",
     "mermaid-cove",
     "mini-golf",
     "museum",
