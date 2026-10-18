@@ -95,6 +95,8 @@ const GEOMETRY: Record<Shared, THREE.BufferGeometry> = {
   road: BOX,
   sidewalk: BOX,
   ground: BOX,
+  lawn: BOX,
+  planks: BOX,
   lane: BOX,
   body: BOX,
   band: BOX,
@@ -148,12 +150,35 @@ const MATERIAL: Record<Shared, THREE.Material> = {
     }),
     0.35,
   ),
-  // sand and boardwalk: matte, tinted per instance, no paving texture
-  ground: new THREE.MeshStandardMaterial({
-    roughness: 0.95,
-    emissive: "#2a1d3a",
-    emissiveIntensity: 0.35,
-  }),
+  // sand, lawns and the boardwalk: CC0 scans by world position, tinted per
+  // instance
+  ground: worldMapped(
+    new THREE.MeshStandardMaterial({
+      ...groundMaps("coast_sand_01"),
+      roughness: 0.95,
+      emissive: "#2a1d3a",
+      emissiveIntensity: 0.35,
+    }),
+    0.3,
+  ),
+  lawn: worldMapped(
+    new THREE.MeshStandardMaterial({
+      ...groundMaps("leafy_grass"),
+      roughness: 0.95,
+      emissive: "#10241a",
+      emissiveIntensity: 0.35,
+    }),
+    0.3,
+  ),
+  planks: worldMapped(
+    new THREE.MeshStandardMaterial({
+      ...groundMaps("wood_floor"),
+      roughness: 0.8,
+      emissive: "#2a1d3a",
+      emissiveIntensity: 0.3,
+    }),
+    0.4,
+  ),
   lane: new THREE.MeshBasicMaterial({ toneMapped: false }),
   // the faint emissive keeps facades readable on the night side of the street;
   // a CC0 plaster scan, box-mapped by world position, gives every facade
@@ -302,6 +327,8 @@ export function createKindMeshes(
     road: make("road"),
     sidewalk: make("sidewalk"),
     ground: make("ground"),
+    lawn: make("lawn"),
+    planks: make("planks"),
     lane: make("lane"),
     body: make("body"),
     band: make("band"),

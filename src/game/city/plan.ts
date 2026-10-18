@@ -24,6 +24,8 @@ export const KINDS = [
   "road",
   "sidewalk",
   "ground",
+  "lawn",
+  "planks",
   "lane",
   "body",
   "band",
@@ -84,6 +86,8 @@ export const TRIANGLES: Record<Kind, number> = {
   road: 12,
   sidewalk: 12,
   ground: 12,
+  lawn: 12,
+  planks: 12,
   lane: 12,
   body: 12,
   band: 12,
@@ -170,6 +174,8 @@ function emptyInstances(): Record<Kind, Instance[]> {
     road: [],
     sidewalk: [],
     ground: [],
+    lawn: [],
+    planks: [],
     lane: [],
     body: [],
     band: [],
@@ -213,13 +219,16 @@ function surfaceStyle(surface: Surface): {
   if (surface.kind === "road") {
     return { kind: "road", y: 0.02, h: 0.04, color: SURFACE_COLOR.road };
   }
-  // sand and boardwalk planks are plain ground, not concrete paving
+  // sand, lawns and boardwalk planks each have their own texture; the rest
+  // is concrete paving
   const kind =
-    surface.kind === "sand" ||
-    surface.kind === "boardwalk" ||
-    surface.kind === "lawn"
+    surface.kind === "sand"
       ? "ground"
-      : "sidewalk";
+      : surface.kind === "lawn"
+        ? "lawn"
+        : surface.kind === "boardwalk"
+          ? "planks"
+          : "sidewalk";
   return { kind, y: 0.07, h: 0.14, color: SURFACE_COLOR[surface.kind] };
 }
 
