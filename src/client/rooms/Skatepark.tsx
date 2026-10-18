@@ -21,6 +21,64 @@ import { bail, runTime, skate, tick } from "./skatepark/session.ts";
 import { Doll } from "../avatar/Doll.tsx";
 import { CrowdFigure } from "./shared/CrowdFigure.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
+import { Batch } from "./shared/batch.ts";
+import { GLOSS, painted, plant } from "./shared/details.ts";
+import { groundMaps, surface } from "../city/worldTexture.ts";
+
+// smooth-troweled concrete ramps, a darker dish, aluminum bleachers
+const RAMP = surface("brushed_concrete", {
+  scale: 0.5,
+  color: "#c8c4d0",
+  roughness: 0.8,
+});
+const DISH = surface("brushed_concrete", {
+  scale: 0.5,
+  color: "#8a8694",
+  roughness: 0.85,
+});
+const PLANKS = surface("metal_plate", {
+  scale: 1.5,
+  color: "#8a8a9a",
+  metalness: 0.6,
+  roughness: 0.5,
+});
+// the graffiti on a real block wall
+const WALL_RELIEF = groundMaps("concrete_wall_008").normalMap;
+WALL_RELIEF.repeat.set(10, 1.2);
+
+/** Traffic cones, a trash can, spare boards and planters round the park. */
+function buildDressing() {
+  const b = new Batch();
+  const cone = new THREE.ConeGeometry(0.14, 0.45, 10);
+  const base = new THREE.BoxGeometry(0.3, 0.03, 0.3);
+  for (const [x, z] of [
+    [4.2, -1],
+    [4.6, 6],
+    [-4.8, -1.4],
+    [12.4, -3],
+  ] as const) {
+    b.add(painted(cone, "#ff7a1f"), GLOSS, { position: [x, 0.25, z] });
+    b.add(painted(base, "#ff7a1f"), GLOSS, { position: [x, 0.015, z] });
+  }
+  const can = new THREE.CylinderGeometry(0.3, 0.28, 0.9, 12);
+  b.add(painted(can, "#2e7d4a"), GLOSS, { position: [-4.4, 0.45, 7.8] });
+  b.add(painted(can, "#3a5ad8"), GLOSS, { position: [4.4, 0.45, 7.8] });
+  // decks leaning on the bleachers
+  const deck = new THREE.BoxGeometry(0.21, 0.8, 0.02);
+  ["#ff4fb3", LIME, "#ffd84f", "#4fe3ff"].forEach((c, i) =>
+    b.add(painted(deck, c), GLOSS, {
+      position: [-3.2 + i * 0.3, 0.4, BLEACHER_Z - 0.32],
+      rotation: [-0.25, 0, 0],
+    }),
+  );
+  for (const [x, z] of [
+    [-13.2, -8.6],
+    [13.2, -8.6],
+    [13.2, 5],
+  ] as const)
+    plant(b, { x, z }, 1.5);
+  return b.build();
+}
 import { canvasTex, hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { Palm } from "./shared/Palm.tsx";
@@ -102,9 +160,7 @@ function HalfPipe() {
   const geo = useMemo(pipeGeometry, []);
   return (
     <group position={[PIPE.x, 0, PIPE.z]}>
-      <mesh geometry={geo}>
-        <meshStandardMaterial color="#b8b4c0" roughness={0.85} />
-      </mesh>
+      <mesh geometry={geo} material={RAMP} />
       {[-1, 1].map((side) => (
         <mesh
           key={side}
@@ -350,9 +406,11 @@ export function Skatepark({
   player: Player;
 }) {
   const calm = useReducedMotion();
+  const dressing = useMemo(buildDressing, []);
   return (
     <>
       <color attach="background" args={["#08081e"]} />
+      <primitive object={dressing} />
       <fog attach="fog" args={["#12102c", 22, 60]} />
       <Stars
         radius={70}
@@ -382,9 +440,8 @@ export function Skatepark({
       <HalfPipe />
       {/* the bowl: a ring of coping round a sunken concrete dish */}
       <group position={[BOWL.x, 0, BOWL.z]}>
-        <mesh position-y={0.01} rotation-x={-Math.PI / 2}>
+        <mesh position-y={0.01} rotation-x={-Math.PI / 2} material={DISH}>
           <circleGeometry args={[BOWL.r, 40]} />
-          <meshStandardMaterial color="#6a6670" roughness={0.9} />
         </mesh>
         <mesh position-y={0.05} rotation-x={Math.PI / 2}>
           <torusGeometry args={[BOWL.r, 0.06, 8, 48]} />
@@ -410,7 +467,7 @@ export function Skatepark({
         <boxGeometry
           args={[FUNBOX.x1 - FUNBOX.x0, 0.6, FUNBOX.z1 - FUNBOX.z0]}
         />
-        <meshStandardMaterial color="#9a96a0" roughness={0.85} />
+        <primitive object={RAMP} attach="material" />
       </mesh>
       <mesh
         position={[(FUNBOX.x0 + FUNBOX.x1) / 2, 0.85, FUNBOX.z1 - 0.3]}
@@ -426,7 +483,11 @@ export function Skatepark({
       {/* the graffiti wall behind the pipe, and the park's name */}
       <mesh position={[0, 1.6, FLOOR_BOUNDS.z0 - 0.1]}>
         <planeGeometry args={[W, 3.2]} />
-        <meshStandardMaterial map={GRAFFITI} roughness={0.9} />
+        <meshStandardMaterial
+          map={GRAFFITI}
+          normalMap={WALL_RELIEF}
+          roughness={0.9}
+        />
       </mesh>
       <NeonText
         text="CONCRETE WAVE"
@@ -443,7 +504,7 @@ export function Skatepark({
           position={[0, 0.22 + row * 0.35, BLEACHER_Z + row * 0.5]}
         >
           <boxGeometry args={[6.8, 0.44 + row * 0.7, 0.5]} />
-          <meshStandardMaterial color="#4a4a58" roughness={0.8} />
+          <primitive object={PLANKS} attach="material" />
         </mesh>
       ))}
       <group

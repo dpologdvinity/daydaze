@@ -21,6 +21,80 @@ import type { Player } from "../world/PlayerController.tsx";
 import { gym, leave, routineTime, tick } from "./gym/session.ts";
 import { CrowdFigure } from "./shared/CrowdFigure.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
+import { Batch } from "./shared/batch.ts";
+import { GLOSS, painted, plant, poster } from "./shared/details.ts";
+import { groundMaps, surface } from "../city/worldTexture.ts";
+
+// a felt spring floor, suede beam, vinyl pads, rubber mats, painted block
+const FELT_PILE = groundMaps("carpet").normalMap;
+FELT_PILE.repeat.set(8, 8);
+const SPRING_FELT = new THREE.MeshStandardMaterial({
+  color: "#2e5ec8",
+  normalMap: FELT_PILE,
+  roughness: 0.9,
+});
+const SUEDE = surface("leather_white", {
+  scale: 3,
+  color: "#f4e8d8",
+  roughness: 0.8,
+});
+const VINYL = surface("leather_white", {
+  scale: 2.5,
+  color: "#ff4fb3",
+  roughness: 0.45,
+});
+const RUBBER = surface("rubber_tiles", { scale: 1, color: "#6a8ae8" });
+const BLOCK = surface("concrete_wall_008", {
+  scale: 0.4,
+  color: "#6a5aa0",
+  roughness: 0.9,
+});
+const DESK = surface("wood_veneer", { scale: 1.5, color: "#8a5a4a" });
+
+/** Rubber landing mats under the apparatus, chalk bowls, crash pads,
+ * banners and plants. */
+function buildDressing() {
+  const b = new Batch();
+  const box = new THREE.BoxGeometry(1, 1, 1);
+  for (const [x, z, w, d] of [
+    [BEAM.x, (BEAM.z0 + BEAM.z1) / 2, 2.2, BEAM.z1 - BEAM.z0 + 1.6],
+    [BARS.x, BARS.z, 3.4, 3],
+    [VAULT.x, VAULT.z, 2.2, 3],
+  ] as const)
+    b.add(box, RUBBER, { position: [x, 0.04, z], scale: [w, 0.08, d] });
+  // folded crash pads stacked against the side walls
+  for (const [x, z] of [
+    [-9.3, 7.4],
+    [9.3, 0.6],
+  ] as const)
+    for (let k = 0; k < 3; k++)
+      b.add(painted(box, k % 2 ? "#2e5ec8" : PINK), GLOSS, {
+        position: [x, 0.15 + k * 0.3, z],
+        scale: [1.2, 0.28, 1.8],
+      });
+  // chalk bowls on stands by the beam and the bars
+  const bowl = new THREE.CylinderGeometry(0.25, 0.18, 0.18, 12);
+  const stand = new THREE.CylinderGeometry(0.03, 0.12, 0.8, 8);
+  for (const [x, z] of [
+    [BEAM.x + 1.4, BEAM.z1 + 0.8],
+    [BARS.x + 1.8, BARS.z - 1.8],
+  ] as const) {
+    b.add(painted(stand, "#c8c8d4"), GLOSS, { position: [x, 0.4, z] });
+    b.add(painted(bowl, "#f8f8f8"), GLOSS, { position: [x, 0.89, z] });
+  }
+  // the judges' table skirted, a banner run along the back wall
+  b.add(box, DESK, {
+    position: [0, 0.4, JUDGES.z],
+    scale: [JUDGES.x1 - JUDGES.x0, 0.8, 0.6],
+  });
+  // clear of the scoreboard in the middle
+  [-12, -8.5, -5, 5, 8.5, 12].forEach((x, k) =>
+    poster(b, { x, y: 3.4, z: FLOOR_BOUNDS.z0 - 2.48 }, k + 2, 1.4, 2),
+  );
+  plant(b, { x: -9.4, z: -5.4 }, 1.6);
+  plant(b, { x: 9.4, z: -5.4 }, 1.6);
+  return b.build();
+}
 import { Jumbotron } from "./shared/Jumbotron.tsx";
 import { NeonText, SCRIPT } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
@@ -101,9 +175,8 @@ function Apparatus() {
   );
   return (
     <>
-      <mesh position={[BEAM.x, 1.25, (BEAM.z0 + BEAM.z1) / 2]}>
+      <mesh position={[BEAM.x, 1.25, (BEAM.z0 + BEAM.z1) / 2]} material={SUEDE}>
         <boxGeometry args={[0.1, 0.16, BEAM.z1 - BEAM.z0]} />
-        <meshStandardMaterial color="#f4e8d8" roughness={0.6} />
       </mesh>
       {[BEAM.z0 + 0.6, BEAM.z1 - 0.6].map((z) => (
         <mesh key={z} position={[BEAM.x, 0.6, z]}>
@@ -133,9 +206,8 @@ function Apparatus() {
         </group>
       ))}
       <group position={[VAULT.x, 0, VAULT.z]}>
-        <mesh position-y={0.62}>
+        <mesh position-y={0.62} material={VINYL}>
           <boxGeometry args={[0.9, 0.2, 1.1]} />
-          <meshStandardMaterial color={PINK} roughness={0.5} />
         </mesh>
         <mesh position-y={0.3}>
           <cylinderGeometry args={[0.12, 0.3, 0.6, 10]} />
@@ -152,10 +224,6 @@ function Judges() {
   const best = prizeDesk.use().bests.gymnastics;
   return (
     <>
-      <mesh position={[0, 0.4, JUDGES.z]}>
-        <boxGeometry args={[JUDGES.x1 - JUDGES.x0, 0.8, 0.6]} />
-        <meshStandardMaterial color="#1c1430" />
-      </mesh>
       {[-1.6, 0, 1.6].map((x, i) => (
         <group key={x} position={[x, 0, JUDGES.z - 0.6]}>
           <CrowdFigure look={JUDGE} seed={230 + i} />
@@ -257,9 +325,11 @@ export function Gym({
   player: Player;
 }) {
   const calm = useReducedMotion();
+  const dressing = useMemo(buildDressing, []);
   return (
     <>
       <color attach="background" args={["#0c0820"]} />
+      <primitive object={dressing} />
       <fog attach="fog" args={["#140c2c", 16, 40]} />
       <hemisphereLight args={["#f4f0ff", "#4a3a6a", 1]} />
       <pointLight
@@ -280,9 +350,12 @@ export function Gym({
       />
       <PortalPads room={ROOMS.gym} color={PINK} />
       {/* the spring floor, a blue square edged in white */}
-      <mesh position={[SPRING.x, 0.015, SPRING.z]} rotation-x={-Math.PI / 2}>
+      <mesh
+        position={[SPRING.x, 0.015, SPRING.z]}
+        rotation-x={-Math.PI / 2}
+        material={SPRING_FELT}
+      >
         <planeGeometry args={[SPRING.half * 2, SPRING.half * 2]} />
-        <meshStandardMaterial color="#2e5ec8" roughness={0.8} />
       </mesh>
       <mesh position={[SPRING.x, 0.018, SPRING.z]} rotation-x={-Math.PI / 2}>
         <ringGeometry
@@ -295,9 +368,8 @@ export function Gym({
         [FLOOR_BOUNDS.x0 - 5, HEIGHT / 2, CZ, 0.2, HEIGHT, D],
         [FLOOR_BOUNDS.x1 + 5, HEIGHT / 2, CZ, 0.2, HEIGHT, D],
       ].map(([x, y, z, w, h, d], i) => (
-        <mesh key={i} position={[x, y, z]}>
+        <mesh key={i} position={[x, y, z]} material={BLOCK}>
           <boxGeometry args={[w, h, d]} />
-          <meshStandardMaterial color="#2a1c48" roughness={0.9} />
         </mesh>
       ))}
       <NeonText
@@ -310,9 +382,8 @@ export function Gym({
       />
       {/* benches by the door */}
       {[-2.5, 2.5].map((x) => (
-        <mesh key={x} position={[x, 0.42, BENCH_Z]}>
+        <mesh key={x} position={[x, 0.42, BENCH_Z]} material={VINYL}>
           <boxGeometry args={[1.8, 0.08, 0.42]} />
-          <meshStandardMaterial color={PINK} roughness={0.5} />
         </mesh>
       ))}
       <Apparatus />

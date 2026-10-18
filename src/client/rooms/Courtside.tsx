@@ -20,6 +20,76 @@ import { CourtsideNpcs } from "./courtside/Npcs.tsx";
 import { leave, OUTGOING, tennis, tick } from "./courtside/session.ts";
 import { CrowdFigure } from "./shared/CrowdFigure.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
+import { Batch } from "./shared/batch.ts";
+import { GLOSS, painted, plant } from "./shared/details.ts";
+import { surface } from "../city/worldTexture.ts";
+
+const TEAK = surface("wood_veneer", { scale: 1.5, color: "#c89a6a" });
+
+/** The umpire's chair at the net, a ball hopper, towels and water by the
+ * bench, and planters at the corners. */
+function buildDressing() {
+  const b = new Batch();
+  const box = new THREE.BoxGeometry(1, 1, 1);
+  const leg = new THREE.CylinderGeometry(0.03, 0.03, 1.8, 6);
+  const ux = COURT.doubles + 1.3;
+  for (const dx of [-0.25, 0.25])
+    for (const dz of [-0.25, 0.25])
+      b.add(painted(leg, "#e8e8f0"), GLOSS, {
+        position: [ux + dx, 0.9, dz],
+        rotation: [dz * 0.2, 0, -dx * 0.2],
+      });
+  b.add(box, TEAK, { position: [ux, 1.85, 0], scale: [0.55, 0.06, 0.55] });
+  b.add(box, TEAK, {
+    position: [ux + 0.25, 2.15, 0],
+    scale: [0.05, 0.6, 0.55],
+  });
+  for (let k = 0; k < 5; k++)
+    b.add(box, TEAK, {
+      position: [ux - 0.35, 0.3 + k * 0.32, 0],
+      scale: [0.05, 0.03, 0.4],
+    });
+  // a wire hopper of balls
+  const ball = new THREE.SphereGeometry(0.034, 8, 6);
+  for (let k = 0; k < 16; k++)
+    b.add(painted(ball, LIME), GLOSS, {
+      position: [
+        BENCH_X - 0.6 + (k % 4) * 0.07,
+        0.75 + Math.floor(k / 8) * 0.06,
+        4.4 + (Math.floor(k / 4) % 2) * 0.07,
+      ],
+    });
+  b.add(
+    painted(
+      new THREE.CylinderGeometry(0.16, 0.12, 0.7, 10, 1, true),
+      "#3a3a48",
+    ),
+    GLOSS,
+    {
+      position: [BENCH_X - 0.5, 0.4, 4.43],
+    },
+  );
+  for (let k = 0; k < 4; k++) {
+    b.add(painted(box, k % 2 ? "#ff4fb3" : "#f4f4f0"), GLOSS, {
+      position: [BENCH_X + 0.15, 0.47, 5 + k * 0.9],
+      scale: [0.35, 0.02, 0.3],
+    });
+    b.add(
+      painted(
+        new THREE.CylinderGeometry(0.035, 0.035, 0.22, 8),
+        k % 2 ? LIME : "#4fe3ff",
+      ),
+      GLOSS,
+      {
+        position: [BENCH_X + 0.15, 0.57, 5.4 + k * 0.9],
+      },
+    );
+  }
+  for (const sx of [-1, 1])
+    for (const z of [FLOOR_BOUNDS.z0 + 0.6, FLOOR_BOUNDS.z1 - 0.6])
+      plant(b, { x: sx * 8.4, z }, 1.5);
+  return b.build();
+}
 import { canvasTex, hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
@@ -205,7 +275,8 @@ export function Courtside({
   onPick: PickHandler;
   player: Player;
 }) {
-  const surface = useMemo(courtTexture, []);
+  const court = useMemo(courtTexture, []);
+  const dressing = useMemo(buildDressing, []);
   return (
     <>
       <color attach="background" args={["#071226"]} />
@@ -222,10 +293,12 @@ export function Courtside({
         depth={D}
         center={[0, CZ]}
         color="#ffffff"
-        map={surface}
+        map={court}
+        texture={{ id: "brushed_concrete", scale: 0.4 }}
         low={{ metalness: 0, roughness: 0.8 }}
         onPick={onPick}
       />
+      <primitive object={dressing} />
       <PortalPads room={ROOMS.courtside} color={LIME} />
       {/* the net and its posts */}
       <mesh position={[0, 0.5, 0]}>
@@ -273,9 +346,8 @@ export function Courtside({
       )}
       <Stands banks={BANKS} fill={0.7} seed={29} />
       {[5.5, 7.5].map((z) => (
-        <mesh key={z} position={[BENCH_X + 0.15, 0.42, z]}>
+        <mesh key={z} position={[BENCH_X + 0.15, 0.42, z]} material={TEAK}>
           <boxGeometry args={[0.45, 0.08, 1.8]} />
-          <meshStandardMaterial color="#e9f5db" />
         </mesh>
       ))}
       <NeonText

@@ -19,6 +19,58 @@ import { MirrorBall } from "./pulse/Decor.tsx";
 import { type Beam, Beams } from "./shared/Beams.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { LedFloor } from "./shared/LedFloor.tsx";
+import { Batch } from "./shared/batch.ts";
+import { plant, poster, stringLights } from "./shared/details.ts";
+import { surface } from "../city/worldTexture.ts";
+
+// midnight-painted block, carpeted booth, vinyl benches
+const BLOCK = surface("concrete_wall_008", {
+  scale: 0.4,
+  color: "#4a3878",
+  roughness: 0.9,
+});
+const BOOTH = surface("carpet", { scale: 2, color: "#5a4a90" });
+const VINYL = surface("leather_white", {
+  scale: 2.5,
+  color: "#ff4fb3",
+  roughness: 0.45,
+});
+const COUNTER_TOP = surface("terrazzo_tiles", {
+  scale: 1.2,
+  color: "#d8c8ff",
+  roughness: 0.3,
+});
+
+/** Retro posters, bulbs looping over the rink, plants by the door. */
+function buildDressing() {
+  const b = new Batch();
+  [-6, -3, 3, 6].forEach((x, i) =>
+    poster(
+      b,
+      { x, y: 2.4, z: FLOOR_BOUNDS.z0 + 0.03 },
+      [4, 1, 5, 7][i] ?? 0,
+      1,
+      1.3,
+    ),
+  );
+  [-4, -1, 2].forEach((z, i) =>
+    poster(
+      b,
+      { x: FLOOR_BOUNDS.x1 - 0.03, y: 2.4, z, ry: -Math.PI / 2 },
+      i * 2,
+      0.9,
+      1.2,
+    ),
+  );
+  for (const [a, c] of [
+    [[-10.8, 5.2, -7.8], PINK],
+    [[10.8, 5.2, -7.8], CYAN],
+  ] as const)
+    stringLights(b, a, [0, 5.4, 7.2], 30, c, 0.8);
+  plant(b, { x: -4.2, z: 7.1 }, 1.3);
+  plant(b, { x: 10.4, z: 7.1 }, 1.3);
+  return b.build();
+}
 import { canvasTex, hdr } from "./shared/materials.ts";
 import { NeonText, SCRIPT } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
@@ -214,7 +266,7 @@ function Rental(): JSX.Element {
         <boxGeometry
           args={[COUNTER.x1 - COUNTER.x0, 1.1, COUNTER.z1 - COUNTER.z0]}
         />
-        <meshStandardMaterial color="#2a1840" roughness={0.5} />
+        <primitive object={COUNTER_TOP} attach="material" />
       </mesh>
       {/* cubbies of skates on the wall behind */}
       {Array.from({ length: 10 }, (_, i) => (
@@ -265,6 +317,7 @@ function Rental(): JSX.Element {
  * counter where Roxy hands out skates (or put on your own from the dock).
  */
 export function RollerRink({ onPick }: { onPick: PickHandler }) {
+  const dressing = useMemo(buildDressing, []);
   return (
     <>
       <color attach="background" args={["#0c0418"]} />
@@ -289,6 +342,7 @@ export function RollerRink({ onPick }: { onPick: PickHandler }) {
         center={[0, CZ]}
         color="#ffffff"
         map={MAPLE}
+        texture={{ id: "wood_floor", scale: 0.8 }}
         mirror={0.35}
         low={{ metalness: 0.05, roughness: 0.35 }}
         onPick={onPick}
@@ -300,11 +354,11 @@ export function RollerRink({ onPick }: { onPick: PickHandler }) {
         [FLOOR_BOUNDS.x0 - 0.1, HEIGHT / 2, CZ, 0.2, HEIGHT, D],
         [FLOOR_BOUNDS.x1 + 0.1, HEIGHT / 2, CZ, 0.2, HEIGHT, D],
       ].map(([x, y, z, w, h, d], i) => (
-        <mesh key={i} position={[x, y, z]}>
+        <mesh key={i} position={[x, y, z]} material={BLOCK}>
           <boxGeometry args={[w, h, d]} />
-          <meshStandardMaterial color="#1a0c2e" roughness={0.9} />
         </mesh>
       ))}
+      <primitive object={dressing} />
       <NeonText
         text="Roller Disco"
         color={PINK}
@@ -325,9 +379,8 @@ export function RollerRink({ onPick }: { onPick: PickHandler }) {
         <MirrorBall />
       </group>
       {/* the DJ's booth at the north end */}
-      <mesh position={[DJ[0], 0.55, DJ[1]]}>
+      <mesh position={[DJ[0], 0.55, DJ[1]]} material={BOOTH}>
         <boxGeometry args={[2.2, 1.1, 1]} />
-        <meshStandardMaterial color="#14102a" />
       </mesh>
       <mesh position={[DJ[0], 1.12, DJ[1] + 0.51]}>
         <boxGeometry args={[2.2, 0.04, 0.02]} />
@@ -335,9 +388,8 @@ export function RollerRink({ onPick }: { onPick: PickHandler }) {
       </mesh>
       {/* benches along the south wall */}
       {[3.5, 6.5].map((x) => (
-        <mesh key={x} position={[x, 0.42, BENCH_Z]}>
+        <mesh key={x} position={[x, 0.42, BENCH_Z]} material={VINYL}>
           <boxGeometry args={[1.8, 0.08, 0.42]} />
-          <meshStandardMaterial color="#ff4fb3" roughness={0.5} />
         </mesh>
       ))}
       <Rental />

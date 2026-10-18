@@ -19,6 +19,76 @@ import { WINDOWS } from "./plaza/Sky.tsx";
 import { RangeNpcs } from "./range/Npcs.tsx";
 import { leave, range, tick } from "./range/session.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
+import { Batch } from "./shared/batch.ts";
+import { GLOSS, painted, plant, poster } from "./shared/details.ts";
+import { surface } from "../city/worldTexture.ts";
+
+// mown grass out on the range, turf mats, painted steel bays, teak benches
+const FAIRWAY = surface("leafy_grass", {
+  scale: 0.25,
+  color: "#6aa868",
+  roughness: 1,
+});
+const TURF = surface("leafy_grass", { scale: 3, color: "#7ad87a" });
+const STEEL = surface("painted_metal_shutter", {
+  scale: 1,
+  color: "#6a5a90",
+  metalness: 0.4,
+  roughness: 0.6,
+});
+const ROOF = surface("corrugated_iron", {
+  scale: 0.8,
+  color: "#2a2238",
+  metalness: 0.1,
+  roughness: 1,
+});
+const TEAK = surface("wood_veneer", { scale: 1.5, color: "#b07a4a" });
+
+/** A bucket of balls at every bay, a bag stand, club racks and posters. */
+function buildDressing() {
+  const b = new Batch();
+  const bucket = new THREE.CylinderGeometry(0.16, 0.12, 0.26, 12);
+  const ball = new THREE.SphereGeometry(0.03, 6, 4);
+  const club = new THREE.CylinderGeometry(0.008, 0.008, 1, 5);
+  const head = new THREE.BoxGeometry(0.07, 0.05, 0.03);
+  BAY_XS.forEach((x, i) => {
+    const bx = x + 0.55;
+    const bz = TEE[1] + 0.9;
+    b.add(painted(bucket, i % 2 ? "#ff4fb3" : LIME), GLOSS, {
+      position: [bx, 0.13, bz],
+    });
+    for (let k = 0; k < 9; k++)
+      b.add(painted(ball, "#f8f8f4"), GLOSS, {
+        position: [
+          bx + ((k % 3) - 1) * 0.07,
+          0.27 + (k > 5 ? 0.03 : 0),
+          bz + (Math.floor(k / 3) - 1) * 0.07,
+        ],
+      });
+  });
+  // a rack of clubs leaning on the back of each bench
+  for (const x of [-4, 4])
+    for (let k = 0; k < 5; k++) {
+      const cx = x - 1 + k * 0.5;
+      b.add(painted(club, "#c8c8d4"), GLOSS, {
+        position: [cx, 0.55, BENCH_Z + 0.32],
+        rotation: [0.15, 0, 0],
+      });
+      b.add(painted(head, k % 2 ? "#2a2a34" : "#c8c8d4"), GLOSS, {
+        position: [cx, 0.06, BENCH_Z + 0.25],
+      });
+    }
+  for (const [x, d] of [
+    [-5.6, 3],
+    [5.6, 5],
+  ] as const)
+    poster(b, { x, y: 1.8, z: FLOOR_BOUNDS.z1 - 0.05, ry: Math.PI }, d, 0.8, 1);
+  plant(b, { x: -8, z: 5.5 }, 1.4);
+  plant(b, { x: 8, z: 5.5 }, 1.4);
+  plant(b, { x: -8, z: -0.8 }, 1.2);
+  plant(b, { x: 8, z: -0.8 }, 1.2);
+  return b.build();
+}
 import { hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
@@ -176,6 +246,7 @@ function Shot() {
  */
 export function DrivingRange({ onPick }: { onPick: PickHandler }) {
   const calm = useReducedMotion();
+  const dressing = useMemo(buildDressing, []);
   return (
     <>
       <color attach="background" args={["#08061c"]} />
@@ -205,28 +276,34 @@ export function DrivingRange({ onPick }: { onPick: PickHandler }) {
         onPick={onPick}
       />
       {/* the range itself, stretching away into the night */}
-      <mesh position={[0, -0.02, TEE[1] - 130]} rotation-x={-Math.PI / 2}>
+      <mesh
+        position={[0, -0.02, TEE[1] - 130]}
+        rotation-x={-Math.PI / 2}
+        material={FAIRWAY}
+      >
         <planeGeometry args={[160, 260]} />
-        <meshStandardMaterial color="#1f6a2e" roughness={1} />
       </mesh>
+      <primitive object={dressing} />
       <PortalPads room={ROOMS["driving-range"]} color={LIME} />
       {/* the tee mats and the dividers between the bays */}
       {BAY_XS.map((x) => (
-        <mesh key={x} position={[x, 0.02, TEE[1]]} rotation-x={-Math.PI / 2}>
+        <mesh
+          key={x}
+          position={[x, 0.02, TEE[1]]}
+          rotation-x={-Math.PI / 2}
+          material={TURF}
+        >
           <planeGeometry args={[1.6, 1.6]} />
-          <meshStandardMaterial color="#2a8a3a" roughness={1} />
         </mesh>
       ))}
       {[-4.5, -1.5, 1.5, 4.5].map((x) => (
-        <mesh key={x} position={[x, 1, TEE[1] + 0.8]}>
+        <mesh key={x} position={[x, 1, TEE[1] + 0.8]} material={STEEL}>
           <boxGeometry args={[0.15, 2, 1.8]} />
-          <meshStandardMaterial color="#2a2440" />
         </mesh>
       ))}
       {/* the roof over the bays, edged in neon */}
-      <mesh position={[0, 3.2, CZ]}>
+      <mesh position={[0, 3.2, CZ]} material={ROOF}>
         <boxGeometry args={[W + 1, 0.2, D + 1]} />
-        <meshStandardMaterial color="#1c1430" />
       </mesh>
       <mesh position={[0, 3.05, FLOOR_BOUNDS.z0 - 0.4]}>
         <boxGeometry args={[W + 1, 0.06, 0.06]} />
@@ -242,9 +319,8 @@ export function DrivingRange({ onPick }: { onPick: PickHandler }) {
         rotation-y={Math.PI}
       />
       {[-4, 4].map((x) => (
-        <mesh key={x} position={[x, 0.42, BENCH_Z]}>
+        <mesh key={x} position={[x, 0.42, BENCH_Z]} material={TEAK}>
           <boxGeometry args={[2.8, 0.08, 0.42]} />
-          <meshStandardMaterial color="#8a5a3a" />
         </mesh>
       ))}
       {/* floodlights along the range */}
