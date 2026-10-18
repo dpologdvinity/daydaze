@@ -23,6 +23,65 @@ import { placePlayer } from "../world/PlayerController.tsx";
 import { runway } from "./catwalk/session.ts";
 import { CrowdFigure } from "./shared/CrowdFigure.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
+import { Batch } from "./shared/batch.ts";
+import { plant, poster } from "./shared/details.ts";
+import { GOLD } from "./shared/materials.ts";
+import { groundMaps, surface } from "../city/worldTexture.ts";
+
+// velvet-draped walls, a lacquered judges' table
+const DRAPE = surface("velour_velvet", { scale: 1.2, color: "#b070c8" });
+const VELVET_PINK = surface("velour_velvet", { scale: 2, color: "#ff8ad0" });
+const LACQUER_TOP = surface("leather_white", {
+  scale: 2,
+  color: "#2a2030",
+  roughness: 0.3,
+});
+const CURTAIN_PILE = groundMaps("velour_velvet").normalMap;
+CURTAIN_PILE.repeat.set(3, 3);
+
+/** Brass stanchions and velvet rope down the runway, fashion week posters,
+ * flowers at the runway's end. */
+function buildDressing() {
+  const b = new Batch();
+  const post = new THREE.CylinderGeometry(0.03, 0.03, 0.95, 8);
+  const foot = new THREE.CylinderGeometry(0.14, 0.16, 0.04, 12);
+  const knob = new THREE.SphereGeometry(0.05, 6, 4);
+  const rope = new THREE.CylinderGeometry(0.022, 0.022, 1, 6);
+  for (const side of [-1, 1]) {
+    const x = side * (RUNWAY.half + 0.45);
+    for (let z = RUNWAY.z0 + 1; z <= RUNWAY.z1; z += 2) {
+      b.add(post, GOLD, { position: [x, 0.5, z] });
+      b.add(foot, GOLD, { position: [x, 0.02, z] });
+      b.add(knob, GOLD, { position: [x, 0.98, z] });
+      if (z + 2 <= RUNWAY.z1)
+        b.add(rope, VELVET_PINK, {
+          position: [x, 0.82, z + 1],
+          rotation: [Math.PI / 2, 0, 0],
+          scale: [1, 2, 1],
+        });
+    }
+  }
+  [-7, -3, 1].forEach((z, i) => {
+    poster(
+      b,
+      { x: FLOOR_BOUNDS.x0 + 0.02, y: 2.6, z, ry: Math.PI / 2 },
+      [6, 4, 7][i] ?? 0,
+      1.1,
+      1.5,
+      GOLD,
+    );
+    poster(
+      b,
+      { x: FLOOR_BOUNDS.x1 - 0.02, y: 2.6, z, ry: -Math.PI / 2 },
+      [1, 3, 5][i] ?? 0,
+      1.1,
+      1.5,
+      GOLD,
+    );
+  });
+  for (const x of [-1.9, 1.9]) plant(b, { x, z: RUNWAY.z1 + 0.6 }, 1.2);
+  return b.build();
+}
 import { hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
@@ -267,6 +326,7 @@ export function Catwalk({
   onPick: PickHandler;
   player: Player;
 }) {
+  const dressing = useMemo(buildDressing, []);
   const led = useMemo(
     () =>
       new THREE.MeshBasicMaterial({ color: hdr(PINK, 3), toneMapped: false }),
@@ -305,10 +365,12 @@ export function Catwalk({
         width={W}
         depth={D}
         center={[0, CZ]}
-        color="#140c1e"
+        color="#6a5a7a"
+        texture={{ id: "marble_tiles", scale: 0.35 }}
         low={{ metalness: 0.2, roughness: 0.5 }}
         onPick={onPick}
       />
+      <primitive object={dressing} />
       <PortalPads room={ROOMS.catwalk} color={PINK} />
       {/* the runway: a raised glossy slab, LED strips down both edges */}
       <mesh position={[0, RUNWAY.height / 2, MID]}>
@@ -352,9 +414,8 @@ export function Catwalk({
         [FLOOR_BOUNDS.x0 - 0.1, HEIGHT / 2, CZ, 0.2, HEIGHT, D],
         [FLOOR_BOUNDS.x1 + 0.1, HEIGHT / 2, CZ, 0.2, HEIGHT, D],
       ].map(([x, y, z, w, h, d], i) => (
-        <mesh key={i} position={[x, y, z]}>
+        <mesh key={i} position={[x, y, z]} material={DRAPE}>
           <boxGeometry args={[w, h, d]} />
-          <meshStandardMaterial color="#1e1028" roughness={0.9} />
         </mesh>
       ))}
       <mesh position={[0, 1.7, FLOOR_BOUNDS.z0 + 0.05]}>
@@ -363,6 +424,7 @@ export function Catwalk({
           color="#3a0f3a"
           emissive="#5a1050"
           emissiveIntensity={0.6}
+          normalMap={CURTAIN_PILE}
         />
       </mesh>
       {[
@@ -392,16 +454,15 @@ export function Catwalk({
         <boxGeometry
           args={[JUDGES.x1 - JUDGES.x0, 0.76, JUDGES.z1 - JUDGES.z0]}
         />
-        <meshStandardMaterial color="#0e0a14" roughness={0.2} metalness={0.4} />
+        <primitive object={LACQUER_TOP} attach="material" />
       </mesh>
       <mesh position={[0, 0.7, JUDGES.z0 - 0.01]} material={led}>
         <boxGeometry args={[JUDGES.x1 - JUDGES.x0, 0.04, 0.02]} />
       </mesh>
       {JUDGE_XS.map((x, i) => (
         <group key={x} position={[x, 0, JUDGE_Z]} rotation-y={Math.PI}>
-          <mesh position-y={0.25}>
+          <mesh position-y={0.25} material={VELVET_PINK}>
             <boxGeometry args={[0.5, 0.5, 0.5]} />
-            <meshStandardMaterial color="#2a1838" />
           </mesh>
           {/* a chair's height, less where a sitting doll's thighs come to */}
           <group position-y={0.5 - 0.48}>

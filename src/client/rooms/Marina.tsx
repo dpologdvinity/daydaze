@@ -20,13 +20,112 @@ import { cameraHold } from "../world/cameraHold.ts";
 import { MarinaNpcs } from "./marina/Npcs.tsx";
 import { FLIGHT, fishing, leave, tick } from "./marina/session.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
+import { Batch } from "./shared/batch.ts";
+import { Bottles, type ShelfRow } from "./shared/Bottles.tsx";
+import { GLOSS, painted, plant, stringLights } from "./shared/details.ts";
+import { surface } from "../city/worldTexture.ts";
+
+// weathered oak decking on tarred pilings, a navy-painted bar, teak benches
+const DECKING = surface("oak_wood_planks", {
+  scale: 0.8,
+  color: "#d8b090",
+  roughness: 0.85,
+});
+const PILING = surface("palm_bark", { scale: 1.5, color: "#8a6a50" });
+const NAVY = surface("wood_plank_wall", { scale: 1, color: "#4a5a9a" });
+const TEAK = surface("wood_veneer", { scale: 1.5, color: "#c8a27a" });
+// the yacht club's bottles along the back of its bar, labels to the dock
+// (the group turns them round to face -z)
+const ROWS: readonly ShelfRow[] = [
+  {
+    x0: -(BAR.x1 - 0.2),
+    x1: -(BAR.x0 + 0.2),
+    y: 1.16,
+    z: -(BAR.z1 - 0.12),
+    count: 12,
+  },
+];
+
+/** Life rings, rope coils, crates, lanterns, planters and bulbs along the
+ * landing's edge. */
+function buildDressing() {
+  const b = new Batch();
+  const ring = new THREE.TorusGeometry(0.28, 0.07, 8, 16);
+  for (const [x, z] of [
+    [DOCK.x0 - 0.05, -2],
+    [DOCK.x1 + 0.05, -8],
+    [CROSS.x1, CROSS.z1 + 0.05],
+  ] as const) {
+    b.add(painted(ring, "#f4f4f0"), GLOSS, {
+      position: [x, 0.5, z],
+      rotation: [0, Math.PI / 2, 0],
+    });
+    for (let q = 0; q < 4; q++)
+      b.add(
+        painted(
+          new THREE.TorusGeometry(0.28, 0.072, 8, 3, Math.PI / 4),
+          "#d8323a",
+        ),
+        GLOSS,
+        {
+          position: [x, 0.5, z],
+          rotation: [q * (Math.PI / 2), Math.PI / 2, 0],
+        },
+      );
+  }
+  const coil = new THREE.TorusGeometry(0.2, 0.05, 6, 14);
+  for (const [x, z] of [
+    [1.1, -4],
+    [-1.1, -10],
+    [6.5, -6.2],
+  ] as const)
+    for (let k = 0; k < 3; k++)
+      b.add(painted(coil, "#d8c8a0"), GLOSS, {
+        position: [x, 0.03 + k * 0.08, z],
+        rotation: [Math.PI / 2, 0, 0],
+        scale: 1 - k * 0.18,
+      });
+  const box = new THREE.BoxGeometry(1, 1, 1);
+  for (const [x, z, s] of [
+    [-8.2, 4, 0.6],
+    [-7.6, 4.1, 0.45],
+    [-8.1, 4.05, 0.4],
+  ] as const)
+    b.add(box, TEAK, {
+      position: [x, s / 2 + (s < 0.45 ? 0.6 : 0), z],
+      scale: s,
+    });
+  for (const [x, z] of [
+    [-8.4, 8.4],
+    [8.4, 8.4],
+    [-2.4, 3.4],
+    [2.4, 3.4],
+  ] as const)
+    plant(b, { x, z }, 1.3);
+  stringLights(
+    b,
+    [LANDING.x0, 1.8, LANDING.z0],
+    [DOCK.x0, 1.8, LANDING.z0],
+    10,
+    "#ffe3b0",
+    0.25,
+  );
+  stringLights(
+    b,
+    [DOCK.x1, 1.8, LANDING.z0],
+    [LANDING.x1, 1.8, LANDING.z0],
+    10,
+    "#ffe3b0",
+    0.25,
+  );
+  return b.build();
+}
 import { hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 
 const TEAL = "#3fe0d0";
 const WATER_Y = -0.5;
-const PLANK = "#8a6a4a";
 
 /** The docks' decks, as boxes standing out of the water. */
 const DECKS = [LANDING, DOCK, CROSS].map((r) => ({
@@ -61,7 +160,7 @@ function Pilings() {
       args={[undefined, undefined, spots.length]}
     >
       <cylinderGeometry args={[0.14, 0.16, 1.4, 8]} />
-      <meshStandardMaterial color="#4a3424" roughness={0.9} />
+      <primitive object={PILING} attach="material" />
     </instancedMesh>
   );
 }
@@ -256,9 +355,14 @@ export function Marina({
   player: Player;
 }) {
   const calm = useReducedMotion();
+  const dressing = useMemo(buildDressing, []);
   return (
     <>
       <color attach="background" args={["#060a1c"]} />
+      <primitive object={dressing} />
+      <group rotation-y={Math.PI}>
+        <Bottles rows={ROWS} seed={37} />
+      </group>
       <fog attach="fog" args={["#0a1430", 30, 120]} />
       <Stars
         radius={90}
@@ -292,9 +396,9 @@ export function Marina({
           key={i}
           position={[d.x, -0.3, d.z]}
           onClick={(e) => onPick([e.point.x, e.point.z])}
+          material={DECKING}
         >
           <boxGeometry args={[d.w, 0.6, d.d]} />
-          <meshStandardMaterial color={PLANK} roughness={0.85} />
         </mesh>
       ))}
       <Pilings />
@@ -321,9 +425,11 @@ export function Marina({
         />
       </mesh>
       {/* the yacht club's bar on the landing */}
-      <mesh position={[(BAR.x0 + BAR.x1) / 2, 0.55, (BAR.z0 + BAR.z1) / 2]}>
+      <mesh
+        position={[(BAR.x0 + BAR.x1) / 2, 0.55, (BAR.z0 + BAR.z1) / 2]}
+        material={NAVY}
+      >
         <boxGeometry args={[BAR.x1 - BAR.x0, 1.1, BAR.z1 - BAR.z0]} />
-        <meshStandardMaterial color="#1c2a4a" />
       </mesh>
       <mesh position={[(BAR.x0 + BAR.x1) / 2, 1.13, (BAR.z0 + BAR.z1) / 2]}>
         <boxGeometry
@@ -341,9 +447,12 @@ export function Marina({
       />
       {/* benches on the landing, facing the boats */}
       {[-7, -4].map((x) => (
-        <mesh key={x} position={[x, 0.42, BENCH_SEATS[0][1] + 0.05]}>
+        <mesh
+          key={x}
+          position={[x, 0.42, BENCH_SEATS[0][1] + 0.05]}
+          material={TEAK}
+        >
           <boxGeometry args={[1.8, 0.08, 0.45]} />
-          <meshStandardMaterial color="#c8a27a" />
         </mesh>
       ))}
       <NeonText

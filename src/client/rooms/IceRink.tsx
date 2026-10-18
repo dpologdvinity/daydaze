@@ -12,6 +12,60 @@ import { cameraHold } from "../world/cameraHold.ts";
 import { show } from "./icerink/session.ts";
 import { useReducedMotion } from "../motion.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
+import { Batch } from "./shared/batch.ts";
+import { bunting, GLOSS, painted, plant, poster } from "./shared/details.ts";
+import { surface } from "../city/worldTexture.ts";
+
+// white dasher boards, a timber cocoa stand under a red awning
+const BOARDS = surface("plastic", {
+  scale: 1,
+  color: "#f4f7ff",
+  roughness: 0.4,
+});
+// the boards are one open ring, seen from both sides (this color is theirs alone)
+BOARDS.side = THREE.DoubleSide;
+const TIMBER = surface("wood_plank_wall", { scale: 0.9, color: "#d08a5a" });
+const AWNING = surface("plastic", {
+  scale: 1,
+  color: "#d94f4f",
+  roughness: 0.6,
+});
+
+/** Cocoa mugs on the stand, pennants over it, benches of rental skates,
+ * evergreens and posters. */
+function buildDressing() {
+  const b = new Batch();
+  const mug = new THREE.CylinderGeometry(0.045, 0.04, 0.1, 10);
+  for (let k = 0; k < 6; k++)
+    b.add(painted(mug, k % 2 ? "#ff2f9a" : "#f4f0ea"), GLOSS, {
+      position: [6.7 + k * 0.35, 1.16, 6.1],
+    });
+  bunting(
+    b,
+    [6.3, 2.35, 5.8],
+    [8.9, 2.35, 5.8],
+    10,
+    ["#9ad8ff", "#ffffff", "#ff4fb3"],
+    0.15,
+    0.16,
+  );
+  // a bench of rental skates by the door
+  const box = new THREE.BoxGeometry(1, 1, 1);
+  b.add(box, TIMBER, { position: [-7.4, 0.42, 6.6], scale: [2.4, 0.08, 0.5] });
+  for (let k = 0; k < 6; k++)
+    b.add(painted(box, k % 2 ? "#f4f4f8" : "#2a2a34"), GLOSS, {
+      position: [-8.4 + k * 0.4, 0.52, 6.6],
+      scale: [0.1, 0.14, 0.26],
+    });
+  for (const [x, z] of [
+    [-10, -7],
+    [10, -7],
+    [-10, 7],
+  ] as const)
+    plant(b, { x, z }, 1.8);
+  poster(b, { x: 7.6, y: 1.7, z: 6.84, ry: Math.PI }, 7, 0.8, 0.5);
+  return b.build();
+}
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { Sparkles } from "./shared/Sparkles.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
@@ -184,6 +238,7 @@ export function IceRink({
   player: Player;
 }) {
   const calm = useReducedMotion();
+  const dressing = useMemo(buildDressing, []);
   const lights = useMemo(
     () =>
       Array.from({ length: 28 }, (_, i): [number, number, number] => {
@@ -211,10 +266,12 @@ export function IceRink({
         width={22}
         depth={16}
         center={[0, 0]}
-        color="#2a3358"
+        color="#8a9ad8"
+        texture={{ id: "rubber_tiles", scale: 0.8 }}
         low={{ metalness: 0, roughness: 0.8 }}
         onPick={onPick}
       />
+      <primitive object={dressing} />
       {/* the ice itself, glossy and pale, a hair over the hall floor */}
       <mesh
         rotation-x={-Math.PI / 2}
@@ -236,11 +293,7 @@ export function IceRink({
         <cylinderGeometry
           args={[1, 1, 1, 64, 1, true, BOARD_GAP, Math.PI * 2 - BOARD_GAP * 2]}
         />
-        <meshStandardMaterial
-          color="#f4f7ff"
-          roughness={0.4}
-          side={THREE.DoubleSide}
-        />
+        <primitive object={BOARDS} attach="material" />
       </mesh>
       <Bulbs points={lights} colors={LIGHT_COLORS} radius={0.09} />
       <Sparkles
@@ -256,13 +309,11 @@ export function IceRink({
         <Skater key={i} {...s} seed={70 + i} />
       ))}
       {/* the hot cocoa stand, right of the door */}
-      <mesh position={[7.6, 0.55, 6.4]}>
+      <mesh position={[7.6, 0.55, 6.4]} material={TIMBER}>
         <boxGeometry args={[2.4, 1.1, 0.9]} />
-        <meshStandardMaterial color="#8a4b2a" roughness={0.7} />
       </mesh>
-      <mesh position={[7.6, 2.4, 6.4]}>
+      <mesh position={[7.6, 2.4, 6.4]} material={AWNING}>
         <boxGeometry args={[2.6, 0.12, 1.2]} />
-        <meshStandardMaterial color="#d94f4f" />
       </mesh>
       <TalkingNpc
         name="Noelle"

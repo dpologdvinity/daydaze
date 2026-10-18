@@ -7,6 +7,48 @@ import { ROOMS } from "../../game/rooms.ts";
 import type { DialogueContext } from "../../game/dialogue/types.ts";
 import { useReducedMotion } from "../motion.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
+import { Batch } from "./shared/batch.ts";
+import { GLOSS, painted, plant } from "./shared/details.ts";
+import { surface } from "../city/worldTexture.ts";
+
+// wet rock round the touch pool and along the tank bases, a teak bench
+const ROCK = surface("rock_face", { scale: 1.2, color: "#8a8aa8" });
+const TEAK = surface("wood_veneer", { scale: 1.5, color: "#a07050" });
+
+/** Rock piles along the reef and jelly walls, starfish in the touch pool, a
+ * viewing bench and planters by the door. */
+function buildDressing() {
+  const b = new Batch();
+  const rock = new THREE.DodecahedronGeometry(1, 0);
+  for (let k = 0; k < 14; k++) {
+    const side = k % 2 ? 1 : -1;
+    const r = 0.25 + ((k * 37) % 5) * 0.08;
+    b.add(rock, ROCK, {
+      position: [side * (7.2 - r * 0.4), r * 0.5, -6 + Math.floor(k / 2) * 1.9],
+      rotation: [k, k * 2.3, 0],
+      scale: [r * 1.3, r * 0.8, r],
+    });
+  }
+  const star = new THREE.CylinderGeometry(0.09, 0.09, 0.02, 5);
+  for (let k = 0; k < 5; k++) {
+    const a = k * 1.3;
+    b.add(
+      painted(star, ["#ff7a3d", "#ff4fb3", "#ffd84f"][k % 3] ?? "#ff7a3d"),
+      GLOSS,
+      {
+        position: [-3.6 + Math.cos(a) * 0.7, 0.73, 4.4 + Math.sin(a) * 0.7],
+        rotation: [0, a, 0],
+      },
+    );
+  }
+  const box = new THREE.BoxGeometry(1, 1, 1);
+  b.add(box, TEAK, { position: [2.4, 0.42, -2], scale: [0.5, 0.08, 2.2] });
+  for (const z of [-2.9, -1.1])
+    b.add(box, TEAK, { position: [2.4, 0.2, z], scale: [0.4, 0.4, 0.1] });
+  plant(b, { x: 6.8, z: 6.2 }, 1.4);
+  plant(b, { x: -6.8, z: 6.2 }, 1.4);
+  return b.build();
+}
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
 import { hdr } from "./shared/materials.ts";
@@ -59,6 +101,7 @@ function sharkGeometry() {
  */
 export function Aquarium({ onPick }: { onPick: PickHandler }) {
   const calm = useReducedMotion();
+  const dressing = useMemo(buildDressing, []);
   const sharks = useRef<THREE.InstancedMesh>(null);
   const jellies = useRef<THREE.InstancedMesh>(null);
   const fish = useRef<THREE.InstancedMesh>(null);
@@ -173,11 +216,13 @@ export function Aquarium({ onPick }: { onPick: PickHandler }) {
         width={16}
         depth={14}
         center={[0, 0]}
-        color="#0c2236"
+        color="#4a6a90"
+        texture={{ id: "slate_floor", scale: 0.5 }}
         mirror={0.6}
         low={{ metalness: 0.2, roughness: 0.5 }}
         onPick={onPick}
       />
+      <primitive object={dressing} />
       <PortalPads room={ROOMS.aquarium} color="#4fe3ff" />
       {/* the shark tank: a glowing body of water the tunnel runs through */}
       {/* its floor sits a little above the hall's, so the two never fight */}
@@ -244,9 +289,8 @@ export function Aquarium({ onPick }: { onPick: PickHandler }) {
       </instancedMesh>
       <SealShow />
       {/* the touch pool by the door */}
-      <mesh position={[-3.6, 0.35, 4.4]}>
+      <mesh position={[-3.6, 0.35, 4.4]} material={ROCK}>
         <cylinderGeometry args={[1.4, 1.5, 0.7, 28]} />
-        <meshStandardMaterial color="#3b2a4a" roughness={0.6} />
       </mesh>
       <mesh position={[-3.6, 0.71, 4.4]} rotation-x={-Math.PI / 2}>
         <circleGeometry args={[1.3, 28]} />
