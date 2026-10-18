@@ -199,7 +199,9 @@ export function VelvetRoom({
       <Floor
         width={ROOM * 2}
         depth={ROOM * 2}
-        color="#120814"
+        color="#7a5a72"
+        texture={{ id: "marble_tiles", scale: 0.35 }}
+        mirror={0.45}
         onPick={onPick}
       />
       <PortalPads room={ROOMS["velvet-room"]} />

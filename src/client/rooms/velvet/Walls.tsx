@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import * as THREE from "three";
+import { groundMaps, surface } from "../../city/worldTexture.ts";
 import { Batch } from "../shared/batch.ts";
-import { canvasTex, GOLD, LACQUER } from "../shared/materials.ts";
+import { canvasTex, GOLD } from "../shared/materials.ts";
 import { NEON_PINK, NEON_VIOLET } from "./materials.ts";
 import { inFrame, type Frame } from "./place.ts";
 import { ROOM } from "./layout.ts";
@@ -84,10 +85,20 @@ export function Walls() {
   );
 
   const parts = useMemo(() => {
+    // the pile's weave from a CC0 velvet scan, under the quilting
+    const { normalMap } = groundMaps("velour_velvet");
+    normalMap.repeat.set(36, 14);
     const velvet = new THREE.MeshStandardMaterial({
       map: tufted,
+      normalMap,
       roughness: 0.75,
       metalness: 0.05,
+    });
+    // a dark walnut wainscot instead of flat lacquer
+    const walnut = surface("wood_veneer", {
+      scale: 1.2,
+      color: "#5a3a3a",
+      roughness: 0.5,
     });
     const batch = new Batch();
     for (const frame of WALLS) {
@@ -96,7 +107,7 @@ export function Walls() {
         position: [0, H / 2, 0],
       });
       // black lacquer wainscot with a gold rail
-      at.add(new THREE.BoxGeometry(12, 1, 0.04), LACQUER, {
+      at.add(new THREE.BoxGeometry(12, 1, 0.04), walnut, {
         position: [0, 0.5, 0.02],
       });
       at.add(new THREE.BoxGeometry(12, 0.05, 0.06), GOLD, {

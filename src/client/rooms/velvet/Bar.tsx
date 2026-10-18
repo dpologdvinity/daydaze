@@ -1,11 +1,12 @@
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { useMemo } from "react";
 import * as THREE from "three";
-import { lathe } from "../../avatar/dollGeometry.ts";
+import { surface } from "../../city/worldTexture.ts";
 import { Batch } from "../shared/batch.ts";
-import { canvasTex, GOLD, gradientTex, LACQUER } from "../shared/materials.ts";
+import { canvasTex, GOLD, gradientTex } from "../shared/materials.ts";
 import { MIRROR, NEON_AMBER, NEON_PINK } from "./materials.ts";
 import { Cocktails } from "./Props.tsx";
 import { BarStools } from "../shared/BarStools.tsx";
+import { Bottles } from "../shared/Bottles.tsx";
 
 const CX = -0.8;
 const LEN = 6.2;
@@ -29,129 +30,14 @@ const SHELF_GLASS = new THREE.MeshStandardMaterial({
   roughness: 0.05,
 });
 
-// Three bottle silhouettes, so the back bar reads as a real collection.
-const SHAPES = [
-  lathe(
-    [
-      [0, 0],
-      [0.005, 0.038],
-      [0.2, 0.04],
-      [0.235, 0.022],
-      [0.27, 0.012],
-      [0.33, 0.012],
-      [0.335, 0],
-    ],
-    12,
-  ),
-  lathe(
-    [
-      [0, 0],
-      [0.005, 0.06],
-      [0.12, 0.07],
-      [0.2, 0.06],
-      [0.24, 0.02],
-      [0.25, 0],
-    ],
-    12,
-  ),
-  lathe(
-    [
-      [0, 0],
-      [0.005, 0.04],
-      [0.1, 0.05],
-      [0.14, 0.02],
-      [0.16, 0.02],
-      [0.3, 0.012],
-      [0.3, 0],
-    ],
-    12,
-  ),
-];
-
-const PALETTE = [
-  "#ffb02e",
-  "#ff2f6a",
-  "#3dff9a",
-  "#5ab0ff",
-  "#ffe6a0",
-  "#c04dff",
-  "#ff7a1f",
-];
-
-type Bottle = {
-  shape: number;
-  x: number;
-  y: number;
-  z: number;
-  s: number;
-  c: THREE.Color;
-};
-
-// Bottles on every shelf: shape and color cycle so neighbours differ.
-function bottlesFor(x0: number, x1: number, per = 16): Bottle[] {
-  const out: Bottle[] = [];
-  SHELVES.forEach((y, row) => {
-    for (let k = 0; k < per; k++) {
-      out.push({
-        shape: (k + row) % SHAPES.length,
-        x: x0 + ((x1 - x0) * (k + 0.5)) / per,
-        y,
-        z: -5.84 + (k % 2) * 0.06,
-        s: 0.75 + ((k * 7 + row * 3) % 5) * 0.09,
-        c: new THREE.Color(
-          PALETTE[(k * 3 + row * 2) % PALETTE.length],
-        ).multiplyScalar(1.35),
-      });
-    }
-  });
-  return out;
-}
-
-// Glowing bottles: one instanced mesh per silhouette.
-function Bottles() {
-  const bottles = useMemo(
-    () => bottlesFor(CX - LEN / 2 + 0.1, CX + LEN / 2 - 0.1),
-    [],
-  );
-  const refs = useRef<(THREE.InstancedMesh | null)[]>([]);
-  useLayoutEffect(() => {
-    const o = new THREE.Object3D();
-    SHAPES.forEach((_, shape) => {
-      const m = refs.current[shape];
-      if (!m) return;
-      let i = 0;
-      for (const b of bottles) {
-        if (b.shape !== shape) continue;
-        o.position.set(b.x, b.y, b.z);
-        o.scale.set(1, b.s, 1);
-        o.updateMatrix();
-        m.setMatrixAt(i, o.matrix);
-        m.setColorAt(i, b.c);
-        i++;
-      }
-      m.instanceMatrix.needsUpdate = true;
-      if (m.instanceColor) m.instanceColor.needsUpdate = true;
-    });
-  }, [bottles]);
-  return (
-    <>
-      {SHAPES.map((geo, shape) => {
-        const count = bottles.filter((b) => b.shape === shape).length;
-        return (
-          <instancedMesh
-            key={shape}
-            ref={(m) => {
-              refs.current[shape] = m;
-            }}
-            args={[geo, undefined, count]}
-          >
-            <meshBasicMaterial transparent opacity={0.92} toneMapped={false} />
-          </instancedMesh>
-        );
-      })}
-    </>
-  );
-}
+// the back bar's three shelves of bottles
+const ROWS = SHELVES.map((y) => ({
+  x0: CX - LEN / 2 + 0.1,
+  x1: CX + LEN / 2 - 0.1,
+  y,
+  z: -5.86,
+  count: 26,
+}));
 
 // bar stools along the bar (see the velvet-stool seats in seats.ts)
 const STOOLS = [-3.2, -2.3, -0.5, 0.5, 1.4].map(
@@ -183,12 +69,18 @@ export function Bar() {
       roughness: 0.45,
       metalness: 0.2,
     });
+    // a black marble bar top
+    const marble = surface("marble_01", {
+      scale: 0.8,
+      color: "#3a2a36",
+      roughness: 0.35,
+    });
     const batch = new Batch();
     // counter, brass rail and neon strips along its front
     batch.add(new THREE.BoxGeometry(LEN, 1, 0.62), counter, {
       position: [CX, 0.5, Z],
     });
-    batch.add(new THREE.BoxGeometry(LEN + 0.2, 0.06, 0.78), LACQUER, {
+    batch.add(new THREE.BoxGeometry(LEN + 0.2, 0.06, 0.78), marble, {
       position: [CX, 1.03, Z],
     });
     batch.add(new THREE.BoxGeometry(LEN + 0.2, 0.03, 0.03), GOLD, {
@@ -229,7 +121,7 @@ export function Bar() {
     <group>
       <primitive object={parts} />
       <BarStools at={STOOLS} color="#b0123a" />
-      <Bottles />
+      <Bottles rows={ROWS} seed={3} />
       <Cocktails
         items={[
           { position: [0.35, 1.06 + 0.0, -4.55], color: "#ff2f4a" },
