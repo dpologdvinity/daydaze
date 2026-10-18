@@ -290,6 +290,25 @@ test("Vinyl Vault sells a record that plays at home", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("the Coconut Grove pours a drink and seats the player by the fire", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=tiki-bar`);
+  await page
+    .getByRole("button", { name: "Have a drink" })
+    .click({ timeout: 150_000 });
+  await expect
+    .poll(async () => Number(await canvasOf(page).getAttribute("data-buzz")))
+    .toBeGreaterThan(0);
+  await page.getByRole("button", { name: "Take a seat" }).click();
+  await expect(canvasOf(page)).toHaveAttribute("data-seated", /tiki-/, {
+    timeout: 120_000,
+  });
+  expect(errors).toEqual([]);
+});
+
 test("the Back Room pours a drink and seats the player at the bar", async ({
   page,
 }) => {
@@ -1161,6 +1180,7 @@ for (const room of [
   "vinyl-vault",
   "back-room",
   "video-store",
+  "tiki-bar",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

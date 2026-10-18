@@ -96,6 +96,7 @@ import * as MOTORS from "./dealership.ts";
 import * as HORN from "./jazzClub.ts";
 import * as VAULT from "./vinylVault.ts";
 import * as BACK from "./backRoom.ts";
+import * as TIKI from "./tikiBar.ts";
 import * as REWIND from "./videoStore.ts";
 import type { Vec2 } from "./walk.ts";
 
@@ -151,6 +152,7 @@ export type RoomId =
   | "jazz-club"
   | "vinyl-vault"
   | "back-room"
+  | "tiki-bar"
   | "video-store"
   | "city";
 
@@ -668,6 +670,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the avenue",
         target: "city",
         targetSpawn: { position: BACK.BACK_ROOM_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  "tiki-bar": {
+    id: "tiki-bar",
+    name: "The Coconut Grove",
+    walkable: TIKI.FLOOR,
+    blockers: TIKI.BLOCKERS,
+    spawn: { position: TIKI.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "tiki-bar-to-city",
+        position: TIKI.EXIT,
+        radius: 0.8,
+        label: "Out to Shore Boulevard",
+        target: "city",
+        targetSpawn: { position: TIKI.TIKI_DOOR.landing, yaw: 0 },
       },
     ],
   },

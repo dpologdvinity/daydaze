@@ -30,6 +30,7 @@ import * as MOTORS from "../dealership.ts";
 import * as HORN from "../jazzClub.ts";
 import * as VAULT from "../vinylVault.ts";
 import * as BACK from "../backRoom.ts";
+import * as TIKI from "../tikiBar.ts";
 import * as REWIND from "../videoStore.ts";
 import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
@@ -811,8 +812,15 @@ const BEACH_FRONT: readonly {
     w: 22,
     h: 12,
     color: "#ff9ec2",
-    sign: { text: "TIKI BAR", color: "#ffb02e" },
+    sign: { text: "COCONUT GROVE", color: "#ffb02e" },
     style: "storefront",
+    door: {
+      position: TIKI.TIKI_DOOR.position,
+      radius: 2,
+      label: "Into the Coconut Grove",
+      target: "tiki-bar",
+      targetSpawn: { position: TIKI.SPAWN, yaw: Math.PI },
+    },
   },
   {
     // Starboard Marina's gate, east of the pier

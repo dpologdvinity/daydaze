@@ -116,6 +116,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Rewind Video. Browse the tapes and the new releases, then play Throwback Trivia at Tasha's counter.",
   "back-room":
     "The Back Room. A speakeasy behind an unmarked door: order a drink from Odette, then take a stool or a leather booth.",
+  "tiki-bar":
+    "The Coconut Grove. Order something with an umbrella from Malia, take a stool or a lounge by the fire, and watch the sun go down.",
   "vinyl-vault":
     "Vinyl Vault. Dig the crates, play a sample of any record and buy the ones you love for the record player at home.",
   "jazz-club":
@@ -770,7 +772,9 @@ export function Overlay({
               Ride a slide
             </button>
           )}
-          {(room === "velvet-room" || room === "back-room") && (
+          {(room === "velvet-room" ||
+            room === "back-room" ||
+            room === "tiki-bar") && (
             <button
               type="button"
               className="drink"

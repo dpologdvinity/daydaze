@@ -6,6 +6,7 @@ import * as ARCADE from "./arcadeBar.ts";
 import * as LA_NOCHE from "./laNoche.ts";
 import * as HORN from "./jazzClub.ts";
 import * as BACK from "./backRoom.ts";
+import * as TIKI from "./tikiBar.ts";
 import * as DOME from "./dome.ts";
 import * as KAMAYAN from "./kamayanHall.ts";
 import * as GALLERIA from "./galleria.ts";
@@ -195,6 +196,28 @@ const jazzSeats = [
 ];
 
 // the Back Room: stools at the bar, and the booths' leather benches
+// the Coconut Grove: bar stools, and the rattan lounges round the fire
+const tikiSeats = [
+  ...TIKI.STOOL_XS.map((x, i) =>
+    seat(`tiki-stool-${i}`, "tiki-bar", [x, TIKI.STOOL_Z], 0.8, [
+      x,
+      TIKI.BAR.z1,
+    ]),
+  ),
+  ...TIKI.LOUNGES.flatMap(({ at: [x, z] }, i) =>
+    [-0.5, 0.5].map((dx, k) =>
+      seat(
+        `tiki-lounge-${i}-${k}`,
+        "tiki-bar",
+        [x + dx, z],
+        0.45,
+        [x + dx, TIKI.FIRE[1]],
+        "front",
+      ),
+    ),
+  ),
+];
+
 const backRoomSeats = [
   ...BACK.STOOL_XS.map((x, i) =>
     seat(`back-stool-${i}`, "back-room", [x, BACK.STOOL_Z], 0.8, [
@@ -364,6 +387,7 @@ export const SEATS: readonly Seat[] = [
   ...laNocheSeats,
   ...jazzSeats,
   ...backRoomSeats,
+  ...tikiSeats,
   ...squareSeats,
   ...linksSeats,
   ...sportsSeats,
