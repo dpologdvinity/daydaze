@@ -60,7 +60,8 @@ export function MarinaNpcs(): JSX.Element {
         name="Coral"
         role="bartender"
         look={BARTENDER_LOOK}
-        mood="idle"
+        mood="dance"
+        dance="bartending"
         at={[(BAR.x0 + BAR.x1) / 2, 0, BAR.z0 - 0.6]}
         rot={0}
         seed={251}

@@ -493,7 +493,7 @@ function Mirror({
         id="mirror-panel"
         className="mirror-panel"
         role="tabpanel"
-        aria-labeledby={`mirror-tab-${tab}`}
+        aria-labelledby={`mirror-tab-${tab}`}
       >
         {tabs[tab]}
       </div>

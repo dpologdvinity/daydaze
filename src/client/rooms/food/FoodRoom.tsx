@@ -56,6 +56,8 @@ function Diners({ room }: { room: RoomId }) {
             <Doll
               look={DINER_LOOKS[(base + i * 3) % DINER_LOOKS.length]}
               mood="sit"
+              // facing across the table: one leans in, one talks
+              hold={i % 2 ? "sit-chatting" : "sit-at-table"}
               seed={base + i}
             />
           </group>

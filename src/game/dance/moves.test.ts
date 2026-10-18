@@ -8,6 +8,7 @@ import {
   danceMove,
   isDanceMoveId,
   loadMocap,
+  PICKER_DANCE_MOVES,
   STILL_CLIPS,
   WALK_CLIPS,
   poseAt,
@@ -149,4 +150,53 @@ test("motion capture loads: dances get keys, walks and held poses appear", async
     ALL_DANCE_MOVES.every((m) => m.period < 7),
     "loops capped",
   );
+});
+
+test("NPC emotes play as moves but stay out of the Dance picker", () => {
+  const picker = new Set(PICKER_DANCE_MOVES.map((m) => m.id));
+  for (const id of ["clap", "cheer", "bartending"] as const) {
+    assert.equal(isDanceMoveId(id), true, id);
+    assert.equal(picker.has(id), false, id);
+  }
+  assert.ok(picker.has("charleston"));
+});
+
+test("clip ids the game names stay generated", () => {
+  for (const id of [
+    "walk-relaxed",
+    "walk-brisk",
+    "walk-catwalk",
+    "walk-normal",
+    "walk-sexy",
+    "walk-easy",
+    "walk-feminine",
+    "walk-casual",
+  ])
+    assert.ok(WALK_CLIPS.has(id), id);
+  for (const id of [
+    "pose-arms-down",
+    "pose-over-shoulder",
+    "pose-arms-raised",
+    "pose-wave",
+    "sit-lean-back",
+    "sit-elbows",
+    "sit-crossed",
+    "lay-arched",
+  ])
+    assert.ok(STILL_CLIPS.has(id), id);
+  for (const id of [
+    "salsa",
+    "salsa-turns",
+    "lambada",
+    "expressive",
+    "belly-dance",
+    "breakdance",
+    "afrobeat",
+    "body-wave",
+    "salsa-solo",
+    "hip-hop",
+    "side-to-side",
+    "samba",
+  ])
+    assert.equal(isDanceMoveId(id), true, id);
 });

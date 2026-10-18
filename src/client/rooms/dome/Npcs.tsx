@@ -122,7 +122,11 @@ export function DomeNpcs(): JSX.Element {
           position={[d.at[0], 0, d.at[1]]}
           rotation-y={d.at[0] < 0 ? 0.6 : -0.6}
         >
-          <CrowdFigure look={d.look} dance seed={152 + i} />
+          <CrowdFigure
+            look={d.look}
+            move={i % 2 ? "arm-wave" : "house"}
+            seed={152 + i}
+          />
         </group>
       ))}
     </>

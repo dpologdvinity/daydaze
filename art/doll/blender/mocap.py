@@ -34,7 +34,7 @@ CLIPS = {
 }
 
 KEYS_PER_SECOND = 15
-HIP_HEIGHT = 0.92  # the doll's hip height in metres, for the bounce
+HIP_HEIGHT = 0.92  # the doll's hip height in meters, for the bounce
 
 
 def parse(path):
@@ -344,46 +344,87 @@ def keys_for(poses, fdt, s, L):
     return round(period, 4), keys
 
 
-# Mixamo folders (repo-root mixamo/, git-ignored: Adobe's terms allow use in
-# a game but not redistributing the files) -> what each clip becomes
+# The Mixamo library (repo-root mixamo/, a symlink to the user's own copy,
+# git-ignored: Adobe's terms allow use in a game but not redistributing the
+# files), files named Name_Description.fbx in topic folders. Hand-picked,
+# not the whole library, so mocapKeys.ts stays small. clip id -> (path under
+# mixamo/ without .fbx, kind, label). Ids are stable: gaits.ts, pickers,
+# NPCs and saved holds name them. Order matters within a kind: the first
+# lay clip is the player's lounge, and NPCs pick seeded poses by index.
 MIXAMO = os.path.join(HERE, "..", "..", "..", "mixamo")
-FOLDER_KIND = {"walking": "walk", "dancing": "dance", "standing": "pose", "sitting": "sit", "laying": "lay"}
-# transitions, not loops
-SKIP = ("start-walking", "stop-walking", "stop-and-start",
-        # leans the chest over one leg; the doll's single torso bone tips her over
-        "on-right-foot-left-leg-raised")
-# file stem -> (clip id, label); stems not listed become mx-<stem>
-NAMES = {
-    "belly-dancing-variation-3": ("belly-dance", "Belly dance"),
-    "breakdance-ending-1": ("breakdance", "Breakdance"),
-    "dancing-female-african-noodle-fance": ("afrobeat", "Afrobeat"),
-    "female-hip-hip-body-wave-dancing": ("body-wave", "Body wave"),
-    "female-salsa-dancing": ("salsa-solo", "Salsa solo"),
-    "hip-hop-dancing-bboy-variation-one": ("hip-hop", "Hip-hop"),
-    "hip-hop-dancing-side-to-side": ("side-to-side", "Side to side"),
-    "samba-dancing-funky-pocoto-variation-1": ("samba", "Samba"),
-    "female-sexy-walk": ("walk-sexy", "Sexy"),
-    "catwalk": ("walk-catwalk", "Catwalk"),
-    "feminine-walk-forward": ("walk-feminine", "Feminine"),
-    "female-normal-walk": ("walk-normal", "Normal"),
-    "female-walk-normal": ("walk-easy", "Easy"),
-    "walking": ("walk-casual", "Casual"),
-    "female-standing-pose-arms-down": ("pose-arms-down", "Arms down"),
-    "female-standing-pose-arms-on-hip-looking-over-shoulder": ("pose-over-shoulder", "Over the shoulder"),
-    "female-standing-pose-legs-crossed-arms-raised": ("pose-arms-raised", "Arms raised"),
-    "female-standing-pose-right-hand-on-hip-left-arm-raised": ("pose-wave", "Hand on hip"),
-    "female-sitting-pose-arms-supporting": ("sit-lean-back", "Lean back"),
-    "female-sitting-pose-leaning-forward-elbows-on-knees": ("sit-elbows", "Elbows on knees"),
-    "female-sitting-pose-legs-crossed-right-arm-over-knee": ("sit-crossed", "Legs crossed"),
-    "female-laying-pose-back-arched-arms-supporting": ("lay-arched", "Lounging"),
+MIXAMO_CLIPS = {
+    # walks only play when a gait names them (src/game/gaits.ts)
+    "walk-catwalk": ("walking/styled/Catwalk-Walking_Catwalk-Walk", "walk", "Catwalk"),
+    "walk-normal": ("walking/Walk_Female-Walk-2", "walk", "Normal"),
+    "walk-sexy": ("walking/styled/Walking_Female-Sexy-Walk", "walk", "Sexy"),
+    "walk-easy": ("walking/Walk_Female-Walk-2", "walk", "Easy"),
+    "walk-feminine": ("walking/Walking_Feminine-Walk-Forward", "walk", "Feminine"),
+    "walk-casual": ("walking/styled/Walking-With-A-Swagger-3", "walk", "Casual"),
+    "belly-dance": ("dancing/Dancing_Belly-Dancing-Variation-Three", "dance", "Belly dance"),
+    "breakdance": ("dancing/Breakdance-Ending-1_Breakdance-Finishing-Combo-Var-1", "dance", "Breakdance"),
+    "afrobeat": ("dancing/Dancing_Female-African-Noodle-Dance", "dance", "Afrobeat"),
+    "body-wave": ("dancing/Hip-Hop-Dancing_Female-Hip-Hop-'Body-Wave'-Dancing", "dance", "Body wave"),
+    "salsa-solo": ("dancing/Salsa-Dancing_Female-Salsa-Dancing", "dance", "Salsa solo"),
+    "hip-hop": ("dancing/Hip-Hop-Dancing_Hip-Hop-Dancing-Bboy-Variation-One", "dance", "Hip-hop"),
+    "side-to-side": ("dancing/Hip-Hop-Dancing_Hip-Hop-Dancing-Side-To-Side", "dance", "Side to side"),
+    "samba": ("dancing/Samba-Dancing_Samba-Funky-Pocoto-Variation-1", "dance", "Samba"),
+    "house": ("dancing/House-Dancing_House-Dance-Variation-Two", "dance", "House"),
+    "shuffle": ("dancing/Shuffling_Doing-The-Shuffling-Dance", "dance", "Shuffle"),
+    "charleston": ("dancing/Swing-Dancing_Dance-Swing-Charleston", "dance", "Charleston"),
+    "belly-sway": ("dancing/Bellydancing_Bellydance-Variation-2", "dance", "Belly sway"),
+    "pagode": ("dancing/Samba-Dancing_Female-Samba-Pagode-Variation-Five-Loop", "dance", "Pagode samba"),
+    "rumba": ("dancing/Rumba-Dancing_Female-Rumba-Dancing-Loop", "dance", "Rumba"),
+    "arm-wave": ("dancing/Hip-Hop-Dancing_Female-Hip-Hop-'Arm-Wave'-Dancing", "dance", "Arm wave"),
+    "kick-step": ("dancing/Hip-Hop-Dancing_Female-Hip-Hop-'Kick-Step'-Dancing", "dance", "Kick step"),
+    "raise-the-roof": ("dancing/Hip-Hop-Dancing_Female-Hip-Hop-'Raise-The-Roof'-Dancing", "dance", "Raise the roof"),
+    "running-man": ("dancing/Hip-Hop-Dancing_Female-Hip-Hop-'Running-Man'-Dancing", "dance", "Running man"),
+    "jazz-square": ("dancing/Jazz-Dancing_Female-Jazz-Square-Dancing", "dance", "Jazz square"),
+    "robot": ("dancing/Robot-Hip-Hop-Dance_Robot-Hip-Hop-Dance-Variation-One", "dance", "Robot"),
+    "the-twist": ("dancing/Silly-Dancing_Silly-Dancing-The-Twist", "dance", "The twist"),
+    "macarena": ("dancing/Macarena-Dance_Dancing-The-Macarena", "dance", "Macarena"),
+    "northern-soul": ("dancing/Northern-Soul-Dance_Basic-Northern-Soul-Step", "dance", "Northern soul"),
+    "locking": ("dancing/Locking-Hip-Hop-Dance_Locking-Hip-Hop-Dance-Variation-Two", "dance", "Locking"),
+    "shy-sway": ("dancing/Hip-Hop-Dancing_Timid-Dancing", "dance", "Shy sway"),
+    # emotes: looped like dances, for NPCs only (kept out of the Dance picker)
+    "clap": ("gestures/clapping/Clapping_Clap-While-Standing", "emote", "Clapping"),
+    "cheer": ("gestures/cheering/Cheering_Male-Cheering-With-Two-Fists-Pump", "emote", "Cheering"),
+    "fist-pump": ("gestures/cheering/Fist-Pump_Pumping-A-Fist", "emote", "Fist pump"),
+    "wave": ("gestures/waving/Waving-Gesture_Aj-Waving-Gesture", "emote", "Waving"),
+    "chatting": ("talking/Talking_General-Conversation", "emote", "Chatting"),
+    "bartending": ("drinking/Bartending_Pouring-And-Serving-Drinks", "emote", "Bartending"),
+    # held poses: the middle frame of the take
+    "pose-arms-down": ("idle/Female-Standing-Pose_Arms-Down", "pose", "Arms down"),
+    "pose-over-shoulder": ("idle/Female-Standing-Pose_Hands-On-Hips-Looking-Over-Shoulder", "pose", "Over the shoulder"),
+    "pose-arms-raised": ("idle/Female-Standing-Pose_Legs-Crossed-Arms-Raised", "pose", "Arms raised"),
+    "pose-wave": ("idle/Female-Standing-Pose_Right-Hand-On-Hip-Left-Arm-Raised-2", "pose", "Hand on hip"),
+    "pose-relaxed": ("idle/Idle_Female-Idle", "pose", "Relaxed"),
+    "pose-bashful": ("idle/Bashful_Being-Bashful-While-Standing", "pose", "Bashful"),
+    "pose-cocky": ("idle/Being-Cocky_Cocky-Lean-Back", "pose", "Cocky"),
+    "pose-lean-back": ("idle/Female-Standing-Pose_Leaning-Back-Left-Hand-On-Hip", "pose", "Lean back"),
+    "pose-legs-crossed": ("idle/Female-Standing-Pose_Legs-Crossed-Left-Hand-On-Hip", "pose", "Legs crossed"),
+    "pose-foot-up": ("idle/Female-Standing-Pose_Right-Foot-Raised", "pose", "Foot up"),
+    "pose-thinking": ("idle/Thinking_Thinking-While-Standing", "pose", "Thinking"),
+    "pose-phone": ("talking/Talking-On-Phone_Female-Standing-Talking-On-Phone", "pose", "On the phone"),
+    "pose-looking-away": ("idle/Female-Standing-Pose_Looking-Down-To-The-Right", "pose", "Looking away"),
+    "pose-waiting": ("idle/Male-Standing-Pose_Arms-Behind-Back", "pose", "Waiting"),
+    "sit-lean-back": ("sitting/Female-Sitting-Pose_Arms-Supporting", "sit", "Lean back"),
+    "sit-elbows": ("sitting/Female-Sitting-Pose_Leaning-Forward-Elbows-On-Knees", "sit", "Elbows on knees"),
+    "sit-crossed": ("sitting/Female-Sitting-Pose_Legs-Crossed-Right-Arm-Over-Knee", "sit", "Legs crossed"),
+    "sit-chatting": ("talking/Sitting-Talking_Sitting-And-Talking-To-Another-Person", "sit", "Chatting"),
+    "sit-reclined": ("sitting/Female-Sitting-Pose_Legs-Crossed-Reclining", "sit", "Reclined"),
+    "sit-arms-crossed": ("sitting/Female-Sitting-Pose_Legs-Crossed-Arms-Crossed", "sit", "Arms crossed"),
+    "sit-hug-knee": ("sitting/Female-Sitting-Pose_Arms-Holding-Right-Knee", "sit", "Hugging a knee"),
+    "sit-at-table": ("sitting/Seated-Idle-With-Hands-On-A-Table", "sit", "At the table"),
+    "sit-upright": ("sitting/Sitting-Idle_Sitting-Still-In-A-Chair", "sit", "Upright"),
+    "sit-sipping": ("drinking/Sitting-Drinking_Having-A-Seat-And-Drinking-A-Canned-Beverage", "sit", "Sipping"),
+    "lay-arched": ("laying/Female-Laying-Pose_Back-Arched-Arms-Supporting", "lay", "Lounging"),
+    "lay-side": ("laying/Female-Laying-Pose_On-Right-Side-Right-Hand-Supporting-Head", "lay", "On my side"),
+    "lay-stomach": ("laying/Female-Laying-Pose_On-Stomach-Elbows-Supporting", "lay", "On my stomach"),
 }
+# never: the game has no guns outside game zones and nothing gory
+BANNED = ("weapons/", "combat/", "death", "dying", "agony", "hit", "injur", "pain")
 # dance loops longer than this repeat a shorter section: the file stays small
 MAX_LOOP = 6.5
-
-
-def label_of(stem):
-    words = stem.replace("female-", "").replace("-", " ").split()
-    return " ".join(words).capitalize()[:40]
 
 
 def still(poses):
@@ -404,34 +445,20 @@ def main():
         period, keys = keys_for(poses, fdt, s, L)
         clips.append({"id": cid, "kind": kind, "label": label, "source": f"CMU {file}", "period": period, "keys": keys})
         print(cid, "period", period, "keys", len(keys))
-    for folder, kind in FOLDER_KIND.items():
-        d = os.path.join(MIXAMO, folder)
-        if not os.path.isdir(d):
-            continue
-        for name in sorted(os.listdir(d)):
-            stem = name[:-4].lower().replace(" ", "-")
-            if not name.lower().endswith(".fbx") or any(k in stem for k in SKIP):
-                continue
-            k = "walk" if "walk" in stem and kind == "dance" else kind
-            # walks only play when a gait names them (src/game/gaits.ts)
-            if k == "walk" and stem not in NAMES:
-                print("unused walk, add to NAMES to use:", stem)
-                continue
-            if NAMES.get(stem, ("mx-" + stem,))[0] in {c["id"] for c in clips}:
-                continue
-            frames, fdt = mixamo_frames(os.path.join(d, name))
-            held = k in ("pose", "sit", "lay") or len(frames) * fdt < 0.6
-            poses, fdt = retarget(frames, fdt, held)
-            dur = len(poses) * fdt
-            if held:
-                period, keys = still(poses)
-            else:
-                window = (0.7, min(1.6, dur * 0.9)) if k == "walk" else (min(1.5, dur * 0.4), min(MAX_LOOP, dur * 0.9))
-                s, L = best_loop(poses, fdt, window, k)
-                period, keys = keys_for(poses, fdt, s, L)
-            cid, label = NAMES.get(stem, ("mx-" + stem, label_of(stem)))
-            clips.append({"id": cid, "kind": k, "label": label, "source": "Mixamo", "period": period, "keys": keys})
-            print(cid, k, "period", period, "keys", len(keys))
+    for cid, (rel, k, label) in MIXAMO_CLIPS.items():
+        assert not any(w in rel.lower() for w in BANNED), rel
+        frames, fdt = mixamo_frames(os.path.join(MIXAMO, rel + ".fbx"))
+        held = k in ("pose", "sit", "lay")
+        poses, fdt = retarget(frames, fdt, held)
+        dur = len(poses) * fdt
+        if held:
+            period, keys = still(poses)
+        else:
+            window = (0.7, min(1.6, dur * 0.9)) if k == "walk" else (min(1.5, dur * 0.4), min(MAX_LOOP, dur * 0.9))
+            s, L = best_loop(poses, fdt, window, k)
+            period, keys = keys_for(poses, fdt, s, L)
+        clips.append({"id": cid, "kind": k, "label": label, "source": "Mixamo", "period": period, "keys": keys})
+        print(cid, k, "period", period, "keys", len(keys))
     head = (
         "// Generated by art/doll/blender/mocap.py. CMU clips: CMU Graphics Lab\n"
         "// Motion Capture Database (mocap.cs.cmu.edu), free to copy, modify\n"
@@ -440,12 +467,15 @@ def main():
     )
     meta = [{k: v for k, v in c.items() if k != "keys"} for c in clips]
     dances = [c["id"] for c in clips if c["kind"] == "dance"]
+    emotes = [c["id"] for c in clips if c["kind"] == "emote"]
     with open(OUT, "w") as f:
         f.write(
             head + 'import type { MocapClip } from "./mocapTypes.ts";\n\n'
             "// the keys load later, from mocapKeys.ts (see loadMocap in moves.ts)\n"
             f"export const MOCAP_CLIPS: readonly MocapClip[] = {json.dumps(meta)};\n\n"
-            f"export const MOCAP_DANCE_IDS = {json.dumps(dances)} as const;\n"
+            f"export const MOCAP_DANCE_IDS = {json.dumps(dances)} as const;\n\n"
+            "// looped like dances, for NPCs; not in the player's Dance picker\n"
+            f"export const MOCAP_EMOTE_IDS = {json.dumps(emotes)} as const;\n"
         )
     # one line per clip, left out of Prettier, so the file stays small
     with open(KEYS_OUT, "w") as f:
@@ -457,4 +487,5 @@ def main():
     print("wrote", OUT)
 
 
-main()
+if __name__ == "__main__":
+    main()

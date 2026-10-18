@@ -48,7 +48,7 @@ export function StadiumNpcs(): JSX.Element {
         context={CONTEXT}
       />
       <group position={[DUGOUT_X + 1.2, 0, -2.4]} rotation-y={Math.PI / 2}>
-        <CrowdFigure look={COACH_LOOK} seed={162} />
+        <CrowdFigure look={COACH_LOOK} move="clap" seed={162} />
       </group>
     </>
   );

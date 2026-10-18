@@ -1,4 +1,4 @@
-import { MOCAP_CLIPS, MOCAP_DANCE_IDS } from "./mocap.ts";
+import { MOCAP_CLIPS, MOCAP_DANCE_IDS, MOCAP_EMOTE_IDS } from "./mocap.ts";
 import type { MocapClip, MocapKey } from "./mocapTypes.ts";
 // Dance moves are data: looped clips of joint angles on the doll rig. The
 // sampler eases between keys and wraps at the end, so a move loops forever.
@@ -62,6 +62,7 @@ export const DANCE_MOVE_IDS = [
   "slow-dance",
   // motion capture (see mocap.ts)
   ...MOCAP_DANCE_IDS,
+  ...MOCAP_EMOTE_IDS,
 ] as const;
 
 export type DanceMoveId = (typeof DANCE_MOVE_IDS)[number];
@@ -486,7 +487,9 @@ function capturedMove(c: MocapClip, id: DanceMoveId): DanceMove {
 }
 
 const CAPTURED: readonly DanceMove[] = MOCAP_CLIPS.flatMap((c) =>
-  c.kind === "dance" && isMoveId(c.id) ? [capturedMove(c, c.id)] : [],
+  (c.kind === "dance" || c.kind === "emote") && isMoveId(c.id)
+    ? [capturedMove(c, c.id)]
+    : [],
 );
 
 function isMoveId(id: string): id is DanceMoveId {
@@ -519,7 +522,7 @@ export function loadMocap(): Promise<void> {
     const keysOf = (id: string): readonly MocapKey[] => MOCAP_KEYS[id] ?? STILL;
     for (const m of CAPTURED) m.keys = keysOf(m.id);
     for (const c of MOCAP_CLIPS) {
-      if (c.kind === "dance") continue;
+      if (c.kind === "dance" || c.kind === "emote") continue;
       const move = { ...capturedMove(c, "groove"), keys: keysOf(c.id) };
       (c.kind === "walk" ? walkClips : stillClips).set(c.id, move);
     }
@@ -531,6 +534,13 @@ export const ALL_DANCE_MOVES: readonly DanceMove[] = [
   ...DANCE_MOVES,
   ...CAPTURED,
 ];
+
+const EMOTES: ReadonlySet<string> = new Set(MOCAP_EMOTE_IDS);
+
+/** The moves the player picks from: every dance, no NPC emotes. */
+export const PICKER_DANCE_MOVES: readonly DanceMove[] = ALL_DANCE_MOVES.filter(
+  (m) => !EMOTES.has(m.id),
+);
 
 const BY_ID = new Map<string, DanceMove>(ALL_DANCE_MOVES.map((m) => [m.id, m]));
 

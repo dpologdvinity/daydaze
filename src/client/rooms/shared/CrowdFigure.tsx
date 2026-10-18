@@ -1,3 +1,4 @@
+import type { DanceMoveId } from "../../../game/dance/moves.ts";
 import type { Look } from "../../../game/look.ts";
 import { Doll } from "../../avatar/Doll.tsx";
 
@@ -10,11 +11,21 @@ import { Doll } from "../../avatar/Doll.tsx";
 export function CrowdFigure({
   look,
   dance = false,
+  move,
   seed = 0,
 }: {
   look: Look;
   dance?: boolean;
+  /** The move to loop (a dance or an emote such as "clap"); it dances when set. */
+  move?: DanceMoveId;
   seed?: number;
 }) {
-  return <Doll look={look} mood={dance ? "dance" : "idle"} seed={seed} />;
+  return (
+    <Doll
+      look={look}
+      mood={dance || move ? "dance" : "idle"}
+      dance={move}
+      seed={seed}
+    />
+  );
 }
