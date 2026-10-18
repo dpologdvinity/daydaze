@@ -86,7 +86,7 @@ State-changing requests and room sockets must come from the Worker's own origin 
 - NPC lines come from `pickLine` in `src/game/dialogue/`; add lines to the role files (10+ per situation, handwritten). Venue-specific lines use `when: { venue: "<room-id>" }`.
 - Free resources when done: stop dev servers, delete `dist/` and `test-results/`, remove merged worktrees.
 - 3D assets: optimize GLB files with `npx -y @gltf-transform/cli@4.5.1 optimize in.glb out.glb --compress meshopt --texture-compress webp` (run on demand, not a dependency: its `braces` dep has an unpatched advisory). Profile scenes with the Chrome DevTools MCP (telemetry off via env in `~/.claude/settings.json`).
-- Blender: the `blender` MCP server (user scope) runs `~/.local/bin/blender-mcp-launch`, which starts headless Blender (`blender-mcp-headless`, virtual display, add-on on port 9876) when nothing listens there. Batch builds don't need it: `blender --background` runs the doll scripts directly.
+- Blender: the `blender` MCP server (project scope, in the git-ignored `.mcp.json`) runs `~/.local/bin/blender-mcp-launch`, which starts headless Blender (`blender-mcp-headless`, virtual display, add-on on port 9876) when nothing listens there. Batch builds don't need it: `blender --background` runs the doll scripts directly.
 - glTF gotchas: run gltf-transform with `--flatten false --palette false --prune-attributes false` (as `scripts/optimize-doll.sh` does), or node extras, material names and the UVs the client paints on disappear; set Blender shape keys' `value = 0` before export, or glTF writes them as default weights of 1.
 - Dev servers: kill a stray `vite` by the node PID; `pkill -f vite` also matches and kills the shell running it.
 

@@ -9,7 +9,6 @@ import {
   HAIR_STYLES,
   LIPS,
   OUTFITS,
-  silhouetteOf,
   type Look,
 } from "./look.ts";
 import {
@@ -59,17 +58,6 @@ test("every store sells something", () => {
       store,
     );
   }
-});
-
-test("every shop outfit is cut from a known silhouette", () => {
-  for (const option of OUTFITS) {
-    assert.ok(
-      ["flares", "mini", "fur", "jeans", "shorts", "blouse"].includes(
-        silhouetteOf(option.id),
-      ),
-    );
-  }
-  assert.equal(silhouetteOf("tracksuit-y2k"), "flares");
 });
 
 test("buying spends the price and adds the item to the wardrobe", () => {

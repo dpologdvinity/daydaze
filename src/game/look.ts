@@ -75,22 +75,23 @@ export const BROWS = [
   { id: "brows-feathered-honey", label: "Feathered" },
 ] as const;
 
-/** The doll geometry each outfit is cut from. Shop outfits reuse these shapes. */
-export type Silhouette =
-  "flares" | "mini" | "fur" | "jeans" | "shorts" | "blouse";
-
+/** Each outfit is its own doll model, `outfit-<id>.glb`. */
 export const OUTFITS = [
-  { id: "flares", label: "Crop and flares", silhouette: "flares" },
-  { id: "mini", label: "Slip mini", silhouette: "mini" },
-  { id: "fur", label: "Faux fur", silhouette: "fur" },
-  { id: "jeans", label: "Tee and skinny jeans", silhouette: "jeans" },
-  { id: "shorts", label: "Tee and denim shorts", silhouette: "shorts" },
-  { id: "blouse", label: "Blouse and pencil skirt", silhouette: "blouse" },
+  { id: "flares", label: "Crop and flares" },
+  { id: "mini", label: "Slip mini" },
+  { id: "fur", label: "Faux fur" },
+  { id: "jeans", label: "Tee and skinny jeans" },
+  { id: "shorts", label: "Tee and denim shorts" },
+  { id: "blouse", label: "Blouse and pencil skirt" },
   // Boutique outfits, see shop.ts.
-  { id: "tracksuit-y2k", label: "Y2K velour tracksuit", silhouette: "flares" },
-  { id: "baby-tee-mini", label: "Baby tee and mini", silhouette: "mini" },
-  { id: "sequin-slip", label: "Sequin slip gown", silhouette: "mini" },
-  { id: "glam-faux-fur", label: "Glam faux-fur wrap", silhouette: "fur" },
+  { id: "tracksuit-y2k", label: "Y2K velour tracksuit" },
+  { id: "baby-tee-mini", label: "Baby tee and mini" },
+  { id: "sequin-slip", label: "Sequin slip gown" },
+  { id: "glam-faux-fur", label: "Glam faux-fur wrap" },
+  { id: "corset-maxi", label: "Corset and maxi skirt" },
+  { id: "cargo-crop", label: "Tube top and cargos" },
+  { id: "sundress", label: "Sundress" },
+  { id: "hoodie-bikers", label: "Cropped hoodie and bikers" },
 ] as const;
 
 export const OUTFIT_COLORS = [
@@ -129,9 +130,6 @@ type IdOf<T extends readonly Option[]> = T[number]["id"];
 export type HairStyle = IdOf<typeof HAIR_STYLES>;
 export type Outfit = IdOf<typeof OUTFITS>;
 
-export function silhouetteOf(outfit: Outfit): Silhouette {
-  return OUTFITS.find((option) => option.id === outfit)?.silhouette ?? "flares";
-}
 export type Mood = IdOf<typeof MOODS>;
 
 /** Eye colors for the 3D doll's irises. */

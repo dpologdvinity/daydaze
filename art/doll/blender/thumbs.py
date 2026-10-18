@@ -39,10 +39,14 @@ OUTFITS = {
     "jeans": ("jeans", "sneakers", (0.9, 0.45, 0.05, 1)),
     "shorts": ("shorts", "sneakers", (0.03, 0.03, 0.04, 1)),
     "blouse": ("blouse", "platforms", (1.0, 0.05, 0.35, 1)),
-    "tracksuit-y2k": ("flares", "sneakers", (1.0, 0.25, 0.6, 1)),
-    "baby-tee-mini": ("mini", "platforms", (1.0, 0.75, 0.9, 1)),
-    "sequin-slip": ("mini", "platforms", (0.95, 0.8, 0.3, 1)),
-    "glam-faux-fur": ("fur", "boots", (1.0, 0.1, 0.5, 1)),
+    "tracksuit-y2k": ("tracksuit-y2k", "sneakers", (1.0, 0.25, 0.6, 1)),
+    "baby-tee-mini": ("baby-tee-mini", "platforms", (1.0, 0.75, 0.9, 1)),
+    "sequin-slip": ("sequin-slip", "platforms", (0.95, 0.8, 0.3, 1)),
+    "glam-faux-fur": ("glam-faux-fur", "boots", (1.0, 0.1, 0.5, 1)),
+    "corset-maxi": ("corset-maxi", "platforms", (0.02, 0.02, 0.03, 1)),
+    "cargo-crop": ("cargo-crop", "sneakers", (0.25, 0.3, 0.12, 1)),
+    "sundress": ("sundress", "platforms", (1.0, 0.85, 0.2, 1)),
+    "hoodie-bikers": ("hoodie-bikers", "sneakers", (0.35, 0.15, 0.9, 1)),
 }
 # `-- outfits` renders only that group
 SKIN = (0.55, 0.3, 0.19, 1)  # linear: a warm medium tone

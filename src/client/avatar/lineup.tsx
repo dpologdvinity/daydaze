@@ -5,7 +5,12 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useRef } from "react";
 import { createRoot } from "react-dom/client";
 import * as THREE from "three";
-import { DEFAULT_LOOK, HAIR_STYLES, type Look } from "../../game/look.ts";
+import {
+  DEFAULT_LOOK,
+  HAIR_STYLES,
+  OUTFITS,
+  type Look,
+} from "../../game/look.ts";
 import { ToonDoll as Doll } from "./Doll.tsx";
 import { HumanDoll } from "./human/HumanDoll.tsx";
 import { isDanceMoveId, stillClipsOf } from "../../game/dance/moves.ts";
@@ -118,11 +123,14 @@ const LINEUP: Look[] = [
   },
 ];
 
-const BODY = [
-  { ...LINEUP[0], outfit: "flares" as const },
-  { ...LINEUP[1], outfit: "mini" as const },
-  { ...LINEUP[2], outfit: "fur" as const },
-];
+// `?outfits=a,b,c` dresses the body shot's three dolls
+const OUTFIT_PICK = new URLSearchParams(location.search)
+  .get("outfits")
+  ?.split(",");
+const BODY = (["flares", "mini", "fur"] as const).map((fallback, i) => ({
+  ...LINEUP[i],
+  outfit: OUTFITS.find((o) => o.id === OUTFIT_PICK?.[i])?.id ?? fallback,
+}));
 
 const SHOTS = {
   lineup: {

@@ -24,9 +24,8 @@ import {
   seededMakeup,
   encodeMakeup,
   type Face,
-  silhouetteOf,
   type Look,
-  type Silhouette,
+  type Outfit,
   type Mood,
   type SwimLook,
 } from "../../../game/look.ts";
@@ -108,13 +107,21 @@ type Props = {
 } & Omit<ThreeElements["group"], "children">;
 
 // shortcut: shoes follow the outfit until the closet has a shoe picker
-const SHOES: Record<Silhouette, string> = {
+const SHOES: Record<Outfit, string> = {
   flares: "sneakers",
   mini: "platforms",
   fur: "boots",
   jeans: "sneakers",
   shorts: "sneakers",
   blouse: "platforms",
+  "tracksuit-y2k": "sneakers",
+  "baby-tee-mini": "platforms",
+  "sequin-slip": "platforms",
+  "glam-faux-fur": "boots",
+  "corset-maxi": "platforms",
+  "cargo-crop": "sneakers",
+  sundress: "platforms",
+  "hoodie-bikers": "sneakers",
 };
 
 /** The part files a look wears, by kind. */
@@ -125,8 +132,7 @@ const HAIR: Partial<Record<Look["hairStyle"], string>> = {
 };
 
 export function partsFor(look: Look, swim: SwimLook | null) {
-  // shop outfits are cut from the three starting silhouettes
-  const cut = silhouetteOf(look.outfit);
+  const cut = look.outfit;
   return {
     hair: `${MODELS}/hair-${HAIR[look.hairStyle] ?? look.hairStyle}.glb`,
     outfit: swim
@@ -419,6 +425,14 @@ function hairMaterial(
 
 type Tint = { color: string; kind: "hair" | "cloth" | "gloss" | "keep" };
 
+/** How a cloth catches light, by the Blender material it was cut from. */
+const FEEL: Record<string, { roughness: number; metalness?: number }> = {
+  satin: { roughness: 0.32 },
+  sequin: { roughness: 0.25, metalness: 0.8 },
+  velour: { roughness: 0.95 },
+  fur: { roughness: 0.95 },
+};
+
 /** A part's low-poly twin, worn while the doll is far off (optimize-doll.sh
  * simplifies every hair, outfit and shoe file into one). */
 const lodOf = (url: string) => url.replace(/\.glb$/, "-lo.glb");
@@ -535,6 +549,7 @@ function buildPart(
               map: old?.map ?? null,
               color: tint.kind === "keep" ? "#ffffff" : tint.color,
               roughness: tint.kind === "gloss" ? 0.22 : 0.7,
+              ...(tint.kind === "cloth" ? FEEL[old?.name ?? ""] : undefined),
             });
       materials.push(mat);
       mesh.material = mat;
@@ -773,13 +788,11 @@ export function HumanDoll({
             url={parts.shoes}
             bones={body.bones}
             tint={
-              SHOES[silhouetteOf(look.outfit)] === "sneakers"
+              SHOES[look.outfit] === "sneakers"
                 ? { color: "#ffffff", kind: "keep" }
                 : {
                     color:
-                      silhouetteOf(look.outfit) === "mini"
-                        ? "#f6e7ff"
-                        : look.outfitColor,
+                      look.outfit === "mini" ? "#f6e7ff" : look.outfitColor,
                     kind: "gloss",
                   }
             }

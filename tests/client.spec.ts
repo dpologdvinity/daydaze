@@ -984,6 +984,8 @@ test("the debug buttons take the player into Kamayan Hall", async ({
 test("the Galleria: buy at Glitterbox, pay for it, and it's yours to wear", async ({
   page,
 }) => {
+  // the Galleria compiles for minutes on SwiftShader, under the loading veil
+  test.setTimeout(480_000);
   const errors = collectErrors(page);
   await page.goto(`${VELVET}&debug=1`);
   await page.getByRole("button", { name: "Go to the Galleria" }).click();

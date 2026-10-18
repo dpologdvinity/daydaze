@@ -34,6 +34,10 @@ export const SHOP_ITEMS: readonly ShopItem[] = [
   { id: "baby-tee-mini", slot: "outfit", store: "boutique", price: 45 },
   { id: "sequin-slip", slot: "outfit", store: "boutique", price: 120 },
   { id: "glam-faux-fur", slot: "outfit", store: "boutique", price: 150 },
+  { id: "corset-maxi", slot: "outfit", store: "boutique", price: 90 },
+  { id: "cargo-crop", slot: "outfit", store: "boutique", price: 55 },
+  { id: "sundress", slot: "outfit", store: "boutique", price: 50 },
+  { id: "hoodie-bikers", slot: "outfit", store: "boutique", price: 65 },
   // Glowstick Beauty Supply: lip and eye testers
   { id: "lips-chrome-berry", slot: "lips", store: "beauty", price: 20 },
   {

@@ -125,6 +125,17 @@ def taper(ob, top, bottom, squeeze):
     sync_keys(ob, co)
 
 
+def stretch(ob, top, hem, to):
+    """Lengthens a skirt: below `top`, heights scale so the hem at `hem`
+    falls to `to` instead (a midi or maxi from the short skirt helper)."""
+    co = np.array([v.co[:] for v in ob.data.vertices])
+    below = co[:, 2] < top
+    k = (top - to) / (top - hem)
+    co[below, 2] = top - (top - co[below, 2]) * k
+    ob.data.vertices.foreach_set("co", co.ravel())
+    sync_keys(ob, co)
+
+
 def sync_keys(ob, basis):
     """After moving a mesh's basis, moves every shape key by the same."""
     keys = ob.data.shape_keys.key_blocks
@@ -213,6 +224,66 @@ def build(ctx, body, body_src):
     sk2 = shell(ctx, "fur_skirt", ["helper-skirt"], [(hem, waist)], 0.003, satin)
     taper(sk2, waist, hem, 0.05)
     out.append(join(coat, sk2))
+
+    # boutique and closet garments, each its own cut (see OUTFITS in
+    # src/game/look.ts); all from the tights and skirt helpers
+    velour = bpy.data.materials.new("velour")
+    sequin = bpy.data.materials.new("sequin")
+    ankle = h["ankle"] + 0.02
+    knee = h["knee"]
+    midthigh = (h["hip"] + knee) / 2
+
+    # Y2K velour tracksuit: a zip hoodie to the wrists, flared track pants
+    hood = shell(ctx, "Outfit_tracksuit-y2k", ["helper-tights"], [(waist - 0.03, h["neck"] - 0.035)], 0.012, velour, arms=1.1)
+    pants = shell(ctx, "tracksuit_pants", ["helper-tights"], [(ankle, waist - 0.01)], 0.006, velour)
+    flare(ctx, pants)
+    out.append(join(hood, pants))
+
+    # baby tee and pleated mini: a fitted cropped tee with cap sleeves over a
+    # short skirt that kicks out at the hem
+    tee = shell(ctx, "Outfit_baby-tee-mini", ["helper-tights"], [(waist + 0.07, h["neck"] - 0.05)], 0.004, cloth, arms=0.55)
+    sk3 = shell(ctx, "babytee_skirt", ["helper-skirt"], [(hem + 0.05, waist)], 0.004, cloth)
+    taper(sk3, waist, hem + 0.05, -0.18)
+    out.append(join(tee, sk3))
+
+    # sequin slip gown: a strapless bodice and a skirt stretched to the ankle
+    bod = shell(ctx, "Outfit_sequin-slip", ["helper-tights"], [(waist - 0.04, bust)], 0.002, sequin)
+    gown = shell(ctx, "slip_gown", ["helper-skirt"], [(hem, waist)], 0.004, sequin)
+    stretch(gown, waist, hem, ankle + 0.03)
+    taper(gown, waist, ankle + 0.03, -0.25)
+    out.append(join(bod, gown))
+
+    # glam faux-fur wrap: a long, plush coat to mid-thigh over a satin mini
+    wrap = shell(ctx, "Outfit_glam-faux-fur", ["helper-tights"], [(waist - 0.02, h["neck"] - 0.03)], 0.03, fur, arms=1.1)
+    tail = shell(ctx, "wrap_tail", ["helper-skirt"], [(hem - 0.04, waist + 0.02)], 0.032, fur)
+    taper(tail, waist, hem - 0.04, -0.12)
+    out.append(join(wrap, tail))
+
+    # corset and maxi skirt: a laced bodice cinched at the waist, a full
+    # skirt to the floor
+    cor = shell(ctx, "Outfit_corset-maxi", ["helper-tights"], [(waist - 0.06, bust + 0.01)], 0.003, satin)
+    maxi = shell(ctx, "corset_skirt", ["helper-skirt"], [(hem, waist - 0.04)], 0.006, cloth)
+    stretch(maxi, waist - 0.04, hem, ankle)
+    taper(maxi, waist - 0.04, ankle, -0.55)
+    out.append(join(cor, maxi))
+
+    # cargo pants and a tank: wide, roomy legs to the ankle and a cropped
+    # vest top
+    tank = shell(ctx, "Outfit_cargo-crop", ["helper-tights"], [(waist + 0.09, bust + 0.03)], 0.003, cloth, arms=0.15)
+    cargo = shell(ctx, "cargo_pants", ["helper-tights"], [(ankle, waist - 0.01)], 0.022, cloth)
+    out.append(join(tank, cargo))
+
+    # sundress: a fitted bodice and a skirt flaring to the knee
+    sun = shell(ctx, "Outfit_sundress", ["helper-tights"], [(waist - 0.03, bust + 0.01)], 0.003, cloth)
+    swing = shell(ctx, "sundress_skirt", ["helper-skirt"], [(hem, waist - 0.02)], 0.005, cloth)
+    stretch(swing, waist - 0.02, hem, knee - 0.02)
+    taper(swing, waist - 0.02, knee - 0.02, -0.4)
+    out.append(join(sun, swing))
+
+    # cropped hoodie and biker shorts
+    crop = shell(ctx, "Outfit_hoodie-bikers", ["helper-tights"], [(waist + 0.08, h["neck"] - 0.035)], 0.012, cloth, arms=1.1)
+    bikers = shell(ctx, "biker_shorts", ["helper-tights"], [(midthigh, waist - 0.01)], 0.003, satin)
+    out.append(join(crop, bikers))
 
     # swimsuits. The bikini's leg line dips to the crotch and rises over the
     # hips to a thin side, lower at the back for fuller cover (front is -y)
