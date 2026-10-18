@@ -26,6 +26,7 @@ import { Fireworks } from "./Fireworks.tsx";
 import { Parade } from "./Parade.tsx";
 import { BeachLife } from "./BeachLife.tsx";
 import { SquareLife } from "./SquareLife.tsx";
+import { Parols } from "./Parols.tsx";
 import { Pedestrians } from "./Pedestrians.tsx";
 import { NightMarket } from "./NightMarket.tsx";
 import { WATER_Z } from "../../game/city/layout.ts";
@@ -149,6 +150,7 @@ export function CityScene({
       <Fireworks />
       <Parade />
       <SquareLife />
+      <Parols />
       {KINDS.map((kind) => (
         <primitive key={kind} object={meshes[kind]} onClick={click} />
       ))}

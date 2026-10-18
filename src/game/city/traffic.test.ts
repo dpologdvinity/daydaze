@@ -1,9 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { neighborhoodAt } from "./cells.ts";
 import { CITY_SURFACES } from "./layout.ts";
 import {
   EDGES,
+  JEEPNEY_COLOURS,
   SIGNAL_PHASES,
+  VEHICLE_LENGTH,
   carPose,
   createTraffic,
   signalAt,
@@ -52,15 +55,44 @@ test("cars stay on the asphalt while they drive for two minutes", () => {
   }
 });
 
-test("cars on one lane keep their distance", () => {
-  const t = createTraffic(24, 5);
-  run(t, 90);
-  for (const a of t.cars)
-    for (const b of t.cars) {
-      if (a === b || a.lane.edge !== b.lane.edge || a.lane.way !== b.lane.way)
-        continue;
-      assert.ok(Math.abs(a.s - b.s) > 4, `cars ${a.id} and ${b.id} overlap`);
-    }
+test("cars and jeepneys on one lane keep their distance", () => {
+  const t = createTraffic(40, 5);
+  assert.ok(t.cars.some((c) => c.kind === "jeepney"));
+  for (let step = 0; step < 90 / DT; step++) {
+    stepTraffic(t, DT, null);
+    if (step % 50) continue;
+    for (const a of t.cars)
+      for (const b of t.cars) {
+        if (a === b || a.lane.edge !== b.lane.edge || a.lane.way !== b.lane.way)
+          continue;
+        // bumper to bumper, with each vehicle's own length
+        const clear =
+          Math.abs(a.s - b.s) -
+          (VEHICLE_LENGTH[a.kind] + VEHICLE_LENGTH[b.kind]) / 2;
+        assert.ok(clear > 0, `${a.kind} ${a.id} and ${b.kind} ${b.id} overlap`);
+      }
+  }
+});
+
+test("jeepneys are longer, brightly painted, and start in Little Manila", () => {
+  assert.ok(VEHICLE_LENGTH.jeepney > VEHICLE_LENGTH.car + 1);
+  // the low tier's traffic still has a few
+  const t = createTraffic(12, 11);
+  assert.deepEqual(
+    t.cars.map((c) => c.kind),
+    createTraffic(12, 11).cars.map((c) => c.kind),
+  );
+  const jeepneys = t.cars.filter((c) => c.kind === "jeepney");
+  assert.ok(jeepneys.length >= 1 && jeepneys.length <= 6);
+  for (const c of jeepneys) {
+    const { from, to } = EDGES[c.lane.edge];
+    const mid: [number, number] = [
+      (from[0] + to[0]) / 2,
+      (from[1] + to[1]) / 2,
+    ];
+    assert.equal(neighborhoodAt(mid), "little-manila");
+    assert.ok(JEEPNEY_COLOURS.some((colour) => colour === c.colour));
+  }
 });
 
 test("traffic keeps moving: every car gets somewhere", () => {

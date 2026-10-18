@@ -1,11 +1,13 @@
 import type { Vec2 } from "../walk.ts";
+import { neighborhoodAt } from "./cells.ts";
 import { hash } from "./hash.ts";
 import { ROAD_EDGES, ROAD_NODES, type RoadEdge } from "./layout.ts";
 
 /**
  * City traffic: cars drive one lane each way on every road edge, keep right,
  * follow the car ahead, stop at red lights, yield to the player, and pick a
- * turn at every junction (a U-turn at the map edge). Pure and allocation-free
+ * turn at every junction (a U-turn at the map edge). Some of them are
+ * jeepneys, most of all on Little Manila's roads. Pure and allocation-free
  * per step, so the client can run it at the fixed walking rate.
  */
 
@@ -110,7 +112,10 @@ function crossingHalfWidth(node: string, edge: number): number {
 /** Where a lane runs: an edge and which way along it (1 from -> to). */
 type Lane = { edge: number; way: 1 | -1 };
 
+export type VehicleKind = "car" | "jeepney";
+
 export type TrafficCar = {
+  kind: VehicleKind;
   lane: Lane;
   /** Metres travelled along the lane from its start node. */
   s: number;
@@ -136,7 +141,21 @@ export const CAR_COLOURS = [
   "#7dff6b",
 ] as const;
 
-const CAR_LENGTH = 4.2;
+/** Bright jeepney paint: the stripes are drawn in a second colour. */
+export const JEEPNEY_COLOURS = [
+  "#ff2f4f",
+  "#ffd84f",
+  "#2f8aff",
+  "#ff4fb3",
+  "#3fe0d0",
+  "#f4f1ff",
+] as const;
+
+export const VEHICLE_LENGTH: Record<VehicleKind, number> = {
+  car: 4.2,
+  jeepney: 5.6,
+};
+const JEEPNEY_SHARE = 0.2;
 const GAP = 2.5;
 /** Junction radius: the curve between lanes starts this far from the node. */
 const TURN = 6;
@@ -151,24 +170,43 @@ function endNode(l: Lane) {
   return l.way === 1 ? e.toId : e.fromId;
 }
 
-/** Cars spread over the lanes, none near a junction. */
+/**
+ * Vehicles spread over the lanes, none near a junction: jeepneys start out on
+ * Little Manila's roads and cars on the rest, then both roam the whole city.
+ */
 export function createTraffic(count: number, seed = 1): Traffic {
   const cars: TrafficCar[] = [];
   const lanes: Lane[] = EDGES.flatMap((_, edge) => [
     { edge, way: 1 as const },
     { edge, way: -1 as const },
   ]);
+  const inManila = ({ edge }: Lane) => {
+    const { from, to } = EDGES[edge];
+    const mid: Vec2 = [(from[0] + to[0]) / 2, (from[1] + to[1]) / 2];
+    return neighborhoodAt(mid) === "little-manila";
+  };
+  const starts: Record<VehicleKind, Lane[]> = {
+    car: lanes.filter((l) => !inManila(l)),
+    jeepney: lanes.filter(inManila),
+  };
+  const placed: Record<VehicleKind, number> = { car: 0, jeepney: 0 };
   for (let i = 0; i < count; i++) {
-    const lane = lanes[i % lanes.length];
-    const round = Math.floor(i / lanes.length);
+    const kind: VehicleKind =
+      hash(i, seed, 7) < JEEPNEY_SHARE ? "jeepney" : "car";
+    const own = starts[kind];
+    const n = placed[kind]++;
+    const lane = own[n % own.length];
+    const round = Math.floor(n / own.length);
     const len = laneLength(lane);
     const s =
       TURN + 12 + ((round * 37 + hash(i, seed) * 20) % (len - 2 * TURN - 24));
+    const paint = kind === "jeepney" ? JEEPNEY_COLOURS : CAR_COLOURS;
     cars.push({
+      kind,
       lane: { ...lane },
       s,
       speed: 0,
-      colour: CAR_COLOURS[Math.floor(hash(seed, i) * CAR_COLOURS.length)],
+      colour: paint[Math.floor(hash(seed, i) * paint.length)],
       turns: Math.floor(hash(i * 3, seed) * 1000),
       id: i,
       next: null,
@@ -252,7 +290,17 @@ function headroom(t: Traffic, car: TrafficCar, look: number): number {
       other.lane.way === car.next.way
     )
       ahead = laneLength(car.lane) - car.s + other.s;
-    if (ahead > 0) room = Math.min(room, ahead - CAR_LENGTH - GAP);
+    else if (
+      car.next &&
+      other.next &&
+      other.next.edge === car.next.edge &&
+      other.next.way === car.next.way
+    )
+      // both turning into the same lane: the one nearer it goes first
+      ahead = laneLength(car.lane) - car.s - (laneLength(other.lane) - other.s);
+    // s is each vehicle's centre: half of each length lies between them
+    const bumpers = (VEHICLE_LENGTH[car.kind] + VEHICLE_LENGTH[other.kind]) / 2;
+    if (ahead > 0) room = Math.min(room, ahead - bumpers - GAP);
   }
   return room;
 }
@@ -288,7 +336,7 @@ function playerRoom(car: TrafficCar, player: Vec2 | null): number {
   const along = px * fx + pz * fz;
   const across = Math.abs(-px * fz + pz * fx);
   if (along < 0 || along > 14 || across > 1.8) return Infinity;
-  return along - CAR_LENGTH / 2 - 1.5;
+  return along - VEHICLE_LENGTH[car.kind] / 2 - 1.5;
 }
 
 /** Advances every car by dt seconds at simulation time t.time + dt. */
