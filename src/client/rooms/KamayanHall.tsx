@@ -16,6 +16,9 @@ import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { canvasTex, hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
+import { Batch } from "./shared/batch.ts";
+import { bunting, plant, poster } from "./shared/details.ts";
+import { groundMaps, surface } from "../city/worldTexture.ts";
 
 const VENUE = FOOD_VENUES.find((v) => v.id === "lechon-kamayan-hall");
 const W = FLOOR_BOUNDS.x1 - FLOOR_BOUNDS.x0;
@@ -55,6 +58,63 @@ const WEAVE = canvasTex(
   },
   [6, 2],
 );
+
+// the banig's real weave under its painted squares, from a CC0 scan
+const WEAVE_RELIEF = groundMaps("bamboo_wall").normalMap;
+WEAVE_RELIEF.repeat.set(8, 3);
+const WOVEN = new THREE.MeshStandardMaterial({
+  map: WEAVE,
+  normalMap: WEAVE_RELIEF,
+  roughness: 0.9,
+});
+// narra for the table and benches, darker wood at the carving station
+const NARRA = surface("wood_veneer", {
+  scale: 1.2,
+  color: "#a0643a",
+  roughness: 0.6,
+});
+const BENCH = surface("oak_wood_planks", {
+  scale: 1,
+  color: "#9a6a42",
+  roughness: 0.8,
+});
+const STATION = surface("dark_wooden_planks", {
+  scale: 1,
+  color: "#8a6040",
+  roughness: 0.7,
+});
+// banderitas in the flag's colors and the fiesta's
+const BANDERITAS = ["#0038a8", "#ce1126", "#fcd116", "#ffffff", "#ff7ac8"];
+
+/** Banderitas over the table, plants in the corners and fiesta posters. */
+function buildDressing() {
+  const b = new Batch();
+  for (const z of [-3.6, 0.4, 3.2])
+    bunting(
+      b,
+      [FLOOR_BOUNDS.x0 + 0.1, 3.5, z],
+      [FLOOR_BOUNDS.x1 - 0.1, 3.5, z],
+      36,
+      BANDERITAS,
+      0.4,
+      0.16,
+    );
+  plant(b, { x: 6.4, z: -5.4 }, 1.6);
+  plant(b, { x: -6.4, z: 5 }, 1.4);
+  plant(b, { x: 6.5, z: 1.4 }, 1.3);
+  for (const [z, d] of [
+    [-3.2, 3],
+    [-0.4, 1],
+  ] as const)
+    poster(
+      b,
+      { x: FLOOR_BOUNDS.x1 - 0.02, y: 2.2, z, ry: -Math.PI / 2 },
+      d,
+      0.7,
+      0.9,
+    );
+  return b.build();
+}
 
 // banana leaves laid end to end: veins running off a pale midrib
 const LEAF = canvasTex(
@@ -176,9 +236,11 @@ function BoodleTable() {
   }, []);
   return (
     <group>
-      <mesh position={[(TABLE.x0 + TABLE.x1) / 2, 0.36, TABLE.z]}>
+      <mesh
+        position={[(TABLE.x0 + TABLE.x1) / 2, 0.36, TABLE.z]}
+        material={NARRA}
+      >
         <boxGeometry args={[len, 0.72, TABLE.half * 2]} />
-        <meshStandardMaterial color="#5a3a22" roughness={0.8} />
       </mesh>
       <mesh
         position={[(TABLE.x0 + TABLE.x1) / 2, 0.725, TABLE.z]}
@@ -235,9 +297,9 @@ function BoodleTable() {
             0.22,
             TABLE.z + side * (TABLE.half + 0.45),
           ]}
+          material={BENCH}
         >
           <boxGeometry args={[len, 0.44, 0.36]} />
-          <meshStandardMaterial color="#6a4a2a" roughness={0.8} />
         </mesh>
       ))}
     </group>
@@ -336,9 +398,11 @@ function Videoke() {
 }
 
 function Shell() {
-  const woven = <meshStandardMaterial map={WEAVE} roughness={0.9} />;
+  const woven = <primitive object={WOVEN} attach="material" />;
+  const dressing = useMemo(buildDressing, []);
   return (
     <>
+      <primitive object={dressing} />
       <mesh position={[0, HEIGHT / 2, FLOOR_BOUNDS.z0 - 0.1]}>
         <boxGeometry args={[W + 0.4, HEIGHT, 0.2]} />
         {woven}
@@ -386,11 +450,10 @@ function Carving() {
   const cx = (CARVING.x0 + CARVING.x1) / 2;
   return (
     <group>
-      <mesh position={[cx, 0.5, cz]}>
+      <mesh position={[cx, 0.5, cz]} material={STATION}>
         <boxGeometry
           args={[CARVING.x1 - CARVING.x0, 1, CARVING.z1 - CARVING.z0]}
         />
-        <meshStandardMaterial color="#3a2414" roughness={0.7} />
       </mesh>
       <mesh position={[cx, 1.02, cz]}>
         <boxGeometry args={[CARVING.x1 - CARVING.x0, 0.04, 1.6]} />

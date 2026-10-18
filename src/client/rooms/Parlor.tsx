@@ -1,6 +1,7 @@
 import { useFrame } from "@react-three/fiber";
 import { useRef, type JSX } from "react";
-import type * as THREE from "three";
+import { useMemo } from "react";
+import * as THREE from "three";
 import type { Look } from "../../game/look.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import { PARLOR } from "../../game/salon.ts";
@@ -10,6 +11,44 @@ import { hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
+import { Batch } from "./shared/batch.ts";
+import { plant, poster, rug, stringLights } from "./shared/details.ts";
+import { GOLD } from "./shared/materials.ts";
+import { surface } from "../city/worldTexture.ts";
+
+// dark painted brick, walnut cases lined in velvet, black leather
+const BRICK = surface("brick_wall_13", { scale: 0.5, color: "#7a5a8a" });
+const WALNUT = surface("wood_veneer", {
+  scale: 1.5,
+  color: "#6a3a2a",
+  roughness: 0.45,
+});
+const VELVET = surface("velour_velvet", { scale: 3, color: "#c86a9a" });
+const LEATHER = surface("leather_white", {
+  scale: 2.5,
+  color: "#3a2a40",
+  roughness: 0.4,
+});
+
+/** Flash sheets in frames, plants, a rug and bulbs. */
+function buildDressing() {
+  const b = new Batch();
+  [-3, -1.5, 1.5, 3].forEach((x, i) =>
+    poster(
+      b,
+      { x, y: 2.2, z: -4 + 0.04 },
+      [5, 6, 7, 2][i] ?? 0,
+      1.1,
+      1.4,
+      GOLD,
+    ),
+  );
+  plant(b, { x: 4.4, z: 3.4 }, 1.3);
+  plant(b, { x: -4.4, z: 3.4 }, 1.3);
+  rug(b, { x: 0, z: 0.4 }, 3, 2.2, "#c890d8");
+  stringLights(b, [-4.8, 3.6, -3.8], [4.8, 3.6, -3.8], 18, "#ff9ad8", 0.25);
+  return b.build();
+}
 
 const PINK = "#ff2f9a";
 const { bounds } = PARLOR;
@@ -45,13 +84,11 @@ function Case({ c }: { c: (typeof PARLOR.cases)[number] }) {
   const depth = c.z1 - c.z0;
   return (
     <group position={[cx, 0, cz]}>
-      <mesh position-y={0.45}>
+      <mesh position-y={0.45} material={WALNUT}>
         <boxGeometry args={[c.x1 - c.x0, 0.9, depth]} />
-        <meshStandardMaterial color="#1a1020" />
       </mesh>
-      <mesh position-y={0.92}>
+      <mesh position-y={0.92} material={VELVET}>
         <boxGeometry args={[c.x1 - c.x0 - 0.1, 0.04, depth - 0.1]} />
-        <meshStandardMaterial color="#4a1030" roughness={1} />
       </mesh>
       <mesh position-y={1.05}>
         <boxGeometry args={[c.x1 - c.x0, 0.25, depth]} />
@@ -93,6 +130,7 @@ function Case({ c }: { c: (typeof PARLOR.cases)[number] }) {
  * piercer, or use the parlor's panel to pick a spot and a piece.
  */
 export function Parlor({ onPick }: { onPick: PickHandler }): JSX.Element {
+  const dressing = useMemo(buildDressing, []);
   return (
     <>
       <color attach="background" args={["#0e0812"]} />
@@ -120,32 +158,22 @@ export function Parlor({ onPick }: { onPick: PickHandler }): JSX.Element {
           [bounds.x1 + 0.1, 0, 0.2, D],
         ] as const
       ).map(([x, z, w, d]) => (
-        <mesh key={`${x}${z}`} position={[x, 2, z]}>
+        <mesh key={`${x}${z}`} position={[x, 2, z]} material={BRICK}>
           <boxGeometry args={[w, 4, d]} />
-          <meshStandardMaterial color="#2a1a32" />
         </mesh>
       ))}
       {/* flash art: framed sheets of little designs on the back wall */}
-      {[-3, -1.5, 1.5, 3].map((x, i) => (
-        <mesh key={x} position={[x, 2.2, bounds.z0 + 0.02]}>
-          <planeGeometry args={[1.1, 1.4]} />
-          <meshBasicMaterial
-            color={hdr(["#ff4fb3", "#4fe3ff", "#ffd84f", "#9b5cff"][i], 0.5)}
-          />
-        </mesh>
-      ))}
+      <primitive object={dressing} />
       {PARLOR.cases.map((c) => (
         <Case key={c.x0} c={c} />
       ))}
       {/* the reclined piercing chair */}
       <group position={[PARLOR.chair[0], 0, PARLOR.chair[1]]}>
-        <mesh position-y={0.5}>
+        <mesh position-y={0.5} material={LEATHER}>
           <boxGeometry args={[0.7, 0.14, 1.2]} />
-          <meshStandardMaterial color="#141018" roughness={0.4} />
         </mesh>
-        <mesh position={[0, 0.85, -0.55]} rotation-x={-0.5}>
+        <mesh position={[0, 0.85, -0.55]} rotation-x={-0.5} material={LEATHER}>
           <boxGeometry args={[0.7, 0.8, 0.12]} />
-          <meshStandardMaterial color="#141018" roughness={0.4} />
         </mesh>
         <mesh position-y={0.25}>
           <cylinderGeometry args={[0.08, 0.3, 0.5, 12]} />

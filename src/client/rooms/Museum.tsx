@@ -23,6 +23,10 @@ import { cameraHold } from "../world/cameraHold.ts";
 import { look as lookAt, tour } from "./museum/tour.ts";
 import { CrowdFigure } from "./shared/CrowdFigure.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
+import { Batch } from "./shared/batch.ts";
+import { plant, poster, rug } from "./shared/details.ts";
+import { GOLD as GILT } from "./shared/materials.ts";
+import { surface } from "../city/worldTexture.ts";
 import { canvasTex, hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
@@ -31,6 +35,81 @@ import { TalkingNpc } from "./shared/TalkingNpc.tsx";
 const GOLD = "#ffd166";
 const W = FLOOR_BOUNDS.x1 - FLOOR_BOUNDS.x0;
 const D = FLOOR_BOUNDS.z1 - FLOOR_BOUNDS.z0;
+
+// cream plaster over a narra wainscot, plinths in dark wood
+const PLASTER = surface("painted_plaster_wall", {
+  scale: 0.5,
+  color: "#f4ead5",
+});
+const NARRA = surface("wood_veneer", {
+  scale: 1.2,
+  color: "#8a5232",
+  roughness: 0.5,
+});
+const LEATHER = surface("brown_leather", { scale: 2, color: "#c08a6a" });
+
+/** Wainscot, a gallery of framed pictures, a viewing bench, rugs, plants. */
+function buildDressing() {
+  const b = new Batch();
+  const box = new THREE.BoxGeometry(1, 1, 1);
+  b.add(box, NARRA, {
+    position: [0, 0.5, FLOOR_BOUNDS.z0 + 0.01],
+    scale: [W, 1, 0.02],
+  });
+  for (const x of [FLOOR_BOUNDS.x0 + 0.01, FLOOR_BOUNDS.x1 - 0.01])
+    b.add(box, NARRA, { position: [x, 0.5, 0], scale: [0.02, 1, D] });
+  for (const [x, z, ry] of [
+    [0, FLOOR_BOUNDS.z0 + 0.02, 0],
+    [FLOOR_BOUNDS.x0 + 0.02, 0, Math.PI / 2],
+    [FLOOR_BOUNDS.x1 - 0.02, 0, -Math.PI / 2],
+  ] as const)
+    b.add(box, GILT, {
+      position: [x, 1.02, z],
+      rotation: [0, ry, 0],
+      scale: [ry ? D : W, 0.04, 0.03],
+    });
+  // pictures between the exhibits, hung salon-style
+  for (const [z, y, d, s] of [
+    [-2, 2.2, 1, 0.9],
+    [1.6, 2.4, 7, 0.7],
+    [4.6, 2.1, 3, 0.8],
+  ] as const) {
+    poster(
+      b,
+      { x: FLOOR_BOUNDS.x0 + 0.03, y, z, ry: Math.PI / 2 },
+      d,
+      s,
+      s * 1.25,
+      GILT,
+    );
+    poster(
+      b,
+      { x: FLOOR_BOUNDS.x1 - 0.03, y, z: -z, ry: -Math.PI / 2 },
+      d + 1,
+      s,
+      s * 1.25,
+      GILT,
+    );
+  }
+  for (const x of [-3.8, 3.8])
+    poster(
+      b,
+      { x, y: 2.3, z: FLOOR_BOUNDS.z0 + 0.03 },
+      x < 0 ? 5 : 4,
+      0.9,
+      1.1,
+      GILT,
+    );
+  // a viewing bench mid-gallery: leather on narra legs
+  b.add(box, LEATHER, { position: [0, 0.45, -0.8], scale: [2, 0.12, 0.6] });
+  for (const x of [-0.85, 0.85])
+    b.add(box, NARRA, { position: [x, 0.2, -0.8], scale: [0.12, 0.4, 0.5] });
+  rug(b, { x: 0, z: -0.8 }, 4.4, 2.6, "#e8b080");
+  plant(b, { x: -7.4, z: 5.4 }, 1.5);
+  plant(b, { x: 7.4, z: 5.4 }, 1.5);
+  plant(b, { x: 0, z: -5.4 }, 1.2);
+  return b.build();
+}
 
 /** A woven banig: bright bands plaited in a diamond pattern. */
 function banigTexture() {
@@ -287,6 +366,7 @@ export function Museum({
   onPick: PickHandler;
   player: Player;
 }): JSX.Element {
+  const dressing = useMemo(buildDressing, []);
   return (
     <>
       <color attach="background" args={["#1a120c"]} />
@@ -315,11 +395,11 @@ export function Museum({
           [FLOOR_BOUNDS.x1 + 0.1, 0, 0.2, D],
         ] as const
       ).map(([x, z, w, d]) => (
-        <mesh key={`${x}${z}`} position={[x, 2.2, z]}>
+        <mesh key={`${x}${z}`} position={[x, 2.2, z]} material={PLASTER}>
           <boxGeometry args={[w, 4.4, d]} />
-          <meshStandardMaterial color="#f4ead5" />
         </mesh>
       ))}
+      <primitive object={dressing} />
       {/* capiz-shell pendant lamps */}
       {[-4, 0, 4].map((x) => (
         <mesh key={x} position={[x, 3.6, -1]}>
@@ -337,9 +417,8 @@ export function Museum({
       />
       {EXHIBITS.map((e, i) => (
         <group key={e.kind} position={[e.at[0], 0, e.at[1]]} rotation-y={e.yaw}>
-          <mesh position-y={0.4}>
+          <mesh position-y={0.4} material={NARRA}>
             <boxGeometry args={[1.3, 0.8, 1.3]} />
-            <meshStandardMaterial color="#5a3a24" roughness={0.6} />
           </mesh>
           {/* the plaque on the plinth's front, tappable */}
           <mesh
