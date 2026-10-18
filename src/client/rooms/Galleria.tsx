@@ -26,6 +26,9 @@ import { canvasTex, hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText, SCRIPT } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { PropSet } from "./shared/Prop.tsx";
+import { Batch } from "./shared/batch.ts";
+import { plant, poster, tableSetting } from "./shared/details.ts";
+import { surface } from "../city/worldTexture.ts";
 
 const W = FLOOR_BOUNDS.x1 - FLOOR_BOUNDS.x0;
 const D = FLOOR_BOUNDS.z1 - NORTH_Z;
@@ -62,6 +65,62 @@ const TERRAZZO = canvasTex(
   },
   [7, 5],
 );
+
+// lilac plaster, white marble trim, walnut and lacquer in the food court
+const PLASTER = surface("painted_plaster_wall", {
+  scale: 0.4,
+  color: "#e8d8f8",
+});
+const MARBLE = surface("marble_01", {
+  scale: 0.6,
+  color: "#fff6fa",
+  roughness: 0.3,
+});
+const WALNUT = surface("wood_veneer", {
+  scale: 1.2,
+  color: "#a06a4a",
+  roughness: 0.5,
+});
+const STALL = surface("wood_veneer", {
+  scale: 1.2,
+  color: "#5a4a70",
+  roughness: 0.5,
+});
+
+/** Big planters between the stores and round the fountain, mall ads, and
+ * condiments on the food court tables. */
+function buildDressing() {
+  const b = new Batch();
+  const planter = surface("terrazzo_tiles", { scale: 2, color: "#f4e8f0" });
+  for (const store of STORES.slice(1))
+    plant(b, { x: store.x - STORE_WIDTH / 2, z: NORTH_Z + 0.75 }, 1.9, planter);
+  for (const a of [0.6, 2.2, 4, 5.4]) {
+    const r = FOUNTAIN_R + 0.6;
+    plant(
+      b,
+      { x: FOUNTAIN[0] + Math.cos(a) * r, z: FOUNTAIN[1] - Math.sin(a) * r },
+      1.5,
+      planter,
+    );
+  }
+  plant(b, { x: 13.3, z: 8.6 }, 2, planter);
+  plant(b, { x: -13.3, z: 8.8 }, 2, planter);
+  for (const [z, d] of [
+    [-1.9, 4],
+    [0.6, 6],
+  ] as const)
+    poster(
+      b,
+      { x: FLOOR_BOUNDS.x0 - 0.02, y: 2.4, z, ry: Math.PI / 2 },
+      d,
+      1.1,
+      1.5,
+      MARBLE,
+    );
+  for (const [x, z] of TABLES)
+    tableSetting(b, { x, y: 0.76, z, ry: Math.PI / 2 });
+  return b.build();
+}
 
 /** The stores along the north wall: lit windows, a sign over each, the
  * glass shopfront; the balcony runs over them. */
@@ -112,9 +171,9 @@ function Storefronts() {
         <mesh
           key={store.id}
           position={[store.x - STORE_WIDTH / 2, BALCONY_Y / 2, NORTH_Z]}
+          material={MARBLE}
         >
           <boxGeometry args={[0.4, BALCONY_Y, 0.4]} />
-          <meshStandardMaterial color="#f4ecf0" roughness={0.4} />
         </mesh>
       ))}
     </>
@@ -125,9 +184,8 @@ function Storefronts() {
 function Balcony() {
   return (
     <group position={[0, BALCONY_Y, NORTH_Z + 1.2]}>
-      <mesh>
+      <mesh material={MARBLE}>
         <boxGeometry args={[W, 0.3, 2.4]} />
-        <meshStandardMaterial color="#f4ecf0" roughness={0.4} />
       </mesh>
       <mesh position={[0, 0.6, 1.2]}>
         <boxGeometry args={[W, 0.9, 0.04]} />
@@ -267,9 +325,8 @@ function FoodCourt() {
     <>
       {STALLS.map((stall) => (
         <group key={stall.venue} position={[STALL_X, 0, stall.z]}>
-          <mesh position={[0.4, 0.55, 0]}>
+          <mesh position={[0.4, 0.55, 0]} material={STALL}>
             <boxGeometry args={[1.6, 1.1, 2.8]} />
-            <meshStandardMaterial color="#1c1430" roughness={0.5} />
           </mesh>
           <mesh position={[-0.42, 0.95, 0]}>
             <boxGeometry args={[0.04, 0.1, 2.8]} />
@@ -282,9 +339,8 @@ function FoodCourt() {
       ))}
       {TABLES.map(([x, z]) => (
         <group key={z} position={[x, 0, z]}>
-          <mesh position-y={0.74}>
+          <mesh position-y={0.74} material={MARBLE}>
             <cylinderGeometry args={[0.4, 0.4, 0.04, 20]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.3} />
           </mesh>
           <mesh position-y={0.37}>
             <cylinderGeometry args={[0.04, 0.2, 0.74, 10]} />
@@ -325,11 +381,10 @@ function Fountain() {
   const [x, z] = FOUNTAIN;
   return (
     <group position={[x, 0, z]}>
-      <mesh position-y={0.3}>
+      <mesh position-y={0.3} material={MARBLE}>
         <cylinderGeometry
           args={[FOUNTAIN_R, FOUNTAIN_R + 0.1, 0.6, 32, 1, true]}
         />
-        <meshStandardMaterial color="#f4ecf0" roughness={0.4} />
       </mesh>
       <mesh position-y={0.45} rotation-x={-Math.PI / 2}>
         <circleGeometry args={[FOUNTAIN_R - 0.1, 32]} />
@@ -366,9 +421,11 @@ function Hall() {
       c.rotation.y = Math.sin(clock.elapsedTime * 0.5 + i) * 0.15;
     });
   });
-  const wall = <meshStandardMaterial color="#d8c8ec" roughness={0.7} />;
+  const wall = <primitive object={PLASTER} attach="material" />;
+  const dressing = useMemo(buildDressing, []);
   return (
     <>
+      <primitive object={dressing} />
       <mesh position={[0, HEIGHT / 2, NORTH_Z - 2.1]}>
         <boxGeometry args={[W, HEIGHT, 0.2]} />
         {wall}
@@ -424,9 +481,8 @@ function Furniture() {
   return (
     <>
       {ATRIUM_BENCHES.map(([x, z]) => (
-        <mesh key={x} position={[x, 0.42, z]}>
+        <mesh key={x} position={[x, 0.42, z]} material={WALNUT}>
           <boxGeometry args={[1.8, 0.08, 0.45]} />
-          <meshStandardMaterial color="#8a5a3a" roughness={0.6} />
         </mesh>
       ))}
       {KIOSKS.map(([x, z], i) => (
@@ -484,6 +540,7 @@ export function Galleria({ onPick }: { onPick: PickHandler }) {
         center={[0, CZ]}
         color="#ffffff"
         map={TERRAZZO}
+        texture={{ id: "marble_tiles", scale: 0.25 }}
         mirror={0.35}
         low={{ metalness: 0.1, roughness: 0.3 }}
         onPick={onPick}

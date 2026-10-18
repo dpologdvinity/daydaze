@@ -1,7 +1,14 @@
 import { Suspense, useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { makeCanvas } from "../../canvas.ts";
+import { groundMaps, surface } from "../../city/worldTexture.ts";
 import { Batch } from "../shared/batch.ts";
+import {
+  plant,
+  poster,
+  stringLights,
+  tableSetting,
+} from "../shared/details.ts";
 import { PropSet } from "../shared/Prop.tsx";
 import type { FoodPalette } from "./FoodRoom.tsx";
 
@@ -73,10 +80,17 @@ export function Fitout({ palette }: { palette: FoodPalette }) {
       palette.floor,
       `#${new THREE.Color(palette.floor).lerp(new THREE.Color("#ffffff"), 0.18).getHexString()}`,
     );
+    // the checker's colors over a real tile floor's grout and gloss
+    const tileRelief = groundMaps("marble_tiles");
+    for (const t of [tileRelief.normalMap, tileRelief.roughnessMap])
+      t.repeat.set(4, 3);
     const floorMat = new THREE.MeshStandardMaterial({
       map: floorTex,
-      roughness: 0.35,
+      normalMap: tileRelief.normalMap,
+      roughnessMap: tileRelief.roughnessMap,
+      roughness: 0.6,
     });
+    const tableTop = surface("wood_veneer", { scale: 1.5, color: "#c08a60" });
 
     const wall = new THREE.Color(palette.wall);
     const accent = new THREE.Color(palette.accent);
@@ -85,7 +99,6 @@ export function Fitout({ palette }: { palette: FoodPalette }) {
     const tileB = wall.clone().lerp(accent, 0.25);
     const dark = new THREE.Color("#1a0f18");
     const chrome = new THREE.Color("#c9c4d6");
-    const wood = new THREE.Color("#8a5a3c");
 
     const s = new Batch();
     const g = new Batch();
@@ -188,11 +201,24 @@ export function Fitout({ palette }: { palette: FoodPalette }) {
     for (const [x, z] of TABLES) {
       put(s, CYL, chrome, [x, 0.38, z], [0.08, 0.76, 0.08]);
       put(s, CYL, chrome, [x, 0.02, z], [0.5, 0.04, 0.5]);
-      put(s, CYL, wood, [x, 0.78, z], [1.0, 0.05, 1.0]);
-      put(s, BOX, chrome, [x, 0.86, z], [0.14, 0.1, 0.08]);
-      put(s, CYL, accent, [x + 0.18, 0.88, z + 0.05], [0.06, 0.16, 0.06]);
-      put(s, CYL, light, [x + 0.28, 0.88, z - 0.04], [0.06, 0.16, 0.06]);
+      s.add(CYL, tableTop, { position: [x, 0.78, z], scale: [1.0, 0.05, 1.0] });
+      tableSetting(s, { x, y: 0.805, z });
     }
+    // framed prints down the right wall, plants by the door and the counter
+    [1.2, 2.4, 3.6, 4.8].forEach((z, i) =>
+      poster(
+        s,
+        { x: 4.08, y: 2.1 + (i % 2) * 0.25, z, ry: -Math.PI / 2 },
+        i * 2 + 1,
+        0.6,
+        0.75,
+      ),
+    );
+    plant(s, { x: -3.7, z: 5.1 }, 1.3);
+    plant(s, { x: 3.7, z: 5.1 }, 1.3);
+    plant(s, { x: 3.6, z: -1.6 }, 1.1);
+    // café bulbs strung over the window
+    stringLights(s, [-4, 3.1, 1.6], [-4, 3.1, 4.4], 10, "#ffd27a", 0.2);
 
     // pendant lamps over the side tables; one over the middle table would
     // hang in the camera's line to the cashier

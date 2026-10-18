@@ -17,6 +17,7 @@ import {
   FOOD_TABLES,
 } from "../../../game/seats.ts";
 import { Doll } from "../../avatar/Doll.tsx";
+import { surface } from "../../city/worldTexture.ts";
 
 /** Regulars at the tables; each room seats a different pair. */
 const DINER_LOOKS: readonly Look[] = (
@@ -105,6 +106,16 @@ export function FoodRoom({
   onPick: PickHandler;
   children?: ReactNode;
 }): JSX.Element {
+  // painted plaster walls; a counter front of glazed tiles in its color
+  const wall = surface("painted_plaster_wall", {
+    scale: 0.6,
+    color: palette.wall,
+  });
+  const counter = surface("rounded_square_tiled_wall", {
+    scale: 1.5,
+    color: palette.counter,
+    roughness: 0.4,
+  });
   const next = useRef(0);
   // The staff hands over the next menu item each time; the doll holds one at a time.
   const order = () => {
@@ -131,21 +142,17 @@ export function FoodRoom({
         onPick={onPick}
       />
       <PortalPads room={ROOMS[palette.room]} color={palette.accent} />
-      <mesh position={[0, 2, -2.2]}>
+      <mesh position={[0, 2, -2.2]} material={wall}>
         <boxGeometry args={[8.4, 4, 0.2]} />
-        <meshStandardMaterial color={palette.wall} />
       </mesh>
-      <mesh position={[-4.2, 2, 2.4]}>
+      <mesh position={[-4.2, 2, 2.4]} material={wall}>
         <boxGeometry args={[0.2, 4, 6.4]} />
-        <meshStandardMaterial color={palette.wall} />
       </mesh>
-      <mesh position={[4.2, 2, 2.4]}>
+      <mesh position={[4.2, 2, 2.4]} material={wall}>
         <boxGeometry args={[0.2, 4, 6.4]} />
-        <meshStandardMaterial color={palette.wall} />
       </mesh>
-      <mesh position={[0, 0.55, -0.85]}>
+      <mesh position={[0, 0.55, -0.85]} material={counter}>
         <boxGeometry args={[6, 1.1, 0.6]} />
-        <meshStandardMaterial color={palette.counter} />
       </mesh>
       <mesh position={[0, 1.13, -0.85]}>
         <boxGeometry args={[6.2, 0.08, 0.7]} />
