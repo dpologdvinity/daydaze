@@ -50,6 +50,7 @@ import {
 } from "../../game/body.ts";
 import { wearable, type PurchaseResult } from "../../game/shop.ts";
 import { drink } from "../effects/drunk.ts";
+import { sipTea, takeHit } from "../effects/high.ts";
 import type { MinigameId } from "../../game/hotspots.ts";
 import { VIEWS, type View } from "../world/CameraRig.tsx";
 import { clearCityMapRequest, useCityMapRequest } from "./cityMapRequest.ts";
@@ -108,6 +109,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Skyline Driving Range. Get a bucket of ten: set your backswing, strike it pure, and land them on the greens.",
   salon:
     "The Blowout Bar. Book with Dani for the salon's colors, or take a chair by the mirrors.",
+  "green-haze":
+    "Green Haze, 18+. Light up, try an edible or sip shroom tea at the counter, then sink into a couch.",
   piercing:
     "Ink & Needle. Pick a spot and a piece of fine jewelry at the counter; Vix does the rest.",
   museum:
@@ -735,6 +738,27 @@ export function Overlay({
               <CocktailIcon />
               Have a drink
             </button>
+          )}
+          {room === "green-haze" && (
+            <>
+              <button
+                type="button"
+                className="drink"
+                onClick={() => takeHit("joint")}
+              >
+                Light a joint
+              </button>
+              <button
+                type="button"
+                className="drink"
+                onClick={() => takeHit("edible")}
+              >
+                Eat an edible
+              </button>
+              <button type="button" className="drink" onClick={sipTea}>
+                Sip shroom tea
+              </button>
+            </>
           )}
           <VenueGames room={room} onPlay={onPlayGame} />
           {room === "salon" && (

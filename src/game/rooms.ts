@@ -84,6 +84,7 @@ import { POOL_BLOCKER } from "./sealShow.ts";
 import * as DINER from "./skateDiner.ts";
 import * as MUSEUM from "./museum.ts";
 import * as SALON from "./salon.ts";
+import * as HAZE from "./greenHaze.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -128,6 +129,7 @@ export type RoomId =
   | "museum"
   | "salon"
   | "piercing"
+  | "green-haze"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -608,6 +610,24 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to Gallery Row",
         target: "city",
         targetSpawn: { position: SALON.SALON.door.landing, yaw: 0 },
+      },
+    ],
+  },
+  // 18+ only: age.ts keeps the door shut until the age check ships
+  "green-haze": {
+    id: "green-haze",
+    name: "Green Haze",
+    walkable: HAZE.FLOOR,
+    blockers: HAZE.BLOCKERS,
+    spawn: { position: HAZE.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "green-haze-to-city",
+        position: HAZE.EXIT,
+        radius: 0.8,
+        label: "Out to Gallery Row",
+        target: "city",
+        targetSpawn: { position: HAZE.GREEN_HAZE_DOOR.landing, yaw: 0 },
       },
     ],
   },

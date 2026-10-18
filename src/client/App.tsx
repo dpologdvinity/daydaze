@@ -14,6 +14,8 @@ import { jailAfterArrest } from "../game/police/arrest.ts";
 import type { Look, Mood, SwimLook } from "../game/look.ts";
 import type { HomeSave } from "../game/home/home.ts";
 import { parkedOrHome, type ParkedCar } from "../game/city/drive.ts";
+import { mayEnter } from "../game/age.ts";
+import { ADULT_NOTICE, ADULT_OK } from "./adult.ts";
 import { arrive } from "../game/portals.ts";
 import { ROOMS, type RoomId, type Spawn } from "../game/rooms.ts";
 import {
@@ -91,13 +93,25 @@ export function App() {
     // a sentence still running resumes in the cell block
     const jailed = isJailed(save.jail, Date.now());
     // new players (and returning ones) start out on Downtown's square
-    const room = flags.room ?? (jailed ? "jail" : "city");
-    return visit(room, flags.at ?? ROOMS[room].spawn);
+    const asked = flags.room ?? (jailed ? "jail" : "city");
+    const room = mayEnter(asked, ADULT_OK) ? asked : "city";
+    return visit(room, (room === asked && flags.at) || ROOMS[room].spawn);
   });
   const [fading, setFading] = useState(false);
   const traveling = useRef(false);
   // Fade out, swap rooms behind the curtain, then fade back in.
+  // a short line about a shut door, such as an 18+ venue's
+  const [notice, setNotice] = useState<string | null>(null);
+  useEffect(() => {
+    if (!notice) return;
+    const id = window.setTimeout(() => setNotice(null), 4000);
+    return () => window.clearTimeout(id);
+  }, [notice]);
   const travel = useCallback((room: RoomId, spawn: Spawn) => {
+    if (!mayEnter(room, ADULT_OK)) {
+      setNotice(ADULT_NOTICE);
+      return;
+    }
     if (traveling.current) return;
     traveling.current = true;
     playWhoosh();
@@ -260,6 +274,11 @@ export function App() {
           <p className="nametag">{save.name}</p>
         </div>
         <div className="fade" data-on={fading} aria-hidden="true" />
+        {notice && (
+          <p className="notice" role="status">
+            {notice}
+          </p>
+        )}
         <Overlay
           room={here.room}
           roomName={ROOMS[here.room].name}

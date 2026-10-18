@@ -628,6 +628,21 @@ button:focus-visible {
   box-shadow: 0 0 18px rgb(255 176 46 / 0.6);
 }
 
+/* a shut door's line, such as an 18+ venue's, under the room card */
+.notice {
+  position: fixed;
+  top: 190px;
+  left: 28px;
+  z-index: 6;
+  max-width: 360px;
+  margin: 0;
+  padding: 10px 16px;
+  border-radius: 14px;
+  background: rgb(20 10 40 / 0.85);
+  color: var(--champagne);
+  box-shadow: 0 0 0 1px rgb(255 207 106 / 0.5);
+}
+
 /* your car in the city: Drive, then which car and its paint */
 .car-picker {
   display: flex;

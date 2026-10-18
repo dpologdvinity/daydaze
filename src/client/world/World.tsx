@@ -14,6 +14,8 @@ import type { BodyShape } from "../../game/body.ts";
 import type { DanceMoveId, Holds } from "../../game/dance/moves.ts";
 import type { HomeSave } from "../../game/home/home.ts";
 import type { ParkedCar } from "../../game/city/drive.ts";
+import { mayEnter } from "../../game/age.ts";
+import { ADULT_OK } from "../adult.ts";
 import type { Intensity } from "../../game/effects/buzz.ts";
 import {
   swimFor,
@@ -38,6 +40,7 @@ import { NeonClamp } from "./NeonClamp.tsx";
 import {
   createPlayer,
   PlayerController,
+  placePlayer,
   startRide,
   walkTo,
   type Player,
@@ -102,6 +105,9 @@ const Gridiron = lazy(() =>
 );
 const Salon = lazy(() =>
   import("../rooms/Salon.tsx").then((m) => ({ default: m.Salon })),
+);
+const GreenHaze = lazy(() =>
+  import("../rooms/GreenHaze.tsx").then((m) => ({ default: m.GreenHaze })),
 );
 const Parlor = lazy(() =>
   import("../rooms/Parlor.tsx").then((m) => ({ default: m.Parlor })),
@@ -328,6 +334,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   museum: Museum,
   salon: Salon,
   piercing: Parlor,
+  "green-haze": GreenHaze,
   "halo-halo-cafe": HaloHaloCafe,
   gym: Gym,
   stadium: Stadium,
@@ -480,7 +487,19 @@ export function World({
             holds={holds}
             onMove={onMove}
             tag={tag}
-            onPortal={onPortal}
+            onPortal={(portal) => {
+              // a shut door (an 18+ venue): step back off it and stay
+              if (!mayEnter(portal.target, ADULT_OK)) {
+                const back = 1.6;
+                placePlayer(
+                  player,
+                  player.walk.pos[0] - Math.sin(player.walk.yaw) * back,
+                  player.walk.pos[1] - Math.cos(player.walk.yaw) * back,
+                );
+                player.walk.leaving = false;
+              }
+              onPortal(portal);
+            }}
           />
           <CameraRig player={player} view={view} room={room} />
           <CreatorFrame />

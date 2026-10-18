@@ -1,5 +1,6 @@
 import type { RoomId } from "../../game/rooms.ts";
 import { drink } from "../effects/drunk.ts";
+import { ADULT_OK } from "../adult.ts";
 
 /** Room jumps for testing, shown only with `?debug=1`. */
 export function DebugPanel({ onGo }: { onGo: (room: RoomId) => void }) {
@@ -26,6 +27,11 @@ export function DebugPanel({ onGo }: { onGo: (room: RoomId) => void }) {
       <button type="button" onClick={() => onGo("mermaid-cove")}>
         Go to Mermaid Cove
       </button>
+      {ADULT_OK && (
+        <button type="button" onClick={() => onGo("green-haze")}>
+          Go to Green Haze
+        </button>
+      )}
       <button type="button" onClick={() => onGo("courtside")}>
         Go to the Courtside Club
       </button>

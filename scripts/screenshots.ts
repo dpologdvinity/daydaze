@@ -83,6 +83,7 @@ const SHOTS: {
   { name: "skate-diner", query: "room=skate-diner" },
   { name: "museum", query: "room=museum" },
   { name: "salon", query: "room=salon" },
+  { name: "green-haze", query: "room=green-haze&adult=1" },
   { name: "piercing", query: "room=piercing" },
   { name: "halo-halo-cafe", query: "room=halo-halo-cafe" },
   { name: "gym", query: "room=gym" },

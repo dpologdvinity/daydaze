@@ -21,6 +21,7 @@ import * as COURTSIDE from "../courtside.ts";
 import * as COVE from "../mermaidCove.ts";
 import * as MUSEUM from "../museum.ts";
 import * as SALON from "../salon.ts";
+import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
 import * as RANGE from "../drivingRange.ts";
 import * as GYM from "../gym.ts";
@@ -1090,7 +1091,23 @@ const ARTS_FRONT: readonly {
     sign: { text: "WAREHOUSE", color: "#4fe3ff" },
     style: "club",
   },
-  { x: 156, w: 30, h: 16, north: false, color: "#f72585", style: "warehouse" },
+  {
+    x: GREEN_HAZE_DOOR.position[0],
+    w: 30,
+    h: 16,
+    north: false,
+    color: "#2d6a4f",
+    sign: { text: "GREEN HAZE 18+", color: "#7dff6b" },
+    style: "warehouse",
+    // the 18+ lounge: age.ts keeps it shut until the age check ships
+    door: {
+      position: GREEN_HAZE_DOOR.position,
+      radius: 1.5,
+      label: "Into Green Haze (18+)",
+      target: "green-haze",
+      targetSpawn: { position: GREEN_HAZE_SPAWN, yaw: Math.PI },
+    },
+  },
   {
     x: -168,
     w: 32,

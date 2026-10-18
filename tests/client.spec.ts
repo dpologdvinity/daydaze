@@ -105,6 +105,36 @@ test("a car low on gas fills up at a pump for coins", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("the 18+ lounge stays shut without the age check", async ({ page }) => {
+  await page.goto(`${STILL}&room=green-haze`);
+  await expect(roomTitle(page)).toHaveText("Downtown", { timeout: 150_000 });
+});
+
+test("Green Haze (18+, dev flag): a joint and shroom tea raise the high and the trip", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&room=green-haze&adult=1`);
+  await expect(roomTitle(page)).toHaveText("Green Haze", { timeout: 150_000 });
+  const canvas = canvasOf(page);
+  await expect
+    .poll(async () => Number(await canvas.getAttribute("data-calls")), {
+      timeout: 120_000,
+    })
+    .toBeGreaterThan(15);
+  expect(Number(await canvas.getAttribute("data-calls"))).toBeLessThan(250);
+  await page.getByRole("button", { name: "Light a joint" }).click();
+  await page.getByRole("button", { name: "Sip shroom tea" }).click();
+  await expect
+    .poll(async () => Number(await canvas.getAttribute("data-high")))
+    .toBeGreaterThan(0.2);
+  await expect
+    .poll(async () => Number(await canvas.getAttribute("data-trip")))
+    .toBeGreaterThan(0.3);
+  expect(errors).toEqual([]);
+});
+
 test("loads the Velvet Room with no errors and mounts the canvas", async ({
   page,
 }) => {

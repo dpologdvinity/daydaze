@@ -17,6 +17,8 @@ export type Flags = {
   slide: number | null;
   /** `?at=0,300` starts the room at that point (x, z), facing `yaw` (0). */
   at: Spawn | null;
+  /** `?adult=1` opens the 18+ rooms, in a development build only (adult.ts). */
+  adult: boolean;
 };
 
 const VIEW_IDS: readonly View[] = ["room", "full", "face", "detail"];
@@ -35,6 +37,7 @@ export function readFlags(search: string): Flags {
     view,
     slide: slide >= 0 && slide <= 1 ? slide : null,
     at: spawnAt(q.get("at"), Number(q.get("yaw") ?? 0)),
+    adult: q.get("adult") === "1",
   };
 }
 

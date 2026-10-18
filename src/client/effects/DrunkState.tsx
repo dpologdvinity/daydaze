@@ -1,6 +1,12 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
-import { visualParams, type Intensity } from "../../game/effects/buzz.ts";
+import {
+  intensityFactor,
+  visualParams,
+  type Intensity,
+} from "../../game/effects/buzz.ts";
+import { highParams } from "../../game/effects/high.ts";
+import { ageHigh, getHigh, getTrip, liveHigh, onHighChange } from "./high.ts";
 import { useReducedMotion } from "../motion.ts";
 import { ageBuzz, getBuzz, liveDrunk, onBuzzChange } from "./drunk.ts";
 
@@ -16,6 +22,8 @@ export function DrunkState({ intensity }: { intensity: Intensity }) {
   const shown = useRef({ buzz: -1, calm, intensity });
 
   useEffect(() => onBuzzChange(() => invalidate()), [invalidate]);
+  useEffect(() => onHighChange(() => invalidate()), [invalidate]);
+  const shownHigh = useRef({ high: -1, trip: -1 });
 
   useFrame((_, dt) => {
     ageBuzz(dt);
@@ -25,6 +33,22 @@ export function DrunkState({ intensity }: { intensity: Intensity }) {
     liveDrunk.wobble = look.wobble;
     liveDrunk.warm = look.warm;
     liveDrunk.edge = look.edge;
+    ageHigh(dt);
+    const high = getHigh();
+    const trip = getTrip();
+    const lifted = highParams(high, trip, intensityFactor(intensity), calm);
+    liveHigh.glow = lifted.glow;
+    liveHigh.hue = lifted.hue;
+    liveHigh.breathe = lifted.breathe;
+    liveHigh.drift = lifted.drift;
+    // two decimals, so the canvas attributes change a few times a second
+    const h = Math.round(high * 100) / 100;
+    const t = Math.round(trip * 100) / 100;
+    if (h !== shownHigh.current.high || t !== shownHigh.current.trip) {
+      shownHigh.current = { high: h, trip: t };
+      gl.domElement.dataset.high = h.toFixed(2);
+      gl.domElement.dataset.trip = t.toFixed(2);
+    }
     const seen = shown.current;
     if (
       buzz !== seen.buzz ||
