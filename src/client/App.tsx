@@ -89,7 +89,8 @@ export function App() {
   const [here, setHere] = useState(() => {
     // a sentence still running resumes in the cell block
     const jailed = isJailed(save.jail, Date.now());
-    const room = flags.room ?? (jailed ? "jail" : "velvet-room");
+    // new players (and returning ones) start out on Downtown's square
+    const room = flags.room ?? (jailed ? "jail" : "city");
     return visit(room, flags.at ?? ROOMS[room].spawn);
   });
   const [fading, setFading] = useState(false);

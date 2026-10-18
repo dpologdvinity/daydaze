@@ -5,6 +5,8 @@ import { expect, test, type Page } from "@playwright/test";
 // Most also use still=1 so the scene renders a few frames and then idles.
 const LOW = "/?quality=low";
 const STILL = "/?quality=low&still=1";
+// the tests that began in the old first room still start there
+const VELVET = `${STILL}&room=velvet-room`;
 
 function collectErrors(page: Page) {
   const errors: string[] = [];
@@ -21,11 +23,21 @@ const roomTitle = (page: Page) => page.getByRole("heading", { level: 1 });
 const canvasOf = (page: Page) =>
   page.getByRole("img", { name: "3D room view" });
 
+test("a new player starts in the city, on Downtown's square", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto("/?quality=low");
+  await expect(roomTitle(page)).toHaveText("Downtown", { timeout: 150_000 });
+  expect(errors).toEqual([]);
+});
+
 test("loads the Velvet Room with no errors and mounts the canvas", async ({
   page,
 }) => {
   const errors = collectErrors(page);
-  await page.goto(LOW);
+  await page.goto(`${LOW}&room=velvet-room`);
   await expect(page.getByRole("img", { name: "3D room view" })).toBeVisible();
   await expect(roomTitle(page)).toHaveText("The Velvet Room");
   // shaders compile on the first frames; wait until the frame counter caps out
@@ -38,7 +50,7 @@ test("a hair style picked in the closet survives a reload", async ({
 }) => {
   // the closet and a reload are slow on CI's SwiftShader
   test.setTimeout(300_000);
-  await page.goto(STILL);
+  await page.goto(VELVET);
   await page
     .getByRole("button", { name: "Dressing room", exact: true })
     .click();
@@ -63,7 +75,7 @@ test("a hair style picked in the closet survives a reload", async ({
 
 test("the debug buttons move the player between rooms", async ({ page }) => {
   const errors = collectErrors(page);
-  await page.goto(`${STILL}&debug=1`);
+  await page.goto(`${VELVET}&debug=1`);
   await expect(roomTitle(page)).toHaveText("The Velvet Room");
   await page.getByRole("button", { name: "Go to Plaza" }).click();
   await expect(roomTitle(page)).toHaveText("Daydaze Plaza");
@@ -74,7 +86,7 @@ test("the debug buttons move the player between rooms", async ({ page }) => {
 
 test("the Water Park loads with the swimsuit on", async ({ page }) => {
   const errors = collectErrors(page);
-  await page.goto(`${STILL}&debug=1`);
+  await page.goto(`${VELVET}&debug=1`);
   await expect(roomTitle(page)).toHaveText("The Velvet Room");
   const view = page.getByRole("img", { name: "3D room view" });
   await expect(view).toHaveAttribute("data-wearing", "outfit");
@@ -85,7 +97,7 @@ test("the Water Park loads with the swimsuit on", async ({ page }) => {
 });
 
 test("the debug panel is hidden without the flag", async ({ page }) => {
-  await page.goto(STILL);
+  await page.goto(VELVET);
   await expect(roomTitle(page)).toBeVisible();
   await expect(page.getByRole("button", { name: "Go to Plaza" })).toHaveCount(
     0,
@@ -93,7 +105,7 @@ test("the debug panel is hidden without the flag", async ({ page }) => {
 });
 
 test("chat shows what you said above your doll", async ({ page }) => {
-  await page.goto(STILL);
+  await page.goto(VELVET);
   const input = page.getByRole("textbox", { name: "Chat message" });
   await input.fill("velvet hour anyone?");
   await input.press("Enter");
@@ -102,7 +114,7 @@ test("chat shows what you said above your doll", async ({ page }) => {
 });
 
 test("the overlay passes an axe scan", async ({ page }) => {
-  await page.goto(`${STILL}&debug=1`);
+  await page.goto(`${VELVET}&debug=1`);
   await expect(roomTitle(page)).toBeVisible();
   const results = await new AxeBuilder({ page }).exclude("canvas").analyze();
   expect(results.violations).toEqual([]);
@@ -110,7 +122,7 @@ test("the overlay passes an axe scan", async ({ page }) => {
 
 test("on a phone the dressing room opens from its toggle", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto(STILL);
+  await page.goto(VELVET);
   const toggle = page.getByRole("button", {
     name: "Dressing room",
     exact: true,
@@ -130,7 +142,7 @@ test("the dressing room starts closed, closes on Esc and keeps its state", async
 }) => {
   // the closet and a reload are slow on CI's SwiftShader
   test.setTimeout(300_000);
-  await page.goto(STILL);
+  await page.goto(VELVET);
   const toggle = page.getByRole("button", {
     name: "Dressing room",
     exact: true,
@@ -153,7 +165,7 @@ test("the Amusement Park opens from the debug panel and renders its rides", asyn
   page,
 }) => {
   const errors = collectErrors(page);
-  await page.goto(`${STILL}&debug=1`);
+  await page.goto(`${VELVET}&debug=1`);
   await expect(roomTitle(page)).toHaveText("The Velvet Room");
   await page.getByRole("button", { name: "Go to Amusement Park" }).click();
   await expect(roomTitle(page)).toHaveText("Amusement Park");
@@ -280,7 +292,7 @@ test("the Dance mood opens a move picker, and the picked move plays", async ({
   page,
 }) => {
   const errors = collectErrors(page);
-  await page.goto(STILL);
+  await page.goto(VELVET);
   const canvas = canvasOf(page);
   await expect(canvas).toHaveAttribute("data-dance", "none");
   await page.getByRole("radio", { name: "Dance", exact: true }).click();
@@ -294,7 +306,7 @@ test("the Dance mood opens a move picker, and the picked move plays", async ({
 test("a drink in the Velvet Room raises the buzz and sways the view", async ({
   page,
 }) => {
-  await page.goto(STILL);
+  await page.goto(VELVET);
   const canvas = canvasOf(page);
   await expect(canvas).toHaveAttribute("data-buzz", "0.00");
   await page.getByRole("button", { name: "Have a drink" }).click();
@@ -309,7 +321,7 @@ test.describe("with reduced motion", () => {
   test.use({ reducedMotion: "reduce" });
 
   test("the drunk sway is off, but the buzz still shows", async ({ page }) => {
-    await page.goto(STILL);
+    await page.goto(VELVET);
     const canvas = canvasOf(page);
     await page.getByRole("button", { name: "Have a drink" }).click();
     await expect
@@ -321,7 +333,7 @@ test.describe("with reduced motion", () => {
 
 test("the debug buttons take the player into Pulse", async ({ page }) => {
   const errors = collectErrors(page);
-  await page.goto(`${STILL}&debug=1`);
+  await page.goto(`${VELVET}&debug=1`);
   await page.getByRole("button", { name: "Go to Pulse" }).click();
   await expect(roomTitle(page)).toHaveText("Pulse");
   expect(errors).toEqual([]);
@@ -331,7 +343,7 @@ test("the debug buttons take the player into The Violet Hour", async ({
   page,
 }) => {
   const errors = collectErrors(page);
-  await page.goto(`${STILL}&debug=1`);
+  await page.goto(`${VELVET}&debug=1`);
   await page.getByRole("button", { name: "Go to Violet Hour" }).click();
   await expect(roomTitle(page)).toHaveText("The Violet Hour");
   expect(errors).toEqual([]);
@@ -341,7 +353,7 @@ test("the debug buttons take the player up to the Skylark, with Last Call at its
   page,
 }) => {
   const errors = collectErrors(page);
-  await page.goto(`${STILL}&debug=1`);
+  await page.goto(`${VELVET}&debug=1`);
   await page.getByRole("button", { name: "Go to Skylark" }).click();
   await expect(roomTitle(page)).toHaveText("The Skylark");
   await expect(
@@ -352,7 +364,7 @@ test("the debug buttons take the player up to the Skylark, with Last Call at its
 
 test("the debug buttons take the player into Sugar Rush", async ({ page }) => {
   const errors = collectErrors(page);
-  await page.goto(`${STILL}&debug=1`);
+  await page.goto(`${VELVET}&debug=1`);
   await page.getByRole("button", { name: "Go to Sugar Rush" }).click();
   await expect(roomTitle(page)).toHaveText("Sugar Rush");
   expect(errors).toEqual([]);
@@ -362,7 +374,7 @@ test("the debug buttons take the player into Bassline, with its decks", async ({
   page,
 }) => {
   const errors = collectErrors(page);
-  await page.goto(`${STILL}&debug=1`);
+  await page.goto(`${VELVET}&debug=1`);
   await page.getByRole("button", { name: "Go to Bassline" }).click();
   await expect(roomTitle(page)).toHaveText("Bassline");
   await expect(
@@ -375,7 +387,7 @@ test("the debug buttons take the player up to the Karaoke Loft", async ({
   page,
 }) => {
   const errors = collectErrors(page);
-  await page.goto(`${STILL}&debug=1`);
+  await page.goto(`${VELVET}&debug=1`);
   await page.getByRole("button", { name: "Go to Karaoke Loft" }).click();
   await expect(roomTitle(page)).toHaveText("Karaoke Loft");
   expect(errors).toEqual([]);
@@ -674,7 +686,7 @@ test("the debug buttons take the player into Kamayan Hall", async ({
   page,
 }) => {
   const errors = collectErrors(page);
-  await page.goto(`${STILL}&debug=1`);
+  await page.goto(`${VELVET}&debug=1`);
   await page.getByRole("button", { name: "Go to Kamayan Hall" }).click();
   await expect(roomTitle(page)).toHaveText("Lechon and Kamayan Hall");
   expect(errors).toEqual([]);
@@ -684,7 +696,7 @@ test("the Galleria: buy at Glitterbox, pay for it, and it's yours to wear", asyn
   page,
 }) => {
   const errors = collectErrors(page);
-  await page.goto(`${STILL}&debug=1`);
+  await page.goto(`${VELVET}&debug=1`);
   await page.getByRole("button", { name: "Go to the Galleria" }).click();
   await expect(roomTitle(page)).toHaveText("Starlight Galleria");
   await page.getByRole("button", { name: "Shop at Glitterbox" }).click();
@@ -707,7 +719,7 @@ test("the Roller Disco: put on skates, and they come off indoors", async ({
   page,
 }) => {
   const errors = collectErrors(page);
-  await page.goto(`${STILL}&debug=1`);
+  await page.goto(`${VELVET}&debug=1`);
   await page.getByRole("button", { name: "Go to the Roller Disco" }).click();
   await expect(roomTitle(page)).toHaveText("Starlite Roller Disco");
   const skates = page.getByRole("button", { name: /skates/ });
@@ -752,7 +764,7 @@ for (const [room, region, startName, live] of [
 
 test("the debug buttons take the player into La Noche", async ({ page }) => {
   const errors = collectErrors(page);
-  await page.goto(`${STILL}&debug=1`);
+  await page.goto(`${VELVET}&debug=1`);
   await page.getByRole("button", { name: "Go to La Noche" }).click();
   await expect(roomTitle(page)).toHaveText("La Noche");
   expect(errors).toEqual([]);
@@ -762,7 +774,7 @@ test("Player 2's cabinet opens Gem Glam and closes back to the bar", async ({
   page,
 }) => {
   const errors = collectErrors(page);
-  await page.goto(`${STILL}&debug=1`);
+  await page.goto(`${VELVET}&debug=1`);
   await page.getByRole("button", { name: "Go to Player 2" }).click();
   await expect(roomTitle(page)).toHaveText("Player 2");
   await page
@@ -780,7 +792,7 @@ test("Star Siege: the fleet marches, a shot flies, and the game closes", async (
   page,
 }) => {
   const errors = collectErrors(page);
-  await page.goto(`${STILL}&debug=1`);
+  await page.goto(`${VELVET}&debug=1`);
   await page.getByRole("button", { name: "Go to Player 2" }).click();
   await page
     .getByRole("button", { name: "Play Star Siege on the cabinet" })
@@ -800,7 +812,7 @@ test("Throwback Trivia: answer a question and the right one lights up", async ({
   page,
 }) => {
   const errors = collectErrors(page);
-  await page.goto(`${STILL}&debug=1`);
+  await page.goto(`${VELVET}&debug=1`);
   await page.getByRole("button", { name: "Go to Player 2" }).click();
   await page
     .getByRole("button", { name: "Play Throwback Trivia on the cabinet" })
@@ -894,7 +906,7 @@ test("Bassline opens from the Pulse DJ booth and closes back to the world", asyn
 test("Last Call opens from the Velvet Room bar and closes back to the world", async ({
   page,
 }) => {
-  await page.goto(STILL);
+  await page.goto(VELVET);
   await page.getByRole("button", { name: "Play Last Call at the bar" }).click();
   const dialog = page.getByRole("dialog", { name: "Last Call" });
   await expect(dialog).toBeVisible();
@@ -940,7 +952,7 @@ test("apartment: place, rotate and remove furniture, lock the door, and it persi
   page,
 }) => {
   const errors = collectErrors(page);
-  await page.goto(`${STILL}&debug=1`);
+  await page.goto(`${VELVET}&debug=1`);
   await page.getByRole("button", { name: "Go to Apartment" }).click();
   await expect(roomTitle(page)).toHaveText("Your apartment");
   const lock = page.getByRole("button", { name: /^Door:/ });
@@ -977,7 +989,7 @@ test("jail: the sentence counts down, cards shorten it, and bail needs coins", a
       JSON.stringify({ jail: { endsAt: Date.now() + 120_000 }, coins: 0 }),
     );
   });
-  await page.goto(`${STILL}&debug=1`);
+  await page.goto(`${VELVET}&debug=1`);
   await page.getByRole("button", { name: "Go to Jail" }).click();
   await expect(roomTitle(page)).toHaveText("City Jail, Block C");
   const clock = page.getByRole("timer");
@@ -993,7 +1005,7 @@ test("jail: the sentence counts down, cards shorten it, and bail needs coins", a
 test("shoplifting: the suspicion meter fills and a caught player is penalised", async ({
   page,
 }) => {
-  await page.goto(`${STILL}&debug=1`);
+  await page.goto(`${VELVET}&debug=1`);
   await page.getByRole("button", { name: "Go to Apartment" }).click();
   await page.getByRole("button", { name: "Try the test shelf" }).click();
   await page.getByRole("button", { name: /Corner Bodega/ }).click();
@@ -1015,7 +1027,7 @@ test("Plate Rush orders a dish and the courier drops it in hand", async ({
 }) => {
   test.setTimeout(90_000);
   const errors = collectErrors(page);
-  await page.goto(STILL);
+  await page.goto(VELVET);
   await page.getByRole("button", { name: "Plate Rush" }).click();
   const app = page.getByRole("dialog", { name: "Plate Rush" });
   await app.getByRole("button", { name: /Point and Eat Kitchen/ }).click();
