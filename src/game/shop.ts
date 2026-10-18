@@ -5,6 +5,7 @@ import {
   HAIR_STYLES,
   encodePiercings,
   LIPS,
+  OUTFIT_COLORS,
   OUTFITS,
   PIERCING_SPOTS,
   PIERCING_STYLES,
@@ -14,11 +15,17 @@ import {
 } from "./look.ts";
 import { spend } from "./wallet.ts";
 
-export type ShopId = "boutique" | "beauty" | "salon" | "piercing";
+export type ShopId = "boutique" | "beauty" | "salon" | "piercing" | "thrift";
 
 /** A Look slot a shop item fills; its id is the catalog option in that slot. */
 export type ShopSlot =
-  "outfit" | "hairStyle" | "hairColor" | "lips" | "shadow" | "piercing";
+  | "outfit"
+  | "outfitColor"
+  | "hairStyle"
+  | "hairColor"
+  | "lips"
+  | "shadow"
+  | "piercing";
 
 export type ShopItem = {
   id: string;
@@ -61,15 +68,34 @@ export const SHOP_ITEMS: readonly ShopItem[] = [
   { id: "rose-gold-ring", slot: "piercing", store: "piercing", price: 30 },
   { id: "diamond-stud", slot: "piercing", store: "piercing", price: 45 },
   { id: "opal-stud", slot: "piercing", store: "piercing", price: 40 },
+  // Thrift Temple: vintage dyes for any outfit
+  { id: "#c9a227", slot: "outfitColor", store: "thrift", price: 15 },
+  { id: "#6b7a2a", slot: "outfitColor", store: "thrift", price: 15 },
+  { id: "#b5502a", slot: "outfitColor", store: "thrift", price: 15 },
+  { id: "#3a5a8a", slot: "outfitColor", store: "thrift", price: 15 },
+  { id: "#f2e6c8", slot: "outfitColor", store: "thrift", price: 20 },
+  { id: "#6a1a2a", slot: "outfitColor", store: "thrift", price: 20 },
 ];
 
-/** Every item a store sells, in catalog order. */
-export function itemsIn(store: ShopId): ShopItem[] {
-  return SHOP_ITEMS.filter((item) => item.store === store);
+/** Thrift Temple's find of the day: one boutique outfit at half price,
+ * a different one each day (`day` from challenges.ts `dayOf`). */
+export function thriftFind(day: number): ShopItem {
+  const rack = itemsIn("boutique").filter((i) => i.slot === "outfit");
+  const pick = rack[(((day * 7) % rack.length) + rack.length) % rack.length];
+  if (!pick) throw new Error("the boutique sells no outfits");
+  return { ...pick, store: "thrift", price: Math.round(pick.price / 2) };
+}
+
+/** Every item a store sells on `day`, in catalog order; the thrift shop
+ * adds its find of the day first. */
+export function itemsIn(store: ShopId, day = 0): ShopItem[] {
+  const stock = SHOP_ITEMS.filter((item) => item.store === store);
+  return store === "thrift" ? [thriftFind(day), ...stock] : stock;
 }
 
 const CATALOGUES: Record<ShopSlot, readonly { id: string; label: string }[]> = {
   outfit: OUTFITS,
+  outfitColor: OUTFIT_COLORS,
   hairStyle: HAIR_STYLES,
   hairColor: HAIR_COLORS,
   lips: LIPS,
@@ -88,6 +114,10 @@ export function wearItem(look: Look, item: ShopItem): Look {
     case "outfit": {
       const o = OUTFITS.find((x) => x.id === item.id);
       return o ? { ...look, outfit: o.id } : look;
+    }
+    case "outfitColor": {
+      const o = OUTFIT_COLORS.find((x) => x.id === item.id);
+      return o ? { ...look, outfitColor: o.id } : look;
     }
     case "hairStyle": {
       const o = HAIR_STYLES.find((x) => x.id === item.id);
@@ -130,9 +160,17 @@ export type PurchaseResult =
   | { ok: true; state: Wallet }
   | { ok: false; reason: "unknown" | "owned" | "broke" };
 
-/** Charges once and adds the item to the wardrobe; owning it again is refused. */
-export function buyItem(state: Wallet, id: string): PurchaseResult {
-  const item = shopItem(id);
+/** Charges once and adds the item to the wardrobe; owning it again is
+ * refused. From `store` on `day`, the price is that store's that day. */
+export function buyItem(
+  state: Wallet,
+  id: string,
+  store?: ShopId,
+  day = 0,
+): PurchaseResult {
+  const item = store
+    ? itemsIn(store, day).find((i) => i.id === id)
+    : shopItem(id);
   if (!item) return { ok: false, reason: "unknown" };
   if (state.wardrobe.includes(id)) return { ok: false, reason: "owned" };
   const coins = spend(state.coins, item.price);
@@ -150,6 +188,9 @@ export function unlockedLook(look: Look, wardrobe: readonly string[]): Look {
   return {
     ...look,
     outfit: locked(look.outfit, wardrobe) ? DEFAULT_LOOK.outfit : look.outfit,
+    outfitColor: locked(look.outfitColor, wardrobe)
+      ? DEFAULT_LOOK.outfitColor
+      : look.outfitColor,
     hairStyle: locked(look.hairStyle, wardrobe)
       ? DEFAULT_LOOK.hairStyle
       : look.hairStyle,

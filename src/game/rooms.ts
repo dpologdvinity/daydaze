@@ -97,6 +97,7 @@ import * as HORN from "./jazzClub.ts";
 import * as VAULT from "./vinylVault.ts";
 import * as BACK from "./backRoom.ts";
 import * as TIKI from "./tikiBar.ts";
+import * as THRIFT from "./thriftTemple.ts";
 import * as REWIND from "./videoStore.ts";
 import type { Vec2 } from "./walk.ts";
 
@@ -153,6 +154,7 @@ export type RoomId =
   | "vinyl-vault"
   | "back-room"
   | "tiki-bar"
+  | "thrift-temple"
   | "video-store"
   | "city";
 
@@ -670,6 +672,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the avenue",
         target: "city",
         targetSpawn: { position: BACK.BACK_ROOM_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  "thrift-temple": {
+    id: "thrift-temple",
+    name: "Thrift Temple",
+    walkable: THRIFT.FLOOR,
+    blockers: THRIFT.BLOCKERS,
+    spawn: { position: THRIFT.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "thrift-temple-to-city",
+        position: THRIFT.EXIT,
+        radius: 0.8,
+        label: "Out to Gallery Row",
+        target: "city",
+        targetSpawn: { position: THRIFT.THRIFT_DOOR.landing, yaw: Math.PI },
       },
     ],
   },

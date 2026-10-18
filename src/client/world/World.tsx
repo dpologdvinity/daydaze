@@ -112,6 +112,11 @@ const VideoStore = lazy(() =>
 const BackRoom = lazy(() =>
   import("../rooms/BackRoom.tsx").then((m) => ({ default: m.BackRoom })),
 );
+const ThriftTemple = lazy(() =>
+  import("../rooms/ThriftTemple.tsx").then((m) => ({
+    default: m.ThriftTemple,
+  })),
+);
 const TikiBar = lazy(() =>
   import("../rooms/TikiBar.tsx").then((m) => ({ default: m.TikiBar })),
 );
@@ -378,6 +383,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   "vinyl-vault": VinylVault,
   "back-room": BackRoom,
   "tiki-bar": TikiBar,
+  "thrift-temple": ThriftTemple,
   "video-store": VideoStore,
   "halo-halo-cafe": HaloHaloCafe,
   gym: Gym,

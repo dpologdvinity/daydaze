@@ -293,10 +293,12 @@ export function App() {
           setBody={setBody}
           coins={save.coins}
           wardrobe={save.wardrobe}
-          onBuy={(id) => {
+          onBuy={(id, store, day) => {
             const r = buyItem(
               { coins: save.coins, wardrobe: save.wardrobe },
               id,
+              store,
+              day,
             );
             if (r.ok)
               setSave((s) => ({

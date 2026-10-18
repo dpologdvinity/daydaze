@@ -290,6 +290,25 @@ test("Vinyl Vault sells a record that plays at home", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("Thrift Temple: buy a vintage dye and wear it", async ({ page }) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=thrift-temple`);
+  await page
+    .getByRole("button", { name: "Shop at Thrift Temple" })
+    .click({ timeout: 150_000 });
+  const shop = page.getByRole("dialog", { name: "Thrift Temple" });
+  const row = shop.getByRole("listitem").filter({ hasText: "Mustard" });
+  await row.getByRole("button", { name: "Buy" }).click();
+  await expect(row.getByRole("button", { name: "Wear" })).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(() => localStorage.getItem("daydaze-save-v1") ?? ""),
+    )
+    .toContain("#c9a227");
+  expect(errors).toEqual([]);
+});
+
 test("the Coconut Grove pours a drink and seats the player by the fire", async ({
   page,
 }) => {
@@ -1181,6 +1200,7 @@ for (const room of [
   "back-room",
   "video-store",
   "tiki-bar",
+  "thrift-temple",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

@@ -58,6 +58,7 @@ const MUSIC: Partial<Record<RoomId, TrackId>> = {
   "vinyl-vault": "canopy-lofi",
   "back-room": "waterhole-twilight",
   "tiki-bar": "canopy-lofi",
+  "thrift-temple": "roller-disco",
   "video-store": "player-two-chiptune",
   "halo-halo-cafe": "canopy-lofi",
   // a backing track to sing over

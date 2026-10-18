@@ -8,6 +8,7 @@ import {
   HAIR_COLORS,
   HAIR_STYLES,
   LIPS,
+  OUTFIT_COLORS,
   OUTFITS,
   type Look,
 } from "./look.ts";
@@ -19,6 +20,7 @@ import {
   itemLabel,
   itemsIn,
   shopItem,
+  thriftFind,
   unlockedLook,
   wearable,
   wearItem,
@@ -26,6 +28,7 @@ import {
 
 const catalogs = {
   outfit: OUTFITS,
+  outfitColor: OUTFIT_COLORS,
   hairStyle: HAIR_STYLES,
   hairColor: HAIR_COLORS,
   lips: LIPS,
@@ -144,7 +147,7 @@ test("the closet lists free options and owned shop items only", () => {
 });
 
 test("every store's items have shelf names and can be worn", () => {
-  for (const store of ["boutique", "beauty", "salon"] as const) {
+  for (const store of ["boutique", "beauty", "salon", "thrift"] as const) {
     const items = itemsIn(store);
     assert.ok(items.length > 0, store);
     for (const item of items) {
@@ -169,4 +172,30 @@ test("fine jewelry goes in at any spot, and comes out when it isn't owned", () =
   const silver = pierce(DEFAULT_LOOK, "lip", "silver-ring");
   assert.equal(piercingsOf(unlockedLook(silver, [])).lip, "silver-ring");
   assert.equal(pierce(DEFAULT_LOOK, "lip", "made-up"), DEFAULT_LOOK);
+});
+
+test("the thrift shop's find of the day is a boutique outfit at half price", () => {
+  const finds = new Set<string>();
+  for (let day = 0; day < 8; day++) {
+    const find = thriftFind(day);
+    const full = shopItem(find.id);
+    assert.equal(full?.store, "boutique");
+    assert.equal(find.price, Math.round((full?.price ?? 0) / 2));
+    finds.add(find.id);
+  }
+  assert.ok(finds.size > 1, "the find changes from day to day");
+});
+
+test("buying the find pays the thrift price, and dyes come off unowned", () => {
+  const find = thriftFind(3);
+  const r = buyItem({ coins: find.price, wardrobe: [] }, find.id, "thrift", 3);
+  assert.deepEqual(r, { ok: true, state: { coins: 0, wardrobe: [find.id] } });
+  assert.equal(
+    buyItem({ coins: find.price, wardrobe: [] }, find.id).ok,
+    false,
+    "at the boutique it's full price",
+  );
+  const dyed = { ...DEFAULT_LOOK, outfitColor: "#c9a227" } as const;
+  assert.equal(unlockedLook(dyed, []).outfitColor, DEFAULT_LOOK.outfitColor);
+  assert.equal(unlockedLook(dyed, ["#c9a227"]).outfitColor, "#c9a227");
 });

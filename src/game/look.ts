@@ -101,6 +101,13 @@ export const OUTFIT_COLORS = [
   { id: "#e8e2ff", label: "Chrome" },
   { id: "#141018", label: "Midnight" },
   { id: "#3fe0d0", label: "Aqua" },
+  // Thrift Temple dyes, see shop.ts.
+  { id: "#c9a227", label: "Mustard" },
+  { id: "#6b7a2a", label: "Olive" },
+  { id: "#b5502a", label: "Rust" },
+  { id: "#3a5a8a", label: "Faded denim" },
+  { id: "#f2e6c8", label: "Cream" },
+  { id: "#6a1a2a", label: "Burgundy" },
 ] as const;
 
 export const EYESHADOWS = [

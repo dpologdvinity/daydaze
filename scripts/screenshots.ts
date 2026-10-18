@@ -93,6 +93,7 @@ const SHOTS: {
   { name: "vinyl-vault", query: "room=vinyl-vault" },
   { name: "back-room", query: "room=back-room" },
   { name: "tiki-bar", query: "room=tiki-bar" },
+  { name: "thrift-temple", query: "room=thrift-temple" },
   { name: "video-store", query: "room=video-store" },
   { name: "green-haze", query: "room=green-haze&adult=1" },
   { name: "piercing", query: "room=piercing" },

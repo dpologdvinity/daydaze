@@ -5,8 +5,10 @@ import {
   itemsIn,
   wearItem,
   type PurchaseResult,
+  type ShopId,
   type ShopItem,
 } from "../../game/shop.ts";
+import { dayOf } from "../../game/challenges.ts";
 import { closeShop, shopRequest } from "./shopRequest.ts";
 
 /**
@@ -24,7 +26,7 @@ export function ShopPanel({
   wardrobe: readonly string[];
   look: Look;
   setLook: (look: Look) => void;
-  onBuy: (id: string) => PurchaseResult;
+  onBuy: (id: string, store: ShopId, day: number) => PurchaseResult;
 }): JSX.Element | null {
   const { open, name } = shopRequest.use();
   const [note, setNote] = useState("");
@@ -40,13 +42,14 @@ export function ShopPanel({
     return () => window.removeEventListener("keydown", key);
   }, [open]);
   if (!open) return null;
+  const day = dayOf(Date.now());
 
   const wear = (item: ShopItem) => {
     setLook(wearItem(look, item));
     setNote(`Wearing ${itemLabel(item)}.`);
   };
   const buy = (item: ShopItem) => {
-    const r = onBuy(item.id);
+    const r = onBuy(item.id, open, day);
     if (r.ok) {
       setLook(wearItem(look, item));
       setNote(`${itemLabel(item)} is yours, and you're wearing it.`);
@@ -74,7 +77,7 @@ export function ShopPanel({
           </button>
         </div>
         <ul className="shop-items">
-          {itemsIn(open).map((item) => {
+          {itemsIn(open, day).map((item) => {
             const owned = wardrobe.includes(item.id);
             return (
               <li key={item.id}>

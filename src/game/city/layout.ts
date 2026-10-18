@@ -31,6 +31,7 @@ import * as HORN from "../jazzClub.ts";
 import * as VAULT from "../vinylVault.ts";
 import * as BACK from "../backRoom.ts";
 import * as TIKI from "../tikiBar.ts";
+import * as THRIFT from "../thriftTemple.ts";
 import * as REWIND from "../videoStore.ts";
 import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
@@ -1079,6 +1080,13 @@ const ARTS_FRONT: readonly {
     color: "#ffe066",
     sign: { text: "THRIFT TEMPLE", color: "#ff2f9a" },
     style: "brick",
+    door: {
+      position: THRIFT.THRIFT_DOOR.position,
+      radius: 1.5,
+      label: "Into Thrift Temple",
+      target: "thrift-temple",
+      targetSpawn: { position: THRIFT.SPAWN, yaw: Math.PI },
+    },
   },
   {
     x: -32,

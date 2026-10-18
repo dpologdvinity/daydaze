@@ -50,7 +50,7 @@ import {
   clampTrait,
   type BodyShape,
 } from "../../game/body.ts";
-import { wearable, type PurchaseResult } from "../../game/shop.ts";
+import { wearable, type PurchaseResult, type ShopId } from "../../game/shop.ts";
 import { drink, relieve } from "../effects/drunk.ts";
 import { PRICES } from "../../game/market.ts";
 import { sipTea, takeHit } from "../effects/high.ts";
@@ -116,6 +116,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Rewind Video. Browse the tapes and the new releases, then play Throwback Trivia at Tasha's counter.",
   "back-room":
     "The Back Room. A speakeasy behind an unmarked door: order a drink from Odette, then take a stool or a leather booth.",
+  "thrift-temple":
+    "Thrift Temple. Tap Juno at the counter for vintage dyes and today's find on the pedestal, half the boutique's price.",
   "tiki-bar":
     "The Coconut Grove. Order something with an umbrella from Malia, take a stool or a lounge by the fire, and watch the sun go down.",
   "vinyl-vault":
@@ -469,7 +471,7 @@ function Mirror({
           />
           <Swatches
             label="Outfit color"
-            options={OUTFIT_COLORS}
+            options={wearable(OUTFIT_COLORS, wardrobe)}
             value={look.outfitColor}
             onPick={(outfitColor) => setLook({ ...look, outfitColor })}
           />
@@ -485,7 +487,7 @@ function Mirror({
           />
           <Swatches
             label="Swimsuit color"
-            options={OUTFIT_COLORS}
+            options={wearable(OUTFIT_COLORS, wardrobe)}
             value={swim.color}
             onPick={(color) => setSwim({ ...swim, color })}
           />
@@ -577,7 +579,7 @@ export function Overlay({
   setSwim: (swim: SwimLook) => void;
   coins: number;
   wardrobe: readonly string[];
-  onBuy: (id: string) => PurchaseResult;
+  onBuy: (id: string, store?: ShopId, day?: number) => PurchaseResult;
   body: BodyShape;
   setBody: (body: BodyShape) => void;
   onRide: () => void;
@@ -828,6 +830,15 @@ export function Overlay({
             </>
           )}
           <VenueGames room={room} onPlay={onPlayGame} />
+          {room === "thrift-temple" && (
+            <button
+              type="button"
+              className="drink"
+              onClick={() => openShop("thrift", "Thrift Temple")}
+            >
+              Shop at Thrift Temple
+            </button>
+          )}
           {room === "salon" && (
             <button
               type="button"
