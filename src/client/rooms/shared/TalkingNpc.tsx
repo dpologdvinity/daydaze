@@ -1,6 +1,7 @@
 import { Html } from "@react-three/drei";
 import type { ThreeEvent } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
+import type { DanceMoveId } from "../../../game/dance/moves.ts";
 import type { Look, Mood } from "../../../game/look.ts";
 import { pickLine, type RecentLines } from "../../../game/dialogue/pick.ts";
 import type {
@@ -24,6 +25,8 @@ export function TalkingNpc({
   role,
   look,
   mood,
+  dance,
+  hold,
   at,
   rot,
   seed,
@@ -37,6 +40,10 @@ export function TalkingNpc({
   role: DialogueRole;
   look: Look;
   mood: Mood;
+  /** The move a dancing NPC loops (a dance or an emote such as "bartending"). */
+  dance?: DanceMoveId;
+  /** A held pose (STILL_CLIPS id) for the pose and sit moods. */
+  hold?: string;
   at: readonly [number, number, number];
   rot: number;
   seed: number;
@@ -76,9 +83,14 @@ export function TalkingNpc({
   return (
     <group position={[at[0], at[1], at[2]]} rotation-y={rot}>
       {figure === "doll" ? (
-        <Doll look={look} mood={mood} seed={seed} />
+        <Doll look={look} mood={mood} dance={dance} hold={hold} seed={seed} />
       ) : (
-        <CrowdFigure look={look} dance={mood === "dance"} seed={seed} />
+        <CrowdFigure
+          look={look}
+          dance={mood === "dance"}
+          move={dance}
+          seed={seed}
+        />
       )}
       {/* a see-through tap target around the doll */}
       <mesh position={[0, 0.95, 0]} onClick={tap}>

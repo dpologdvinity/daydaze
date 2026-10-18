@@ -151,7 +151,8 @@ export function WarehouseNpcs({
         name="Ren"
         role="bartender"
         look={BARTENDER_LOOK}
-        mood="idle"
+        mood="dance"
+        dance="bartending"
         at={[BAR.back + 0.35, 0, (BAR.z0 + BAR.z1) / 2]}
         rot={Math.PI / 2}
         seed={92}

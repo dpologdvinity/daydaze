@@ -3,7 +3,8 @@ import type { Joint, Vec3 } from "./moves.ts";
 /** A motion-capture loop retargeted onto the doll rig (see mocap.ts). */
 export type MocapClip = {
   id: string;
-  kind: "walk" | "dance" | "pose" | "sit" | "lay";
+  /** An emote loops like a dance, for NPCs; it stays out of the Dance picker. */
+  kind: "walk" | "dance" | "emote" | "pose" | "sit" | "lay";
   label: string;
   /** The take it came from. */
   source: string;

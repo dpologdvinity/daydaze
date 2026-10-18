@@ -153,7 +153,8 @@ export function SugarRushNpcs({
         name="Kiki"
         role="bartender"
         look={BARTENDER_LOOK}
-        mood="idle"
+        mood="dance"
+        dance="bartending"
         at={[(BAR.back + 6) / 2, 0, (BAR.z0 + BAR.z1) / 2]}
         rot={-Math.PI / 2}
         seed={72}

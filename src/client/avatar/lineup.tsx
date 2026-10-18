@@ -36,11 +36,15 @@ const DANCES = (
     "groove",
   ]
 ).filter(isDanceMoveId);
-// held poses for the pose, sit and lay shots, one per doll
+// held poses for the pose, sit and lay shots, one per doll; `?holds=a,b`
+// picks them instead
+const picked = new URLSearchParams(location.search).get("holds")?.split(",");
+const holdsOf = (kind: "pose" | "sit" | "lay") =>
+  picked ?? stillClipsOf(kind).map((c) => c.id);
 const HOLDS = {
-  pose: stillClipsOf("pose").map((c) => c.id),
-  sit: stillClipsOf("sit").map((c) => c.id),
-  lay: stillClipsOf("lay").map((c) => c.id),
+  pose: holdsOf("pose"),
+  sit: holdsOf("sit"),
+  lay: holdsOf("lay"),
 };
 // a steady walking pace for the walk shot
 const WALKING = { current: { speed: 1.4 } };

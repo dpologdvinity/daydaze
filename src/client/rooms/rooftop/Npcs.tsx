@@ -141,7 +141,8 @@ export function SkylarkNpcs({
         name="Bea"
         role="bartender"
         look={BARTENDER_LOOK}
-        mood="idle"
+        mood="dance"
+        dance="bartending"
         at={[(BAR.x0 + BAR.x1) / 2, 0, -5.45]}
         rot={0}
         seed={62}

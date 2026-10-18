@@ -57,6 +57,9 @@ const TEAM: readonly Look[] = (
   shadow: "#ffb02e",
 }));
 
+// the squad works the crowd: a routine, a cheer and a clap in turn
+const SQUAD_MOVES = ["raise-the-roof", "cheer", "clap", "kick-step"] as const;
+
 /** The sideline: the cheer squad dancing, the team by the bench and a snack
  * seller at the gate. */
 export function GridironNpcs(): JSX.Element {
@@ -68,7 +71,11 @@ export function GridironNpcs(): JSX.Element {
           position={[FIELD.x0 + 1.2, 0, d.z]}
           rotation-y={Math.PI / 2}
         >
-          <CrowdFigure look={d.look} dance seed={171 + i} />
+          <CrowdFigure
+            look={d.look}
+            move={SQUAD_MOVES[i % SQUAD_MOVES.length]}
+            seed={171 + i}
+          />
         </group>
       ))}
       {TEAM.map((look, i) => (
@@ -77,7 +84,11 @@ export function GridironNpcs(): JSX.Element {
           position={[BENCH_X - 0.9, 0, 3.4 + i * 1.1]}
           rotation-y={-Math.PI / 2 - 0.3}
         >
-          <CrowdFigure look={look} seed={176 + i} />
+          <CrowdFigure
+            look={look}
+            move={i % 2 ? "clap" : undefined}
+            seed={176 + i}
+          />
         </group>
       ))}
       <TalkingNpc

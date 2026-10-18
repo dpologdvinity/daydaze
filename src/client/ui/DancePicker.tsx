@@ -1,5 +1,5 @@
 import {
-  ALL_DANCE_MOVES,
+  PICKER_DANCE_MOVES,
   stillClipsOf,
   type DanceMoveId,
 } from "../../game/dance/moves.ts";
@@ -17,7 +17,7 @@ export function DancePicker({
     <div className="dance-picker">
       <Chips
         label="Dance move"
-        options={ALL_DANCE_MOVES}
+        options={PICKER_DANCE_MOVES}
         value={move}
         onPick={onPick}
       />

@@ -67,8 +67,9 @@ const REST_LID = 0.12;
 void loadMocap();
 
 // a doll given no held pose (an NPC) strikes one of these, by seed; the
-// first, none, keeps the built hip-pop pose
+// first, none, keeps the built hip-pop pose (or the built sit)
 const POSE_HOLDS = [undefined, ...stillClipsOf("pose").map((c) => c.id)];
+const SIT_HOLDS = [undefined, ...stillClipsOf("sit").map((c) => c.id)];
 // meters from the camera where a doll swaps to and from the low-poly body
 const LOD_FAR = 9;
 const LOD_NEAR = 8;
@@ -634,7 +635,9 @@ export function HumanDoll({
     const speed = walk?.current.speed ?? 0;
     const moving = speed > 0.05;
     phase.current += dt * speed * 6.2 * gait.cadence;
-    const hold = picked ?? POSE_HOLDS[seed % POSE_HOLDS.length];
+    // a seated NPC takes a seated hold, not a standing one lowered onto the seat
+    const seeded = mood === "sit" ? SIT_HOLDS : POSE_HOLDS;
+    const hold = picked ?? seeded[seed % seeded.length];
     const held =
       !moving && hold && (mood === "pose" || mood === "sit")
         ? STILL_CLIPS.get(hold)
