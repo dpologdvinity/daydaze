@@ -311,6 +311,7 @@ export function Deck({ onPick }: { onPick: PickHandler }) {
         center={[0, -1.5]}
         color="#ffffff"
         map={TILES}
+        texture={{ id: "anti_skid_tiles", scale: 0.6 }}
         mirror={0.25}
         mixStrength={1.2}
         roughness={0.7}

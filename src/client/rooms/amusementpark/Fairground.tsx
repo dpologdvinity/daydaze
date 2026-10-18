@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import * as THREE from "three";
+import { surface } from "../../city/worldTexture.ts";
 import type { Vec3 } from "../../../game/amusementPark.ts";
 import { LACQUER } from "../shared/materials.ts";
 import { Copies, Segments, type Copy, type Segment } from "./Instanced.tsx";
@@ -61,6 +62,12 @@ const TRIM = new THREE.MeshStandardMaterial({
   roughness: 0.6,
 });
 const GLOW = new THREE.MeshBasicMaterial({ toneMapped: false });
+// the fairground's cobbled path
+const COBBLES = surface("cobblestone_floor_04", {
+  scale: 0.8,
+  color: "#b090c0",
+  roughness: 0.9,
+});
 
 const BALLOON_COLORS = ["#ff2f9a", "#3fe0d0", "#ffb02e", "#9b5cff", "#3dff9a"];
 // Five balloons above each cart, in the cart's frame, tied to the awning.
@@ -159,9 +166,12 @@ export function Fairground() {
       <Segments items={LAMP_POLES} color="#2a1d3a" />
       <Copies geometry={LAMP_CAP} material={LACQUER} items={LAMP_ITEMS} />
       <Copies geometry={LAMP_GLOBE} material={LAMP_GLOW} items={LAMP_ITEMS} />
-      <mesh rotation-x={-Math.PI / 2} position={[PATH.x, 0.005, PATH.z]}>
+      <mesh
+        rotation-x={-Math.PI / 2}
+        position={[PATH.x, 0.005, PATH.z]}
+        material={COBBLES}
+      >
         <planeGeometry args={[PATH.width, PATH.length]} />
-        <meshStandardMaterial color="#4a2550" roughness={0.8} />
       </mesh>
     </group>
   );

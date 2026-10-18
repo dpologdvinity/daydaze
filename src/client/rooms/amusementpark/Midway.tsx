@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import * as THREE from "three";
+import { surface } from "../../city/worldTexture.ts";
 import { stringPoints, type Vec3 } from "../../../game/amusementPark.ts";
 import { BOOTHS, type Booth as BoothSpec } from "./layout.ts";
 import { Bulbs } from "./Bulbs.tsx";
@@ -108,19 +109,22 @@ function Wire({ a, b, sag }: { a: Vec3; b: Vec3; sag: number }) {
 }
 
 const PRIZE = new THREE.MeshStandardMaterial({ roughness: 0.6 });
+// painted plank booths
+const COUNTER = surface("wood_plank_wall", { scale: 0.9, color: "#a070b0" });
 
 /** One booth: a counter, a striped awning and a neon sign on the front. */
 function Booth({ sign, color, accent, at, rot }: BoothSpec) {
   const awning = useStripes(color, accent);
   return (
     <group position={[at[0], 0, at[1]]} rotation-y={rot}>
-      <mesh position={[0, 0.55, 0]}>
+      <mesh position={[0, 0.55, 0]} material={COUNTER}>
         <boxGeometry args={[2.6, 1.1, 1]} />
-        <meshStandardMaterial color="#2b1238" roughness={0.6} />
       </mesh>
-      <mesh position={[0, 1.9, -0.4]}>
+      <mesh
+        position={[0, 1.9, -0.4]}
+        material={surface("wood_plank_wall", { scale: 0.9, color: accent })}
+      >
         <boxGeometry args={[2.8, 2.6, 0.12]} />
-        <meshStandardMaterial color={accent} roughness={0.5} />
       </mesh>
       <mesh position={[0, 3.25, 0.2]} material={LACQUER}>
         <boxGeometry args={[3.1, 0.14, 1.9]} />

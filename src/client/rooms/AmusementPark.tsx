@@ -43,6 +43,14 @@ import {
 import { Arch } from "./shared/Arch.tsx";
 import { Beams, type Beam } from "./shared/Beams.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
+import { surface } from "../city/worldTexture.ts";
+
+// the fairground's worn blacktop past the fence
+const BLACKTOP = surface("asphalt_02", {
+  scale: 0.3,
+  color: "#5a4a6a",
+  roughness: 0.9,
+});
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { canvasTex, hdr } from "./shared/materials.ts";
 import { Scrambler, Starship } from "./amusementpark/MoreRides.tsx";
@@ -276,13 +284,17 @@ export function AmusementPark({
         center={[0, -0.25]}
         color="#3d1656"
         map={tiles}
+        texture={{ id: "patterned_paving", scale: 0.35 }}
         mirror={0.5}
         onPick={onPick}
       />
       {/* the fairground beyond the rides' back fence */}
-      <mesh rotation-x={-Math.PI / 2} position={[0, -0.02, -30]}>
+      <mesh
+        rotation-x={-Math.PI / 2}
+        position={[0, -0.02, -30]}
+        material={BLACKTOP}
+      >
         <planeGeometry args={[70, 60]} />
-        <meshStandardMaterial color="#0e0519" roughness={0.9} />
       </mesh>
       <Beams beams={BEAMS} aim={[0, -12]} aimY={12} spread={[14, 4]} />
       <PortalPads room={ROOMS["amusement-park"]} color="#ffb02e" />

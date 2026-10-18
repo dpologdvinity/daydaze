@@ -22,6 +22,14 @@ import {
   type DriveRequest,
 } from "../world/driving.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
+import { surface } from "../city/worldTexture.ts";
+
+// the infield's blacktop, all round the pits and the tracks
+const BLACKTOP = surface("asphalt_02", {
+  scale: 0.25,
+  color: "#3a3450",
+  roughness: 0.9,
+});
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { BumperArena } from "./speedway/BumperArena.tsx";
 import { CarLineup } from "./speedway/CarLineup.tsx";
@@ -205,15 +213,20 @@ export function Speedway({ onPick }: { onPick: PickHandler }) {
         distance={80}
         decay={2}
       />
-      <mesh rotation-x={-Math.PI / 2} position={[0, -0.02, -40]}>
+      <mesh
+        rotation-x={-Math.PI / 2}
+        position={[0, -0.02, -40]}
+        material={BLACKTOP}
+      >
         <planeGeometry args={[600, 600]} />
-        <meshStandardMaterial color="#07050f" roughness={0.9} />
       </mesh>
       <Floor
         width={20}
         depth={13}
         center={[0, 0.5]}
-        color="#1b1830"
+        color="#6a6080"
+        texture={{ id: "garage_floor", scale: 0.4 }}
+        low={{ metalness: 0.1, roughness: 0.6 }}
         onPick={onPick}
       />
       <PortalPads room={ROOMS.speedway} color="#ff4fb3" />
