@@ -1,6 +1,6 @@
 import { Stars } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import type { Look } from "../../game/look.ts";
 import { LOG_SEATS, SAND, SHELL_SPOTS } from "../../game/mermaidCove.ts";
@@ -8,6 +8,7 @@ import { ROOMS } from "../../game/rooms.ts";
 import { Doll } from "../avatar/Doll.tsx";
 import { useReducedMotion } from "../motion.ts";
 import { leave, SHELL_COLORS, siren, tick } from "./cove/session.ts";
+import { fluke, Tail } from "./cove/Tail.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
@@ -84,6 +85,8 @@ function Mermaid({
   const calm = useReducedMotion();
   const body = useRef<THREE.Group>(null);
   const fin = useRef<THREE.Group>(null);
+  const finShape = useMemo(fluke, []);
+  useEffect(() => () => finShape.dispose(), [finShape]);
   useFrame(({ clock }) => {
     const t = clock.elapsedTime + seed * 2.1;
     if (body.current && !calm)
@@ -102,14 +105,14 @@ function Mermaid({
         <Doll look={look} mood="dance" dance="body-roll" seed={seed} />
       </group>
       <group ref={fin} position={[0, WATER_Y - 0.4, -1.1]}>
-        <mesh rotation-x={Math.PI / 2} scale={[1, 0.25, 1]}>
-          <coneGeometry args={[0.35, 0.6, 3]} />
+        <mesh geometry={finShape} rotation-x={-Math.PI / 2}>
           <meshStandardMaterial
             color={tail}
             emissive={tail}
             emissiveIntensity={0.5}
-            metalness={0.4}
+            metalness={0.5}
             roughness={0.3}
+            side={THREE.DoubleSide}
           />
         </mesh>
       </group>
@@ -118,6 +121,74 @@ function Mermaid({
         <ringGeometry args={[0.32, 0.4, 24]} />
         <meshBasicMaterial color="#bff8ff" transparent opacity={0.35} />
       </mesh>
+    </group>
+  );
+}
+
+/** Mermaids perched on the lagoon's rocks, full tails draped down the rock
+ * into the water: [rock x, z, size], her look, tail color and turn. */
+const PERCHED: readonly {
+  rock: readonly [number, number, number];
+  look: Look;
+  tail: string;
+  turn: number;
+}[] = [
+  {
+    rock: [-7, -3, 1.6],
+    turn: 0.5,
+    tail: "#ff4fb3",
+    look: {
+      skin: "#c48d68",
+      hairStyle: "mermaid",
+      hairColor: "#7ee8a2",
+      lips: "lips-90s-caramel-ombre",
+      brows: "brows-fox-snatched",
+      outfit: "baby-tee-mini",
+      outfitColor: "#ff2f9a",
+      shadow: "#ff2f9a",
+    },
+  },
+  {
+    rock: [6.5, -5, 1.3],
+    turn: -0.6,
+    tail: "#3a6bff",
+    look: {
+      skin: "#94603f",
+      hairStyle: "waves",
+      hairColor: "#c0c0c8",
+      lips: "lips-hot-pink-glam",
+      brows: "brows-sculpted-espresso",
+      outfit: "baby-tee-mini",
+      outfitColor: "#3fe0d0",
+      shadow: "#2e7dff",
+    },
+  },
+];
+
+/** A mermaid sitting on a rock's front edge, leaning back, her tail
+ * hanging down the rock and her fluke over the water. */
+function PerchedMermaid({
+  rock: [x, z, r],
+  look,
+  tail,
+  turn,
+  seed,
+}: (typeof PERCHED)[number] & { seed: number }) {
+  return (
+    <group position={[x, 0, z]} rotation-y={turn}>
+      {/* seated on the rock's front edge, leaning back on her hands; the
+          sit pose's thighs rest this far above her root */}
+      <group position={[0, r * 1.05 - 0.5, r * 0.45]}>
+        {/* a shell-top bikini, and no shoes to poke out of the tail */}
+        <Doll
+          look={look}
+          swim={{ style: "bikini", color: look.outfitColor }}
+          mood="sit"
+          hold="sit-lean-back"
+          seed={seed}
+        />
+        <Tail color={tail} pose="seated" />
+      </group>
     </group>
   );
 }
@@ -210,8 +281,8 @@ export function MermaidCove({ onPick }: { onPick: PickHandler }) {
         low={{ metalness: 0, roughness: 0.95 }}
         onPick={onPick}
       />
-      {/* the lagoon, glowing faintly from below; opaque, so the mermaids
-          are only seen from the waist up */}
+      {/* the lagoon, glowing faintly from below; opaque, so the swimming
+          mermaids are seen from the waist up */}
       <mesh position={[0, WATER_Y, SAND.z0 - 20]} rotation-x={-Math.PI / 2}>
         <planeGeometry args={[60, 40]} />
         <meshStandardMaterial
@@ -256,6 +327,9 @@ export function MermaidCove({ onPick }: { onPick: PickHandler }) {
       </mesh>
       {MERMAIDS.map((m, i) => (
         <Mermaid key={i} {...m} seed={271 + i} />
+      ))}
+      {PERCHED.map((m, i) => (
+        <PerchedMermaid key={i} {...m} seed={281 + i} />
       ))}
       <Shells />
       <SongClock />
