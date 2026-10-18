@@ -504,11 +504,35 @@ function carProfileParts(spec: CarSpec, p: Profile): CarParts {
       const x = side * (W / 2 - 0.04);
       tyre.push(
         plain(
-          new CylinderGeometry(p.wheelR, p.wheelR, p.tyreW, 16)
+          new CylinderGeometry(p.wheelR, p.wheelR, p.tyreW, 24)
             .rotateZ(Math.PI / 2)
             .translate(x, p.wheelR, z),
         ),
       );
+      // five spokes and a center cap on the wheel's outer face
+      const face = x + side * p.tyreW * 0.54;
+      for (let k = 0; k < 5; k++)
+        rim.push(
+          plain(
+            new BoxGeometry(0.02, p.wheelR * 1.05, 0.05)
+              .rotateX((k / 5) * Math.PI * 2)
+              .translate(face, p.wheelR, z),
+          ),
+        );
+      rim.push(
+        plain(
+          new CylinderGeometry(p.wheelR * 0.16, p.wheelR * 0.16, 0.04, 10)
+            .rotateZ(Math.PI / 2)
+            .translate(face + side * 0.01, p.wheelR, z),
+        ),
+      );
+      // the wheel arch: a dark half ring over the tyre
+      if (p.bumperY !== null)
+        trim.push(
+          new TorusGeometry(p.wheelR * 1.12, 0.035, 6, 16, Math.PI)
+            .rotateY(Math.PI / 2)
+            .translate(side * (W / 2 + 0.01), p.wheelR, z),
+        );
       rim.push(
         plain(
           new CylinderGeometry(
@@ -546,6 +570,42 @@ function carProfileParts(spec: CarSpec, p: Profile): CarParts {
         tint(
           plain(box([0.3, 0.1, 0.05, side * W * 0.34, p.lampY, -L / 2 + 0.01])),
           NEON.red,
+        ),
+      );
+    }
+  }
+  if (p.bumperY !== null && p.lampY !== null) {
+    // grille between the headlamps, plates front and back, an exhaust
+    trim.push(box([W * 0.42, 0.14, 0.03, 0, p.lampY - 0.06, L / 2 + 0.005]));
+    for (const end of [1, -1])
+      rim.push(
+        plain(
+          box([0.5, 0.12, 0.02, 0, p.bumperY + 0.02, end * (L / 2 + 0.09)]),
+        ),
+      );
+    rim.push(
+      plain(
+        new CylinderGeometry(0.04, 0.045, 0.22, 10)
+          .rotateX(Math.PI / 2)
+          .translate(W * 0.28, p.bumperY - 0.06, -L / 2 - 0.06),
+      ),
+    );
+    for (const side of [1, -1]) {
+      const x = side * (W / 2 + 0.004);
+      // door seams, handles and a side skirt
+      for (const z of [0.1 * L, -0.12 * L])
+        trim.push(box([0.01, 0.42, 0.012, x, p.bumperY + 0.42, z]));
+      rim.push(
+        plain(
+          box([0.02, 0.03, 0.12, x + side * 0.01, p.bumperY + 0.5, 0.02 * L]),
+        ),
+      );
+      trim.push(box([0.03, 0.06, L * 0.42, x, p.bumperY - 0.02, 0]));
+      // amber indicators at the front corners
+      light.push(
+        tint(
+          plain(box([0.03, 0.06, 0.12, x, p.lampY, L / 2 - 0.12])),
+          NEON.gold,
         ),
       );
     }
