@@ -187,6 +187,25 @@ test("Splat City: a paintball round marks a rival for points", async ({
   expect(errors).toEqual([]);
 });
 
+test("Loft Studios: pick an instrument and play notes from the panel and keys", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&room=music-studio`);
+  const panel = page.getByRole("region", { name: "Instruments" });
+  await panel
+    .getByRole("button", { name: "Drums" })
+    .click({ timeout: 150_000 });
+  await expect(panel.getByRole("button", { name: "Drums" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await panel.getByRole("button", { name: "Snare" }).click();
+  await panel.getByRole("button", { name: "Marimba" }).click();
+  await page.keyboard.press("3");
+  expect(errors).toEqual([]);
+});
+
 test("loads the Velvet Room with no errors and mounts the canvas", async ({
   page,
 }) => {
@@ -1017,6 +1036,7 @@ for (const room of [
   "laser-tag",
   "market",
   "paintball",
+  "music-studio",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

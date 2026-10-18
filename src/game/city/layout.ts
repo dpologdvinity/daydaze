@@ -24,6 +24,7 @@ import * as SALON from "../salon.ts";
 import { PHOTON_DOOR, SPAWN as PHOTON_SPAWN } from "../laserTag.ts";
 import { MARKET_DOOR, SPAWN as MARKET_SPAWN } from "../market.ts";
 import { SPLAT_DOOR, SPAWN as SPLAT_SPAWN } from "../paintball.ts";
+import { STUDIO_DOOR, SPAWN as STUDIO_SPAWN } from "../studio.ts";
 import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
 import * as RANGE from "../drivingRange.ts";
@@ -1119,6 +1120,14 @@ const ARTS_FRONT: readonly {
     color: "#b5179e",
     sign: { text: "LOFT STUDIOS", color: "#ffe066" },
     style: "brick",
+    // a rehearsal loft of instruments to play
+    door: {
+      position: STUDIO_DOOR.position,
+      radius: 2,
+      label: "Into Loft Studios",
+      target: "music-studio",
+      targetSpawn: { position: STUDIO_SPAWN, yaw: Math.PI },
+    },
   },
   {
     x: -126,

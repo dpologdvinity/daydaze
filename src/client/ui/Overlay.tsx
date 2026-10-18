@@ -110,6 +110,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Skyline Driving Range. Get a bucket of ten: set your backswing, strike it pure, and land them on the greens.",
   salon:
     "The Blowout Bar. Book with Dani for the salon's colors, or take a chair by the mirrors.",
+  "music-studio":
+    "Loft Studios. Walk up to the piano, the drums, the marimba or the floor piano and play: tap the notes or press 1 to 8.",
   paintball:
     "Splat City. Gear up for sixty seconds of speedball: mark rivals when they lean out of their bunkers, and stay behind yours.",
   market:

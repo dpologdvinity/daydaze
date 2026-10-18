@@ -88,6 +88,7 @@ import * as HAZE from "./greenHaze.ts";
 import * as TAG from "./laserTag.ts";
 import * as MARKET from "./market.ts";
 import * as PAINT from "./paintball.ts";
+import * as STUDIO from "./studio.ts";
 import type { Vec2 } from "./walk.ts";
 
 export type RoomId =
@@ -136,6 +137,7 @@ export type RoomId =
   | "laser-tag"
   | "market"
   | "paintball"
+  | "music-studio"
   | "city";
 
 export type Spawn = { position: Vec2; yaw: number };
@@ -616,6 +618,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to Gallery Row",
         target: "city",
         targetSpawn: { position: SALON.SALON.door.landing, yaw: 0 },
+      },
+    ],
+  },
+  "music-studio": {
+    id: "music-studio",
+    name: "Loft Studios",
+    walkable: STUDIO.FLOOR,
+    blockers: STUDIO.BLOCKERS,
+    spawn: { position: STUDIO.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "music-studio-to-city",
+        position: STUDIO.EXIT,
+        radius: 0.8,
+        label: "Out to Gallery Row",
+        target: "city",
+        targetSpawn: { position: STUDIO.STUDIO_DOOR.landing, yaw: 0 },
       },
     ],
   },
