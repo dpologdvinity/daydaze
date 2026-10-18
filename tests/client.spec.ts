@@ -204,11 +204,13 @@ test("walking into the Plaza's glowing door enters the Velvet Room", async ({
 test("the city loads, the player walks with the keys, and the scene renders", async ({
   page,
 }) => {
+  test.setTimeout(330_000);
   const errors = collectErrors(page);
   await page.goto(`${LOW}&room=city`);
   await expect(roomTitle(page)).toHaveText("Downtown");
   const view = page.getByRole("img", { name: "3D room view" });
-  await expect(view).toHaveAttribute("data-frames", "10");
+  // the city's first compile is the longest of any room's on SwiftShader
+  await expect(view).toHaveAttribute("data-frames", "10", { timeout: 150_000 });
   // the lazy city writes its position from its first frame; wait for it
   await expect(view).toHaveAttribute("data-player-x", /-?\d/);
   const at = async () => ({
@@ -1009,6 +1011,7 @@ test("the food rooms open from a query and show their counter staff", async ({
 test("the city map's directory takes the player to a venue's door", async ({
   page,
 }) => {
+  test.setTimeout(330_000);
   await page.goto(`${LOW}&room=city`);
   await expect(roomTitle(page)).toHaveText("Downtown");
   await page.getByRole("button", { name: "City map" }).click();
@@ -1016,7 +1019,7 @@ test("the city map's directory takes the player to a venue's door", async ({
   await places.locator("summary", { hasText: "Uptown" }).click();
   await places.getByRole("button", { name: "The Courtside Club" }).click();
   await expect(page.getByRole("dialog", { name: "City map" })).toBeHidden();
-  await expect(roomTitle(page)).toHaveText("Uptown", { timeout: 60_000 });
+  await expect(roomTitle(page)).toHaveText("Uptown", { timeout: 150_000 });
 });
 
 test("the city map takes the player to Beachside", async ({ page }) => {
