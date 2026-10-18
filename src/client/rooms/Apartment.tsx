@@ -4,7 +4,12 @@ import {
   footprint,
   type Furniture,
 } from "../../game/home/decor.ts";
-import { Suspense } from "react";
+import { Suspense, useMemo } from "react";
+import * as THREE from "three";
+import { Batch } from "./shared/batch.ts";
+import { plant, poster, stringLights } from "./shared/details.ts";
+import { GOLD } from "./shared/materials.ts";
+import { surface } from "../city/worldTexture.ts";
 import { Prop } from "./shared/Prop.tsx";
 import { HdriLight } from "./shared/HdriLight.tsx";
 import type { HomeSave } from "../../game/home/home.ts";
@@ -129,21 +134,76 @@ function Piece({ item }: { item: Furniture }) {
   );
 }
 
+// lilac plaster over white baseboards, with crown molding
+const WALL = surface("painted_plaster_wall", {
+  scale: 0.6,
+  color: "#a07ab8",
+});
+const TRIM = surface("white_plaster_02", {
+  scale: 2,
+  color: "#fff8f4",
+  roughness: 0.5,
+});
+const CURTAIN = surface("velour_velvet", { scale: 2, color: "#ffb0d8" });
+
+/** Trim, a framed window with curtains and a sill plant, pictures and
+ * bulbs over the window: the walls only, so the floor stays yours. */
+function buildDressing() {
+  const b = new Batch();
+  const box = new THREE.BoxGeometry(1, 1, 1);
+  for (const [x, z, w, ry] of [
+    [-3.94, 0, 6, Math.PI / 2],
+    [3.94, 0, 6, Math.PI / 2],
+    [0, -2.94, 8, 0],
+  ] as const) {
+    b.add(box, TRIM, {
+      position: [x, 0.07, z],
+      rotation: [0, ry, 0],
+      scale: [w, 0.14, 0.03],
+    });
+    b.add(box, TRIM, {
+      position: [x, 2.93, z],
+      rotation: [0, ry, 0],
+      scale: [w, 0.1, 0.05],
+    });
+  }
+  // the window's frame, sill and curtains
+  b.add(box, TRIM, {
+    position: [-1.5, 2.33, -2.92],
+    scale: [2.16, 0.08, 0.08],
+  });
+  b.add(box, TRIM, { position: [-1.5, 1.08, -2.88], scale: [2.3, 0.06, 0.18] });
+  for (const dx of [-1.04, 1.04])
+    b.add(box, TRIM, {
+      position: [-1.5 + dx, 1.7, -2.92],
+      scale: [0.08, 1.3, 0.08],
+    });
+  for (const dx of [-1.3, 1.3])
+    b.add(box, CURTAIN, {
+      position: [-1.5 + dx, 1.55, -2.86],
+      scale: [0.4, 2.3, 0.06],
+    });
+  plant(b, { x: -2.1, y: 1.11, z: -2.85 }, 0.6);
+  stringLights(b, [-2.6, 2.6, -2.85], [-0.4, 2.6, -2.85], 9, "#ffd8a0", 0.18);
+  poster(b, { x: 1.4, y: 1.8, z: -2.93 }, 1, 0.7, 0.9, GOLD);
+  poster(b, { x: -3.93, y: 1.7, z: -0.6, ry: Math.PI / 2 }, 6, 0.6, 0.8, GOLD);
+  poster(b, { x: -3.93, y: 1.9, z: 0.6, ry: Math.PI / 2 }, 3, 0.5, 0.5, GOLD);
+  return b.build();
+}
+
 function Walls() {
-  const wall = "#7a5a8c";
+  const dressing = useMemo(buildDressing, []);
   return (
     <>
-      <mesh position={[-4, 1.5, 0]}>
+      <primitive object={dressing} />
+      <mesh position={[-4, 1.5, 0]} material={WALL}>
         <boxGeometry args={[0.1, 3, 6]} />
-        <meshStandardMaterial color={wall} />
       </mesh>
-      <mesh position={[4, 1.5, 0]}>
+      <mesh position={[4, 1.5, 0]} material={WALL}>
         <boxGeometry args={[0.1, 3, 6]} />
-        <meshStandardMaterial color={wall} />
       </mesh>
-      <mesh position={[0, 1.5, -3]}>
+      <mesh position={[0, 1.5, -3]} material={WALL}>
         <boxGeometry args={[8, 3, 0.1]} />
-        <meshStandardMaterial color={wall} />
       </mesh>
     </>
   );

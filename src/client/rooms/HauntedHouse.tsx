@@ -4,6 +4,15 @@ import * as THREE from "three";
 import { HAUNTED_WALLS, ROOMS } from "../../game/rooms.ts";
 import { useReducedMotion } from "../motion.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
+import { surface } from "../city/worldTexture.ts";
+
+// peeling damask in the gloom, an old oak table
+const WALLPAPER = surface("quatrefoil_jacquard_fabric", {
+  scale: 1.2,
+  color: "#7a5a8a",
+  roughness: 0.95,
+});
+const OAK = surface("wood_veneer", { scale: 1.5, color: "#7a5a40" });
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { hdr } from "./shared/materials.ts";
 
@@ -117,9 +126,8 @@ export function HauntedHouse({ onPick }: { onPick: PickHandler }) {
         { x: 7, z: 0, w: 0.2, d: 12 },
         ...walls,
       ].map((w, i) => (
-        <mesh key={i} position={[w.x, 1.5, w.z]}>
+        <mesh key={i} position={[w.x, 1.5, w.z]} material={WALLPAPER}>
           <boxGeometry args={[w.w, 3, w.d]} />
-          <meshStandardMaterial color="#2b1d33" roughness={0.95} />
         </mesh>
       ))}
       {PORTRAITS.map(([x, y, z, yaw], i) => (
@@ -145,9 +153,8 @@ export function HauntedHouse({ onPick }: { onPick: PickHandler }) {
         </group>
       ))}
       {/* candles on a table by the door */}
-      <mesh position={[-4.5, 0.4, 3.6]}>
+      <mesh position={[-4.5, 0.4, 3.6]} material={OAK}>
         <boxGeometry args={[1.2, 0.8, 0.6]} />
-        <meshStandardMaterial color="#3a2418" />
       </mesh>
       {[-0.3, 0, 0.3].map((dx) => (
         <mesh key={dx} position={[-4.5 + dx, 0.95, 3.6]}>

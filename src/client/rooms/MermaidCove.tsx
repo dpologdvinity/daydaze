@@ -10,6 +10,12 @@ import { useReducedMotion } from "../motion.ts";
 import { leave, SHELL_COLORS, siren, tick } from "./cove/session.ts";
 import { fluke, Tail } from "./cove/Tail.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
+import { surface } from "../city/worldTexture.ts";
+
+// real rock round the lagoon, a darker sea cave, sun-bleached driftwood
+const COVE_ROCK = surface("rock_face", { scale: 0.8, color: "#8a80a8" });
+const CAVE_ROCK = surface("rock_face", { scale: 0.5, color: "#6a6088" });
+const DRIFTWOOD = surface("palm_bark", { scale: 1.5, color: "#d8c0a0" });
 import { hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
@@ -277,7 +283,8 @@ export function MermaidCove({ onPick }: { onPick: PickHandler }) {
         width={SAND.x1 - SAND.x0}
         depth={SAND.z1 - SAND.z0}
         center={[0, (SAND.z0 + SAND.z1) / 2]}
-        color="#d9c2a0"
+        color="#f4e2c8"
+        texture={{ id: "coast_sand_01", scale: 0.4 }}
         low={{ metalness: 0, roughness: 0.95 }}
         onPick={onPick}
       />
@@ -309,12 +316,12 @@ export function MermaidCove({ onPick }: { onPick: PickHandler }) {
           scale={[r, r * 0.8, r]}
         >
           <dodecahedronGeometry args={[1, 0]} />
-          <meshStandardMaterial color="#4a4060" roughness={0.9} flatShading />
+          <primitive object={COVE_ROCK} attach="material" />
         </mesh>
       ))}
       <mesh position={[0, 0, -16]} scale={[1.4, 1.2, 1]}>
         <torusGeometry args={[6, 1.6, 8, 24, Math.PI]} />
-        <meshStandardMaterial color="#3a3050" roughness={0.95} flatShading />
+        <primitive object={CAVE_ROCK} attach="material" />
       </mesh>
       {/* the moon, and its path on the water */}
       <mesh position={[8, 13, -45]}>
@@ -341,7 +348,7 @@ export function MermaidCove({ onPick }: { onPick: PickHandler }) {
           rotation-z={Math.PI / 2}
         >
           <cylinderGeometry args={[0.2, 0.22, 1.9, 10]} />
-          <meshStandardMaterial color="#8a6a4a" roughness={0.95} />
+          <primitive object={DRIFTWOOD} attach="material" />
         </mesh>
       ))}
       <Sparkles

@@ -191,6 +191,7 @@ export function Street({ onPick }: { onPick: PickHandler }) {
         center={[(X0 + X1) / 2, (Z0 + Z1) / 2]}
         color="#ffffff"
         map={ground}
+        texture={{ id: "patterned_paving", scale: 0.45 }}
         mirror={0.85}
         mixStrength={4}
         roughness={0.35}
