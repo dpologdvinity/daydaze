@@ -604,6 +604,35 @@ test("loads the Velvet Room with no errors and mounts the canvas", async ({
   expect(errors).toEqual([]);
 });
 
+test("glasses and freckles from the closet go into the saved makeup", async ({
+  page,
+}) => {
+  test.setTimeout(300_000);
+  await page.goto(VELVET);
+  await page
+    .getByRole("button", { name: "Dressing room", exact: true })
+    .click();
+  await page.getByRole("tab", { name: "Makeup" }).click();
+  const glasses = page
+    .getByRole("radiogroup", { name: "Glasses" })
+    .getByRole("radio", { name: "Cat-eye" });
+  await glasses.click();
+  await expect(glasses).toHaveAttribute("aria-checked", "true");
+  await page
+    .getByRole("radiogroup", { name: "Freckles" })
+    .getByRole("radio", { name: "Lots" })
+    .click();
+  // the makeup code's last two digits: freckles (lots = 2), glasses (cat-eye = 2)
+  await expect
+    .poll(async () => {
+      const save = await page.evaluate(() =>
+        JSON.parse(localStorage.getItem("daydaze-save-v1") ?? "{}"),
+      );
+      return String(save.look?.makeup ?? "").slice(-2);
+    })
+    .toBe("22");
+});
+
 test("a hair style picked in the closet survives a reload", async ({
   page,
 }) => {

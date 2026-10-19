@@ -12,6 +12,8 @@ import {
   BLUSHES,
   GLOSSES,
   HIGHLIGHTERS,
+  FRECKLES,
+  GLASSES,
   LINERS,
   SHADOW_STYLES,
   STRENGTHS,
@@ -394,6 +396,22 @@ function Mirror({
             options={HIGHLIGHTERS}
             value={makeup.highlight}
             onPick={(highlight) => setMakeup({ ...makeup, highlight })}
+          />
+          <Segmented
+            label="Freckles"
+            options={FRECKLES}
+            value={makeup.freckles}
+            onPick={(freckles) => setMakeup({ ...makeup, freckles })}
+            className="strength"
+          />
+        </section>
+        <section>
+          <h3>Glasses</h3>
+          <Chips
+            label="Glasses"
+            options={GLASSES}
+            value={makeup.glasses}
+            onPick={(glasses) => setMakeup({ ...makeup, glasses })}
           />
         </section>
         <section>

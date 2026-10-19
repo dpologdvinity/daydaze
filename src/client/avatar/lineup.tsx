@@ -6,6 +6,7 @@ import { useRef } from "react";
 import { createRoot } from "react-dom/client";
 import * as THREE from "three";
 import {
+  decodeMakeup,
   DEFAULT_LOOK,
   HAIR_STYLES,
   OUTFITS,
@@ -30,6 +31,11 @@ const still = new URLSearchParams(location.search).get("still") === "1";
 function hairParam(): Look["hairStyle"] {
   const id = new URLSearchParams(location.search).get("hair");
   return HAIR_STYLES.find((h) => h.id === id)?.id ?? "waves";
+}
+/** `?makeup=<code>` puts encodeMakeup's code on the face shots' doll. */
+function makeupParam(): { makeup?: string } {
+  const code = new URLSearchParams(location.search).get("makeup");
+  return code && decodeMakeup(code) ? { makeup: code } : {};
 }
 // `?moves=a,b` picks the dance shot's moves
 const DANCES = (
@@ -148,7 +154,7 @@ const SHOTS = {
     fov: 32,
   },
   face: {
-    looks: [{ ...LINEUP[0], hairStyle: hairParam() }],
+    looks: [{ ...LINEUP[0], hairStyle: hairParam(), ...makeupParam() }],
     x: () => 0,
     cam: [0, 1.5, 0.95] as const,
     target: [0, 1.42, 0] as const,
@@ -156,7 +162,7 @@ const SHOTS = {
   },
   // head and shoulders with the crown in frame, for judging hair
   portrait: {
-    looks: [{ ...LINEUP[0], hairStyle: hairParam() }],
+    looks: [{ ...LINEUP[0], hairStyle: hairParam(), ...makeupParam() }],
     x: () => 0,
     cam: [0, 1.5, 1.25] as const,
     target: [0, 1.45, 0] as const,

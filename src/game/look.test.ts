@@ -204,6 +204,25 @@ test("makeup codes round-trip and old looks wear the default", () => {
     assert.equal(validateLook({ ...DEFAULT_LOOK, makeup: bad }), false);
 });
 
+test("freckles and glasses ride in the makeup code; 6-digit codes still decode", () => {
+  const m = {
+    ...DEFAULT_MAKEUP,
+    freckles: "lots" as const,
+    glasses: "cat-eye" as const,
+  };
+  const code = encodeMakeup(m);
+  assert.equal(code.length, 8);
+  assert.deepEqual(decodeMakeup(code), m);
+  // a code from before freckles and glasses: the same makeup, none of either
+  const old = code.slice(0, 6);
+  assert.deepEqual(decodeMakeup(old), {
+    ...m,
+    freckles: "none",
+    glasses: "none",
+  });
+  assert.equal(decodeMakeup(`${code}0`), null);
+});
+
 test("face presets ride in the code; 8-character codes still decode", () => {
   const face = {
     ...DEFAULT_FACE,

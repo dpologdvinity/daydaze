@@ -24,6 +24,7 @@ import {
   seededMakeup,
   encodeMakeup,
   type Face,
+  makeupOf,
   type Look,
   type Outfit,
   type Mood,
@@ -50,6 +51,7 @@ const NPC_GAITS: GaitId[] = [
 ];
 import { paintFace, paintIris, paintLashes, readMarks } from "./faceCanvas.ts";
 import { Jewelry, readAnchors } from "./Jewelry.tsx";
+import { Glasses } from "./Glasses.tsx";
 
 /**
  * The 3D doll: a skinned, shape-keyed body built in Blender from MakeHuman's
@@ -757,6 +759,12 @@ export function HumanDoll({
       <primitive object={body.scene} />
       <Jewelry
         piercings={piercings}
+        anchors={body.anchors}
+        bones={body.bones}
+        restInverse={body.restInverse}
+      />
+      <Glasses
+        style={makeupOf(look).glasses}
         anchors={body.anchors}
         bones={body.bones}
         restInverse={body.restInverse}

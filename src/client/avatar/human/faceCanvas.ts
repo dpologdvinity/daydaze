@@ -426,6 +426,26 @@ export async function paintFace(look: Look, marks: Marks) {
     ctx.restore();
   }
 
+  // freckles: a sprinkle across the nose bridge and the tops of the cheeks,
+  // the same pattern every time for the same face
+  if (makeup.freckles !== "none") {
+    const fleck = mixRgb(skin, [110, 55, 35], 0.5);
+    let f = 4242;
+    const rand = () => {
+      f = (f * 16807) % 2147483647;
+      return f / 2147483647;
+    };
+    const count = makeup.freckles === "lots" ? 120 : 45;
+    for (let i = 0; i < count; i++) {
+      // spread across the band between the cheeks, thickest over the nose
+      const t = rand() * 2 - 1;
+      const x = noseTip[0] + t * (Math.abs(lCheek[0] - rCheek[0]) / 2) * 1.1;
+      const y = noseTip[1] - 0.05 + (rand() - 0.5) * 0.07 + Math.abs(t) * 0.02;
+      const r = 0.0022 + rand() * 0.0028;
+      blob(ctx, x, y, r, r * (0.8 + rand() * 0.4), fleck, 0.35 + rand() * 0.3);
+    }
+  }
+
   // highlighter: cheekbone tops, nose bridge, cupid's bow and brow bone
   const glow = HIGHLIGHTERS.find((h) => h.id === makeup.highlight)?.swatch;
   if (makeup.highlight !== "none" && glow) {

@@ -325,6 +325,13 @@ export function seededMakeup(seed: number): Makeup {
     blushStrength: "soft",
     highlight: (["champagne", "rose-gold", "icy"] as const)[(n >> 6) % 3],
     shadowStyle: (["wash", "smoky", "halo"] as const)[(n >> 8) % 3],
+    // some strangers have freckles, a few wear glasses
+    freckles: (["none", "none", "none", "light", "lots"] as const)[
+      (n >> 10) % 5
+    ],
+    glasses: (
+      ["none", "none", "none", "none", "round", "cat-eye", "square"] as const
+    )[(n >> 13) % 7],
   };
 }
 
@@ -378,6 +385,19 @@ export const SHADOW_STYLES = [
   { id: "halo", label: "Halo" },
 ] as const;
 
+export const FRECKLES = [
+  { id: "none", label: "None" },
+  { id: "light", label: "A few" },
+  { id: "lots", label: "Lots" },
+] as const;
+
+export const GLASSES = [
+  { id: "none", label: "No glasses" },
+  { id: "round", label: "Round" },
+  { id: "cat-eye", label: "Cat-eye" },
+  { id: "square", label: "Square" },
+] as const;
+
 export type Makeup = {
   liner: IdOf<typeof LINERS>;
   gloss: IdOf<typeof GLOSSES>;
@@ -385,6 +405,8 @@ export type Makeup = {
   blushStrength: IdOf<typeof STRENGTHS>;
   highlight: IdOf<typeof HIGHLIGHTERS>;
   shadowStyle: IdOf<typeof SHADOW_STYLES>;
+  freckles: IdOf<typeof FRECKLES>;
+  glasses: IdOf<typeof GLASSES>;
 };
 
 export const DEFAULT_MAKEUP: Makeup = {
@@ -394,10 +416,13 @@ export const DEFAULT_MAKEUP: Makeup = {
   blushStrength: "soft",
   highlight: "champagne",
   shadowStyle: "wash",
+  freckles: "none",
+  glasses: "none",
 };
 
 // Makeup travels as one short code, like the face: one digit per choice,
-// each the option's index in its catalog.
+// each the option's index in its catalog. Parts added later go on the end,
+// so older, shorter codes still decode (the new parts at their defaults).
 const MAKEUP_PARTS = [
   ["liner", LINERS],
   ["gloss", GLOSSES],
@@ -405,7 +430,11 @@ const MAKEUP_PARTS = [
   ["blushStrength", STRENGTHS],
   ["highlight", HIGHLIGHTERS],
   ["shadowStyle", SHADOW_STYLES],
+  ["freckles", FRECKLES],
+  ["glasses", GLASSES],
 ] as const;
+/** The code's length before freckles and glasses. */
+const MAKEUP_V1 = 6;
 
 export function encodeMakeup(m: Makeup): string {
   return MAKEUP_PARTS.map(([key, list]) =>
@@ -417,10 +446,15 @@ export function encodeMakeup(m: Makeup): string {
 }
 
 export function decodeMakeup(code: unknown): Makeup | null {
-  if (typeof code !== "string" || code.length !== MAKEUP_PARTS.length)
+  if (
+    typeof code !== "string" ||
+    code.length < MAKEUP_V1 ||
+    code.length > MAKEUP_PARTS.length
+  )
     return null;
   const out: Makeup = { ...DEFAULT_MAKEUP };
   for (const [i, [key, list]] of MAKEUP_PARTS.entries()) {
+    if (i >= code.length) break;
     const option = list[Number(code[i])];
     if (!option || !/^[0-9]$/.test(code[i])) return null;
     Object.assign(out, { [key]: option.id });
