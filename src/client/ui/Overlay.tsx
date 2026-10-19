@@ -117,6 +117,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Rewind Video. Browse the tapes and the new releases, then play Throwback Trivia at Tasha's counter.",
   "back-room":
     "The Back Room. A speakeasy behind an unmarked door: order a drink from Odette, then take a stool or a leather booth.",
+  "drive-in":
+    "The Starlite Drive-In. Moon Girls is playing on the big screen: grab a picnic bench, or order from Dot at the window.",
   "boardwalk-arcade":
     "The Boardwalk Arcade. Roll nine balls of Skee-Ball up the middle lane: stop the aim, then the power. Firm and straight for the 50.",
   "surf-shack":
@@ -803,7 +805,8 @@ export function Overlay({
           {(room === "velvet-room" ||
             room === "back-room" ||
             room === "tiki-bar" ||
-            room === "hotel-rooftop") && (
+            room === "hotel-rooftop" ||
+            room === "drive-in") && (
             <button
               type="button"
               className="drink"

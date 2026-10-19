@@ -66,6 +66,7 @@ const MUSIC: Partial<Record<RoomId, TrackId>> = {
   gallery: "canopy-lofi",
   "surf-shack": "sugar-rush-pop",
   "boardwalk-arcade": "player-two-chiptune",
+  "drive-in": "roller-disco",
   "video-store": "player-two-chiptune",
   "halo-halo-cafe": "canopy-lofi",
   // a backing track to sing over

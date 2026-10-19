@@ -39,6 +39,7 @@ import * as SUCRE from "../patisserie.ts";
 import * as G44 from "../gallery.ts";
 import * as SURF from "../surfShack.ts";
 import * as SKEE from "../boardwalkArcade.ts";
+import * as DRIVE from "../driveIn.ts";
 import * as REWIND from "../videoStore.ts";
 import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
@@ -427,8 +428,15 @@ const SUBURB_FRONT: readonly {
     h: 8,
     north: false,
     color: "#ffd166",
-    sign: { text: "DRIVE-IN DINER", color: "#ff2f9a" },
+    sign: { text: "STARLITE DRIVE-IN", color: "#ff2f9a" },
     style: "storefront",
+    door: {
+      position: DRIVE.DRIVE_IN_DOOR.position,
+      radius: 2,
+      label: "Into the Starlite Drive-In",
+      target: "drive-in",
+      targetSpawn: { position: DRIVE.SPAWN, yaw: Math.PI },
+    },
   },
   {
     x: -432,

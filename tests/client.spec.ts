@@ -290,6 +290,21 @@ test("Vinyl Vault sells a record that plays at home", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("the Starlite Drive-In: a milkshake and a bench for the movie", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=drive-in`);
+  await page
+    .getByRole("button", { name: "Take a seat" })
+    .click({ timeout: 150_000 });
+  await expect(canvasOf(page)).toHaveAttribute("data-seated", /drive-in-/, {
+    timeout: 120_000,
+  });
+  expect(errors).toEqual([]);
+});
+
 test("the Boardwalk Arcade: a Skee-Ball roll scores and the next ball comes", async ({
   page,
 }) => {
@@ -1351,6 +1366,7 @@ for (const room of [
   "gallery",
   "surf-shack",
   "boardwalk-arcade",
+  "drive-in",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

@@ -105,6 +105,7 @@ import * as SUCRE from "./patisserie.ts";
 import * as G44 from "./gallery.ts";
 import * as SURF from "./surfShack.ts";
 import * as BOARDWALK from "./boardwalkArcade.ts";
+import * as DRIVE from "./driveIn.ts";
 import * as REWIND from "./videoStore.ts";
 import type { Vec2 } from "./walk.ts";
 
@@ -169,6 +170,7 @@ export type RoomId =
   | "gallery"
   | "surf-shack"
   | "boardwalk-arcade"
+  | "drive-in"
   | "video-store"
   | "city";
 
@@ -686,6 +688,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the avenue",
         target: "city",
         targetSpawn: { position: BACK.BACK_ROOM_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  "drive-in": {
+    id: "drive-in",
+    name: "The Starlite Drive-In",
+    walkable: DRIVE.FLOOR,
+    blockers: DRIVE.BLOCKERS,
+    spawn: { position: DRIVE.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "drive-in-to-city",
+        position: DRIVE.EXIT,
+        radius: 0.8,
+        label: "Out to Maple Drive",
+        target: "city",
+        targetSpawn: { position: DRIVE.DRIVE_IN_DOOR.landing, yaw: Math.PI },
       },
     ],
   },
