@@ -96,6 +96,7 @@ const SHOTS: {
   { name: "thrift-temple", query: "room=thrift-temple" },
   { name: "espresso-lab", query: "room=espresso-lab" },
   { name: "hotel-rooftop", query: "room=hotel-rooftop" },
+  { name: "bookshop", query: "room=bookshop" },
   { name: "video-store", query: "room=video-store" },
   { name: "green-haze", query: "room=green-haze&adult=1" },
   { name: "piercing", query: "room=piercing" },

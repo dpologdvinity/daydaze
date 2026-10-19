@@ -34,6 +34,7 @@ import * as TIKI from "../tikiBar.ts";
 import * as THRIFT from "../thriftTemple.ts";
 import * as LAB from "../espressoLab.ts";
 import * as ROOF from "../hotelRooftop.ts";
+import * as BOOKS from "../bookshop.ts";
 import * as REWIND from "../videoStore.ts";
 import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
@@ -1546,8 +1547,18 @@ const UPTOWN_FRONT: readonly {
     h: 20,
     north: true,
     color: "#9a8c98",
-    sign: { text: "BOOKSHOP", color: "#ffffff" },
+    sign: { text: "DOG-EAR BOOKS", color: "#ffffff" },
     style: "brick",
+    venue: {
+      id: "bookshop",
+      door: {
+        position: BOOKS.BOOKSHOP_DOOR.position,
+        radius: 2,
+        label: "Into Dog-Ear Books",
+        target: "bookshop",
+        targetSpawn: { position: BOOKS.SPAWN, yaw: Math.PI },
+      },
+    },
   },
   {
     x: COURTSIDE.COURTSIDE_DOOR.position[0],

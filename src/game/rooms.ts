@@ -100,6 +100,7 @@ import * as TIKI from "./tikiBar.ts";
 import * as THRIFT from "./thriftTemple.ts";
 import * as LAB from "./espressoLab.ts";
 import * as ROOF from "./hotelRooftop.ts";
+import * as BOOKS from "./bookshop.ts";
 import * as REWIND from "./videoStore.ts";
 import type { Vec2 } from "./walk.ts";
 
@@ -159,6 +160,7 @@ export type RoomId =
   | "thrift-temple"
   | "espresso-lab"
   | "hotel-rooftop"
+  | "bookshop"
   | "video-store"
   | "city";
 
@@ -676,6 +678,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the avenue",
         target: "city",
         targetSpawn: { position: BACK.BACK_ROOM_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  bookshop: {
+    id: "bookshop",
+    name: "Dog-Ear Books",
+    walkable: BOOKS.FLOOR,
+    blockers: BOOKS.BLOCKERS,
+    spawn: { position: BOOKS.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "bookshop-to-city",
+        position: BOOKS.EXIT,
+        radius: 0.8,
+        label: "Out to Park Avenue",
+        target: "city",
+        targetSpawn: { position: BOOKS.BOOKSHOP_DOOR.landing, yaw: 0 },
       },
     ],
   },

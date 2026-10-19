@@ -117,6 +117,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Rewind Video. Browse the tapes and the new releases, then play Throwback Trivia at Tasha's counter.",
   "back-room":
     "The Back Room. A speakeasy behind an unmarked door: order a drink from Odette, then take a stool or a leather booth.",
+  bookshop:
+    "Dog-Ear Books. Browse the stacks, curl up in a wingback by the fire, and say hello to Marmalade asleep on the counter.",
   "hotel-rooftop":
     "The Marquise Rooftop. Swimsuits on, forty floors up: lie out on a lounger, sink into the hot tub, or get a drink from Simone at the pool bar.",
   "espresso-lab":

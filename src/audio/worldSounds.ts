@@ -197,6 +197,42 @@ export function playShellNote(shell: number): boolean {
   return true;
 }
 
+/** A cat's purr: low rumbling noise pulsing about 25 times a second, in on
+ * a breath and out on the next, for `seconds`. */
+export function playPurr(seconds: number): boolean {
+  const out = sfx();
+  if (!out) return false;
+  const { ctx, dest } = out;
+  const now = ctx.currentTime;
+  const end = now + Math.max(0.8, Math.min(seconds, 4));
+  const source = ctx.createBufferSource();
+  source.buffer = noiseBuffer(ctx);
+  source.loop = true;
+  const filter = ctx.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.setValueAtTime(180, now);
+  const pulse = ctx.createGain();
+  pulse.gain.setValueAtTime(0.5, now);
+  const lfo = ctx.createOscillator();
+  lfo.frequency.setValueAtTime(25, now);
+  const depth = ctx.createGain();
+  depth.gain.setValueAtTime(0.5, now);
+  lfo.connect(depth).connect(pulse.gain);
+  const breath = ctx.createGain();
+  breath.gain.setValueAtTime(0.0001, now);
+  for (let t = now; t < end; t += 1.8) {
+    breath.gain.exponentialRampToValueAtTime(0.35, Math.min(t + 0.8, end));
+    breath.gain.exponentialRampToValueAtTime(0.12, Math.min(t + 1.8, end));
+  }
+  breath.gain.exponentialRampToValueAtTime(0.0001, end + 0.1);
+  source.connect(filter).connect(pulse).connect(breath).connect(dest);
+  source.start(now);
+  lfo.start(now);
+  source.stop(end + 0.15);
+  lfo.stop(end + 0.15);
+  return true;
+}
+
 /** A bowling ball rolling down the lane: a low rumble for `seconds`,
  * swelling as it goes. */
 export function playBowlRoll(seconds: number): boolean {

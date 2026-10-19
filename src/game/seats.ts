@@ -9,6 +9,7 @@ import * as BACK from "./backRoom.ts";
 import * as TIKI from "./tikiBar.ts";
 import * as LAB from "./espressoLab.ts";
 import * as ROOF from "./hotelRooftop.ts";
+import * as BOOKS from "./bookshop.ts";
 import * as DOME from "./dome.ts";
 import * as KAMAYAN from "./kamayanHall.ts";
 import * as GALLERIA from "./galleria.ts";
@@ -198,6 +199,11 @@ const jazzSeats = [
 ];
 
 // the Back Room: stools at the bar, and the booths' leather benches
+// Dog-Ear Books: the armchairs by the fire
+const bookshopSeats = BOOKS.ARMCHAIRS.map(({ at: [x, z], dir }, i) =>
+  seat(`books-armchair-${i}`, "bookshop", [x, z], 0.45, [x, z + dir], "front"),
+);
+
 // the Marquise Rooftop: loungers to lie back on, the hot tub, the pool bar's
 // stools and the cabanas' daybeds
 const rooftopSeats: Seat[] = [
@@ -448,6 +454,7 @@ export const SEATS: readonly Seat[] = [
   ...tikiSeats,
   ...labSeats,
   ...rooftopSeats,
+  ...bookshopSeats,
   ...squareSeats,
   ...linksSeats,
   ...sportsSeats,

@@ -290,6 +290,19 @@ test("Vinyl Vault sells a record that plays at home", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("Dog-Ear Books: a seat by the fire", async ({ page }) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=bookshop`);
+  await page
+    .getByRole("button", { name: "Take a seat" })
+    .click({ timeout: 150_000 });
+  await expect(canvasOf(page)).toHaveAttribute("data-seated", /books-/, {
+    timeout: 120_000,
+  });
+  expect(errors).toEqual([]);
+});
+
 test("Take a photo saves a framed snapshot named for the place", async ({
   page,
 }) => {
@@ -1259,6 +1272,7 @@ for (const room of [
   "thrift-temple",
   "espresso-lab",
   "hotel-rooftop",
+  "bookshop",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

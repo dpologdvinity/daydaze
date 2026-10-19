@@ -31,6 +31,7 @@ test("every room is registered under its own id", () => {
     "arcade-bar",
     "back-room",
     "boba-matcha",
+    "bookshop",
     "bowling",
     "catwalk",
     "city",
