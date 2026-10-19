@@ -8,6 +8,7 @@ import {
 } from "../../src/net/networkProtocol.ts";
 import { DEFAULT_LOOK } from "../../src/game/look.ts";
 import {
+  INTEREST_RADIUS,
   MAX_INVALID_MESSAGES,
   RoomCore,
   type CloseReason,
@@ -17,10 +18,10 @@ import {
 const look = DEFAULT_LOOK;
 const otherLook = { ...DEFAULT_LOOK, hairStyle: "ponytail" };
 
-function setup(capacity?: number) {
+function setup(capacity?: number, roomId = "plaza") {
   const clock = { t: 0 };
   const room = new RoomCore({
-    roomId: "plaza",
+    roomId,
     capacity,
     now: () => clock.t,
   });
@@ -537,4 +538,40 @@ test("enforceBan removes a player the gateway banned and keeps them out", () => 
   // Banning someone who is not here still keeps them out of this copy.
   assert.equal(room.enforceBan("absent"), false);
   assert.deepEqual(join("absent").result, { ok: false, reason: "banned" });
+});
+
+test("in the city, players only hear about those within reach", () => {
+  const { room, clock, join } = setup(undefined, "city");
+  const a = join("a");
+  const b = join("b");
+  room.handle("a", update(entity("a", { x: 0, z: 0 })));
+  clock.t = 1000;
+  // b turns up across town: a is told b has gone
+  room.handle("b", update(entity("b", { x: 300, z: 0, timestamp: 1 })));
+  assert.deepEqual(ofType(a.received, "entity-leave").at(-1)?.id, "b");
+  assert.deepEqual(ofType(b.received, "entity-leave").at(-1)?.id, "a");
+  const quiet = a.received.length;
+  clock.t = 2000;
+  room.handle("b", update(entity("b", { x: 290, z: 0, timestamp: 2 })));
+  room.handle("b", chat("anyone here?"));
+  assert.equal(a.received.length, quiet, "nothing from b while far away");
+  // b drives back into range: a gets b's profile and where b is
+  clock.t = 3000;
+  room.handle(
+    "b",
+    update(entity("b", { x: INTEREST_RADIUS - 5, z: 0, timestamp: 3 })),
+  );
+  const back = a.received.slice(quiet);
+  assert.deepEqual(
+    back.map((m) => m.type),
+    ["profile", "delta"],
+  );
+  assert.equal(ofType(b.received, "profile").at(-1)?.id, "a");
+  // a little past the edge still counts, so the border doesn't flicker
+  clock.t = 4000;
+  room.handle(
+    "b",
+    update(entity("b", { x: INTEREST_RADIUS + 5, z: 0, timestamp: 4 })),
+  );
+  assert.equal(a.received.at(-1)?.type, "delta");
 });

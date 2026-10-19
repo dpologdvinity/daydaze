@@ -25,6 +25,14 @@ export { CLOSE_CODES };
 export const ROOM_CAPACITY = 60;
 export const MAX_INVALID_MESSAGES = 10;
 export const REPORT_CHAT_LINES = 20;
+/**
+ * Players see (and hear) only those within this many meters. Rooms are
+ * smaller, so it only bites in the city; once out of range a player gets an
+ * entity-leave, and back in range their profile and position again.
+ */
+export const INTEREST_RADIUS = 120;
+/** Leaving takes a little further than arriving, so the edge doesn't flicker. */
+const INTEREST_SLACK = 10;
 
 export type RoomPlayer = {
   id: string;
@@ -60,6 +68,8 @@ type Occupant = {
   close: (reason: CloseReason) => void;
   entity: EntityDelta | null;
   invalid: number;
+  /** Who this occupant's client knows about: sent a profile, no leave since. */
+  seen: Set<string>;
 };
 
 /** One room copy's state and rules, independent of the socket host. */
@@ -104,6 +114,7 @@ export class RoomCore {
       return { ok: false, reason: "full" };
 
     this.occupants.set(player.id, occupant);
+    // with no position yet the newcomer sees everyone; their first move trims
     const others = [...this.occupants.values()].filter(
       (other) => other !== occupant && this.visible(other, occupant),
     );
@@ -112,9 +123,15 @@ export class RoomCore {
       roomId: this.roomId,
       entities: others.flatMap((other) => (other.entity ? [other.entity] : [])),
     });
-    for (const other of others) this.sendTo(occupant, this.profile(other));
+    for (const other of others) {
+      occupant.seen.add(other.id);
+      this.sendTo(occupant, this.profile(other));
+    }
     if (this.occupants.get(player.id) !== occupant) return { ok: true };
-    this.broadcast(occupant, this.profile(occupant));
+    for (const other of others) {
+      other.seen.add(occupant.id);
+      this.sendTo(other, this.profile(occupant));
+    }
     this.broadcastOccupancy();
     return { ok: true };
   }
@@ -131,6 +148,12 @@ export class RoomCore {
     const occupant = this.admit(player, send, close);
     if (!occupant) return false;
     this.occupants.set(player.id, occupant);
+    // positions are gone too, so assume everyone knew everyone, as on join
+    for (const other of this.occupants.values())
+      if (other !== occupant && this.visible(other, occupant)) {
+        other.seen.add(occupant.id);
+        occupant.seen.add(other.id);
+      }
     return true;
   }
 
@@ -146,6 +169,7 @@ export class RoomCore {
     ])
       limiter.forget(id);
     this.broadcast(occupant, { type: "entity-leave", roomId: this.roomId, id });
+    for (const other of this.occupants.values()) other.seen.delete(id);
     this.broadcastOccupancy();
   }
 
@@ -179,11 +203,20 @@ export class RoomCore {
           message.entity.z,
         ]);
         occupant.entity = { ...message.entity, id, x, z };
-        this.broadcast(occupant, {
+        // coming into range sends the delta along with the profile
+        const shown = new Set<Occupant>();
+        for (const other of this.occupants.values()) {
+          if (other === occupant) continue;
+          if (this.sync(other, occupant)) shown.add(other);
+          this.sync(occupant, other);
+        }
+        const raw = encodeServerMessage({
           type: "delta",
           roomId: this.roomId,
           entity: occupant.entity,
         });
+        for (const other of this.occupants.values())
+          if (other.seen.has(id) && !shown.has(other)) this.deliver(other, raw);
         return;
       }
       case "chat": {
@@ -227,6 +260,8 @@ export class RoomCore {
     const by = this.occupants.get(byId);
     const target = this.occupants.get(targetId);
     if (!by || !target) return;
+    by.seen.delete(targetId);
+    target.seen.delete(byId);
     this.sendTo(by, {
       type: "entity-leave",
       roomId: this.roomId,
@@ -307,6 +342,7 @@ export class RoomCore {
       close,
       entity: null,
       invalid: 0,
+      seen: new Set(),
     };
   }
 
@@ -318,8 +354,42 @@ export class RoomCore {
     return adminId !== targetId && !!this.occupants.get(adminId)?.isAdmin;
   }
 
+  /** Whether `a` should know about `b`: not blocked, and close enough. */
   private visible(a: Occupant, b: Occupant): boolean {
-    return !this.blocked.has(pairKey(a.id, b.id));
+    if (this.blocked.has(pairKey(a.id, b.id))) return false;
+    if (!a.entity || !b.entity) return true;
+    const reach = INTEREST_RADIUS + (a.seen.has(b.id) ? INTEREST_SLACK : 0);
+    return (
+      Math.hypot(a.entity.x - b.entity.x, a.entity.z - b.entity.z) <= reach
+    );
+  }
+
+  /**
+   * Brings what `viewer` knows of `other` in line with `visible`: a profile
+   * and position on coming into range, a leave on going out. True when
+   * `other` was just shown.
+   */
+  private sync(viewer: Occupant, other: Occupant): boolean {
+    const show = this.visible(viewer, other);
+    if (show === viewer.seen.has(other.id)) return false;
+    if (!show) {
+      viewer.seen.delete(other.id);
+      this.sendTo(viewer, {
+        type: "entity-leave",
+        roomId: this.roomId,
+        id: other.id,
+      });
+      return false;
+    }
+    viewer.seen.add(other.id);
+    this.sendTo(viewer, this.profile(other));
+    if (other.entity)
+      this.sendTo(viewer, {
+        type: "delta",
+        roomId: this.roomId,
+        entity: other.entity,
+      });
+    return true;
   }
 
   private disconnect(occupant: Occupant, reason: CloseReason): void {
@@ -334,8 +404,7 @@ export class RoomCore {
   private broadcast(origin: Occupant, message: ServerMessage): void {
     const raw = encodeServerMessage(message);
     for (const occupant of this.occupants.values())
-      if (occupant !== origin && this.visible(occupant, origin))
-        this.deliver(occupant, raw);
+      if (occupant.seen.has(origin.id)) this.deliver(occupant, raw);
   }
 
   private broadcastOccupancy(): void {
