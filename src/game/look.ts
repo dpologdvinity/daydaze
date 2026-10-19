@@ -543,11 +543,14 @@ export type Look = {
   piercings?: string;
   /** A walk style from GAITS; looks without one walk naturally. */
   gait?: string;
+  /** encodeSwim's code: sent online so others see the swimsuit in swimwear
+   * rooms. Saves keep the swimsuit apart, in `swim`. */
+  swim?: string;
 };
 
 const LOOK_CATALOGS: {
   [
-    K in Exclude<keyof Look, "face" | "makeup" | "piercings" | "gait">
+    K in Exclude<keyof Look, "face" | "makeup" | "piercings" | "gait" | "swim">
   ]: readonly {
     readonly id: Look[K];
     readonly label: string;
@@ -576,13 +579,16 @@ export function validateLook(value: unknown): value is Look {
   const hasMakeup = fields.has("makeup");
   const hasPiercings = fields.has("piercings");
   const hasGait = fields.has("gait");
+  const hasSwim = fields.has("swim");
   return (
     fields.size ===
       catalogs.length +
         (hasFace ? 1 : 0) +
         (hasMakeup ? 1 : 0) +
         (hasPiercings ? 1 : 0) +
-        (hasGait ? 1 : 0) &&
+        (hasGait ? 1 : 0) +
+        (hasSwim ? 1 : 0) &&
+    (!hasSwim || decodeSwim(fields.get("swim")) !== null) &&
     (!hasGait || isGait(fields.get("gait"))) &&
     (!hasPiercings || decodePiercings(fields.get("piercings")) !== null) &&
     (!hasFace || decodeFace(fields.get("face")) !== null) &&
@@ -617,6 +623,18 @@ export function validateSwim(value: unknown): value is SwimLook {
     isId(SWIMSUITS, fields.get("style")) &&
     isId(OUTFIT_COLORS, fields.get("color"))
   );
+}
+
+/** A swimsuit as one short code for the online look: "style|color". */
+export function encodeSwim(swim: SwimLook): string {
+  return `${swim.style}|${swim.color}`;
+}
+
+export function decodeSwim(code: unknown): SwimLook | null {
+  if (typeof code !== "string") return null;
+  const [style, color, ...rest] = code.split("|");
+  const swim = { style, color };
+  return rest.length === 0 && validateSwim(swim) ? swim : null;
 }
 
 /** What the doll wears in a room: the swimsuit in swimwear rooms, else null. */

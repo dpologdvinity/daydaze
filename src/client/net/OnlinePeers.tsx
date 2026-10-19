@@ -10,7 +10,8 @@ import {
 } from "react";
 import * as THREE from "three";
 import type { DanceMoveId } from "../../game/dance/moves.ts";
-import type { Look, Mood } from "../../game/look.ts";
+import { decodeSwim, type Look, type Mood } from "../../game/look.ts";
+import { ROOMS, type RoomId } from "../../game/rooms.ts";
 import { decodeAction, encodeAction } from "../../game/peerAction.ts";
 import type { OnlineSession } from "../../net/client/OnlineSession.ts";
 import { Doll, type WalkState } from "../avatar/Doll.tsx";
@@ -28,10 +29,13 @@ function PeerDoll({
   session,
   peer,
   said,
+  swimwear,
 }: {
   session: OnlineSession;
   peer: Peer;
   said: string | null;
+  /** In a swimwear room they wear the swimsuit their look carries. */
+  swimwear: boolean;
 }) {
   const group = useRef<THREE.Group>(null);
   const walk = useMemo(() => ({ current: { speed: 0 } as WalkState }), []);
@@ -63,6 +67,7 @@ function PeerDoll({
     >
       <Doll
         look={peer.look}
+        swim={swimwear ? decodeSwim(peer.look.swim) : null}
         mood={doing.mood}
         dance={doing.dance}
         walk={walk}
@@ -94,10 +99,12 @@ function PeerDoll({
  * nothing when playing offline.
  */
 export function OnlinePeers({
+  room,
   player,
   mood,
   dance,
 }: {
+  room: RoomId;
   player: Player;
   mood: Mood;
   dance: DanceMoveId;
@@ -169,6 +176,7 @@ export function OnlinePeers({
           session={session}
           peer={p}
           said={said[p.id]?.text ?? null}
+          swimwear={ROOMS[room].swimwear === true}
         />
       ))}
     </Suspense>

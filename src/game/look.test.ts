@@ -10,7 +10,9 @@ import {
   encodePiercings,
   piercingsOf,
   decodeMakeup,
+  decodeSwim,
   encodeMakeup,
+  encodeSwim,
   makeupOf,
   EYE_COLORS,
   decodeFace,
@@ -249,4 +251,13 @@ test("piercings round-trip and old looks have none", () => {
   assert.deepEqual(piercingsOf(DEFAULT_LOOK), NO_PIERCINGS);
   for (const bad of ["", "9000", "00000", "a000", 0])
     assert.equal(validateLook({ ...DEFAULT_LOOK, piercings: bad }), false);
+});
+
+test("a swimsuit rides on the online look as a short code", () => {
+  const swim = { style: "tankini", color: "#ff2f9a" } as const;
+  const code = encodeSwim(swim);
+  assert.deepEqual(decodeSwim(code), swim);
+  assert.equal(validateLook({ ...DEFAULT_LOOK, swim: code }), true);
+  for (const bad of ["tankini", "tankini|#nope", "x|#ff2f9a", "a|b|c", 4])
+    assert.equal(validateLook({ ...DEFAULT_LOOK, swim: bad }), false);
 });

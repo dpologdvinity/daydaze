@@ -14,7 +14,12 @@ import { PeerCard } from "./net/PeerCard.tsx";
 import type { MinigameId } from "../game/hotspots.ts";
 import { isJailed } from "../game/jail/jail.ts";
 import { jailAfterArrest } from "../game/police/arrest.ts";
-import type { Look, Mood, SwimLook } from "../game/look.ts";
+import {
+  encodeSwim,
+  type Look,
+  type Mood,
+  type SwimLook,
+} from "../game/look.ts";
 import type { HomeSave } from "../game/home/home.ts";
 import { parkedOrHome, type ParkedCar } from "../game/city/drive.ts";
 import { mayEnter } from "../game/age.ts";
@@ -103,8 +108,13 @@ export function App() {
     const room = mayEnter(asked, ADULT_OK) ? asked : "city";
     return visit(room, (room === asked && flags.at) || ROOMS[room].spawn);
   });
-  // online play (?online=1): be in the same room as everyone else here
-  useOnlineRoom(here.room, save.look);
+  // online play (?online=1): be in the same room as everyone else here,
+  // the swimsuit along so others see it in swimwear rooms
+  const onlineLook = useMemo(
+    () => ({ ...save.look, swim: encodeSwim(save.swim) }),
+    [save.look, save.swim],
+  );
+  useOnlineRoom(here.room, onlineLook);
   const [fading, setFading] = useState(false);
   const traveling = useRef(false);
   // Fade out, swap rooms behind the curtain, then fade back in.
