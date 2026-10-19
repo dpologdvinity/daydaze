@@ -11,6 +11,7 @@ import * as LAB from "./espressoLab.ts";
 import * as ROOF from "./hotelRooftop.ts";
 import * as BOOKS from "./bookshop.ts";
 import * as SUCRE from "./patisserie.ts";
+import * as G44 from "./gallery.ts";
 import * as DOME from "./dome.ts";
 import * as KAMAYAN from "./kamayanHall.ts";
 import * as GALLERIA from "./galleria.ts";
@@ -200,6 +201,20 @@ const jazzSeats = [
 ];
 
 // the Back Room: stools at the bar, and the booths' leather benches
+// Gallery 44: the bench, a seat each side facing the long walls
+const gallerySeats = ([-1, 1] as const).flatMap((side) =>
+  [-0.6, 0.6].map((x, i) =>
+    seat(
+      `gallery-bench-${side < 0 ? "n" : "s"}${i}`,
+      "gallery",
+      [x, side * 0.15],
+      0.45,
+      [x, side * 5],
+      "front",
+    ),
+  ),
+);
+
 // Sucre: a chair either side of each cafe table
 const sucreSeats = SUCRE.TABLES.flatMap(([x, z], t) =>
   ([-1, 1] as const).map((side) =>
@@ -470,6 +485,7 @@ export const SEATS: readonly Seat[] = [
   ...rooftopSeats,
   ...bookshopSeats,
   ...sucreSeats,
+  ...gallerySeats,
   ...squareSeats,
   ...linksSeats,
   ...sportsSeats,

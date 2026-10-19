@@ -36,6 +36,7 @@ import * as LAB from "../espressoLab.ts";
 import * as ROOF from "../hotelRooftop.ts";
 import * as BOOKS from "../bookshop.ts";
 import * as SUCRE from "../patisserie.ts";
+import * as G44 from "../gallery.ts";
 import * as REWIND from "../videoStore.ts";
 import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
@@ -1133,6 +1134,13 @@ const ARTS_FRONT: readonly {
     color: "#2ec4b6",
     sign: { text: "GALLERY 44", color: "#ffffff" },
     style: "glass",
+    door: {
+      position: G44.GALLERY_DOOR.position,
+      radius: 1.5,
+      label: "Into Gallery 44",
+      target: "gallery",
+      targetSpawn: { position: G44.SPAWN, yaw: Math.PI },
+    },
   },
   {
     x: 104,

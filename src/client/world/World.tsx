@@ -113,6 +113,9 @@ const VideoStore = lazy(() =>
 const BackRoom = lazy(() =>
   import("../rooms/BackRoom.tsx").then((m) => ({ default: m.BackRoom })),
 );
+const Gallery = lazy(() =>
+  import("../rooms/Gallery.tsx").then((m) => ({ default: m.Gallery })),
+);
 const Patisserie = lazy(() =>
   import("../rooms/Patisserie.tsx").then((m) => ({ default: m.Patisserie })),
 );
@@ -403,6 +406,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   "hotel-rooftop": HotelRooftop,
   bookshop: Bookshop,
   patisserie: Patisserie,
+  gallery: Gallery,
   "video-store": VideoStore,
   "halo-halo-cafe": HaloHaloCafe,
   gym: Gym,

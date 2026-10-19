@@ -290,6 +290,31 @@ test("Vinyl Vault sells a record that plays at home", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("Gallery 44: paint at the easel and hang it on the open wall", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=gallery`);
+  const panel = page.getByRole("region", { name: "Easel" });
+  await panel
+    .getByRole("button", { name: "Paint at the easel" })
+    .click({ timeout: 150_000 });
+  const canvas = panel.getByLabel("Your canvas");
+  const box = await canvas.boundingBox();
+  if (!box) throw new Error("no canvas");
+  await page.mouse.move(box.x + 30, box.y + 30);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 200, box.y + 180, { steps: 8 });
+  await page.mouse.up();
+  await panel.getByRole("button", { name: "Hang it" }).click();
+  await expect(panel.getByRole("status")).toHaveText("Hung on the open wall.");
+  expect(
+    await page.evaluate(() => localStorage.getItem("daydaze-painting-v1")),
+  ).toMatch(/^data:image\/png;base64,/);
+  expect(errors).toEqual([]);
+});
+
 test("Sucre: a macaron tower goes up a layer or topples", async ({ page }) => {
   test.setTimeout(330_000);
   const errors = collectErrors(page);
@@ -1288,6 +1313,7 @@ for (const room of [
   "hotel-rooftop",
   "bookshop",
   "patisserie",
+  "gallery",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

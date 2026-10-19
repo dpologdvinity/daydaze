@@ -102,6 +102,7 @@ import * as LAB from "./espressoLab.ts";
 import * as ROOF from "./hotelRooftop.ts";
 import * as BOOKS from "./bookshop.ts";
 import * as SUCRE from "./patisserie.ts";
+import * as G44 from "./gallery.ts";
 import * as REWIND from "./videoStore.ts";
 import type { Vec2 } from "./walk.ts";
 
@@ -163,6 +164,7 @@ export type RoomId =
   | "hotel-rooftop"
   | "bookshop"
   | "patisserie"
+  | "gallery"
   | "video-store"
   | "city";
 
@@ -680,6 +682,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the avenue",
         target: "city",
         targetSpawn: { position: BACK.BACK_ROOM_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  gallery: {
+    id: "gallery",
+    name: "Gallery 44",
+    walkable: G44.FLOOR,
+    blockers: G44.BLOCKERS,
+    spawn: { position: G44.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "gallery-to-city",
+        position: G44.EXIT,
+        radius: 0.8,
+        label: "Out to Gallery Row",
+        target: "city",
+        targetSpawn: { position: G44.GALLERY_DOOR.landing, yaw: Math.PI },
       },
     ],
   },

@@ -98,6 +98,7 @@ const SHOTS: {
   { name: "hotel-rooftop", query: "room=hotel-rooftop" },
   { name: "bookshop", query: "room=bookshop" },
   { name: "patisserie", query: "room=patisserie" },
+  { name: "gallery", query: "room=gallery" },
   { name: "video-store", query: "room=video-store" },
   { name: "green-haze", query: "room=green-haze&adult=1" },
   { name: "piercing", query: "room=piercing" },

@@ -1507,6 +1507,36 @@ button:focus-visible {
   font-size: 13px;
 }
 
+.easel-canvas {
+  width: 240px;
+  height: 240px;
+  align-self: center;
+  border-radius: 6px;
+  background: #f8f4ee;
+  cursor: crosshair;
+  touch-action: none;
+  box-shadow: 0 0 0 3px #8a5a3a;
+}
+
+.game-row .swatch {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid rgb(255 255 255 / 0.4);
+}
+
+.game-row .swatch[aria-pressed="true"] {
+  border-color: #fff;
+  transform: scale(1.15);
+}
+
+.easel .game-row[aria-label="Paints"] {
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 .game-label {
   font-size: 13px;
   opacity: 0.8;
