@@ -63,6 +63,7 @@ import { DanceOffHud } from "../rooms/pulse/DanceOffHud.tsx";
 import { ShopPanel } from "./ShopPanel.tsx";
 import { setSkates, skates, SKATE_ROOMS } from "../world/skates.ts";
 import { openShop } from "./shopRequest.ts";
+import { takePhoto } from "../world/Photo.tsx";
 import { STORES as GALLERIA_STORES } from "../../game/galleria.ts";
 import { CocktailIcon, RideIcon } from "./icons.tsx";
 import { DancePicker, HoldPicker } from "./DancePicker.tsx";
@@ -739,6 +740,17 @@ export function Overlay({
             onClick={() => setMuted(!muted)}
           >
             {muted ? "Sound off" : "Sound on"}
+          </button>
+          <button
+            type="button"
+            className="drink"
+            onClick={() =>
+              takePhoto(
+                room === "city" ? NEIGHBORHOOD_NAMES[neighborhood] : roomName,
+              )
+            }
+          >
+            Take a photo
           </button>
           {SKATE_ROOMS.has(room) && (
             <button

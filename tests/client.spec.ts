@@ -290,6 +290,23 @@ test("Vinyl Vault sells a record that plays at home", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("Take a photo saves a framed snapshot named for the place", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=tiki-bar`);
+  await expect(canvasOf(page)).toHaveAttribute("data-frames", "10", {
+    timeout: 150_000,
+  });
+  const saved = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Take a photo" }).click();
+  expect((await saved).suggestedFilename()).toMatch(
+    /^daydaze-the-coconut-grove-\d{4}-\d{2}-\d{2}-\d{4}\.png$/,
+  );
+  expect(errors).toEqual([]);
+});
+
 test("the Marquise Rooftop: swimsuit on, a drink, then a lounger", async ({
   page,
 }) => {

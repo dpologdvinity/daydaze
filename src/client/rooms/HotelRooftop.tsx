@@ -165,9 +165,9 @@ function skylineGeometry() {
     // the open side is the pool's: towers across the back and sides
     const a = Math.PI * (0.55 + (i / 48) * 0.9) + r * 0.05;
     const dist = 30 + ((r * 7.1) % 1) * 90;
-    const w = 7 + ((r * 3.7) % 1) * 10;
-    const d = 7 + ((r * 5.3) % 1) * 10;
-    const h = dist > 70 ? 40 + ((r * 9.7) % 1) * 50 : 18 + ((r * 9.7) % 1) * 18;
+    const w = 5 + ((r * 3.7) % 1) * 6;
+    const d = 5 + ((r * 5.3) % 1) * 6;
+    const h = dist > 70 ? 34 + ((r * 9.7) % 1) * 40 : 18 + ((r * 9.7) % 1) * 18;
     const g = new THREE.BoxGeometry(w, h, d);
     const uv = g.attributes.uv;
     for (let k = 0; k < uv.count; k++)
