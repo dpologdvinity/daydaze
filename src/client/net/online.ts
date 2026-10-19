@@ -1,0 +1,52 @@
+import { useEffect } from "react";
+import type { Look } from "../../game/look.ts";
+import type { RoomId } from "../../game/rooms.ts";
+import { createApi } from "../../net/client/api.ts";
+import { OnlineSession } from "../../net/client/OnlineSession.ts";
+import { WebSocketTransport } from "../../net/client/WebSocketTransport.ts";
+
+/**
+ * Online play, for now behind `?online=1`: the game talks to the Worker's
+ * `/api` and `/ws` on its own origin (in development, `npm run dev:server`
+ * on 8787 behind Vite's proxy). Without the flag, or when the server can't
+ * be reached, everything stays single-player.
+ * shortcut: opt-in by URL flag; switch it on by default once the Worker is
+ * deployed beside the client.
+ */
+export const ONLINE =
+  typeof location !== "undefined" &&
+  new URLSearchParams(location.search).get("online") === "1";
+
+let shared: OnlineSession | null = null;
+
+/** The one online session, made on first use; null when offline. */
+export function onlineSession(): OnlineSession | null {
+  if (!ONLINE) return null;
+  shared ??= new OnlineSession({
+    api: createApi({ fetch: (url, init) => fetch(url, init) }),
+    wsBaseUrl: location.origin.replace(/^http/, "ws"),
+    openTransport: (url) => new WebSocketTransport({ url, WebSocket }),
+  });
+  return shared;
+}
+
+/** Keeps the session in the room the player is in, wearing their look. */
+export function useOnlineRoom(room: RoomId, look: Look) {
+  const session = onlineSession();
+  // join (and rejoin on each room change) once the session has an identity
+  useEffect(() => {
+    if (!session) return;
+    let live = true;
+    void (async () => {
+      if (session.status() === "idle" && !(await session.start())) return;
+      if (live) await session.joinRoom(room, look);
+    })();
+    return () => {
+      live = false;
+    };
+    // the look follows separately; a look change must not rejoin the room
+  }, [session, room]);
+  useEffect(() => {
+    session?.setLook(look);
+  }, [session, look]);
+}

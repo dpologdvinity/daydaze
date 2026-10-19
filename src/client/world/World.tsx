@@ -49,6 +49,7 @@ import { QualityContext, type QualityTier } from "./quality.ts";
 import { Seats } from "./Seats.tsx";
 import { isSceneReady, setSceneReady } from "./ready.ts";
 import { Photo } from "./Photo.tsx";
+import { OnlinePeers } from "../net/OnlinePeers.tsx";
 import { Confetti } from "./Confetti.tsx";
 import { CreatorFrame } from "./CreatorFrame.tsx";
 
@@ -538,6 +539,7 @@ export function World({
         )}
         <FrameCount still={still} />
         <Photo />
+        <OnlinePeers player={player} mood={mood} />
         <DrunkState intensity={effects} />
         <Dancing mood={mood} move={dance} />
         <Wearing style={swimFor(def, swim)?.style ?? "outfit"} />

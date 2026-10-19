@@ -9,6 +9,7 @@ import {
 } from "../game/dance/moves.ts";
 import { chatDistort, type Intensity } from "../game/effects/buzz.ts";
 import { getBuzz } from "./effects/drunk.ts";
+import { onlineSession, useOnlineRoom } from "./net/online.ts";
 import type { MinigameId } from "../game/hotspots.ts";
 import { isJailed } from "../game/jail/jail.ts";
 import { jailAfterArrest } from "../game/police/arrest.ts";
@@ -101,6 +102,8 @@ export function App() {
     const room = mayEnter(asked, ADULT_OK) ? asked : "city";
     return visit(room, (room === asked && flags.at) || ROOMS[room].spawn);
   });
+  // online play (?online=1): be in the same room as everyone else here
+  useOnlineRoom(here.room, save.look);
   const [fading, setFading] = useState(false);
   const traveling = useRef(false);
   // Fade out, swap rooms behind the curtain, then fade back in.
@@ -389,7 +392,9 @@ export function App() {
           onSay={(text) => {
             const at = Date.now();
             // a few drinks in, vowels stretch ("heyyy")
-            setChat({ text: chatDistort(text, getBuzz(), at), at });
+            const said = chatDistort(text, getBuzz(), at);
+            setChat({ text: said, at });
+            onlineSession()?.sendChat(said);
           }}
         />
         {flags.debug && (

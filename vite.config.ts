@@ -7,11 +7,20 @@ import { defineConfig } from "vite";
 // would silently stop.
 const worktrees = fileURLToPath(new URL("./.worktrees/", import.meta.url));
 
+const workerPort = process.env.WORKER_PORT ?? "8787";
+
 // `npm run dev -- --port <n>` overrides the default port.
 export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
+    // online play in development: `npm run dev:server` runs the Worker on
+    // 8787 (WORKER_PORT if that's taken); proxying keeps its cookie and
+    // sockets on this origin
+    proxy: {
+      "/api": `http://127.0.0.1:${workerPort}`,
+      "/ws": { target: `ws://127.0.0.1:${workerPort}`, ws: true },
+    },
     // Agents edit files in .worktrees/; watching them reloads the open game.
     watch: {
       ignored: [

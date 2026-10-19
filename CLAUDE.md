@@ -48,7 +48,9 @@ if (await session.start()) await session.joinRoom("plaza", look);
 // else: status "offline", keep playing single-player.
 ```
 
-In development, run `npm run dev:server` (wrangler dev on port 8787) next to Vite and proxy both paths, so cookies stay same-origin:
+The 3D client uses it behind `?online=1` (`src/client/net/`: `online.ts` joins the current room and keeps the look in sync; `OnlinePeers.tsx` draws everyone else's doll, name and chat bubble, and sends your moves). Without the flag, or when `/api` can't be reached, the game stays single-player, so offline tests never touch the network.
+
+In development, run `npm run dev:server` (wrangler dev on port 8787) next to Vite; `vite.config.ts` already proxies both paths, so cookies stay same-origin. If 8787 is taken, run wrangler on another port and start Vite with `WORKER_PORT=<port>`; a Vite port other than 5173 must be in `ALLOWED_ORIGINS` (`wrangler dev --var ALLOWED_ORIGINS:http://localhost:5199`). Stop wrangler by PID (`ss -ltnp`), not `pkill -f`. The proxy, for reference:
 
 ```ts
 // vite.config.ts
