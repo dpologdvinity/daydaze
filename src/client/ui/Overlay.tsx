@@ -117,6 +117,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Rewind Video. Browse the tapes and the new releases, then play Throwback Trivia at Tasha's counter.",
   "back-room":
     "The Back Room. A speakeasy behind an unmarked door: order a drink from Odette, then take a stool or a leather booth.",
+  "surf-shack":
+    "Swell Surf Co. Grab a beach chair, or paddle out and ride a wave: lean to stay in the pocket, trick when you're charged.",
   gallery:
     "Gallery 44. Walk the show, sit on the bench, or paint at the easel: hang your piece and it stays on the open wall.",
   patisserie:

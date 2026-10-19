@@ -12,6 +12,7 @@ import * as ROOF from "./hotelRooftop.ts";
 import * as BOOKS from "./bookshop.ts";
 import * as SUCRE from "./patisserie.ts";
 import * as G44 from "./gallery.ts";
+import * as SURF from "./surfShack.ts";
 import * as DOME from "./dome.ts";
 import * as KAMAYAN from "./kamayanHall.ts";
 import * as GALLERIA from "./galleria.ts";
@@ -201,6 +202,11 @@ const jazzSeats = [
 ];
 
 // the Back Room: stools at the bar, and the booths' leather benches
+// Swell Surf Co.: beach chairs facing the water
+const surfSeats = SURF.CHAIRS.map(([x, z], i) =>
+  seat(`surf-chair-${i}`, "surf-shack", [x, z], 0.35, [x, z - 1], "front"),
+);
+
 // Gallery 44: the bench, a seat each side facing the long walls
 const gallerySeats = ([-1, 1] as const).flatMap((side) =>
   [-0.6, 0.6].map((x, i) =>
@@ -486,6 +492,7 @@ export const SEATS: readonly Seat[] = [
   ...bookshopSeats,
   ...sucreSeats,
   ...gallerySeats,
+  ...surfSeats,
   ...squareSeats,
   ...linksSeats,
   ...sportsSeats,

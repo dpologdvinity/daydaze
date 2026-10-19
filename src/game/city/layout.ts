@@ -37,6 +37,7 @@ import * as ROOF from "../hotelRooftop.ts";
 import * as BOOKS from "../bookshop.ts";
 import * as SUCRE from "../patisserie.ts";
 import * as G44 from "../gallery.ts";
+import * as SURF from "../surfShack.ts";
 import * as REWIND from "../videoStore.ts";
 import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
@@ -777,8 +778,15 @@ const BEACH_FRONT: readonly {
     w: 20,
     h: 11,
     color: "#bfe8ff",
-    sign: { text: "SURF SHACK", color: "#3fe0d0" },
+    sign: { text: "SWELL SURF CO.", color: "#3fe0d0" },
     style: "storefront",
+    door: {
+      position: SURF.SURF_DOOR.position,
+      radius: 2,
+      label: "Into Swell Surf Co.",
+      target: "surf-shack",
+      targetSpawn: { position: SURF.SPAWN, yaw: Math.PI },
+    },
   },
   {
     // Lagoon Links, the mini golf course out on the sand behind

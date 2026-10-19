@@ -103,6 +103,7 @@ import * as ROOF from "./hotelRooftop.ts";
 import * as BOOKS from "./bookshop.ts";
 import * as SUCRE from "./patisserie.ts";
 import * as G44 from "./gallery.ts";
+import * as SURF from "./surfShack.ts";
 import * as REWIND from "./videoStore.ts";
 import type { Vec2 } from "./walk.ts";
 
@@ -165,6 +166,7 @@ export type RoomId =
   | "bookshop"
   | "patisserie"
   | "gallery"
+  | "surf-shack"
   | "video-store"
   | "city";
 
@@ -682,6 +684,24 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the avenue",
         target: "city",
         targetSpawn: { position: BACK.BACK_ROOM_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  "surf-shack": {
+    id: "surf-shack",
+    name: "Swell Surf Co.",
+    walkable: SURF.FLOOR,
+    blockers: SURF.BLOCKERS,
+    spawn: { position: SURF.SPAWN, yaw: Math.PI },
+    swimwear: true,
+    portals: [
+      {
+        id: "surf-shack-to-city",
+        position: SURF.EXIT,
+        radius: 0.8,
+        label: "Out to Shore Boulevard",
+        target: "city",
+        targetSpawn: { position: SURF.SURF_DOOR.landing, yaw: 0 },
       },
     ],
   },
