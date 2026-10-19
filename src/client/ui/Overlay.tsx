@@ -116,6 +116,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Rewind Video. Browse the tapes and the new releases, then play Throwback Trivia at Tasha's counter.",
   "back-room":
     "The Back Room. A speakeasy behind an unmarked door: order a drink from Odette, then take a stool or a leather booth.",
+  "espresso-lab":
+    "Espresso Lab. Grab a table, or take a shift at the barista station: build each ticket's drink from the recipe card, fast for tips.",
   "thrift-temple":
     "Thrift Temple. Tap Juno at the counter for vintage dyes and today's find on the pedestal, half the boutique's price.",
   "tiki-bar":

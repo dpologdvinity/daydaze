@@ -32,6 +32,7 @@ import * as VAULT from "../vinylVault.ts";
 import * as BACK from "../backRoom.ts";
 import * as TIKI from "../tikiBar.ts";
 import * as THRIFT from "../thriftTemple.ts";
+import * as LAB from "../espressoLab.ts";
 import * as REWIND from "../videoStore.ts";
 import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
@@ -1096,6 +1097,13 @@ const ARTS_FRONT: readonly {
     color: "#c77dff",
     sign: { text: "ESPRESSO LAB", color: "#ffd166" },
     style: "storefront",
+    door: {
+      position: LAB.ESPRESSO_DOOR.position,
+      radius: 1.5,
+      label: "Into Espresso Lab",
+      target: "espresso-lab",
+      targetSpawn: { position: LAB.SPAWN, yaw: Math.PI },
+    },
   },
   {
     x: CATWALK_DOOR.position[0],

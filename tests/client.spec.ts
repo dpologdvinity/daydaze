@@ -290,6 +290,25 @@ test("Vinyl Vault sells a record that plays at home", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("Espresso Lab: a barista shift takes a ticket and scores a drink", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=espresso-lab`);
+  const panel = page.getByRole("region", { name: "Barista station" });
+  await panel
+    .getByRole("button", { name: "Start a shift" })
+    .click({ timeout: 150_000 });
+  await expect(panel.getByRole("status")).toContainText("Ticket:");
+  await panel.getByRole("button", { name: "Espresso shot" }).click();
+  await expect(panel).toContainText("In the cup: Espresso shot");
+  await panel.getByRole("button", { name: "Hand it over" }).click();
+  await expect(panel.getByRole("status")).toContainText(/perfect|wasn't/);
+  await expect(panel.getByLabel("Shift")).toContainText("2/8");
+  expect(errors).toEqual([]);
+});
+
 test("Thrift Temple: buy a vintage dye and wear it", async ({ page }) => {
   test.setTimeout(330_000);
   const errors = collectErrors(page);
@@ -1201,6 +1220,7 @@ for (const room of [
   "video-store",
   "tiki-bar",
   "thrift-temple",
+  "espresso-lab",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

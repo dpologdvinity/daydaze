@@ -112,6 +112,9 @@ const VideoStore = lazy(() =>
 const BackRoom = lazy(() =>
   import("../rooms/BackRoom.tsx").then((m) => ({ default: m.BackRoom })),
 );
+const EspressoLab = lazy(() =>
+  import("../rooms/EspressoLab.tsx").then((m) => ({ default: m.EspressoLab })),
+);
 const ThriftTemple = lazy(() =>
   import("../rooms/ThriftTemple.tsx").then((m) => ({
     default: m.ThriftTemple,
@@ -384,6 +387,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   "back-room": BackRoom,
   "tiki-bar": TikiBar,
   "thrift-temple": ThriftTemple,
+  "espresso-lab": EspressoLab,
   "video-store": VideoStore,
   "halo-halo-cafe": HaloHaloCafe,
   gym: Gym,

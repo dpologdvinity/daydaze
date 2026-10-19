@@ -98,6 +98,7 @@ import * as VAULT from "./vinylVault.ts";
 import * as BACK from "./backRoom.ts";
 import * as TIKI from "./tikiBar.ts";
 import * as THRIFT from "./thriftTemple.ts";
+import * as LAB from "./espressoLab.ts";
 import * as REWIND from "./videoStore.ts";
 import type { Vec2 } from "./walk.ts";
 
@@ -155,6 +156,7 @@ export type RoomId =
   | "back-room"
   | "tiki-bar"
   | "thrift-temple"
+  | "espresso-lab"
   | "video-store"
   | "city";
 
@@ -672,6 +674,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the avenue",
         target: "city",
         targetSpawn: { position: BACK.BACK_ROOM_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  "espresso-lab": {
+    id: "espresso-lab",
+    name: "Espresso Lab",
+    walkable: LAB.FLOOR,
+    blockers: LAB.BLOCKERS,
+    spawn: { position: LAB.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "espresso-lab-to-city",
+        position: LAB.EXIT,
+        radius: 0.8,
+        label: "Out to Gallery Row",
+        target: "city",
+        targetSpawn: { position: LAB.ESPRESSO_DOOR.landing, yaw: Math.PI },
       },
     ],
   },

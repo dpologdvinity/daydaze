@@ -7,6 +7,7 @@ import * as LA_NOCHE from "./laNoche.ts";
 import * as HORN from "./jazzClub.ts";
 import * as BACK from "./backRoom.ts";
 import * as TIKI from "./tikiBar.ts";
+import * as LAB from "./espressoLab.ts";
 import * as DOME from "./dome.ts";
 import * as KAMAYAN from "./kamayanHall.ts";
 import * as GALLERIA from "./galleria.ts";
@@ -196,6 +197,19 @@ const jazzSeats = [
 ];
 
 // the Back Room: stools at the bar, and the booths' leather benches
+// Espresso Lab: a chair either side of each cafe table
+const labSeats = LAB.TABLES.flatMap(([x, z], t) =>
+  ([-1, 1] as const).map((side) =>
+    seat(
+      `lab-table${t}-${side < 0 ? "l" : "r"}`,
+      "espresso-lab",
+      [x + side * 0.75, z],
+      FOOD_CHAIR_HEIGHT,
+      [x, z],
+    ),
+  ),
+);
+
 // the Coconut Grove: bar stools, and the rattan lounges round the fire
 const tikiSeats = [
   ...TIKI.STOOL_XS.map((x, i) =>
@@ -388,6 +402,7 @@ export const SEATS: readonly Seat[] = [
   ...jazzSeats,
   ...backRoomSeats,
   ...tikiSeats,
+  ...labSeats,
   ...squareSeats,
   ...linksSeats,
   ...sportsSeats,
