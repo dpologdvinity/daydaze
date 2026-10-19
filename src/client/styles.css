@@ -1564,6 +1564,29 @@ button:focus-visible {
   opacity: 0.45;
 }
 
+.nail-panel {
+  width: 280px;
+}
+
+.nails {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.nails .nail {
+  width: 30px;
+  height: 42px;
+  padding: 0;
+  border-radius: 15px 15px 8px 8px;
+  border: 2px solid rgb(255 255 255 / 0.35);
+}
+
+.nail-panel .game-row[aria-label="Polishes"] {
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 .game-label {
   font-size: 13px;
   opacity: 0.8;

@@ -290,6 +290,27 @@ test("Vinyl Vault sells a record that plays at home", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("the Blowout Bar's nail station: paint a nail, hand over the set", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=salon`);
+  const panel = page.getByRole("region", { name: "Nail station" });
+  await panel
+    .getByRole("button", { name: "Do some nails" })
+    .click({ timeout: 150_000 });
+  await panel.getByRole("button", { name: "Cherry" }).click();
+  await panel.getByRole("button", { name: "glitter" }).click();
+  await panel.getByRole("button", { name: "Paint nail 1" }).click();
+  await panel.getByRole("button", { name: "All done" }).click();
+  await expect(panel.getByLabel("Nails", { exact: true })).toContainText(
+    "Client 2/5",
+  );
+  await expect(panel.getByRole("status")).toContainText("/5 right");
+  expect(errors).toEqual([]);
+});
+
 test("Cellar 214: pour a glass and it scores", async ({ page }) => {
   test.setTimeout(330_000);
   const errors = collectErrors(page);

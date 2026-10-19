@@ -112,7 +112,7 @@ const ROOM_HINTS: Record<RoomId, string> = {
   "driving-range":
     "Skyline Driving Range. Get a bucket of ten: set your backswing, strike it pure, and land them on the greens.",
   salon:
-    "The Blowout Bar. Book with Dani for the salon's colors, or take a chair by the mirrors.",
+    "The Blowout Bar. Book with Dani for the salon's colors, take a chair by the mirrors, or work the nail station.",
   "video-store":
     "Rewind Video. Browse the tapes and the new releases, then play Throwback Trivia at Tasha's counter.",
   "back-room":
