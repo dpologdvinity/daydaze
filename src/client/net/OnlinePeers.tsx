@@ -12,7 +12,12 @@ import * as THREE from "three";
 import type { DanceMoveId } from "../../game/dance/moves.ts";
 import { decodeSwim, type Look, type Mood } from "../../game/look.ts";
 import { ROOMS, type RoomId } from "../../game/rooms.ts";
-import { decodeAction, encodeAction } from "../../game/peerAction.ts";
+import {
+  decodeAction,
+  encodeAction,
+  type Doing,
+} from "../../game/peerAction.ts";
+import { stillClipsOf } from "../../game/dance/moves.ts";
 import type { OnlineSession } from "../../net/client/OnlineSession.ts";
 import { Doll, type WalkState } from "../avatar/Doll.tsx";
 import type { Player } from "../world/PlayerController.tsx";
@@ -20,6 +25,7 @@ import { onlineSession } from "./online.ts";
 import { peerCard } from "./peerCard.ts";
 
 const BUBBLE_MS = 6000;
+const LAY_HOLD = stillClipsOf("lay")[0]?.id ?? "built";
 
 type Peer = { id: string; name: string | null; look: Look };
 
@@ -40,21 +46,26 @@ function PeerDoll({
   const group = useRef<THREE.Group>(null);
   const walk = useMemo(() => ({ current: { speed: 0 } as WalkState }), []);
   const last = useRef<{ x: number; z: number } | null>(null);
-  const [doing, setDoing] = useState<{ mood: Mood; dance?: DanceMoveId }>({
+  const [doing, setDoing] = useState<Doing>({
     mood: "idle",
   });
   useFrame((_, dt) => {
     const g = group.current;
     const at = session.sample(peer.id);
     if (!g || !at) return;
-    g.position.set(at.x, 0, at.z);
+    const next = decodeAction(at.action);
+    g.position.set(at.x, next.seat?.y ?? 0, at.z);
     g.rotation.y = at.yaw;
     const prev = last.current;
     const moved = prev ? Math.hypot(at.x - prev.x, at.z - prev.z) : 0;
     walk.current.speed = dt > 0 ? Math.min(4, moved / dt) : 0;
     last.current = { x: at.x, z: at.z };
-    const next = decodeAction(at.action);
-    if (next.mood !== doing.mood || next.dance !== doing.dance) setDoing(next);
+    if (
+      next.mood !== doing.mood ||
+      next.dance !== doing.dance ||
+      next.seat?.lie !== doing.seat?.lie
+    )
+      setDoing(next);
   });
   return (
     <group
@@ -69,6 +80,7 @@ function PeerDoll({
         look={peer.look}
         swim={swimwear ? decodeSwim(peer.look.swim) : null}
         mood={doing.mood}
+        hold={doing.seat?.lie ? LAY_HOLD : undefined}
         dance={doing.dance}
         walk={walk}
         seed={peer.id.length * 7}
@@ -154,18 +166,27 @@ export function OnlinePeers({
   const sent = useRef({ x: NaN, z: NaN, yaw: NaN, action: "" });
   useFrame(() => {
     const s = sent.current;
-    const { x, z } = player.pos;
-    const action = encodeAction(mood, dance);
+    // seated, they're drawn on the seat, not where they walked up
+    const seat = player.seat;
+    const { x, z } = seat?.position ?? player.pos;
+    const yaw = seat?.yaw ?? player.yaw;
+    const action = encodeAction(
+      mood,
+      dance,
+      seat && (player.sitting || seat.sit)
+        ? { lie: seat.lie === true, y: seat.position.y }
+        : undefined,
+    );
     if (
       !session ||
       (Math.abs(x - s.x) < 0.01 &&
         Math.abs(z - s.z) < 0.01 &&
-        Math.abs(player.yaw - s.yaw) < 0.01 &&
+        Math.abs(yaw - s.yaw) < 0.01 &&
         action === s.action)
     )
       return;
-    if (session.sendMove(x, z, player.yaw, action))
-      sent.current = { x, z, yaw: player.yaw, action };
+    if (session.sendMove(x, z, yaw, action))
+      sent.current = { x, z, yaw, action };
   });
   if (!session) return null;
   return (
