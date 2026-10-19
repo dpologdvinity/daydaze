@@ -408,3 +408,35 @@ test("adoptIdentity goes offline when the server has gone away", async () => {
   assert.equal(session.status(), "offline");
   assert.equal(session.room(), null);
 });
+
+test("report and block name the room copy, and a block drops the player", async () => {
+  const bodies: Record<string, unknown> = {};
+  const capture = (key: string) => async () => {
+    bodies[key] = true;
+    return json({ ok: true }, 202);
+  };
+  const { session, socket } = await joined({
+    "POST /api/report": capture("report"),
+    "POST /api/block": capture("block"),
+  });
+  serve(socket, snapshot([entity(1)]));
+  serve(socket, {
+    type: "profile",
+    roomId: "plaza",
+    ...other,
+    look: otherLook,
+  });
+  assert.ok(session.remotePlayers.has(other.id));
+  const left: string[] = [];
+  session.on("leave", (id) => left.push(id));
+  assert.equal(await session.report(other.id, "harassment"), true);
+  assert.equal(await session.block(other.id), true);
+  assert.deepEqual(bodies, { report: true, block: true });
+  assert.equal(session.remotePlayers.has(other.id), false);
+  assert.deepEqual(left, [other.id]);
+});
+
+test("reporting with no room joined does nothing", async () => {
+  const { session } = setup();
+  assert.equal(await session.report("g_x", "spam"), false);
+});

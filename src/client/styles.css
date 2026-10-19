@@ -531,11 +531,29 @@ button:focus-visible {
   margin: 0;
 }
 
+.home-panel.peer-card {
+  left: auto;
+  right: 16px;
+  bottom: 120px;
+  width: min(280px, calc(100vw - 32px));
+}
+
+.peer-card h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
 .peer-tag {
   display: grid;
   justify-items: center;
   gap: 4px;
   pointer-events: none;
+}
+
+.peer-tag .nametag {
+  pointer-events: auto;
+  border: 0;
+  cursor: pointer;
 }
 
 .nametag {

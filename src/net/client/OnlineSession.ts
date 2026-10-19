@@ -246,6 +246,22 @@ export class OnlineSession {
     return this.send({ type: "emote", emote });
   }
 
+  /** Reports a player in this room copy to the moderators. False when
+   * there's no room or the server refused it. */
+  async report(targetId: string, reason: string): Promise<boolean> {
+    if (!this.current) return false;
+    const r = await this.api.report({ ...this.current, targetId, reason });
+    return r.ok;
+  }
+
+  /** Blocks a player: the server stops passing their chat and moves to you
+   * in this copy at once, and in every room after. They leave your view. */
+  async block(targetId: string): Promise<boolean> {
+    const r = await this.api.block(targetId, this.current ?? undefined);
+    if (r.ok && this.players.delete(targetId)) this.emit("leave", targetId);
+    return r.ok;
+  }
+
   /** Where to draw a remote player now, rendered INTERPOLATION_DELAY_MS behind. */
   sample(id: string, at = this.now()): EntityDelta | null {
     const player = this.players.get(id);

@@ -16,6 +16,7 @@ import type { OnlineSession } from "../../net/client/OnlineSession.ts";
 import { Doll, type WalkState } from "../avatar/Doll.tsx";
 import type { Player } from "../world/PlayerController.tsx";
 import { onlineSession } from "./online.ts";
+import { peerCard } from "./peerCard.ts";
 
 const BUBBLE_MS = 6000;
 
@@ -52,7 +53,14 @@ function PeerDoll({
     if (next.mood !== doing.mood || next.dance !== doing.dance) setDoing(next);
   });
   return (
-    <group ref={group}>
+    <group
+      ref={group}
+      onClick={(e) => {
+        if (e.delta > 6) return;
+        e.stopPropagation();
+        peerCard.set({ open: { id: peer.id, name: peer.name ?? "Guest" } });
+      }}
+    >
       <Doll
         look={peer.look}
         mood={doing.mood}
@@ -63,7 +71,18 @@ function PeerDoll({
       <Html position={[0, 2.05, 0]} center zIndexRange={[20, 10]}>
         <div className="peer-tag">
           {said && <p className="bubble npc-bubble">{said}</p>}
-          <p className="nametag">{peer.name ?? "Guest"}</p>
+          <button
+            type="button"
+            className="nametag"
+            aria-label={`${peer.name ?? "Guest"}: open their card`}
+            onClick={() =>
+              peerCard.set({
+                open: { id: peer.id, name: peer.name ?? "Guest" },
+              })
+            }
+          >
+            {peer.name ?? "Guest"}
+          </button>
         </div>
       </Html>
     </group>
@@ -100,9 +119,11 @@ export function OnlinePeers({
       session.on("profile", refresh),
       session.on("leave", refresh),
       session.on("snapshot", refresh),
-      session.on("chat", ({ id, text }) =>
-        setSaid((s) => ({ ...s, [id]: { text, at: Date.now() } })),
-      ),
+      session.on("chat", ({ id, text }) => {
+        // a muted player's chat never shows
+        if (peerCard.get().mutes.includes(id)) return;
+        setSaid((s) => ({ ...s, [id]: { text, at: Date.now() } }));
+      }),
     ];
     refresh();
     return () => offs.forEach((off) => off());

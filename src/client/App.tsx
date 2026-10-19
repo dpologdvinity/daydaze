@@ -10,6 +10,7 @@ import {
 import { chatDistort, type Intensity } from "../game/effects/buzz.ts";
 import { getBuzz } from "./effects/drunk.ts";
 import { onlineSession, useOnlineRoom } from "./net/online.ts";
+import { PeerCard } from "./net/PeerCard.tsx";
 import type { MinigameId } from "../game/hotspots.ts";
 import { isJailed } from "../game/jail/jail.ts";
 import { jailAfterArrest } from "../game/police/arrest.ts";
@@ -280,6 +281,7 @@ export function App() {
           )}
           <p className="nametag">{save.name}</p>
         </div>
+        <PeerCard />
         <div className="fade" data-on={fading} aria-hidden="true" />
         {notice && (
           <p className="notice" role="status">

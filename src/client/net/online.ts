@@ -18,6 +18,8 @@ export const ONLINE =
   new URLSearchParams(location.search).get("online") === "1";
 
 let shared: OnlineSession | null = null;
+// one start per page, however many times effects run (StrictMode runs twice)
+let started: Promise<unknown> | null = null;
 
 /** The one online session, made on first use; null when offline. */
 export function onlineSession(): OnlineSession | null {
@@ -38,8 +40,9 @@ export function useOnlineRoom(room: RoomId, look: Look) {
     if (!session) return;
     let live = true;
     void (async () => {
-      if (session.status() === "idle" && !(await session.start())) return;
-      if (live) await session.joinRoom(room, look);
+      started ??= session.start();
+      await started;
+      if (live && session.identity()) await session.joinRoom(room, look);
     })();
     return () => {
       live = false;
