@@ -13,6 +13,7 @@ import type { DanceMoveId } from "../../game/dance/moves.ts";
 import { decodeSwim, type Look, type Mood } from "../../game/look.ts";
 import { ROOMS, type RoomId } from "../../game/rooms.ts";
 import {
+  buzzTier,
   decodeAction,
   encodeAction,
   type Doing,
@@ -21,6 +22,7 @@ import { stillClipsOf } from "../../game/dance/moves.ts";
 import { carById } from "../../game/driving/roster.ts";
 import type { OnlineSession } from "../../net/client/OnlineSession.ts";
 import { Doll, type WalkState } from "../avatar/Doll.tsx";
+import { getBuzz } from "../effects/drunk.ts";
 import { CarMesh } from "../rooms/speedway/CarMesh.tsx";
 import { driving } from "../world/driving.ts";
 import type { Player } from "../world/PlayerController.tsx";
@@ -29,6 +31,8 @@ import { peerCard } from "./peerCard.ts";
 
 const BUBBLE_MS = 6000;
 const LAY_HOLD = stillClipsOf("lay")[0]?.id ?? "built";
+
+const BUZZ = { 1: "Tipsy", 2: "Drunk", 3: "Very drunk" } as const;
 
 type Peer = { id: string; name: string | null; look: Look };
 
@@ -76,7 +80,8 @@ function PeerDoll({
       next.dance !== doing.dance ||
       next.seat?.pose !== doing.seat?.pose ||
       next.car?.id !== doing.car?.id ||
-      next.car?.color !== doing.car?.color
+      next.car?.color !== doing.car?.color ||
+      next.buzz !== doing.buzz
     )
       setDoing(next);
   });
@@ -117,6 +122,15 @@ function PeerDoll({
           data-doing={car ? `car:${car.id}` : (doing.seat?.pose ?? doing.mood)}
         >
           {said && <p className="bubble npc-bubble">{said}</p>}
+          {doing.buzz && (
+            <span
+              className="peer-buzz"
+              role="img"
+              aria-label={BUZZ[doing.buzz]}
+            >
+              {"🍸".repeat(doing.buzz)}
+            </span>
+          )}
           <button
             type="button"
             className="nametag"
@@ -217,6 +231,7 @@ export function OnlinePeers({
           }
         : undefined,
       city ? { id: city.spec.id, color: city.color } : undefined,
+      buzzTier(getBuzz()),
     );
     if (
       !session ||

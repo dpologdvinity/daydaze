@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { decodeAction, encodeAction } from "./peerAction.ts";
+import { buzzTier, decodeAction, encodeAction } from "./peerAction.ts";
 
 test("a dance goes out with its move, other moods plain", () => {
   assert.equal(encodeAction("dance", "salsa"), "dance:salsa");
@@ -52,4 +52,25 @@ test("a driver goes out as their car and its paint", () => {
   // a car no one sells, or a paint that isn't one, draws no car
   assert.deepEqual(decodeAction("car:tank:ff4fb3"), { mood: "idle" });
   assert.deepEqual(decodeAction("car:pebble:red"), { mood: "idle" });
+});
+
+test("a buzz rides along on any action, and still fits", () => {
+  assert.equal(buzzTier(0.1), 0);
+  assert.equal(buzzTier(0.5), 2);
+  assert.equal(buzzTier(1), 3);
+  assert.equal(encodeAction("idle", "salsa", undefined, undefined, 0), "idle");
+  const a = encodeAction("dance", "salsa", undefined, undefined, 2);
+  assert.equal(a, "dance:salsa~2");
+  assert.deepEqual(decodeAction(a), { mood: "dance", dance: "salsa", buzz: 2 });
+  const driving = encodeAction(
+    "idle",
+    "salsa",
+    undefined,
+    { id: "nova-spyder", color: "#ff4fb3" },
+    3,
+  );
+  assert.ok(driving.length <= 24);
+  assert.equal(decodeAction(driving).car?.id, "nova-spyder");
+  assert.equal(decodeAction(driving).buzz, 3);
+  assert.deepEqual(decodeAction("idle~9"), { mood: "idle" });
 });

@@ -2087,3 +2087,8 @@ button:focus-visible {
   width: 100%;
   border-radius: 12px;
 }
+
+.peer-buzz {
+  font-size: 14px;
+  line-height: 1;
+}
