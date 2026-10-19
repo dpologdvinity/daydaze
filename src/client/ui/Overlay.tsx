@@ -161,7 +161,7 @@ const ROOM_HINTS: Record<RoomId, string> = {
   museum:
     "Museo ng Little Manila. Walk the hall, or pick an exhibit from the guide to read its plaque: the bahay kubo, the jeepney, the parol and more.",
   "halo-halo-cafe":
-    "Halo-Halo Haus. Tap Joy at the counter for halo-halo, ube or leche flan.",
+    "Halo-Halo Haus. Tap Joy at the counter for halo-halo, ube or leche flan, or work the counter yourself.",
   "skate-diner":
     "Skate-Up Drive-In Diner. Tap Dottie at the pass to order, grab a booth or a stool, and mind the servers gliding by on skates.",
   "mermaid-cove":

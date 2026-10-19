@@ -290,6 +290,23 @@ test("Vinyl Vault sells a record that plays at home", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("the halo-halo counter: a shift takes a ticket and scores a glass", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=halo-halo-cafe`);
+  const panel = page.getByRole("region", { name: "Halo-halo counter" });
+  await panel
+    .getByRole("button", { name: "Build some halo-halo" })
+    .click({ timeout: 150_000 });
+  await panel.getByRole("button", { name: "Shaved ice" }).click();
+  await expect(panel).toContainText("In the cup: Shaved ice");
+  await panel.getByRole("button", { name: "Hand it over" }).click();
+  await expect(panel.getByLabel("Shift")).toContainText("2/8");
+  expect(errors).toEqual([]);
+});
+
 test("the boba bar: a shift takes a ticket and scores a cup", async ({
   page,
 }) => {
