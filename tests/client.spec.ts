@@ -607,6 +607,24 @@ test("the debug panel is hidden without the flag", async ({ page }) => {
   );
 });
 
+test("a few drinks in, chat stretches its vowels", async ({ page }) => {
+  test.setTimeout(330_000);
+  await page.goto(`${LOW}&room=back-room`);
+  const drink = page.getByRole("button", { name: "Have a drink" });
+  await drink.click({ timeout: 150_000 });
+  for (let i = 0; i < 4; i++) await drink.click();
+  await expect
+    .poll(async () => Number(await canvasOf(page).getAttribute("data-buzz")))
+    .toBeGreaterThan(0.5);
+  const line = "a e i o u a e i o u a e i o u a e i o u a e i o u";
+  const input = page.getByRole("textbox", { name: "Chat message" });
+  await input.fill(line);
+  await input.press("Enter");
+  // the same letters in the same order, some of them doubled up
+  const said = page.getByRole("status").filter({ hasText: /^a+ e+ i+ o+ u+/ });
+  await expect(said).toHaveText(/([aeiou])\1/);
+});
+
 test("chat shows what you said above your doll", async ({ page }) => {
   await page.goto(VELVET);
   const input = page.getByRole("textbox", { name: "Chat message" });

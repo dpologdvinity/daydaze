@@ -7,7 +7,8 @@ import {
   type DanceMoveId,
   type Holds,
 } from "../game/dance/moves.ts";
-import type { Intensity } from "../game/effects/buzz.ts";
+import { chatDistort, type Intensity } from "../game/effects/buzz.ts";
+import { getBuzz } from "./effects/drunk.ts";
 import type { MinigameId } from "../game/hotspots.ts";
 import { isJailed } from "../game/jail/jail.ts";
 import { jailAfterArrest } from "../game/police/arrest.ts";
@@ -384,7 +385,13 @@ export function App() {
         )}
         {game && <GameOverlay game={game} onClose={endGame} />}
         {here.room === "city" && touch && <CityJoystick />}
-        <ChatBar onSay={(text) => setChat({ text, at: Date.now() })} />
+        <ChatBar
+          onSay={(text) => {
+            const at = Date.now();
+            // a few drinks in, vowels stretch ("heyyy")
+            setChat({ text: chatDistort(text, getBuzz(), at), at });
+          }}
+        />
         {flags.debug && (
           <DebugPanel onGo={(room) => travel(room, ROOMS[room].spawn)} />
         )}
