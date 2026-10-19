@@ -560,6 +560,9 @@ export function validateLook(value: unknown): value is Look {
 export const SWIMSUITS = [
   { id: "one-piece", label: "One-piece" },
   { id: "bikini", label: "Bikini" },
+  { id: "high-waist", label: "High-waisted bikini" },
+  { id: "tankini", label: "Tankini" },
+  { id: "racer", label: "Racer one-piece" },
 ] as const;
 
 export type Swimsuit = IdOf<typeof SWIMSUITS>;

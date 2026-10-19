@@ -307,6 +307,35 @@ def build(ctx, body, body_src):
         )
     )
 
+    # a high-waisted bikini: the same top, the briefs up to the waist
+    out.append(
+        shell(
+            ctx,
+            "Swim_high-waist",
+            ["helper-tights"],
+            [(bust - 0.1, bust + 0.01), (leg_line, waist + 0.02)],
+            0.0015,
+            cloth,
+            arms=0.2,
+        )
+    )
+    # a tankini: a long top to just above the briefs
+    out.append(
+        shell(
+            ctx,
+            "Swim_tankini",
+            ["helper-tights"],
+            [(h["hip"] + 0.1, bust + 0.015), (leg_line, h["hip"] + 0.02)],
+            0.002,
+            cloth,
+            arms=0.2,
+        )
+    )
+    # a racer one-piece, cut high to the collarbone
+    out.append(
+        shell(ctx, "Swim_racer", ["helper-tights"], [(h["hip"] - 0.08, h["neck"] - 0.07)], 0.0015, cloth, arms=0.2)
+    )
+
     # shoes: CC0 sneakers keep their own colours
     shoe_img = proxies.detail_texture(
         "clothes/shoes06/shoes06_diffuse.png", 512, keep_colour=True
