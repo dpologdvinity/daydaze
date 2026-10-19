@@ -40,6 +40,7 @@ import * as G44 from "../gallery.ts";
 import * as SURF from "../surfShack.ts";
 import * as SKEE from "../boardwalkArcade.ts";
 import * as DRIVE from "../driveIn.ts";
+import * as CELLAR from "../wineBar.ts";
 import * as REWIND from "../videoStore.ts";
 import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
@@ -1495,8 +1496,18 @@ const UPTOWN_FRONT: readonly {
     h: 16,
     north: false,
     color: "#8d5b4c",
-    sign: { text: "WINE BAR", color: "#ffd6a5" },
+    sign: { text: "CELLAR 214", color: "#ffd6a5" },
     style: "brick",
+    venue: {
+      id: "wine-bar",
+      door: {
+        position: CELLAR.WINE_DOOR.position,
+        radius: 2,
+        label: "Down to Cellar 214",
+        target: "wine-bar",
+        targetSpawn: { position: CELLAR.SPAWN, yaw: Math.PI },
+      },
+    },
   },
   {
     x: 238,

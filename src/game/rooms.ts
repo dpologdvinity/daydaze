@@ -106,6 +106,7 @@ import * as G44 from "./gallery.ts";
 import * as SURF from "./surfShack.ts";
 import * as BOARDWALK from "./boardwalkArcade.ts";
 import * as DRIVE from "./driveIn.ts";
+import * as CELLAR from "./wineBar.ts";
 import * as REWIND from "./videoStore.ts";
 import type { Vec2 } from "./walk.ts";
 
@@ -171,6 +172,7 @@ export type RoomId =
   | "surf-shack"
   | "boardwalk-arcade"
   | "drive-in"
+  | "wine-bar"
   | "video-store"
   | "city";
 
@@ -688,6 +690,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the avenue",
         target: "city",
         targetSpawn: { position: BACK.BACK_ROOM_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  "wine-bar": {
+    id: "wine-bar",
+    name: "Cellar 214",
+    walkable: CELLAR.FLOOR,
+    blockers: CELLAR.BLOCKERS,
+    spawn: { position: CELLAR.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "wine-bar-to-city",
+        position: CELLAR.EXIT,
+        radius: 0.8,
+        label: "Up to Park Avenue",
+        target: "city",
+        targetSpawn: { position: CELLAR.WINE_DOOR.landing, yaw: Math.PI },
       },
     ],
   },

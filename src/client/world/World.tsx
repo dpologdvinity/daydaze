@@ -113,6 +113,9 @@ const VideoStore = lazy(() =>
 const BackRoom = lazy(() =>
   import("../rooms/BackRoom.tsx").then((m) => ({ default: m.BackRoom })),
 );
+const WineBar = lazy(() =>
+  import("../rooms/WineBar.tsx").then((m) => ({ default: m.WineBar })),
+);
 const DriveIn = lazy(() =>
   import("../rooms/DriveIn.tsx").then((m) => ({ default: m.DriveIn })),
 );
@@ -421,6 +424,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   "surf-shack": SurfShack,
   "boardwalk-arcade": BoardwalkArcade,
   "drive-in": DriveIn,
+  "wine-bar": WineBar,
   "video-store": VideoStore,
   "halo-halo-cafe": HaloHaloCafe,
   gym: Gym,

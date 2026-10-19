@@ -14,6 +14,7 @@ import * as SUCRE from "./patisserie.ts";
 import * as G44 from "./gallery.ts";
 import * as SURF from "./surfShack.ts";
 import * as DRIVE from "./driveIn.ts";
+import * as CELLAR from "./wineBar.ts";
 import * as DOME from "./dome.ts";
 import * as KAMAYAN from "./kamayanHall.ts";
 import * as GALLERIA from "./galleria.ts";
@@ -203,6 +204,27 @@ const jazzSeats = [
 ];
 
 // the Back Room: stools at the bar, and the booths' leather benches
+// Cellar 214: bar stools, and high stools either side of each barrel
+const cellarSeats = [
+  ...CELLAR.STOOL_XS.map((x, i) =>
+    seat(`cellar-stool-${i}`, "wine-bar", [x, CELLAR.STOOL_Z], 0.8, [
+      x,
+      CELLAR.BAR.z1,
+    ]),
+  ),
+  ...CELLAR.BARRELS.flatMap(([x, z], b) =>
+    ([-1, 1] as const).map((side) =>
+      seat(
+        `cellar-barrel-${b}-${side < 0 ? "w" : "e"}`,
+        "wine-bar",
+        [x + side * 0.85, z],
+        0.8,
+        [x, z],
+      ),
+    ),
+  ),
+];
+
 // the Starlite Drive-In: picnic benches, facing the screen side to side
 const driveInSeats = DRIVE.TABLES.flatMap(([x, z], t) =>
   ([-1, 1] as const).map((side) =>
@@ -508,6 +530,7 @@ export const SEATS: readonly Seat[] = [
   ...gallerySeats,
   ...surfSeats,
   ...driveInSeats,
+  ...cellarSeats,
   ...squareSeats,
   ...linksSeats,
   ...sportsSeats,

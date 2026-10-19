@@ -290,6 +290,25 @@ test("Vinyl Vault sells a record that plays at home", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("Cellar 214: pour a glass and it scores", async ({ page }) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=wine-bar`);
+  const panel = page.getByRole("region", { name: "Wine flight" });
+  await panel
+    .getByRole("button", { name: "Pour a flight" })
+    .click({ timeout: 150_000 });
+  const pourButton = panel.getByRole("button", { name: "Hold to pour" });
+  const box = await pourButton.boundingBox();
+  if (!box) throw new Error("no pour button");
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await expect(panel.getByRole("status")).toContainText("Pouring");
+  await page.mouse.up();
+  await expect(panel.getByLabel("Flight")).toContainText("Glass 2/5");
+  expect(errors).toEqual([]);
+});
+
 test("the Starlite Drive-In: a milkshake and a bench for the movie", async ({
   page,
 }) => {
@@ -1367,6 +1386,7 @@ for (const room of [
   "surf-shack",
   "boardwalk-arcade",
   "drive-in",
+  "wine-bar",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,
