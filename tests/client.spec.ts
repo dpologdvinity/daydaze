@@ -1524,7 +1524,7 @@ test("apartment: place, rotate and remove furniture, lock the door, and it persi
   expect(errors).toEqual([]);
 });
 
-test("jail: the sentence counts down, cards shorten it, and bail needs coins", async ({
+test("jail: the sentence counts down, push-ups shorten it, cards deal a hand, and bail needs coins", async ({
   page,
 }) => {
   await page.addInitScript(() => {
@@ -1545,8 +1545,15 @@ test("jail: the sentence counts down, cards shorten it, and bail needs coins", a
   };
   await expect(clock).toContainText("Time left:");
   const before = await left();
-  await page.getByRole("button", { name: /Play cards/ }).click();
+  await page.getByRole("button", { name: /Push-ups/ }).click();
   await expect.poll(left).toBeLessThan(before - 10);
+  // cards: a real hand of Crazy Eights with the guard
+  await page.getByRole("button", { name: /Play cards/ }).click();
+  const table = page.getByRole("region", { name: "Crazy Eights" });
+  await expect(table.getByRole("group", { name: "Your hand" })).toBeVisible();
+  await table.getByRole("button", { name: "Draw" }).click();
+  await expect(table.getByRole("status")).toContainText(/guard|win/i);
+  await table.getByRole("button", { name: "Fold" }).click();
   await page.getByRole("button", { name: /Use the phone/ }).click();
   await expect(page.getByText(/you have 0/)).toBeVisible();
   await page.reload();

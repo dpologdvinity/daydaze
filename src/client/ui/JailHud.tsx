@@ -6,6 +6,7 @@ import {
   remainingMs,
   type JailSave,
 } from "../../game/jail/jail.ts";
+import { CardTable } from "./CardTable.tsx";
 
 function clock(ms: number): string {
   const total = Math.ceil(ms / 1000);
@@ -30,6 +31,7 @@ export function JailHud({
 }) {
   const [now, setNow] = useState(() => Date.now());
   const [note, setNote] = useState("");
+  const [cards, setCards] = useState(false);
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 500);
     return () => window.clearInterval(id);
@@ -50,12 +52,9 @@ export function JailHud({
       <button
         type="button"
         disabled={!serving || done}
-        onClick={() => {
-          onChange(goodBehavior(jail, Date.now()));
-          setNote("Cards with the guard: 30 seconds off.");
-        }}
+        onClick={() => setCards(true)}
       >
-        Play cards with the guard (-30 s)
+        Play cards with the guard
       </button>
       <button
         type="button"
@@ -85,6 +84,17 @@ export function JailHud({
       >
         Use the phone: bail ({bailCost(jail, now)} coins)
       </button>
+      {cards && serving && !done && (
+        <CardTable
+          onWin={() => {
+            const t = Date.now();
+            // a win at cards is a minute's good behavior
+            onChange(goodBehavior(goodBehavior(jail, t), t));
+            setNote("You beat the guard at cards: a minute off.");
+          }}
+          onClose={() => setCards(false)}
+        />
+      )}
       <p role="status" className="home-note">
         {note}
       </p>

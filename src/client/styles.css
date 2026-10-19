@@ -1537,6 +1537,33 @@ button:focus-visible {
   justify-content: center;
 }
 
+.card-table {
+  width: 300px;
+}
+
+.card-hand {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.game-row .card {
+  flex: 0 0 auto;
+  min-width: 46px;
+  padding: 10px 6px;
+  border-radius: 6px;
+  background: #fffaf0;
+  color: #141018;
+  font-weight: 700;
+}
+
+.game-row .card.red {
+  color: #d0103a;
+}
+
+.game-row .card:disabled {
+  opacity: 0.45;
+}
+
 .game-label {
   font-size: 13px;
   opacity: 0.8;
