@@ -99,7 +99,7 @@ const ROOM_HINTS: Record<RoomId, string> = {
   "filipino-joint":
     "Point and Eat Kitchen. Tap the cashier for the next dish, then eat it.",
   "boba-matcha":
-    "Jade Whisk and Pearl Ledger. Tap the server for a drink, then sip it.",
+    "Jade Whisk and Pearl Ledger. Tap the server for a drink and sip it, or work the boba bar yourself.",
   "ube-bakery": "Purple Pandesal. Tap the baker for a treat, then eat it.",
   speedway: "Pit lane. Tap a spot to race or ride the bumper cars.",
   city: "The city after dark. Tap the street or use WASD, walk into a lit door, or head south to the beach.",

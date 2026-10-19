@@ -1457,6 +1457,9 @@ button:focus-visible {
   right: 28px;
   top: 150px;
   z-index: 5;
+  /* tall panels (a big order station) scroll above the dock */
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -1465,6 +1468,10 @@ button:focus-visible {
   border-radius: 16px;
   background: rgb(20 10 40 / 0.78);
   color: var(--champagne);
+}
+
+.game-panel > * {
+  flex-shrink: 0;
 }
 
 .game-panel button {
@@ -1585,6 +1592,16 @@ button:focus-visible {
 .nail-panel .game-row[aria-label="Polishes"] {
   flex-wrap: wrap;
   justify-content: center;
+}
+
+.order-station {
+  flex-wrap: wrap;
+}
+
+.order-station button {
+  flex: 1 1 30%;
+  padding: 4px 2px;
+  font-size: 12px;
 }
 
 .game-label {

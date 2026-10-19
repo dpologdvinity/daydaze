@@ -1,6 +1,6 @@
 import { useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";
-import { INGREDIENTS, MENU } from "../../game/barista.ts";
+import { ESPRESSO } from "../../game/barista.ts";
 import {
   BARISTA,
   BOUNDS,
@@ -92,8 +92,10 @@ function menuTex() {
     ctx.fillText("Today's Menu", 256, 50);
     ctx.textAlign = "left";
     const short = (id: string) =>
-      (INGREDIENTS.find((i) => i.id === id)?.label ?? id).toLowerCase();
-    MENU.forEach((d, i) => {
+      (
+        ESPRESSO.ingredients.find((i) => i.id === id)?.label ?? id
+      ).toLowerCase();
+    ESPRESSO.menu.forEach((d, i) => {
       const y = 92 + i * 32;
       ctx.font = "bold 20px sans-serif";
       ctx.fillStyle = ["#ffd166", "#f4f0e0", "#ff9ec2"][i % 3] ?? "#fff";
