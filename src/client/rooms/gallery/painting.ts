@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import * as THREE from "three";
 import { cleanPainting, PAINTING_KEY } from "../../../game/painting.ts";
 import { createStore } from "../shared/store.ts";
 
@@ -24,4 +26,27 @@ export function hang(url: string): boolean {
   }
   painting.set({ url: clean });
   return true;
+}
+
+/** The hung painting as a texture, or null while there's none (or it's
+ * still decoding). */
+export function usePaintingTexture(): THREE.Texture | null {
+  const { url } = painting.use();
+  const [tex, setTex] = useState<THREE.Texture | null>(null);
+  useEffect(() => {
+    if (!url) {
+      setTex(null);
+      return;
+    }
+    let live = true;
+    const t = new THREE.TextureLoader().load(url, () => {
+      if (live) setTex(t);
+    });
+    t.colorSpace = THREE.SRGBColorSpace;
+    return () => {
+      live = false;
+      t.dispose();
+    };
+  }, [url]);
+  return tex;
 }

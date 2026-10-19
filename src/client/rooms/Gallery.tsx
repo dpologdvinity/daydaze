@@ -1,5 +1,5 @@
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState, type JSX } from "react";
+import { useEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";
 import {
   BENCH,
@@ -20,7 +20,7 @@ import { canvasTex, hdr } from "./shared/materials.ts";
 import { NeonText, SCRIPT } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
-import { painting } from "./gallery/painting.ts";
+import { usePaintingTexture } from "./gallery/painting.ts";
 
 const { x0, x1, z0, z1 } = BOUNDS;
 const W = x1 - x0;
@@ -362,23 +362,7 @@ function useRoom(atlas: THREE.Texture) {
 /** The player's painting on the open wall, and a blank one on the easel
  * until there is one. */
 function OpenWall() {
-  const { url } = painting.use();
-  const [tex, setTex] = useState<THREE.Texture | null>(null);
-  useEffect(() => {
-    if (!url) {
-      setTex(null);
-      return;
-    }
-    let live = true;
-    const t = new THREE.TextureLoader().load(url, () => {
-      if (live) setTex(t);
-    });
-    t.colorSpace = THREE.SRGBColorSpace;
-    return () => {
-      live = false;
-      t.dispose();
-    };
-  }, [url]);
+  const tex = usePaintingTexture();
   return (
     <>
       <mesh position={[OPEN_WALL.x, OPEN_WALL.y, z0 + 0.06]}>

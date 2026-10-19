@@ -9,6 +9,7 @@ import * as THREE from "three";
 import { Batch } from "./shared/batch.ts";
 import { plant, poster, stringLights } from "./shared/details.ts";
 import { GOLD } from "./shared/materials.ts";
+import { usePaintingTexture } from "./gallery/painting.ts";
 import { surface } from "../city/worldTexture.ts";
 import { Prop } from "./shared/Prop.tsx";
 import { HdriLight } from "./shared/HdriLight.tsx";
@@ -75,6 +76,7 @@ export function Apartment({
       />
       <PortalPads room={ROOMS.apartment} color="#ffd166" />
       <Walls />
+      <HungPainting />
       {home.furniture.map((item, index) => (
         <Piece key={`${item.id}-${index}`} item={item} />
       ))}
@@ -92,6 +94,24 @@ export function Apartment({
         <meshStandardMaterial color="#6fd3ff" emissive="#1c5f7a" />
       </mesh>
     </>
+  );
+}
+
+/** The player's own painting from Gallery 44, framed on the back wall
+ * beside the poster once there is one. */
+function HungPainting() {
+  const tex = usePaintingTexture();
+  if (!tex) return null;
+  return (
+    <group position={[2.4, 1.8, -2.93]}>
+      <mesh material={GOLD}>
+        <boxGeometry args={[0.8, 0.8, 0.04]} />
+      </mesh>
+      <mesh position-z={0.025}>
+        <planeGeometry args={[0.7, 0.7]} />
+        <meshStandardMaterial key={tex.uuid} map={tex} roughness={0.8} />
+      </mesh>
+    </group>
   );
 }
 
