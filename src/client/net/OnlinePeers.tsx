@@ -18,8 +18,11 @@ import {
   type Doing,
 } from "../../game/peerAction.ts";
 import { stillClipsOf } from "../../game/dance/moves.ts";
+import { carById } from "../../game/driving/roster.ts";
 import type { OnlineSession } from "../../net/client/OnlineSession.ts";
 import { Doll, type WalkState } from "../avatar/Doll.tsx";
+import { CarMesh } from "../rooms/speedway/CarMesh.tsx";
+import { driving } from "../world/driving.ts";
 import type { Player } from "../world/PlayerController.tsx";
 import { onlineSession } from "./online.ts";
 import { peerCard } from "./peerCard.ts";
@@ -54,7 +57,15 @@ function PeerDoll({
     const at = session.sample(peer.id);
     if (!g || !at) return;
     const next = decodeAction(at.action);
-    g.position.set(at.x, next.seat?.y ?? 0, at.z);
+    // height comes only with each move: ease it, so rides don't step
+    const y = next.seat?.y ?? 0;
+    g.position.set(
+      at.x,
+      Math.abs(y - g.position.y) > 3
+        ? y
+        : g.position.y + (y - g.position.y) * Math.min(1, dt * 10),
+      at.z,
+    );
     g.rotation.y = at.yaw;
     const prev = last.current;
     const moved = prev ? Math.hypot(at.x - prev.x, at.z - prev.z) : 0;
@@ -63,10 +74,13 @@ function PeerDoll({
     if (
       next.mood !== doing.mood ||
       next.dance !== doing.dance ||
-      next.seat?.lie !== doing.seat?.lie
+      next.seat?.pose !== doing.seat?.pose ||
+      next.car?.id !== doing.car?.id ||
+      next.car?.color !== doing.car?.color
     )
       setDoing(next);
   });
+  const car = doing.car ? carById(doing.car.id) : null;
   return (
     <group
       ref={group}
@@ -76,17 +90,32 @@ function PeerDoll({
         peerCard.set({ open: { id: peer.id, name: peer.name ?? "Guest" } });
       }}
     >
-      <Doll
-        look={peer.look}
-        swim={swimwear ? decodeSwim(peer.look.swim) : null}
-        mood={doing.mood}
-        hold={doing.seat?.lie ? LAY_HOLD : undefined}
-        dance={doing.dance}
-        walk={walk}
-        seed={peer.id.length * 7}
-      />
-      <Html position={[0, 2.05, 0]} center zIndexRange={[20, 10]}>
-        <div className="peer-tag">
+      {car ? (
+        <CarMesh
+          key={`${car.id}${doing.car?.color}`}
+          spec={car}
+          color={doing.car?.color ?? "#ffffff"}
+          // CarMesh starts hidden for the speedway's own placement
+          ref={(g: THREE.Group | null) => {
+            if (g) g.visible = true;
+          }}
+        />
+      ) : (
+        <Doll
+          look={peer.look}
+          swim={swimwear ? decodeSwim(peer.look.swim) : null}
+          mood={doing.mood}
+          hold={doing.seat?.pose === "lie" ? LAY_HOLD : undefined}
+          dance={doing.dance}
+          walk={walk}
+          seed={peer.id.length * 7}
+        />
+      )}
+      <Html position={[0, car ? 2.3 : 2.05, 0]} center zIndexRange={[20, 10]}>
+        <div
+          className="peer-tag"
+          data-doing={car ? `car:${car.id}` : (doing.seat?.pose ?? doing.mood)}
+        >
           {said && <p className="bubble npc-bubble">{said}</p>}
           <button
             type="button"
@@ -166,16 +195,28 @@ export function OnlinePeers({
   const sent = useRef({ x: NaN, z: NaN, yaw: NaN, action: "" });
   useFrame(() => {
     const s = sent.current;
-    // seated, they're drawn on the seat, not where they walked up
+    // seated or riding, they're drawn on the seat, not where they walked
+    // up; driving, as their car
+    const city = driving.session?.kind === "city" ? driving.session : null;
     const seat = player.seat;
-    const { x, z } = seat?.position ?? player.pos;
-    const yaw = seat?.yaw ?? player.yaw;
+    const at = seat?.position ?? player.pos;
+    const x = city ? city.car.position[0] : at.x;
+    const z = city ? city.car.position[1] : at.z;
+    const yaw = city?.car.yaw ?? seat?.yaw ?? player.yaw;
     const action = encodeAction(
       mood,
       dance,
-      seat && (player.sitting || seat.sit)
-        ? { lie: seat.lie === true, y: seat.position.y }
+      seat
+        ? {
+            pose: seat.lie
+              ? "lie"
+              : player.sitting || seat.sit
+                ? "sit"
+                : "stand",
+            y: seat.position.y,
+          }
         : undefined,
+      city ? { id: city.spec.id, color: city.color } : undefined,
     );
     if (
       !session ||
