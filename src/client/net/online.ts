@@ -32,6 +32,12 @@ export function onlineSession(): OnlineSession | null {
   return shared;
 }
 
+/** Going to a friend: join their copy of that room when we get there. */
+export const joinCopy: { room: RoomId | null; copy: number } = {
+  room: null,
+  copy: 1,
+};
+
 /** Keeps the session in the room the player is in, wearing their look. */
 export function useOnlineRoom(room: RoomId, look: Look) {
   const session = onlineSession();
@@ -42,7 +48,9 @@ export function useOnlineRoom(room: RoomId, look: Look) {
     void (async () => {
       started ??= session.start();
       await started;
-      if (live && session.identity()) await session.joinRoom(room, look);
+      const copy = joinCopy.room === room ? joinCopy.copy : undefined;
+      joinCopy.room = null;
+      if (live && session.identity()) await session.joinRoom(room, look, copy);
     })();
     return () => {
       live = false;

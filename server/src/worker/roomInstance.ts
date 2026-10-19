@@ -188,6 +188,7 @@ export class RoomInstance extends DurableObject<Env> {
         this.room.roomId,
         this.room.copy,
         this.core.occupancy(),
+        this.core.ids(),
       );
     } catch (error) {
       // A stale headcount only skews auto-pick; the room itself keeps working.

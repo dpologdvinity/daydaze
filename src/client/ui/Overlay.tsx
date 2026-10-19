@@ -81,6 +81,8 @@ import { DeliveryApp } from "./phone/DeliveryApp.tsx";
 import { FoodHud } from "./phone/FoodHud.tsx";
 import { Chips, Segmented, Slider, Swatches, Tiles } from "./controls.tsx";
 import { VenueGames } from "./Minigames.tsx";
+import { friends } from "../net/friends.ts";
+import { ONLINE } from "../net/online.ts";
 
 // Sit and lean need furniture, so the player only picks these.
 const PLAYER_MOODS: readonly { id: Mood; label: string }[] = [
@@ -784,6 +786,15 @@ export function Overlay({
           >
             Take a photo
           </button>
+          {ONLINE && (
+            <button
+              type="button"
+              className="drink"
+              onClick={() => friends.set({ open: !friends.get().open })}
+            >
+              Friends
+            </button>
+          )}
           {SKATE_ROOMS.has(room) && (
             <button
               type="button"

@@ -45,7 +45,7 @@ test("signups and guest sessions have their own budgets", () => {
 test("reports and blocks are limited per player, and more loosely per address", () => {
   const limiter = createAuthLimiter();
   const run = (
-    kind: "report" | "block",
+    kind: "report" | "block" | "friend",
     scope: "player" | "address",
     times: number,
   ) =>
@@ -55,6 +55,7 @@ test("reports and blocks are limited per player, and more loosely per address", 
     ).filter(Boolean).length;
   assert.equal(run("report", "player", 20), 5);
   assert.equal(run("block", "player", 50), 20);
+  assert.equal(run("friend", "player", 50), 20);
   // A shared address (a household, a campus) gets a wider budget.
   assert.equal(run("report", "address", 50), 15);
   assert.equal(run("block", "address", 100), 60);

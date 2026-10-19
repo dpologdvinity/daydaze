@@ -12,6 +12,9 @@ test("fixed API routes match by method and path", () => {
   assert.deepEqual(matchRoute("PUT", "/api/save"), { kind: "save-put" });
   assert.deepEqual(matchRoute("POST", "/api/report"), { kind: "report" });
   assert.deepEqual(matchRoute("POST", "/api/block"), { kind: "block" });
+  assert.deepEqual(matchRoute("POST", "/api/friend"), { kind: "friend" });
+  assert.deepEqual(matchRoute("POST", "/api/unfriend"), { kind: "unfriend" });
+  assert.deepEqual(matchRoute("GET", "/api/friends"), { kind: "friends" });
   assert.deepEqual(matchRoute("POST", "/api/admin/ban"), { kind: "admin-ban" });
 });
 

@@ -273,6 +273,11 @@ export class RoomCore {
     return this.occupants.size;
   }
 
+  /** Who is here, for friends' presence. */
+  ids(): string[] {
+    return [...this.occupants.keys()];
+  }
+
   /** The last `n` chat lines (at most 20), oldest first, for reports. */
   recentChat(n: number): ChatLine[] {
     return this.chatLog

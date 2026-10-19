@@ -15,7 +15,8 @@ import {
 /** Idle buckets older than this are full again and can be deleted. */
 export const BUCKET_PRUNE_AFTER_MS = 60 * 60 * 1000;
 
-export type AuthAction = "login" | "signup" | "guest" | "report" | "block";
+export type AuthAction =
+  "login" | "signup" | "guest" | "report" | "block" | "friend";
 /** Which Durable Object is asking: one per IP address, or one per player. */
 export type LimitScope = "address" | "player";
 
@@ -38,10 +39,13 @@ export function createAuthLimiter(store: BucketStore = new Map()) {
     guest: limiter("guest", GUEST_LIMIT),
     report: limiter("report-address", REPORT_ADDRESS_LIMIT),
     block: limiter("block-address", BLOCK_ADDRESS_LIMIT),
+    // friend requests spend like blocks: a burst, then one every few seconds
+    friend: limiter("friend-address", BLOCK_ADDRESS_LIMIT),
   };
   const perPlayer = {
     report: limiter("report-player", REPORT_LIMIT),
     block: limiter("block-player", BLOCK_LIMIT),
+    friend: limiter("friend-player", BLOCK_LIMIT),
   };
   const seconds = (ms: number) => Math.max(1, Math.ceil(ms / 1000));
   return {
@@ -60,7 +64,8 @@ export function createAuthLimiter(store: BucketStore = new Map()) {
         return 0;
       }
       const limiter =
-        scope === "player" && (action === "report" || action === "block")
+        scope === "player" &&
+        (action === "report" || action === "block" || action === "friend")
           ? perPlayer[action]
           : others[action];
       return limiter.take("", now) ? 0 : seconds(limiter.retryAfterMs("", now));

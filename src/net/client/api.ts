@@ -1,5 +1,6 @@
 import type { RoomId } from "../../game/rooms.ts";
 import { loadSave, serializeSave, type SaveV1 } from "../../game/save.ts";
+import { parseFriends } from "../friends.ts";
 import { parseIdentity, type Identity } from "../identity.ts";
 
 export type Fetch = (url: string, init: RequestInit) => Promise<Response>;
@@ -130,6 +131,16 @@ export function createApi({
         "/api/block",
         JSON.stringify({ targetId, ...room }),
         accepted,
+      ),
+    /** Asks to be friends, or says yes to their request. */
+    friend: (targetId: string) =>
+      call("POST", "/api/friend", JSON.stringify({ targetId }), accepted),
+    /** Ends a friendship, or turns down or takes back a request. */
+    unfriend: (targetId: string) =>
+      call("POST", "/api/unfriend", JSON.stringify({ targetId }), accepted),
+    friends: () =>
+      call("GET", "/api/friends", undefined, (text) =>
+        parseFriends(parseJson(text)),
       ),
   };
 }

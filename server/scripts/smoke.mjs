@@ -220,6 +220,33 @@ try {
     "the reconnected player still counts once",
   );
 
+  // Asking each other makes friends, who see where each other are.
+  const befriend = (from, to) =>
+    fetch(`${BASE}/api/friend`, {
+      method: "POST",
+      headers: { Cookie: from.cookie },
+      body: JSON.stringify({ targetId: to.id }),
+    });
+  const friendsOf = async (who) =>
+    (
+      await fetch(`${BASE}/api/friends`, { headers: { Cookie: who.cookie } })
+    ).json();
+  check((await befriend(alice, bob)).status === 204, "POST /api/friend asks");
+  const asked = await friendsOf(bob);
+  check(
+    asked.incoming.some((p) => p.id === alice.id && p.name === alice.name) &&
+      asked.friends.length === 0,
+    "the request waits in the other player's list",
+  );
+  await befriend(bob, alice);
+  const mutual = await friendsOf(alice);
+  check(
+    mutual.friends.some(
+      (f) => f.id === bob.id && f.room?.roomId === "plaza" && f.room.copy === 1,
+    ),
+    "friends see which room copy each other are in",
+  );
+
   // Blocking hides the pair from each other at once.
   const block = await fetch(`${BASE}/api/block`, {
     method: "POST",
@@ -227,6 +254,10 @@ try {
     body: JSON.stringify({ targetId: bob.id, roomId: "plaza", copy: 1 }),
   });
   check(block.status === 204, "POST /api/block succeeds");
+  check(
+    (await friendsOf(alice)).friends.length === 0,
+    "a block ends the friendship",
+  );
   await waitFor(
     a2.messages,
     (m) => m.type === "entity-leave" && m.id === bob.id,
@@ -352,9 +383,10 @@ try {
   });
   check(signup.status === 201, "POST /api/signup creates an account");
   const account = signup.headers.getSetCookie()[0].split(";")[0];
+  const fresh = createDefaultSave("Smoke Tester");
   const save = {
-    ...createDefaultSave("Smoke Tester"),
-    settings: { quality: "low", muted: true },
+    ...fresh,
+    settings: { ...fresh.settings, quality: "low", muted: true },
   };
   const put = await fetch(`${BASE}/api/save`, {
     method: "PUT",

@@ -147,14 +147,15 @@ export class OnlineSession {
   }
 
   /** Joins the least-full copy, moving on to the next one while copies are full. */
-  joinRoom(roomId: RoomId, look: Look): Promise<JoinOutcome> {
+  /** `copy` asks for that copy first (a friend's), if it has room. */
+  joinRoom(roomId: RoomId, look: Look, copy?: number): Promise<JoinOutcome> {
     const { position, yaw } = ROOMS[roomId].spawn;
-    return this.enter(roomId, look, {
-      x: position[0],
-      z: position[1],
-      yaw,
-      action: "idle",
-    });
+    return this.enter(
+      roomId,
+      look,
+      { x: position[0], z: position[1], yaw, action: "idle" },
+      copy,
+    );
   }
 
   /**
@@ -260,6 +261,28 @@ export class OnlineSession {
     const r = await this.api.block(targetId, this.current ?? undefined);
     if (r.ok && this.players.delete(targetId)) this.emit("leave", targetId);
     return r.ok;
+  }
+
+  /** Moves to another copy of this room (a friend's), staying put. */
+  async switchCopy(copy: number): Promise<JoinOutcome> {
+    const room = this.current;
+    const look = this.look;
+    if (!room || !look) return { ok: false, reason: "offline" };
+    if (room.copy === copy) return { ok: true, copy };
+    return this.enter(room.roomId, look, this.pose, copy);
+  }
+
+  /** Your friends, where they are, and requests either way. */
+  friends() {
+    return this.api.friends();
+  }
+  /** Asks to be friends, or accepts their request. */
+  async friend(targetId: string): Promise<boolean> {
+    return (await this.api.friend(targetId)).ok;
+  }
+  /** Ends a friendship, or turns down or takes back a request. */
+  async unfriend(targetId: string): Promise<boolean> {
+    return (await this.api.unfriend(targetId)).ok;
   }
 
   /** Where to draw a remote player now, rendered INTERPOLATION_DELAY_MS behind. */

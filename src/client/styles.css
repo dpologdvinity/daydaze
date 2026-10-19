@@ -538,7 +538,17 @@ button:focus-visible {
   width: min(280px, calc(100vw - 32px));
 }
 
-.peer-card h2 {
+.home-panel.friends-panel {
+  left: auto;
+  right: 16px;
+  bottom: 120px;
+  width: min(320px, calc(100vw - 32px));
+  max-height: calc(100vh - 250px);
+  overflow: auto;
+}
+
+.peer-card h2,
+.friends-panel h2 {
   margin: 0;
   font-size: 18px;
 }
@@ -2091,4 +2101,19 @@ button:focus-visible {
 .peer-buzz {
   font-size: 14px;
   line-height: 1;
+}
+
+.friends-panel ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.friends-panel li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
 }

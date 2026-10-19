@@ -12,6 +12,9 @@ export type Route =
         | "save-put"
         | "report"
         | "block"
+        | "friend"
+        | "unfriend"
+        | "friends"
         | "admin-ban";
     }
   | { kind: "rooms"; roomId: RoomId }
@@ -27,6 +30,9 @@ const FIXED = new Map<string, Route>([
   ["PUT /api/save", { kind: "save-put" }],
   ["POST /api/report", { kind: "report" }],
   ["POST /api/block", { kind: "block" }],
+  ["POST /api/friend", { kind: "friend" }],
+  ["POST /api/unfriend", { kind: "unfriend" }],
+  ["GET /api/friends", { kind: "friends" }],
   ["POST /api/admin/ban", { kind: "admin-ban" }],
 ]);
 

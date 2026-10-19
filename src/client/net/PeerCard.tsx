@@ -1,4 +1,5 @@
 import { useEffect, useState, type JSX } from "react";
+import { friends, friendship, refreshFriends } from "./friends.ts";
 import { onlineSession } from "./online.ts";
 import { mute, peerCard } from "./peerCard.ts";
 
@@ -14,6 +15,7 @@ const REASONS = [
 /** Another player's card: mute their chat, block them, or report them. */
 export function PeerCard(): JSX.Element | null {
   const { open, mutes } = peerCard.use();
+  const { list } = friends.use();
   const [reporting, setReporting] = useState(false);
   const [blocking, setBlocking] = useState(false);
   const [note, setNote] = useState("");
@@ -21,6 +23,7 @@ export function PeerCard(): JSX.Element | null {
     setReporting(false);
     setBlocking(false);
     setNote("");
+    if (open) void refreshFriends();
   }, [open?.id]);
   if (!open) return null;
   const session = onlineSession();
@@ -32,6 +35,18 @@ export function PeerCard(): JSX.Element | null {
       aria-label={`${open.name}'s card`}
     >
       <h2>{open.name}</h2>
+      <FriendButton
+        status={friendship(list, open.id)}
+        onFriend={async () => {
+          const ok = await session?.friend(open.id);
+          if (!ok) setNote("That didn't go through. Try again in a moment.");
+          await refreshFriends();
+        }}
+        onUnfriend={async () => {
+          await session?.unfriend(open.id);
+          await refreshFriends();
+        }}
+      />
       <button type="button" aria-pressed={muted} onClick={() => mute(open.id)}>
         {muted ? "Unmute their chat" : "Mute their chat"}
       </button>
@@ -93,4 +108,41 @@ export function PeerCard(): JSX.Element | null {
       </button>
     </section>
   );
+}
+
+function FriendButton({
+  status,
+  onFriend,
+  onUnfriend,
+}: {
+  status: ReturnType<typeof friendship>;
+  onFriend: () => void;
+  onUnfriend: () => void;
+}): JSX.Element {
+  switch (status) {
+    case "friend":
+      return (
+        <button type="button" onClick={onUnfriend}>
+          Unfriend
+        </button>
+      );
+    case "incoming":
+      return (
+        <button type="button" onClick={onFriend}>
+          Accept friend request
+        </button>
+      );
+    case "sent":
+      return (
+        <button type="button" onClick={onUnfriend}>
+          Friend request sent (take back)
+        </button>
+      );
+    case "none":
+      return (
+        <button type="button" onClick={onFriend}>
+          Add friend
+        </button>
+      );
+  }
 }

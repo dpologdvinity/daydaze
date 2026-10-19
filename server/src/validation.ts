@@ -125,6 +125,12 @@ export function parseBlock(
   return room ? { targetId, room } : null;
 }
 
+/** A friend request or unfriending: just who. */
+export function parseTarget(body: unknown): string | null {
+  const targetId = fields(body).get("targetId");
+  return isNetworkId(targetId) ? targetId : null;
+}
+
 export function parseLookParam(param: string | null): Look {
   try {
     const look: unknown = JSON.parse(param ?? "");

@@ -11,6 +11,7 @@ import {
   parseLookParam,
   parseReport,
   parseSave,
+  parseTarget,
 } from "./validation.ts";
 
 const identity = {
@@ -154,4 +155,11 @@ test("admin bans need a target and a short reason", () => {
     { targetId: "g_x", reason: "x".repeat(201) },
   ])
     assert.equal(parseBan(bad), null);
+});
+
+test("friend requests name only a target", () => {
+  assert.equal(parseTarget({ targetId: "u_x" }), "u_x");
+  assert.equal(parseTarget({ targetId: "" }), null);
+  assert.equal(parseTarget({}), null);
+  assert.equal(parseTarget(null), null);
 });

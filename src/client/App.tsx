@@ -10,6 +10,7 @@ import {
 import { chatDistort, type Intensity } from "../game/effects/buzz.ts";
 import { getBuzz } from "./effects/drunk.ts";
 import { onlineSession, useOnlineRoom } from "./net/online.ts";
+import { FriendsPanel } from "./net/FriendsPanel.tsx";
 import { PeerCard } from "./net/PeerCard.tsx";
 import type { MinigameId } from "../game/hotspots.ts";
 import { isJailed } from "../game/jail/jail.ts";
@@ -292,6 +293,7 @@ export function App() {
           <p className="nametag">{save.name}</p>
         </div>
         <PeerCard />
+        <FriendsPanel onGo={(room) => travel(room, ROOMS[room].spawn)} />
         <div className="fade" data-on={fading} aria-hidden="true" />
         {notice && (
           <p className="notice" role="status">

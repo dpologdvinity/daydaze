@@ -33,8 +33,10 @@ import {
   parseIdentity,
   parseReport,
   parseSave,
+  parseTarget,
   type Identity,
 } from "../validation.ts";
+import { friendLists, type FriendRoom } from "../../../src/net/friends.ts";
 import {
   DIRECTORY_NAME,
   IDENTITY_HEADER,
@@ -173,6 +175,54 @@ async function startSession(
     )
     .run();
   return sessionCookie(token);
+}
+
+/** Ends a friendship, or turns down or takes back a request. */
+async function unfriend(env: Env, a: string, b: string): Promise<void> {
+  await env.DB.prepare(
+    `DELETE FROM friend_requests
+     WHERE (from_id = ?1 AND to_id = ?2) OR (from_id = ?2 AND to_id = ?1)`,
+  )
+    .bind(a, b)
+    .run();
+}
+
+async function friendsOf(env: Env, id: string) {
+  const ids = async (sql: string) =>
+    (await env.DB.prepare(sql).bind(id).all()).results.flatMap((row) =>
+      typeof row.other === "string" ? [row.other] : [],
+    );
+  const sentTo = await ids(
+    "SELECT to_id AS other FROM friend_requests WHERE from_id = ? LIMIT 1000",
+  );
+  const receivedFrom = await ids(
+    "SELECT from_id AS other FROM friend_requests WHERE to_id = ? LIMIT 1000",
+  );
+  const everyone = JSON.stringify([...new Set([...sentTo, ...receivedFrom])]);
+  // an account's username, or a guest's name while their session lasts
+  const { results } = await env.DB.prepare(
+    `SELECT id, username AS name FROM users
+     WHERE id IN (SELECT value FROM json_each(?1))
+     UNION ALL
+     SELECT player_id AS id, guest_name AS name FROM sessions
+     WHERE player_id IN (SELECT value FROM json_each(?1))
+       AND guest_name IS NOT NULL AND expires_at > ?2`,
+  )
+    .bind(everyone, Date.now())
+    .all();
+  const names = new Map<string, string>();
+  for (const { id: other, name } of results)
+    if (typeof other === "string" && typeof name === "string")
+      names.set(other, name);
+  // only mutual friends see where each other are
+  const received = new Set(receivedFrom);
+  const mutual = sentTo.filter((other) => received.has(other));
+  const rooms = new Map<string, FriendRoom>(
+    (await env.DIRECTORY.getByName(DIRECTORY_NAME).where(mutual)).map(
+      ({ id: other, roomId, copy }) => [other, { roomId, copy }],
+    ),
+  );
+  return friendLists(sentTo, receivedFrom, names, rooms);
 }
 
 function publicIdentity({ id, name, isGuest, isAdmin }: Identity): Identity {
@@ -395,6 +445,7 @@ async function handle(
       )
         .bind(session.id, block.targetId, Date.now())
         .run();
+      await unfriend(env, session.id, block.targetId);
       if (block.room)
         await roomStub(env, block.room.roomId, block.room.copy).block(
           session.id,
@@ -402,6 +453,32 @@ async function handle(
         );
       return new Response(null, { status: 204 });
     }
+    case "friend": {
+      const targetId = parseTarget(await readJson(request));
+      if (!targetId || targetId === session.id)
+        return error(400, "invalid-friend");
+      const limited = await rateLimited(env, request, "friend", "", session.id);
+      if (limited) return limited;
+      // blocked either way, the request quietly goes nowhere
+      await env.DB.prepare(
+        `INSERT OR IGNORE INTO friend_requests (from_id, to_id, created_at)
+         SELECT ?1, ?2, ?3 WHERE NOT EXISTS (
+           SELECT 1 FROM blocks
+           WHERE (blocker_id = ?1 AND blocked_id = ?2)
+              OR (blocker_id = ?2 AND blocked_id = ?1))`,
+      )
+        .bind(session.id, targetId, Date.now())
+        .run();
+      return new Response(null, { status: 204 });
+    }
+    case "unfriend": {
+      const targetId = parseTarget(await readJson(request));
+      if (!targetId) return error(400, "invalid-friend");
+      await unfriend(env, session.id, targetId);
+      return new Response(null, { status: 204 });
+    }
+    case "friends":
+      return json(await friendsOf(env, session.id));
     case "ws": {
       if (request.headers.get("Upgrade") !== "websocket")
         return error(426, "expected-websocket");

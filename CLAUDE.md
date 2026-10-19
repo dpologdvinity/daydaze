@@ -27,7 +27,7 @@ Use Node.js 22.18 or newer; `.nvmrc` pins 24 for nvm and CI.
 - `npm test`: run all `src/**/*.test.ts` with Node's built-in test runner.
 - `npm run typecheck`: strict TypeScript check, including the Worker (regenerates `server/worker-configuration.d.ts`).
 - `npm run dev:server`: builds the app, then runs local `wrangler dev`, which serves `dist/` with the CSP from `public/_headers`. Apply migrations first with `npx wrangler d1 migrations apply DB --local --config server/wrangler.jsonc`.
-- `npm run smoke:server`: starts a throwaway local `wrangler dev` and checks guests, rooms, chat, blocks, reconnects and accounts end to end. Never run `wrangler deploy` or log in to Cloudflare without the user's approval.
+- `npm run smoke:server`: starts a throwaway local `wrangler dev` and checks guests, rooms, chat, friends, blocks, reconnects and accounts end to end. Never run `wrangler deploy` or log in to Cloudflare without the user's approval.
 - `npm run test:e2e:client`: Playwright browser tests for the client in `tests/client.spec.ts` (install the browser once with `npx playwright install chromium`). Headless WebGL runs on SwiftShader on the CPU, so it is slow: run only the tests you need (see Working here).
 - `npm run format` / `npm run format:check`: Prettier.
 - `npm run verify`: tests, typecheck, format check and build.
@@ -48,7 +48,7 @@ if (await session.start()) await session.joinRoom("plaza", look);
 // else: status "offline", keep playing single-player.
 ```
 
-The 3D client uses it behind `?online=1` (`src/client/net/`: `online.ts` joins the current room and keeps the look in sync; `OnlinePeers.tsx` draws everyone else's doll, name and chat bubble, and sends your moves). Without the flag, or when `/api` can't be reached, the game stays single-player, so offline tests never touch the network.
+The 3D client uses it behind `?online=1` (`src/client/net/`: `online.ts` joins the current room and keeps the look in sync; `OnlinePeers.tsx` draws everyone else's doll, car, name, buzz and chat bubble, and sends your moves; `PeerCard.tsx` and `FriendsPanel.tsx` handle friends, mute, block and report). Friends are mutual requests in D1 (`server/migrations/0002_friends.sql`); where they are comes from the Directory, which each room copy tells who is in it. Without the flag, or when `/api` can't be reached, the game stays single-player, so offline tests never touch the network.
 
 In development, run `npm run dev:server` (wrangler dev on port 8787) next to Vite; `vite.config.ts` already proxies both paths, so cookies stay same-origin. If 8787 is taken, run wrangler on another port and start Vite with `WORKER_PORT=<port>`; a Vite port other than 5173 must be in `ALLOWED_ORIGINS` (`wrangler dev --var ALLOWED_ORIGINS:http://localhost:5199`). Stop wrangler by PID (`ss -ltnp`), not `pkill -f`. The proxy, for reference:
 

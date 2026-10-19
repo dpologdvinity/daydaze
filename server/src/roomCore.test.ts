@@ -100,6 +100,7 @@ test("joining sends a snapshot and every occupant's profile, and announces the n
     count: 2,
   });
   assert.equal(room.occupancy(), 2);
+  assert.equal(room.ids().length, 2);
 });
 
 test("joins are rejected when invalid, duplicated, full or banned", () => {
