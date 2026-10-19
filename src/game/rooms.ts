@@ -99,6 +99,7 @@ import * as BACK from "./backRoom.ts";
 import * as TIKI from "./tikiBar.ts";
 import * as THRIFT from "./thriftTemple.ts";
 import * as LAB from "./espressoLab.ts";
+import * as ROOF from "./hotelRooftop.ts";
 import * as REWIND from "./videoStore.ts";
 import type { Vec2 } from "./walk.ts";
 
@@ -157,6 +158,7 @@ export type RoomId =
   | "tiki-bar"
   | "thrift-temple"
   | "espresso-lab"
+  | "hotel-rooftop"
   | "video-store"
   | "city";
 
@@ -674,6 +676,24 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the avenue",
         target: "city",
         targetSpawn: { position: BACK.BACK_ROOM_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  "hotel-rooftop": {
+    id: "hotel-rooftop",
+    name: "The Marquise Rooftop",
+    walkable: ROOF.FLOOR,
+    blockers: ROOF.BLOCKERS,
+    spawn: { position: ROOF.SPAWN, yaw: Math.PI },
+    swimwear: true,
+    portals: [
+      {
+        id: "hotel-rooftop-to-city",
+        position: ROOF.EXIT,
+        radius: 0.8,
+        label: "Down to Park Avenue",
+        target: "city",
+        targetSpawn: { position: ROOF.HOTEL_DOOR.landing, yaw: 0 },
       },
     ],
   },

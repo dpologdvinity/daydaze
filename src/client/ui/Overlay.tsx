@@ -116,6 +116,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Rewind Video. Browse the tapes and the new releases, then play Throwback Trivia at Tasha's counter.",
   "back-room":
     "The Back Room. A speakeasy behind an unmarked door: order a drink from Odette, then take a stool or a leather booth.",
+  "hotel-rooftop":
+    "The Marquise Rooftop. Swimsuits on, forty floors up: lie out on a lounger, sink into the hot tub, or get a drink from Simone at the pool bar.",
   "espresso-lab":
     "Espresso Lab. Grab a table, or take a shift at the barista station: build each ticket's drink from the recipe card, fast for tips.",
   "thrift-temple":
@@ -778,7 +780,8 @@ export function Overlay({
           )}
           {(room === "velvet-room" ||
             room === "back-room" ||
-            room === "tiki-bar") && (
+            room === "tiki-bar" ||
+            room === "hotel-rooftop") && (
             <button
               type="button"
               className="drink"

@@ -84,6 +84,11 @@ const ROOM_SHOTS: Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }> =
       eye: new THREE.Vector3(-1, 5, 9),
       look: new THREE.Vector3(0.5, 0.8, -2.5),
     },
+    // from the stair door, over the loungers and the pool to the skyline
+    "hotel-rooftop": {
+      eye: new THREE.Vector3(1.5, 6, 11),
+      look: new THREE.Vector3(0, 0.4, -4),
+    },
     // from the door, over the cafe tables to the counter
     "espresso-lab": {
       eye: new THREE.Vector3(1, 4.6, 8.6),
@@ -358,6 +363,7 @@ const MAX_DISTANCE: Record<RoomId, number> = {
   "tiki-bar": 16,
   "thrift-temple": 16,
   "espresso-lab": 14,
+  "hotel-rooftop": 18,
   "video-store": 14,
   "halo-halo-cafe": 14,
   gym: 22,

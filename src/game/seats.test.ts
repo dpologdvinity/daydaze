@@ -21,7 +21,8 @@ test("every seat's approach point is on its room's floor", () => {
 test("seats face their table or bar and stand half a meter in front", () => {
   for (const s of SEATS) {
     const d = Math.hypot(s.approach[0] - s.at[0], s.approach[1] - s.at[1]);
-    assert.ok(Math.abs(d - 0.5) < 1e-9);
+    // loungers are walked up to from the side, clear of their frame
+    if (!s.lie) assert.ok(Math.abs(d - 0.5) < 1e-9, s.id);
     assert.ok(s.height > 0.3 && s.height < 1.0);
   }
   assert.equal(new Set(SEATS.map((s) => s.id)).size, SEATS.length);

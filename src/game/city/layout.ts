@@ -33,6 +33,7 @@ import * as BACK from "../backRoom.ts";
 import * as TIKI from "../tikiBar.ts";
 import * as THRIFT from "../thriftTemple.ts";
 import * as LAB from "../espressoLab.ts";
+import * as ROOF from "../hotelRooftop.ts";
 import * as REWIND from "../videoStore.ts";
 import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
@@ -1592,8 +1593,18 @@ const UPTOWN_FRONT: readonly {
     h: 24,
     north: true,
     color: "#22223b",
-    sign: { text: "THE PLAZA HOTEL", color: "#ffd166" },
+    sign: { text: "THE MARQUISE", color: "#ffd166" },
     style: "tower",
+    venue: {
+      id: "hotel-rooftop",
+      door: {
+        position: ROOF.HOTEL_DOOR.position,
+        radius: 2,
+        label: "Up to the Marquise Rooftop",
+        target: "hotel-rooftop",
+        targetSpawn: { position: ROOF.SPAWN, yaw: Math.PI },
+      },
+    },
   },
 ];
 

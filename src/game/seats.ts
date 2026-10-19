@@ -8,6 +8,7 @@ import * as HORN from "./jazzClub.ts";
 import * as BACK from "./backRoom.ts";
 import * as TIKI from "./tikiBar.ts";
 import * as LAB from "./espressoLab.ts";
+import * as ROOF from "./hotelRooftop.ts";
 import * as DOME from "./dome.ts";
 import * as KAMAYAN from "./kamayanHall.ts";
 import * as GALLERIA from "./galleria.ts";
@@ -197,6 +198,49 @@ const jazzSeats = [
 ];
 
 // the Back Room: stools at the bar, and the booths' leather benches
+// the Marquise Rooftop: loungers to lie back on, the hot tub, the pool bar's
+// stools and the cabanas' daybeds
+const rooftopSeats: Seat[] = [
+  ...ROOF.LOUNGERS.map((x, i): Seat => ({
+    id: `roof-lounger-${i}`,
+    room: "hotel-rooftop",
+    at: [x, ROOF.LOUNGER_Z],
+    height: 0.42,
+    yaw: 0,
+    approach: [x + 0.75, ROOF.LOUNGER_Z],
+    lie: true,
+  })),
+  ...ROOF.TUB_SEATS.map((a, i) => {
+    const [cx, cz] = ROOF.TUB;
+    const r = ROOF.TUB_SEAT_RADIUS;
+    return seat(
+      `roof-tub-${i}`,
+      "hotel-rooftop",
+      [cx + Math.cos(a) * r, cz + Math.sin(a) * r],
+      0.32,
+      ROOF.TUB,
+    );
+  }),
+  ...ROOF.STOOL_ZS.map((z, i) =>
+    seat(`roof-stool-${i}`, "hotel-rooftop", [ROOF.STOOL_X, z], 0.8, [
+      ROOF.BAR.x1,
+      z,
+    ]),
+  ),
+  ...ROOF.CABANAS.flatMap(([x, z], c) =>
+    [-0.45, 0.45].map((dz, k) =>
+      seat(
+        `roof-cabana-${c}-${k}`,
+        "hotel-rooftop",
+        [x - 0.68, z + dz],
+        0.45,
+        [x - 2, z + dz],
+        "front",
+      ),
+    ),
+  ),
+];
+
 // Espresso Lab: a chair either side of each cafe table
 const labSeats = LAB.TABLES.flatMap(([x, z], t) =>
   ([-1, 1] as const).map((side) =>
@@ -403,6 +447,7 @@ export const SEATS: readonly Seat[] = [
   ...backRoomSeats,
   ...tikiSeats,
   ...labSeats,
+  ...rooftopSeats,
   ...squareSeats,
   ...linksSeats,
   ...sportsSeats,
