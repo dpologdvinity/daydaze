@@ -38,6 +38,7 @@ import * as BOOKS from "../bookshop.ts";
 import * as SUCRE from "../patisserie.ts";
 import * as G44 from "../gallery.ts";
 import * as SURF from "../surfShack.ts";
+import * as SKEE from "../boardwalkArcade.ts";
 import * as REWIND from "../videoStore.ts";
 import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
@@ -859,6 +860,13 @@ const BEACH_FRONT: readonly {
     color: "#d9b3ff",
     sign: { text: "BOARDWALK ARCADE", color: "#4fe3ff" },
     style: "billboard",
+    door: {
+      position: SKEE.ARCADE_DOOR.position,
+      radius: 2,
+      label: "Into the Boardwalk Arcade",
+      target: "boardwalk-arcade",
+      targetSpawn: { position: SKEE.SPAWN, yaw: Math.PI },
+    },
   },
   { x: 124, w: 18, h: 9, color: "#fff3c9" },
   {

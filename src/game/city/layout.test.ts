@@ -403,6 +403,7 @@ for (const target of [
   "patisserie",
   "gallery",
   "surf-shack",
+  "boardwalk-arcade",
 ] as const) {
   test(`the ${target}'s gate fires from the forecourt, and its exit lands back outside`, () => {
     const door = BUILDINGS.find((b) => b.door?.target === target)?.door;

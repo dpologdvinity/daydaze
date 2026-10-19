@@ -113,6 +113,11 @@ const VideoStore = lazy(() =>
 const BackRoom = lazy(() =>
   import("../rooms/BackRoom.tsx").then((m) => ({ default: m.BackRoom })),
 );
+const BoardwalkArcade = lazy(() =>
+  import("../rooms/BoardwalkArcade.tsx").then((m) => ({
+    default: m.BoardwalkArcade,
+  })),
+);
 const SurfShack = lazy(() =>
   import("../rooms/SurfShack.tsx").then((m) => ({ default: m.SurfShack })),
 );
@@ -411,6 +416,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   patisserie: Patisserie,
   gallery: Gallery,
   "surf-shack": SurfShack,
+  "boardwalk-arcade": BoardwalkArcade,
   "video-store": VideoStore,
   "halo-halo-cafe": HaloHaloCafe,
   gym: Gym,

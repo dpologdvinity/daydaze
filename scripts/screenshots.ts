@@ -100,6 +100,7 @@ const SHOTS: {
   { name: "patisserie", query: "room=patisserie" },
   { name: "gallery", query: "room=gallery" },
   { name: "surf-shack", query: "room=surf-shack" },
+  { name: "boardwalk-arcade", query: "room=boardwalk-arcade" },
   { name: "video-store", query: "room=video-store" },
   { name: "green-haze", query: "room=green-haze&adult=1" },
   { name: "piercing", query: "room=piercing" },

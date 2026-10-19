@@ -290,6 +290,24 @@ test("Vinyl Vault sells a record that plays at home", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("the Boardwalk Arcade: a Skee-Ball roll scores and the next ball comes", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=boardwalk-arcade`);
+  const panel = page.getByRole("region", { name: "Skee-Ball" });
+  await panel
+    .getByRole("button", { name: "Play Skee-Ball" })
+    .click({ timeout: 150_000 });
+  await panel.getByRole("button", { name: "Set aim" }).click();
+  await panel.getByRole("button", { name: "Roll!" }).click();
+  await expect(panel.getByLabel("Score")).toContainText("Ball 2/9", {
+    timeout: 60_000,
+  });
+  expect(errors).toEqual([]);
+});
+
 test("Swell Surf Co.: paddle out and the ride clock runs", async ({ page }) => {
   test.setTimeout(330_000);
   const errors = collectErrors(page);
@@ -1332,6 +1350,7 @@ for (const room of [
   "patisserie",
   "gallery",
   "surf-shack",
+  "boardwalk-arcade",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

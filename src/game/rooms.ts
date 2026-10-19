@@ -104,6 +104,7 @@ import * as BOOKS from "./bookshop.ts";
 import * as SUCRE from "./patisserie.ts";
 import * as G44 from "./gallery.ts";
 import * as SURF from "./surfShack.ts";
+import * as BOARDWALK from "./boardwalkArcade.ts";
 import * as REWIND from "./videoStore.ts";
 import type { Vec2 } from "./walk.ts";
 
@@ -167,6 +168,7 @@ export type RoomId =
   | "patisserie"
   | "gallery"
   | "surf-shack"
+  | "boardwalk-arcade"
   | "video-store"
   | "city";
 
@@ -684,6 +686,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the avenue",
         target: "city",
         targetSpawn: { position: BACK.BACK_ROOM_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  "boardwalk-arcade": {
+    id: "boardwalk-arcade",
+    name: "The Boardwalk Arcade",
+    walkable: BOARDWALK.FLOOR,
+    blockers: BOARDWALK.BLOCKERS,
+    spawn: { position: BOARDWALK.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "boardwalk-arcade-to-city",
+        position: BOARDWALK.EXIT,
+        radius: 0.8,
+        label: "Out to Shore Boulevard",
+        target: "city",
+        targetSpawn: { position: BOARDWALK.ARCADE_DOOR.landing, yaw: 0 },
       },
     ],
   },

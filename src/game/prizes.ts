@@ -26,6 +26,7 @@ export const PRIZE_GAMES = [
   "barista",
   "macaron-tower",
   "surf",
+  "skee-ball",
 ] as const;
 export type PrizeGame = (typeof PRIZE_GAMES)[number];
 
@@ -146,6 +147,12 @@ export const PRIZE_TABLES: Record<PrizeGame, Table> = {
     label: "Paintball",
     room: "paintball",
     grades: [1000, 650, 300],
+    format: plain("points"),
+  },
+  "skee-ball": {
+    label: "Skee-Ball",
+    room: "boardwalk-arcade",
+    grades: [300, 200, 120],
     format: plain("points"),
   },
   surf: {
