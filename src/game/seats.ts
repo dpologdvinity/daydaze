@@ -10,6 +10,7 @@ import * as TIKI from "./tikiBar.ts";
 import * as LAB from "./espressoLab.ts";
 import * as ROOF from "./hotelRooftop.ts";
 import * as BOOKS from "./bookshop.ts";
+import * as SUCRE from "./patisserie.ts";
 import * as DOME from "./dome.ts";
 import * as KAMAYAN from "./kamayanHall.ts";
 import * as GALLERIA from "./galleria.ts";
@@ -199,6 +200,19 @@ const jazzSeats = [
 ];
 
 // the Back Room: stools at the bar, and the booths' leather benches
+// Sucre: a chair either side of each cafe table
+const sucreSeats = SUCRE.TABLES.flatMap(([x, z], t) =>
+  ([-1, 1] as const).map((side) =>
+    seat(
+      `sucre-table${t}-${side < 0 ? "l" : "r"}`,
+      "patisserie",
+      [x + side * 0.75, z],
+      FOOD_CHAIR_HEIGHT,
+      [x, z],
+    ),
+  ),
+);
+
 // Dog-Ear Books: the armchairs by the fire
 const bookshopSeats = BOOKS.ARMCHAIRS.map(({ at: [x, z], dir }, i) =>
   seat(`books-armchair-${i}`, "bookshop", [x, z], 0.45, [x, z + dir], "front"),
@@ -455,6 +469,7 @@ export const SEATS: readonly Seat[] = [
   ...labSeats,
   ...rooftopSeats,
   ...bookshopSeats,
+  ...sucreSeats,
   ...squareSeats,
   ...linksSeats,
   ...sportsSeats,

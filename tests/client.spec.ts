@@ -290,6 +290,20 @@ test("Vinyl Vault sells a record that plays at home", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("Sucre: a macaron tower goes up a layer or topples", async ({ page }) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=patisserie`);
+  const panel = page.getByRole("region", { name: "Macaron tower" });
+  await panel
+    .getByRole("button", { name: "Build a tower" })
+    .click({ timeout: 150_000 });
+  await panel.getByRole("button", { name: "Drop" }).click();
+  // wherever it landed: one high, or toppled off the stand
+  await expect(panel.getByLabel("Tower")).toContainText(/1 high|0 high/);
+  expect(errors).toEqual([]);
+});
+
 test("Dog-Ear Books: a seat by the fire", async ({ page }) => {
   test.setTimeout(330_000);
   const errors = collectErrors(page);
@@ -1273,6 +1287,7 @@ for (const room of [
   "espresso-lab",
   "hotel-rooftop",
   "bookshop",
+  "patisserie",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

@@ -101,6 +101,7 @@ import * as THRIFT from "./thriftTemple.ts";
 import * as LAB from "./espressoLab.ts";
 import * as ROOF from "./hotelRooftop.ts";
 import * as BOOKS from "./bookshop.ts";
+import * as SUCRE from "./patisserie.ts";
 import * as REWIND from "./videoStore.ts";
 import type { Vec2 } from "./walk.ts";
 
@@ -161,6 +162,7 @@ export type RoomId =
   | "espresso-lab"
   | "hotel-rooftop"
   | "bookshop"
+  | "patisserie"
   | "video-store"
   | "city";
 
@@ -678,6 +680,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the avenue",
         target: "city",
         targetSpawn: { position: BACK.BACK_ROOM_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  patisserie: {
+    id: "patisserie",
+    name: "Sucre",
+    walkable: SUCRE.FLOOR,
+    blockers: SUCRE.BLOCKERS,
+    spawn: { position: SUCRE.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "patisserie-to-city",
+        position: SUCRE.EXIT,
+        radius: 0.8,
+        label: "Out to Park Avenue",
+        target: "city",
+        targetSpawn: { position: SUCRE.PATISSERIE_DOOR.landing, yaw: Math.PI },
       },
     ],
   },

@@ -35,6 +35,7 @@ import * as THRIFT from "../thriftTemple.ts";
 import * as LAB from "../espressoLab.ts";
 import * as ROOF from "../hotelRooftop.ts";
 import * as BOOKS from "../bookshop.ts";
+import * as SUCRE from "../patisserie.ts";
 import * as REWIND from "../videoStore.ts";
 import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
@@ -1481,8 +1482,18 @@ const UPTOWN_FRONT: readonly {
     h: 16,
     north: false,
     color: "#7b4b3a",
-    sign: { text: "PATISSERIE", color: "#ffc8dd" },
+    sign: { text: "SUCRE", color: "#ffc8dd" },
     style: "brick",
+    venue: {
+      id: "patisserie",
+      door: {
+        position: SUCRE.PATISSERIE_DOOR.position,
+        radius: 2,
+        label: "Into Sucre",
+        target: "patisserie",
+        targetSpawn: { position: SUCRE.SPAWN, yaw: Math.PI },
+      },
+    },
   },
   { x: 290, w: 22, h: 20, north: false, color: "#9c6644", style: "brick" },
   {
