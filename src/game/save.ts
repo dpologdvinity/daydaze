@@ -44,6 +44,8 @@ export type SaveV1 = {
     effects: Intensity;
     /** The dressing-room drawer; closed on a new save. */
     panelOpen: boolean;
+    /** Mask swearing in others' chat too, not just slurs. */
+    strictChat: boolean;
   };
   // Added after v1 shipped: older saves load with these defaults.
   home: HomeSave;
@@ -86,6 +88,7 @@ export function createDefaultSave(name: string): SaveV1 {
       quality: "auto",
       muted: false,
       effects: "full",
+      strictChat: false,
       panelOpen: false,
     },
     home: { ...DEFAULT_HOME, furniture: [] },
@@ -125,6 +128,7 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
   const muted = settings.get("muted");
   const effects = settings.get("effects");
   const panelOpen = settings.get("panelOpen");
+  const strictChat = settings.get("strictChat");
   const defaults = createDefaultSave(
     isValidDisplayName(name) ? name : fallbackName,
   );
@@ -147,6 +151,10 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
         typeof panelOpen === "boolean"
           ? panelOpen
           : defaults.settings.panelOpen,
+      strictChat:
+        typeof strictChat === "boolean"
+          ? strictChat
+          : defaults.settings.strictChat,
     },
     home: validateHome(save.get("home")),
     jail: validateJail(save.get("jail")),

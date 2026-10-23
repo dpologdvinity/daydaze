@@ -53,13 +53,25 @@ test("credentials need a clean display name and an 8 to 128 character password",
 test("saves are stored only when loadSave keeps every field as sent", () => {
   const save = {
     ...createDefaultSave("Kai"),
-    settings: { quality: "low", muted: true, effects: "low", panelOpen: false },
+    settings: {
+      quality: "low",
+      muted: true,
+      effects: "low",
+      panelOpen: false,
+      strictChat: false,
+    },
   };
   const raw = JSON.stringify(save);
   assert.deepEqual(parseSave(raw, "Fallback"), save);
   // Key order does not matter.
   const reordered = JSON.stringify({
-    settings: { muted: true, quality: "low", effects: "low", panelOpen: false },
+    settings: {
+      muted: true,
+      quality: "low",
+      effects: "low",
+      panelOpen: false,
+      strictChat: false,
+    },
     bests: save.bests,
     challenges: save.challenges,
     car: save.car,

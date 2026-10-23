@@ -38,6 +38,7 @@ test("createDefaultSave uses the default look and auto quality", () => {
       muted: false,
       effects: "full",
       panelOpen: false,
+      strictChat: false,
     },
     home: { locked: true, furniture: [] },
     jail: { endsAt: null },
@@ -64,7 +65,13 @@ test("a save round-trips through serializeSave and loadSave", () => {
     coins: 320,
     wardrobe: [],
     body: DEFAULT_BODY,
-    settings: { quality: "low", muted: true, effects: "off", panelOpen: true },
+    settings: {
+      quality: "low",
+      muted: true,
+      effects: "off",
+      panelOpen: true,
+      strictChat: true,
+    },
     home: {
       locked: false,
       furniture: [{ id: "sofa", cell: [0, 0], rotation: 1 }],
@@ -94,6 +101,8 @@ test("a save from before the apartment, jail and crime fields still loads", () =
     settings: { quality: "low", muted: true, effects: "off" },
   });
   const loaded = loadSave(old, "Fallback");
+  // the strict chat filter starts off
+  assert.equal(loaded.settings.strictChat, false);
   assert.deepEqual(loaded.home, { locked: true, furniture: [] });
   assert.deepEqual(loaded.jail, { endsAt: null });
   assert.deepEqual(loaded.crime, { offences: 0, bans: {}, stolen: {} });
@@ -134,6 +143,7 @@ test("a save from before the swimsuit slot still loads", () => {
       muted: true,
       effects: "full",
       panelOpen: false,
+      strictChat: false,
     },
     home: { locked: true, furniture: [] },
     jail: { endsAt: null },
@@ -175,6 +185,7 @@ test("loadSave keeps a valid name when the look is bad", () => {
       muted: true,
       effects: "full",
       panelOpen: false,
+      strictChat: false,
     },
   });
   assert.deepEqual(loadSave(raw, "Fallback"), {
@@ -190,6 +201,7 @@ test("loadSave keeps a valid name when the look is bad", () => {
       muted: true,
       effects: "full",
       panelOpen: false,
+      strictChat: false,
     },
     home: { locked: true, furniture: [] },
     jail: { endsAt: null },
@@ -221,6 +233,7 @@ test("loadSave keeps a valid look when the name is bad", () => {
       muted: false,
       effects: "full",
       panelOpen: false,
+      strictChat: false,
     },
     home: { locked: true, furniture: [] },
     jail: { endsAt: null },
@@ -245,6 +258,7 @@ test("loadSave repairs settings field by field", () => {
     muted: true,
     effects: "full",
     panelOpen: false,
+    strictChat: false,
   });
   const badMuted = JSON.stringify({
     version: 1,
@@ -257,6 +271,7 @@ test("loadSave repairs settings field by field", () => {
     muted: false,
     effects: "full",
     panelOpen: false,
+    strictChat: false,
   });
 });
 
@@ -280,6 +295,7 @@ test("loadSave repairs the effects setting without touching the rest", () => {
       muted: true,
       effects: "loud",
       panelOpen: false,
+      strictChat: false,
     },
   });
   assert.deepEqual(loadSave(raw, "Fallback").settings, {
@@ -287,6 +303,7 @@ test("loadSave repairs the effects setting without touching the rest", () => {
     muted: true,
     effects: "full",
     panelOpen: false,
+    strictChat: false,
   });
   const low = JSON.stringify({
     version: 1,
