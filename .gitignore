@@ -25,3 +25,7 @@ tmp/
 
 # Windows download metadata (WSL copies); it embeds signed download URLs
 *:Zone.Identifier
+
+# agent instructions stay local
+CLAUDE.md
+.claude/

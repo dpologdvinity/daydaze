@@ -8,7 +8,7 @@ Not intended for children.
 
 A 3D game built with React Three Fiber: a streamed night city of eight neighborhoods with traffic and your own car, about 65 rooms (clubs, bars, restaurants, shops, a mall, parks, a zoo, an aquarium, a water park, an amusement park, a speedway, sports venues, an apartment and a jail), dozens of scored minigames with prizes and daily challenges, and a Blender-built 3D doll with a full closet. Online play (guests and accounts, shared rooms, chat, friends, block, mute and report, two-player cards) runs on a Cloudflare Worker with Durable Objects and D1. It is behind `?online=1` and not deployed yet.
 
-See [docs/VISION.md](docs/VISION.md) for the product, [docs/plans/2026-10-23-next-steps.md](docs/plans/2026-10-23-next-steps.md) for what comes next, and [CLAUDE.md](CLAUDE.md) for how to work in the repo.
+See [docs/VISION.md](docs/VISION.md) for the product, [docs/plans/2026-10-23-next-steps.md](docs/plans/2026-10-23-next-steps.md) for what comes next. Working notes for coding agents live in a local, untracked `CLAUDE.md`.
 
 ## Develop
 
