@@ -311,7 +311,11 @@ bodies, parts, hair and the wheelchair are L.
 models: only sneakers, platforms, boots exist in `public/models/doll/`;
 new shoes need Blender work (`art/doll/blender/`).
 
-**B9. Car wraps (S).** Roadmap lists wraps beside rims/underglow/tint. A
+**B9. Car wraps (S). Done 2026-10-23:** `WRAPS` in `drive.ts` (racing
+stripes, black stripes, checker, two-tone), drawn by an object-space pattern
+in `CarMesh`'s paint shader (no UVs needed); the four mods now pack into two
+base-36 characters of the action code (`c:<hex><2 chars><id>`), so an
+11-character car id still fits with a buzz tag. Original note: Roadmap lists wraps beside rims/underglow/tint. A
 canvas-texture livery on the paint material in `CarMesh.tsx`; add to
 `ParkedCar` mods and the action codec (`c:<hex><r><g><t><id>`; a fourth
 digit fits only if the id is ≤ 10 chars with a buzz suffix; check limits).
@@ -457,7 +461,7 @@ M11's day–night clock was deliberately skipped. Ask before revisiting.
 0. B11 prizes for unscored games and B13 speakeasy cards (quick, high value).
 1. ~~A1 couple emotes~~ (done; piggyback left).
 2. ~~A2 cook-off~~ (done).
-3. C4 shoplifting cleanup and B9 car wraps (quick wins).
+3. ~~C4 shoplifting cleanup and B9 car wraps~~ (done).
 4. B2 beach volleyball, B3 shooting range.
 5. B1 Water Park expansion.
 6. A0 online must-haves, then ask the user about D1 deploy and D2 age gate;
