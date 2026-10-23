@@ -414,7 +414,11 @@ night swim, pool bar (with B1). Amusement Park: photo booth. Neighborhoods
 not built: Hillside Winter Town, the Fashion District (`cells.ts`); one bus
 stop per neighborhood (only `SQUARE_BUS_STOP` exists).
 
-**B19. Cars (S–M, content spec "Cars").** Horn, headlights, car radio
+**B19. Cars (S–M, content spec "Cars"). Partly done 2026-10-23:** horn
+(`playHorn`, H key), radio (`src/audio/carRadio.ts` stations, played by
+`RoomAudio` via `carExtras`) and headlight beams (additive cones in
+`CarMesh`, local only, not sent to others) in the "In the car" group.
+Left: passengers, parking at home, locks. Original note: Horn, headlights, car radio
 (procedural tracks), friends riding along as passengers (online), parking at
 home, and car locks (C2 assumes locks; none exist yet).
 
