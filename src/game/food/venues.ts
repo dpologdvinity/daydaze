@@ -1051,6 +1051,7 @@ const RESTAURANTS: readonly FoodVenue[] = [
       ["Bread and butter course", 5],
       ["Dessert trio", 9],
     ],
+    "lune",
   ),
   venue(
     "drive-in-skate-diner",

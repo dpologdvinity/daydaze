@@ -168,6 +168,7 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Ink & Needle. Pick a spot and a piece of fine jewelry at the counter; Vix does the rest.",
   museum:
     "Museo ng Little Manila. Walk the hall, or pick an exhibit from the guide to read its plaque: the bahay kubo, the jeepney, the parol and more.",
+  lune: "Lune Tasting Room. Take a free chair at a table for two, and tap Margot at the pass for the next course.",
   "sushi-bar":
     "Belt Sushi Yard. Tap Aiko to order, or play Sushi Catch: grab plates off the belt.",
   "ramen-shop":

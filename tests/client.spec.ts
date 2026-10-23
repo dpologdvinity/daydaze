@@ -414,6 +414,20 @@ test("feeding time at the zoo: fill a bucket and feed an enclosure", async ({
   expect(errors).toEqual([]);
 });
 
+test("Lune: take a chair at a table for two", async ({ page }) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=lune`);
+  const canvas = canvasOf(page);
+  await page
+    .getByRole("button", { name: "Take a seat" })
+    .click({ timeout: 150_000 });
+  await expect(canvas).toHaveAttribute("data-seated", /lune-chair/, {
+    timeout: 150_000,
+  });
+  expect(errors).toEqual([]);
+});
+
 test("the boba bar: a shift takes a ticket and scores a cup", async ({
   page,
 }) => {
@@ -1614,6 +1628,7 @@ for (const room of [
   "halo-halo-cafe",
   "ramen-shop",
   "sushi-bar",
+  "lune",
   "salon",
   "piercing",
   "laser-tag",

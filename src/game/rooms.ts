@@ -1,3 +1,4 @@
+import * as LUNE from "./lune.ts";
 import { CITY_AREA, CITY_BOUNDS, CITY_SPAWN } from "./city/layout.ts";
 import { FOOD_ROOM_EXITS } from "./food/storefronts.ts";
 import {
@@ -151,6 +152,7 @@ export type RoomId =
   | "halo-halo-cafe"
   | "ramen-shop"
   | "sushi-bar"
+  | "lune"
   | "museum"
   | "salon"
   | "piercing"
@@ -648,6 +650,12 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
   "halo-halo-cafe": foodRoom("halo-halo-cafe", "Halo-Halo Haus"),
   "ramen-shop": foodRoom("ramen-shop", "Steam Ladle Ramen"),
   "sushi-bar": foodRoom("sushi-bar", "Belt Sushi Yard"),
+  // the date spot: the food rooms' door, its own candlelit floor
+  lune: {
+    ...foodRoom("lune", "Lune Tasting Room"),
+    walkable: LUNE.FLOOR,
+    blockers: LUNE.BLOCKERS,
+  },
   salon: {
     id: "salon",
     name: "The Blowout Bar",

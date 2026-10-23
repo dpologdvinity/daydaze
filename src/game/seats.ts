@@ -17,6 +17,7 @@ import * as DRIVE from "./driveIn.ts";
 import * as CELLAR from "./wineBar.ts";
 import * as DOME from "./dome.ts";
 import * as KAMAYAN from "./kamayanHall.ts";
+import * as LUNE from "./lune.ts";
 import * as GALLERIA from "./galleria.ts";
 import * as RINK from "./rollerRink.ts";
 import * as SKATEPARK from "./skatepark.ts";
@@ -413,6 +414,14 @@ const sportsSeats = [
   ),
 ];
 
+// Lune Tasting Room: the chairs at its tables for two, less the date already
+// under way
+const luneSeats = LUNE.CHAIRS.flatMap(({ at, facing, table }, i) =>
+  table === LUNE.DATE_TABLE
+    ? []
+    : [seat(`lune-chair-${i}`, "lune", at, LUNE.CHAIR_HEIGHT, facing)],
+);
+
 // Lechon and Kamayan Hall: the benches down both sides of the boodle table,
 // and the videoke sofa
 const kamayanSeats = [
@@ -535,6 +544,7 @@ export const SEATS: readonly Seat[] = [
   ...linksSeats,
   ...sportsSeats,
   ...kamayanSeats,
+  ...luneSeats,
   ...galleriaSeats,
   ...rinkSeats,
   ...skateparkSeats,
