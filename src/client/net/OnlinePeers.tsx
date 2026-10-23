@@ -25,7 +25,9 @@ import { Doll, type WalkState } from "../avatar/Doll.tsx";
 import { getBuzz } from "../effects/drunk.ts";
 import { CarMesh } from "../rooms/speedway/CarMesh.tsx";
 import { driving } from "../world/driving.ts";
-import type { Player } from "../world/PlayerController.tsx";
+import { placePlayer, type Player } from "../world/PlayerController.tsx";
+import { followSpot } from "../../game/dance/together.ts";
+import { pairUp, stopTogether } from "./together.ts";
 import { onlineSession } from "./online.ts";
 import { peerCard } from "./peerCard.ts";
 
@@ -97,7 +99,9 @@ function PeerDoll({
         next.car?.mods?.rims !== doing.car?.mods?.rims ||
         next.car?.mods?.glow !== doing.car?.mods?.glow ||
         next.car?.mods?.tint !== doing.car?.mods?.tint ||
-        next.buzz !== doing.buzz)
+        next.buzz !== doing.buzz ||
+        next.pair?.emote !== doing.pair?.emote ||
+        next.pair?.role !== doing.pair?.role)
     )
       setDoing(next);
   });
@@ -129,6 +133,7 @@ function PeerDoll({
           mood={doing.mood}
           hold={doing.seat?.pose === "lie" ? LAY_HOLD : undefined}
           dance={doing.dance}
+          couple={doing.pair?.role}
           walk={walk}
           seed={peer.id.length * 7}
         />
@@ -136,7 +141,13 @@ function PeerDoll({
       <Html position={[0, car ? 2.3 : 2.05, 0]} center zIndexRange={[20, 10]}>
         <div
           className="peer-tag"
-          data-doing={car ? `car:${car.id}` : (doing.seat?.pose ?? doing.mood)}
+          data-doing={
+            car
+              ? `car:${car.id}`
+              : doing.pair
+                ? `pair:${doing.pair.emote}`
+                : (doing.seat?.pose ?? doing.mood)
+          }
         >
           {said && <p className="bubble npc-bubble">{said}</p>}
           {doing.buzz && (
@@ -224,8 +235,31 @@ export function OnlinePeers({
   }, []);
   // only a changed pose goes out; the session throttles what does
   const sent = useRef({ x: NaN, z: NaN, yaw: NaN, action: "" });
+  // where an emote with someone began: walking off from it ends the emote
+  const anchor = useRef({ x: 0, z: 0, set: false });
   useFrame(() => {
     const s = sent.current;
+    const { pair } = pairUp.get();
+    if (!pair) anchor.current.set = false;
+    else if (!pair.placed) {
+      // the follow steps into place by the lead, facing them
+      const lead = session?.sample(pair.id);
+      if (lead) {
+        const spot = followSpot(pair.e, [lead.x, lead.z], lead.yaw);
+        placePlayer(player, spot.at[0], spot.at[1]);
+        player.walk.target = null;
+        player.yaw = player.walk.yaw = player.before.yaw = spot.yaw;
+        pairUp.set({ pair: { ...pair, placed: true } });
+      }
+    } else if (!anchor.current.set)
+      anchor.current = { x: player.pos.x, z: player.pos.z, set: true };
+    else if (
+      Math.hypot(
+        player.pos.x - anchor.current.x,
+        player.pos.z - anchor.current.z,
+      ) > 0.4
+    )
+      stopTogether();
     // seated or riding, they're drawn on the seat, not where they walked
     // up; driving, as their car
     const city = driving.session?.kind === "city" ? driving.session : null;
@@ -251,6 +285,7 @@ export function OnlinePeers({
         ? { id: city.spec.id, color: city.color, mods: city.mods }
         : undefined,
       buzzTier(getBuzz()),
+      pair?.placed ? { emote: pair.e, role: pair.role } : undefined,
     );
     if (
       !session ||

@@ -63,4 +63,32 @@ test("two players meet in the Plaza, talk, become friends and play cards", async
     timeout: 60_000,
   });
   await expect(tableB).toContainText("holds 6");
+
+  // a hug: A asks, B says yes and steps in; each sees the other in the pose
+  await tagOnA.click();
+  await a
+    .getByRole("group", { name: "Do something together" })
+    .getByRole("button", { name: "Hug" })
+    .click();
+  const ask = b.getByRole("region", { name: "Emote invite" });
+  await ask.getByRole("button", { name: "Yes" }).click({ timeout: 60_000 });
+  await expect(a.locator(".peer-tag")).toHaveAttribute(
+    "data-doing",
+    "pair:hug",
+    { timeout: 60_000 },
+  );
+  await expect(b.locator(".peer-tag")).toHaveAttribute(
+    "data-doing",
+    "pair:hug",
+    { timeout: 60_000 },
+  );
+  await b
+    .getByRole("region", { name: "Together" })
+    .getByRole("button", { name: "Stop" })
+    .click();
+  await expect(a.locator(".peer-tag")).not.toHaveAttribute(
+    "data-doing",
+    "pair:hug",
+    { timeout: 60_000 },
+  );
 });

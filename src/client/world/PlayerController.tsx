@@ -1,4 +1,6 @@
 import { useFrame } from "@react-three/fiber";
+import { together } from "../../game/dance/together.ts";
+import { pairUp } from "../net/together.ts";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import * as THREE from "three";
 import { clampToArea, type WalkArea } from "../../game/area.ts";
@@ -210,8 +212,8 @@ export function PlayerController({
   look,
   swim,
   body,
-  mood,
-  dance,
+  mood: picked,
+  dance: pickedDance,
   holds,
   onMove,
   tag,
@@ -232,6 +234,11 @@ export function PlayerController({
   tag: RefObject<HTMLDivElement | null>;
   onPortal: (portal: Portal) => void;
 }) {
+  // an emote with another player overrides the picked mood (see net/together.ts)
+  const { pair } = pairUp.use();
+  const paired = pair?.placed ? pair : null;
+  const mood: Mood = paired ? "dance" : picked;
+  const dance = paired ? together(paired.e).move : pickedDance;
   const g = useRef<THREE.Group>(null);
   const gait = useRef<WalkState>({ speed: 0 });
   const marker = useRef<THREE.Mesh>(null);
@@ -412,6 +419,7 @@ export function PlayerController({
           body={body}
           mood={riding === "lay" ? "sit" : (riding ?? mood)}
           dance={dance}
+          couple={paired?.role}
           hold={
             riding === "lay"
               ? LAY_HOLD
