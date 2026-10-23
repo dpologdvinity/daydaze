@@ -44,9 +44,12 @@ Where this file and the master roadmap disagree on status, this file is newer.
   Newest: `ramen-shop`, `sushi-bar`, `bistro` (food counter kit), `lune`
   (custom candlelit date room, `src/game/lune.ts`).
 - **Games with prizes and daily challenges** (`src/game/prizes.ts`): most
-  scored games. Not yet in `PRIZE_GAMES` (so no bests or challenges): the
-  jet-ski race, Speedway races, bumper cars, the Midway booths (they pay
-  coins directly via `payoutFor`) and the arcade minigames; see B11. Newest: Ramen Rush,
+  scored games, including (B11, done) the Speedway and jet-ski races (graded
+  on finishing place, lower is better), bumper cars (bumps, cashed when you
+  climb out), the four Midway booths, Gem Glam, Star Siege and Trivia (the
+  dialog hands its best round to the prize desk on close; leveled cabinets
+  grade on their medium bars). Still paying a bare grade: Bassline and Last
+  Call. Newest: Ramen Rush,
   Sushi Catch, safari photo hunt and feeding time (zoo), curling (ice rink),
   Reef Spotter (aquarium), jet-ski race (marina), water-gun race (Midway
   booth), Super Slide ride (fairground).
@@ -303,7 +306,7 @@ with no score; the roster wants a solo horror game (jump-scare timing or a
 find-the-exit run, no gore). Star Siege already is the roster's alien
 shooter.
 
-**B11. Prizes for unscored games (S).** Add `PRIZE_GAMES`/`PRIZE_TABLES`
+**B11. Prizes for unscored games (S). Done 2026-10-23.** Add `PRIZE_GAMES`/`PRIZE_TABLES`
 entries and `award()` calls for the jet-ski race and Speedway races (best
 lap or place), bumper cars (bumps), the Midway booths (score per booth) and
 the arcade minigames, so they get bests and daily challenges.
@@ -312,7 +315,11 @@ the arcade minigames, so they get bests and daily challenges.
 `Karaoke.tsx`). A pitch/timing rhythm game at the mic, procedural backing
 track, no lyrics on screen (rule from earlier work).
 
-**B13. Card table at the speakeasy (S, M3).** Put Crazy Eights (vs a regular
+**B13. Card table at the speakeasy (S, M3). Done 2026-10-23:** Odette deals
+Crazy Eights at the Back Room bar (`src/client/rooms/backroom/CardsPanel.tsx`;
+`CardTable` takes `rival`/`winLine`; the engine's `deal(seed, rival)` names
+them in the table talk). The online duel already works in any room from
+`PeerCard`. Original note: Put Crazy Eights (vs a regular
 NPC, and the online duel) at a Back Room table (`back-room`).
 
 **B14. Club events and sapphic touches (M, M3).** Pride night event at the
