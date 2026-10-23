@@ -964,6 +964,25 @@ test("the overlay passes an axe scan", async ({ page }) => {
   expect(results.violations).toEqual([]);
 });
 
+test("the newer game panels pass an axe scan once started", async ({
+  page,
+}) => {
+  test.setTimeout(600_000);
+  const panels: [string, string][] = [
+    ["water-park", "Climb the tower"],
+    ["karaoke", "Sing a song"],
+    ["haunted-house", "Step inside"],
+    ["kamayan-hall", "Cook against Tita Baby"],
+    ["back-room", "Deal in with Odette"],
+  ];
+  for (const [room, start] of panels) {
+    await page.goto(`${STILL}&room=${room}`);
+    await page.getByRole("button", { name: start }).click({ timeout: 150_000 });
+    const results = await new AxeBuilder({ page }).exclude("canvas").analyze();
+    expect(results.violations, room).toEqual([]);
+  }
+});
+
 test("on a phone the dressing room opens from its toggle", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(VELVET);
