@@ -16,7 +16,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test:e2e": "playwright test -c playwright.minigames.config.ts",
-    "test:e2e:client": "playwright test"
+    "test:e2e:client": "playwright test",
+    "test:e2e:online": "playwright test -c playwright.online.config.ts"
   },
   "engines": {
     "node": ">=22.18.0"

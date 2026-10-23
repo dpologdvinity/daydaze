@@ -29,6 +29,7 @@ Use Node.js 22.18 or newer; `.nvmrc` pins 24 for nvm and CI.
 - `npm run dev:server`: builds the app, then runs local `wrangler dev`, which serves `dist/` with the CSP from `public/_headers`. Apply migrations first with `npx wrangler d1 migrations apply DB --local --config server/wrangler.jsonc`.
 - `npm run smoke:server`: starts a throwaway local `wrangler dev` and checks guests, rooms, chat, friends, blocks, reconnects and accounts end to end. Never run `wrangler deploy` or log in to Cloudflare without the user's approval.
 - `npm run test:e2e:client`: Playwright browser tests for the client in `tests/client.spec.ts` (install the browser once with `npx playwright install chromium`). Headless WebGL runs on SwiftShader on the CPU, so it is slow: run only the tests you need (see Working here).
+- `npm run test:e2e:online`: two browser players against a throwaway local Worker (`tests/online.spec.ts`, `playwright.online.config.ts`: wrangler on 8798, Vite on 5197). Slow, about 7 minutes; run it when you touch the online client or server.
 - `npm run format` / `npm run format:check`: Prettier.
 - `npm run verify`: tests, typecheck, format check and build.
 
