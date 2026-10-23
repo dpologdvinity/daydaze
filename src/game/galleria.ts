@@ -47,7 +47,7 @@ export const STORES: readonly Store[] = [
     name: "Platform Palace",
     x: 5.5,
     color: "#ffd84f",
-    shop: null,
+    shop: "shoes",
   },
   { id: "track-99", name: "Track 99", x: 11, color: "#b06bff", shop: null },
 ];

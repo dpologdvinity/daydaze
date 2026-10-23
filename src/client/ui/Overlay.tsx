@@ -32,6 +32,8 @@ import {
   LIPS,
   OUTFIT_COLORS,
   OUTFITS,
+  SHOES,
+  isShoe,
   SKINS,
   SWIMSUITS,
   type Look,
@@ -519,6 +521,21 @@ function Mirror({
             options={wearable(OUTFIT_COLORS, wardrobe)}
             value={look.outfitColor}
             onPick={(outfitColor) => setLook({ ...look, outfitColor })}
+          />
+        </section>
+        <section>
+          <h3>Shoes</h3>
+          <Chips
+            label="Shoes"
+            options={[
+              { id: "outfit", label: "With the outfit" },
+              ...wearable(SHOES, wardrobe),
+            ]}
+            value={look.shoes ?? "outfit"}
+            onPick={(pick) => {
+              const { shoes: _old, ...rest } = look;
+              setLook(isShoe(pick) ? { ...rest, shoes: pick } : rest);
+            }}
           />
         </section>
         <section>

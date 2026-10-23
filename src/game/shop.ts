@@ -12,10 +12,13 @@ import {
   piercingsOf,
   type Look,
   type PiercingSpot,
+  isShoe,
+  SHOES,
 } from "./look.ts";
 import { spend } from "./wallet.ts";
 
-export type ShopId = "boutique" | "beauty" | "salon" | "piercing" | "thrift";
+export type ShopId =
+  "boutique" | "beauty" | "salon" | "piercing" | "thrift" | "shoes";
 
 /** A Look slot a shop item fills; its id is the catalog option in that slot. */
 export type ShopSlot =
@@ -25,7 +28,8 @@ export type ShopSlot =
   | "hairColor"
   | "lips"
   | "shadow"
-  | "piercing";
+  | "piercing"
+  | "shoes";
 
 export type ShopItem = {
   id: string;
@@ -36,6 +40,9 @@ export type ShopItem = {
 
 // Original names only. Each id is a catalog option in look.ts.
 export const SHOP_ITEMS: readonly ShopItem[] = [
+  // Platform Palace: shoes (sneakers are everyone's)
+  { id: "platforms", slot: "shoes", store: "shoes", price: 40 },
+  { id: "boots", slot: "shoes", store: "shoes", price: 55 },
   // Pixel Mall Boutique: outfits and glam wear
   { id: "tracksuit-y2k", slot: "outfit", store: "boutique", price: 60 },
   { id: "baby-tee-mini", slot: "outfit", store: "boutique", price: 45 },
@@ -101,6 +108,7 @@ const CATALOGUES: Record<ShopSlot, readonly { id: string; label: string }[]> = {
   lips: LIPS,
   shadow: EYESHADOWS,
   piercing: PIERCING_STYLES,
+  shoes: SHOES,
 };
 
 /** An item's name on the shelf, from its catalog. */
@@ -137,6 +145,8 @@ export function wearItem(look: Look, item: ShopItem): Look {
     }
     case "piercing":
       return pierce(look, "nose", item.id);
+    case "shoes":
+      return isShoe(item.id) ? { ...look, shoes: item.id } : look;
   }
 }
 
@@ -185,8 +195,12 @@ function locked(id: string, wardrobe: readonly string[]): boolean {
 
 /** The look with every unowned shop item swapped for the default. */
 export function unlockedLook(look: Look, wardrobe: readonly string[]): Look {
+  // unowned shoes come off, back to the outfit's own
+  const { shoes, ...rest } = look;
+  const keep = shoes !== undefined && !locked(shoes, wardrobe);
   return {
-    ...look,
+    ...rest,
+    ...(keep ? { shoes } : {}),
     outfit: locked(look.outfit, wardrobe) ? DEFAULT_LOOK.outfit : look.outfit,
     outfitColor: locked(look.outfitColor, wardrobe)
       ? DEFAULT_LOOK.outfitColor

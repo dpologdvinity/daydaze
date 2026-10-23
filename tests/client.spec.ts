@@ -1433,7 +1433,7 @@ test("the debug buttons take the player into Kamayan Hall", async ({
   expect(errors).toEqual([]);
 });
 
-test("the Galleria: buy at Glitterbox, pay for it, and it's yours to wear", async ({
+test("the Galleria: buy at Glitterbox and Platform Palace, and wear them", async ({
   page,
 }) => {
   // the Galleria compiles for minutes on SwiftShader, under the loading veil
@@ -1455,6 +1455,17 @@ test("the Galleria: buy at Glitterbox, pay for it, and it's yours to wear", asyn
   await expect(row.getByRole("button", { name: "Wear" })).toBeVisible();
   await shop.getByRole("button", { name: "Close" }).click();
   await expect(shop).toBeHidden();
+  // Platform Palace next door: the boots are 55, all that's left
+  await page.getByRole("button", { name: "Shop at Platform Palace" }).click();
+  const shoes = page.getByRole("dialog", { name: "Platform Palace" });
+  const boots = shoes.getByRole("listitem").filter({ hasText: "Boots" });
+  await boots.getByRole("button", { name: "Buy" }).click();
+  await expect(shoes).toContainText("0 coins");
+  await expect
+    .poll(() =>
+      page.evaluate(() => localStorage.getItem("daydaze-save-v1") ?? ""),
+    )
+    .toContain('"shoes":"boots"');
   expect(errors).toEqual([]);
 });
 

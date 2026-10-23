@@ -26,7 +26,7 @@ import {
   type Face,
   makeupOf,
   type Look,
-  type Outfit,
+  shoesOf,
   type Mood,
   type SwimLook,
 } from "../../../game/look.ts";
@@ -108,24 +108,6 @@ type Props = {
   seed?: number;
 } & Omit<ThreeElements["group"], "children">;
 
-// shortcut: shoes follow the outfit until the closet has a shoe picker
-const SHOES: Record<Outfit, string> = {
-  flares: "sneakers",
-  mini: "platforms",
-  fur: "boots",
-  jeans: "sneakers",
-  shorts: "sneakers",
-  blouse: "platforms",
-  "tracksuit-y2k": "sneakers",
-  "baby-tee-mini": "platforms",
-  "sequin-slip": "platforms",
-  "glam-faux-fur": "boots",
-  "corset-maxi": "platforms",
-  "cargo-crop": "sneakers",
-  sundress: "platforms",
-  "hoodie-bikers": "sneakers",
-};
-
 /** The part files a look wears, by kind. */
 // salon styles wear the closest 3D hair until they get models of their own
 const HAIR: Partial<Record<Look["hairStyle"], string>> = {
@@ -140,10 +122,10 @@ export function partsFor(look: Look, swim: SwimLook | null) {
     outfit: swim
       ? `${MODELS}/swim-${swim.style}.glb`
       : `${MODELS}/outfit-${cut}.glb`,
-    shoes: swim ? null : `${MODELS}/shoes-${SHOES[cut]}.glb`,
+    shoes: swim ? null : `${MODELS}/shoes-${shoesOf(look)}.glb`,
     tucks: swim
       ? [`tuck_${swim.style}`]
-      : [`tuck_${cut}`, `tuck_${SHOES[cut]}`],
+      : [`tuck_${cut}`, `tuck_${shoesOf(look)}`],
   };
 }
 
@@ -796,7 +778,7 @@ export function HumanDoll({
             url={parts.shoes}
             bones={body.bones}
             tint={
-              SHOES[look.outfit] === "sneakers"
+              shoesOf(look) === "sneakers"
                 ? { color: "#ffffff", kind: "keep" }
                 : {
                     color:

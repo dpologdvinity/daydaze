@@ -137,6 +137,38 @@ type IdOf<T extends readonly Option[]> = T[number]["id"];
 export type HairStyle = IdOf<typeof HAIR_STYLES>;
 export type Outfit = IdOf<typeof OUTFITS>;
 
+/** Shoes: sneakers for everyone, the rest from Platform Palace. */
+export const SHOES = [
+  { id: "sneakers", label: "Sneakers" },
+  { id: "platforms", label: "Platforms" },
+  { id: "boots", label: "Boots" },
+] as const;
+export type Shoe = IdOf<typeof SHOES>;
+export const isShoe = (value: unknown): value is Shoe =>
+  SHOES.some((s) => s.id === value);
+
+/** The shoes each outfit comes with, when the look picks none. */
+const OUTFIT_SHOES: Record<Outfit, Shoe> = {
+  flares: "sneakers",
+  mini: "platforms",
+  fur: "boots",
+  jeans: "sneakers",
+  shorts: "sneakers",
+  blouse: "platforms",
+  "tracksuit-y2k": "sneakers",
+  "baby-tee-mini": "platforms",
+  "sequin-slip": "platforms",
+  "glam-faux-fur": "boots",
+  "corset-maxi": "platforms",
+  "cargo-crop": "sneakers",
+  sundress: "platforms",
+  "hoodie-bikers": "sneakers",
+};
+
+/** The shoes a look wears: its own pick, else the outfit's. */
+export const shoesOf = (look: Look): Shoe =>
+  isShoe(look.shoes) ? look.shoes : OUTFIT_SHOES[look.outfit];
+
 export type Mood = IdOf<typeof MOODS>;
 
 /** Eye colors for the 3D doll's irises. */
@@ -543,6 +575,8 @@ export type Look = {
   piercings?: string;
   /** A walk style from GAITS; looks without one walk naturally. */
   gait?: string;
+  /** Shoes from SHOES; looks without them wear the outfit's own. */
+  shoes?: string;
   /** encodeSwim's code: sent online so others see the swimsuit in swimwear
    * rooms. Saves keep the swimsuit apart, in `swim`. */
   swim?: string;
@@ -550,7 +584,10 @@ export type Look = {
 
 const LOOK_CATALOGS: {
   [
-    K in Exclude<keyof Look, "face" | "makeup" | "piercings" | "gait" | "swim">
+    K in Exclude<
+      keyof Look,
+      "face" | "makeup" | "piercings" | "gait" | "swim" | "shoes"
+    >
   ]: readonly {
     readonly id: Look[K];
     readonly label: string;
@@ -580,6 +617,7 @@ export function validateLook(value: unknown): value is Look {
   const hasPiercings = fields.has("piercings");
   const hasGait = fields.has("gait");
   const hasSwim = fields.has("swim");
+  const hasShoes = fields.has("shoes");
   return (
     fields.size ===
       catalogs.length +
@@ -587,7 +625,9 @@ export function validateLook(value: unknown): value is Look {
         (hasMakeup ? 1 : 0) +
         (hasPiercings ? 1 : 0) +
         (hasGait ? 1 : 0) +
-        (hasSwim ? 1 : 0) &&
+        (hasSwim ? 1 : 0) +
+        (hasShoes ? 1 : 0) &&
+    (!hasShoes || isShoe(fields.get("shoes"))) &&
     (!hasSwim || decodeSwim(fields.get("swim")) !== null) &&
     (!hasGait || isGait(fields.get("gait"))) &&
     (!hasPiercings || decodePiercings(fields.get("piercings")) !== null) &&

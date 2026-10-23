@@ -12,6 +12,7 @@ const LIFT_STORES: Partial<Record<ShopId, Store["id"]>> = {
   beauty: "drugstore",
   boutique: "designer-boutique",
   piercing: "jewelry",
+  shoes: "mall",
 };
 
 /** The stealth profile behind a shop's counter, or null if it can't be lifted from. */

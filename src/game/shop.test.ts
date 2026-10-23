@@ -11,6 +11,9 @@ import {
   OUTFIT_COLORS,
   OUTFITS,
   type Look,
+  SHOES,
+  shoesOf,
+  validateLook,
 } from "./look.ts";
 import {
   pierce,
@@ -34,6 +37,7 @@ const catalogs = {
   lips: LIPS,
   shadow: EYESHADOWS,
   piercing: PIERCING_STYLES,
+  shoes: SHOES,
 } as const;
 
 test("every shop item is a real catalog option in its slot", () => {
@@ -198,4 +202,25 @@ test("buying the find pays the thrift price, and dyes come off unowned", () => {
   const dyed = { ...DEFAULT_LOOK, outfitColor: "#c9a227" } as const;
   assert.equal(unlockedLook(dyed, []).outfitColor, DEFAULT_LOOK.outfitColor);
   assert.equal(unlockedLook(dyed, ["#c9a227"]).outfitColor, "#c9a227");
+});
+
+test("shoes: the outfit's own by default, Platform Palace's once bought", () => {
+  const boots = itemsIn("shoes").find((i) => i.id === "boots");
+  assert.ok(boots);
+  const booted = wearItem(DEFAULT_LOOK, boots);
+  assert.equal(booted.shoes, "boots");
+  assert.ok(validateLook(booted));
+  assert.equal(shoesOf(booted), "boots");
+  assert.equal(shoesOf(DEFAULT_LOOK), shoesOf({ ...DEFAULT_LOOK }));
+  // not owned: they come off, and the key goes with them
+  const unowned = unlockedLook(booted, []);
+  assert.equal("shoes" in unowned, false);
+  assert.ok(validateLook(unowned));
+  assert.equal(unlockedLook(booted, ["boots"]).shoes, "boots");
+  // sneakers are everyone's
+  assert.equal(
+    unlockedLook({ ...DEFAULT_LOOK, shoes: "sneakers" }, []).shoes,
+    "sneakers",
+  );
+  assert.equal(validateLook({ ...DEFAULT_LOOK, shoes: "heels" }), false);
 });
