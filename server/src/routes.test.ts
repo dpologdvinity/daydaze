@@ -16,6 +16,9 @@ test("fixed API routes match by method and path", () => {
   assert.deepEqual(matchRoute("POST", "/api/unfriend"), { kind: "unfriend" });
   assert.deepEqual(matchRoute("GET", "/api/friends"), { kind: "friends" });
   assert.deepEqual(matchRoute("POST", "/api/admin/ban"), { kind: "admin-ban" });
+  assert.deepEqual(matchRoute("GET", "/api/admin/reports"), {
+    kind: "admin-reports",
+  });
 });
 
 test("room routes accept only known rooms and copies 1 to 99", () => {

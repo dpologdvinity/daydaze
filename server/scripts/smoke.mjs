@@ -527,6 +527,20 @@ try {
     ).on("exit", (code) => resolve(code)),
   );
   check(promoted === 0, "the account is made admin with SQL on D1");
+  const peek = await fetch(`${BASE}/api/admin/reports`, {
+    headers: { Cookie: dave.cookie },
+  });
+  check(peek.status === 403, "a non-admin cannot read reports");
+  const listed = await fetch(`${BASE}/api/admin/reports`, {
+    headers: { Cookie: adminCookie },
+  });
+  const { reports } = await listed.json();
+  check(
+    listed.status === 200 &&
+      reports.length >= 5 &&
+      reports[0].target_id === alice.id,
+    `an admin reads the latest reports (${reports.length})`,
+  );
   const erin = await guest(bannedAddress);
   const erinSocket = await connect(erin);
   await waitFor(

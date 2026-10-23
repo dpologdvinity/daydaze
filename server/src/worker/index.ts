@@ -404,6 +404,14 @@ async function handle(
         .run();
       return new Response(null, { status: 201 });
     }
+    case "admin-reports": {
+      if (!session.isAdmin) return error(403, "forbidden");
+      const { results } = await env.DB.prepare(
+        `SELECT id, reporter_id, target_id, reason, room_id, copy, chat, created_at
+         FROM reports ORDER BY created_at DESC LIMIT 50`,
+      ).all();
+      return json({ reports: results });
+    }
     case "admin-ban": {
       if (!session.isAdmin) return error(403, "forbidden");
       const ban = parseBan(await readJson(request));

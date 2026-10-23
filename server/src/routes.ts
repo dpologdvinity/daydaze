@@ -15,7 +15,8 @@ export type Route =
         | "friend"
         | "unfriend"
         | "friends"
-        | "admin-ban";
+        | "admin-ban"
+        | "admin-reports";
     }
   | { kind: "rooms"; roomId: RoomId }
   | { kind: "ws"; roomId: RoomId; copy: number };
@@ -34,6 +35,7 @@ const FIXED = new Map<string, Route>([
   ["POST /api/unfriend", { kind: "unfriend" }],
   ["GET /api/friends", { kind: "friends" }],
   ["POST /api/admin/ban", { kind: "admin-ban" }],
+  ["GET /api/admin/reports", { kind: "admin-reports" }],
 ]);
 
 /** Copies are numbered 1 to 99 ("Downtown #1"). */
