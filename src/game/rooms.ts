@@ -321,6 +321,8 @@ const AMUSEMENT_PARK_BLOCKERS: readonly (readonly Vec2[])[] = [
   box(-15.5, -52, 16.5, -36.2),
   // the Haunted House, in the east lot past the coasters
   box(21, -21, 29, -11),
+  // the Super Slide's lanes, tower and lift, further back in the east lot
+  box(21.6, -51, 27.4, -37.4),
   // food carts at the midway's back corners
   box(-12.4, -10.3, -10.6, -8.7),
   box(10.6, -10.3, 12.4, -8.7),

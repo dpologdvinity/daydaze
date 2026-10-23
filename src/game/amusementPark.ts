@@ -17,6 +17,7 @@ export const RIDE_IDS = [
   "log-flume",
   "scrambler",
   "starship",
+  "super-slide",
 ] as const;
 export type RideId = (typeof RIDE_IDS)[number];
 
@@ -37,6 +38,27 @@ export const STARSHIP_AT: readonly [number, number] = [-22.5, -48.5];
 // Ride tuning. Calm (reduced motion) rides take longer, so the same motion reads
 // slower. `seated` rides sit the doll down (a horse, a cup, a chair, a
 // coaster car); in the wheel's gondola she stands.
+/** The Super Slide in the east lot: four wavy lanes from the tower at the
+ * north end down to the run-out, a chain lift up its east side. */
+export const SUPER_SLIDE = {
+  x: 24,
+  topZ: -50,
+  bottomZ: -38,
+  top: 7.5,
+  lanes: [-1.5, -0.5, 0.5, 1.5],
+  liftX: 26.6,
+  /** The share of the ride spent going up the lift. */
+  climb: 0.55,
+} as const;
+
+/** The slide's height `s` of the way down (0 top, 1 bottom): a steady
+ * fall with three humps that lift the sack off the lane. */
+export function slideHeight(s: number): number {
+  const k = Math.min(1, Math.max(0, s));
+  const humps = 0.45 * Math.sin(Math.PI * k * 3) ** 2 * (1 - k);
+  return Math.max(0, SUPER_SLIDE.top * (1 - k) ** 1.2 + humps);
+}
+
 export const RIDES: Record<
   RideId,
   {
@@ -104,6 +126,13 @@ export const RIDES: Record<
     label: "Scrambler",
     spot: [24, -23.4],
     seconds: { normal: 18, calm: 28 },
+    seated: true,
+  },
+  // up the chain lift, then down a lane over the humps
+  "super-slide": {
+    label: "Super Slide",
+    spot: [SUPER_SLIDE.liftX, SUPER_SLIDE.bottomZ + 1.6],
+    seconds: { normal: 14, calm: 22 },
     seated: true,
   },
   // the rotor pins her to the wall standing
@@ -477,9 +506,34 @@ export function ridePose(
       out.y += (ride === "log-flume" ? LOG_SEAT : CAR_SEAT) - SIT_HIPS;
       return out;
     }
+    case "super-slide":
+      return superSlidePose(progress, out);
     default:
       return turningPose(ride, now, calm, out);
   }
+}
+
+/** Up the chain lift seated, then down the second lane on a sack. */
+function superSlidePose(progress: number, out: Pose): Pose {
+  const S = SUPER_SLIDE;
+  if (progress < S.climb) {
+    const k = progress / S.climb;
+    out.x = S.liftX;
+    out.z = S.bottomZ + (S.topZ - S.bottomZ) * k;
+    out.y = S.top * k + 0.3 - SIT_HIPS;
+    out.yaw = Math.PI;
+    out.pitch = Math.atan2(S.top, S.bottomZ - S.topZ);
+    return out;
+  }
+  const s = (progress - S.climb) / (1 - S.climb);
+  const len = S.bottomZ - S.topZ;
+  out.x = S.x + S.lanes[1];
+  out.z = S.topZ + len * s;
+  out.y = slideHeight(s) + 0.12 - SIT_HIPS;
+  out.yaw = 0;
+  const ds = 0.01;
+  out.pitch = -Math.atan2(slideHeight(s + ds) - slideHeight(s), len * ds);
+  return out;
 }
 
 export type RideState =

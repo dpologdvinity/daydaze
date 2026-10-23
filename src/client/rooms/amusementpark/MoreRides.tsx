@@ -1,5 +1,5 @@
 import { useFrame } from "@react-three/fiber";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import {
   SCRAMBLER_ARM,
@@ -9,7 +9,10 @@ import {
   STARSHIP_AT,
   STARSHIP_RADIUS,
   starshipTurn,
+  slideHeight,
+  SUPER_SLIDE,
 } from "../../../game/amusementPark.ts";
+import { Batch } from "../shared/batch.ts";
 import { useReducedMotion } from "../../motion.ts";
 import { GOLD, LACQUER } from "../shared/materials.ts";
 import { MARQUEE, NeonText } from "../shared/Neon.tsx";
@@ -193,6 +196,107 @@ export function Starship() {
         width={3}
         k={3}
         position={[0, 3.3, 3.2]}
+      />
+    </group>
+  );
+}
+
+const LANE_COLORS = ["#ff2f9a", "#ffd84f", "#3fe0d0", "#9b5cff"];
+const STEEL = new THREE.MeshStandardMaterial({
+  color: "#c8ccd8",
+  roughness: 0.4,
+  metalness: 0.5,
+});
+const DECK = new THREE.MeshStandardMaterial({
+  color: "#ff8a3d",
+  roughness: 0.6,
+});
+
+/** The four lanes as one ribbon, each lane its own color, humps and all. */
+function laneGeometry(): THREE.BufferGeometry {
+  const { x, topZ, bottomZ, lanes } = SUPER_SLIDE;
+  const steps = 60;
+  const half = 0.46;
+  const pos: number[] = [];
+  const col: number[] = [];
+  const c = new THREE.Color();
+  lanes.forEach((lane, li) => {
+    c.set(LANE_COLORS[li] ?? "#ffffff");
+    for (let i = 0; i < steps; i++) {
+      const a = i / steps;
+      const b = (i + 1) / steps;
+      const za = topZ + (bottomZ - topZ) * a;
+      const zb = topZ + (bottomZ - topZ) * b;
+      const ya = slideHeight(a) + 0.1;
+      const yb = slideHeight(b) + 0.1;
+      const x0 = x + lane - half;
+      const x1 = x + lane + half;
+      pos.push(x0, ya, za, x0, yb, zb, x1, ya, za);
+      pos.push(x1, ya, za, x0, yb, zb, x1, yb, zb);
+      for (let k = 0; k < 6; k++) col.push(c.r, c.g, c.b);
+    }
+  });
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+  g.computeVertexNormals();
+  return g;
+}
+
+/** The Super Slide: a tower at the north end, four wavy lanes in candy
+ * colors down to the run-out, and a chain lift up the east side that
+ * carries riders to the top. */
+export function SuperSlide() {
+  const S = SUPER_SLIDE;
+  const len = S.bottomZ - S.topZ;
+  const parts = useMemo(() => {
+    const b = new Batch();
+    // posts under the lanes, every couple of meters, at both edges
+    for (let s = 0.08; s < 0.95; s += 0.16)
+      for (const side of [-2, 2]) {
+        const h = slideHeight(s);
+        b.add(new THREE.CylinderGeometry(0.06, 0.06, h, 6), STEEL, {
+          position: [S.x + side, h / 2, S.topZ + len * s],
+        });
+      }
+    // the tower's legs and its platform at the top of the lanes
+    for (const dx of [-2.2, 2.2])
+      for (const dz of [-1.2, 0.4])
+        b.add(new THREE.CylinderGeometry(0.1, 0.1, S.top, 8), STEEL, {
+          position: [S.x + dx, S.top / 2, S.topZ + dz],
+        });
+    b.add(new THREE.BoxGeometry(4.8, 0.15, 2), DECK, {
+      position: [S.x, S.top + 0.05, S.topZ - 0.4],
+    });
+    // the chain lift: a rail up the east side, on its own posts
+    const rail = Math.hypot(len, S.top);
+    b.add(new THREE.BoxGeometry(0.25, 0.12, rail), STEEL, {
+      position: [S.liftX, S.top / 2, (S.topZ + S.bottomZ) / 2],
+      rotation: [-Math.atan2(S.top, len), 0, 0],
+    });
+    for (let s = 0.2; s < 1; s += 0.3)
+      b.add(new THREE.CylinderGeometry(0.06, 0.06, S.top * s, 6), STEEL, {
+        position: [S.liftX, (S.top * s) / 2, S.bottomZ - len * s],
+      });
+    return b.build();
+  }, [S, len]);
+  const lanes = useMemo(laneGeometry, []);
+  return (
+    <group>
+      <primitive object={parts} />
+      <mesh geometry={lanes}>
+        <meshStandardMaterial
+          vertexColors
+          roughness={0.35}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      <NeonText
+        text="SUPER SLIDE"
+        color="#ffd84f"
+        font={MARQUEE}
+        width={4}
+        position={[S.x, S.top + 1.4, S.topZ - 1.2]}
       />
     </group>
   );

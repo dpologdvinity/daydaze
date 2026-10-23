@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { LINE_BANKS } from "./dialogue/index.ts";
 import { pickLine, seededRng } from "./dialogue/pick.ts";
 import {
+  SUPER_SLIDE,
+  slideHeight,
   CAROUSEL_AT,
   CAROUSEL_RADIUS,
   COASTER_TRACK,
@@ -345,4 +347,17 @@ test("the log flume floats above the ground, lifts 9 m and drops steeply into th
   for (let d = 0; d < FLUME_TRACK.length; d += 0.5)
     steepest = Math.min(steepest, trackPose(FLUME_TRACK, d, pose).pitch);
   assert.ok(steepest < -0.6, `steepest ${steepest}`);
+});
+
+test("the Super Slide climbs the lift, then runs down its lane to the bottom", () => {
+  assert.equal(slideHeight(0), SUPER_SLIDE.top);
+  assert.equal(slideHeight(1), 0);
+  // humps, but downhill overall: every half of the run ends lower
+  assert.ok(slideHeight(0.5) < slideHeight(0.25));
+  const seconds = RIDES["super-slide"].seconds.normal;
+  const top = ridePose("super-slide", seconds * SUPER_SLIDE.climb, false);
+  const end = ridePose("super-slide", seconds, false);
+  assert.ok(top.y > 6);
+  assert.ok(Math.abs(end.z - SUPER_SLIDE.bottomZ) < 0.01);
+  assert.ok(end.y < 0.2);
 });

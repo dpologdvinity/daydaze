@@ -223,10 +223,12 @@ test("the zoo's gate on Park Avenue leads in, and its animals walk", async ({
   expect(errors).toEqual([]);
 });
 
-test("the Scrambler and the Starship take riders", async ({ page }) => {
-  test.setTimeout(480_000);
+test("the Scrambler, the Starship and the Super Slide take riders", async ({
+  page,
+}) => {
+  test.setTimeout(700_000);
   const errors = collectErrors(page);
-  for (const ride of ["scrambler", "starship"]) {
+  for (const ride of ["scrambler", "starship", "super-slide"]) {
     await page.goto(`${LOW}&room=amusement-park&ride=${ride}`);
     // a slow frame can skip past "riding": wait on the rides finished
     await expect(canvasOf(page)).toHaveAttribute("data-ridden", "1", {

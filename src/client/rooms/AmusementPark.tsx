@@ -53,7 +53,7 @@ const BLACKTOP = surface("asphalt_02", {
 });
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { canvasTex, hdr } from "./shared/materials.ts";
-import { Scrambler, Starship } from "./amusementpark/MoreRides.tsx";
+import { Scrambler, Starship, SuperSlide } from "./amusementpark/MoreRides.tsx";
 
 // A starfield over the back of the park, fixed so the scene never reshuffles.
 const STARS: [number, number, number][] = Array.from(
@@ -320,6 +320,7 @@ export function AmusementPark({
       <Teacups />
       <Scrambler />
       <Starship />
+      <SuperSlide />
       {RIDE_IDS.map((id, i) => (
         <Ring
           key={id}
