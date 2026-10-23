@@ -357,7 +357,10 @@ canvas-texture livery on the paint material in `CarMesh.tsx`; add to
 `ParkedCar` mods and the action codec (`c:<hex><r><g><t><id>`; a fourth
 digit fits only if the id is ≤ 10 chars with a buzz suffix; check limits).
 
-**B10. Haunted house as a game (M).** `HauntedHouse.tsx` is a walk-through
+**B10. Haunted house as a game (M). Done 2026-10-23:** find the way out
+(`src/game/hauntedRun.ts`: 8 rooms, 3 doors, 3 nerve; `rooms/haunted/
+EscapePanel.tsx` with 12 handwritten scares, no gore; prize `haunted`).
+Panel only: the 3D rooms don't change as you go deeper. Original note: `HauntedHouse.tsx` is a walk-through
 with no score; the roster wants a solo horror game (jump-scare timing or a
 find-the-exit run, no gore). Star Siege already is the roster's alien
 shooter.
