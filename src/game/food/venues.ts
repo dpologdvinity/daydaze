@@ -188,6 +188,7 @@ const FOOD_STREET: readonly FoodVenue[] = [
       ["Edamame bowl", 4],
       ["Green tea, hot", 2, "drink"],
     ],
+    "sushi-bar",
   ),
   venue(
     "corner-taco-truck",

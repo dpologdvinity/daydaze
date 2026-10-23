@@ -330,6 +330,29 @@ test("Ramen Rush: a shift takes a ticket and scores a bowl", async ({
   expect(errors).toEqual([]);
 });
 
+test("Sushi Catch: a round starts and the belt brings plates", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=sushi-bar`);
+  const panel = page.getByRole("region", { name: "Sushi Catch" });
+  await panel
+    .getByRole("button", { name: "Catch some sushi" })
+    .click({ timeout: 150_000 });
+  await expect(panel.getByLabel("Ticket")).toContainText("Ticket 1:");
+  // the first plate reaches you a few seconds in
+  await expect(panel.getByLabel("In front of you")).not.toContainText(
+    "nothing yet",
+    { timeout: 60_000 },
+  );
+  await panel.getByRole("button", { name: "Stop" }).click();
+  await expect(
+    panel.getByRole("button", { name: "Catch some sushi" }),
+  ).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test("the boba bar: a shift takes a ticket and scores a cup", async ({
   page,
 }) => {
@@ -1491,6 +1514,7 @@ for (const room of [
   "museum",
   "halo-halo-cafe",
   "ramen-shop",
+  "sushi-bar",
   "salon",
   "piercing",
   "laser-tag",

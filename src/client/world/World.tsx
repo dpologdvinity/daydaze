@@ -186,6 +186,11 @@ const Parlor = lazy(() =>
 const Museum = lazy(() =>
   import("../rooms/Museum.tsx").then((m) => ({ default: m.Museum })),
 );
+const SushiBar = lazy(() =>
+  import("../rooms/sushi/SushiBar.tsx").then((m) => ({
+    default: m.SushiBar,
+  })),
+);
 const RamenShop = lazy(() =>
   import("../rooms/food/RamenShop.tsx").then((m) => ({
     default: m.RamenShop,
@@ -434,6 +439,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   "video-store": VideoStore,
   "halo-halo-cafe": HaloHaloCafe,
   "ramen-shop": RamenShop,
+  "sushi-bar": SushiBar,
   gym: Gym,
   stadium: Stadium,
   "haunted-house": HauntedHouse,

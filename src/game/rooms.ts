@@ -150,6 +150,7 @@ export type RoomId =
   | "skate-diner"
   | "halo-halo-cafe"
   | "ramen-shop"
+  | "sushi-bar"
   | "museum"
   | "salon"
   | "piercing"
@@ -644,6 +645,7 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
   },
   "halo-halo-cafe": foodRoom("halo-halo-cafe", "Halo-Halo Haus"),
   "ramen-shop": foodRoom("ramen-shop", "Steam Ladle Ramen"),
+  "sushi-bar": foodRoom("sushi-bar", "Belt Sushi Yard"),
   salon: {
     id: "salon",
     name: "The Blowout Bar",
