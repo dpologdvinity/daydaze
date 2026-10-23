@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { createSaveSync } from "./saveSync.ts";
+import { createSaveSync, mayPush } from "./saveSync.ts";
 
 function fakeTimers() {
   let now = 0;
@@ -59,4 +59,13 @@ test("flush sends what's waiting now; cancel drops it", () => {
   sync.cancel();
   timers.advance(5000);
   assert.deepEqual(sent, [5]);
+});
+
+test("saves go up only for an account whose cloud save has loaded", () => {
+  const account = { id: "u_a", name: "Kai", isGuest: false, isAdmin: false };
+  assert.equal(mayPush(null, true), false);
+  assert.equal(mayPush({ ...account, isGuest: true }, true), false);
+  // signed in, but the account's own save hasn't come down yet
+  assert.equal(mayPush(account, false), false);
+  assert.equal(mayPush(account, true), true);
 });

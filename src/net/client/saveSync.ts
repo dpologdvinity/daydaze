@@ -41,3 +41,12 @@ export function createSaveSync<T>({
     },
   };
 }
+
+/** Saves go up only for an account, and only once its own cloud save has
+ * come down: a stale local save must never overwrite the account's. */
+export function mayPush(
+  me: { isGuest: boolean } | null,
+  cloudReady: boolean,
+): boolean {
+  return !!me && !me.isGuest && cloudReady;
+}
