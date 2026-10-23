@@ -329,8 +329,10 @@ job: pickup and drop-off on the city road graph, a scooter in the roster
 (`src/game/driving/roster.ts`, non-road class like `JET_SKI`), tips by
 speed, visible courier NPCs. Cook-off is A2.
 
-**B7. Diverse doll (M–L, M4/M11).** Glasses and freckles exist. Missing:
-pronouns on the profile/peer card (save `identity`), vitiligo, birthmarks
+**B7. Diverse doll (M–L, M4/M11).** Glasses and freckles exist. Pronouns
+done 2026-10-23: `look.pronouns` from `PRONOUNS` (a fixed list, validated by
+`validateLook`, so they ride the look online), picked under Body in the
+closet, shown on the peer card. Missing: vitiligo, birthmarks
 and monolid eyes (face canvas/sliders, like freckles in `faceCanvas.ts`),
 a plus-size body range (`src/game/body.ts` scales only about ±6–10%),
 hijab, head wraps, turbans, bindis, hearing aids, prosthetics (Blender
