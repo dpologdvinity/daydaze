@@ -49,6 +49,8 @@ export const PRIZE_GAMES = [
   "trivia",
   "cook-off",
   "volleyball",
+  "range-pistol",
+  "range-rifle",
 ] as const;
 export type PrizeGame = (typeof PRIZE_GAMES)[number];
 
@@ -125,6 +127,20 @@ export const PRIZE_TABLES: Record<PrizeGame, Table> = {
     label: "Star Siege",
     room: "arcade-bar",
     grades: [1500, 900, 400],
+    format: plain("points"),
+  },
+  // the light-gun range at Photon Zone: the Midway gallery's medium and
+  // hard bars
+  "range-pistol": {
+    label: "Pistol drill",
+    room: "laser-tag",
+    grades: [200, 140, 75],
+    format: plain("points"),
+  },
+  "range-rifle": {
+    label: "Rifle drill",
+    room: "laser-tag",
+    grades: [180, 120, 60],
     format: plain("points"),
   },
   volleyball: {

@@ -77,6 +77,9 @@ test("bumper cars, the Midway booths and the arcade cabinets have prizes", () =>
     "star-siege",
     "trivia",
     "cook-off",
+    "volleyball",
+    "range-pistol",
+    "range-rifle",
   ] as const)
     assert.ok(PRIZE_GAMES.includes(game), game);
 });

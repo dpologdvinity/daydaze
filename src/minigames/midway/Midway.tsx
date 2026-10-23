@@ -72,6 +72,9 @@ type BoothProps = {
   onFinish: (score: number) => void;
 };
 
+/** What the gallery fires: corks at the Midway, light at the range. */
+type Ammo = { ammo?: string };
+
 // ------------------------------------------------------------ whack-a-mole
 
 // number keys laid out like a phone keypad over the 3 by 3 board
@@ -196,7 +199,12 @@ function TargetArt({ kind }: { kind: "duck" | "star" | "can" }) {
   );
 }
 
-function Gallery({ level, seed, onFinish }: BoothProps) {
+export function Gallery({
+  level,
+  seed,
+  onFinish,
+  ammo = "corks",
+}: BoothProps & Ammo) {
   const targets = useMemo(() => galleryTargets(level, seed), [level, seed]);
   const t = useClock(true);
   const [score, setScore] = useState(0);
@@ -268,13 +276,13 @@ function Gallery({ level, seed, onFinish }: BoothProps) {
       <Hud
         score={score}
         left={left}
-        extra={`${corks} corks · arrows aim, space fires`}
+        extra={`${corks} ${ammo} · arrows aim, space fires`}
       />
       <div
         ref={stage}
         className="mw-stage"
         role="application"
-        aria-label="Gallery targets. Tap a target to fire a cork."
+        aria-label="Gallery targets. Tap a target to fire."
         onPointerMove={(e) => {
           const p = at(e.clientX, e.clientY);
           if (p) setAim(p);
