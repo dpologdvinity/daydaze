@@ -2,7 +2,7 @@ import { areaOf, isBlocked, stepInArea } from "./area.ts";
 import { CAROUSEL_AT, RIDE_IDS, RIDES } from "./amusementPark.ts";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { ROOMS, isRoomId } from "./rooms.ts";
+import { ROOMS, SOLO_ROOMS, isRoomId } from "./rooms.ts";
 import { SPEEDWAY_SPOTS } from "./speedway/spots.ts";
 import { courtToRoom } from "./dome.ts";
 import { FOOD_VENUES } from "./food/venues.ts";
@@ -565,4 +565,10 @@ test("the marina's fishing spot is on the dock and clear", () => {
   const area = areaOf(ROOMS.marina);
   assert.equal(isBlocked(area, MARINA_FISH_SPOT), false);
   assert.equal(isBlocked(area, ROOMS.marina.spawn.position), false);
+});
+
+test("homes and the jail stay solo online, until per-player copies exist", () => {
+  assert.ok(SOLO_ROOMS.has("apartment"));
+  assert.ok(SOLO_ROOMS.has("jail"));
+  assert.ok(!SOLO_ROOMS.has("plaza"));
 });

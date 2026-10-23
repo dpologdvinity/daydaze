@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import type { Look } from "../../game/look.ts";
-import type { RoomId } from "../../game/rooms.ts";
+import { SOLO_ROOMS, type RoomId } from "../../game/rooms.ts";
 import { createApi } from "../../net/client/api.ts";
 import { OnlineSession } from "../../net/client/OnlineSession.ts";
 import { WebSocketTransport } from "../../net/client/WebSocketTransport.ts";
@@ -50,7 +50,10 @@ export function useOnlineRoom(room: RoomId, look: Look) {
       await started;
       const copy = joinCopy.room === room ? joinCopy.copy : undefined;
       joinCopy.room = null;
-      if (live && session.identity()) await session.joinRoom(room, look, copy);
+      if (!live || !session.identity()) return;
+      // your own flat or cell: nobody else's copy to join
+      if (SOLO_ROOMS.has(room)) session.leaveRoom();
+      else await session.joinRoom(room, look, copy);
     })();
     return () => {
       live = false;

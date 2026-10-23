@@ -1549,6 +1549,13 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
   },
 };
 
+/** Rooms that are yours alone: online they join no shared copy, so
+ * strangers never share one apartment or one cell (until per-player copies). */
+export const SOLO_ROOMS: ReadonlySet<RoomId> = new Set<RoomId>([
+  "apartment",
+  "jail",
+]);
+
 export function isRoomId(value: unknown): value is RoomId {
   return typeof value === "string" && Object.hasOwn(ROOMS, value);
 }
