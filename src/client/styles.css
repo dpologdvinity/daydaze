@@ -2117,3 +2117,16 @@ button:focus-visible {
   align-items: center;
   gap: 6px;
 }
+
+.safari-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.safari-list [data-got="true"] {
+  color: #7dff9b;
+}

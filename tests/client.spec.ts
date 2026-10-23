@@ -353,6 +353,24 @@ test("Sushi Catch: a round starts and the belt brings plates", async ({
   expect(errors).toEqual([]);
 });
 
+test("the zoo's photo hunt: a list, and a snap", async ({ page }) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=zoo`);
+  const panel = page.getByRole("region", { name: "Safari photo hunt" });
+  await panel
+    .getByRole("button", { name: "Start a photo hunt" })
+    .click({ timeout: 150_000 });
+  await expect(panel.getByRole("list", { name: "Your list" })).toBeVisible();
+  await expect(
+    panel.getByRole("list", { name: "Your list" }).getByRole("listitem"),
+  ).toHaveCount(4);
+  await panel.getByRole("button", { name: "Snap" }).click();
+  // from the gate something or nothing is in frame; either way it answers
+  await expect(panel.getByRole("status")).toContainText(/Got it|Nothing/);
+  expect(errors).toEqual([]);
+});
+
 test("the boba bar: a shift takes a ticket and scores a cup", async ({
   page,
 }) => {

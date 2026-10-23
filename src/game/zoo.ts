@@ -65,3 +65,58 @@ export const FLOOR: readonly Vec2[] = box(
 export const BLOCKERS: readonly (readonly Vec2[])[] = Object.values(
   HABITATS,
 ).map((h) => box(h.x0, h.z0, h.x1, h.z1));
+
+export type Species =
+  "giraffe" | "zebra" | "elephant" | "lion" | "penguin" | "flamingo";
+
+/** The four-legged animals, each walking its habitat's loop. */
+export const WALKERS: readonly {
+  kind: "giraffe" | "zebra" | "elephant" | "lion";
+  home: Habitat;
+  speed: number;
+  phase: number;
+}[] = [
+  { kind: "giraffe", home: "savanna", speed: 0.7, phase: 0 },
+  { kind: "giraffe", home: "savanna", speed: 0.7, phase: 2.2 },
+  { kind: "zebra", home: "savanna", speed: 1.1, phase: 1 },
+  { kind: "zebra", home: "savanna", speed: 1.1, phase: 3.4 },
+  { kind: "zebra", home: "savanna", speed: 1.1, phase: 4.8 },
+  { kind: "elephant", home: "elephants", speed: 0.5, phase: 0 },
+  { kind: "elephant", home: "elephants", speed: 0.5, phase: 3.1 },
+  { kind: "lion", home: "lions", speed: 0.6, phase: 0.5 },
+  { kind: "lion", home: "lions", speed: 0.6, phase: 3.6 },
+];
+
+export const PENGUINS = 6;
+export const FLAMINGOS = 6;
+
+/** Penguin `i` waddling round the pool. */
+export const penguinAt = (i: number, t: number) =>
+  loopAt(HABITATS.penguins, t, 0.5, (i / PENGUINS) * Math.PI * 2);
+
+/** Flamingo `i`, standing in its spot in the pond. */
+export function flamingoAt(i: number): Vec2 {
+  const h = HABITATS.flamingos;
+  return [
+    h.x0 + 1 + (i % 3) * ((h.x1 - h.x0 - 2) / 2),
+    h.z0 + 1.6 + Math.floor(i / 3) * 2.6,
+  ];
+}
+
+/** Every animal and where it is at `t` seconds of the scene's clock. */
+export function animalsAt(t: number): { kind: Species; at: Vec2 }[] {
+  return [
+    ...WALKERS.map((w) => ({
+      kind: w.kind,
+      at: loopAt(HABITATS[w.home], t, w.speed, w.phase).at,
+    })),
+    ...Array.from({ length: PENGUINS }, (_, i) => ({
+      kind: "penguin" as const,
+      at: penguinAt(i, t).at,
+    })),
+    ...Array.from({ length: FLAMINGOS }, (_, i) => ({
+      kind: "flamingo" as const,
+      at: flamingoAt(i),
+    })),
+  ];
+}

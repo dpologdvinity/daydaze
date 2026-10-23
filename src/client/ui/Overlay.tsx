@@ -149,7 +149,7 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "The Midnight Horn. A four-piece band plays under the spotlight; take a candlelit table or a stool at the bar.",
   dealership:
     "Daydaze Motors. Every road car turns on its own turntable: buy one from the price list and it waits at the curb.",
-  zoo: "The Daydaze Zoo. Stroll the paths past giraffes and zebras, elephants, lions, penguins and flamingos.",
+  zoo: "The Daydaze Zoo. Stroll the paths past giraffes and zebras, elephants, lions, penguins and flamingos, or start a safari photo hunt.",
   "music-studio":
     "Loft Studios. Walk up to the piano, the drums, the marimba or the floor piano and play: tap the notes or press 1 to 8.",
   paintball:

@@ -5,8 +5,13 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import { ROOMS } from "../../game/rooms.ts";
 import {
   BOUNDS,
+  FLAMINGOS,
+  flamingoAt,
   HABITATS,
   loopAt,
+  PENGUINS,
+  penguinAt,
+  WALKERS,
   type Habitat,
   type Rect,
 } from "../../game/zoo.ts";
@@ -17,6 +22,8 @@ import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { canvasTex } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
+import type { Player } from "../world/PlayerController.tsx";
+import { tick, zooView } from "./zoo/session.ts";
 
 const { x0, x1, z0, z1 } = BOUNDS;
 const W = x1 - x0;
@@ -287,24 +294,6 @@ function flamingo() {
   ]);
 }
 
-type Walker = {
-  kind: "giraffe" | "zebra" | "elephant" | "lion";
-  home: Habitat;
-  speed: number;
-  phase: number;
-};
-const WALKERS: readonly Walker[] = [
-  { kind: "giraffe", home: "savanna", speed: 0.7, phase: 0 },
-  { kind: "giraffe", home: "savanna", speed: 0.7, phase: 2.2 },
-  { kind: "zebra", home: "savanna", speed: 1.1, phase: 1 },
-  { kind: "zebra", home: "savanna", speed: 1.1, phase: 3.4 },
-  { kind: "zebra", home: "savanna", speed: 1.1, phase: 4.8 },
-  { kind: "elephant", home: "elephants", speed: 0.5, phase: 0 },
-  { kind: "elephant", home: "elephants", speed: 0.5, phase: 3.1 },
-  { kind: "lion", home: "lions", speed: 0.6, phase: 0.5 },
-  { kind: "lion", home: "lions", speed: 0.6, phase: 3.6 },
-];
-
 /** The four-legged animals, each walking its habitat's loop. */
 function Walkers() {
   const calm = useReducedMotion();
@@ -374,20 +363,13 @@ function Birds() {
   const geo = useMemo(() => ({ penguin: penguin(), flamingo: flamingo() }), []);
   const penguins = useRef<THREE.InstancedMesh>(null);
   const flamingos = useRef<THREE.InstancedMesh>(null);
-  const PENGUINS = 6;
-  const FLAMINGOS = 6;
   const o = useMemo(() => new THREE.Object3D(), []);
   useFrame(({ clock }) => {
     const t = calm ? 0 : clock.elapsedTime;
     const p = penguins.current;
     if (p) {
       for (let i = 0; i < PENGUINS; i++) {
-        const { at, yaw } = loopAt(
-          HABITATS.penguins,
-          t,
-          0.5,
-          (i / PENGUINS) * Math.PI * 2,
-        );
+        const { at, yaw } = penguinAt(i, t);
         o.position.set(at[0], 0.15, at[1]);
         o.rotation.set(0, yaw, Math.sin(t * 6 + i) * 0.12);
         o.updateMatrix();
@@ -397,13 +379,9 @@ function Birds() {
     }
     const f = flamingos.current;
     if (f) {
-      const h = HABITATS.flamingos;
       for (let i = 0; i < FLAMINGOS; i++) {
-        o.position.set(
-          h.x0 + 1 + (i % 3) * ((h.x1 - h.x0 - 2) / 2),
-          0.05,
-          h.z0 + 1.6 + Math.floor(i / 3) * 2.6,
-        );
+        const [x, z] = flamingoAt(i);
+        o.position.set(x, 0.05, z);
         // now and then one dips its head to feed
         const dip = Math.max(0, Math.sin(t * 0.6 + i * 1.7)) * 0.5;
         o.rotation.set(dip, i * 1.1, 0);
@@ -559,7 +537,26 @@ function useGrounds(signs: THREE.Texture) {
  * giraffes and zebras on the savanna, elephants, lions on their rocks,
  * penguins round a pool and flamingos in a pond, all procedurally built.
  */
-export function Zoo({ onPick }: { onPick: PickHandler }): JSX.Element {
+/** Tells the photo hunt the animals' clock and where the player faces. */
+function SafariTracker({ player }: { player: Player }) {
+  const calm = useReducedMotion();
+  useFrame(({ clock }) => {
+    zooView.t = calm ? 0 : clock.elapsedTime;
+    zooView.from[0] = player.pos.x;
+    zooView.from[1] = player.pos.z;
+    zooView.yaw = player.yaw;
+    tick(performance.now());
+  });
+  return null;
+}
+
+export function Zoo({
+  onPick,
+  player,
+}: {
+  onPick: PickHandler;
+  player: Player;
+}): JSX.Element {
   const signs = useMemo(signTex, []);
   const grounds = useGrounds(signs);
   return (
@@ -586,6 +583,7 @@ export function Zoo({ onPick }: { onPick: PickHandler }): JSX.Element {
       <primitive object={grounds} />
       <Walkers />
       <Birds />
+      <SafariTracker player={player} />
       <NeonText
         text="DAYDAZE ZOO"
         color="#2d6a4f"
