@@ -110,6 +110,7 @@ const SHOTS: {
   { name: "ramen-shop", query: "room=ramen-shop" },
   { name: "sushi-bar", query: "room=sushi-bar" },
   { name: "lune", query: "room=lune" },
+  { name: "bistro", query: "room=bistro" },
   { name: "gym", query: "room=gym" },
   { name: "stadium", query: "room=stadium" },
   { name: "velvet-room-full-look", query: "room=velvet-room&view=full" },

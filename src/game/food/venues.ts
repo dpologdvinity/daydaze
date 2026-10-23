@@ -947,6 +947,7 @@ const RESTAURANTS: readonly FoodVenue[] = [
       ["Croque monsieur", 8],
       ["Kir royale", 7, "drink"],
     ],
+    "bistro",
   ),
   venue(
     "fondue-chalet",

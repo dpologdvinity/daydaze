@@ -1629,6 +1629,7 @@ for (const room of [
   "ramen-shop",
   "sushi-bar",
   "lune",
+  "bistro",
   "salon",
   "piercing",
   "laser-tag",
