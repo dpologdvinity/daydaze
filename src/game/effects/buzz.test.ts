@@ -139,3 +139,14 @@ test("the buzz a move shows comes from its tier tag", () => {
   assert.equal(shownBuzz("sit@40~3"), 0.9);
   assert.equal(shownBuzz("idle~7"), 0);
 });
+
+test("slurred chat never grows past the length it's allowed", () => {
+  const long = "a".repeat(120);
+  for (let seed = 0; seed < 50; seed++)
+    assert.ok(chatDistort(long, 0.9, seed, 120).length <= 120);
+  // short lines still stretch
+  assert.notEqual(
+    chatDistort("heyo everyone out tonight", 0.9, 3, 120),
+    "heyo everyone out tonight",
+  );
+});

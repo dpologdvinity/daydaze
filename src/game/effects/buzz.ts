@@ -101,17 +101,30 @@ function mulberry32(seed: number): () => number {
  * Stretches some vowels in chat, as in "heyyy", when the buzz is up.
  * Deterministic: the same text, buzz and seed always give the same result.
  */
-export function chatDistort(text: string, buzz: number, seed: number): string {
+/** `max` caps the stretched line, so it still fits the chat limit. */
+export function chatDistort(
+  text: string,
+  buzz: number,
+  seed: number,
+  max = Infinity,
+): string {
   const level = clamp01(buzz);
   if (level < DISTORT_FROM) return text;
   const chance = ((level - DISTORT_FROM) / (1 - DISTORT_FROM)) * 0.5;
   const random = mulberry32(seed);
   let out = "";
+  let i = 0;
   for (const ch of text) {
     // draw for every character, so a vowel's roll never depends on earlier text
     const roll = random();
     const stretch = 1 + Math.floor(random() * (1 + 3 * level));
-    out += STRETCHY.test(ch) && roll < chance ? ch.repeat(stretch) : ch;
+    // stretch only while the rest of the line still fits
+    const room = max - out.length - (text.length - i - 1);
+    out +=
+      STRETCHY.test(ch) && roll < chance && room > 1
+        ? ch.repeat(Math.min(stretch, room))
+        : ch;
+    i++;
   }
   return out;
 }

@@ -7,6 +7,7 @@ import {
   decodeClientMessage,
   encodeServerMessage,
   isNetworkId,
+  MAX_CHAT_LENGTH,
   MAX_ROOM_ENTITIES,
   type EntityDelta,
   type ProfileMessage,
@@ -243,6 +244,7 @@ export class RoomCore {
             filterChat(message.text, { strict: false }),
             shownBuzz(occupant.entity?.action ?? ""),
             now,
+            MAX_CHAT_LENGTH,
           ),
         });
         return;
