@@ -43,6 +43,10 @@ test("the player drives their car down the avenue and parks it", async ({
   await expect(canvas).toHaveAttribute("data-city-car", "parked", {
     timeout: 180_000,
   });
+  // the custom shop: gold rims and a pink underglow, kept with the car
+  await page.getByRole("button", { name: "Customize" }).click();
+  await page.getByLabel("Rims").selectOption("gold");
+  await page.getByLabel("Underglow").selectOption("pink");
   await page.getByRole("button", { name: "Drive your car" }).click();
   // she walks over from the square and gets in
   await expect(canvas).toHaveAttribute("data-city-car", "driving", {
@@ -64,6 +68,8 @@ test("the player drives their car down the avenue and parks it", async ({
     JSON.parse(localStorage.getItem("daydaze-save-v1") ?? "{}"),
   );
   expect(saved.car.id).toBe("quill-lite");
+  expect(saved.car.rims).toBe("gold");
+  expect(saved.car.glow).toBe("pink");
   expect(saved.car.at[0]).toBeGreaterThan(20);
   expect(errors).toEqual([]);
 });

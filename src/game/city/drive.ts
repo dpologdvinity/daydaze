@@ -129,6 +129,11 @@ export type ParkedCar = {
   yaw: number;
   /** The tank, 0 (empty) to 1 (full). */
   fuel: number;
+  /** Custom-shop touches, as ids from RIMS, UNDERGLOWS and TINTS; a car
+   * without them has the stock look (chrome, no glow, clear). */
+  rims?: string;
+  glow?: string;
+  tint?: string;
 };
 
 const isNum = (v: unknown): v is number =>
@@ -155,7 +160,18 @@ export function cleanParkedCar(
   if (!onRoad([x, z], 0.5)) return null;
   // saves from before gas stations have a full tank
   const tank = isNum(fuel) ? Math.min(1, Math.max(0, fuel)) : 1;
-  return { id, color, at: [x, z], yaw, fuel: tank };
+  const car: ParkedCar = { id, color, at: [x, z], yaw, fuel: tank };
+  // an unknown mod is dropped, so the car keeps its stock part
+  for (const [key, list] of [
+    ["rims", RIMS],
+    ["glow", UNDERGLOWS],
+    ["tint", TINTS],
+  ] as const) {
+    const mod = f.get(key);
+    if (typeof mod === "string" && list.some((m) => m.id === mod))
+      car[key] = mod;
+  }
+  return car;
 }
 
 /** Your car as saved, or the starter sedan waiting at the home spot. */
@@ -184,3 +200,39 @@ export const CAR_PAINTS: readonly { id: string; label: string }[] = [
   { id: "#c0c0c8", label: "Silver" },
   { id: "#ff8a3d", label: "Tangerine" },
 ];
+
+/** The custom-shop part of a parked car. */
+export type CarMods = Pick<ParkedCar, "rims" | "glow" | "tint">;
+
+/** Just the mods a car has, to carry over when it's re-parked. */
+export function modsOf({ rims, glow, tint }: CarMods): CarMods {
+  return {
+    ...(rims && { rims }),
+    ...(glow && { glow }),
+    ...(tint && { tint }),
+  };
+}
+
+/** Rim finishes; the first is stock. */
+export const RIMS = [
+  { id: "chrome", label: "Chrome rims", color: "#d4d8e4" },
+  { id: "black", label: "Gloss black rims", color: "#18161c" },
+  { id: "gold", label: "Gold rims", color: "#d9a93a" },
+  { id: "pink", label: "Pink rims", color: "#ff6fc4" },
+] as const;
+
+/** Neon under the car; the first is none. */
+export const UNDERGLOWS = [
+  { id: "none", label: "No underglow", color: null },
+  { id: "pink", label: "Pink underglow", color: "#ff3fb0" },
+  { id: "cyan", label: "Cyan underglow", color: "#3fe8ff" },
+  { id: "purple", label: "Purple underglow", color: "#9b5cff" },
+  { id: "green", label: "Green underglow", color: "#4dff8a" },
+] as const;
+
+/** Window tint, as how dark the glass is; the first is stock. */
+export const TINTS = [
+  { id: "clear", label: "Clear windows", shade: 0 },
+  { id: "smoke", label: "Smoked windows", shade: 0.55 },
+  { id: "limo", label: "Limo tint", shade: 0.9 },
+] as const;

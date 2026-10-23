@@ -2,7 +2,12 @@ import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import type { Group } from "three";
 import { clampToArea } from "../../game/area.ts";
-import { exitPoint, REACH, type ParkedCar } from "../../game/city/drive.ts";
+import {
+  exitPoint,
+  modsOf,
+  REACH,
+  type ParkedCar,
+} from "../../game/city/drive.ts";
 import { CITY_AREA } from "../../game/city/layout.ts";
 import { advance } from "../../game/driving/fixedStep.ts";
 import { carById, ROAD_CARS } from "../../game/driving/roster.ts";
@@ -59,7 +64,14 @@ export function PlayerCar({
 
   const getIn = () => {
     if (!spec) return;
-    const s = startCity(spec, parked.color, parked.at, parked.yaw, parked.fuel);
+    const s = startCity(
+      spec,
+      parked.color,
+      parked.at,
+      parked.yaw,
+      parked.fuel,
+      modsOf(parked),
+    );
     session.current = s;
     driving.session = s;
     heading.current = false;
@@ -73,6 +85,7 @@ export function PlayerCar({
     const [x, z] = clampToArea(CITY_AREA, exitPoint(s.car));
     placePlayer(player, x, z);
     onParkRef.current({
+      ...s.mods,
       id: s.spec.id,
       color: s.color,
       at: s.car.position,
@@ -148,6 +161,7 @@ export function PlayerCar({
           key={`${spec.id}${parked.color}`}
           spec={spec}
           color={parked.color}
+          mods={parked}
           ref={group}
         />
       )}

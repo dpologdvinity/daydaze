@@ -1,3 +1,4 @@
+import type { CarMods } from "../city/drive.ts";
 import { TICK_HZ, type StepClock } from "../driving/fixedStep.ts";
 import type { CarInput, CarSpec, CarState } from "../driving/car.ts";
 import { stepCityCar } from "../city/drive.ts";
@@ -38,6 +39,8 @@ export type CitySession = {
   kind: "city";
   spec: CarSpec;
   color: string;
+  /** Rims, underglow and tint, as the car was parked with. */
+  mods: CarMods;
   car: CarState;
   prev: CarState;
   traffic: [number, number][];
@@ -55,12 +58,14 @@ export function startCity(
   at: Vec2,
   yaw: number,
   fuel = 1,
+  mods: CarMods = {},
 ): CitySession {
   const car: CarState = { position: at, yaw, speed: 0 };
   return {
     kind: "city",
     spec,
     color,
+    mods,
     car,
     prev: car,
     traffic: [],

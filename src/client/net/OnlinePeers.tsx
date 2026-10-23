@@ -56,11 +56,19 @@ function PeerDoll({
   const [doing, setDoing] = useState<Doing>({
     mood: "idle",
   });
+  // the last action string and what it decodes to: decode only on change
+  const heard = useRef<{ action: string; next: Doing }>({
+    action: "idle",
+    next: { mood: "idle" },
+  });
   useFrame((_, dt) => {
     const g = group.current;
     const at = session.sample(peer.id);
     if (!g || !at) return;
-    const next = decodeAction(at.action);
+    const was = heard.current;
+    if (at.action !== was.action)
+      heard.current = { action: at.action, next: decodeAction(at.action) };
+    const { next } = heard.current;
     // height comes only with each move: ease it, so rides don't step
     const y = next.seat?.y ?? 0;
     g.position.set(
@@ -74,14 +82,22 @@ function PeerDoll({
     const prev = last.current;
     const moved = prev ? Math.hypot(at.x - prev.x, at.z - prev.z) : 0;
     walk.current.speed = dt > 0 ? Math.min(4, moved / dt) : 0;
-    last.current = { x: at.x, z: at.z };
+    if (prev) {
+      prev.x = at.x;
+      prev.z = at.z;
+    } else last.current = { x: at.x, z: at.z };
+    // a new height alone (a ride climbing) needs no re-render
     if (
-      next.mood !== doing.mood ||
-      next.dance !== doing.dance ||
-      next.seat?.pose !== doing.seat?.pose ||
-      next.car?.id !== doing.car?.id ||
-      next.car?.color !== doing.car?.color ||
-      next.buzz !== doing.buzz
+      next !== was.next &&
+      (next.mood !== doing.mood ||
+        next.dance !== doing.dance ||
+        next.seat?.pose !== doing.seat?.pose ||
+        next.car?.id !== doing.car?.id ||
+        next.car?.color !== doing.car?.color ||
+        next.car?.mods?.rims !== doing.car?.mods?.rims ||
+        next.car?.mods?.glow !== doing.car?.mods?.glow ||
+        next.car?.mods?.tint !== doing.car?.mods?.tint ||
+        next.buzz !== doing.buzz)
     )
       setDoing(next);
   });
@@ -100,6 +116,7 @@ function PeerDoll({
           key={`${car.id}${doing.car?.color}`}
           spec={car}
           color={doing.car?.color ?? "#ffffff"}
+          mods={doing.car?.mods}
           // CarMesh starts hidden for the speedway's own placement
           ref={(g: THREE.Group | null) => {
             if (g) g.visible = true;
@@ -230,7 +247,9 @@ export function OnlinePeers({
             y: seat.position.y,
           }
         : undefined,
-      city ? { id: city.spec.id, color: city.color } : undefined,
+      city
+        ? { id: city.spec.id, color: city.color, mods: city.mods }
+        : undefined,
       buzzTier(getBuzz()),
     );
     if (

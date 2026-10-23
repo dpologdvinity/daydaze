@@ -1,5 +1,11 @@
-import type { JSX } from "react";
-import { CAR_PAINTS, type ParkedCar } from "../../game/city/drive.ts";
+import { useState, type JSX } from "react";
+import {
+  CAR_PAINTS,
+  RIMS,
+  TINTS,
+  UNDERGLOWS,
+  type ParkedCar,
+} from "../../game/city/drive.ts";
 import { ROAD_CARS } from "../../game/driving/roster.ts";
 import { driving } from "../world/driving.ts";
 
@@ -15,6 +21,8 @@ export function CarPicker({
   garage: readonly string[];
   onChange: (car: ParkedCar) => void;
 }): JSX.Element {
+  // the custom-shop picks stay tucked away until asked for
+  const [shop, setShop] = useState(false);
   return (
     <div className="car-picker" role="group" aria-label="Your car">
       <button
@@ -46,6 +54,51 @@ export function CarPicker({
           </option>
         ))}
       </select>
+      <button
+        type="button"
+        className="drink"
+        aria-expanded={shop}
+        onClick={() => setShop(!shop)}
+      >
+        Customize
+      </button>
+      {shop && (
+        <>
+          <select
+            aria-label="Rims"
+            value={car.rims ?? RIMS[0].id}
+            onChange={(e) => onChange({ ...car, rims: e.target.value })}
+          >
+            {RIMS.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.label}
+              </option>
+            ))}
+          </select>
+          <select
+            aria-label="Underglow"
+            value={car.glow ?? UNDERGLOWS[0].id}
+            onChange={(e) => onChange({ ...car, glow: e.target.value })}
+          >
+            {UNDERGLOWS.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.label}
+              </option>
+            ))}
+          </select>
+          <select
+            aria-label="Window tint"
+            value={car.tint ?? TINTS[0].id}
+            onChange={(e) => onChange({ ...car, tint: e.target.value })}
+          >
+            {TINTS.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        </>
+      )}
     </div>
   );
 }

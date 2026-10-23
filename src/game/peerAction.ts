@@ -2,10 +2,12 @@
 // carries: their mood; for a dance, the move, so everyone sees the same
 // dance; on a seat or a ride, whether they sit, lie or stand and the height
 // they're at ("sit@38", in centimeters), since moves carry only x and z;
-// behind the wheel, the car and its paint ("car:pebble:ff4fb3"); after a few
+// behind the wheel, the paint, the rims, underglow and tint as indexes, and the
+// car ("c:ff4fb3012pebble"); after a few
 // drinks, how buzzed ("idle~2"). A move id too long to fit goes as a plain
 // "dance".
 import { isDanceMoveId, type DanceMoveId } from "./dance/moves.ts";
+import { RIMS, TINTS, UNDERGLOWS, type CarMods } from "./city/drive.ts";
 import { carById } from "./driving/roster.ts";
 import { MOODS, type Mood } from "./look.ts";
 
@@ -15,13 +17,21 @@ const isMood = (a: string): a is Mood => MOODS.some((m) => m.id === a);
 export type Held = { pose: "sit" | "lie" | "stand"; y: number };
 const CODE = { sit: "sit", lie: "lay", stand: "up" } as const;
 
+export type Driven = { id: string; color: string; mods?: CarMods };
+
+const MOD_LISTS = [
+  ["rims", RIMS],
+  ["glow", UNDERGLOWS],
+  ["tint", TINTS],
+] as const;
+
 export type Doing = {
   mood: Mood;
   dance?: DanceMoveId;
   /** On a seat or a ride: how they're held, at this height (m). */
   seat?: Held;
-  /** Driving: which car, in which paint ("#rrggbb"). */
-  car?: { id: string; color: string };
+  /** Driving: which car, in which paint ("#rrggbb"), with which mods. */
+  car?: Driven;
   /** How buzzed, 1 to 3, shown over their head; sober is none. */
   buzz?: Tier;
 };
@@ -37,7 +47,7 @@ export function encodeAction(
   mood: Mood,
   dance: DanceMoveId,
   seat?: Held,
-  car?: { id: string; color: string },
+  car?: Driven,
   buzz: 0 | Tier = 0,
 ): string {
   const tag = buzz ? `~${buzz}` : "";
@@ -49,10 +59,16 @@ function describe(
   dance: DanceMoveId,
   limit: number,
   seat?: Held,
-  car?: { id: string; color: string },
+  car?: Driven,
 ): string {
   const paint = car && /^#([0-9a-f]{6})$/i.exec(car.color)?.[1];
-  const driven = paint && `car:${car.id}:${paint.toLowerCase()}`;
+  const mods = MOD_LISTS.map(([key, list]) =>
+    Math.max(
+      0,
+      list.findIndex((m) => m.id === car?.mods?.[key]),
+    ),
+  ).join("");
+  const driven = paint && `c:${paint.toLowerCase()}${mods}${car.id}`;
   if (driven && driven.length <= limit) return driven;
   if (seat) {
     const cm = Math.max(-200, Math.min(2000, Math.round(seat.y * 100)));
@@ -71,11 +87,17 @@ export function decodeAction(action: string): Doing {
 }
 
 function decodeBody(action: string): Doing {
-  const car = /^car:([a-z0-9-]{1,14}):([0-9a-f]{6})$/.exec(action);
-  if (car)
-    return carById(car[1])
-      ? { mood: "idle", car: { id: car[1], color: `#${car[2]}` } }
+  const car = /^c:([0-9a-f]{6})(\d)(\d)(\d)([a-z0-9-]{1,14})$/.exec(action);
+  if (car) {
+    const mods: CarMods = {};
+    MOD_LISTS.forEach(([key, list], i) => {
+      const mod = list[Number(car[i + 2])];
+      if (mod && mod !== list[0]) mods[key] = mod.id;
+    });
+    return carById(car[5])
+      ? { mood: "idle", car: { id: car[5], color: `#${car[1]}`, mods } }
       : { mood: "idle" };
+  }
   const held = /^(sit|lay|up)@(-?\d{1,4})$/.exec(action);
   if (held) {
     const pose = held[1] === "up" ? "stand" : held[1] === "lay" ? "lie" : "sit";
