@@ -37,6 +37,16 @@ export const PRIZE_GAMES = [
   "curling",
   "feeding",
   "reef",
+  "speedway",
+  "jet-ski",
+  "bumper-cars",
+  "midway-whack",
+  "midway-gallery",
+  "midway-squirt",
+  "midway-rings",
+  "gem-glam",
+  "star-siege",
+  "trivia",
 ] as const;
 export type PrizeGame = (typeof PRIZE_GAMES)[number];
 
@@ -46,7 +56,7 @@ type Table = {
   room: RoomId;
   /** The least score for S, A and B; anything less is a C. */
   grades: readonly [number, number, number];
-  /** Mini golf counts strokes against par: lower is better. */
+  /** Mini golf counts strokes against par, races count places: lower is better. */
   lower?: true;
   /** How a score reads on the prize card. */
   format: (score: number) => string;
@@ -54,7 +64,73 @@ type Table = {
 
 const plain = (unit: string) => (score: number) => `${score} ${unit}`;
 
+const ORDINAL = ["1st", "2nd", "3rd"];
+const placed = (place: number) => `${ORDINAL[place - 1] ?? `${place}th`} place`;
+
 export const PRIZE_TABLES: Record<PrizeGame, Table> = {
+  speedway: {
+    label: "Speedway race",
+    room: "speedway",
+    grades: [1, 2, 3],
+    lower: true,
+    format: placed,
+  },
+  "jet-ski": {
+    label: "Harbor Run",
+    room: "marina",
+    grades: [1, 2, 3],
+    lower: true,
+    format: placed,
+  },
+  "bumper-cars": {
+    label: "Bumper cars",
+    room: "speedway",
+    grades: [12, 7, 3],
+    format: plain("bumps"),
+  },
+  // The arcade cabinets have difficulty levels; prizes grade on the medium bars.
+  "midway-whack": {
+    label: "Whack-a-mole",
+    room: "amusement-park",
+    grades: [300, 220, 130],
+    format: plain("points"),
+  },
+  "midway-gallery": {
+    label: "Shooting gallery",
+    room: "amusement-park",
+    grades: [200, 140, 75],
+    format: plain("points"),
+  },
+  "midway-squirt": {
+    label: "Water-gun race",
+    room: "amusement-park",
+    grades: [140, 90, 55],
+    format: plain("points"),
+  },
+  "midway-rings": {
+    label: "Ring toss",
+    room: "amusement-park",
+    grades: [130, 80, 40],
+    format: plain("points"),
+  },
+  "gem-glam": {
+    label: "Gem Glam",
+    room: "arcade-bar",
+    grades: [3300, 2200, 1320],
+    format: plain("points"),
+  },
+  "star-siege": {
+    label: "Star Siege",
+    room: "arcade-bar",
+    grades: [1500, 900, 400],
+    format: plain("points"),
+  },
+  trivia: {
+    label: "Trivia",
+    room: "arcade-bar",
+    grades: [9, 7, 5],
+    format: (s) => `${s} right`,
+  },
   hoops: {
     label: "Hot Shots",
     room: "dome",

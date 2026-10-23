@@ -10,6 +10,7 @@ import {
   startBumpers,
   startRace,
   stepSession,
+  hudOf,
   type Session,
 } from "../../game/speedway/session.ts";
 import { ARENA_ORIGIN, TRACK_ORIGINS } from "../../game/speedway/layout.ts";
@@ -21,6 +22,7 @@ import {
   releaseControls,
   type DriveRequest,
 } from "../world/driving.ts";
+import { award } from "../ui/prizeDesk.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { surface } from "../city/worldTexture.ts";
 
@@ -99,6 +101,13 @@ function place(
   group.rotation.y = a.yaw + Math.atan2(Math.sin(turn), Math.cos(turn)) * alpha;
 }
 
+/** A bumper car game ends when you climb out: its bumps go to the prize desk. */
+function cashBumpers() {
+  const s = driving.session;
+  if (s?.kind === "bumpers" && s.cars[0].hits > 0)
+    award("bumper-cars", s.cars[0].hits);
+}
+
 /** The Speedway: a pit apron, the race tracks, a bumper arena and a grandstand. */
 export function Speedway({ onPick }: { onPick: PickHandler }) {
   const canvas = useThree((s) => s.gl.domElement);
@@ -112,6 +121,8 @@ export function Speedway({ onPick }: { onPick: PickHandler }) {
   const live = useRef(false);
   // Set once a frame has run while mounted, so a StrictMode remount keeps a pending request.
   const framed = useRef(false);
+  // The race whose finish has been handed to the prize desk.
+  const awarded = useRef<Session | null>(null);
 
   useEffect(() => {
     live.current = true;
@@ -127,6 +138,7 @@ export function Speedway({ onPick }: { onPick: PickHandler }) {
     return () => {
       window.clearInterval(id);
       live.current = false;
+      cashBumpers();
       driving.session = null;
       if (framed.current) driving.request = null;
       framed.current = false;
@@ -141,6 +153,7 @@ export function Speedway({ onPick }: { onPick: PickHandler }) {
     if (request !== null) {
       driving.request = null;
       releaseControls();
+      cashBumpers();
       if (request === "leave") {
         driving.session = null;
       } else {
@@ -161,6 +174,14 @@ export function Speedway({ onPick }: { onPick: PickHandler }) {
       return;
     }
     const alpha = advance(session.clock, dt, step.current);
+    if (
+      session.kind === "race" &&
+      session.race.phase === "finished" &&
+      awarded.current !== session
+    ) {
+      awarded.current = session;
+      award("speedway", hudOf(session).place);
+    }
     if (session.kind === "race") {
       const cars = session.race.cars;
       for (let i = 0; i < cars.length; i++) {

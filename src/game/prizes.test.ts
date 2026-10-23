@@ -53,3 +53,29 @@ test("bests from storage keep only known games with finite scores", () => {
   assert.deepEqual(cleanBests(null), {});
   assert.deepEqual(cleanBests([1, 2]), {});
 });
+
+test("races grade on finishing place, lower is better", () => {
+  for (const game of ["speedway", "jet-ski"] as const) {
+    assert.equal(gradeFor(game, 1), "S");
+    assert.equal(gradeFor(game, 2), "A");
+    assert.equal(gradeFor(game, 3), "B");
+    assert.equal(gradeFor(game, 6), "C");
+    assert.equal(beats(game, 1, 2), true);
+  }
+  assert.equal(PRIZE_TABLES.speedway.format(1), "1st place");
+  assert.equal(PRIZE_TABLES["jet-ski"].format(3), "3rd place");
+});
+
+test("bumper cars, the Midway booths and the arcade cabinets have prizes", () => {
+  for (const game of [
+    "bumper-cars",
+    "midway-whack",
+    "midway-gallery",
+    "midway-squirt",
+    "midway-rings",
+    "gem-glam",
+    "star-siege",
+    "trivia",
+  ] as const)
+    assert.ok(PRIZE_GAMES.includes(game), game);
+});

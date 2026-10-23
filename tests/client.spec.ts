@@ -1763,6 +1763,10 @@ test("the midway opens at the Amusement Park and a ring toss pays a grade", asyn
   await dialog.getByRole("button", { name: "Collect and leave" }).click();
   await expect(dialog).toBeHidden();
   await expect(roomTitle(page)).toHaveText("Amusement Park");
+  // the best round goes to the prize desk, which keeps a personal best
+  const prize = page.getByRole("status", { name: "Prize" });
+  await expect(prize).toContainText("Ring toss");
+  await expect(prize).toContainText("New personal best!");
 });
 
 test("the midway's water-gun race runs until a horse wins", async ({

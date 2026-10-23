@@ -2,6 +2,9 @@ import { lazy, Suspense } from "react";
 import { hotspotsIn, type MinigameId } from "../../game/hotspots.ts";
 import type { RoomId } from "../../game/rooms.ts";
 import type { PayGrade } from "../../game/wallet.ts";
+import type { PrizeGame } from "../../game/prizes.ts";
+import type { BoothId } from "../../minigames/midway/engine.ts";
+import { award } from "./prizeDesk.ts";
 import { useReducedMotion } from "../motion.ts";
 
 // The minigames are big and rarely opened, so their code loads on first play.
@@ -61,18 +64,35 @@ export function VenueGames({
   );
 }
 
+// Cabinets whose best round goes to the prize desk (bests, daily challenges).
+const PRIZES: Partial<Record<MinigameId, PrizeGame>> = {
+  "gem-glam": "gem-glam",
+  "star-siege": "star-siege",
+  trivia: "trivia",
+};
+
 /** The open minigame as a modal dialog over the world; closing it returns to the room. */
 export function GameOverlay({
   game,
   onClose,
 }: {
   game: MinigameId;
-  /** Receives the finished round's grade, or null when the player quit. */
+  /** Receives the finished round's grade to pay, or null when the player
+   * quit or the prize desk paid instead. */
   onClose: (grade: PayGrade | null) => void;
 }) {
   const reducedMotion = useReducedMotion();
-  const done = (result: { grade: PayGrade } | null) =>
-    onClose(result?.grade ?? null);
+  const done = (
+    result: { grade: PayGrade; score?: number; booth?: BoothId } | null,
+  ) => {
+    const prize = result?.booth
+      ? (`midway-${result.booth}` as const)
+      : PRIZES[game];
+    if (prize && result?.score !== undefined) {
+      award(prize, result.score);
+      onClose(null);
+    } else onClose(result?.grade ?? null);
+  };
   return (
     <Suspense fallback={null}>
       {game === "bassline" ? (

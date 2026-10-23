@@ -4,7 +4,13 @@ import * as THREE from "three";
 import type { CarState } from "../../../game/driving/car.ts";
 import { advance } from "../../../game/driving/fixedStep.ts";
 import { JET_SKI } from "../../../game/driving/roster.ts";
-import { startRace, stepSession } from "../../../game/speedway/session.ts";
+import {
+  hudOf,
+  startRace,
+  stepSession,
+  type Session,
+} from "../../../game/speedway/session.ts";
+import { award } from "../../ui/prizeDesk.ts";
 import { HARBOR_RUN } from "../../../game/speedway/track.ts";
 import type { Vec2 } from "../../../game/walk.ts";
 import { driving, releaseControls } from "../../world/driving.ts";
@@ -125,6 +131,8 @@ export function JetSkiRace() {
   const skis = useRef<(THREE.Group | null)[]>([]);
   const mine = useRef<THREE.Group | null>(null);
   const live = useRef(false);
+  // The race whose finish has been handed to the prize desk.
+  const awarded = useRef<Session | null>(null);
   useEffect(() => {
     live.current = true;
     const id = window.setInterval(() => {
@@ -156,6 +164,10 @@ export function JetSkiRace() {
       return;
     }
     const alpha = advance(s.clock, dt, () => stepSession(s, driving.input));
+    if (s.race.phase === "finished" && awarded.current !== s) {
+      awarded.current = s;
+      award("jet-ski", hudOf(s).place);
+    }
     s.race.cars.forEach((car, i) => {
       const prev = s.prev.cars[i];
       if (prev) place(skis.current[i], prev.state, car.state, alpha);
