@@ -1,4 +1,6 @@
 import { useEffect, type JSX } from "react";
+import type { SaveV1 } from "../../game/save.ts";
+import { AccountPanel } from "./AccountPanel.tsx";
 import { ROOMS, type RoomId } from "../../game/rooms.ts";
 import { friends, refreshFriends } from "./friends.ts";
 import { joinCopy, onlineSession } from "./online.ts";
@@ -11,11 +13,15 @@ export function FriendsPanel({
   onGo,
   strictChat,
   onStrictChat,
+  save,
+  onSave,
 }: {
   onGo: (room: RoomId) => void;
   /** Mask swearing in others' chat, not just slurs. */
   strictChat: boolean;
   onStrictChat: (on: boolean) => void;
+  save: SaveV1;
+  onSave: (save: SaveV1) => void;
 }): JSX.Element | null {
   const { open, list } = friends.use();
   useEffect(() => {
@@ -33,6 +39,7 @@ export function FriendsPanel({
   return (
     <section className="home-panel friends-panel" aria-label="Friends">
       <h2>Friends</h2>
+      <AccountPanel save={save} onSave={onSave} />
       <label className="friends-setting">
         <input
           type="checkbox"

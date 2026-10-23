@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { refreshAccount } from "./account.ts";
 import type { Look } from "../../game/look.ts";
 import { SOLO_ROOMS, type RoomId } from "../../game/rooms.ts";
 import { createApi } from "../../net/client/api.ts";
@@ -48,6 +49,7 @@ export function useOnlineRoom(room: RoomId, look: Look) {
     void (async () => {
       started ??= session.start();
       await started;
+      refreshAccount();
       const copy = joinCopy.room === room ? joinCopy.copy : undefined;
       joinCopy.room = null;
       if (!live || !session.identity()) return;

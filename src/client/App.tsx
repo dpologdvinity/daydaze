@@ -16,6 +16,7 @@ import { TogetherPanel } from "./net/TogetherPanel.tsx";
 import { CookOffInvite } from "./net/CookOffInvite.tsx";
 import { ConnectionNote } from "./net/ConnectionNote.tsx";
 import { chatPrefs } from "./net/chatPrefs.ts";
+import { useCloudSave } from "./net/cloudSave.ts";
 import { FriendsPanel } from "./net/FriendsPanel.tsx";
 import { PeerCard } from "./net/PeerCard.tsx";
 import type { MinigameId } from "../game/hotspots.ts";
@@ -167,6 +168,8 @@ export function App() {
     setSave((s) => ({ ...s, settings: { ...s.settings, muted } }));
   const setEffects = (effects: Intensity) =>
     setSave((s) => ({ ...s, settings: { ...s.settings, effects } }));
+  // signed in, every change goes up to the account a few seconds later
+  useCloudSave(save);
   // the strict chat filter: set in the Friends panel, read by the chat
   const setStrictChat = (strictChat: boolean) =>
     setSave((s) => ({ ...s, settings: { ...s.settings, strictChat } }));
@@ -310,6 +313,8 @@ export function App() {
           onGo={(room) => travel(room, ROOMS[room].spawn)}
           strictChat={save.settings.strictChat}
           onStrictChat={setStrictChat}
+          save={save}
+          onSave={setSave}
         />
         {ONLINE && <DuelPanel />}
         {ONLINE && <TogetherPanel />}

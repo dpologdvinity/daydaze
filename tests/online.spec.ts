@@ -110,4 +110,26 @@ test("two players meet in the Plaza, talk, become friends and play cards", async
   await expect(a.getByText("is in. Head to Kamayan Hall")).toBeVisible({
     timeout: 60_000,
   });
+
+  // B signs up (keeping the guest's progress), logs out, and logs back in
+  const name = `Tester${Date.now() % 100000}`;
+  await b.getByRole("button", { name: "Friends", exact: true }).click();
+  const acct = b.getByRole("region", { name: "Account" });
+  await acct.getByLabel("Name").fill(name);
+  await acct.getByLabel("Password").fill("correct horse battery");
+  await acct.getByRole("button", { name: "Sign up" }).click();
+  await expect(acct).toContainText(`Signed in as ${name}`, { timeout: 60_000 });
+  await acct.getByRole("button", { name: "Log out" }).click();
+  await expect(acct.getByRole("status")).toContainText("Logged out", {
+    timeout: 60_000,
+  });
+  await acct.getByLabel("Name").fill(name);
+  await acct.getByLabel("Password").fill("correct horse battery");
+  await acct.getByRole("button", { name: "Log in" }).click();
+  await expect(acct.getByRole("status")).toContainText(
+    `Welcome back, ${name}`,
+    {
+      timeout: 60_000,
+    },
+  );
 });
