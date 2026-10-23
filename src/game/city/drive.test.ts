@@ -96,7 +96,13 @@ test("a saved parked car is checked before use", () => {
   assert.equal(cleanParkedCar({ ...good, id: "rocket" }, known), null);
   assert.equal(cleanParkedCar({ ...good, color: "red" }, known), null);
   // custom-shop mods survive; unknown ones fall back to stock
-  const modded = { ...good, rims: "gold", glow: "cyan", tint: "limo" };
+  const modded = {
+    ...good,
+    rims: "gold",
+    glow: "cyan",
+    tint: "limo",
+    wrap: "checker",
+  };
   assert.deepEqual(cleanParkedCar(modded, known), modded);
   assert.deepEqual(
     cleanParkedCar({ ...good, rims: "diamond", glow: 3 }, known),

@@ -129,11 +129,12 @@ export type ParkedCar = {
   yaw: number;
   /** The tank, 0 (empty) to 1 (full). */
   fuel: number;
-  /** Custom-shop touches, as ids from RIMS, UNDERGLOWS and TINTS; a car
-   * without them has the stock look (chrome, no glow, clear). */
+  /** Custom-shop touches, as ids from RIMS, UNDERGLOWS, TINTS and WRAPS; a
+   * car without them has the stock look (chrome, no glow, clear, plain). */
   rims?: string;
   glow?: string;
   tint?: string;
+  wrap?: string;
 };
 
 const isNum = (v: unknown): v is number =>
@@ -166,6 +167,7 @@ export function cleanParkedCar(
     ["rims", RIMS],
     ["glow", UNDERGLOWS],
     ["tint", TINTS],
+    ["wrap", WRAPS],
   ] as const) {
     const mod = f.get(key);
     if (typeof mod === "string" && list.some((m) => m.id === mod))
@@ -202,14 +204,15 @@ export const CAR_PAINTS: readonly { id: string; label: string }[] = [
 ];
 
 /** The custom-shop part of a parked car. */
-export type CarMods = Pick<ParkedCar, "rims" | "glow" | "tint">;
+export type CarMods = Pick<ParkedCar, "rims" | "glow" | "tint" | "wrap">;
 
 /** Just the mods a car has, to carry over when it's re-parked. */
-export function modsOf({ rims, glow, tint }: CarMods): CarMods {
+export function modsOf({ rims, glow, tint, wrap }: CarMods): CarMods {
   return {
     ...(rims && { rims }),
     ...(glow && { glow }),
     ...(tint && { tint }),
+    ...(wrap && { wrap }),
   };
 }
 
@@ -228,6 +231,16 @@ export const UNDERGLOWS = [
   { id: "cyan", label: "Cyan underglow", color: "#3fe8ff" },
   { id: "purple", label: "Purple underglow", color: "#9b5cff" },
   { id: "green", label: "Green underglow", color: "#4dff8a" },
+] as const;
+
+/** Vinyl wraps over the paint, drawn by pattern in CarMesh; the first is
+ * plain paint. */
+export const WRAPS = [
+  { id: "none", label: "No wrap", color: null },
+  { id: "stripes", label: "Racing stripes", color: "#f4f4f8" },
+  { id: "black-stripes", label: "Black racing stripes", color: "#141018" },
+  { id: "checker", label: "Checkered", color: "#141018" },
+  { id: "two-tone", label: "Two-tone", color: "#141018" },
 ] as const;
 
 /** Window tint, as how dark the glass is; the first is stock. */

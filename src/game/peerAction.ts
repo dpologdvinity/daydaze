@@ -2,13 +2,13 @@
 // carries: their mood; for a dance, the move, so everyone sees the same
 // dance; on a seat or a ride, whether they sit, lie or stand and the height
 // they're at ("sit@38", in centimeters), since moves carry only x and z;
-// behind the wheel, the paint, the rims, underglow and tint as indexes, and the
-// car ("c:ff4fb3012pebble"); after a few
+// behind the wheel, the paint, the rims, underglow, tint and wrap packed in two
+// base-36 characters, and the car ("c:ff4fb30kpebble"); after a few
 // drinks, how buzzed ("idle~2"); in an emote with someone, which and which
 // side ("pair:hug:f"). A move id too long to fit goes as a plain
 // "dance".
 import { isDanceMoveId, type DanceMoveId } from "./dance/moves.ts";
-import { RIMS, TINTS, UNDERGLOWS, type CarMods } from "./city/drive.ts";
+import { RIMS, TINTS, UNDERGLOWS, WRAPS, type CarMods } from "./city/drive.ts";
 import { carById } from "./driving/roster.ts";
 import { MOODS, type Mood } from "./look.ts";
 import { isTogetherId, together, type Pair } from "./dance/together.ts";
@@ -25,7 +25,11 @@ const MOD_LISTS = [
   ["rims", RIMS],
   ["glow", UNDERGLOWS],
   ["tint", TINTS],
+  ["wrap", WRAPS],
 ] as const;
+
+// every combination of mods, as one number written in two base-36 characters
+const COMBOS = MOD_LISTS.reduce((n, [, list]) => n * list.length, 1);
 
 export type Doing = {
   mood: Mood;
@@ -70,12 +74,16 @@ function describe(
   car?: Driven,
 ): string {
   const paint = car && /^#([0-9a-f]{6})$/i.exec(car.color)?.[1];
-  const mods = MOD_LISTS.map(([key, list]) =>
-    Math.max(
-      0,
-      list.findIndex((m) => m.id === car?.mods?.[key]),
-    ),
-  ).join("");
+  const code = MOD_LISTS.reduceRight(
+    (n, [key, list]) =>
+      n * list.length +
+      Math.max(
+        0,
+        list.findIndex((m) => m.id === car?.mods?.[key]),
+      ),
+    0,
+  );
+  const mods = code.toString(36).padStart(2, "0");
   const driven = paint && `c:${paint.toLowerCase()}${mods}${car.id}`;
   if (driven && driven.length <= limit) return driven;
   if (seat) {
@@ -106,15 +114,18 @@ function decodeBody(action: string): Doing {
       pair: { emote, role },
     };
   }
-  const car = /^c:([0-9a-f]{6})(\d)(\d)(\d)([a-z0-9-]{1,14})$/.exec(action);
+  const car = /^c:([0-9a-f]{6})([0-9a-z]{2})([a-z0-9-]{1,14})$/.exec(action);
   if (car) {
     const mods: CarMods = {};
-    MOD_LISTS.forEach(([key, list], i) => {
-      const mod = list[Number(car[i + 2])];
-      if (mod && mod !== list[0]) mods[key] = mod.id;
-    });
-    return carById(car[5])
-      ? { mood: "idle", car: { id: car[5], color: `#${car[1]}`, mods } }
+    let code = parseInt(car[2], 36);
+    if (code < COMBOS)
+      for (const [key, list] of MOD_LISTS) {
+        const mod = list[code % list.length];
+        code = Math.floor(code / list.length);
+        if (mod && mod !== list[0]) mods[key] = mod.id;
+      }
+    return carById(car[3])
+      ? { mood: "idle", car: { id: car[3], color: `#${car[1]}`, mods } }
       : { mood: "idle" };
   }
   const held = /^(sit|lay|up)@(-?\d{1,4})$/.exec(action);

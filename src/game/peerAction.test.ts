@@ -43,19 +43,19 @@ test("a driver goes out as their car and its paint", () => {
     id: "nova-spyder",
     color: "#FF4FB3",
   });
-  assert.equal(a, "c:ff4fb3000nova-spyder");
+  assert.equal(a, "c:ff4fb300nova-spyder");
   assert.ok(a.length <= 24);
   assert.deepEqual(decodeAction(a), {
     mood: "idle",
     car: { id: "nova-spyder", color: "#ff4fb3", mods: {} },
   });
   // a car no one sells, or a paint that isn't one, draws no car
-  assert.deepEqual(decodeAction("c:ff4fb3000tank"), { mood: "idle" });
-  assert.deepEqual(decodeAction("c:red000pebble"), { mood: "idle" });
+  assert.deepEqual(decodeAction("c:ff4fb300tank"), { mood: "idle" });
+  assert.deepEqual(decodeAction("c:red00pebble"), { mood: "idle" });
 });
 
-test("a driver's rims, underglow and tint go along", () => {
-  const mods = { rims: "gold", glow: "cyan", tint: "limo" };
+test("a driver's rims, underglow, tint and wrap go along", () => {
+  const mods = { rims: "gold", glow: "cyan", tint: "limo", wrap: "stripes" };
   const a = encodeAction(
     "idle",
     "salsa",
@@ -67,11 +67,12 @@ test("a driver's rims, underglow and tint go along", () => {
     },
     3,
   );
-  assert.equal(a, "c:ff4fb3222nova-spyder~3");
+  // the four mods pack into two base-36 characters
+  assert.equal(a, "c:ff4fb332nova-spyder~3");
   assert.ok(a.length <= 24);
   assert.deepEqual(decodeAction(a).car?.mods, mods);
-  // a mod index past the list is the stock part
-  assert.deepEqual(decodeAction("c:ff4fb3990pebble").car?.mods, {});
+  // a mod code past the lists is the stock car
+  assert.deepEqual(decodeAction("c:ff4fb3zzpebble").car?.mods, {});
 });
 
 test("a buzz rides along on any action, and still fits", () => {
