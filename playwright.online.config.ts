@@ -1,4 +1,3 @@
-import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { defineConfig } from "@playwright/test";
@@ -8,13 +7,16 @@ import base from "./playwright.config.ts";
 // WORKER_PORT, Vite proxying /api and /ws to it, the client at ?online=1.
 const PORT = Number(process.env.PORT ?? 5197);
 const WORKER_PORT = Number(process.env.WORKER_PORT ?? 8798);
-const persist = mkdtempSync(join(tmpdir(), "daydaze-online-e2e-"));
+// fixed, so worker processes that reload this file agree on it; the
+// teardown deletes it
+export const persist = join(tmpdir(), "daydaze-online-e2e");
 const wrangler = (args: string) =>
   `npx wrangler ${args} --config server/wrangler.jsonc --persist-to ${persist}`;
 
 export default defineConfig({
   ...base,
   testMatch: "online.spec.ts",
+  globalTeardown: "./tests/online.teardown.ts",
   workers: 1,
   timeout: 1_200_000,
   use: { ...base.use, baseURL: `http://localhost:${PORT}` },
