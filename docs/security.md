@@ -70,7 +70,8 @@ Out of scope for now: anything that only hurts the cheater (client-owned coins),
 **Harassment tools**
 
 - Blocks are enforced by the server in both directions, for entities, profiles, chat and emotes.
-- The server masks a short slur list. A strict mode that also masks profanity exists in `filterChat` for a personal setting, but the client doesn't use it yet.
+- The server masks a short slur list. Players can turn on a strict personal filter (Friends panel), which masks swearing too in the chat they see, using the same `filterChat` in strict mode on their own client.
+- Drunk chat is applied by the server: `RoomCore` stretches vowels by the buzz tier the sender's own moves show, and the report log keeps what was typed.
 - Reports store the room's last 20 chat lines, unfiltered, for review in the D1 console.
 
 **Responses**
@@ -104,8 +105,9 @@ The smoke test (`npm run smoke:server`) runs against a local `wrangler dev`. It 
 
 - **Guest re-entry after a ban.** A banned guest can start a new guest session. IP bans help, but addresses are shared (carrier NAT, campus Wi-Fi) and rotate (IPv6). Accounts are the real accountability tool; if guests are abused, gate chat or rooms behind accounts.
 - **Client-owned coins and purchases.** Coins live in the client save, so players can give themselves anything. That only affects the cheater while there is no trading or online leaderboard. Both of those must wait for a server-authoritative economy.
-- **No admin route yet.** `RoomCore` supports kick and ban, but nothing exposes them, so bans are added by hand in D1.
-- **Rate-limit memory.** Buckets live in Durable Object memory, so an object evicted after idling starts full again. Many users behind one IP share a budget.
+- **Admin tools are API-only.** `POST /api/admin/ban` bans a player (and a guest's last IP) and signs them out everywhere, but there's no in-game admin menu or report viewer yet; reports are read in D1.
+- **In-room rate limits live in memory.** Login, signup, guest, report and block budgets live in a `RateLimiter` Durable Object's SQLite storage, so eviction doesn't refill them. The per-room movement, chat and emote buckets in `RoomCore` are in memory, so a room copy evicted after idling starts them full again. Many users behind one IP share the auth budget.
+- **Client-owned jail sentences and store bans.** They live in the save, so a player can clear them; they move to D1 with the server economy (A5).
 - **Username enumeration, residual.** Signup still answers 409 for a taken name. Letting people choose a name requires that, and display names are public in every room anyway. Signup's 3-per-10-minutes budget makes bulk probing slow. Small timing differences remain, such as D1 lookups and the one-time dummy hash per isolate, but they are tiny next to a 100,000-iteration PBKDF2.
 - **No account recovery, no 2FA, and no breached-password check.**
 - **The chat filter is a short list.** Spacing and look-alike letters get past it; block and report are the backstop.
