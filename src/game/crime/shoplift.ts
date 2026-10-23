@@ -154,9 +154,11 @@ export const START: Stealth = {
   outcome: "playing",
 };
 
+export const isWatching = (w: Watcher, beat: number) =>
+  (beat + w.phase) % w.period < w.cone;
+
 export function watchersFacing(store: Store, beat: number): number {
-  return store.watchers.filter((w) => (beat + w.phase) % w.period < w.cone)
-    .length;
+  return store.watchers.filter((w) => isWatching(w, beat)).length;
 }
 
 // One beat of play. Returns a new state; the store decides who is watching.

@@ -42,7 +42,7 @@ const COLOR = {
   tv: "#222233",
 } as const;
 
-// The rented flat: a rug-and-sofa living room with the stub shop shelf on
+// The rented flat: a rug-and-sofa living room with the practice shelf on
 // the right wall. Furniture comes from the saved home layout.
 export function Apartment({
   onPick,
@@ -88,7 +88,7 @@ export function Apartment({
       <mesh
         position={[3.4, 1.1, -2.2]}
         onClick={onShelf}
-        aria-label="Test shop shelf (stub)"
+        aria-label="Practice shelf"
       >
         <boxGeometry args={[0.9, 2.2, 0.5]} />
         <meshStandardMaterial color="#6fd3ff" emissive="#1c5f7a" />

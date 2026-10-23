@@ -7,6 +7,7 @@ import {
   penaltyFor,
   stepStealth,
   watchersFacing,
+  isWatching,
   type Action,
   type Stealth,
   type Store,
@@ -158,4 +159,10 @@ test("jail time grows with the item value and with repeat offences", () => {
   assert.ok(pricey.minutes > cheap.minutes);
   assert.ok(again.kind === "jail" && again.minutes > cheap.minutes);
   assert.ok(pricey.minutes <= 15, "sentences are capped");
+});
+
+test("each watcher looks for `cone` beats of every `period`", () => {
+  const w = { kind: "cashier", period: 6, cone: 2, phase: 1 } as const;
+  const seen = [0, 1, 2, 3, 4, 5].map((beat) => isWatching(w, beat));
+  assert.deepEqual(seen, [true, false, false, false, false, true]);
 });

@@ -112,7 +112,7 @@ const ROOM_HINTS: Record<RoomId, string> = {
   speedway: "Pit lane. Tap a spot to race or ride the bumper cars.",
   city: "The city after dark. Tap the street or use WASD, walk into a lit door, or head south to the beach.",
   apartment:
-    "Your flat. Use the decorating panel to place furniture and lock the door. Tap the blue shelf to try a shoplift.",
+    "Your flat. Use the decorating panel to place furniture and lock the door. Tap the blue shelf to practice pocketing before you try a real shop.",
   "haunted-house":
     "The Haunted House. Find your way through the dark rooms past the ghosts, then back out to the park.",
   gridiron:

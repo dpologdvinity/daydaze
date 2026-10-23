@@ -173,7 +173,7 @@ export function App() {
   const setHome = (home: HomeSave) => setSave((s) => ({ ...s, home }));
   const setCar = (car: ParkedCar) => setSave((s) => ({ ...s, car }));
   const setJail = (jail: SaveV1["jail"]) => setSave((s) => ({ ...s, jail }));
-  // Stealing opens the stub shelf; a caught attempt runs the arrest first.
+  // The practice shelf opens the shoplift panel; a caught attempt runs the arrest first.
   const [shopping, setShopping] = useState(false);
   const [arrest, setArrest] = useState<{
     caught: Caught;

@@ -482,7 +482,7 @@ export type WorldProps = {
   still: boolean;
   onPortal: (portal: Portal) => void;
   home: HomeSave;
-  /** The stub shop shelf in the apartment opens the shoplifting test. */
+  /** The practice shelf in the apartment opens the shoplifting practice. */
   onShelf: () => void;
   /** Your car, parked in the city, and where to save it when you park. */
   car: ParkedCar;

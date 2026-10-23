@@ -15,6 +15,7 @@ import {
   stepStealth,
   SUSPICION_MAX,
   watchersFacing,
+  isWatching,
   type Action,
   type Stealth,
 } from "../../game/crime/shoplift.ts";
@@ -144,6 +145,17 @@ export function ShopPanel({
               {watchersFacing(store, lift.state.beat)} of{" "}
               {store.watchers.length}.
             </p>
+            <ul className="shop-watchers" aria-label="Who's looking">
+              {store.watchers.map((w, i) => {
+                const looking = isWatching(w, lift.state.beat);
+                return (
+                  <li key={i} data-looking={looking}>
+                    {looking ? "👁" : "🙈"} The {w.kind}:{" "}
+                    {looking ? "looking" : "away"}
+                  </li>
+                );
+              })}
+            </ul>
             <p className="shop-note">
               Pocket it while nobody&rsquo;s watching, then walk out calmly.
             </p>

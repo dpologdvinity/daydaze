@@ -53,7 +53,7 @@ export function ShopliftPanel({
 
   if (shelf === null) {
     return (
-      <section className="home-panel" aria-label="Test shop shelf">
+      <section className="home-panel" aria-label="Practice shelf">
         <p>Test shelf (stub). Pick a store to try a pocket.</p>
         {STUB_SHELF.map((entry) => {
           const banned = isBanned(crime, entry.store.id, now);

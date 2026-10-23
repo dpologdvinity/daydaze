@@ -72,7 +72,7 @@ export function ApartmentPanel({
         Door: {home.locked ? "locked" : "unlocked"}
       </button>
       <button type="button" onClick={onShelf}>
-        Try the test shelf
+        Practice at the shelf
       </button>
       <fieldset>
         <legend>Furniture</legend>

@@ -2205,3 +2205,22 @@ button:focus-visible {
     animation: none;
   }
 }
+
+.shop-watchers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shop-watchers li {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.08);
+}
+
+.shop-watchers li[data-looking="true"] {
+  background: rgb(255 79 120 / 0.35);
+}

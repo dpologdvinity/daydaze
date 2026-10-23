@@ -714,6 +714,9 @@ test("Thrift Temple: pocket a dye while the clerk looks away", async ({
   await shop.getByRole("button", { name: "Pocket Olive" }).click();
   const lift = shop.getByRole("region", { name: "Lifting Olive" });
   // the clerk faces the floor one turn in six, and not this one
+  await expect(lift.getByRole("list", { name: "Who's looking" })).toContainText(
+    "away",
+  );
   await lift.getByRole("button", { name: "Pocket it" }).click();
   await lift.getByRole("button", { name: "Walk out" }).click();
   await expect(shop.getByRole("status")).toContainText("You walked out with");
@@ -1909,7 +1912,7 @@ test("shoplifting: the suspicion meter fills and a caught player is penalised", 
 }) => {
   await page.goto(`${VELVET}&debug=1`);
   await page.getByRole("button", { name: "Go to Apartment" }).click();
-  await page.getByRole("button", { name: "Try the test shelf" }).click();
+  await page.getByRole("button", { name: "Practice at the shelf" }).click();
   await page.getByRole("button", { name: /Corner Bodega/ }).click();
   await expect(page.getByRole("meter", { name: "Suspicion" })).toBeVisible();
   // running draws attention every beat, so the meter fills and the officer comes
