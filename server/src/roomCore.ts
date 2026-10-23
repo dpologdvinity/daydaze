@@ -13,6 +13,7 @@ import {
   type ServerMessage,
 } from "../../src/net/networkProtocol.ts";
 import { filterChat } from "./chatFilter.ts";
+import { chatDistort, shownBuzz } from "../../src/game/effects/buzz.ts";
 import {
   ACCOUNT_CHAT_LIMIT,
   createRateLimiter,
@@ -237,7 +238,12 @@ export class RoomCore {
           type: "chat",
           roomId: this.roomId,
           id,
-          text: filterChat(message.text, { strict: false }),
+          // a few drinks in, vowels stretch, by the tier their moves show
+          text: chatDistort(
+            filterChat(message.text, { strict: false }),
+            shownBuzz(occupant.entity?.action ?? ""),
+            now,
+          ),
         });
         return;
       }

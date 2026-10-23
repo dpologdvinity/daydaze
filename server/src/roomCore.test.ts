@@ -595,3 +595,24 @@ test("a game move goes only to its player, never through a block", () => {
   room.handle("a", move("zz"));
   assert.equal(ofType(a.received, "game").length, 0);
 });
+
+test("a well-buzzed player's chat goes out slurred; a sober one's untouched", () => {
+  const { room, join } = setup();
+  const a = join("a");
+  join("b");
+  join("c");
+  room.handle("b", update(entity("b", { action: "idle~3" })));
+  room.handle("c", update(entity("c", { action: "idle" })));
+  a.received.length = 0;
+  const line = "hello everyone, so good to see you all out tonight";
+  room.handle("b", chat(line));
+  room.handle("c", chat(line));
+  const [fromB, fromC] = ofType(a.received, "chat").map((m) => m.text);
+  assert.notEqual(fromB, line);
+  // only letters stretch: squeeze the repeats and it reads the same
+  const squeeze = (t = "") => t.replace(/(.)\1+/g, "$1");
+  assert.equal(squeeze(fromB), squeeze(line));
+  assert.equal(fromC, line);
+  // the report log keeps what was typed
+  assert.equal(room.recentChat(2)[0]?.text, line);
+});

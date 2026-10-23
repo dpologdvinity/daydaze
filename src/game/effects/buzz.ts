@@ -115,3 +115,10 @@ export function chatDistort(text: string, buzz: number, seed: number): string {
   }
   return out;
 }
+
+/** The buzz a move's action shows (its "~1".."~3" tag, see peerAction.ts),
+ * as a level for effects others apply: the server slurs chat with it. */
+export function shownBuzz(action: string): number {
+  const tier = /~([1-3])$/.exec(action)?.[1];
+  return tier === "3" ? 0.9 : tier === "2" ? 0.6 : tier === "1" ? 0.3 : 0;
+}

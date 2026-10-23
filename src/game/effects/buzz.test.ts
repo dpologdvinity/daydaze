@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   BUZZ_CAP,
+  shownBuzz,
   DECAY_SECONDS,
   SWAY_AMOUNT,
   SWAY_HZ,
@@ -130,4 +131,11 @@ test("sway stays small and slow, so it never strobes", () => {
   assert.ok(max <= SWAY_AMOUNT);
   assert.ok(max < 0.01);
   assert.ok(SWAY_HZ < 0.5);
+});
+
+test("the buzz a move shows comes from its tier tag", () => {
+  assert.equal(shownBuzz("idle"), 0);
+  assert.equal(shownBuzz("dance:groove~1"), 0.3);
+  assert.equal(shownBuzz("sit@40~3"), 0.9);
+  assert.equal(shownBuzz("idle~7"), 0);
 });
