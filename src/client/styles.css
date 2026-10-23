@@ -532,6 +532,8 @@ button:focus-visible {
 }
 
 .home-panel.peer-card {
+  /* opened on purpose, so it sits over a game panel (a card table) */
+  z-index: 6;
   left: auto;
   right: 16px;
   bottom: 120px;
