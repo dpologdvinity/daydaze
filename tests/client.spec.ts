@@ -393,6 +393,25 @@ test("curling at the ice rink: aim, weight, and the stone slides", async ({
   expect(errors).toEqual([]);
 });
 
+test("feeding time at the zoo: fill a bucket and feed an enclosure", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=zoo`);
+  await page
+    .getByRole("group", { name: "Games here" })
+    .getByRole("button", { name: "Feeding time" })
+    .click({ timeout: 150_000 });
+  const panel = page.getByRole("region", { name: "Feeding time" });
+  await panel.getByRole("button", { name: "Start feeding time" }).click();
+  await panel.getByRole("button", { name: "Hay" }).click();
+  await expect(panel).toContainText("In the bucket: Hay");
+  await panel.getByRole("button", { name: "Feed them" }).click();
+  await expect(panel.getByLabel("Shift")).toContainText("2/8");
+  expect(errors).toEqual([]);
+});
+
 test("the boba bar: a shift takes a ticket and scores a cup", async ({
   page,
 }) => {

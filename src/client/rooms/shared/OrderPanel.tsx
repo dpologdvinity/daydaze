@@ -10,6 +10,10 @@ export function OrderPanel({
   intro,
   startLabel,
   vessel = "cup",
+  serveLabel = "Hand it over",
+  wrong = (name) => `That wasn't a ${name}`,
+  tipWord = "tip",
+  tipsWord = "tips",
 }: {
   session: OrderSession;
   title: string;
@@ -17,6 +21,13 @@ export function OrderPanel({
   startLabel: string;
   /** What each order is built in. */
   vessel?: string;
+  /** The button that hands the order over. */
+  serveLabel?: string;
+  /** What a wrong order says, given the ticket's name. */
+  wrong?: (name: string) => string;
+  /** What the speed bonus is called, for one order and for the shift. */
+  tipWord?: string;
+  tipsWord?: string;
 }): JSX.Element {
   const { station } = session;
   const s = session.store.use();
@@ -47,9 +58,9 @@ export function OrderPanel({
       </p>
       <p className="game-call" role="status">
         {over
-          ? `Shift done: ${s.shift.right} of ${TICKETS} right, ${s.shift.tips} in tips`
+          ? `Shift done: ${s.shift.right} of ${TICKETS} right, ${s.shift.tips} in ${tipsWord}`
           : s.last
-            ? `${s.last.right ? `${s.last.name}, perfect${s.last.tip ? `: +${s.last.tip} tip` : ""}` : `That wasn't a ${s.last.name}`}. Next: ${order?.name}`
+            ? `${s.last.right ? `${s.last.name}, perfect${s.last.tip ? `: +${s.last.tip} ${tipWord}` : ""}` : wrong(s.last.name)}. Next: ${order?.name}`
             : `Ticket: ${order?.name}`}
       </p>
       {!over && (
@@ -75,7 +86,7 @@ export function OrderPanel({
               className="game-main"
               onClick={() => session.handOver(performance.now())}
             >
-              Hand it over
+              {serveLabel}
             </button>
             <button type="button" onClick={session.empty}>
               Dump the {vessel}
