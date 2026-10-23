@@ -268,9 +268,9 @@ test within free-plan CPU.
 prize `cliff-dive`; panel only, no dive animation) and the speed slide race
 (`src/game/speedSlide.ts`, `SlidePanel.tsx`, prize `speed-slide`, lower is
 better) and pool volleyball (`VolleyGame` shared with the beach, prize
-`pool-volleyball`), as tabs. Left: grow the floor, lazy river,
-water-gun battle. Original
-note: The park floor is about 21 m × 10 m
+`pool-volleyball`) and a water-gun battle (the Midway `Gallery`, prize
+`water-guns`), as tabs. Left: grow the floor, the lazy river ride.
+Original note: The park floor is about 21 m × 10 m
 (`WATER_PARK_FLOOR` in `rooms.ts`, `src/game/waterPark.ts`); too small.
 Grow it (walkable polygon, gate, camera shots), then add: lazy river (a tube
 ride: `player.seat` along a loop, like the slide rides), speed slide race
