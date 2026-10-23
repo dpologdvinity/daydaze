@@ -267,7 +267,8 @@ test within free-plan CPU.
 2026-10-23 (`src/game/cliffDive.ts`, `rooms/waterpark/DivePanel.tsx`,
 prize `cliff-dive`; panel only, no dive animation) and the speed slide race
 (`src/game/speedSlide.ts`, `SlidePanel.tsx`, prize `speed-slide`, lower is
-better), as tabs. Left: grow the floor, lazy river, pool volleyball,
+better) and pool volleyball (`VolleyGame` shared with the beach, prize
+`pool-volleyball`), as tabs. Left: grow the floor, lazy river,
 water-gun battle. Original
 note: The park floor is about 21 m × 10 m
 (`WATER_PARK_FLOOR` in `rooms.ts`, `src/game/waterPark.ts`); too small.
