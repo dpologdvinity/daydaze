@@ -21,6 +21,7 @@ export function PeerCard(): JSX.Element | null {
   const { open, mutes } = peerCard.use();
   const { list } = friends.use();
   const [reporting, setReporting] = useState(false);
+  const [banning, setBanning] = useState(false);
   const [blocking, setBlocking] = useState(false);
   const [note, setNote] = useState("");
   useEffect(() => {
@@ -136,6 +137,35 @@ export function PeerCard(): JSX.Element | null {
           Report
         </button>
       )}
+      {session?.identity()?.isAdmin &&
+        (banning ? (
+          <div role="group" aria-label="Ban reason">
+            {REASONS.map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={async () => {
+                  const ok = await session.ban(open.id, r);
+                  setNote(
+                    ok
+                      ? `${open.name} is banned and signed out.`
+                      : "The ban didn't go through.",
+                  );
+                  setBanning(false);
+                }}
+              >
+                Ban: {r}
+              </button>
+            ))}
+            <button type="button" onClick={() => setBanning(false)}>
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button type="button" onClick={() => setBanning(true)}>
+            Ban (admin)
+          </button>
+        ))}
       <p role="status" className="home-note">
         {note}
       </p>
