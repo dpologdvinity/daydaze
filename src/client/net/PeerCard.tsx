@@ -34,12 +34,14 @@ export function PeerCard(): JSX.Element | null {
   const session = onlineSession();
   const close = () => peerCard.set({ open: null });
   const muted = mutes.includes(open.id);
+  const pronouns = session?.remotePlayers.get(open.id)?.look?.pronouns;
   return (
     <section
       className="home-panel peer-card"
       aria-label={`${open.name}'s card`}
     >
       <h2>{open.name}</h2>
+      {pronouns && <p className="pronouns">{pronouns}</p>}
       <FriendButton
         status={friendship(list, open.id)}
         onFriend={async () => {

@@ -32,7 +32,18 @@ test("two players meet in the Plaza, talk, become friends and play cards", async
     timeout: 60_000,
   });
 
+  // B shows their pronouns; A sees them on B's card
+  await b.getByRole("button", { name: "Dressing room" }).click();
+  await b.getByRole("tab", { name: "Body" }).click();
+  await b
+    .getByRole("radiogroup", { name: "Pronouns" })
+    .getByRole("radio", { name: "she/they" })
+    .click();
+  await b.getByRole("button", { name: "Close dressing room" }).click();
   await tagOnA.click();
+  await expect(
+    a.getByRole("region", { name: /'s card$/ }).getByText("she/they"),
+  ).toBeVisible({ timeout: 60_000 });
   await a.getByRole("button", { name: "Add friend" }).click();
   await expect(
     a.getByRole("button", { name: "Friend request sent (take back)" }),

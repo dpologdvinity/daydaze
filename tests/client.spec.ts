@@ -2153,6 +2153,32 @@ test("Pride night at Pulse shows in the room card", async ({ page }) => {
   });
 });
 
+test("pronouns picked in the closet are kept in the look", async ({ page }) => {
+  await page.goto(`${STILL}&room=plaza`);
+  await page
+    .getByRole("button", { name: "Dressing room" })
+    .click({ timeout: 150_000 });
+  await page.getByRole("tab", { name: "Body" }).click();
+  await page
+    .getByRole("radiogroup", { name: "Pronouns" })
+    .getByRole("radio", { name: "she/they" })
+    .click();
+  await expect
+    .poll(() =>
+      page.evaluate(() => localStorage.getItem("daydaze-save-v1") ?? ""),
+    )
+    .toContain('"pronouns":"she/they"');
+  await page
+    .getByRole("radiogroup", { name: "Pronouns" })
+    .getByRole("radio", { name: "None shown" })
+    .click();
+  await expect
+    .poll(() =>
+      page.evaluate(() => localStorage.getItem("daydaze-save-v1") ?? ""),
+    )
+    .not.toContain("pronouns");
+});
+
 test("the city map takes the player to Beachside", async ({ page }) => {
   await page.goto(`${LOW}&room=city`);
   await expect(roomTitle(page)).toHaveText("Downtown");

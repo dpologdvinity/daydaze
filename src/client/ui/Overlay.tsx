@@ -39,6 +39,7 @@ import {
   type Look,
   type Mood,
   type SwimLook,
+  PRONOUNS,
 } from "../../game/look.ts";
 import type { DanceMoveId, Holds } from "../../game/dance/moves.ts";
 import { INTENSITIES, type Intensity } from "../../game/effects/buzz.ts";
@@ -81,6 +82,11 @@ import { PRIDE_CLUBS } from "../../game/prideNight.ts";
 import { PrideTicker } from "./PrideTicker.tsx";
 import { Dressing } from "./Dressing.tsx";
 import { GAITS, gaitOf } from "../../game/gaits.ts";
+
+const PRONOUN_CHIPS = [
+  { id: "", label: "None shown" },
+  ...PRONOUNS.map((p) => ({ id: p, label: p })),
+];
 import { seatsIn } from "../../game/seats.ts";
 import { seatRequest } from "../world/Seats.tsx";
 import { NEIGHBORHOOD_NAMES, useNeighborhood } from "../city/here.ts";
@@ -487,6 +493,19 @@ function Mirror({
             options={GAITS}
             value={gaitOf(look.gait).id}
             onPick={(gait) => setLook({ ...look, gait })}
+          />
+        </section>
+        <section>
+          <h3>Pronouns</h3>
+          <Chips
+            label="Pronouns"
+            options={PRONOUN_CHIPS}
+            value={look.pronouns ?? ""}
+            onPick={(pronouns) => {
+              // none drops the key: validateLook refuses an undefined field
+              const { pronouns: _, ...rest } = look;
+              setLook(pronouns ? { ...rest, pronouns } : rest);
+            }}
           />
         </section>
         <section>
