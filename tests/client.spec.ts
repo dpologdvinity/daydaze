@@ -2029,6 +2029,27 @@ test("Photon Zone's target range: a pistol drill pays a prize", async ({
   expect(errors).toEqual([]);
 });
 
+test("the Water Park tower: five cliff dives pay a prize", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&room=water-park`);
+  await page
+    .getByRole("button", { name: "Climb the tower" })
+    .click({ timeout: 150_000 });
+  const panel = page.getByRole("region", { name: "Cliff dive" });
+  for (let i = 0; i < 5; i++) {
+    await panel.getByRole("button", { name: /Pencil drop/ }).click();
+    await panel.getByRole("button", { name: "Dive!" }).click();
+    await expect(panel.getByRole("status")).toContainText(
+      i < 4 ? "Pick your trick." : "Set done",
+      { timeout: 30_000 },
+    );
+  }
+  await expect(page.getByRole("status", { name: "Prize" })).toContainText(
+    "Cliff dive",
+  );
+  expect(errors).toEqual([]);
+});
+
 test("the city map takes the player to Beachside", async ({ page }) => {
   await page.goto(`${LOW}&room=city`);
   await expect(roomTitle(page)).toHaveText("Downtown");

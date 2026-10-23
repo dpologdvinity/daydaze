@@ -33,6 +33,10 @@ const games = (...list: [label: string, Panel: ComponentType][]) =>
 
 /** Each game room's controls, loaded with the room rather than up front. */
 const PANELS: Partial<Record<RoomId, ComponentType>> = {
+  "water-park": panel(
+    () => import("../rooms/waterpark/DivePanel.tsx"),
+    "DivePanel",
+  ),
   "back-room": panel(
     () => import("../rooms/backroom/CardsPanel.tsx"),
     "CardsPanel",
