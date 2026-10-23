@@ -580,13 +580,28 @@ export type Look = {
   /** encodeSwim's code: sent online so others see the swimsuit in swimwear
    * rooms. Saves keep the swimsuit apart, in `swim`. */
   swim?: string;
+  /** From PRONOUNS, shown on your card online; looks without them show none. */
+  pronouns?: string;
 };
+
+/** Pronouns to pick from; a fixed list, so nothing else reaches others. */
+export const PRONOUNS: readonly string[] = [
+  "she/her",
+  "they/them",
+  "he/him",
+  "she/they",
+  "he/they",
+  "they/she",
+  "they/he",
+  "any pronouns",
+  "ask me",
+];
 
 const LOOK_CATALOGS: {
   [
     K in Exclude<
       keyof Look,
-      "face" | "makeup" | "piercings" | "gait" | "swim" | "shoes"
+      "face" | "makeup" | "piercings" | "gait" | "swim" | "shoes" | "pronouns"
     >
   ]: readonly {
     readonly id: Look[K];
@@ -618,6 +633,7 @@ export function validateLook(value: unknown): value is Look {
   const hasGait = fields.has("gait");
   const hasSwim = fields.has("swim");
   const hasShoes = fields.has("shoes");
+  const hasPronouns = fields.has("pronouns");
   return (
     fields.size ===
       catalogs.length +
@@ -626,8 +642,10 @@ export function validateLook(value: unknown): value is Look {
         (hasPiercings ? 1 : 0) +
         (hasGait ? 1 : 0) +
         (hasSwim ? 1 : 0) +
-        (hasShoes ? 1 : 0) &&
+        (hasShoes ? 1 : 0) +
+        (hasPronouns ? 1 : 0) &&
     (!hasShoes || isShoe(fields.get("shoes"))) &&
+    (!hasPronouns || PRONOUNS.some((p) => p === fields.get("pronouns"))) &&
     (!hasSwim || decodeSwim(fields.get("swim")) !== null) &&
     (!hasGait || isGait(fields.get("gait"))) &&
     (!hasPiercings || decodePiercings(fields.get("piercings")) !== null) &&

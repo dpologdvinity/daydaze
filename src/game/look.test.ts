@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   BROWS,
+  PRONOUNS,
   FIGURES,
   DEFAULT_FACE,
   DEFAULT_MAKEUP,
@@ -260,4 +261,12 @@ test("a swimsuit rides on the online look as a short code", () => {
   assert.equal(validateLook({ ...DEFAULT_LOOK, swim: code }), true);
   for (const bad of ["tankini", "tankini|#nope", "x|#ff2f9a", "a|b|c", 4])
     assert.equal(validateLook({ ...DEFAULT_LOOK, swim: bad }), false);
+});
+
+test("pronouns are an optional pick from the list", () => {
+  assert.ok(validateLook({ ...DEFAULT_LOOK, pronouns: "she/they" }));
+  assert.ok(validateLook({ ...DEFAULT_LOOK, pronouns: "any pronouns" }));
+  assert.ok(!validateLook({ ...DEFAULT_LOOK, pronouns: "<script>" }));
+  assert.ok(!validateLook({ ...DEFAULT_LOOK, pronouns: undefined }));
+  assert.ok(PRONOUNS.includes("they/them"));
 });
