@@ -1,4 +1,5 @@
 import { useFrame } from "@react-three/fiber";
+import { playerSpot } from "./playerSpot.ts";
 import { together } from "../../game/dance/together.ts";
 import { pairUp } from "../net/together.ts";
 import { useEffect, useRef, useState, type RefObject } from "react";
@@ -258,6 +259,8 @@ export function PlayerController({
   const lastPos = useRef(new THREE.Vector3().copy(player.pos));
 
   useFrame((state, dt) => {
+    playerSpot.x = player.pos.x;
+    playerSpot.z = player.pos.z;
     // in the city she's in the car, out of sight; at the Speedway she
     // stands at the pit wall
     if (g.current) g.current.visible = driving.session?.kind !== "city";

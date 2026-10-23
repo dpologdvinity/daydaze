@@ -1983,6 +1983,31 @@ test("the city map's directory takes the player to a venue's door", async ({
   await expect(roomTitle(page)).toHaveText("Uptown", { timeout: 150_000 });
 });
 
+test("beach volleyball at the city net: first to seven pays a prize", async ({
+  page,
+}) => {
+  test.setTimeout(420_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=city`);
+  await expect(roomTitle(page)).toHaveText("Downtown", { timeout: 150_000 });
+  await page.getByRole("button", { name: "City map" }).click();
+  const map = page.getByRole("dialog", { name: "City map" });
+  await map.getByText("Beachside", { exact: false }).last().click();
+  await map.getByRole("button", { name: "Beach volleyball" }).click();
+  await page
+    .getByRole("button", { name: "Play beach volleyball" })
+    .click({ timeout: 60_000 });
+  const game = page.getByRole("region", { name: "Beach volleyball" });
+  // never touch the ball: every point drops on your side
+  await expect(game.getByRole("status")).toContainText("They take it, 7 to 0", {
+    timeout: 120_000,
+  });
+  await expect(page.getByRole("status", { name: "Prize" })).toContainText(
+    "Beach volleyball",
+  );
+  expect(errors).toEqual([]);
+});
+
 test("the city map takes the player to Beachside", async ({ page }) => {
   await page.goto(`${LOW}&room=city`);
   await expect(roomTitle(page)).toHaveText("Downtown");
