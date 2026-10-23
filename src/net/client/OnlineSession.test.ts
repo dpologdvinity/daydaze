@@ -472,3 +472,26 @@ test("signOut logs out and carries on as a guest", async () => {
   await session.signOut();
   assert.deepEqual(session.identity(), guest);
 });
+
+test("copies lists the room copies of the room you're in; none outside one", async () => {
+  const routes: Routes = {};
+  const { session } = await joined(routes);
+  routes["GET /api/rooms/plaza"] = () =>
+    json({
+      pick: 1,
+      copies: [
+        { copy: 1, count: 12, full: false },
+        { copy: 2, count: 40, full: true },
+      ],
+    });
+  assert.deepEqual(await session.copies(), {
+    roomId: "plaza",
+    copy: 1,
+    copies: [
+      { copy: 1, count: 12, full: false },
+      { copy: 2, count: 40, full: true },
+    ],
+  });
+  session.leaveRoom();
+  assert.equal(await session.copies(), null);
+});

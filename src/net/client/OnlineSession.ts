@@ -12,7 +12,7 @@ import {
   interpolateEntityState,
   type NetworkTransport,
 } from "../roomNetworkSync.ts";
-import type { Api, ApiResult } from "./api.ts";
+import type { Api, ApiResult, RoomCopy } from "./api.ts";
 import type { SaveV1 } from "../../game/save.ts";
 import type { Schedule, TransportStatus } from "./WebSocketTransport.ts";
 
@@ -298,6 +298,19 @@ export class OnlineSession {
   }
 
   /** Moves to another copy of this room (a friend's), staying put. */
+  /** The copies of the room you're in, with how many are in each. */
+  async copies(): Promise<
+    | (RoomCopy & {
+        copies: { copy: number; count: number; full: boolean }[];
+      })
+    | null
+  > {
+    const room = this.current;
+    if (!room) return null;
+    const listing = await this.api.rooms(room.roomId);
+    return listing.ok ? { ...room, copies: listing.value.copies } : null;
+  }
+
   async switchCopy(copy: number): Promise<JoinOutcome> {
     const room = this.current;
     const look = this.look;
