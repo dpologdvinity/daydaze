@@ -99,6 +99,7 @@ function PeerDoll({
         next.car?.mods?.rims !== doing.car?.mods?.rims ||
         next.car?.mods?.glow !== doing.car?.mods?.glow ||
         next.car?.mods?.tint !== doing.car?.mods?.tint ||
+        next.car?.mods?.wrap !== doing.car?.mods?.wrap ||
         next.buzz !== doing.buzz ||
         next.pair?.emote !== doing.pair?.emote ||
         next.pair?.role !== doing.pair?.role)
@@ -117,7 +118,7 @@ function PeerDoll({
     >
       {car ? (
         <CarMesh
-          key={`${car.id}${doing.car?.color}`}
+          key={`${car.id}${doing.car?.color}${doing.car?.mods?.wrap}`}
           spec={car}
           color={doing.car?.color ?? "#ffffff"}
           mods={doing.car?.mods}

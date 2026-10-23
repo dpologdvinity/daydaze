@@ -3,6 +3,7 @@ import {
   CAR_PAINTS,
   RIMS,
   TINTS,
+  WRAPS,
   UNDERGLOWS,
   type ParkedCar,
 } from "../../game/city/drive.ts";
@@ -94,6 +95,17 @@ export function CarPicker({
             {TINTS.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.label}
+              </option>
+            ))}
+          </select>
+          <select
+            aria-label="Wrap"
+            value={car.wrap ?? WRAPS[0].id}
+            onChange={(e) => onChange({ ...car, wrap: e.target.value })}
+          >
+            {WRAPS.map((w) => (
+              <option key={w.id} value={w.id}>
+                {w.label}
               </option>
             ))}
           </select>

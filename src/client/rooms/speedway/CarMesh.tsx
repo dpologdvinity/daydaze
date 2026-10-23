@@ -1,6 +1,7 @@
 import { useEffect, useMemo, type Ref } from "react";
 import {
   AdditiveBlending,
+  Color,
   MeshBasicMaterial,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
@@ -12,6 +13,7 @@ import {
   RIMS,
   TINTS,
   UNDERGLOWS,
+  WRAPS,
   type CarMods,
 } from "../../../game/city/drive.ts";
 import type { CarSpec } from "../../../game/driving/car.ts";
@@ -64,6 +66,42 @@ function glassMaterial(id: string | undefined) {
   );
 }
 
+// How much of the wrap color shows at a body point (car space, meters):
+// stripes down the middle, a checker, or the lower body in the second tone.
+const WRAP_MASK: Record<string, string> = {
+  stripes: "step(0.07, abs(p.x)) * step(abs(p.x), 0.2)",
+  "black-stripes": "step(0.07, abs(p.x)) * step(abs(p.x), 0.2)",
+  checker: "mod(floor(p.x * 4.0) + floor(p.z * 4.0), 2.0)",
+  "two-tone": "step(p.y, 0.6)",
+};
+
+/** Paints a vinyl wrap over the lacquer by pattern, so it needs no UVs. */
+function wrapPaint(m: MeshPhysicalMaterial, id: string | undefined) {
+  const wrap = WRAPS.find((w) => w.id === id);
+  const mask = wrap && WRAP_MASK[wrap.id];
+  if (!wrap?.color || !mask) return;
+  const color = new Color(wrap.color);
+  m.customProgramCacheKey = () => `wrap:${wrap.id}`;
+  m.onBeforeCompile = (shader) => {
+    shader.uniforms.wrapColor = { value: color };
+    shader.vertexShader = shader.vertexShader
+      .replace("#include <common>", "#include <common>\nvarying vec3 vWrap;")
+      .replace(
+        "#include <begin_vertex>",
+        "#include <begin_vertex>\nvWrap = position;",
+      );
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        "#include <common>",
+        "#include <common>\nvarying vec3 vWrap;\nuniform vec3 wrapColor;",
+      )
+      .replace(
+        "#include <color_fragment>",
+        `#include <color_fragment>\n{ vec3 p = vWrap; diffuseColor.rgb = mix(diffuseColor.rgb, wrapColor, ${mask}); }`,
+      );
+  };
+}
+
 /** A soft glowing pool under the car: additive, so no real light needed. */
 function glowMaterial(id: string | undefined) {
   const glow = UNDERGLOWS.find((g) => g.id === id);
@@ -102,17 +140,17 @@ export function CarMesh({
   const glow = glowMaterial(mods?.glow);
   const parts = carParts(spec);
   // Clearcoat lacquer on the paint, the only per-car material.
-  const paint = useMemo(
-    () =>
-      new MeshPhysicalMaterial({
-        color,
-        roughness: 0.38,
-        metalness: 0.15,
-        clearcoat: 1,
-        clearcoatRoughness: 0.08,
-      }),
-    [color],
-  );
+  const paint = useMemo(() => {
+    const m = new MeshPhysicalMaterial({
+      color,
+      roughness: 0.38,
+      metalness: 0.15,
+      clearcoat: 1,
+      clearcoatRoughness: 0.08,
+    });
+    wrapPaint(m, mods?.wrap);
+    return m;
+  }, [color, mods?.wrap]);
   useEffect(() => () => paint.dispose(), [paint]);
   return (
     <group ref={ref} visible={false}>
