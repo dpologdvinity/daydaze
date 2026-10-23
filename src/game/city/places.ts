@@ -5,6 +5,7 @@ import {
   CITY_SPAWN,
   GALLERY_Z,
   SHORE_Z,
+  VOLLEYBALL,
   type Neighborhood,
 } from "./layout.ts";
 import { ADULT_ROOMS } from "../age.ts";
@@ -48,6 +49,23 @@ export const CITY_PLACES: readonly Place[] = [
     id: "fairground",
     label: "The Fairground",
     spawn: { position: [300, SHORE_Z - 13.5], yaw: 0 },
+  },
+];
+
+/** Games out in the open, with no door, for the map's directory. */
+export const OUTDOOR_SPOTS: readonly {
+  label: string;
+  neighborhood: Neighborhood;
+  spawn: Spawn;
+}[] = [
+  {
+    label: "Beach volleyball",
+    neighborhood: "beachside",
+    // on the sand at the near end of the net, facing it
+    spawn: {
+      position: [VOLLEYBALL.x - VOLLEYBALL.half - 2, VOLLEYBALL.z + 2],
+      yaw: Math.PI / 2,
+    },
   },
 ];
 
