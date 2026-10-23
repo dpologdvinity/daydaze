@@ -107,6 +107,7 @@ const clients: ClientMessage[] = [
   { type: "update", entity: rounded },
   { type: "chat", text: "Hello 🦁" },
   { type: "emote", emote: "wave" },
+  { type: "game", to: "b2", data: '{"k":"draw","n":3}' },
 ];
 const servers: ServerMessage[] = [
   { type: "snapshot", roomId: "downtown-plaza", entities: [rounded] },
@@ -122,6 +123,7 @@ const servers: ServerMessage[] = [
     name: "MangoGuest4821",
     look,
   },
+  { type: "game", roomId: "downtown-plaza", from: "a1", data: "{}" },
 ];
 
 test("every directional message round trips through JSON framing", () => {
@@ -170,6 +172,8 @@ test("frames reject unknown types, invalid fields, oversized packets and duplica
     { type: "chat", text: " " },
     { type: "chat", text: "x".repeat(121) },
     { type: "emote", emote: "x".repeat(25) },
+    { type: "game", to: "b2", data: "x".repeat(201) },
+    { type: "game", to: "", data: "{}" },
   ])
     assert.equal(decodeClientMessage(raw), null);
   for (const raw of [

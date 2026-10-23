@@ -49,6 +49,7 @@ export type SessionEvents = {
   leave: string;
   chat: { id: string; name: string | null; text: string };
   emote: { id: string; emote: string };
+  game: { from: string; data: string };
   occupancy: number;
   closeCode: number;
 };
@@ -90,6 +91,7 @@ export class OnlineSession {
     leave: new Set(),
     chat: new Set(),
     emote: new Set(),
+    game: new Set(),
     occupancy: new Set(),
     closeCode: new Set(),
   };
@@ -247,6 +249,11 @@ export class OnlineSession {
     return this.send({ type: "emote", emote });
   }
 
+  /** A move in a game with one other player in this room copy. */
+  sendGame(to: string, data: string): boolean {
+    return this.send({ type: "game", to, data });
+  }
+
   /** Reports a player in this room copy to the moderators. False when
    * there's no room or the server refused it. */
   async report(targetId: string, reason: string): Promise<boolean> {
@@ -393,6 +400,9 @@ export class OnlineSession {
         return false;
       case "emote":
         this.emit("emote", { id: message.id, emote: message.emote });
+        return false;
+      case "game":
+        this.emit("game", { from: message.from, data: message.data });
         return false;
       case "occupancy":
         this.emit("occupancy", message.count);

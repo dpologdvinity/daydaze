@@ -575,3 +575,23 @@ test("in the city, players only hear about those within reach", () => {
   );
   assert.equal(a.received.at(-1)?.type, "delta");
 });
+
+test("a game move goes only to its player, never through a block", () => {
+  const { room, join } = setup();
+  const a = join("a");
+  const b = join("b");
+  const c = join("c");
+  const move = (to: string) =>
+    encodeClientMessage({ type: "game", to, data: '{"k":"draw"}' });
+  room.handle("a", move("b"));
+  assert.deepEqual(ofType(b.received, "game"), [
+    { type: "game", roomId: "plaza", from: "a", data: '{"k":"draw"}' },
+  ]);
+  assert.equal(ofType(c.received, "game").length, 0);
+  room.block("b", "a");
+  room.handle("a", move("b"));
+  assert.equal(ofType(b.received, "game").length, 1);
+  // nobody by that id: dropped
+  room.handle("a", move("zz"));
+  assert.equal(ofType(a.received, "game").length, 0);
+});

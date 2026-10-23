@@ -95,3 +95,7 @@ export function createRateLimiter(
     },
   };
 }
+
+/** Moves in a game between two players: a card game's pace, with room for a
+ * burst of invites and answers. */
+export const GAME_LIMIT: RateLimit = { capacity: 10, refillPerSecond: 2 };

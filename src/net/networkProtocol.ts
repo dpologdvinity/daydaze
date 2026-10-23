@@ -40,12 +40,16 @@ export type LeaveRoomMessage = { type: "leave" };
 export type EntityUpdateMessage = { type: "update"; entity: EntityDelta };
 export type ChatMessage = { type: "chat"; text: string };
 export type EmoteMessage = { type: "emote"; emote: string };
+/** A move in a game between two players, passed on to `to` only. */
+export type GameMessage = { type: "game"; to: string; data: string };
+export const MAX_GAME_DATA = 200;
 export type ClientMessage =
   | JoinRoomMessage
   | LeaveRoomMessage
   | EntityUpdateMessage
   | ChatMessage
-  | EmoteMessage;
+  | EmoteMessage
+  | GameMessage;
 export type RoomSnapshotMessage = {
   type: "snapshot";
   roomId: string;
@@ -63,6 +67,12 @@ export type EntityLeaveBroadcast = {
 };
 export type ChatBroadcast = ChatMessage & { roomId: string; id: string };
 export type EmoteBroadcast = EmoteMessage & { roomId: string; id: string };
+export type GameRelay = {
+  type: "game";
+  roomId: string;
+  from: string;
+  data: string;
+};
 export type RoomOccupancyMessage = {
   type: "occupancy";
   roomId: string;
@@ -81,6 +91,7 @@ export type ServerMessage =
   | EntityLeaveBroadcast
   | ChatBroadcast
   | EmoteBroadcast
+  | GameRelay
   | RoomOccupancyMessage
   | ProfileMessage;
 
@@ -216,6 +227,12 @@ export function decodeClientMessage(raw: unknown): ClientMessage | null {
         const emote = value.emote;
         return text(emote, 24) ? { type: "emote", emote } : null;
       }
+      case "game": {
+        const { to, data } = value;
+        return isNetworkId(to) && text(data, MAX_GAME_DATA)
+          ? { type: "game", to, data }
+          : null;
+      }
       default:
         return null;
     }
@@ -265,6 +282,12 @@ export function decodeServerMessage(raw: unknown): ServerMessage | null {
           emote = value.emote;
         return isNetworkId(id) && text(emote, 24)
           ? { type: "emote", roomId, id, emote }
+          : null;
+      }
+      case "game": {
+        const { from, data } = value;
+        return isNetworkId(from) && text(data, MAX_GAME_DATA)
+          ? { type: "game", roomId, from, data }
           : null;
       }
       case "occupancy": {

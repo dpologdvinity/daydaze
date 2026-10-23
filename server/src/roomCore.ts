@@ -17,6 +17,7 @@ import {
   ACCOUNT_CHAT_LIMIT,
   createRateLimiter,
   EMOTE_LIMIT,
+  GAME_LIMIT,
   GUEST_CHAT_LIMIT,
   MOVEMENT_LIMIT,
 } from "./rateLimit.ts";
@@ -87,6 +88,7 @@ export class RoomCore {
   private readonly accountChat = createRateLimiter(ACCOUNT_CHAT_LIMIT);
   private readonly guestChat = createRateLimiter(GUEST_CHAT_LIMIT);
   private readonly emotes = createRateLimiter(EMOTE_LIMIT);
+  private readonly games = createRateLimiter(GAME_LIMIT);
 
   constructor({ roomId, capacity = ROOM_CAPACITY, now }: RoomCoreOptions) {
     if (!isRoomId(roomId)) throw new TypeError("Unknown room");
@@ -166,6 +168,7 @@ export class RoomCore {
       this.accountChat,
       this.guestChat,
       this.emotes,
+      this.games,
     ])
       limiter.forget(id);
     this.broadcast(occupant, { type: "entity-leave", roomId: this.roomId, id });
@@ -247,6 +250,19 @@ export class RoomCore {
           emote: message.emote,
         });
         return;
+      case "game": {
+        // only to someone this player can see: never through a block
+        const target = this.occupants.get(message.to);
+        if (!target || !target.seen.has(id) || !this.games.take(id, now))
+          return;
+        this.sendTo(target, {
+          type: "game",
+          roomId: this.roomId,
+          from: id,
+          data: message.data,
+        });
+        return;
+      }
       case "leave":
         this.disconnect(occupant, "left");
     }
