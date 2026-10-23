@@ -392,7 +392,10 @@ and report.
 
 **C3. Friend bail (S).** Friends pay bail from the jail panel (`JailHud`).
 
-**C4. Shoplifting polish (S).** Remove the apartment stub shelf and its hint
+**C4. Shoplifting polish (S). Done 2026-10-23:** kept the apartment shelf
+as a practice shelf (it drives the arrest-flow browser test); the lift panel
+lists each watcher looking or away (`isWatching`). 3D sight cones would need
+watchers placed as shop NPCs; not done. Original note: Remove the apartment stub shelf and its hint
 (`Overlay.tsx` apartment hint, `ShopliftPanel.tsx`, World `onShelf`), or
 keep it as a practice shelf; add sight-cone visuals in shops (today watchers
 are beat-based, `watchersFacing`).
