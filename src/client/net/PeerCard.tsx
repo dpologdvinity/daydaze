@@ -1,4 +1,5 @@
 import { useEffect, useState, type JSX } from "react";
+import { askToPlay } from "./duel.ts";
 import { friends, friendship, refreshFriends } from "./friends.ts";
 import { onlineSession } from "./online.ts";
 import { mute, peerCard } from "./peerCard.ts";
@@ -47,6 +48,15 @@ export function PeerCard(): JSX.Element | null {
           await refreshFriends();
         }}
       />
+      <button
+        type="button"
+        onClick={() => {
+          askToPlay(open.id, open.name);
+          close();
+        }}
+      >
+        Play Crazy Eights
+      </button>
       <button type="button" aria-pressed={muted} onClick={() => mute(open.id)}>
         {muted ? "Unmute their chat" : "Mute their chat"}
       </button>

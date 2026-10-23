@@ -156,16 +156,34 @@ export function guardMove(t: Table): Table {
   };
 }
 
+/** `who` plays card `index` (naming `suit` for an eight), with nobody
+ * answering: a game between two players. Illegal plays are ignored. */
+export function seatPlay(
+  t: Table,
+  who: Who,
+  index: number,
+  suit?: number,
+): Table {
+  const card = (who === "you" ? t.you : t.guard)[index];
+  if (t.winner || t.turn !== who || !card || !playable(t, card)) return t;
+  return lay(t, who, index, suit);
+}
+
+/** `who` draws a card and passes the turn. */
+export function seatDraw(t: Table, who: Who): Table {
+  if (t.winner || t.turn !== who) return t;
+  return { ...drawFor(t, who), turn: who === "you" ? "guard" : "you" };
+}
+
 /** Your move: play card `index` (naming `suit` for an eight). Illegal plays
  * are ignored. The guard answers at once. */
 export function playCard(t: Table, index: number, suit?: number): Table {
-  const card = t.you[index];
-  if (t.winner || t.turn !== "you" || !card || !playable(t, card)) return t;
-  return guardMove(lay(t, "you", index, suit));
+  const played = seatPlay(t, "you", index, suit);
+  return played === t ? t : guardMove(played);
 }
 
 /** You can't (or won't) go: draw a card and the guard takes their turn. */
 export function drawCard(t: Table): Table {
   if (t.winner || t.turn !== "you") return t;
-  return guardMove({ ...drawFor(t, "you"), turn: "guard" });
+  return guardMove(seatDraw(t, "you"));
 }

@@ -15,7 +15,7 @@ async function player(browser: Browser): Promise<Page> {
   return page;
 }
 
-test("two players meet in the Plaza, talk and become friends", async ({
+test("two players meet in the Plaza, talk, become friends and play cards", async ({
   browser,
 }) => {
   const a = await player(browser);
@@ -45,4 +45,22 @@ test("two players meet in the Plaza, talk and become friends", async ({
   await expect(b.getByRole("list", { name: "Your friends" })).toContainText(
     "Daydaze Plaza #1",
   );
+  await b.getByRole("button", { name: "Close" }).click();
+
+  // a hand of Crazy Eights: A deals and goes first
+  await tagOnA.click();
+  await a.getByRole("button", { name: "Play Crazy Eights" }).click();
+  const invite = b.getByRole("region", { name: "Card game invite" });
+  await invite.getByRole("button", { name: "Play" }).click({ timeout: 60_000 });
+  const tableA = a.getByRole("region", { name: "Crazy Eights" });
+  const tableB = b.getByRole("region", { name: "Crazy Eights" });
+  await expect(tableA.getByRole("status")).toContainText("Your turn", {
+    timeout: 60_000,
+  });
+  await expect(tableB.getByRole("status")).toContainText("'s turn");
+  await tableA.getByRole("button", { name: "Draw" }).click();
+  await expect(tableB.getByRole("status")).toContainText("Your turn", {
+    timeout: 60_000,
+  });
+  await expect(tableB).toContainText("holds 6");
 });

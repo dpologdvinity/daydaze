@@ -10,7 +10,8 @@ import {
 } from "../game/dance/moves.ts";
 import { chatDistort, type Intensity } from "../game/effects/buzz.ts";
 import { getBuzz } from "./effects/drunk.ts";
-import { onlineSession, useOnlineRoom } from "./net/online.ts";
+import { ONLINE, onlineSession, useOnlineRoom } from "./net/online.ts";
+import { DuelPanel } from "./net/DuelPanel.tsx";
 import { FriendsPanel } from "./net/FriendsPanel.tsx";
 import { PeerCard } from "./net/PeerCard.tsx";
 import type { MinigameId } from "../game/hotspots.ts";
@@ -295,6 +296,7 @@ export function App() {
         </div>
         <PeerCard />
         <FriendsPanel onGo={(room) => travel(room, ROOMS[room].spawn)} />
+        {ONLINE && <DuelPanel />}
         <div className="fade" data-on={fading} aria-hidden="true" />
         {notice && (
           <p className="notice" role="status">
