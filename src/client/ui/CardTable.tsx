@@ -10,23 +10,26 @@ import {
   type Table,
 } from "../../game/cards/crazyEights.ts";
 
-/** Crazy Eights with the guard, across the cell bars. `onWin` runs once
- * when you empty your hand first. */
+/** Crazy Eights against an NPC (the jail guard by default). `onWin` runs
+ * once when you empty your hand first. */
 export function CardTable({
   onWin,
   onClose,
+  rival = "The guard",
+  winLine = "You win! A minute off your sentence.",
 }: {
-  onWin: () => void;
+  onWin?: () => void;
   onClose: () => void;
+  rival?: string;
+  winLine?: string;
 }): JSX.Element {
-  const [table, setTable] = useState<Table>(() =>
-    deal(Math.floor(Math.random() * 1e9)),
-  );
+  const shuffle = () => deal(Math.floor(Math.random() * 1e9), rival);
+  const [table, setTable] = useState<Table>(shuffle);
   // an eight waiting for you to name its suit
   const [eight, setEight] = useState<number | null>(null);
   const move = (next: Table) => {
     setTable(next);
-    if (next.winner === "you" && table.winner === null) onWin();
+    if (next.winner === "you" && table.winner === null) onWin?.();
   };
   const top = topCard(table);
   return (
@@ -36,13 +39,15 @@ export function CardTable({
           Top: {label(top)}
           {table.suit !== top.suit ? ` (${SUITS[table.suit]} called)` : ""}
         </span>
-        <span>Guard holds {table.guard.length}</span>
+        <span>
+          {rival} holds {table.guard.length}
+        </span>
       </p>
       <p className="game-call" role="status">
         {table.winner === "you"
-          ? "You win! A minute off your sentence."
+          ? winLine
           : table.winner === "guard"
-            ? "The guard wins this one."
+            ? `${rival} wins this one.`
             : table.guardDid || "Match the suit or the rank. Eights are wild."}
       </p>
       {eight !== null ? (
@@ -83,7 +88,7 @@ export function CardTable({
           <button
             type="button"
             className="game-main"
-            onClick={() => setTable(deal(Math.floor(Math.random() * 1e9)))}
+            onClick={() => setTable(shuffle())}
           >
             Deal again
           </button>

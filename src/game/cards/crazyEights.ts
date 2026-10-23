@@ -17,6 +17,8 @@ export type Table = {
   winner: Who | null;
   /** What the guard did on their last turn, for the table talk. */
   guardDid: string;
+  /** Who sits across from you, as the table talk names them. */
+  rival: string;
 };
 
 const RANKS = [
@@ -57,7 +59,7 @@ function shuffled(cards: readonly Card[], seed: number): Card[] {
   return out;
 }
 
-export function deal(seed: number): Table {
+export function deal(seed: number, rival = "The guard"): Table {
   const full: Card[] = [];
   for (let suit = 0; suit < 4; suit++)
     for (let rank = 1; rank <= 13; rank++) full.push({ rank, suit });
@@ -77,6 +79,7 @@ export function deal(seed: number): Table {
     turn: "you",
     winner: null,
     guardDid: "",
+    rival,
   };
 }
 
@@ -142,7 +145,11 @@ export function guardMove(t: Table): Table {
     i = card && playable(table, card) ? last : -1;
   }
   if (i < 0)
-    return { ...table, turn: "you", guardDid: "The guard draws and passes." };
+    return {
+      ...table,
+      turn: "you",
+      guardDid: `${table.rival} draws and passes.`,
+    };
   const card = table.guard[i];
   const played = lay(
     table,
@@ -152,7 +159,7 @@ export function guardMove(t: Table): Table {
   );
   return {
     ...played,
-    guardDid: `${drew ? "The guard draws, then plays" : "The guard plays"} ${card ? label(card) : ""}${card?.rank === 8 ? `, calling ${SUITS[played.suit]}` : ""}.`,
+    guardDid: `${table.rival} ${drew ? "draws, then plays" : "plays"} ${card ? label(card) : ""}${card?.rank === 8 ? `, calling ${SUITS[played.suit]}` : ""}.`,
   };
 }
 

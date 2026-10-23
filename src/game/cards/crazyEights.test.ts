@@ -77,3 +77,9 @@ test("a whole game always ends, one way or the other", () => {
     assert.ok(t.winner, `seed ${seed}`);
   }
 });
+
+test("the table talk names whoever deals you in", () => {
+  const t = drawCard(deal(3, "Odette"));
+  assert.match(t.guardDid, /^Odette (draws|plays)/);
+  assert.match(drawCard(deal(3)).guardDid, /^The guard (draws|plays)/);
+});

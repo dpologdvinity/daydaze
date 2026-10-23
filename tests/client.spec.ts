@@ -747,6 +747,23 @@ test("the Coconut Grove pours a drink and seats the player by the fire", async (
   expect(errors).toEqual([]);
 });
 
+test("the Back Room deals Crazy Eights with Odette", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&room=back-room`);
+  await page
+    .getByRole("button", { name: "Deal in with Odette" })
+    .click({ timeout: 150_000 });
+  const table = page.getByRole("region", { name: "Crazy Eights" });
+  await expect(table).toContainText("Odette holds 5");
+  await table.getByRole("button", { name: "Draw" }).click();
+  await expect(table.getByRole("status")).toContainText(/Odette (draws|plays)/);
+  await table.getByRole("button", { name: "Fold" }).click();
+  await expect(
+    page.getByRole("button", { name: "Deal in with Odette" }),
+  ).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test("the Back Room pours a drink and seats the player at the bar", async ({
   page,
 }) => {
