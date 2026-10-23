@@ -2127,6 +2127,25 @@ test("online with no server, a HUD line says the game is offline", async ({
   );
 });
 
+test("the Karaoke Loft: a song at the mic ends in a prize", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&room=karaoke`);
+  await page
+    .getByRole("button", { name: "Sing a song" })
+    .click({ timeout: 150_000 });
+  const panel = page.getByRole("region", { name: "Karaoke" });
+  // stand silent: every note goes by, and the song still ends
+  await expect(panel.getByRole("status")).toContainText("Song done", {
+    timeout: 60_000,
+  });
+  await expect(page.getByRole("status", { name: "Prize" })).toContainText(
+    "Karaoke",
+  );
+  expect(errors).toEqual([]);
+});
+
 test("the city map takes the player to Beachside", async ({ page }) => {
   await page.goto(`${LOW}&room=city`);
   await expect(roomTitle(page)).toHaveText("Downtown");

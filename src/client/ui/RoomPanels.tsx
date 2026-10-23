@@ -57,6 +57,10 @@ const PANELS: Partial<Record<RoomId, ComponentType>> = {
       ),
     ],
   ),
+  karaoke: panel(
+    () => import("../rooms/karaoke/KaraokePanel.tsx"),
+    "KaraokePanel",
+  ),
   "back-room": panel(
     () => import("../rooms/backroom/CardsPanel.tsx"),
     "CardsPanel",
