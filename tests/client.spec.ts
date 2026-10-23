@@ -2146,6 +2146,13 @@ test("the Karaoke Loft: a song at the mic ends in a prize", async ({
   expect(errors).toEqual([]);
 });
 
+test("Pride night at Pulse shows in the room card", async ({ page }) => {
+  await page.goto(`${STILL}&room=pulse&pride=20`);
+  await expect(page.getByText("It's Pride night!")).toBeVisible({
+    timeout: 150_000,
+  });
+});
+
 test("the city map takes the player to Beachside", async ({ page }) => {
   await page.goto(`${LOW}&room=city`);
   await expect(roomTitle(page)).toHaveText("Downtown");

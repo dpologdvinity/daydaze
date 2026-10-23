@@ -77,6 +77,8 @@ import { DancePicker, HoldPicker } from "./DancePicker.tsx";
 import { CityMap } from "./CityMap.tsx";
 import type { ChallengeSave } from "../../game/challenges.ts";
 import { FireworksTicker } from "../city/FireworksTicker.tsx";
+import { PRIDE_CLUBS } from "../../game/prideNight.ts";
+import { PrideTicker } from "./PrideTicker.tsx";
 import { Dressing } from "./Dressing.tsx";
 import { GAITS, gaitOf } from "../../game/gaits.ts";
 import { seatsIn } from "../../game/seats.ts";
@@ -723,6 +725,7 @@ export function Overlay({
         </div>
         <p className="venue-sub">{ROOM_HINTS[room]}</p>
         {room === "city" && <FireworksTicker />}
+        {PRIDE_CLUBS.has(room) && <PrideTicker />}
         <p className="coins" aria-label={`${coins} coins`}>
           {coins} coins
         </p>
