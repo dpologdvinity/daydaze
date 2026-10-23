@@ -5,6 +5,7 @@ import {
   playClick,
   playFanfare,
   playFireworkBoom,
+  playHorn,
   playPurr,
   playShellNote,
   playStep,
@@ -23,6 +24,7 @@ test("world sounds stay silent and never throw without Web Audio", () => {
   assert.equal(playFireworkBoom(1), false);
   assert.equal(playShellNote(2), false);
   assert.equal(playPurr(2), false);
+  assert.equal(playHorn(), false);
   const stop = startAmbience("beach");
   assert.equal(typeof stop, "function");
   assert.doesNotThrow(stop);

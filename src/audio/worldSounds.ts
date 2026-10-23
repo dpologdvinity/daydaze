@@ -104,6 +104,32 @@ export function playWhoosh(): boolean {
   return true;
 }
 
+/** A car horn: two square tones a third apart, the classic "meep". */
+export function playHorn(): boolean {
+  const out = sfx();
+  if (!out) return false;
+  const { ctx, dest } = out;
+  const now = ctx.currentTime;
+  const filter = ctx.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.setValueAtTime(1800, now);
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.12, now + 0.02);
+  gain.gain.setValueAtTime(0.12, now + 0.32);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+  filter.connect(gain).connect(dest);
+  for (const hz of [415, 523]) {
+    const osc = ctx.createOscillator();
+    osc.type = "square";
+    osc.frequency.setValueAtTime(hz, now);
+    osc.connect(filter);
+    osc.start(now);
+    osc.stop(now + 0.42);
+  }
+  return true;
+}
+
 /** A soft glassy tick for buttons. */
 export function playClick(): boolean {
   const out = sfx();
