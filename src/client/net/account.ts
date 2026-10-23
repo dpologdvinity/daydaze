@@ -6,6 +6,9 @@ import { onlineSession } from "./online.ts";
 /** Who you're playing as online: a guest, or a signed-in account. */
 export const account = createStore({
   me: null as Identity | null,
+  /** The account's save has loaded (or it's a brand-new account), so local
+   * changes may go up. */
+  cloudReady: false,
   busy: false,
   note: "",
 });
@@ -21,8 +24,8 @@ const ERRORS: Record<string, string> = {
 const say = (error: string) =>
   ERRORS[error] ?? "That didn't go through. Try again in a moment.";
 
-export function refreshAccount() {
-  account.set({ me: onlineSession()?.identity() ?? null });
+export function refreshAccount(cloudReady = false) {
+  account.set({ me: onlineSession()?.identity() ?? null, cloudReady });
 }
 
 /**
@@ -44,27 +47,31 @@ export async function signIn(
     account.set({ busy: false, note: say(result.error) });
     return;
   }
-  refreshAccount();
   const me = result.value;
-  const cloud =
-    kind === "signup"
-      ? await session.storeSave({ ...save, name: me.name })
-      : await session.cloudSave(me.name);
-  if (cloud.ok) onSave(cloud.value);
+  if (kind === "login") {
+    // useCloudSave loads the account's save before anything goes up
+    refreshAccount(false);
+    account.set({ busy: false, note: `Welcome back, ${me.name}.` });
+    return;
+  }
+  // a brand-new account has nothing to lose: the guest's progress goes up
+  refreshAccount(true);
+  const up = await session.storeSave({ ...save, name: me.name });
+  if (up.ok) onSave(up.value);
   account.set({
     busy: false,
-    note: cloud.ok
-      ? kind === "signup"
-        ? `Welcome, ${me.name}! Your progress is saved to your account.`
-        : `Welcome back, ${me.name}.`
-      : "Signed in, but your save didn't load. It'll sync on your next change.",
+    note: up.ok
+      ? `Welcome, ${me.name}! Your progress is saved to your account.`
+      : `Welcome, ${me.name}! Your progress will save on your next change.`,
   });
 }
 
-export async function signOut(): Promise<void> {
+export async function signOut(save: SaveV1): Promise<void> {
   const session = onlineSession();
   if (!session) return;
   account.set({ busy: true, note: "" });
+  // the last few seconds of changes go up before the session ends
+  if (account.get().cloudReady) await session.storeSave(save);
   await session.signOut();
   refreshAccount();
   account.set({ busy: false, note: "Logged out. Playing as a guest." });

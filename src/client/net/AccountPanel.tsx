@@ -23,7 +23,11 @@ export function AccountPanel({
       {me && !me.isGuest ? (
         <>
           <p>Signed in as {me.name}. Your progress saves to your account.</p>
-          <button type="button" disabled={busy} onClick={() => void signOut()}>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void signOut(save)}
+          >
             Log out
           </button>
         </>

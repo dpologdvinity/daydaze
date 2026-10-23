@@ -169,7 +169,7 @@ export function App() {
   const setEffects = (effects: Intensity) =>
     setSave((s) => ({ ...s, settings: { ...s.settings, effects } }));
   // signed in, every change goes up to the account a few seconds later
-  useCloudSave(save);
+  useCloudSave(save, setSave);
   // the strict chat filter: set in the Friends panel, read by the chat
   const setStrictChat = (strictChat: boolean) =>
     setSave((s) => ({ ...s, settings: { ...s.settings, strictChat } }));
