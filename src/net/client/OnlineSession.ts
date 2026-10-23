@@ -311,6 +311,11 @@ export class OnlineSession {
     return this.api.friends();
   }
   /** Asks to be friends, or accepts their request. */
+  /** Admins only; the server checks. */
+  async ban(targetId: string, reason: string): Promise<boolean> {
+    return (await this.api.ban(targetId, reason)).ok;
+  }
+
   async friend(targetId: string): Promise<boolean> {
     return (await this.api.friend(targetId)).ok;
   }

@@ -52,6 +52,7 @@ test("every route sends credentials and the right method, path and body", async 
     copy: 1,
   });
   await api.block("u_x", { roomId: "plaza", copy: 2 });
+  await api.ban("g_troll", "slurs in chat");
   assert.deepEqual(
     calls.map(({ url, init }) => `${init.method} ${url}`),
     [
@@ -65,6 +66,7 @@ test("every route sends credentials and the right method, path and body", async 
       "GET http://game/api/rooms/plaza",
       "POST http://game/api/report",
       "POST http://game/api/block",
+      "POST http://game/api/admin/ban",
     ],
   );
   assert.ok(calls.every(({ init }) => init.credentials === "include"));
@@ -76,6 +78,10 @@ test("every route sends credentials and the right method, path and body", async 
     targetId: "u_x",
     roomId: "plaza",
     copy: 2,
+  });
+  assert.deepEqual(JSON.parse(String(calls[10].init.body)), {
+    targetId: "g_troll",
+    reason: "slurs in chat",
   });
   assert.equal(calls[4].init.body, undefined);
 });

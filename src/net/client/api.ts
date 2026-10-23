@@ -132,6 +132,14 @@ export function createApi({
         JSON.stringify({ targetId, ...room }),
         accepted,
       ),
+    /** Admins only: bans a player (and a guest's last address). */
+    ban: (targetId: string, reason: string) =>
+      call(
+        "POST",
+        "/api/admin/ban",
+        JSON.stringify({ targetId, reason }),
+        accepted,
+      ),
     /** Asks to be friends, or says yes to their request. */
     friend: (targetId: string) =>
       call("POST", "/api/friend", JSON.stringify({ targetId }), accepted),
