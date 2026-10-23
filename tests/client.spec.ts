@@ -2069,6 +2069,25 @@ test("the Water Park speed slide: six untucked bends lose to the rival", async (
   expect(errors).toEqual([]);
 });
 
+test("pool volleyball at the Water Park pays its own prize", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&room=water-park`);
+  await page
+    .getByRole("button", { name: "Pool volleyball" })
+    .click({ timeout: 150_000 });
+  await page.getByRole("button", { name: "Play pool volleyball" }).click();
+  const game = page.getByRole("region", { name: "Pool volleyball" });
+  await expect(game.getByRole("status")).toContainText("They take it, 7 to 0", {
+    timeout: 120_000,
+  });
+  await expect(page.getByRole("status", { name: "Prize" })).toContainText(
+    "Pool volleyball",
+  );
+  expect(errors).toEqual([]);
+});
+
 test("the city map takes the player to Beachside", async ({ page }) => {
   await page.goto(`${LOW}&room=city`);
   await expect(roomTitle(page)).toHaveText("Downtown");

@@ -7,6 +7,7 @@ import {
   type Rally,
 } from "../../game/volleyball.ts";
 import { gradeSwing, type Swing } from "../../game/tennis.ts";
+import type { PrizeGame } from "../../game/prizes.ts";
 import { award } from "../ui/prizeDesk.ts";
 import { createStore } from "../rooms/shared/store.ts";
 
@@ -25,6 +26,8 @@ const OFF = {
   /** performance.now() the ball is there to hit. */
   arrives: 0,
   last: null as { swing: Swing; outcome: Outcome } | null,
+  /** Which court: the beach net or the pool. */
+  prize: "volleyball" as PrizeGame,
 };
 
 export const volley = createStore(OFF);
@@ -38,8 +41,8 @@ function feed(now: number, match: Rally) {
   });
 }
 
-export function start(now: number) {
-  volley.set(OFF);
+export function start(now: number, prize: PrizeGame = volley.get().prize) {
+  volley.set({ ...OFF, prize });
   feed(now, NEW_RALLY);
 }
 
@@ -74,7 +77,7 @@ export function tick(now: number) {
     feed(now, s.match);
   else if (s.phase === "between" && now - s.since >= BETWEEN * 1000) {
     if (matchOver(s.match)) {
-      award("volleyball", s.match.you);
+      award(s.prize, s.match.you);
       volley.set({ phase: "over", since: now });
     } else feed(now, s.match);
   }

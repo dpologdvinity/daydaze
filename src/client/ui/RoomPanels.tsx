@@ -42,6 +42,13 @@ const PANELS: Partial<Record<RoomId, ComponentType>> = {
       "Speed slide",
       panel(() => import("../rooms/waterpark/SlidePanel.tsx"), "SlidePanel"),
     ],
+    [
+      "Pool volleyball",
+      panel(
+        () => import("../rooms/waterpark/PoolVolleyPanel.tsx"),
+        "PoolVolleyPanel",
+      ),
+    ],
   ),
   "back-room": panel(
     () => import("../rooms/backroom/CardsPanel.tsx"),

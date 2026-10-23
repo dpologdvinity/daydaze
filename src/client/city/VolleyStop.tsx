@@ -1,5 +1,6 @@
 import { useEffect, useState, type JSX } from "react";
 import { VOLLEYBALL } from "../../game/city/layout.ts";
+import type { PrizeGame } from "../../game/prizes.ts";
 import { TO_WIN } from "../../game/volleyball.ts";
 import { useNow, usePressKeys } from "../rooms/shared/useNow.ts";
 import { driving } from "../world/driving.ts";
@@ -18,8 +19,7 @@ const CALL = {
 
 /** At the beach net on foot: first to seven against the pair across it. */
 export function VolleyStop(): JSX.Element | null {
-  const s = volley.use();
-  const playing = s.phase !== "off";
+  const playing = volley.use().phase !== "off";
   const [near, setNear] = useState(false);
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -31,15 +31,28 @@ export function VolleyStop(): JSX.Element | null {
     }, 300);
     return () => window.clearInterval(id);
   }, []);
+  if (!playing && !near) return null;
+  return <VolleyGame label="Beach volleyball" prize="volleyball" />;
+}
+
+/** A volleyball match's panel, for whichever court it's played on. */
+export function VolleyGame({
+  label,
+  prize,
+}: {
+  label: string;
+  prize: PrizeGame;
+}): JSX.Element {
+  const s = volley.use();
+  const playing = s.phase !== "off";
   const now = useNow(playing && s.phase !== "over");
   useEffect(() => {
     if (playing) tick(now);
   }, [now, playing]);
   usePressKeys(playing, (t) => press(t), leave);
-  if (!playing && !near) return null;
   if (!playing)
     return (
-      <section className="game-panel" aria-label="Beach volleyball">
+      <section className="game-panel" aria-label={label}>
         <p className="game-call">
           First to {TO_WIN} against the pair across the net. Dig it as it
           reaches you, then spike the set at the top.
@@ -47,9 +60,9 @@ export function VolleyStop(): JSX.Element | null {
         <button
           type="button"
           className="game-main"
-          onClick={() => start(performance.now())}
+          onClick={() => start(performance.now(), prize)}
         >
-          Play beach volleyball
+          Play {label.toLowerCase()}
         </button>
       </section>
     );
@@ -59,7 +72,7 @@ export function VolleyStop(): JSX.Element | null {
       ? Math.max(0, Math.min(1, 1 - (s.arrives - now) / 1400))
       : 0;
   return (
-    <section className="game-panel" aria-label="Beach volleyball">
+    <section className="game-panel" aria-label={label}>
       <p className="game-score" aria-label="Score">
         <span>
           You {you} · Them {them}
