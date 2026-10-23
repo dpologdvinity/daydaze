@@ -208,10 +208,8 @@ has only partner salsa, no hug/kiss/hand clips) and slow dance.
 `src/client/net/together.ts` + `TogetherPanel.tsx`, PeerCard group "Do
 something together". The follower snaps beside the lead; walking 0.4 m off
 ends it. Left: piggyback (needs a lifted doll), pose polish (the hug's arms
-are guessed; check in the lineup), offline NPC partners. The online spec
-step passed in a two-browser probe; the full `test:e2e:online` timed out on
-page load under heavy machine load (clean main passed once) — rerun it
-when the machine is quiet. Original note: Holding hands, forehead kiss,
+are guessed; check in the lineup), offline NPC partners. `test:e2e:online` passes (the card table used to cover the
+peer card's buttons; the card now sits on z-index 6). Original note: Holding hands, forehead kiss,
 piggyback, hug, slow dance; offline with nobody, online between two players.
 - Clips: look in `./mixamo` (dancing, gestures, idle folders) for paired or
   adaptable clips; add to `art/doll/blender/mocap.py` `MIXAMO_CLIPS`
