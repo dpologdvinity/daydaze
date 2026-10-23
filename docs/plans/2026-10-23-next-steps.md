@@ -43,8 +43,10 @@ Where this file and the master roadmap disagree on status, this file is newer.
 - **~66 rooms**: `node --experimental-strip-types -e 'import("./src/game/rooms.ts").then(m=>console.log(Object.keys(m.ROOMS)))'`.
   Newest: `ramen-shop`, `sushi-bar`, `bistro` (food counter kit), `lune`
   (custom candlelit date room, `src/game/lune.ts`).
-- **Games with prizes and daily challenges** (`src/game/prizes.ts`):
-  everything in the roster except those listed in §4. Newest: Ramen Rush,
+- **Games with prizes and daily challenges** (`src/game/prizes.ts`): most
+  scored games. Not yet in `PRIZE_GAMES` (so no bests or challenges): the
+  jet-ski race, Speedway races, bumper cars, the Midway booths (they pay
+  coins directly via `payoutFor`) and the arcade minigames; see B11. Newest: Ramen Rush,
   Sushi Catch, safari photo hunt and feeding time (zoo), curling (ice rink),
   Reef Spotter (aquarium), jet-ski race (marina), water-gun race (Midway
   booth), Super Slide ride (fairground).
@@ -56,7 +58,9 @@ Where this file and the master roadmap disagree on status, this file is newer.
   stealth profiles in `src/game/crime/shoplift.ts`, shop mapping, stolen
   tags (`CrimeSave.stolen`) and staff recognition in `src/game/crime/lift.ts`.
   The old stub shelf in the apartment still exists.
-- **Online (behind `?online=1`)**: guests and accounts, room copies, other
+- **Online (behind `?online=1`)**: guests (accounts exist on the server
+  and in `src/net/client/api.ts`, but the 3D client has no login, signup or
+  save sync yet; see A0), room copies, other
   players' dolls, swimsuits, dances, seated and ride poses, cars with mods,
   buzz icons, chat (drunk-distorted), mute/block/report, friends with
   presence and "Go to" (D1 `friend_requests`, presence in the Directory DO),
@@ -116,7 +120,9 @@ default (it is a URL flag today; the comment there says so).
 5. Client: `World.tsx` lazy import + `SCENES`; `CameraRig.tsx` `ROOM_SHOTS`
    and `MAX_DISTANCE`; `Overlay.tsx` `ROOM_HINTS`; `RoomAudio.tsx` track
    (ids in `src/audio/proceduralJukebox.ts`); `scripts/screenshots.ts`;
-   the budget list in `tests/client.spec.ts`; `RoomPanels.tsx` for games.
+   the budget list in `tests/client.spec.ts`; `RoomPanels.tsx` for games;
+   `DebugPanel.tsx` jump button; the city map's `VENUE_PLACES` in
+   `src/game/city/places.ts`.
 6. Budget on the low tier: < 250 draw calls, < 300k triangles, ≤ 4 lights.
 
 ### Adding a game
@@ -164,6 +170,32 @@ Ordered by value; each item is self-contained. Sizes: S < half a day, M ~ a
 day, L several days.
 
 ### A. Social and online (M9)
+
+**A0. Online must-haves before real players (M–L, do with or before D1).**
+- Account UI and cloud saves: login, signup, logout screens; load the save
+  at login, push changes debounced (`api.getSave/putSave`); upload a
+  guest's local save when they make an account. Nothing in `src/client`
+  calls `signup`, `login` or `putSave` today.
+- Connection status: a HUD line for reconnecting, playing offline, room
+  full (4001), kicked (4002), banned (4003), replaced (4009).
+- Private rooms: `useOnlineRoom` joins every room the same way, so online
+  strangers would share one `apartment` and one `jail` copy. Make homes and
+  jail per player (a copy keyed by owner) or skip them online until M6b.
+- Server-enforced drunk chat: send the buzz level and apply `chatDistort`
+  in `server/src/roomCore.ts` instead of only in `App.tsx`.
+- Jail sentences and store bans are client-owned (`SaveV1.jail`,
+  `crime.bans`); move them to D1 with server checks (with A5).
+- Moderation tools: an admin menu on `PeerCard` (kick, ban via
+  `/api/admin/ban`, today only callable from devtools), a report viewer,
+  and the M11 threat-model review against `docs/security.md`.
+- A strict personal chat filter setting (`filterChat` strict mode exists,
+  unused by the client).
+- A room-copy list ("Plaza #1, 12 people") from `api.rooms`.
+- Online leaderboards for bests (today client-only).
+- Refresh `docs/security.md`: it says there's no admin route (there is) and
+  that rate limits are in memory (they're in DO SQL storage). Its known
+  gaps (no account recovery, no 2FA, no breached-password check, a short
+  slur list) need a user decision.
 
 **A1. Couple emotes (M, highest value).** Holding hands, forehead kiss,
 piggyback, hug, slow dance; offline with nobody, online between two players.
@@ -213,7 +245,7 @@ test within free-plan CPU.
 
 ### B. Content gaps (roster and wishlist)
 
-**B1. Water Park expansion (L).** The park floor is 21 m × 16 m
+**B1. Water Park expansion (L).** The park floor is about 21 m × 10 m
 (`WATER_PARK_FLOOR` in `rooms.ts`, `src/game/waterPark.ts`); too small.
 Grow it (walkable polygon, gate, camera shots), then add: lazy river (a tube
 ride: `player.seat` along a loop, like the slide rides), speed slide race
@@ -238,15 +270,23 @@ town); taxi ranks are unnecessary (city map travel is free).
 **B5. Yacht party (M, M8).** A party yacht from the Marina sailing to a
 private island; DJ set and dance-off.
 
-**B6. Food games left (S each).** Delivery job exists in
-`src/game/food/delivery.ts` and the phone; check it's reachable and
-scored. Cook-off is A2.
+**B6. Delivery job and scooter (M, M5).** Not built:
+`src/game/food/delivery.ts` only times a food order (20 s). Build a courier
+job: pickup and drop-off on the city road graph, a scooter in the roster
+(`src/game/driving/roster.ts`, non-road class like `JET_SKI`), tips by
+speed, visible courier NPCs. Cook-off is A2.
 
 **B7. Diverse doll (M–L, M4/M11).** Glasses and freckles exist. Missing:
-pronouns on the profile/peer card (save `identity`), hijab (Blender part),
-vitiligo (face canvas paint, like freckles in `faceCanvas.ts`), wheelchair
-(model + seated locomotion; M11 wants it in every place). Pronouns and
-vitiligo are S; hijab and wheelchair are L.
+pronouns on the profile/peer card (save `identity`), vitiligo, birthmarks
+and monolid eyes (face canvas/sliders, like freckles in `faceCanvas.ts`),
+a plus-size body range (`src/game/body.ts` scales only about ±6–10%),
+hijab, head wraps, turbans, bindis, hearing aids, prosthetics (Blender
+parts or anchors like `Glasses.tsx`), hair: locs, cornrows, bantu knots,
+twist-outs, puffs, buzz cut, shaved sides, bald, edges/baby hair (strand
+hair in `art/doll/blender/strands.py`; check ponytail and braids, which
+were still the older cards at one point), and a wheelchair (model + seated
+locomotion; M11 wants it in every place). Pronouns and face paint are S;
+bodies, parts, hair and the wheelchair are L.
 
 **B8. More stores (S–M each).** Galleria's "Track 99" has no shop
 (`src/game/galleria.ts`); a swimwear shop at the beach; more jewelry. Shoe
@@ -258,8 +298,64 @@ canvas-texture livery on the paint material in `CarMesh.tsx`; add to
 `ParkedCar` mods and the action codec (`c:<hex><r><g><t><id>`; a fourth
 digit fits only if the id is ≤ 10 chars with a buzz suffix; check limits).
 
-**B10. Haunted house, Midway, Star Siege** already exist; the roster's
-"alien invasion arcade shooter" is Star Siege.
+**B10. Haunted house as a game (M).** `HauntedHouse.tsx` is a walk-through
+with no score; the roster wants a solo horror game (jump-scare timing or a
+find-the-exit run, no gore). Star Siege already is the roster's alien
+shooter.
+
+**B11. Prizes for unscored games (S).** Add `PRIZE_GAMES`/`PRIZE_TABLES`
+entries and `award()` calls for the jet-ski race and Speedway races (best
+lap or place), bumper cars (bumps), the Midway booths (score per booth) and
+the arcade minigames, so they get bests and daily challenges.
+
+**B12. Karaoke game (M, M3).** `karaoke` is a room only (`src/game/karaoke.ts`,
+`Karaoke.tsx`). A pitch/timing rhythm game at the mic, procedural backing
+track, no lyrics on screen (rule from earlier work).
+
+**B13. Card table at the speakeasy (S, M3).** Put Crazy Eights (vs a regular
+NPC, and the online duel) at a Back Room table (`back-room`).
+
+**B14. Club events and sapphic touches (M, M3).** Pride night event at the
+clubs (timed like `src/game/danceOff.ts`, the HUD ticker pattern), beat-tile
+streak glow on dance floors, couple skating at the ice rink (with A1),
+pride-flag clothing prints (an outfit pattern option).
+
+**B15. Homes and economy (M each, M4/M6a).** Choose the apartment's
+neighborhood with a matching window view (`HomeSave` in
+`src/game/home/home.ts` has none); cooking with groceries (a kitchen and
+pantry; `market.ts` is layout only); a furniture and decor store
+(`decor.ts` is a free catalog); pets and a pet shop (low priority in VISION).
+
+**B16. Salons and beauty (M each, M4).** More salons (braiding shop,
+barbershop, Korean perm, walk-in, luxe nail studio), lash/brow/makeup
+artist services, and painted nails on the doll's hands (a `Look` field plus
+`HumanDoll` material; today nails are only a minigame). Check whether the
+salon previews a style before you pay.
+
+**B17. Stores, groceries, malls (S–M each, M4/M8).** `ShopId` is
+boutique/beauty/salon/piercing/thrift/shoes. Missing from the content spec:
+sneakers, handbags, hats, wigs, sunglasses, beauty supply, K-beauty,
+drugstore, perfume, nail polish bar, plants, phone/gadgets, toys,
+crystals/tarot, liquor, flowers, party, bridal, sports gear, style
+boutiques (goth, cottagecore, lingerie…). Groceries: Filipino grocery, Asian
+supermarket, farmers market, a bodega with a cat (the spec's easy
+shoplifting store). Malls: an outdoor luxury street, a retro dead mall; the
+Galleria's photo-sticker booth, pretzel stand and arcade. Most can reuse
+`ShopPanel` with new items once there are things to sell (new wearables
+need Blender parts; accessories like hats and bags need new `Look` slots).
+
+**B18. Places from the M7/M8 checklist (M each).** Park and Gardens: boating
+lake, night-sky lookout, the Lanmaoa grove (18+, D2). Zoo: monkey canopy
+walk, reptile house, petting area, safari tram (habitats in
+`src/game/zoo.ts`). Aquarium: underwater cafe, otter show. Mermaid Cove:
+sunken ship, swimming. Marina: rowboats, speedboat rentals. Water Park:
+night swim, pool bar (with B1). Amusement Park: photo booth. Neighborhoods
+not built: Hillside Winter Town, the Fashion District (`cells.ts`); one bus
+stop per neighborhood (only `SQUARE_BUS_STOP` exists).
+
+**B19. Cars (S–M, content spec "Cars").** Horn, headlights, car radio
+(procedural tracks), friends riding along as passengers (online), parking at
+home, and car locks (C2 assumes locks; none exist yet).
 
 ### C. Crime and homes (M6b, needs A5)
 
@@ -281,8 +377,13 @@ are beat-based, `watchersFacing`).
 
 ### D. Needs the user's approval or decisions
 
-**D1. Deploy.** See §2 "Not deployed"; then turn online on by default and
-rerun the smoke test against production. Ask first.
+**D1. Deploy.** See §2 "Not deployed" and `docs/deploy.md`: `wrangler
+login`, `wrangler d1 create`, replace the placeholder `database_id`
+(`00000000-…`) in `server/wrangler.jsonc`, apply migrations remotely, set
+`ALLOWED_ORIGINS`, measure PBKDF2 against the free plan's 10 ms CPU limit
+(Paid plan or fewer iterations), make the user an admin, deploy, turn online
+on by default, rerun the smoke test against production. Do A0 first. Every
+step needs the user's approval.
 
 **D2. Age gate and 18+ area (M10).** Birthdate at signup, locked on the
 server; under-16 can't sign up; 18+ unlocks automatically; guests never see
@@ -292,13 +393,21 @@ can host the unmarked door) and massage parlor (upstairs from the nail bar),
 suggestive only. Read the M10 section of the master roadmap; confirm the
 design with the user before building.
 
+**D4. Open questions for the user** (master roadmap §8): the mango line in
+VISION ("subtle mango references" or "one rare easter egg"), an optional
+landing page, placeholder names. VISION still describes toon,
+doll-proportion avatars, which the user rejected for the semi-realistic 3D
+doll; update it once confirmed.
+
 **D3. Day–night.** The user wants the city always night (neon, fireworks);
 M11's day–night clock was deliberately skipped. Ask before revisiting.
 
 ### E. Polish and launch (M11)
 
-- Performance pass on a mid phone: 30 fps low tier; re-measure the heaviest
-  rooms (Galleria, Pulse, Water Park, Speedway).
+- Performance pass on a mid phone: 30 fps low tier, 16 ms frames on the
+  high tier; re-measure the heaviest rooms (Galleria, Pulse, Water Park,
+  Speedway, Amusement Park, which a note once put near 370k triangles on
+  low; the Super Slide commit measured 179 calls and 211k).
 - Accessibility: keyboard play, labels, axe-clean dialogs (Speedway test
   already runs axe), reduced motion, effects intensity.
 - Fix boots-over-jeans poke-through (outfit tuck shape keys).
@@ -307,11 +416,25 @@ M11's day–night clock was deliberately skipped. Ask before revisiting.
   headless Chrome or cloud CI (GitHub Actions is manual-only for billing)
   would cut the 1.6 h suite and end load flakes. Suggest to the user.
 
+### F. Unverified (check before relying on them)
+
+- Ponytail and braids may still be the older hair cards, not strand hair.
+- Salon: whether you can preview a style before paying.
+- An eating animation, and clinking drinks with others: no clips found.
+- Guns stay in game zones because they only exist inside game rooms; the
+  roadmap's `src/game/weapons/` pickup/return module was never built.
+- The online spec's planned tests that `tests/online.spec.ts` doesn't cover:
+  a block hiding a player, a full room opening a new copy, the server
+  stopping mid-session falling back to offline.
+
 ## 5. Suggested order for the next session
 
+0. B11 prizes for unscored games and B13 speakeasy cards (quick, high value).
 1. A1 couple emotes (check `./mixamo` first; if no usable clips, do A2 first).
 2. A2 cook-off.
 3. C4 shoplifting cleanup and B9 car wraps (quick wins).
 4. B2 beach volleyball, B3 shooting range.
 5. B1 Water Park expansion.
-6. Ask the user about D1 deploy and D2 age gate; then A5 and the M6b chain.
+6. A0 online must-haves, then ask the user about D1 deploy and D2 age gate;
+   then A5 and the M6b chain.
+7. The long tail in B12–B19 and B7, picking what the user asks for.
