@@ -12,7 +12,8 @@ import {
   interpolateEntityState,
   type NetworkTransport,
 } from "../roomNetworkSync.ts";
-import type { Api } from "./api.ts";
+import type { Api, ApiResult } from "./api.ts";
+import type { SaveV1 } from "../../game/save.ts";
 import type { Schedule, TransportStatus } from "./WebSocketTransport.ts";
 
 /** 12 Hz stays under the server's 15/s movement bucket. */
@@ -158,6 +159,32 @@ export class OnlineSession {
       { x: position[0], z: position[1], yaw, action: "idle" },
       copy,
     );
+  }
+
+  /** Signs up or logs in; on success, rejoins as that account. */
+  async signIn(
+    kind: "signup" | "login",
+    username: string,
+    password: string,
+  ): Promise<ApiResult<Identity>> {
+    const result = await this.api[kind](username, password);
+    if (result.ok) await this.adoptIdentity();
+    return result;
+  }
+
+  /** Logs out and carries on as a fresh guest. */
+  async signOut(): Promise<void> {
+    await this.api.logout();
+    await this.adoptIdentity();
+  }
+
+  /** The signed-in account's save (a fresh one if it has none yet). */
+  cloudSave(fallbackName: string): Promise<ApiResult<SaveV1>> {
+    return this.api.getSave(fallbackName);
+  }
+
+  storeSave(save: SaveV1): Promise<ApiResult<SaveV1>> {
+    return this.api.putSave(save);
   }
 
   /**

@@ -440,3 +440,35 @@ test("reporting with no room joined does nothing", async () => {
   const { session } = setup();
   assert.equal(await session.report("g_x", "spam"), false);
 });
+
+test("signIn logs in and becomes the account; a wrong password changes nothing", async () => {
+  const routes: Routes = {};
+  const { session } = setup(routes);
+  await session.start();
+  routes["POST /api/login"] = () => json({ error: "wrong-credentials" }, 401);
+  const wrong = await session.signIn("login", "Kai", "not-it-at-all");
+  assert.deepEqual(wrong, {
+    ok: false,
+    status: 401,
+    error: "wrong-credentials",
+  });
+  assert.equal(session.identity()?.isGuest, true);
+  routes["POST /api/login"] = () => json(account);
+  routes["GET /api/me"] = () => json(account);
+  const right = await session.signIn("login", "Kai", "right-password");
+  assert.equal(right.ok, true);
+  assert.deepEqual(session.identity(), account);
+});
+
+test("signOut logs out and carries on as a guest", async () => {
+  const routes: Routes = {};
+  const { session } = setup(routes);
+  routes["GET /api/me"] = () => json(account);
+  await session.start();
+  const guest = { ...me, id: "g_after", name: "JuicySlice4321" };
+  routes["POST /api/logout"] = () => json({ ok: true });
+  routes["GET /api/me"] = () => json({ error: "no-session" }, 401);
+  routes["POST /api/guest"] = () => json(guest);
+  await session.signOut();
+  assert.deepEqual(session.identity(), guest);
+});
