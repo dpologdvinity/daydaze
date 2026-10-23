@@ -2088,6 +2088,25 @@ test("pool volleyball at the Water Park pays its own prize", async ({
   expect(errors).toEqual([]);
 });
 
+test("the Water Park water-gun battle pays a prize", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&room=water-park`);
+  await page
+    .getByRole("button", { name: "Water guns" })
+    .click({ timeout: 150_000 });
+  await page.getByRole("button", { name: "Grab a water gun" }).click();
+  const battle = page.getByRole("dialog", { name: "Water-gun battle" });
+  const stage = battle.getByRole("application");
+  // the whole tank, squirted
+  for (let i = 0; i < 24; i++)
+    await stage.click({ position: { x: 20, y: 20 } });
+  await expect(battle).toBeHidden();
+  await expect(page.getByRole("status", { name: "Prize" })).toContainText(
+    "Water-gun battle",
+  );
+  expect(errors).toEqual([]);
+});
+
 test("the city map takes the player to Beachside", async ({ page }) => {
   await page.goto(`${LOW}&room=city`);
   await expect(roomTitle(page)).toHaveText("Downtown");
