@@ -156,7 +156,7 @@ export function GemGlam({ onClose }: Props) {
 
   const start = () => {
     setGame(newGame(level, Math.floor(Math.random() * 1e9)));
-    setNote("Swap two neighbouring gems to make a line of three.");
+    setNote("Swap two neighboring gems to make a line of three.");
     setPhase("play");
   };
 
