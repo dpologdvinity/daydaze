@@ -189,8 +189,11 @@ the account's save, and while signed in every change is pushed 4 s later
 "Ban (admin)" on the peer card (`api.ban`, `session.ban`; not browser-tested,
 needs `is_admin` in D1); the room-copy list in the Friends panel
 (`RoomCopies.tsx`, `session.copies()`, hop with `switchCopy`);
-`docs/security.md` refreshed. Still open: a report viewer, online
-leaderboards, jail and store bans in D1 (with A5).
+`docs/security.md` refreshed; an admin report viewer (`GET
+/api/admin/reports`, latest 50, `ReportsPanel.tsx` in the Friends panel,
+smoke-tested). Still open: online leaderboards (wait for a server economy:
+scores are client-owned, see `docs/security.md`), jail and store bans in D1
+(with A5).
 - Account UI and cloud saves: login, signup, logout screens; load the save
   at login, push changes debounced (`api.getSave/putSave`); upload a
   guest's local save when they make an account. Nothing in `src/client`
