@@ -437,10 +437,10 @@ export function App() {
         <ChatBar
           onSay={(text) => {
             const at = Date.now();
-            // a few drinks in, vowels stretch ("heyyy")
-            const said = chatDistort(text, getBuzz(), at);
-            setChat({ text: said, at });
-            onlineSession()?.sendChat(said);
+            // a few drinks in, vowels stretch ("heyyy"); online, the server
+            // stretches what others see, by the buzz your moves show
+            setChat({ text: chatDistort(text, getBuzz(), at), at });
+            onlineSession()?.sendChat(text);
           }}
         />
         {flags.debug && (
