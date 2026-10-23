@@ -5,9 +5,11 @@ export type CrimeSave = {
   offences: number;
   /** Store id to the epoch millisecond the ban ends. */
   bans: Record<string, number>;
+  /** The "stolen" tag: item id to the store it was lifted from. */
+  stolen: Record<string, string>;
 };
 
-export const DEFAULT_CRIME: CrimeSave = { offences: 0, bans: {} };
+export const DEFAULT_CRIME: CrimeSave = { offences: 0, bans: {}, stolen: {} };
 
 export function isBanned(
   crime: CrimeSave,
@@ -28,16 +30,17 @@ export function recordCaught(
     penalty.kind === "warning"
       ? { ...crime.bans, [storeId]: now + penalty.banMs }
       : crime.bans;
-  return { offences: crime.offences + 1, bans };
+  return { ...crime, offences: crime.offences + 1, bans };
 }
 
 const MAX_OFFENCES = 1000;
 const MAX_BANS = 50;
+const MAX_STOLEN = 200;
 
 // Saved crime data is untrusted: keep a sane count and finite ban times only.
 export function validateCrime(value: unknown): CrimeSave {
   if (typeof value !== "object" || value === null) return DEFAULT_CRIME;
-  const { offences, bans } = value as Record<string, unknown>;
+  const { offences, bans, stolen } = value as Record<string, unknown>;
   const count =
     typeof offences === "number" && Number.isInteger(offences) && offences >= 0
       ? Math.min(offences, MAX_OFFENCES)
@@ -52,5 +55,13 @@ export function validateCrime(value: unknown): CrimeSave {
       }
     }
   }
-  return { offences: count, bans: kept };
+  const tags: Record<string, string> = {};
+  if (typeof stolen === "object" && stolen !== null) {
+    for (const [itemId, storeId] of Object.entries(stolen)) {
+      if (Object.keys(tags).length >= MAX_STOLEN) break;
+      if (itemId.length > 64 || typeof storeId !== "string") continue;
+      if (storeId.length <= 64) tags[itemId] = storeId;
+    }
+  }
+  return { offences: count, bans: kept, stolen: tags };
 }

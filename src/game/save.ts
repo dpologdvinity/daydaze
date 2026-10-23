@@ -90,7 +90,7 @@ export function createDefaultSave(name: string): SaveV1 {
     },
     home: { ...DEFAULT_HOME, furniture: [] },
     jail: { ...DEFAULT_JAIL },
-    crime: { ...DEFAULT_CRIME, bans: {} },
+    crime: { ...DEFAULT_CRIME, bans: {}, stolen: {} },
     bests: {},
     challenges: { ...NO_CHALLENGES, done: [] },
     car: null,

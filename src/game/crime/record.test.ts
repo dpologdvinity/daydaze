@@ -35,7 +35,7 @@ test("saved crime data keeps good values and drops bad ones", () => {
       offences: 2,
       bans: { bodega: 9, mall: "soon", x: Infinity },
     }),
-    { offences: 2, bans: { bodega: 9 } },
+    { offences: 2, bans: { bodega: 9 }, stolen: {} },
   );
   assert.equal(validateCrime({ offences: -4 }).offences, 0);
   assert.equal(validateCrime({ offences: 1.5 }).offences, 0);

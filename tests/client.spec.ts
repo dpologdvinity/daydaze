@@ -647,6 +647,33 @@ test("Thrift Temple: buy a vintage dye and wear it", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("Thrift Temple: pocket a dye while the clerk looks away", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=thrift-temple`);
+  await page
+    .getByRole("button", { name: "Shop at Thrift Temple" })
+    .click({ timeout: 150_000 });
+  const shop = page.getByRole("dialog", { name: "Thrift Temple" });
+  await shop.getByRole("button", { name: "Pocket Olive" }).click();
+  const lift = shop.getByRole("region", { name: "Lifting Olive" });
+  // the clerk faces the floor one turn in six, and not this one
+  await lift.getByRole("button", { name: "Pocket it" }).click();
+  await lift.getByRole("button", { name: "Walk out" }).click();
+  await expect(shop.getByRole("status")).toContainText("You walked out with");
+  await lift.getByRole("button", { name: "Back to the shelves" }).click();
+  const row = shop.getByRole("listitem").filter({ hasText: "Olive" });
+  await expect(row.getByRole("button", { name: "Wear" })).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(() => localStorage.getItem("daydaze-save-v1") ?? ""),
+    )
+    .toContain('"stolen":{"#6b7a2a":"thrift-store"}');
+  expect(errors).toEqual([]);
+});
+
 test("the Coconut Grove pours a drink and seats the player by the fire", async ({
   page,
 }) => {

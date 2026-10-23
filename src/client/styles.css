@@ -1757,7 +1757,7 @@ button:focus-visible {
 
 .shop-items li {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: 1fr auto auto auto;
   align-items: center;
   gap: 10px;
   padding: 8px 10px;
@@ -2153,4 +2153,21 @@ button:focus-visible {
 .game-tabs button[aria-pressed="true"] {
   background: var(--champagne);
   color: #1a0a28;
+}
+
+.shop-lift {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.shop-items li > :nth-child(3):last-child {
+  grid-column: 3 / 5;
+}
+
+.shop-items .shop-pocket {
+  background: transparent;
+  border: 1px solid currentcolor;
+  color: inherit;
 }

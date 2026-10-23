@@ -41,6 +41,8 @@ import {
 import type { DanceMoveId, Holds } from "../../game/dance/moves.ts";
 import { INTENSITIES, type Intensity } from "../../game/effects/buzz.ts";
 import { CarPicker } from "../city/CarPicker.tsx";
+import type { CrimeSave } from "../../game/crime/record.ts";
+import type { Caught } from "./ShopliftPanel.tsx";
 import { FuelStop } from "../city/FuelStop.tsx";
 import { DealershipPanel } from "../city/DealershipPanel.tsx";
 import { RecordPlayer, RecordsPanel } from "../city/RecordsPanel.tsx";
@@ -586,6 +588,9 @@ export function Overlay({
   coins,
   wardrobe,
   onBuy,
+  crime,
+  onSteal,
+  onCaught,
   body,
   setBody,
   onRide,
@@ -623,6 +628,9 @@ export function Overlay({
   coins: number;
   wardrobe: readonly string[];
   onBuy: (id: string, store?: ShopId, day?: number) => PurchaseResult;
+  crime: CrimeSave;
+  onSteal: (id: string, storeId: string) => void;
+  onCaught: (caught: Caught) => void;
   body: BodyShape;
   setBody: (body: BodyShape) => void;
   onRide: () => void;
@@ -732,6 +740,9 @@ export function Overlay({
         look={look}
         setLook={setLook}
         onBuy={onBuy}
+        crime={crime}
+        onSteal={onSteal}
+        onCaught={onCaught}
       />
       <RoomPanel room={room} />
       {room === "city" && <FuelStop coins={coins} onSpend={onSpend} />}

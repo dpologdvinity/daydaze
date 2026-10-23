@@ -41,7 +41,7 @@ test("createDefaultSave uses the default look and auto quality", () => {
     },
     home: { locked: true, furniture: [] },
     jail: { endsAt: null },
-    crime: { offences: 0, bans: {} },
+    crime: { offences: 0, bans: {}, stolen: {} },
     bests: {},
     challenges: { day: 0, done: [] },
     car: null,
@@ -70,7 +70,7 @@ test("a save round-trips through serializeSave and loadSave", () => {
       furniture: [{ id: "sofa", cell: [0, 0], rotation: 1 }],
     },
     jail: { endsAt: 1_900_000_000_000 },
-    crime: { offences: 3, bans: { bodega: 1_900_000_000_000 } },
+    crime: { offences: 3, bans: { bodega: 1_900_000_000_000 }, stolen: {} },
     bests: {},
     challenges: { day: 0, done: [] },
     car: {
@@ -96,7 +96,7 @@ test("a save from before the apartment, jail and crime fields still loads", () =
   const loaded = loadSave(old, "Fallback");
   assert.deepEqual(loaded.home, { locked: true, furniture: [] });
   assert.deepEqual(loaded.jail, { endsAt: null });
-  assert.deepEqual(loaded.crime, { offences: 0, bans: {} });
+  assert.deepEqual(loaded.crime, { offences: 0, bans: {}, stolen: {} });
 });
 
 test("a damaged home, jail or crime field falls back without losing the rest", () => {
@@ -111,7 +111,7 @@ test("a damaged home, jail or crime field falls back without losing the rest", (
   assert.equal(loaded.name, "Kept Name");
   assert.deepEqual(loaded.home, { locked: true, furniture: [] });
   assert.deepEqual(loaded.jail, { endsAt: null });
-  assert.deepEqual(loaded.crime, { offences: 0, bans: {} });
+  assert.deepEqual(loaded.crime, { offences: 0, bans: {}, stolen: {} });
 });
 
 test("a save from before the swimsuit slot still loads", () => {
@@ -137,7 +137,7 @@ test("a save from before the swimsuit slot still loads", () => {
     },
     home: { locked: true, furniture: [] },
     jail: { endsAt: null },
-    crime: { offences: 0, bans: {} },
+    crime: { offences: 0, bans: {}, stolen: {} },
     bests: {},
     challenges: { day: 0, done: [] },
     car: null,
@@ -193,7 +193,7 @@ test("loadSave keeps a valid name when the look is bad", () => {
     },
     home: { locked: true, furniture: [] },
     jail: { endsAt: null },
-    crime: { offences: 0, bans: {} },
+    crime: { offences: 0, bans: {}, stolen: {} },
     bests: {},
     challenges: { day: 0, done: [] },
     car: null,
@@ -224,7 +224,7 @@ test("loadSave keeps a valid look when the name is bad", () => {
     },
     home: { locked: true, furniture: [] },
     jail: { endsAt: null },
-    crime: { offences: 0, bans: {} },
+    crime: { offences: 0, bans: {}, stolen: {} },
     bests: {},
     challenges: { day: 0, done: [] },
     car: null,

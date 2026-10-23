@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { isBanned, recordCaught } from "../game/crime/record.ts";
 import { penaltyFor, type Penalty } from "../game/crime/shoplift.ts";
+import { tagStolen } from "../game/crime/lift.ts";
 import type { BodyShape } from "../game/body.ts";
 import {
   DEFAULT_HOLDS,
@@ -326,6 +327,17 @@ export function App() {
               }));
             return r;
           }}
+          crime={save.crime}
+          onSteal={(id, storeId) =>
+            setSave((s) => ({
+              ...s,
+              wardrobe: s.wardrobe.includes(id)
+                ? s.wardrobe
+                : [...s.wardrobe, id],
+              crime: tagStolen(s.crime, id, storeId),
+            }))
+          }
+          onCaught={caught}
           onRide={() => setRides((n) => n + 1)}
           onPlayGame={setGame}
           onCityTravel={(spawn) => travel("city", spawn)}
