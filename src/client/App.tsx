@@ -15,6 +15,7 @@ import { DuelPanel } from "./net/DuelPanel.tsx";
 import { TogetherPanel } from "./net/TogetherPanel.tsx";
 import { CookOffInvite } from "./net/CookOffInvite.tsx";
 import { ConnectionNote } from "./net/ConnectionNote.tsx";
+import { chatPrefs } from "./net/chatPrefs.ts";
 import { FriendsPanel } from "./net/FriendsPanel.tsx";
 import { PeerCard } from "./net/PeerCard.tsx";
 import type { MinigameId } from "../game/hotspots.ts";
@@ -166,6 +167,13 @@ export function App() {
     setSave((s) => ({ ...s, settings: { ...s.settings, muted } }));
   const setEffects = (effects: Intensity) =>
     setSave((s) => ({ ...s, settings: { ...s.settings, effects } }));
+  // the strict chat filter: set in the Friends panel, read by the chat
+  const setStrictChat = (strictChat: boolean) =>
+    setSave((s) => ({ ...s, settings: { ...s.settings, strictChat } }));
+  useEffect(
+    () => chatPrefs.set({ strict: save.settings.strictChat }),
+    [save.settings.strictChat],
+  );
   const setPanelOpen = useCallback(
     (panelOpen: boolean) =>
       setSave((s) => ({ ...s, settings: { ...s.settings, panelOpen } })),
@@ -298,7 +306,11 @@ export function App() {
           <p className="nametag">{save.name}</p>
         </div>
         <PeerCard />
-        <FriendsPanel onGo={(room) => travel(room, ROOMS[room].spawn)} />
+        <FriendsPanel
+          onGo={(room) => travel(room, ROOMS[room].spawn)}
+          strictChat={save.settings.strictChat}
+          onStrictChat={setStrictChat}
+        />
         {ONLINE && <DuelPanel />}
         {ONLINE && <TogetherPanel />}
         {ONLINE && <CookOffInvite />}

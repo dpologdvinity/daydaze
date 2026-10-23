@@ -9,8 +9,13 @@ const REFRESH_MS = 20_000;
  * requests waiting on you or on them. */
 export function FriendsPanel({
   onGo,
+  strictChat,
+  onStrictChat,
 }: {
   onGo: (room: RoomId) => void;
+  /** Mask swearing in others' chat, not just slurs. */
+  strictChat: boolean;
+  onStrictChat: (on: boolean) => void;
 }): JSX.Element | null {
   const { open, list } = friends.use();
   useEffect(() => {
@@ -28,6 +33,14 @@ export function FriendsPanel({
   return (
     <section className="home-panel friends-panel" aria-label="Friends">
       <h2>Friends</h2>
+      <label className="friends-setting">
+        <input
+          type="checkbox"
+          checked={strictChat}
+          onChange={(e) => onStrictChat(e.target.checked)}
+        />{" "}
+        Strict chat filter: hide swearing too
+      </label>
       {!list ? (
         <p>Looking for your friends…</p>
       ) : list.friends.length + list.incoming.length + list.sent.length ===

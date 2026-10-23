@@ -28,6 +28,7 @@ import { driving } from "../world/driving.ts";
 import { placePlayer, type Player } from "../world/PlayerController.tsx";
 import { followSpot } from "../../game/dance/together.ts";
 import { pairUp, stopTogether } from "./together.ts";
+import { shownChat } from "./chatPrefs.ts";
 import { onlineSession } from "./online.ts";
 import { peerCard } from "./peerCard.ts";
 
@@ -213,7 +214,10 @@ export function OnlinePeers({
       session.on("chat", ({ id, text }) => {
         // a muted player's chat never shows
         if (peerCard.get().mutes.includes(id)) return;
-        setSaid((s) => ({ ...s, [id]: { text, at: Date.now() } }));
+        setSaid((s) => ({
+          ...s,
+          [id]: { text: shownChat(text), at: Date.now() },
+        }));
       }),
     ];
     refresh();
