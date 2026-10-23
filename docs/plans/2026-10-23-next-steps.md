@@ -185,7 +185,10 @@ vowels by the `~N` buzz tag on the sender's last move, `shownBuzz` in
 section at the top of the Friends panel (`AccountPanel.tsx`, `account.ts`):
 signing up uploads the guest's local save as the account's, logging in loads
 the account's save, and while signed in every change is pushed 4 s later
-(`saveSync.ts`, `cloudSave.ts`, flushed on `pagehide`); an admin-only
+(`saveSync.ts`, `cloudSave.ts`, flushed on `pagehide`). Pushes wait until the
+account's own save has come down (`mayPush`, `account.cloudReady`; on start-up
+with a session cookie too, retried every 15 s), so a stale local save never
+overwrites the cloud one; logout pushes the last changes first; an admin-only
 "Ban (admin)" on the peer card (`api.ban`, `session.ban`; not browser-tested,
 needs `is_admin` in D1); the room-copy list in the Friends panel
 (`RoomCopies.tsx`, `session.copies()`, hop with `switchCopy`);
