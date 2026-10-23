@@ -428,6 +428,25 @@ test("Lune: take a chair at a table for two", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("Reef Spotter: watch the parade, then count", async ({ page }) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=aquarium`);
+  await page
+    .getByRole("group", { name: "Games here" })
+    .getByRole("button", { name: "Reef Spotter" })
+    .click({ timeout: 150_000 });
+  const panel = page.getByRole("region", { name: "Reef Spotter" });
+  await panel.getByRole("button", { name: "Watch the reef" }).click();
+  await expect(panel.getByLabel("Reef window")).toBeVisible();
+  const count = panel.getByRole("spinbutton");
+  await expect(count).toBeVisible({ timeout: 60_000 });
+  await count.fill("2");
+  await panel.getByRole("button", { name: "Answer" }).click();
+  await expect(panel.getByLabel("Score")).toContainText("Round 2/5");
+  expect(errors).toEqual([]);
+});
+
 test("the boba bar: a shift takes a ticket and scores a cup", async ({
   page,
 }) => {

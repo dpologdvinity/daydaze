@@ -218,7 +218,7 @@ const ROOM_HINTS: Record<RoomId, string> = {
   "ice-rink":
     "Park Ice Rink. Glide onto the ice, skate the ice show for the judges or throw a curling end, then warm up with cocoa by the door.",
   aquarium:
-    "Uptown Aquarium. Walk the shark tunnel, watch the jellyfish and the reef, and say hi at the desk.",
+    "Uptown Aquarium. Walk the shark tunnel, watch the jellyfish, count fish at the reef in Reef Spotter, and say hi at the desk.",
   jail: "City Jail. Wait out the sentence, play cards with the guard, or talk to Officer Dee.",
 };
 
