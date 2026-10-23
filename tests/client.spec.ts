@@ -747,6 +747,27 @@ test("the Coconut Grove pours a drink and seats the player by the fire", async (
   expect(errors).toEqual([]);
 });
 
+test("Kamayan Hall's cook-off: eight plates against Tita Baby pay a prize", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&room=kamayan-hall`);
+  await page
+    .getByRole("button", { name: "Cook against Tita Baby" })
+    .click({ timeout: 150_000 });
+  const rival = page.getByRole("region", { name: "Rival" });
+  await expect(rival).toContainText(/Tita Baby scored \d+/);
+  const plate = page
+    .getByRole("region", { name: "Cook-off" })
+    .getByRole("button", { name: "Plate it" });
+  for (let i = 0; i < 8; i++) await plate.click();
+  await expect(rival).toContainText("They take it this time.");
+  await expect(page.getByRole("status", { name: "Prize" })).toContainText(
+    "Cook-off",
+  );
+  expect(errors).toEqual([]);
+});
+
 test("the Back Room deals Crazy Eights with Odette", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto(`${STILL}&room=back-room`);

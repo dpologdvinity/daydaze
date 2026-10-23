@@ -91,4 +91,16 @@ test("two players meet in the Plaza, talk, become friends and play cards", async
     "pair:hug",
     { timeout: 60_000 },
   );
+
+  // a cook-off challenge: B takes it, and both are sent to the kitchen
+  await tagOnA.click();
+  await a.getByRole("button", { name: "Challenge to a cook-off" }).click();
+  await b
+    .getByRole("region", { name: "Cook-off invite" })
+    .getByRole("button", { name: "Cook" })
+    .click({ timeout: 60_000 });
+  await expect(b.getByText("You're in. Head to Kamayan Hall")).toBeVisible();
+  await expect(a.getByText("is in. Head to Kamayan Hall")).toBeVisible({
+    timeout: 60_000,
+  });
 });

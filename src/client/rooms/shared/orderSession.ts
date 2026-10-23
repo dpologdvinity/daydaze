@@ -28,10 +28,11 @@ export function createOrderSession(station: Station, prize: PrizeGame) {
   return {
     station,
     store,
-    start(now: number) {
+    /** A shared `seed` gives two cooks the same tickets (the cook-off). */
+    start(now: number, seed = Math.floor(Math.random() * 1e6)) {
       store.set({
         on: true,
-        shift: newShift(Math.floor(Math.random() * 1e6)),
+        shift: newShift(seed),
         since: now,
         last: null,
       });

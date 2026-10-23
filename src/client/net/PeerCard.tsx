@@ -2,6 +2,7 @@ import { useEffect, useState, type JSX } from "react";
 import { askToPlay } from "./duel.ts";
 import { TOGETHER } from "../../game/dance/together.ts";
 import { askTogether } from "./together.ts";
+import { askToCook } from "./cookOff.ts";
 import { friends, friendship, refreshFriends } from "./friends.ts";
 import { onlineSession } from "./online.ts";
 import { mute, peerCard } from "./peerCard.ts";
@@ -58,6 +59,15 @@ export function PeerCard(): JSX.Element | null {
         }}
       >
         Play Crazy Eights
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          askToCook(open.id, open.name);
+          close();
+        }}
+      >
+        Challenge to a cook-off
       </button>
       <div className="game-row" role="group" aria-label="Do something together">
         {TOGETHER.map((e) => (

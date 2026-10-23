@@ -13,6 +13,7 @@ import { getBuzz } from "./effects/drunk.ts";
 import { ONLINE, onlineSession, useOnlineRoom } from "./net/online.ts";
 import { DuelPanel } from "./net/DuelPanel.tsx";
 import { TogetherPanel } from "./net/TogetherPanel.tsx";
+import { CookOffInvite } from "./net/CookOffInvite.tsx";
 import { FriendsPanel } from "./net/FriendsPanel.tsx";
 import { PeerCard } from "./net/PeerCard.tsx";
 import type { MinigameId } from "../game/hotspots.ts";
@@ -299,6 +300,7 @@ export function App() {
         <FriendsPanel onGo={(room) => travel(room, ROOMS[room].spawn)} />
         {ONLINE && <DuelPanel />}
         {ONLINE && <TogetherPanel />}
+        {ONLINE && <CookOffInvite />}
         <div className="fade" data-on={fading} aria-hidden="true" />
         {notice && (
           <p className="notice" role="status">
