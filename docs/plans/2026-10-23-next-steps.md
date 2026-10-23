@@ -179,7 +179,9 @@ Done 2026-10-23: the connection HUD line (`connectionNote.ts`,
 `ConnectionNote.tsx`), solo apartment and jail online (`SOLO_ROOMS`; they
 leave the room copy), and the strict chat filter (`settings.strictChat`, a
 checkbox in the Friends panel, masked client-side with the server's
-`filterChat`). The rest below is still open.
+`filterChat`), and drunk chat applied by the server (`roomCore` stretches
+vowels by the `~N` buzz tag on the sender's last move, `shownBuzz` in
+`buzz.ts`; the client sends what was typed). The rest below is still open.
 - Account UI and cloud saves: login, signup, logout screens; load the save
   at login, push changes debounced (`api.getSave/putSave`); upload a
   guest's local save when they make an account. Nothing in `src/client`
