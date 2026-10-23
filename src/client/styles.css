@@ -2130,3 +2130,27 @@ button:focus-visible {
 .safari-list [data-got="true"] {
   color: #7dff9b;
 }
+
+/* a room with two games: tabs just above the game panel */
+.game-tabs {
+  position: fixed;
+  right: 28px;
+  top: 112px;
+  z-index: 5;
+  display: flex;
+  gap: 6px;
+}
+
+.game-tabs button {
+  padding: 4px 12px;
+  border: 1px solid rgb(255 255 255 / 0.25);
+  border-radius: 999px;
+  background: rgb(20 10 40 / 0.78);
+  color: var(--champagne);
+  cursor: pointer;
+}
+
+.game-tabs button[aria-pressed="true"] {
+  background: var(--champagne);
+  color: #1a0a28;
+}

@@ -1,10 +1,35 @@
-import { lazy, Suspense, type ComponentType } from "react";
+import { lazy, Suspense, useState, type ComponentType } from "react";
 import type { RoomId } from "../../game/rooms.ts";
 
 const panel = <K extends string>(
   load: () => Promise<Record<K, ComponentType>>,
   name: K,
 ) => lazy(() => load().then((m) => ({ default: m[name] })));
+
+/** A room with more than one game: a row of tabs picks whose controls show
+ * (a game left running keeps going in its own store). */
+const games = (...list: [label: string, Panel: ComponentType][]) =>
+  function Games() {
+    const [pick, setPick] = useState(0);
+    const Panel = list[pick]?.[1];
+    return (
+      <>
+        <div className="game-tabs" role="group" aria-label="Games here">
+          {list.map(([label], i) => (
+            <button
+              key={label}
+              type="button"
+              aria-pressed={i === pick}
+              onClick={() => setPick(i)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        {Panel && <Panel />}
+      </>
+    );
+  };
 
 /** Each game room's controls, loaded with the room rather than up front. */
 const PANELS: Partial<Record<RoomId, ComponentType>> = {
@@ -35,9 +60,15 @@ const PANELS: Partial<Record<RoomId, ComponentType>> = {
     "ExhibitsPanel",
   ),
   aquarium: panel(() => import("../rooms/aquarium/SealPanel.tsx"), "SealPanel"),
-  "ice-rink": panel(
-    () => import("../rooms/icerink/ShowPanel.tsx"),
-    "ShowPanel",
+  "ice-rink": games(
+    [
+      "Ice show",
+      panel(() => import("../rooms/icerink/ShowPanel.tsx"), "ShowPanel"),
+    ],
+    [
+      "Curling",
+      panel(() => import("../rooms/icerink/CurlingPanel.tsx"), "CurlingPanel"),
+    ],
   ),
   "mermaid-cove": panel(
     () => import("../rooms/cove/SirenPanel.tsx"),

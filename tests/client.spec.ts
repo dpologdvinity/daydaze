@@ -371,6 +371,28 @@ test("the zoo's photo hunt: a list, and a snap", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("curling at the ice rink: aim, weight, and the stone slides", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=ice-rink`);
+  await page
+    .getByRole("group", { name: "Games here" })
+    .getByRole("button", { name: "Curling" })
+    .click({ timeout: 150_000 });
+  const panel = page.getByRole("region", { name: "Curling" });
+  await panel.getByRole("button", { name: "Throw some stones" }).click();
+  await panel.getByRole("button", { name: "Set aim" }).click();
+  await panel.getByRole("button", { name: "Throw!" }).click();
+  await expect(panel.getByRole("button", { name: "Sweep!" })).toBeVisible();
+  // it comes to rest, and the next stone is up
+  await expect(panel.getByLabel("Score")).toContainText("Stone 2/6", {
+    timeout: 120_000,
+  });
+  expect(errors).toEqual([]);
+});
+
 test("the boba bar: a shift takes a ticket and scores a cup", async ({
   page,
 }) => {

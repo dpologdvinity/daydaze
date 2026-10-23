@@ -10,6 +10,8 @@ import type { Player } from "../world/PlayerController.tsx";
 import { placePlayer } from "../world/PlayerController.tsx";
 import { cameraHold } from "../world/cameraHold.ts";
 import { show } from "./icerink/session.ts";
+import { curling } from "./icerink/curling.ts";
+import { CurlingSheet } from "./icerink/CurlingSheet.tsx";
 import { useReducedMotion } from "../motion.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { Batch } from "./shared/batch.ts";
@@ -150,6 +152,8 @@ function Skater({
   const g = useRef<THREE.Group>(null);
   useFrame(({ clock }) => {
     if (!g.current) return;
+    // they clear the ice for a curling end
+    g.current.visible = curling.get().phase === "off";
     const a = at + clock.elapsedTime * speed * (calm ? 0.3 : 1);
     const x = Math.cos(a) * RINK.rx * lane;
     const z = Math.sin(a) * RINK.rz * lane;
@@ -173,13 +177,14 @@ function Skater({
  * and the camera follows from the middle of the ice. */
 function IceShow({ player }: { player: Player }) {
   const calm = useReducedMotion();
+  const skating = useRef(false);
   const camera = useThree((st) => st.camera);
   const eye = useMemo(() => new THREE.Vector3(), []);
   const look = useMemo(() => new THREE.Vector3(), []);
   useEffect(
     () => () => {
       show.leave();
-      player.seat = null;
+      if (skating.current) player.seat = null;
       if (cameraHold.by === "ice-rink") cameraHold.by = null;
     },
     [player],
@@ -188,14 +193,18 @@ function IceShow({ player }: { player: Player }) {
     const now = performance.now();
     show.tick(now);
     const s = show.store.get();
-    cameraHold.by = s.phase !== "off" ? "ice-rink" : null;
+    // let go only of what the show held: curling shares the ice
     if (s.phase === "off") {
-      if (player.seat) {
+      if (cameraHold.by === "ice-rink") cameraHold.by = null;
+      if (skating.current) {
+        skating.current = false;
         player.seat = null;
         placePlayer(player, 0, RINK.rz * 0.55);
       }
       return;
     }
+    cameraHold.by = "ice-rink";
+    skating.current = true;
     const t = show.routineTime(now);
     const a = Math.PI / 2 + (t / 18) * Math.PI * 2;
     const x = Math.cos(a) * RINK.rx * 0.55;
@@ -335,6 +344,7 @@ export function IceRink({
       />
       <PortalPads room={ROOMS["ice-rink"]} color="#9ad8ff" />
       <IceShow player={player} />
+      <CurlingSheet player={player} />
     </>
   );
 }

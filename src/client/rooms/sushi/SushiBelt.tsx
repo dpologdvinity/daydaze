@@ -85,10 +85,18 @@ export function SushiBelt(): JSX.Element {
         <boxGeometry args={[0.5, 0.012, 0.02]} />
         <meshBasicMaterial color="#ffd166" />
       </mesh>
-      <instancedMesh ref={plates} args={[undefined, plateMat, MAX]}>
+      <instancedMesh
+        ref={plates}
+        args={[undefined, plateMat, MAX]}
+        frustumCulled={false}
+      >
         <cylinderGeometry args={[0.12, 0.09, 0.03, 16]} />
       </instancedMesh>
-      <instancedMesh ref={pieces} args={[undefined, pieceMat, MAX]}>
+      <instancedMesh
+        ref={pieces}
+        args={[undefined, pieceMat, MAX]}
+        frustumCulled={false}
+      >
         <boxGeometry args={[0.12, 0.05, 0.07]} />
       </instancedMesh>
     </group>
