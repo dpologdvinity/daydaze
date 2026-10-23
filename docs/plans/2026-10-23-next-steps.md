@@ -181,7 +181,12 @@ leave the room copy), and the strict chat filter (`settings.strictChat`, a
 checkbox in the Friends panel, masked client-side with the server's
 `filterChat`), and drunk chat applied by the server (`roomCore` stretches
 vowels by the `~N` buzz tag on the sender's last move, `shownBuzz` in
-`buzz.ts`; the client sends what was typed). The rest below is still open.
+`buzz.ts`; the client sends what was typed), and accounts: an Account
+section at the top of the Friends panel (`AccountPanel.tsx`, `account.ts`):
+signing up uploads the guest's local save as the account's, logging in loads
+the account's save, and while signed in every change is pushed 4 s later
+(`saveSync.ts`, `cloudSave.ts`, flushed on `pagehide`). The rest below is
+still open.
 - Account UI and cloud saves: login, signup, logout screens; load the save
   at login, push changes debounced (`api.getSave/putSave`); upload a
   guest's local save when they make an account. Nothing in `src/client`
