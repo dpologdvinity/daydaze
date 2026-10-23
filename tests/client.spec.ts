@@ -2179,6 +2179,31 @@ test("pronouns picked in the closet are kept in the look", async ({ page }) => {
     .not.toContain("pronouns");
 });
 
+test("the haunted house: losing your nerve ends the run with a prize", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&room=haunted-house`);
+  await page
+    .getByRole("button", { name: "Step inside" })
+    .click({ timeout: 150_000 });
+  const panel = page.getByRole("region", { name: "Find the way out" });
+  const doors = panel.getByRole("group", { name: "Doors" });
+  // try doors until the run ends, one way or the other
+  for (let i = 0; i < 30 && (await doors.count()) > 0; i++)
+    await doors
+      .getByRole("button")
+      .nth(i % 3)
+      .click();
+  await expect(panel.getByRole("status")).toContainText(
+    /You're out|nerve gives out/,
+  );
+  await expect(page.getByRole("status", { name: "Prize" })).toContainText(
+    "Haunted house",
+  );
+  expect(errors).toEqual([]);
+});
+
 test("the city map takes the player to Beachside", async ({ page }) => {
   await page.goto(`${LOW}&room=city`);
   await expect(roomTitle(page)).toHaveText("Downtown");
