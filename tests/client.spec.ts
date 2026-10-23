@@ -2008,6 +2008,27 @@ test("beach volleyball at the city net: first to seven pays a prize", async ({
   expect(errors).toEqual([]);
 });
 
+test("Photon Zone's target range: a pistol drill pays a prize", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&room=laser-tag`);
+  await page
+    .getByRole("button", { name: "Target range" })
+    .click({ timeout: 150_000 });
+  await page.getByRole("button", { name: "Pistol drill" }).click();
+  const drill = page.getByRole("dialog", { name: "Pistol drill" });
+  const stage = drill.getByRole("application");
+  // eighteen shots, all of them fired
+  for (let i = 0; i < 18; i++)
+    await stage.click({ position: { x: 20, y: 20 } });
+  await expect(drill).toBeHidden();
+  await expect(page.getByRole("status", { name: "Prize" })).toContainText(
+    "Pistol drill",
+  );
+  expect(errors).toEqual([]);
+});
+
 test("the city map takes the player to Beachside", async ({ page }) => {
   await page.goto(`${LOW}&room=city`);
   await expect(roomTitle(page)).toHaveText("Downtown");

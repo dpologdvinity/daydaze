@@ -164,9 +164,18 @@ const PANELS: Partial<Record<RoomId, ComponentType>> = {
     () => import("../rooms/espresso/BaristaPanel.tsx"),
     "BaristaPanel",
   ),
-  "laser-tag": panel(
-    () => import("../rooms/lasertag/LaserTagPanel.tsx"),
-    "LaserTagPanel",
+  "laser-tag": games(
+    [
+      "Laser tag",
+      panel(
+        () => import("../rooms/lasertag/LaserTagPanel.tsx"),
+        "LaserTagPanel",
+      ),
+    ],
+    [
+      "Target range",
+      panel(() => import("../rooms/lasertag/RangePanel.tsx"), "RangePanel"),
+    ],
   ),
   speedway: panel(
     () => import("../rooms/speedway/SpeedwayPanels.tsx"),
