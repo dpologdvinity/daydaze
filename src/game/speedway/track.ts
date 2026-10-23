@@ -139,6 +139,14 @@ const boardwalkLoop = build(
 
 export const TRACKS: readonly Track[] = [neonOval, boardwalkLoop];
 
+/** The Marina's jet-ski course out past the yachts, marked by buoys. */
+export const HARBOR_RUN = build(
+  "harbor-run",
+  "Harbor Run",
+  roundedLoop(45, 18, 14),
+  10,
+);
+
 /** Solid barrier quads along both edges of the road. */
 export function trackWalls(track: Track): readonly (readonly Vec2[])[] {
   const pts = track.centerline;

@@ -71,7 +71,7 @@ const CAR_COLORS = [
 function setupFor(
   request: Exclude<DriveRequest, "leave">,
 ): { session: Session; origin: Vec2 } | null {
-  if (request === "city-drive") return null;
+  if (request === "city-drive" || request === "race-harbor") return null;
   if (request === "bumper-cars") {
     return { session: startBumpers(), origin: ARENA_ORIGIN };
   }

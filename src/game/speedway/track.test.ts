@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { nearestPointOnPolygon, pointInPolygon, type Vec2 } from "../walk.ts";
-import { TRACKS, trackWalls } from "./track.ts";
+import { HARBOR_RUN, TRACKS, trackWalls } from "./track.ts";
 
 function segmentsCross(a: Vec2, b: Vec2, c: Vec2, d: Vec2): boolean {
   const o = (p: Vec2, q: Vec2, r: Vec2) =>
@@ -14,7 +14,7 @@ test("there are two tracks with unique ids", () => {
   assert.equal(new Set(TRACKS.map((t) => t.id)).size, 2);
 });
 
-for (const track of TRACKS) {
+for (const track of [...TRACKS, HARBOR_RUN]) {
   test(`${track.name}: the centerline is a closed loop with no self-intersection`, () => {
     const pts = track.centerline;
     assert.ok(pts.length >= 16);

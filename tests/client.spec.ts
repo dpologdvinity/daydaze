@@ -447,6 +447,25 @@ test("Reef Spotter: watch the parade, then count", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("the Marina's jet-ski race starts round the buoys", async ({ page }) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=marina`);
+  await page
+    .getByRole("group", { name: "Games here" })
+    .getByRole("button", { name: "Jet-ski race" })
+    .click({ timeout: 150_000 });
+  await page.getByRole("button", { name: "Race the Harbor Run" }).click();
+  const canvas = canvasOf(page);
+  await expect(canvas).toHaveAttribute("data-race-phase", "racing", {
+    timeout: 120_000,
+  });
+  await expect(page.getByText("Lap 1 of 3")).toBeVisible();
+  await page.getByRole("button", { name: "Leave the car" }).click();
+  await expect(canvas).toHaveAttribute("data-race-phase", "walk");
+  expect(errors).toEqual([]);
+});
+
 test("the boba bar: a shift takes a ticket and scores a cup", async ({
   page,
 }) => {

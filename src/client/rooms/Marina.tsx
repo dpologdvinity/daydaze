@@ -17,6 +17,7 @@ import { useReducedMotion } from "../motion.ts";
 import type { Player } from "../world/PlayerController.tsx";
 import { placePlayer } from "../world/PlayerController.tsx";
 import { cameraHold } from "../world/cameraHold.ts";
+import { JetSkiRace } from "./marina/JetSkiRace.tsx";
 import { MarinaNpcs } from "./marina/Npcs.tsx";
 import { FLIGHT, fishing, leave, tick } from "./marina/session.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
@@ -373,6 +374,7 @@ export function Marina({
         speed={calm ? 0 : 0.3}
       />
       <hemisphereLight args={["#9fb8ff", "#0b2a4a", 0.9]} />
+      <JetSkiRace />
       <pointLight
         position={[0, 4, 5]}
         color="#ffe3b0"

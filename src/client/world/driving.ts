@@ -6,6 +6,8 @@ export type DriveRequest =
   | "race-oval"
   | "race-boardwalk"
   | "bumper-cars"
+  /** The Marina's jet-ski race. */
+  | "race-harbor"
   | "leave"
   /** Walk to your car in the city and get in. */
   | "city-drive";

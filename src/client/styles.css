@@ -877,7 +877,8 @@ button:focus-visible {
 
 .race-hud {
   position: fixed;
-  top: 150px;
+  /* below the room card, however many lines its hint runs to */
+  top: 210px;
   left: 28px;
   z-index: 5;
   padding: 10px 16px;

@@ -91,9 +91,15 @@ const PANELS: Partial<Record<RoomId, ComponentType>> = {
     () => import("../rooms/courtside/TennisPanel.tsx"),
     "TennisPanel",
   ),
-  marina: panel(
-    () => import("../rooms/marina/FishingPanel.tsx"),
-    "FishingPanel",
+  marina: games(
+    [
+      "Fishing",
+      panel(() => import("../rooms/marina/FishingPanel.tsx"), "FishingPanel"),
+    ],
+    [
+      "Jet-ski race",
+      panel(() => import("../rooms/marina/JetSkiPanel.tsx"), "JetSkiPanel"),
+    ],
   ),
   gym: panel(() => import("../rooms/gym/RoutinePanel.tsx"), "RoutinePanel"),
   stadium: panel(

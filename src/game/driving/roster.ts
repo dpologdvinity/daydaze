@@ -259,6 +259,23 @@ export const BUMPER_CAR: CarSpec = {
   price: 0,
 };
 
+/** The Marina's rental jet ski: quick off the line, loose in the turns. */
+export const JET_SKI: CarSpec = {
+  id: "jet-ski",
+  name: "Jet Ski",
+  basedOn: "sit-down personal watercraft",
+  class: "kart",
+  topSpeed: 26,
+  accel: 6,
+  brake: 5,
+  turnRate: 2.2,
+  grip: 0.9,
+  length: 2.8,
+  width: 1.1,
+  seats: 1,
+  price: 0,
+};
+
 /** The cars you can drive on the city's streets (not karts or bumper cars). */
 export const ROAD_CARS: readonly CarSpec[] = CARS.filter(
   (c) => c.class !== "kart" && c.class !== "bumper",
