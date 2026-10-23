@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { DEFAULT_LOOK } from "../../game/look.ts";
 import { createDefaultSave, serializeSave } from "../../game/save.ts";
-import { createApi, type Fetch } from "./api.ts";
+import { createApi, parseReports, type Fetch } from "./api.ts";
 
 const identity = {
   id: "g_abc",
@@ -139,4 +139,35 @@ test("server errors and network failures are reported, never thrown", async () =
     status: 502,
     error: "http-502",
   });
+});
+
+test("admin reports are validated row by row; bad rows are dropped", () => {
+  const good = {
+    id: 7,
+    reporter_id: "u_a",
+    target_id: "g_b",
+    reason: "harassment",
+    room_id: "plaza",
+    copy: 2,
+    chat: JSON.stringify([
+      { id: "g_b", name: "Troll", text: "you suck", at: 5 },
+    ]),
+    created_at: 1000,
+  };
+  assert.deepEqual(
+    parseReports(JSON.stringify({ reports: [good, { ...good, id: "x" }] })),
+    [
+      {
+        id: 7,
+        reporterId: "u_a",
+        targetId: "g_b",
+        reason: "harassment",
+        roomId: "plaza",
+        copy: 2,
+        chat: [{ name: "Troll", text: "you suck" }],
+        at: 1000,
+      },
+    ],
+  );
+  assert.equal(parseReports("nope"), null);
 });

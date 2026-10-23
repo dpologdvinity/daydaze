@@ -12,7 +12,7 @@ import {
   interpolateEntityState,
   type NetworkTransport,
 } from "../roomNetworkSync.ts";
-import type { Api, ApiResult, RoomCopy } from "./api.ts";
+import type { Api, ApiResult, Report, RoomCopy } from "./api.ts";
 import type { SaveV1 } from "../../game/save.ts";
 import type { Schedule, TransportStatus } from "./WebSocketTransport.ts";
 
@@ -324,6 +324,12 @@ export class OnlineSession {
     return this.api.friends();
   }
   /** Asks to be friends, or accepts their request. */
+  /** Admins only; the server checks. Null when it says no. */
+  async reports(): Promise<Report[] | null> {
+    const r = await this.api.reports();
+    return r.ok ? r.value : null;
+  }
+
   /** Admins only; the server checks. */
   async ban(targetId: string, reason: string): Promise<boolean> {
     return (await this.api.ban(targetId, reason)).ok;

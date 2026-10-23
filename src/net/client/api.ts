@@ -1,4 +1,4 @@
-import type { RoomId } from "../../game/rooms.ts";
+import { isRoomId, type RoomId } from "../../game/rooms.ts";
 import { loadSave, serializeSave, type SaveV1 } from "../../game/save.ts";
 import { parseFriends } from "../friends.ts";
 import { parseIdentity, type Identity } from "../identity.ts";
@@ -52,6 +52,71 @@ function parseRoomCopies(text: string): RoomCopies | null {
 }
 const identity = (text: string) => parseIdentity(parseJson(text));
 const accepted = () => true as const;
+
+/** A report as the admin viewer shows it: the chat is the room's last lines
+ * before it was made, unfiltered. */
+export type Report = {
+  id: number;
+  reporterId: string;
+  targetId: string;
+  reason: string;
+  roomId: RoomId;
+  copy: number;
+  chat: { name: string; text: string }[];
+  at: number;
+};
+
+const str = (v: unknown, max = 200): v is string =>
+  typeof v === "string" && v.length <= max;
+const int = (v: unknown): v is number =>
+  typeof v === "number" && Number.isInteger(v) && v >= 0;
+
+function parseChat(raw: unknown): Report["chat"] {
+  const list = typeof raw === "string" ? parseJson(raw) : null;
+  if (!Array.isArray(list)) return [];
+  return list.flatMap((line) => {
+    const f = fields(line);
+    const name = f.get("name");
+    const text = f.get("text");
+    return str(name, 64) && str(text, 500) ? [{ name, text }] : [];
+  });
+}
+
+/** `GET /api/admin/reports`, row by row: a malformed row is dropped. */
+export function parseReports(text: string): Report[] | null {
+  const rows = fields(parseJson(text)).get("reports");
+  if (!Array.isArray(rows)) return null;
+  return rows.flatMap((row): Report[] => {
+    const f = fields(row);
+    const id = f.get("id");
+    const reporterId = f.get("reporter_id");
+    const targetId = f.get("target_id");
+    const reason = f.get("reason");
+    const roomId = f.get("room_id");
+    const copy = f.get("copy");
+    const at = f.get("created_at");
+    return int(id) &&
+      str(reporterId, 64) &&
+      str(targetId, 64) &&
+      str(reason) &&
+      isRoomId(roomId) &&
+      int(copy) &&
+      int(at)
+      ? [
+          {
+            id,
+            reporterId,
+            targetId,
+            reason,
+            roomId,
+            copy,
+            chat: parseChat(f.get("chat")),
+            at,
+          },
+        ]
+      : [];
+  });
+}
 
 /** Typed wrappers for the Worker's /api routes; nothing from the wire is trusted. */
 export function createApi({
@@ -132,6 +197,8 @@ export function createApi({
         JSON.stringify({ targetId, ...room }),
         accepted,
       ),
+    /** Admins only: the latest reports. */
+    reports: () => call("GET", "/api/admin/reports", undefined, parseReports),
     /** Admins only: bans a player (and a guest's last address). */
     ban: (targetId: string, reason: string) =>
       call(
