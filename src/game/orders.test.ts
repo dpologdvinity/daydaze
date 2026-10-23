@@ -3,6 +3,7 @@ import { test } from "node:test";
 import { ESPRESSO } from "./barista.ts";
 import { BOBA } from "./boba.ts";
 import { HALO_HALO } from "./haloHalo.ts";
+import { COOKOFF } from "./cookOff.ts";
 import { RAMEN } from "./ramen.ts";
 import { FEEDING } from "./feeding.ts";
 import {
@@ -24,6 +25,7 @@ for (const [name, station] of [
   ["halo-halo", HALO_HALO],
   ["ramen", RAMEN],
   ["feeding", FEEDING],
+  ["cook-off", COOKOFF],
 ] as const)
   test(`every ${name} order is made from the station's ingredients`, () => {
     const known = new Set(station.ingredients.map((i) => i.id));
