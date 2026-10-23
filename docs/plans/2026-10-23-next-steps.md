@@ -281,7 +281,11 @@ Original note: The city beach already has nets
 either a beach gate room (cleaner; like Lagoon Links) or a contextual city
 panel when near the net. Timing rally engine like `src/game/tennis.ts`.
 
-**B3. Shooting range (M, M7).** A game zone only (guns only in zones and
+**B3. Shooting range (M, M7). Done 2026-10-23 (lean):** a "Target range"
+tab at Photon Zone (`RangePanel.tsx`): pistol and rifle drills in light, the
+Midway `Gallery` (exported, `ammo="shots"`) at medium and hard; prizes
+`range-pistol`/`range-rifle`. Still open: a 3D range with lanes. Original
+note: A game zone only (guns only in zones and
 your own home). Targets, timed drills, pistol to rifle; reuse the gallery
 logic from `src/minigames/midway/engine.ts` and laser tag's panel. Hits are
 paint or light, never blood.
@@ -467,7 +471,7 @@ M11's day–night clock was deliberately skipped. Ask before revisiting.
 1. ~~A1 couple emotes~~ (done; piggyback left).
 2. ~~A2 cook-off~~ (done).
 3. ~~C4 shoplifting cleanup and B9 car wraps~~ (done).
-4. B2 beach volleyball, B3 shooting range.
+4. ~~B2 beach volleyball, B3 shooting range~~ (done).
 5. B1 Water Park expansion.
 6. A0 online must-haves, then ask the user about D1 deploy and D2 age gate;
    then A5 and the M6b chain.
