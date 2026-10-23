@@ -175,6 +175,11 @@ day, L several days.
 ### A. Social and online (M9)
 
 **A0. Online must-haves before real players (M–L, do with or before D1).**
+Done 2026-10-23: the connection HUD line (`connectionNote.ts`,
+`ConnectionNote.tsx`), solo apartment and jail online (`SOLO_ROOMS`; they
+leave the room copy), and the strict chat filter (`settings.strictChat`, a
+checkbox in the Friends panel, masked client-side with the server's
+`filterChat`). The rest below is still open.
 - Account UI and cloud saves: login, signup, logout screens; load the save
   at login, push changes debounced (`api.getSave/putSave`); upload a
   guest's local save when they make an account. Nothing in `src/client`
