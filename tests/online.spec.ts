@@ -45,6 +45,10 @@ test("two players meet in the Plaza, talk, become friends and play cards", async
   await expect(b.getByRole("list", { name: "Your friends" })).toContainText(
     "Daydaze Plaza #1",
   );
+  // the Friends panel lists this room's copies and who's in each
+  await expect(b.getByRole("region", { name: "Room copies" })).toContainText(
+    "Daydaze Plaza #1: 2 here",
+  );
   // B turns on the strict filter: A's swearing reaches B masked
   await b.getByLabel("Strict chat filter: hide swearing too").check();
   await b.getByRole("button", { name: "Close" }).click();

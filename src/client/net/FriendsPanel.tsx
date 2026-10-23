@@ -1,6 +1,7 @@
 import { useEffect, type JSX } from "react";
 import type { SaveV1 } from "../../game/save.ts";
 import { AccountPanel } from "./AccountPanel.tsx";
+import { RoomCopies } from "./RoomCopies.tsx";
 import { ROOMS, type RoomId } from "../../game/rooms.ts";
 import { friends, refreshFriends } from "./friends.ts";
 import { joinCopy, onlineSession } from "./online.ts";
@@ -40,6 +41,7 @@ export function FriendsPanel({
     <section className="home-panel friends-panel" aria-label="Friends">
       <h2>Friends</h2>
       <AccountPanel save={save} onSave={onSave} />
+      <RoomCopies />
       <label className="friends-setting">
         <input
           type="checkbox"
