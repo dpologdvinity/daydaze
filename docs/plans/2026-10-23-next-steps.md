@@ -271,7 +271,12 @@ ride: `player.seat` along a loop, like the slide rides), speed slide race
 game, like skee/curling), pool volleyball and the water-gun battle (both
 multi in the roadmap; ship solo vs NPCs first).
 
-**B2. Beach volleyball (M).** The city beach already has nets
+**B2. Beach volleyball (M). Done 2026-10-23:** a contextual panel at the
+city net (`src/client/city/VolleyStop.tsx`, shown within 9 m on foot via the
+new `playerSpot`), engine `src/game/volleyball.ts` (dig then spike, first to
+seven), prize `volleyball`, and "Beach volleyball" under Beachside in the
+city map's directory (`OUTDOOR_SPOTS`). No 3D ball or opponents yet.
+Original note: The city beach already has nets
 (`BeachLife.tsx`, `layout.ts`). The city's panel slot is `CityDrivePanel`;
 either a beach gate room (cleaner; like Lagoon Links) or a contextual city
 panel when near the net. Timing rally engine like `src/game/tennis.ts`.
