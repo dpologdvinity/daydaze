@@ -2,6 +2,8 @@ import { useEffect, useMemo, type Ref } from "react";
 import {
   AdditiveBlending,
   Color,
+  ConeGeometry,
+  DoubleSide,
   MeshBasicMaterial,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
@@ -121,6 +123,25 @@ function glowMaterial(id: string | undefined) {
   );
 }
 
+// Headlight beams: a soft additive cone from each lamp, no real light.
+let beamMade: { geometry: ConeGeometry; material: MeshBasicMaterial } | null =
+  null;
+function beam() {
+  beamMade ??= {
+    geometry: new ConeGeometry(1.3, 8, 16, 1, true),
+    material: new MeshBasicMaterial({
+      color: hdr("#fff2c4", 0.35),
+      transparent: true,
+      opacity: 0.18,
+      blending: AdditiveBlending,
+      depthWrite: false,
+      side: DoubleSide,
+      toneMapped: false,
+    }),
+  };
+  return beamMade;
+}
+
 /**
  * A low-poly car in its class's silhouette: painted shell, glass, trim, tyres,
  * rims and lamps. Nose points down +z, so yaw matches the physics. Starts hidden.
@@ -130,11 +151,14 @@ export function CarMesh({
   spec,
   color,
   mods,
+  beams = false,
   ref,
 }: {
   spec: CarSpec;
   color: string;
   mods?: CarMods;
+  /** Headlights on: beams on the road ahead. */
+  beams?: boolean;
   ref?: Ref<Group>;
 }) {
   const glow = glowMaterial(mods?.glow);
@@ -169,6 +193,17 @@ export function CarMesh({
           <planeGeometry args={[spec.width * 2.2, spec.length * 1.4]} />
         </mesh>
       )}
+      {beams &&
+        [-1, 1].map((side) => (
+          <mesh
+            key={side}
+            geometry={beam().geometry}
+            material={beam().material}
+            position={[side * spec.width * 0.3, 0.55, spec.length / 2 + 4]}
+            // the apex at the lamp, opening toward the road ahead (+z)
+            rotation-x={-Math.PI / 2}
+          />
+        ))}
     </group>
   );
 }

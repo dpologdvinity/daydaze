@@ -13,6 +13,7 @@ import {
 import type { RoomId } from "../game/rooms.ts";
 import { useNeighborhood } from "./city/here.ts";
 import { musicPick } from "./musicPick.ts";
+import { carExtras } from "./city/carExtras.ts";
 
 // what plays where: venues get a jukebox track, open places an ambience bed
 const MUSIC: Partial<Record<RoomId, TrackId>> = {
@@ -101,8 +102,15 @@ export function RoomAudio({ room, muted }: { room: RoomId; muted: boolean }) {
   const [unlocked, setUnlocked] = useState(false);
   const neighborhood = useNeighborhood();
   const picked = musicPick.use().track;
-  // a record on at the shop or the record player at home wins
-  const pick = room === "vinyl-vault" || room === "apartment" ? picked : null;
+  const radio = carExtras.use().station;
+  // a record on at the shop or the record player at home wins, and the car
+  // radio while you drive in the city
+  const pick =
+    room === "vinyl-vault" || room === "apartment"
+      ? picked
+      : room === "city"
+        ? radio
+        : null;
 
   useEffect(() => {
     const unlock = () => {

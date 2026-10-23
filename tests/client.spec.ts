@@ -63,6 +63,14 @@ test("the player drives their car down the avenue and parks it", async ({
     .toBeGreaterThan(24);
   await page.keyboard.up("w");
   await expect(page.getByLabel("Speedometer")).toContainText("mph");
+  // in the car: the horn, the radio and the headlights
+  const extras = page.getByRole("group", { name: "In the car" });
+  await extras.getByRole("button", { name: "Horn (H)" }).click();
+  await extras.getByRole("button", { name: "Radio: off" }).click();
+  await expect(extras).toContainText("Radio: Sugar FM");
+  const lights = extras.getByRole("button", { name: "Headlights" });
+  await lights.click();
+  await expect(lights).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Leave the car" }).click();
   await expect(canvas).toHaveAttribute("data-city-car", "parked");
   // parked where it stopped: the save remembers the car and the spot

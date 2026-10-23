@@ -1,4 +1,5 @@
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
+import { carExtras } from "./carExtras.ts";
 import { useEffect, useRef } from "react";
 import type { Group } from "three";
 import { clampToArea } from "../../game/area.ts";
@@ -42,6 +43,7 @@ export function PlayerCar({
   parked: ParkedCar;
   onPark: (car: ParkedCar) => void;
 }) {
+  const { lights } = carExtras.use();
   const canvas = useThree((s) => s.gl.domElement);
   const group = useRef<Group>(null);
   const spec = carById(parked.id) ?? FALLBACK;
@@ -162,6 +164,7 @@ export function PlayerCar({
           spec={spec}
           color={parked.color}
           mods={parked}
+          beams={lights}
           ref={group}
         />
       )}
