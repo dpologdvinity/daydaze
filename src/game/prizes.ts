@@ -55,6 +55,7 @@ export const PRIZE_GAMES = [
   "speed-slide",
   "pool-volleyball",
   "water-guns",
+  "karaoke",
 ] as const;
 export type PrizeGame = (typeof PRIZE_GAMES)[number];
 
@@ -145,6 +146,12 @@ export const PRIZE_TABLES: Record<PrizeGame, Table> = {
     label: "Rifle drill",
     room: "laser-tag",
     grades: [180, 120, 60],
+    format: plain("points"),
+  },
+  karaoke: {
+    label: "Karaoke",
+    room: "karaoke",
+    grades: [1300, 900, 500],
     format: plain("points"),
   },
   // the Midway gallery's easy bars
