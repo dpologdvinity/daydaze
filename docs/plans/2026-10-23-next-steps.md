@@ -365,7 +365,10 @@ entries and `award()` calls for the jet-ski race and Speedway races (best
 lap or place), bumper cars (bumps), the Midway booths (score per booth) and
 the arcade minigames, so they get bests and daily challenges.
 
-**B12. Karaoke game (M, M3).** `karaoke` is a room only (`src/game/karaoke.ts`,
+**B12. Karaoke game (M, M3). Done 2026-10-23:** `src/game/karaokeGame.ts`
+(16 seeded notes on three lanes), `rooms/karaoke/KaraokePanel.tsx` (J/K/L
+or buttons, shell-note tones), prize `karaoke`. The chart's 0.6 s beat isn't
+synced to the room's backing track yet. Original note: `karaoke` is a room only (`src/game/karaoke.ts`,
 `Karaoke.tsx`). A pitch/timing rhythm game at the mic, procedural backing
 track, no lyrics on screen (rule from earlier work).
 
