@@ -484,6 +484,10 @@ M11's day–night clock was deliberately skipped. Ask before revisiting.
 
 ### E. Polish and launch (M11)
 
+- Measured 2026-10-23 on the low tier (1280x800, SwiftShader, calls /
+  triangles): Amusement Park 167 / 191k, city 113 / 254k (closest to the
+  300k cap), Pulse 115 / 115k, Plaza 105 / 149k, Water Park 63 / 92k,
+  Galleria 89 / 39k, Speedway 56 / 51k, Zoo 40 / 29k. All within budget.
 - Performance pass on a mid phone: 30 fps low tier, 16 ms frames on the
   high tier; re-measure the heaviest rooms (Galleria, Pulse, Water Park,
   Speedway, Amusement Park, which a note once put near 370k triangles on
