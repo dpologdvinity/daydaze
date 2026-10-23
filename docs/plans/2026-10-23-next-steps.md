@@ -187,9 +187,10 @@ signing up uploads the guest's local save as the account's, logging in loads
 the account's save, and while signed in every change is pushed 4 s later
 (`saveSync.ts`, `cloudSave.ts`, flushed on `pagehide`); an admin-only
 "Ban (admin)" on the peer card (`api.ban`, `session.ban`; not browser-tested,
-needs `is_admin` in D1); `docs/security.md` refreshed. The rest below is
-still open (report viewer, room-copy list, online leaderboards, jail and bans
-in D1).
+needs `is_admin` in D1); the room-copy list in the Friends panel
+(`RoomCopies.tsx`, `session.copies()`, hop with `switchCopy`);
+`docs/security.md` refreshed. Still open: a report viewer, online
+leaderboards, jail and store bans in D1 (with A5).
 - Account UI and cloud saves: login, signup, logout screens; load the save
   at login, push changes debounced (`api.getSave/putSave`); upload a
   guest's local save when they make an account. Nothing in `src/client`
