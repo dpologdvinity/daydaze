@@ -60,6 +60,10 @@ export const DANCE_MOVE_IDS = [
   "voguing",
   "twerk",
   "slow-dance",
+  // poses for two (see together.ts), kept out of the solo picker
+  "hug",
+  "hold-hands",
+  "forehead-kiss",
   // motion capture (see mocap.ts)
   ...MOCAP_DANCE_IDS,
   ...MOCAP_EMOTE_IDS,
@@ -475,6 +479,97 @@ export const DANCE_MOVES: readonly DanceMove[] = [
       },
     ],
   },
+  {
+    // arms wrapped round the partner, cheek turned, a slow rock side to side
+    id: "hug",
+    label: "Hug",
+    period: 3,
+    keys: [
+      {
+        at: 0,
+        joints: {
+          body: [0.08, 0.04, 0.03],
+          head: [0.1, 0.35, 0.08],
+          lArm: [-0.95, 0, 0.2],
+          rArm: [-0.9, 0, -0.18],
+          lFore: [-1.25, 0, 0.5],
+          rFore: [-1.2, 0, -0.5],
+        },
+      },
+      {
+        at: 1.5,
+        joints: {
+          body: [0.08, -0.04, -0.03],
+          head: [0.1, 0.3, 0.04],
+          lArm: [-0.9, 0, 0.18],
+          rArm: [-0.95, 0, -0.2],
+          lFore: [-1.2, 0, 0.5],
+          rFore: [-1.25, 0, -0.5],
+        },
+      },
+    ],
+  },
+  {
+    // side by side: the inside (right) hand reaches down for the partner's,
+    // a little sway while you stand together
+    id: "hold-hands",
+    label: "Hold hands",
+    period: 4,
+    keys: [
+      {
+        at: 0,
+        joints: {
+          body: [0, -0.06, -0.02],
+          head: [0, -0.25, -0.04],
+          rArm: [-0.2, 0, -0.3],
+          rFore: [-0.25, 0, 0],
+          lArm: [0.05, 0, 0.05],
+          lFore: [-0.15, 0, 0],
+        },
+      },
+      {
+        at: 2,
+        joints: {
+          body: [0, -0.02, 0.02],
+          head: [0.03, -0.15, 0],
+          rArm: [-0.2, 0, -0.32],
+          rFore: [-0.25, 0, 0],
+          lArm: [0, 0, 0.05],
+          lFore: [-0.2, 0, 0],
+        },
+      },
+    ],
+  },
+  {
+    // hands on the partner's shoulders, leaning in until foreheads touch
+    id: "forehead-kiss",
+    label: "Forehead kiss",
+    period: 4,
+    keys: [
+      {
+        at: 0,
+        joints: {
+          body: [0.12, 0, 0],
+          head: [0.3, 0, 0],
+          lArm: [-1.3, 0, 0.15],
+          rArm: [-1.3, 0, -0.15],
+          lFore: [-0.7, 0, 0.35],
+          rFore: [-0.7, 0, -0.35],
+        },
+      },
+      {
+        at: 2,
+        joints: {
+          body: [0.16, 0, 0],
+          head: [0.38, 0.05, 0.03],
+          lArm: [-1.35, 0, 0.15],
+          rArm: [-1.35, 0, -0.15],
+          lFore: [-0.75, 0, 0.35],
+          rFore: [-0.75, 0, -0.35],
+        },
+      },
+    ],
+  },
 ];
 
 // motion capture: the clips are listed up front, their keys load with
@@ -535,9 +630,14 @@ export const ALL_DANCE_MOVES: readonly DanceMove[] = [
   ...CAPTURED,
 ];
 
-const EMOTES: ReadonlySet<string> = new Set(MOCAP_EMOTE_IDS);
+const EMOTES: ReadonlySet<string> = new Set([
+  ...MOCAP_EMOTE_IDS,
+  "hug",
+  "hold-hands",
+  "forehead-kiss",
+]);
 
-/** The moves the player picks from: every dance, no NPC emotes. */
+/** The moves the player picks from: every dance, no NPC emotes or poses for two. */
 export const PICKER_DANCE_MOVES: readonly DanceMove[] = ALL_DANCE_MOVES.filter(
   (m) => !EMOTES.has(m.id),
 );

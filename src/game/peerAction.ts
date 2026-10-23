@@ -4,12 +4,14 @@
 // they're at ("sit@38", in centimeters), since moves carry only x and z;
 // behind the wheel, the paint, the rims, underglow and tint as indexes, and the
 // car ("c:ff4fb3012pebble"); after a few
-// drinks, how buzzed ("idle~2"). A move id too long to fit goes as a plain
+// drinks, how buzzed ("idle~2"); in an emote with someone, which and which
+// side ("pair:hug:f"). A move id too long to fit goes as a plain
 // "dance".
 import { isDanceMoveId, type DanceMoveId } from "./dance/moves.ts";
 import { RIMS, TINTS, UNDERGLOWS, type CarMods } from "./city/drive.ts";
 import { carById } from "./driving/roster.ts";
 import { MOODS, type Mood } from "./look.ts";
+import { isTogetherId, together, type Pair } from "./dance/together.ts";
 
 const LIMIT = 24;
 const isMood = (a: string): a is Mood => MOODS.some((m) => m.id === a);
@@ -34,6 +36,8 @@ export type Doing = {
   car?: Driven;
   /** How buzzed, 1 to 3, shown over their head; sober is none. */
   buzz?: Tier;
+  /** In an emote with another player. */
+  pair?: Pair;
 };
 
 export type Tier = 1 | 2 | 3;
@@ -49,9 +53,13 @@ export function encodeAction(
   seat?: Held,
   car?: Driven,
   buzz: 0 | Tier = 0,
+  pair?: Pair,
 ): string {
   const tag = buzz ? `~${buzz}` : "";
-  return describe(mood, dance, LIMIT - tag.length, seat, car) + tag;
+  const body = pair
+    ? `pair:${pair.emote}:${pair.role === "lead" ? "l" : "f"}`
+    : describe(mood, dance, LIMIT - tag.length, seat, car);
+  return body + tag;
 }
 
 function describe(
@@ -87,6 +95,17 @@ export function decodeAction(action: string): Doing {
 }
 
 function decodeBody(action: string): Doing {
+  const pair = /^pair:([a-z-]{1,14}):([lf])$/.exec(action);
+  if (pair) {
+    const emote = pair[1];
+    if (!isTogetherId(emote)) return { mood: "idle" };
+    const role = pair[2] === "l" ? "lead" : "follow";
+    return {
+      mood: "dance",
+      dance: together(emote).move,
+      pair: { emote, role },
+    };
+  }
   const car = /^c:([0-9a-f]{6})(\d)(\d)(\d)([a-z0-9-]{1,14})$/.exec(action);
   if (car) {
     const mods: CarMods = {};
