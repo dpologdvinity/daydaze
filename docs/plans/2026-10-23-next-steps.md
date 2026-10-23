@@ -379,7 +379,11 @@ them in the table talk). The online duel already works in any room from
 `PeerCard`. Original note: Put Crazy Eights (vs a regular
 NPC, and the online duel) at a Back Room table (`back-room`).
 
-**B14. Club events and sapphic touches (M, M3).** Pride night event at the
+**B14. Club events and sapphic touches (M, M3). Partly done 2026-10-23:**
+Pride night (`src/game/prideNight.ts`, every 15 min for 4 min, in
+`PRIDE_CLUBS`; `PrideTicker` in the room card with a rainbow glow; preview
+with `?pride=20`). Left: lights in the 3D clubs, beat-tile streak glow,
+couple skating, pride-flag prints. Original note: Pride night event at the
 clubs (timed like `src/game/danceOff.ts`, the HUD ticker pattern), beat-tile
 streak glow on dance floors, couple skating at the ice rink (with A1),
 pride-flag clothing prints (an outfit pattern option).
