@@ -200,7 +200,18 @@ day, L several days.
   gaps (no account recovery, no 2FA, no breached-password check, a short
   slur list) need a user decision.
 
-**A1. Couple emotes (M, highest value).** Holding hands, forehead kiss,
+**A1. Couple emotes (M, highest value). Done 2026-10-23 (online only):**
+hug, hold hands, forehead kiss (handwritten poses in `moves.ts`; `./mixamo`
+has only partner salsa, no hug/kiss/hand clips) and slow dance.
+`src/game/dance/together.ts` (list, `followSpot`, relay messages
+`pair-invite`/`pair-accept`/`pair-stop`), action code `pair:<emote>:<l|f>`,
+`src/client/net/together.ts` + `TogetherPanel.tsx`, PeerCard group "Do
+something together". The follower snaps beside the lead; walking 0.4 m off
+ends it. Left: piggyback (needs a lifted doll), pose polish (the hug's arms
+are guessed; check in the lineup), offline NPC partners. The online spec
+step passed in a two-browser probe; the full `test:e2e:online` timed out on
+page load under heavy machine load (clean main passed once) — rerun it
+when the machine is quiet. Original note: Holding hands, forehead kiss,
 piggyback, hug, slow dance; offline with nobody, online between two players.
 - Clips: look in `./mixamo` (dancing, gestures, idle folders) for paired or
   adaptable clips; add to `art/doll/blender/mocap.py` `MIXAMO_CLIPS`
@@ -437,7 +448,7 @@ M11's day–night clock was deliberately skipped. Ask before revisiting.
 ## 5. Suggested order for the next session
 
 0. B11 prizes for unscored games and B13 speakeasy cards (quick, high value).
-1. A1 couple emotes (check `./mixamo` first; if no usable clips, do A2 first).
+1. ~~A1 couple emotes~~ (done; piggyback left).
 2. A2 cook-off.
 3. C4 shoplifting cleanup and B9 car wraps (quick wins).
 4. B2 beach volleyball, B3 shooting range.
