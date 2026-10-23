@@ -14,6 +14,7 @@ import { ONLINE, onlineSession, useOnlineRoom } from "./net/online.ts";
 import { DuelPanel } from "./net/DuelPanel.tsx";
 import { TogetherPanel } from "./net/TogetherPanel.tsx";
 import { CookOffInvite } from "./net/CookOffInvite.tsx";
+import { ConnectionNote } from "./net/ConnectionNote.tsx";
 import { FriendsPanel } from "./net/FriendsPanel.tsx";
 import { PeerCard } from "./net/PeerCard.tsx";
 import type { MinigameId } from "../game/hotspots.ts";
@@ -301,6 +302,7 @@ export function App() {
         {ONLINE && <DuelPanel />}
         {ONLINE && <TogetherPanel />}
         {ONLINE && <CookOffInvite />}
+        {ONLINE && <ConnectionNote />}
         <div className="fade" data-on={fading} aria-hidden="true" />
         {notice && (
           <p className="notice" role="status">

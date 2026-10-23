@@ -2107,6 +2107,18 @@ test("the Water Park water-gun battle pays a prize", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("online with no server, a HUD line says the game is offline", async ({
+  page,
+}) => {
+  // no Worker answers /api here, so the session gives up and plays offline
+  await page.route("**/api/**", (route) => route.abort());
+  await page.goto(`${STILL}&online=1`);
+  await expect(page.getByRole("status", { name: "Connection" })).toContainText(
+    "Playing offline",
+    { timeout: 150_000 },
+  );
+});
+
 test("the city map takes the player to Beachside", async ({ page }) => {
   await page.goto(`${LOW}&room=city`);
   await expect(roomTitle(page)).toHaveText("Downtown");
