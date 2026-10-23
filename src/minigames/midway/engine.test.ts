@@ -1,6 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  FILL_RATE,
+  onTarget,
+  rivalAt,
+  SQUIRT_SECONDS,
+  squirtScore,
+  squirtTarget,
   CORKS,
   HOLES,
   LEVELS,
@@ -98,4 +104,28 @@ test("grades climb with the score", () => {
   assert.equal(grade("whack", "easy", 0), "C");
   assert.equal(grade("whack", "easy", 10_000), "S");
   assert.equal(grade("rings", "hard", 60), "A");
+});
+
+test("the water-gun race: aim on the bullseye wins, rivals keep a steady pace", async () => {
+  const {
+    squirtTarget,
+    onTarget,
+    rivalAt,
+    squirtScore,
+    FILL_RATE,
+    SQUIRT_SECONDS,
+  } = await import("./engine.ts");
+  const t0 = squirtTarget("medium", 7, 3);
+  assert.ok(onTarget("medium", t0, t0));
+  assert.equal(onTarget("medium", { x: t0.x + 0.2, y: t0.y }, t0), false);
+  // a board height is half a width: the same miss counts less up and down
+  assert.ok(onTarget("medium", { x: t0.x, y: t0.y + 0.1 }, t0));
+  assert.equal(onTarget("medium", { x: t0.x + 0.1, y: t0.y }, t0), false);
+  // a perfect stream beats every rival to the top
+  const win = 1 / FILL_RATE;
+  for (let i = 0; i < 3; i++) assert.ok(rivalAt("hard", 7, i, win) < 1);
+  // and a rival does finish inside the race's time
+  assert.ok(rivalAt("easy", 7, 2, SQUIRT_SECONDS) >= 1);
+  assert.equal(squirtScore(1, true), 150);
+  assert.equal(squirtScore(0.4, false), 40);
 });

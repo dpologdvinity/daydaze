@@ -1671,6 +1671,22 @@ test("the midway opens at the Amusement Park and a ring toss pays a grade", asyn
   await expect(roomTitle(page)).toHaveText("Amusement Park");
 });
 
+test("the midway's water-gun race runs until a horse wins", async ({
+  page,
+}) => {
+  await page.goto(`${STILL}&room=amusement-park`);
+  await page.getByRole("button", { name: "Play the midway games" }).click();
+  const dialog = page.getByRole("dialog", { name: "The Midway" });
+  await dialog.getByRole("radio", { name: /Water-gun race/ }).click();
+  await dialog.getByRole("button", { name: "Play Water-gun race" }).click();
+  await expect(dialog.getByRole("list", { name: "The race" })).toBeVisible();
+  await expect(dialog.getByRole("meter")).toHaveCount(4);
+  // nobody squirting: a rival gets there, and the counter grades it
+  await expect(
+    dialog.getByText(/The prize counter pays \d+ coins/),
+  ).toBeVisible({ timeout: 60_000 });
+});
+
 test("the player takes a seat at the Velvet Room bar and stands to walk", async ({
   page,
 }) => {

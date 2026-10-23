@@ -9,6 +9,14 @@ import { payoutFor, type PayGrade } from "../../game/wallet.ts";
 import { Dialog } from "../Dialog.tsx";
 import {
   BOOTHS,
+  FILL_RATE,
+  RIVALS,
+  SQUIRT_RADIUS,
+  SQUIRT_SECONDS,
+  onTarget,
+  rivalAt,
+  squirtScore,
+  squirtTarget,
   BOTTLE_COLUMNS,
   BOTTLE_ROWS,
   CORKS,
@@ -314,6 +322,135 @@ function Gallery({ level, seed, onFinish }: BoothProps) {
   );
 }
 
+// ---------------------------------------------------------- water-gun race
+
+const HORSES = ["You", "Blue", "Gold", "Green"] as const;
+
+function Squirt({ level, seed, onFinish }: BoothProps) {
+  const t = useClock(true);
+  const [aim, setAim] = useState({ x: 0.5, y: 0.5 });
+  const [firing, setFiring] = useState(false);
+  // progress builds frame by frame while the stream is on the bullseye
+  const progress = useRef(0);
+  const last = useRef(0);
+  const finished = useRef(false);
+  const stage = useRef<HTMLDivElement>(null);
+  const target = squirtTarget(level, seed, t);
+  const hitting = firing && onTarget(level, aim, target);
+  const dt = Math.max(0, Math.min(0.1, t - last.current));
+  last.current = t;
+  if (hitting && !finished.current)
+    progress.current = Math.min(1, progress.current + FILL_RATE * dt);
+  const rivals = Array.from({ length: RIVALS }, (_, i) =>
+    rivalAt(level, seed, i, t),
+  );
+  const rivalWon = rivals.some((r) => r >= 1);
+  const won = progress.current >= 1 && !rivalWon;
+  const over = progress.current >= 1 || rivalWon || t >= SQUIRT_SECONDS;
+  const score = squirtScore(progress.current, won);
+
+  useEffect(() => {
+    if (!over || finished.current) return;
+    finished.current = true;
+    onFinish(score);
+  }, [over, score, onFinish]);
+
+  useEffect(() => {
+    const step = 0.04;
+    const keys: Record<string, () => void> = {
+      ArrowLeft: () => setAim((a) => ({ ...a, x: Math.max(0, a.x - step) })),
+      ArrowRight: () => setAim((a) => ({ ...a, x: Math.min(1, a.x + step) })),
+      ArrowUp: () => setAim((a) => ({ ...a, y: Math.max(0, a.y - step) })),
+      ArrowDown: () => setAim((a) => ({ ...a, y: Math.min(1, a.y + step) })),
+    };
+    const down = (e: KeyboardEvent) => {
+      if (e.key === " " || e.key === "Enter") {
+        e.preventDefault();
+        setFiring(true);
+        return;
+      }
+      const fn = keys[e.key];
+      if (!fn) return;
+      e.preventDefault();
+      fn();
+    };
+    const up = (e: KeyboardEvent) => {
+      if (e.key === " " || e.key === "Enter") setFiring(false);
+    };
+    window.addEventListener("keydown", down);
+    window.addEventListener("keyup", up);
+    return () => {
+      window.removeEventListener("keydown", down);
+      window.removeEventListener("keyup", up);
+    };
+  }, []);
+
+  const at = (clientX: number, clientY: number) => {
+    const box = stage.current?.getBoundingClientRect();
+    if (!box) return null;
+    return {
+      x: Math.min(1, Math.max(0, (clientX - box.left) / box.width)),
+      y: Math.min(1, Math.max(0, (clientY - box.top) / box.height)),
+    };
+  };
+  const size = `${SQUIRT_RADIUS[level] * 200}%`;
+
+  return (
+    <section className="mw-booth mw-squirt" aria-label="Water-gun race">
+      <Hud
+        score={score}
+        left={Math.max(0, SQUIRT_SECONDS - t)}
+        extra="hold to squirt · arrows aim, hold space"
+      />
+      <ol className="mw-horses" aria-label="The race">
+        {HORSES.map((name, i) => {
+          const p = i === 0 ? progress.current : (rivals[i - 1] ?? 0);
+          return (
+            <li key={name} data-you={i === 0}>
+              <span>{name}</span>
+              <meter min={0} max={1} value={p} aria-label={`${name}'s horse`} />
+            </li>
+          );
+        })}
+      </ol>
+      <div
+        ref={stage}
+        className="mw-stage"
+        role="application"
+        aria-label="The bullseye. Press and hold on it to squirt."
+        data-hitting={hitting}
+        onPointerMove={(e) => {
+          const p = at(e.clientX, e.clientY);
+          if (p) setAim(p);
+        }}
+        onPointerDown={(e) => {
+          const p = at(e.clientX, e.clientY);
+          if (p) setAim(p);
+          setFiring(true);
+        }}
+        onPointerUp={() => setFiring(false)}
+        onPointerLeave={() => setFiring(false)}
+      >
+        <span
+          className="mw-bullseye"
+          style={{
+            left: `${target.x * 100}%`,
+            top: `${target.y * 100}%`,
+            width: size,
+            aspectRatio: "1",
+          }}
+        />
+        <span
+          className="mw-cross"
+          data-firing={firing}
+          style={{ left: `${aim.x * 100}%`, top: `${aim.y * 100}%` }}
+          aria-hidden="true"
+        />
+      </div>
+    </section>
+  );
+}
+
 // ---------------------------------------------------------------- ring toss
 
 function Rings({ level, onFinish }: BoothProps) {
@@ -480,7 +617,7 @@ export function Midway({ onClose }: Props) {
   return (
     <Dialog
       title="The Midway"
-      subtitle="Step right up: three games, one prize counter."
+      subtitle="Step right up: four games, one prize counter."
       className="mw"
       onClose={() => onClose(best.current)}
     >
@@ -529,6 +666,8 @@ export function Midway({ onClose }: Props) {
           <Whack level={level} seed={seed} onFinish={finish} />
         ) : booth === "gallery" ? (
           <Gallery level={level} seed={seed} onFinish={finish} />
+        ) : booth === "squirt" ? (
+          <Squirt level={level} seed={seed} onFinish={finish} />
         ) : (
           <Rings level={level} seed={seed} onFinish={finish} />
         ))}

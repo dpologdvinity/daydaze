@@ -400,3 +400,58 @@
     transition: none;
   }
 }
+
+/* water-gun race: the horses up top, a bullseye drifting on the board */
+.mw-horses {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.mw-horses li {
+  display: grid;
+  grid-template-columns: 4em 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.mw-horses li[data-you="true"] {
+  font-weight: 700;
+}
+
+.mw-horses meter {
+  width: 100%;
+}
+
+.mw-bullseye {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    #fff 0 18%,
+    #e0283a 18% 40%,
+    #fff 40% 62%,
+    #e0283a 62% 100%
+  );
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.35);
+}
+
+.mw-squirt .mw-stage[data-hitting="true"] .mw-bullseye {
+  box-shadow:
+    0 0 0 4px #3fe8ff,
+    0 0 18px #3fe8ff;
+}
+
+.mw-cross[data-firing="true"] {
+  border-color: #3fe8ff;
+}
+
+.mw-squirt .mw-stage {
+  width: min(100%, 92vh);
+  height: auto;
+  aspect-ratio: 2 / 1;
+  margin-inline: auto;
+}

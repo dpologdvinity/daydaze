@@ -1,12 +1,13 @@
 /**
- * The midway: three carnival booths at the Amusement Park. Whack-a-mole is
+ * The midway: four carnival booths at the Amusement Park. Whack-a-mole is
  * reactions, the shooting gallery is aim against moving targets (corks, never
- * blood), and ring toss is timing two swinging meters. Pure TypeScript, so
+ * blood), ring toss is timing two swinging meters, and the water-gun race is
+ * holding a stream on a drifting bullseye. Pure TypeScript, so
  * every rule is testable in Node; the view only reads state and reports taps.
  */
 import type { PayGrade } from "../../game/wallet.ts";
 
-export type BoothId = "whack" | "gallery" | "rings";
+export type BoothId = "whack" | "gallery" | "rings" | "squirt";
 export type Level = "easy" | "medium" | "hard";
 
 export const BOOTHS: readonly { id: BoothId; label: string; blurb: string }[] =
@@ -25,6 +26,11 @@ export const BOOTHS: readonly { id: BoothId; label: string; blurb: string }[] =
       id: "rings",
       label: "Ring toss",
       blurb: "Stop the aim and the power meters to land a ring on a bottle.",
+    },
+    {
+      id: "squirt",
+      label: "Water-gun race",
+      blurb: "Keep your stream on the bullseye to race your horse to the top.",
     },
   ];
 
@@ -249,6 +255,62 @@ export function toss(level: Level, aim: number, power: number): Toss {
   return { at, ringer: [col, row], points: 10 * (row + 1) };
 }
 
+// --------------------------------------------------------- water-gun race
+
+/** The race is over when a horse reaches the top, or after this long. */
+export const SQUIRT_SECONDS = 30;
+/** Progress a second with the stream on the bullseye: about 9 s to win. */
+export const FILL_RATE = 0.11;
+/** The board is twice as wide as tall; radii are in board widths. */
+export const BOARD_ASPECT = 2;
+export const SQUIRT_RADIUS: Record<Level, number> = {
+  easy: 0.07,
+  medium: 0.055,
+  hard: 0.045,
+};
+const DRIFT: Record<Level, number> = { easy: 0.6, medium: 0.9, hard: 1.25 };
+/** The three rivals' pace, as a share of a perfect stream. */
+const RIVAL_PACE: Record<Level, number> = {
+  easy: 0.55,
+  medium: 0.7,
+  hard: 0.82,
+};
+export const RIVALS = 3;
+
+/** Where the bullseye is at `t` (0..1 across and down the board). */
+export function squirtTarget(
+  level: Level,
+  seed: number,
+  t: number,
+): { x: number; y: number } {
+  const w = DRIFT[level];
+  const p = (seed % 1000) / 159;
+  return {
+    x: 0.5 + 0.36 * Math.sin(t * w + p) * Math.cos(t * w * 0.37),
+    y: 0.5 + 0.3 * Math.sin(t * w * 1.3 + p * 2),
+  };
+}
+
+export function onTarget(
+  level: Level,
+  aim: { x: number; y: number },
+  target: { x: number; y: number },
+): boolean {
+  const dy = (aim.y - target.y) / BOARD_ASPECT;
+  return Math.hypot(aim.x - target.x, dy) <= SQUIRT_RADIUS[level];
+}
+
+/** How far rival `i` has run at `t`, 0..1: a steady pace with a wobble. */
+export function rivalAt(level: Level, seed: number, i: number, t: number) {
+  const pace = RIVAL_PACE[level] * (0.85 + 0.1 * i) * FILL_RATE;
+  const wobble = 0.02 * Math.sin(t * (1.3 + i) + seed + i);
+  return Math.max(0, Math.min(1, pace * t + wobble));
+}
+
+/** Points: how far you ran, and 50 more for winning. */
+export const squirtScore = (progress: number, won: boolean) =>
+  Math.round(Math.min(1, progress) * 100) + (won ? 50 : 0);
+
 // ------------------------------------------------------------------ grading
 
 /** Scores needed for S, A and B; anything less grades C. */
@@ -262,6 +324,11 @@ const BARS: Record<BoothId, Record<Level, [number, number, number]>> = {
     easy: [220, 150, 80],
     medium: [200, 140, 75],
     hard: [180, 120, 60],
+  },
+  squirt: {
+    easy: [140, 95, 60],
+    medium: [140, 90, 55],
+    hard: [130, 85, 50],
   },
   rings: {
     easy: [150, 100, 50],
