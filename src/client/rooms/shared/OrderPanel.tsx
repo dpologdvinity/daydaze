@@ -9,11 +9,14 @@ export function OrderPanel({
   title,
   intro,
   startLabel,
+  vessel = "cup",
 }: {
   session: OrderSession;
   title: string;
   intro: string;
   startLabel: string;
+  /** What each order is built in. */
+  vessel?: string;
 }): JSX.Element {
   const { station } = session;
   const s = session.store.use();
@@ -52,7 +55,7 @@ export function OrderPanel({
       {!over && (
         <>
           <p className="game-call">
-            In the cup:{" "}
+            In the {vessel}:{" "}
             {s.shift.cup.length ? s.shift.cup.map(label).join(", ") : "empty"}
           </p>
           <div className="game-row order-station">
@@ -75,7 +78,7 @@ export function OrderPanel({
               Hand it over
             </button>
             <button type="button" onClick={session.empty}>
-              Dump the cup
+              Dump the {vessel}
             </button>
           </div>
           <details>

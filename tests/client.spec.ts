@@ -313,6 +313,23 @@ test("the halo-halo counter: a shift takes a ticket and scores a glass", async (
   expect(errors).toEqual([]);
 });
 
+test("Ramen Rush: a shift takes a ticket and scores a bowl", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=ramen-shop`);
+  const panel = page.getByRole("region", { name: "Ramen Rush" });
+  await panel
+    .getByRole("button", { name: "Work the counter" })
+    .click({ timeout: 150_000 });
+  await panel.getByRole("button", { name: "Miso broth" }).click();
+  await expect(panel).toContainText("In the bowl: Miso broth");
+  await panel.getByRole("button", { name: "Hand it over" }).click();
+  await expect(panel.getByLabel("Shift")).toContainText("2/8");
+  expect(errors).toEqual([]);
+});
+
 test("the boba bar: a shift takes a ticket and scores a cup", async ({
   page,
 }) => {
@@ -1473,6 +1490,7 @@ for (const room of [
   "skate-diner",
   "museum",
   "halo-halo-cafe",
+  "ramen-shop",
   "salon",
   "piercing",
   "laser-tag",

@@ -3,6 +3,7 @@ import { test } from "node:test";
 import { ESPRESSO } from "./barista.ts";
 import { BOBA } from "./boba.ts";
 import { HALO_HALO } from "./haloHalo.ts";
+import { RAMEN } from "./ramen.ts";
 import {
   dump,
   MAX_TIP,
@@ -20,6 +21,7 @@ for (const [name, station] of [
   ["espresso", ESPRESSO],
   ["boba", BOBA],
   ["halo-halo", HALO_HALO],
+  ["ramen", RAMEN],
 ] as const)
   test(`every ${name} order is made from the station's ingredients`, () => {
     const known = new Set(station.ingredients.map((i) => i.id));

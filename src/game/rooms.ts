@@ -149,6 +149,7 @@ export type RoomId =
   | "mermaid-cove"
   | "skate-diner"
   | "halo-halo-cafe"
+  | "ramen-shop"
   | "museum"
   | "salon"
   | "piercing"
@@ -642,6 +643,7 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
     blockers: KAMAYAN.BLOCKERS,
   },
   "halo-halo-cafe": foodRoom("halo-halo-cafe", "Halo-Halo Haus"),
+  "ramen-shop": foodRoom("ramen-shop", "Steam Ladle Ramen"),
   salon: {
     id: "salon",
     name: "The Blowout Bar",
