@@ -226,7 +226,13 @@ piggyback, hug, slow dance; offline with nobody, online between two players.
 - Tests: codec units; online spec step (A invites, B accepts, both see the
   pose attribute on the peer tag `data-doing`).
 
-**A2. Filipino cook-off (M).** Two players, one kitchen, Kamayan Hall or a new
+**A2. Filipino cook-off (M). Done 2026-10-23:** `src/game/cookOff.ts`
+(`COOKOFF` station, `ghostScore`, `cook-*` relay messages), Kamayan Hall's
+`CookOffPanel` (vs Tita Baby's ghost score, or a matched player with the same
+seed; scores swap at the end), the invite anywhere (`CookOffInvite`, PeerCard
+"Challenge to a cook-off"), prize `cook-off`. The online spec covers invite
+and accept only (both players walking to Kamayan Hall would add minutes).
+Original note: Two players, one kitchen, Kamayan Hall or a new
 Little Manila kitchen. Each gets the same tickets (orders engine, a new
 `COOKOFF` station: adobo, sinigang, pancit, lumpia…); scores exchanged over
 the `game` relay; highest after 8 tickets wins. Offline: versus a ghost score.
@@ -447,7 +453,7 @@ M11's day–night clock was deliberately skipped. Ask before revisiting.
 
 0. B11 prizes for unscored games and B13 speakeasy cards (quick, high value).
 1. ~~A1 couple emotes~~ (done; piggyback left).
-2. A2 cook-off.
+2. ~~A2 cook-off~~ (done).
 3. C4 shoplifting cleanup and B9 car wraps (quick wins).
 4. B2 beach volleyball, B3 shooting range.
 5. B1 Water Park expansion.
