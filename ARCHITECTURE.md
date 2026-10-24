@@ -42,6 +42,10 @@ floors, looks, saves, chat effects) so both sides agree on the rules.
   engine in `src/game/<game>.ts`, a small store-backed session
   (`rooms/shared/store.ts`, `createStore`), and a panel. `ui/RoomPanels.tsx`
   maps rooms to their panels; rooms with several games get tabs.
+  In-world games build on `rooms/shared/game3d/`: `Ball`, `Splash` /
+  `SandPuff` / `Burst` (instanced particles), `ScoreCard`, `useGameShot`
+  (a camera shot through `cameraHold`) and `useGameClip` (the player's doll
+  plays a game clip over the picked mood). `game3d/kit.html` is a dev lab.
 - `ui/` is the HUD: `Overlay.tsx` (room card, closet, action bars),
   `Dressing.tsx`, the prize card (`prizeDesk.ts` → `App` grades, pays and
   records bests and daily challenges), the city map, shops, jail.
@@ -67,8 +71,15 @@ online player agree. The main tables:
   daily challenges.
 - One module per game (`bowling.ts`, `tennis.ts`, `cookOff.ts`,
   `volleyball.ts`, `karaokeGame.ts`, ...), plus `dance/` (moves, mocap
-  clips, couple poses), `crime/`, `police/`, `driving/`, `speedway/`.
-- `dialogue/`: handwritten NPC lines by role, picked by `pickLine`.
+  clips, couple poses, and `GAME_CLIP_IDS`: the dig, spike, sing, tuck, dive,
+  stir, chop and aim clips the in-world games play), `crime/`, `police/`, `driving/`, `speedway/`.
+- `dialogue/`: handwritten NPC lines by role, picked by `pickLine`. The
+  banks are a separate chunk: `loadDialogue()` fetches them (prefetched at
+  idle from `client/main.tsx`), and NPCs say "..." until then.
+- `motion/`: ball flights (`lob`, `bounce`, `ballAt`) and seeded particle
+  bursts for the in-world games. `clock.ts`: held and shifted event clocks
+  (`?danceoff=<s>`, `?pride=<s>` and the city's event flags pin a clock to a
+  moment, so tests can't miss a window).
 - `peerAction.ts`: what a player is doing, packed into the 24-character
   `action` string every move carries (mood, dance, seat, car and mods,
   couple emotes, buzz).

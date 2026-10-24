@@ -164,6 +164,9 @@ default (it is a URL flag today; the comment there says so).
 - Editing `src/` while Playwright runs reloads its pages (HMR): don't.
 - Headless WebGL is SwiftShader on the CPU; a failure under load is usually a
   flake: rerun alone before debugging. Timing games (paintball) flake most.
+- The lineup lab (`lineup.html`) and the kit lab (`game3d/kit.html`) write
+  `data-frames` on `<body>`, not on the canvas; with `still=1` a doll whose
+  GLB loads after the 8th frame never draws, so shoot without `still`.
 - Python patch scripts: read before writing; a bad splice once truncated
   `layout.ts` and once mangled `RoomPanels.tsx`. Typecheck after each.
 
@@ -520,6 +523,13 @@ M11's day–night clock was deliberately skipped. Ask before revisiting.
 ([spec](../specs/2026-10-24-wonder-pass.md)): in-world games first, then
 load speed, social play, reasons to return, doll diversity, and launch as
 the owner unblocks it. The list below is kept for history.
+
+Wonder pass log: Phase 0 (2026-10-24) done: held event clocks
+(`src/game/clock.ts`, `?danceoff=<s>` holds until the player dances),
+twelve game clips (`GAME_CLIP_IDS` in `moves.ts`; Mixamo dig, spike and
+sing, the rest hand-keyed with `groove: false`), the in-world game kit
+(`src/game/motion/`, `src/client/rooms/shared/game3d/`), and lazy NPC
+dialogue (main chunk 136 kB to 77 kB gzip).
 
 0. B11 prizes for unscored games and B13 speakeasy cards (quick, high value).
 1. ~~A1 couple emotes~~ (done; piggyback left).
