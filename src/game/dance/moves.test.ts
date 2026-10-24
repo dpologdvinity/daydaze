@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   ALL_DANCE_MOVES,
   DANCE_MOVE_IDS,
+  GAME_CLIP_IDS,
   JOINTS,
   createPose,
   danceMove,
@@ -199,4 +200,31 @@ test("clip ids the game names stay generated", () => {
     "samba",
   ])
     assert.equal(isDanceMoveId(id), true, id);
+});
+
+test("game clips resolve, carry real keys and stay out of the Dance picker", () => {
+  const want = [
+    "dig",
+    "spike",
+    "sing",
+    "tuck",
+    "dive-pencil",
+    "dive-swan",
+    "dive-backflip",
+    "dive-twist",
+    "stir",
+    "chop",
+    "aim-pistol",
+    "aim-rifle",
+  ];
+  assert.deepEqual([...GAME_CLIP_IDS].sort(), [...want].sort());
+  const picker = new Set(PICKER_DANCE_MOVES.map((m) => m.id));
+  for (const id of GAME_CLIP_IDS) {
+    const move = danceMove(id);
+    assert.ok(!picker.has(id), `${id} is in the picker`);
+    // a real pose, not the still placeholder: some joint leaves rest
+    const pose = poseAt(move, move.period / 3);
+    const furthest = Math.max(...flatten(pose).map(Math.abs));
+    assert.ok(furthest > 0.3, `${id} barely moves (${furthest})`);
+  }
 });

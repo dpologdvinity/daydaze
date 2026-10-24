@@ -85,7 +85,7 @@ function poseMood(
     // the 3D doll's arms rest angled out; draw them in like the other poses
     if (j.lArm) j.lArm.rotation.z -= ARM_IN;
     if (j.rArm) j.rArm.rotation.z += ARM_IN;
-    if (calm) return;
+    if (calm || !dance.groove) return;
     // a groove under every move: a soft knee dip on each beat (120 bpm), with
     // the head nodding into it, so the whole body moves to the music
     const dip = 0.5 - 0.5 * Math.cos(t * Math.PI * 4);

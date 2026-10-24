@@ -289,6 +289,15 @@ export const MOCAP_CLIPS: readonly MocapClip[] = [
     source: "Mixamo",
     period: 1.5,
   },
+  { id: "dig", kind: "emote", label: "Dig", source: "Mixamo", period: 1.4 },
+  { id: "spike", kind: "emote", label: "Spike", source: "Mixamo", period: 2.3 },
+  {
+    id: "sing",
+    kind: "emote",
+    label: "Singing",
+    source: "Mixamo",
+    period: 6.1667,
+  },
   {
     id: "pose-arms-down",
     kind: "pose",
@@ -520,4 +529,7 @@ export const MOCAP_EMOTE_IDS = [
   "wave",
   "chatting",
   "bartending",
+  "dig",
+  "spike",
+  "sing",
 ] as const;

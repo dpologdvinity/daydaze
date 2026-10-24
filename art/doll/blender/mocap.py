@@ -392,6 +392,10 @@ MIXAMO_CLIPS = {
     "wave": ("gestures/waving/Waving-Gesture_Aj-Waving-Gesture", "emote", "Waving"),
     "chatting": ("talking/Talking_General-Conversation", "emote", "Chatting"),
     "bartending": ("drinking/Bartending_Pouring-And-Serving-Drinks", "emote", "Bartending"),
+    # game clips: the player's doll plays these during in-world games
+    "dig": ("sports/Receiver-Catch_Receiver-Catch-On-Boundary-Line", "emote", "Dig"),
+    "spike": ("sports/Goalie-Throw_Goalie-Overhand-Throw", "emote", "Spike"),
+    "sing": ("talking/Singing_Singing-While-Walking-On-Stage", "emote", "Singing"),
     # held poses: the middle frame of the take
     "pose-arms-down": ("idle/Female-Standing-Pose_Arms-Down", "pose", "Arms down"),
     "pose-over-shoulder": ("idle/Female-Standing-Pose_Hands-On-Hips-Looking-Over-Shoulder", "pose", "Over the shoulder"),

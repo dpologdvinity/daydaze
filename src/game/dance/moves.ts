@@ -29,6 +29,8 @@ export type Pose = {
   joints: Record<Joint, Vec3>;
   /** Set for motion capture: already exact for the 3D doll, no extra groove. */
   captured: boolean;
+  /** False for game clips: the doll holds the shape, no knee dip on the beat. */
+  groove: boolean;
 };
 
 type Key = {
@@ -47,6 +49,8 @@ export type DanceMove = {
   /** Loop length in seconds. */
   period: number;
   keys: readonly Key[];
+  /** Game clips set this false: no beat dip under a dive or an aim. */
+  groove?: false;
 };
 
 export const DANCE_MOVE_IDS = [
@@ -64,6 +68,16 @@ export const DANCE_MOVE_IDS = [
   "hug",
   "hold-hands",
   "forehead-kiss",
+  // game clips the player's doll plays in in-world games (see GAME_CLIP_IDS)
+  "tuck",
+  "dive-pencil",
+  "dive-swan",
+  "dive-backflip",
+  "dive-twist",
+  "stir",
+  "chop",
+  "aim-pistol",
+  "aim-rifle",
   // motion capture (see mocap.ts)
   ...MOCAP_DANCE_IDS,
   ...MOCAP_EMOTE_IDS,
@@ -76,7 +90,7 @@ const ZERO: Vec3 = [0, 0, 0];
 export function createPose(): Pose {
   const joints = {} as Record<Joint, Vec3>;
   for (const j of JOINTS) joints[j] = [0, 0, 0];
-  return { root: [0, 0, 0], joints, captured: false };
+  return { root: [0, 0, 0], joints, captured: false, groove: true };
 }
 
 // Each move is a short loop. Arm and leg values follow pose.ts: a positive z
@@ -570,6 +584,268 @@ export const DANCE_MOVES: readonly DanceMove[] = [
       },
     ],
   },
+  // ---- game clips: held shapes for in-world games, no beat dip ----
+  {
+    // knees hugged to the chest, chin down: the slide's tuck and a dive's ball
+    id: "tuck",
+    label: "Tuck",
+    period: 1,
+    groove: false,
+    keys: [
+      {
+        at: 0,
+        joints: {
+          body: [0.45, 0, 0],
+          head: [0.35, 0, 0],
+          lLeg: [-2.35, 0, 0.08],
+          rLeg: [-2.35, 0, -0.08],
+          lShin: [2.5, 0, 0],
+          rShin: [2.5, 0, 0],
+          lArm: [-1.1, 0, 0.1],
+          rArm: [-1.1, 0, -0.1],
+          lFore: [-1.3, 0, 0],
+          rFore: [-1.3, 0, 0],
+          lFoot: [0.5, 0, 0],
+          rFoot: [0.5, 0, 0],
+        },
+      },
+      {
+        at: 0.5,
+        joints: {
+          body: [0.5, 0, 0],
+          head: [0.4, 0, 0],
+          lLeg: [-2.4, 0, 0.08],
+          rLeg: [-2.4, 0, -0.08],
+          lShin: [2.55, 0, 0],
+          rShin: [2.55, 0, 0],
+          lArm: [-1.15, 0, 0.1],
+          rArm: [-1.15, 0, -0.1],
+          lFore: [-1.35, 0, 0],
+          rFore: [-1.35, 0, 0],
+          lFoot: [0.5, 0, 0],
+          rFoot: [0.5, 0, 0],
+        },
+      },
+    ],
+  },
+  {
+    // feet first, straight as a pencil, arms pressed to the sides
+    id: "dive-pencil",
+    label: "Pencil dive",
+    period: 1,
+    groove: false,
+    keys: [
+      {
+        at: 0,
+        joints: {
+          head: [-0.05, 0, 0],
+          lArm: [0, 0, -0.12],
+          rArm: [0, 0, 0.12],
+          lLeg: [0, 0, -0.03],
+          rLeg: [0, 0, 0.03],
+          lFoot: [0.7, 0, 0],
+          rFoot: [0.7, 0, 0],
+        },
+      },
+    ],
+  },
+  {
+    // arms spread like wings, back arched, legs long and toes pointed
+    id: "dive-swan",
+    label: "Swan dive",
+    period: 1,
+    groove: false,
+    keys: [
+      {
+        at: 0,
+        joints: {
+          body: [-0.22, 0, 0],
+          head: [-0.35, 0, 0],
+          lArm: [-0.25, 0, 1.45],
+          rArm: [-0.25, 0, -1.45],
+          lFore: [-0.05, 0, 0],
+          rFore: [-0.05, 0, 0],
+          lLeg: [0.12, 0, 0],
+          rLeg: [0.12, 0, 0],
+          lFoot: [0.7, 0, 0],
+          rFoot: [0.7, 0, 0],
+        },
+      },
+    ],
+  },
+  {
+    // a backflip's tight ball: shins grabbed, head thrown back into the turn
+    id: "dive-backflip",
+    label: "Backflip",
+    period: 1,
+    groove: false,
+    keys: [
+      {
+        at: 0,
+        joints: {
+          body: [0.3, 0, 0],
+          head: [-0.3, 0, 0],
+          lLeg: [-2.4, 0, 0.12],
+          rLeg: [-2.4, 0, -0.12],
+          lShin: [2.5, 0, 0],
+          rShin: [2.5, 0, 0],
+          lArm: [-1.3, 0, 0.2],
+          rArm: [-1.3, 0, -0.2],
+          lFore: [-0.6, 0, 0],
+          rFore: [-0.6, 0, 0],
+          lFoot: [0.6, 0, 0],
+          rFoot: [0.6, 0, 0],
+        },
+      },
+    ],
+  },
+  {
+    // a twist's spindle: arms straight overhead, the body turning, legs locked
+    id: "dive-twist",
+    label: "Twist",
+    period: 1,
+    groove: false,
+    keys: [
+      {
+        at: 0,
+        joints: {
+          body: [0, 0.35, 0],
+          head: [-0.1, 0.15, 0],
+          lArm: [-2.95, 0, -0.1],
+          rArm: [-2.95, 0, 0.1],
+          lLeg: [0, 0, -0.04],
+          rLeg: [0, 0, 0.04],
+          lFoot: [0.7, 0, 0],
+          rFoot: [0.7, 0, 0],
+        },
+      },
+    ],
+  },
+  {
+    // over the wok: the left hand holds the pan, the right stirs in circles
+    id: "stir",
+    label: "Stirring",
+    period: 1.2,
+    groove: false,
+    keys: [0, 0.3, 0.6, 0.9].map((at, i) => {
+      const a = (i / 4) * Math.PI * 2;
+      return {
+        at,
+        joints: {
+          body: [0.18, 0, 0],
+          head: [0.4, 0, 0],
+          lArm: [-0.55, 0, -0.1],
+          lFore: [-1.1, 0, 0],
+          rArm: [-0.75 + Math.sin(a) * 0.12, 0, 0.12 + Math.cos(a) * 0.1],
+          rFore: [-1.2 + Math.cos(a) * 0.15, 0, 0],
+        },
+      } satisfies Key;
+    }),
+  },
+  {
+    // at the board: the right hand chops, the left steadies the food
+    id: "chop",
+    label: "Chopping",
+    period: 0.5,
+    groove: false,
+    keys: [
+      {
+        at: 0,
+        joints: {
+          body: [0.2, 0, 0],
+          head: [0.45, 0, 0],
+          lArm: [-0.5, 0, -0.15],
+          lFore: [-1.35, 0, 0],
+          rArm: [-0.85, 0, 0.05],
+          rFore: [-1.55, 0, 0],
+        },
+      },
+      {
+        at: 0.25,
+        joints: {
+          body: [0.22, 0, 0],
+          head: [0.45, 0, 0],
+          lArm: [-0.5, 0, -0.15],
+          lFore: [-1.35, 0, 0],
+          rArm: [-0.6, 0, 0.05],
+          rFore: [-0.85, 0, 0],
+        },
+      },
+    ],
+  },
+  {
+    // a two-handed grip, arms out at eye level, feet in a steady stance
+    id: "aim-pistol",
+    label: "Aiming",
+    period: 2,
+    groove: false,
+    keys: [
+      {
+        at: 0,
+        joints: {
+          head: [0.04, 0, 0],
+          lArm: [-1.5, 0, -0.28],
+          rArm: [-1.52, 0, 0.22],
+          lFore: [-0.12, 0, 0],
+          rFore: [-0.08, 0, 0],
+          lLeg: [-0.18, 0, 0.06],
+          rLeg: [0.12, 0, -0.06],
+          lShin: [0.15, 0, 0],
+        },
+      },
+      {
+        at: 1,
+        joints: {
+          head: [0.05, 0, 0],
+          lArm: [-1.48, 0, -0.27],
+          rArm: [-1.5, 0, 0.21],
+          lFore: [-0.12, 0, 0],
+          rFore: [-0.08, 0, 0],
+          lLeg: [-0.18, 0, 0.06],
+          rLeg: [0.12, 0, -0.06],
+          lShin: [0.15, 0, 0],
+        },
+      },
+    ],
+  },
+  {
+    // the stock at the right shoulder, left hand out under the barrel, cheek
+    // down on the stock
+    id: "aim-rifle",
+    label: "Aiming",
+    period: 2,
+    groove: false,
+    keys: [
+      {
+        at: 0,
+        joints: {
+          body: [0.04, 0.2, 0],
+          head: [0.12, -0.15, 0.18],
+          lArm: [-1.35, 0, -0.35],
+          lFore: [-0.35, 0, 0],
+          rArm: [-0.55, 0, -0.85],
+          rFore: [-1.65, 0, 0],
+          lLeg: [-0.2, 0, 0.08],
+          rLeg: [0.12, 0, -0.08],
+          lShin: [0.15, 0, 0],
+        },
+      },
+      {
+        at: 1,
+        joints: {
+          body: [0.04, 0.21, 0],
+          head: [0.12, -0.15, 0.18],
+          lArm: [-1.33, 0, -0.35],
+          lFore: [-0.35, 0, 0],
+          rArm: [-0.55, 0, -0.85],
+          rFore: [-1.65, 0, 0],
+          lLeg: [-0.2, 0, 0.08],
+          rLeg: [0.12, 0, -0.08],
+          lShin: [0.15, 0, 0],
+        },
+      },
+    ],
+  },
 ];
 
 // motion capture: the clips are listed up front, their keys load with
@@ -630,8 +906,31 @@ export const ALL_DANCE_MOVES: readonly DanceMove[] = [
   ...CAPTURED,
 ];
 
+/**
+ * Clips the player's doll plays during in-world games (volleyball, diving,
+ * karaoke, the cook-off, the target lanes); never in the Dance picker.
+ */
+export const GAME_CLIP_IDS = [
+  "dig",
+  "spike",
+  "sing",
+  "tuck",
+  "dive-pencil",
+  "dive-swan",
+  "dive-backflip",
+  "dive-twist",
+  "stir",
+  "chop",
+  "aim-pistol",
+  "aim-rifle",
+] as const satisfies readonly DanceMoveId[];
+
+/** One of the game clips. */
+export type GameClipId = (typeof GAME_CLIP_IDS)[number];
+
 const EMOTES: ReadonlySet<string> = new Set([
   ...MOCAP_EMOTE_IDS,
+  ...GAME_CLIP_IDS,
   "hug",
   "hold-hands",
   "forehead-kiss",
@@ -697,6 +996,7 @@ function curve3(
 export function poseAt(move: DanceMove, t: number, out = createPose()): Pose {
   const { keys, period } = move;
   out.captured = move.captured === true;
+  out.groove = move.groove !== false;
   const n = keys.length;
   const local = ((t % period) + period) % period;
   let i = 0;
