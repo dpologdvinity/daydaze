@@ -353,7 +353,10 @@ function paintBrow(
 }
 
 /** The face texture: skin, contour, blush, shadow, liner, brows, lips. */
-export async function paintFace(look: Look, marks: Marks) {
+export async function paintFace(
+  look: Pick<Look, "skin" | "lips" | "brows" | "shadow" | "makeup">,
+  marks: Marks,
+) {
   const img = await loadMask();
   const makeup = makeupOf(look);
   const skin = hexRgb(look.skin);

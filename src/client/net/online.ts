@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { refreshAccount } from "./account.ts";
 import type { Look } from "../../game/look.ts";
 import { SOLO_ROOMS, type RoomId } from "../../game/rooms.ts";
@@ -42,6 +42,11 @@ export const joinCopy: { room: RoomId | null; copy: number } = {
 /** Keeps the session in the room the player is in, wearing their look. */
 export function useOnlineRoom(room: RoomId, look: Look) {
   const session = onlineSession();
+  // the look as of now, for joining; a look change alone never rejoins
+  const latestLook = useRef(look);
+  useEffect(() => {
+    latestLook.current = look;
+  }, [look]);
   // join (and rejoin on each room change) once the session has an identity
   useEffect(() => {
     if (!session) return;
@@ -55,12 +60,11 @@ export function useOnlineRoom(room: RoomId, look: Look) {
       if (!live || !session.identity()) return;
       // your own flat or cell: nobody else's copy to join
       if (SOLO_ROOMS.has(room)) session.leaveRoom();
-      else await session.joinRoom(room, look, copy);
+      else await session.joinRoom(room, latestLook.current, copy);
     })();
     return () => {
       live = false;
     };
-    // the look follows separately; a look change must not rejoin the room
   }, [session, room]);
   useEffect(() => {
     session?.setLook(look);

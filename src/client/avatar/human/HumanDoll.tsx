@@ -258,15 +258,17 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
     [body],
   );
 
+  // the parts of the look painted into the face texture
+  const { skin: skinTone, lips, brows, shadow, makeup } = look;
   useEffect(() => {
     const { marks, skin } = body;
     // plain skin until the painted face arrives, then the texture tints both
-    skin.color.set(look.skin);
-    skin.emissive.set(look.skin);
+    skin.color.set(skinTone);
+    skin.emissive.set(skinTone);
     if (!marks) return;
     let live = true;
     let tex: THREE.Texture | null = null;
-    paintFace(look, marks)
+    paintFace({ skin: skinTone, lips, brows, shadow, makeup }, marks)
       .then((t) => {
         if (!live) return t.dispose();
         tex = t;
@@ -285,15 +287,7 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
       live = false;
       tex?.dispose();
     };
-  }, [
-    body,
-    look.skin,
-    look.lips,
-    look.brows,
-    look.shadow,
-    look.makeup,
-    invalidate,
-  ]);
+  }, [body, skinTone, lips, brows, shadow, makeup, invalidate]);
   useEffect(() => {
     const tex = paintIris(eyeColor);
     body.eye.map?.dispose();
@@ -445,9 +439,10 @@ function Part({
   onMeshes: (meshes: THREE.Mesh[] | null, lift: number) => void;
 }) {
   const gltfLo = useGLTF(lodOf(url));
+  const { color, kind } = tint;
   const lo = useMemo(
-    () => buildPart(gltfLo.scene, bones, tint, false),
-    [gltfLo, bones, tint.color, tint.kind],
+    () => buildPart(gltfLo.scene, bones, { color, kind }, false),
+    [gltfLo, bones, color, kind],
   );
   // the full model, once it has been wanted and has loaded
   const [wantNear, setWantNear] = useState(false);
@@ -500,9 +495,10 @@ function NearPart({
   const gltf = useGLTF(url);
   // the glossy hair shading and its soft-edge pass are for capable GPUs
   const rich = useQuality() === "high";
+  const { color, kind } = tint;
   const part = useMemo(
-    () => buildPart(gltf.scene, bones, tint, rich),
-    [gltf, bones, tint.color, tint.kind, rich],
+    () => buildPart(gltf.scene, bones, { color, kind }, rich),
+    [gltf, bones, color, kind, rich],
   );
   useEffect(() => {
     // hidden until Part decides, so it never shows alongside the twin
@@ -642,7 +638,11 @@ export function HumanDoll({
   const gait = gaitOf(
     look.gait ?? (seed ? NPC_GAITS[seed % NPC_GAITS.length] : undefined),
   );
-  const piercings = useMemo(() => piercingsOf(look), [look.piercings]);
+  const piercingCode = look.piercings;
+  const piercings = useMemo(
+    () => piercingsOf({ piercings: piercingCode }),
+    [piercingCode],
+  );
   const parts = partsFor(look, swim);
   const tuckKey = parts.tucks.join(",");
   const tucks = useMemo(() => tuckKey.split(","), [tuckKey]);

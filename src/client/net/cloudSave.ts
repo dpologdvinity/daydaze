@@ -28,12 +28,12 @@ export function useCloudSave(save: SaveV1, onSave: (save: SaveV1) => void) {
     [],
   );
   // an account whose save hasn't come down yet: fetch it, retrying
-  const needsLoad = !!me && !me.isGuest && !cloudReady && !busy;
+  const loadAs = me && !me.isGuest && !cloudReady && !busy ? me.name : null;
   useEffect(() => {
-    if (!needsLoad || !me) return;
+    if (loadAs === null) return;
     let live = true;
     const load = async () => {
-      const cloud = await onlineSession()?.cloudSave(me.name);
+      const cloud = await onlineSession()?.cloudSave(loadAs);
       if (!live) return;
       if (cloud?.ok) {
         onSave(cloud.value);
@@ -45,7 +45,7 @@ export function useCloudSave(save: SaveV1, onSave: (save: SaveV1) => void) {
       live = false;
       window.clearTimeout(timer);
     };
-  }, [needsLoad, me?.id]);
+  }, [loadAs, onSave]);
   const pushing = mayPush(me, cloudReady);
   useEffect(() => {
     if (pushing) sync.push(save);

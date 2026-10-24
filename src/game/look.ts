@@ -554,7 +554,7 @@ export function decodeMakeup(code: unknown): Makeup | null {
 }
 
 /** A look's makeup, or the default for looks from before the makeup bag. */
-export function makeupOf(look: Look): Makeup {
+export function makeupOf(look: Pick<Look, "makeup">): Makeup {
   return decodeMakeup(look.makeup) ?? DEFAULT_MAKEUP;
 }
 
@@ -625,7 +625,7 @@ export function decodePiercings(code: unknown): Piercings | null {
 }
 
 /** A look's piercings, or none when it has no valid code. */
-export function piercingsOf(look: Look): Piercings {
+export function piercingsOf(look: Pick<Look, "piercings">): Piercings {
   return decodePiercings(look.piercings) ?? NO_PIERCINGS;
 }
 

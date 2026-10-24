@@ -4,7 +4,7 @@
 // ?online=1. Everything else gets state and setters through props.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { isBanned, recordCaught } from "../game/crime/record.ts";
+import { recordCaught } from "../game/crime/record.ts";
 import { penaltyFor, type Penalty } from "../game/crime/shoplift.ts";
 import { tagStolen } from "../game/crime/lift.ts";
 import type { BodyShape } from "../game/body.ts";
@@ -109,11 +109,13 @@ export function App() {
     [],
   );
   const reducedMotion = usePrefersReducedMotion();
-  const [save, setSave] = useState(() =>
-    loadSave(readStorage(), generateGuestName(Math.random)),
-  );
-  // the player's own doll parts start downloading with the page
-  useEffect(() => preloadLook(save.look), []);
+  const [save, setSave] = useState(() => {
+    const loaded = loadSave(readStorage(), generateGuestName(Math.random));
+    // the player's own doll parts start downloading with the page (a cached
+    // fetch, so StrictMode's second call costs nothing)
+    preloadLook(loaded.look);
+    return loaded;
+  });
   useEffect(() => writeStorage(save), [save]);
 
   const [here, setHere] = useState(() => {
@@ -253,15 +255,17 @@ export function App() {
   // a finished sports game pays its grade, and a bonus for a personal best
   const { pending } = prizeDesk.use();
   useEffect(() => prizeDesk.set({ bests: save.bests }), [save.bests]);
+  // the save as of the last render, for grading a prize when one comes in
+  const latest = useRef(save);
+  useEffect(() => {
+    latest.current = save;
+  }, [save]);
   useEffect(() => {
     if (!pending) return;
-    const prize = prizeFor(
-      pending.game,
-      pending.score,
-      save.bests[pending.game],
-    );
+    const { bests, challenges } = latest.current;
+    const prize = prizeFor(pending.game, pending.score, bests[pending.game]);
     const daily = completeChallenge(
-      save.challenges,
+      challenges,
       dayOf(Date.now()),
       pending.game,
       pending.score,

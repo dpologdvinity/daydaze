@@ -1,6 +1,6 @@
 import { Environment, Html, Lightformer } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import {
   newPose,
@@ -160,19 +160,23 @@ export function AmusementPark({
   const seat = useMemo(newPose, []);
   const cabin = useRef<THREE.Group>(null);
 
-  const dispatch = (event: RideEvent) => {
-    const next = rideStep(ride.current, event);
-    if (next.phase !== ride.current.phase) {
-      // tests and screenshots wait on this instead of a fixed delay
-      gl.domElement.dataset.rideState = next.phase;
-      // and on this, which a slow frame can't skip past: rides ridden so far
-      if (ride.current.phase === "riding")
-        gl.domElement.dataset.ridden = String(
-          Number(gl.domElement.dataset.ridden ?? 0) + 1,
-        );
-    }
-    ride.current = next;
-  };
+  // touches only refs and the canvas, so it's stable for the scene's life
+  const dispatch = useCallback(
+    (event: RideEvent) => {
+      const next = rideStep(ride.current, event);
+      if (next.phase !== ride.current.phase) {
+        // tests and screenshots wait on this instead of a fixed delay
+        gl.domElement.dataset.rideState = next.phase;
+        // and on this, which a slow frame can't skip past: rides ridden so far
+        if (ride.current.phase === "riding")
+          gl.domElement.dataset.ridden = String(
+            Number(gl.domElement.dataset.ridden ?? 0) + 1,
+          );
+      }
+      ride.current = next;
+    },
+    [gl],
+  );
 
   const board = (id: RideId) => {
     if (ride.current.phase !== "idle") return;
@@ -196,8 +200,8 @@ export function AmusementPark({
     // the ride starts on the first frame drawn, not at mount: on a slow
     // machine the first frame can come long after
     arriveNow.current = true;
-    // runs once per visit to the park
-  }, []);
+    // all stable for the scene's life, so this runs once per visit
+  }, [dispatch, gl, invalidate]);
 
   useFrame(() => {
     const now = clock.elapsedTime;

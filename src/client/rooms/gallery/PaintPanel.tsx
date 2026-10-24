@@ -19,6 +19,12 @@ export function PaintPanel(): JSX.Element {
   const last = useRef<{ x: number; y: number } | null>(null);
 
   // a fresh canvas, or the painting already on the wall to keep working on
+  // the hung piece as of now: only opening the easel loads it, so the wall
+  // copy changing never wipes a painting in progress
+  const hung = useRef(url);
+  useEffect(() => {
+    hung.current = url;
+  }, [url]);
   useEffect(() => {
     if (!easel) return;
     setNote("");
@@ -26,12 +32,11 @@ export function PaintPanel(): JSX.Element {
     if (!ctx) return;
     ctx.fillStyle = PAINTS[1];
     ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-    if (url) {
+    if (hung.current) {
       const img = new Image();
       img.onload = () => ctx.drawImage(img, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
-      img.src = url;
+      img.src = hung.current;
     }
-    // only on opening: the wall copy changing must not wipe the canvas
   }, [easel]);
 
   if (!easel)

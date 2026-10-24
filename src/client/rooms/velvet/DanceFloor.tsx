@@ -1,5 +1,5 @@
 import { useFrame } from "@react-three/fiber";
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { makeCanvas } from "../../canvas.ts";
 import { useReducedMotion } from "../../motion.ts";
@@ -142,23 +142,26 @@ export function DiscoBall() {
   const o = useMemo(() => new THREE.Object3D(), []);
 
   // Places every spot for time t; allocation-free so it can run each frame.
-  const place = (m: THREE.InstancedMesh, t: number) => {
-    for (let i = 0; i < SPOTS; i++) {
-      const a = t * 0.25 + (i * Math.PI * 2) / SPOTS;
-      const r = 3.6 + 0.9 * Math.sin(a * 1.7 + i);
-      o.position.set(
-        DANCE.x + Math.cos(a) * r,
-        0.02,
-        DANCE.z + Math.sin(a) * r * 0.8,
-      );
-      o.updateMatrix();
-      m.setMatrixAt(i, o.matrix);
-    }
-    m.instanceMatrix.needsUpdate = true;
-  };
+  const place = useCallback(
+    (m: THREE.InstancedMesh, t: number) => {
+      for (let i = 0; i < SPOTS; i++) {
+        const a = t * 0.25 + (i * Math.PI * 2) / SPOTS;
+        const r = 3.6 + 0.9 * Math.sin(a * 1.7 + i);
+        o.position.set(
+          DANCE.x + Math.cos(a) * r,
+          0.02,
+          DANCE.z + Math.sin(a) * r * 0.8,
+        );
+        o.updateMatrix();
+        m.setMatrixAt(i, o.matrix);
+      }
+      m.instanceMatrix.needsUpdate = true;
+    },
+    [o],
+  );
   useLayoutEffect(() => {
     if (spots.current) place(spots.current, calm ? 1.2 : 0);
-  }, [calm]);
+  }, [calm, place]);
   useFrame(({ clock }, dt) => {
     if (calm) return;
     if (ball.current) ball.current.rotation.y += dt * 0.35;

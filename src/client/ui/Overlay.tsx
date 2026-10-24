@@ -741,15 +741,21 @@ export function Overlay({
   // the creator frames the doll for the tab: close on the face for face and
   // makeup, the full look for the rest; closing it restores the old view
   const before = useRef<View | null>(null);
+  // the view as of now, remembered when the closet opens (the effect below
+  // runs on opening and tab changes, not on every view change)
+  const viewNow = useRef(view);
+  useEffect(() => {
+    viewNow.current = view;
+  }, [view]);
   useEffect(() => {
     if (panelOpen) {
-      before.current ??= view;
+      before.current ??= viewNow.current;
       setView(tab === "face" || tab === "makeup" ? "face" : "full");
     } else if (before.current) {
       setView(before.current);
       before.current = null;
     }
-  }, [panelOpen, tab]);
+  }, [panelOpen, tab, setView]);
   return (
     <>
       <header className="venue">

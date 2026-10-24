@@ -75,10 +75,17 @@ export function TalkingNpc({
     window.clearTimeout(timer.current);
     timer.current = window.setTimeout(() => setLine(null), BUBBLE_MS);
   };
-  // greet once per mount: a room arrival, not every render
+  // greet once per mount: a room arrival, not every render (the latest
+  // `say` is read through a ref, so a re-render never greets again)
+  const sayNow = useRef(say);
   useEffect(() => {
-    if (greet) say("greeting-first");
-    return () => window.clearTimeout(timer.current);
+    sayNow.current = say;
+  });
+  const greets = useRef(greet);
+  useEffect(() => {
+    const pending = timer;
+    if (greets.current) sayNow.current("greeting-first");
+    return () => window.clearTimeout(pending.current);
   }, []);
   const tap = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();

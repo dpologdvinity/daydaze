@@ -31,15 +31,14 @@ export function Dialog({
   // Layout effect so showModal()'s autofocus runs before children focus their own controls.
   useLayoutEffect(() => {
     const el = ref.current;
+    const opener = returnFocus.current;
     el?.showModal();
     const oldOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       el?.close();
       document.body.style.overflow = oldOverflow;
-      if (returnFocus.current?.isConnected) {
-        returnFocus.current.focus({ preventScroll: true });
-      }
+      if (opener?.isConnected) opener.focus({ preventScroll: true });
     };
   }, []);
   return (

@@ -527,11 +527,17 @@ export function World({
     const s = SLIDES[slide];
     if (def.id === "water-park" && s) startRide(player, s, t);
   };
+  // rides start when asked, read through a ref so a new arrival (a new
+  // player, and so a new onRide) never restarts one by itself
+  const rideNow = useRef(onRide);
   useEffect(() => {
-    if (rides > 0) onRide((rides - 1) % SLIDES.length);
+    rideNow.current = onRide;
+  });
+  useEffect(() => {
+    if (rides > 0) rideNow.current((rides - 1) % SLIDES.length);
   }, [rides]);
   useEffect(() => {
-    if (slideAt !== null) onRide(0, slideAt);
+    if (slideAt !== null) rideNow.current(0, slideAt);
   }, [player, slideAt]);
   // the city is its own scene, streamed rather than built as one room
   const Room = room === "city" ? null : SCENES[room];

@@ -3,7 +3,7 @@
 // (src/client/net/cookOff.ts). A match only counts when its seed matches the
 // running shift's seed.
 
-import { useEffect, type JSX } from "react";
+import { useEffect, useRef, type JSX } from "react";
 import { COOKOFF, ghostScore, outcome } from "../../../game/cookOff.ts";
 import { score, shiftOver } from "../../../game/orders.ts";
 import { cookOff, endCookOff, sendScore } from "../../net/cookOff.ts";
@@ -26,10 +26,13 @@ export function CookOffPanel(): JSX.Element {
   const vs = c.match && s.on && c.match.seed === s.shift.seed ? c.match : null;
   const over = s.on && shiftOver(s.shift);
   const mine = score(s.shift);
-  // your final score goes to your rival once
+  // your final score goes to your rival once per match
+  const sentFor = useRef<number | null>(null);
   useEffect(() => {
-    if (over && vs) sendScore(mine);
-  }, [over, vs?.id, mine]);
+    if (!over || !vs || sentFor.current === vs.seed) return;
+    sentFor.current = vs.seed;
+    sendScore(mine);
+  }, [over, vs, mine]);
   if (!s.on)
     return (
       <section className="game-panel" aria-label="Cook-off">

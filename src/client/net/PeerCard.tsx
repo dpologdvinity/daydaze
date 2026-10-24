@@ -27,12 +27,15 @@ export function PeerCard(): JSX.Element | null {
   const [banning, setBanning] = useState(false);
   const [blocking, setBlocking] = useState(false);
   const [note, setNote] = useState("");
+  // a newly opened card starts with every menu closed
+  const openId = open?.id;
   useEffect(() => {
     setReporting(false);
+    setBanning(false);
     setBlocking(false);
     setNote("");
-    if (open) void refreshFriends();
-  }, [open?.id]);
+    if (openId) void refreshFriends();
+  }, [openId]);
   if (!open) return null;
   const session = onlineSession();
   const close = () => peerCard.set({ open: null });

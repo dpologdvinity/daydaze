@@ -135,9 +135,10 @@ function useFace(look: Look, face: THREE.MeshToonMaterial) {
     open: THREE.Texture;
     closed: THREE.Texture;
   } | null>(null);
+  const { skin, lips, brows, shadow } = look;
   useEffect(() => {
     let live = true;
-    buildFaceTextures(look)
+    buildFaceTextures({ skin, lips, brows, shadow })
       .then((t) => {
         if (live) setTex(t);
         else {
@@ -150,7 +151,7 @@ function useFace(look: Look, face: THREE.MeshToonMaterial) {
     return () => {
       live = false;
     };
-  }, [look.skin, look.lips, look.brows, look.shadow]);
+  }, [skin, lips, brows, shadow]);
   useEffect(() => {
     if (!tex) return;
     face.map = tex.open;
