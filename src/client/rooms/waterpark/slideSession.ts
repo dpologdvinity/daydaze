@@ -1,3 +1,6 @@
+// The speed slide race session: the pure engine (speedSlide.ts) on a clock.
+// The ride plays in the world (SlideRace.tsx); the panel times it.
+
 import {
   bendAt,
   finishTenths,
@@ -17,8 +20,10 @@ const OFF = {
   phase: "off" as Phase,
   run: [] as Run,
   seed: 0,
-  /** performance.now() of the push-off. */
+  /** performance.now() of the push-off, or of the finish once it's over. */
   since: 0,
+  /** performance.now() of the push-off, kept after the finish. */
+  pushedOff: 0,
   last: null as Swing | null,
 };
 
@@ -30,6 +35,7 @@ export function start(now: number) {
     phase: "sliding",
     seed: Math.floor(Math.random() * 1e9),
     since: now,
+    pushedOff: now,
   });
 }
 

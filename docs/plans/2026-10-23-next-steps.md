@@ -571,6 +571,14 @@ judge holding up the score card. Ad-hoc shots of fast moments: pin
 action (see `art/textures/.cache/dive.mjs`); SwiftShader frames are too
 slow to time a capture.
 
+Task 9 (speed slide, ridden): the race clock drives the ride
+(`slideProgress`, `bendFraction`, `RIDE_SECONDS` in `speedSlide.ts`), so
+each bend arrives on screen exactly when the engine grades it; the rival's
+pace is `rivalRideSeconds(rival, yours)`, so she falls back as you tuck well
+and the order at the splash matches the result. `waterpark/SlideRace.tsx`:
+ring markers at the bends (flash on the beat, then the tuck's grade color),
+the tuck clip, glide hiss, whoosh per tuck, splashes, a high fixed camera.
+
 0. B11 prizes for unscored games and B13 speakeasy cards (quick, high value).
 1. ~~A1 couple emotes~~ (done; piggyback left).
 2. ~~A2 cook-off~~ (done).

@@ -2106,6 +2106,8 @@ test("the Water Park speed slide: six untucked bends lose to the rival", async (
   await expect(page.getByRole("status", { name: "Prize" })).toContainText(
     "Speed slide",
   );
+  // the scene rode all six bends
+  await expect(canvasOf(page)).toHaveAttribute("data-slide-bends", "6");
   expect(errors).toEqual([]);
 });
 

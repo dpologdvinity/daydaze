@@ -5,15 +5,7 @@
 import { useEffect, type JSX } from "react";
 import { BENDS, finishTenths } from "../../../game/speedSlide.ts";
 import { useNow, usePressKeys } from "../shared/useNow.ts";
-import {
-  leave,
-  nextBend,
-  press,
-  rivalNow,
-  slide,
-  start,
-  tick,
-} from "./slideSession.ts";
+import { leave, press, rivalNow, slide, start, tick } from "./slideSession.ts";
 
 const CALL = {
   perfect: "Perfect tuck!",
@@ -48,10 +40,6 @@ export function SlidePanel(): JSX.Element {
     );
   const mine = finishTenths(s.run);
   const rival = rivalNow();
-  const coming =
-    s.phase === "sliding"
-      ? Math.max(0, Math.min(1, 1 - (nextBend() - now) / 1100))
-      : 0;
   return (
     <section className="game-panel" aria-label="Speed slide">
       <p className="game-score" aria-label="Score">
@@ -74,10 +62,6 @@ export function SlidePanel(): JSX.Element {
       </p>
       {s.phase === "sliding" ? (
         <>
-          <label className="game-meter">
-            Bend
-            <meter min={0} max={1} high={0.9} optimum={1} value={coming} />
-          </label>
           <button
             type="button"
             className="game-main"
