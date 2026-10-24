@@ -1,3 +1,9 @@
+// Bassline, the DJ booth rhythm game at Pulse: notes fall down four lanes to a
+// 120 BPM chart, and you hit them on the line with D F J K, the arrows or the
+// pads. The chart and judging live in engine.ts; this owns the timing loop, the
+// drum and mixer sound and the best set of the visit, which is reported once on
+// close.
+
 import { useEffect, useRef, useState } from "react";
 import { Dialog } from "../Dialog.tsx";
 import { playInstrumentNote } from "../../audio/instrumentSynths.ts";
@@ -47,6 +53,10 @@ const GRADE_LINE: Record<Grade, string> = {
 
 type Phase = "intro" | "playing" | "done";
 
+/**
+ * Props for the Bassline dialog. `muted` silences the drums, airhorn and
+ * backing mix; `reducedMotion` calms the booth animations.
+ */
 export type BasslineProps = {
   /** Called once: the best result of this visit, or null if no set was finished. */
   onClose: (result: Result | null) => void;
@@ -80,6 +90,11 @@ function Crowd() {
   );
 }
 
+/**
+ * The Bassline dialog: intro, a timed set, then the result with a replay.
+ * Several sets can be played in one visit; only the best is passed to
+ * `onClose`.
+ */
 export function Bassline({
   onClose,
   reducedMotion = false,

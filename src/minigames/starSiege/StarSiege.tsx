@@ -1,3 +1,8 @@
+// Star Siege, the arcade bar's alien invasion shooter, drawn on a canvas. The
+// rules live in engine.ts; this owns the animation-frame loop (fixed 1/60 s
+// steps, at most 0.1 s per frame), the held-key state from the keyboard and
+// on-screen pads, and the best grade of the visit, reported on close.
+
 import { useEffect, useRef, useState } from "react";
 import { payoutFor, type PayGrade } from "../../game/wallet.ts";
 import { Dialog } from "../Dialog.tsx";

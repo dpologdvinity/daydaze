@@ -1,3 +1,9 @@
+// The Midway's four carnival booths in one dialog: whack-a-mole, the shooting
+// gallery, the water-gun race and ring toss, each at three difficulties. Booth
+// rules live in engine.ts; each booth component runs its own clock and calls
+// onFinish once with its score. The best-paying result of the visit is reported
+// on close.
+
 import {
   useEffect,
   useMemo,
@@ -199,6 +205,12 @@ function TargetArt({ kind }: { kind: "duck" | "star" | "can" }) {
   );
 }
 
+/**
+ * The shooting gallery booth: targets slide along lanes and you fire a limited
+ * supply of shots by tap, or by aiming with the arrows and pressing Space or
+ * Enter. `ammo` names the shots in the HUD ("corks" here; other venues reuse
+ * the booth). Calls `onFinish` once, when time or ammo runs out.
+ */
 export function Gallery({
   level,
   seed,
@@ -585,6 +597,11 @@ function Hud({
   );
 }
 
+/**
+ * The Midway dialog: pick a booth and a difficulty, play, then collect.
+ * `onClose` gets the best-paying result of the visit, or null if nothing was
+ * finished.
+ */
 export function Midway({ onClose }: Props) {
   const [phase, setPhase] = useState<"intro" | "play" | "done">("intro");
   const [booth, setBooth] = useState<BoothId>("whack");

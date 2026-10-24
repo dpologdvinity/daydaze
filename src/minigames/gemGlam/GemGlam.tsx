@@ -1,3 +1,8 @@
+// Gem Glam, the arcade's match-three: pick a difficulty, swap neighboring gems
+// until the moves run out, and get graded on score. The board rules live in
+// engine.ts, which mutates the Game in place (hence the redraw counter). The
+// best grade of the visit is reported on close.
+
 import {
   useEffect,
   useMemo,
@@ -139,6 +144,11 @@ function Board({
   );
 }
 
+/**
+ * The Gem Glam dialog. The board is keyboard playable (arrows move focus, Enter
+ * picks and swaps). `onClose` gets the best-paying result of the visit, or null
+ * if no game was finished.
+ */
 export function GemGlam({ onClose }: Props) {
   const [phase, setPhase] = useState<"intro" | "play" | "done">("intro");
   const [level, setLevel] = useState<Level>("easy");
