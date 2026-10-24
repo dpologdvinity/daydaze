@@ -1,3 +1,8 @@
+// The Reef Spotter panel at the Aquarium: fish parade past a reef window, then
+// the player guesses how many of one kind went by. Game state lives in a
+// module-level store; rounds and scoring come from src/game/reefSpotter.ts, and
+// the final score goes to the prize desk.
+
 import { useEffect, useState, type JSX } from "react";
 import {
   FISH,

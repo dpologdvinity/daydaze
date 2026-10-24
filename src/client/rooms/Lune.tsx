@@ -1,3 +1,8 @@
+// Lune Tasting Room, a candlelit date spot on Park Avenue: tables for two, a
+// grand piano under a crescent moon and Margot at the pass. Each tap on Margot
+// hands you the next course of the venue's menu in order. Throws at render if
+// the venue is missing from FOOD_VENUES.
+
 import { type JSX, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { FOOD_VENUES } from "../../game/food/venues.ts";

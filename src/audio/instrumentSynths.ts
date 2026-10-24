@@ -1,5 +1,11 @@
+// Synthesized notes for the playable instruments (piano, marimba, floor piano
+// and an eight-pad drum kit) on an eight-note C major pentatonic scale. Notes
+// go to the shared audio bus's SFX output so the global SFX volume reaches
+// them; nothing here throws.
+
 import { getSharedAudioBus } from "./audioBus.ts";
 
+/** Every instrument a room can offer. */
 export type InstrumentType = "piano" | "marimba" | "drums" | "floor_piano";
 
 /** C major pentatonic room scale, C4 through E5 (8 notes). */
@@ -11,6 +17,7 @@ export const PENTATONIC_FREQUENCIES: readonly number[] = [
 export const FLOOR_PIANO_FREQUENCIES: readonly number[] =
   PENTATONIC_FREQUENCIES.map((hz) => hz / 2);
 
+/** Labels for the eight pitched pads, matching PENTATONIC_FREQUENCIES. */
 export const NOTE_NAMES: readonly string[] = [
   "C4",
   "D4",
@@ -22,6 +29,7 @@ export const NOTE_NAMES: readonly string[] = [
   "E5",
 ];
 
+/** Labels for the eight drum pads, in pad order. */
 export const DRUM_LABELS: readonly string[] = [
   "Kick",
   "Snare",
@@ -33,6 +41,7 @@ export const DRUM_LABELS: readonly string[] = [
   "Open Hat",
 ];
 
+/** Display name for each instrument. */
 export const INSTRUMENT_LABELS: Record<InstrumentType, string> = {
   piano: "Piano",
   marimba: "Marimba",

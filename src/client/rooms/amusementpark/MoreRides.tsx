@@ -1,3 +1,8 @@
+// Three more amusement park rides: the Scrambler, the Starship rotor and the
+// Super Slide. Motion comes from the pure helpers in src/game/amusementPark.ts
+// (scramblerTurns, starshipTurn, slideHeight); these components only pose
+// meshes.
+
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";

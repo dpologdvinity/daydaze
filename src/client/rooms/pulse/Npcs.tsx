@@ -1,3 +1,7 @@
+// Pulse's people: the DJ, the bartender (her tap calls `onDrink`), the bouncer,
+// coat check, podium dancers and a regular, plus a background crowd of cheap
+// CrowdFigures.
+
 import type { JSX } from "react";
 import type { Look } from "../../../game/look.ts";
 import type { DialogueContext } from "../../../game/dialogue/types.ts";
@@ -194,6 +198,9 @@ const CROWD: readonly {
   },
 ];
 
+/**
+ * The background crowd on Pulse's floor, as CrowdFigures that can't be tapped.
+ */
 export function PulseCrowd(): JSX.Element {
   return (
     <>

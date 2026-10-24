@@ -1,3 +1,8 @@
+// The Starlight Galleria's people: clerks at the doors of the stores that sell
+// (a tap opens the shop), food court cashiers (a tap hands over the next menu
+// item), two shoppers strolling an ellipse round the hall, one on the balcony
+// and diners at the tables.
+
 import { useFrame } from "@react-three/fiber";
 import { useRef, type JSX } from "react";
 import type * as THREE from "three";
@@ -166,6 +171,11 @@ const DINER_LOOKS: readonly Look[] = [
   },
 ];
 
+/**
+ * Every NPC in the mall. Stores without a shop get no clerk; a food stall whose
+ * venue is missing from FOOD_VENUES is skipped. Each stall cycles through its
+ * menu, one item per tap, for as long as this stays mounted.
+ */
 export function GalleriaNpcs(): JSX.Element {
   const served = useRef<Record<string, number>>({});
   return (

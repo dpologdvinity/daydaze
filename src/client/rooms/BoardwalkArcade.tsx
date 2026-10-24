@@ -1,3 +1,8 @@
+// The Boardwalk Arcade on Shore Boulevard: room shell, canvas ring-board and
+// carpet textures, the three Skee-Ball lanes with the animated ball on the
+// playable middle lane, claw machine, pinball and Pia at the prize counter.
+// Lane geometry comes from game/boardwalkArcade.ts.
+
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";

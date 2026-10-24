@@ -1,3 +1,8 @@
+// Lagoon Links' controls and score card: turn the aim, start the power
+// swinging, strike. Keys: arrows turn, Space or Enter press, Escape leaves.
+// Keeps its own copies of `typing` and `useNow` rather than the ones in
+// shared/useNow.ts.
+
 import { useEffect, useState, type JSX } from "react";
 import { HOLES, holeIndex, totals } from "../../../game/minigolf.ts";
 import {

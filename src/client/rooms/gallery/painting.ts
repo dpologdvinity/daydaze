@@ -1,3 +1,8 @@
+// The player's own painting from Gallery 44's easel: a store holding its PNG
+// data URL (persisted in localStorage under PAINTING_KEY, cleaned on load and
+// save) and whether the easel is open, plus a hook that turns it into a texture
+// for the walls it hangs on.
+
 import { useEffect, useState } from "react";
 import * as THREE from "three";
 import { cleanPainting, PAINTING_KEY } from "../../../game/painting.ts";

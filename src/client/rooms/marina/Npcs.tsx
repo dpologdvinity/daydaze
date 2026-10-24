@@ -1,3 +1,7 @@
+// Starboard Marina's people: Coral at the yacht club bar (a tap pours a
+// cocktail through the drunk effect), Nalu on the dock, a party dancing on the
+// Golden Hour's deck and a regular on the benches.
+
 import type { JSX } from "react";
 import type { DialogueContext } from "../../../game/dialogue/types.ts";
 import type { Look } from "../../../game/look.ts";

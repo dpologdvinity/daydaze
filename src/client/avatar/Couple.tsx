@@ -1,3 +1,6 @@
+// Two dolls dancing one move as a couple: a lead and a follow placed either
+// side of a center point by coupleSpots.
+
 import type { ThreeElements } from "@react-three/fiber";
 import { coupleSpots } from "../../game/dance/couple.ts";
 import type { DanceMoveId } from "../../game/dance/moves.ts";

@@ -1,3 +1,7 @@
+// Geometry helpers for the Water Park: `Props` merges tinted parts into one
+// vertex-colored mesh (one draw call), and `instanced` builds an instanced mesh
+// that is never frustum culled.
+
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
@@ -27,6 +31,11 @@ export class Props {
     return new Props(this.frame.clone().multiply(local), this.parts);
   }
 
+  /**
+   * Places a copy of `geo` at `at` (meters), Euler `rot` (radians) and `scale`
+   * inside this frame, tinted `color`. Only position and normal survive (UVs
+   * are dropped), and `geo` itself is not changed.
+   */
   add(
     geo: THREE.BufferGeometry,
     color: string,
@@ -52,6 +61,10 @@ export class Props {
     return this;
   }
 
+  /**
+   * Merges every part added so far, including parts added through `within`
+   * frames, into one geometry. Throws if the parts do not share attributes.
+   */
   geometry(): THREE.BufferGeometry {
     const merged = mergeGeometries(this.parts);
     if (!merged) throw new Error("Props parts do not share attributes.");

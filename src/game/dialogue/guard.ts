@@ -1,3 +1,7 @@
+// Handwritten lines for store security guards: greetings, walking out without
+// paying, catching a shoplifter and greeting someone fresh out of jail. Read
+// through `pickLine`, never directly.
+
 import type { RoleBank } from "./types.ts";
 
 export const guardBank: RoleBank = {

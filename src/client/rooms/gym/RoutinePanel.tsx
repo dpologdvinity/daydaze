@@ -1,3 +1,7 @@
+// The judged-routine panel: a closing ring cues each element and a press scores
+// it stuck, near or missed. RoutineCard works over any RoutineSession and is
+// shared by other routine games; RoutinePanel is the gym's floor routine.
+
 import type { JSX } from "react";
 import { judgesScore, LEAD, type Mark } from "../../../game/gymnastics.ts";
 import type { RoutineSession } from "../shared/routineSession.ts";

@@ -1,3 +1,7 @@
+// Halo-Halo Haus, Little Manila's dessert cafe: the shared FoodRoom in lilac
+// with layered halo-halo glasses on the counter and capiz-shell lamps above.
+// Throws on render if the "halo-halo-haus" venue is missing from FOOD_VENUES.
+
 import type { JSX } from "react";
 import { FOOD_VENUES } from "../../../game/food/venues.ts";
 import type { PickHandler } from "../shared/Floor.tsx";

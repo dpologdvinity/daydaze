@@ -1,3 +1,6 @@
+// A debug lineup of every roster car side by side, for the docs screenshot.
+// Renders nothing unless the URL has `?lineup=cars`.
+
 import type { Group } from "three";
 import { CARS } from "../../../game/driving/roster.ts";
 import { CarMesh } from "./CarMesh.tsx";

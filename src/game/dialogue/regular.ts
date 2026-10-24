@@ -1,3 +1,7 @@
+// Handwritten lines for bar regulars, the barflies who know your name; venue-
+// tagged entries are mostly the Violet Hour. Read through `pickLine`, never
+// directly.
+
 import type { RoleBank } from "./types.ts";
 
 export const regularBank: RoleBank = {

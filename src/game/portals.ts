@@ -1,7 +1,11 @@
+// Room-to-room doors: which portal a point stands in, and where a traveler
+// lands in the target room (clamped onto its walkable area).
+
 import { areaOf, clampToArea } from "./area.ts";
 import type { Portal, RoomDefinition, Spawn } from "./rooms.ts";
 import type { Vec2 } from "./walk.ts";
 
+/** The first portal whose circle contains `p` (edge included), or null. */
 export function portalAt(
   room: Pick<RoomDefinition, "portals">,
   p: Vec2,
@@ -14,6 +18,10 @@ export function portalAt(
   );
 }
 
+/**
+ * The spawn to use in `target`: the position pulled onto its walkable area, and
+ * a non-finite yaw replaced by 0.
+ */
 export function arrive(target: RoomDefinition, spawn: Spawn): Spawn {
   return {
     position: clampToArea(areaOf(target), spawn.position),

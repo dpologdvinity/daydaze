@@ -1,3 +1,8 @@
+// The Pride parade on the Beachside boardwalk: four floats with rainbow arches,
+// neon signs and two dancers each, placed every frame by floatX from the shared
+// parade clock. Floats outside the route and dancers beyond 140 m are hidden;
+// reduced motion freezes them.
+
 import { useFrame, useThree } from "@react-three/fiber";
 import { useRef } from "react";
 import * as THREE from "three";

@@ -1,3 +1,6 @@
+// Handwritten lines for Water Park lifeguards, keyed by situation (swimsuits,
+// drunk swimmers, ride ends). Read through `pickLine`, never directly.
+
 import type { RoleBank } from "./types.ts";
 
 export const lifeguardBank: RoleBank = {

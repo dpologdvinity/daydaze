@@ -1,13 +1,21 @@
+// Neon signage shared by the rooms: glowing tubes along a point list, neon
+// lettering drawn on a canvas and blended additively, and a round ring sign.
+// The three font stacks are canvas `font` strings sized for the 1024x320 text
+// canvas.
+
 import { useFrame, type ThreeElements } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useReducedMotion } from "../../motion.ts";
 import { canvasTex, hdr, neonMat } from "./materials.ts";
 
+/** A bold italic script font stack, for signs like "open" and bar names. */
 export const SCRIPT =
   "italic 700 200px 'Z003', 'Snell Roundhand', 'Segoe Script', 'Brush Script MT', cursive";
+/** A bold Didone serif font stack, for art-deco shop names. */
 export const DECO =
   "700 170px 'Didot', 'Bodoni 72', 'TeX Gyre Bonum', 'URW Bookman', Georgia, serif";
+/** A heavy geometric sans font stack, for marquee and blade signs. */
 export const MARQUEE =
   "800 150px 'Futura', 'Century Gothic', 'URW Gothic', 'TeX Gyre Adventor', sans-serif";
 

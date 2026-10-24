@@ -1,3 +1,7 @@
+// Pulse, the main dance club scene: assembles lights, beams, the LED floor, the
+// mirror ball, NPCs, the dance-off sign and the floor hotspots from ./pulse/.
+// The bartender's default onDrink pours a cocktail into the buzz system.
+
 import { DanceOffSign } from "./pulse/DanceOffSign.tsx";
 import type { MinigameId } from "../../game/hotspots.ts";
 import { hotspotsIn } from "../../game/hotspots.ts";

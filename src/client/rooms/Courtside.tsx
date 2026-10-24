@@ -1,3 +1,7 @@
+// The Courtside Club tennis room: the floodlit court texture, member stands and
+// the animated rally against the club pro, with the camera following the point.
+// Scoring and court sides come from game/tennis.ts.
+
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";

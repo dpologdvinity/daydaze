@@ -1,5 +1,13 @@
+// Maps an HTTP method and path to a typed Route for the Worker: the fixed /api
+// endpoints, a room's copy list and a room copy's WebSocket. Unknown rooms and
+// bad copy numbers match nothing.
+
 import { isRoomId, type RoomId } from "../../src/game/rooms.ts";
 
+/**
+ * Every endpoint the Worker serves; rooms and ws carry a validated room id (and
+ * copy).
+ */
 export type Route =
   | {
       kind:
@@ -47,6 +55,10 @@ export function parseCopy(value: unknown): number | null {
     : null;
 }
 
+/**
+ * The route for a request, or null for an unknown path or a method it doesn't
+ * allow. Room routes accept GET only.
+ */
 export function matchRoute(method: string, pathname: string): Route | null {
   const fixed = FIXED.get(`${method} ${pathname}`);
   if (fixed) return fixed;

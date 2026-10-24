@@ -1,3 +1,7 @@
+// La Noche's people: Inés on the door, Yara behind the bar (her tap calls
+// `onDrink`), Celia singing, a two-piece band on stage and dancers on the
+// floor.
+
 import type { JSX } from "react";
 import type { DialogueContext } from "../../../game/dialogue/types.ts";
 import { BAR, DANCE, STAGE } from "../../../game/laNoche.ts";

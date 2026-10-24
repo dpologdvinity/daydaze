@@ -1,3 +1,8 @@
+// Lechon and Kamayan Hall, Little Manila's Filipino restaurant scene: banig
+// walls, swaying parols, the boodle-fight table, the spit-roast carving station
+// and a videoke corner. Throws at render if the venue is missing from
+// FOOD_VENUES. NPCs and ordering live in ./kamayan/Npcs.tsx.
+
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";

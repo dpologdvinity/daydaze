@@ -1,3 +1,7 @@
+// Downtown's square dressing: the fountain with falling drops, the benches
+// round it, and the bus shelter whose board shows a painted city map and opens
+// the full map on click.
+
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";

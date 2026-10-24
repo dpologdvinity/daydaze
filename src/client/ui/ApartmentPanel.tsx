@@ -1,3 +1,8 @@
+// The apartment's decorating panel: lock the door, practice at the shelf, and
+// place, select, rotate, move or remove furniture on the home grid. Every
+// change goes through the pure helpers in src/game/home/decor.ts, which return
+// null when a piece does not fit.
+
 import { useState } from "react";
 import {
   FURNITURE_CATALOG,

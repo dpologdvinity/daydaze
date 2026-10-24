@@ -1,4 +1,13 @@
+// The Directory's pure rule for room copies: given each copy's head count, list
+// the copies a player can choose from and pick the one to join. Copies are
+// numbered from 1; copy 1 is always listed.
+
+/** How many players one room copy reported. */
 export type CopyCount = { copy: number; count: number };
+/**
+ * The copies to show, each flagged full at capacity, and the copy number to
+ * join by default.
+ */
 export type CopyListing = {
   copies: (CopyCount & { full: boolean })[];
   pick: number;

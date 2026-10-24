@@ -1,6 +1,15 @@
+// Static-geometry batching for rooms: collect posed pieces by material and
+// merge each material's pieces into one mesh, so trim-heavy rooms cost a few
+// draw calls. Pieces are de-indexed so they merge; every piece added to one
+// material must share the same attributes, or build throws.
+
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
+/**
+ * Where a piece sits: position and rotation (Euler XYZ, radians) in meters, and
+ * a uniform or per-axis scale. All optional.
+ */
 export type Pose = {
   position?: [number, number, number];
   rotation?: [number, number, number];
@@ -15,6 +24,10 @@ export type Pose = {
 export class Batch {
   private parts = new Map<THREE.Material, THREE.BufferGeometry[]>();
 
+  /**
+   * Adds a copy of `geometry`, moved by `pose`, under `material`. The input
+   * geometry is left untouched and can be reused. Chainable.
+   */
   add(geometry: THREE.BufferGeometry, material: THREE.Material, pose?: Pose) {
     const g = geometry.index ? geometry.toNonIndexed() : geometry.clone();
     if (pose) g.applyMatrix4(poseMatrix(pose));
@@ -24,6 +37,10 @@ export class Batch {
     return this;
   }
 
+  /**
+   * Merges each material's pieces into one mesh and returns them in a group.
+   * Throws if one material's pieces differ in attributes.
+   */
   build(): THREE.Group {
     const group = new THREE.Group();
     for (const [material, geoms] of this.parts) {

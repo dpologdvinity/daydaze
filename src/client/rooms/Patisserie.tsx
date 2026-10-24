@@ -1,3 +1,7 @@
+// Sucre patisserie scene: the pastry case, cafe tables, a chandelier and the
+// marble stand where the macaron tower minigame builds. The tower draws at most
+// MAX_LAYERS layers; tower units become meters through UNIT.
+
 import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";

@@ -1,3 +1,6 @@
+// Handwritten lines for the Water Park snack bar cashier, keyed by situation.
+// Read through `pickLine`, never directly.
+
 import type { RoleBank } from "./types.ts";
 
 export const snackCashierBank: RoleBank = {

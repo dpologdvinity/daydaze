@@ -1,3 +1,8 @@
+// Seaside Stadium scene: the penalty end with goal, floodlights, stands and a
+// scoreboard, plus the penalty shootout's keeper, ball and camera. Play ticks
+// the ./stadium/session.ts store each frame and holds the camera through
+// cameraHold while a shootout runs.
+
 import { Stars } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";

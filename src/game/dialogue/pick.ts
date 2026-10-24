@@ -1,3 +1,8 @@
+// Picks an NPC line for a role and situation: falls back to tapped, then idle,
+// when a situation has no lines; filters by venue, neighborhood and time;
+// avoids the last few lines said; fills {name}-style placeholders. Pure and
+// deterministic given the rng.
+
 import { LINE_BANKS } from "./index.ts";
 import {
   PLACEHOLDER_IDS,
@@ -11,6 +16,9 @@ import {
   type RoleBank,
 } from "./types.ts";
 
+/**
+ * How many recently said line keys pickLine remembers, and so avoids repeating.
+ */
 export const RECENT_WINDOW = 6;
 
 // A missing situation falls back to these, in order.
@@ -27,11 +35,16 @@ const PLACEHOLDER_FALLBACKS: Record<PlaceholderId, string> = {
   drink: "drink",
 };
 
+/** A random source returning numbers in [0, 1), like Math.random. */
 export type Rng = () => number;
 
 // Keys of recently used lines, oldest first. Pass the returned list back in.
 export type RecentLines = readonly string[];
 
+/**
+ * Inputs to pickLine. `bank` overrides the role's bank from LINE_BANKS (for
+ * tests); `recent` is the list returned by the previous pick.
+ */
 export type PickArgs = {
   role: DialogueRole;
   situation: DialogueSituation;
@@ -41,6 +54,7 @@ export type PickArgs = {
   bank?: RoleBank;
 };
 
+/** The filled-in line and the updated recent list to pass to the next pick. */
 export type PickResult = {
   text: string;
   recent: RecentLines;
@@ -58,6 +72,11 @@ export function seededRng(seed: number): Rng {
   };
 }
 
+/**
+ * Picks a weighted random line nobody heard recently, or the one heard longest
+ * ago when all were; returns "..." when the role has no eligible line at all.
+ * Never mutates `recent`.
+ */
 export function pickLine({
   role,
   situation,

@@ -1,5 +1,12 @@
+// The jukebox: nine looping tracks synthesized live in Web Audio, each a step
+// function on an eighth- or quarter-note grid, driven by a lookahead scheduler
+// on the AudioContext clock. One shared controller plays through the audio
+// bus's music output; a controller without a context stays silent and never
+// throws.
+
 import { getSharedAudioBus } from "./audioBus.ts";
 
+/** Every track the jukebox can play. */
 export type TrackId =
   | "savanna-nightclub"
   | "canopy-lofi"
@@ -11,6 +18,7 @@ export type TrackId =
   | "la-noche-salsa"
   | "roller-disco";
 
+/** What the jukebox shows for a track; `bpm` also sets its tempo. */
 export type TrackMetadata = {
   id: TrackId;
   title: string;
@@ -20,6 +28,7 @@ export type TrackMetadata = {
   mood: string;
 };
 
+/** The track list, in display order. */
 export const JUKEBOX_TRACKS: readonly TrackMetadata[] = [
   {
     id: "savanna-nightclub",
@@ -109,6 +118,10 @@ function isTrackId(id: string): id is TrackId {
   return (TRACK_IDS as readonly string[]).includes(id);
 }
 
+/**
+ * Plays one track at a time. Volume is 0 to 1; playTrack returns false when
+ * audio is unavailable or the controller is disposed.
+ */
 export interface JukeboxController {
   playTrack(id: TrackId): boolean;
   stopTrack(): void;
@@ -153,6 +166,7 @@ const SCHEDULER_INTERVAL_MS = 25;
  */
 const MAX_CATCH_UP_SECONDS = 1.0;
 
+/** A step number and the audio-clock time (seconds) to play it at. */
 export type DueStep = { step: number; time: number };
 
 /**
@@ -586,6 +600,7 @@ function playClap(ctx: AudioContext, dest: AnyNode, now: number) {
   }
 }
 
+/** One eighth-note step of Sugar Rush, scheduled at audio time `now`. */
 export function sugarRushPopStep(
   ctx: AudioContext,
   dest: AnyNode,
@@ -672,6 +687,7 @@ function playRumble(ctx: AudioContext, dest: AnyNode, now: number) {
   osc.stop(now + 0.16);
 }
 
+/** One eighth-note step of Warehouse Acid, scheduled at audio time `now`. */
 export function warehouseAcidStep(
   ctx: AudioContext,
   dest: AnyNode,
@@ -754,6 +770,7 @@ function playChip(
   osc.stop(now + length);
 }
 
+/** One eighth-note step of Player Two, scheduled at audio time `now`. */
 export function playerTwoChiptuneStep(
   ctx: AudioContext,
   dest: AnyNode,
@@ -821,6 +838,7 @@ function playKnock(
   osc.stop(now + decay);
 }
 
+/** One eighth-note step of La Noche's salsa, scheduled at audio time `now`. */
 export function laNocheSalsaStep(
   ctx: AudioContext,
   dest: AnyNode,
@@ -891,6 +909,10 @@ function playStab(
     }
 }
 
+/**
+ * One eighth-note step of the roller disco track: the chord changes every 16
+ * steps (two bars).
+ */
 export function rollerDiscoStep(
   ctx: AudioContext,
   dest: AnyNode,
@@ -920,6 +942,7 @@ type TrackProgram = {
   step: (ctx: AudioContext, dest: AnyNode, step: number, time: number) => void;
 };
 
+/** Each track's step length (seconds, from its BPM) and step function. */
 export const TRACK_PROGRAMS: Record<TrackId, TrackProgram> = {
   "savanna-nightclub": {
     stepSeconds: (bpm) => 60 / bpm / 2,
@@ -1084,6 +1107,10 @@ function resolveAudioContext(ctx?: AudioContext | null): AudioContext | null {
   }
 }
 
+/**
+ * A new controller. Omit `ctx` to create an AudioContext; pass null for a
+ * silent one. Music goes to `musicDestination`, or the context's output.
+ */
 export function createJukeboxController(
   ctx?: AudioContext | null,
   musicDestination?: AudioNode | null,

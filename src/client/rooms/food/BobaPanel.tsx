@@ -1,3 +1,7 @@
+// The boba bar shift panel: the shared order panel bound to the BOBA menu. The
+// order session is module-level, so a shift survives the panel closing and
+// reopening.
+
 import type { JSX } from "react";
 import { BOBA } from "../../../game/boba.ts";
 import { createOrderSession } from "../shared/orderSession.ts";

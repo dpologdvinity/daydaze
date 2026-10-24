@@ -1,3 +1,7 @@
+// A Speedway race track mesh: asphalt road with painted lines, red and white
+// kerbs, barriers with neon tops, and tyre walls found by measuring how sharply
+// the centerline bends. Built once per track.
+
 import { useMemo } from "react";
 import * as THREE from "three";
 import { trackWalls, type Track } from "../../../game/speedway/track.ts";

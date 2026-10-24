@@ -1,3 +1,7 @@
+// The Dome's people: Bree the snack seller, dancers on the baseline and two
+// players warming up on the sideline, one of them dribbling. Positions come
+// from src/game/dome.ts.
+
 import { useFrame } from "@react-three/fiber";
 import { useRef, type JSX } from "react";
 import * as THREE from "three";

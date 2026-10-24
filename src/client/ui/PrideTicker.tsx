@@ -1,3 +1,7 @@
+// The Pride night countdown shown in the clubs, re-rendered once a second, with
+// a rainbow glow over the room card while the event is on. The schedule comes
+// from src/game/prideNight.ts on the shared event clock.
+
 import { useEffect, useState } from "react";
 import { nextPrideNightIn } from "../../game/prideNight.ts";
 import { prideClock } from "../city/eventClocks.ts";

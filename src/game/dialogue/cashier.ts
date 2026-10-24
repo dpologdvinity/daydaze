@@ -1,3 +1,7 @@
+// Handwritten lines for shop cashiers, keyed by situation, including the
+// shoplifting catch and the post-jail greeting. Read through `pickLine`, never
+// directly.
+
 import type { RoleBank } from "./types.ts";
 
 export const cashierBank: RoleBank = {

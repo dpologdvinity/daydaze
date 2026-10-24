@@ -1,3 +1,9 @@
+// The Water Park's slide tower and its three slides from SLIDES in
+// src/game/waterPark.ts: half-pipe troughs swept along each path, instanced
+// ribs and supports, gangways, flags and landing foam. Tapping the tower rides
+// slide 0; tapping a slide rides that one. A drag of more than 6 px is an
+// orbit, not a tap.
+
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";

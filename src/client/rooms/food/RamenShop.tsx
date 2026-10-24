@@ -1,3 +1,7 @@
+// Steam Ladle Ramen, Downtown: the shared FoodRoom with a wooden counter, a row
+// of bowls with egg halves and red paper lanterns. Throws on render if the
+// "steam-ladle-ramen" venue is missing from FOOD_VENUES.
+
 import type { JSX } from "react";
 import { FOOD_VENUES } from "../../../game/food/venues.ts";
 import type { PickHandler } from "../shared/Floor.tsx";

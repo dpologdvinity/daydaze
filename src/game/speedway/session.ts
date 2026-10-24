@@ -1,3 +1,8 @@
+// Driving sessions the client runs at a fixed tick: a Speedway race, a bumper
+// car game or your own car on the city streets. Sessions are mutated in place
+// by stepSession, and each keeps the previous tick so the renderer can
+// interpolate. hudOf turns any session into what the HUD shows.
+
 import type { CarMods } from "../city/drive.ts";
 import { TICK_HZ, type StepClock } from "../driving/fixedStep.ts";
 import type { CarInput, CarSpec, CarState } from "../driving/car.ts";
@@ -50,8 +55,13 @@ export type CitySession = {
   clock: StepClock;
 };
 
+/** Any driving session; switch on `kind`. */
 export type Session = RaceSession | BumperSession | CitySession;
 
+/**
+ * Puts your car on the street at `at` facing `yaw`, stopped. `fuel` is the
+ * tank, 0..1; `mods` are the car's cosmetic upgrades.
+ */
 export function startCity(
   spec: CarSpec,
   color: string,
@@ -75,6 +85,7 @@ export function startCity(
   };
 }
 
+/** Starts a 3-lap race against `bots` bots of one skill, its clock at 0. */
 export function startRace(
   track: Track,
   spec: CarSpec,
@@ -92,6 +103,10 @@ export function startRace(
   };
 }
 
+/**
+ * Starts a bumper car game: six cars in a 5 m ring, each facing along the ring,
+ * the player first.
+ */
 export function startBumpers(): BumperSession {
   const cars: Bumper[] = Array.from({ length: BUMPER_CARS }, (_, i) => {
     const a = (i / BUMPER_CARS) * Math.PI * 2;
@@ -142,6 +157,10 @@ export function stepSession(session: Session, input: CarInput): void {
   }
 }
 
+/**
+ * Numbers for the driving HUD. Race-only fields (laps, times, place) read 0 or
+ * null in the city and at the bumper cars.
+ */
 export type Hud = {
   phase: string;
   /** Lap being driven, 1-based; 0 before the first start-line crossing. */

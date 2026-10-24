@@ -1,3 +1,7 @@
+// City Jail, Block C: the cell block scene with bars, bunks, a yard court, a
+// payphone and Officer Dee. Visual only; sentence timing and release live in
+// the HUD and src/game/crime/.
+
 import { DEFAULT_LOOK } from "../../game/look.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import type { DialogueContext } from "../../game/dialogue/types.ts";

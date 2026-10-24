@@ -1,3 +1,6 @@
+// Handwritten lines for ticket booth cashiers at the parks, keyed by situation.
+// Read through `pickLine`, never directly.
+
 import type { RoleBank } from "./types.ts";
 
 export const ticketCashierBank: RoleBank = {

@@ -1,3 +1,7 @@
+// Handwritten lines for door bouncers at the clubs and bars, keyed by
+// situation. Venue-tagged entries cover the Violet Hour, Pulse and the Velvet
+// Room. Read through `pickLine`, never directly.
+
 import type { RoleBank } from "./types.ts";
 
 export const bouncerBank: RoleBank = {

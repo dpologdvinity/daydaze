@@ -1,3 +1,7 @@
+// Concrete Wave's half-pipe panel: a timed run where each press of Trick is
+// graded against the lip; clean tricks in a row build a combo and a bail drops
+// it. State lives in ./session.ts.
+
 import type { JSX } from "react";
 import { RUN_SECONDS } from "../../../game/skate.ts";
 import { useNow, usePressKeys } from "../shared/useNow.ts";

@@ -1,3 +1,7 @@
+// Renders the Beachside fireworks show from the pure schedule in
+// game/city/fireworks.ts: up to 12 shells at once in one additive points draw,
+// with a boom per burst scaled by distance. Hidden under reduced motion.
+
 import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";

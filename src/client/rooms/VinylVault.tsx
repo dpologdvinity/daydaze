@@ -1,3 +1,7 @@
+// Vinyl Vault, the Gallery Row record shop: framed covers from a 4 by 4 canvas
+// atlas, instanced sleeves in the crates, two turntables (the left one spins)
+// and Nico at the counter. Layout comes from src/game/vinylVault.ts.
+
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useLayoutEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";

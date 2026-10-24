@@ -1,3 +1,7 @@
+// Handwritten lines for dancers on club floors (mostly Pulse), keyed by
+// situation: dancing nearby, dance-offs, outfits, late night. Read through
+// `pickLine`, never directly.
+
 import type { RoleBank } from "./types.ts";
 
 export const clubDancerBank: RoleBank = {

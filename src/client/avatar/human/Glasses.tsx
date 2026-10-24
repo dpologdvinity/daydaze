@@ -1,3 +1,7 @@
+// Procedural glasses (round, cat-eye or square) for the 3D doll, built at the
+// nose anchor and parented to the head bone. Frame and lens materials are
+// shared module-wide and never disposed; geometry is disposed on unmount.
+
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
 import type { Makeup } from "../../../game/look.ts";

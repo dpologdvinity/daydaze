@@ -1,3 +1,7 @@
+// Bassline's cast: Ash on the door, Ren behind the bar (taps pour a drink), DJ
+// Static at the container decks, two regulars, and three non-talking dancers on
+// the floor. Positions come from the warehouse layout in src/game/warehouse.ts.
+
 import type { JSX } from "react";
 import type { DialogueContext } from "../../../game/dialogue/types.ts";
 import type { Look } from "../../../game/look.ts";

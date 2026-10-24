@@ -1,3 +1,7 @@
+// The Espresso Lab barista shift panel: the shared order panel bound to the
+// ESPRESSO menu. The order session is module-level, so a shift survives the
+// panel closing and reopening.
+
 import type { JSX } from "react";
 import { ESPRESSO } from "../../../game/barista.ts";
 import { createOrderSession } from "../shared/orderSession.ts";

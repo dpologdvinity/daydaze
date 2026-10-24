@@ -1,3 +1,8 @@
+// Rewind Video on Maple Drive in Suburbia: a batched shell with a poster wall,
+// instanced tapes on the shelves, a CRT scrolling color bars and Tasha at the
+// counter, plus the store's minigame hotspot pads. Layout comes from
+// src/game/videoStore.ts.
+
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useLayoutEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";

@@ -1,12 +1,22 @@
+// Water Park geometry shared by the room data, the 3D scene and the slide ride:
+// the wave pool and slide tower placement, the three slides' paths, and
+// sampling a rider's position along a path. Meters, y up.
+
 import type { Vec2 } from "./walk.ts";
 
+/** A point in meters, y up. */
 export type Vec3 = readonly [x: number, y: number, z: number];
 
 // Water Park layout in meters, shared by the room data, the scene and the
 // slide ride. The wave pool sits behind the deck, the slide tower to its east.
+/** The wave pool's x/z bounds and water surface height, in meters. */
 export const POOL = { x0: -10, x1: 3, z0: -9.5, z1: -1.5, water: 0.06 };
+/**
+ * The slide tower's center on the ground and its platform height, in meters.
+ */
 export const TOWER = { x: 7.5, z: -6.6, top: 6.6 };
 
+/** One water slide: its menu label, tube color and ride path. */
 export type Slide = {
   id: string;
   label: string;
@@ -62,6 +72,9 @@ function spiral(o: {
   return pts;
 }
 
+/**
+ * The slides off the tower, each spiraling down then running out into the pool.
+ */
 export const SLIDES: readonly Slide[] = [
   {
     id: "twister",
@@ -107,6 +120,7 @@ export const SLIDES: readonly Slide[] = [
   },
 ];
 
+/** Total length of a polyline path, in meters. */
 export function pathLength(path: readonly Vec3[]): number {
   let total = 0;
   for (let i = 1; i < path.length; i++) {

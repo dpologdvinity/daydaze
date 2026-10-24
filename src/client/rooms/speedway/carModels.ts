@@ -1,3 +1,9 @@
+// Procedural car geometry: each roster model's side profile extruded into a
+// painted shell and glass, plus wheels, rims, bumpers, lamps and per-model
+// extras (wings, rails, roll hoops), merged into one geometry per material
+// bucket. Built once per model and cached; the shared materials are
+// module-level.
+
 import {
   BoxGeometry,
   BufferGeometry,
@@ -454,7 +460,15 @@ function box(b: Box): BufferGeometry {
   return new BoxGeometry(w, h, d).translate(x, y, z);
 }
 
+/**
+ * The material groups a car's geometry is split into; each becomes one draw
+ * call.
+ */
 export type Bucket = "paint" | "glass" | "trim" | "tyre" | "rim" | "light";
+/**
+ * One car model's merged geometry per bucket. A bucket is missing when the
+ * model has no pieces in it (a bumper car has no tyres or rims).
+ */
 export type CarParts = Partial<Record<Bucket, BufferGeometry>>;
 
 function merged(list: BufferGeometry[]): BufferGeometry | undefined {
@@ -470,15 +484,18 @@ export const GLASS = new MeshStandardMaterial({
   roughness: 0.08,
   metalness: 0.6,
 });
+/** Dark satin trim: bumpers, mirrors, arches, seams and extras. */
 export const TRIM = new MeshStandardMaterial({
   color: "#1c1a24",
   roughness: 0.55,
   metalness: 0.2,
 });
+/** Matte black rubber for the tyres. */
 export const TYRE = new MeshStandardMaterial({
   color: "#0c0c10",
   roughness: 0.9,
 });
+/** Bright metal for rims, plates, exhausts and handles. */
 export const RIM = new MeshStandardMaterial({
   color: "#d4d8e4",
   roughness: 0.28,

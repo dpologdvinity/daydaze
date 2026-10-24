@@ -1,3 +1,7 @@
+// Espresso Lab on Gallery Row: tiled cafe shell, the espresso machine, pastry
+// case, a canvas chalkboard menu listing the barista drinks from
+// game/barista.ts, Rafi the barista and a regular.
+
 import { useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";
 import { ESPRESSO } from "../../game/barista.ts";

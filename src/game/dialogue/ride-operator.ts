@@ -1,3 +1,6 @@
+// Handwritten lines for Amusement Park ride operators, keyed by situation (ride
+// ends, drunk riders, outfits). Read through `pickLine`, never directly.
+
 import type { RoleBank } from "./types.ts";
 
 export const rideOperatorBank: RoleBank = {

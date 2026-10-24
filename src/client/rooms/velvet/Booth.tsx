@@ -1,3 +1,7 @@
+// The Velvet Room's half-round tufted velvet booth with gold piping, rose
+// buttons and a lacquer table, placed at BOOTH from layout.ts. Booth geometry
+// is in the booth's own frame (inFrame); the cocktails are in room coordinates.
+
 import { useMemo } from "react";
 import * as THREE from "three";
 import { Batch } from "../shared/batch.ts";

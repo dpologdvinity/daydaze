@@ -1,3 +1,8 @@
+// Glow Bowl, the blacklit bowling alley: four instanced lanes, the pin
+// geometry, the player's ten-frame game on lane three and looping fake games on
+// the other lanes. Lane positions come from game/bowlingAlley.ts; scratch
+// objects keep useFrame allocation-free.
+
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";

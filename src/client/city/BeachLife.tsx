@@ -1,3 +1,7 @@
+// Beachside's sand dressing: bonfires with animated flames and log seats, and
+// the volleyball net. Wood and flames are one instanced draw each; flames hold
+// still under reduced motion.
+
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";

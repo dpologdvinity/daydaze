@@ -1,3 +1,8 @@
+// The Dome basketball arena: court texture, hoop, scoreboard, the arc's
+// shooting spots and the Hot Shots shot animation with its follow camera. Court
+// and hoop coordinates come from game/dome.ts and are mapped to room space with
+// courtToRoom.
+
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";

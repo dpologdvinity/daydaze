@@ -1,15 +1,27 @@
+// Token-bucket rate limits for the Worker and room copies: the named budgets
+// (movement, chat, login, reports and more) and a limiter that keeps buckets in
+// a Map or Durable Object storage. Times are in milliseconds; refill rates are
+// tokens per second.
+
+/** A bucket's size and how many tokens it regains per second. */
 export type RateLimit = { capacity: number; refillPerSecond: number };
 
 /** Clients send ~15 Hz; the burst absorbs packets bunched by network jitter. */
 export const MOVEMENT_LIMIT: RateLimit = { capacity: 8, refillPerSecond: 15 };
+/** Chat lines for signed-in players: a burst of 3, then one every 2 seconds. */
 export const ACCOUNT_CHAT_LIMIT: RateLimit = {
   capacity: 3,
   refillPerSecond: 1 / 2,
 };
+/**
+ * Chat lines for guests, stricter than accounts: a burst of 2, then one every 4
+ * seconds.
+ */
 export const GUEST_CHAT_LIMIT: RateLimit = {
   capacity: 2,
   refillPerSecond: 1 / 4,
 };
+/** Emotes per player: a burst of 3, then one a second. */
 export const EMOTE_LIMIT: RateLimit = { capacity: 3, refillPerSecond: 1 };
 
 // Per IP address. Login has a per-account bucket against password guessing and
@@ -22,23 +34,29 @@ export const LOGIN_ADDRESS_LIMIT: RateLimit = {
   capacity: 20,
   refillPerSecond: 1 / 6,
 };
+/** New accounts per IP address: 3, then one every 10 minutes. */
 export const SIGNUP_LIMIT: RateLimit = {
   capacity: 3,
   refillPerSecond: 1 / 600,
 };
+/** New guest sessions per IP address: 10, then one every 30 seconds. */
 export const GUEST_LIMIT: RateLimit = { capacity: 10, refillPerSecond: 1 / 30 };
 // Per player, plus a wider budget per IP address for shared connections.
 export const REPORT_LIMIT: RateLimit = { capacity: 5, refillPerSecond: 1 / 60 };
+/** Blocks per player: 20, then one every 6 seconds. */
 export const BLOCK_LIMIT: RateLimit = { capacity: 20, refillPerSecond: 1 / 6 };
+/** Reports per IP address, shared by everyone behind it. */
 export const REPORT_ADDRESS_LIMIT: RateLimit = {
   capacity: 15,
   refillPerSecond: 1 / 20,
 };
+/** Blocks per IP address, shared by everyone behind it. */
 export const BLOCK_ADDRESS_LIMIT: RateLimit = {
   capacity: 60,
   refillPerSecond: 1 / 2,
 };
 
+/** A set of token buckets, one per key (a player id or an address). */
 export type RateLimiter = {
   /** Spends one token for `key` at `now` (ms); false when the bucket is empty. */
   take(key: string, now: number): boolean;
@@ -47,6 +65,7 @@ export type RateLimiter = {
   forget(key: string): void;
 };
 
+/** Tokens left and the time (ms) they were counted. */
 export type Bucket = { tokens: number; at: number };
 /** Where buckets live: a Map by default, or Durable Object storage. */
 export type BucketStore = {

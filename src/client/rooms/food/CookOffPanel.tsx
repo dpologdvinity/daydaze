@@ -1,3 +1,8 @@
+// Kamayan Hall's cook-off panel: eight Filipino tickets on the shared order
+// panel, against Tita Baby's ghost score or another player's score over the net
+// (src/client/net/cookOff.ts). A match only counts when its seed matches the
+// running shift's seed.
+
 import { useEffect, type JSX } from "react";
 import { COOKOFF, ghostScore, outcome } from "../../../game/cookOff.ts";
 import { score, shiftOver } from "../../../game/orders.ts";

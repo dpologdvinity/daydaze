@@ -1,3 +1,7 @@
+// Jade Whisk Matcha, the boba and matcha cafe: the shared FoodRoom with a
+// green-and-pink palette, tapioca jars and glowing cups. Throws if the
+// "jade-whisk-matcha" venue is missing from FOOD_VENUES.
+
 import type { JSX } from "react";
 import { FOOD_VENUES } from "../../../game/food/venues.ts";
 import type { PickHandler } from "../shared/Floor.tsx";

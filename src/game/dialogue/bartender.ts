@@ -1,3 +1,7 @@
+// Handwritten lines for bartenders, keyed by situation. Venue-tagged entries
+// (`when: { venue }`) cover the Violet Hour, Pulse and the Velvet Room;
+// untagged ones play at any bar. Read through `pickLine`, never directly.
+
 import type { RoleBank } from "./types.ts";
 
 export const bartenderBank: RoleBank = {

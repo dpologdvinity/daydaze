@@ -1,8 +1,21 @@
+// The browser's room socket: wraps a WebSocket (injected, so tests use a fake)
+// as a NetworkTransport that reconnects with jittered backoff after a drop.
+// Close codes in FINAL_CODES stop it for good; every close code is still passed
+// to onCloseCode so the session can react (for example, try another copy when
+// one is full).
+
 import { CLOSE_CODES } from "../networkProtocol.ts";
 import type { NetworkTransport } from "../roomNetworkSync.ts";
 import { nextDelay } from "./backoff.ts";
 
+/**
+ * Connection state. "closed" is final: the transport never reconnects after it.
+ */
 export type TransportStatus = "connecting" | "open" | "reconnecting" | "closed";
+/**
+ * The fields of a WebSocket event the transport reads: `data` on messages,
+ * `code` on close.
+ */
 export type SocketEvent = { readonly data?: unknown; readonly code?: number };
 /** The slice of the browser WebSocket this transport uses. */
 export interface SocketLike {
@@ -16,6 +29,11 @@ export interface SocketLike {
 }
 /** Runs `callback` after `delayMs`; the returned function cancels it. */
 export type Schedule = (callback: () => void, delayMs: number) => () => void;
+/**
+ * `url` is the full ws(s) URL of the room socket. `schedule` and `random`
+ * default to setTimeout and Math.random; tests inject their own to control
+ * retries and jitter.
+ */
 export type WebSocketTransportOptions = {
   url: string;
   WebSocket: new (url: string) => SocketLike;

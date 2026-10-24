@@ -1,3 +1,8 @@
+// Skyline Driving Range's life: golfers in the other bays with their balls
+// flying downrange (one instanced mesh), the ball picker circling with its
+// beacon, and Imani the attendant. Under reduced motion the balls sit on the
+// tee and the picker stays put.
+
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";

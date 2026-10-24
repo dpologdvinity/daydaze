@@ -1,3 +1,8 @@
+// Crazy Eights between two players over the room's game relay: invites,
+// answers, numbered moves and quits, kept in the duel store. Both sides deal
+// from the same seed and apply each other's moves, so only legal moves are sent
+// and a move is applied only if its number is next.
+
 import { deal, type Table, type Who } from "../../game/cards/crazyEights.ts";
 import {
   applyMove,
@@ -83,12 +88,20 @@ export function listenForDuels(): () => void {
   return () => offs.forEach((off) => off());
 }
 
+/**
+ * Invites a player to Crazy Eights with a fresh seed; marked asked only if the
+ * message was sent. The inviter sits as `you`.
+ */
 export function askToPlay(id: string, name: string) {
   const seed = Math.floor(Math.random() * 2 ** 31);
   if (send(id, { k: "invite", seed }))
     duel.set({ asked: { id, name, seed }, note: "" });
 }
 
+/**
+ * Answers the open invite: yes deals the table (you sit as `guard`), no
+ * declines. Does nothing without an invite.
+ */
 export function answer(yes: boolean) {
   const { invite } = duel.get();
   if (!invite) return;
@@ -123,6 +136,10 @@ export function move(m: { k: "play"; i: number; s?: number } | { k: "draw" }) {
   duel.set({ game: { ...game, table, moves: game.moves + 1 } });
 }
 
+/**
+ * Quits the game or takes back your invite, telling the other player, and
+ * clears the store.
+ */
 export function leaveTable() {
   const { game, asked } = duel.get();
   if (game) send(game.id, { k: "quit" });

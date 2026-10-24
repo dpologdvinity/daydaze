@@ -1,3 +1,7 @@
+// Bistro Rue Vert, the Park Avenue French bistro: the shared FoodRoom with a
+// green-and-zinc palette, wine bottles, baguettes and globe lamps. Throws if
+// the "bistro-rue" venue is missing from FOOD_VENUES.
+
 import type { JSX } from "react";
 import { FOOD_VENUES } from "../../../game/food/venues.ts";
 import type { PickHandler } from "../shared/Floor.tsx";

@@ -1,3 +1,6 @@
+// Handwritten lines for the Speedway pit crew, keyed by situation (race ends,
+// drunk drivers, matching outfits). Read through `pickLine`, never directly.
+
 import type { RoleBank } from "./types.ts";
 
 export const pitCrewBank: RoleBank = {

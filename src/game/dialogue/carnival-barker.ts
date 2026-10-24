@@ -1,3 +1,7 @@
+// Handwritten lines for the Midway barkers at the Amusement Park, keyed by
+// situation (greetings, ride and dance-off reactions, shoplifting). Read
+// through `pickLine`, never directly.
+
 import type { RoleBank } from "./types.ts";
 
 export const carnivalBarkerBank: RoleBank = {

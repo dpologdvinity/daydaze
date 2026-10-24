@@ -1,3 +1,6 @@
+// Handwritten lines for the Amusement Park cotton candy vendor, keyed by
+// situation. Read through `pickLine`, never directly.
+
 import type { RoleBank } from "./types.ts";
 
 export const cottonCandyVendorBank: RoleBank = {

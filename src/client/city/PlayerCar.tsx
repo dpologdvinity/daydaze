@@ -1,3 +1,9 @@
+// Your own car on the city streets: parked from the save, entered on the Drive
+// request or a tap (walking you over first), driven on a fixed-step session
+// with interpolated rendering, and parked back into the save when you leave.
+// Owns driving.session while you drive; also writes data-city-car, data-car-x
+// and data-car-z on the canvas for tests.
+
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { carExtras } from "./carExtras.ts";
 import { useEffect, useRef } from "react";

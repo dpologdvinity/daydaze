@@ -1,3 +1,8 @@
+// Swell Surf Co. scene: the beach shack, board rack and chairs, and the break
+// where you ride a wave. While a ride is on, Break seats the player on the
+// board and holds the camera through cameraHold; when it ends it frees the seat
+// and puts her back on the sand.
+
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";

@@ -1,3 +1,7 @@
+// Handwritten lines for the coat-check attendant, keyed by situation; outfit
+// reactions and tips dominate. Venue-tagged entries are for Pulse. Read through
+// `pickLine`, never directly.
+
 import type { RoleBank } from "./types.ts";
 
 export const coatCheckBank: RoleBank = {

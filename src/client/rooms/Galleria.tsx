@@ -1,3 +1,8 @@
+// The Starlight Galleria mall: terrazzo hall, the storefront row with its
+// clerks, the balcony and always-running escalators, cinema marquee, food
+// court, fountain and shoppers walking laps. Positions come from
+// game/galleria.ts; scratch objects keep useFrame allocation-free.
+
 import { useFrame } from "@react-three/fiber";
 import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";

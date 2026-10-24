@@ -1,3 +1,7 @@
+// Ramen Rush's panel: the shared OrderPanel over a ramen order session, drawn
+// as a bowl. The session is created once at module load, so a round in progress
+// survives the panel unmounting.
+
 import type { JSX } from "react";
 import { RAMEN } from "../../../game/ramen.ts";
 import { createOrderSession } from "../shared/orderSession.ts";

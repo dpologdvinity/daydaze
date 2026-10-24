@@ -1,3 +1,7 @@
+// The city's night sky: a shader dome with clouds, street glow and a skyline
+// ring, plus a field of twinkling point stars. Both follow the camera, render
+// first and skip fog; they read the shared CITY_CLOCK uniforms.
+
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";

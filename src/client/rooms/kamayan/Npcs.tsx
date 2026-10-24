@@ -1,3 +1,8 @@
+// Kamayan Hall's people: Tess the server (a tap hands over the next dish), Lola
+// Nena at the head of the boodle table, Tita Joy on the videoke and the seated
+// family. The diners' seats must stay in kamayanHall's DINER_SEATS so the
+// player isn't offered them.
+
 import { useRef, type JSX } from "react";
 import type { DialogueContext } from "../../../game/dialogue/types.ts";
 import type { FoodVenue } from "../../../game/food/venues.ts";

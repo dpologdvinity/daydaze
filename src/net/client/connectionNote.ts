@@ -1,3 +1,6 @@
+// The short HUD line that explains why online play is reconnecting, offline or
+// closed, with a specific message for each final server close code.
+
 import type { SessionStatus } from "./OnlineSession.ts";
 
 const CLOSED: Record<number, string> = {

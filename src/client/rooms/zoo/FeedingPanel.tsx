@@ -1,3 +1,7 @@
+// The Daydaze Zoo's feeding-time panel: the shared order game (OrderPanel)
+// dressed as filling food buckets for eight enclosures. The session is
+// module-level, so a round survives the panel unmounting.
+
 import type { JSX } from "react";
 import { FEEDING } from "../../../game/feeding.ts";
 import { createOrderSession } from "../shared/orderSession.ts";

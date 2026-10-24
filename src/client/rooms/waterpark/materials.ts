@@ -1,3 +1,8 @@
+// Shared Water Park materials and textures: cached toon materials per color,
+// the vertex-colored PROPS material, candy stripes, the lesbian pride flag
+// colors, and the tileable caustic and ripple textures for the pool shader. The
+// pool textures are built once, lazily, and shared.
+
 import * as THREE from "three";
 import { gradientMap } from "../../avatar/toon.ts";
 import { makeCanvas } from "../../canvas.ts";

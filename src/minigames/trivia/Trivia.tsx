@@ -1,3 +1,8 @@
+// Throwback Trivia at Player 2: a timed ten-question round on 2000s pop
+// culture. The questions and scoring live in engine.ts; this owns the
+// per-question countdown (a timeout answers -1, counted wrong), the answer
+// reveal and the best grade of the visit, reported on close.
+
 import { useEffect, useRef, useState } from "react";
 import { payoutFor, type PayGrade } from "../../game/wallet.ts";
 import { Dialog } from "../Dialog.tsx";

@@ -1,3 +1,7 @@
+// The tennis panel at the Courtside Club: seven points against the pro, one
+// swing button timed to the incoming ball. Match state lives in ./session.ts;
+// the ball meter assumes a 1.5 s flight.
+
 import type { JSX } from "react";
 import { POINTS, pointsWon } from "../../../game/tennis.ts";
 import { useNow, usePressKeys } from "../shared/useNow.ts";

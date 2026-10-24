@@ -1,3 +1,7 @@
+// Purple Pandesal, the ube bakery: the shared FoodRoom in lilac and purple with
+// a row of pendant lamps over the counter. Throws on render if the
+// "purple-pandesal" venue is missing from FOOD_VENUES.
+
 import type { JSX } from "react";
 import { FOOD_VENUES } from "../../../game/food/venues.ts";
 import type { PickHandler } from "../shared/Floor.tsx";

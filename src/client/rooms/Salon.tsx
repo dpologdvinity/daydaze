@@ -1,3 +1,7 @@
+// The Blowout Bar salon scene on Gallery Row: styling chairs at lit mirrors, a
+// retail wall and reception. Tapping the stylist opens the salon shop through
+// openShop; chairs and desk come from SALON in src/game/salon.ts.
+
 import { useMemo, type JSX } from "react";
 import * as THREE from "three";
 import type { Look } from "../../game/look.ts";

@@ -1,8 +1,13 @@
+// A small decorative cocktail: a lathed glass, a glowing drink shaded red to
+// gold with vertex colors, a straw and a paper umbrella. Geometry is built per
+// instance and never disposed.
+
 import { useMemo } from "react";
 import * as THREE from "three";
 import { lathe } from "../../avatar/dollGeometry.ts";
 import { gradientMap } from "../../avatar/toon.ts";
 
+/** One cocktail at `position`, about 0.4 m tall before `scale`. */
 export function Cocktail(props: {
   position: [number, number, number];
   scale?: number;

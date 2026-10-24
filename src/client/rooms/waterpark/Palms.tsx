@@ -1,3 +1,7 @@
+// The Water Park's potted palms: every trunk, planter and coconut merged into
+// one vertex-colored mesh, and every frond in one instanced mesh, so all palms
+// cost two draw calls. Frond detail drops on the low quality tier.
+
 import { useMemo } from "react";
 import * as THREE from "three";
 import { gradientMap } from "../../avatar/toon.ts";
@@ -5,6 +9,10 @@ import { useQuality } from "../../world/quality.ts";
 import { instanced, Props } from "./build.ts";
 import { PROPS } from "./materials.ts";
 
+/**
+ * Where one palm stands (its planter base, in room coordinates) and its uniform
+ * scale. Only x and z of `position` are used; palms always stand on the deck.
+ */
 export type PalmSpec = {
   position: readonly [number, number, number];
   scale: number;

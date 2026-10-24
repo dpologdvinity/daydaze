@@ -1,3 +1,8 @@
+// Museo ng Little Manila scene: eight exhibits on plinths, each built from
+// simple shapes. Tapping a plaque starts the guided view (./museum/tour.ts):
+// the Guide moves the player to the viewpoint and takes the camera through
+// cameraHold while an exhibit is in focus.
+
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";

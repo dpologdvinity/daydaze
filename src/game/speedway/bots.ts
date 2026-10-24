@@ -1,7 +1,14 @@
+// Speedway race bots: pure-pursuit steering along the track's centerline, with
+// a speed cap per skill and braking for the sharpest bend in the next 30 m.
+
 import type { Vec2 } from "../walk.ts";
 import type { CarInput, CarSpec, CarState } from "../driving/car.ts";
 import type { Track } from "./track.ts";
 
+/**
+ * How hard a bot drives: longer lookahead and a higher share of top speed as
+ * skill rises.
+ */
 export type BotSkill = "easy" | "medium" | "hard";
 
 const LOOKAHEAD: Record<BotSkill, number> = { easy: 6, medium: 9, hard: 12 };

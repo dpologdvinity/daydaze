@@ -1,3 +1,8 @@
+// The Aquarium's seal show pool: Pepper the seal acts out each trick whose cue
+// the player stuck, from the session in ./session.ts. While the show runs it
+// takes the camera through cameraHold and steers it to the pool; unmounting
+// leaves the show and releases the hold.
+
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";

@@ -1,3 +1,7 @@
+// Belt Sushi Yard on Nightlife Row: the shared FoodRoom in slate and pale wood
+// with the conveyor belt and paper lamps. Throws on render if the
+// "belt-sushi-yard" venue is missing from FOOD_VENUES.
+
 import type { JSX } from "react";
 import { FOOD_VENUES } from "../../../game/food/venues.ts";
 import { FoodRoom, type FoodPalette } from "../food/FoodRoom.tsx";

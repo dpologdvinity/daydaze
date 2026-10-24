@@ -1,3 +1,8 @@
+// The Skate-Up Drive-In Diner scene: checkerboard floor, cherry booths, a
+// chrome counter, a jukebox and two servers skating a loop. Tapping the cook
+// hands out the venue's menu one dish at a time. Throws at render if the venue
+// is missing from FOOD_VENUES.
+
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";

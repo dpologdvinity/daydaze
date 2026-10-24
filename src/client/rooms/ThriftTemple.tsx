@@ -1,3 +1,9 @@
+// Thrift Temple, the Gallery Row vintage store in an old church hall: the
+// batched shell (brick, arches, rose window, rails, counter, fitting rooms),
+// instanced garments, today's find on the pedestal and Juno, who opens the
+// thrift shop. Positions come from src/game/thriftTemple.ts; the daily find
+// comes from thriftFind in shop.ts.
+
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useLayoutEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";

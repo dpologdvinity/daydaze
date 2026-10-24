@@ -1,3 +1,6 @@
+// Lists the copies of your current room with head counts, and switches to
+// another copy on request. Loads once per session; refreshes after a switch.
+
 import { useEffect, useState, type JSX } from "react";
 import { ROOMS } from "../../game/rooms.ts";
 import { onlineSession } from "./online.ts";

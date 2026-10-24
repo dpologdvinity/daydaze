@@ -1,3 +1,8 @@
+// The Gridiron's field-goal panel: five kicks, each aimed against a crosswind
+// and struck on a power meter. Rules live in game/fieldGoal.ts and the state in
+// ./session.ts; this only reads and presses. Distances are meters, shown in
+// yards.
+
 import type { JSX } from "react";
 import {
   AIM_LIMIT,

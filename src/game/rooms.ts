@@ -1,3 +1,9 @@
+// Every room in the game: the RoomId union, each room's walkable floor,
+// blockers, spawn and portals, and the ROOMS table. Coordinates are meters in
+// the room's own space (the city's are world coordinates). Shared by many
+// agents: keep edits small and additive. A new room also needs its key in
+// rooms.test.ts, ROOM_HINTS, ROOM_SHOTS, SCENES and a city door.
+
 import * as LUNE from "./lune.ts";
 import { CITY_AREA, CITY_BOUNDS, CITY_SPAWN } from "./city/layout.ts";
 import { FOOD_ROOM_EXITS } from "./food/storefronts.ts";
@@ -111,6 +117,7 @@ import * as CELLAR from "./wineBar.ts";
 import * as REWIND from "./videoStore.ts";
 import type { Vec2 } from "./walk.ts";
 
+/** Every room's id; ROOMS has one entry per id. */
 export type RoomId =
   | "velvet-room"
   | "pulse"
@@ -181,8 +188,13 @@ export type RoomId =
   | "video-store"
   | "city";
 
+/** Where a player appears: a floor point and a yaw (0 faces +z). */
 export type Spawn = { position: Vec2; yaw: number };
 
+/**
+ * A room's walking rules: the floor polygon, solid blockers on it, the default
+ * spawn and the portals out.
+ */
 export type RoomDefinition = {
   id: RoomId;
   name: string;
@@ -202,6 +214,10 @@ export type RoomDefinition = {
   }[];
 };
 
+/**
+ * A door circle: stepping within `radius` of `position` moves the player to
+ * `target` at `targetSpawn`.
+ */
 export type Portal = RoomDefinition["portals"][number];
 
 // Velvet Room (prototype lounge): walls at x = +-6 and z = -6, open towards the
@@ -403,6 +419,7 @@ const HAUNTED_FLOOR: readonly Vec2[] = [
   [7, 6],
   [-7, 6],
 ];
+/** The Haunted House's inner walls, as blockers. */
 export const HAUNTED_WALLS: readonly (readonly Vec2[])[] = [
   // a wall across the middle with a gap on the left, and one splitting the
   // back half with a gap on the right: a short S-shaped route to the back
@@ -439,6 +456,10 @@ function foodRoom(id: RoomId, name: string): RoomDefinition {
   };
 }
 
+/**
+ * Every room by id. The city's `walkable` is only its bounds; its real surfaces
+ * live in CITY_AREA.
+ */
 export const ROOMS: Record<RoomId, RoomDefinition> = {
   "velvet-room": {
     id: "velvet-room",
@@ -1556,6 +1577,7 @@ export const SOLO_ROOMS: ReadonlySet<RoomId> = new Set<RoomId>([
   "jail",
 ]);
 
+/** Whether a value (from storage or the network) is a known room id. */
 export function isRoomId(value: unknown): value is RoomId {
   return typeof value === "string" && Object.hasOwn(ROOMS, value);
 }

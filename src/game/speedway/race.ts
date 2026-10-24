@@ -1,3 +1,8 @@
+// Speedway race rules: a grid of the player and bots, a countdown, fixed-tick
+// driving against the track walls, lap counting and live standings. Pure and
+// immutable; every step returns a new Race. The player is always car 0 with id
+// "player".
+
 import type { Vec2 } from "../walk.ts";
 import {
   stepCar,
@@ -10,8 +15,16 @@ import { botInput, type BotSkill } from "./bots.ts";
 import { initialLap, updateLap, type LapState } from "./laps.ts";
 import { trackWalls, type Track } from "./track.ts";
 
+/**
+ * Where a race is: "grid" is frozen (stepRace returns it unchanged),
+ * "countdown" runs COUNTDOWN_MS, then "racing" until the player finishes.
+ */
 export type RacePhase = "grid" | "countdown" | "racing" | "finished";
 
+/**
+ * One car in a race. `skill` is set only for bots; `finishedMs` is the race
+ * clock time the car finished its last lap, or null while still racing.
+ */
 export type RaceCar = {
   id: string;
   spec: CarSpec;
@@ -22,6 +35,10 @@ export type RaceCar = {
   finishedMs: number | null;
 };
 
+/**
+ * A whole race: the track, the lap count to finish, the phase, the countdown
+ * left in ms and every car (player first).
+ */
 export type Race = {
   track: Track;
   laps: number;
@@ -30,6 +47,7 @@ export type Race = {
   cars: readonly RaceCar[];
 };
 
+/** Length of the start countdown, in ms. */
 export const COUNTDOWN_MS = 3000;
 const TICK_MS = 1000 / TICK_HZ;
 const IDLE: CarInput = { throttle: 0, brake: 0, steer: 0 };
@@ -44,6 +62,11 @@ function wallsOf(track: Track): readonly (readonly Vec2[])[] {
   return walls;
 }
 
+/**
+ * Lines up the player and up to `bots` bots on the track's grid slots (extra
+ * bots past the grid are dropped) and starts the countdown. Every car uses the
+ * player's spec, so the race is even on hardware. `nowMs` seeds the lap clocks.
+ */
 export function createRace(
   track: Track,
   laps: number,

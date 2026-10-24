@@ -1,3 +1,7 @@
+// Draws every other player in the room copy (doll or car, name, buzz tag, chat
+// bubble, tap for their card) and sends your own position and action to the
+// session. Renders nothing offline.
+
 import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import {

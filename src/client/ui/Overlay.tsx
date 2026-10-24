@@ -1,3 +1,9 @@
+// The 2D HUD over the 3D world: the venue header and hint, coins, the closet
+// (the Mirror tabs), shop and game panels, the city map, the phone, and the
+// dock of room actions, moods and camera views. Room-specific buttons are
+// switched on by room id here. Opening the closet reframes the camera and
+// restores the old view on close.
+
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import {
   FIGURES,
@@ -236,6 +242,10 @@ const EFFECT_LEVELS = INTENSITIES.map((id) => ({
   label: id === "off" ? "Off" : id === "low" ? "Low" : "Full",
 }));
 
+/**
+ * The closet's tabs, in order. Face and makeup frame the camera on the face;
+ * the rest show the full doll.
+ */
 export const MIRROR_TABS = [
   { id: "face", label: "Face" },
   { id: "makeup", label: "Makeup" },
@@ -243,6 +253,7 @@ export const MIRROR_TABS = [
   { id: "body", label: "Body" },
   { id: "outfit", label: "Outfit" },
 ] as const;
+/** One of the closet tab ids from MIRROR_TABS. */
 export type MirrorTab = (typeof MIRROR_TABS)[number]["id"];
 
 function Mirror({
@@ -620,6 +631,11 @@ function Mirror({
   );
 }
 
+/**
+ * Everything drawn over the canvas for the current room. All game state is
+ * owned by the caller and passed in with its setters; the overlay keeps only UI
+ * state (phone, map, closet tab).
+ */
 export function Overlay({
   room,
   roomName,

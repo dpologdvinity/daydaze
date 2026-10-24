@@ -1,3 +1,7 @@
+// The Violet Hour's cast: Robin the bouncer at the door, Sam the bartender who
+// serves drinks on tap, and three regulars at the corner table and bar. All
+// lines come from the dialogue banks with the violet-hour venue context.
+
 import type { JSX } from "react";
 import type { Look, Mood } from "../../../game/look.ts";
 import type { DialogueContext } from "../../../game/dialogue/types.ts";

@@ -1,3 +1,8 @@
+// The standard talking NPC: a doll (or a cheap CrowdFigure) with an invisible
+// tap cylinder, a speech bubble for six seconds, and lines from pickLine for
+// its role. Remembers its recent lines so taps rarely repeat; greets once per
+// mount.
+
 import { Html } from "@react-three/drei";
 import type { ThreeEvent } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";

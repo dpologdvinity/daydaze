@@ -1,3 +1,8 @@
+// Skyline Supply grocery scene: shelving aisles, freezer wall, produce and
+// checkouts, with all stock drawn as three instanced meshes. Box labels come
+// from one 8-slot atlas texture; a patched shader picks each box's slot from
+// its aLabel instance attribute.
+
 import { useEffect, useLayoutEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";
 import type { Look } from "../../game/look.ts";

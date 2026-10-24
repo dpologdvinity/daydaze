@@ -1,3 +1,8 @@
+// The Water Park's tappable regulars in swimwear: the lifeguard on her chair,
+// the snack bar cashier, two swimmers treading water, a sunbather and a dancer
+// under the splash bucket. A tap shows a line from the dialogue banks in a
+// bubble for 4.5 s; swimmers bob unless reduced motion is on.
+
 import { Html } from "@react-three/drei";
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";

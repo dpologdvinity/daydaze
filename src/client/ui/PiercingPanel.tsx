@@ -1,3 +1,7 @@
+// Ink & Needle's piercing counter: choose a spot, then buy or put in a piece of
+// jewelry, or take one out. Purchases go through onBuy; failed purchases show a
+// reason and leave the look as it was.
+
 import { useState, type JSX } from "react";
 import {
   PIERCING_SPOTS,

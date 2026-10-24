@@ -1,3 +1,7 @@
+// The chat input at the bottom of the screen. Trims the message, ignores empty
+// ones and caps length at 120 characters; what happens to the text (bubble,
+// network) is up to onSay.
+
 import { useState, type FormEvent } from "react";
 
 const MAX_LENGTH = 120;

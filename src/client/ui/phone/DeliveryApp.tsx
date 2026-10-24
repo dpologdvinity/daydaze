@@ -1,3 +1,8 @@
+// Plate Rush, the phone's food delivery app: browse venues, order a dish, and
+// watch couriers on the way. Orders and their timers live in the food store
+// (src/client/food/store.ts); this dialog only reads and repaints them once a
+// second.
+
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { Dialog } from "../../../minigames/Dialog.tsx";
 import {

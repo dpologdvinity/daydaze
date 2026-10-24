@@ -1,3 +1,7 @@
+// The Skylark's people: Noor hosting at the elevator, Bea at the bar (her tap
+// calls `onDrink`), DJ Vesper on the decks, and four regulars at the tables, by
+// the fire and on the floor.
+
 import type { JSX } from "react";
 import type { DialogueContext } from "../../../game/dialogue/types.ts";
 import type { Look, Mood } from "../../../game/look.ts";

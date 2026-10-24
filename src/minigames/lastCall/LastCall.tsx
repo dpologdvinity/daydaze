@@ -1,3 +1,9 @@
+// Last Call, the bartending game: five guests order cocktails, and you pour,
+// pick the glass and garnish, time the shake or stir on a meter and serve for
+// tips. Recipes, scoring and the round live in engine.ts; this owns the step
+// flow (build, mixing, mixed, tipped), the drawn glass and guests, and the best
+// round of the visit, reported once on close.
+
 import { useEffect, useRef, useState } from "react";
 import { Dialog } from "../Dialog.tsx";
 import { playBarSound, type BarSound } from "../../audio/barSynths.ts";
@@ -67,6 +73,10 @@ const QUALITY_WORD: Record<MixQuality, string> = {
 type Phase = "intro" | "bar" | "done";
 type Step = "build" | "mixing" | "mixed" | "tipped";
 
+/**
+ * Props for the Last Call dialog. `muted` silences the bar sounds;
+ * `reducedMotion` calms the animations.
+ */
 export type LastCallProps = {
   /** Called once: the best finished round of this visit, or null if none. */
   onClose: (result: Result | null) => void;
@@ -345,6 +355,11 @@ function Receipt({
   );
 }
 
+/**
+ * The Last Call dialog: intro, a five-order round behind the bar, then the
+ * result with a replay. Several rounds can be worked in one visit; only the one
+ * with the most tips is passed to `onClose`.
+ */
 export function LastCall({
   onClose,
   reducedMotion = false,

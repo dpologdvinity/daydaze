@@ -1,3 +1,8 @@
+// Player 2, the Arts District arcade bar room: the shell and instanced
+// dressing, cabinet screens (the playable ones open their minigame from the
+// cabinet's hotspot), pinball, air hockey and the bar. Layout constants are
+// local to this file.
+
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef, type ReactNode } from "react";
 import * as THREE from "three";

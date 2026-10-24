@@ -1,3 +1,7 @@
+// The twin speed slide panel: tuck as each bend comes up to race a rival down.
+// Times are in tenths of a second; the race state lives in slideSession.ts and
+// this panel only renders it and forwards presses.
+
 import { useEffect, type JSX } from "react";
 import { BENDS, finishTenths } from "../../../game/speedSlide.ts";
 import { useNow, usePressKeys } from "../shared/useNow.ts";

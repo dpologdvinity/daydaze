@@ -1,3 +1,6 @@
+// Handwritten lines for restaurant servers, keyed by situation: ordering, tips
+// and drunk, high or tripping guests. Read through `pickLine`, never directly.
+
 import type { RoleBank } from "./types.ts";
 
 export const serverBank: RoleBank = {

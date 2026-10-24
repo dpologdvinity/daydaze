@@ -1,3 +1,6 @@
+// Handwritten lines for the salon stylist, keyed by situation; outfit reactions
+// and tips. Read through `pickLine`, never directly.
+
 import type { RoleBank } from "./types.ts";
 
 export const stylistBank: RoleBank = {

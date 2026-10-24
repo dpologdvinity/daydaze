@@ -1,3 +1,8 @@
+// Shared closet picker controls: color swatches, picture tiles, chips,
+// segmented buttons and sliders. Every picker is a radiogroup of buttons with
+// the option label as its accessible name. Also augments React's CSSProperties
+// with the `--c` swatch variable.
+
 import { useId, type CSSProperties } from "react";
 
 declare module "react" {
@@ -120,6 +125,10 @@ export function Chips<T extends string>({
   );
 }
 
+/**
+ * A row of text buttons, one per option, for small exclusive choices (mood,
+ * camera view, strengths). `className` picks the row's styling.
+ */
 export function Segmented<T extends string>({
   label,
   options,
