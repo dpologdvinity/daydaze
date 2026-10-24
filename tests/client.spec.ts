@@ -770,9 +770,11 @@ test("Kamayan Hall's cook-off: eight plates against Tita Baby pay a prize", asyn
     .click({ timeout: 150_000 });
   const rival = page.getByRole("region", { name: "Rival" });
   await expect(rival).toContainText(/Tita Baby scored \d+/);
-  const plate = page
-    .getByRole("region", { name: "Cook-off" })
-    .getByRole("button", { name: "Plate it" });
+  const kitchen = page.getByRole("region", { name: "Cook-off" });
+  // an ingredient goes into the wok on the stove
+  await kitchen.getByRole("button", { name: "Pork" }).click();
+  await expect(canvasOf(page)).toHaveAttribute("data-cook-pieces", "1");
+  const plate = kitchen.getByRole("button", { name: "Plate it" });
   for (let i = 0; i < 8; i++) await plate.click();
   await expect(rival).toContainText("They take it this time.");
   await expect(page.getByRole("status", { name: "Prize" })).toContainText(

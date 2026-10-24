@@ -74,6 +74,11 @@ const SIT_HOLDS = [undefined, ...stillClipsOf("sit").map((c) => c.id)];
 // meters from the camera where a doll swaps to and from the low-poly body
 const LOD_FAR = 9;
 const LOD_NEAR = 8;
+// on the low tier everyone else's doll (NPCs, other players: any with a
+// seed) goes low-poly much sooner, so a game's close shot of the player
+// with a rival or two beside her stays in budget; hers keeps full detail
+const LOW_TIER_FAR = 4.6;
+const LOW_TIER_NEAR = 4;
 const worldPos = new THREE.Vector3();
 const JOINTS = [
   "body",
@@ -621,6 +626,9 @@ export function HumanDoll({
 }: Props) {
   // NPC looks carry no face, so their seed picks one
   const heightScale = bodyScales(shape).height;
+  const lowTierNpc = useQuality() === "low" && seed !== 0;
+  const lodNear = lowTierNpc ? LOW_TIER_NEAR : LOD_NEAR;
+  const lodFar = lowTierNpc ? LOW_TIER_FAR : LOD_FAR;
   const root = useRef<THREE.Group>(null);
   const face = useMemo(
     () => (look.face || !seed ? faceOf(look) : seededFace(seed)),
@@ -713,7 +721,7 @@ export function HumanDoll({
       // reading it costs nothing (getWorldPosition re-walks every parent)
       worldPos.setFromMatrixPosition(root.current.matrixWorld);
       const d = worldPos.distanceTo(state.camera.position);
-      const isFar = d > (body.far.visible ? LOD_NEAR : LOD_FAR);
+      const isFar = d > (body.far.visible ? lodNear : lodFar);
       if (isFar !== body.far.visible) {
         body.far.visible = isFar;
         for (const m of body.near) m.visible = !isFar;

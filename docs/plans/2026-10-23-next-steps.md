@@ -588,6 +588,19 @@ tap over the water, the arrows or the panel's pad; squirt with a click,
 tap, Space or the button. Browser tests press Enter on a focused game
 button when a ticking panel keeps it from holding still.
 
+Task 11 (cook-off at the stove): two gas ranges on Kamayan Hall's back
+wall (`STOVES` and blockers in `kamayanHall.ts`, `myStove(me, rival)` in
+`cookOff.ts` so online rivals take different stoves); `kamayan/Stove.tsx`
+fills the wok with low-poly ingredient pieces as you add them (chop clip
+and a knock for cut ones, then stir and sizzle), steam, the served plate
+on the pass, a gong for the result, and Tita Baby cooking at the next
+stove offline. The session moved to `food/cookOffSession.ts`. Budget: on
+the low tier, NPC and peer dolls (any with a seed) drop to their low-poly
+body within 4-4.6 m instead of 8-9 m (`HumanDoll.tsx`), and game shots keep
+background NPCs farther than that from the camera; the player's own doll
+keeps full detail. Live stats need ~10 s of waiting under SwiftShader
+(they refresh every 30 frames).
+
 0. B11 prizes for unscored games and B13 speakeasy cards (quick, high value).
 1. ~~A1 couple emotes~~ (done; piggyback left).
 2. ~~A2 cook-off~~ (done).

@@ -4,13 +4,11 @@
 // running shift's seed.
 
 import { useEffect, useRef, type JSX } from "react";
-import { COOKOFF, ghostScore, outcome } from "../../../game/cookOff.ts";
+import { ghostScore, outcome } from "../../../game/cookOff.ts";
 import { score, shiftOver } from "../../../game/orders.ts";
 import { cookOff, endCookOff, sendScore } from "../../net/cookOff.ts";
-import { createOrderSession } from "../shared/orderSession.ts";
 import { OrderPanel } from "../shared/OrderPanel.tsx";
-
-const session = createOrderSession(COOKOFF, "cook-off");
+import { cookOffSession as session } from "./cookOffSession.ts";
 
 const VERDICT = {
   win: "You win the cook-off!",

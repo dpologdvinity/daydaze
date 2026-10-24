@@ -3,6 +3,8 @@
 // and a videoke corner. Throws at render if the venue is missing from
 // FOOD_VENUES. NPCs and ordering live in ./kamayan/Npcs.tsx.
 
+import { Kitchen } from "./kamayan/Stove.tsx";
+import type { Player } from "../world/PlayerController.tsx";
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -483,7 +485,13 @@ function Carving() {
  * at the carving station, and a videoke corner by the door where the titas
  * sing. Tap Tess at the station for the next dish.
  */
-export function KamayanHall({ onPick }: { onPick: PickHandler }) {
+export function KamayanHall({
+  onPick,
+  player,
+}: {
+  onPick: PickHandler;
+  player: Player;
+}) {
   if (!VENUE)
     throw new Error("Lechon and Kamayan Hall is missing from the venues");
   return (
@@ -518,6 +526,7 @@ export function KamayanHall({ onPick }: { onPick: PickHandler }) {
       <Parols />
       <BoodleTable />
       <Carving />
+      <Kitchen player={player} />
       <Videoke />
       <KamayanNpcs venue={VENUE} />
     </>

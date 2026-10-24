@@ -310,6 +310,89 @@ export function playPinCrash(pins: number): boolean {
   return true;
 }
 
+/** Something hitting a hot wok: a crackling hiss that settles. */
+export function playSizzle(): boolean {
+  const out = sfx();
+  if (!out) return false;
+  const { ctx, dest } = out;
+  const now = ctx.currentTime;
+  const fry = ctx.createBufferSource();
+  fry.buffer = noiseBuffer(ctx);
+  const hp = ctx.createBiquadFilter();
+  hp.type = "highpass";
+  hp.frequency.value = 3200;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.12, now + 0.04);
+  gain.gain.exponentialRampToValueAtTime(0.03, now + 0.5);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.3);
+  fry.connect(hp).connect(gain).connect(dest);
+  fry.start(now, Math.random() * 0.5);
+  fry.stop(now + 1.35);
+  // a few pops of fat
+  for (let i = 0; i < 5; i++) {
+    const at = now + 0.05 + Math.random() * 0.8;
+    const pop = ctx.createOscillator();
+    const g = ctx.createGain();
+    pop.type = "square";
+    pop.frequency.setValueAtTime(1800 + Math.random() * 1500, at);
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.setValueAtTime(0.03, at);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + 0.015);
+    pop.connect(g).connect(dest);
+    pop.start(at);
+    pop.stop(at + 0.02);
+  }
+  return true;
+}
+
+/** A knife on a board: a sharp knock with a woody body. */
+export function playChop(): boolean {
+  const out = sfx();
+  if (!out) return false;
+  const { ctx, dest } = out;
+  const now = ctx.currentTime;
+  burst(ctx, dest, "bandpass", 2600, 0.18, 0.04);
+  const body = ctx.createOscillator();
+  const gain = ctx.createGain();
+  body.type = "triangle";
+  body.frequency.setValueAtTime(320, now);
+  body.frequency.exponentialRampToValueAtTime(140, now + 0.06);
+  gain.gain.setValueAtTime(0.16, now);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+  body.connect(gain).connect(dest);
+  body.start(now);
+  body.stop(now + 0.09);
+  return true;
+}
+
+/** A gong for the result: a low inharmonic bloom that rings out. */
+export function playGong(): boolean {
+  const out = sfx();
+  if (!out) return false;
+  const { ctx, dest } = out;
+  const now = ctx.currentTime;
+  for (const [f, level, decay] of [
+    [98, 0.2, 4],
+    [146.8, 0.1, 3],
+    [207.5, 0.07, 2.4],
+    [311, 0.04, 1.6],
+  ] as const) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(f * 1.01, now);
+    osc.frequency.exponentialRampToValueAtTime(f, now + 0.6);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(level, now + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + decay);
+    osc.connect(gain).connect(dest);
+    osc.start(now);
+    osc.stop(now + decay + 0.05);
+  }
+  return true;
+}
+
 /** A water pistol's squirt: a short hiss that bends up as the jet leaves. */
 export function playSquirt(): boolean {
   const out = sfx();
