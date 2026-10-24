@@ -1,3 +1,7 @@
+// Bumper cars: a walled 24 m x 16 m arena, chasing bots and equal-mass bounces
+// between cars. Each real knock (closing faster than HIT_SPEED) counts a hit
+// for both cars. Pure.
+
 import type { Vec2 } from "../walk.ts";
 import { stepCar, type CarInput, type CarState } from "../driving/car.ts";
 import { BUMPER_CAR } from "../driving/roster.ts";
@@ -10,6 +14,10 @@ const HIT_SPEED = 0.5; // m/s of closing speed that counts as a bump
 const RADIUS = BUMPER_CAR.width / 2 + 0.1;
 
 // shortcut: square corners, not rounded; round them if the scene wants softer corners.
+/**
+ * The bumper arena: four wall slabs around a floor of `size` meters, centered
+ * on the origin.
+ */
 export const ARENA: { walls: readonly (readonly Vec2[])[]; size: Vec2 } = {
   size: [HALF_X * 2, HALF_Z * 2],
   walls: [
@@ -40,6 +48,7 @@ export const ARENA: { walls: readonly (readonly Vec2[])[]; size: Vec2 } = {
   ],
 };
 
+/** One car in the arena; `hits` counts the bumps it has been in. */
 export type Bumper = {
   id: string;
   state: CarState;

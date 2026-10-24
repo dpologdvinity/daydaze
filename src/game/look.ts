@@ -1,4 +1,12 @@
+// The doll's look: every closet catalog (skin, hair, makeup, outfits, shoes,
+// face, piercings, swimsuits), the Look type, its validator, and the short
+// codes that pack a face, makeup, piercings and swimsuit into strings. Looks go
+// over the network as flat maps of short strings, so new parts are optional
+// fields with codes that older looks can omit. Catalog ids double as shop item
+// ids (shop.ts).
+
 import { isGait } from "./gaits.ts";
+/** Skin tones; each id is the hex color the doll is tinted. */
 export const SKINS = [
   { id: "#f3d4c4", label: "Porcelain" },
   { id: "#e6b48e", label: "Golden" },
@@ -7,6 +15,10 @@ export const SKINS = [
   { id: "#633c29", label: "Espresso" },
 ] as const;
 
+/**
+ * Hair styles; each id names a doll hair model. Salon styles are locked until
+ * bought.
+ */
 export const HAIR_STYLES = [
   { id: "waves", label: "Glossy waves" },
   { id: "ponytail", label: "Snatched pony" },
@@ -31,6 +43,7 @@ export const HAIR_STYLES = [
   { id: "top-knot", label: "Top knot" },
 ] as const;
 
+/** Hair colors as hex ids; the Blowout Bar's are locked until bought. */
 export const HAIR_COLORS = [
   { id: "#1b1014", label: "Ink" },
   { id: "#4a2a1c", label: "Espresso" },
@@ -68,6 +81,7 @@ export const LIPS = [
   { id: "lips-bare-balm", label: "Bare balm", swatch: "#c98f86" },
 ] as const;
 
+/** Eyebrow styles. */
 export const BROWS = [
   { id: "brows-y2k-thin", label: "Y2K thin" },
   { id: "brows-fox-snatched", label: "Fox" },
@@ -94,6 +108,7 @@ export const OUTFITS = [
   { id: "hoodie-bikers", label: "Cropped hoodie and bikers" },
 ] as const;
 
+/** Outfit tints as hex ids; the Thrift Temple dyes are locked until bought. */
 export const OUTFIT_COLORS = [
   { id: "#ff2f9a", label: "Fuchsia" },
   { id: "#ffb02e", label: "Amber" },
@@ -110,6 +125,10 @@ export const OUTFIT_COLORS = [
   { id: "#6a1a2a", label: "Burgundy" },
 ] as const;
 
+/**
+ * Eyeshadow colors as hex ids; the beauty supply testers are locked until
+ * bought.
+ */
 export const EYESHADOWS = [
   { id: "#d23cff", label: "Orchid" },
   { id: "#ff2f9a", label: "Fuchsia" },
@@ -123,6 +142,7 @@ export const EYESHADOWS = [
   { id: "#2e7dff", label: "Electric blue" },
 ] as const;
 
+/** Idle animations a doll can hold. */
 export const MOODS = [
   { id: "idle", label: "Idle" },
   { id: "pose", label: "Pose" },
@@ -134,7 +154,9 @@ export const MOODS = [
 type Option = { readonly id: string; readonly label: string };
 type IdOf<T extends readonly Option[]> = T[number]["id"];
 
+/** One of HAIR_STYLES' ids. */
 export type HairStyle = IdOf<typeof HAIR_STYLES>;
+/** One of OUTFITS' ids. */
 export type Outfit = IdOf<typeof OUTFITS>;
 
 /** Shoes: sneakers for everyone, the rest from Platform Palace. */
@@ -143,7 +165,9 @@ export const SHOES = [
   { id: "platforms", label: "Platforms" },
   { id: "boots", label: "Boots" },
 ] as const;
+/** One of SHOES' ids. */
 export type Shoe = IdOf<typeof SHOES>;
+/** Whether a value is one of SHOES' ids. */
 export const isShoe = (value: unknown): value is Shoe =>
   SHOES.some((s) => s.id === value);
 
@@ -169,6 +193,7 @@ const OUTFIT_SHOES: Record<Outfit, Shoe> = {
 export const shoesOf = (look: Look): Shoe =>
   isShoe(look.shoes) ? look.shoes : OUTFIT_SHOES[look.outfit];
 
+/** One of MOODS' ids. */
 export type Mood = IdOf<typeof MOODS>;
 
 /** Eye colors for the 3D doll's irises. */
@@ -185,6 +210,7 @@ export const EYE_COLORS = [
   { id: "#1f8a5a", label: "Emerald" },
 ] as const;
 
+/** Body shapes; the index travels in the face code. */
 export const FIGURES = [
   { id: "classic", label: "Hourglass" },
   { id: "curvy", label: "Curvy" },
@@ -211,6 +237,7 @@ export const EYE_SHAPES = [
   { id: "upturned", label: "Upturned" },
   { id: "downturned", label: "Downturned" },
 ] as const;
+/** Nose presets; see EYE_SHAPES. */
 export const NOSES = [
   { id: "straight", label: "Straight" },
   { id: "button", label: "Button" },
@@ -218,6 +245,7 @@ export const NOSES = [
   { id: "wide", label: "Wide" },
   { id: "roman", label: "Roman" },
 ] as const;
+/** Lip shape presets; see EYE_SHAPES. */
 export const LIP_SHAPES = [
   { id: "natural", label: "Natural" },
   { id: "full", label: "Full" },
@@ -225,6 +253,7 @@ export const LIP_SHAPES = [
   { id: "heart", label: "Heart" },
   { id: "wide", label: "Wide" },
 ] as const;
+/** Face shape presets; see EYE_SHAPES. */
 export const FACE_SHAPES = [
   { id: "oval", label: "Oval" },
   { id: "round", label: "Round" },
@@ -241,9 +270,15 @@ export const FACE_PRESETS = [
   { field: "faceShape", key: "face", options: FACE_SHAPES },
 ] as const;
 
+/** One of FACE_SLIDERS' ids. */
 export type FaceSlider = IdOf<typeof FACE_SLIDERS>;
+/** One of FIGURES' ids. */
 export type Figure = IdOf<typeof FIGURES>;
 
+/**
+ * Everything the face code carries: slider values in -1..1, figure, eye color
+ * and the four presets.
+ */
 export type Face = Record<FaceSlider, number> & {
   figure: Figure;
   eyeColor: IdOf<typeof EYE_COLORS>;
@@ -253,6 +288,7 @@ export type Face = Record<FaceSlider, number> & {
   faceShape: IdOf<typeof FACE_SHAPES>;
 };
 
+/** The base face: every slider at 0 and the first option of each preset. */
 export const DEFAULT_FACE: Face = {
   eyeSize: 0,
   eyeTilt: 0,
@@ -273,6 +309,11 @@ export const DEFAULT_FACE: Face = {
 // -1..1 in steps of 0.1), then the body shape's and eye color's indexes.
 const STEPS = "abcdefghijklmnopqrstu";
 
+/**
+ * Packs a face into its short code: a letter per slider (rounded to 0.1,
+ * clamped to -1..1), then single-digit indexes for figure, eye color and each
+ * preset. Assumes every catalog stays under 10 options.
+ */
 export function encodeFace(face: Face): string {
   const slider = (v: number) =>
     STEPS[Math.round((Math.max(-1, Math.min(1, v)) + 1) * 10)];
@@ -372,6 +413,7 @@ export function faceOf(look: Look): Face {
   return decodeFace(look.face) ?? DEFAULT_FACE;
 }
 
+/** Eyeliner styles. */
 export const LINERS = [
   { id: "none", label: "No liner" },
   { id: "thin", label: "Thin line" },
@@ -380,6 +422,7 @@ export const LINERS = [
   { id: "graphic", label: "Graphic" },
 ] as const;
 
+/** Lip finishes. */
 export const GLOSSES = [
   { id: "matte", label: "Matte" },
   { id: "satin", label: "Satin" },
@@ -387,6 +430,7 @@ export const GLOSSES = [
   { id: "glass", label: "Glass" },
 ] as const;
 
+/** Blush colors; `swatch` is the closet chip, transparent for none. */
 export const BLUSHES = [
   { id: "none", label: "No blush", swatch: "#00000000" },
   { id: "rose", label: "Rose", swatch: "#ff6c9a" },
@@ -396,12 +440,14 @@ export const BLUSHES = [
   { id: "bronze", label: "Bronze", swatch: "#b5653a" },
 ] as const;
 
+/** How strongly blush is painted. */
 export const STRENGTHS = [
   { id: "soft", label: "Soft" },
   { id: "medium", label: "Medium" },
   { id: "bold", label: "Bold" },
 ] as const;
 
+/** Highlighter shades; `swatch` is the closet chip, transparent for none. */
 export const HIGHLIGHTERS = [
   { id: "none", label: "No highlighter", swatch: "#00000000" },
   { id: "champagne", label: "Champagne", swatch: "#f7e2b5" },
@@ -410,6 +456,7 @@ export const HIGHLIGHTERS = [
   { id: "bronze", label: "Bronze glow", swatch: "#d79a5c" },
 ] as const;
 
+/** How eyeshadow is placed around the eye. */
 export const SHADOW_STYLES = [
   { id: "wash", label: "Wash" },
   { id: "cut-crease", label: "Cut crease" },
@@ -417,12 +464,14 @@ export const SHADOW_STYLES = [
   { id: "halo", label: "Halo" },
 ] as const;
 
+/** Freckle amounts. */
 export const FRECKLES = [
   { id: "none", label: "None" },
   { id: "light", label: "A few" },
   { id: "lots", label: "Lots" },
 ] as const;
 
+/** Glasses frames. */
 export const GLASSES = [
   { id: "none", label: "No glasses" },
   { id: "round", label: "Round" },
@@ -430,6 +479,7 @@ export const GLASSES = [
   { id: "square", label: "Square" },
 ] as const;
 
+/** The makeup bag's choices, one id per catalog. */
 export type Makeup = {
   liner: IdOf<typeof LINERS>;
   gloss: IdOf<typeof GLOSSES>;
@@ -441,6 +491,7 @@ export type Makeup = {
   glasses: IdOf<typeof GLASSES>;
 };
 
+/** Makeup for looks without a makeup code. */
 export const DEFAULT_MAKEUP: Makeup = {
   liner: "winged",
   gloss: "glossy",
@@ -468,6 +519,10 @@ const MAKEUP_PARTS = [
 /** The code's length before freckles and glasses. */
 const MAKEUP_V1 = 6;
 
+/**
+ * Packs makeup into its code: one digit per part, the option's catalog index
+ * (unknown ids become 0).
+ */
 export function encodeMakeup(m: Makeup): string {
   return MAKEUP_PARTS.map(([key, list]) =>
     Math.max(
@@ -477,6 +532,10 @@ export function encodeMakeup(m: Makeup): string {
   ).join("");
 }
 
+/**
+ * The makeup a code describes; null when malformed. Codes from before freckles
+ * and glasses (6 digits) decode with those at their defaults.
+ */
 export function decodeMakeup(code: unknown): Makeup | null {
   if (
     typeof code !== "string" ||
@@ -507,6 +566,10 @@ export const PIERCING_SPOTS = [
   { id: "navel", label: "Belly button" },
 ] as const;
 
+/**
+ * Jewelry for any piercing spot; Ink & Needle's fine pieces are locked until
+ * bought.
+ */
 export const PIERCING_STYLES = [
   { id: "none", label: "None" },
   { id: "silver-stud", label: "Silver stud" },
@@ -520,10 +583,14 @@ export const PIERCING_STYLES = [
   { id: "opal-stud", label: "Opal stud" },
 ] as const;
 
+/** One of PIERCING_SPOTS' ids. */
 export type PiercingSpot = IdOf<typeof PIERCING_SPOTS>;
+/** One of PIERCING_STYLES' ids. */
 export type PiercingStyle = IdOf<typeof PIERCING_STYLES>;
+/** The jewelry at every spot; "none" for an empty one. */
 export type Piercings = Record<PiercingSpot, PiercingStyle>;
 
+/** Every spot empty. */
 export const NO_PIERCINGS: Piercings = {
   lip: "none",
   nose: "none",
@@ -541,6 +608,10 @@ export function encodePiercings(p: Piercings): string {
   ).join("");
 }
 
+/**
+ * The piercings a code describes; null unless it has exactly one valid digit
+ * per spot.
+ */
 export function decodePiercings(code: unknown): Piercings | null {
   if (typeof code !== "string" || !/^[0-9]+$/.test(code)) return null;
   if (code.length !== PIERCING_SPOTS.length) return null;
@@ -553,10 +624,15 @@ export function decodePiercings(code: unknown): Piercings | null {
   return out;
 }
 
+/** A look's piercings, or none when it has no valid code. */
 export function piercingsOf(look: Look): Piercings {
   return decodePiercings(look.piercings) ?? NO_PIERCINGS;
 }
 
+/**
+ * Everything a doll wears and is. The catalog fields are required; the code
+ * fields are optional so older looks stay valid.
+ */
 export type Look = {
   skin: IdOf<typeof SKINS>;
   hairStyle: HairStyle;
@@ -622,6 +698,11 @@ function isId(catalog: readonly Option[], value: unknown): boolean {
   return catalog.some((option) => option.id === value);
 }
 
+/**
+ * Whether a value from storage or the network is a valid Look: own fields only,
+ * every required field a catalog id, every optional field valid when present,
+ * and no extra fields.
+ */
 export function validateLook(value: unknown): value is Look {
   if (typeof value !== "object" || value === null) return false;
   // Own enumerable fields only, so prototypes and arrays cannot sneak through.
@@ -655,6 +736,7 @@ export function validateLook(value: unknown): value is Look {
   );
 }
 
+/** Swimsuit styles for the Water Park and other swimwear rooms. */
 export const SWIMSUITS = [
   { id: "one-piece", label: "One-piece" },
   { id: "bikini", label: "Bikini" },
@@ -663,6 +745,7 @@ export const SWIMSUITS = [
   { id: "racer", label: "Racer one-piece" },
 ] as const;
 
+/** One of SWIMSUITS' ids. */
 export type Swimsuit = IdOf<typeof SWIMSUITS>;
 
 /** The Water Park look: its own save slot, so the outfit is never touched. */
@@ -671,8 +754,10 @@ export type SwimLook = {
   color: IdOf<typeof OUTFIT_COLORS>;
 };
 
+/** The swimsuit a new save starts with. */
 export const DEFAULT_SWIM: SwimLook = { style: "bikini", color: "#3fe0d0" };
 
+/** Whether a value is a valid SwimLook with exactly its two fields. */
 export function validateSwim(value: unknown): value is SwimLook {
   if (typeof value !== "object" || value === null) return false;
   const fields = new Map<string, unknown>(Object.entries(value));
@@ -688,6 +773,7 @@ export function encodeSwim(swim: SwimLook): string {
   return `${swim.style}|${swim.color}`;
 }
 
+/** The swimsuit a "style|color" code describes; null when malformed. */
 export function decodeSwim(code: unknown): SwimLook | null {
   if (typeof code !== "string") return null;
   const [style, color, ...rest] = code.split("|");
@@ -703,10 +789,12 @@ export function swimFor(
   return room.swimwear ? swim : null;
 }
 
+/** Whether a value is one of MOODS' ids. */
 export function isMood(value: unknown): value is Mood {
   return isId(MOODS, value);
 }
 
+/** The look a new save starts with; uses only free options. */
 export const DEFAULT_LOOK: Look = {
   skin: "#e6b48e",
   hairStyle: "waves",

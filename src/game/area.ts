@@ -1,3 +1,8 @@
+// Walk areas: the walkable surfaces, solid blockers and portals of a room, plus
+// clamping and one-step movement with wall sliding. Blockers are bucketed on an
+// 8 m grid, cached per blocker list in a WeakMap, so the lists must not be
+// mutated after first use. Pure.
+
 import { CITY_AREA } from "./city/layout.ts";
 import type { Portal, RoomDefinition } from "./rooms.ts";
 import {
@@ -20,6 +25,10 @@ export type WalkArea = {
   portals: readonly Portal[];
 };
 
+/**
+ * A single-surface walk area from a room definition: its walkable polygon, its
+ * blockers (none if unset) and its portals.
+ */
 export function roomArea(room: RoomDefinition): WalkArea {
   return {
     surfaces: [room.walkable],

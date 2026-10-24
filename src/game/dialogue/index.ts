@@ -1,3 +1,7 @@
+// Registry of every NPC role's handwritten line bank, keyed by role id. Adding
+// a role means a new role file, its id in ROLE_IDS (types.ts) and an entry
+// here; the Record type makes a missing bank a type error.
+
 import { bartenderBank } from "./bartender.ts";
 import { bouncerBank } from "./bouncer.ts";
 import { djBank } from "./dj.ts";
@@ -20,6 +24,10 @@ import { guardBank } from "./guard.ts";
 import { policeBank } from "./police.ts";
 import type { DialogueRole, RoleBank } from "./types.ts";
 
+/**
+ * Each dialogue role's line bank; pickLine reads from here unless a test passes
+ * its own bank.
+ */
 export const LINE_BANKS: Record<DialogueRole, RoleBank> = {
   bartender: bartenderBank,
   bouncer: bouncerBank,

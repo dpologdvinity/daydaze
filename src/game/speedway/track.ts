@@ -1,5 +1,15 @@
+// Speedway track geometry: the race tracks and the Marina's jet-ski course,
+// each built from a closed centerline into checkpoints, a starting grid and
+// barrier walls. Coordinates are meters on the x/z ground plane, with yaw 0
+// facing +z.
+
 import type { Vec2 } from "../walk.ts";
 
+/**
+ * A closed-loop course and everything derived from it. `width` is the drivable
+ * road width in meters; `grid` holds six start slots behind the line, pole
+ * first.
+ */
 export type Track = {
   id: string;
   name: string;
@@ -137,6 +147,7 @@ const boardwalkLoop = build(
   12,
 );
 
+/** The Speedway's tracks, in the order the menu lists them. */
 export const TRACKS: readonly Track[] = [neonOval, boardwalkLoop];
 
 /** The Marina's jet-ski course out past the yachts, marked by buoys. */

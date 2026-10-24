@@ -1,8 +1,15 @@
+// Fixed-timestep clock for the driving physics: turns variable frame times into
+// whole ticks at TICK_HZ, with a cap so a long pause does not run a burst of
+// catch-up ticks.
+
+/** Physics ticks per second for every car. */
 export const TICK_HZ = 50;
+/** Most ticks one frame may run; time beyond that is dropped. */
 export const MAX_TICKS_PER_FRAME = 5;
 
 const TICK = 1 / TICK_HZ;
 
+/** Leftover time in seconds, carried between frames; start at 0. */
 export type StepClock = { accumulator: number };
 
 // Runs `step` once per whole fixed tick and returns the interpolation alpha in [0, 1).

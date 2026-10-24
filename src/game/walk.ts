@@ -1,3 +1,8 @@
+// Walking on the ground plane: 2D points as [x, z] in meters, point-in-polygon
+// tests and clamping to a room's walkable area, and stepping and turning
+// towards a target. Pure; non-finite input is tolerated and never moves you.
+
+/** A point or direction on the ground plane, [x, z] in meters. */
 export type Vec2 = readonly [x: number, z: number];
 
 /** Meters per second. */
@@ -58,6 +63,10 @@ export function pointInPolygon(polygon: readonly Vec2[], p: Vec2): boolean {
   return inside;
 }
 
+/**
+ * `p` when it is inside (or on the edge of) the walkable polygon, else the
+ * nearest point on its edge.
+ */
 export function clampToWalkable(polygon: readonly Vec2[], p: Vec2): Vec2 {
   return pointInPolygon(polygon, p) ? p : nearestPointOnPolygon(polygon, p);
 }

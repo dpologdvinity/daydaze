@@ -1,6 +1,13 @@
+// Lap timing for the Speedway: checkpoints must be crossed in order and
+// forward; checkpoint 0 is the start line, so crossing it starts lap 1 and then
+// closes each lap.
+
 import type { Vec2 } from "../walk.ts";
 import type { Track } from "./track.ts";
 
+/**
+ * Lap progress for one car; times are in milliseconds on the caller's clock.
+ */
 export type LapState = {
   nextCheckpoint: number;
   /** The lap being driven; 0 until the car first crosses the start line. */
@@ -10,6 +17,7 @@ export type LapState = {
   lapTimesMs: readonly number[];
 };
 
+/** A car at the grid, before its first crossing of the start line. */
 export function initialLap(nowMs: number): LapState {
   return {
     nextCheckpoint: 0,

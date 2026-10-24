@@ -1,3 +1,6 @@
+// Handwritten lines for the nail salon tech, keyed by situation; mostly outfit
+// and tipping reactions. Read through `pickLine`, never directly.
+
 import type { RoleBank } from "./types.ts";
 
 export const nailTechBank: RoleBank = {

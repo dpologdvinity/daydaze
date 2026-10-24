@@ -1,6 +1,11 @@
+// Arcade car physics: car specs, inputs and state, and stepCar, one fixed tick
+// of a bicycle model that keeps the car (as a circle of half its width) out of
+// solid wall polygons. Pure; runs at TICK_HZ from fixedStep.ts.
+
 import { nearestPointOnPolygon, pointInPolygon, type Vec2 } from "../walk.ts";
 import { TICK_HZ } from "./fixedStep.ts";
 
+/** A car's class, for the roster and the dealership's shelves. */
 export type CarClass =
   | "beater"
   | "everyday"

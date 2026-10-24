@@ -1,3 +1,6 @@
+// Handwritten lines for police officers: greetings, skipped bills, shoplifting
+// arrests and jail release. Read through `pickLine`, never directly.
+
 import type { RoleBank } from "./types.ts";
 
 export const policeBank: RoleBank = {

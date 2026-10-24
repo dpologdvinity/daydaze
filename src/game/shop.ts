@@ -1,3 +1,8 @@
+// The clothing and beauty shops: the item catalog (each item an option id from
+// look.ts), Thrift Temple's daily find, buying into the wardrobe, and taking
+// unowned items off a look. Shop items are locked until owned; every other
+// catalog option is free.
+
 import {
   DEFAULT_LOOK,
   EYESHADOWS,
@@ -17,6 +22,7 @@ import {
 } from "./look.ts";
 import { spend } from "./wallet.ts";
 
+/** A store that sells look items. */
 export type ShopId =
   "boutique" | "beauty" | "salon" | "piercing" | "thrift" | "shoes";
 
@@ -31,6 +37,10 @@ export type ShopSlot =
   | "piercing"
   | "shoes";
 
+/**
+ * An item for sale: its look option id, the slot it fills, the store and the
+ * price in coins.
+ */
 export type ShopItem = {
   id: string;
   slot: ShopSlot;
@@ -160,12 +170,18 @@ export function pierce(look: Look, spot: PiercingSpot, style: string): Look {
   };
 }
 
+/** The catalog item with this id, at its regular store and price. */
 export function shopItem(id: string): ShopItem | undefined {
   return SHOP_ITEMS.find((item) => item.id === id);
 }
 
+/** The coins and owned items a purchase works on. */
 export type Wallet = { coins: number; wardrobe: readonly string[] };
 
+/**
+ * A purchase's new wallet, or why it failed: unknown item, already owned, or
+ * not enough coins.
+ */
 export type PurchaseResult =
   | { ok: true; state: Wallet }
   | { ok: false; reason: "unknown" | "owned" | "broke" };

@@ -1,3 +1,6 @@
+// Handwritten lines for swimmers lounging at the Water Park, keyed by
+// situation. Read through `pickLine`, never directly.
+
 import type { RoleBank } from "./types.ts";
 
 export const swimmerBank: RoleBank = {

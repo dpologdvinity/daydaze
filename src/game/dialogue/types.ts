@@ -1,3 +1,8 @@
+// The dialogue vocabulary: role, situation, time-of-day, neighborhood and
+// placeholder ids, plus the shapes of lines, conditions and role banks. The id
+// lists are the single source; the union types derive from them.
+
+/** Every NPC role with a line bank; LINE_BANKS in index.ts must cover each. */
 export const ROLE_IDS = [
   "bartender",
   "bouncer",
@@ -21,8 +26,12 @@ export const ROLE_IDS = [
   "police",
 ] as const;
 
+/** One of ROLE_IDS. */
 export type DialogueRole = (typeof ROLE_IDS)[number];
 
+/**
+ * Every situation a line can be written for; a bank may leave any of them out.
+ */
 export const SITUATION_IDS = [
   "greeting-first",
   "greeting-regular",
@@ -53,8 +62,10 @@ export const SITUATION_IDS = [
   "goodbye",
 ] as const;
 
+/** One of SITUATION_IDS. */
 export type DialogueSituation = (typeof SITUATION_IDS)[number];
 
+/** The four parts of the in-game day a line can be limited to. */
 export const TIME_OF_DAY_IDS = [
   "morning",
   "afternoon",
@@ -62,8 +73,10 @@ export const TIME_OF_DAY_IDS = [
   "late-night",
 ] as const;
 
+/** One of TIME_OF_DAY_IDS. */
 export type TimeOfDay = (typeof TIME_OF_DAY_IDS)[number];
 
+/** City neighborhoods a line can be limited to. */
 export const NEIGHBORHOOD_IDS = [
   "downtown",
   "nightlife-row",
@@ -77,10 +90,16 @@ export const NEIGHBORHOOD_IDS = [
   "hillside-winter-town",
 ] as const;
 
+/** One of NEIGHBORHOOD_IDS. */
 export type NeighborhoodId = (typeof NEIGHBORHOOD_IDS)[number];
 
+/**
+ * Tokens a line may contain as `{id}`; fillPlaceholders swaps them for context
+ * values.
+ */
 export const PLACEHOLDER_IDS = ["name", "item", "place", "drink"] as const;
 
+/** One of PLACEHOLDER_IDS. */
 export type PlaceholderId = (typeof PLACEHOLDER_IDS)[number];
 
 // A line matches only when every condition it sets matches the context.
@@ -91,6 +110,10 @@ export type LineConditions = {
   time?: TimeOfDay | readonly TimeOfDay[];
 };
 
+/**
+ * A line in object form. `weight` (default 1, non-positive or non-finite also
+ * counts as 1) scales how often it is picked.
+ */
 export type Line = {
   text: string;
   weight?: number;
@@ -100,8 +123,16 @@ export type Line = {
 // Plain strings are the common case; use the object form for weights or conditions.
 export type LineEntry = string | Line;
 
+/**
+ * One role's lines, by situation. Missing situations fall back to tapped, then
+ * idle.
+ */
 export type RoleBank = Partial<Record<DialogueSituation, readonly LineEntry[]>>;
 
+/**
+ * What the speaker knows: placeholder values plus where and when, for matching
+ * LineConditions.
+ */
 export type DialogueContext = {
   name?: string;
   item?: string;

@@ -1,3 +1,8 @@
+// The local save: its shape (version 1, extended with defaulted fields), the
+// localStorage key, and a loader that salvages every valid field from any
+// stored JSON so a corrupt or older save never loses the rest. Also
+// display-name rules and random guest names.
+
 import { isIntensity, type Intensity } from "./effects/buzz.ts";
 import {
   DEFAULT_CRIME,
@@ -27,8 +32,10 @@ import { cleanRecords, type RecordId } from "./records.ts";
 import { cleanWardrobe, unlockedLook } from "./shop.ts";
 import { isCoins, STARTING_COINS } from "./wallet.ts";
 
+/** The graphics quality setting; auto picks a tier from the device. */
 export type Quality = "auto" | "high" | "low";
 
+/** Everything a player keeps between sessions. */
 export type SaveV1 = {
   version: 1;
   name: string;
@@ -63,6 +70,7 @@ export type SaveV1 = {
   records: RecordId[];
 };
 
+/** The localStorage key the save lives under. */
 export const SAVE_KEY = "daydaze-save-v1";
 
 const QUALITIES: readonly unknown[] = [
@@ -75,6 +83,10 @@ function isQuality(value: unknown): value is Quality {
   return QUALITIES.includes(value);
 }
 
+/**
+ * A fresh save for a new player named `name`, with fresh copies of every
+ * default (nothing shared).
+ */
 export function createDefaultSave(name: string): SaveV1 {
   return {
     version: 1,
@@ -108,6 +120,11 @@ function fieldsOf(value: unknown): Map<string, unknown> {
   );
 }
 
+/**
+ * Parses stored save JSON, keeping each field that validates and defaulting the
+ * rest. Null or unparseable input gives a default save named `fallbackName`;
+ * worn shop items the wardrobe does not own are taken off.
+ */
 export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
   let parsed: unknown = null;
   try {
@@ -167,10 +184,15 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
   };
 }
 
+/** The save as JSON for localStorage. */
 export function serializeSave(save: SaveV1): string {
   return JSON.stringify(save);
 }
 
+/**
+ * Whether a name is 2-16 ASCII letters, digits, spaces, underscores or hyphens,
+ * with no leading or trailing space.
+ */
 export function isValidDisplayName(name: unknown): name is string {
   // ASCII only, so look-alike letters cannot impersonate other players.
   return (
@@ -206,6 +228,7 @@ function pick(random: () => number, count: number): number {
   return index > 0 ? Math.min(index, count - 1) : 0;
 }
 
+/** A random guest name like "PeachyBloom4821", always a valid display name. */
 export function generateGuestName(random: () => number): string {
   const adjective = GUEST_ADJECTIVES[pick(random, GUEST_ADJECTIVES.length)];
   const noun = GUEST_NOUNS[pick(random, GUEST_NOUNS.length)];

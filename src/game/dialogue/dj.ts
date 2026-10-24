@@ -1,3 +1,7 @@
+// Handwritten lines for club DJs (mostly Pulse), keyed by situation: dancing
+// nearby, dance-offs, Pride night, late night. Read through `pickLine`, never
+// directly.
+
 import type { RoleBank } from "./types.ts";
 
 export const djBank: RoleBank = {

@@ -1,3 +1,7 @@
+// Partner dancing: where two dolls stand to dance as a couple, and the follow's
+// pose as a mirror of the lead's, half a loop behind. Pure; works for any pair
+// of dolls, NPC or player.
+
 import {
   poseAt,
   type DanceMove,
@@ -6,7 +10,12 @@ import {
   type Vec3,
 } from "./moves.ts";
 
+/**
+ * Which half of a dancing pair a doll is. The lead dances the move as written;
+ * the follow mirrors it.
+ */
 export type CoupleRole = "lead" | "follow";
+/** Where one partner stands and which way they face. */
 export type CoupleSpot = {
   role: CoupleRole;
   /** Ground position, in the same units as the center. */
