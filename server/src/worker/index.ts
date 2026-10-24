@@ -1,3 +1,9 @@
+// The Worker entry: routes /api and /ws requests, checks the Origin on anything
+// but plain GETs, reads sessions from D1, and handles guests, accounts, cloud
+// saves, friends, blocks, reports and admin bans. Room sockets are forwarded to
+// the room copy's Durable Object with an identity header only this gateway
+// sets. Every response gets the security headers; error bodies are fixed codes.
+
 import type { RoomId } from "../../../src/game/rooms.ts";
 import {
   createDefaultSave,

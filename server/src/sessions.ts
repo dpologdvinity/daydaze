@@ -1,3 +1,6 @@
+// Random session tokens, their SHA-256 digests for D1, player ids and a crypto-
+// random number. Uses Web Crypto, so it runs in the Worker and in Node.
+
 function base64Url(bytes: Uint8Array): string {
   return btoa(String.fromCharCode(...bytes))
     .replaceAll("+", "-")
@@ -26,6 +29,7 @@ export function newPlayerId(kind: "g" | "u"): string {
   return `${kind}_${base64Url(crypto.getRandomValues(new Uint8Array(16)))}`;
 }
 
+/** A crypto-random number in [0, 1). */
 export function randomUnit(): number {
   return crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32;
 }

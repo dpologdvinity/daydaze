@@ -1,3 +1,9 @@
+// The rules of one room copy, independent of the socket host: joining and
+// capacity, area-of-interest visibility (120 m in the city), position clamping,
+// rate-limited chat, emotes and game relays, blocks, kicks and bans, and the
+// recent chat kept for reports. Blocks and bans last only as long as the copy;
+// the gateway re-applies stored ones.
+
 import { validateLook, type Look } from "../../src/game/look.ts";
 import { isRoomId, ROOMS, type RoomId } from "../../src/game/rooms.ts";
 import { isValidDisplayName } from "../../src/game/save.ts";
@@ -25,8 +31,11 @@ import {
 } from "./rateLimit.ts";
 
 export { CLOSE_CODES };
+/** Most players one room copy holds. */
 export const ROOM_CAPACITY = 60;
+/** Malformed messages a socket may send before it is closed. */
 export const MAX_INVALID_MESSAGES = 10;
+/** Chat lines the copy keeps for reports, unfiltered. */
 export const REPORT_CHAT_LINES = 20;
 /**
  * Players see (and hear) only those within this many meters. Rooms are
@@ -37,6 +46,9 @@ export const INTEREST_RADIUS = 120;
 /** Leaving takes a little further than arriving, so the edge doesn't flicker. */
 const INTEREST_SLACK = 10;
 
+/**
+ * Who is joining, as the gateway vouched for them; `look` is validated on join.
+ */
 export type RoomPlayer = {
   id: string;
   name: string;
@@ -44,6 +56,7 @@ export type RoomPlayer = {
   isAdmin: boolean;
   look: unknown;
 };
+/** Whether a join was let in, and why not. */
 export type JoinResult =
   { ok: true } | { ok: false; reason: "full" | "banned" | "invalid" };
 /** Passed to the socket's close callback; the player is already removed. */
@@ -54,7 +67,12 @@ CLOSE_CODES satisfies Record<
   CloseReason | Exclude<JoinResult, { ok: true }>["reason"],
   number
 >;
+/** One chat line as typed, with when it was said (ms). */
 export type ChatLine = { id: string; name: string; text: string; at: number };
+/**
+ * Which room this copy is, its capacity (1 to MAX_ROOM_ENTITIES) and the clock
+ * in ms.
+ */
 export type RoomCoreOptions = {
   roomId: string;
   capacity?: number;

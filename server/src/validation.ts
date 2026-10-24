@@ -1,3 +1,7 @@
+// Validates every request body, socket attachment and query parameter the
+// Worker reads, returning typed values or null. Anything from the network
+// passes through here before use.
+
 import { validateLook, DEFAULT_LOOK, type Look } from "../../src/game/look.ts";
 import { isRoomId, type RoomId } from "../../src/game/rooms.ts";
 import {
@@ -13,9 +17,14 @@ import { parseCopy } from "./routes.ts";
 
 export { parseIdentity, type Identity };
 
+/** One copy of a room, such as Downtown #2. */
 export type RoomCopy = { roomId: RoomId; copy: number };
+/**
+ * What a hibernating room socket keeps: where it is, who it is and their look.
+ */
 export type Attachment = RoomCopy & { identity: Identity; look: Look };
 
+/** Largest save upload accepted, in UTF-8 bytes (64 KiB). */
 export const MAX_SAVE_BYTES = 65_536;
 const MAX_REASON_LENGTH = 200;
 
@@ -42,6 +51,10 @@ export function parseAttachment(value: unknown): Attachment | null {
     : null;
 }
 
+/**
+ * Username and password from a signup or login body, or null if either is
+ * malformed or the username is not allowed.
+ */
 export function parseCredentials(
   body: unknown,
 ): { username: string; password: string } | null {
@@ -83,6 +96,10 @@ export function parseSave(raw: string, fallbackName: string): SaveV1 | null {
   return canonical(parsed) === canonical(save) ? save : null;
 }
 
+/**
+ * A player report: who, why (1 to 200 characters, not blank) and in which room
+ * copy. Null when any part is invalid.
+ */
 export function parseReport(
   body: unknown,
 ): (RoomCopy & { targetId: string; reason: string }) | null {
@@ -99,6 +116,7 @@ export function parseReport(
     : null;
 }
 
+/** An admin ban: who and why (1 to 200 characters, not blank), or null. */
 export function parseBan(
   body: unknown,
 ): { targetId: string; reason: string } | null {
@@ -131,6 +149,10 @@ export function parseTarget(body: unknown): string | null {
   return isNetworkId(targetId) ? targetId : null;
 }
 
+/**
+ * A look from a JSON query parameter; a missing or invalid one falls back to a
+ * copy of DEFAULT_LOOK, never null.
+ */
 export function parseLookParam(param: string | null): Look {
   try {
     const look: unknown = JSON.parse(param ?? "");
