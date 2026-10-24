@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { createSaveSync, mayPush } from "./saveSync.ts";
+import { createSaveSync, mayPush, stillReady } from "./saveSync.ts";
 
 function fakeTimers() {
   let now = 0;
@@ -68,4 +68,12 @@ test("saves go up only for an account whose cloud save has loaded", () => {
   // signed in, but the account's own save hasn't come down yet
   assert.equal(mayPush(account, false), false);
   assert.equal(mayPush(account, true), true);
+});
+
+test("a refresh as the same account keeps the save loaded; a new one starts over", () => {
+  const a = { id: "u_a" };
+  assert.equal(stillReady(a, true, { id: "u_a" }), true);
+  assert.equal(stillReady(a, true, { id: "u_b" }), false);
+  assert.equal(stillReady(a, true, null), false);
+  assert.equal(stillReady(null, false, a), false);
 });

@@ -50,3 +50,13 @@ export function mayPush(
 ): boolean {
   return !!me && !me.isGuest && cloudReady;
 }
+
+/** Whether the account's save stays loaded across a refresh of who we are:
+ * yes for the same account (a room change), no for anyone else. */
+export function stillReady(
+  before: { id: string } | null,
+  ready: boolean,
+  after: { id: string } | null,
+): boolean {
+  return ready && !!before && !!after && before.id === after.id;
+}
