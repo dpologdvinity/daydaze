@@ -2,6 +2,7 @@ import { useFrame } from "@react-three/fiber";
 import { playerSpot } from "./playerSpot.ts";
 import { together } from "../../game/dance/together.ts";
 import { pairUp } from "../net/together.ts";
+import { gameClip } from "../rooms/shared/game3d/gameClip.ts";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import * as THREE from "three";
 import { clampToArea, type WalkArea } from "../../game/area.ts";
@@ -238,8 +239,10 @@ export function PlayerController({
   // an emote with another player overrides the picked mood (see net/together.ts)
   const { pair } = pairUp.use();
   const paired = pair?.placed ? pair : null;
-  const mood: Mood = paired ? "dance" : picked;
-  const dance = paired ? together(paired.e).move : pickedDance;
+  // an in-world game's clip (a dig, a dive) overrides both
+  const { move: gameMove } = gameClip.use();
+  const mood: Mood = gameMove || paired ? "dance" : picked;
+  const dance = gameMove ?? (paired ? together(paired.e).move : pickedDance);
   const g = useRef<THREE.Group>(null);
   const gait = useRef<WalkState>({ speed: 0 });
   const marker = useRef<THREE.Mesh>(null);
