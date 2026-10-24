@@ -1,4 +1,4 @@
-import { useEffect, type JSX } from "react";
+import { useEffect, type Dispatch, type JSX, type SetStateAction } from "react";
 import type { SaveV1 } from "../../game/save.ts";
 import { AccountPanel } from "./AccountPanel.tsx";
 import { RoomCopies } from "./RoomCopies.tsx";
@@ -23,7 +23,7 @@ export function FriendsPanel({
   strictChat: boolean;
   onStrictChat: (on: boolean) => void;
   save: SaveV1;
-  onSave: (save: SaveV1) => void;
+  onSave: Dispatch<SetStateAction<SaveV1>>;
 }): JSX.Element | null {
   const { open, list } = friends.use();
   useEffect(() => {

@@ -100,8 +100,8 @@ function mulberry32(seed: number): () => number {
 /**
  * Stretches some vowels in chat, as in "heyyy", when the buzz is up.
  * Deterministic: the same text, buzz and seed always give the same result.
+ * `max` caps the stretched line, so it still fits the chat limit.
  */
-/** `max` caps the stretched line, so it still fits the chat limit. */
 export function chatDistort(
   text: string,
   buzz: number,

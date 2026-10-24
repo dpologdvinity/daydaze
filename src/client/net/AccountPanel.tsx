@@ -1,4 +1,4 @@
-import { useState, type JSX } from "react";
+import { useState, type Dispatch, type JSX, type SetStateAction } from "react";
 import type { SaveV1 } from "../../game/save.ts";
 import { account, signIn, signOut } from "./account.ts";
 
@@ -8,7 +8,7 @@ export function AccountPanel({
   onSave,
 }: {
   save: SaveV1;
-  onSave: (save: SaveV1) => void;
+  onSave: Dispatch<SetStateAction<SaveV1>>;
 }): JSX.Element {
   const { me, busy, note } = account.use();
   const [username, setUsername] = useState("");

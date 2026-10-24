@@ -1,6 +1,8 @@
+import type { Dispatch, SetStateAction } from "react";
 import type { SaveV1 } from "../../game/save.ts";
 import type { Identity } from "../../net/identity.ts";
 import { createStore } from "../rooms/shared/store.ts";
+import { stillReady } from "../../net/client/saveSync.ts";
 import { onlineSession } from "./online.ts";
 
 /** Who you're playing as online: a guest, or a signed-in account. */
@@ -24,8 +26,15 @@ const ERRORS: Record<string, string> = {
 const say = (error: string) =>
   ERRORS[error] ?? "That didn't go through. Try again in a moment.";
 
-export function refreshAccount(cloudReady = false) {
-  account.set({ me: onlineSession()?.identity() ?? null, cloudReady });
+/** Re-reads who we are. The same account (a room change) keeps its loaded
+ * save; `cloudReady` forces it, for a brand-new account. */
+export function refreshAccount(cloudReady?: boolean) {
+  const me = onlineSession()?.identity() ?? null;
+  const was = account.get();
+  account.set({
+    me,
+    cloudReady: cloudReady ?? stillReady(was.me, was.cloudReady, me),
+  });
 }
 
 /**
@@ -37,11 +46,13 @@ export async function signIn(
   username: string,
   password: string,
   save: SaveV1,
-  onSave: (save: SaveV1) => void,
+  onSave: Dispatch<SetStateAction<SaveV1>>,
 ): Promise<void> {
   const session = onlineSession();
   if (!session) return;
   account.set({ busy: true, note: "" });
+  // signed in already: the last changes go up before switching accounts
+  if (account.get().cloudReady) await session.storeSave(save);
   const result = await session.signIn(kind, username, password);
   if (!result.ok) {
     account.set({ busy: false, note: say(result.error) });
@@ -56,8 +67,9 @@ export async function signIn(
   }
   // a brand-new account has nothing to lose: the guest's progress goes up
   refreshAccount(true);
+  // local is the truth: only the account's name comes back into it
   const up = await session.storeSave({ ...save, name: me.name });
-  if (up.ok) onSave(up.value);
+  if (up.ok) onSave((s) => ({ ...s, name: up.value.name }));
   account.set({
     busy: false,
     note: up.ok
@@ -71,7 +83,13 @@ export async function signOut(save: SaveV1): Promise<void> {
   if (!session) return;
   account.set({ busy: true, note: "" });
   // the last few seconds of changes go up before the session ends
-  if (account.get().cloudReady) await session.storeSave(save);
+  if (account.get().cloudReady && !(await session.storeSave(save)).ok) {
+    account.set({
+      busy: false,
+      note: "Your latest changes didn't save. Try logging out again in a moment.",
+    });
+    return;
+  }
   await session.signOut();
   refreshAccount();
   account.set({ busy: false, note: "Logged out. Playing as a guest." });

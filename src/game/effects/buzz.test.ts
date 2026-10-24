@@ -144,6 +144,10 @@ test("slurred chat never grows past the length it's allowed", () => {
   const long = "a".repeat(120);
   for (let seed = 0; seed < 50; seed++)
     assert.ok(chatDistort(long, 0.9, seed, 120).length <= 120);
+  // right at the edge, and with emoji (two UTF-16 units) in the line
+  const edge = "hey you 💜 ".repeat(11).slice(0, 119);
+  for (let seed = 0; seed < 50; seed++)
+    assert.ok(chatDistort(edge, 0.9, seed, 120).length <= 120);
   // short lines still stretch
   assert.notEqual(
     chatDistort("heyo everyone out tonight", 0.9, 3, 120),
