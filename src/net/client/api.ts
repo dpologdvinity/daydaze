@@ -1,13 +1,31 @@
+// Typed client for the Worker's /api routes (guest, accounts, saves, room
+// copies, friends, blocks, reports and admin). Every response body is parsed
+// and validated before use; a call never throws and resolves to an ApiResult
+// instead. Requests send cookies (credentials: include) for the session.
+
 import { isRoomId, type RoomId } from "../../game/rooms.ts";
 import { loadSave, serializeSave, type SaveV1 } from "../../game/save.ts";
 import { parseFriends } from "../friends.ts";
 import { parseIdentity, type Identity } from "../identity.ts";
 
+/**
+ * The fetch function the API calls through; injected so tests and the browser
+ * can supply their own.
+ */
 export type Fetch = (url: string, init: RequestInit) => Promise<Response>;
 /** `status` 0 means the server could not be reached at all. */
 export type ApiFailure = { ok: false; status: number; error: string };
+/**
+ * A call's outcome: the parsed value, or a failure with the HTTP status and the
+ * server's short error code.
+ */
 export type ApiResult<T> = { ok: true; value: T } | ApiFailure;
+/** One copy (shard) of a room, numbered from 1. */
 export type RoomCopy = { roomId: RoomId; copy: number };
+/**
+ * `GET /api/rooms/:id`: every open copy with its head count and whether it is
+ * full, plus the copy the server suggests joining (`pick`).
+ */
 export type RoomCopies = {
   copies: { copy: number; count: number; full: boolean }[];
   pick: number;
@@ -220,4 +238,5 @@ export function createApi({
   };
 }
 
+/** The API object createApi returns. */
 export type Api = ReturnType<typeof createApi>;

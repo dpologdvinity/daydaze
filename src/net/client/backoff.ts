@@ -1,4 +1,11 @@
+// Reconnect backoff for the room socket: exponential delay with jitter, capped
+// at MAX_DELAY_MS. Pure; the random source is passed in.
+
+/** Delay before the first reconnect attempt, before jitter, in ms. */
 export const BASE_DELAY_MS = 1000;
+/**
+ * Longest delay between reconnect attempts, in ms; jitter never goes past it.
+ */
 export const MAX_DELAY_MS = 15_000;
 
 /** Reconnect delay: 1 s, 2 s, 4 s ... up to 15 s, each ±20% so clients spread out. */

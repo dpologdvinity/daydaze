@@ -1,3 +1,10 @@
+// An in-memory spatial room server and the NetworkTransport interface it speaks
+// through, plus entity interpolation for drawing remote players between
+// updates. Clients join rooms, send moves, chat and emotes, and get snapshots,
+// deltas and occupancy back. Every outgoing message is validated with the
+// protocol decoders before it is sent. A loopback transport pair lets a client
+// and the server run in one process (tests and offline play).
+
 import {
   decodeClientMessage,
   decodeServerMessage,
@@ -10,6 +17,10 @@ import {
   type ServerMessage,
 } from "./networkProtocol.ts";
 
+/**
+ * A message pipe between a client and the room server. `onClose` fires when the
+ * pipe stops for good; `send` on a closed pipe is a no-op.
+ */
 export interface NetworkTransport {
   send(message: string): void;
   onMessage(handler: (message: string) => void): void;
@@ -26,6 +37,12 @@ function lerp(start: number, end: number, ratio: number): number {
   return start + (end - start) * ratio;
 }
 
+/**
+ * Where an entity is at `targetTimeMs`, between two timestamped states.
+ * Positions lerp, yaw turns the short way, and past `next` it extrapolates for
+ * at most 200 ms and 1 m. Before `prev`, or when the states are out of order,
+ * it returns `prev`. Throws a TypeError on a non-finite time.
+ */
 export function interpolateEntityState(
   prev: EntityDelta,
   next: EntityDelta,
@@ -86,10 +103,20 @@ type ClientRecord = {
   roomId: RoomId | null;
 };
 
+/**
+ * Keeps each connected client's room and entity state and relays updates to
+ * everyone else in the same room. A room holds at most MAX_ROOM_ENTITIES; a
+ * join to a full room, or with an entity id already in use there, is ignored. A
+ * client whose transport is no longer connected is dropped on the next send.
+ */
 export class SpatialRoomServer {
   private readonly clients = new Map<string, ClientRecord>();
   private readonly rooms = new Map<RoomId, Map<string, EntityDelta>>();
 
+  /**
+   * Registers a client on a transport, replacing (and closing) any earlier
+   * connection with the same id. Throws a TypeError for an invalid client id.
+   */
   connectClient(clientId: string, transport: NetworkTransport): void {
     if (!isNetworkId(clientId)) throw new TypeError("Invalid client ID");
     if (this.clients.get(clientId)?.transport === transport) return;
@@ -103,6 +130,10 @@ export class SpatialRoomServer {
     });
   }
 
+  /**
+   * Removes a client, tells its room it left and closes its transport. Unknown
+   * ids are ignored.
+   */
   disconnectClient(clientId: string): void {
     const record = this.clients.get(clientId);
     if (!record) return;
@@ -115,6 +146,7 @@ export class SpatialRoomServer {
     return this.rooms.get(roomId)?.size ?? 0;
   }
 
+  /** Copies of every entity currently in a room; empty for an unknown room. */
   getRoomEntities(roomId: string): EntityDelta[] {
     const room = this.rooms.get(roomId);
     return room ? Array.from(room.values(), (entity) => ({ ...entity })) : [];
@@ -324,6 +356,10 @@ class LoopbackTransport implements NetworkTransport {
   }
 }
 
+/**
+ * Connects `clientId` to `server` through an in-process transport pair and
+ * returns the client's end. Closing either end closes both.
+ */
 export function createLocalLoopbackPair(
   server: SpatialRoomServer,
   clientId: string,
