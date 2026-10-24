@@ -129,3 +129,38 @@ test("the water-gun race: aim on the bullseye wins, rivals keep a steady pace", 
   assert.equal(squirtScore(1, true), 150);
   assert.equal(squirtScore(0.4, false), 40);
 });
+
+test("the water-gun bullseye drifts inside the board, the same for a seed", () => {
+  for (const level of ["easy", "medium", "hard"] as const)
+    for (let t = 0; t < SQUIRT_SECONDS; t += 0.7) {
+      const at = squirtTarget(level, 42, t);
+      assert.ok(at.x > 0 && at.x < 1 && at.y > 0 && at.y < 1);
+      assert.deepEqual(at, squirtTarget(level, 42, t));
+    }
+});
+
+test("the stream is on target inside the bullseye, tighter on hard", () => {
+  const target = { x: 0.5, y: 0.5 };
+  assert.equal(onTarget("easy", target, target), true);
+  const nearEdge = { x: 0.56, y: 0.5 };
+  assert.equal(onTarget("easy", nearEdge, target), true);
+  assert.equal(onTarget("hard", nearEdge, target), false);
+  // the board is twice as wide as tall: a vertical miss counts half
+  assert.equal(onTarget("easy", { x: 0.5, y: 0.62 }, target), true);
+});
+
+test("rivals run steadily from 0 toward 1 and never past it", () => {
+  for (let i = 0; i < 3; i++) {
+    assert.ok(rivalAt("medium", 7, i, 0) <= 0.05);
+    assert.ok(rivalAt("medium", 7, i, 10) > rivalAt("medium", 7, i, 2));
+    assert.equal(rivalAt("hard", 7, i, 1e4), 1);
+  }
+  // a perfect stream fills faster than any rival's pace
+  assert.ok(FILL_RATE * 5 > rivalAt("hard", 7, 2, 5));
+});
+
+test("the race scores how far you ran, plus 50 for winning", () => {
+  assert.equal(squirtScore(0.5, false), 50);
+  assert.equal(squirtScore(1.4, true), 150);
+  assert.equal(squirtScore(0, false), 0);
+});
