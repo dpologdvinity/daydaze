@@ -119,6 +119,8 @@ The 3D doll is built in Blender from MakeHuman's CC0 assets
 
 ## Testing
 
+- `npm run lint`: ESLint with typescript-eslint and the React hooks rules
+  (`eslint.config.mjs`).
 - `npm test`: Node's test runner over `src/**/*.test.ts` and
   `server/**/*.test.ts` (game rules, protocol, server cores).
 - `npm run typecheck`: strict TypeScript, including the Worker.
@@ -126,4 +128,8 @@ The 3D doll is built in Blender from MakeHuman's CC0 assets
   WebGL runs on the CPU, so it's slow; run what you touched).
 - `npm run test:e2e:online`: two browsers against a local Worker.
 - `npm run smoke:server`: the server end to end.
-- `npm run verify`: tests, typecheck, format check and build; the merge gate.
+- `npm run test:coverage`: the unit tests with a coverage report
+  (`coverage/lcov.info`, `coverage/summary.txt`).
+- `npm run verify`: lint, tests, typecheck, format check and build; the
+  merge gate, and what CI (`.github/workflows/ci.yml`) runs on every push
+  and pull request to `main`.

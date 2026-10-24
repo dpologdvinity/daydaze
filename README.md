@@ -39,7 +39,17 @@ All music and sound is synthesized in the browser. NPC lines are handwritten.
   what's done and what's next.
 - [docs/security.md](docs/security.md): threat model and known gaps.
 - [docs/deploy.md](docs/deploy.md): deploying the Worker.
+- [CONTRIBUTING.md](CONTRIBUTING.md): local workflow, checks, commit and
+  pull request conventions.
 - `docs/specs/`: design specs.
+
+## CI
+
+GitHub Actions (`.github/workflows/ci.yml`) runs on every push and pull
+request to `main`: install (cached), lint, format and type checks, unit
+tests with coverage, and the production build; a `v*` tag drafts a release.
+The slow browser suites (`playwright.yml`) and the Cloudflare deploy
+(`deploy.yml`, owner-approved) run by hand.
 
 ## Develop
 
@@ -48,9 +58,11 @@ Requires Node.js 22.18 or newer (`.nvmrc` pins 24).
 ```bash
 npm install
 npm run dev               # client at http://localhost:5173
+npm run lint              # ESLint (TypeScript and React hooks rules)
 npm test                  # unit tests (game rules, protocol, server)
+npm run test:coverage     # the same, with a coverage report in coverage/
 npm run typecheck         # strict TypeScript, including the Worker
-npm run verify            # tests, typecheck, format check and build
+npm run verify            # lint, tests, typecheck, format check and build
 npm run test:e2e:client   # Playwright browser tests (slow: software WebGL)
 npm run test:e2e:online   # two browsers against a local Worker
 npm run smoke:server      # the server end to end
@@ -71,6 +83,8 @@ npm run dev               # in another terminal; Vite proxies /api and /ws
 Then open `http://localhost:5173/?online=1`.
 
 ## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). In short:
 
 - Keep rules in `src/game` (pure, tested) and drawing in `src/client`.
 - Add or update tests with every change; for a bug, write the failing test
