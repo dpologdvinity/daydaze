@@ -132,6 +132,17 @@ export interface JukeboxController {
   setMuted(muted: boolean): void;
   isMuted(): boolean;
   dispose(): void;
+  /** The playing track, its BPM, and the audio time its first beat fell on
+   * (step 0 of its grid, kept current if the loop resyncs). */
+  currentTempo(): { track: TrackId; bpm: number; startedAt: number } | null;
+  /** The audio clock (seconds) while the context runs; null otherwise. */
+  audioTime(): number | null;
+  /**
+   * A sung melody note on `lane` (0 low, 1 mid, 2 high) over beat `beat` of
+   * the playing track, at audio time `at` (now if omitted); `hit` false sings
+   * it sour and soft.
+   */
+  playMelody(beat: number, lane: number, hit: boolean, at?: number): void;
 }
 
 type AnyNode = AudioNode;
@@ -254,6 +265,11 @@ class LoopEngine {
         /* keep the loop alive even if a single tick fails to synthesize */
       }
     }
+  }
+
+  /** The audio time of step 0 on the current grid. */
+  anchor(): number {
+    return this.nextStepTime - this.step * this.stepSeconds;
   }
 
   stop() {
@@ -982,6 +998,65 @@ export const TRACK_PROGRAMS: Record<TrackId, TrackProgram> = {
   },
 };
 
+/**
+ * The melody pitch a karaoke singer hits on `lane` over beat `beat` of a
+ * track: Sugar Rush's chord tones for its bar, a pentatonic triad otherwise.
+ * Lanes climb low to high.
+ */
+export function melodyFrequency(
+  track: TrackId,
+  beat: number,
+  lane: number,
+): number {
+  const l = Math.min(2, Math.max(0, Math.floor(lane)));
+  if (track === "sugar-rush-pop") {
+    // the arpeggio's bar is 8 eighth-note steps, so 4 beats
+    const bar = Math.floor(beat / 4) % SUGAR_ROOTS.length;
+    return SUGAR_ROOTS[bar] * 4 * SUGAR_CHORDS[bar][l];
+  }
+  return PENTATONIC_FLUTE[l * 2];
+}
+
+/** A sung "ooh": two detuned triangles through a vowel formant, with a
+ * little vibrato; `sour` drops it a semitone, quieter and shorter. */
+function playVoice(
+  ctx: AudioContext,
+  dest: AnyNode,
+  now: number,
+  frequency: number,
+  sour: boolean,
+) {
+  const f = sour ? frequency / 1.0595 : frequency;
+  const length = sour ? 0.22 : 0.48;
+  const formant = ctx.createBiquadFilter();
+  formant.type = "bandpass";
+  formant.frequency.value = 900;
+  formant.Q.value = 1.2;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(sour ? 0.06 : 0.22, now + 0.03);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + length);
+  formant.connect(gain);
+  gain.connect(dest);
+  const vibrato = ctx.createOscillator();
+  const depth = ctx.createGain();
+  vibrato.frequency.value = 5.5;
+  depth.gain.value = f * 0.008;
+  vibrato.connect(depth);
+  for (const detune of [-6, 6]) {
+    const osc = ctx.createOscillator();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(f, now);
+    osc.detune.value = detune;
+    depth.connect(osc.frequency);
+    osc.connect(formant);
+    osc.start(now);
+    osc.stop(now + length);
+  }
+  vibrato.start(now);
+  vibrato.stop(now + length);
+}
+
 const TRACK_BPM: Record<TrackId, number> = Object.fromEntries(
   JUKEBOX_TRACKS.map((t) => [t.id, t.bpm]),
 ) as Record<TrackId, number>;
@@ -1045,6 +1120,34 @@ class JukeboxControllerImpl implements JukeboxController {
 
   getCurrentTrack(): TrackId | null {
     return this.currentTrack;
+  }
+
+  currentTempo() {
+    const track = this.currentTrack;
+    if (!track || !this.loop) return null;
+    return { track, bpm: TRACK_BPM[track], startedAt: this.loop.anchor() };
+  }
+
+  audioTime(): number | null {
+    return this.ctx?.state === "running" ? this.ctx.currentTime : null;
+  }
+
+  playMelody(beat: number, lane: number, hit: boolean, at?: number): void {
+    const ctx = this.ctx;
+    const dest = this.master;
+    if (!ctx || !dest || this.disposed) return;
+    const track = this.currentTrack ?? "sugar-rush-pop";
+    try {
+      playVoice(
+        ctx,
+        dest,
+        at ?? ctx.currentTime,
+        melodyFrequency(track, beat, lane),
+        !hit,
+      );
+    } catch {
+      /* a note that fails to synthesize is just silent */
+    }
   }
 
   isPlaying(): boolean {

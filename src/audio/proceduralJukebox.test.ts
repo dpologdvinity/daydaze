@@ -8,6 +8,7 @@ import {
   carnivalCalliopeStep,
   savannaNightclubStep,
   type TrackId,
+  melodyFrequency,
 } from "./proceduralJukebox.ts";
 
 const TRACK_IDS: TrackId[] = [
@@ -442,4 +443,46 @@ test("the game's record list matches the jukebox's tracks", async () => {
     [...RECORD_IDS],
     JUKEBOX_TRACKS.map((t) => t.id),
   );
+});
+
+test("currentTempo gives the playing track's BPM and the audio time it started", () => {
+  const ctx = makeFakeAudioContext();
+  Object.assign(ctx, { currentTime: 5 });
+  const controller = createJukeboxController(ctx);
+  try {
+    assert.equal(controller.currentTempo(), null);
+    controller.playTrack("sugar-rush-pop");
+    const tempo = controller.currentTempo();
+    const bpm = JUKEBOX_TRACKS.find((t) => t.id === "sugar-rush-pop")?.bpm;
+    assert.equal(tempo?.track, "sugar-rush-pop");
+    assert.equal(tempo.bpm, bpm);
+    assert.ok(Math.abs(tempo.startedAt - 5) < 1e-9);
+    assert.equal(controller.audioTime(), 5);
+    controller.stopTrack();
+    assert.equal(controller.currentTempo(), null);
+  } finally {
+    controller.dispose();
+  }
+});
+
+test("audioTime is null while the context is suspended or missing", () => {
+  const ctx = makeFakeAudioContext();
+  Object.assign(ctx, { state: "suspended" });
+  assert.equal(createJukeboxController(ctx).audioTime(), null);
+  assert.equal(createJukeboxController(null).audioTime(), null);
+});
+
+test("melody notes climb with the lane and follow Sugar Rush's chords", () => {
+  for (const track of ["sugar-rush-pop", "canopy-lofi"] as const)
+    for (let beat = 0; beat < 32; beat++) {
+      const [low, mid, high] = [0, 1, 2].map((lane) =>
+        melodyFrequency(track, beat, lane),
+      );
+      assert.ok(low! < mid! && mid! < high!, `${track} beat ${beat}`);
+    }
+  // bar 3 of Sugar Rush (beats 8-11) is the minor chord on 92.5 Hz
+  assert.ok(
+    Math.abs(melodyFrequency("sugar-rush-pop", 9, 1) - 92.5 * 4 * 1.189) < 0.01,
+  );
+  assert.ok(Math.abs(melodyFrequency("sugar-rush-pop", 0, 0) - 440) < 0.01);
 });
