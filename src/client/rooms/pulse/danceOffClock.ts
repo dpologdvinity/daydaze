@@ -1,16 +1,27 @@
-import { DANCE_OFF_EVERY } from "../../../game/danceOff.ts";
+// The dance-off clock Pulse's sign and banner share: the real one, or, with
+// `?danceoff=<s>`, held `s` seconds into a dance-off until the player first
+// dances, so a test or screenshot can never miss the window.
 
-/** `?danceoff=5` shifts the clock so a dance-off is 5 s in when the clock
- * is first read (the HUD's first tick, once the page is up), for tests and
- * screenshots; the real clock otherwise. */
+import { DANCE_OFF_EVERY } from "../../../game/danceOff.ts";
+import {
+  heldClock,
+  wallSeconds,
+  type EventClock,
+} from "../../../game/clock.ts";
+
 const PREVIEW = Number(
   new URLSearchParams(window.location.search).get("danceoff") ?? Number.NaN,
 );
-let offset: number | null = Number.isFinite(PREVIEW) ? null : 0;
+const clock: EventClock | null = Number.isFinite(PREVIEW)
+  ? heldClock(DANCE_OFF_EVERY, PREVIEW)
+  : null;
 
 /** The dance-off clock, seconds. */
 export function danceOffClock(): number {
-  const now = Date.now() / 1000;
-  offset ??= DANCE_OFF_EVERY - (now % DANCE_OFF_EVERY) + PREVIEW;
-  return now + offset;
+  return clock ? clock.read() : wallSeconds();
+}
+
+/** The player started dancing: a held preview clock runs on from here. */
+export function releaseDanceOffClock(): void {
+  clock?.release();
 }

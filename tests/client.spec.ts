@@ -1363,11 +1363,11 @@ test("Pulse: dance through a dance-off and the floor pays a prize", async ({
 }) => {
   test.setTimeout(240_000);
   const errors = collectErrors(page);
-  // the clock starts 20 s before the DJ calls one, so a slow load can't
-  // miss it; dancing early is fine
-  await page.goto(`${STILL}&room=pulse&danceoff=-20`);
+  // the clock holds 2 s into a dance-off until the player dances, so a slow
+  // load can't miss it
+  await page.goto(`${STILL}&room=pulse&danceoff=2`);
   const call = page.getByRole("region", { name: "Dance-off" });
-  await expect(call).toContainText("calls a dance-off");
+  await expect(call).toContainText("Press Dance to join: 0:28 left");
   await page.getByRole("radio", { name: "Dance", exact: true }).click();
   await expect(call).toContainText("Keep dancing", { timeout: 60_000 });
   const prize = page.getByRole("status", { name: "Prize" });

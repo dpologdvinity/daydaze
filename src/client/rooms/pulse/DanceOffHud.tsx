@@ -5,7 +5,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { danceOffAt, danceOffIndex } from "../../../game/danceOff.ts";
-import { danceOffClock as clock } from "./danceOffClock.ts";
+import {
+  danceOffClock as clock,
+  releaseDanceOffClock,
+} from "./danceOffClock.ts";
 import { award } from "../../ui/prizeDesk.ts";
 
 const TICK_MS = 250;
@@ -24,6 +27,9 @@ export function DanceOffHud({ dancing }: { dancing: boolean }) {
   const [t, setT] = useState(clock);
   const live = useRef(dancing);
   live.current = dancing;
+  useEffect(() => {
+    if (dancing) releaseDanceOffClock();
+  }, [dancing]);
   const tally = useRef({ index: -1, seconds: 0 });
   useEffect(() => {
     const id = window.setInterval(() => {
