@@ -516,6 +516,11 @@ M11's day–night clock was deliberately skipped. Ask before revisiting.
 
 ## 5. Suggested order for the next session
 
+**Superseded 2026-10-24 by [the wonder pass plan](2026-10-24-wonder-pass.md)**
+([spec](../specs/2026-10-24-wonder-pass.md)): in-world games first, then
+load speed, social play, reasons to return, doll diversity, and launch as
+the owner unblocks it. The list below is kept for history.
+
 0. B11 prizes for unscored games and B13 speakeasy cards (quick, high value).
 1. ~~A1 couple emotes~~ (done; piggyback left).
 2. ~~A2 cook-off~~ (done).
