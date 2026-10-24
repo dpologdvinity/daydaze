@@ -1,3 +1,7 @@
+// The prize card that slides in after a scored game: grade, score, coins paid,
+// a personal-best ribbon and any daily challenge bonus. It reads the prizeDesk
+// store and dismisses itself after 5 s; a new prize restarts the timer.
+
 import { useEffect } from "react";
 import { PRIZE_TABLES } from "../../game/prizes.ts";
 import { dismissPrize, prizeDesk } from "./prizeDesk.ts";

@@ -1,3 +1,8 @@
+// The city map dialog: an SVG of every street surface and the coast, a jump
+// button per neighborhood, a list of venues and outdoor spots per neighborhood,
+// and today's daily challenges with which ones are done. Coordinates map city
+// meters to percentages of the map box.
+
 import { useEffect, useRef } from "react";
 import { CITY_BOUNDS, CITY_SURFACES, WATER_Z } from "../../game/city/layout.ts";
 import {

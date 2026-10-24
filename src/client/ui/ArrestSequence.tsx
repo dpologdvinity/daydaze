@@ -1,3 +1,8 @@
+// The scripted arrest overlay after a shoplifter is caught: approach, the
+// officer's warning line, cuffs, then the van, stepped on a timer from
+// src/game/police/arrest.ts. It calls onDone when the sequence ends so the
+// caller applies the penalty.
+
 import { useEffect, useState } from "react";
 import { pickLine } from "../../game/dialogue/pick.ts";
 import {

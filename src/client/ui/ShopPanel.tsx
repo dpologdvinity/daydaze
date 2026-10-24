@@ -1,3 +1,9 @@
+// The shop dialog opened through shopRequest: the day's stock with buy and wear
+// buttons, plus the shoplifting flow (pocket, watchers, suspicion, walk out or
+// run) for shops that have lift rules. Shoplifting rules live in
+// src/game/crime/; this panel steps them and reports escapes and arrests to the
+// caller.
+
 import { useEffect, useRef, useState, type JSX } from "react";
 import type { Look } from "../../game/look.ts";
 import {

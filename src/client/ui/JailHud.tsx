@@ -1,3 +1,8 @@
+// The jail panel: the sentence countdown, plus the ways to shorten it
+// (push-ups, a card game with the guard, or paying bail). The countdown reads
+// the saved end time, so reloads resume it; release fires once the time reaches
+// zero.
+
 import { useEffect, useState } from "react";
 import {
   bailCost,

@@ -1,3 +1,7 @@
+// Which game controls each room shows, lazily imported so a room's panels load
+// with the room, not up front. Rooms with several games get a tab row
+// (`games`); a game left running in one tab keeps going in its own store.
+
 import { lazy, Suspense, useState, type ComponentType } from "react";
 import type { RoomId } from "../../game/rooms.ts";
 
@@ -215,6 +219,10 @@ const PANELS: Partial<Record<RoomId, ComponentType>> = {
   ),
 };
 
+/**
+ * The game controls for `room`, or nothing for rooms without a game. Renders
+ * nothing while the panel's chunk loads.
+ */
 export function RoomPanel({ room }: { room: RoomId }) {
   const Panel = PANELS[room];
   return Panel ? (

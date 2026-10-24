@@ -1,3 +1,7 @@
+// The always-mounted food HUD: the held tray with an eat or sip button, and the
+// courier toast. It also runs the delivery clock every 250 ms, so orders land
+// while the phone is closed.
+
 import { useEffect, useSyncExternalStore } from "react";
 import {
   clearToast,
