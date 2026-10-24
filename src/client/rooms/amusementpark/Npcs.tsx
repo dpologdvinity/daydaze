@@ -10,7 +10,11 @@ import {
   PARK_NPC_ROLES,
   type ParkNpcId,
 } from "../../../game/amusementPark.ts";
-import { pickLine, type RecentLines } from "../../../game/dialogue/pick.ts";
+import {
+  loadDialogue,
+  pickLine,
+  type RecentLines,
+} from "../../../game/dialogue/pick.ts";
 import type { Look, Mood } from "../../../game/look.ts";
 import { Doll } from "../../avatar/Doll.tsx";
 
@@ -158,17 +162,20 @@ export function ParkNpc({ npc, seed }: { npc: Npc; seed: number }) {
   useEffect(() => () => window.clearTimeout(timer.current), []);
   const say = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
-    const picked = pickLine({
-      role: PARK_NPC_ROLES[npc.id],
-      situation: "tapped",
-      context: PARK_CONTEXT,
-      rng: Math.random,
-      recent: recent.current,
-    });
-    recent.current = picked.recent;
-    setLine(picked.text);
-    window.clearTimeout(timer.current);
-    timer.current = window.setTimeout(() => setLine(null), BUBBLE_MS);
+    // the line banks load lazily; a failed load is retried on the next tap
+    loadDialogue().then(() => {
+      const picked = pickLine({
+        role: PARK_NPC_ROLES[npc.id],
+        situation: "tapped",
+        context: PARK_CONTEXT,
+        rng: Math.random,
+        recent: recent.current,
+      });
+      recent.current = picked.recent;
+      setLine(picked.text);
+      window.clearTimeout(timer.current);
+      timer.current = window.setTimeout(() => setLine(null), BUBBLE_MS);
+    }, ignore);
   };
   return (
     <group position={[npc.at[0], 0, npc.at[1]]} rotation-y={npc.rot}>
@@ -189,3 +196,5 @@ export function ParkNpc({ npc, seed }: { npc: Npc; seed: number }) {
     </group>
   );
 }
+
+const ignore = () => {};

@@ -2,7 +2,7 @@
 // numerals, drawn on a canvas texture. Pops up when the score arrives.
 
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useReducedMotion } from "../../../motion.ts";
 import { canvasTex } from "../materials.ts";
@@ -34,6 +34,8 @@ export function ScoreCard({
       }),
     [score, ink],
   );
+  // each score draws a new texture; free the last one from the GPU
+  useEffect(() => () => tex.dispose(), [tex]);
   const calm = useReducedMotion();
   const group = useRef<THREE.Group>(null);
   const shown = useRef(0);

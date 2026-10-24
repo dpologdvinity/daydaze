@@ -4,7 +4,7 @@
 // caller applies the penalty.
 
 import { useEffect, useState } from "react";
-import { pickLine } from "../../game/dialogue/pick.ts";
+import { loadDialogue, pickLine } from "../../game/dialogue/pick.ts";
 import {
   ARREST_STEPS,
   ARREST_TOTAL_MS,
@@ -21,14 +21,21 @@ const STEP_TEXT = {
 // The scripted arrest: the officer's line plays on the warning beat, then
 // the scene calls onDone so the caller can apply the penalty.
 export function ArrestSequence({ onDone }: { onDone: () => void }) {
-  const [line] = useState(
-    () =>
-      pickLine({
-        role: "police",
-        situation: "state-caught-shoplifting",
-        rng: Math.random,
-      }).text,
-  );
+  const [line, setLine] = useState("");
+  useEffect(() => {
+    // the line banks load lazily: the officer speaks once they're in
+    loadDialogue().then(
+      () =>
+        setLine(
+          pickLine({
+            role: "police",
+            situation: "state-caught-shoplifting",
+            rng: Math.random,
+          }).text,
+        ),
+      () => {},
+    );
+  }, []);
   const [started] = useState(() => Date.now());
   const [stepId, setStepId] = useState(ARREST_STEPS[0].id);
 

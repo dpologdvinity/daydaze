@@ -35,7 +35,12 @@ window.addEventListener("vite:preloadError", (event) => {
 // NPC lines are a separate chunk: fetch them once the page is idle, so they
 // never hold up the first frame (NPCs say "..." until then)
 const idle = window.requestIdleCallback ?? ((run) => window.setTimeout(run, 1));
-idle(() => void loadDialogue());
+idle(() => {
+  // a failed fetch is retried by the next NPC that speaks
+  loadDialogue().catch((error: unknown) =>
+    console.warn("NPC lines failed to load", error),
+  );
+});
 
 const root = document.getElementById("root");
 if (!root) throw new Error("index.html is missing #root.");

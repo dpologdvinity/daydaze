@@ -4,7 +4,13 @@
 // builds water and sand on the same base.
 
 import { useFrame } from "@react-three/fiber";
-import { useImperativeHandle, useMemo, useRef, type Ref } from "react";
+import {
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  type Ref,
+} from "react";
 import * as THREE from "three";
 import {
   burst,
@@ -88,6 +94,8 @@ export function ParticleBurst({
       }),
     [color, glow, additive],
   );
+  // R3F doesn't dispose objects passed through `args`
+  useEffect(() => () => material.dispose(), [material]);
   useFrame((_, dt) => {
     const im = mesh.current;
     const b = shot.current;
@@ -97,7 +105,13 @@ export function ParticleBurst({
       return;
     }
     b.t += dt;
-    im.visible = b.t < b.data.lifetime;
+    if (b.t >= b.data.lifetime) {
+      // done: hide and stop touching the matrices until the next fire()
+      shot.current = null;
+      im.visible = false;
+      return;
+    }
+    im.visible = true;
     let fade = 0;
     const parts = b.data.particles;
     for (let i = 0; i < parts.length; i++) {

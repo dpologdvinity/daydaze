@@ -45,11 +45,25 @@ export type RecentLines = readonly string[];
 let banks: Record<DialogueRole, RoleBank> | null = null;
 let loading: Promise<void> | null = null;
 
-/** Fetches the NPC line banks (a separate chunk); safe to call repeatedly. */
-export function loadDialogue(): Promise<void> {
-  loading ??= import("./index.ts").then(({ LINE_BANKS }) => {
-    banks = LINE_BANKS;
-  });
+type Banks = { LINE_BANKS: Record<DialogueRole, RoleBank> };
+
+/**
+ * Fetches the NPC line banks (a separate chunk); safe to call repeatedly. A
+ * failed fetch is not cached, so the next call tries again. `load` swaps the
+ * fetch, for tests.
+ */
+export function loadDialogue(
+  load: () => Promise<Banks> = () => import("./index.ts"),
+): Promise<void> {
+  loading ??= load().then(
+    ({ LINE_BANKS }) => {
+      banks = LINE_BANKS;
+    },
+    (error: unknown) => {
+      loading = null;
+      throw error;
+    },
+  );
   return loading;
 }
 

@@ -5,7 +5,11 @@
 import { Html } from "@react-three/drei";
 import type { ThreeEvent } from "@react-three/fiber";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { pickLine, type RecentLines } from "../../../game/dialogue/pick.ts";
+import {
+  loadDialogue,
+  pickLine,
+  type RecentLines,
+} from "../../../game/dialogue/pick.ts";
 import type {
   DialogueRole,
   DialogueSituation,
@@ -104,15 +108,18 @@ export function Locals() {
       index < LOCALS.length
         ? LOCALS[index].role
         : STAFF[index - STAFF_BASE].role;
-    const picked = pickLine({
-      role,
-      situation,
-      context: { venue: "speedway" },
-      rng: Math.random,
-      recent: recent.current,
-    });
-    recent.current = picked.recent;
-    setSaid({ index, text: picked.text });
+    // the line banks load lazily; a failed load is retried on the next tap
+    loadDialogue().then(() => {
+      const picked = pickLine({
+        role,
+        situation,
+        context: { venue: "speedway" },
+        rng: Math.random,
+        recent: recent.current,
+      });
+      recent.current = picked.recent;
+      setSaid({ index, text: picked.text });
+    }, ignore);
   }, []);
 
   useEffect(() => {
@@ -186,3 +193,5 @@ export function Locals() {
     </>
   );
 }
+
+const ignore = () => {};

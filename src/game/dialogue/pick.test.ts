@@ -205,3 +205,23 @@ test("before the banks load, NPCs say '...'; after, real lines", () => {
   assert.equal(before, "...");
   assert.ok(typeof after === "string" && after !== "..." && after.length > 3);
 });
+
+test("a failed bank load is retried on the next call, not cached", async () => {
+  const pick = fileURLToPath(new URL("./pick.ts", import.meta.url));
+  const script = `
+    const { pickLine, loadDialogue, seededRng } = await import(${JSON.stringify(pick)});
+    const say = () => pickLine({ role: "bartender", situation: "idle", rng: seededRng(1) }).text;
+    let failed = false;
+    await loadDialogue(() => Promise.reject(new Error("chunk gone"))).catch(() => { failed = true; });
+    await loadDialogue();
+    console.log(JSON.stringify([failed, say()]));
+  `;
+  const out = execFileSync(
+    process.execPath,
+    ["--experimental-strip-types", "--input-type=module", "-e", script],
+    { encoding: "utf8" },
+  );
+  const [failed, line]: unknown[] = JSON.parse(out);
+  assert.equal(failed, true);
+  assert.ok(typeof line === "string" && line !== "...");
+});

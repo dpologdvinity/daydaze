@@ -8,7 +8,11 @@ import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
 import type * as THREE from "three";
 import type { Look, Mood, SwimLook } from "../../../game/look.ts";
-import { pickLine, type RecentLines } from "../../../game/dialogue/pick.ts";
+import {
+  loadDialogue,
+  pickLine,
+  type RecentLines,
+} from "../../../game/dialogue/pick.ts";
 import type { DialogueRole } from "../../../game/dialogue/types.ts";
 import { POOL } from "../../../game/waterPark.ts";
 import { Doll } from "../../avatar/Doll.tsx";
@@ -163,14 +167,17 @@ function Person({ local, seed }: { local: Local; seed: number }) {
   const talk = (e: ThreeEvent<MouseEvent>) => {
     if (e.delta > 6) return;
     e.stopPropagation();
-    const picked = pickLine({
-      role: local.role,
-      situation: "tapped",
-      rng: Math.random,
-      recent: recent.current,
-    });
-    recent.current = picked.recent;
-    setLine({ text: picked.text });
+    // the line banks load lazily; a failed load is retried on the next tap
+    loadDialogue().then(() => {
+      const picked = pickLine({
+        role: local.role,
+        situation: "tapped",
+        rng: Math.random,
+        recent: recent.current,
+      });
+      recent.current = picked.recent;
+      setLine({ text: picked.text });
+    }, ignore);
   };
   return (
     <group ref={group} position={local.at} rotation-y={local.rot}>
@@ -204,3 +211,5 @@ export function Locals() {
     </>
   );
 }
+
+const ignore = () => {};

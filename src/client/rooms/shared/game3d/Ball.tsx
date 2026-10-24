@@ -27,10 +27,16 @@ export function Ball({
   useFrame(() => {
     const g = group.current;
     if (!g) return;
+    const was = g.visible;
     g.visible = track(at);
     if (!g.visible) return;
-    // roll along the direction of travel
+    // roll along the direction of travel (from where it is, on a fresh serve)
     const p = last.current;
+    if (!was) {
+      p[0] = at[0];
+      p[1] = at[1];
+      p[2] = at[2];
+    }
     const dx = at[0] - p[0];
     const dz = at[2] - p[2];
     g.rotation.x += dz / radius;

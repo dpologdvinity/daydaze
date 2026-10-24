@@ -8,7 +8,11 @@ import type { ThreeEvent } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
 import type { DanceMoveId } from "../../../game/dance/moves.ts";
 import type { Look, Mood } from "../../../game/look.ts";
-import { pickLine, type RecentLines } from "../../../game/dialogue/pick.ts";
+import {
+  loadDialogue,
+  pickLine,
+  type RecentLines,
+} from "../../../game/dialogue/pick.ts";
 import type {
   DialogueContext,
   DialogueRole,
@@ -63,17 +67,20 @@ export function TalkingNpc({
   const recent = useRef<RecentLines>([]);
   const timer = useRef(0);
   const say = (when: DialogueSituation) => {
-    const picked = pickLine({
-      role,
-      situation: when,
-      context,
-      rng: Math.random,
-      recent: recent.current,
-    });
-    recent.current = picked.recent;
-    setLine(picked.text);
-    window.clearTimeout(timer.current);
-    timer.current = window.setTimeout(() => setLine(null), BUBBLE_MS);
+    // the line banks load lazily; a failed load is retried on the next tap
+    loadDialogue().then(() => {
+      const picked = pickLine({
+        role,
+        situation: when,
+        context,
+        rng: Math.random,
+        recent: recent.current,
+      });
+      recent.current = picked.recent;
+      setLine(picked.text);
+      window.clearTimeout(timer.current);
+      timer.current = window.setTimeout(() => setLine(null), BUBBLE_MS);
+    }, ignore);
   };
   // greet once per mount: a room arrival, not every render (the latest
   // `say` is read through a ref, so a re-render never greets again)
@@ -120,3 +127,5 @@ export function TalkingNpc({
     </group>
   );
 }
+
+const ignore = () => {};
