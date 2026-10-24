@@ -46,7 +46,7 @@ for (const { savedName, description } of manifest) {
       ? safeName
       : `${safeName.slice(0, -ext.length)} (${count})${ext}`;
   const base = description
-    .replace(/[\\/:*?"<>|\x00-\x1f]/g, "")
+    .replace(/[\\/:*?"<>|\p{Cc}]/gu, "")
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, 150);

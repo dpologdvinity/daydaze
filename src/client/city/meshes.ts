@@ -23,7 +23,6 @@ type Shared = Exclude<Kind, "label">;
 const BOX = new THREE.BoxGeometry(1, 1, 1);
 const CYLINDER = new THREE.CylinderGeometry(0.5, 0.5, 1, 8);
 const SPHERE = new THREE.SphereGeometry(0.5, 10, 8);
-const CONE = new THREE.ConeGeometry(0.5, 1, 6);
 const CAPSULE = new THREE.CapsuleGeometry(0.5, 1, 2, 8);
 const PLANE = new THREE.PlaneGeometry(1, 1);
 const CIRCLE = new THREE.CircleGeometry(0.5, 12);

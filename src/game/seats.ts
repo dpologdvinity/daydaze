@@ -11,7 +11,6 @@ import * as LAB from "./espressoLab.ts";
 import * as ROOF from "./hotelRooftop.ts";
 import * as BOOKS from "./bookshop.ts";
 import * as SUCRE from "./patisserie.ts";
-import * as G44 from "./gallery.ts";
 import * as SURF from "./surfShack.ts";
 import * as DRIVE from "./driveIn.ts";
 import * as CELLAR from "./wineBar.ts";

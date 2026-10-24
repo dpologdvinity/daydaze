@@ -191,7 +191,6 @@ test("Splat City: a paintball round marks a rival for points", async ({
   await page
     .getByRole("button", { name: "Gear up" })
     .click({ timeout: 150_000 });
-  const score = page.getByLabel("Score");
   await expect(async () => {
     for (const name of ["Red", "Blue", "Orange", "Purple", "Green"])
       await page.getByRole("button", { name: `Fire at ${name}` }).click();

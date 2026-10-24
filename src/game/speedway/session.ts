@@ -9,7 +9,6 @@ import type { CarInput, CarSpec, CarState } from "../driving/car.ts";
 import { stepCityCar } from "../city/drive.ts";
 import { TANK_RANGE } from "../city/gasStations.ts";
 import type { Vec2 } from "../walk.ts";
-import { BUMPER_CAR } from "../driving/roster.ts";
 import { stepBumpers, type Bumper } from "./bumper.ts";
 import { type BotSkill } from "./bots.ts";
 import { createRace, standings, stepRace, type Race } from "./race.ts";

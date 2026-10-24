@@ -205,7 +205,6 @@ function paintClosedEyes(
   shadow: string,
 ) {
   for (const e of [EYE_L, EYE_R]) {
-    const dir = e.x < 512 ? -1 : 1;
     const g = ctx.createRadialGradient(e.x, e.y, 10, e.x, e.y, e.rx);
     g.addColorStop(0, rgba(skin));
     g.addColorStop(0.8, rgba(skin));

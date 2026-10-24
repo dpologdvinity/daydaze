@@ -8,12 +8,7 @@ import * as THREE from "three";
 import { useReducedMotion } from "../../motion.ts";
 import { Batch } from "../shared/batch.ts";
 import { canvasTex, GOLD } from "../shared/materials.ts";
-import {
-  NEON_AMBER,
-  NEON_WARM,
-  PLUM_VELVET,
-  ROSE_VELVET,
-} from "./materials.ts";
+import { NEON_AMBER, NEON_WARM } from "./materials.ts";
 import { inFrame } from "../shared/place.ts";
 
 /**

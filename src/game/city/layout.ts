@@ -84,7 +84,6 @@ export type RoadEdge = {
   speedLimit: number;
 };
 
-const HALF_CITY = 192;
 /** Beachside runs south of the old city edge to the water. */
 const SOUTH_EDGE = 384;
 /** Little Manila runs west of Downtown along the avenue. */

@@ -51,7 +51,7 @@ function spiral(o: {
     ]);
   }
   // a quadratic run-out that leaves the spiral along its own tangent
-  const [ax, ay, az] = pts[pts.length - 2];
+  const [ax, , az] = pts[pts.length - 2];
   const [bx, by, bz] = pts[pts.length - 1];
   const len = Math.hypot(bx - ax, bz - az) || 1;
   const reach = 2.4;

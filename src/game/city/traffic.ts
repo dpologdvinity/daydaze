@@ -28,7 +28,7 @@ export function signalAt(t: number, axis: "ew" | "ns"): Signal {
       ? 0
       : (p -= ewGreen) < ewYellow
         ? 1
-        : (p -= ewYellow) < nsGreen
+        : p - ewYellow < nsGreen
           ? 2
           : 3;
   if (axis === "ew")
