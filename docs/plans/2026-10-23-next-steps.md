@@ -579,6 +579,15 @@ and the order at the splash matches the result. `waterpark/SlideRace.tsx`:
 ring markers at the bends (flash on the beat, then the tuck's grade color),
 the tuck clip, glide hiss, whoosh per tuck, splashes, a high fixed camera.
 
+Task 10 (water-gun battle): `src/game/waterGuns.ts` wraps the Midway
+gallery math (its lanes are the pool's three rows, its corks your
+squirts); `waterpark/WaterGuns.tsx` puts rubber ducks, ring and star floats
+on the pool, an aim ring on the water, the doll on the deck aiming a toy
+pistol, an arcing jet and spin-and-splash hits. Aim with the mouse or a
+tap over the water, the arrows or the panel's pad; squirt with a click,
+tap, Space or the button. Browser tests press Enter on a focused game
+button when a ticking panel keeps it from holding still.
+
 0. B11 prizes for unscored games and B13 speakeasy cards (quick, high value).
 1. ~~A1 couple emotes~~ (done; piggyback left).
 2. ~~A2 cook-off~~ (done).

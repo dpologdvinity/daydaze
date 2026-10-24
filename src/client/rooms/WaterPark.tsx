@@ -12,6 +12,7 @@ import { Pool, POOL_CENTER } from "./waterpark/Pool.tsx";
 import { PoolCourt } from "./waterpark/PoolCourt.tsx";
 import { DiveScene } from "./waterpark/DiveScene.tsx";
 import { SlideRace } from "./waterpark/SlideRace.tsx";
+import { WaterGuns } from "./waterpark/WaterGuns.tsx";
 import type { Player } from "../world/PlayerController.tsx";
 import { Sky } from "./waterpark/Sky.tsx";
 import { SplashZone } from "./waterpark/SplashZone.tsx";
@@ -70,6 +71,7 @@ export function WaterPark({
       <PoolCourt player={player} />
       <DiveScene player={player} />
       <SlideRace player={player} />
+      <WaterGuns player={player} />
       <Tower onRide={onRide} />
       <SplashZone position={[-6, 0, 3.6]} />
       <PortalPads room={ROOMS["water-park"]} color="#3fc2ff" />

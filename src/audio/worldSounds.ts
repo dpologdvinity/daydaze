@@ -310,6 +310,29 @@ export function playPinCrash(pins: number): boolean {
   return true;
 }
 
+/** A water pistol's squirt: a short hiss that bends up as the jet leaves. */
+export function playSquirt(): boolean {
+  const out = sfx();
+  if (!out) return false;
+  const { ctx, dest } = out;
+  const now = ctx.currentTime;
+  const jet = ctx.createBufferSource();
+  jet.buffer = noiseBuffer(ctx);
+  const band = ctx.createBiquadFilter();
+  band.type = "bandpass";
+  band.Q.value = 3;
+  band.frequency.setValueAtTime(1800, now);
+  band.frequency.exponentialRampToValueAtTime(3600, now + 0.14);
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.14, now + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+  jet.connect(band).connect(gain).connect(dest);
+  jet.start(now, Math.random() * 1.5);
+  jet.stop(now + 0.22);
+  return true;
+}
+
 /**
  * Something hitting water: a bright slap, then a hiss of falling drops. `size`
  * (0..2) scales it: a ball's plop at 0.3, a neat dive entry at 0.6, a belly

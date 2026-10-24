@@ -2147,12 +2147,19 @@ test("the Water Park water-gun battle pays a prize", async ({ page }) => {
     .getByRole("button", { name: "Water guns" })
     .click({ timeout: 150_000 });
   await page.getByRole("button", { name: "Grab a water gun" }).click();
-  const battle = page.getByRole("dialog", { name: "Water-gun battle" });
-  const stage = battle.getByRole("application");
-  // the whole tank, squirted
-  for (let i = 0; i < 24; i++)
-    await stage.click({ position: { x: 20, y: 20 } });
-  await expect(battle).toBeHidden();
+  const panel = page.getByRole("region", { name: "Water-gun battle" });
+  // aim with the pad, then empty the whole tank onto the pool
+  await panel.getByRole("button", { name: "▲ Farther" }).click();
+  await page.keyboard.press("ArrowLeft");
+  // Enter on the focused button clicks it natively, without waiting for the
+  // panel's ticking clock to hold the layout still
+  await panel.getByRole("button", { name: "Squirt!" }).focus();
+  for (let i = 0; i < 24; i++) await page.keyboard.press("Enter");
+  await expect(panel.getByRole("status")).toContainText("Battle over", {
+    timeout: 60_000,
+  });
+  // the squirts landed on the pool in the scene
+  await expect(canvasOf(page)).toHaveAttribute("data-water-shots", "24");
   await expect(page.getByRole("status", { name: "Prize" })).toContainText(
     "Water-gun battle",
   );
