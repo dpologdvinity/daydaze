@@ -7,6 +7,8 @@ import {
   opponentSpots,
   play,
   shotFlight,
+  spikeSpot,
+  digSpot,
   TO_WIN,
   type Court,
   type Rally,
@@ -117,4 +119,22 @@ test("the opponents follow the ball on their side", () => {
   assert.ok(Math.abs(d2[0]) < Math.abs(3));
   // a ball wide of the court: the digger stops at the line
   assert.equal(opponentSpots(BEACH, [9, 0.7, 4])[0][0], BEACH.half);
+});
+
+test("a low pool net brings every touch down within a wader's reach", () => {
+  const pool: Court = { half: 3.5, depth: 6, net: 1.25 };
+  assert.ok(spikeSpot(pool, 0)[1] < 1.9, "spike within reach");
+  assert.ok(spikeSpot(pool, 0)[1] > pool.net, "spike above the net");
+  assert.ok(digSpot(pool, 0)[1] < 0.5, "dig just over the water");
+  for (const lane of [-1, 0, 1]) {
+    const flight = shotFlight(pool, "attack", 1, lane);
+    const at: Vec3 = [0, 0, 0];
+    let crossing = -1;
+    for (let i = 1; i <= 400; i++) {
+      const before = ballAt(flight, ((i - 1) / 400) * 1, [0, 0, 0]);
+      ballAt(flight, i / 400, at);
+      if (Math.sign(before[2]) !== Math.sign(at[2])) crossing = at[1];
+    }
+    assert.ok(crossing > pool.net && crossing < 3, `crosses at ${crossing}`);
+  }
 });

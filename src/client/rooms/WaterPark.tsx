@@ -9,6 +9,8 @@ import { PortalPads } from "./shared/PortalPads.tsx";
 import { Deck } from "./waterpark/Deck.tsx";
 import { Locals } from "./waterpark/Locals.tsx";
 import { Pool, POOL_CENTER } from "./waterpark/Pool.tsx";
+import { PoolCourt } from "./waterpark/PoolCourt.tsx";
+import type { Player } from "../world/PlayerController.tsx";
 import { Sky } from "./waterpark/Sky.tsx";
 import { SplashZone } from "./waterpark/SplashZone.tsx";
 import { Tower } from "./waterpark/Tower.tsx";
@@ -18,9 +20,11 @@ import { Sparkles } from "./shared/Sparkles.tsx";
 export function WaterPark({
   onPick,
   onRide,
+  player,
 }: {
   onPick: PickHandler;
   onRide: (slide: number) => void;
+  player: Player;
 }) {
   const calm = useReducedMotion();
   const quality = useQuality();
@@ -61,6 +65,7 @@ export function WaterPark({
       <Sky />
       <Deck onPick={onPick} />
       <Pool />
+      <PoolCourt player={player} />
       <Tower onRide={onRide} />
       <SplashZone position={[-6, 0, 3.6]} />
       <PortalPads room={ROOMS["water-park"]} color="#3fc2ff" />

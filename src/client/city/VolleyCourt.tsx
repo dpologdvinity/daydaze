@@ -8,7 +8,7 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { playCheer, playThump } from "../../audio/worldSounds.ts";
+import { playCheer, playSplash, playThump } from "../../audio/worldSounds.ts";
 import type { GameClipId } from "../../game/dance/moves.ts";
 import type { Look, SwimLook } from "../../game/look.ts";
 import {
@@ -80,6 +80,9 @@ export type CourtSpot = {
   center: Vec3;
   floor: number;
   yaw?: number;
+  /** The camera: how far behind the back line and how high (default 4.2
+   * back, 3.6 up). */
+  shot?: { back: number; up: number };
 };
 
 /** The beach net's court: the net along x, the player's side toward the
@@ -259,7 +262,12 @@ function Rally({
 
   // the camera behind the player's side, looking over the net
   const eye = useMemo(
-    () => toWorld(spot, [0, 3.6, -spot.court.depth - 4.2], [0, 0, 0]),
+    () =>
+      toWorld(
+        spot,
+        [0, spot.shot?.up ?? 3.6, -spot.court.depth - (spot.shot?.back ?? 4.2)],
+        [0, 0, 0],
+      ),
     [spot],
   );
   const target = useMemo(() => toWorld(spot, [0, 1.2, 1.5], [0, 0, 0]), [spot]);
@@ -313,6 +321,7 @@ function Rally({
       landed.current = f.n;
       toWorld(spot, cur.end, here);
       puff.current?.fire(here[0], spot.center[1] + 0.02, here[2], 1);
+      if (water) playSplash(0.35);
       if (f.shot === "kill") playCheer(0.45);
     }
     // the player: to the dig spot for their attack, under the set for the

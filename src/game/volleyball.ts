@@ -68,17 +68,24 @@ export type Court = { half: number; depth: number; net: number };
  */
 export type Shot = "attack" | "set" | "kill" | "their-dig" | "net" | "miss";
 
+// Touch heights scale with the net: a beach net (2.45 m) has you dig at
+// 0.7 m and spike at 2.9 m; a low pool net brings everything down to a
+// wader's reach.
+const digHeight = (c: Court) => c.net * 0.29;
+const spikeHeight = (c: Court) => c.net + 0.45;
+const attackHeight = (c: Court) => c.net + 0.65;
+
 /** Where you dig, for a lane across the court (-1 left .. 1 right). */
 export const digSpot = (c: Court, lane: number): Vec3 => [
   lane * c.half * 0.4,
-  0.7,
+  digHeight(c),
   -c.depth * 0.55,
 ];
 
 /** Where you meet the set at the top of your jump. */
 export const spikeSpot = (c: Court, lane: number): Vec3 => [
   lane * c.half * 0.25,
-  2.9,
+  spikeHeight(c),
   -0.9,
 ];
 
@@ -95,15 +102,19 @@ export function shotFlight(
   switch (shot) {
     case "attack":
       // their hitter at the net, high, down to where you dig
-      return lobIn([-l * c.half * 0.3, 3.1, 1.4], dig, seconds);
+      return lobIn([-l * c.half * 0.3, attackHeight(c), 1.4], dig, seconds);
     case "set":
       return lobIn(dig, spike, seconds);
     case "kill":
       return lobIn(spike, [-l * c.half * 0.6, 0.11, c.depth * 0.5], seconds);
     case "their-dig":
-      return lobIn(spike, [l * c.half * 0.4, 0.7, c.depth * 0.55], seconds);
+      return lobIn(
+        spike,
+        [l * c.half * 0.4, digHeight(c), c.depth * 0.55],
+        seconds,
+      );
     case "net":
-      return lobIn(spike, [spike[0], 1.3, -0.08], seconds);
+      return lobIn(spike, [spike[0], c.net * 0.53, -0.08], seconds);
     case "miss":
       return lobIn(
         dig,

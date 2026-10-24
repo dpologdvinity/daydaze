@@ -554,6 +554,13 @@ it. `data-calls`/`data-triangles` now refresh every 30 frames after the
 first 10, so a game's live budget can be read (the beach rally: ~120
 calls, ~200k triangles with the parade on).
 
+Task 7 (pool volleyball): the same rally across the wave pool
+(`waterpark/PoolCourt.tsx`: a low net on two posts, `POOL_COURT` rotated a
+quarter turn, dolls waist-deep via `floor`, splashes and `playSplash`).
+Touch heights scale with the net (`volleyball.ts`), so a 1.25 m pool net
+keeps every touch within a wader's reach. Task 14 (shader warm-up) needed
+no change: `World.tsx` `Warmup` already compiles under the veil.
+
 0. B11 prizes for unscored games and B13 speakeasy cards (quick, high value).
 1. ~~A1 couple emotes~~ (done; piggyback left).
 2. ~~A2 cook-off~~ (done).

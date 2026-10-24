@@ -2107,13 +2107,23 @@ test("the Water Park speed slide: six untucked bends lose to the rival", async (
 test("pool volleyball at the Water Park pays its own prize", async ({
   page,
 }) => {
+  test.setTimeout(300_000);
   const errors = collectErrors(page);
-  await page.goto(`${STILL}&room=water-park`);
+  await page.goto(`${LOW}&room=water-park`);
   await page
     .getByRole("button", { name: "Pool volleyball" })
     .click({ timeout: 150_000 });
   await page.getByRole("button", { name: "Play pool volleyball" }).click();
   const game = page.getByRole("region", { name: "Pool volleyball" });
+  // the rally plays across the pool: each touch is a new flight
+  const canvas = canvasOf(page);
+  await expect(canvas).toHaveAttribute("data-volley-ball", /^attack-\d+$/, {
+    timeout: 60_000,
+  });
+  const first = await canvas.getAttribute("data-volley-ball");
+  await expect(canvas).not.toHaveAttribute("data-volley-ball", first ?? "", {
+    timeout: 60_000,
+  });
   await expect(game.getByRole("status")).toContainText("They take it, 7 to 0", {
     timeout: 120_000,
   });

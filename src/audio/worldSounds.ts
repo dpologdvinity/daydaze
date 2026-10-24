@@ -310,6 +310,36 @@ export function playPinCrash(pins: number): boolean {
   return true;
 }
 
+/**
+ * Something hitting water: a bright slap, then a hiss of falling drops. `size`
+ * (0..2) scales it: a ball's plop at 0.3, a neat dive entry at 0.6, a belly
+ * flop at 2.
+ */
+export function playSplash(size: number): boolean {
+  const out = sfx();
+  if (!out) return false;
+  const { ctx, dest } = out;
+  const k = Math.min(2, Math.max(0.1, size));
+  const now = ctx.currentTime;
+  // the slap: a short low-mid noise burst
+  burst(ctx, dest, "lowpass", 900 + k * 500, 0.12 + k * 0.1, 0.12 + k * 0.05);
+  // the drops: highpassed noise that swells a touch and falls away
+  const drops = ctx.createBufferSource();
+  drops.buffer = noiseBuffer(ctx);
+  const hp = ctx.createBiquadFilter();
+  hp.type = "highpass";
+  hp.frequency.value = 2400;
+  const gain = ctx.createGain();
+  const tail = 0.35 + k * 0.45;
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.05 + k * 0.05, now + 0.06);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + tail);
+  drops.connect(hp).connect(gain).connect(dest);
+  drops.start(now, Math.random() * 1.2);
+  drops.stop(now + tail + 0.02);
+  return true;
+}
+
 /** A ball struck by hand or forearm: a soft low thump with a slap on top;
  * `level` (0..1) is how hard. */
 export function playThump(level: number): boolean {
