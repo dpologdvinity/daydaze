@@ -1,3 +1,6 @@
+// Lagoon Links' people: Leilani the starter at the hut and two golfers waiting
+// by the tees of later holes.
+
 import type { JSX } from "react";
 import type { DialogueContext } from "../../../game/dialogue/types.ts";
 import { HOLE_XS, HUT, TEE_Z } from "../../../game/lagoonLinks.ts";

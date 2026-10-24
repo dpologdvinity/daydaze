@@ -1,3 +1,7 @@
+// Splat City paintball scene: inflatable bunkers, a safety net and splattered
+// walls. Gameplay reuses the laser tag Rivals and Beams with the paintball
+// session; the room ticks it each frame and leaves the game on unmount.
+
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";

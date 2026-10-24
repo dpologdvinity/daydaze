@@ -1,3 +1,8 @@
+// The Water Park's cliff-dive panel: pick a trick, then stop the entry meter
+// near its middle, five dives a set. The game state lives in divingSession.ts;
+// this panel only renders it and forwards presses (button, or the keys from
+// usePressKeys).
+
 import { useEffect, type JSX } from "react";
 import { DIVES, TRICKS, total } from "../../../game/cliffDive.ts";
 import { useNow, usePressKeys } from "../shared/useNow.ts";

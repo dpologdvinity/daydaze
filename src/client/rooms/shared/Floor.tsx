@@ -1,3 +1,8 @@
+// The walkable floor every room stands on: a plane that turns a click into a
+// walk order, mirrored with MeshReflectorMaterial on high quality and a plain
+// glossy material on low. A drag (over 6 px) is taken as a camera orbit and
+// ignored.
+
 import { MeshReflectorMaterial } from "@react-three/drei";
 import type { ThreeEvent } from "@react-three/fiber";
 import type * as THREE from "three";
@@ -5,6 +10,10 @@ import type { Vec2 } from "../../../game/walk.ts";
 import { useQuality } from "../../world/quality.ts";
 import { tiledMaps } from "../../city/worldTexture.ts";
 
+/**
+ * Called with the clicked floor point as [x, z] in room space, to walk the
+ * player there.
+ */
 export type PickHandler = (point: Vec2) => void;
 
 /**

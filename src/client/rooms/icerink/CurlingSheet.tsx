@@ -1,3 +1,8 @@
+// The curling sheet in the 3D rink: the house rings, the hack and the stones as
+// one instanced mesh. While an end is on it takes over the player (seated at
+// the hack, then sweeping behind the stone) and the camera through cameraHold,
+// and hands both back when the end stops or the sheet unmounts.
+
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";

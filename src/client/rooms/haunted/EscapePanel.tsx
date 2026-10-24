@@ -1,3 +1,8 @@
+// The haunted house's escape game: three doors a room, one goes deeper and the
+// others cost nerve with a scare line (jumps and creaks, never gore). Run state
+// is local React state, so leaving the panel ends the run; the score goes to
+// the prize desk when it finishes.
+
 import { useState, type JSX } from "react";
 import { playWhoosh } from "../../../audio/worldSounds.ts";
 import {

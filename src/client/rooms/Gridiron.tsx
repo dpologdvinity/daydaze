@@ -1,3 +1,7 @@
+// The Gridiron football field: field texture, goalposts, scoreboard and the
+// field-goal kick animation with its follow camera. Goal and field coordinates
+// come from game/gridiron.ts and are mapped to room space with fieldToRoom.
+
 import { Stars } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";

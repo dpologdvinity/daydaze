@@ -1,3 +1,9 @@
+// Merged geometry for the amusement park: gondolas, coaster cars, flume logs,
+// carousel horses and poles, plus the rails, ties, trough and lattice towers
+// built from the tracks in src/game/amusementPark.ts. Gotcha: `merged` applies
+// each part's matrix to its geometry in place, so always pass a fresh geometry
+// per part.
+
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import {
@@ -42,9 +48,12 @@ export function merged(parts: readonly Part[]): THREE.BufferGeometry {
   return out;
 }
 
+/** A fresh 1 by 1 by 1 box, for scaling with a Part's `size`. */
 export const cube = () => new THREE.BoxGeometry(1, 1, 1);
+/** A fresh unit cylinder (radius 1, height 1) with `sides` around. */
 export const cylinder = (sides: number) =>
   new THREE.CylinderGeometry(1, 1, 1, sides);
+/** A fresh unit sphere with `w` by `h` segments. */
 export const ball = (w: number, h: number) => new THREE.SphereGeometry(1, w, h);
 
 // Gondola parts in the cabin's own frame. The origin is the rim point it hangs
@@ -285,8 +294,11 @@ export function flumeParts(controls: readonly Vec3[]): CoasterParts {
   };
 }
 
+/** Built parts for the Comet, the midway coaster. */
 export const COMET = coasterParts(COASTER_CONTROLS, COASTER_TRACK);
+/** Built parts for the log flume: trough and towers, no ties. */
 export const FLUME = flumeParts(FLUME_CONTROLS);
+/** Built parts for the Starlight hyper coaster, with 120 ties. */
 export const STARLIGHT = coasterParts(STARLIGHT_CONTROLS, STARLIGHT_TRACK, 120);
 
 // A coaster car, nose along +z so the track yaw turns it. Three draws in total:

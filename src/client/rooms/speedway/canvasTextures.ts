@@ -1,6 +1,10 @@
+// Canvas-painted textures for the Speedway, and the seeded random generator
+// their paint functions use so the art is the same every visit.
+
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
 
+/** Paints a texture onto a `w` by `h` canvas context. */
 export type Paint = (
   ctx: CanvasRenderingContext2D,
   w: number,

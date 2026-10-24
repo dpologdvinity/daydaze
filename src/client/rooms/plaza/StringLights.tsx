@@ -1,3 +1,7 @@
+// The Plaza's festoon lights: sagging wires zig-zagging between the shop
+// cornices and the lamp posts, with an instanced bulb every half meter or so
+// that twinkles in a wave along the strings (still under reduced motion).
+
 import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -33,6 +37,10 @@ function span(a: THREE.Vector3, b: THREE.Vector3) {
   return new THREE.QuadraticBezierCurve3(a, mid, b);
 }
 
+/**
+ * The wires (one merged mesh) and the bulbs (one instanced mesh). Colors are
+ * rewritten every frame unless reduced motion is on.
+ */
 export function StringLights() {
   const ref = useRef<THREE.InstancedMesh>(null);
   const { wires, bulbs } = useMemo(() => {

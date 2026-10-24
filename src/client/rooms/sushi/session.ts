@@ -1,3 +1,8 @@
+// Sushi Catch's round state: a store with the round, its start time and the
+// last grab, and the actions that start, grab, tick and leave. Times are
+// performance.now() milliseconds; the round itself counts seconds. The score
+// goes to the prize desk once, when time runs out.
+
 import {
   grab,
   newRound,
@@ -18,10 +23,16 @@ const OFF = {
   over: false,
 };
 
+/**
+ * The Sushi Catch store: whether a round is on or over, its start time, the
+ * round and the last grab.
+ */
 export const sushi = createStore(OFF);
 
+/** Seconds since the current round started, for a performance.now() time. */
 export const secondsIn = (now: number) => (now - sushi.get().start) / 1000;
 
+/** Starts a fresh round at `now`, seeded from the clock. */
 export function start(now: number) {
   sushi.set({
     ...OFF,
@@ -31,10 +42,15 @@ export function start(now: number) {
   });
 }
 
+/** Ends the round without scoring it. */
 export function leave() {
   sushi.set(OFF);
 }
 
+/**
+ * Grabs whatever plate is in reach at `now`. Does nothing when the round is off
+ * or over, or nothing is in reach.
+ */
 export function press(now: number) {
   const s = sushi.get();
   if (!s.on || s.over) return;

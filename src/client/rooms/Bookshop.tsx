@@ -1,3 +1,7 @@
+// Dog-Ear Books on Park Avenue: the wallpapered shell, instanced shelves of
+// book spines, the fireplace, Ines the clerk, a reader and Marmalade the cat.
+// Shelf rows and stack runs are fixed constants here.
+
 import { Html } from "@react-three/drei";
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import {

@@ -1,3 +1,8 @@
+// The Water Park's splash zone: a climbing frame whose giant bucket fills,
+// wobbles and tips every 20 s, with a falling water sheet, a splash ring and
+// spray jets. All animation runs off the clock in one useFrame, offset by 8 s
+// so it does not tip right at load.
+
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 import * as THREE from "three";

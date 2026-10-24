@@ -1,3 +1,8 @@
+// The Karaoke Loft scene: velvet walls, quilted panels, a stage with mic and
+// footlights, the lyric screen with its bouncing ball, and banquettes. The
+// screen shows notes, never lyrics. Tapping the bartender (./karaoke/Npcs.tsx)
+// pours a cocktail into the buzz system.
+
 import { useFrame } from "@react-three/fiber";
 import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";

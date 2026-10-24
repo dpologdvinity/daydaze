@@ -1,3 +1,7 @@
+// The Skee-Ball panel at the Boardwalk Arcade: aim and power meters and the
+// press button, driven by the session in ./session.ts. Scoring comes from
+// src/game/skeeBall.ts.
+
 import type { JSX } from "react";
 import { BALLS, total } from "../../../game/skeeBall.ts";
 import { useNow, usePressKeys } from "../shared/useNow.ts";

@@ -1,3 +1,7 @@
+// The Water Park's wave pool: a custom shader for rolling waves, caustics,
+// glints and edge foam, the tiled coping, and inflatables that ride the waves.
+// Reduced motion freezes the water and the floats.
+
 import { useFrame } from "@react-three/fiber";
 import { useMemo } from "react";
 import * as THREE from "three";
@@ -9,6 +13,10 @@ import { causticTex, rippleTex, stripes, toon, PROPS } from "./materials.ts";
 
 const W = POOL.x1 - POOL.x0;
 const D = POOL.z1 - POOL.z0;
+/**
+ * The pool's center on the deck as [x, z]; the water mesh and waveAt use
+ * coordinates relative to it.
+ */
 export const POOL_CENTER: [number, number] = [
   (POOL.x0 + POOL.x1) / 2,
   (POOL.z0 + POOL.z1) / 2,

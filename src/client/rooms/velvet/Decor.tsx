@@ -1,3 +1,7 @@
+// Velvet Room wall and ceiling decor: the gold lion sunburst crest, the swaying
+// crystal chandelier (one instanced draw) and the gathered velvet curtains. The
+// curtain geometry is built once at module load and shared by every drape.
+
 import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -12,6 +16,10 @@ import {
 } from "./materials.ts";
 import { inFrame } from "../shared/place.ts";
 
+/**
+ * Gold sunburst crest with a painted Leo glyph disc and a neon halo, facing +z
+ * at `position`.
+ */
 export function LionCrest(props: { position: [number, number, number] }) {
   const parts = useMemo(() => {
     const tex = canvasTex(512, 512, (ctx) => {

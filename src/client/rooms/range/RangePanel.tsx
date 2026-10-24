@@ -1,3 +1,7 @@
+// Skyline Driving Range's panel: a bucket of ten balls, each set on a power
+// meter and then struck on a timing meter; balls that land on the greens score.
+// Rules live in game/golfRange.ts and the state in ./session.ts.
+
 import type { JSX } from "react";
 import { BALLS, bucketScore } from "../../../game/golfRange.ts";
 import { useNow, usePressKeys } from "../shared/useNow.ts";

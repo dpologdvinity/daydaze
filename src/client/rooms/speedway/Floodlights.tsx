@@ -1,3 +1,7 @@
+// Four floodlight towers at the corners of the Neon Oval, set a margin outside
+// the track's bounds. Lamp heads are emissive boxes, not real lights, to stay
+// inside the low tier's light budget.
+
 import { useMemo } from "react";
 import { TRACKS } from "../../../game/speedway/track.ts";
 import { TRACK_ORIGINS } from "../../../game/speedway/layout.ts";

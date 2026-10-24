@@ -1,3 +1,8 @@
+// The Velvet Room's bar along the north wall: fluted pink counter with a marble
+// top, brass rail and neon strips, plus the mirrored back bar with three lit
+// glass shelves of bottles, the stools and two cocktails. Static geometry is
+// merged into one Batch built once.
+
 import { useMemo } from "react";
 import * as THREE from "three";
 import { surface } from "../../city/worldTexture.ts";
@@ -44,6 +49,10 @@ const STOOLS = [-3.2, -2.3, -0.5, 0.5, 1.4].map(
   (x) => [x, 0, -4.05, Math.PI] as const,
 );
 
+/**
+ * The whole bar, counter to back shelves. Stool positions must stay in step
+ * with the velvet-stool seats in seats.ts.
+ */
 export function Bar() {
   const fluted = useMemo(
     () =>

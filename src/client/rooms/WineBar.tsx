@@ -1,3 +1,8 @@
+// Cellar 214, the Park Avenue wine bar: brick cellar, oak bar, racks of
+// bottles, candlelit barrel tables and Inès the sommelier. The glass on the bar
+// mirrors the wine-pour minigame state from ./cellar/session.ts every frame and
+// hides itself when no flight is on.
+
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";

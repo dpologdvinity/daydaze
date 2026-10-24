@@ -1,3 +1,8 @@
+// The Karaoke Loft's mic panel: notes come down three lanes and the player
+// sings each on time, by button or J, K and L. Ticks the session from the
+// panel's own animation-frame clock, so the song only advances while this is
+// mounted.
+
 import { useEffect, type JSX } from "react";
 import { LANES, NOTES, songScore } from "../../../game/karaokeGame.ts";
 import { typing, useNow } from "../shared/useNow.ts";

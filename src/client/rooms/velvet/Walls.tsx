@@ -1,3 +1,8 @@
+// The Velvet Room's north, west and east walls: quilted velvet (a painted
+// canvas texture over a CC0 velvet normal map), a walnut wainscot, gold
+// pilasters and moulding, and neon cornice and baseboard. The south side is
+// open for the camera.
+
 import { useMemo } from "react";
 import * as THREE from "three";
 import { groundMaps, surface } from "../../city/worldTexture.ts";

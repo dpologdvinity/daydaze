@@ -1,3 +1,6 @@
+// Glow Bowl's people: Dana at the shoe counter and bowlers waiting on the other
+// lanes. A bowler on PLAY_LANE is skipped so the player's lane stays clear.
+
 import type { JSX } from "react";
 import {
   COUNTER,

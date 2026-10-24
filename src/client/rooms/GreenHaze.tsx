@@ -1,3 +1,8 @@
+// Green Haze, the 18+ weed and shroom lounge: brick shell, jar counter, grow
+// wall, couch nooks with regulars, a canvas mushroom mural and the budtender.
+// 18+ only: game/age.ts keeps the door shut, so never route real players here
+// before the age check ships.
+
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useLayoutEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";

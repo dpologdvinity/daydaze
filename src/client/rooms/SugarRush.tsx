@@ -1,3 +1,8 @@
+// Sugar Rush, the Y2K pop club scene: gradient walls, butterflies flexing on
+// the walls (one instanced draw call), an LED floor, podiums, an acrylic bar,
+// blow-up chairs and the DJ booth. Ordering at the bar pours a cocktail into
+// the buzz system.
+
 import { useFrame } from "@react-three/fiber";
 import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";

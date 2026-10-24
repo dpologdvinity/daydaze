@@ -1,3 +1,7 @@
+// Starboard Marina's fishing panel: five casts, each set on a power meter and
+// then struck when the bobber dips. Rules live in game/fishing.ts and the state
+// in ./session.ts; this only reads and presses.
+
 import type { JSX } from "react";
 import { CASTS, tripKg, type Catch } from "../../../game/fishing.ts";
 import { useNow, usePressKeys } from "../shared/useNow.ts";

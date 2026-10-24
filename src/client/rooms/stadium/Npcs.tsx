@@ -1,3 +1,6 @@
+// Seaside Stadium's people: Mags selling snacks on the touchline and the coach
+// clapping by the dugout.
+
 import type { JSX } from "react";
 import type { DialogueContext } from "../../../game/dialogue/types.ts";
 import type { Look } from "../../../game/look.ts";

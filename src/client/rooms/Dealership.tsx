@@ -1,3 +1,7 @@
+// Daydaze Motors, the car showroom: white glass shell, each road car from the
+// roster on a spinning LED turntable, and Gia at the sales desk. Display
+// positions come from game/dealership.ts; buying happens in the UI panel.
+
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";

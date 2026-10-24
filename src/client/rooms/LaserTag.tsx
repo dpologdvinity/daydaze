@@ -1,3 +1,8 @@
+// Photon Zone laser tag scene, plus the Rivals and Beams components that
+// Paintball.tsx reuses for any TagGame session. The room ticks the shared
+// laserTag session each frame from the player's position and leaves the game on
+// unmount.
+
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";

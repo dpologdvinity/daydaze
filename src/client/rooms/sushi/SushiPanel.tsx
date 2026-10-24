@@ -1,3 +1,7 @@
+// Sushi Catch's panel: shows the ticket, the plate in reach and the score, and
+// grabs on a press. The round's clock is ticked by SushiBelt in the scene, not
+// by this panel.
+
 import type { JSX } from "react";
 import {
   inReach,

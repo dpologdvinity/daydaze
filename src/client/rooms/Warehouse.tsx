@@ -1,3 +1,9 @@
+// Bassline, the Nightlife Row techno warehouse: brick shell under steel
+// trusses, the DJ in a shipping container, speaker stacks, LED bars on the back
+// wall, a pallet bar and crate benches. Repeated boxes go through the instanced
+// `Boxes` helper to save draw calls; layout comes from src/game/warehouse.ts.
+// The bar NPC's drink order calls drink("cocktail").
+
 import { useFrame } from "@react-three/fiber";
 import { Suspense, useMemo, useRef, type ReactNode } from "react";
 import * as THREE from "three";

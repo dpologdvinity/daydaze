@@ -1,3 +1,7 @@
+// The Speedway's bumper-car arena: a glowing floor with a neon grid,
+// neon-topped walls, a dark beam-and-pole ceiling and falling sparks. Solid and
+// glowing boxes are one draw call each; the sparks are one instanced mesh.
+
 import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";

@@ -1,3 +1,7 @@
+// The Starlite Drive-In lot: parked roster cars, the giant screen whose film is
+// drawn to a small canvas at 12 fps, a star field, the chrome diner and Dot the
+// carhop. The film is procedural canvas drawing, not a video file.
+
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";

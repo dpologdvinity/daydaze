@@ -1,3 +1,7 @@
+// The Daydaze Zoo's safari photo hunt panel: start a two-minute hunt, see the
+// list of animals still to shoot, and snap. Aiming and scoring live in
+// session.ts and src/game/safari.ts; this panel only renders them.
+
 import type { JSX } from "react";
 import { huntScore, SPECIES } from "../../../game/safari.ts";
 import { useNow, usePressKeys } from "../shared/useNow.ts";

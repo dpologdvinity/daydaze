@@ -1,3 +1,7 @@
+// The Ice Rink's curling panel: set the aim, then the weight, then sweep while
+// the stone slides; six stones an end. State lives in ./curling.ts; this reads
+// it and forwards presses.
+
 import type { JSX } from "react";
 import { endScore, STONES } from "../../../game/curling.ts";
 import { useNow, usePressKeys } from "../shared/useNow.ts";

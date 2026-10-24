@@ -1,3 +1,8 @@
+// Glow Bowl's lane panel: the ten-frame scoreboard and the place, aim, power
+// and bowl controls, plus keyboard shortcuts. Lane state lives in ./session.ts;
+// scoring comes from src/game/bowling.ts. Keeps its own useNow rather than the
+// shared one.
+
 import { useEffect, useState, type JSX } from "react";
 import {
   frameTotals,

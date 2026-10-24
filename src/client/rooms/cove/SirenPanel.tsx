@@ -1,3 +1,7 @@
+// The Siren Song panel at Mermaid Cove: a memory game on four shells, one note
+// longer each round. Keys 1 to 4 play the shells while it's the player's turn;
+// state lives in ./session.ts.
+
 import { useEffect, type JSX } from "react";
 import { SHELLS } from "../../../game/sirenSong.ts";
 import { typing } from "../shared/useNow.ts";

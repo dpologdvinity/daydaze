@@ -1,3 +1,6 @@
+// The Courtside Club's people: the umpire by the net and Margaux, the attendant
+// at the door.
+
 import type { JSX } from "react";
 import { BENCH_X, FLOOR_BOUNDS } from "../../../game/courtside.ts";
 import type { DialogueContext } from "../../../game/dialogue/types.ts";

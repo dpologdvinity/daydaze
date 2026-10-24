@@ -1,3 +1,7 @@
+// Photon Zone's light-gun target range: pick a pistol or rifle drill and it
+// runs the Midway's shooting Gallery in a dialog with a fresh seed. The score
+// goes to the prize desk as `range-<drill>`.
+
 import { useState, type JSX } from "react";
 import { Gallery } from "../../../minigames/midway/Midway.tsx";
 import { Dialog } from "../../../minigames/Dialog.tsx";

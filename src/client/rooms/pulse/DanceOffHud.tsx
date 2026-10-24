@@ -1,3 +1,8 @@
+// Pulse's dance-off banner: counts down to the next dance-off on the shared
+// clock, then tallies the seconds the player dances during it and pays them to
+// the prize desk when it ends. Polls every 250 ms; the tally lives in a ref, so
+// leaving mid dance-off forfeits it.
+
 import { useEffect, useRef, useState } from "react";
 import { danceOffAt, danceOffIndex } from "../../../game/danceOff.ts";
 import { danceOffClock as clock } from "./danceOffClock.ts";

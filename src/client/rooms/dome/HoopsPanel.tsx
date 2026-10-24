@@ -1,3 +1,7 @@
+// The Hot Shots panel at the Dome: a 60-second shootout with aim and power
+// meters on one button. State and timing live in ./session.ts; shot spots come
+// from src/game/hoops.ts.
+
 import type { JSX } from "react";
 import { AIM_LIMIT, spotFor } from "../../../game/hoops.ts";
 import { useNow, usePressKeys } from "../shared/useNow.ts";

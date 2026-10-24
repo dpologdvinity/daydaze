@@ -1,3 +1,7 @@
+// The amusement park's ride staff and visitors as full dolls with tap-to-talk
+// speech bubbles. Lines come from pickLine with each NPC's dialogue role and
+// PARK_CONTEXT; a bubble clears itself after BUBBLE_MS.
+
 import { Html } from "@react-three/drei";
 import type { ThreeEvent } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";

@@ -1,3 +1,7 @@
+// Small terracotta potted plants around the Velvet Room. Every pot and frond is
+// merged into one batch; frond angles come from the pot's position, so each
+// plant looks a little different with no randomness.
+
 import { useMemo } from "react";
 import * as THREE from "three";
 import { lathe } from "../../avatar/dollGeometry.ts";

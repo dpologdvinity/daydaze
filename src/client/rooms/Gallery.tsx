@@ -1,3 +1,7 @@
+// Gallery 44 on Gallery Row: the white-cube shell, six framed pieces drawn into
+// one canvas atlas texture, plinth sculptures, the curator and a visitor, and
+// the open wall where the player's own painting hangs.
+
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";

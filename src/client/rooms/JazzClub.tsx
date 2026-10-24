@@ -1,3 +1,8 @@
+// The Midnight Horn jazz club scene: brick-backed stage with a four-piece band,
+// velvet walls, candlelit tables and a marble bar. Static geometry is merged
+// into one Batch; positions come from src/game/jazzClub.ts. Only the candle
+// glow light animates.
+
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";

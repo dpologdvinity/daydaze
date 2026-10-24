@@ -1,3 +1,8 @@
+// La Noche, the Latin club scene: red plaster, festoon swags, a band stage, an
+// LED dance floor, a rum bar and candlelit tables. Positions come from
+// src/game/laNoche.ts; ordering a drink calls the buzz system via
+// drink("cocktail").
+
 import { useFrame } from "@react-three/fiber";
 import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";

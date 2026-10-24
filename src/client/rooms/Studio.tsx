@@ -1,3 +1,8 @@
+// Loft Studios music room scene: piano, drum kit, marimba and floor piano.
+// Walking near an instrument selects it in the studio session; each
+// instrument's eight playable parts are one instanced mesh that lights the note
+// just played for GLOW seconds.
+
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";

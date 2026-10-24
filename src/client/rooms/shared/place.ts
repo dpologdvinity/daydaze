@@ -1,3 +1,7 @@
+// Local frames for Batch: author a wall or prop's pieces around its own origin,
+// then bake them into room space by the frame's position, yaw and uniform
+// scale.
+
 import * as THREE from "three";
 import { Batch, type Pose } from "./batch.ts";
 

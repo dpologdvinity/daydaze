@@ -1,3 +1,7 @@
+// Seaside Stadium's penalty shootout panel: five kicks, each a sweeping
+// direction locked by a press, then a power meter where too hard goes over the
+// bar. Rules live in game/penalty.ts and the state in ./session.ts.
+
 import type { JSX } from "react";
 import { goals, KICKS, type Outcome } from "../../../game/penalty.ts";
 import { useNow, usePressKeys } from "../shared/useNow.ts";

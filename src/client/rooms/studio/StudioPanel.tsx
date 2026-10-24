@@ -1,3 +1,7 @@
+// Loft Studios' instrument panel: pick a station and play its eight notes by
+// button or the 1 to 8 keys. The key listener is always on while the panel is
+// mounted, except while typing in a field.
+
 import { useEffect, type JSX } from "react";
 import {
   DRUM_LABELS,

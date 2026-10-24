@@ -1,3 +1,9 @@
+// The Velvet Room, the starting lounge: mirrored marble floor, bar, booth,
+// dance floor with a doll (low tier) or slow-dancing couple (high tier),
+// drapes, palms and the arched mirror door to the Plaza. Stays at four real
+// lights (one hemisphere fill plus three points); the reflections come from a
+// one-frame Environment of lightformers.
+
 import { Environment, Lightformer } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
@@ -181,6 +187,10 @@ function Regulars() {
   );
 }
 
+/**
+ * The Velvet Room scene. `onPick` handles floor clicks for walking; `onGame`
+ * opens the minigame on a tapped hotspot pad.
+ */
 export function VelvetRoom({
   onPick,
   onGame,

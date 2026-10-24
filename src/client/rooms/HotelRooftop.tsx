@@ -1,3 +1,9 @@
+// The Marquise Rooftop scene: deck, infinity pool, hot tub, loungers, pool bar,
+// cabanas and a merged skyline 40 m below. Layout numbers come from
+// src/game/hotelRooftop.ts; the deck is three Floor pieces round the sunken
+// pool, so the pool itself is not walkable. Swimming guests bob only when
+// reduced motion is off.
+
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";

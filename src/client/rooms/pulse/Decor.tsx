@@ -1,3 +1,7 @@
+// Pulse's set dressing: the back wall with its painted seams over a CC0 plaster
+// normal map, the PULSE neon sign, the scrolling LED wall behind the DJ and the
+// mirror ball. Materials are module-level and shared.
+
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";

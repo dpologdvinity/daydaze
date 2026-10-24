@@ -1,3 +1,9 @@
+// Fairground dressing for the amusement park: food carts with striped awnings
+// and balloons, lamp posts along the midway and the path out to the Starlight,
+// and the cobbled path strip. Everything is instanced through Copies and
+// Segments; cart parts are built in each cart's own frame and turned by its
+// `rot`.
+
 import { useMemo } from "react";
 import * as THREE from "three";
 import { surface } from "../../city/worldTexture.ts";

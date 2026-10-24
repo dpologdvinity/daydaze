@@ -1,3 +1,7 @@
+// The Gridiron's sideline people: a cheer squad cycling through moves, the team
+// by the bench (cheap CrowdFigures) and Dez, the one talking NPC, selling
+// snacks.
+
 import type { JSX } from "react";
 import type { DialogueContext } from "../../../game/dialogue/types.ts";
 import { BENCH_X, FIELD } from "../../../game/gridiron.ts";

@@ -1,3 +1,7 @@
+// Photon Zone's laser tag and Splat City's paintball panels: one TagPanel over
+// either TagGame session from ./session.ts, with each venue's own words. A
+// round is sixty seconds; a hit on you stuns you for a moment.
+
 import type { JSX } from "react";
 import {
   ROUND_SECONDS,
@@ -73,6 +77,7 @@ function TagPanel({
   );
 }
 
+/** Photon Zone's laser tag round. */
 export function LaserTagPanel(): JSX.Element {
   return (
     <TagPanel
@@ -84,6 +89,9 @@ export function LaserTagPanel(): JSX.Element {
   );
 }
 
+/**
+ * Splat City's speedball round, the same game as laser tag in paintball words.
+ */
 export function PaintballPanel(): JSX.Element {
   return (
     <TagPanel

@@ -1,3 +1,9 @@
+// The Daydaze Zoo: five fenced habitats with procedurally built animals. Every
+// animal is merged geometry painted per vertex and drawn with the one shared
+// SKIN material; walkers swing two diagonal leg pairs, birds are instanced.
+// SafariTracker feeds the animals' clock and the player's view to the
+// photo-hunt session each frame.
+
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";
@@ -550,6 +556,10 @@ function SafariTracker({ player }: { player: Player }) {
   return null;
 }
 
+/**
+ * The Zoo scene. `player` is read every frame so the safari photo hunt knows
+ * where the player stands and faces.
+ */
 export function Zoo({
   onPick,
   player,

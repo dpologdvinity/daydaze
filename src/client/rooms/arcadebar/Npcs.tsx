@@ -1,3 +1,7 @@
+// The people in Player 2, the arcade bar: Kit the bartender (tap to order a
+// drink) and regulars at the cabinets, the pinball and the air hockey table.
+// Positions come from src/game/arcadeBar.ts.
+
 import type { JSX } from "react";
 import { BAR, CABINET_XS, HOCKEY, PINBALL } from "../../../game/arcadeBar.ts";
 import type { DialogueContext } from "../../../game/dialogue/types.ts";

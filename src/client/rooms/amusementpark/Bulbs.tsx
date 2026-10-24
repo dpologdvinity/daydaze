@@ -1,8 +1,13 @@
+// Strings of glowing bulbs for the amusement park's rides and booths, one
+// instanced draw call per string. Colors are HDR (hdr x3.2, not tone mapped) so
+// they bloom.
+
 import { useLayoutEffect, useRef } from "react";
 import * as THREE from "three";
 import type { Vec3 } from "../../../game/amusementPark.ts";
 import { hdr } from "../shared/materials.ts";
 
+/** The default bulb colors, cycled in order along a string. */
 export const BULB_PALETTE = [
   "#fff1c8",
   "#ff6ac8",

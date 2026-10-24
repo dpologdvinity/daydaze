@@ -1,3 +1,9 @@
+// The Coconut Grove tiki bar on Beachside: a thatched bamboo bar, torches,
+// glass floats, lounges round a fire bowl and a painted sunset out the open
+// back. FLAME is a module-level material shared by every torch and fire flame,
+// so its flicker in useFrame moves them all at once. Layout comes from
+// src/game/tikiBar.ts.
+
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";

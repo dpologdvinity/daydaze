@@ -1,3 +1,9 @@
+// The Plaza's street of shopfronts: facades, windows, doors or shutters, velvet
+// ropes and the end walls, all merged through Batch into one mesh per material,
+// plus the neon signs, chasing marquee bulbs, a mannequin and three point
+// lights. Shop positions come from ./layout.ts; module-level textures and
+// materials are never disposed.
+
 import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -450,6 +456,11 @@ function ShopSigns({ shop }: { shop: Shop }) {
   );
 }
 
+/**
+ * Every shopfront on the Plaza. The static pieces are built once per mount; the
+ * signs and marquees animate on their own (the marquee holds still under
+ * reduced motion).
+ */
 export function Storefronts() {
   const statics = useMemo(buildStatics, []);
   const club = shopAt("club");

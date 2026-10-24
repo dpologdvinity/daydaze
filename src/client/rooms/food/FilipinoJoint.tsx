@@ -1,3 +1,8 @@
+// Kain Tayo, Little Manila's turo-turo: the shared FoodRoom in pink, gold and
+// magenta with a row of colored banners and three glowing parol lanterns over
+// the counter. Throws on render if the "kain-tayo-turo-turo" venue is missing
+// from FOOD_VENUES.
+
 import type { JSX } from "react";
 import { FOOD_VENUES } from "../../../game/food/venues.ts";
 import type { PickHandler } from "../shared/Floor.tsx";

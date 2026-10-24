@@ -1,3 +1,7 @@
+// The Back Room, Nightlife Row's hidden speakeasy: paneled shell, mirrored back
+// bar with a canvas-drawn bottle texture, booths, piano and Odette the
+// bartender. Bounds come from the room's game module.
+
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";

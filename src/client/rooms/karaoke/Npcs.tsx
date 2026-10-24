@@ -1,3 +1,7 @@
+// The Karaoke Loft's people: Marisol hosting by the stage, Jo the server (her
+// tap calls `onDrink`), Bel singing on stage and two friends dancing on the
+// floor.
+
 import type { JSX } from "react";
 import type { DialogueContext } from "../../../game/dialogue/types.ts";
 import { MIC, STAGE } from "../../../game/karaoke.ts";

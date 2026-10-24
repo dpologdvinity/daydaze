@@ -1,3 +1,7 @@
+// A carnival entrance arch: two neon tubes, outer and inner, rising from the
+// ground and over the top, with a marquee neon sign above. The arch's size is
+// fixed; `width` only sizes the sign.
+
 import { useMemo } from "react";
 import * as THREE from "three";
 import { MARQUEE, Neon, NeonText } from "./Neon.tsx";

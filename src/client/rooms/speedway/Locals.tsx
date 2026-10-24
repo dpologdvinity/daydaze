@@ -1,3 +1,7 @@
+// The Speedway's staff: two pit-crew dolls and two box-figure staff who talk
+// when tapped. Polls the driving session every 200 ms so the first pit-crew
+// member says one line when each race finishes.
+
 import { Html } from "@react-three/drei";
 import type { ThreeEvent } from "@react-three/fiber";
 import { useCallback, useEffect, useRef, useState } from "react";

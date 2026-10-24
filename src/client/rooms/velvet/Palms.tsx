@@ -1,3 +1,6 @@
+// The Velvet Room's four potted toon palms in the corners, merged into one
+// batch. Fronds are bent planes, so they use double-sided materials.
+
 import { useMemo } from "react";
 import * as THREE from "three";
 import { gradientMap } from "../../avatar/toon.ts";

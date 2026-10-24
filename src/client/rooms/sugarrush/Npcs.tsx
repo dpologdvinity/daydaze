@@ -1,3 +1,7 @@
+// Sugar Rush's people: Tash on the door, Kiki at the bar (her tap calls
+// `onDrink`), DJ Glitter, two podium dancers, Dot at coat check and a crowd
+// dancing on the LED floor.
+
 import type { JSX } from "react";
 import type { DialogueContext } from "../../../game/dialogue/types.ts";
 import type { Look } from "../../../game/look.ts";

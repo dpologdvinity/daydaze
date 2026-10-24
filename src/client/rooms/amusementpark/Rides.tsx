@@ -1,3 +1,10 @@
+// The amusement park's main rides: Ferris wheel, carousel, the Comet and
+// Starlight coasters, drop tower, swing ride, teacups, pirate ship, log flume
+// and the Haunted House front. Ride motion comes from the pure helpers in
+// src/game/amusementPark.ts; a module-level scratch object keeps useFrame from
+// allocating. `coasterRiders` is how the scene moves a train under a riding
+// player.
+
 import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
