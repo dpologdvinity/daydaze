@@ -35,6 +35,24 @@ export function lob(from: Vec3, to: Vec3, apex: number): Flight {
   };
 }
 
+/**
+ * A flight from `from` that lands on `to` exactly `seconds` later (the arc is
+ * whatever gravity needs for that time), for games whose engine says when the
+ * ball arrives.
+ */
+export function lobIn(from: Vec3, to: Vec3, seconds: number): Flight {
+  const t = Math.max(seconds, 1e-3);
+  return {
+    from: [from[0], from[1], from[2]],
+    velocity: [
+      (to[0] - from[0]) / t,
+      (to[1] - from[1] + 0.5 * GRAVITY * t * t) / t,
+      (to[2] - from[2]) / t,
+    ],
+    duration: t,
+  };
+}
+
 /** Where the ball is `t` seconds into the flight, written into `out`. */
 export function ballAt(flight: Flight, t: number, out: Vec3): Vec3 {
   const [x, y, z] = flight.from;

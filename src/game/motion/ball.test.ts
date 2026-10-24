@@ -3,7 +3,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { ballAt, bounce, GRAVITY, lob, type Vec3 } from "./ball.ts";
+import { ballAt, bounce, GRAVITY, lob, lobIn, type Vec3 } from "./ball.ts";
 
 const near = (a: number, b: number, eps = 1e-6) =>
   assert.ok(Math.abs(a - b) < eps, `${a} ≉ ${b}`);
@@ -63,4 +63,15 @@ test("restitution is clamped below 1", () => {
   const next = bounce(flight, 5);
   const before = Math.abs(flight.velocity[1] - GRAVITY * flight.duration);
   assert.ok(next.velocity[1] < before);
+});
+
+test("a timed lob lands on its target exactly when asked", () => {
+  for (const seconds of [0.5, 0.9, 1.4]) {
+    const flight = lobIn([1, 2.8, 4], [-0.5, 0.7, -4.5], seconds);
+    assert.equal(flight.duration, seconds);
+    const out = ballAt(flight, seconds, [0, 0, 0]);
+    near(out[0], -0.5);
+    near(out[1], 0.7);
+    near(out[2], -4.5);
+  }
 });
