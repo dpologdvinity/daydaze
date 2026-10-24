@@ -1,3 +1,7 @@
+// A confetti burst in front of the camera whenever the prize desk posts a new
+// prize. One instanced mesh with preallocated buffers, so frames allocate
+// nothing; hidden between bursts and off under reduced motion.
+
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";

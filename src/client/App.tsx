@@ -1,3 +1,8 @@
+// The root component: owns the save (loaded from and written to localStorage on
+// every change), the current room and travel fades, chat bubbles, shoplifting
+// arrests and jail, minigame and prize payouts, and the online panels behind
+// ?online=1. Everything else gets state and setters through props.
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { isBanned, recordCaught } from "../game/crime/record.ts";
 import { penaltyFor, type Penalty } from "../game/crime/shoplift.ts";
@@ -93,6 +98,10 @@ function visit(room: RoomId, spawn: Spawn): Visit {
   return { room, arrival: arrive(ROOMS[room], spawn) };
 }
 
+/**
+ * The whole game: the 3D World, the overlay UI and the panels around it. Travel
+ * to an 18+ room is refused with a notice unless the age gate allows it.
+ */
 export function App() {
   const flags = useMemo(() => readFlags(window.location.search), []);
   const touch = useMemo(

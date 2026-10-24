@@ -1,3 +1,7 @@
+// The two-player cook-off over the room's game relay: invites, acceptance with
+// a shared seed, and score exchange, kept in the cookOff store. A muted
+// player's invite, or one during a match, is turned down automatically.
+
 import { encodeCook, parseCook, type CookMessage } from "../../game/cookOff.ts";
 import { createStore } from "../rooms/shared/store.ts";
 import { onlineSession } from "./online.ts";
@@ -70,12 +74,20 @@ export function listenForCookOffs(): () => void {
   return () => offs.forEach((off) => off());
 }
 
+/**
+ * Invites a player to a cook-off with a fresh seed; marked asked only if the
+ * message was sent.
+ */
 export function askToCook(id: string, name: string) {
   const seed = Math.floor(Math.random() * 2 ** 31);
   if (send(id, { k: "cook-invite", seed }))
     cookOff.set({ asked: { id, name, seed }, note: "" });
 }
 
+/**
+ * Answers the open cook-off invite: yes starts the match, no turns it down.
+ * Does nothing without an invite.
+ */
 export function answerCook(yes: boolean) {
   const { invite } = cookOff.get();
   if (!invite) return;
@@ -92,11 +104,16 @@ export function answerCook(yes: boolean) {
   });
 }
 
+/** Sends your final cook-off score to your opponent, if a match is on. */
 export function sendScore(score: number) {
   const { match } = cookOff.get();
   if (match) send(match.id, { k: "cook-score", score });
 }
 
+/**
+ * Leaves the match or takes back your invite, telling the other player, and
+ * clears the store.
+ */
 export function endCookOff() {
   const { match, asked } = cookOff.get();
   if (match) send(match.id, { k: "cook-stop" });

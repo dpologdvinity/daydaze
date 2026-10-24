@@ -1,7 +1,12 @@
+// Parses the client's URL flags (?quality, ?still, ?debug, ?room, ?view,
+// ?slide, ?at and ?yaw, ?adult) into typed values. Invalid values become null
+// or false; nothing here enforces the age gate.
+
 import { isRoomId, type RoomId, type Spawn } from "../game/rooms.ts";
 import type { View } from "./world/CameraRig.tsx";
 import type { QualityTier } from "./world/quality.ts";
 
+/** Every URL flag, already validated. */
 export type Flags = {
   /** `?quality=low|high` forces a tier. */
   quality: QualityTier | null;
@@ -23,6 +28,7 @@ export type Flags = {
 
 const VIEW_IDS: readonly View[] = ["room", "full", "face", "detail"];
 
+/** Reads the flags from a location.search string. */
 export function readFlags(search: string): Flags {
   const q = new URLSearchParams(search);
   const quality = q.get("quality");

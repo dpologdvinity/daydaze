@@ -1,3 +1,6 @@
+// City HUD countdowns to the next fireworks show and Pride parade, re-rendered
+// once a second from the shared event clocks.
+
 import { useEffect, useState } from "react";
 import { nextShowIn } from "../../game/city/fireworks.ts";
 import { nextParadeIn } from "../../game/city/parade.ts";

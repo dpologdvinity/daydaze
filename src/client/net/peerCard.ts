@@ -1,3 +1,7 @@
+// Store for the open player card and your mute list. Mutes persist in
+// localStorage, validated on load; when storage is blocked they last only this
+// visit.
+
 import { cleanMutes, MUTES_KEY, toggleMute } from "../../net/mutes.ts";
 import { createStore } from "../rooms/shared/store.ts";
 
@@ -15,6 +19,7 @@ export const peerCard = createStore({
   mutes: loadMutes(),
 });
 
+/** Mutes or unmutes a player's chat and saves the list. */
 export function mute(id: string) {
   const mutes = toggleMute(peerCard.get().mutes, id);
   peerCard.set({ mutes });

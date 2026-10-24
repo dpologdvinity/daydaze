@@ -1,3 +1,7 @@
+// The Crazy Eights panel for online play: an invite to answer, a wait for your
+// own invite, then the table from your seat with a suit picker for eights.
+// State lives in the duel store (duel.ts).
+
 import { useEffect, useState, type JSX } from "react";
 import {
   label,

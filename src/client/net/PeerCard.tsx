@@ -1,3 +1,6 @@
+// The card for another player tapped in the world: add or remove friend, invite
+// to cards, a dance or a cook-off, mute, block, report and (for admins) ban.
+
 import { useEffect, useState, type JSX } from "react";
 import { askToPlay } from "./duel.ts";
 import { TOGETHER } from "../../game/dance/together.ts";

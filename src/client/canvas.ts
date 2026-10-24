@@ -1,3 +1,10 @@
+// Creates offscreen 2D canvases for painted textures. Throws when the browser
+// has no 2D context.
+
+/**
+ * A canvas of the given pixel size and its 2D context, set up for frequent
+ * getImageData reads.
+ */
 export function makeCanvas(width: number, height: number) {
   const canvas = document.createElement("canvas");
   canvas.width = width;

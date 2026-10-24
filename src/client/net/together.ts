@@ -1,3 +1,9 @@
+// Paired emotes with another online player (slow dance and friends): the
+// invite, answer and stop handshake over the room's game relay, and the pairUp
+// store the UI reads. The asker leads and the one who accepts follows. Invites
+// from muted players, or while already paired, are answered with an automatic
+// pair-stop.
+
 import type { CoupleRole } from "../../game/dance/couple.ts";
 import {
   encodePair,
@@ -67,12 +73,22 @@ export function listenForPairs(): () => void {
   return () => offs.forEach((off) => off());
 }
 
+/**
+ * Invites player `id` to emote `e`, ending any current pair or invite first.
+ * Records the invite as `asked` only when the relay send succeeded (offline
+ * sends do nothing).
+ */
 export function askTogether(id: string, name: string, e: TogetherId) {
   stopTogether();
   if (send(id, { k: "pair-invite", e }))
     pairUp.set({ asked: { id, name, e }, note: "" });
 }
 
+/**
+ * Answers the pending invite: no sends pair-stop and clears it; yes sends pair-
+ * accept and starts the pair as the follow, not yet placed. Does nothing
+ * without an invite.
+ */
 export function answerTogether(yes: boolean) {
   const { invite } = pairUp.get();
   if (!invite) return;

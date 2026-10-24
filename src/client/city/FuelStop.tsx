@@ -1,3 +1,7 @@
+// The gas pump prompt: polls the city drive session every 200 ms and, with the
+// car stopped (under 0.5 m/s) at a station and the tank not full, offers a full
+// fill-up for coins.
+
 import { useEffect, useState, type JSX } from "react";
 import { fillCost, stationAt } from "../../game/city/gasStations.ts";
 import { driving } from "../world/driving.ts";

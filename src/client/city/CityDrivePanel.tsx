@@ -1,3 +1,7 @@
+// The HUD while driving your own car in the city: speedometer in mph, the gas
+// gauge, horn (H), radio and headlights. Leaving the car turns the radio and
+// headlights off.
+
 import { useEffect, type JSX } from "react";
 import { nextStation, STATIONS } from "../../audio/carRadio.ts";
 import { playHorn } from "../../audio/worldSounds.ts";

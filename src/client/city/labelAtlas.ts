@@ -1,3 +1,6 @@
+// Draws every city sign and ad name into one atlas texture, one 512 by 128 cell
+// per label in LABELS order, so all signs share a single material.
+
 import * as THREE from "three";
 import { LABELS, LABEL_COLUMNS, LABEL_ROWS } from "../../game/city/dressing.ts";
 

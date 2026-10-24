@@ -1,3 +1,7 @@
+// The sea south of the waterline: a large emissive plane with shader-patched
+// moonlit glints and a pulsing surf line. Neither mesh takes clicks. The glint
+// clock is module-wide and stops under reduced motion.
+
 import { useFrame } from "@react-three/fiber";
 import { useMemo } from "react";
 import * as THREE from "three";

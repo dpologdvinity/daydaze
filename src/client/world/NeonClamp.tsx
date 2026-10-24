@@ -1,3 +1,7 @@
+// Low-tier fix for neon colors: without bloom, unlit colors brighter than 1.0
+// clip per channel and shift hue, so this rescales them each frame to keep the
+// hue. It rescans the scene for such materials only every 30 frames.
+
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 import * as THREE from "three";

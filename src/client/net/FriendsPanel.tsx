@@ -1,3 +1,7 @@
+// The Friends panel: account controls, room copies, the strict chat setting,
+// and friend lists (incoming, friends with where they are, sent). Refreshes
+// every 20 seconds while open; renders nothing offline.
+
 import { useEffect, type Dispatch, type JSX, type SetStateAction } from "react";
 import type { SaveV1 } from "../../game/save.ts";
 import { AccountPanel } from "./AccountPanel.tsx";

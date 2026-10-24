@@ -1,3 +1,8 @@
+// The player and NPC doll. Doll shows the Blender-built 3D doll and falls back
+// to ToonDoll, the older procedural toon doll, while its models load. ToonDoll
+// owns toon materials, the painted face, pose animation and a distance LOD
+// (outlines and small jewelry drop past 8.5 m).
+
 import { useFrame, useThree, type ThreeElements } from "@react-three/fiber";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
@@ -190,6 +195,10 @@ function setLod(root: THREE.Object3D, far: boolean) {
 
 // ---------------------------------------------------------------- the doll
 
+/**
+ * Shared each frame by the walker: current speed in meters per second (0
+ * standing).
+ */
 export type WalkState = { speed: number };
 
 type DollProps = {
