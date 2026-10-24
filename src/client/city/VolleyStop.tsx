@@ -1,3 +1,8 @@
+// Beach volleyball's panel: offered when you walk up to the city beach net,
+// and the same match panel for the pool court. It keeps the score, the call
+// and the Dig/Spike button (Space or Enter); the rally itself plays on the
+// court (VolleyCourt.tsx).
+
 import { useEffect, useState, type JSX } from "react";
 import { VOLLEYBALL } from "../../game/city/layout.ts";
 import type { PrizeGame } from "../../game/prizes.ts";
@@ -67,10 +72,6 @@ export function VolleyGame({
       </section>
     );
   const { you, them, touch } = s.match;
-  const coming =
-    s.phase === "incoming"
-      ? Math.max(0, Math.min(1, 1 - (s.arrives - now) / 1400))
-      : 0;
   return (
     <section className="game-panel" aria-label={label}>
       <p className="game-score" aria-label="Score">
@@ -92,10 +93,6 @@ export function VolleyGame({
               : CALL[s.last.outcome]
             : "Here comes the serve"}
       </p>
-      <label className="game-meter">
-        Ball
-        <meter min={0} max={1} high={0.9} optimum={1} value={coming} />
-      </label>
       <button
         type="button"
         className="game-main"

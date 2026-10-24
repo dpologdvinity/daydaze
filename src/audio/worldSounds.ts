@@ -310,6 +310,28 @@ export function playPinCrash(pins: number): boolean {
   return true;
 }
 
+/** A ball struck by hand or forearm: a soft low thump with a slap on top;
+ * `level` (0..1) is how hard. */
+export function playThump(level: number): boolean {
+  const out = sfx();
+  if (!out) return false;
+  const { ctx, dest } = out;
+  const k = Math.min(1, Math.max(0.2, level));
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(170, now);
+  osc.frequency.exponentialRampToValueAtTime(70, now + 0.12);
+  gain.gain.setValueAtTime(0.32 * k, now);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+  osc.connect(gain).connect(dest);
+  osc.start(now);
+  osc.stop(now + 0.18);
+  burst(ctx, dest, "bandpass", 1600, 0.12 * k, 0.05);
+  return true;
+}
+
 /**
  * A small crowd cheering: a swell of filtered noise (the roar) under a few
  * rising "woo"s. `level` (0..1) scales how big the crowd sounds.

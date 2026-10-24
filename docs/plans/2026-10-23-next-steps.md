@@ -542,6 +542,18 @@ tests drive the session from the page (`import("/src/...session.ts")`):
 restart a long-running dev server before ad-hoc scripts do the same, or
 HMR's `?t=` copies give the script a second, idle module.
 
+Task 6 (beach volleyball at the net): `shotFlight(court, shot, seconds,
+lane)` and `opponentSpots` in `volleyball.ts` (court coordinates: net along
+x, your side z < 0), `lobIn` in `motion/ball.ts` (a flight that lands when
+the engine says); the session carries the current flight; `city/
+VolleyCourt.tsx` draws the ball, the pair across the net (dig and spike
+clips), the player stepping to the dig and spike spots, sand puffs, thumps
+and a cheer on a kill; boundary tape in `BeachLife.tsx`. The sand's top is
+y 0.14 (`plan.ts` `surfaceStyle`): anything laid on the beach goes above
+it. `data-calls`/`data-triangles` now refresh every 30 frames after the
+first 10, so a game's live budget can be read (the beach rally: ~120
+calls, ~200k triangles with the parade on).
+
 0. B11 prizes for unscored games and B13 speakeasy cards (quick, high value).
 1. ~~A1 couple emotes~~ (done; piggyback left).
 2. ~~A2 cook-off~~ (done).

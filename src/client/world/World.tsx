@@ -301,14 +301,24 @@ const UbeBakery = lazy(() =>
  * Counts rendered frames into `canvas[data-frames]` (up to 10) so tests and
  * screenshots can wait for a real picture. In still mode it also asks for
  * the few on-demand frames the scene needs to settle. The first frames also
- * record draw calls and triangles in `data-calls` and `data-triangles`.
+ * record draw calls and triangles in `data-calls` and `data-triangles`, and
+ * every 30th frame after refreshes them, so a game's budget can be read while
+ * it plays.
  */
 function FrameCount({ still }: { still: boolean }) {
   const invalidate = useThree((s) => s.invalidate);
   const count = useRef(0);
+  const later = useRef(0);
   useFrame(({ gl }) => {
+    if (count.current >= 10) {
+      if (++later.current % 30 === 0) {
+        gl.domElement.dataset.calls = String(gl.info.render.calls);
+        gl.domElement.dataset.triangles = String(gl.info.render.triangles);
+      }
+      return;
+    }
     // frames under the loading veil (scene hidden, compiling) do not count
-    if (count.current >= 10 || !isSceneReady()) return;
+    if (!isSceneReady()) return;
     count.current += 1;
     gl.domElement.dataset.frames = String(count.current);
     gl.domElement.dataset.calls = String(gl.info.render.calls);

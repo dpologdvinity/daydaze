@@ -2024,6 +2024,15 @@ test("beach volleyball at the city net: first to seven pays a prize", async ({
     .getByRole("button", { name: "Play beach volleyball" })
     .click({ timeout: 60_000 });
   const game = page.getByRole("region", { name: "Beach volleyball" });
+  // the ball flies on the court: each touch is a new flight
+  const canvas = canvasOf(page);
+  await expect(canvas).toHaveAttribute("data-volley-ball", /^attack-\d+$/, {
+    timeout: 60_000,
+  });
+  const first = await canvas.getAttribute("data-volley-ball");
+  await expect(canvas).not.toHaveAttribute("data-volley-ball", first ?? "", {
+    timeout: 60_000,
+  });
   // never touch the ball: every point drops on your side
   await expect(game.getByRole("status")).toContainText("They take it, 7 to 0", {
     timeout: 120_000,

@@ -25,6 +25,7 @@ import { Ocean } from "./Ocean.tsx";
 import { Fireworks } from "./Fireworks.tsx";
 import { Parade } from "./Parade.tsx";
 import { BeachLife } from "./BeachLife.tsx";
+import { BEACH_COURT, VolleyCourt } from "./VolleyCourt.tsx";
 import { SquareLife } from "./SquareLife.tsx";
 import { Parols } from "./Parols.tsx";
 import { Pedestrians } from "./Pedestrians.tsx";
@@ -154,6 +155,7 @@ export function CityScene({
       </mesh>
       <Ocean />
       <BeachLife />
+      <VolleyCourt spot={BEACH_COURT} prize="volleyball" player={player} />
       <Fireworks />
       <Parade />
       <SquareLife />

@@ -141,7 +141,8 @@ export const BONFIRES: readonly Vec2[] = [
   [-330, 314],
   [330, 316],
 ];
-export const VOLLEYBALL = { x: 70, z: 312, half: 5 };
+/** The beach net: its center, half its width, and each side's depth. */
+export const VOLLEYBALL = { x: 70, z: 312, half: 5, depth: 7 };
 /** The pier: planks from the sand out over the water, wider at its head. */
 export const PIER = { x: 24, half: 3, end: 378, head: 9 };
 /** Uptown's Park and Gardens: a lawn north of Park Avenue. */

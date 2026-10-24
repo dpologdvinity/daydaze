@@ -1,6 +1,6 @@
 // Beachside's sand dressing: bonfires with animated flames and log seats, and
-// the volleyball net. Wood and flames are one instanced draw each; flames hold
-// still under reduced motion.
+// the volleyball court (net and boundary tape). Wood, flames and tape are one
+// instanced draw each; flames hold still under reduced motion.
 
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
@@ -76,6 +76,7 @@ export function BeachLife() {
   const { x, z, half } = VOLLEYBALL;
   return (
     <>
+      <primitive object={tape} />
       <primitive object={wood} />
       <instancedMesh
         ref={flames}
@@ -109,3 +110,37 @@ export function BeachLife() {
 }
 
 const scratch = new THREE.Object3D();
+
+/** The court's boundary tape on the sand: two sidelines, two end lines and
+ * the center line under the net, one instanced draw. */
+const tape = (() => {
+  const { x, z, half, depth } = VOLLEYBALL;
+  const lines: [number, number, number, number][] = [
+    // center x, center z, length along x, length along z
+    [x - half, z, 0.1, depth * 2],
+    [x + half, z, 0.1, depth * 2],
+    [x, z - depth, half * 2, 0.1],
+    [x, z + depth, half * 2, 0.1],
+    [x, z, half * 2, 0.1],
+  ];
+  const m = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(1, 0.01, 1),
+    // pale rope with a faint glow, so the court reads after dark
+    new THREE.MeshStandardMaterial({
+      color: "#eef6ff",
+      emissive: "#bfe0ff",
+      emissiveIntensity: 0.35,
+      roughness: 0.8,
+    }),
+    lines.length,
+  );
+  const o = new THREE.Object3D();
+  lines.forEach(([cx, cz, lx, lz], i) => {
+    // just above the sand, whose top is at 0.14 (plan.ts surfaceStyle)
+    o.position.set(cx, 0.15, cz);
+    o.scale.set(lx, 1, lz);
+    o.updateMatrix();
+    m.setMatrixAt(i, o.matrix);
+  });
+  return m;
+})();

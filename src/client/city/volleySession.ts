@@ -1,3 +1,6 @@
+// Beach (and pool) volleyball's match session: the pure rally engine
+// (volleyball.ts) on a clock, plus the ball's current flight, so the court
+// scene (VolleyCourt.tsx) can draw every touch while the panel keeps score.
 import {
   ballSeconds,
   matchOver,
@@ -5,6 +8,7 @@ import {
   play,
   type Outcome,
   type Rally,
+  type Shot,
 } from "../../game/volleyball.ts";
 import { gradeSwing, type Swing } from "../../game/tennis.ts";
 import type { PrizeGame } from "../../game/prizes.ts";
@@ -25,20 +29,48 @@ const OFF = {
   since: 0,
   /** performance.now() the ball is there to hit. */
   arrives: 0,
-  last: null as { swing: Swing; outcome: Outcome } | null,
+  last: null as {
+    swing: Swing;
+    outcome: Outcome;
+    /** Which touch it was. */
+    touch: Rally["touch"];
+  } | null,
+  /** The ball's flight now: the shot, its lane across the court (-1..1),
+   * performance.now() it was hit and its seconds in the air; `n` counts
+   * flights, so a scene can tell a new one from the last. */
+  flight: null as {
+    shot: Shot;
+    lane: number;
+    at: number;
+    seconds: number;
+    n: number;
+  } | null,
   /** Which court: the beach net or the pool. */
   prize: "volleyball" as PrizeGame,
 };
 
 export const volley = createStore(OFF);
 
+function fly(shot: Shot, now: number, seconds: number, lane: number) {
+  const n = (volley.get().flight?.n ?? 0) + 1;
+  volley.set({ flight: { shot, lane, at: now, seconds, n } });
+}
+
 function feed(now: number, match: Rally) {
+  const seconds = ballSeconds(match);
   volley.set({
     phase: "incoming",
     match,
     since: now,
-    arrives: now + ballSeconds(match) * 1000,
+    arrives: now + seconds * 1000,
   });
+  // their attack picks a new spot across your court; your set goes up from
+  // wherever you dug it
+  const lane =
+    match.touch === "dig"
+      ? Math.random() * 2 - 1
+      : (volley.get().flight?.lane ?? 0);
+  fly(match.touch === "dig" ? "attack" : "set", now, seconds, lane);
 }
 
 export function start(now: number, prize: PrizeGame = volley.get().prize) {
@@ -49,15 +81,23 @@ export function start(now: number, prize: PrizeGame = volley.get().prize) {
 export const leave = () => volley.set(OFF);
 
 function hit(now: number, s: Swing) {
-  const { match, outcome } = play(volley.get().match, s);
-  const last = { swing: s, outcome };
+  const before = volley.get();
+  const { match, outcome } = play(before.match, s);
+  const touch = before.match.touch;
+  const last = { swing: s, outcome, touch };
+  const lane = before.flight?.lane ?? 0;
   if (outcome === "dug") {
     // your setter puts it up for the spike
     volley.set({ last });
     feed(now, match);
-  } else if (outcome === "rally")
+  } else if (outcome === "rally") {
     volley.set({ phase: "away", match, since: now, last });
-  else volley.set({ phase: "between", match, since: now, last });
+    fly("their-dig", now, AWAY, lane);
+  } else {
+    volley.set({ phase: "between", match, since: now, last });
+    if (outcome === "kill") fly("kill", now, 0.55, lane);
+    else fly(touch === "dig" ? "miss" : "net", now, 0.6, lane);
+  }
 }
 
 /** `seen` is the phase the button showed, so a stale press is dropped. */
