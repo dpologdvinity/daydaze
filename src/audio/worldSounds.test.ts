@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { resetSharedAudioBusForTests } from "./audioBus.ts";
 import {
+  playCheer,
   playClick,
   playFanfare,
   playFireworkBoom,
@@ -25,6 +26,7 @@ test("world sounds stay silent and never throw without Web Audio", () => {
   assert.equal(playShellNote(2), false);
   assert.equal(playPurr(2), false);
   assert.equal(playHorn(), false);
+  assert.equal(playCheer(1), false);
   const stop = startAmbience("beach");
   assert.equal(typeof stop, "function");
   assert.doesNotThrow(stop);

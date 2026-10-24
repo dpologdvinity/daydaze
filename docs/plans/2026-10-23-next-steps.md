@@ -531,6 +531,17 @@ sing, the rest hand-keyed with `groove: false`), the in-world game kit
 (`src/game/motion/`, `src/client/rooms/shared/game3d/`), and lazy NPC
 dialogue (main chunk 136 kB to 77 kB gzip).
 
+Phase 1, Task 5 (karaoke on stage): the chart is cut from the playing
+track's tempo on the audio clock (`currentTempo()`, `audioTime()` and
+`playMelody()` on the jukebox; `chart(seed, bpm, startAt, from)`); the doll
+walks up to the mic (a striding seat) and sings; the big screen shows three
+lanes with falling notes (`karaoke/Stage.tsx`); hits burst, sing the melody
+and flash the light strips; every 4 in a row the crowd cheers
+(`playCheer`). Canvas: `data-karaoke-hits`, `data-karaoke-phase`. Browser
+tests drive the session from the page (`import("/src/...session.ts")`):
+restart a long-running dev server before ad-hoc scripts do the same, or
+HMR's `?t=` copies give the script a second, idle module.
+
 0. B11 prizes for unscored games and B13 speakeasy cards (quick, high value).
 1. ~~A1 couple emotes~~ (done; piggyback left).
 2. ~~A2 cook-off~~ (done).

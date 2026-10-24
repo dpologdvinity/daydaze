@@ -17,6 +17,8 @@ import { ROOMS } from "../../game/rooms.ts";
 import { drink } from "../effects/drunk.ts";
 import { useReducedMotion } from "../motion.ts";
 import { KaraokeNpcs } from "./karaoke/Npcs.tsx";
+import { SingStage } from "./karaoke/Stage.tsx";
+import type { Player } from "../world/PlayerController.tsx";
 import { type Beam, Beams } from "./shared/Beams.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { canvasTex, hdr } from "./shared/materials.ts";
@@ -357,10 +359,17 @@ function Lights() {
 /**
  * The Karaoke Loft, up the stair off Bassline Alley: violet velvet walls,
  * a herringbone floor, a stage with footlights and a mic stand under a pink
- * spot, a big screen where a ball hops along the notes, and banquettes
- * with a drinks ledge down both walls.
+ * spot, a big screen where a ball hops along the notes (the note lanes
+ * while someone sings, see ./karaoke/Stage.tsx), and banquettes with a
+ * drinks ledge down both walls.
  */
-export function Karaoke({ onPick }: { onPick: PickHandler }) {
+export function Karaoke({
+  onPick,
+  player,
+}: {
+  onPick: PickHandler;
+  player: Player;
+}) {
   return (
     <>
       <color attach="background" args={["#0c0418"]} />
@@ -381,6 +390,7 @@ export function Karaoke({ onPick }: { onPick: PickHandler }) {
       <Walls />
       <Stage />
       <Screen />
+      <SingStage player={player} screen={{ ...SCREEN, z: BACK_Z + 0.08 }} />
       <Booths />
       <KaraokeNpcs onDrink={orderCocktail} />
     </>

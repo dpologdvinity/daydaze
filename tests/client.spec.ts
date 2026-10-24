@@ -2164,6 +2164,47 @@ test("the Karaoke Loft: a song at the mic ends in a prize", async ({
   expect(errors).toEqual([]);
 });
 
+test("the Karaoke Loft: notes on the beat light up the stage", async ({
+  page,
+}) => {
+  test.setTimeout(300_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=karaoke`);
+  await expect(canvasOf(page)).toHaveAttribute("data-frames", "10", {
+    timeout: 150_000,
+  });
+  await page.getByRole("button", { name: "Sing a song" }).click();
+  // a singer in the page: sings each note's lane as it reaches the line, on
+  // the session's own clock (rendering under SwiftShader is too slow to aim by)
+  await page.evaluate(async () => {
+    // the dev server's own copy of the module, so it's the live session
+    const path = "/src/client/rooms/karaoke/session.ts";
+    const s: typeof import("../src/client/rooms/karaoke/session.ts") =
+      await import(/* @vite-ignore */ path);
+    const id = window.setInterval(() => {
+      const state = s.karaoke.get();
+      if (state.phase === "off" || state.phase === "over")
+        return window.clearInterval(id);
+      const note = s.nextNote();
+      if (state.phase === "singing" && note && s.songNow() >= note.at - 0.03)
+        s.singOn(note.lane);
+    }, 4);
+  });
+  await expect
+    .poll(() => canvasOf(page).getAttribute("data-karaoke-hits"), {
+      timeout: 120_000,
+    })
+    .toMatch(/^(?:[4-9]|1\d)$/);
+  const panel = page.getByRole("region", { name: "Karaoke" });
+  await expect(panel.getByRole("status")).toContainText("Song done", {
+    timeout: 120_000,
+  });
+  await expect(page.getByRole("status", { name: "Prize" })).toContainText(
+    "Karaoke",
+  );
+  expect(errors).toEqual([]);
+});
+
 test("Pride night at Pulse shows in the room card", async ({ page }) => {
   await page.goto(`${STILL}&room=pulse&pride=20`);
   await expect(page.getByText("It's Pride night!")).toBeVisible({

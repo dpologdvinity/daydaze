@@ -310,6 +310,48 @@ export function playPinCrash(pins: number): boolean {
   return true;
 }
 
+/**
+ * A small crowd cheering: a swell of filtered noise (the roar) under a few
+ * rising "woo"s. `level` (0..1) scales how big the crowd sounds.
+ */
+export function playCheer(level: number): boolean {
+  const out = sfx();
+  if (!out) return false;
+  const { ctx, dest } = out;
+  const k = Math.min(1, Math.max(0.2, level));
+  const now = ctx.currentTime;
+  const roar = ctx.createBufferSource();
+  roar.buffer = noiseBuffer(ctx);
+  const band = ctx.createBiquadFilter();
+  band.type = "bandpass";
+  band.frequency.value = 1100;
+  band.Q.value = 0.6;
+  const swell = ctx.createGain();
+  swell.gain.setValueAtTime(0.0001, now);
+  swell.gain.exponentialRampToValueAtTime(0.16 * k, now + 0.25);
+  swell.gain.exponentialRampToValueAtTime(0.0001, now + 1.6);
+  roar.connect(band).connect(swell).connect(dest);
+  roar.start(now, Math.random() * 0.4);
+  roar.stop(now + 1.65);
+  for (let i = 0; i < 2 + Math.round(k * 3); i++) {
+    const at = now + 0.05 + Math.random() * 0.5;
+    const from = 380 + Math.random() * 260;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(from, at);
+    osc.frequency.exponentialRampToValueAtTime(from * 1.6, at + 0.35);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.setValueAtTime(0.0001, at);
+    gain.gain.exponentialRampToValueAtTime(0.04 * k, at + 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.5);
+    osc.connect(gain).connect(dest);
+    osc.start(at);
+    osc.stop(at + 0.55);
+  }
+  return true;
+}
+
 /** How each bed is built: filtered looping noise, slowly swelling, plus
  * an optional low drone. */
 const BEDS: Record<

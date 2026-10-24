@@ -8,6 +8,7 @@ import { MIC, STAGE } from "../../../game/karaoke.ts";
 import type { Look } from "../../../game/look.ts";
 import { CrowdFigure } from "../shared/CrowdFigure.tsx";
 import { TalkingNpc } from "../shared/TalkingNpc.tsx";
+import { useCrowdCheering } from "./Stage.tsx";
 
 const CONTEXT: DialogueContext = {
   venue: "karaoke",
@@ -86,6 +87,8 @@ export function KaraokeNpcs({
 }: {
   onDrink?: () => void;
 }): JSX.Element {
+  // the floor cheers a singer's streak (./Stage.tsx)
+  const cheering = useCrowdCheering();
   return (
     <>
       <TalkingNpc
@@ -123,7 +126,12 @@ export function KaraokeNpcs({
       />
       {CROWD.map((c, i) => (
         <group key={i} position={[c.at[0], 0, c.at[1]]} rotation-y={c.rot}>
-          <CrowdFigure look={c.look} dance seed={104 + i} />
+          <CrowdFigure
+            look={c.look}
+            dance
+            move={cheering ? (i % 2 ? "cheer" : "fist-pump") : undefined}
+            seed={104 + i}
+          />
         </group>
       ))}
     </>
