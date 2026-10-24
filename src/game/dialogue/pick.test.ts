@@ -1,13 +1,19 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import {
   RECENT_WINDOW,
   fillPlaceholders,
+  loadDialogue,
   pickLine,
   seededRng,
   type RecentLines,
 } from "./pick.ts";
 import type { RoleBank } from "./types.ts";
+
+// the banks are a separate chunk: everything below speaks real lines
+await loadDialogue();
 
 const tenLines = Array.from({ length: 10 }, (_, index) => `line ${index}`);
 
@@ -178,4 +184,24 @@ test("missing placeholder values fall back to neutral words and never show a bra
 
 test("braces inside a context value are stripped", () => {
   assert.equal(fillPlaceholders("Hi {name}", { name: "{evil}" }), "Hi evil");
+});
+
+test("before the banks load, NPCs say '...'; after, real lines", () => {
+  // a fresh process, so no other test has loaded the banks yet
+  const pick = fileURLToPath(new URL("./pick.ts", import.meta.url));
+  const script = `
+    const { pickLine, loadDialogue, seededRng } = await import(${JSON.stringify(pick)});
+    const say = () => pickLine({ role: "bartender", situation: "idle", rng: seededRng(1) }).text;
+    const before = say();
+    await loadDialogue();
+    console.log(JSON.stringify([before, say()]));
+  `;
+  const out = execFileSync(
+    process.execPath,
+    ["--experimental-strip-types", "--input-type=module", "-e", script],
+    { encoding: "utf8" },
+  );
+  const [before, after]: unknown[] = JSON.parse(out);
+  assert.equal(before, "...");
+  assert.ok(typeof after === "string" && after !== "..." && after.length > 3);
 });

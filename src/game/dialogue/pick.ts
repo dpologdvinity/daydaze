@@ -1,9 +1,9 @@
 // Picks an NPC line for a role and situation: falls back to tapped, then idle,
 // when a situation has no lines; filters by venue, neighborhood and time;
 // avoids the last few lines said; fills {name}-style placeholders. Pure and
-// deterministic given the rng.
+// deterministic given the rng. The line banks (~200 KB) are a separate chunk:
+// loadDialogue() fetches them, and until then every NPC says "...".
 
-import { LINE_BANKS } from "./index.ts";
 import {
   PLACEHOLDER_IDS,
   type DialogueContext,
@@ -40,6 +40,18 @@ export type Rng = () => number;
 
 // Keys of recently used lines, oldest first. Pass the returned list back in.
 export type RecentLines = readonly string[];
+
+// Every role's lines once loadDialogue() has fetched them.
+let banks: Record<DialogueRole, RoleBank> | null = null;
+let loading: Promise<void> | null = null;
+
+/** Fetches the NPC line banks (a separate chunk); safe to call repeatedly. */
+export function loadDialogue(): Promise<void> {
+  loading ??= import("./index.ts").then(({ LINE_BANKS }) => {
+    banks = LINE_BANKS;
+  });
+  return loading;
+}
 
 /**
  * Inputs to pickLine. `bank` overrides the role's bank from LINE_BANKS (for
@@ -83,8 +95,9 @@ export function pickLine({
   context = {},
   rng,
   recent = [],
-  bank = LINE_BANKS[role],
+  bank = banks?.[role],
 }: PickArgs): PickResult {
+  if (!bank) return { text: "...", recent };
   const lines = eligibleLines(bank, situation, context);
   if (lines.length === 0) return { text: "...", recent };
 

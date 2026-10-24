@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { LINE_BANKS } from "./dialogue/index.ts";
-import { pickLine, seededRng } from "./dialogue/pick.ts";
+import { loadDialogue, pickLine, seededRng } from "./dialogue/pick.ts";
 import {
   SUPER_SLIDE,
   slideHeight,
@@ -46,6 +46,8 @@ function assertNear(actual: readonly number[], expected: readonly number[]) {
 }
 
 const at = (p: { x: number; y: number; z: number }) => [p.x, p.y, p.z];
+
+await loadDialogue();
 
 test("calm rides take longer than normal rides", () => {
   for (const ride of ["ferris-wheel", "coaster"] as const) {

@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { setConsoleFunction } from "three";
+import { loadDialogue } from "../game/dialogue/pick.ts";
 import { App } from "./App.tsx";
 import "./styles.css";
 
@@ -30,6 +31,11 @@ window.addEventListener("vite:preloadError", (event) => {
   event.preventDefault();
   location.reload();
 });
+
+// NPC lines are a separate chunk: fetch them once the page is idle, so they
+// never hold up the first frame (NPCs say "..." until then)
+const idle = window.requestIdleCallback ?? ((run) => window.setTimeout(run, 1));
+idle(() => void loadDialogue());
 
 const root = document.getElementById("root");
 if (!root) throw new Error("index.html is missing #root.");
