@@ -7,8 +7,11 @@ import {
   entryOf,
   gameOver,
   newDives,
+  diveTurn,
+  splashSize,
   total,
   TRICKS,
+  type TrickId,
 } from "./cliffDive.ts";
 
 test("entries grade from a rip to a belly flop by distance from the middle", () => {
@@ -40,4 +43,46 @@ test("five dives make a set, and nothing counts after", () => {
   for (let i = 0; i < DIVES; i++) g = dive(g, "swan", 0.5);
   assert.ok(gameOver(g));
   assert.equal(dive(g, "swan", 0.5), g);
+});
+
+test("each trick turns its own way through the flight and enters upright", () => {
+  const want: Record<TrickId, [number, number]> = {
+    pencil: [0, 0],
+    swan: [Math.PI, 0],
+    backflip: [-2 * Math.PI, 0],
+    twist: [2 * Math.PI, 2 * Math.PI],
+  };
+  for (const t of TRICKS) {
+    const [pitch, twist] = want[t.id];
+    const start = diveTurn(t.id, "rip", 0);
+    const end = diveTurn(t.id, "rip", 1);
+    assert.equal(start.pitch, 0, t.id);
+    assert.equal(start.twist, 0, t.id);
+    assert.ok(Math.abs(end.pitch - pitch) < 1e-9, `${t.id} pitch ${end.pitch}`);
+    assert.ok(Math.abs(end.twist - twist) < 1e-9, `${t.id} twist ${end.twist}`);
+    // "upright": the body enters along the vertical, feet or head first
+    const along = Math.abs(Math.sin(end.pitch));
+    assert.ok(along < 1e-9, `${t.id} enters at an angle`);
+    // the turn never runs backward
+    let last = 0;
+    for (let i = 0; i <= 50; i++) {
+      const p = Math.abs(diveTurn(t.id, "rip", i / 50).pitch);
+      assert.ok(p >= last - 1e-9, `${t.id} turns back at ${i}`);
+      last = p;
+    }
+  }
+});
+
+test("a worse entry finishes off the vertical; a flop lands flat", () => {
+  const off = (e: Parameters<typeof diveTurn>[1]) =>
+    Math.abs(diveTurn("swan", e, 1).pitch - Math.PI);
+  assert.equal(off("rip"), 0);
+  assert.ok(off("clean") > 0 && off("clean") < off("splash"));
+  assert.ok(Math.abs(off("flop") - Math.PI / 2) < 1e-9);
+});
+
+test("splash size grows with a worse entry", () => {
+  const sizes = (["rip", "clean", "splash", "flop"] as const).map(splashSize);
+  for (let i = 1; i < sizes.length; i++) assert.ok(sizes[i]! > sizes[i - 1]!);
+  assert.ok(sizes[0]! > 0 && sizes[3]! <= 2);
 });

@@ -56,3 +56,53 @@ export function dive(g: Dives, id: TrickId, at: number): Dives {
   const points = Math.round(ENTRY_POINTS[entry] * trick(id).difficulty);
   return [...g, { trick: id, entry, points }];
 }
+
+/** Each trick's turn through the air: somersault (pitch, radians, positive
+ * forward) and twist about the body's long axis. */
+const TURNS: Record<TrickId, { pitch: number; twist: number }> = {
+  pencil: { pitch: 0, twist: 0 },
+  swan: { pitch: Math.PI, twist: 0 },
+  backflip: { pitch: -2 * Math.PI, twist: 0 },
+  twist: { pitch: 2 * Math.PI, twist: 2 * Math.PI },
+};
+
+/** How far off the vertical each entry finishes: a flop lands flat. */
+const ENTRY_OFF: Record<Entry, number> = {
+  rip: 0,
+  clean: 0.12,
+  splash: 0.4,
+  flop: Math.PI / 2,
+};
+
+const smooth = (from: number, to: number, u: number) => {
+  const x = Math.min(1, Math.max(0, (u - from) / (to - from)));
+  return x * x * (3 - 2 * x);
+};
+
+/**
+ * The diver's turn `u` (0 at take-off, 1 at the water) through a dive: the
+ * somersault and twist of the trick, eased so it opens and closes, with the
+ * entry's error (over- or under-rotation) creeping in at the end. A rip
+ * enters dead vertical, feet or head first.
+ */
+export function diveTurn(
+  id: TrickId,
+  entry: Entry,
+  u: number,
+): { pitch: number; twist: number } {
+  const turn = TURNS[id];
+  // a swan holds its spread layout, then rolls over late; flips tuck early
+  const ease = id === "swan" ? smooth(0.35, 0.95, u) : smooth(0.08, 0.85, u);
+  const dir = turn.pitch < 0 ? -1 : 1;
+  const off = ENTRY_OFF[entry] * smooth(0.7, 1, u);
+  // `+ 0` folds -0 into 0
+  return {
+    pitch: turn.pitch * ease + dir * off + 0,
+    twist: turn.twist * smooth(0.15, 0.8, u) + 0,
+  };
+}
+
+/** How big the splash is for an entry (Splash and playSplash sizes). */
+export function splashSize(entry: Entry): number {
+  return { rip: 0.25, clean: 0.55, splash: 1.1, flop: 2 }[entry];
+}
