@@ -34,6 +34,15 @@ export const SERVER: Vec2 = [-5.4, -2];
 export const VIDEOKE: Vec2 = [5.2, 5.5];
 export const SOFA = { x0: 4.2, x1: 6.2, z0: 2.6, z1: 3.4 } as const;
 
+/** The cook-off kitchen: two stoves against the back wall, each with the
+ * spot its cook stands at, facing the wall. */
+export const STOVES: readonly { x: number; z: number; cook: Vec2 }[] = [
+  { x: 1.4, z: -5.5, cook: [1.4, -4.6] },
+  { x: 3.8, z: -5.5, cook: [3.8, -4.6] },
+];
+/** Half a stove's width and depth. */
+export const STOVE_HALF = { x: 0.6, z: 0.4 } as const;
+
 export const SPAWN = INTERIOR_SPAWN;
 export const EXIT = INTERIOR_EXIT;
 
@@ -63,4 +72,12 @@ export const BLOCKERS: readonly (readonly Vec2[])[] = [
   box(CARVING.x0, CARVING.z0, CARVING.x1, CARVING.z1),
   // the sofa's back half: its cushions' front is left clear to sit down
   box(SOFA.x0, SOFA.z0, SOFA.x1, SOFA.z1 - 0.4),
+  ...STOVES.map((s) =>
+    box(
+      s.x - STOVE_HALF.x,
+      s.z - STOVE_HALF.z,
+      s.x + STOVE_HALF.x,
+      s.z + STOVE_HALF.z,
+    ),
+  ),
 ];

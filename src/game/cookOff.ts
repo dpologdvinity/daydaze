@@ -92,3 +92,13 @@ export function parseCook(data: string): CookMessage | null {
   }
   return null;
 }
+
+/**
+ * Which stove you cook at (0 or 1): alone you take the first and Tita Baby
+ * the second; in a match the two players sort by id, so each client puts
+ * its cook at a different stove.
+ */
+export function myStove(me: string | null, rival: string | null): 0 | 1 {
+  if (!me || !rival) return 0;
+  return me < rival ? 0 : 1;
+}

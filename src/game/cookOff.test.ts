@@ -3,6 +3,10 @@ import { test } from "node:test";
 import { encodeCook, ghostScore, outcome, parseCook } from "./cookOff.ts";
 import { MAX_TIP, ORDER_POINTS, TICKETS } from "./orders.ts";
 
+import { myStove } from "./cookOff.ts";
+import { BLOCKERS, FLOOR, STOVES } from "./kamayanHall.ts";
+import { pointInPolygon } from "./walk.ts";
+
 test("the ghost cook's score is fixed by the seed and a fair fight", () => {
   for (const seed of [0, 1, 99, 123456]) {
     const g = ghostScore(seed);
@@ -34,4 +38,24 @@ test("cook-off messages over the relay round-trip and junk is refused", () => {
     "null",
   ])
     assert.equal(parseCook(bad), null, bad);
+});
+
+test("two cooks in a match take different stoves; alone, you take the first", () => {
+  assert.equal(myStove("p-1", null), 0);
+  assert.equal(myStove(null, "p-2"), 0);
+  const a = myStove("p-abc", "p-xyz");
+  const b = myStove("p-xyz", "p-abc");
+  assert.notEqual(a, b);
+});
+
+test("both stoves stand on the floor, out of the way, with room to cook", () => {
+  assert.equal(STOVES.length, 2);
+  for (const stove of STOVES) {
+    const [x, z] = stove.cook;
+    assert.ok(pointInPolygon(FLOOR, [x, z]), "cook spot on the floor");
+    for (const b of BLOCKERS)
+      assert.ok(!pointInPolygon(b, [x, z]), "cook spot clear of blockers");
+    // the stove itself blocks walkers
+    assert.ok(BLOCKERS.some((b) => pointInPolygon(b, [stove.x, stove.z])));
+  }
 });
