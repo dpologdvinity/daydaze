@@ -2079,6 +2079,11 @@ test("the Water Park tower: five cliff dives pay a prize", async ({ page }) => {
       { timeout: 30_000 },
     );
   }
+  // the dives happened in the world: the scene saw each entry
+  await expect(canvasOf(page)).toHaveAttribute(
+    "data-dive-entry",
+    /^(rip|clean|splash|flop)$/,
+  );
   await expect(page.getByRole("status", { name: "Prize" })).toContainText(
     "Cliff dive",
   );

@@ -27,7 +27,9 @@ const CALL = {
 export function DivePanel(): JSX.Element {
   const s = diving.use();
   const playing = s.phase !== "off";
-  const now = useNow(s.phase === "entry" || s.phase === "splash");
+  const now = useNow(
+    s.phase === "climb" || s.phase === "entry" || s.phase === "splash",
+  );
   useEffect(() => tick(now), [now]);
   usePressKeys(s.phase === "entry", (t) => press(t), leave);
   if (!playing)
@@ -57,9 +59,11 @@ export function DivePanel(): JSX.Element {
           ? `Set done: ${total(s.dives)} points`
           : s.phase === "splash" && last
             ? `${CALL[last.entry]} +${last.points}`
-            : s.phase === "pick"
-              ? "Pick your trick."
-              : "Stop the meter in the middle."}
+            : s.phase === "climb"
+              ? "Climbing the tower…"
+              : s.phase === "pick"
+                ? "Pick your trick."
+                : "Stop the meter in the middle."}
       </p>
       {s.phase === "pick" && (
         <div className="game-row" role="group" aria-label="Tricks">

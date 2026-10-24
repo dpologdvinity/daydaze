@@ -561,6 +561,16 @@ Touch heights scale with the net (`volleyball.ts`), so a 1.25 m pool net
 keeps every touch within a wader's reach. Task 14 (shader warm-up) needed
 no change: `World.tsx` `Warmup` already compiles under the veil.
 
+Task 8 (cliff dive): `diveTurn(trick, entry, u)` and `splashSize` in
+`cliffDive.ts`; `waterpark/DiveScene.tsx` adds a diving board, an entry
+gauge by its tip, the diver's climb (a "climb" phase in the session that
+waits for her, 6 s fallback), the lob into open water with the trick's
+clip, somersault (`seat.flip`) and twist, a splash sized by the entry and a
+judge holding up the score card. Ad-hoc shots of fast moments: pin
+`performance.now` and `requestAnimationFrame` in the page right after the
+action (see `art/textures/.cache/dive.mjs`); SwiftShader frames are too
+slow to time a capture.
+
 0. B11 prizes for unscored games and B13 speakeasy cards (quick, high value).
 1. ~~A1 couple emotes~~ (done; piggyback left).
 2. ~~A2 cook-off~~ (done).
