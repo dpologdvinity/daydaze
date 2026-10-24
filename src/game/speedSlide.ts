@@ -33,3 +33,23 @@ export function rivalTenths(seed: number): number {
   const h = Math.imul(seed ^ 0x2c1b3c6d, 0x297a2d39) >>> 0;
   return 98 + (h % 12);
 }
+
+/** The whole ride, push-off to splash, s: the last bend, then the run-out. */
+export const RIDE_SECONDS = bendAt(BENDS - 1) + 1.1;
+
+/** How far down the slide (0 top .. 1 in the pool) you are `seconds` after
+ * the push-off: the race clock drives the ride, so bends can't drift. */
+export const slideProgress = (seconds: number) =>
+  Math.min(1, Math.max(0, seconds / RIDE_SECONDS));
+
+/** Where along the slide bend `i` is, as a fraction of the ride. */
+export const bendFraction = (i: number) => slideProgress(bendAt(i));
+
+/**
+ * How long the rival's ride takes on screen, s, so the race reads true:
+ * your ride is RIDE_SECONDS on the race clock, hers is scaled by her time
+ * against your time so far (`yours`, in tenths), so she falls back as you
+ * tuck well and splashes first if she's ahead.
+ */
+export const rivalRideSeconds = (rival: number, yours: number) =>
+  (RIDE_SECONDS * rival) / Math.max(1, yours);
