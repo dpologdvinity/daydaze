@@ -1,6 +1,6 @@
 import { useGLTF } from "@react-three/drei";
 import { useFrame, useThree, type ThreeElements } from "@react-three/fiber";
-import { Suspense, useEffect, useMemo, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { couplePoseAt, type CoupleRole } from "../../../game/dance/couple.ts";
@@ -421,8 +421,14 @@ const FEEL: Record<string, { roughness: number; metalness?: number }> = {
  * simplifies every hair, outfit and shoe file into one). */
 const lodOf = (url: string) => url.replace(/\.glb$/, "-lo.glb");
 
-/** A worn part, re-bound to the body's bones and tinted; past the doll's
- * LOD distance its low-poly twin shows instead. */
+type Built = ReturnType<typeof buildPart>;
+
+/**
+ * A worn part, re-bound to the body's bones and tinted. Its low-poly twin
+ * loads first and is worn far off; the full model downloads only once the
+ * doll first comes within LOD range, so a street of distant dolls never
+ * fetches their full hair and clothes. Until it arrives the twin stays on.
+ */
 function Part({
   url,
   bones,
@@ -438,38 +444,75 @@ function Part({
   /** The part's meshes, and how far its soles lift the doll (meters). */
   onMeshes: (meshes: THREE.Mesh[] | null, lift: number) => void;
 }) {
-  const gltf = useGLTF(url);
   const gltfLo = useGLTF(lodOf(url));
+  const lo = useMemo(
+    () => buildPart(gltfLo.scene, bones, tint, false),
+    [gltfLo, bones, tint.color, tint.kind],
+  );
+  // the full model, once it has been wanted and has loaded
+  const [wantNear, setWantNear] = useState(false);
+  const [near, setNear] = useState<Built | null>(null);
+  useFrame(() => {
+    if (!wantNear && !far.current) setWantNear(true);
+    const showLo = far.current || !near;
+    if (lo.group.visible !== showLo) lo.group.visible = showLo;
+    if (near && near.group.visible === showLo) near.group.visible = !showLo;
+  });
+  useEffect(() => {
+    onMeshes(
+      near
+        ? [...morphMeshes(lo.group), ...morphMeshes(near.group)]
+        : morphMeshes(lo.group),
+      near?.lift ?? lo.lift,
+    );
+  }, [lo, near, onMeshes]);
+  useEffect(
+    () => () => {
+      onMeshes(null, 0);
+      lo.materials.forEach((m) => m.dispose());
+    },
+    [lo, onMeshes],
+  );
+  return (
+    <>
+      <primitive object={lo.group} />
+      {wantNear && (
+        <Suspense fallback={null}>
+          <NearPart url={url} bones={bones} tint={tint} onBuilt={setNear} />
+        </Suspense>
+      )}
+    </>
+  );
+}
+
+/** The full-detail part, fetched on demand; it hands itself up when built. */
+function NearPart({
+  url,
+  bones,
+  tint,
+  onBuilt,
+}: {
+  url: string;
+  bones: Map<string, THREE.Bone>;
+  tint: Tint;
+  onBuilt: (part: Built | null) => void;
+}) {
+  const gltf = useGLTF(url);
   // the glossy hair shading and its soft-edge pass are for capable GPUs
   const rich = useQuality() === "high";
-  const part = useMemo(() => {
-    const near = buildPart(gltf.scene, bones, tint, rich);
-    const lo = buildPart(gltfLo.scene, bones, tint, false);
-    lo.group.visible = false;
-    const group = new THREE.Group();
-    group.add(near.group, lo.group);
-    return {
-      group,
-      near: near.group,
-      lo: lo.group,
-      materials: [...near.materials, ...lo.materials],
-      lift: near.lift,
-    };
-  }, [gltf, gltfLo, bones, tint.color, tint.kind, rich]);
-  useFrame(() => {
-    if (part.lo.visible !== far.current) {
-      part.lo.visible = far.current;
-      part.near.visible = !far.current;
-    }
-  });
-
+  const part = useMemo(
+    () => buildPart(gltf.scene, bones, tint, rich),
+    [gltf, bones, tint.color, tint.kind, rich],
+  );
   useEffect(() => {
-    onMeshes(morphMeshes(part.group), part.lift);
+    // hidden until Part decides, so it never shows alongside the twin
+    part.group.visible = false;
+    onBuilt(part);
     return () => {
-      onMeshes(null, 0);
+      onBuilt(null);
       part.materials.forEach((m) => m.dispose());
     };
-  }, [part, onMeshes]);
+  }, [part, onBuilt]);
   return <primitive object={part.group} />;
 }
 
@@ -636,7 +679,8 @@ export function HumanDoll({
   const shapedWith = useRef<typeof shapeKeys | null>(null);
   const lift = useRef(0);
   // read by each worn part, to swap in its low-poly twin
-  const farParts = useRef(false);
+  // start far, so nobody fetches full parts before their first LOD check
+  const farParts = useRef(true);
   const track = useMemo(() => {
     const make = (key: string) => (meshes: THREE.Mesh[] | null, up: number) => {
       if (meshes) worn.current.set(key, meshes);
