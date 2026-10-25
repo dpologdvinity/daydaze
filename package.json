@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "test": "node --experimental-strip-types --test --test-isolation=none \"src/**/*.test.ts\" \"server/**/*.test.ts\"",
-    "test:coverage": "mkdir -p coverage && node --experimental-strip-types --test --test-isolation=none --experimental-test-coverage --test-coverage-exclude=\"**/*.test.ts\" --test-reporter=spec --test-reporter-destination=stdout --test-reporter=spec --test-reporter-destination=coverage/summary.txt --test-reporter=lcov --test-reporter-destination=coverage/lcov.info \"src/**/*.test.ts\" \"server/**/*.test.ts\"",
+    "test": "node --experimental-strip-types --test --test-isolation=none \"src/**/*.test.ts\" \"server/**/*.test.ts\" \"scripts/**/*.test.ts\"",
+    "test:coverage": "mkdir -p coverage && node --experimental-strip-types --test --test-isolation=none --experimental-test-coverage --test-coverage-exclude=\"**/*.test.ts\" --test-reporter=spec --test-reporter-destination=stdout --test-reporter=spec --test-reporter-destination=coverage/summary.txt --test-reporter=lcov --test-reporter-destination=coverage/lcov.info \"src/**/*.test.ts\" \"server/**/*.test.ts\" \"scripts/**/*.test.ts\"",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit && npm run typecheck:server",
     "format": "prettier --write .",

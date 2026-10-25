@@ -1,4 +1,6 @@
 import * as THREE from "three";
+import { SAVE_KEY } from "../../game/save.ts";
+import { bootTier } from "../flags.ts";
 
 /**
  * Ground textures for instanced city surfaces. The road and sidewalk are a
@@ -7,8 +9,34 @@ import * as THREE from "three";
  */
 const loader = new THREE.TextureLoader();
 
+/**
+ * A visit that starts on the low tier (`?quality=low` or the saved setting)
+ * skips the normal and roughness maps, two thirds of every set's download:
+ * each is a one-pixel neutral stand-in instead (flat normal, roughness as the
+ * material sets it), so materials, shaders and callers stay the same.
+ */
+const lean = (() => {
+  try {
+    return bootTier(location.search, localStorage.getItem(SAVE_KEY)) === "low";
+  } catch {
+    return false; // no storage, or not in a browser: the full sets
+  }
+})();
+
+const FLAT_NORMAL = new Uint8Array([128, 128, 255, 255]);
+const FULL_ROUGH = new Uint8Array([255, 255, 255, 255]);
+
+function standIn(pixel: Uint8Array) {
+  const t = new THREE.DataTexture(pixel, 1, 1);
+  t.needsUpdate = true;
+  return t;
+}
+
 function tex(path: string, srgb: boolean) {
-  const t = loader.load(path);
+  const t =
+    lean && !srgb
+      ? standIn(path.endsWith("/nor.webp") ? FLAT_NORMAL : FULL_ROUGH)
+      : loader.load(path);
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
   t.anisotropy = 8;
   if (srgb) t.colorSpace = THREE.SRGBColorSpace;

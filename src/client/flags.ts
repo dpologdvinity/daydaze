@@ -3,6 +3,7 @@
 // or false; nothing here enforces the age gate.
 
 import { isRoomId, type RoomId, type Spawn } from "../game/rooms.ts";
+import { loadSave } from "../game/save.ts";
 import type { View } from "./world/CameraRig.tsx";
 import type { QualityTier } from "./world/quality.ts";
 
@@ -55,4 +56,17 @@ function spawnAt(value: string | null, yaw: number): Spawn | null {
     position: [parts[0], parts[1]],
     yaw: Number.isFinite(yaw) ? yaw : 0,
   };
+}
+
+/**
+ * The tier this visit starts on, before React runs: the `?quality` flag,
+ * else the saved setting (`rawSave` is the stored save, or null). Null
+ * means auto, which starts high and steps down only if frames struggle.
+ */
+export function bootTier(
+  search: string,
+  rawSave: string | null,
+): QualityTier | null {
+  const saved = loadSave(rawSave, "").settings.quality;
+  return readFlags(search).quality ?? (saved === "auto" ? null : saved);
 }
