@@ -4,6 +4,7 @@
 // switched on by room id here. Opening the closet reframes the camera and
 // restores the old view on close.
 
+import { InviteButton } from "../net/InviteButton.tsx";
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import {
   FIGURES,
@@ -765,6 +766,7 @@ export function Overlay({
           </h1>
         </div>
         <p className="venue-sub">{ROOM_HINTS[room]}</p>
+        <InviteButton />
         {room === "city" && <FireworksTicker />}
         {PRIDE_CLUBS.has(room) && <PrideTicker />}
         <p className="coins" aria-label={`${coins} coins`}>

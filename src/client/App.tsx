@@ -124,7 +124,7 @@ export function App() {
     const jailed = isJailed(save.jail, Date.now());
     // new players (and returning ones) start out on Downtown's square
     // a sentence can't be skipped with ?room=
-    const asked = jailed ? "jail" : (flags.room ?? "city");
+    const asked = jailed ? "jail" : (flags.room ?? flags.join?.room ?? "city");
     const room = mayEnter(asked, ADULT_OK) ? asked : "city";
     return visit(room, (room === asked && flags.at) || ROOMS[room].spawn);
   });

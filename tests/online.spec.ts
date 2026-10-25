@@ -15,6 +15,12 @@ async function player(browser: Browser): Promise<Page> {
   return page;
 }
 
+// each test opens its own contexts; close them, pass or fail, so their
+// SwiftShader canvases don't keep eating the CPU the next test needs
+test.afterEach(async ({ browser }) => {
+  for (const context of browser.contexts()) await context.close();
+});
+
 test("two players meet in the Plaza, talk, become friends and play cards", async ({
   browser,
 }) => {
@@ -147,4 +153,43 @@ test("two players meet in the Plaza, talk, become friends and play cards", async
       timeout: 60_000,
     },
   );
+});
+
+test("an invite link brings a friend into the same room copy", async ({
+  browser,
+}) => {
+  // A starts in Plaza copy 2, so a plain join (the least-full copy, 1)
+  // would put B somewhere else
+  const open = async (url: string) => {
+    const context = await browser.newContext({
+      viewport: { width: 900, height: 600 },
+    });
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    const page = await context.newPage();
+    await page.goto(url);
+    await expect(page.locator("canvas")).toHaveAttribute("data-frames", "10", {
+      timeout: 480_000,
+    });
+    return page;
+  };
+  const a = await open("/?join=plaza.2&quality=low");
+  await a
+    .getByRole("button", { name: "Copy invite link" })
+    .click({ timeout: 120_000 });
+  const note = a.getByRole("status").filter({ hasText: "invite link" });
+  await expect(note).toContainText("/?join=plaza.2");
+  const link = /https?:\/\/\S+/.exec((await note.textContent()) ?? "")?.[0];
+  expect(link).toBeTruthy();
+  const b = await open(`${link}&quality=low`);
+  // each sees the other: the same copy
+  await expect(a.locator(".peer-tag .nametag")).toHaveCount(1, {
+    timeout: 120_000,
+  });
+  await expect(b.locator(".peer-tag .nametag")).toHaveCount(1, {
+    timeout: 120_000,
+  });
+  await b.getByRole("button", { name: "Copy invite link" }).click();
+  await expect(
+    b.getByRole("status").filter({ hasText: "invite link" }),
+  ).toContainText("/?join=plaza.2");
 });

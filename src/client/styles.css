@@ -1817,6 +1817,30 @@ button:focus-visible {
 }
 
 /* The prize card a finished game slides in, top center. */
+/* "Copy invite link" on the room card (online play). */
+.invite {
+  margin-top: 6px;
+  /* the room card itself lets clicks through to the world */
+  pointer-events: auto;
+}
+
+.invite button {
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--fuchsia);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.invite-note {
+  margin: 4px 0 0;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
 /* A new version is waiting: reload when it suits the player. */
 .update-prompt {
   position: fixed;
