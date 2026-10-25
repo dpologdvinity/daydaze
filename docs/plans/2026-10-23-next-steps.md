@@ -601,6 +601,13 @@ background NPCs farther than that from the camera; the player's own doll
 keeps full detail. Live stats need ~10 s of waiting under SwiftShader
 (they refresh every 30 frames).
 
+Task 12 (target range lanes): `src/game/targetRange.ts` puts the Midway
+gallery's lanes on three neon rails along Photon Zone's north wall
+(pistol: medium, rifle: hard); `lasertag/Range.tsx` draws the glowing
+targets, a crosshair, a beam per shot, spark bursts and spin-away hits,
+with the doll at the line aiming a light pistol or rifle. Prizes stay
+`range-pistol` / `range-rifle`.
+
 0. B11 prizes for unscored games and B13 speakeasy cards (quick, high value).
 1. ~~A1 couple emotes~~ (done; piggyback left).
 2. ~~A2 cook-off~~ (done).

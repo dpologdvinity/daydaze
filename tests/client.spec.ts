@@ -2054,12 +2054,16 @@ test("Photon Zone's target range: a pistol drill pays a prize", async ({
     .getByRole("button", { name: "Target range" })
     .click({ timeout: 150_000 });
   await page.getByRole("button", { name: "Pistol drill" }).click();
-  const drill = page.getByRole("dialog", { name: "Pistol drill" });
-  const stage = drill.getByRole("application");
-  // eighteen shots, all of them fired
-  for (let i = 0; i < 18; i++)
-    await stage.click({ position: { x: 20, y: 20 } });
-  await expect(drill).toBeHidden();
+  const panel = page.getByRole("region", { name: "Target range" });
+  await page.keyboard.press("ArrowUp");
+  // eighteen shots, all fired: Enter on the focused button clicks natively
+  await panel.getByRole("button", { name: "Fire!" }).focus();
+  for (let i = 0; i < 18; i++) await page.keyboard.press("Enter");
+  await expect(panel.getByRole("status")).toContainText("Pistol drill:", {
+    timeout: 60_000,
+  });
+  // the shots flew in the arena
+  await expect(canvasOf(page)).toHaveAttribute("data-range-shots", "18");
   await expect(page.getByRole("status", { name: "Prize" })).toContainText(
     "Pistol drill",
   );

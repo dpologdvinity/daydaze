@@ -393,6 +393,50 @@ export function playGong(): boolean {
   return true;
 }
 
+/** A light gun's shot: a bright square blip diving down in pitch. */
+export function playZap(): boolean {
+  const out = sfx();
+  if (!out) return false;
+  const { ctx, dest } = out;
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = "square";
+  osc.frequency.setValueAtTime(2200, now);
+  osc.frequency.exponentialRampToValueAtTime(320, now + 0.14);
+  gain.gain.setValueAtTime(0.07, now);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+  osc.connect(gain).connect(dest);
+  osc.start(now);
+  osc.stop(now + 0.17);
+  return true;
+}
+
+/** A target lit up: a two-note bell, higher for a better target (`level`
+ * 1..3). */
+export function playChime(level: number): boolean {
+  const out = sfx();
+  if (!out) return false;
+  const { ctx, dest } = out;
+  const now = ctx.currentTime;
+  const base = 880 * Math.pow(1.26, Math.min(3, Math.max(1, level)) - 1);
+  [base, base * 1.5].forEach((f, i) => {
+    const at = now + i * 0.07;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(f, at);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.setValueAtTime(0.0001, at);
+    gain.gain.exponentialRampToValueAtTime(0.09, at + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.5);
+    osc.connect(gain).connect(dest);
+    osc.start(at);
+    osc.stop(at + 0.52);
+  });
+  return true;
+}
+
 /** A water pistol's squirt: a short hiss that bends up as the jet leaves. */
 export function playSquirt(): boolean {
   const out = sfx();

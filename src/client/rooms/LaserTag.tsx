@@ -3,6 +3,7 @@
 // laserTag session each frame from the player's position and leaves the game on
 // unmount.
 
+import { Range } from "./lasertag/Range.tsx";
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";
@@ -294,6 +295,7 @@ export function LaserTag({
   });
   return (
     <>
+      <Range player={player} />
       <color attach="background" args={["#05020c"]} />
       <fog attach="fog" args={["#0c0620", 10, 30]} />
       <hemisphereLight args={["#8a5cff", "#1a0830", 0.9]} />

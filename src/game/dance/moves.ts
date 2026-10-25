@@ -809,8 +809,8 @@ export const DANCE_MOVES: readonly DanceMove[] = [
     ],
   },
   {
-    // the stock at the right shoulder, left hand out under the barrel, cheek
-    // down on the stock
+    // shouldered: both arms forward along the barrel, the right elbow in,
+    // cheek down on the stock
     id: "aim-rifle",
     label: "Aiming",
     period: 2,
@@ -821,10 +821,10 @@ export const DANCE_MOVES: readonly DanceMove[] = [
         joints: {
           body: [0.04, 0.2, 0],
           head: [0.12, -0.15, 0.18],
-          lArm: [-1.35, 0, -0.35],
-          lFore: [-0.35, 0, 0],
-          rArm: [-0.55, 0, -0.85],
-          rFore: [-1.65, 0, 0],
+          lArm: [-1.5, 0, -0.3],
+          lFore: [-0.15, 0, 0],
+          rArm: [-1.3, 0, 0.1],
+          rFore: [-0.55, 0, 0],
           lLeg: [-0.2, 0, 0.08],
           rLeg: [0.12, 0, -0.08],
           lShin: [0.15, 0, 0],
@@ -835,10 +835,10 @@ export const DANCE_MOVES: readonly DanceMove[] = [
         joints: {
           body: [0.04, 0.21, 0],
           head: [0.12, -0.15, 0.18],
-          lArm: [-1.33, 0, -0.35],
-          lFore: [-0.35, 0, 0],
-          rArm: [-0.55, 0, -0.85],
-          rFore: [-1.65, 0, 0],
+          lArm: [-1.48, 0, -0.3],
+          lFore: [-0.15, 0, 0],
+          rArm: [-1.3, 0, 0.1],
+          rFore: [-0.55, 0, 0],
           lLeg: [-0.2, 0, 0.08],
           rLeg: [0.12, 0, -0.08],
           lShin: [0.15, 0, 0],

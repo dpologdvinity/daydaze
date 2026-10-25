@@ -14,6 +14,8 @@ import {
   playShellNote,
   playSplash,
   playSquirt,
+  playZap,
+  playChime,
   playStep,
   playThump,
   playWhoosh,
@@ -39,6 +41,8 @@ test("world sounds stay silent and never throw without Web Audio", () => {
   assert.equal(playSizzle(), false);
   assert.equal(playChop(), false);
   assert.equal(playGong(), false);
+  assert.equal(playZap(), false);
+  assert.equal(playChime(1), false);
   const stop = startAmbience("beach");
   assert.equal(typeof stop, "function");
   assert.doesNotThrow(stop);
