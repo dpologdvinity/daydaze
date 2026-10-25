@@ -128,6 +128,16 @@ The 3D doll is built in Blender from MakeHuman's CC0 assets
 `scripts/fetch-textures.ts`. Motion capture is retargeted by
 `art/doll/blender/mocap.py` into `src/game/dance/mocap.ts`.
 
+## Service worker
+
+`public/sw.js` registers in production builds only
+(`src/client/serviceWorker.ts`). The fingerprinted `/assets/` bundle and
+the models, textures, sky maps and closet art are cache-first; pages are
+network-first; `/api` and `/ws` pass straight through. The cache is named
+after the build (`__BUILD_ID__`, set in `vite.config.ts`), so each deploy
+gets a fresh cache. A new version waits until the player taps Reload in the
+update prompt (`src/client/ui/UpdatePrompt.tsx`), then deletes the old cache.
+
 ## Testing
 
 - `npm run lint`: ESLint with typescript-eslint and the React hooks rules
@@ -138,6 +148,8 @@ The 3D doll is built in Blender from MakeHuman's CC0 assets
 - `npm run test:e2e:client`: Playwright against the client (headless
   WebGL runs on the CPU, so it's slow; run what you touched).
 - `npm run test:e2e:online`: two browsers against a local Worker.
+- `npm run test:e2e:sw`: the service worker against a production build
+  (`vite preview`): a second visit loads from its cache.
 - `npm run smoke:server`: the server end to end.
 - `npm run test:coverage`: the unit tests with a coverage report
   (`coverage/lcov.info`, `coverage/summary.txt`).

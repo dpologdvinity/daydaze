@@ -69,6 +69,7 @@ import { playFanfare, playWhoosh } from "../audio/worldSounds.ts";
 import { completeChallenge, dayOf } from "../game/challenges.ts";
 import { prizeFor } from "../game/prizes.ts";
 import { PrizeCard } from "./ui/PrizeCard.tsx";
+import { UpdatePrompt } from "./ui/UpdatePrompt.tsx";
 import { postPrize, prizeDesk } from "./ui/prizeDesk.ts";
 import { World } from "./world/World.tsx";
 
@@ -287,6 +288,7 @@ export function App() {
       <main className="app">
         <LoadingVeil />
         <PrizeCard />
+        <UpdatePrompt />
         <RoomAudio room={here.room} muted={save.settings.muted} />
         <World
           room={here.room}

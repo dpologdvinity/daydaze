@@ -19,7 +19,8 @@
     "vite.config.ts",
     "playwright.config.ts",
     "playwright.minigames.config.ts",
-    "playwright.online.config.ts"
+    "playwright.online.config.ts",
+    "playwright.sw.config.ts"
   ],
   "exclude": ["server/src/worker", "server/worker-configuration.d.ts"]
 }

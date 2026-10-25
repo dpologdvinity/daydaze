@@ -12,6 +12,8 @@ const workerPort = process.env.WORKER_PORT ?? "8787";
 // `npm run dev -- --port <n>` overrides the default port.
 export default defineConfig({
   plugins: [react()],
+  // names the service worker's cache: each build gets its own (public/sw.js)
+  define: { __BUILD_ID__: JSON.stringify(Date.now().toString(36)) },
   server: {
     port: 5173,
     // online play in development: `npm run dev:server` runs the Worker on

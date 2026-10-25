@@ -45,6 +45,8 @@ Browser and server suites are slower; run the parts you touched:
   usually a flake, so rerun it alone once before debugging).
 - `npm run test:e2e:online` (two browsers against a local Worker) after
   touching `src/net`, `src/client/net` or `server/`.
+- `npm run test:e2e:sw` after touching `public/sw.js` or
+  `src/client/serviceWorker.ts`.
 - `npm run smoke:server` for the server end to end.
 
 ## Code standards

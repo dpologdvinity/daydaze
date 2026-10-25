@@ -1817,6 +1817,24 @@ button:focus-visible {
 }
 
 /* The prize card a finished game slides in, top center. */
+/* A new version is waiting: reload when it suits the player. */
+.update-prompt {
+  position: fixed;
+  bottom: 84px;
+  left: 50%;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  transform: translateX(-50%);
+  background: rgb(20 10 40 / 0.9);
+  box-shadow: 0 0 0 2px var(--fuchsia);
+  color: var(--champagne);
+  font-family: var(--sans);
+}
+
 .prize-card {
   position: fixed;
   top: 84px;

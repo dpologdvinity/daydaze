@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { setConsoleFunction } from "three";
 import { loadDialogue } from "../game/dialogue/pick.ts";
 import { App } from "./App.tsx";
+import { registerServiceWorker } from "./serviceWorker.ts";
 import "./styles.css";
 
 // R3F 9 builds a THREE.Clock for `state.clock`, and three r183+ warns that
@@ -41,6 +42,9 @@ idle(() => {
     console.warn("NPC lines failed to load", error),
   );
 });
+
+// return visits load the game's files from the service worker's cache
+registerServiceWorker();
 
 const root = document.getElementById("root");
 if (!root) throw new Error("index.html is missing #root.");

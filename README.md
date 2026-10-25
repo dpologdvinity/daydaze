@@ -65,6 +65,7 @@ npm run typecheck         # strict TypeScript, including the Worker
 npm run verify            # lint, tests, typecheck, format check and build
 npm run test:e2e:client   # Playwright browser tests (slow: software WebGL)
 npm run test:e2e:online   # two browsers against a local Worker
+npm run test:e2e:sw       # the service worker on a production build
 npm run smoke:server      # the server end to end
 ```
 
