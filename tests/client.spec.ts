@@ -2287,15 +2287,30 @@ test("the haunted house: losing your nerve ends the run with a prize", async ({
     .click({ timeout: 150_000 });
   const panel = page.getByRole("region", { name: "Find the way out" });
   const doors = panel.getByRole("group", { name: "Doors" });
-  // try doors until the run ends, one way or the other
-  for (let i = 0; i < 30 && (await doors.count()) > 0; i++)
+  const status = panel.getByRole("status");
+  // the front hall is dressed as the run's first room
+  await expect(canvasOf(page)).toHaveAttribute(
+    "data-haunted-set",
+    /^(parlor|nursery|library|dining|bedroom|attic|chapel|conservatory)$/,
+  );
+  // try doors until the run ends, one way or the other; after each pick the
+  // doll walks to the door and a scare or the fade plays before the next
+  const over = /You're out|nerve gives out/;
+  const ready = async () =>
+    over.test((await status.textContent()) ?? "")
+      ? "over"
+      : (await doors.getByRole("button").first().isEnabled())
+        ? "choose"
+        : "busy";
+  for (let i = 0; i < 30; i++) {
+    await expect.poll(ready, { timeout: 30_000 }).not.toBe("busy");
+    if ((await ready()) === "over") break;
     await doors
       .getByRole("button")
       .nth(i % 3)
       .click();
-  await expect(panel.getByRole("status")).toContainText(
-    /You're out|nerve gives out/,
-  );
+  }
+  await expect(status).toContainText(/You're out|nerve gives out/);
   await expect(page.getByRole("status", { name: "Prize" })).toContainText(
     "Haunted house",
   );

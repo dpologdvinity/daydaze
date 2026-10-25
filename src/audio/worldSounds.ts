@@ -393,6 +393,63 @@ export function playGong(): boolean {
   return true;
 }
 
+/** A horror stinger: a sharp dissonant string stab over a low thud. */
+export function playStinger(): boolean {
+  const out = sfx();
+  if (!out) return false;
+  const { ctx, dest } = out;
+  const now = ctx.currentTime;
+  for (const f of [466.2, 493.9, 698.5]) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(f, now);
+    osc.frequency.linearRampToValueAtTime(f * 0.97, now + 0.9);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.05, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 1);
+    osc.connect(gain).connect(dest);
+    osc.start(now);
+    osc.stop(now + 1.05);
+  }
+  const thud = ctx.createOscillator();
+  const g = ctx.createGain();
+  thud.type = "sine";
+  thud.frequency.setValueAtTime(90, now);
+  thud.frequency.exponentialRampToValueAtTime(40, now + 0.3);
+  g.gain.setValueAtTime(0.3, now);
+  g.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+  thud.connect(g).connect(dest);
+  thud.start(now);
+  thud.stop(now + 0.42);
+  return true;
+}
+
+/** An old door's creak: a slow, rough glide of a resonant squeal. */
+export function playCreak(): boolean {
+  const out = sfx();
+  if (!out) return false;
+  const { ctx, dest } = out;
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const band = ctx.createBiquadFilter();
+  const gain = ctx.createGain();
+  osc.type = "sawtooth";
+  osc.frequency.setValueAtTime(70, now);
+  osc.frequency.linearRampToValueAtTime(120, now + 0.7);
+  band.type = "bandpass";
+  band.Q.value = 9;
+  band.frequency.setValueAtTime(900, now);
+  band.frequency.linearRampToValueAtTime(1400, now + 0.7);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.08, now + 0.1);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
+  osc.connect(band).connect(gain).connect(dest);
+  osc.start(now);
+  osc.stop(now + 0.82);
+  return true;
+}
+
 /** A light gun's shot: a bright square blip diving down in pitch. */
 export function playZap(): boolean {
   const out = sfx();

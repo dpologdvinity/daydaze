@@ -608,6 +608,16 @@ targets, a crosshair, a beam per shot, spark bursts and spin-away hits,
 with the doll at the line aiming a light pistol or rifle. Prizes stay
 `range-pistol` / `range-rifle`.
 
+Task 13 (haunted escape, walked): `src/game/hauntedSets.ts` gives each
+depth a room set (never the same twice in a row) and each wrong door a
+scare kind with its line; `haunted/escapeSession.ts` adds the beats (pick,
+walk, scare or fade through); `haunted/EscapeSet.tsx` dresses the front
+hall as the room (rug, curtains, furniture), walks the doll to the chosen
+door, swings it open, and plays the scare in the room (doll head turns,
+candles out, sheet slides, rocking chair, portrait eyes, music box) with a
+stinger; reduced motion softens each. The hall's field of view is narrow
+and the back wall stops the camera, so the shot is tight.
+
 0. B11 prizes for unscored games and B13 speakeasy cards (quick, high value).
 1. ~~A1 couple emotes~~ (done; piggyback left).
 2. ~~A2 cook-off~~ (done).

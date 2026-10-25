@@ -1,44 +1,23 @@
-// The haunted house's escape game: three doors a room, one goes deeper and the
-// others cost nerve with a scare line (jumps and creaks, never gore). Run state
-// is local React state, so leaving the panel ends the run; the score goes to
-// the prize desk when it finishes.
+// The haunted escape's panel: the room count, your nerve, the line for
+// what just happened and the three doors. The rooms, the walk to a door and
+// the scares play in the house itself (EscapeSet.tsx).
 
-import { useState, type JSX } from "react";
-import { playWhoosh } from "../../../audio/worldSounds.ts";
-import {
-  DEPTH,
-  NERVE,
-  newRun,
-  open,
-  runOver,
-  runScore,
-  type Run,
-} from "../../../game/hauntedRun.ts";
-import { award } from "../../ui/prizeDesk.ts";
+import { useEffect, type JSX } from "react";
+import { DEPTH, NERVE, runScore } from "../../../game/hauntedRun.ts";
+import { useNow } from "../shared/useNow.ts";
+import { escape, leave, pick, start, tick } from "./escapeSession.ts";
 
 const DOORS = ["Left door", "Door ahead", "Right door"] as const;
 
-// What waits behind a wrong door: jumps and creaks, never gore.
-const SCARES = [
-  "A porcelain doll turns its head to watch you go.",
-  "Something cold breathes on the back of your neck.",
-  "A wardrobe door swings open on its own. Empty. Probably.",
-  "The portrait's eyes were looking the other way a second ago.",
-  "A music box starts playing, then stops mid-note.",
-  "Footsteps upstairs match yours, one step behind.",
-  "A sheet slides off a chair. Nobody's sitting there. Nobody you can see.",
-  "Every candle in the room goes out at once.",
-  "Wet handprints appear on the mirror, from the inside.",
-  "A child's laugh, very close, then nothing.",
-  "The door slams behind you and the knob turns by itself.",
-  "A rocking chair keeps rocking long after you look away.",
-];
-
 /** Find the way out of the haunted house: three doors a room, one goes on. */
 export function EscapePanel(): JSX.Element {
-  const [run, setRun] = useState<Run | null>(null);
-  const [scare, setScare] = useState<string | null>(null);
-  if (!run)
+  const s = escape.use();
+  const live = s.phase !== "off" && s.phase !== "over";
+  const now = useNow(live);
+  useEffect(() => {
+    if (live) tick(now);
+  }, [now, live]);
+  if (s.phase === "off")
     return (
       <section className="game-panel" aria-label="Find the way out">
         <p className="game-call">
@@ -48,18 +27,18 @@ export function EscapePanel(): JSX.Element {
         <button
           type="button"
           className="game-main"
-          onClick={() => setRun(newRun(Math.floor(Math.random() * 1e9)))}
+          onClick={() => start(performance.now())}
         >
           Step inside
         </button>
       </section>
     );
-  const over = runOver(run);
+  const { run } = s;
   return (
     <section
       className="game-panel"
       aria-label="Find the way out"
-      data-scared={scare !== null}
+      data-scared={s.phase === "scare"}
     >
       <p className="game-score" aria-label="Progress">
         <span>
@@ -71,40 +50,36 @@ export function EscapePanel(): JSX.Element {
         </span>
       </p>
       <p className="game-call" role="status">
-        {over
+        {s.phase === "over"
           ? run.escaped
             ? `You're out! ${runScore(run)} points.`
             : "Your nerve gives out. You run for the front door."
-          : (scare ??
-            (run.depth === 0 ? "The front door creaks shut." : "Deeper in."))}
+          : s.phase === "walk"
+            ? "You reach for the handle…"
+            : s.phase === "through"
+              ? "Deeper in."
+              : s.scare
+                ? s.scare.line
+                : run.depth === 0
+                  ? "The front door creaks shut."
+                  : "Deeper in."}
       </p>
-      {!over && (
+      {s.phase !== "over" && (
         <div className="game-row" role="group" aria-label="Doors">
           {DOORS.map((label, door) => (
             <button
               key={door}
               type="button"
-              onClick={() => {
-                const r = open(run, door);
-                setRun(r.run);
-                if (r.scared) {
-                  playWhoosh();
-                  setScare(
-                    SCARES[
-                      (run.seed + run.depth * 3 + run.nerve) % SCARES.length
-                    ] ?? SCARES[0],
-                  );
-                } else setScare(null);
-                if (runOver(r.run)) award("haunted", runScore(r.run));
-              }}
+              disabled={s.phase !== "choose"}
+              onClick={() => pick(door, performance.now())}
             >
               {label}
             </button>
           ))}
         </div>
       )}
-      <button type="button" onClick={() => setRun(null)}>
-        {over ? "Back to the hall" : "Run for it"}
+      <button type="button" onClick={leave}>
+        {s.phase === "over" ? "Back to the hall" : "Run for it"}
       </button>
     </section>
   );

@@ -14,6 +14,8 @@ const WALLPAPER = surface("quatrefoil_jacquard_fabric", {
 });
 const OAK = surface("wood_veneer", { scale: 1.5, color: "#7a5a40" });
 import { PortalPads } from "./shared/PortalPads.tsx";
+import { EscapeSet } from "./haunted/EscapeSet.tsx";
+import type { Player } from "../world/PlayerController.tsx";
 import { hdr } from "./shared/materials.ts";
 
 const GHOSTS = 7;
@@ -49,7 +51,13 @@ function ghostGeometry() {
  * drifting through them, portraits whose eyes glow, candles that gutter and
  * a cold blue glow at the back. Spooky, never gory: no zombies.
  */
-export function HauntedHouse({ onPick }: { onPick: PickHandler }) {
+export function HauntedHouse({
+  onPick,
+  player,
+}: {
+  onPick: PickHandler;
+  player: Player;
+}) {
   const calm = useReducedMotion();
   const ghosts = useRef<THREE.InstancedMesh>(null);
   const candle = useRef<THREE.PointLight>(null);
@@ -92,6 +100,7 @@ export function HauntedHouse({ onPick }: { onPick: PickHandler }) {
   });
   return (
     <>
+      <EscapeSet player={player} />
       <color attach="background" args={["#050208"]} />
       <fog attach="fog" args={["#0a0414", 6, 24]} />
       <hemisphereLight args={["#6a4a9a", "#140a1e", 1.4]} />
