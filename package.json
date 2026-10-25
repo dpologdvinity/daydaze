@@ -20,7 +20,8 @@
     "test:e2e": "playwright test -c playwright.minigames.config.ts",
     "test:e2e:client": "playwright test",
     "test:e2e:online": "playwright test -c playwright.online.config.ts",
-    "test:e2e:sw": "playwright test -c playwright.sw.config.ts"
+    "test:e2e:sw": "playwright test -c playwright.sw.config.ts",
+    "perf:budget": "node --experimental-strip-types scripts/perf-budget.ts"
   },
   "engines": {
     "node": ">=22.18.0"

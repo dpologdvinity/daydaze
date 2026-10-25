@@ -48,6 +48,8 @@ Browser and server suites are slower; run the parts you touched:
 - `npm run test:e2e:sw` after touching `public/sw.js` or
   `src/client/serviceWorker.ts`.
 - `npm run smoke:server` for the server end to end.
+- `npm run build && npm run perf:budget` after adding a dependency or a
+  module the entry imports: initial JS must stay under 600 KB gzipped.
 
 ## Code standards
 

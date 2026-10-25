@@ -100,6 +100,8 @@ jobs:
       - run: npm ci
       - name: Production build
         run: npm run build
+      - name: Performance budget (initial JS under 600 KB gzipped)
+        run: npm run perf:budget
       - uses: actions/upload-artifact@v4
         with:
           name: dist

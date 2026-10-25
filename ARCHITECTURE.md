@@ -151,6 +151,9 @@ update prompt (`src/client/ui/UpdatePrompt.tsx`), then deletes the old cache.
 - `npm run test:e2e:sw`: the service worker against a production build
   (`vite preview`): a second visit loads from its cache.
 - `npm run smoke:server`: the server end to end.
+- `npm run perf:budget`: after a build, fails when the initial JS (entry plus
+  preloads, gzipped) passes 600 KB, and prints `dist/` by asset class; CI runs
+  it after the build.
 - `npm run test:coverage`: the unit tests with a coverage report
   (`coverage/lcov.info`, `coverage/summary.txt`).
 - `npm run verify`: lint, tests, typecheck, format check and build; the
