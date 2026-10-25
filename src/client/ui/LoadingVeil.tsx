@@ -5,7 +5,8 @@ import { useSceneReady } from "../world/ready.ts";
 const FADE_MS = 600;
 
 /** Covers the canvas while a room loads and compiles, then fades away and
- * unmounts, so no idle full-screen layer stays over the canvas. */
+ * unmounts, so no idle full-screen layer stays over the canvas. It sits under
+ * the HUD and passes clicks through, so chat and the closet work meanwhile. */
 export function LoadingVeil() {
   const ready = useSceneReady();
   const [gone, setGone] = useState(false);

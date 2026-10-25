@@ -1413,10 +1413,13 @@ button:focus-visible {
 
 /* ------------------------------------------------------------ loading veil */
 
+/* Sits under the HUD (z-index 5 and up) and lets clicks through, so chat and
+   the closet work while the room streams in behind it. */
 .loading-veil {
   position: fixed;
   inset: 0;
-  z-index: 30;
+  z-index: 4;
+  pointer-events: none;
   display: grid;
   place-content: center;
   gap: 6px;

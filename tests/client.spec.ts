@@ -949,6 +949,46 @@ test("a few drinks in, chat stretches its vowels", async ({ page }) => {
   await expect(said).toHaveText(/([aeiou])\1/);
 });
 
+test("chat and the closet work while the room is still loading", async ({
+  page,
+}) => {
+  test.setTimeout(300_000);
+  // hold the room's code back, so it cannot finish loading meanwhile
+  let release = () => {};
+  const held = new Promise<void>((r) => (release = r));
+  await page.route("**/rooms/VelvetRoom.tsx*", async (route) => {
+    await held;
+    await route.continue();
+  });
+  await page.goto(VELVET);
+  await expect(page.locator(".loading-veil")).toHaveAttribute(
+    "data-ready",
+    "false",
+  );
+  const input = page.getByRole("textbox", { name: "Chat message" });
+  await input.fill("still loading in");
+  await input.press("Enter");
+  await expect(input).toHaveValue("");
+  await page
+    .getByRole("button", { name: "Dressing room", exact: true })
+    .click();
+  await page.getByRole("tab", { name: "Hair" }).click();
+  const buns = page
+    .getByRole("radiogroup", { name: "Hair style" })
+    .getByRole("radio", { name: "Space buns" });
+  await buns.click();
+  await expect(buns).toHaveAttribute("aria-checked", "true");
+  // all of that happened before the world drew its tenth frame
+  expect(Number(await canvasOf(page).getAttribute("data-frames"))).toBeLessThan(
+    10,
+  );
+  // let the room in: it finishes loading and the veil lifts
+  release();
+  await expect(page.locator(".loading-veil")).toHaveCount(0, {
+    timeout: 240_000,
+  });
+});
+
 test("chat shows what you said above your doll", async ({ page }) => {
   await page.goto(VELVET);
   const input = page.getByRole("textbox", { name: "Chat message" });
