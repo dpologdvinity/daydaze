@@ -25,6 +25,8 @@ export function registerServiceWorker(): void {
       .filter((u) => u.startsWith(location.origin));
     sw.controller?.postMessage({ type: "warm", urls });
   };
+  // tell an older worker this page's build, so it won't serve it old art
+  sw.controller?.postMessage({ type: "hello", build: __BUILD_ID__ });
   if (sw.controller) warm();
   else sw.addEventListener("controllerchange", warm, { once: true });
   sw.register(`/sw.js?v=${encodeURIComponent(__BUILD_ID__)}`)

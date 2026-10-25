@@ -10,7 +10,10 @@
 // The cache is named after the build (`/sw.js?v=<build id>`, registered by
 // src/client/serviceWorker.ts). A new build is a new worker with a new cache;
 // it waits until the player says to reload (the update prompt posts
-// "skip-waiting"), then deletes the old version's cache.
+// "skip-waiting"), then deletes the old version's cache. Meanwhile a page
+// already running the new build (pages are network-first) tells this older
+// worker its build ("hello"); the art it asks for then skips this version's
+// cache, so new code never gets old models under the same file names.
 
 const VERSION = new URL(self.location.href).searchParams.get("v") ?? "dev";
 const PREFIX = "daydaze-";
@@ -32,28 +35,52 @@ function strategy(request) {
   return null;
 }
 
+/** Each open page's build, by client id, from its "hello" message. The
+ * browser stops idle workers, so a copy is kept in a small cache too (its
+ * name has the prefix, so the next version's activation clears it). */
+const builds = new Map();
+const BUILDS = `${PREFIX}builds`;
+
+async function buildOf(clientId) {
+  if (!clientId) return undefined;
+  if (builds.has(clientId)) return builds.get(clientId);
+  const hit = await (await caches.open(BUILDS)).match(`/__build/${clientId}`);
+  const build = hit ? await hit.text() : undefined;
+  builds.set(clientId, build);
+  return build;
+}
+
 /** Only whole, same-origin, successful responses are worth keeping. */
 function keepable(response) {
   return response.ok && response.status === 200 && response.type === "basic";
 }
 
-async function cacheFirst(request) {
-  const cache = await caches.open(CACHE);
-  const hit = await cache.match(request);
-  if (hit) return hit;
-  const response = await fetch(request);
-  if (keepable(response)) await cache.put(request, response.clone());
+/** Stores a copy without holding up the response; a full or evicted cache
+ * just means the file is fetched again next time. */
+function keep(event, cache, key, response) {
+  if (keepable(response))
+    event.waitUntil(cache.put(key, response.clone()).catch(() => undefined));
   return response;
 }
 
-async function networkFirst(request) {
+async function cacheFirst(event) {
+  const request = event.request;
+  // a page from another build gets the network, not this version's files
+  const build = await buildOf(event.clientId);
+  if (build !== undefined && build !== VERSION) return fetch(request);
+  const cache = await caches.open(CACHE);
+  const hit = await cache.match(request);
+  if (hit) return hit;
+  return keep(event, cache, request, await fetch(request));
+}
+
+async function networkFirst(event) {
+  const request = event.request;
   const cache = await caches.open(CACHE);
   // one copy of the page, whatever its ?room= or ?quality= flags
   const key = new URL(request.url).pathname;
   try {
-    const response = await fetch(request);
-    if (keepable(response)) await cache.put(key, response.clone());
-    return response;
+    return keep(event, cache, key, await fetch(request));
   } catch (error) {
     const hit = await cache.match(key);
     if (hit) return hit;
@@ -75,15 +102,31 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const how = strategy(event.request);
-  if (how === "cache-first") event.respondWith(cacheFirst(event.request));
-  else if (how === "network-first")
-    event.respondWith(networkFirst(event.request));
+  if (how === "cache-first") event.respondWith(cacheFirst(event));
+  else if (how === "network-first") event.respondWith(networkFirst(event));
 });
 
 self.addEventListener("message", (event) => {
   const data = event.data;
   if (data === "skip-waiting") {
     self.skipWaiting();
+    return;
+  }
+  if (
+    data &&
+    data.type === "hello" &&
+    typeof data.build === "string" &&
+    event.source
+  ) {
+    builds.set(event.source.id, data.build);
+    event.waitUntil(
+      caches
+        .open(BUILDS)
+        .then((c) =>
+          c.put(`/__build/${event.source.id}`, new Response(data.build)),
+        )
+        .catch(() => undefined),
+    );
     return;
   }
   // the files the page fetched before this worker took over

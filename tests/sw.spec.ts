@@ -37,3 +37,26 @@ test("a second visit loads the game's files from the service worker", async ({
   expect(cached.some((u) => u.includes("/assets/"))).toBe(true);
   expect(cached.filter((u) => /\/(api|ws)\//.test(u))).toEqual([]);
 });
+
+test("a page from another build never gets this worker's cached art", async ({
+  page,
+}) => {
+  await page.goto(ROOM);
+  await page.waitForFunction(
+    () => navigator.serviceWorker?.controller !== null,
+  );
+  // the page says it runs a different build than the worker's cache holds
+  const cached = await page.evaluate(async () => {
+    navigator.serviceWorker.controller?.postMessage({
+      type: "hello",
+      build: "some-other-build",
+    });
+    await new Promise((r) => setTimeout(r, 200));
+    const url = "/models/doll/hair-afro-lo.glb";
+    await fetch(url);
+    for (const name of await caches.keys())
+      if (await (await caches.open(name)).match(url)) return true;
+    return false;
+  });
+  expect(cached).toBe(false);
+});
