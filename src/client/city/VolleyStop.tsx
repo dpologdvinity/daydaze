@@ -48,6 +48,8 @@ export function VolleyGame({
   label: string;
   prize: PrizeGame;
 }): JSX.Element {
+  // switching to another game (or leaving the room) ends this one
+  useEffect(() => () => leave(), []);
   const s = volley.use();
   const playing = s.phase !== "off";
   const now = useNow(playing && s.phase !== "over");

@@ -34,6 +34,8 @@ const ARROWS: Record<string, [number, number]> = {
 
 /** Photon Zone's light-gun range: timed drills on the north wall. */
 export function RangePanel(): JSX.Element {
+  // switching to another game (or leaving the room) ends this one
+  useEffect(() => () => leave(), []);
   const s = range.use();
   const playing = s.phase === "playing";
   const now = useNow(playing);

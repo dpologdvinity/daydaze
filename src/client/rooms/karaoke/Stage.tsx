@@ -5,6 +5,7 @@
 // right in a row and the crowd cheers. The session (./session.ts) keeps the
 // song; this only draws it.
 
+import { claimSeat, releaseSeat } from "../shared/game3d/seatClaim.ts";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import * as THREE from "three";
@@ -200,11 +201,11 @@ function LightStrips({ screen }: { screen: ScreenSpot }) {
  */
 function useWalkToMic(player: Player): boolean {
   const [arrived, setArrived] = useState(false);
-  const took = useRef(false);
+  const took = useRef<GameSeat | null>(null);
   const at = useRef(false);
   useEffect(
     () => () => {
-      if (took.current) player.seat = null;
+      if (took.current) releaseSeat(player, took.current);
     },
     [player],
   );
@@ -212,23 +213,23 @@ function useWalkToMic(player: Player): boolean {
     const on = karaoke.get().phase !== "off";
     if (!on) {
       if (took.current) {
-        player.seat = null;
-        took.current = false;
+        releaseSeat(player, took.current);
+        took.current = null;
       }
       if (at.current) setArrived((at.current = false));
       return;
     }
     if (!took.current) {
-      took.current = true;
-      player.sitting = false;
-      player.seat = {
+      const mine: GameSeat = {
         position: player.pos.clone(),
         yaw: player.yaw,
         stride: true,
       };
+      if (!claimSeat(player, mine)) return;
+      took.current = mine;
     }
-    const seat = player.seat;
-    if (!seat) return;
+    const seat = took.current;
+    if (!seat || player.seat !== seat) return;
     const dx = MIC[0] - seat.position.x;
     const dz = MIC[1] - seat.position.z;
     const d = Math.hypot(dx, dz);
@@ -304,3 +305,6 @@ export function useCrowdCheering(): boolean {
   });
   return on;
 }
+
+/** The seat a game puts the player on. */
+type GameSeat = NonNullable<Player["seat"]>;

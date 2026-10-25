@@ -7,6 +7,7 @@
 // gong. Offline, Tita Baby cooks at the next stove. The order session
 // (food/cookOffSession.ts) keeps the shift; the panel has the tickets.
 
+import { claimSeat, releaseSeat } from "../shared/game3d/seatClaim.ts";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
@@ -286,10 +287,10 @@ export function Kitchen({ player }: { player: Player }) {
   }, [s.last]);
 
   // the player at her stove, facing it
-  const took = useRef(false);
+  const took = useRef<GameSeat | null>(null);
   useEffect(
     () => () => {
-      if (took.current) player.seat = null;
+      if (took.current) releaseSeat(player, took.current);
     },
     [player],
   );
@@ -297,18 +298,18 @@ export function Kitchen({ player }: { player: Player }) {
     const on = cookOffSession.store.get().on;
     if (!on || !mine) {
       if (took.current) {
-        player.seat = null;
-        took.current = false;
+        releaseSeat(player, took.current);
+        took.current = null;
       }
       return;
     }
     if (!took.current) {
-      took.current = true;
-      player.sitting = false;
-      player.seat = {
+      const seat: GameSeat = {
         position: new THREE.Vector3(mine.cook[0], 0, mine.cook[1]),
         yaw: Math.PI,
       };
+      if (!claimSeat(player, seat)) return;
+      took.current = seat;
     }
   });
 
@@ -421,3 +422,6 @@ function Plate({
     </group>
   );
 }
+
+/** The seat a game puts the player on. */
+type GameSeat = NonNullable<Player["seat"]>;

@@ -18,6 +18,8 @@ const secs = (tenths: number) => `${(tenths / 10).toFixed(1)} s`;
 
 /** The twin speed slides: tuck at each bend to beat the rival down. */
 export function SlidePanel(): JSX.Element {
+  // switching to another game (or leaving the room) ends this one
+  useEffect(() => () => leave(), []);
   const s = slide.use();
   const now = useNow(s.phase === "sliding");
   useEffect(() => tick(now), [now]);

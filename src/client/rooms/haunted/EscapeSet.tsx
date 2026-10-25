@@ -8,6 +8,7 @@
 // music box opens) with a stinger. Reduced motion softens every scare. The
 // session (escapeSession.ts) keeps the run.
 
+import { claimSeat, releaseSeat } from "../shared/game3d/seatClaim.ts";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -472,10 +473,10 @@ export function EscapeSet({ player }: { player: Player }) {
   const target = useMemo<Vec3>(() => [0.8, 1.15, 1.2], []);
   useGameShot("haunted", on, eye, target);
   // her walk: to the chosen door, then back to the middle
-  const took = useRef(false);
+  const took = useRef<GameSeat | null>(null);
   useEffect(
     () => () => {
-      if (took.current) player.seat = null;
+      if (took.current) releaseSeat(player, took.current);
     },
     [player],
   );
@@ -484,22 +485,22 @@ export function EscapeSet({ player }: { player: Player }) {
     const st = escape.get();
     if (st.phase === "off") {
       if (took.current) {
-        player.seat = null;
-        took.current = false;
+        releaseSeat(player, took.current);
+        took.current = null;
       }
       return;
     }
     if (!took.current) {
-      took.current = true;
-      player.sitting = false;
-      player.seat = {
+      const mine: GameSeat = {
         position: new THREE.Vector3(...CENTER),
         yaw: Math.PI,
         stride: false,
       };
+      if (!claimSeat(player, mine)) return;
+      took.current = mine;
     }
-    const seat = player.seat;
-    if (!seat) return;
+    const seat = took.current;
+    if (!seat || player.seat !== seat) return;
     const gx = st.phase === "walk" ? (DOOR_X[st.door] ?? 0) : CENTER[0];
     const gz = st.phase === "walk" ? WALL_Z + 0.7 : CENTER[2];
     if (
@@ -548,3 +549,6 @@ export function EscapeSet({ player }: { player: Player }) {
     </>
   );
 }
+
+/** The seat a game puts the player on. */
+type GameSeat = NonNullable<Player["seat"]>;

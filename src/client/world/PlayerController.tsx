@@ -420,6 +420,7 @@ export function PlayerController({
     <>
       <group ref={g}>
         <Doll
+          own
           look={look}
           swim={swim}
           body={body}

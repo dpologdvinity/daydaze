@@ -26,6 +26,8 @@ const ARROWS: Record<string, [number, number]> = {
 
 /** Soak the floaties bobbing across the pool before the tank runs dry. */
 export function WaterGunPanel(): JSX.Element {
+  // switching to another game (or leaving the room) ends this one
+  useEffect(() => () => leave(), []);
   const s = waterGuns.use();
   const playing = s.phase === "playing";
   const now = useNow(playing);

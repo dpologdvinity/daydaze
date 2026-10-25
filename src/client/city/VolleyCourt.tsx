@@ -5,6 +5,7 @@
 // Contact thumps, a kill gets a cheer. Shared by the beach net (city) and the
 // pool court (Water Park); the panel keeps only score and controls.
 
+import { claimSeat, releaseSeat } from "../rooms/shared/game3d/seatClaim.ts";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
@@ -274,10 +275,10 @@ function Rally({
   useGameShot("volleyball", true, eye, target);
 
   // the player steps to where the ball is coming: a striding seat
-  const took = useRef(false);
+  const took = useRef<GameSeat | null>(null);
   useEffect(
     () => () => {
-      if (took.current) player.seat = null;
+      if (took.current) releaseSeat(player, took.current);
     },
     [player],
   );
@@ -327,16 +328,16 @@ function Rally({
     // the player: to the dig spot for their attack, under the set for the
     // spike, back to base otherwise; facing the net
     if (!took.current) {
-      took.current = true;
-      player.sitting = false;
-      player.seat = {
+      const mine: GameSeat = {
         position: player.pos.clone(),
         yaw: spot.yaw ?? 0,
         stride: false,
       };
+      if (!claimSeat(player, mine)) return;
+      took.current = mine;
     }
-    const seat = player.seat;
-    if (!seat) return;
+    const seat = took.current;
+    if (!seat || player.seat !== seat) return;
     if (want.current.n !== f.n)
       want.current = {
         n: f.n,
@@ -363,3 +364,6 @@ function Rally({
     </>
   );
 }
+
+/** The seat a game puts the player on. */
+type GameSeat = NonNullable<Player["seat"]>;

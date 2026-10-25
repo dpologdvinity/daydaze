@@ -5,6 +5,7 @@
 // into sparks while the target spins away. Mouse and touch aim over the wall
 // and fire on a click or tap. The session (rangeSession.ts) keeps the drill.
 
+import { claimSeat, releaseSeat } from "../shared/game3d/seatClaim.ts";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -250,10 +251,10 @@ export function Range({ player }: { player: Player }) {
   const eye = useMemo<Vec3>(() => [1.3, 2.0, LINE[2] + 2.8], []);
   const target = useMemo<Vec3>(() => [0, 1.7, RAIL_Z], []);
   useGameShot("target-range", playing, eye, target);
-  const took = useRef(false);
+  const took = useRef<GameSeat | null>(null);
   useEffect(
     () => () => {
-      if (took.current) player.seat = null;
+      if (took.current) releaseSeat(player, took.current);
     },
     [player],
   );
@@ -261,18 +262,21 @@ export function Range({ player }: { player: Player }) {
     const st = range.get();
     if (st.phase !== "playing") {
       if (took.current) {
-        player.seat = null;
-        took.current = false;
+        releaseSeat(player, took.current);
+        took.current = null;
       }
       return;
     }
     if (!took.current) {
-      took.current = true;
-      player.sitting = false;
-      player.seat = { position: new THREE.Vector3(...LINE), yaw: Math.PI };
+      const mine: GameSeat = {
+        position: new THREE.Vector3(...LINE),
+        yaw: Math.PI,
+      };
+      if (!claimSeat(player, mine)) return;
+      took.current = mine;
     }
-    if (player.seat)
-      player.seat.yaw = Math.atan2(st.aim[0] - LINE[0], RAIL_Z - LINE[2]);
+    if (took.current)
+      took.current.yaw = Math.atan2(st.aim[0] - LINE[0], RAIL_Z - LINE[2]);
   });
   const canvas = useThree((st) => st.gl.domElement);
   useEffect(() => {
@@ -316,3 +320,6 @@ export function Range({ player }: { player: Player }) {
     </>
   );
 }
+
+/** The seat a game puts the player on. */
+type GameSeat = NonNullable<Player["seat"]>;

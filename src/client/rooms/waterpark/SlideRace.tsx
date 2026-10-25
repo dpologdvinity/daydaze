@@ -6,6 +6,7 @@
 // A high camera over the pool shows the whole race. The session (slideSession.ts) keeps the
 // race; the panel only times it.
 
+import { claimSeat, releaseSeat } from "../shared/game3d/seatClaim.ts";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import * as THREE from "three";
@@ -173,7 +174,7 @@ function useRider(
   player: Player,
   splash: RefObject<BurstHandle | null>,
 ): { clip: GameClipId | null; riding: boolean } {
-  const took = useRef(false);
+  const took = useRef<GameSeat | null>(null);
   const splashed = useRef(-1);
   const glide = useRef(0);
   const [clip, setClip] = useState<GameClipId | null>(null);
@@ -190,7 +191,7 @@ function useRider(
   }, [s.last, s.run.length]);
   useEffect(
     () => () => {
-      if (took.current) player.seat = null;
+      if (took.current) releaseSeat(player, took.current);
     },
     [player],
   );
@@ -201,20 +202,24 @@ function useRider(
     const st = slide.get();
     if (st.phase === "off" || !MY_TABLE || !MINE) {
       if (took.current) {
-        player.seat = null;
-        took.current = false;
+        releaseSeat(player, took.current);
+        took.current = null;
       }
       if (onFlume.current) setRiding((onFlume.current = false));
       return;
     }
     if (!took.current && st.phase === "sliding") {
-      took.current = true;
-      player.sitting = false;
-      player.seat = { position: new THREE.Vector3(), yaw: 0, sit: true };
+      const mine: GameSeat = {
+        position: new THREE.Vector3(),
+        yaw: 0,
+        sit: true,
+      };
+      if (!claimSeat(player, mine)) return;
+      took.current = mine;
       if (!onFlume.current) setRiding((onFlume.current = true));
     }
-    const seat = player.seat;
-    if (!seat) return;
+    const seat = took.current;
+    if (!seat || player.seat !== seat) return;
     const t = (performance.now() - st.pushedOff) / 1000;
     const u = slideProgress(t);
     if (u < 1) {
@@ -244,8 +249,8 @@ function useRider(
     }
     // out onto the deck by the flume's exit; the race result stays up
     if (took.current) {
-      player.seat = null;
-      took.current = false;
+      releaseSeat(player, took.current);
+      took.current = null;
       placePlayer(player, MINE.exit[0], MINE.exit[1]);
       setRiding((onFlume.current = false));
     }
@@ -315,3 +320,6 @@ export function SlideRace({ player }: { player: Player }) {
     </>
   );
 }
+
+/** The seat a game puts the player on. */
+type GameSeat = NonNullable<Player["seat"]>;

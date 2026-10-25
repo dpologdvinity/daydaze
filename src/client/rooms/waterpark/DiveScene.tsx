@@ -5,6 +5,7 @@
 // clip, hits the water with a splash sized by the entry, and a judge on the
 // deck holds up her score. The session (divingSession.ts) keeps the game.
 
+import { claimSeat, releaseSeat } from "../shared/game3d/seatClaim.ts";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, type RefObject } from "react";
 import * as THREE from "three";
@@ -168,14 +169,14 @@ function stepToward(
  */
 function useDiver(player: Player, splash: RefObject<BurstHandle | null>) {
   const calm = useReducedMotion();
-  const took = useRef(false);
+  const took = useRef<GameSeat | null>(null);
   // the climb: 0 walking to the ladder, 1 climbing, 2 out on the board, 3 up
   const leg = useRef(0);
   const flown = useRef(-1);
   const splashed = useRef(-1);
   useEffect(
     () => () => {
-      if (took.current) player.seat = null;
+      if (took.current) releaseSeat(player, took.current);
     },
     [player],
   );
@@ -183,24 +184,24 @@ function useDiver(player: Player, splash: RefObject<BurstHandle | null>) {
     const s = diving.get();
     if (s.phase === "off") {
       if (took.current) {
-        player.seat = null;
-        took.current = false;
+        releaseSeat(player, took.current);
+        took.current = null;
         leg.current = 0;
       }
       return;
     }
     if (!took.current) {
-      took.current = true;
-      leg.current = 0;
-      player.sitting = false;
-      player.seat = {
+      const mine: GameSeat = {
         position: player.pos.clone(),
         yaw: player.yaw,
         stride: true,
       };
+      if (!claimSeat(player, mine)) return;
+      took.current = mine;
+      leg.current = 0;
     }
-    const seat = player.seat;
-    if (!seat) return;
+    const seat = took.current;
+    if (!seat || player.seat !== seat) return;
     const now = performance.now();
     seat.flip = 0;
     if (s.phase === "splash") {
@@ -300,3 +301,6 @@ export function DiveScene({ player }: { player: Player }) {
     </>
   );
 }
+
+/** The seat a game puts the player on. */
+type GameSeat = NonNullable<Player["seat"]>;

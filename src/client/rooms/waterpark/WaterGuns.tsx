@@ -6,6 +6,7 @@
 // aim over the water and squirt on a click or tap. The session
 // (waterGunSession.ts) keeps the battle.
 
+import { claimSeat, releaseSeat } from "../shared/game3d/seatClaim.ts";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, type RefObject } from "react";
 import * as THREE from "three";
@@ -317,10 +318,10 @@ export function WaterGuns({ player }: { player: Player }) {
   );
   useGameShot("water-guns", s.phase !== "off", eye, target);
   // the player on the deck, turned to the aim
-  const took = useRef(false);
+  const took = useRef<GameSeat | null>(null);
   useEffect(
     () => () => {
-      if (took.current) player.seat = null;
+      if (took.current) releaseSeat(player, took.current);
     },
     [player],
   );
@@ -328,18 +329,21 @@ export function WaterGuns({ player }: { player: Player }) {
     const st = waterGuns.get();
     if (st.phase !== "playing") {
       if (took.current) {
-        player.seat = null;
-        took.current = false;
+        releaseSeat(player, took.current);
+        took.current = null;
       }
       return;
     }
     if (!took.current) {
-      took.current = true;
-      player.sitting = false;
-      player.seat = { position: new THREE.Vector3(...STAND), yaw: Math.PI };
+      const mine: GameSeat = {
+        position: new THREE.Vector3(...STAND),
+        yaw: Math.PI,
+      };
+      if (!claimSeat(player, mine)) return;
+      took.current = mine;
     }
-    if (player.seat)
-      player.seat.yaw = Math.atan2(st.aim[0] - STAND[0], st.aim[1] - STAND[2]);
+    if (took.current)
+      took.current.yaw = Math.atan2(st.aim[0] - STAND[0], st.aim[1] - STAND[2]);
   });
   const canvas = useThree((st) => st.gl.domElement);
   useEffect(() => {
@@ -381,3 +385,6 @@ export function WaterGuns({ player }: { player: Player }) {
     </>
   );
 }
+
+/** The seat a game puts the player on. */
+type GameSeat = NonNullable<Player["seat"]>;

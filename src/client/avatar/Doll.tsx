@@ -219,6 +219,8 @@ type DollProps = {
   buzzed?: boolean;
   walk?: { current: WalkState };
   seed?: number;
+  /** The player's own doll: full detail at any distance on the low tier. */
+  own?: boolean;
 } & Omit<ThreeElements["group"], "children">;
 
 /** The original toon doll, shown while the 3D doll's models load. */

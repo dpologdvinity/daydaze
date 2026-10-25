@@ -74,8 +74,8 @@ const SIT_HOLDS = [undefined, ...stillClipsOf("sit").map((c) => c.id)];
 // meters from the camera where a doll swaps to and from the low-poly body
 const LOD_FAR = 9;
 const LOD_NEAR = 8;
-// on the low tier everyone else's doll (NPCs, other players: any with a
-// seed) goes low-poly much sooner, so a game's close shot of the player
+// on the low tier everyone else's doll (NPCs, other players) goes
+// low-poly much sooner, so a game's close shot of the player
 // with a rival or two beside her stays in budget; hers keeps full detail
 const LOW_TIER_FAR = 4.6;
 const LOW_TIER_NEAR = 4;
@@ -111,6 +111,8 @@ type Props = {
   buzzed?: boolean;
   walk?: { current: WalkState };
   seed?: number;
+  /** The player's own doll: full detail at any distance on the low tier. */
+  own?: boolean;
 } & Omit<ThreeElements["group"], "children">;
 
 /** The part files a look wears, by kind. */
@@ -621,12 +623,13 @@ export function HumanDoll({
   buzzed = false,
   walk,
   seed = 0,
+  own = false,
   body: shape = DEFAULT_BODY,
   ...rest
 }: Props) {
   // NPC looks carry no face, so their seed picks one
   const heightScale = bodyScales(shape).height;
-  const lowTierNpc = useQuality() === "low" && seed !== 0;
+  const lowTierNpc = useQuality() === "low" && !own;
   const lodNear = lowTierNpc ? LOW_TIER_NEAR : LOD_NEAR;
   const lodFar = lowTierNpc ? LOW_TIER_FAR : LOD_FAR;
   const root = useRef<THREE.Group>(null);
