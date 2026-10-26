@@ -1,4 +1,9 @@
 import { SealShow } from "./aquarium/SealShow.tsx";
+import { Suspense } from "react";
+import { SwimmingCreature } from "../creatures/Swimmer.tsx";
+import type { CreaturePose } from "../creatures/Creature.tsx";
+import type { FishKind } from "../../game/creatures.ts";
+import { useQuality } from "../world/quality.ts";
 import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -57,9 +62,7 @@ const CONTEXT: DialogueContext = { venue: "aquarium", neighborhood: "uptown" };
 
 // The shark tunnel: a glass half-pipe over the middle aisle, water beyond it.
 const TUNNEL = { z0: -6, z1: 1, radius: 3.2 };
-const SHARKS = 4;
 const JELLIES = 22;
-const FISH = 60;
 const CORAL = 34;
 
 const scratch = {
@@ -76,21 +79,80 @@ function rand(i: number, k: number): number {
   return x - Math.floor(x);
 }
 
-/** A shark: a long body with a dorsal fin and a tail, nose along +x. */
-function sharkGeometry() {
-  const body = new THREE.SphereGeometry(0.5, 14, 8).scale(1.6, 0.36, 0.42);
-  const fin = new THREE.ConeGeometry(0.16, 0.42, 4).translate(0, 0.32, 0);
-  const tail = new THREE.ConeGeometry(0.18, 0.5, 4)
-    .rotateZ(Math.PI / 2)
-    .translate(-0.95, 0, 0);
-  const parts = [body, fin, tail].map((g) => g.toNonIndexed());
-  const merged = new THREE.BufferGeometry();
-  const pos = parts.flatMap((g) =>
-    Array.from(g.getAttribute("position").array),
+const REEF_FISH: readonly FishKind[] = [
+  "cute-clownfish",
+  "cute-bluetang",
+  "cute-yellowtang",
+  "cute-butterflyfish",
+  "cute-mandarinfish",
+  "cute-goldfish",
+  "fish1",
+  "cute-zebraclownfish",
+  "fish2",
+  "cute-koi",
+  "fish3",
+  "cute-lionfish",
+  "cute-puffer",
+];
+const FISH_HIGH = 16;
+const FISH_LOW = 6;
+
+/** Sharks lap the tank over the tunnel; the mantas glide above them; a school
+ * of reef fish loops along the reef wall. Each is its own skinned mesh, so the
+ * low tier keeps fewer. */
+function Swimmers() {
+  const low = useQuality() === "low";
+  const zc = (TUNNEL.z0 + TUNNEL.z1) / 2;
+  const sharks = low ? 2 : 3;
+  const fish = low ? FISH_LOW : FISH_HIGH;
+  return (
+    <>
+      {Array.from({ length: sharks }, (_, i) => (
+        <SwimmingCreature
+          key={`shark${i}`}
+          kind="shark"
+          scale={1 + (i % 2) * 0.25}
+          path={(t, pose) =>
+            lap(pose, t * 0.22 + (i / sharks) * Math.PI * 2, i, zc)
+          }
+        />
+      ))}
+      {!low && (
+        <SwimmingCreature
+          kind="manta-ray"
+          path={(t, pose) => lap(pose, t * 0.15 + 1, 3, zc, 1.1)}
+        />
+      )}
+      {Array.from({ length: fish }, (_, i) => (
+        <SwimmingCreature
+          key={`fish${i}`}
+          kind={REEF_FISH[i % REEF_FISH.length] ?? "fish1"}
+          scale={1.4}
+          path={(t, pose) => reef(pose, t, i)}
+        />
+      ))}
+    </>
   );
-  merged.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
-  merged.computeVertexNormals();
-  return merged;
+}
+
+/** A slow oval lap round the tank at angle `a`, nose along the way it goes (angle grows with time). */
+function lap(pose: CreaturePose, a: number, i: number, zc: number, k = 1) {
+  const rx = (5.4 + (i % 2) * 0.9) * k;
+  const rz = (2.6 + (i % 2) * 0.6) * k;
+  pose.x = Math.cos(a) * rx;
+  pose.y = 3.9 + (i % 2) * 0.8 + Math.sin(a * 2) * 0.25;
+  pose.z = zc + Math.sin(a) * rz;
+  pose.yaw = Math.atan2(-Math.sin(a) * rx, Math.cos(a) * rz);
+}
+
+/** Reef fish loop in a long thin oval along the right wall. */
+function reef(pose: CreaturePose, t: number, i: number) {
+  const lane = rand(i, 10);
+  const a = t * (0.4 + rand(i, 11) * 0.5) + i * 1.7;
+  pose.x = 6.5 + lane * 0.5 + Math.cos(a) * 0.35;
+  pose.y = 0.7 + rand(i, 12) * 2.6 + Math.sin(a * 2) * 0.1;
+  pose.z = Math.sin(a) * 5.5;
+  pose.yaw = Math.atan2(-Math.sin(a) * 0.35, Math.cos(a) * 5.5);
 }
 
 /**
@@ -102,17 +164,10 @@ function sharkGeometry() {
 export function Aquarium({ onPick }: { onPick: PickHandler }) {
   const calm = useReducedMotion();
   const dressing = useMemo(buildDressing, []);
-  const sharks = useRef<THREE.InstancedMesh>(null);
   const jellies = useRef<THREE.InstancedMesh>(null);
-  const fish = useRef<THREE.InstancedMesh>(null);
   const coral = useRef<THREE.InstancedMesh>(null);
-  const shark = useMemo(sharkGeometry, []);
   const bell = useMemo(
     () => new THREE.SphereGeometry(0.3, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2),
-    [],
-  );
-  const fishShape = useMemo(
-    () => new THREE.ConeGeometry(0.06, 0.22, 5).rotateZ(-Math.PI / 2),
     [],
   );
   const coralShape = useMemo(() => new THREE.IcosahedronGeometry(0.35, 1), []);
@@ -133,38 +188,11 @@ export function Aquarium({ onPick }: { onPick: PickHandler }) {
     }
     m.instanceMatrix.needsUpdate = true;
     if (m.instanceColor) m.instanceColor.needsUpdate = true;
-    const f = fish.current;
-    if (f) {
-      for (let i = 0; i < FISH; i++)
-        f.setColorAt(i, new THREE.Color().setHSL(rand(i, 9), 0.9, 0.6));
-      if (f.instanceColor) f.instanceColor.needsUpdate = true;
-    }
-  }, [coral, fish]);
+  }, [coral]);
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime * (calm ? 0.3 : 1);
-    const { m, q, e, p, s } = scratch;
-    // sharks circle the tank in slow level laps, above and around the tunnel
-    const sh = sharks.current;
-    if (sh) {
-      for (let i = 0; i < SHARKS; i++) {
-        const a = t * 0.22 + (i / SHARKS) * Math.PI * 2;
-        const rx = 5.4 + (i % 2) * 0.9;
-        const rz = 2.6 + (i % 2) * 0.6;
-        const zc = (TUNNEL.z0 + TUNNEL.z1) / 2;
-        p.set(
-          Math.cos(a) * rx,
-          3.9 + (i % 2) * 0.8 + Math.sin(a * 2) * 0.25,
-          zc + Math.sin(a) * rz,
-        );
-        // nose (+x) along the direction of travel
-        e.set(0, Math.atan2(-Math.cos(a) * rz, -Math.sin(a) * rx), 0);
-        q.setFromEuler(e);
-        s.setScalar(1.6 + (i % 2) * 0.5);
-        sh.setMatrixAt(i, m.compose(p, q, s));
-      }
-      sh.instanceMatrix.needsUpdate = true;
-    }
+    const { m, q, p, s } = scratch;
     // jellyfish rise and sink, pulsing as they go
     const jl = jellies.current;
     if (jl) {
@@ -181,21 +209,6 @@ export function Aquarium({ onPick }: { onPick: PickHandler }) {
         jl.setMatrixAt(i, m.compose(p, q, s));
       }
       jl.instanceMatrix.needsUpdate = true;
-    }
-    // fish dart back and forth across the reef in loose schools
-    const fs = fish.current;
-    if (fs) {
-      for (let i = 0; i < FISH; i++) {
-        const lane = rand(i, 10);
-        const speed = 0.4 + rand(i, 11) * 0.5;
-        const z = Math.sin(t * speed + i) * 5.5;
-        p.set(6.2 + lane * 1.2, 0.6 + rand(i, 12) * 2.6, z);
-        e.set(0, Math.cos(t * speed + i) > 0 ? -Math.PI / 2 : Math.PI / 2, 0);
-        q.setFromEuler(e);
-        s.setScalar(1);
-        fs.setMatrixAt(i, m.compose(p, q, s));
-      }
-      fs.instanceMatrix.needsUpdate = true;
     }
   });
 
@@ -260,9 +273,9 @@ export function Aquarium({ onPick }: { onPick: PickHandler }) {
           depthWrite={false}
         />
       </mesh>
-      <instancedMesh ref={sharks} args={[shark, undefined, SHARKS]}>
-        <meshStandardMaterial color="#6a7f94" roughness={0.6} />
-      </instancedMesh>
+      <Suspense fallback={null}>
+        <Swimmers />
+      </Suspense>
       {/* the jellyfish bay, along the left wall */}
       <mesh position={[-7.6, 2, 0]}>
         <boxGeometry args={[0.2, 4, 13.6]} />
@@ -283,9 +296,6 @@ export function Aquarium({ onPick }: { onPick: PickHandler }) {
       </mesh>
       <instancedMesh ref={coral} args={[coralShape, undefined, CORAL]}>
         <meshStandardMaterial roughness={0.7} emissive="#331022" />
-      </instancedMesh>
-      <instancedMesh ref={fish} args={[fishShape, undefined, FISH]}>
-        <meshBasicMaterial toneMapped={false} />
       </instancedMesh>
       <SealShow />
       {/* the touch pool by the door */}
