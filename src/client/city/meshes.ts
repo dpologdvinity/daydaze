@@ -34,6 +34,8 @@ const CAPSULE = new THREE.CapsuleGeometry(0.5, 1, 2, 8);
 const PLANE = new THREE.PlaneGeometry(1, 1);
 const CIRCLE = new THREE.CircleGeometry(0.5, 12);
 const PUFF = new THREE.SphereGeometry(0.5, 6, 4);
+// tree crowns: a couple of hundred in view, so a lighter sphere than SPHERE
+const CANOPY = new THREE.SphereGeometry(0.5, 8, 6);
 
 /**
  * A window: a dark frame round two panes, a mullion and a transom, with blinds
@@ -122,7 +124,7 @@ const GEOMETRY: Record<Shared, THREE.BufferGeometry> = {
   palmTrunk: CYLINDER,
   palmFrond: PLANE,
   treeTrunk: CYLINDER,
-  treeCanopy: SPHERE,
+  treeCanopy: CANOPY,
   window: PLANE,
   panel: BOX,
   arch: BOX,

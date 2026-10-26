@@ -47,7 +47,7 @@ export const CAR_BODY = loftProfile(
     [-0.47, 0.3],
     [-0.5, 0.0],
   ],
-  { sections: 6, ring: 8, tumble: 0.12, taper: 0.2 },
+  { sections: 4, ring: 8, tumble: 0.12, taper: 0.2 },
 );
 
 /** Cabin glass: raked windscreen and rear window. */
@@ -58,7 +58,7 @@ export const CAR_CABIN = loftProfile(
     [0.18, 0.5],
     [-0.32, 0.5],
   ],
-  { sections: 4, ring: 6, tumble: 0.3, taper: 0.25 },
+  { sections: 3, ring: 6, tumble: 0.3, taper: 0.25 },
 );
 
 // ---------------------------------------------------------------- jeepneys

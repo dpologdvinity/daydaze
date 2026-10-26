@@ -9,6 +9,11 @@
 // looks shape keys up by name (HumanDoll's setMorph), so a missing one is
 // simply skipped.
 //
+// It also drops the normals of the tuck keys (tuck_<garment>: skin sinking
+// out of sight under a garment): nobody sees how that skin is shaded, and the
+// normals were half of each key's bytes. (three.js stands the base normal in
+// for a missing one, which only rescales a normal along itself.)
+//
 //   node --experimental-strip-types scripts/pruneMorphs.ts in.glb out.glb
 
 import { readFileSync, writeFileSync } from "node:fs";
@@ -123,6 +128,11 @@ export function pruneMorphs(glb: Uint8Array): {
       });
       if (moves) keep.push(i);
     }
+    const names = mesh.extras?.targetNames;
+    for (const p of mesh.primitives)
+      p.targets?.forEach((t, i) => {
+        if (names?.[i]?.startsWith("tuck_")) delete t.NORMAL;
+      });
     if (keep.length === count) continue;
     dropped += count - keep.length;
     for (const p of mesh.primitives) {
@@ -132,7 +142,6 @@ export function pruneMorphs(glb: Uint8Array): {
       if (targets.length) p.targets = targets;
       else delete p.targets;
     }
-    const names = mesh.extras?.targetNames;
     if (keep.length) {
       if (mesh.weights) mesh.weights = keep.map((i) => mesh.weights?.[i] ?? 0);
       if (names && mesh.extras)

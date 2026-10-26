@@ -461,6 +461,8 @@ type Built = ReturnType<typeof buildPart>;
  * loads first and is worn far off; the full model downloads only once the
  * doll first comes within LOD range, so a street of distant dolls never
  * fetches their full hair and clothes. Until it arrives the twin stays on.
+ * The player's own doll (`full`) skips the twin: it is always close, and
+ * fetching both doubled its first download.
  */
 function Part({
   url,
@@ -468,6 +470,7 @@ function Part({
   tint,
   far,
   onMeshes,
+  full = false,
 }: {
   url: string;
   bones: Map<string, THREE.Bone>;
@@ -476,17 +479,21 @@ function Part({
   far: { current: boolean };
   /** The part's meshes, and how far its soles lift the doll (meters). */
   onMeshes: (meshes: THREE.Mesh[] | null, lift: number) => void;
+  /** Wear the full model from the start, with no twin. */
+  full?: boolean;
 }) {
-  const gltfLo = useGLTF(lodOf(url));
+  const gltfLo = useGLTF(full ? url : lodOf(url));
+  const rich = useQuality() === "high";
   const { color, kind } = tint;
   const lo = useMemo(
-    () => buildPart(gltfLo.scene, bones, { color, kind }, false),
-    [gltfLo, bones, color, kind],
+    () => buildPart(gltfLo.scene, bones, { color, kind }, full && rich),
+    [gltfLo, bones, color, kind, full, rich],
   );
   // the full model, once it has been wanted and has loaded
   const [wantNear, setWantNear] = useState(false);
   const [near, setNear] = useState<Built | null>(null);
   useFrame(() => {
+    if (full) return;
     if (!wantNear && !far.current) setWantNear(true);
     const showLo = far.current || !near;
     if (lo.group.visible !== showLo) lo.group.visible = showLo;
@@ -853,6 +860,7 @@ export function HumanDoll({
           bones={body.bones}
           tint={{ color: look.hairColor, kind: "hair" }}
           far={farParts}
+          full={own}
           onMeshes={track.hair}
         />
       </Suspense>
@@ -863,6 +871,7 @@ export function HumanDoll({
           bones={body.bones}
           tint={{ color: swim?.color ?? look.outfitColor, kind: "cloth" }}
           far={farParts}
+          full={own}
           onMeshes={track.outfit}
         />
       </Suspense>
@@ -882,6 +891,7 @@ export function HumanDoll({
                   }
             }
             far={farParts}
+            full={own}
             onMeshes={track.shoes}
           />
         </Suspense>
@@ -898,9 +908,7 @@ useGLTF.preload(`${MODELS}/body-lo.glb`);
  * the player's own parts download alongside the body instead of after it. */
 export function preloadLook(look: Look, swim: SwimLook | null = null) {
   const parts = partsFor(look, swim);
+  // the player's own doll wears the full parts only (Part's `full`)
   for (const url of [parts.hair, parts.outfit, parts.shoes])
-    if (url) {
-      useGLTF.preload(url);
-      useGLTF.preload(lodOf(url));
-    }
+    if (url) useGLTF.preload(url);
 }

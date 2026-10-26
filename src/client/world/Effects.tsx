@@ -10,8 +10,9 @@ import { DrunkPost } from "../effects/DrunkPost.tsx";
 /** The high tier's post stack. Its own chunk, so low-tier players never
  * download postprocessing. */
 export default function Effects() {
+  // 2x MSAA: at 1.5x resolution 4x samples cost more than they showed
   return (
-    <EffectComposer multisampling={4}>
+    <EffectComposer multisampling={2}>
       <Bloom
         mipmapBlur
         luminanceThreshold={1}

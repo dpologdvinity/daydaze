@@ -528,6 +528,10 @@ export function World({
   // high tier's effects: two steps down instead of one big one
   const [sharp, setSharp] = useState(true);
   const tier = quality ?? auto;
+  // the canvas's own MSAA is fixed when the context is made: the high tier's
+  // post stack multisamples its own target, so there it would only smooth
+  // the final full-screen quad (memory and fill for nothing)
+  const [nativeAA] = useState(() => tier !== "high");
   const def = ROOMS[room];
   const area = useMemo(() => areaOf(def), [def]);
   // a fresh player per arrival, so a portal can only fire once per visit
@@ -556,10 +560,11 @@ export function World({
     <Canvas
       className="world"
       frameloop={still ? "demand" : "always"}
-      // sharp: full device resolution (up to 2x) on the high tier, stepping
-      // down to 1x before the effects go; native MSAA smooths edges on low
-      dpr={tier === "high" && sharp ? [1, 2] : 1}
-      gl={{ antialias: true, powerPreference: "high-performance" }}
+      // sharp: device resolution up to 1.5x on the high tier (2x quadrupled
+      // the pixels the bloom chain works through), stepping down to 1x before
+      // the effects go; native MSAA smooths edges on low
+      dpr={tier === "high" && sharp ? [1, 1.5] : 1}
+      gl={{ antialias: nativeAA, powerPreference: "high-performance" }}
       camera={{ position: [6.4, 5.4, 10], fov: 38, near: 0.05, far: 600 }}
       onCreated={({ gl }) => {
         gl.domElement.setAttribute("role", "img");

@@ -54,3 +54,14 @@ test("the binary chunk passes through untouched", () => {
   const { bin } = readGlb(pruneMorphs(glbWith([0, 0.01])).glb);
   assert.deepEqual([...bin], [1, 2, 3, 4]);
 });
+
+test("tuck keys (skin sinking under clothes) lose their normals; others keep them", () => {
+  const json = readGlb(glbWith([0.01, 0.01])).json;
+  const mesh = json.meshes[0];
+  if (mesh?.extras) mesh.extras.targetNames = ["tuck_jeans", "smile"];
+  const { glb } = pruneMorphs(writeGlb(json, new Uint8Array([1, 2, 3, 4])));
+  for (const p of readGlb(glb).json.meshes[0]?.primitives ?? []) {
+    assert.equal(p.targets?.[0]?.NORMAL, undefined);
+    assert.equal(p.targets?.[1]?.NORMAL, 1);
+  }
+});
