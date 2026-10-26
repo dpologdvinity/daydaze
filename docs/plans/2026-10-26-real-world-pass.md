@@ -104,6 +104,12 @@ menu; the asset list with sources and licenses kept in `docs/assets.md`.
   columns, cornices, windows, doors, storefronts, roads, sidewalks and three
   prebuilt buildings. Optimize what we use with gltf-transform before it
   enters `public/`.
+- Also downloaded by the owner (CC0, Quaternius, Standard): `Stylized Nature
+  MegaKit[Standard].zip` (68 glTF trees, bushes, grass, flowers, rocks;
+  unpacked to `/tmp/daydaze-city/Stylized_Nature_MegaKit_Standard__zip/`) and
+  `Universal Animation Library[Standard].zip` (unpacked to
+  `/tmp/daydaze-city/Universal_Animation_Library_Standard__zi/`), both in
+  `C:\Users\mango\Downloads`.
 - Next: remaining purple night palette by day (parking lines, lane strips,
   the far skyline backdrop); street trees and lawns (EZ-Tree / Quaternius
   nature, InstancedMesh2, impostors far off); the park; the boardwalk
