@@ -69,6 +69,12 @@ under 250 draw calls, 300k triangles and 4 real lights.
 Pure, deterministic and seeded where randomness matters, so tests and every
 online player agree. The main tables:
 
+- `events.ts`: the weekly club nights (Y2K, Latin, chiptune) on a UTC
+  schedule shared by every player: on its night a club plays the night's
+  track (`RoomAudio`), glows its color and its NPCs talk about it (the
+  `event-*` dialogue situations); the city map lists them with Pride night,
+  the fireworks and the parade (`ui/EventCalendar.tsx`). `?night=<id>`
+  previews a night.
 - `rooms.ts`: the `RoomId` union and `ROOMS` (floor polygons, blockers,
   spawns, portals). `city/layout.ts` is the city's buildings and streets.
 - `look.ts`, `save.ts`, `shop.ts`, `wallet.ts`: the doll's look, the save

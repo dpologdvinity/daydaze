@@ -3,6 +3,10 @@
 // its role. Remembers its recent lines so taps rarely repeat; greets once per
 // mount.
 
+import { eventSituation } from "../../../game/events.ts";
+import { PRIDE_CLUBS, prideNightOn } from "../../../game/prideNight.ts";
+import { isRoomId } from "../../../game/rooms.ts";
+import { nightClock, prideClock } from "../../city/eventClocks.ts";
 import { Html } from "@react-three/drei";
 import type { ThreeEvent } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
@@ -96,7 +100,18 @@ export function TalkingNpc({
   }, []);
   const tap = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
-    say(situation);
+    // on a club night (or Pride night) here, people mostly talk about it; a
+    // role with nothing to say about it falls back to its tapped lines
+    const venue = context.venue;
+    const event =
+      venue && isRoomId(venue)
+        ? eventSituation(
+            venue,
+            nightClock(),
+            PRIDE_CLUBS.has(venue) && prideNightOn(prideClock()),
+          )
+        : null;
+    say(event && Math.random() < 0.7 ? event : situation);
     onTap?.();
   };
   return (

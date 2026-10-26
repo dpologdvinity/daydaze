@@ -2464,3 +2464,31 @@ test("the walkthrough names you, dresses you and shows you around", async ({
   });
   await context.close();
 });
+
+test("the city map lists the week's events, and a club glows on its night", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  await page.goto(`${STILL}&room=city`);
+  await page
+    .getByRole("button", { name: "City map", exact: true })
+    .click({ timeout: 150_000 });
+  const events = page
+    .getByRole("dialog", { name: "City map" })
+    .getByRole("region", { name: "Events" });
+  for (const name of [
+    "Y2K night",
+    "Latin night",
+    "Chiptune night",
+    "Fireworks",
+  ])
+    await expect(events).toContainText(name);
+  await expect(events).toContainText(/in \d|on now/);
+  // La Noche on Latin Night: the card says so and glows
+  await page.goto(`${STILL}&room=la-noche&night=latin-night`);
+  await expect(page.locator(".venue-event[data-night]")).toHaveText(
+    /Latin night is on! \d+h \d+m left/,
+    { timeout: 150_000 },
+  );
+  await expect(page.locator(".night-glow")).toHaveCount(1);
+});

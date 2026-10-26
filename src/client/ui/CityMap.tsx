@@ -3,6 +3,7 @@
 // and today's daily challenges with which ones are done. Coordinates map city
 // meters to percentages of the map box.
 
+import { EventCalendar } from "./EventCalendar.tsx";
 import { useEffect, useRef } from "react";
 import { CITY_BOUNDS, CITY_SURFACES, WATER_Z } from "../../game/city/layout.ts";
 import {
@@ -133,6 +134,7 @@ export function CityMap({
             );
           })}
         </section>
+        <EventCalendar />
         <section className="challenges" aria-label="Today's challenges">
           <h3>Today&apos;s challenges · {CHALLENGE_PAY} coins each</h3>
           <ul>

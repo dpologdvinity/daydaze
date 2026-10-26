@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { eventTrack } from "../game/events.ts";
+import { nightClock } from "./city/eventClocks.ts";
 import { getSharedAudioBus } from "../audio/audioBus.ts";
 import {
   getSharedJukeboxController,
@@ -143,17 +145,29 @@ export function RoomAudio({ room, muted }: { room: RoomId; muted: boolean }) {
     getSharedAudioBus().setMasterMuted(muted);
   }, [muted]);
 
+  // a club night on here plays its own music; check each minute, so a
+  // night starting (or ending) while you're in the club switches the track
+  const [nightTrack, setNightTrack] = useState(() =>
+    eventTrack(room, nightClock()),
+  );
+  useEffect(() => {
+    const check = () => setNightTrack(eventTrack(room, nightClock()));
+    check();
+    const id = window.setInterval(check, 60_000);
+    return () => window.clearInterval(id);
+  }, [room]);
+
   useEffect(() => {
     if (!unlocked) return;
     const jukebox = getSharedJukeboxController();
     // music sits under the room, not over it
     jukebox.setMusicVolume(0.35);
-    const track = pick ?? MUSIC[room];
+    const track = pick ?? nightTrack ?? MUSIC[room];
     if (track) {
       if (jukebox.getCurrentTrack() !== track || !jukebox.isPlaying())
         jukebox.playTrack(track);
     } else jukebox.stopTrack();
-  }, [room, unlocked, pick]);
+  }, [room, unlocked, pick, nightTrack]);
 
   const bed: Ambience | null =
     room === "city"

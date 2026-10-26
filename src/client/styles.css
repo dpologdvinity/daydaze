@@ -2067,6 +2067,54 @@ button:focus-visible {
   color: var(--amber);
 }
 
+/* a weekly club night on: the room card glows the night's color (the
+   color comes inline, from src/game/events.ts) */
+.night-glow {
+  position: absolute;
+  inset: -4px;
+  border: 2px solid;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .night-glow {
+    animation: pride-pulse 2.4s ease-in-out infinite alternate;
+  }
+}
+
+/* the week's events, on the city map */
+.event-calendar h3 {
+  margin: 14px 0 6px;
+  font-size: 15px;
+  color: var(--amber);
+}
+
+.event-calendar ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+
+.event-calendar li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  align-items: baseline;
+  font-size: 14px;
+}
+
+.event-calendar li[data-on="true"] strong {
+  color: var(--amber);
+}
+
+.event-when {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
 /* today's challenges, under the city map */
 .challenges h3 {
   margin: 14px 0 6px;
