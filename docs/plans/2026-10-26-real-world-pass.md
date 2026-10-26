@@ -184,3 +184,30 @@ Each builds on what exists where it can; packs from the asset map above.
 | Trains | new: the El across the city, a boardwalk train | Train Pack |
 | NASCAR race tracks | the Speedway (add a stock-car oval, pit crew, grandstand crowd) | Realistic Car Pack |
 | Farms | new: a farm at the city's edge (crops, animals, farm stand), feeding the farmers market | Nature Crops, Animated Animals |
+
+## Handoff (2026-10-26, before a context compaction)
+
+- **Uncommitted on main (street trees, work in progress):**
+  `src/game/city/plan.ts` + `plan.test.ts` (TreeSpot / `plan.trees`,
+  `TREE_VARIANTS`; tests green), `src/client/city/CityTrees.tsx` + its use in
+  `CityScene.tsx`, `scripts/import-nature.sh`, `art/nature/nature_lod.py`,
+  `public/models/nature/*.glb`. Problem being fixed: the city-day shot hit
+  410745 tris on low because the kit's trees are 3.5-6.3k tris each and
+  gltf-transform simplify can't merge leaf cards. Fix in progress:
+  `nature_lod.py` (Blender: decimate bark through a vertex group, keep 1 leaf
+  card in 3 grown 1.45x for the -lo twin; env KEEP/GROW/SOLID_RATIO; near
+  model KEEP=1 GROW=1 SOLID_RATIO=0.35). Tested on CommonTree_1: 6265 → 1507
+  tris for -lo. Next: make the env overrides, rerun import-nature.sh for both
+  levels, re-shoot city-day (target < 300k low), verify, commit.
+- **Mixamo rig branch** `feat/mixamo-rig` (worktree
+  `.claude/worktrees/agent-a5242a3cc45607159`, rebased on main at 3ec904d):
+  52-bone MPFB2 rig, 78 baked Mixamo clips in `anims.glb`, AnimationMixer
+  playback; verify green. NOT merged: walks look like jogging (back heel kicks
+  to the hip; knee flex over-rotated in the retarget). The agent was stopped
+  mid-diagnosis; resume by comparing per-frame knee flex / thigh pitch of the
+  source FBX vs our baked rig for Walk_Female-Walk, fix the bake, re-render
+  docs/screenshots/doll-walk.png with a source-armature strip, re-verify,
+  then merge (squash the first commit if each must be green).
+- Asset sources other than CC0 packs: Unity Asset Store (owner downloads;
+  check each EULA), freegameassets.com, itch.io free 3D, Sketchfab (per-asset
+  license; CC-BY needs credits).
