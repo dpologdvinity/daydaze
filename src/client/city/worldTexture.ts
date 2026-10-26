@@ -109,14 +109,33 @@ export function tiledMaps(
   return maps;
 }
 
+// Value noise on world position, shared by the box-mapped shaders: cheap
+// enough to run per pixel, smooth enough to read as weathering.
+const NOISE = [
+  "float boxHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }",
+  "float boxNoise(vec2 p) {",
+  "  vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);",
+  "  return mix(mix(boxHash(i), boxHash(i + vec2(1.0, 0.0)), f.x),",
+  "             mix(boxHash(i + vec2(0.0, 1.0)), boxHash(i + vec2(1.0, 1.0)), f.x), f.y);",
+  "}",
+].join("\n");
+
 /**
  * Box mapping: samples the maps by world position on the plane the surface
  * faces most (floor XZ, wall XY or ZY), `scale` repeats per meter. Any box,
  * wall or counter tiles at true size with no UV work.
+ *
+ * The color map is sampled twice at offsets picked by low-frequency noise and
+ * blended, so the photo's repeat never lines up into a grid (Quilez's
+ * technique 3, https://iquilezles.org/articles/texturerepetition/), and a
+ * broad mottling varies it across a wall. `weather` (building walls) also
+ * darkens toward the street and streaks the walls with grime, so they read
+ * as textured from a distance, not as flat painted blocks.
  */
 export function boxMapped<M extends THREE.MeshStandardMaterial>(
   material: M,
   scale: number,
+  { weather = false } = {},
 ): M {
   // the scale rides in each map's own transform (repeat), so every
   // box-mapped material shares one shader program; the maps must be this
@@ -124,6 +143,10 @@ export function boxMapped<M extends THREE.MeshStandardMaterial>(
   for (const t of [material.map, material.normalMap, material.roughnessMap])
     t?.repeat.set(scale, scale);
   material.onBeforeCompile = (shader) => {
+    shader.vertexShader = shader.vertexShader.replace(
+      "void main() {",
+      "varying vec3 vBoxP;\nvoid main() {",
+    );
     shader.vertexShader = shader.vertexShader.replace(
       "#include <worldpos_vertex>",
       [
@@ -135,6 +158,7 @@ export function boxMapped<M extends THREE.MeshStandardMaterial>(
         "boxN = mat3(instanceMatrix) * boxN;",
         "#endif",
         "vec3 boxP = (modelMatrix * boxPos).xyz;",
+        "vBoxP = boxP;",
         "vec3 boxA = abs(mat3(modelMatrix) * boxN);",
         // planar per face: exact for flat faces, which box mapping is for
         "vec2 boxUv = boxA.y >= max(boxA.x, boxA.z) ? boxP.xz",
@@ -153,8 +177,37 @@ export function boxMapped<M extends THREE.MeshStandardMaterial>(
         "#endif",
       ].join("\n"),
     );
+    shader.fragmentShader = shader.fragmentShader
+      .replace("void main() {", `varying vec3 vBoxP;\n${NOISE}\nvoid main() {`)
+      .replace(
+        "#include <map_fragment>",
+        [
+          "#ifdef USE_MAP",
+          // two samples at noise-picked offsets, blended: no visible repeat
+          "float bk = boxNoise(vBoxP.xz * 0.11 + vBoxP.y * 0.07) * 8.0;",
+          "float bi = floor(bk); float bf = fract(bk);",
+          "vec2 bOffA = sin(vec2(3.0, 7.0) * bi);",
+          "vec2 bOffB = sin(vec2(3.0, 7.0) * (bi + 1.0));",
+          "vec4 bColA = texture2D(map, vMapUv + bOffA);",
+          "vec4 bColB = texture2D(map, vMapUv + bOffB);",
+          "vec4 sampledDiffuseColor = mix(bColA, bColB,",
+          "  smoothstep(0.2, 0.8, bf - 0.1 * dot(bColA.rgb - bColB.rgb, vec3(1.0))));",
+          // broad mottling, a few meters across
+          "float bMacro = boxNoise(vBoxP.xz * 0.045 + vBoxP.y * 0.03);",
+          "sampledDiffuseColor.rgb *= mix(0.82, 1.1, bMacro);",
+          "#ifdef BOX_WEATHER",
+          // grime pooled toward the street and streaks running down the wall
+          "float bStreak = boxNoise(vec2((vBoxP.x + vBoxP.z) * 1.7, vBoxP.y * 0.12));",
+          "sampledDiffuseColor.rgb *= mix(0.62, 1.0, smoothstep(0.0, 5.0, vBoxP.y));",
+          "sampledDiffuseColor.rgb *= mix(0.78, 1.0, smoothstep(0.25, 0.75, bStreak));",
+          "#endif",
+          "diffuseColor *= sampledDiffuseColor;",
+          "#endif",
+        ].join("\n"),
+      );
   };
-  material.customProgramCacheKey = () => "box";
+  if (weather) material.defines = { ...material.defines, BOX_WEATHER: "" };
+  material.customProgramCacheKey = () => (weather ? "box-weather" : "box");
   return material;
 }
 

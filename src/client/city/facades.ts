@@ -36,6 +36,7 @@ function scanned(
       metalness,
     }),
     scale,
+    { weather: true },
   );
 }
 
@@ -84,6 +85,7 @@ function curtain(): THREE.MeshStandardMaterial {
     }),
     // one texture spans two panes (3.6 m) across and one floor up
     1 / 3.6,
+    { weather: true },
   );
 }
 
