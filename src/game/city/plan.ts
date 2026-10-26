@@ -198,7 +198,9 @@ const NEON_STYLES: ReadonlySet<BuildingStyle> = new Set([
 ]);
 export const wearsNeon = (style: BuildingStyle) => NEON_STYLES.has(style);
 const FROND_COLORS = ["#1f7a4f", "#2fa36b", "#25905c", "#3dbf7a"];
-const DASH_COLOR = "#ffe6a8";
+// street paint as it is by day (faded yellow and white); lane paint is flat-lit,
+// so laneTint (daylight.ts) tints it down to a violet dusk at night
+const DASH_COLOR = "#e6bf4a";
 const SURFACE_COLOR = {
   // real asphalt and concrete: the night's color comes from the lights
   road: "#4a4a52",
@@ -355,10 +357,10 @@ const SIDEWALK_BOXES: readonly Box[] = CITY_SURFACES.filter(
 const PAVED_BOXES: readonly Box[] = CITY_SURFACES.filter(
   (s) => s.kind !== "road" && s.kind !== "sand" && s.kind !== "lawn",
 ).map((s) => boundsOf(s.polygon));
-const CURB_COLOR = "#8c80c0";
-const SEAM_COLOR = "#3d2f6e";
-const ZEBRA_COLOR = "#e8e6f5";
-const MANHOLE_COLOR = "#1a1230";
+const CURB_COLOR = "#aaa59c";
+const SEAM_COLOR = "#85807a";
+const ZEBRA_COLOR = "#ebe8df";
+const MANHOLE_COLOR = "#2a2a2f";
 const CURB_EPS = 1e-6;
 
 /** The shared edge of two boxes that touch along a line, or null. */

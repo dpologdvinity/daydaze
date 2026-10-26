@@ -23,6 +23,7 @@ const SKY_FRAGMENT = `
 uniform vec3 uZenith;
 uniform vec3 uHorizon;
 uniform vec3 uGlow;
+uniform float uNeon;
 uniform float uTime;
 uniform float uMotion;
 varying vec3 vDir;
@@ -75,7 +76,14 @@ void main() {
   float edge = smoothstep(tower + 0.004, tower, up);
   vec2 cell = vec2(angle * 140.0, up * 420.0);
   float lit = step(0.72, hash21(floor(cell))) * step(fract(cell.x), 0.55) * step(fract(cell.y), 0.5);
-  vec3 towerCol = vec3(0.07, 0.04, 0.15) + uGlow * lit * 0.8;
+  vec3 nightCol = vec3(0.07, 0.04, 0.15) + uGlow * lit * 0.8;
+  // by day the ring is a hazy NYC skyline: stone, brick and glass, thinned into the sky
+  float kind = hash21(vec2(column, 19.0));
+  vec3 stone = mix(vec3(0.62, 0.62, 0.66), vec3(0.64, 0.5, 0.44), step(0.45, kind));
+  stone = mix(stone, vec3(0.5, 0.6, 0.7), step(0.8, kind));
+  stone *= 0.85 + 0.3 * hash21(vec2(column, 23.0));
+  vec3 dayCol = mix(stone, uHorizon, 0.5 + 0.3 * smoothstep(0.0, tower, up)) * (1.0 + 0.25 * lit);
+  vec3 towerCol = mix(dayCol, nightCol, uNeon);
   col = mix(col, towerCol, edge);
 
   if (up < 0.0) col = uHorizon;

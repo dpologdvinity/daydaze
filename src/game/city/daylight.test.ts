@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { daylightAt, hourOf, parseTimeFlag } from "./daylight.ts";
+import { daylightAt, hourOf, laneTint, parseTimeFlag } from "./daylight.ts";
 
 test("noon is full day: sun up, no neon, a blue sky", () => {
   const d = daylightAt(12);
@@ -46,4 +46,11 @@ test("the hour comes from the local clock, or ?time=HH:MM for screenshots", () =
   assert.equal(parseTimeFlag("?time=8"), 8);
   assert.equal(parseTimeFlag("?time=25"), null);
   assert.equal(parseTimeFlag("?room=city"), null);
+});
+
+test("street paint is untinted by day and dim violet at night", () => {
+  assert.deepEqual(laneTint(daylightAt(12).neon), [1, 1, 1]);
+  const night = laneTint(daylightAt(23).neon);
+  assert.ok(night[0] < 0.6 && night[2] > night[0], "dim and violet");
+  assert.deepEqual(laneTint(5), laneTint(1));
 });
