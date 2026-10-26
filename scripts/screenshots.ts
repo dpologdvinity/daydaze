@@ -149,6 +149,28 @@ const SHOTS: {
   { name: "city-street", query: "room=city&view=full" },
   { name: "city-overview", query: "room=city" },
   {
+    // the wheel zooms from the overview all the way in on her face
+    name: "city-zoom",
+    query: "room=city",
+    live: true,
+    act: async (page) => {
+      const canvas = page.locator("canvas");
+      await canvas.waitFor();
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      await page.mouse.move(640, 400);
+      for (let i = 0; i < 60; i++) await page.mouse.wheel(0, -100);
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.camDistance) < 1,
+        null,
+        { timeout: 120_000 },
+      );
+    },
+  },
+  {
     name: "city-mobile",
     query: "room=city&view=full",
     viewport: { width: 390, height: 844 },

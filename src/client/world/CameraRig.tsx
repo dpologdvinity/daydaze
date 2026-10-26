@@ -1,8 +1,14 @@
 import { OrbitControls } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import type { OrbitControls as OrbitImpl } from "three-stdlib";
+import {
+  MIN_ZOOM,
+  ZOOM_STEP,
+  focusHeight,
+  zoomAbout,
+} from "../../game/cameraZoom.ts";
 import type { RoomId } from "../../game/rooms.ts";
 import { useReducedMotion } from "../motion.ts";
 import { cameraHold } from "./cameraHold.ts";
@@ -447,6 +453,7 @@ const Y = new THREE.Vector3(0, 1, 0);
 const moved = new THREE.Vector3();
 const goalPos = new THREE.Vector3();
 const goalTarget = new THREE.Vector3();
+const chest = new THREE.Vector3();
 
 /**
  * Orbit camera that follows the player without fighting the user's orbit,
@@ -463,12 +470,65 @@ export function CameraRig({
 }) {
   const controls = useRef<OrbitImpl>(null);
   const camera = useThree((s) => s.camera);
+  const canvas = useThree((s) => s.gl.domElement);
   const calm = useReducedMotion();
   const last = useRef(player.pos.clone());
   const fly = useRef<{ t: number; snap: boolean } | null>(null);
   const shown = useRef<{ view: View; player: Player } | null>(null);
   const seated = useRef(false);
   const held = useRef(false);
+  // wheel notches and pinches since the last frame, as one zoom factor
+  const zoom = useRef(1);
+
+  // Wheel and pinch zoom on her (cameraZoom.ts), not on the orbit target,
+  // which in a room's overview sits far from her: OrbitControls' own dolly
+  // is off, and these feed `zoom`, applied in the frame loop.
+  useEffect(() => {
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      // a line or page delta is a notch; pixel deltas (trackpads) scale;
+      // scrolling up (negative) zooms in
+      const notches =
+        e.deltaMode === WheelEvent.DOM_DELTA_PIXEL
+          ? e.deltaY / 100
+          : Math.sign(e.deltaY);
+      zoom.current *= ZOOM_STEP ** -notches;
+    };
+    const touches = new Map<number, { x: number; y: number }>();
+    let spread = 0;
+    const span = () => {
+      const [a, b] = [...touches.values()];
+      return a && b ? Math.hypot(a.x - b.x, a.y - b.y) : 0;
+    };
+    const onDown = (e: PointerEvent) => {
+      if (e.pointerType !== "touch") return;
+      touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      spread = span();
+    };
+    const onMove = (e: PointerEvent) => {
+      if (!touches.has(e.pointerId)) return;
+      touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      const next = span();
+      if (spread > 0 && next > 0) zoom.current *= spread / next;
+      spread = next;
+    };
+    const onUp = (e: PointerEvent) => {
+      touches.delete(e.pointerId);
+      spread = span();
+    };
+    canvas.addEventListener("wheel", onWheel, { passive: false });
+    canvas.addEventListener("pointerdown", onDown);
+    canvas.addEventListener("pointermove", onMove);
+    canvas.addEventListener("pointerup", onUp);
+    canvas.addEventListener("pointercancel", onUp);
+    return () => {
+      canvas.removeEventListener("wheel", onWheel);
+      canvas.removeEventListener("pointerdown", onDown);
+      canvas.removeEventListener("pointermove", onMove);
+      canvas.removeEventListener("pointerup", onUp);
+      canvas.removeEventListener("pointercancel", onUp);
+    };
+  }, [canvas]);
 
   useFrame((_, dt) => {
     const c = controls.current;
@@ -477,6 +537,7 @@ export function CameraRig({
     // a room may hold it (a bowling lane's shot)
     c.enabled = driving.session === null && cameraHold.by === null;
     if (!c.enabled) {
+      zoom.current = 1;
       held.current = true;
       // a car carries her across the city meanwhile: don't replay that move
       last.current.copy(player.pos);
@@ -534,6 +595,29 @@ export function CameraRig({
       f.t += dt;
       if (f.snap || f.t > 1.4) fly.current = null;
     }
+    if (zoom.current !== 1) {
+      // a zoom takes over from a flight still under way; it glides over a
+      // few frames (all at once with reduced motion)
+      fly.current = null;
+      let k = calm ? zoom.current : zoom.current ** Math.min(1, dt * 10);
+      if (Math.abs(Math.log(zoom.current / k)) < 1e-3) k = zoom.current;
+      zoom.current /= k;
+      const d = camera.position.distanceTo(chest.copy(at).setY(at.y + 1));
+      // aim at the height that suits where this step ends up
+      const { camera: eye, target } = zoomAbout(
+        camera.position.toArray(),
+        c.target.toArray(),
+        [at.x, at.y + focusHeight(d * k), at.z],
+        k,
+        MIN_ZOOM,
+        MAX_DISTANCE[room],
+      );
+      camera.position.fromArray(eye);
+      c.target.fromArray(target);
+      canvas.dataset.camDistance = camera.position
+        .distanceTo(chest.copy(at).setY(at.y + focusHeight(0)))
+        .toFixed(2);
+    }
     c.update();
   });
 
@@ -542,7 +626,8 @@ export function CameraRig({
       ref={controls}
       makeDefault
       enableDamping={!calm}
-      minDistance={0.6}
+      enableZoom={false}
+      minDistance={MIN_ZOOM}
       maxDistance={MAX_DISTANCE[room]}
       maxPolarAngle={Math.PI / 2 - 0.06}
       minPolarAngle={0.15}

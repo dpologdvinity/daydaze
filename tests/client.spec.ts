@@ -60,6 +60,34 @@ test("a new player starts in the city, on Downtown's square", async ({
   expect(errors).toEqual([]);
 });
 
+test("the mouse wheel zooms in on your own character from the city's overview", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=city`);
+  const canvas = canvasOf(page);
+  await expect(canvas).toHaveAttribute("data-frames", "10", {
+    timeout: 240_000,
+  });
+  const box = await canvas.boundingBox();
+  if (!box) throw new Error("no canvas");
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  // the overview is about 255 m out; 60 notches bring it to her face
+  for (let i = 0; i < 60; i++) await page.mouse.wheel(0, -100);
+  await expect
+    .poll(
+      // no attribute yet (no zoom happened) reads as NaN, never "close"
+      async () =>
+        Number((await canvas.getAttribute("data-cam-distance")) ?? NaN),
+      {
+        timeout: 60_000,
+      },
+    )
+    .toBeLessThan(1);
+  expect(errors).toEqual([]);
+});
+
 test("the player drives their car down the avenue and parks it", async ({
   page,
 }) => {
