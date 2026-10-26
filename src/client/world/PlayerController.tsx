@@ -15,7 +15,12 @@ import {
 
 // the pose for lying on a bed
 const LAY_HOLD = stillClipsOf("lay")[0]?.id ?? "built";
-import type { Look, Mood, SwimLook } from "../../game/look.ts";
+import {
+  modelSuffix,
+  type Look,
+  type Mood,
+  type SwimLook,
+} from "../../game/look.ts";
 import { moveAction, MOVE_CODES } from "../../game/input.ts";
 import type { Portal, Spawn } from "../../game/rooms.ts";
 import {
@@ -33,7 +38,7 @@ import {
   type Walker,
 } from "../../game/walker.ts";
 import { WALK_SPEED, type Vec2 } from "../../game/walk.ts";
-import { clipOf } from "../../game/dance/clips.ts";
+import { naturalPace } from "../../game/dance/clips.ts";
 import { gaitPace } from "../../game/dance/stride.ts";
 import { gaitOf } from "../../game/gaits.ts";
 import { useReducedMotion } from "../motion.ts";
@@ -316,7 +321,9 @@ export function PlayerController({
       player.walk.target = null;
     } else {
       // she walks at her gait's pace (a strut is slower than a stride)
-      pace.current = gaitPace(clipOf(gaitOf(look.gait).clip)?.speed);
+      pace.current = gaitPace(
+        naturalPace(gaitOf(look.gait).clip, modelSuffix(look) === "-m"),
+      );
       // simulate in fixed steps, however fast frames arrive
       player.acc = Math.min(player.acc + dt, MAX_CATCH_UP);
       while (player.acc >= SIM_STEP) {

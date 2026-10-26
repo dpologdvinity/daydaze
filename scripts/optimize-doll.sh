@@ -20,7 +20,7 @@ for src in "$IN"/*.glb; do
   # the baked clips (art/doll/blender/mocap.py): no meshes to prune; keys
   # that a straight line through their neighbors meets within ~0.2 degrees
   # go, then meshopt packs the rest
-  if [ "$name" = anims ]; then
+  if [ "${name%-m}" = anims ]; then
     npx -y @gltf-transform/cli@4.5.1 resample "$src" "$f" --tolerance 0.003
     npx -y @gltf-transform/cli@4.5.1 optimize "$f" "$OUT/$name.glb" "${OPTS[@]}" --meshopt-level high
     continue

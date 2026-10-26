@@ -1,16 +1,15 @@
 // The doll's motion: Mixamo clips baked onto her full 52-bone skeleton
-// (art/doll/blender/mocap.py writes public/models/doll/anims.glb; the
-// catalog is src/game/dance/mocap.ts). This module loads the clip file once,
-// carries its clips over to each doll's own rest pose, and drives the
-// skeleton from the older 13-joint poses (pose.ts) for the moves that are
-// still hand-made. HumanDoll plays it all with one AnimationMixer per doll.
+// (art/doll/blender/mocap.py writes public/models/doll/anims.glb, and
+// anims-m.glb for the man's skeleton; the catalog is
+// src/game/dance/mocap.ts). This module loads each doll's clip file once
+// and drives the skeleton from the older 13-joint poses (pose.ts) for the
+// moves that are still hand-made. HumanDoll plays it all with one
+// AnimationMixer per doll.
 
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import type { Rig } from "../pose.ts";
-
-const URL = "/models/doll/anims.glb";
 
 /** Bone names as three.js reads them from the doll's GLB (glTF node names
  * lose their "mixamorig:" colon to PropertyBinding.sanitizeNodeName). */
@@ -22,120 +21,36 @@ export const BONE = {
   pony: "pony",
 } as const;
 
-/** A bone's rest transform in its parent's space. */
-type Rest = { q: THREE.Quaternion; p: THREE.Vector3 };
+// clips by id, per doll skeleton ("" the woman's, "-m" the man's: each is
+// baked on its own rig, since their bones rest on different axes)
+const baked = new Map<string, ReadonlyMap<string, THREE.AnimationClip>>();
+const loading = new Map<string, Promise<void>>();
 
-let baked: {
-  clips: readonly THREE.AnimationClip[];
-  rest: ReadonlyMap<string, Rest>;
-} | null = null;
-let loading: Promise<void> | null = null;
-
-/** Starts fetching the clip file (once); resolves when it has loaded. A
- * failed fetch is logged and retried on the next call, and the dolls keep
- * their built poses meanwhile. */
-export function loadAnims(): Promise<void> {
-  loading ??= new GLTFLoader()
-    .setMeshoptDecoder(MeshoptDecoder)
-    .loadAsync(URL)
-    .then((gltf) => {
-      baked = { clips: gltf.animations, rest: restOf(gltf.scene) };
-    })
-    .catch((e: unknown) => {
-      console.warn(e);
-      loading = null;
-    });
-  return loading;
-}
-
-/** True once the clip file has loaded. */
-export const animsLoaded = (): boolean => baked !== null;
-
-function restOf(root: THREE.Object3D): Map<string, Rest> {
-  const rest = new Map<string, Rest>();
-  root.traverse((o) => {
-    if (o.name)
-      rest.set(o.name, { q: o.quaternion.clone(), p: o.position.clone() });
-  });
-  return rest;
-}
-
-const carried = new Map<string, Map<string, THREE.AnimationClip>>();
-
-/**
- * The clips by id, carried over to a skeleton whose bones rest as `bones`
- * do; `key` names that skeleton (one per doll body file), so each is
- * converted once. Null until the file loads.
- */
-export function clipsFor(
-  key: string,
-  bones: ReadonlyMap<string, THREE.Object3D>,
-): ReadonlyMap<string, THREE.AnimationClip> | null {
-  if (!baked) return null;
-  let clips = carried.get(key);
-  if (!clips) {
-    const to = new Map<string, Rest>();
-    for (const [name, b] of bones)
-      to.set(name, { q: b.quaternion.clone(), p: b.position.clone() });
-    clips = new Map(
-      baked.clips.map((c) => [c.name, retargetClip(c, baked?.rest ?? to, to)]),
-    );
-    carried.set(key, clips);
+/** Starts fetching a skeleton's clip file (once; `suffix` as modelSuffix);
+ * resolves when it has loaded. A failed fetch is logged and retried on the
+ * next call, and the dolls keep their built poses meanwhile. */
+export function loadAnims(suffix = ""): Promise<void> {
+  let p = loading.get(suffix);
+  if (!p) {
+    p = new GLTFLoader()
+      .setMeshoptDecoder(MeshoptDecoder)
+      .loadAsync(`/models/doll/anims${suffix}.glb`)
+      .then((gltf) => {
+        baked.set(suffix, new Map(gltf.animations.map((c) => [c.name, c])));
+      })
+      .catch((e: unknown) => {
+        console.warn(e);
+        loading.delete(suffix);
+      });
+    loading.set(suffix, p);
   }
-  return clips;
+  return p;
 }
 
-const fix = new THREE.Quaternion();
-const key = new THREE.Quaternion();
-
-/**
- * A clip baked on one skeleton, carried over to another with the same bones
- * but its own rest pose (the man's doll plays the clips baked on the
- * woman's). A key holds rest x pose, so each rotation key is turned by the
- * bone's rest difference (to x from^-1); the hips' moves from rest scale by
- * the two hip heights. Tracks on bones that rest alike are shared as is.
- */
-export function retargetClip(
-  clip: THREE.AnimationClip,
-  from: ReadonlyMap<string, Rest>,
-  to: ReadonlyMap<string, Rest>,
-): THREE.AnimationClip {
-  const hipsFrom = from.get(BONE.hips)?.p.y ?? 0;
-  const hipsTo = to.get(BONE.hips)?.p.y ?? 0;
-  const scale = hipsFrom > 0 && hipsTo > 0 ? hipsTo / hipsFrom : 1;
-  let changed = false;
-  const tracks = clip.tracks.map((track) => {
-    const dot = track.name.lastIndexOf(".");
-    const a = from.get(track.name.slice(0, dot));
-    const b = to.get(track.name.slice(0, dot));
-    const prop = track.name.slice(dot + 1);
-    if (!a || !b) return track;
-    if (prop === "quaternion") {
-      fix.copy(a.q).invert().premultiply(b.q);
-      if (Math.abs(fix.w) > 1 - 1e-7) return track;
-      const v = Float32Array.from(track.values);
-      for (let i = 0; i < v.length; i += 4) {
-        key.fromArray(v, i).premultiply(fix).toArray(v, i);
-      }
-      changed = true;
-      return new THREE.QuaternionKeyframeTrack(track.name, track.times, v);
-    }
-    if (prop === "position") {
-      if (a.p.equals(b.p) && scale === 1) return track;
-      const v = Float32Array.from(track.values);
-      for (let i = 0; i < v.length; i += 3)
-        for (let k = 0; k < 3; k++)
-          v[i + k] =
-            b.p.getComponent(k) + (v[i + k] - a.p.getComponent(k)) * scale;
-      changed = true;
-      return new THREE.VectorKeyframeTrack(track.name, track.times, v);
-    }
-    return track;
-  });
-  return changed
-    ? new THREE.AnimationClip(clip.name, clip.duration, tracks)
-    : clip;
-}
+/** A skeleton's clips by id; null until its file loads. */
+export const clipsFor = (
+  suffix: string,
+): ReadonlyMap<string, THREE.AnimationClip> | null => baked.get(suffix) ?? null;
 
 // ---------------------------------------------------------------- built poses
 

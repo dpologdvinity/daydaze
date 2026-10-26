@@ -21,11 +21,10 @@ test("a walk clip plays at ground speed over its own pace, within the clamp", ()
   assert.equal(walkRate(Number.NaN, 1.2), 1);
 });
 
-test("a gait walks at most MAX_TEMPO times its clip's pace, and never past the walk speed", () => {
-  // a slow strut at 0.86 m/s natural walks at 1.075 m/s
-  assert.ok(Math.abs(gaitPace(0.86) - 0.86 * MAX_TEMPO) < 1e-9);
-  // the player's pace always plays her clip inside the clamp
-  assert.ok(walkRate(gaitPace(0.86), 0.86) <= MAX_TEMPO);
+test("a gait walks at its clip's own pace, never past the walk speed", () => {
+  // a slow strut at 0.86 m/s natural walks at 0.86 m/s: the clip plays at 1x
+  assert.equal(gaitPace(0.86), 0.86);
+  assert.equal(walkRate(gaitPace(0.86), 0.86), 1);
   // a brisk clip is capped at the walk speed
   assert.equal(gaitPace(1.6), WALK_SPEED);
   // no clip measured: the walk speed

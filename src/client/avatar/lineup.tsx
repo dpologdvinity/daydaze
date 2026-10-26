@@ -18,6 +18,7 @@ import { HumanDoll } from "./human/HumanDoll.tsx";
 import { isDanceMoveId, stillClipsOf } from "../../game/dance/moves.ts";
 import { liftOf, roleMove, together } from "../../game/dance/together.ts";
 import { GAITS } from "../../game/gaits.ts";
+import { naturalPace } from "../../game/dance/clips.ts";
 import { Environment, Lightformer } from "@react-three/drei";
 import { Suspense } from "react";
 
@@ -68,8 +69,10 @@ const HOLDS = {
   sit: holdsOf("sit"),
   lay: holdsOf("lay"),
 };
-// a steady walking pace for the walk shot
-const WALKING = { current: { speed: 1.4 } };
+// the walk shot: each gait at its clip's own pace, so it plays at 1x
+const WALKING = GAITS.map((g) => ({
+  current: { speed: naturalPace(g.clip, false) ?? 1.4 },
+}));
 
 const LINEUP: Look[] = [
   {
@@ -468,7 +471,7 @@ function Lab() {
                     : DANCES[i % DANCES.length]
                 }
                 seed={i}
-                walk={shot === "walk" ? WALKING : undefined}
+                walk={shot === "walk" ? WALKING[i % WALKING.length] : undefined}
                 rotation-y={shot === "walk" ? Math.PI / 2 : 0}
               />
             </Suspense>

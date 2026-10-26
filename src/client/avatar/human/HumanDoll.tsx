@@ -13,7 +13,12 @@ import {
   type DanceMoveId,
   type Pose,
 } from "../../../game/dance/moves.ts";
-import { MOVING, clipOf, pickClip } from "../../../game/dance/clips.ts";
+import {
+  MAN_STRIDE,
+  MOVING,
+  clipOf,
+  pickClip,
+} from "../../../game/dance/clips.ts";
 import {
   modelSuffix,
   FACE_PRESETS,
@@ -40,18 +45,10 @@ import {
 } from "../../../game/body.ts";
 import { pose, type Rig } from "../pose.ts";
 import { useQuality } from "../../world/quality.ts";
-import { gaitOf, type GaitId } from "../../../game/gaits.ts";
+import { NPC_GAITS, gaitOf } from "../../../game/gaits.ts";
 import { BUILT_STRIDE, walkPhaseRate } from "../../../game/dance/stride.ts";
 import { BONE, BuiltPose, clipsFor, loadAnims } from "./anims.ts";
 
-// strangers walk naturally, a few with more swing
-const NPC_GAITS: GaitId[] = [
-  "natural",
-  "relaxed",
-  "natural",
-  "confident",
-  "sassy",
-];
 import { paintFace, paintIris, paintLashes, readMarks } from "./faceCanvas.ts";
 import { Jewelry, readAnchors } from "./Jewelry.tsx";
 import { Glasses } from "./Glasses.tsx";
@@ -73,7 +70,10 @@ const REST_LID = 0.12;
 // the baked clips come in their own file (a big one), fetched once the first
 // room shows, so they don't share the bandwidth it loads over; dolls wear
 // the built poses until then
-afterSceneReady(() => void loadAnims(), 8000);
+afterSceneReady(() => {
+  void loadAnims("");
+  void loadAnims("-m");
+}, 8000);
 
 // seconds to crossfade between clips, and between clips and built poses
 const FADE = 0.3;
@@ -826,10 +826,11 @@ export function HumanDoll({
     const hold = picked ?? seeded[seed % seeded.length];
     const a = anim.current;
     if (a) {
-      const clips = clipsFor(body.key, body.bones);
+      const clips = clipsFor(body.key);
       const want = pickClip({
         loaded: clips !== null,
-        speed,
+        // the catalog's walk speeds are the woman's stride; his carries farther
+        speed: body.key ? speed / MAN_STRIDE : speed,
         walk: gait.clip,
         mood,
         hold,

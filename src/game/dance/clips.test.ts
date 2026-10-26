@@ -4,6 +4,8 @@ import { GAITS } from "../gaits.ts";
 import {
   IDLE_CLIPS,
   LEAN_CLIP,
+  MAN_STRIDE,
+  naturalPace,
   SEAT_CLIP,
   clipOf,
   idleFor,
@@ -113,4 +115,14 @@ test("dances: captured moves play, built ones stay built, a follow trails half a
   assert.equal(dance("groove"), null);
   assert.equal(dance("hug"), null);
   assert.equal(dance("clap")?.id, "clap");
+});
+
+test("a gait's natural pace: the woman's measured speed, the man's longer stride", () => {
+  const easy = clipOf("walk-easy")?.speed ?? 0;
+  assert.equal(naturalPace("walk-easy", false), easy);
+  assert.ok(
+    Math.abs((naturalPace("walk-easy", true) ?? 0) - easy * MAN_STRIDE) < 1e-9,
+  );
+  assert.equal(naturalPace("salsa", false), undefined);
+  assert.equal(naturalPace(undefined, true), undefined);
 });

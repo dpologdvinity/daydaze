@@ -16,6 +16,23 @@ const BY_ID: ReadonlyMap<string, MocapClip> = new Map(
   MOCAP_CLIPS.map((c) => [c.id, c]),
 );
 
+/**
+ * How much farther the man's stride carries him than the woman's on the
+ * same clip (his longer legs): the catalog's walk speeds are measured on
+ * hers, and the bake measures his 1.0865 times faster on every walk.
+ */
+export const MAN_STRIDE = 1.0865;
+
+/** A gait clip's natural ground speed, m/s, on the woman's or the man's
+ * doll; undefined for a clip with no measured pace. */
+export function naturalPace(
+  walk: string | undefined,
+  man: boolean,
+): number | undefined {
+  const speed = clipOf(walk)?.speed;
+  return speed === undefined ? undefined : speed * (man ? MAN_STRIDE : 1);
+}
+
 /** A baked clip by id, if there is one. */
 export const clipOf = (id: string | undefined): MocapClip | undefined =>
   id === undefined ? undefined : BY_ID.get(id);

@@ -1,6 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { MENSWEAR, SHORT_CUTS, validateLook } from "../look.ts";
+import { naturalPace } from "../dance/clips.ts";
+import { walkRate } from "../dance/stride.ts";
+import { gaitOf } from "../gaits.ts";
+import { MENSWEAR, SHORT_CUTS, modelSuffix, validateLook } from "../look.ts";
 import { CITY_AREA, CITY_SPAWN } from "./layout.ts";
 import {
   PEDESTRIANS,
@@ -63,5 +66,15 @@ test("men walk the city too, in menswear with short cuts", () => {
     assert.ok(MENSWEAR.includes(m.look.outfit), m.look.outfit);
     assert.ok(SHORT_CUTS.includes(m.look.hairStyle), m.look.hairStyle);
     assert.ok(validateLook(m.look));
+  }
+});
+
+test("every pedestrian walks at her gait clip's own pace, so it plays near 1x", () => {
+  for (const p of PEDESTRIANS) {
+    const man = modelSuffix(p.look) === "-m";
+    const pace = naturalPace(gaitOf(p.look.gait).clip, man);
+    assert.ok(pace, `${p.look.gait} has a measured pace`);
+    const rate = walkRate(p.speed, pace);
+    assert.ok(rate > 0.94 && rate < 1.06, `rate ${rate}`);
   }
 });

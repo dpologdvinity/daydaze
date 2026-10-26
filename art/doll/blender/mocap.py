@@ -5,7 +5,7 @@ animation-only GLB, plus the clip catalog src/game/dance/mocap.ts.
     blender --background --factory-startup --python art/doll/blender/mocap.py
     scripts/optimize-doll.sh
 
-build_doll.py leaves the woman's bare rig in .cache/rig.blend: Mixamo's 52
+build_doll.py leaves each doll's bare rig in .cache/rig{-m}.blend: Mixamo's 52
 bones (MPFB2's CC0 rig), fitted to the shaped body and resting arms down.
 Each clip is retargeted bone for bone, in world space with rest-pose
 compensation:
@@ -21,10 +21,10 @@ compensation:
      drift across the floor comes off (loops play in place, sway kept); a
      seat or a bed sets the height of a sit or a lie.
 
-Writes .cache/out/anims.glb (scripts/optimize-doll.sh compresses it into
+Writes .cache/out/anims{-m}.glb (scripts/optimize-doll.sh compresses it into
 public/models/doll/) and mocap.ts (ids, kinds, labels, loop lengths and walk
-speeds). The man shares the file: the client moves each clip onto his rest
-pose when it loads (src/client/avatar/human/anims.ts).
+speeds). DOLL_SEX=male bakes the same clips onto the man's rig as
+anims-m.glb (run build_doll.py for him first).
 
 The Mixamo library (repo-root mixamo/, a symlink to the user's own copy,
 git-ignored): Adobe's terms allow the animations in a game, baked into its
@@ -44,10 +44,15 @@ from mathutils import Quaternion, Vector
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
-# baked once, on the woman's rig; the client carries the clips over to the
-# man's (same bones, own rest pose: see retargetClip in HumanDoll's anims.ts)
-RIG_BLEND = os.path.join(HERE, ".cache", "rig.blend")
-OUT = os.path.join(HERE, ".cache", "out", "anims.glb")
+# baked per doll on its own rig: the man's bones share names with the
+# woman's but not their rest axes (his neck rests 44 degrees off hers), so a
+# clip can't be carried from one to the other after baking
+SEX = os.environ.get("DOLL_SEX", "female")
+if SEX not in ("female", "male"):
+    raise SystemExit(f"DOLL_SEX must be female or male, not {SEX}")
+SUFFIX = "-m" if SEX == "male" else ""
+RIG_BLEND = os.path.join(HERE, ".cache", f"rig{SUFFIX}.blend")
+OUT = os.path.join(HERE, ".cache", "out", f"anims{SUFFIX}.glb")
 CATALOG = os.path.join(ROOT, "src", "game", "dance", "mocap.ts")
 MIXAMO = os.path.join(ROOT, "mixamo")
 FPS = 30
@@ -67,15 +72,18 @@ SEAT_BELOW_HIPS = 0.1
 # frame), and seat (a looped sit).
 CLIPS = {
     # walks only play when a gait names them (src/game/gaits.ts)
-    "walk-easy": ("walking/Walk_Female-Walk-2", "walk", "Easy"),
-    "walk-relaxed": ("walking/Walk_Female-Walk", "walk", "Relaxed"),
-    "walk-brisk": ("walking/Standard-Walk_Standard-Walk", "walk", "Brisk"),
-    "walk-catwalk": ("walking/styled/Catwalk-Walking_Catwalk-Walk", "walk", "Catwalk"),
-    "walk-normal": ("walking/styled/Catwalk-Walk-Forward_Female-Walk-Forward", "walk", "Normal"),
-    "walk-sexy": ("walking/styled/Walking_Female-Sexy-Walk", "walk", "Sexy"),
-    "walk-feminine": ("walking/Walking_Feminine-Walk-Forward", "walk", "Feminine"),
-    "walk-casual": ("walking/styled/Walking-With-A-Swagger-3", "walk", "Casual"),
-    "walk-masc": ("walking/Walking_Male-Standard-Walk", "walk", "Easy stride"),
+    # Walks keep the trailing leg long: measured on the takes (knee flex at
+    # toe-off / at most, by scripts/mixamo-gait.mjs), these sit near a
+    # real walk's ~15 / ~65 degrees; bouncier takes read as jogging.
+    "walk-easy": ("walking/styled/Catwalk-Walk-Forward_Female-Walk-Forward", "walk", "Easy"),  # 15 / 60
+    "walk-relaxed": ("walking/Standard-Walk_Standard-Walk", "walk", "Relaxed"),  # 20 / 70
+    "walk-brisk": ("walking/Walking_Male-Hurried-Walk", "walk", "Brisk"),  # 14 / 70
+    "walk-catwalk": ("walking/styled/Catwalk-Walk-Forward-Crossed_Female-Walk-Forward-Legs-Crossing", "walk", "Catwalk"),  # 14 / 67
+    "walk-normal": ("walking/Walk_Female-Walk-2", "walk", "Normal"),  # 32 / 67
+    "walk-sexy": ("walking/styled/Walking_Female-Sexy-Walk", "walk", "Sexy"),  # 16 / 69
+    "walk-feminine": ("walking/styled/Walking-With-A-Swagger-2", "walk", "Feminine"),  # 15 / 75
+    "walk-casual": ("walking/styled/Catwalk-Walk-Forward-02_Male-Walk-Forward-02", "walk", "Casual"),  # 21 / 74
+    "walk-masc": ("walking/Walking_Male-Standard-Walk", "walk", "Easy stride"),  # 18 / 67
     # standing idles: the player breathes, NPCs pick one by seed
     "idle-breathing": ("idle/Breathing-Idle_Breathing-Idle", "idle", "Breathing"),
     "idle-weight-shift": ("idle/Neutral-Idle_Neutral-Idle", "idle", "Weight shift"),
@@ -230,13 +238,32 @@ def sample(src, f):
     for pb in src.pose.bones:
         m = src.matrix_world @ pb.matrix
         rot[short(pb.name)] = m.to_3x3().normalized().to_quaternion()
-    hips = src.pose.bones[next(n for n in src.pose.bones.keys() if short(n) == "Hips")]
-    return rot, src.matrix_world @ hips.head
+    head = {short(pb.name): src.matrix_world @ pb.head for pb in src.pose.bones}
+    return rot, head["Hips"], head
 
 
-def locals_for(rig, tgt_rest, off, world_src):
+def foot_fix(tgt_rest, heads):
+    """Per foot, degrees to tip it toes-up so it rests as the doll's does.
+    Mixamo's women's takes were made in heels: their planted foot points
+    ~50 degrees further down than its own rest, which on the doll's bare
+    feet reads as tiptoeing (and lifts her body onto her toes). The angle
+    is the doll's rest pitch (ankle to ball) less the take's median pitch
+    over the frames its ball is on the floor; none planted, no fix."""
+    fix = {}
+    for side in ("Left", "Right"):
+        foot, ball = f"{side}Foot", f"{side}ToeBase"
+        pitch = lambda a, b: math.degrees(math.atan2((b - a).z, (b - a).xy.length))
+        floor = min(h[ball].z for h in heads)
+        planted = sorted(pitch(h[foot], h[ball]) for h in heads if h[ball].z < floor + 0.02 and floor < 0.08)
+        if planted:
+            rest = pitch(tgt_rest[foot][1], tgt_rest[ball][1])
+            fix[foot] = rest - planted[len(planted) // 2]
+    return fix
+
+
+def locals_for(rig, tgt_rest, off, world_src, fix=None):
     """Each doll bone's pose rotation (relative to its rest), from the
-    clip's world rotations at one frame (step 2)."""
+    clip's world rotations at one frame (step 2); `fix` tips feet (foot_fix)."""
     world = {}
     basis = {}
     for b in rig.data.bones:
@@ -250,6 +277,11 @@ def locals_for(rig, tgt_rest, off, world_src):
         rest_local = p_rest.inverted() @ q_rest
         if name in off and name in world_src:
             world[name] = world_src[name] @ off[name]
+            if fix and abs(fix.get(name, 0)) > 3:
+                # about the foot's own side-to-side axis, toes up
+                side = q_rest.inverted() @ tgt_rest[name][2].cross(Vector((0, 0, 1))).normalized()
+                axis = world[name] @ side
+                world[name] = Quaternion(axis, math.radians(fix[name])) @ world[name]
         else:
             # unmatched bones (eyes, pony) keep their rest pose on the parent
             world[name] = p_world @ rest_local
@@ -342,10 +374,14 @@ def bake(rig, tgt_rest, cid, rel, kind):
     held = kind in HELD
     frames = [(f0 + f1) // 2] * 2 if held else list(range(f0, f1 + 1))
     rots, hips = [], []
+    heads = []
     for f in frames:
-        r, h = sample(src, f)
+        r, h, head = sample(src, f)
         rots.append(r)
+        heads.append(head)
         hips.append(hip_t + (h - hip_s) * k)
+    fix = foot_fix(tgt_rest, heads)
+    print(cid, "foot fix", {k: round(v) for k, v in fix.items()})
     n = len(frames)
     if kind in ("dance", "emote", "idle") and n / FPS > MAX_LOOP:
         n = best_loop(rots, int(MIN_LOOP * FPS), int(MAX_LOOP * FPS)) + 1
@@ -372,7 +408,7 @@ def bake(rig, tgt_rest, cid, rel, kind):
     rows = {}
     drops = []
     for i in range(n):
-        basis, world = locals_for(rig, tgt_rest, off, rots[i])
+        basis, world = locals_for(rig, tgt_rest, off, rots[i], fix)
         drops.append(foot_drop(rig, tgt_rest, world, pos[i]))
         for name, q in basis.items():
             if name in prev and prev[name].dot(q) < 0:
@@ -453,7 +489,7 @@ def main():
         export_skins=True,
         export_materials="NONE",
     )
-    if not only:
+    if not only and SEX == "female":
         write_catalog(metas)
 
 
