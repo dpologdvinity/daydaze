@@ -17,7 +17,7 @@ async function player(browser: Browser): Promise<Page> {
   });
   await context.addInitScript(ONBOARDED);
   const page = await context.newPage();
-  await page.goto("/?online=1&quality=low&room=plaza");
+  await page.goto("/?online=1&quality=low&room=plaza&debug=1");
   await expect(page.locator("canvas")).toHaveAttribute("data-frames", "10", {
     timeout: 480_000,
   });
@@ -140,6 +140,30 @@ test("two players meet in the Plaza, talk, become friends and play cards", async
   await expect(a.getByText("is in. Head to Kamayan Hall")).toBeVisible({
     timeout: 60_000,
   });
+
+  // A invites B (a friend now) to a party; when A goes through to the
+  // Velvet Room, B follows into the same copy
+  await tagOnA.click();
+  await a.getByRole("button", { name: "Invite to your party" }).click();
+  await b
+    .getByRole("region", { name: "Party invite" })
+    .getByRole("button", { name: "Join" })
+    .click({ timeout: 60_000 });
+  await expect(a.getByRole("region", { name: "Party" })).toContainText(
+    "Your party:",
+    { timeout: 60_000 },
+  );
+  await a.getByRole("button", { name: "Go to Velvet Room" }).click();
+  for (const page of [a, b])
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "The Velvet Room",
+      { timeout: 240_000 },
+    );
+  await expect(tagOnA).toHaveCount(1, { timeout: 120_000 });
+  await expect(tagOnB).toHaveCount(1, { timeout: 120_000 });
+  await expect(b.getByRole("region", { name: "Party" })).toContainText(
+    "you follow them through doors",
+  );
 
   // B signs up (keeping the guest's progress), logs out, and logs back in
   const name = `Tester${Date.now() % 100000}`;

@@ -19,6 +19,8 @@ import { ONLINE, onlineSession, useOnlineRoom } from "./net/online.ts";
 import { DuelPanel } from "./net/DuelPanel.tsx";
 import { TogetherPanel } from "./net/TogetherPanel.tsx";
 import { CookOffInvite } from "./net/CookOffInvite.tsx";
+import { PartyPanel } from "./net/PartyPanel.tsx";
+import { leaveParty } from "./net/party.ts";
 import { ConnectionNote } from "./net/ConnectionNote.tsx";
 import { chatPrefs } from "./net/chatPrefs.ts";
 import { useCloudSave } from "./net/cloudSave.ts";
@@ -161,6 +163,16 @@ export function App() {
       traveling.current = false;
     }, FADE_MS);
   }, []);
+
+  // following a party leader through a door; a sentence in the cells
+  // can't be walked out of that way
+  const goWithParty = useCallback(
+    (room: RoomId) => {
+      if (here.room === "jail") leaveParty();
+      else travel(room, ROOMS[room].spawn);
+    },
+    [travel, here.room],
+  );
 
   const tag = useRef<HTMLDivElement>(null);
   const [mood, setMood] = useState<Mood>("idle");
@@ -346,6 +358,7 @@ export function App() {
         {ONLINE && <DuelPanel />}
         {ONLINE && <TogetherPanel />}
         {ONLINE && <CookOffInvite />}
+        {ONLINE && <PartyPanel onGo={goWithParty} />}
         {ONLINE && <ConnectionNote />}
         <div className="fade" data-on={fading} aria-hidden="true" />
         {notice && (

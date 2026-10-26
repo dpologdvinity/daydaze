@@ -149,6 +149,16 @@ export class OnlineSession {
     return identity.value;
   }
 
+  /**
+   * The copy of `roomId` a join would try first (the server's pick), or null
+   * when the listing can't be fetched. A party leader asks before leaving, so
+   * the members can be told where to follow.
+   */
+  async pickCopy(roomId: RoomId): Promise<number | null> {
+    const listing = await this.api.rooms(roomId);
+    return listing.ok ? listing.value.pick : null;
+  }
+
   /** Joins the least-full copy, moving on to the next one while copies are full. */
   /** `copy` asks for that copy first (a friend's), if it has room. */
   joinRoom(roomId: RoomId, look: Look, copy?: number): Promise<JoinOutcome> {

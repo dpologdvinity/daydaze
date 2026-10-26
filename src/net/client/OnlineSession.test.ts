@@ -495,3 +495,17 @@ test("copies lists the room copies of the room you're in; none outside one", asy
   session.leaveRoom();
   assert.equal(await session.copies(), null);
 });
+
+test("pickCopy names the copy a join would try first, null when offline", async () => {
+  const { session } = setup({
+    "GET /api/rooms/karaoke": () =>
+      listing(3, [
+        { copy: 1, count: 40, full: true },
+        { copy: 3, count: 2, full: false },
+      ]),
+    "GET /api/rooms/bowling": () => json({ error: "down" }, 503),
+  });
+  await session.start();
+  assert.equal(await session.pickCopy("karaoke"), 3);
+  assert.equal(await session.pickCopy("bowling"), null);
+});

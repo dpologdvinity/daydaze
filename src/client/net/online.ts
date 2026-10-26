@@ -6,6 +6,7 @@ import { createApi } from "../../net/client/api.ts";
 import { OnlineSession } from "../../net/client/OnlineSession.ts";
 import { WebSocketTransport } from "../../net/client/WebSocketTransport.ts";
 import { readFlags } from "../flags.ts";
+import { beforeTravel } from "./party.ts";
 
 /**
  * Online play, for now behind `?online=1`: the game talks to the Worker's
@@ -67,9 +68,13 @@ export function useOnlineRoom(room: RoomId, look: Look) {
       if (!live || !session.identity()) return;
       const copy = joinCopy.room === room ? joinCopy.copy : undefined;
       joinCopy.room = null;
+      // still in the old copy: a party leader tells the members where to
+      // follow, and a member heading off alone leaves the party
+      const partyCopy = await beforeTravel(room);
+      if (!live) return;
       // your own flat or cell: nobody else's copy to join
       if (SOLO_ROOMS.has(room)) session.leaveRoom();
-      else await session.joinRoom(room, latestLook.current, copy);
+      else await session.joinRoom(room, latestLook.current, partyCopy ?? copy);
     })();
     return () => {
       live = false;
