@@ -171,12 +171,24 @@ const BODY_COLOR: Record<BuildingStyle, string> = {
 };
 
 const BAND_COLOR = "#6a5cff";
+/** Stone trim: floor-line cornices and rooflines on non-nightlife buildings. */
+export const CORNICE_COLOR = "#d8cfbf";
+
+/** Nightlife buildings wear neon (corner tubes, glowing floor bands); the
+ * rest of the city is brick, stucco and stone by day. */
+const NEON_STYLES: ReadonlySet<BuildingStyle> = new Set([
+  "club",
+  "velvet",
+  "billboard",
+]);
+export const wearsNeon = (style: BuildingStyle) => NEON_STYLES.has(style);
 const FROND_COLORS = ["#1f7a4f", "#2fa36b", "#25905c", "#3dbf7a"];
 const DASH_COLOR = "#ffe6a8";
 const SURFACE_COLOR = {
-  road: "#2a2050",
-  sidewalk: "#5a4a8a",
-  square: "#6a5a9a",
+  // real asphalt and concrete: the night's color comes from the lights
+  road: "#4a4a52",
+  sidewalk: "#a39e96",
+  square: "#b3ab9e",
   // Beachside at night: weathered planks, moonlit sand
   boardwalk: "#9a6a4a",
   sand: "#c9a274",
@@ -559,13 +571,17 @@ function buildingInstancesFacing(
     sz: f.z1 - f.z0,
     color: b.color ?? BODY_COLOR[b.style],
   });
-  // neon tubes up the four corners: cheap glow on every facade
-  for (const [x, z] of [
-    [f.x0, f.z0],
-    [f.x1, f.z0],
-    [f.x1, f.z1],
-    [f.x0, f.z1],
-  ]) {
+  // neon tubes up the four corners, on nightlife buildings only
+  const neon = wearsNeon(b.style);
+  const corners: [number, number][] = neon
+    ? [
+        [f.x0, f.z0],
+        [f.x1, f.z0],
+        [f.x1, f.z1],
+        [f.x0, f.z1],
+      ]
+    : [];
+  for (const [x, z] of corners) {
     out.tube.push({
       x,
       y: f.h / 2,
@@ -583,19 +599,36 @@ function buildingInstancesFacing(
     sx: f.w + 0.4,
     sy: 0.5,
     sz: f.z1 - f.z0 + 0.4,
-    color: "#1c1438",
+    // tar and gravel
+    color: "#4a4744",
   });
+  // neon bands at every floor on nightlife buildings; on everything else a
+  // stone belt course over the storefronts (lit by the sun and the street,
+  // not glowing) and a deeper cornice crowning the roofline, as on a NYC
+  // walk-up
   for (let y = 3.6; y < f.h - 1; y += 3.6) {
-    out.band.push({
+    if (!neon && y > 3.6) break;
+    const band = {
       x: f.cx,
       y,
       z: f.cz,
       sx: f.w + 0.12,
       sy: 0.35,
       sz: f.z1 - f.z0 + 0.12,
-      color: BAND_COLOR,
-    });
+    };
+    if (neon) out.band.push({ ...band, color: BAND_COLOR });
+    else out.ledge.push({ ...band, sy: 0.22, color: CORNICE_COLOR });
   }
+  if (!neon)
+    out.ledge.push({
+      x: f.cx,
+      y: f.h - 0.3,
+      z: f.cz,
+      sx: f.w + 0.5,
+      sy: 0.6,
+      sz: f.z1 - f.z0 + 0.5,
+      color: CORNICE_COLOR,
+    });
   out.glow.push({
     x: f.cx,
     y: 1.6,

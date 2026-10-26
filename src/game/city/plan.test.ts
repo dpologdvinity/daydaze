@@ -11,8 +11,10 @@ import {
 import { BUILDINGS, CITY_SPAWN } from "./layout.ts";
 import {
   drawCallsOf,
+  CORNICE_COLOR,
   FACADE_KINDS,
   facadeOf,
+  wearsNeon,
   KINDS,
   planCity,
   trianglesOf,
@@ -147,4 +149,30 @@ test("every instance has a finite position and a positive size", () => {
       assert.ok(i.sx > 0 && i.sy > 0 && i.sz > 0, kind);
     }
   }
+});
+
+test("only nightlife buildings wear neon; the rest get stone cornices", () => {
+  assert.equal(wearsNeon("club"), true);
+  assert.equal(wearsNeon("velvet"), true);
+  assert.equal(wearsNeon("brick"), false);
+  assert.equal(wearsNeon("storefront"), false);
+  // one plain building on its own: cornices at each floor, no neon bands
+  const plain = BUILDINGS.find((b) => !wearsNeon(b.style) && b.height > 9);
+  assert.ok(plain);
+  const cell = cellAt(plain.footprint[0] ?? [0, 0]);
+  const plan = planCity([cell], 0, origin);
+  const bandsOnIt = plan.instances.band.filter(
+    (i) =>
+      Math.abs(i.x - (plain.footprint[0]?.[0] ?? 0)) < 40 &&
+      Math.abs(i.z - (plain.footprint[0]?.[1] ?? 0)) < 40 &&
+      BUILDINGS.filter((b) => b !== plain && wearsNeon(b.style)).every(
+        (b) =>
+          Math.hypot(
+            i.x - (b.footprint[0]?.[0] ?? 0),
+            i.z - (b.footprint[0]?.[1] ?? 0),
+          ) > 60,
+      ),
+  );
+  assert.equal(bandsOnIt.length, 0);
+  assert.ok(plan.instances.ledge.some((l) => l.color === CORNICE_COLOR));
 });

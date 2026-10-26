@@ -419,3 +419,53 @@ export function writeKind(
   // the bounds follow the instances, so frustum culling stays correct
   mesh.computeBoundingSphere();
 }
+
+// the kinds that are lit at night: neon, signs, lamps, bulbs and windows
+const NIGHT_LIT: readonly Kind[] = [
+  "band",
+  "sign",
+  "tube",
+  "lamp",
+  "panel",
+  "arch",
+  "bulb",
+  "glow",
+  "window",
+];
+// ground and walls carry a faint violet night glow so the dark side of the
+// street still reads; by day the sun does that
+const NIGHT_GLOW: readonly Kind[] = [
+  "road",
+  "sidewalk",
+  "ground",
+  "lawn",
+  "planks",
+];
+
+/**
+ * Dims the night for daylight (`night` 1 at night, 0 by day, from
+ * src/game/city/daylight.ts): unlit neon is still colored glass, windows show
+ * the sky instead of lamps, and the walls' and ground's night glow fades.
+ */
+export function dimForDay(meshes: KindMeshes, night: number): void {
+  for (const kind of NIGHT_LIT) {
+    const m = meshes[kind].material;
+    if (m instanceof THREE.MeshBasicMaterial)
+      m.color.setScalar(
+        kind === "window" ? 0.4 + 0.6 * night : 0.3 + 0.7 * night,
+      );
+  }
+  const glows: THREE.MeshStandardMaterial[] = [
+    ...Object.values(facadeMaterials()),
+    ...NIGHT_GLOW.map((k) => meshes[k].material).filter(
+      (m): m is THREE.MeshStandardMaterial =>
+        m instanceof THREE.MeshStandardMaterial,
+    ),
+  ];
+  for (const m of glows) {
+    const base: unknown = m.userData.nightGlow;
+    const full = typeof base === "number" ? base : m.emissiveIntensity;
+    m.userData.nightGlow = full;
+    m.emissiveIntensity = full * (0.1 + 0.9 * night);
+  }
+}

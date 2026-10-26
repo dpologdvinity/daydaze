@@ -148,6 +148,10 @@ const SHOTS: {
   { name: "haunted-house", query: "room=haunted-house" },
   { name: "city-street", query: "room=city&view=full" },
   { name: "city-overview", query: "room=city" },
+  // the city by day and at sunset (daylight.ts), pinned with ?time=
+  { name: "city-day", query: "room=city&view=full&time=12:00" },
+  { name: "city-day-overview", query: "room=city&time=12:00" },
+  { name: "city-sunset", query: "room=city&view=full&time=19:30" },
   {
     // the game menu open over the city: everything not needed this moment
     name: "city-menu",

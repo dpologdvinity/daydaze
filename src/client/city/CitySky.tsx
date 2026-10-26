@@ -2,6 +2,7 @@
 // ring, plus a field of twinkling point stars. Both follow the camera, render
 // first and skip fog; they read the shared CITY_CLOCK uniforms.
 
+import { SKY_UNIFORMS } from "./daylight.ts";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
@@ -104,7 +105,7 @@ void main() {
  * A dome of dusk over the city, with stars and the glow of the streets along
  * the horizon. It follows the camera, so it never runs out at the edge of view.
  */
-export function CitySky() {
+export function CitySky({ night }: { night: number }) {
   const root = useMemo(() => {
     const dome = new THREE.Mesh(
       new THREE.SphereGeometry(RADIUS, 24, 16),
@@ -112,9 +113,8 @@ export function CitySky() {
         vertexShader: SKY_VERTEX,
         fragmentShader: SKY_FRAGMENT,
         uniforms: {
-          uZenith: { value: new THREE.Color("#07041a") },
-          uHorizon: { value: new THREE.Color("#2a1046") },
-          uGlow: { value: new THREE.Color("#ff5fa8") },
+          // day, dusk or night: set by useDaylight (daylight.ts)
+          ...SKY_UNIFORMS,
           uTime: CITY_CLOCK.uTime,
           uMotion: CITY_CLOCK.uMotion,
         },
@@ -171,6 +171,11 @@ export function CitySky() {
   useFrame(({ camera }) => {
     root.position.copy(camera.position);
   });
+  // the stars come out as the day goes
+  useEffect(() => {
+    const stars = root.children[1];
+    if (stars) stars.visible = night > 0.3;
+  }, [root, night]);
 
   useEffect(() => () => disposeSky(root), [root]);
 
