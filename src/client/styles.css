@@ -2780,3 +2780,62 @@ button:focus-visible {
   font-weight: 400;
   opacity: 0.8;
 }
+
+/* Credits keep the menu's sheet styling, with the Close control above the scroll. */
+.credits-panel {
+  top: auto;
+  left: auto;
+  margin: 0;
+  width: min(560px, calc(100vw - 28px));
+  overflow: hidden;
+  border: 0;
+  color: var(--champagne);
+}
+
+.credits-panel::backdrop {
+  background: rgb(12 4 20 / 0.55);
+}
+
+.credits-panel .game-menu-head {
+  flex-shrink: 0;
+}
+
+.credits-list {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 12px;
+  line-height: 1.5;
+}
+
+.credits-list h3 {
+  margin: 24px 0 12px;
+  font-size: 18px;
+}
+
+.credits-list ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.credits-list li {
+  padding: 14px 0;
+  border-top: 1px solid rgb(255 207 106 / 0.2);
+}
+
+.credits-list a {
+  color: var(--champagne);
+  font-weight: 700;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
+.credits-list li p {
+  margin: 4px 0 0;
+}
+
+.credits-list .credits-byline {
+  color: #d6b7d2;
+  font-size: 14px;
+}

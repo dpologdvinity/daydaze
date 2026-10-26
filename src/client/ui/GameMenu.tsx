@@ -5,8 +5,9 @@
 // the moment needs (a drink at the bar, a seat, a game). The sheet closes on
 // Escape, on the Close button, and after an item that opens something else.
 
-import { useEffect, useRef, type JSX, type ReactNode } from "react";
+import { useEffect, useRef, useState, type JSX, type ReactNode } from "react";
 import { createStore } from "../rooms/shared/store.ts";
+import { CreditsPanel } from "./CreditsPanel.tsx";
 
 export const gameMenu = createStore({ open: false });
 
@@ -15,6 +16,7 @@ export const closeMenu = () => gameMenu.set({ open: false });
 
 export function GameMenu({ children }: { children: ReactNode }): JSX.Element {
   const { open } = gameMenu.use();
+  const [creditsOpen, setCreditsOpen] = useState(false);
   const toggle = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     if (!open) return;
@@ -52,7 +54,28 @@ export function GameMenu({ children }: { children: ReactNode }): JSX.Element {
             </button>
           </div>
           {children}
+          <div className="game-menu-items">
+            <button
+              type="button"
+              className="drink"
+              aria-haspopup="dialog"
+              onClick={() => {
+                closeMenu();
+                setCreditsOpen(true);
+              }}
+            >
+              Credits
+            </button>
+          </div>
         </section>
+      )}
+      {creditsOpen && (
+        <CreditsPanel
+          onClose={() => {
+            setCreditsOpen(false);
+            toggle.current?.focus();
+          }}
+        />
       )}
     </>
   );
