@@ -9,9 +9,21 @@ import {
   type Cell,
 } from "./cells.ts";
 import { BUILDINGS, CITY_SPAWN } from "./layout.ts";
-import { drawCallsOf, KINDS, planCity, trianglesOf } from "./plan.ts";
+import {
+  drawCallsOf,
+  FACADE_KINDS,
+  facadeOf,
+  KINDS,
+  planCity,
+  trianglesOf,
+  type CityPlan,
+} from "./plan.ts";
 
 const origin: [number, number] = [0, 0];
+
+/** Buildings drawn: one facade instance each, whatever its material. */
+const facades = (plan: CityPlan) =>
+  FACADE_KINDS.reduce((n, k) => n + plan.instances[k].length, 0);
 
 function insideCells(
   p: { x: number; z: number },
@@ -28,7 +40,7 @@ function insideCells(
 
 test("the full city draws every building and every neon sign", () => {
   const plan = planCity(ALL_CELLS, 0, origin);
-  assert.equal(plan.instances.body.length, BUILDINGS.length);
+  assert.equal(facades(plan), BUILDINGS.length);
   assert.equal(
     plan.instances.sign.length,
     BUILDINGS.filter((b) => b.sign).length,
@@ -39,11 +51,27 @@ test("the full city draws every building and every neon sign", () => {
   );
 });
 
+test("each building's walls take its style's material", () => {
+  assert.equal(facadeOf("brick"), "brick");
+  assert.equal(facadeOf("storefront"), "brick");
+  assert.equal(facadeOf("club"), "stucco");
+  assert.equal(facadeOf("tower"), "concrete");
+  assert.equal(facadeOf("warehouse"), "siding");
+  assert.equal(facadeOf("glass"), "curtain");
+  const plan = planCity(ALL_CELLS, 0, origin);
+  for (const kind of FACADE_KINDS)
+    assert.equal(
+      plan.instances[kind].length,
+      BUILDINGS.filter((b) => facadeOf(b.style) === kind).length,
+      kind,
+    );
+});
+
 test("only the cells in view are drawn", () => {
   const corner: [number, number] = [-170, 170];
   const cells = cellsWithin(corner, 60);
   const plan = planCity(cells, 0, corner);
-  assert.ok(plan.instances.body.length < BUILDINGS.length);
+  assert.ok(facades(plan) < BUILDINGS.length);
   // building kit (tanks, antennas) hangs off a building drawn whole, so it can
   // stand just outside the view; the ground kinds are clipped to the cells
   for (const kind of ["road", "sidewalk", "lane", "palmTrunk"] as const) {
@@ -65,7 +93,7 @@ test("a building is drawn when any of its cells is in view", () => {
     ),
   );
   assert.ok(expected.length > 0, "the test cell should hold a building");
-  assert.equal(plan.instances.body.length, expected.length);
+  assert.equal(facades(plan), expected.length);
 });
 
 test("the real lights are the neon signs nearest the player", () => {

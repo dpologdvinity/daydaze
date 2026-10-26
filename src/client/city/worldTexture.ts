@@ -32,9 +32,9 @@ function standIn(pixel: Uint8Array) {
   return t;
 }
 
-function tex(path: string, srgb: boolean) {
+function tex(path: string, srgb: boolean, full = false) {
   const t =
-    lean && !srgb
+    lean && !srgb && !full
       ? standIn(path.endsWith("/nor.webp") ? FLAT_NORMAL : FULL_ROUGH)
       : loader.load(path);
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
@@ -43,12 +43,13 @@ function tex(path: string, srgb: boolean) {
   return t;
 }
 
-/** Poly Haven CC0 set in public/textures/<id>/ (diff, nor, rough). */
-export function groundMaps(id: string) {
+/** Poly Haven CC0 set in public/textures/<id>/ (diff, nor, rough). `full`
+ * loads the normal and roughness maps even on the low tier. */
+export function groundMaps(id: string, { full = false } = {}) {
   return {
     map: tex(`/textures/${id}/diff.webp`, true),
-    normalMap: tex(`/textures/${id}/nor.webp`, false),
-    roughnessMap: tex(`/textures/${id}/rough.webp`, false),
+    normalMap: tex(`/textures/${id}/nor.webp`, false, full),
+    roughnessMap: tex(`/textures/${id}/rough.webp`, false, full),
   };
 }
 
@@ -146,6 +147,9 @@ export function boxMapped<M extends THREE.MeshStandardMaterial>(
         "#endif",
         "#ifdef USE_ROUGHNESSMAP",
         "vRoughnessMapUv = (roughnessMapTransform * vec3(boxUv, 1.0)).xy;",
+        "#endif",
+        "#ifdef USE_EMISSIVEMAP",
+        "vEmissiveMapUv = (emissiveMapTransform * vec3(boxUv, 1.0)).xy;",
         "#endif",
       ].join("\n"),
     );

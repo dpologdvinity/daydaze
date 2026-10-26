@@ -1,7 +1,14 @@
 import * as THREE from "three";
 import { CAR_BODY, CAR_CABIN } from "./carGeometry.ts";
 import { boxMapped, groundMaps, worldMapped } from "./worldTexture.ts";
-import { KINDS, type Instance, type Kind } from "../../game/city/plan.ts";
+import {
+  FACADE_KINDS,
+  KINDS,
+  type FacadeKind,
+  type Instance,
+  type Kind,
+} from "../../game/city/plan.ts";
+import { facadeMaterials } from "./facades.ts";
 import { animate } from "./shaders.ts";
 
 // Kinds that glow: their colors run past 1.0 so bloom picks them up on high.
@@ -97,7 +104,11 @@ const GEOMETRY: Record<Shared, THREE.BufferGeometry> = {
   lawn: BOX,
   planks: BOX,
   lane: BOX,
-  body: BOX,
+  brick: BOX,
+  stucco: BOX,
+  concrete: BOX,
+  siding: BOX,
+  curtain: BOX,
   band: BOX,
   roof: BOX,
   ledge: BOX,
@@ -127,7 +138,11 @@ const GEOMETRY: Record<Shared, THREE.BufferGeometry> = {
   steam: PUFF,
 };
 
-const MATERIAL: Record<Shared, THREE.Material> = {
+const FACADES: ReadonlySet<Kind> = new Set(FACADE_KINDS);
+const isFacade = (kind: Kind): kind is FacadeKind => FACADES.has(kind);
+
+// building walls come from facades.ts, built on first mount
+const MATERIAL: Record<Exclude<Shared, FacadeKind>, THREE.Material> = {
   // wet asphalt: low roughness catches the neon as a soft sheen
   // wet asphalt (Poly Haven CC0), mapped by world position
   road: worldMapped(
@@ -179,19 +194,6 @@ const MATERIAL: Record<Shared, THREE.Material> = {
     0.4,
   ),
   lane: new THREE.MeshBasicMaterial({ toneMapped: false }),
-  // the faint emissive keeps facades readable on the night side of the street;
-  // a CC0 plaster scan, box-mapped by world position, gives every facade
-  // texture under its instance color
-  body: boxMapped(
-    new THREE.MeshStandardMaterial({
-      ...groundMaps("painted_plaster_wall"),
-      roughness: 0.6,
-      metalness: 0.15,
-      emissive: "#3b2b7a",
-      emissiveIntensity: 1,
-    }),
-    0.35,
-  ),
   band: new THREE.MeshBasicMaterial({ toneMapped: false }),
   roof: boxMapped(
     new THREE.MeshStandardMaterial({
@@ -301,8 +303,13 @@ export function createKindMeshes(
   capacity: Record<Kind, number>,
   atlas: THREE.Texture,
 ): KindMeshes {
+  const walls = facadeMaterials();
   const make = (kind: Shared) =>
-    instanced(GEOMETRY[kind], MATERIAL[kind], capacity[kind]);
+    instanced(
+      GEOMETRY[kind],
+      isFacade(kind) ? walls[kind] : MATERIAL[kind],
+      capacity[kind],
+    );
   // the card and frame textures are drawn once, on first mount
   const windowMaterial = MATERIAL.window as THREE.MeshBasicMaterial;
   windowMaterial.map ??= windowTexture();
@@ -329,7 +336,11 @@ export function createKindMeshes(
     lawn: make("lawn"),
     planks: make("planks"),
     lane: make("lane"),
-    body: make("body"),
+    brick: make("brick"),
+    stucco: make("stucco"),
+    concrete: make("concrete"),
+    siding: make("siding"),
+    curtain: make("curtain"),
     band: make("band"),
     roof: make("roof"),
     ledge: make("ledge"),

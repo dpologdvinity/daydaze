@@ -27,7 +27,11 @@ export const KINDS = [
   "lawn",
   "planks",
   "lane",
-  "body",
+  "brick",
+  "stucco",
+  "concrete",
+  "siding",
+  "curtain",
   "band",
   "roof",
   "ledge",
@@ -59,6 +63,16 @@ export const KINDS = [
 ] as const;
 export type Kind = (typeof KINDS)[number];
 
+/** The materials a building's walls come in, one instanced mesh each. */
+export const FACADE_KINDS = [
+  "brick",
+  "stucco",
+  "concrete",
+  "siding",
+  "curtain",
+] as const satisfies readonly Kind[];
+export type FacadeKind = (typeof FACADE_KINDS)[number];
+
 /** A unit mesh placed and scaled; `rot` is Euler XYZ-order YXZ in radians. */
 export type Instance = {
   x: number;
@@ -89,7 +103,11 @@ export const TRIANGLES: Record<Kind, number> = {
   lawn: 12,
   planks: 12,
   lane: 12,
-  body: 12,
+  brick: 12,
+  stucco: 12,
+  concrete: 12,
+  siding: 12,
+  curtain: 12,
   band: 12,
   roof: 12,
   ledge: 12,
@@ -120,17 +138,35 @@ export const TRIANGLES: Record<Kind, number> = {
   steam: 48,
 };
 
+/** Which wall material each building style is built from. */
+const FACADE: Record<BuildingStyle, FacadeKind> = {
+  tower: "concrete",
+  glass: "curtain",
+  billboard: "concrete",
+  storefront: "brick",
+  deck: "concrete",
+  brick: "brick",
+  club: "stucco",
+  warehouse: "siding",
+  velvet: "stucco",
+  gate: "concrete",
+};
+
+export const facadeOf = (style: BuildingStyle): FacadeKind => FACADE[style];
+
+// Tints over each wall's photo: light enough that brick, plaster and steel
+// keep their own color and grain, with the city's violet night in them.
 const BODY_COLOR: Record<BuildingStyle, string> = {
-  tower: "#3d4f9e",
-  glass: "#3a5aa8",
-  billboard: "#4a2a7a",
-  storefront: "#5a3a7a",
-  deck: "#5c5a8a",
-  brick: "#a4483f",
-  club: "#6a2a7a",
-  warehouse: "#55505c",
-  velvet: "#7a1f55",
-  gate: "#4f2f8a",
+  tower: "#9aa2dc",
+  glass: "#a8bcf4",
+  billboard: "#a894d0",
+  storefront: "#e8c0bc",
+  deck: "#aeaccc",
+  brick: "#f4d0c6",
+  club: "#cc9ee6",
+  warehouse: "#b0acc0",
+  velvet: "#e088b8",
+  gate: "#a290d8",
 };
 
 const BAND_COLOR = "#6a5cff";
@@ -177,7 +213,11 @@ function emptyInstances(): Record<Kind, Instance[]> {
     lawn: [],
     planks: [],
     lane: [],
-    body: [],
+    brick: [],
+    stucco: [],
+    concrete: [],
+    siding: [],
+    curtain: [],
     band: [],
     roof: [],
     ledge: [],
@@ -509,7 +549,7 @@ function buildingInstancesFacing(
   const f = frontOf(b);
   const signColor = b.sign?.color;
 
-  out.body.push({
+  out[FACADE[b.style]].push({
     x: f.cx,
     y: f.h / 2,
     z: f.cz,
