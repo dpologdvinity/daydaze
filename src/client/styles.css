@@ -1961,6 +1961,190 @@ button:focus-visible {
   opacity: 0.75;
 }
 
+/* Collections: the album, closet sets and stickers. The button sits under
+   the phone's Plate Rush button. */
+.collections-open {
+  position: fixed;
+  top: 114px;
+  right: 18px;
+  z-index: 6;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffe08a, #ffb02e 60%, #c97a12);
+  color: #2a1400;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.collections-open:focus-visible {
+  outline: 3px solid #ffd84f;
+  outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+  .collections-open {
+    top: 104px;
+    right: 14px;
+    font-size: 13px;
+  }
+}
+
+/* on the right, under its button, above the dock; opaque so the HUD
+   behind never shows through */
+.collections-panel {
+  top: 162px;
+  right: 18px;
+  bottom: auto;
+  left: auto;
+  z-index: 9;
+  width: min(420px, calc(100vw - 36px));
+  max-height: calc(100vh - 300px);
+  background: rgb(18 10 28 / 0.97);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.5);
+}
+
+@media (max-width: 720px) {
+  .collections-panel {
+    top: 148px;
+    right: 14px;
+    max-height: calc(100vh - 340px);
+  }
+}
+
+.collections-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.collections-tabs {
+  display: flex;
+  gap: 6px;
+  margin: 6px 0 10px;
+}
+
+.collections-tabs [aria-pressed="true"] {
+  background: var(--glow-button);
+  color: #fff;
+}
+
+.collections-page h3 {
+  margin: 10px 0 6px;
+  font-size: 15px;
+  color: var(--amber);
+}
+
+.album-places,
+.album-snaps,
+.closet-sets,
+.sticker-book {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.album-places {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.album-places li {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: rgb(255 176 46 / 0.22);
+}
+
+.album-left {
+  margin: 6px 0 0;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.album-snaps {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px;
+}
+
+.album-snaps img {
+  width: 100%;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.4);
+  transform: rotate(-1.5deg);
+}
+
+.album-snaps li:nth-child(even) img {
+  transform: rotate(1.5deg);
+}
+
+.closet-sets li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.closet-sets button,
+.set-done {
+  margin-left: auto;
+}
+
+.set-done {
+  color: var(--amber);
+  font-weight: 700;
+}
+
+.sticker-book {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px;
+}
+
+.sticker-book li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.sticker {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 50%;
+  font-weight: 800;
+  background: rgb(255 255 255 / 0.08);
+  color: rgb(255 255 255 / 0.5);
+}
+
+.sticker-book [data-grade="S"] .sticker {
+  background: linear-gradient(135deg, #ffe08a, #ff4fb3);
+  color: #2a0a1c;
+}
+
+.sticker-book [data-grade="A"] .sticker {
+  background: #b06bff;
+  color: #fff;
+}
+
+.sticker-book [data-grade="B"] .sticker {
+  background: #4fe3ff;
+  color: #082a33;
+}
+
+.sticker-book [data-grade="C"] .sticker {
+  background: #7dff6b;
+  color: #0a2a10;
+}
+
 /* A new version is waiting: reload when it suits the player. */
 .update-prompt {
   position: fixed;

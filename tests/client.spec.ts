@@ -2492,3 +2492,42 @@ test("the city map lists the week's events, and a club glows on its night", asyn
   );
   await expect(page.locator(".night-glow")).toHaveCount(1);
 });
+
+test("collections: the album counts places, a full set pays, stickers show grades", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  await seedSave(page, {
+    coins: 100,
+    wardrobe: [
+      "tracksuit-y2k",
+      "baby-tee-mini",
+      "platforms",
+      "lips-blue-raspberry-gloss",
+      "#ffb3d9",
+    ],
+    bests: { bowling: 190 },
+  });
+  await page.goto(VELVET);
+  await page
+    .getByRole("button", { name: "Collections" })
+    .click({ timeout: 150_000 });
+  const panel = page.getByRole("dialog", { name: "Collections" });
+  await expect(panel).toContainText(/Places · 1 of \d+/);
+  await expect(
+    panel.getByRole("list", { name: "Places visited" }),
+  ).toContainText("The Velvet Room");
+  expect(
+    (await new AxeBuilder({ page }).include(".collections-panel").analyze())
+      .violations,
+  ).toEqual([]);
+  await panel.getByRole("button", { name: "Sets" }).click();
+  const y2k = panel.getByRole("listitem").filter({ hasText: "Y2K princess" });
+  await y2k.getByRole("button", { name: "Claim" }).click();
+  await expect(y2k).toContainText("Claimed");
+  await expect(page.getByText("220 coins")).toBeVisible();
+  await panel.getByRole("button", { name: "Stickers" }).click();
+  await expect(
+    panel.getByRole("listitem").filter({ hasText: "Bowling" }),
+  ).toContainText("grade S");
+});

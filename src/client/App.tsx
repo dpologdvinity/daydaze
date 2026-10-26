@@ -74,6 +74,8 @@ import { completeChallenge, dayOf } from "../game/challenges.ts";
 import { prizeFor } from "../game/prizes.ts";
 import { PrizeCard } from "./ui/PrizeCard.tsx";
 import { UpdatePrompt } from "./ui/UpdatePrompt.tsx";
+import { Collections } from "./ui/Collections.tsx";
+import { claimSet, visit as visitPlace } from "../game/collections.ts";
 import { Onboarding } from "./ui/Onboarding.tsx";
 import { postPrize, prizeDesk } from "./ui/prizeDesk.ts";
 import { World } from "./world/World.tsx";
@@ -140,6 +142,14 @@ export function App() {
     [save.look, save.swim],
   );
   useOnlineRoom(here.room, onlineLook);
+  // the album remembers every place you've been
+  useEffect(() => {
+    setSave((s) =>
+      s.visited.includes(here.room)
+        ? s
+        : { ...s, visited: visitPlace(s.visited, here.room) },
+    );
+  }, [here.room]);
   const [fading, setFading] = useState(false);
   const traveling = useRef(false);
   // Fade out, swap rooms behind the curtain, then fade back in.
@@ -304,6 +314,20 @@ export function App() {
         <LoadingVeil />
         <PrizeCard />
         <UpdatePrompt />
+        <Collections
+          visited={save.visited}
+          wardrobe={save.wardrobe}
+          claimed={save.sets}
+          bests={save.bests}
+          onClaim={(id) =>
+            setSave((s) => {
+              const claim = claimSet(s, id);
+              return claim.ok
+                ? { ...s, coins: claim.coins, sets: claim.sets }
+                : s;
+            })
+          }
+        />
         {!save.onboarded && (
           <Onboarding
             name={save.name}

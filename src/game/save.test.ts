@@ -49,6 +49,8 @@ test("createDefaultSave uses the default look and auto quality", () => {
     garage: ["quill-lite"],
     records: [],
     onboarded: false,
+    visited: [],
+    sets: [],
   });
 });
 
@@ -91,6 +93,8 @@ test("a save round-trips through serializeSave and loadSave", () => {
     garage: ["quill-lite"],
     records: [],
     onboarded: true,
+    visited: [],
+    sets: [],
   };
   assert.deepEqual(loadSave(serializeSave(save), "Fallback"), save);
 });
@@ -156,6 +160,8 @@ test("a save from before the swimsuit slot still loads", () => {
     garage: ["quill-lite"],
     records: [],
     onboarded: true,
+    visited: [],
+    sets: [],
   });
 });
 
@@ -215,6 +221,8 @@ test("loadSave keeps a valid name when the look is bad", () => {
     garage: ["quill-lite"],
     records: [],
     onboarded: true,
+    visited: [],
+    sets: [],
   });
 });
 
@@ -248,6 +256,8 @@ test("loadSave keeps a valid look when the name is bad", () => {
     garage: ["quill-lite"],
     records: [],
     onboarded: true,
+    visited: [],
+    sets: [],
   });
 });
 
@@ -414,6 +424,8 @@ test("loadSave salvages valid fields from a wrong version", () => {
   assert.deepEqual(loadSave(raw, "Fallback"), {
     ...createDefaultSave("Kept Name"),
     onboarded: true,
+    visited: [],
+    sets: [],
   });
 });
 
@@ -535,4 +547,18 @@ test("the onboarded flag round-trips; a bad one counts as an existing save", () 
   assert.equal(loadSave(serializeSave(done), "x").onboarded, true);
   const bad = JSON.stringify({ ...fresh, onboarded: "yes" });
   assert.equal(loadSave(bad, "x").onboarded, true);
+});
+
+test("the album's places and claimed sets round-trip and are cleaned", () => {
+  const save: SaveV1 = {
+    ...createDefaultSave("Mango Fan"),
+    visited: ["karaoke", "bowling"],
+    sets: ["y2k"],
+  };
+  const back = loadSave(serializeSave(save), "x");
+  assert.deepEqual(back.visited, ["karaoke", "bowling"]);
+  assert.deepEqual(back.sets, ["y2k"]);
+  const bad = JSON.stringify({ ...save, visited: ["moon"], sets: "y2k" });
+  assert.deepEqual(loadSave(bad, "x").visited, []);
+  assert.deepEqual(loadSave(bad, "x").sets, []);
 });

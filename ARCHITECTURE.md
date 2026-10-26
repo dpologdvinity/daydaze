@@ -69,6 +69,11 @@ under 250 draw calls, 300k triangles and 4 real lights.
 Pure, deterministic and seeded where randomness matters, so tests and every
 online player agree. The main tables:
 
+- `collections.ts`: the photo album (places visited, a save field), closet
+  sets that pay a reward once complete (claimed sets, a save field) and the
+  sticker book (best grade per game, from the personal bests). Snapshot
+  thumbnails stay on the device (`client/albumSnaps.ts`, 12 kept): images
+  would overflow the 64 KB cloud save. The panel is `ui/Collections.tsx`.
 - `events.ts`: the weekly club nights (Y2K, Latin, chiptune) on a UTC
   schedule shared by every player: on its night a club plays the night's
   track (`RoomAudio`), glows its color and its NPCs talk about it (the

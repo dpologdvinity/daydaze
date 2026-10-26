@@ -3,6 +3,8 @@
 // stored JSON so a corrupt or older save never loses the rest. Also
 // display-name rules and random guest names.
 
+import { cleanSets, cleanVisited } from "./collections.ts";
+import type { RoomId } from "./rooms.ts";
 import { isIntensity, type Intensity } from "./effects/buzz.ts";
 import {
   DEFAULT_CRIME,
@@ -70,6 +72,10 @@ export type SaveV1 = {
   records: RecordId[];
   /** Whether the first-visit walkthrough has been finished or skipped. */
   onboarded: boolean;
+  /** The album: every place you've been, in the order you first went. */
+  visited: RoomId[];
+  /** Closet sets whose reward you've claimed (collections.ts). */
+  sets: string[];
 };
 
 /** The localStorage key the save lives under. */
@@ -114,6 +120,8 @@ export function createDefaultSave(name: string): SaveV1 {
     garage: [STARTER],
     records: [],
     onboarded: false,
+    visited: [],
+    sets: [],
   };
 }
 
@@ -190,6 +198,8 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
       typeof save.get("onboarded") === "boolean"
         ? save.get("onboarded") === true
         : save.size > 0,
+    visited: cleanVisited(save.get("visited")),
+    sets: cleanSets(save.get("sets")),
   };
 }
 
