@@ -40,6 +40,7 @@ import {
   writeKind,
 } from "./meshes.ts";
 import { useDaylight } from "./daylight.ts";
+import { CityTrees, cityTrees } from "./CityTrees.tsx";
 import { CITY_CLOCK } from "./shaders.ts";
 import { Traffic } from "./Traffic.tsx";
 import { PlayerCar } from "./PlayerCar.tsx";
@@ -135,6 +136,7 @@ export function CityScene({
       const plan = planCity(cellsWithin(at, VIEW_RADIUS), lightCount, at);
       for (const kind of KINDS)
         writeKind(meshes[kind], kind, plan.instances[kind]);
+      cityTrees.set({ spots: plan.trees, at });
       lights.current.forEach((light, i) => {
         if (!light) return;
         const sign = plan.lights[i];
@@ -217,6 +219,9 @@ export function CityScene({
       <PlayerCar player={player} parked={car} onPark={onPark} />
       <GasStations player={player} />
       <Pedestrians player={player} />
+      <Suspense fallback={null}>
+        <CityTrees />
+      </Suspense>
       <NightMarket player={player} />
     </>
   );

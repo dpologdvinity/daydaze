@@ -176,3 +176,20 @@ test("only nightlife buildings wear neon; the rest get stone cornices", () => {
   assert.equal(bandsOnIt.length, 0);
   assert.ok(plan.instances.ledge.some((l) => l.color === CORNICE_COLOR));
 });
+
+test("street trees come as spots for the tree models, not boxes and balls", () => {
+  const plan = planCity(ALL_CELLS, 0, origin);
+  const props = BUILDINGS.length; // keep the import used
+  assert.ok(props > 0);
+  assert.ok(plan.trees.length > 50, `${plan.trees.length} trees`);
+  for (const t of plan.trees) {
+    assert.ok(Number.isInteger(t.variant) && t.variant >= 0 && t.variant < 5);
+    assert.ok(t.scale > 0.6 && t.scale < 1.4);
+  }
+  // every variant shows up, so streets aren't one tree cloned
+  assert.equal(new Set(plan.trees.map((t) => t.variant)).size, 5);
+  // the old sphere canopies are only the palms' coconuts now
+  assert.ok(plan.instances.treeTrunk.length === 0);
+  // the same spot always grows the same tree
+  assert.deepEqual(planCity(ALL_CELLS, 0, origin).trees, plan.trees);
+});

@@ -89,10 +89,25 @@ export type Instance = {
 
 export type Light = { x: number; y: number; z: number; color: string };
 
+/** A street tree: the client draws one of the tree models here
+ * (src/client/city/CityTrees.tsx); `variant` picks the model, `scale` and
+ * `yaw` keep a row of them from looking cloned. */
+export type TreeSpot = {
+  x: number;
+  z: number;
+  variant: number;
+  scale: number;
+  yaw: number;
+};
+
+/** How many tree models there are (public/models/nature/commontree-*). */
+export const TREE_VARIANTS = 5;
+
 export type CityPlan = {
   instances: Record<Kind, Instance[]>;
   /** The neon signs nearest the player, for the real point lights. */
   lights: Light[];
+  trees: TreeSpot[];
 };
 
 /** Triangles per instance of each kind's unit geometry, upper bounds. */
@@ -704,18 +719,22 @@ function propInstances(
         color: "#5a3a1f",
       });
     }
-  } else {
-    out.treeTrunk.push({ x, y: 2, z, sx: 0.25, sy: 4, sz: 0.25 });
-    out.treeCanopy.push({
-      x,
-      y: 4.6,
-      z,
-      sx: 3.2,
-      sy: 3,
-      sz: 3.2,
-      color: "#1f6b52",
-    });
   }
+}
+
+/** A street tree at (x, z): a model, size and turn picked from its spot. */
+function treeAt(x: number, z: number): TreeSpot {
+  const h = (k: number) => {
+    const v = Math.sin(x * 12.9898 + z * 78.233 + k * 37.719) * 43758.5453;
+    return v - Math.floor(v);
+  };
+  return {
+    x,
+    z,
+    variant: Math.floor(h(1) * TREE_VARIANTS),
+    scale: 0.8 + h(2) * 0.4,
+    yaw: h(3) * Math.PI * 2,
+  };
 }
 
 /**
@@ -762,10 +781,12 @@ export function planCity(
     if (loaded.has(cellAt(p.at).key)) instances[p.kind].push(p.instance);
   }
 
+  const trees: TreeSpot[] = [];
   for (const prop of PROPS) {
     const [x, z] = prop.position;
     if (cells.some((c) => cellAt([x, z]).key === c.key)) {
-      propInstances(x, z, prop.kind, instances);
+      if (prop.kind === "tree") trees.push(treeAt(x, z));
+      else propInstances(x, z, prop.kind, instances);
     }
   }
 
@@ -775,7 +796,11 @@ export function planCity(
       (a.z - from[1]) ** 2 -
       ((b.x - from[0]) ** 2 + (b.z - from[1]) ** 2),
   );
-  return { instances, lights: lights.slice(0, Math.max(0, lightCount)) };
+  return {
+    instances,
+    lights: lights.slice(0, Math.max(0, lightCount)),
+    trees,
+  };
 }
 
 /** Upper bound on triangles the plan draws. */
