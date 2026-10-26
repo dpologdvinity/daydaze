@@ -1,366 +1,92 @@
-"""Retargets CMU motion capture (free to copy, modify and redistribute) onto
-the doll's 13-joint rig, and writes src/game/dance/mocap.ts.
+"""Bakes Mixamo clips onto the doll's own skeleton and writes them as one
+animation-only GLB, plus the clip catalog src/game/dance/mocap.ts.
 
-    art/doll/blender/fetch_cmu.sh
+    blender --background --factory-startup --python art/doll/blender/build_doll.py
     blender --background --factory-startup --python art/doll/blender/mocap.py
+    scripts/optimize-doll.sh
 
-Per frame: forward kinematics of the BVH skeleton; the pelvis frame becomes
-the doll's body rotation (the clip turned to face +z, in place); every other
-bone takes the shortest rotation from its rest direction to the matching
-mocap limb, chained down each limb (twist about the limb is dropped). A
-clean loop is found by matching poses, resampled to 15 keys a second.
-Angles come out as three.js XYZ Euler, as src/client/avatar/pose.ts uses.
+build_doll.py leaves the woman's bare rig in .cache/rig.blend: Mixamo's 52
+bones (MPFB2's CC0 rig), fitted to the shaped body and resting arms down.
+Each clip is retargeted bone for bone, in world space with rest-pose
+compensation:
+
+  1. Line the doll's rest bones up with the clip's rest (a T-pose), parent
+     first, by the shortest swing of each bone onto the clip bone's
+     direction. A bone's offset is the clip's rest frame to that lined-up
+     frame, so it soaks up any difference in bone axes and roll (Mixamo's
+     feet, toes and thumbs sit 25 to 180 degrees off ours).
+  2. Per frame, each doll bone's world rotation is the clip bone's world
+     rotation times its offset; local rotations follow, parent to child.
+  3. The hips move from rest scaled by the two rigs' leg lengths. Their
+     drift across the floor comes off (loops play in place, sway kept); a
+     seat or a bed sets the height of a sit or a lie.
+
+Writes .cache/out/anims.glb (scripts/optimize-doll.sh compresses it into
+public/models/doll/) and mocap.ts (ids, kinds, labels, loop lengths and walk
+speeds). The man shares the file: the client moves each clip onto his rest
+pose when it loads (src/client/avatar/human/anims.ts).
+
+The Mixamo library (repo-root mixamo/, a symlink to the user's own copy,
+git-ignored): Adobe's terms allow the animations in a game, baked into its
+own files, but not redistributing the FBX files. Only the clips below ship.
+CMU clips were dropped in the move to this rig (2026-10-26): their BVH
+skeleton has no hands, toes or upper spine to match bone for bone, and every
+clip id they filled now plays a Mixamo take instead.
 """
 
 import json
 import math
 import os
+import sys
 
-import numpy as np
+import bpy
+from mathutils import Quaternion, Vector
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-CMU = os.path.join(HERE, ".cache", "cmu")
-OUT = os.path.join(HERE, "..", "..", "..", "src", "game", "dance", "mocap.ts")
-KEYS_OUT = os.path.join(os.path.dirname(OUT), "mocapKeys.ts")
+ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
+# baked once, on the woman's rig; the client carries the clips over to the
+# man's (same bones, own rest pose: see retargetClip in HumanDoll's anims.ts)
+RIG_BLEND = os.path.join(HERE, ".cache", "rig.blend")
+OUT = os.path.join(HERE, ".cache", "out", "anims.glb")
+CATALOG = os.path.join(ROOT, "src", "game", "dance", "mocap.ts")
+MIXAMO = os.path.join(ROOT, "mixamo")
+FPS = 30
 
-# clip id -> (file, kind, label, loop search window in seconds)
+# How far sitting lowers the hips: SIT_DROP in src/client/avatar/pose.ts,
+# which every seat is built to. A lying doll rests on a surface this far
+# below the seated hips (the hips' own depth).
+SIT_DROP = -0.33
+SEAT_BELOW_HIPS = 0.1
+
+# clip id -> (path under mixamo/ without .fbx, kind, label). Ids are stable:
+# gaits.ts, pickers, NPCs and saved holds name them. Order matters within a
+# kind: the first lay clip is the player's lounge, NPCs pick seeded poses
+# and idles by index, and the first sit is the default seat.
+# Kinds: walk (a gait's loop), idle (standing, looped), dance, emote (looped
+# like a dance, NPCs and games only), pose / sit / lay (held: the middle
+# frame), and seat (a looped sit).
 CLIPS = {
-    "walk-relaxed": ("07_04", "walk", "Relaxed", (1.0, 1.7)),
-    "walk-brisk": ("07_12", "walk", "Brisk", (0.8, 1.3)),
-    "salsa": ("60_01", "dance", "Salsa", (2.5, 4.5)),
-    "salsa-turns": ("61_01", "dance", "Salsa turns", (2.5, 4.5)),
-    "lambada": ("55_02", "dance", "Lambada", (2.5, 4.5)),
-    "expressive": ("05_02", "dance", "Expressive", (3.0, 5.0)),
-}
-
-KEYS_PER_SECOND = 15
-HIP_HEIGHT = 0.92  # the doll's hip height in meters, for the bounce
-
-
-def parse(path):
-    joints, stack, motion = [], [], []
-    channels_total = 0
-    with open(path) as f:
-        lines = f.read().split("\n")
-    i = 0
-    while i < len(lines):
-        p = lines[i].split()
-        i += 1
-        if not p:
-            continue
-        if p[0] in ("ROOT", "JOINT"):
-            joints.append(
-                {"name": p[1], "parent": stack[-1] if stack else -1, "offset": None, "ch": [], "start": 0}
-            )
-            stack.append(len(joints) - 1)
-        elif p[0] == "End":
-            joints.append({"name": "End", "parent": stack[-1], "offset": None, "ch": [], "start": 0})
-            stack.append(len(joints) - 1)
-        elif p[0] == "OFFSET":
-            joints[stack[-1]]["offset"] = np.array([float(x) for x in p[1:4]])
-        elif p[0] == "CHANNELS":
-            j = joints[stack[-1]]
-            j["ch"] = p[2 : 2 + int(p[1])]
-            j["start"] = channels_total
-            channels_total += int(p[1])
-        elif p[0] == "}":
-            stack.pop()
-        elif p[0] == "Frame" and p[1] == "Time:":
-            dt = float(p[2])
-            motion = [list(map(float, l.split())) for l in lines[i:] if l.strip()]
-            break
-    return joints, np.array(motion), dt
-
-
-def rot(axis, deg):
-    a = math.radians(deg)
-    c, s = math.cos(a), math.sin(a)
-    if axis == "X":
-        return np.array([[1, 0, 0], [0, c, -s], [0, s, c]])
-    if axis == "Y":
-        return np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]])
-    return np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])
-
-
-def fk(joints, frame):
-    """World position of every joint for one frame (BVH is Y up)."""
-    pos = [None] * len(joints)
-    world = [None] * len(joints)
-    for k, j in enumerate(joints):
-        R = np.eye(3)
-        t = j["offset"].copy()
-        for n, ch in enumerate(j["ch"]):
-            v = frame[j["start"] + n]
-            if ch.endswith("position"):
-                t["XYZ".index(ch[0])] += v
-            else:
-                R = R @ rot(ch[0], v)
-        if j["parent"] < 0:
-            world[k] = R
-            pos[k] = t
-        else:
-            pw = world[j["parent"]]
-            pos[k] = pos[j["parent"]] + pw @ t
-            world[k] = pw @ R
-    return pos
-
-
-def by_name(joints):
-    out = {}
-    for k, j in enumerate(joints):
-        out.setdefault(j["name"], k)  # the first Spine and Neck
-    return out
-
-
-def norm(v):
-    return v / (np.linalg.norm(v) + 1e-12)
-
-
-def from_to(a, b):
-    """Rotation taking unit a onto unit b, by axis and angle (Rodrigues).
-    Near opposite directions (an arm raised from hanging) the axis is taken
-    across the body's front, so it never flips between frames."""
-    a, b = norm(a), norm(b)
-    c = max(-1.0, min(1.0, float(np.dot(a, b))))
-    angle = math.acos(c)
-    axis = np.cross(a, b)
-    if np.linalg.norm(axis) < 1e-3:
-        axis = np.cross(a, [0.0, 0.0, 1.0])
-        if np.linalg.norm(axis) < 1e-3:
-            axis = np.array([1.0, 0.0, 0.0])
-    k = norm(axis)
-    K = np.array([[0, -k[2], k[1]], [k[2], 0, -k[0]], [-k[1], k[0], 0]])
-    return np.eye(3) + math.sin(angle) * K + (1 - c) * K @ K
-
-
-def euler_xyz(m):
-    """three.js 'XYZ' Euler from a rotation matrix."""
-    y = math.asin(max(-1.0, min(1.0, m[0, 2])))
-    if abs(m[0, 2]) < 0.9999:
-        x = math.atan2(-m[1, 2], m[2, 2])
-        z = math.atan2(-m[0, 1], m[0, 0])
-    else:
-        x = math.atan2(m[2, 1], m[1, 1])
-        z = 0.0
-    return [x, y, z]
-
-
-# Rest directions of the doll's bones in its own frame (Y up, facing +z,
-# left = +x), matching the re-posed model in build_doll.py.
-ARM_REST = {"l": norm(np.array([0.3, -1.0, 0.04])), "r": norm(np.array([-0.3, -1.0, 0.04]))}
-LEG_REST = {"l": norm(np.array([0.035, -1.0, 0.0])), "r": norm(np.array([-0.035, -1.0, 0.0]))}
-FOOT_REST = norm(np.array([0.0, -0.45, 1.0]))
-HEAD_REST = norm(np.array([0.0, 1.0, 0.08]))
-
-LIMBS = {
-    # our bone: (mocap from, mocap to, parent, rest direction)
-    "lArm": ("LeftArm", "LeftForeArm", "body", ARM_REST["l"]),
-    "lFore": ("LeftForeArm", "LeftHand", "lArm", ARM_REST["l"]),
-    "rArm": ("RightArm", "RightForeArm", "body", ARM_REST["r"]),
-    "rFore": ("RightForeArm", "RightHand", "rArm", ARM_REST["r"]),
-    "lLeg": ("LeftUpLeg", "LeftLeg", "body", LEG_REST["l"]),
-    "lShin": ("LeftLeg", "LeftFoot", "lLeg", LEG_REST["l"]),
-    "lFoot": ("LeftFoot", "LeftToeBase", "lShin", FOOT_REST),
-    "rLeg": ("RightUpLeg", "RightLeg", "body", LEG_REST["r"]),
-    "rShin": ("RightLeg", "RightFoot", "rLeg", LEG_REST["r"]),
-    "rFoot": ("RightFoot", "RightToeBase", "rShin", FOOT_REST),
-    "head": ("Neck", "Head", "body", HEAD_REST),
-}
-JOINT_ORDER = ["body", "head", "lArm", "lFore", "rArm", "rFore", "lLeg", "lShin", "rLeg", "rShin", "lFoot", "rFoot"]
-
-
-def cmu_frames(path):
-    """CMU BVH as frames of {joint name: position}, Y up, at 30 fps."""
-    joints, motion, dt = parse(path)
-    idx = by_name(joints)
-    step = max(1, round((1 / 30) / dt))
-    frames = []
-    for f in range(0, len(motion), step):
-        pos = fk(joints, motion[f])
-        frames.append({name: pos[i] for name, i in idx.items()})
-    return frames, dt * step
-
-
-MIXAMO_JOINTS = [
-    "Hips", "Spine", "Neck", "Head", "LeftUpLeg", "LeftLeg", "LeftFoot",
-    "LeftToeBase", "RightUpLeg", "RightLeg", "RightFoot", "RightToeBase",
-    "LeftArm", "LeftForeArm", "LeftHand", "RightArm", "RightForeArm", "RightHand",
-]
-
-
-def mixamo_frames(path):
-    """A Mixamo FBX as frames of {joint name: position}, Y up. Mixamo's
-    bone names match CMU's once the mixamorig: prefix is dropped."""
-    import bpy
-
-    bpy.ops.wm.read_factory_settings(use_empty=True)
-    bpy.ops.import_scene.fbx(filepath=path)
-    arm = next(o for o in bpy.data.objects if o.type == "ARMATURE")
-    scene = bpy.context.scene
-    act = arm.animation_data.action if arm.animation_data else None
-    start, end = (int(act.frame_range[0]), int(act.frame_range[1])) if act else (1, 1)
-    bones = {
-        b.name.split(":")[-1]: b for b in arm.pose.bones if b.name.split(":")[-1] in MIXAMO_JOINTS
-    }
-    frames = []
-    for f in range(start, end + 1):
-        scene.frame_set(f)
-        fr = {}
-        for name, b in bones.items():
-            w = arm.matrix_world @ b.head
-            fr[name] = np.array([w.x, w.z, -w.y])  # Blender Z up to Y up
-        frames.append(fr)
-    return frames, 1 / scene.render.fps
-
-
-def retarget(frames, fdt, held=False):
-    """`held`: a still pose (sitting, lying), where the clip's own hip height
-    is not standing height, so standing height comes from leg length."""
-
-    def P(fr, name):
-        return fr[name]
-
-    # facing: the average pelvis forward over the clip, turned onto +z
-    fwd = np.zeros(3)
-    for fr in frames:
-        left = P(fr, "LeftUpLeg") - P(fr, "RightUpLeg")
-        up = P(fr, "Spine") - P(fr, "Hips")
-        fwd += norm(np.cross(norm(left), norm(up)))
-    fwd[1] = 0
-    yaw = math.atan2(fwd[0], fwd[2])
-    turn = rot("Y", -math.degrees(yaw))
-    stand = np.median([P(fr, "Hips")[1] for fr in frames])
-    if held:
-        fr = frames[len(frames) // 2]
-        L = lambda a, b: float(np.linalg.norm(P(fr, a) - P(fr, b)))
-        hip = float(np.linalg.norm(P(fr, "Hips") - (P(fr, "LeftUpLeg") + P(fr, "RightUpLeg")) / 2))
-        ankle = min(min(P(f, "LeftFoot")[1], P(f, "RightFoot")[1]) for f in frames)
-        stand = hip + L("LeftUpLeg", "LeftLeg") + L("LeftLeg", "LeftFoot") + max(ankle, 0.05 * stand)
-    scale = HIP_HEIGHT / stand
-
-    # heading per frame, smoothed over about a second: subtracting it keeps
-    # the hips' natural twist but drops whole turns, which XYZ Euler on the
-    # body cannot hold (the doll's facing is the walker's anyway)
-    heads = []
-    for fr in frames:
-        fr = {n: turn @ p for n, p in fr.items()}
-        left = P(fr, "LeftUpLeg") - P(fr, "RightUpLeg")
-        up = P(fr, "Spine") - P(fr, "Hips")
-        f = np.cross(norm(left), norm(up))
-        heads.append(math.atan2(f[0], f[2]))
-    heads = np.unwrap(np.array(heads))
-    width = max(1, int(1.0 / fdt))
-    kernel = np.ones(width) / width
-    smooth = np.convolve(np.pad(heads, width, mode="edge"), kernel, mode="same")[width:-width]
-
-    poses = []
-    for fi, fr in enumerate(frames):
-        spin = rot("Y", -math.degrees(smooth[fi]))
-        fr = {n: spin @ (turn @ p) for n, p in fr.items()}
-        left = norm(P(fr, "LeftUpLeg") - P(fr, "RightUpLeg"))
-        up = P(fr, "Spine") - P(fr, "Hips")
-        up = norm(up - left * np.dot(up, left))
-        fz = np.cross(left, up)
-        R = {"body": np.column_stack([left, up, fz])}
-        out = {"body": euler_xyz(R["body"])}
-        for bone in JOINT_ORDER[1:]:
-            a, b, parent, rest = LIMBS[bone]
-            v = R[parent].T @ norm(P(fr, b) - P(fr, a))
-            q = from_to(rest, v)
-            R[bone] = R[parent] @ q
-            out[bone] = euler_xyz(q)
-        # vertical bounce only: the clip plays in place
-        root = [0.0, float((P(fr, "Hips")[1] - stand) * scale), 0.0]
-        poses.append((root, out))
-    return poses, fdt
-
-
-def flat(pose):
-    root, joints = pose
-    return np.array(root + [a for b in JOINT_ORDER for a in joints[b]])
-
-
-def best_loop(poses, fdt, window, kind):
-    """The segment whose end pose best matches its start. Long takes search
-    starts near the middle; short ones anywhere a loop of that length fits."""
-    lo, hi = int(window[0] / fdt), int(window[1] / fdt)
-    vec = [flat(p) for p in poses]
-    n = len(poses)
-    hi = min(hi, n - 2)
-    lo = min(lo, hi)
-    mid = n // 2
-    best = (1e9, 0, max(lo, 1))
-    for L in range(lo, hi + 1):
-        first = max(0, mid - int(2 / fdt))
-        last = min(n - L - 2, mid + int(2 / fdt))
-        if last < first:
-            first, last = 0, n - L - 2
-        for s0 in range(first, last + 1):
-            d = np.abs(vec[s0] - vec[s0 + L])[1:].sum() + np.abs(vec[s0 + 1] - vec[s0 + L + 1])[1:].sum()
-            # a longer loop that matches as well is worth a little: less repetition
-            d *= 1 - 0.1 * (L - lo) / max(1, hi - lo)
-            if d < best[0]:
-                best = (d, s0, L)
-    return best[1], best[2]
-
-
-def keys_for(poses, fdt, s, L):
-    period = L * fdt
-    n = max(4, int(round(period * KEYS_PER_SECOND)))
-    rows = []
-    for k in range(n + 1):
-        f = s + k * L / n
-        a = min(int(f), len(poses) - 2)
-        u = f - a
-        rows.append(flat(poses[a]) * (1 - u) + flat(poses[a + 1]) * u)
-    rows = np.array(rows)
-    # every rotation has two XYZ Euler forms, (x, y, z) and
-    # (x + pi, pi - y, z + pi); per joint, keep whichever sits closest to the
-    # previous key, then unwrap whole turns, so no key flips across
-    for j in range(len(JOINT_ORDER)):
-        c = slice(3 + 3 * j, 6 + 3 * j)
-        for k in range(1, len(rows)):
-            prev = rows[k - 1, c]
-            a = rows[k, c].copy()
-            b = np.array([a[0] + np.pi, np.pi - a[1], a[2] + np.pi])
-            near = lambda v: v - np.round((v - prev) / (2 * np.pi)) * 2 * np.pi
-            a, b = near(a), near(b)
-            rows[k, c] = a if np.abs(a - prev).sum() <= np.abs(b - prev).sum() else b
-    # close the loop: spread the end-to-start mismatch across the clip (the
-    # last row is the first pose again, one period on)
-    # (a full spin in the take unwinds over the loop, since the doll's facing
-    # is the walker's, not the dance's)
-    residual = rows[n] - rows[0]
-    for k in range(n + 1):
-        rows[k] -= residual * (k / n)
-    keys = []
-    for k in range(n):
-        v = rows[k]
-        root = [round(float(x), 3) for x in v[:3]]
-        joints = {}
-        for i, b in enumerate(JOINT_ORDER):
-            joints[b] = [round(float(x), 3) for x in v[3 + i * 3 : 6 + i * 3]]
-        keys.append({"at": round(k * period / n, 4), "root": root, "joints": joints})
-    return round(period, 4), keys
-
-
-# The Mixamo library (repo-root mixamo/, a symlink to the user's own copy,
-# git-ignored: Adobe's terms allow use in a game but not redistributing the
-# files), files named Name_Description.fbx in topic folders. Hand-picked,
-# not the whole library, so mocapKeys.ts stays small. clip id -> (path under
-# mixamo/ without .fbx, kind, label). Ids are stable: gaits.ts, pickers,
-# NPCs and saved holds name them. Order matters within a kind: the first
-# lay clip is the player's lounge, and NPCs pick seeded poses by index.
-MIXAMO = os.path.join(HERE, "..", "..", "..", "mixamo")
-MIXAMO_CLIPS = {
     # walks only play when a gait names them (src/game/gaits.ts)
-    "walk-catwalk": ("walking/styled/Catwalk-Walking_Catwalk-Walk", "walk", "Catwalk"),
-    "walk-normal": ("walking/Walk_Female-Walk-2", "walk", "Normal"),
-    "walk-sexy": ("walking/styled/Walking_Female-Sexy-Walk", "walk", "Sexy"),
     "walk-easy": ("walking/Walk_Female-Walk-2", "walk", "Easy"),
+    "walk-relaxed": ("walking/Walk_Female-Walk", "walk", "Relaxed"),
+    "walk-brisk": ("walking/Standard-Walk_Standard-Walk", "walk", "Brisk"),
+    "walk-catwalk": ("walking/styled/Catwalk-Walking_Catwalk-Walk", "walk", "Catwalk"),
+    "walk-normal": ("walking/styled/Catwalk-Walk-Forward_Female-Walk-Forward", "walk", "Normal"),
+    "walk-sexy": ("walking/styled/Walking_Female-Sexy-Walk", "walk", "Sexy"),
     "walk-feminine": ("walking/Walking_Feminine-Walk-Forward", "walk", "Feminine"),
     "walk-casual": ("walking/styled/Walking-With-A-Swagger-3", "walk", "Casual"),
     "walk-masc": ("walking/Walking_Male-Standard-Walk", "walk", "Easy stride"),
+    # standing idles: the player breathes, NPCs pick one by seed
+    "idle-breathing": ("idle/Breathing-Idle_Breathing-Idle", "idle", "Breathing"),
+    "idle-weight-shift": ("idle/Neutral-Idle_Neutral-Idle", "idle", "Weight shift"),
+    "idle-look-around": ("idle/Looking-Around_Idle-Stand-Looking-Around", "idle", "Looking around"),
+    "idle-bored": ("idle/Unarmed-Idle-01_Unarmed-Idle", "idle", "Bored"),
+    "idle-female": ("idle/Idle_Female-Idle", "idle", "Easy"),
+    "idle-happy": ("gestures/emotions/Happy-Idle_Happy-Idle-Variation-1", "idle", "Happy"),
+    "salsa": ("dancing/Salsa-Dancing_Salsa-Dancing-Side-To-Side", "dance", "Salsa"),
+    "salsa-turns": ("dancing/Salsa-Dancing_Salsa-Dancing-Double-Twirl", "dance", "Salsa turns"),
+    "lambada": ("dancing/Salsa-Dancing_Salsa-Dance-Variation-Five", "dance", "Lambada"),
+    "expressive": ("dancing/Jazz-Dancing_Female-Jazz-Dancing-'Around-The-World'-Loop", "dance", "Expressive"),
     "belly-dance": ("dancing/Dancing_Belly-Dancing-Variation-Three", "dance", "Belly dance"),
     "breakdance": ("dancing/Breakdance-Ending-1_Breakdance-Finishing-Combo-Var-1", "dance", "Breakdance"),
     "afrobeat": ("dancing/Dancing_Female-African-Noodle-Dance", "dance", "Afrobeat"),
@@ -392,6 +118,8 @@ MIXAMO_CLIPS = {
     "fist-pump": ("gestures/cheering/Fist-Pump_Pumping-A-Fist", "emote", "Fist pump"),
     "wave": ("gestures/waving/Waving-Gesture_Aj-Waving-Gesture", "emote", "Waving"),
     "chatting": ("talking/Talking_General-Conversation", "emote", "Chatting"),
+    "talk-question": ("talking/Talking_Asking-A-Question-With-One-Hand", "emote", "Asking"),
+    "laugh": ("talking/Talking_Talking-Finding-Something-Funny", "emote", "Laughing"),
     "bartending": ("drinking/Bartending_Pouring-And-Serving-Drinks", "emote", "Bartending"),
     # game clips: the player's doll plays these during in-world games
     "dig": ("sports/Receiver-Catch_Receiver-Catch-On-Boundary-Line", "emote", "Dig"),
@@ -412,6 +140,10 @@ MIXAMO_CLIPS = {
     "pose-phone": ("talking/Talking-On-Phone_Female-Standing-Talking-On-Phone", "pose", "On the phone"),
     "pose-looking-away": ("idle/Female-Standing-Pose_Looking-Down-To-The-Right", "pose", "Looking away"),
     "pose-waiting": ("idle/Male-Standing-Pose_Arms-Behind-Back", "pose", "Waiting"),
+    # the Lean mood: an elbow on the bar
+    "pose-lean": ("idle/Male-Standing-Pose_Left-Elbow-Resting-On-Object", "pose", "Leaning"),
+    # a seat's own loop: the default for anyone sitting without a held pose
+    "sit-idle": ("sitting/Sitting-Idle_Sitting-With-Breathing-Idle", "seat", "Sitting"),
     "sit-lean-back": ("sitting/Female-Sitting-Pose_Arms-Supporting", "sit", "Lean back"),
     "sit-elbows": ("sitting/Female-Sitting-Pose_Leaning-Forward-Elbows-On-Knees", "sit", "Elbows on knees"),
     "sit-crossed": ("sitting/Female-Sitting-Pose_Legs-Crossed-Right-Arm-Over-Knee", "sit", "Legs crossed"),
@@ -426,70 +158,323 @@ MIXAMO_CLIPS = {
     "lay-side": ("laying/Female-Laying-Pose_On-Right-Side-Right-Hand-Supporting-Head", "lay", "On my side"),
     "lay-stomach": ("laying/Female-Laying-Pose_On-Stomach-Elbows-Supporting", "lay", "On my stomach"),
 }
+HELD = ("pose", "sit", "lay")
 # never: the game has no guns outside game zones and nothing gory
 BANNED = ("weapons/", "combat/", "death", "dying", "agony", "hit", "injur", "pain")
-# dance loops longer than this repeat a shorter section: the file stays small
-MAX_LOOP = 6.5
+# a dance or emote longer than this loops a shorter section of itself,
+# where its end pose best meets its start (keeps the file small)
+MAX_LOOP = 8.0
+MIN_LOOP = 3.0
 
 
-def still(poses):
-    """A held pose: one key, standing in for a 1 s loop."""
-    root, joints = poses[len(poses) // 2]
-    return 1.0, [{"at": 0, "root": [round(float(x), 3) for x in root], "joints": {b: [round(float(x), 3) for x in v] for b, v in joints.items()}}]
+def short(name):
+    """mixamorig:Hips, mixamorig1:Hips -> Hips."""
+    return name.split(":")[-1]
+
+
+# where a bone points: at this child's joint when it has several
+LEAD = {"Hips": "Spine", "Spine2": "Neck", "LeftHand": "LeftHandMiddle1", "RightHand": "RightHandMiddle1"}
+
+
+def rest_of(arm):
+    """World-space rest rotation, head and unit direction of each bone.
+    The direction runs joint to joint (to the lead child's head), not along
+    the bone's own axis: an FBX bone's tail is wherever the importer guessed,
+    so only joints compare across rigs. A leaf points at its tail, or at
+    Mixamo's *_End / finger-4 marker bone where the clip has one."""
+    out = {}
+    for b in arm.data.bones:
+        name = short(b.name)
+        kids = [c for c in b.children if short(c.name) not in ("lEye", "rEye", "pony")]
+        lead = next((c for c in kids if short(c.name) == LEAD.get(name)), kids[0] if len(kids) == 1 else None)
+        m = arm.matrix_world @ b.matrix_local
+        head = arm.matrix_world @ b.head_local
+        tip = arm.matrix_world @ (lead.head_local if lead else b.tail_local)
+        out[name] = (m.to_3x3().normalized().to_quaternion(), head, (tip - head).normalized())
+    return out
+
+
+def leg_length(rest):
+    """Hip joint to knee to ankle, meters, from rest_of()."""
+    hip, knee, ankle = (rest[b][1] for b in ("LeftUpLeg", "LeftLeg", "LeftFoot"))
+    return (knee - hip).length + (ankle - knee).length
+
+
+def swing(a, b):
+    """The shortest rotation taking unit a onto unit b."""
+    return a.rotation_difference(b)
+
+
+def offsets(rig, tgt_rest, src_rest):
+    """Per doll bone: the clip-rest-frame to doll-frame offset, with the
+    doll lined up onto the clip's rest pose (step 1 in the module doc)."""
+    D = {}
+    off = {}
+    for b in rig.data.bones:  # parents come before children
+        name = short(b.name)
+        parent = D.get(short(b.parent.name), Quaternion()) if b.parent else Quaternion()
+        if name not in src_rest:
+            D[name] = parent
+            continue
+        q_t, _, d_t = tgt_rest[name]
+        q_s, _, d_s = src_rest[name]
+        D[name] = swing(parent @ d_t, d_s) @ parent
+        off[name] = q_s.inverted() @ (D[name] @ q_t)
+    return off
+
+
+def sample(src, f):
+    """The clip's world rotations and hip position at frame f."""
+    bpy.context.scene.frame_set(f)
+    rot = {}
+    for pb in src.pose.bones:
+        m = src.matrix_world @ pb.matrix
+        rot[short(pb.name)] = m.to_3x3().normalized().to_quaternion()
+    hips = src.pose.bones[next(n for n in src.pose.bones.keys() if short(n) == "Hips")]
+    return rot, src.matrix_world @ hips.head
+
+
+def locals_for(rig, tgt_rest, off, world_src):
+    """Each doll bone's pose rotation (relative to its rest), from the
+    clip's world rotations at one frame (step 2)."""
+    world = {}
+    basis = {}
+    for b in rig.data.bones:
+        name = short(b.name)
+        q_rest = tgt_rest[name][0]
+        if b.parent:
+            pn = short(b.parent.name)
+            p_world, p_rest = world[pn], tgt_rest[pn][0]
+        else:
+            p_world = p_rest = Quaternion()
+        rest_local = p_rest.inverted() @ q_rest
+        if name in off and name in world_src:
+            world[name] = world_src[name] @ off[name]
+        else:
+            # unmatched bones (eyes, pony) keep their rest pose on the parent
+            world[name] = p_world @ rest_local
+        basis[b.name] = rest_local.inverted() @ (p_world.inverted() @ world[name])
+    return basis, world
+
+
+FEET = ("LeftFoot", "LeftToeBase", "RightFoot", "RightToeBase")
+
+
+def foot_drop(rig, tgt_rest, world, hips):
+    """How far the doll's lowest foot point (ankle, ball or toe tip) sits
+    below its own rest height, with the hips at `hips` and the bones turned
+    to `world` (forward kinematics from the rest offsets). Negative: sunk
+    into the floor; positive: every foot point lifted."""
+    head = {}
+    drop = float("inf")
+    for b in rig.data.bones:
+        name = short(b.name)
+        if not b.parent:
+            head[name] = hips
+            continue
+        pn = short(b.parent.name)
+        offset = tgt_rest[pn][0].inverted() @ (tgt_rest[name][1] - tgt_rest[pn][1])
+        head[name] = head[pn] + world[pn] @ offset
+        if name in FEET:
+            drop = min(drop, head[name].z - tgt_rest[name][1].z)
+        if name.endswith("ToeBase"):
+            tip = (b.tail_local - b.head_local)
+            tip_at = head[name] + world[name] @ (tgt_rest[name][0].inverted() @ tip)
+            drop = min(drop, tip_at.z - (b.tail_local.z))
+    return drop
+
+
+def best_loop(frames, lo, hi):
+    """The frame count, within [lo, hi], whose pose best meets frame 0."""
+    first = frames[0]
+
+    def gap(fr):
+        return sum(first[k].rotation_difference(q).angle for k, q in fr.items())
+
+    hi = min(hi, len(frames) - 1)
+    lo = min(lo, hi)
+    return min(range(lo, hi + 1), key=lambda n: gap(frames[n]))
+
+
+def walk_speed(src, f0, f1, k):
+    """A walk's natural ground speed (m/s, doll scale): how fast a planted
+    foot slides back under the hips, the median over the stance frames.
+    Works for clips in place and with root motion alike."""
+    speeds = []
+    for side in ("Left", "Right"):
+        bone = next(pb for pb in src.pose.bones if short(pb.name) == f"{side}ToeBase")
+        hips = next(pb for pb in src.pose.bones if short(pb.name) == "Hips")
+        track = []
+        for f in range(f0, f1 + 1):
+            bpy.context.scene.frame_set(f)
+            foot = src.matrix_world @ bone.head
+            hip = src.matrix_world @ hips.head
+            # Blender's forward is -Y
+            track.append((foot.z, -(foot.y - hip.y)))
+        low = min(z for z, _ in track)
+        for (z0, y0), (z1, y1) in zip(track, track[1:]):
+            if z0 < low + 0.03 / k and z1 < low + 0.03 / k:
+                speeds.append(abs(y1 - y0) * FPS * k)
+    speeds.sort()
+    return speeds[len(speeds) // 2] if speeds else 0.0
+
+
+def import_clip(path):
+    before = set(bpy.data.objects)
+    bpy.ops.import_scene.fbx(filepath=path)
+    new = [o for o in bpy.data.objects if o not in before]
+    src = next(o for o in new if o.type == "ARMATURE")
+    return src, new
+
+
+def bake(rig, tgt_rest, cid, rel, kind):
+    path = os.path.join(MIXAMO, rel + ".fbx")
+    src, imported = import_clip(path)
+    act = src.animation_data.action
+    f0, f1 = (int(round(x)) for x in act.frame_range)
+    src_rest = rest_of(src)
+    off = offsets(rig, tgt_rest, src_rest)
+    hip_t = tgt_rest["Hips"][1]
+    hip_s = src_rest["Hips"][1]
+    # step 3: the hips move from rest scaled by leg length, so the same knee
+    # bend drops them the same share and planted feet stay on the floor
+    k = leg_length(tgt_rest) / leg_length(src_rest)
+    held = kind in HELD
+    frames = [(f0 + f1) // 2] * 2 if held else list(range(f0, f1 + 1))
+    rots, hips = [], []
+    for f in frames:
+        r, h = sample(src, f)
+        rots.append(r)
+        hips.append(hip_t + (h - hip_s) * k)
+    n = len(frames)
+    if kind in ("dance", "emote", "idle") and n / FPS > MAX_LOOP:
+        n = best_loop(rots, int(MIN_LOOP * FPS), int(MAX_LOOP * FPS)) + 1
+        frames, rots, hips = frames[:n], rots[:n], hips[:n]
+    speed = walk_speed(src, f0, f1, k) if kind == "walk" else None
+    # hips: drift off, seats and beds set the height (step 3)
+    drift = (hips[-1] - hips[0]) if n > 1 and not held else Vector()
+    pos = []
+    for i, h in enumerate(hips):
+        p = h - drift * (i / max(1, n - 1))
+        p.z = h.z
+        if kind in ("sit", "seat"):
+            p = Vector((hip_t.x, hip_t.y, hip_t.z + SIT_DROP + (h.z - hips[0].z)))
+        elif kind == "lay":
+            p = Vector((hip_t.x, hip_t.y, hip_t.z + SIT_DROP - SEAT_BELOW_HIPS + h.z))
+        pos.append(p)
+    # keys: rotations per bone, the hips' location in its rest frame
+    action = bpy.data.actions.new(cid)
+    rig.animation_data_create()
+    rig.animation_data.action = action
+    hip_bone = next(b for b in rig.data.bones if short(b.name) == "Hips")
+    hip_rest = tgt_rest["Hips"][0]
+    prev = {}
+    rows = {}
+    drops = []
+    for i in range(n):
+        basis, world = locals_for(rig, tgt_rest, off, rots[i])
+        drops.append(foot_drop(rig, tgt_rest, world, pos[i]))
+        for name, q in basis.items():
+            if name in prev and prev[name].dot(q) < 0:
+                q = -q  # same rotation, the side nearer the last key
+            prev[name] = q
+            rows.setdefault(name, []).append(q)
+    # on her feet: the lowest the feet reach over the clip meets the floor
+    # (the takes' own rest hips differ, a pose file's most of all)
+    if kind not in ("sit", "seat", "lay"):
+        lift = -min(drops)
+        print(cid, "grounded by", round(lift, 3))
+        for p in pos:
+            p.z += lift
+    loc = [hip_rest.inverted() @ (p - hip_t) for p in pos]
+    for name, qs in rows.items():
+        # fingers are 30 of the 55 bones but barely read at play distance:
+        # only held poses (two keys each) keep them; loops leave the hands
+        # at rest, which are relaxed and a little curled
+        if not held and "Hand" in name and short(name)[-1].isdigit():
+            continue
+        dp = f'pose.bones["{name}"].rotation_quaternion'
+        for c in range(4):
+            fc = action.fcurve_ensure_for_datablock(rig, dp, index=c)
+            fc.keyframe_points.add(n)
+            fc.keyframe_points.foreach_set("co", [v for i, q in enumerate(qs) for v in (i, q[c])])
+            for kp in fc.keyframe_points:
+                kp.interpolation = "LINEAR"
+    dp = f'pose.bones["{hip_bone.name}"].location'
+    for c in range(3):
+        fc = action.fcurve_ensure_for_datablock(rig, dp, index=c)
+        fc.keyframe_points.add(n)
+        fc.keyframe_points.foreach_set("co", [v for i, p in enumerate(loc) for v in (i, p[c])])
+        for kp in fc.keyframe_points:
+            kp.interpolation = "LINEAR"
+    action.use_fake_user = True
+    rig.animation_data.action = None
+    for ob in imported:
+        bpy.data.objects.remove(ob)
+    bpy.data.actions.remove(act)
+    period = round((n - 1) / FPS, 4) if not held else 0
+    meta = {"id": cid, "kind": kind, "label": CLIP_LABEL[cid], "period": period}
+    if speed is not None:
+        meta["speed"] = round(speed, 3)
+    print(cid, kind, "frames", n, "period", period, "speed", speed)
+    return meta
+
+
+CLIP_LABEL = {cid: label for cid, (_, _, label) in CLIPS.items()}
 
 
 def main():
-    clips = []
-    for cid, (file, kind, label, window) in CLIPS.items():
-        path = os.path.join(CMU, file + ".bvh")
-        if not os.path.exists(path):
-            print("missing", path)
+    only = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else []
+    bpy.ops.wm.open_mainfile(filepath=RIG_BLEND)
+    scene = bpy.context.scene
+    scene.render.fps = FPS
+    rig = bpy.data.objects["Rig"]
+    for pb in rig.pose.bones:
+        pb.rotation_mode = "QUATERNION"
+    tgt_rest = rest_of(rig)
+    metas = []
+    for cid, (rel, kind, _) in CLIPS.items():
+        if only and cid not in only:
             continue
-        poses, fdt = retarget(*cmu_frames(path))
-        s, L = best_loop(poses, fdt, window, kind)
-        period, keys = keys_for(poses, fdt, s, L)
-        clips.append({"id": cid, "kind": kind, "label": label, "source": f"CMU {file}", "period": period, "keys": keys})
-        print(cid, "period", period, "keys", len(keys))
-    for cid, (rel, k, label) in MIXAMO_CLIPS.items():
         assert not any(w in rel.lower() for w in BANNED), rel
-        frames, fdt = mixamo_frames(os.path.join(MIXAMO, rel + ".fbx"))
-        held = k in ("pose", "sit", "lay")
-        poses, fdt = retarget(frames, fdt, held)
-        dur = len(poses) * fdt
-        if held:
-            period, keys = still(poses)
-        else:
-            window = (0.7, min(1.6, dur * 0.9)) if k == "walk" else (min(1.5, dur * 0.4), min(MAX_LOOP, dur * 0.9))
-            s, L = best_loop(poses, fdt, window, k)
-            period, keys = keys_for(poses, fdt, s, L)
-        clips.append({"id": cid, "kind": k, "label": label, "source": "Mixamo", "period": period, "keys": keys})
-        print(cid, k, "period", period, "keys", len(keys))
-    head = (
-        "// Generated by art/doll/blender/mocap.py. CMU clips: CMU Graphics Lab\n"
-        "// Motion Capture Database (mocap.cs.cmu.edu), free to copy, modify\n"
-        "// and redistribute. Mixamo clips: retargeted from Adobe Mixamo\n"
-        "// animations, used in-game under Mixamo's terms. Do not edit by hand.\n"
+        metas.append(bake(rig, tgt_rest, cid, rel, kind))
+    for ob in list(bpy.data.objects):
+        ob.select_set(ob is rig)
+    bpy.context.view_layer.objects.active = rig
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    bpy.ops.export_scene.gltf(
+        filepath=OUT,
+        use_selection=True,
+        export_format="GLB",
+        export_yup=True,
+        export_animations=True,
+        export_animation_mode="ACTIONS",
+        export_force_sampling=False,
+        export_skins=True,
+        export_materials="NONE",
     )
-    meta = [{k: v for k, v in c.items() if k != "keys"} for c in clips]
-    dances = [c["id"] for c in clips if c["kind"] == "dance"]
-    emotes = [c["id"] for c in clips if c["kind"] == "emote"]
-    with open(OUT, "w") as f:
+    if not only:
+        write_catalog(metas)
+
+
+def write_catalog(metas):
+    head = (
+        "// Generated by art/doll/blender/mocap.py. Mixamo clips: retargeted from\n"
+        "// Adobe Mixamo animations onto the doll's own skeleton and baked into\n"
+        "// public/models/doll/anims*.glb, used in-game under Mixamo's terms.\n"
+        "// Do not edit by hand.\n"
+    )
+    by = lambda *kinds: [m["id"] for m in metas if m["kind"] in kinds]
+    with open(CATALOG, "w") as f:
         f.write(
             head + 'import type { MocapClip } from "./mocapTypes.ts";\n\n'
-            "// the keys load later, from mocapKeys.ts (see loadMocap in moves.ts)\n"
-            f"export const MOCAP_CLIPS: readonly MocapClip[] = {json.dumps(meta)};\n\n"
-            f"export const MOCAP_DANCE_IDS = {json.dumps(dances)} as const;\n\n"
+            "// the keyframes are in the doll's animation file (see HumanDoll.tsx)\n"
+            f"export const MOCAP_CLIPS: readonly MocapClip[] = {json.dumps(metas)};\n\n"
+            f"export const MOCAP_DANCE_IDS = {json.dumps(by('dance'))} as const;\n\n"
             "// looped like dances, for NPCs; not in the player's Dance picker\n"
-            f"export const MOCAP_EMOTE_IDS = {json.dumps(emotes)} as const;\n"
+            f"export const MOCAP_EMOTE_IDS = {json.dumps(by('emote'))} as const;\n"
         )
-    # one line per clip, left out of Prettier, so the file stays small
-    with open(KEYS_OUT, "w") as f:
-        f.write(head + 'import type { MocapKey } from "./mocapTypes.ts";\n\n')
-        f.write("export const MOCAP_KEYS: Record<string, readonly MocapKey[]> = {\n")
-        for c in clips:
-            f.write(f"  {json.dumps(c['id'])}: {json.dumps(c['keys'], separators=(',', ':'))},\n")
-        f.write("};\n")
-    print("wrote", OUT)
+    print("wrote", CATALOG)
 
 
 if __name__ == "__main__":
