@@ -1,15 +1,66 @@
-// The Karaoke Loft's mic panel: the score, the call and the three sing
-// buttons (or J, K and L). The notes themselves come down the big screen on
+// The Karaoke Loft's mic panel: the songbook to pick from, the score, the
+// call and the three sing buttons (or J, K and L). The notes themselves come down the big screen on
 // stage (./Stage.tsx). Also ticks the session from its own animation-frame
 // clock, so the song runs even when the 3D view is paused.
 
 import { ONLINE } from "../../net/online.ts";
 import { answerDuet, duetAsk, listenForDuets } from "../../net/karaokeDuet.ts";
 import { useEffect, type JSX } from "react";
-import { LANES, NOTES, songScore } from "../../../game/karaokeGame.ts";
+import { LANES, songScore } from "../../../game/karaokeGame.ts";
 import { partScore } from "../../../game/karaokeDuet.ts";
+import {
+  GENRES,
+  SONGS,
+  songById,
+  type Genre,
+} from "../../../game/karaokeSongs.ts";
 import { typing, useNow } from "../shared/useNow.ts";
-import { karaoke, leave, mine, singOn, start, tick } from "./session.ts";
+import {
+  karaoke,
+  leave,
+  mine,
+  singOn,
+  songPick,
+  start,
+  tick,
+} from "./session.ts";
+
+const GENRE_NAMES: Record<Genre, string> = {
+  classical: "Classical",
+  folk: "Folk",
+  country: "Country",
+  gospel: "Gospel",
+  jazz: "Jazz",
+  ragtime: "Ragtime",
+  "tin-pan-alley": "Tin Pan Alley",
+  latin: "Latin",
+  world: "Around the world",
+  holiday: "Holiday",
+  party: "Party",
+};
+
+/** The songbook: every song, by genre. */
+function SongPicker(): JSX.Element {
+  const { id } = songPick.use();
+  const song = songById(id);
+  return (
+    <label className="song-pick">
+      <span>Song</span>
+      <select value={id} onChange={(e) => songPick.set({ id: e.target.value })}>
+        {GENRES.map((genre) => (
+          <optgroup key={genre} label={GENRE_NAMES[genre]}>
+            {SONGS.filter((s) => s.genre === genre).map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.title}
+              </option>
+            ))}
+          </optgroup>
+        ))}
+      </select>
+      {song && <small>{song.credit} · public domain</small>}
+    </label>
+  );
+}
 
 const LANE_NAMES = ["Low", "Mid", "High"] as const;
 const KEYS: Record<string, number> = { KeyJ: 0, KeyK: 1, KeyL: 2 };
@@ -52,7 +103,9 @@ export function KaraokePanel(): JSX.Element {
     return (
       <section className="game-panel" aria-label="Karaoke">
         <p className="game-call" role="status">
-          {ask.ask.name} wants to sing a duet with you. You&apos;ll trade lines.
+          {ask.ask.name} wants to sing{" "}
+          {songById(ask.ask.song)?.title ?? "a song"} with you. You&apos;ll
+          trade lines.
         </p>
         <div className="game-row" role="group" aria-label="Duet invite">
           <button
@@ -77,9 +130,10 @@ export function KaraokePanel(): JSX.Element {
           </p>
         )}
         <p className="game-call">
-          Take the mic. The melody comes down three lanes on the big screen:
-          sing each note on its lane as it reaches the line (J, K, L).
+          Pick a song and take the mic: sing each note on its lane, low to high,
+          as it reaches the line (J, K, L).
         </p>
+        <SongPicker />
         <button type="button" className="game-main" onClick={start}>
           Sing a song
         </button>
@@ -92,8 +146,13 @@ export function KaraokePanel(): JSX.Element {
           {score} points{duet ? ` · duet with ${duet.partner.name}` : ""}
         </span>
         <span>
-          Note {Math.min(s.song.length + (singing ? 1 : 0), NOTES)}/{NOTES}
+          Note{" "}
+          {Math.min(s.song.length + (singing ? 1 : 0), s.notes.length || 1)}/
+          {s.notes.length || "…"}
         </span>
+      </p>
+      <p className="game-call">
+        {songById(s.duet?.song ?? songPick.get().id)?.title}
       </p>
       <p className="game-call" role="status">
         {s.phase === "over"
@@ -126,11 +185,14 @@ export function KaraokePanel(): JSX.Element {
             </button>
           ))}
         </div>
-      ) : (
-        <button type="button" className="game-main" onClick={start}>
-          Sing again
-        </button>
-      )}
+      ) : s.phase === "over" ? (
+        <>
+          <SongPicker />
+          <button type="button" className="game-main" onClick={start}>
+            Sing again
+          </button>
+        </>
+      ) : null}
       <button type="button" onClick={leave}>
         Put the mic down
       </button>

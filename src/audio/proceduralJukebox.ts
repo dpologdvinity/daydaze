@@ -134,7 +134,11 @@ export interface JukeboxController {
   dispose(): void;
   /** The playing track, its BPM, and the audio time its first beat fell on
    * (step 0 of its grid, kept current if the loop resyncs). */
-  currentTempo(): { track: TrackId; bpm: number; startedAt: number } | null;
+  currentTempo(): {
+    track: TrackId | null;
+    bpm: number;
+    startedAt: number;
+  } | null;
   /** The audio clock (seconds) while the context runs; null otherwise. */
   audioTime(): number | null;
   /**
@@ -143,6 +147,81 @@ export interface JukeboxController {
    * it sour and soft.
    */
   playMelody(beat: number, lane: number, hit: boolean, at?: number): void;
+  /** A sung note at its real pitch (MIDI), a karaoke song's melody. */
+  playPitch(midi: number, hit: boolean): void;
+  /**
+   * Swaps the playing track for a karaoke band at `bpm` (currentTempo
+   * reports it, its first step now); false without audio.
+   */
+  playSong(band: KaraokeBand, bpm: number): boolean;
+  /** The song's over: back to the track that was playing before it. */
+  endSong(): void;
+}
+
+/** What a karaoke song's band plays (bandPlan in src/game/karaokeSongs.ts):
+ * beats a bar, the pickup before the first downbeat, the count-in beats
+ * before the melody, and a triad a bar as pitch classes (0 = C). */
+export type KaraokeBand = {
+  beatsPerBar: number;
+  pickup: number;
+  countIn: number;
+  chords: readonly (readonly number[])[];
+};
+
+/** A MIDI note's frequency, Hz (A4 = 69 = 440 Hz). */
+export const midiFrequency = (midi: number) => 440 * 2 ** ((midi - 69) / 12);
+
+/**
+ * The karaoke band's step function, eighth notes: clicks through the
+ * count-in, then each bar's chord, a bass root on the downbeat (and the fifth
+ * mid-bar in 4/4), a stab on each beat in triple time (oom-pah-pah), and a
+ * kick, clap and hat groove. After the last bar it vamps the chords again.
+ */
+export function karaokeBandStep(band: KaraokeBand) {
+  const near = (a: number, b: number) => Math.abs(a - b) < 1e-6;
+  return (ctx: AudioContext, dest: AnyNode, step: number, now: number) => {
+    const beat = step / 2 - band.countIn;
+    if (beat < 0) {
+      if (step % 2 === 0) playHiHatHit(ctx, dest, now);
+      return;
+    }
+    const sinceBar = beat - band.pickup;
+    const bpb = band.beatsPerBar;
+    const bar = Math.max(0, Math.floor(sinceBar / bpb)) % band.chords.length;
+    const inBar = ((sinceBar % bpb) + bpb) % bpb;
+    const chord = band.chords[bar] ?? [0, 4, 7];
+    const root = chord[0] ?? 0;
+    const triple = near(bpb % 3, 0);
+    const onBeat = near(inBar % 1, 0);
+    if (near(inBar, 0)) {
+      playBassNote(ctx, dest, now, midiFrequency(36 + root));
+      playKick(ctx, dest, now);
+      playStab(
+        ctx,
+        dest,
+        now,
+        chord.map((pc) => midiFrequency(60 + pc)),
+      );
+      return;
+    }
+    if (!onBeat) {
+      playHiHatHit(ctx, dest, now);
+      return;
+    }
+    if (triple) {
+      playStab(
+        ctx,
+        dest,
+        now,
+        chord.map((pc) => midiFrequency(60 + pc)),
+      );
+      return;
+    }
+    if (near(inBar, bpb / 2)) {
+      playBassNote(ctx, dest, now, midiFrequency(36 + ((root + 7) % 12)));
+      playKick(ctx, dest, now);
+    } else playClap(ctx, dest, now);
+  };
 }
 
 type AnyNode = AudioNode;
@@ -1066,6 +1145,8 @@ class JukeboxControllerImpl implements JukeboxController {
   private master: GainNode | null = null;
   private loop: LoopEngine | null = null;
   private currentTrack: TrackId | null = null;
+  /** A karaoke band in place of the track, and the track it stands in for. */
+  private band: { bpm: number; resume: TrackId | null } | null = null;
   private volume = 0.6;
   private muted = false;
   private disposed = false;
@@ -1088,6 +1169,8 @@ class JukeboxControllerImpl implements JukeboxController {
     if (this.disposed) return false;
     if (!this.ctx || !this.master) return false;
     if (!isTrackId(id)) return false;
+    // a track asked for by name ends any karaoke band
+    this.band = null;
     try {
       if (this.ctx.state === "suspended") {
         void this.ctx.resume().catch(() => {});
@@ -1116,6 +1199,7 @@ class JukeboxControllerImpl implements JukeboxController {
     }
     this.loop = null;
     this.currentTrack = null;
+    this.band = null;
   }
 
   getCurrentTrack(): TrackId | null {
@@ -1123,6 +1207,8 @@ class JukeboxControllerImpl implements JukeboxController {
   }
 
   currentTempo() {
+    if (this.band && this.loop)
+      return { track: null, bpm: this.band.bpm, startedAt: this.loop.anchor() };
     const track = this.currentTrack;
     if (!track || !this.loop) return null;
     return { track, bpm: TRACK_BPM[track], startedAt: this.loop.anchor() };
@@ -1148,6 +1234,46 @@ class JukeboxControllerImpl implements JukeboxController {
     } catch {
       /* a note that fails to synthesize is just silent */
     }
+  }
+
+  playPitch(midi: number, hit: boolean): void {
+    const ctx = this.ctx;
+    const dest = this.master;
+    if (!ctx || !dest || this.disposed) return;
+    try {
+      playVoice(ctx, dest, ctx.currentTime, midiFrequency(midi), !hit);
+    } catch {
+      /* a note that fails to synthesize is just silent */
+    }
+  }
+
+  playSong(band: KaraokeBand, bpm: number): boolean {
+    if (this.disposed || !this.ctx || !this.master) return false;
+    if (!(bpm > 0) || band.chords.length === 0) return false;
+    try {
+      if (this.ctx.state === "suspended")
+        void this.ctx.resume().catch(() => {});
+      const resume = this.band ? this.band.resume : this.currentTrack;
+      this.loop?.stop();
+      this.loop = new LoopEngine(this.ctx);
+      const dest = this.master;
+      const step = karaokeBandStep(band);
+      this.loop.start(60 / bpm / 2, (ctx, s, time) => step(ctx, dest, s, time));
+      this.band = { bpm, resume };
+      this.currentTrack = null;
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  endSong(): void {
+    const band = this.band;
+    if (!band) return;
+    this.band = null;
+    this.loop?.stop();
+    this.loop = null;
+    if (band.resume) this.playTrack(band.resume);
   }
 
   isPlaying(): boolean {

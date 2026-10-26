@@ -8,7 +8,9 @@ import {
   carnivalCalliopeStep,
   savannaNightclubStep,
   type TrackId,
+  karaokeBandStep,
   melodyFrequency,
+  midiFrequency,
 } from "./proceduralJukebox.ts";
 
 const TRACK_IDS: TrackId[] = [
@@ -485,4 +487,51 @@ test("melody notes climb with the lane and follow Sugar Rush's chords", () => {
     Math.abs(melodyFrequency("sugar-rush-pop", 9, 1) - 92.5 * 4 * 1.189) < 0.01,
   );
   assert.ok(Math.abs(melodyFrequency("sugar-rush-pop", 0, 0) - 440) < 0.01);
+});
+
+test("a karaoke song brings its own band, then hands back to the room's track", () => {
+  const ctx = makeFakeAudioContext();
+  Object.assign(ctx, { currentTime: 7 });
+  const controller = createJukeboxController(ctx);
+  try {
+    controller.playTrack("sugar-rush-pop");
+    const band = {
+      beatsPerBar: 3,
+      pickup: 1,
+      countIn: 4,
+      chords: [
+        [0, 4, 7],
+        [7, 11, 2],
+      ],
+    };
+    assert.ok(controller.playSong(band, 96));
+    const tempo = controller.currentTempo();
+    assert.equal(tempo?.bpm, 96);
+    assert.ok(Math.abs((tempo?.startedAt ?? 0) - 7) < 1e-9);
+    controller.endSong();
+    assert.equal(controller.getCurrentTrack(), "sugar-rush-pop");
+    assert.equal(controller.currentTempo()?.track, "sugar-rush-pop");
+  } finally {
+    controller.dispose();
+  }
+});
+
+test("the karaoke band plays every step of a song and its count-in", () => {
+  const ctx = makeFakeAudioContext();
+  const dest = ctx.createGain();
+  for (const beatsPerBar of [4, 3, 6, 1.5, 2]) {
+    const step = karaokeBandStep({
+      beatsPerBar,
+      pickup: 0.75,
+      countIn: 4,
+      chords: [
+        [9, 0, 4],
+        [2, 5, 9],
+      ],
+    });
+    for (let s = 0; s < 96; s++)
+      assert.doesNotThrow(() => step(ctx, dest, s, s * 0.1));
+  }
+  assert.equal(midiFrequency(69), 440);
+  assert.ok(Math.abs(midiFrequency(60) - 261.63) < 0.01);
 });

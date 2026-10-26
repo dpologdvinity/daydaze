@@ -38,15 +38,15 @@ test("each singer's part counts only their own lines", () => {
 
 test("duet messages round-trip; bad ones are dropped", () => {
   for (const m of [
-    { k: "duet-ask", seed: 12345 },
+    { k: "duet-ask", song: "saints" },
     { k: "duet-yes" },
     { k: "duet-no" },
     { k: "duet-done", score: 780 },
   ] as const)
     assert.deepEqual(parseDuetMessage(encodeDuet(m)), m);
   for (const bad of [
-    { k: "duet-ask", seed: -1 },
-    { k: "duet-ask", seed: 1.5 },
+    { k: "duet-ask", song: "not-a-song" },
+    { k: "duet-ask", seed: 12345 },
     { k: "duet-done", score: 99999 },
     { k: "duet-done" },
     { k: "duet-boo" },

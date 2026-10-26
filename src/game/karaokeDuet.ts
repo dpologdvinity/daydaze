@@ -1,12 +1,13 @@
-// Karaoke duets at the Karaoke Loft: two players sing the same chart (the
-// asker's seed, sent over the `game` relay), trading lines of DUET_LINE notes
+// Karaoke duets at the Karaoke Loft: two players sing the same song (the
+// asker's pick, sent over the `game` relay), trading lines of DUET_LINE notes
 // — the asker leads, singing the first line, the partner the next, and so
 // on. Each sings their own lines against their own music, so the two clocks
 // never need to agree; each sends their part's score when the song ends, and
 // both see the two parts and the total. Pure.
 
 import { MAX_GAME_DATA } from "../net/networkProtocol.ts";
-import { NOTES, POINTS, type Song } from "./karaokeGame.ts";
+import { POINTS, type Song } from "./karaokeGame.ts";
+import { MAX_SONG_NOTES, songById } from "./karaokeSongs.ts";
 
 /** Notes per line: the singers trade every this many notes. */
 export const DUET_LINE = 4;
@@ -25,11 +26,12 @@ export const partScore = (song: Song, role: DuetRole) =>
     0,
   );
 
-/** The most one part can score: half the notes, all perfect. */
-const MAX_PART = (NOTES / 2) * POINTS.perfect;
+/** The most one part can score: half the longest song, all perfect. */
+const MAX_PART = Math.ceil(MAX_SONG_NOTES / 2) * POINTS.perfect;
 
 export type DuetMessage =
-  | { k: "duet-ask"; seed: number }
+  /** The song, by its songbook id. */
+  | { k: "duet-ask"; song: string }
   | { k: "duet-yes" }
   | { k: "duet-no" }
   /** Your part's score, once the song is over. */
@@ -53,8 +55,8 @@ export function parseDuetMessage(data: string): DuetMessage | null {
   const k: unknown = Reflect.get(value, "k");
   if (k === "duet-yes" || k === "duet-no") return { k };
   if (k === "duet-ask") {
-    const seed: unknown = Reflect.get(value, "seed");
-    return whole(seed, 2 ** 32 - 1) ? { k, seed } : null;
+    const song: unknown = Reflect.get(value, "song");
+    return typeof song === "string" && songById(song) ? { k, song } : null;
   }
   if (k === "duet-done") {
     const score: unknown = Reflect.get(value, "score");

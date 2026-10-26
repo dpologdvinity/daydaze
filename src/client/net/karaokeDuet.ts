@@ -12,6 +12,7 @@ import {
   duetHooks,
   karaoke,
   partnerScored,
+  songPick,
   startDuet,
 } from "../rooms/karaoke/session.ts";
 import { createStore } from "../rooms/shared/store.ts";
@@ -22,9 +23,9 @@ type Who = { id: string; name: string };
 
 export const duetAsk = createStore({
   /** Someone asked you to sing with them. */
-  ask: null as (Who & { seed: number }) | null,
-  /** You asked; waiting for an answer, with the chart's seed. */
-  asked: null as (Who & { seed: number }) | null,
+  ask: null as (Who & { song: string }) | null,
+  /** You asked; waiting for an answer, with the song you picked. */
+  asked: null as (Who & { song: string }) | null,
   note: "",
 });
 
@@ -55,10 +56,10 @@ export function listenForDuets(): () => void {
           send(from, { k: "duet-no" });
           return;
         }
-        duetAsk.set({ ask: { id: from, name: nameOf(from), seed: m.seed } });
+        duetAsk.set({ ask: { id: from, name: nameOf(from), song: m.song } });
       } else if (m.k === "duet-yes" && s.asked?.id === from) {
         duetAsk.set({ asked: null, note: "" });
-        startDuet("lead", { id: from, name: s.asked.name }, s.asked.seed);
+        startDuet("lead", { id: from, name: s.asked.name }, s.asked.song);
       } else if (m.k === "duet-no") {
         if (s.asked?.id === from)
           duetAsk.set({ asked: null, note: `${s.asked.name} said not now.` });
@@ -80,9 +81,9 @@ export function listenForDuets(): () => void {
 
 /** Asks another singer in the Karaoke Loft to sing a duet. */
 export function askToDuet(id: string, name: string): void {
-  const seed = Math.floor(Math.random() * 2 ** 31);
-  if (send(id, { k: "duet-ask", seed }))
-    duetAsk.set({ asked: { id, name, seed }, note: "" });
+  const song = songPick.get().id;
+  if (send(id, { k: "duet-ask", song }))
+    duetAsk.set({ asked: { id, name, song }, note: "" });
 }
 
 /** Answers the ask on screen: yes starts the song, on their chart. */
@@ -95,5 +96,5 @@ export function answerDuet(yes: boolean): void {
     return;
   }
   if (send(ask.id, { k: "duet-yes" }))
-    startDuet("follow", { id: ask.id, name: ask.name }, ask.seed);
+    startDuet("follow", { id: ask.id, name: ask.name }, ask.song);
 }

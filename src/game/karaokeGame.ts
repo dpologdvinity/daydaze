@@ -11,8 +11,9 @@ export const LANES = 3;
 export const LEAD_IN = 4;
 
 /** A note: when it reaches the line (clock seconds), its lane, and which
- * beat of the backing track it falls on (counted from the track's start). */
-export type Note = { at: number; lane: number; beat: number };
+ * beat of the backing track it falls on (counted from the track's start);
+ * a real song's note (karaokeSongs.ts) also carries its pitch (MIDI). */
+export type Note = { at: number; lane: number; beat: number; pitch?: number };
 
 /**
  * The melody for a seed, on the beat of a track at `bpm` that started at
@@ -56,10 +57,17 @@ export const POINTS: Record<Swing, number> = {
   late: 0,
 };
 
-export const songOver = (s: Song) => s.length >= NOTES;
+/** Whether all `total` notes are sung (a real song's own count, or the
+ * seeded chart's NOTES). */
+export const songOver = (s: Song, total = NOTES) => s.length >= total;
 
-export function sing(s: Song, swing: Swing, rightLane: boolean): Song {
-  return songOver(s) ? s : [...s, { swing, lane: rightLane }];
+export function sing(
+  s: Song,
+  swing: Swing,
+  rightLane: boolean,
+  total = NOTES,
+): Song {
+  return songOver(s, total) ? s : [...s, { swing, lane: rightLane }];
 }
 
 export const songScore = (s: Song) =>

@@ -2751,3 +2751,32 @@ button:focus-visible {
     opacity: 0.8;
   }
 }
+
+/* the karaoke songbook: a label over a full-width select, the credit under */
+.song-pick {
+  display: grid;
+  gap: 4px;
+  margin: 6px 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--lilac);
+}
+
+.song-pick select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--amber);
+  border-radius: 999px;
+  background: rgb(7 2 11 / 0.78);
+  color: var(--champagne);
+  font: inherit;
+  font-size: 14px;
+}
+
+.song-pick small {
+  font-weight: 400;
+  opacity: 0.8;
+}

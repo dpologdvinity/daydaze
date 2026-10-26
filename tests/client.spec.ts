@@ -2308,9 +2308,11 @@ test("the Karaoke Loft: a song at the mic ends in a prize", async ({
 }) => {
   const errors = collectErrors(page);
   await page.goto(`${STILL}&room=karaoke`);
-  await page
-    .getByRole("button", { name: "Sing a song" })
-    .click({ timeout: 150_000 });
+  // the songbook: 25 public-domain songs; this one is short
+  const book = page.getByLabel("Song");
+  await expect(book.getByRole("option")).toHaveCount(25, { timeout: 150_000 });
+  await book.selectOption("happy-birthday");
+  await page.getByRole("button", { name: "Sing a song" }).click();
   const panel = page.getByRole("region", { name: "Karaoke" });
   // stand silent: every note goes by, and the song still ends
   await expect(panel.getByRole("status")).toContainText("Song done", {
@@ -2331,6 +2333,7 @@ test("the Karaoke Loft: notes on the beat light up the stage", async ({
   await expect(canvasOf(page)).toHaveAttribute("data-frames", "10", {
     timeout: 150_000,
   });
+  await page.getByLabel("Song").selectOption("happy-birthday");
   await page.getByRole("button", { name: "Sing a song" }).click();
   // a singer in the page: sings each note's lane as it reaches the line, on
   // the session's own clock (rendering under SwiftShader is too slow to aim by)

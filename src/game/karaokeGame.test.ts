@@ -65,3 +65,11 @@ test("a streak counts the notes sung right in a row, back from the last", () => 
   s = sing(s, "perfect", true);
   assert.equal(streak(s), 1);
 });
+
+test("a real song is over once all its notes are sung, however many", () => {
+  let s: Song = [];
+  for (let i = 0; i < 20; i++) s = sing(s, "perfect", true, 20);
+  assert.ok(songOver(s, 20));
+  assert.equal(sing(s, "perfect", true, 20).length, 20);
+  assert.ok(!songOver(s.slice(0, 19), 20));
+});

@@ -10,7 +10,8 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import * as THREE from "three";
 import { playCheer } from "../../../audio/worldSounds.ts";
-import { LANES, NOTES } from "../../../game/karaokeGame.ts";
+import { LANES } from "../../../game/karaokeGame.ts";
+import { MAX_SONG_NOTES } from "../../../game/karaokeSongs.ts";
 import { MIC, STAGE } from "../../../game/karaoke.ts";
 import type { Vec3 } from "../../../game/motion/ball.ts";
 import { useReducedMotion } from "../../motion.ts";
@@ -87,7 +88,8 @@ function NoteLanes({
   useEffect(() => {
     const im = notes.current;
     if (!im) return;
-    for (let i = 0; i < NOTES; i++) im.setColorAt(i, tint.set("#ffffff"));
+    for (let i = 0; i < MAX_SONG_NOTES; i++)
+      im.setColorAt(i, tint.set("#ffffff"));
   }, []);
   useFrame((_, dt) => {
     const g = group.current;
@@ -97,7 +99,7 @@ function NoteLanes({
     g.visible = s.phase !== "off";
     if (!g.visible) return;
     const now = songNow();
-    for (let i = 0; i < NOTES; i++) {
+    for (let i = 0; i < MAX_SONG_NOTES; i++) {
       const note = s.notes[i];
       const y = note ? LINE_Y + (note.at - now) * FALL : 0;
       const show = note && i >= s.song.length && y < screen.h / 2 - 0.12;
@@ -147,7 +149,7 @@ function NoteLanes({
       </mesh>
       <instancedMesh
         ref={notes}
-        args={[undefined, undefined, NOTES]}
+        args={[undefined, undefined, MAX_SONG_NOTES]}
         frustumCulled={false}
       >
         <circleGeometry args={[0.12, 16]} />
