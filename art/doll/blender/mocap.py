@@ -360,6 +360,7 @@ MIXAMO_CLIPS = {
     "walk-easy": ("walking/Walk_Female-Walk-2", "walk", "Easy"),
     "walk-feminine": ("walking/Walking_Feminine-Walk-Forward", "walk", "Feminine"),
     "walk-casual": ("walking/styled/Walking-With-A-Swagger-3", "walk", "Casual"),
+    "walk-masc": ("walking/Walking_Male-Standard-Walk", "walk", "Easy stride"),
     "belly-dance": ("dancing/Dancing_Belly-Dancing-Variation-Three", "dance", "Belly dance"),
     "breakdance": ("dancing/Breakdance-Ending-1_Breakdance-Finishing-Combo-Var-1", "dance", "Breakdance"),
     "afrobeat": ("dancing/Dancing_Female-African-Noodle-Dance", "dance", "Afrobeat"),

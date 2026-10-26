@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { validateLook } from "../look.ts";
+import { MENSWEAR, SHORT_CUTS, validateLook } from "../look.ts";
 import { CITY_AREA, CITY_SPAWN } from "./layout.ts";
 import {
   PEDESTRIANS,
@@ -53,4 +53,15 @@ test("only the nearest few are drawn, nearest first", () => {
   });
   for (let k = 1; k < d.length; k++) assert.ok(d[k] >= d[k - 1]);
   assert.ok(d.every((v) => v <= 60));
+});
+
+test("men walk the city too, in menswear with short cuts", () => {
+  const men = PEDESTRIANS.filter((p) => p.look.body === "masculine");
+  const share = men.length / PEDESTRIANS.length;
+  assert.ok(share > 0.3 && share < 0.55, `${men.length}/${PEDESTRIANS.length}`);
+  for (const m of men) {
+    assert.ok(MENSWEAR.includes(m.look.outfit), m.look.outfit);
+    assert.ok(SHORT_CUTS.includes(m.look.hairStyle), m.look.hairStyle);
+    assert.ok(validateLook(m.look));
+  }
 });

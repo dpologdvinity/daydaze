@@ -972,6 +972,44 @@ test("a hair style picked in the closet survives a reload", async ({
   ).toHaveAttribute("aria-checked", "true");
 });
 
+test("the closet's Build makes a man, with a beard, and it survives a reload", async ({
+  page,
+}) => {
+  test.setTimeout(300_000);
+  const errors = collectErrors(page);
+  await page.goto(VELVET);
+  await page
+    .getByRole("button", { name: "Dressing room", exact: true })
+    .click();
+  await page.getByRole("tab", { name: "Body" }).click();
+  await page
+    .getByRole("radiogroup", { name: "Build" })
+    .getByRole("radio", { name: "Masculine" })
+    .click();
+  await page
+    .getByRole("radiogroup", { name: "Facial hair" })
+    .getByRole("radio", { name: "Short beard" })
+    .click();
+  await page.getByRole("tab", { name: "Hair" }).click();
+  await page
+    .getByRole("radiogroup", { name: "Hair style" })
+    .getByRole("radio", { name: "Crop" })
+    .click();
+  const saved = await page.evaluate(() =>
+    localStorage.getItem("daydaze-save-v1"),
+  );
+  expect(saved).toContain('"body":"masculine"');
+  expect(saved).toContain('"beard":"short"');
+  await page.reload();
+  await page.getByRole("tab", { name: "Body" }).click();
+  await expect(
+    page
+      .getByRole("radiogroup", { name: "Build" })
+      .getByRole("radio", { name: "Masculine" }),
+  ).toHaveAttribute("aria-checked", "true");
+  expect(errors).toEqual([]);
+});
+
 test("the debug buttons move the player between rooms", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto(`${VELVET}&debug=1`);

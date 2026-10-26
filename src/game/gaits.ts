@@ -136,6 +136,22 @@ export const GAITS = [
     chin: 0,
     clip: "walk-casual",
   },
+  {
+    // a man's easy walk: square shoulders, a straight line, little sway
+    id: "stride",
+    label: "Easy stride",
+    stride: 0.38,
+    knee: 0.5,
+    armSwing: 0.22,
+    elbow: 0.2,
+    hipSway: 0.012,
+    cross: 0.02,
+    twist: 0.06,
+    bounce: 0.012,
+    cadence: 1,
+    chin: 0,
+    clip: "walk-masc",
+  },
 ] as const satisfies readonly Gait[];
 
 export type GaitId = (typeof GAITS)[number]["id"];

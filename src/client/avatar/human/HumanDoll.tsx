@@ -17,6 +17,7 @@ import {
   type Pose,
 } from "../../../game/dance/moves.ts";
 import {
+  bodyOf,
   FACE_PRESETS,
   FIGURES,
   FACE_SLIDERS,
@@ -276,7 +277,15 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
   );
 
   // the parts of the look painted into the face texture
-  const { skin: skinTone, lips, brows, shadow, makeup } = look;
+  const {
+    skin: skinTone,
+    lips,
+    brows,
+    shadow,
+    makeup,
+    beard,
+    hairColor,
+  } = look;
   useEffect(() => {
     const { marks, skin } = body;
     // plain skin until the painted face arrives, then the texture tints both
@@ -285,7 +294,10 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
     if (!marks) return;
     let live = true;
     let tex: THREE.Texture | null = null;
-    paintFace({ skin: skinTone, lips, brows, shadow, makeup }, marks)
+    paintFace(
+      { skin: skinTone, lips, brows, shadow, makeup, beard, hairColor },
+      marks,
+    )
       .then((t) => {
         if (!live) return t.dispose();
         tex = t;
@@ -304,7 +316,17 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
       live = false;
       tex?.dispose();
     };
-  }, [body, skinTone, lips, brows, shadow, makeup, invalidate]);
+  }, [
+    body,
+    skinTone,
+    lips,
+    brows,
+    shadow,
+    makeup,
+    beard,
+    hairColor,
+    invalidate,
+  ]);
   useEffect(() => {
     const tex = paintIris(eyeColor);
     body.eye.map?.dispose();
@@ -691,11 +713,15 @@ export function HumanDoll({
     for (const g of FACE_PRESETS)
       for (const o of g.options.slice(1))
         keys.push([`${g.key}_${o.id}`, face[g.field] === o.id ? 1 : 0]);
-    keys.push(["bust", (shape.bust - 50) / 50]);
+    // the masculine build is a key over the house body; its chest takes no
+    // bust slider
+    const masculine = bodyOf(look) === "masculine";
+    keys.push(["masculine", masculine ? 1 : 0]);
+    keys.push(["bust", masculine ? 0 : (shape.bust - 50) / 50]);
     keys.push(["hips", (shape.hips - 50) / 50]);
     keys.push(["waist", (shape.waist - 50) / 50]);
     return keys;
-  }, [face, shape]);
+  }, [face, shape, look]);
   const shapedFor = useRef<THREE.Mesh[] | null>(null);
   const shapedWith = useRef<typeof shapeKeys | null>(null);
   const lift = useRef(0);

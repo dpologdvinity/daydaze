@@ -10,6 +10,7 @@ import {
   DEFAULT_LOOK,
   HAIR_STYLES,
   OUTFITS,
+  BEARDS,
   type Look,
 } from "../../game/look.ts";
 import { ToonDoll as Doll } from "./Doll.tsx";
@@ -34,9 +35,18 @@ function hairParam(): Look["hairStyle"] {
   return HAIR_STYLES.find((h) => h.id === id)?.id ?? "waves";
 }
 /** `?makeup=<code>` puts encodeMakeup's code on the face shots' doll. */
-function makeupParam(): { makeup?: string } {
-  const code = new URLSearchParams(location.search).get("makeup");
-  return code && decodeMakeup(code) ? { makeup: code } : {};
+function makeupParam(): Partial<Look> {
+  const q = new URLSearchParams(location.search);
+  const code = q.get("makeup");
+  // `?men=1` puts the face and portrait shots on the masculine body, with
+  // `?beard=` (a BEARDS id)
+  const beard = BEARDS.find((b) => b.id === q.get("beard"))?.id;
+  return {
+    ...(code && decodeMakeup(code) ? { makeup: code } : {}),
+    ...(q.get("men") === "1"
+      ? { body: "masculine", lips: "lips-bare-balm", beard: beard ?? "none" }
+      : {}),
+  };
 }
 // `?moves=a,b` picks the dance shot's moves
 const DANCES = (
@@ -139,7 +149,57 @@ const BODY = (["flares", "mini", "fur"] as const).map((fallback, i) => ({
   outfit: OUTFITS.find((o) => o.id === OUTFIT_PICK?.[i])?.id ?? fallback,
 }));
 
+// `?shot=men`: three masculine dolls, in menswear with short cuts and beards
+const MEN: Look[] = [
+  {
+    ...DEFAULT_LOOK,
+    body: "masculine",
+    skin: "#c48d68",
+    hairStyle: "crop",
+    hairColor: "#1b1014",
+    lips: "lips-bare-balm",
+    brows: "brows-sculpted-espresso",
+    outfit: "suit",
+    outfitColor: "#141018",
+    shadow: "#8a5a3c",
+    beard: "short",
+  },
+  {
+    ...DEFAULT_LOOK,
+    body: "masculine",
+    skin: "#633c29",
+    hairStyle: "coils",
+    hairColor: "#1b1014",
+    lips: "lips-bare-balm",
+    brows: "brows-sculpted-espresso",
+    outfit: "white-tee",
+    outfitColor: "#e8e2ff",
+    shadow: "#8a5a3c",
+    beard: "stubble",
+  },
+  {
+    ...DEFAULT_LOOK,
+    body: "masculine",
+    skin: "#f3d4c4",
+    hairStyle: "swept",
+    hairColor: "#4a2a1c",
+    lips: "lips-bare-balm",
+    brows: "brows-feathered-honey",
+    outfit: "puffer",
+    outfitColor: "#6b7a2a",
+    shadow: "#8a5a3c",
+    beard: "full",
+  },
+];
+
 const SHOTS = {
+  men: {
+    looks: MEN,
+    x: (i: number) => (i - 1) * 1.4,
+    cam: [0, 0.95, 6.2] as const,
+    target: [0, 0.85, 0] as const,
+    fov: 32,
+  },
   lineup: {
     looks: LINEUP,
     x: (i: number) => (i - 2.5) * 0.95,

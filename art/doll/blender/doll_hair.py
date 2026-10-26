@@ -14,9 +14,15 @@ from mathutils.kdtree import KDTree
 import proxies
 import strands
 
-# style id -> MakeHuman proxy (none now: every style is built here)
-PROXY = {}
-TEXTURE = {}
+# style id -> MakeHuman proxy: the short cuts, where strand cards that short
+# read as scraps; MakeHuman's own short-hair meshes hold their shape
+PROXY = {
+    "crop": "hair/short02/short02.mhclo",
+    "swept": "hair/short04/short04.mhclo",
+    "textured": "hair/short01/short01.mhclo",
+    "fringe": "hair/short03/short03.mhclo",
+}
+TEXTURE = {k: v.replace(".mhclo", "_diffuse.png") for k, v in PROXY.items()}
 
 
 def swing(ctx, ob, start):

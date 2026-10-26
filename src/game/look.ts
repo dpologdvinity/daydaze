@@ -41,6 +41,11 @@ export const HAIR_STYLES = [
   { id: "low-pony", label: "Low pony" },
   { id: "pigtails", label: "Pigtails" },
   { id: "top-knot", label: "Top knot" },
+  // short cuts
+  { id: "crop", label: "Crop" },
+  { id: "textured", label: "Textured top" },
+  { id: "swept", label: "Side sweep" },
+  { id: "fringe", label: "Fringe" },
 ] as const;
 
 /** Hair colors as hex ids; the Blowout Bar's are locked until bought. */
@@ -106,6 +111,13 @@ export const OUTFITS = [
   { id: "cargo-crop", label: "Tube top and cargos" },
   { id: "sundress", label: "Sundress" },
   { id: "hoodie-bikers", label: "Cropped hoodie and bikers" },
+  // menswear, worn by anyone
+  { id: "denim-shirt", label: "Denim shirt and jeans" },
+  { id: "striped-shirt", label: "Striped shirt and jeans" },
+  { id: "puffer", label: "Puffer jacket and jeans" },
+  { id: "white-tee", label: "White tee and jeans" },
+  { id: "suit", label: "Suit and tie" },
+  { id: "overalls", label: "Overalls" },
 ] as const;
 
 /** Outfit tints as hex ids; the Thrift Temple dyes are locked until bought. */
@@ -187,6 +199,12 @@ const OUTFIT_SHOES: Record<Outfit, Shoe> = {
   "cargo-crop": "sneakers",
   sundress: "platforms",
   "hoodie-bikers": "sneakers",
+  "denim-shirt": "sneakers",
+  "striped-shirt": "sneakers",
+  puffer: "sneakers",
+  "white-tee": "sneakers",
+  suit: "sneakers",
+  overalls: "sneakers",
 };
 
 /** The shoes a look wears: its own pick, else the outfit's. */
@@ -658,7 +676,48 @@ export type Look = {
   swim?: string;
   /** From PRONOUNS, shown on your card online; looks without them show none. */
   pronouns?: string;
+  /** The build: looks without one are feminine (the house doll). */
+  body?: Body;
+  /** Facial hair from BEARDS; looks without one have none. */
+  beard?: Beard;
 };
+
+/** The two builds the doll comes in (a shape key on one mesh, so every
+ * outfit, hair and shoe fits both). */
+export const BODIES = [
+  { id: "feminine", label: "Feminine" },
+  { id: "masculine", label: "Masculine" },
+] as const;
+export type Body = IdOf<typeof BODIES>;
+
+/** Facial hair, painted on the face. */
+export const BEARDS = [
+  { id: "none", label: "None" },
+  { id: "stubble", label: "Stubble" },
+  { id: "short", label: "Short beard" },
+  { id: "full", label: "Full beard" },
+] as const;
+export type Beard = IdOf<typeof BEARDS>;
+
+/** A look's build. */
+export const bodyOf = (look: Look): Body => look.body ?? "feminine";
+
+/** The menswear outfits and short cuts NPC men are dressed from. */
+export const MENSWEAR: readonly Outfit[] = [
+  "denim-shirt",
+  "striped-shirt",
+  "puffer",
+  "white-tee",
+  "suit",
+  "overalls",
+];
+export const SHORT_CUTS: readonly HairStyle[] = [
+  "crop",
+  "textured",
+  "swept",
+  "fringe",
+  "coils",
+];
 
 /** Pronouns to pick from; a fixed list, so nothing else reaches others. */
 export const PRONOUNS: readonly string[] = [
@@ -677,7 +736,15 @@ const LOOK_CATALOGS: {
   [
     K in Exclude<
       keyof Look,
-      "face" | "makeup" | "piercings" | "gait" | "swim" | "shoes" | "pronouns"
+      | "face"
+      | "makeup"
+      | "piercings"
+      | "gait"
+      | "swim"
+      | "shoes"
+      | "pronouns"
+      | "body"
+      | "beard"
     >
   ]: readonly {
     readonly id: Look[K];
@@ -715,6 +782,8 @@ export function validateLook(value: unknown): value is Look {
   const hasSwim = fields.has("swim");
   const hasShoes = fields.has("shoes");
   const hasPronouns = fields.has("pronouns");
+  const hasBody = fields.has("body");
+  const hasBeard = fields.has("beard");
   return (
     fields.size ===
       catalogs.length +
@@ -724,7 +793,11 @@ export function validateLook(value: unknown): value is Look {
         (hasGait ? 1 : 0) +
         (hasSwim ? 1 : 0) +
         (hasShoes ? 1 : 0) +
-        (hasPronouns ? 1 : 0) &&
+        (hasPronouns ? 1 : 0) +
+        (hasBody ? 1 : 0) +
+        (hasBeard ? 1 : 0) &&
+    (!hasBody || isId(BODIES, fields.get("body"))) &&
+    (!hasBeard || isId(BEARDS, fields.get("beard"))) &&
     (!hasShoes || isShoe(fields.get("shoes"))) &&
     (!hasPronouns || PRONOUNS.some((p) => p === fields.get("pronouns"))) &&
     (!hasSwim || decodeSwim(fields.get("swim")) !== null) &&
@@ -849,6 +922,22 @@ export const STARTER_LOOKS: readonly { label: string; look: Look }[] = [
       outfit: "jeans",
       outfitColor: "#141018",
       shadow: "#8a5a3c",
+    },
+  },
+  {
+    label: "Easy going",
+    look: {
+      skin: "#94603f",
+      hairStyle: "crop",
+      hairColor: "#1b1014",
+      lips: "lips-bare-balm",
+      brows: "brows-sculpted-espresso",
+      outfit: "denim-shirt",
+      outfitColor: "#e8e2ff",
+      shadow: "#8a5a3c",
+      body: "masculine",
+      beard: "stubble",
+      gait: "stride",
     },
   },
 ];

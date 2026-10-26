@@ -16,6 +16,12 @@ FILES=(
   $T/macrodetails/universal-female-young-averagemuscle-minweight.target
   $T/macrodetails/universal-female-young-maxmuscle-averageweight.target
   $T/macrodetails/african-female-young.target
+  $T/macrodetails/universal-male-young-averagemuscle-averageweight.target
+  $T/macrodetails/universal-male-young-maxmuscle-averageweight.target
+  $T/macrodetails/african-male-young.target
+  $T/macrodetails/asian-male-young.target
+  $T/macrodetails/caucasian-male-young.target
+  $T/macrodetails/proportions/male-young-averagemuscle-averageweight-idealproportions.target
   $T/macrodetails/asian-female-young.target
   $T/macrodetails/caucasian-female-young.target
   $T/macrodetails/proportions/female-young-averagemuscle-averageweight-idealproportions.target
@@ -149,6 +155,13 @@ if [ ! -d "$PACK/hair/long01" ]; then
   unzip -q -o "$tmp/cc0.zip" '*hair/afro01/*' '*hair/bob01/*' '*hair/braid01/*' \
     '*hair/long01/*' '*hair/ponytail01/*' '*clothes/shoes06/*' \
     '*clothes/female_sportsuit01/*' -d "$PACK"
+  rm -r "$tmp"
+fi
+# menswear and short hair, for the masculine body (added 2026-10-26)
+if [ ! -d "$PACK/clothes/male_casualsuit01" ]; then
+  tmp="$(mktemp -d)"
+  curl -fsSL https://files.makehumancommunity.org/asset_packs/makehuman_system_assets/makehuman_system_assets_cc0.zip -o "$tmp/cc0.zip"
+  unzip -q -o "$tmp/cc0.zip" '*clothes/male_*' '*hair/short0*' -d "$PACK"
   rm -r "$tmp"
 fi
 echo "MakeHuman proxies in $PACK"

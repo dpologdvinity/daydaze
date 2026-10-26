@@ -221,6 +221,39 @@ KEYS = {
     "smile": target("expression/units/caucasian/mouth-corner-puller.target") * 0.5,
 }
 
+
+def masculine():
+    """The masculine body as a key over the house shape: an average young
+    MakeHuman man (male macro, the three races, ideal proportions, a little
+    muscle), scaled about the feet to the same height so every joint stays on
+    its bone (taller men come from the height slider), minus the house woman.
+    The eye sockets keep the house shape, so the lids still fit the separate
+    eyeballs. Garments follow it like any body key."""
+    male_uni = "macrodetails/universal-male-young-"
+    male_avg = target(male_uni + "averagemuscle-averageweight.target")
+    M = BASE + male_avg + sum(
+        target(f"macrodetails/{race}-male-young.target") / 3
+        for race in ("african", "asian", "caucasian")
+    )
+    M = M + target(
+        "macrodetails/proportions/male-young-averagemuscle-averageweight-idealproportions.target"
+    )
+    M = M + (target(male_uni + "maxmuscle-averageweight.target") - male_avg) * 0.25
+    body = sorted({i for f in FACES["body"] for i in f})
+    feet = P[body][:, 1].min()
+    scale = (P[body][:, 1].max() - feet) / (M[body][:, 1].max() - M[body][:, 1].min())
+    M = M.copy()
+    M[:, 1] = (M[:, 1] - M[body][:, 1].min()) * scale + feet
+    M[:, [0, 2]] = M[:, [0, 2]] * scale
+    keep = np.zeros(len(P))
+    for helper in ("helper-l-eye", "helper-r-eye"):
+        c = _centre(helper)
+        keep = np.maximum(keep, _falloff(P, c, 0.55))
+    return (M - P) * (1 - keep)[:, None]
+
+
+KEYS["masculine"] = masculine()
+
 SKEL = json.load(open(os.path.join(MH, "rigs", "default.mhskel")))
 MHW = json.load(open(os.path.join(MH, "rigs", "default_weights.mhw")))["weights"]
 

@@ -3,8 +3,11 @@
 // pure function of time, so every client agrees and nothing is stored.
 // The renderer draws only the few nearest the player.
 import {
+  BEARDS,
   HAIR_COLORS,
   HAIR_STYLES,
+  MENSWEAR,
+  SHORT_CUTS,
   OUTFIT_COLORS,
   SKINS,
   DEFAULT_LOOK,
@@ -75,14 +78,31 @@ export const PEDESTRIANS: readonly Pedestrian[] = CITY_SURFACES.filter(
       b,
       speed: 1.1 + rand(i, 2) * 0.5,
       start: rand(i, 3) * 400,
-      look: {
-        ...DEFAULT_LOOK,
-        skin: pick(SKINS, rand(i, 4)).id,
-        hairStyle: pick(STREET_HAIR, rand(i, 5)).id,
-        hairColor: pick(HAIR_COLORS, rand(i, 6)).id,
-        outfit: pick(STREET_OUTFITS, rand(i, 7)),
-        outfitColor: pick(OUTFIT_COLORS, rand(i, 8)).id,
-      },
+      // about two in five are men: menswear, a short cut, often a beard,
+      // bare lips and a man's easy walk
+      look:
+        rand(i, 9) < 0.4
+          ? {
+              ...DEFAULT_LOOK,
+              body: "masculine",
+              skin: pick(SKINS, rand(i, 4)).id,
+              hairStyle: pick(SHORT_CUTS, rand(i, 5)),
+              hairColor: pick(HAIR_COLORS.slice(0, 4), rand(i, 6)).id,
+              outfit: pick(MENSWEAR, rand(i, 7)),
+              outfitColor: pick(OUTFIT_COLORS, rand(i, 8)).id,
+              lips: "lips-bare-balm",
+              brows: "brows-sculpted-espresso",
+              beard: pick(BEARDS, rand(i, 10)).id,
+              gait: "stride",
+            }
+          : {
+              ...DEFAULT_LOOK,
+              skin: pick(SKINS, rand(i, 4)).id,
+              hairStyle: pick(STREET_HAIR, rand(i, 5)).id,
+              hairColor: pick(HAIR_COLORS, rand(i, 6)).id,
+              outfit: pick(STREET_OUTFITS, rand(i, 7)),
+              outfitColor: pick(OUTFIT_COLORS, rand(i, 8)).id,
+            },
     };
   });
 });

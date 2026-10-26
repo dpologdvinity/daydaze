@@ -48,6 +48,9 @@ import {
   type Mood,
   type SwimLook,
   PRONOUNS,
+  BEARDS,
+  BODIES,
+  bodyOf,
 } from "../../game/look.ts";
 import type { DanceMoveId, Holds } from "../../game/dance/moves.ts";
 import { INTENSITIES, type Intensity } from "../../game/effects/buzz.ts";
@@ -502,6 +505,25 @@ function Mirror({
     ),
     body: (
       <>
+        <section>
+          <h3>Build</h3>
+          <Chips
+            label="Build"
+            options={BODIES}
+            value={bodyOf(look)}
+            onPick={(build) => setLook({ ...look, body: build })}
+          />
+          <Chips
+            label="Facial hair"
+            options={BEARDS}
+            value={look.beard ?? "none"}
+            onPick={(beard) => {
+              // none drops the key: validateLook refuses an undefined field
+              const { beard: _, ...rest } = look;
+              setLook(beard === "none" ? rest : { ...rest, beard });
+            }}
+          />
+        </section>
         <section>
           <h3>Walk</h3>
           <Chips

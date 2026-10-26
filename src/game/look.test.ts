@@ -2,6 +2,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { unlockedLook } from "./shop.ts";
 import {
+  BEARDS,
+  bodyOf,
   BROWS,
   STARTER_LOOKS,
   PRONOUNS,
@@ -273,13 +275,57 @@ test("pronouns are an optional pick from the list", () => {
   assert.ok(PRONOUNS.includes("they/them"));
 });
 
-test("the three starter looks are valid, free and different", () => {
-  assert.equal(STARTER_LOOKS.length, 3);
+test("the four starter looks are valid, free and different, one a man", () => {
+  assert.equal(STARTER_LOOKS.length, 4);
+  assert.ok(STARTER_LOOKS.some((s) => s.look.body === "masculine"));
   for (const { label, look } of STARTER_LOOKS) {
     assert.ok(validateLook(look), label);
     // nothing from a shop: a new player owns none of it
     assert.deepEqual(unlockedLook(look, []), look, label);
   }
-  assert.equal(new Set(STARTER_LOOKS.map((s) => s.look.skin)).size, 3);
-  assert.equal(new Set(STARTER_LOOKS.map((s) => s.look.outfit)).size, 3);
+  assert.equal(new Set(STARTER_LOOKS.map((s) => s.look.skin)).size, 4);
+  assert.equal(new Set(STARTER_LOOKS.map((s) => s.look.outfit)).size, 4);
+});
+
+test("a look can have a masculine body and a beard; old looks stay valid", () => {
+  const man: Record<string, unknown> = {
+    ...DEFAULT_LOOK,
+    body: "masculine",
+    beard: "short",
+    hairStyle: "crop",
+    outfit: "suit",
+  };
+  assert.equal(validateLook(man), true);
+  assert.equal(validateLook({ ...DEFAULT_LOOK, body: "feminine" }), true);
+  assert.equal(validateLook({ ...DEFAULT_LOOK, body: "robot" }), false);
+  assert.equal(validateLook({ ...DEFAULT_LOOK, beard: "goatee-ish" }), false);
+  // a look from before bodies existed has neither field, and is a woman's
+  assert.equal(validateLook(DEFAULT_LOOK), true);
+  assert.equal(bodyOf(DEFAULT_LOOK), "feminine");
+  assert.ok(validateLook(man));
+  assert.equal(bodyOf(man), "masculine");
+});
+
+test("short cuts and menswear are in the closet's catalogs", () => {
+  for (const id of ["crop", "textured", "swept", "fringe"])
+    assert.ok(
+      HAIR_STYLES.some((h) => h.id === id),
+      id,
+    );
+  for (const id of [
+    "denim-shirt",
+    "striped-shirt",
+    "puffer",
+    "white-tee",
+    "suit",
+    "overalls",
+  ])
+    assert.ok(
+      OUTFITS.some((o) => o.id === id),
+      id,
+    );
+  assert.deepEqual(
+    BEARDS.map((b) => b.id),
+    ["none", "stubble", "short", "full"],
+  );
 });

@@ -146,7 +146,21 @@ test("the closet lists free options and owned shop items only", () => {
   assert.ok(!options.some((option) => option.id === "glam-faux-fur"));
   assert.deepEqual(
     wearable(OUTFITS, []).map((option) => option.id),
-    ["flares", "mini", "fur", "jeans", "shorts", "blouse"],
+    [
+      "flares",
+      "mini",
+      "fur",
+      "jeans",
+      "shorts",
+      "blouse",
+      // menswear is free: a new player of either build has clothes to wear
+      "denim-shirt",
+      "striped-shirt",
+      "puffer",
+      "white-tee",
+      "suit",
+      "overalls",
+    ],
   );
 });
 

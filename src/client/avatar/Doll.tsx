@@ -87,6 +87,12 @@ const TOON_CUT: Record<Outfit, "flares" | "mini" | "fur"> = {
   "cargo-crop": "flares",
   sundress: "mini",
   "hoodie-bikers": "flares",
+  "denim-shirt": "flares",
+  "striped-shirt": "flares",
+  puffer: "fur",
+  "white-tee": "flares",
+  suit: "flares",
+  overalls: "flares",
 };
 
 function useDollMaterials(look: Look, swim: SwimLook | null) {

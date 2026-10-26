@@ -91,6 +91,13 @@ export const MOCAP_CLIPS: readonly MocapClip[] = [
     period: 0.9333,
   },
   {
+    id: "walk-masc",
+    kind: "walk",
+    label: "Easy stride",
+    source: "Mixamo",
+    period: 1.1333,
+  },
+  {
     id: "belly-dance",
     kind: "dance",
     label: "Belly dance",

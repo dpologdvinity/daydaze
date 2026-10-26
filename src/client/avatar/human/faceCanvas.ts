@@ -7,6 +7,7 @@ import {
   type Look,
   type Makeup,
 } from "../../../game/look.ts";
+import { beardStrokes } from "../../../game/beard.ts";
 import { makeCanvas } from "../../canvas.ts";
 
 /**
@@ -352,9 +353,13 @@ function paintBrow(
   ctx.restore();
 }
 
-/** The face texture: skin, contour, blush, shadow, liner, brows, lips. */
+/** The face texture: skin, contour, blush, shadow, liner, brows, lips, and
+ * any beard. */
 export async function paintFace(
-  look: Pick<Look, "skin" | "lips" | "brows" | "shadow" | "makeup">,
+  look: Pick<
+    Look,
+    "skin" | "lips" | "brows" | "shadow" | "makeup" | "beard" | "hairColor"
+  >,
   marks: Marks,
 ) {
   const img = await loadMask();
@@ -537,6 +542,25 @@ export async function paintFace(
   ctx.restore();
   blob(ctx, mx - 0.004, my + 0.022, 0.03, 0.007, [255, 255, 255], 0.45 * gloss);
   blob(ctx, mx - 0.012, my + 0.018, 0.007, 0.003, [255, 255, 255], 0.9 * gloss);
+  // facial hair: short strokes in the hair color, a shade deeper
+  const hairs = beardStrokes(look.beard ?? "none", marks);
+  if (hairs.length) {
+    const ink = hexRgb(look.hairColor).map((v) => v * 0.8);
+    ctx.save();
+    ctx.lineCap = "round";
+    ctx.lineWidth = 1.3;
+    for (const h of hairs) {
+      ctx.strokeStyle = rgba(ink, h.alpha);
+      ctx.beginPath();
+      ctx.moveTo(h.x * SIZE, h.y * SIZE);
+      ctx.lineTo(
+        (h.x + Math.cos(h.angle) * h.len) * SIZE,
+        (h.y + Math.sin(h.angle) * h.len) * SIZE,
+      );
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
   // keep the eyes' own position free of paint: the eyeballs sit there
   void lEye;
   void rEye;

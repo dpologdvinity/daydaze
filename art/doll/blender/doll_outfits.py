@@ -201,6 +201,14 @@ def build(ctx, body, body_src):
         ("jeans", "female_casualsuit01", logo),
         ("shorts", "female_casualsuit02", logo),
         ("blouse", "female_elegantsuit01", ()),
+        # menswear (worn by anyone): a denim shirt, a striped shirt, a puffer
+        # jacket and a white tee, each over jeans; a suit and tie; overalls
+        ("denim-shirt", "male_casualsuit01", ()),
+        ("striped-shirt", "male_casualsuit03", ()),
+        ("puffer", "male_casualsuit05", ()),
+        ("white-tee", "male_casualsuit06", ((0.245, 0.14, 0.05), (0.535, 0.16, 0.11), (0.74, 0.17, 0.02))),
+        ("suit", "male_elegantsuit01", ()),
+        ("overalls", "male_worksuit01", ()),
     ):
         img = proxies.detail_texture(f"clothes/{suit}/{suit}_diffuse.png", 1024, blank=blank)
         out.append(
