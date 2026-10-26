@@ -1,16 +1,18 @@
-// The Daydaze Zoo: five fenced habitats with procedurally built animals. Every
+// The Daydaze Zoo: six fenced habitats. The petting farm's animals are animated
+// GLBs (src/client/creatures/); the rest are procedural: every
 // animal is merged geometry painted per vertex and drawn with the one shared
 // SKIN material; walkers swing two diagonal leg pairs, birds are instanced.
 // SafariTracker feeds the animals' clock and the player's view to the
 // photo-hunt session each frame.
 
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef, type JSX } from "react";
+import { Suspense, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { ROOMS } from "../../game/rooms.ts";
 import {
   BOUNDS,
+  FARM_ANIMALS,
   FLAMINGOS,
   flamingoAt,
   HABITATS,
@@ -30,6 +32,7 @@ import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import type { Player } from "../world/PlayerController.tsx";
 import { tick, zooView } from "./zoo/session.ts";
+import { WanderingCreature } from "../creatures/Wanderer.tsx";
 
 const { x0, x1, z0, z1 } = BOUNDS;
 const W = x1 - x0;
@@ -363,6 +366,38 @@ function Walkers() {
   );
 }
 
+/** The petting farm's animated animals, each wandering its own loop. */
+function Farm({ player }: { player: Player }) {
+  const pens = useMemo(
+    () =>
+      FARM_ANIMALS.map((a) => {
+        const h = HABITATS.farm;
+        return {
+          x0: h.x0 + a.inset,
+          z0: h.z0 + a.inset,
+          x1: h.x1 - a.inset,
+          z1: h.z1 - a.inset,
+        };
+      }),
+    [],
+  );
+  return (
+    <>
+      {FARM_ANIMALS.map((a, i) => (
+        <WanderingCreature
+          key={i}
+          kind={a.kind}
+          pen={pens[i] ?? HABITATS.farm}
+          speed={a.speed}
+          phase={a.phase}
+          dir={a.dir}
+          player={player}
+        />
+      ))}
+    </>
+  );
+}
+
 /** Penguins waddling round their pool's edge, flamingos dipping in theirs. */
 function Birds() {
   const calm = useReducedMotion();
@@ -423,6 +458,10 @@ const WATER = new THREE.MeshStandardMaterial({
   roughness: 0.1,
   metalness: 0.2,
 });
+const GRASS = new THREE.MeshStandardMaterial({
+  color: "#6aa84f",
+  roughness: 0.95,
+});
 const LEAVES = new THREE.MeshStandardMaterial({
   color: "#3f8f3a",
   roughness: 0.8,
@@ -435,6 +474,7 @@ const SIGN_NAMES: Record<Habitat, string> = {
   lions: "PRIDE ROCK",
   penguins: "PENGUIN POOL",
   flamingos: "FLAMINGO POND",
+  farm: "PETTING FARM",
 };
 
 /** A painted board for each habitat. */
@@ -467,6 +507,7 @@ function useGrounds(signs: THREE.Texture) {
     rect(HABITATS.elephants, 0.02, SAND);
     rect(HABITATS.penguins, 0.02, ROCK);
     rect(HABITATS.flamingos, 0.03, WATER);
+    rect(HABITATS.farm, 0.02, GRASS);
     // the penguins' pool, inset in its rocks
     const pp = HABITATS.penguins;
     rect(
@@ -539,9 +580,10 @@ function useGrounds(signs: THREE.Texture) {
 }
 
 /**
- * The Daydaze Zoo on Park Avenue: paved paths past five fenced habitats:
+ * The Daydaze Zoo on Park Avenue: paved paths past six fenced habitats:
  * giraffes and zebras on the savanna, elephants, lions on their rocks,
- * penguins round a pool and flamingos in a pond, all procedurally built.
+ * penguins round a pool, flamingos in a pond (all procedurally built) and a
+ * petting farm of animated alpacas, a donkey and a cow.
  */
 /** Tells the photo hunt the animals' clock and where the player faces. */
 function SafariTracker({ player }: { player: Player }) {
@@ -593,6 +635,9 @@ export function Zoo({
       <primitive object={grounds} />
       <Walkers />
       <Birds />
+      <Suspense fallback={null}>
+        <Farm player={player} />
+      </Suspense>
       <SafariTracker player={player} />
       <NeonText
         text="DAYDAZE ZOO"
