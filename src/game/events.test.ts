@@ -9,6 +9,8 @@ import {
   nightsAt,
   schedule,
 } from "./events.ts";
+import { djBank } from "./dialogue/dj.ts";
+import { regularBank } from "./dialogue/regular.ts";
 
 const at = (iso: string) => Date.parse(iso);
 const night = (id: string) => CLUB_NIGHTS.find((n) => n.id === id)!;
@@ -68,8 +70,8 @@ test("a club on its night plays the night's music and NPCs talk about it", () =>
   assert.equal(eventTrack("pulse", friday), "sugar-rush-pop");
   assert.equal(eventSituation("pulse", friday, false), "event-y2k-night");
   // a room that isn't in on it: nothing
-  assert.equal(eventTrack("bowling", friday), null);
-  assert.equal(eventSituation("bowling", friday, false), null);
+  assert.equal(eventTrack("ice-rink", friday), null);
+  assert.equal(eventSituation("ice-rink", friday, false), null);
   // Pride night (its own quick cycle) wins in a Pride club
   assert.equal(eventSituation("pulse", friday, true), "event-pride-night");
 });
@@ -81,4 +83,22 @@ test("waits read as days and hours, hours and minutes, or minutes", () => {
   assert.equal(formatWait(12 * m + 30_000), "13m");
   assert.equal(formatWait(10_000), "1m");
   assert.equal(formatWait(0), "now");
+});
+
+test("every evening of the week has several club nights", () => {
+  assert.ok(CLUB_NIGHTS.length >= 15, `${CLUB_NIGHTS.length} nights`);
+  for (let day = 0; day < 7; day++)
+    assert.ok(
+      CLUB_NIGHTS.filter((n) => n.days.includes(day)).length >= 2,
+      `day ${day}`,
+    );
+});
+
+test("on every night, the regulars and the DJ have plenty to say about it", () => {
+  for (const n of CLUB_NIGHTS)
+    for (const bank of [regularBank, djBank])
+      assert.ok(
+        (bank[n.situation]?.length ?? 0) >= 10,
+        `${n.id}: ${bank[n.situation]?.length ?? 0} lines`,
+      );
 });

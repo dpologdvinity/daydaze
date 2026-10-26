@@ -1,6 +1,8 @@
-// The weekly club nights: Y2K, Latin and chiptune nights at set clubs on set
-// evenings, the same moment for every player (the schedule runs on UTC, the
-// evenings placed over American nights: 23:00 to 05:00 UTC). On its night a
+// The weekly club nights: seventeen of them (Y2K, Latin, chiptune, disco,
+// house, rave, K-pop, drag, goth, speakeasy, luau and more), at set clubs on
+// set evenings, two or more every night of the week. Every player sees the
+// same moment: the schedule runs on UTC, the evenings placed over American
+// nights (23:00 to 05:00 UTC). On its night a
 // club plays the night's music, glows its color and its people talk about
 // it. Pride night keeps its own quick cycle (prideNight.ts), as do the
 // city's fireworks and parade; the city map lists them all. Pure.
@@ -19,7 +21,24 @@ const LENGTH = 6 * HOUR;
 const EPOCH_WEEKDAY = 4;
 
 export type ClubNight = {
-  id: "y2k-night" | "latin-night" | "chiptune-night";
+  id:
+    | "y2k-night"
+    | "latin-night"
+    | "chiptune-night"
+    | "disco-night"
+    | "foam-party"
+    | "speakeasy-night"
+    | "eighties-night"
+    | "goth-night"
+    | "rave-night"
+    | "kpop-night"
+    | "trivia-night"
+    | "open-mic-night"
+    | "drag-night"
+    | "cosmic-bowling"
+    | "ladies-night"
+    | "house-night"
+    | "luau-night";
   label: string;
   /** The clubs that host it. */
   clubs: readonly RoomId[];
@@ -60,6 +79,132 @@ export const CLUB_NIGHTS: readonly ClubNight[] = [
     track: "player-two-chiptune",
     color: "#7dff6b",
     situation: "event-chiptune-night",
+  },
+  {
+    id: "disco-night",
+    label: "Disco night",
+    clubs: ["roller-rink", "sugar-rush"],
+    days: [0],
+    track: "roller-disco",
+    color: "#ffd84f",
+    situation: "event-disco-night",
+  },
+  {
+    id: "foam-party",
+    label: "Foam party",
+    clubs: ["pulse", "water-park"],
+    days: [0],
+    track: "savanna-nightclub",
+    color: "#a8e8ff",
+    situation: "event-foam-party",
+  },
+  {
+    id: "speakeasy-night",
+    label: "Speakeasy night",
+    clubs: ["jazz-club", "back-room"],
+    days: [0, 3],
+    track: "canopy-lofi",
+    color: "#e8b04a",
+    situation: "event-speakeasy-night",
+  },
+  {
+    id: "eighties-night",
+    label: "'80s night",
+    clubs: ["roller-rink", "arcade-bar"],
+    days: [1],
+    track: "roller-disco",
+    color: "#ff4fa3",
+    situation: "event-eighties-night",
+  },
+  {
+    id: "goth-night",
+    label: "Goth night",
+    clubs: ["velvet-room", "back-room"],
+    days: [1],
+    track: "warehouse-acid",
+    color: "#9b4dff",
+    situation: "event-goth-night",
+  },
+  {
+    id: "rave-night",
+    label: "Rave night",
+    clubs: ["warehouse", "pulse"],
+    days: [2],
+    track: "warehouse-acid",
+    color: "#b14dff",
+    situation: "event-rave-night",
+  },
+  {
+    id: "kpop-night",
+    label: "K-pop night",
+    clubs: ["sugar-rush", "karaoke"],
+    days: [2],
+    track: "sugar-rush-pop",
+    color: "#ff7ad9",
+    situation: "event-kpop-night",
+  },
+  {
+    id: "trivia-night",
+    label: "Trivia night",
+    clubs: ["wine-bar", "skate-diner"],
+    days: [2],
+    track: "canopy-lofi",
+    color: "#7fd4ff",
+    situation: "event-trivia-night",
+  },
+  {
+    id: "open-mic-night",
+    label: "Open mic night",
+    clubs: ["karaoke", "espresso-lab"],
+    days: [3],
+    track: "canopy-lofi",
+    color: "#ffb36b",
+    situation: "event-open-mic-night",
+  },
+  {
+    id: "drag-night",
+    label: "Drag night",
+    clubs: ["violet-hour", "velvet-room"],
+    days: [4],
+    track: "sugar-rush-pop",
+    color: "#ff5fd2",
+    situation: "event-drag-night",
+  },
+  {
+    id: "cosmic-bowling",
+    label: "Cosmic bowling",
+    clubs: ["bowling", "boardwalk-arcade"],
+    days: [5],
+    track: "player-two-chiptune",
+    color: "#5cf2ff",
+    situation: "event-cosmic-bowling",
+  },
+  {
+    id: "ladies-night",
+    label: "Ladies' night",
+    clubs: ["violet-hour", "rooftop-bar", "wine-bar"],
+    days: [5],
+    track: "roller-disco",
+    color: "#ff8fb8",
+    situation: "event-ladies-night",
+  },
+  {
+    id: "house-night",
+    label: "House night",
+    clubs: ["warehouse", "rooftop-bar"],
+    days: [6],
+    track: "savanna-nightclub",
+    color: "#6affc4",
+    situation: "event-house-night",
+  },
+  {
+    id: "luau-night",
+    label: "Luau night",
+    clubs: ["tiki-bar", "hotel-rooftop"],
+    days: [6],
+    track: "waterhole-twilight",
+    color: "#3fe0d0",
+    situation: "event-luau-night",
   },
 ];
 

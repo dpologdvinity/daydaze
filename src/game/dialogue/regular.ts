@@ -3,8 +3,10 @@
 // directly.
 
 import type { RoleBank } from "./types.ts";
+import { regularNightLines } from "./eventNights.ts";
 
 export const regularBank: RoleBank = {
+  ...regularNightLines,
   "greeting-first": [
     "Oh, new face! Sit, the stool next to me is comfy.",
     "Hey, you're new. I'm the one who knows where the good bathroom is.",

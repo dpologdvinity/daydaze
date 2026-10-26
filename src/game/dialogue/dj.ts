@@ -3,8 +3,10 @@
 // directly.
 
 import type { RoleBank } from "./types.ts";
+import { djNightLines } from "./eventNights.ts";
 
 export const djBank: RoleBank = {
+  ...djNightLines,
   "greeting-first": [
     "Hey! Welcome to the booth, what's your song?",
     "New face in the crowd, let's get you dancing.",
