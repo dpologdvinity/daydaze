@@ -96,8 +96,14 @@ menu; the asset list with sources and licenses kept in `docs/assets.md`.
   `feat/mixamo-rig` in a worktree (research: Rocketbox has baked-in clothes,
   Quaternius free bodies are superhero-proportioned; MPFB2 rig keeps our
   closet). Merge it after verify + doll browser tests.
-- Waiting on the owner: the Quaternius Downtown City MegaKit zip (CC0,
-  itch.io blocks scripted downloads; see STEPS-FOR-OWNER.md).
+- The Quaternius Downtown City MegaKit (Standard, CC0) is downloaded:
+  `C:\Users\mango\Downloads\Downtown City MegaKit[Standard].zip` (WSL
+  `/mnt/c/Users/mango/Downloads/`), unpacked to `/tmp/daydaze-city/megakit/`
+  (re-unzip if /tmp was cleared): 153 glTF pieces in `Exports/glTF (Godot)`
+  (89 MB) plus shared `Textures/` (142 MB) — brick and stone facade modules,
+  columns, cornices, windows, doors, storefronts, roads, sidewalks and three
+  prebuilt buildings. Optimize what we use with gltf-transform before it
+  enters `public/`.
 - Next: remaining purple night palette by day (parking lines, lane strips,
   the far skyline backdrop); street trees and lawns (EZ-Tree / Quaternius
   nature, InstancedMesh2, impostors far off); the park; the boardwalk
