@@ -47,7 +47,10 @@ export function TogetherPanel(): JSX.Element | null {
     return (
       <section className="game-panel" aria-label="Together">
         <p className="game-call" role="status">
-          {together(s.pair.e).label} with {s.pair.name}. Walk away to stop.
+          {together(s.pair.e).label} with {s.pair.name}.{" "}
+          {together(s.pair.e).behind
+            ? "Press Stop to hop down."
+            : "Walk away to stop."}
         </p>
         <button type="button" onClick={stopTogether}>
           Stop

@@ -68,6 +68,8 @@ export const DANCE_MOVE_IDS = [
   "hug",
   "hold-hands",
   "forehead-kiss",
+  "piggyback-carry",
+  "piggyback-ride",
   // game clips the player's doll plays in in-world games (see GAME_CLIP_IDS)
   "tuck",
   "dive-pencil",
@@ -584,6 +586,84 @@ export const DANCE_MOVES: readonly DanceMove[] = [
       },
     ],
   },
+  {
+    // the carrier: a forward lean, arms hooked back under the rider's knees,
+    // a little bounce as if hitching them up
+    id: "piggyback-carry",
+    label: "Piggyback carry",
+    period: 2,
+    keys: [
+      {
+        at: 0,
+        joints: {
+          body: [0.22, 0, 0],
+          head: [-0.12, 0, 0],
+          lArm: [0.35, 0, 0.4],
+          rArm: [0.35, 0, -0.4],
+          lFore: [-1.35, 0, 0],
+          rFore: [-1.35, 0, 0],
+          lLeg: [-0.12, 0, 0.04],
+          rLeg: [-0.12, 0, -0.04],
+          lShin: [0.22, 0, 0],
+          rShin: [0.22, 0, 0],
+        },
+      },
+      {
+        at: 1,
+        joints: {
+          body: [0.26, 0, 0],
+          head: [-0.08, 0, 0],
+          lArm: [0.4, 0, 0.4],
+          rArm: [0.4, 0, -0.4],
+          lFore: [-1.4, 0, 0],
+          rFore: [-1.4, 0, 0],
+          lLeg: [-0.16, 0, 0.04],
+          rLeg: [-0.16, 0, -0.04],
+          lShin: [0.3, 0, 0],
+          rShin: [0.3, 0, 0],
+        },
+      },
+    ],
+  },
+  {
+    // the rider, up on their back: legs round the carrier's waist, arms
+    // down over the shoulders and crossed at the chest, cheek turned to theirs
+    id: "piggyback-ride",
+    label: "Piggyback ride",
+    period: 2,
+    keys: [
+      {
+        at: 0,
+        joints: {
+          body: [0.3, 0, 0],
+          head: [0.08, 0.3, 0.05],
+          lLeg: [-1.25, 0, 0.45],
+          rLeg: [-1.25, 0, -0.45],
+          lShin: [1.35, 0, 0],
+          rShin: [1.35, 0, 0],
+          lArm: [-0.4, 0, -0.05],
+          rArm: [-0.4, 0, 0.05],
+          lFore: [-1.6, 0, -0.6],
+          rFore: [-1.6, 0, 0.6],
+        },
+      },
+      {
+        at: 1,
+        joints: {
+          body: [0.34, 0, 0],
+          head: [0.1, 0.32, 0.05],
+          lLeg: [-1.3, 0, 0.45],
+          rLeg: [-1.3, 0, -0.45],
+          lShin: [1.4, 0, 0],
+          rShin: [1.4, 0, 0],
+          lArm: [-0.45, 0, -0.05],
+          rArm: [-0.45, 0, 0.05],
+          lFore: [-1.6, 0, -0.6],
+          rFore: [-1.6, 0, 0.6],
+        },
+      },
+    ],
+  },
   // ---- game clips: held shapes for in-world games, no beat dip ----
   {
     // knees hugged to the chest, chin down: the slide's tuck and a dive's ball
@@ -934,6 +1014,8 @@ const EMOTES: ReadonlySet<string> = new Set([
   "hug",
   "hold-hands",
   "forehead-kiss",
+  "piggyback-carry",
+  "piggyback-ride",
 ]);
 
 /** The moves the player picks from: every dance, no NPC emotes or poses for two. */

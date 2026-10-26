@@ -2,16 +2,49 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { decodeAction, encodeAction } from "../peerAction.ts";
 import { danceMove, PICKER_DANCE_MOVES } from "./moves.ts";
-import { followSpot, parsePairMessage, TOGETHER } from "./together.ts";
+import {
+  followSpot,
+  liftOf,
+  mirrored,
+  parsePairMessage,
+  roleMove,
+  TOGETHER,
+} from "./together.ts";
 
 const close = (a: number, b: number) => Math.abs(a - b) < 1e-9;
 
 test("every emote together has its own move, kept out of the solo picker", () => {
-  for (const e of TOGETHER) {
-    assert.equal(danceMove(e.move).id, e.move);
-    if (e.move !== "slow-dance")
-      assert.ok(!PICKER_DANCE_MOVES.some((m) => m.id === e.move), e.id);
-  }
+  for (const e of TOGETHER)
+    for (const move of [e.move, e.follow ?? e.move]) {
+      assert.equal(danceMove(move).id, move);
+      if (move !== "slow-dance")
+        assert.ok(!PICKER_DANCE_MOVES.some((m) => m.id === move), e.id);
+    }
+});
+
+test("a piggyback rider climbs on the leader's back, facing the same way", () => {
+  const e = TOGETHER.find((x) => x.id === "piggyback")!;
+  const spot = followSpot("piggyback", [2, 3], 0);
+  // yaw 0 faces +z: behind is -z
+  assert.ok(close(spot.at[0], 2) && close(spot.at[1], 3 - e.gap));
+  assert.ok(close(spot.yaw, 0));
+  assert.ok(liftOf("piggyback") > 0.1);
+});
+
+test("the piggyback roles play their own moves; the others mirror one", () => {
+  assert.equal(roleMove("piggyback", "lead"), "piggyback-carry");
+  assert.equal(roleMove("piggyback", "follow"), "piggyback-ride");
+  assert.equal(mirrored("piggyback"), false);
+  assert.equal(roleMove("hug", "follow"), "hug");
+  assert.equal(mirrored("hug"), true);
+  assert.equal(liftOf("hug"), 0);
+});
+
+test("a piggyback rider's action code carries the riding move", () => {
+  const ride = decodeAction("pair:piggyback:f");
+  assert.equal(ride.dance, "piggyback-ride");
+  assert.deepEqual(ride.pair, { emote: "piggyback", role: "follow" });
+  assert.equal(decodeAction("pair:piggyback:l").dance, "piggyback-carry");
 });
 
 test("the follower faces the leader, gap meters in front", () => {
@@ -64,7 +97,8 @@ test("an emote together rides the action code, buzz and all", () => {
       const got = decodeAction(code);
       assert.deepEqual(got.pair, { emote: e.id, role });
       assert.equal(got.mood, "dance");
-      assert.equal(got.dance, e.move);
+      // each side's own move: the lead's, or a piggyback rider's
+      assert.equal(got.dance, roleMove(e.id, role));
       assert.equal(got.buzz, 3);
     }
   assert.equal(decodeAction("pair:tango:l").pair, undefined);

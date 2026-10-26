@@ -135,6 +135,46 @@ test("two players meet in the Plaza, talk, become friends and play cards", async
     { timeout: 60_000 },
   );
 
+  // a piggyback: B climbs on A's back and is carried as A walks
+  await tagOnA.click();
+  await a
+    .getByRole("group", { name: "Do something together" })
+    .getByRole("button", { name: "Piggyback" })
+    .click();
+  await b
+    .getByRole("region", { name: "Emote invite" })
+    .getByRole("button", { name: "Yes" })
+    .click({ timeout: 60_000 });
+  for (const page of [a, b])
+    await expect(page.locator(".peer-tag")).toHaveAttribute(
+      "data-doing",
+      "pair:piggyback",
+      { timeout: 60_000 },
+    );
+  const before = await b.locator("canvas").getAttribute("data-spot");
+  await a.locator("canvas").focus();
+  await a.keyboard.down("ArrowUp");
+  await expect
+    .poll(() => b.locator("canvas").getAttribute("data-spot"), {
+      timeout: 120_000,
+    })
+    .not.toBe(before);
+  await a.keyboard.up("ArrowUp");
+  // still on: walking doesn't end a piggyback, Stop does
+  await expect(a.locator(".peer-tag")).toHaveAttribute(
+    "data-doing",
+    "pair:piggyback",
+  );
+  await b
+    .getByRole("region", { name: "Together" })
+    .getByRole("button", { name: "Stop" })
+    .click();
+  await expect(a.locator(".peer-tag")).not.toHaveAttribute(
+    "data-doing",
+    "pair:piggyback",
+    { timeout: 60_000 },
+  );
+
   // a cook-off challenge: B takes it, and both are sent to the kitchen
   await tagOnA.click();
   await a.getByRole("button", { name: "Challenge to a cook-off" }).click();

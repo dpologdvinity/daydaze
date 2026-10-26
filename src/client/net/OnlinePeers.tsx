@@ -30,7 +30,12 @@ import { getBuzz } from "../effects/drunk.ts";
 import { CarMesh } from "../rooms/speedway/CarMesh.tsx";
 import { driving } from "../world/driving.ts";
 import { placePlayer, type Player } from "../world/PlayerController.tsx";
-import { followSpot } from "../../game/dance/together.ts";
+import {
+  followSpot,
+  liftOf,
+  mirrored,
+  together,
+} from "../../game/dance/together.ts";
 import { pairUp, stopTogether } from "./together.ts";
 import { keepSeat } from "./ride.ts";
 import { shownChat } from "./chatPrefs.ts";
@@ -51,12 +56,15 @@ function PeerDoll({
   peer,
   said,
   swimwear,
+  player,
 }: {
   session: OnlineSession;
   peer: Peer;
   said: string | null;
   /** In a swimwear room they wear the swimsuit their look carries. */
   swimwear: boolean;
+  /** This player, whose back a piggyback rider of theirs sits on. */
+  player: Player;
 }) {
   const group = useRef<THREE.Group>(null);
   const walk = useMemo(() => ({ current: { speed: 0 } as WalkState }), []);
@@ -78,7 +86,10 @@ function PeerDoll({
       heard.current = { action: at.action, next: decodeAction(at.action) };
     const { next } = heard.current;
     // height comes only with each move: ease it, so rides don't step
-    const y = next.seat?.y ?? 0;
+    // a piggyback rider sits up on the lead's back
+    const y =
+      (next.seat?.y ?? 0) +
+      (next.pair?.role === "follow" ? liftOf(next.pair.emote) : 0);
     g.position.set(
       at.x,
       Math.abs(y - g.position.y) > 3
@@ -87,6 +98,21 @@ function PeerDoll({
       at.z,
     );
     g.rotation.y = at.yaw;
+    // riding piggyback on this player: drawn on their back as they are now,
+    // not where the rider's (later-arriving) moves say
+    const mine = pairUp.get().pair;
+    if (
+      mine?.id === peer.id &&
+      mine.role === "lead" &&
+      next.pair?.role === "follow" &&
+      together(next.pair.emote).behind
+    ) {
+      const yaw = player.walk.yaw;
+      const gap = together(next.pair.emote).gap;
+      g.position.x = player.pos.x - gap * Math.sin(yaw);
+      g.position.z = player.pos.z - gap * Math.cos(yaw);
+      g.rotation.y = yaw;
+    }
     const prev = last.current;
     const moved = prev ? Math.hypot(at.x - prev.x, at.z - prev.z) : 0;
     walk.current.speed = dt > 0 ? Math.min(4, moved / dt) : 0;
@@ -141,7 +167,11 @@ function PeerDoll({
           mood={doing.mood}
           hold={doing.seat?.pose === "lie" ? LAY_HOLD : undefined}
           dance={doing.dance}
-          couple={doing.pair?.role}
+          couple={
+            doing.pair && mirrored(doing.pair.emote)
+              ? doing.pair.role
+              : undefined
+          }
           walk={walk}
           seed={peer.id.length * 7}
         />
@@ -267,6 +297,18 @@ export function OnlinePeers({
         player.yaw = player.walk.yaw = player.before.yaw = spot.yaw;
         pairUp.set({ pair: { ...pair, placed: true } });
       }
+    } else if (together(pair.e).behind) {
+      // a piggyback moves as one: the rider stays on the lead's back
+      // wherever they walk (the rider's own walking is off), and walking
+      // away never ends it; Stop does
+      const lead = pair.role === "follow" && session?.sample(pair.id);
+      if (lead) {
+        // shortcut: followSpot and placePlayer allocate a little each frame
+        // while riding; reuse buffers if a profile ever shows it
+        const spot = followSpot(pair.e, [lead.x, lead.z], lead.yaw);
+        placePlayer(player, spot.at[0], spot.at[1]);
+        player.yaw = player.walk.yaw = player.before.yaw = spot.yaw;
+      }
     } else if (!anchor.current.set)
       anchor.current = { x: player.pos.x, z: player.pos.z, set: true };
     else if (
@@ -329,6 +371,7 @@ export function OnlinePeers({
           peer={p}
           said={said[p.id]?.text ?? null}
           swimwear={ROOMS[room].swimwear === true}
+          player={player}
         />
       ))}
     </Suspense>

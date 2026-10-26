@@ -1,6 +1,6 @@
 import { useFrame } from "@react-three/fiber";
 import { playerSpot } from "./playerSpot.ts";
-import { together } from "../../game/dance/together.ts";
+import { liftOf, mirrored, roleMove } from "../../game/dance/together.ts";
 import { pairUp } from "../net/together.ts";
 import { gameClip } from "../rooms/shared/game3d/gameClip.ts";
 import { useEffect, useRef, useState, type RefObject } from "react";
@@ -242,7 +242,10 @@ export function PlayerController({
   // an in-world game's clip (a dig, a dive) overrides both
   const { move: gameMove } = gameClip.use();
   const mood: Mood = gameMove || paired ? "dance" : picked;
-  const dance = gameMove ?? (paired ? together(paired.e).move : pickedDance);
+  const dance =
+    gameMove ?? (paired ? roleMove(paired.e, paired.role) : pickedDance);
+  // a piggyback rider is up on the lead's back, carried wherever they go
+  const lift = paired?.role === "follow" ? liftOf(paired.e) : 0;
   const g = useRef<THREE.Group>(null);
   const gait = useRef<WalkState>({ speed: 0 });
   const marker = useRef<THREE.Mesh>(null);
@@ -306,6 +309,10 @@ export function PlayerController({
     } else if (player.seat) {
       // seated: the pose is the seat's, and the walker holds still
       player.acc = 0;
+    } else if (lift > 0) {
+      // on someone's back: they do the walking (OnlinePeers keeps her there)
+      player.acc = 0;
+      player.walk.target = null;
     } else {
       // simulate in fixed steps, however fast frames arrive
       player.acc = Math.min(player.acc + dt, MAX_CATCH_UP);
@@ -376,6 +383,7 @@ export function PlayerController({
       const yaw = player.seat?.yaw ?? player.yaw;
       const flip = player.seat?.flip ?? 0;
       g.current.position.copy(drawnPos);
+      g.current.position.y += lift;
       // turn, then tumble about her own side axis, pivoting at the hips
       g.current.rotation.set(flip, yaw, 0, "YXZ");
       if (flip !== 0) {
@@ -428,7 +436,7 @@ export function PlayerController({
           body={body}
           mood={riding === "lay" ? "sit" : (riding ?? mood)}
           dance={dance}
-          couple={paired?.role}
+          couple={paired && mirrored(paired.e) ? paired.role : undefined}
           hold={
             riding === "lay"
               ? LAY_HOLD

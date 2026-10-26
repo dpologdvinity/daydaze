@@ -11,7 +11,7 @@ import { isDanceMoveId, type DanceMoveId } from "./dance/moves.ts";
 import { RIMS, TINTS, UNDERGLOWS, WRAPS, type CarMods } from "./city/drive.ts";
 import { carById } from "./driving/roster.ts";
 import { MOODS, type Mood } from "./look.ts";
-import { isTogetherId, together, type Pair } from "./dance/together.ts";
+import { isTogetherId, roleMove, type Pair } from "./dance/together.ts";
 
 const LIMIT = 24;
 const isMood = (a: string): a is Mood => MOODS.some((m) => m.id === a);
@@ -116,7 +116,7 @@ function decodeBody(action: string): Doing {
     const role = pair[2] === "l" ? "lead" : "follow";
     return {
       mood: "dance",
-      dance: together(emote).move,
+      dance: roleMove(emote, role),
       pair: { emote, role },
     };
   }

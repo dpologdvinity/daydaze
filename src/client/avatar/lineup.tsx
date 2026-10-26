@@ -15,6 +15,7 @@ import {
 import { ToonDoll as Doll } from "./Doll.tsx";
 import { HumanDoll } from "./human/HumanDoll.tsx";
 import { isDanceMoveId, stillClipsOf } from "../../game/dance/moves.ts";
+import { liftOf, roleMove, together } from "../../game/dance/together.ts";
 import { GAITS } from "../../game/gaits.ts";
 import { Environment, Lightformer } from "@react-three/drei";
 import { Suspense } from "react";
@@ -184,6 +185,15 @@ const SHOTS = {
     target: [0, 0.95, 0] as const,
     fov: 36,
   },
+  // a piggyback, three-quarter on: the carrier, and the rider placed on
+  // their back exactly as the game places them (together.ts)
+  piggyback: {
+    looks: LINEUP.slice(1, 3),
+    x: () => 0,
+    cam: [2.6, 1.5, 2.6] as const,
+    target: [0, 1.0, 0] as const,
+    fov: 38,
+  },
   // every walk style, walking in place, side on
   walk: {
     looks: GAITS.map((g, i) => ({ ...LINEUP[i % LINEUP.length], gait: g.id })),
@@ -278,6 +288,15 @@ const SHOTS = {
 };
 type ShotName = keyof typeof SHOTS;
 const plan = SHOTS[shot as ShotName] ?? SHOTS.lineup;
+// `?cam=x,y,z` moves the shot's camera, to look at a pose from another side
+const camAt = new URLSearchParams(location.search)
+  .get("cam")
+  ?.split(",")
+  .map(Number);
+const cam =
+  camAt?.length === 3 && camAt.every(Number.isFinite)
+    ? ([camAt[0], camAt[1], camAt[2]] as const)
+    : plan.cam;
 
 function measure(root: THREE.Object3D) {
   let calls = 0;
@@ -319,7 +338,7 @@ function Lab() {
       dpr={1}
       gl={{ antialias: true, preserveDrawingBuffer: true }}
       camera={{
-        position: [...plan.cam],
+        position: [...cam],
         fov: plan.fov,
         near: 0.05,
         far: 200,
@@ -356,13 +375,21 @@ function Lab() {
         color="#ff74d4"
       />
       {plan.looks.map((look, i) => (
-        <group key={i} name={`doll-${i}`} position={[plan.x(i), 0, 0]}>
+        <group
+          key={i}
+          name={`doll-${i}`}
+          position={
+            shot === "piggyback" && i === 1
+              ? [0, liftOf("piggyback"), -together("piggyback").gap]
+              : [plan.x(i), 0, 0]
+          }
+        >
           {human ? (
             <Suspense fallback={null}>
               <HumanDoll
                 look={look}
                 mood={
-                  shot === "dance"
+                  shot === "dance" || shot === "piggyback"
                     ? "dance"
                     : shot === "sit" || shot === "lay"
                       ? "sit"
@@ -375,7 +402,11 @@ function Lab() {
                     ? HOLDS[shot][i]
                     : "none"
                 }
-                dance={DANCES[i % DANCES.length]}
+                dance={
+                  shot === "piggyback"
+                    ? roleMove("piggyback", i === 0 ? "lead" : "follow")
+                    : DANCES[i % DANCES.length]
+                }
                 seed={i}
                 walk={shot === "walk" ? WALKING : undefined}
                 rotation-y={shot === "walk" ? Math.PI / 2 : 0}
