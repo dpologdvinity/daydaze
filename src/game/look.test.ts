@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { unlockedLook } from "./shop.ts";
 import {
   BEARDS,
+  modelSuffix,
   bodyOf,
   BROWS,
   STARTER_LOOKS,
@@ -328,4 +329,10 @@ test("short cuts and menswear are in the closet's catalogs", () => {
     BEARDS.map((b) => b.id),
     ["none", "stubble", "short", "full"],
   );
+});
+
+test("men and women are separate dolls: a man's models carry the -m suffix", () => {
+  assert.equal(modelSuffix(DEFAULT_LOOK), "");
+  assert.equal(modelSuffix({ ...DEFAULT_LOOK, body: "feminine" }), "");
+  assert.equal(modelSuffix({ ...DEFAULT_LOOK, body: "masculine" }), "-m");
 });

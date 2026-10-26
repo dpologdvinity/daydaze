@@ -682,8 +682,8 @@ export type Look = {
   beard?: Beard;
 };
 
-/** The two builds the doll comes in (a shape key on one mesh, so every
- * outfit, hair and shoe fits both). */
+/** The two builds: separate dolls, each with its own body, skeleton and
+ * fitted hair, clothes and shoes (see modelSuffix). */
 export const BODIES = [
   { id: "feminine", label: "Feminine" },
   { id: "masculine", label: "Masculine" },
@@ -701,6 +701,11 @@ export type Beard = IdOf<typeof BEARDS>;
 
 /** A look's build. */
 export const bodyOf = (look: Look): Body => look.body ?? "feminine";
+
+/** Women and men are separate dolls (art/doll/blender/build_doll.py builds
+ * each): a man's body, hair, clothes and shoes are the `-m` files. */
+export const modelSuffix = (look: Look): "" | "-m" =>
+  bodyOf(look) === "masculine" ? "-m" : "";
 
 /** The menswear outfits and short cuts NPC men are dressed from. */
 export const MENSWEAR: readonly Outfit[] = [

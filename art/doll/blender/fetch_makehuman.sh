@@ -18,6 +18,8 @@ FILES=(
   $T/macrodetails/african-female-young.target
   $T/macrodetails/universal-male-young-averagemuscle-averageweight.target
   $T/macrodetails/universal-male-young-maxmuscle-averageweight.target
+  $T/macrodetails/universal-male-young-averagemuscle-maxweight.target
+  $T/macrodetails/universal-male-young-averagemuscle-minweight.target
   $T/macrodetails/african-male-young.target
   $T/macrodetails/asian-male-young.target
   $T/macrodetails/caucasian-male-young.target
@@ -157,11 +159,11 @@ if [ ! -d "$PACK/hair/long01" ]; then
     '*clothes/female_sportsuit01/*' -d "$PACK"
   rm -r "$tmp"
 fi
-# menswear and short hair, for the masculine body (added 2026-10-26)
-if [ ! -d "$PACK/clothes/male_casualsuit01" ]; then
+# menswear, short hair and the male far-LOD body, for the man (2026-10-26)
+if [ ! -d "$PACK/proxymeshes/male1591" ]; then
   tmp="$(mktemp -d)"
   curl -fsSL https://files.makehumancommunity.org/asset_packs/makehuman_system_assets/makehuman_system_assets_cc0.zip -o "$tmp/cc0.zip"
-  unzip -q -o "$tmp/cc0.zip" '*clothes/male_*' '*hair/short0*' -d "$PACK"
+  unzip -q -o "$tmp/cc0.zip" '*clothes/male_*' '*hair/short0*' '*proxymeshes/male1591/*' -d "$PACK"
   rm -r "$tmp"
 fi
 echo "MakeHuman proxies in $PACK"

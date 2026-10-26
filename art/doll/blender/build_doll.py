@@ -32,6 +32,14 @@ ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
 # raw exports; scripts/optimize-doll.sh compresses them into public/models/doll/
 OUT_DIR = os.path.join(HERE, ".cache", "out")
 
+# Women and men are separate dolls: each its own MakeHuman build, skeleton
+# and fitted parts. DOLL_SEX=male builds the man, every file suffixed -m
+# (body-m.glb, hair-crop-m.glb, ...); the client loads one set per doll.
+SEX = os.environ.get("DOLL_SEX", "female")
+if SEX not in ("female", "male"):
+    raise SystemExit(f"DOLL_SEX must be female or male, not {SEX}")
+SUFFIX = "-m" if SEX == "male" else ""
+
 # ------------------------------------------------------------------ MakeHuman
 
 
@@ -73,7 +81,7 @@ def pair(name):
 
 
 BASE, FACES = load_obj()
-UNI = "macrodetails/universal-female-young-"
+UNI = f"macrodetails/universal-{SEX}-young-"
 AVG = target(UNI + "averagemuscle-averageweight.target")
 
 # The house look: a young adult woman with glam proportions. Each entry is a
@@ -106,7 +114,7 @@ SHAPE = [
     # hips, fuller bum and thighs, a lifted bust. The shoulders keep a real
     # width (joints ~0.33 m apart, not 0.29: narrowing them made the neck look
     # long and the head look pinned on), and the neck is a touch shorter.
-    (target(UNI + "minmuscle-averageweight.target") - AVG, 0.5),
+    (target("macrodetails/universal-female-young-minmuscle-averageweight.target") - AVG, 0.5),
     (target("torso/torso-vshape-incr.target"), 0.25),
     (target("neck/neck-scale-vert-decr.target"), 0.3),
     (pair("armslegs/{s}-upperarm-muscle-decr.target"), 0.5),
@@ -158,6 +166,25 @@ SHAPE = [
     (pair("eyes/{s}-eye-height1-incr.target"), 0.0),
     (pair("eyes/{s}-eye-eyefold-up.target"), 0.0),
 ]
+if SEX == "male":
+    # the house man: an average young man of the three races, ideal
+    # proportions, a little muscle, and the doll's slightly larger eyes
+    SHAPE = [
+        (AVG, 1.0),
+        (target("macrodetails/african-male-young.target"), 1 / 3),
+        (target("macrodetails/asian-male-young.target"), 1 / 3),
+        (target("macrodetails/caucasian-male-young.target"), 1 / 3),
+        (
+            target(
+                "macrodetails/proportions/male-young-averagemuscle-averageweight-idealproportions.target"
+            ),
+            1.0,
+        ),
+        (target(UNI + "maxmuscle-averageweight.target") - AVG, 0.25),
+        (pair("eyes/{s}-eye-scale-incr.target"), 0.45),
+        (pair("eyes/{s}-eye-bag-decr.target"), 0.6),
+        (pair("cheek/{s}-cheek-bones-incr.target"), 0.4),
+    ]
 P = BASE + sum(t * w for t, w in SHAPE)
 
 
@@ -194,7 +221,9 @@ def refine(P):
     return P
 
 
-P = refine(P)
+# the lip and nose refinements are the house woman's
+if SEX == "female":
+    P = refine(P)
 
 # Shape keys the client drives. Face sliders run -1..1, so a negative influence
 # undoes the target; body keys run 0..1.
@@ -210,11 +239,19 @@ KEYS = {
     "cheeks": pair("cheek/{s}-cheek-bones-incr.target") * 0.8,
     "jaw": target("chin/chin-width-incr.target") * 0.8,
     "curvy": (target(UNI + "averagemuscle-maxweight.target") - AVG) * 0.4
-    + target("bodyshapes/bodyshapes-elvs-fem-full-hourglass.target") * 0.4
-    + target("buttocks/buttocks-volume-incr.target") * 0.3
-    + target("hip/hip-scale-horiz-incr.target") * 0.15,
+    + (
+        target("bodyshapes/bodyshapes-elvs-fem-full-hourglass.target") * 0.4
+        + target("buttocks/buttocks-volume-incr.target") * 0.3
+        + target("hip/hip-scale-horiz-incr.target") * 0.15
+        if SEX == "female"
+        else 0
+    ),
     "slim": (target(UNI + "averagemuscle-minweight.target") - AVG) * 0.6
-    + target("bodyshapes/bodyshapes-elvs-fem-lean-column.target") * 0.4,
+    + (
+        target("bodyshapes/bodyshapes-elvs-fem-lean-column.target") * 0.4
+        if SEX == "female"
+        else 0
+    ),
     "athletic": (target(UNI + "maxmuscle-averageweight.target") - AVG) * 0.6,
     "blink": target("expression/units/caucasian/eye-left-closure.target")
     + target("expression/units/caucasian/eye-right-closure.target"),
@@ -222,37 +259,6 @@ KEYS = {
 }
 
 
-def masculine():
-    """The masculine body as a key over the house shape: an average young
-    MakeHuman man (male macro, the three races, ideal proportions, a little
-    muscle), scaled about the feet to the same height so every joint stays on
-    its bone (taller men come from the height slider), minus the house woman.
-    The eye sockets keep the house shape, so the lids still fit the separate
-    eyeballs. Garments follow it like any body key."""
-    male_uni = "macrodetails/universal-male-young-"
-    male_avg = target(male_uni + "averagemuscle-averageweight.target")
-    M = BASE + male_avg + sum(
-        target(f"macrodetails/{race}-male-young.target") / 3
-        for race in ("african", "asian", "caucasian")
-    )
-    M = M + target(
-        "macrodetails/proportions/male-young-averagemuscle-averageweight-idealproportions.target"
-    )
-    M = M + (target(male_uni + "maxmuscle-averageweight.target") - male_avg) * 0.25
-    body = sorted({i for f in FACES["body"] for i in f})
-    feet = P[body][:, 1].min()
-    scale = (P[body][:, 1].max() - feet) / (M[body][:, 1].max() - M[body][:, 1].min())
-    M = M.copy()
-    M[:, 1] = (M[:, 1] - M[body][:, 1].min()) * scale + feet
-    M[:, [0, 2]] = M[:, [0, 2]] * scale
-    keep = np.zeros(len(P))
-    for helper in ("helper-l-eye", "helper-r-eye"):
-        c = _centre(helper)
-        keep = np.maximum(keep, _falloff(P, c, 0.55))
-    return (M - P) * (1 - keep)[:, None]
-
-
-KEYS["masculine"] = masculine()
 
 SKEL = json.load(open(os.path.join(MH, "rigs", "default.mhskel")))
 MHW = json.load(open(os.path.join(MH, "rigs", "default_weights.mhw")))["weights"]
@@ -396,9 +402,11 @@ _shoulder_y = J["lArm"][1]
 _waist_y = _hip_y + 0.35 * (_shoulder_y - _hip_y)
 _band = 0.12 * (_shoulder_y - _hip_y)
 _waist_mask = np.exp(-(((P[:, 1] - _waist_y) / _band) ** 2))[:, None]
-KEYS["bust"] = target(
-    "breast/female-young-averagemuscle-averageweight-maxcup-averagefirmness.target"
-) * 0.7
+# a man's chest takes no bust key
+if SEX == "female":
+    KEYS["bust"] = target(
+        "breast/female-young-averagemuscle-averageweight-maxcup-averagefirmness.target"
+    ) * 0.7
 KEYS["hips"] = (
     target("hip/hip-scale-horiz-incr.target") * 0.6
     + target("buttocks/buttocks-volume-incr.target") * 0.6
@@ -465,7 +473,8 @@ repose()
 # MakeHuman is Y-up in decimetres; Blender is Z-up in metres, front at -Y.
 _body_y = P[sorted({i for f in FACES["body"] for i in f})][:, 1]
 GROUND = _body_y.min()
-HEIGHT = 1.66  # metres, barefoot; heels add about 7 cm
+# metres, barefoot; heels add about 7 cm
+HEIGHT = 1.78 if SEX == "male" else 1.66
 SCALE = HEIGHT / (_body_y.max() - GROUND)
 
 
@@ -663,7 +672,7 @@ def face_uvs(ob, src, head=None):
 
 
 MASK_RES = 512
-MASK_OUT = os.path.join(ROOT, "public", "models", "doll-face.png")
+MASK_OUT = os.path.join(ROOT, "public", "models", f"doll-face{SUFFIX}.png")
 
 
 def to_canvas(p, rect):
@@ -961,9 +970,10 @@ def main():
     # on the body, not the rig: optimisers flatten the rig node away
     body["doll"] = json.dumps(meta)
     os.makedirs(OUT_DIR, exist_ok=True)
-    export(rig, [body, eyes], "body")
+    export(rig, [body, eyes], f"body{SUFFIX}")
     # far LOD: MakeHuman's CC0 1.6k-vertex proxy, painted with the same face
-    lo = proxies.build(ctx, "Lod_body", "proxymeshes/female1605/female1605.proxy", material("skin"))
+    proxy = "male1591/male1591" if SEX == "male" else "female1605/female1605"
+    lo = proxies.build(ctx, "Lod_body", f"proxymeshes/{proxy}.proxy", material("skin"))
     heads = np.zeros(len(lo.data.vertices))
     hi = lo.vertex_groups["head"].index
     for v in lo.data.vertices:
@@ -980,10 +990,10 @@ def main():
     for key in ("deleted", "src"):
         if key in lo:
             del lo[key]
-    export(rig, [lo], "body-lo")
+    export(rig, [lo], f"body{SUFFIX}-lo")
     for ob in parts:
         kind, name = ob.name.split("_", 1)
-        export(rig, [ob], f"{kind.lower()}-{name}")
+        export(rig, [ob], f"{kind.lower()}-{name}{SUFFIX}")
     print("wrote", OUT_DIR, "body verts", len(body.data.vertices))
 
 

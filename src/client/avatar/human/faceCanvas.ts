@@ -122,14 +122,19 @@ const rgba = ([r, g, b]: readonly number[], a = 1) =>
 const mixRgb = (a: readonly number[], b: readonly number[], t: number) =>
   a.map((v, i) => v + (b[i] - v) * t);
 
-let mask: Promise<HTMLImageElement> | null = null;
-function loadMask() {
-  mask ??= new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error("Could not load the face mask"));
-    img.src = "/models/doll-face.png";
-  });
+// one face mask per doll: the woman's and the man's faces differ
+const masks = new Map<string, Promise<HTMLImageElement>>();
+function loadMask(suffix: string) {
+  let mask = masks.get(suffix);
+  if (!mask) {
+    mask = new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("Could not load the face mask"));
+      img.src = `/models/doll-face${suffix}.png`;
+    });
+    masks.set(suffix, mask);
+  }
   return mask;
 }
 
@@ -358,11 +363,18 @@ function paintBrow(
 export async function paintFace(
   look: Pick<
     Look,
-    "skin" | "lips" | "brows" | "shadow" | "makeup" | "beard" | "hairColor"
+    | "skin"
+    | "lips"
+    | "brows"
+    | "shadow"
+    | "makeup"
+    | "beard"
+    | "hairColor"
+    | "body"
   >,
   marks: Marks,
 ) {
-  const img = await loadMask();
+  const img = await loadMask(look.body === "masculine" ? "-m" : "");
   const makeup = makeupOf(look);
   const skin = hexRgb(look.skin);
   const { canvas, ctx } = makeCanvas(SIZE, SIZE);

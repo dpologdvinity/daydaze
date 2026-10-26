@@ -17,7 +17,7 @@ import {
   type Pose,
 } from "../../../game/dance/moves.ts";
 import {
-  bodyOf,
+  modelSuffix,
   FACE_PRESETS,
   FIGURES,
   FACE_SLIDERS,
@@ -135,12 +135,14 @@ const HAIR: Partial<Record<Look["hairStyle"], string>> = {
 
 export function partsFor(look: Look, swim: SwimLook | null) {
   const cut = look.outfit;
+  // a man wears the parts fitted to the man's body
+  const m = modelSuffix(look);
   return {
-    hair: `${MODELS}/hair-${HAIR[look.hairStyle] ?? look.hairStyle}.glb`,
+    hair: `${MODELS}/hair-${HAIR[look.hairStyle] ?? look.hairStyle}${m}.glb`,
     outfit: swim
-      ? `${MODELS}/swim-${swim.style}.glb`
-      : `${MODELS}/outfit-${cut}.glb`,
-    shoes: swim ? null : `${MODELS}/shoes-${shoesOf(look)}.glb`,
+      ? `${MODELS}/swim-${swim.style}${m}.glb`
+      : `${MODELS}/outfit-${cut}${m}.glb`,
+    shoes: swim ? null : `${MODELS}/shoes-${shoesOf(look)}${m}.glb`,
     tucks: swim
       ? [`tuck_${swim.style}`]
       : [`tuck_${cut}`, `tuck_${shoesOf(look)}`],
@@ -164,8 +166,10 @@ function setMorph(meshes: THREE.Mesh[], name: string, value: number) {
 }
 
 function useBody(look: Look, eyeColor: Face["eyeColor"]) {
-  const gltf = useGLTF(`${MODELS}/body.glb`);
-  const loGltf = useGLTF(`${MODELS}/body-lo.glb`);
+  // women and men are separate dolls, each with its own skeleton
+  const m = modelSuffix(look);
+  const gltf = useGLTF(`${MODELS}/body${m}.glb`);
+  const loGltf = useGLTF(`${MODELS}/body${m}-lo.glb`);
   const invalidate = useThree((s) => s.invalidate);
   const body = useMemo(() => {
     const scene = cloneSkinned(gltf.scene);
@@ -285,6 +289,7 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
     makeup,
     beard,
     hairColor,
+    body: build,
   } = look;
   useEffect(() => {
     const { marks, skin } = body;
@@ -295,7 +300,16 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
     let live = true;
     let tex: THREE.Texture | null = null;
     paintFace(
-      { skin: skinTone, lips, brows, shadow, makeup, beard, hairColor },
+      {
+        skin: skinTone,
+        lips,
+        brows,
+        shadow,
+        makeup,
+        beard,
+        hairColor,
+        body: build,
+      },
       marks,
     )
       .then((t) => {
@@ -325,6 +339,7 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
     makeup,
     beard,
     hairColor,
+    build,
     invalidate,
   ]);
   useEffect(() => {
@@ -720,15 +735,12 @@ export function HumanDoll({
     for (const g of FACE_PRESETS)
       for (const o of g.options.slice(1))
         keys.push([`${g.key}_${o.id}`, face[g.field] === o.id ? 1 : 0]);
-    // the masculine build is a key over the house body; its chest takes no
-    // bust slider
-    const masculine = bodyOf(look) === "masculine";
-    keys.push(["masculine", masculine ? 1 : 0]);
-    keys.push(["bust", masculine ? 0 : (shape.bust - 50) / 50]);
+    // the man's body has no bust key (setMorph skips a missing key)
+    keys.push(["bust", (shape.bust - 50) / 50]);
     keys.push(["hips", (shape.hips - 50) / 50]);
     keys.push(["waist", (shape.waist - 50) / 50]);
     return keys;
-  }, [face, shape, look]);
+  }, [face, shape]);
   const shapedFor = useRef<THREE.Mesh[] | null>(null);
   const shapedWith = useRef<typeof shapeKeys | null>(null);
   const lift = useRef(0);
