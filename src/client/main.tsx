@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { setConsoleFunction } from "three";
 import { loadDialogue } from "../game/dialogue/pick.ts";
+import { afterSceneReady } from "./world/ready.ts";
 import { App } from "./App.tsx";
 import { registerServiceWorker } from "./serviceWorker.ts";
 import "./styles.css";
@@ -33,15 +34,20 @@ window.addEventListener("vite:preloadError", (event) => {
   location.reload();
 });
 
-// NPC lines are a separate chunk: fetch them once the page is idle, so they
-// never hold up the first frame (NPCs say "..." until then)
+// NPC lines are a separate chunk: fetch them once the first room shows and
+// the page is idle, so they never share the bandwidth the room loads over
+// (NPCs say "..." until then)
 const idle = window.requestIdleCallback ?? ((run) => window.setTimeout(run, 1));
-idle(() => {
-  // a failed fetch is retried by the next NPC that speaks
-  loadDialogue().catch((error: unknown) =>
-    console.warn("NPC lines failed to load", error),
-  );
-});
+afterSceneReady(
+  () =>
+    idle(() => {
+      // a failed fetch is retried by the next NPC that speaks
+      loadDialogue().catch((error: unknown) =>
+        console.warn("NPC lines failed to load", error),
+      );
+    }),
+  8000,
+);
 
 // return visits load the game's files from the service worker's cache
 registerServiceWorker();

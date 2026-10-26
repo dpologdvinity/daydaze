@@ -1,4 +1,5 @@
 import { useGLTF } from "@react-three/drei";
+import { afterSceneReady } from "../../world/ready.ts";
 import { useFrame, useThree, type ThreeElements } from "@react-three/fiber";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
@@ -64,8 +65,10 @@ import { Glasses } from "./Glasses.tsx";
 const MODELS = "/models/doll";
 const REST_LID = 0.12;
 
-// the motion-capture keys come in their own chunk, fetched once a doll exists
-void loadMocap();
+// the motion-capture keys come in their own chunk (a big one), fetched once
+// the first room shows, so they don't share the bandwidth it loads over;
+// poses are neutral until then
+afterSceneReady(() => void loadMocap(), 8000);
 
 // a doll given no held pose (an NPC) strikes one of these, by seed; the
 // first, none, keeps the built hip-pop pose (or the built sit)

@@ -24,3 +24,29 @@ export function isSceneReady(): boolean {
 export function useSceneReady(): boolean {
   return useSyncExternalStore(subscribe, () => ready);
 }
+
+/**
+ * Runs `work` once, as soon as a room is on screen, or after `fallbackMs`
+ * if none ever is (a lab page with no world). For downloads the first room
+ * doesn't need (motion capture, NPC lines): they wait rather than share the
+ * bandwidth the room is loading over.
+ */
+export function afterSceneReady(work: () => void, fallbackMs: number): void {
+  if (ready) {
+    work();
+    return;
+  }
+  let done = false;
+  const run = () => {
+    if (done) return;
+    done = true;
+    listeners.delete(onChange);
+    clearTimeout(timer);
+    work();
+  };
+  const onChange = () => {
+    if (ready) run();
+  };
+  listeners.add(onChange);
+  const timer = setTimeout(run, fallbackMs);
+}
