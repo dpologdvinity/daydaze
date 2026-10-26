@@ -45,6 +45,9 @@ export type KaraokeSong = {
   meter?: number;
   /** Beats before the first downbeat (a pickup), default 0. */
   pickup?: number;
+  /** The key, for a tune whose written melody stops off its home note
+   * (otherwise the last note is taken as home): tonic pitch class (0 = C). */
+  key?: { tonic: number; minor: boolean };
   melody: string;
 };
 
@@ -80,6 +83,7 @@ export const SONGS: readonly KaraokeSong[] = [
     genre: "classical",
     bpm: 72,
     meter: 2,
+    key: { tonic: 2, minor: true },
     melody:
       "D5/1.5 C#5/0.5 C5/1 C5/1 B4/1.5 Bb4/0.5 A4/1 A4/1 G#4/1 G4/1 F4/1.5 E4/0.5 F4/1 E4/2 r/1 " +
       "D5/1.5 C#5/0.5 C5/1 C5/1 B4/1.5 Bb4/0.5 A4/1 A4/1 G#4/1 G4/1 F4/1.5 E4/0.5 F4/1 E4/2",
@@ -215,6 +219,7 @@ export const SONGS: readonly KaraokeSong[] = [
     bpm: 52,
     meter: 2,
     pickup: 0.75,
+    key: { tonic: 0, minor: false },
     melody:
       "D4/0.25 D#4/0.25 E4/0.25 C5/0.5 E4/0.25 C5/0.5 E4/0.25 C5/1.25 " +
       "C5/0.25 D5/0.25 D#5/0.25 E5/0.25 C5/0.25 D5/0.25 E5/0.5 B4/0.25 D5/0.5 C5/1.5 " +
@@ -228,6 +233,7 @@ export const SONGS: readonly KaraokeSong[] = [
     genre: "tin-pan-alley",
     bpm: 168,
     meter: 3,
+    key: { tonic: 0, minor: false },
     melody:
       "G5/3 E5/3 C5/3 G4/3 A4/1 B4/1 C5/1 A4/2 C5/1 G4/6 " +
       "D5/3 G5/3 E5/3 C5/3 A4/1 B4/1 C5/1 D5/2 E5/1 D5/6",
@@ -262,6 +268,7 @@ export const SONGS: readonly KaraokeSong[] = [
     credit: "Traditional, Japan",
     genre: "world",
     bpm: 72,
+    key: { tonic: 9, minor: true },
     melody:
       "A4/1 A4/1 B4/2 A4/1 A4/1 B4/2 A4/1 B4/1 C5/1 B4/1 A4/1 B4/0.5 A4/0.5 F4/2 " +
       "E4/1 C4/1 E4/1 F4/1 E4/1 E4/0.5 C4/0.5 B3/2 " +
@@ -459,11 +466,13 @@ const MINOR_CHORDS = [
 export function bandPlan(song: KaraokeSong): BandPlan {
   const melody = parseMelody(song.melody);
   const last = melody[melody.length - 1];
-  const tonic = last?.midi ?? 60;
+  const tonic = song.key ? 60 + song.key.tonic : (last?.midi ?? 60);
   const classes = new Set(melody.map((n) => (n.midi - tonic + 120) % 12));
-  const minor = classes.has(3) && !classes.has(4);
+  const minor = song.key ? song.key.minor : classes.has(3) && !classes.has(4);
   const beatsPerBar = song.meter ?? 4;
-  const pickup = song.pickup ?? 0;
+  // the band steps in eighth notes: a pickup off that grid (the
+  // Entertainer's three sixteenths) would never land a downbeat
+  const pickup = Math.round((song.pickup ?? 0) * 2) / 2;
   const tokens = song.melody.trim().split(/\s+/);
   const total = tokens.reduce((t, tok) => t + Number(tok.split("/")[1]), 0);
   const bars = Math.max(1, Math.ceil((total - pickup) / beatsPerBar));

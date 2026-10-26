@@ -99,3 +99,27 @@ test("the band harmonizes a song: its key from the melody, a chord per bar that 
     for (const c of p.chords) assert.equal(c.length, 3, song.id);
   }
 });
+
+test("every song's bars start on the band's eighth-note grid", () => {
+  for (const song of SONGS) {
+    const { pickup, beatsPerBar } = bandPlan(song);
+    assert.ok(Number.isInteger(pickup * 2), `${song.id} pickup ${pickup}`);
+    assert.ok(
+      Number.isInteger(beatsPerBar * 2),
+      `${song.id} bar ${beatsPerBar}`,
+    );
+  }
+});
+
+test("songs whose tune ends off the home note are banded in their real key", () => {
+  const key = (id: string) => {
+    const song = songById(id);
+    assert.ok(song);
+    const p = bandPlan(song);
+    return [p.tonic % 12, p.minor];
+  };
+  assert.deepEqual(key("habanera"), [2, true]); // D minor
+  assert.deepEqual(key("the-entertainer"), [0, false]); // C major
+  assert.deepEqual(key("daisy-bell"), [0, false]); // C major
+  assert.deepEqual(key("sakura"), [9, true]); // A, minor-ish
+});
