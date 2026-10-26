@@ -14,3 +14,10 @@ export const TRACK_ORIGINS: Readonly<
   "neon-oval": [0, -84],
   "boardwalk-loop": [0, -210],
 };
+
+/** A track's world origin by its id, or null for an unknown id. */
+export function trackOrigin(id: string): Vec2 | null {
+  return id === "neon-oval" || id === "boardwalk-loop"
+    ? TRACK_ORIGINS[id]
+    : null;
+}

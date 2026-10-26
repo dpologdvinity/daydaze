@@ -38,6 +38,10 @@ import {
 } from "../../game/dance/together.ts";
 import { pairUp, stopTogether } from "./together.ts";
 import { keepSeat } from "./ride.ts";
+import { trackOrigin } from "../../game/speedway/layout.ts";
+
+/** Everyone else sees your race kart in the Speedway's own pink. */
+const KART_PAINT = "#ff4fb3";
 import { shownChat } from "./chatPrefs.ts";
 import { onlineSession } from "./online.ts";
 import { peerCard } from "./peerCard.ts";
@@ -321,11 +325,23 @@ export function OnlinePeers({
     // seated or riding, they're drawn on the seat, not where they walked
     // up; driving, as their car
     const city = driving.session?.kind === "city" ? driving.session : null;
+    // racing at the Speedway: the kart, where its track sits in the room
+    const racing = driving.session?.kind === "race" ? driving.session : null;
+    const kart = racing?.race.cars[0];
+    const track = racing && trackOrigin(racing.track.id);
     const seat = player.seat;
     const at = seat?.position ?? player.pos;
-    const x = city ? city.car.position[0] : at.x;
-    const z = city ? city.car.position[1] : at.z;
-    const yaw = city?.car.yaw ?? seat?.yaw ?? player.yaw;
+    const x = city
+      ? city.car.position[0]
+      : kart && track
+        ? track[0] + kart.state.position[0]
+        : at.x;
+    const z = city
+      ? city.car.position[1]
+      : kart && track
+        ? track[1] + kart.state.position[1]
+        : at.z;
+    const yaw = city?.car.yaw ?? kart?.state.yaw ?? seat?.yaw ?? player.yaw;
     const action = encodeAction(
       mood,
       dance,
@@ -341,7 +357,9 @@ export function OnlinePeers({
         : undefined,
       city
         ? { id: city.spec.id, color: city.color, mods: city.mods }
-        : undefined,
+        : kart && track
+          ? { id: kart.spec.id, color: KART_PAINT }
+          : undefined,
       buzzTier(getBuzz()),
       pair?.placed ? { emote: pair.e, role: pair.role } : undefined,
       driving.passenger !== null,

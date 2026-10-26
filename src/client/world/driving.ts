@@ -1,5 +1,6 @@
 import type { CarInput } from "../../game/driving/car.ts";
 import type { Session } from "../../game/speedway/session.ts";
+import type { FriendTrack } from "../../game/speedway/friendRace.ts";
 
 /** A Speedway control's request for the scene to take on its next frame. */
 export type DriveRequest =
@@ -10,7 +11,9 @@ export type DriveRequest =
   | "race-harbor"
   | "leave"
   /** Walk to your car in the city and get in. */
-  | "city-drive";
+  | "city-drive"
+  /** A race against a friend, as `driving.friendRace` says (net/raceFriend.ts). */
+  | "race-friend";
 
 export type Control = "throttle" | "brake" | "left" | "right";
 
@@ -27,12 +30,15 @@ export const driving: {
   /** Riding in another player's car (their id): no walking, out of sight;
    * src/client/net/ride.ts keeps the player in the passenger seat. */
   passenger: string | null;
+  /** The friend race to start on "race-friend": which track, green at when. */
+  friendRace: { track: FriendTrack; startAt: number } | null;
 } = {
   session: null,
   request: null,
   input: { throttle: 0, brake: 0, steer: 0 },
   sideView: false,
   passenger: null,
+  friendRace: null,
 };
 
 const held = new Set<Control>();

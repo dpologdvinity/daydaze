@@ -21,6 +21,7 @@ import { TogetherPanel } from "./net/TogetherPanel.tsx";
 import { CookOffInvite } from "./net/CookOffInvite.tsx";
 import { PartyPanel } from "./net/PartyPanel.tsx";
 import { RidePanel } from "./net/RidePanel.tsx";
+import { RacePanel } from "./net/RacePanel.tsx";
 import { leaveParty } from "./net/party.ts";
 import { ConnectionNote } from "./net/ConnectionNote.tsx";
 import { chatPrefs } from "./net/chatPrefs.ts";
@@ -361,6 +362,7 @@ export function App() {
         {ONLINE && <CookOffInvite />}
         {ONLINE && <PartyPanel onGo={goWithParty} />}
         {ONLINE && <RidePanel />}
+        {ONLINE && <RacePanel />}
         {ONLINE && <ConnectionNote />}
         <div className="fade" data-on={fading} aria-hidden="true" />
         {notice && (

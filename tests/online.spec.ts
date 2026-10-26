@@ -33,6 +33,9 @@ test.afterEach(async ({ browser }) => {
 test("two players meet in the Plaza, talk, become friends and play cards", async ({
   browser,
 }) => {
+  // the whole social tour (cards, emotes, party, ride, race, accounts) on
+  // two SwiftShader pages runs past the config's 20 minutes
+  test.setTimeout(2_400_000);
   const a = await player(browser);
   const b = await player(browser);
   // page errors show in the test output, for debugging a broken frame loop
@@ -257,6 +260,34 @@ test("two players meet in the Plaza, talk, become friends and play cards", async
     "ride",
     { timeout: 180_000 },
   );
+
+  // the party goes on to the Speedway, and A challenges B to a race: both
+  // get the green light together and see each other's kart on the oval
+  await a.getByRole("button", { name: "Go to Speedway" }).click();
+  for (const page of [a, b])
+    await expect(page.locator("canvas")).toHaveAttribute(
+      "data-race-phase",
+      "walk",
+      { timeout: 240_000 },
+    );
+  await tagOnA.click({ timeout: 120_000 });
+  await a.getByRole("button", { name: "Race on the Neon Oval" }).click();
+  await b
+    .getByRole("region", { name: "Race invite" })
+    .getByRole("button", { name: "Race!" })
+    .click({ timeout: 120_000 });
+  for (const page of [a, b])
+    await expect(page.locator("canvas")).toHaveAttribute(
+      "data-race-phase",
+      "racing",
+      { timeout: 180_000 },
+    );
+  for (const page of [a, b])
+    await expect(page.locator(".peer-tag")).toHaveAttribute(
+      "data-doing",
+      "car:zip-kart",
+      { timeout: 180_000 },
+    );
 
   // B signs up (keeping the guest's progress), logs out, and logs back in
   const name = `Tester${Date.now() % 100000}`;

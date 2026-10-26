@@ -14,6 +14,8 @@ import {
   type Session,
 } from "../../game/speedway/session.ts";
 import { ARENA_ORIGIN, TRACK_ORIGINS } from "../../game/speedway/layout.ts";
+import { startFriendRace } from "../../game/speedway/friendRace.ts";
+import { finishedFriendRace } from "../net/raceFriend.ts";
 import { SPEEDWAY_SPOTS } from "../../game/speedway/spots.ts";
 import { TRACKS, type Track } from "../../game/speedway/track.ts";
 import type { Vec2 } from "../../game/walk.ts";
@@ -74,6 +76,18 @@ function setupFor(
   request: Exclude<DriveRequest, "leave">,
 ): { session: Session; origin: Vec2 } | null {
   if (request === "city-drive" || request === "race-harbor") return null;
+  if (request === "race-friend") {
+    // a race against a friend: their track, green at the agreed moment
+    const friend = driving.friendRace;
+    const setup = Object.values(RACES).find(
+      (r) => r.track.id === friend?.track,
+    );
+    if (!friend || !setup || !KART) return null;
+    return {
+      session: startFriendRace(setup.track, KART, friend.startAt, Date.now()),
+      origin: setup.origin,
+    };
+  }
   if (request === "bumper-cars") {
     return { session: startBumpers(), origin: ARENA_ORIGIN };
   }
@@ -156,6 +170,7 @@ export function Speedway({ onPick }: { onPick: PickHandler }) {
       cashBumpers();
       if (request === "leave") {
         driving.session = null;
+        driving.friendRace = null;
       } else {
         const started = setupFor(request);
         if (started) {
@@ -180,7 +195,12 @@ export function Speedway({ onPick }: { onPick: PickHandler }) {
       awarded.current !== session
     ) {
       awarded.current = session;
-      award("speedway", hudOf(session).place);
+      // a friend race has no bots to beat: its result is your time against
+      // theirs, not a place for the prize desk
+      if (driving.friendRace) {
+        const you = session.race.cars[0];
+        finishedFriendRace(you.lap.lapTimesMs.reduce((a, b) => a + b, 0));
+      } else award("speedway", hudOf(session).place);
     }
     if (session.kind === "race") {
       const cars = session.race.cars;
