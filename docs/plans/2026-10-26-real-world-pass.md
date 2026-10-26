@@ -83,3 +83,28 @@ a fountain and a pond; planters and street furniture.
 
 A credits screen listing every CC-BY asset and its author, linked from the
 menu; the asset list with sources and licenses kept in `docs/assets.md`.
+
+## Progress (2026-10-26)
+
+- Done: men and women are separate dolls (58b2b12); texture tiling breakup
+  and wall weathering (0e1c8e1); day/night cycle on the player's clock, neon
+  only on nightlife buildings, real asphalt and concrete, stone cornices
+  (499aa09, owner chose "day/night cycle").
+- In progress: Task 1-2, a full 52-bone Mixamo rig from MPFB2 (CC0,
+  `rig.mixamo.json` / `weights.mixamo.json`) on the MakeHuman bodies, clips
+  baked from `mixamo/` and played with AnimationMixer — being built on branch
+  `feat/mixamo-rig` in a worktree (research: Rocketbox has baked-in clothes,
+  Quaternius free bodies are superhero-proportioned; MPFB2 rig keeps our
+  closet). Merge it after verify + doll browser tests.
+- Waiting on the owner: the Quaternius Downtown City MegaKit zip (CC0,
+  itch.io blocks scripted downloads; see STEPS-FOR-OWNER.md).
+- Next: remaining purple night palette by day (parking lines, lane strips,
+  the far skyline backdrop); street trees and lawns (EZ-Tree / Quaternius
+  nature, InstancedMesh2, impostors far off); the park; the boardwalk
+  district; NYC facades from the MegaKit; credits screen and `docs/assets.md`.
+- Useful finds: InstancedMesh2 (MIT) for culling/LOD of trees and crowds;
+  agargaro octahedral impostors (MIT); EZ-Tree (MIT); Takram three-geospatial
+  sky (MIT); Gobkit (CC0); Physically Based for material values. The
+  Three.js Resources MCP is configured at project scope (`.mcp.json`).
+- Known: the city overview at noon draws 302k triangles on low (budget 300k);
+  the street view 282k.
