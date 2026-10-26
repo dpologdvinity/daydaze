@@ -213,6 +213,27 @@ test("two players meet in the Plaza, talk, become friends and play cards", async
   await expect(a.getByText("is in. Head to Kamayan Hall")).toBeVisible({
     timeout: 60_000,
   });
+
+  // a karaoke duet: both go up to the Loft, A asks, B says yes, and they
+  // trade lines; each part's score crosses the relay to a shared total
+  for (const page of [a, b])
+    await page.getByRole("button", { name: "Go to Karaoke Loft" }).click();
+  await expect(tagOnA).toHaveCount(1, { timeout: 240_000 });
+  // in the Loft, B's name tag can sit under the test-only debug buttons:
+  // click the tag itself rather than whatever covers its spot
+  await tagOnA.dispatchEvent("click");
+  await a.getByRole("button", { name: "Sing a duet" }).click();
+  await b
+    .getByRole("group", { name: "Duet invite" })
+    .getByRole("button", { name: "Sing!" })
+    .click({ timeout: 120_000 });
+  for (const page of [a, b]) {
+    const mic = page.getByRole("region", { name: "Karaoke" });
+    await expect(mic).toContainText("duet with", { timeout: 120_000 });
+    await expect(mic.getByRole("status")).toContainText("together", {
+      timeout: 300_000,
+    });
+  }
 });
 
 test("friends party through doors, ride in a car and race at the Speedway", async ({

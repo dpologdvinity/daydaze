@@ -1,5 +1,5 @@
 // The card for another player tapped in the world: add or remove friend, invite
-// to a party, a ride or a race (friends only), cards, a dance or a cook-off, mute, block,
+// to a party, a ride or a race (friends only), a karaoke duet, cards, a dance or a cook-off, mute, block,
 // report and (for admins) ban.
 
 import { useEffect, useState, type JSX } from "react";
@@ -10,6 +10,7 @@ import { askToCook } from "./cookOff.ts";
 import { inviteToParty } from "./party.ts";
 import { offerRide } from "./ride.ts";
 import { askToRace } from "./raceFriend.ts";
+import { askToDuet } from "./karaokeDuet.ts";
 import { friends, friendship, refreshFriends } from "./friends.ts";
 import { onlineSession } from "./online.ts";
 import { mute, peerCard } from "./peerCard.ts";
@@ -110,6 +111,17 @@ export function PeerCard(): JSX.Element | null {
             </button>
           </div>
         )}
+      {session?.room()?.roomId === "karaoke" && (
+        <button
+          type="button"
+          onClick={() => {
+            askToDuet(open.id, open.name);
+            close();
+          }}
+        >
+          Sing a duet
+        </button>
+      )}
       <button
         type="button"
         onClick={() => {

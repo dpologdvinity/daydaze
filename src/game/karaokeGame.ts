@@ -48,7 +48,8 @@ export function chart(
 /** Each note as sung: how the timing graded, and whether it was the lane. */
 export type Song = readonly { swing: Swing; lane: boolean }[];
 
-const POINTS: Record<Swing, number> = {
+/** Points a note scores, by how it was sung (on its lane). */
+export const POINTS: Record<Swing, number> = {
   perfect: 100,
   good: 60,
   early: 0,

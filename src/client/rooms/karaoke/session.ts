@@ -4,6 +4,11 @@
 // and until the jukebox reports a tempo (the music starts on the first tap);
 // with no audio at all the song runs on the wall clock at 120 BPM.
 
+import {
+  duetTurn,
+  partScore,
+  type DuetRole,
+} from "../../../game/karaokeDuet.ts";
 import { getSharedJukeboxController } from "../../../audio/proceduralJukebox.ts";
 import {
   chart,
@@ -44,6 +49,20 @@ const OFF = {
   cheerAt: Number.NEGATIVE_INFINITY,
   /** The singer has reached the mic (the stage scene says so). */
   atMic: false,
+  /** Singing a duet with another player (karaokeDuet.ts): your role, the
+   * shared chart's seed, and both parts' scores once each is sung. */
+  duet: null as {
+    role: DuetRole;
+    partner: { id: string; name: string };
+    seed: number;
+    mine: number | null;
+    theirs: number | null;
+  } | null,
+};
+
+/** Set by the online duet module: sends your part when the song ends. */
+export const duetHooks: { done: ((score: number) => void) | null } = {
+  done: null,
 };
 
 export const karaoke = createStore(OFF);
@@ -68,6 +87,33 @@ export function start() {
 
 export const leave = () => karaoke.set(OFF);
 
+/** Starts a duet: the same count-in, on the shared chart, your lines only. */
+export function startDuet(
+  role: DuetRole,
+  partner: { id: string; name: string },
+  seed: number,
+) {
+  karaoke.set({
+    ...OFF,
+    phase: "cueing",
+    since: wall(),
+    duet: { role, partner, seed, mine: null, theirs: null },
+  });
+  tick();
+}
+
+/** The partner's part arrived. */
+export function partnerScored(score: number) {
+  const duet = karaoke.get().duet;
+  if (duet) karaoke.set({ duet: { ...duet, theirs: score } });
+}
+
+/** Whether the note at `index` is yours to sing (always, solo). */
+export function mine(index: number): boolean {
+  const duet = karaoke.get().duet;
+  return !duet || duetTurn(index) === duet.role;
+}
+
 /** The stage scene: the singer has walked up to the mic. */
 export function reachedMic() {
   if (karaoke.get().phase !== "off") karaoke.set({ atMic: true });
@@ -89,7 +135,14 @@ function take(swing: Swing, lane: boolean) {
   });
   if (songOver(song)) {
     karaoke.set({ phase: "over", since: wall() });
-    award("karaoke", songScore(song));
+    const duet = karaoke.get().duet;
+    if (duet) {
+      // your half, doubled for the prize desk so grades match a solo song
+      const part = partScore(song, duet.role);
+      karaoke.set({ duet: { ...duet, mine: part } });
+      duetHooks.done?.(part);
+      award("karaoke", part * 2);
+    } else award("karaoke", songScore(song));
   }
 }
 
@@ -98,6 +151,8 @@ export function singOn(lane: number) {
   if (karaoke.get().phase !== "singing") return;
   const note = nextNote();
   if (!note) return;
+  // in a duet, your partner's lines aren't yours to sing
+  if (!mine(karaoke.get().song.length)) return;
   const swing = gradeSwing(songNow() - note.at);
   const onTime = swing === "perfect" || swing === "good";
   const right = lane === note.lane;
@@ -115,7 +170,8 @@ export function tick() {
     const jukebox = getSharedJukeboxController();
     const tempo = jukebox.currentTempo();
     const now = jukebox.audioTime();
-    const seed = Math.floor(Math.random() * 1e9);
+    // a duet sings the asker's chart; solo, a fresh one
+    const seed = s.duet?.seed ?? Math.floor(Math.random() * 1e9);
     if (tempo && now !== null) {
       lastAudio = now;
       karaoke.set({
@@ -134,6 +190,11 @@ export function tick() {
     return;
   }
   const note = nextNote();
-  if (s.phase === "singing" && note && songNow() - note.at > MISS_AFTER)
-    take("late", false);
+  if (s.phase !== "singing" || !note) return;
+  // the partner's line goes by as they sing it (scored on their side)
+  if (!mine(s.song.length)) {
+    if (songNow() >= note.at) take("perfect", true);
+    return;
+  }
+  if (songNow() - note.at > MISS_AFTER) take("late", false);
 }
