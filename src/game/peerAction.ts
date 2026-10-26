@@ -5,8 +5,8 @@
 // behind the wheel, the paint, the rims, underglow, tint and wrap packed in two
 // base-36 characters, and the car ("c:ff4fb30kpebble"); after a few
 // drinks, how buzzed ("idle~2"); in an emote with someone, which and which
-// side ("pair:hug:f"). A move id too long to fit goes as a plain
-// "dance".
+// side ("pair:hug:f"); riding in someone's car, just "ride". A move id too
+// long to fit goes as a plain "dance".
 import { isDanceMoveId, type DanceMoveId } from "./dance/moves.ts";
 import { RIMS, TINTS, UNDERGLOWS, WRAPS, type CarMods } from "./city/drive.ts";
 import { carById } from "./driving/roster.ts";
@@ -42,6 +42,8 @@ export type Doing = {
   buzz?: Tier;
   /** In an emote with another player. */
   pair?: Pair;
+  /** A passenger in someone's car: out of sight, the name tag rides along. */
+  ride?: true;
 };
 
 export type Tier = 1 | 2 | 3;
@@ -58,11 +60,14 @@ export function encodeAction(
   car?: Driven,
   buzz: 0 | Tier = 0,
   pair?: Pair,
+  ride = false,
 ): string {
   const tag = buzz ? `~${buzz}` : "";
-  const body = pair
-    ? `pair:${pair.emote}:${pair.role === "lead" ? "l" : "f"}`
-    : describe(mood, dance, LIMIT - tag.length, seat, car);
+  const body = ride
+    ? "ride"
+    : pair
+      ? `pair:${pair.emote}:${pair.role === "lead" ? "l" : "f"}`
+      : describe(mood, dance, LIMIT - tag.length, seat, car);
   return body + tag;
 }
 
@@ -103,6 +108,7 @@ export function decodeAction(action: string): Doing {
 }
 
 function decodeBody(action: string): Doing {
+  if (action === "ride") return { mood: "sit", ride: true };
   const pair = /^pair:([a-z-]{1,14}):([lf])$/.exec(action);
   if (pair) {
     const emote = pair[1];

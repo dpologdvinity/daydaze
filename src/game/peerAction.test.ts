@@ -95,3 +95,24 @@ test("a buzz rides along on any action, and still fits", () => {
   assert.equal(decodeAction(driving).buzz, 3);
   assert.deepEqual(decodeAction("idle~9"), { mood: "idle" });
 });
+
+test("a passenger rides, out of sight, in someone's car", () => {
+  const action = encodeAction(
+    "idle",
+    "groove",
+    undefined,
+    undefined,
+    0,
+    undefined,
+    true,
+  );
+  assert.equal(action, "ride");
+  assert.deepEqual(decodeAction(action), { mood: "sit", ride: true });
+  // a few drinks in still rides
+  assert.deepEqual(
+    decodeAction(
+      encodeAction("idle", "groove", undefined, undefined, 2, undefined, true),
+    ),
+    { mood: "sit", ride: true, buzz: 2 },
+  );
+});

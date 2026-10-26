@@ -24,11 +24,15 @@ export const driving: {
   request: DriveRequest | null;
   input: CarInput;
   sideView: boolean;
+  /** Riding in another player's car (their id): no walking, out of sight;
+   * src/client/net/ride.ts keeps the player in the passenger seat. */
+  passenger: string | null;
 } = {
   session: null,
   request: null,
   input: { throttle: 0, brake: 0, steer: 0 },
   sideView: false,
+  passenger: null,
 };
 
 const held = new Set<Control>();

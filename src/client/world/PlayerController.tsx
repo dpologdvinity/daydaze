@@ -172,7 +172,7 @@ function useHeldKeys() {
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (!MOVE_CODES.has(e.code) || e.altKey || e.ctrlKey || e.metaKey) return;
-      if (driving.session) return;
+      if (driving.session || driving.passenger) return;
       if (ignoresKeys(e.target, e.code)) return;
       held.current.add(e.code);
       if (e.code.startsWith("Arrow")) e.preventDefault();
@@ -264,13 +264,15 @@ export function PlayerController({
   useFrame((state, dt) => {
     playerSpot.x = player.pos.x;
     playerSpot.z = player.pos.z;
-    // in the city she's in the car, out of sight; at the Speedway she
-    // stands at the pit wall
-    if (g.current) g.current.visible = driving.session?.kind !== "city";
-    // a driven car takes the keys
-    if (driving.session) {
+    // in the city she's in the car (hers or a friend's), out of sight; at
+    // the Speedway she stands at the pit wall
+    const inCar =
+      driving.session?.kind === "city" || driving.passenger !== null;
+    if (g.current) g.current.visible = !inCar;
+    // a driven car takes the keys; a passenger goes where the car goes
+    if (driving.session || driving.passenger) {
       const el = tag.current;
-      if (driving.session.kind === "city" && el && tagAt.current.shown) {
+      if (inCar && el && tagAt.current.shown) {
         tagAt.current.shown = false;
         el.style.visibility = "hidden";
       }

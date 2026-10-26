@@ -35,6 +35,12 @@ test("two players meet in the Plaza, talk, become friends and play cards", async
 }) => {
   const a = await player(browser);
   const b = await player(browser);
+  // page errors show in the test output, for debugging a broken frame loop
+  for (const [who, page] of [
+    ["A", a],
+    ["B", b],
+  ] as const)
+    page.on("pageerror", (e) => console.log(`${who} page error:`, e.message));
   const tagOnA = a.locator(".peer-tag .nametag");
   const tagOnB = b.locator(".peer-tag .nametag");
   await expect(tagOnA).toHaveCount(1, { timeout: 120_000 });
@@ -163,6 +169,53 @@ test("two players meet in the Plaza, talk, become friends and play cards", async
   await expect(tagOnB).toHaveCount(1, { timeout: 120_000 });
   await expect(b.getByRole("region", { name: "Party" })).toContainText(
     "you follow them through doors",
+  );
+
+  // the party heads into the city; A gets in the car and gives B a ride.
+  // Two SwiftShader pages in the city draw a frame every 1.5 to 5 s, so
+  // every step here waits minutes, not seconds
+  await a.getByRole("button", { name: "Go to City" }).click();
+  for (const page of [a, b])
+    await expect(page.locator("canvas")).toHaveAttribute(
+      "data-city-car",
+      "parked",
+      { timeout: 240_000 },
+    );
+  await expect(tagOnA).toHaveCount(1, { timeout: 120_000 });
+  await a.getByRole("button", { name: "Drive your car" }).click();
+  await expect(a.locator("canvas")).toHaveAttribute(
+    "data-city-car",
+    "driving",
+    { timeout: 120_000 },
+  );
+  await tagOnA.click();
+  await a.getByRole("button", { name: "Offer a ride" }).click();
+  await b
+    .getByRole("region", { name: "Ride offer" })
+    .getByRole("button", { name: "Get in" })
+    .click({ timeout: 180_000 });
+  await expect(b.getByRole("region", { name: "Ride" })).toContainText(
+    "Riding with",
+  );
+  await expect(a.locator(".peer-tag")).toHaveAttribute("data-doing", "ride", {
+    timeout: 180_000,
+  });
+  // A drives off: B moves with the car without walking a step
+  const parkedAt = await b.locator("canvas").getAttribute("data-spot");
+  await a.locator("canvas").focus();
+  await a.keyboard.down("ArrowUp");
+  await expect
+    .poll(() => b.locator("canvas").getAttribute("data-spot"), {
+      timeout: 180_000,
+    })
+    .not.toBe(parkedAt);
+  await a.keyboard.up("ArrowUp");
+  await b.getByRole("button", { name: "Get out" }).click();
+  await expect(b.getByRole("region", { name: "Ride" })).toHaveCount(0);
+  await expect(a.locator(".peer-tag")).not.toHaveAttribute(
+    "data-doing",
+    "ride",
+    { timeout: 180_000 },
   );
 
   // B signs up (keeping the guest's progress), logs out, and logs back in

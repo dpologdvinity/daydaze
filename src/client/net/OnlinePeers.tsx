@@ -3,7 +3,7 @@
 // session. Renders nothing offline.
 
 import { Html } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import {
   Suspense,
   useEffect,
@@ -32,6 +32,7 @@ import { driving } from "../world/driving.ts";
 import { placePlayer, type Player } from "../world/PlayerController.tsx";
 import { followSpot } from "../../game/dance/together.ts";
 import { pairUp, stopTogether } from "./together.ts";
+import { keepSeat } from "./ride.ts";
 import { shownChat } from "./chatPrefs.ts";
 import { onlineSession } from "./online.ts";
 import { peerCard } from "./peerCard.ts";
@@ -107,7 +108,8 @@ function PeerDoll({
         next.car?.mods?.wrap !== doing.car?.mods?.wrap ||
         next.buzz !== doing.buzz ||
         next.pair?.emote !== doing.pair?.emote ||
-        next.pair?.role !== doing.pair?.role)
+        next.pair?.role !== doing.pair?.role ||
+        next.ride !== doing.ride)
     )
       setDoing(next);
   });
@@ -132,7 +134,7 @@ function PeerDoll({
             if (g) g.visible = true;
           }}
         />
-      ) : (
+      ) : doing.ride ? null : (
         <Doll
           look={peer.look}
           swim={swimwear ? decodeSwim(peer.look.swim) : null}
@@ -150,9 +152,11 @@ function PeerDoll({
           data-doing={
             car
               ? `car:${car.id}`
-              : doing.pair
-                ? `pair:${doing.pair.emote}`
-                : (doing.seat?.pose ?? doing.mood)
+              : doing.ride
+                ? "ride"
+                : doing.pair
+                  ? `pair:${doing.pair.emote}`
+                  : (doing.seat?.pose ?? doing.mood)
           }
         >
           {said && <p className="bubble npc-bubble">{said}</p>}
@@ -246,7 +250,10 @@ export function OnlinePeers({
   const sent = useRef({ x: NaN, z: NaN, yaw: NaN, action: "" });
   // where an emote with someone began: walking off from it ends the emote
   const anchor = useRef({ x: 0, z: 0, set: false });
+  const canvas = useThree((st) => st.gl.domElement);
   useFrame(() => {
+    // a passenger sits where the driver's car is (ride.ts)
+    keepSeat(player);
     const s = sent.current;
     const { pair } = pairUp.get();
     if (!pair) anchor.current.set = false;
@@ -295,6 +302,7 @@ export function OnlinePeers({
         : undefined,
       buzzTier(getBuzz()),
       pair?.placed ? { emote: pair.e, role: pair.role } : undefined,
+      driving.passenger !== null,
     );
     if (
       !session ||
@@ -304,8 +312,12 @@ export function OnlinePeers({
         action === s.action)
     )
       return;
-    if (session.sendMove(x, z, yaw, action))
+    if (session.sendMove(x, z, yaw, action)) {
       sent.current = { x, z, yaw, action };
+      // where this player is, for the browser tests (a passenger moves
+      // without walking)
+      canvas.dataset.spot = `${x.toFixed(1)},${z.toFixed(1)}`;
+    }
   });
   if (!session) return null;
   return (
