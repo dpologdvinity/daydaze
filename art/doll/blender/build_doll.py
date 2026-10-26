@@ -3,9 +3,10 @@
     art/doll/blender/fetch_makehuman.sh
     blender --background --factory-startup --python art/doll/blender/build_doll.py
 
-The rig matches src/client/avatar/pose.ts: every bone rests with an identity
-rotation (bones point straight up), so the pose code's Euler angles mean what
-they meant on the old group rig. The front of the face gets a planar UV
+The rig is Mixamo's 52-bone skeleton (MPFB2's CC0 rig.mixamo.json and its
+weights), fitted to the shaped body and re-posed with the mesh to arms down,
+plus eye and pony bones on the head. mocap.py bakes Mixamo clips onto it from
+the .cache/rig*.blend this script leaves behind. The front of the face gets a planar UV
 projection that the client paints makeup onto; the rest of the skin samples a
 plain corner of the same texture.
 """
@@ -39,6 +40,7 @@ SEX = os.environ.get("DOLL_SEX", "female")
 if SEX not in ("female", "male"):
     raise SystemExit(f"DOLL_SEX must be female or male, not {SEX}")
 SUFFIX = "-m" if SEX == "male" else ""
+RIG_BLEND = os.path.join(HERE, ".cache", f"rig{SUFFIX}.blend")
 
 # ------------------------------------------------------------------ MakeHuman
 
@@ -261,84 +263,85 @@ KEYS = {
 
 
 SKEL = json.load(open(os.path.join(MH, "rigs", "default.mhskel")))
-MHW = json.load(open(os.path.join(MH, "rigs", "default_weights.mhw")))["weights"]
-
-
-def joint(name, pts=None):
-    idx = SKEL["joints"][name]
-    return (P if pts is None else pts)[idx].mean(axis=0)
 
 
 def bone_head(b):
-    return joint(SKEL["bones"][b]["head"])
-
-
-def bone_tail(b):
-    return joint(SKEL["bones"][b]["tail"])
+    """A MakeHuman skeleton bone's head on the shaped mesh, as a landmark."""
+    return P[SKEL["joints"][SKEL["bones"][b]["head"]]].mean(axis=0)
 
 
 # --------------------------------------------------------------- the rig
 
-# Our joints, at MakeHuman bone heads (MakeHuman space, decimetres).
-BONES = ["body", "head", "lEye", "rEye", "pony"]
-for s, S in (("l", "L"), ("r", "R")):
-    BONES += [s + "Arm", s + "Fore", s + "Leg", s + "Shin", s + "Foot"]
+# The skeleton is Mixamo's: MPFB2's CC0 rig.mixamo.json, 52 bones named
+# mixamorig:*, with their skin weights for this same base mesh
+# (weights.mixamo.json), so Mixamo clips retarget bone for bone (mocap.py).
+# Bones sit on the shaped body: each end is the centroid of a MakeHuman joint
+# cube (or of a vertex pair), not the rig file's default position. Three
+# extras ride the head: the eyes, for gaze, and the pony, for a tail's sway.
+MIX = json.load(open(os.path.join(MH, "rigs", "rig.mixamo.json")))["bones"]
+MIXW = json.load(open(os.path.join(MH, "rigs", "weights.mixamo.json")))["weights"]
+HEAD = "mixamorig:Head"
+EXTRA = ["lEye", "rEye", "pony"]
+BONES = list(MIX) + EXTRA
+PARENT = {b: (MIX[b]["parent"] or None) for b in MIX}
+PARENT.update({b: HEAD for b in EXTRA})
 
-PARENT = {
-    "body": None,
-    "head": "body",
-    "lEye": "head",
-    "rEye": "head",
-    "pony": "head",
-}
-for s in "lr":
-    PARENT.update(
+N = len(P)
+W = np.zeros((N, len(BONES)))
+for _bone, _pairs in MIXW.items():
+    _bi = BONES.index(_bone)
+    for vi, w in _pairs:
+        W[vi, _bi] += w
+W[W.sum(axis=1) == 0, BONES.index("mixamorig:Hips")] = 1
+W /= W.sum(axis=1, keepdims=True)
+
+
+def side_bones(S):
+    """`S` "Left" or "Right": that side's arm and leg bones, by part."""
+    return {
+        "arm": f"mixamorig:{S}Arm",
+        "fore": f"mixamorig:{S}ForeArm",
+        "hand": [b for b in MIX if b.startswith(f"mixamorig:{S}Hand")],
+        "leg": f"mixamorig:{S}UpLeg",
+        "shin": f"mixamorig:{S}Leg",
+        "foot": [f"mixamorig:{S}Foot", f"mixamorig:{S}ToeBase"],
+    }
+
+
+# The old 13-joint names the hair and outfit builders still speak, as the
+# Mixamo bones under each (a group's weight sums its bones' columns).
+GROUPS = {"head": [HEAD]}
+for _s, _S in (("l", "Left"), ("r", "Right")):
+    _sb = side_bones(_S)
+    GROUPS.update(
         {
-            s + "Arm": "body",
-            s + "Fore": s + "Arm",
-            s + "Leg": "body",
-            s + "Shin": s + "Leg",
-            s + "Foot": s + "Shin",
+            _s + "Arm": [_sb["arm"]],
+            _s + "Fore": [_sb["fore"]] + _sb["hand"],
+            _s + "Leg": [_sb["leg"]],
+            _s + "Shin": [_sb["shin"]],
+            _s + "Foot": _sb["foot"],
         }
     )
 
 
-def ours(mh_bone):
-    """Which of our bones a MakeHuman bone's weight goes to, with a share."""
-    side = "l" if mh_bone.endswith(".L") else "r"
-    if mh_bone.startswith(("upperarm",)):
-        return [(side + "Arm", 1.0)]
-    if mh_bone.startswith(
-        ("lowerarm", "wrist", "metacarpal", "finger")
-    ):
-        return [(side + "Fore", 1.0)]
-    if mh_bone.startswith("upperleg"):
-        return [(side + "Leg", 1.0)]
-    if mh_bone.startswith("lowerleg"):
-        return [(side + "Shin", 1.0)]
-    if mh_bone.startswith(("foot", "toe")):
-        return [(side + "Foot", 1.0)]
-    if mh_bone == "neck01":
-        return [("head", 0.15), ("body", 0.85)]
-    if mh_bone == "neck02":
-        return [("head", 0.55), ("body", 0.45)]
-    if mh_bone.startswith(("root", "spine", "pelvis", "clavicle", "breast")):
-        return [("body", 1.0)]
-    if mh_bone.startswith("shoulder"):
-        return [("body", 0.55), (side + "Arm", 0.45)]
-    return [("head", 1.0)]
+def weight(group):
+    """Per base vertex, the summed weight of a GROUPS entry."""
+    return W[:, [BONES.index(b) for b in GROUPS[group]]].sum(axis=1)
 
 
-N = len(P)
-W = np.zeros((N, len(BONES)))
-for mb, pairs in MHW.items():
-    for target_bone, share in ours(mb):
-        bi = BONES.index(target_bone)
-        for vi, w in pairs:
-            W[vi, bi] += w * share
-W[W.sum(axis=1) == 0, BONES.index("body")] = 1
-W /= W.sum(axis=1, keepdims=True)
+def rig_point(end):
+    """A rig.mixamo.json bone end on the shaped mesh (MakeHuman space)."""
+    if end["strategy"] == "CUBE":
+        return P[sorted({i for f in FACES[end["cube_name"]] for i in f})].mean(axis=0)
+    return P[end["vertex_indices"]].mean(axis=0)
 
+
+# bone ends before re-posing; repose() moves them with their bones
+ENDS = {b: [rig_point(MIX[b]["head"]), rig_point(MIX[b]["tail"])] for b in MIX}
+ENDS_A = {b: [p.copy() for p in e] for b, e in ENDS.items()}
+
+# Landmarks the hair and outfit builders place things by (MakeHuman's own
+# skeleton joints), under the old joint names.
 J = {
     "body": np.zeros(3),
     "head": bone_head("neck01") * 0.4 + bone_head("neck03") * 0.6,
@@ -351,7 +354,6 @@ for s, S in (("l", "L"), ("r", "R")):
     J[s + "Leg"] = bone_head(f"upperleg02.{S}")
     J[s + "Shin"] = bone_head(f"lowerleg01.{S}")
     J[s + "Foot"] = bone_head(f"foot.{S}")
-WRIST = {s: bone_head(f"wrist.{S}") for s, S in (("l", "L"), ("r", "R"))}
 
 # Closet face presets (FACE_PRESETS in src/game/look.ts): one key each, at 1
 # when picked. The default of each group (almond eyes, straight nose, natural
@@ -436,12 +438,16 @@ def about(R, pivot):
 
 
 def repose():
-    """Arms down by the sides and legs together, from MakeHuman's A-pose."""
+    """Arms down by the sides and legs together, from MakeHuman's A-pose.
+    Moves the mesh (skinned by the Mixamo weights), the shape keys, the bone
+    ends and the landmarks; returns each bone's rotation (MakeHuman space),
+    which turns its rest frame too."""
     global P
     T = {b: np.eye(4) for b in BONES}
-    for s in "lr":
+    for s, S in (("l", "Left"), ("r", "Right")):
         sign = 1 if s == "l" else -1
-        sh, el, wr = J[s + "Arm"], J[s + "Fore"], WRIST[s]
+        sb = side_bones(S)
+        sh, el, wr = ENDS[sb["arm"]][0], ENDS[sb["fore"]][0], ENDS[sb["fore"]][1]
         # straighten the elbow, then swing the whole arm down
         Rf = rot_between(wr - el, el - sh)
         fore = about(Rf, el)
@@ -450,25 +456,30 @@ def repose():
         down = np.array([sign * 0.3, -1.0, 0.04])
         Ra = rot_between(wr2 - sh, down)
         arm = about(Ra, sh)
-        T[s + "Arm"] = arm
-        T[s + "Fore"] = arm @ fore
-        hip, knee, ankle = J[s + "Leg"], J[s + "Shin"], J[s + "Foot"]
+        T[sb["arm"]] = arm
+        for b in [sb["fore"]] + sb["hand"]:
+            T[b] = arm @ fore
+        hip, ankle = ENDS[sb["leg"]][0], ENDS[sb["foot"][0]][0]
         legdown = np.array([sign * 0.035, -1.0, 0.0])
-        Rl = rot_between(ankle - hip, legdown)
-        leg = about(Rl, hip)
-        for b in (s + "Leg", s + "Shin", s + "Foot"):
+        leg = about(rot_between(ankle - hip, legdown), hip)
+        for b in [sb["leg"], sb["shin"]] + sb["foot"]:
             T[b] = leg
+        # the old joint names ride the same bones
+        J[s + "Arm"] = (arm @ np.append(J[s + "Arm"], 1))[:3]
+        J[s + "Fore"] = ((arm @ fore) @ np.append(J[s + "Fore"], 1))[:3]
+        for j in ("Leg", "Shin", "Foot"):
+            J[s + j] = (leg @ np.append(J[s + j], 1))[:3]
     M = np.stack([T[b] for b in BONES])  # B x 4 x 4
     blend = np.einsum("nb,bij->nij", W, M)
     P = np.einsum("nij,nj->ni", blend[:, :3, :3], P) + blend[:, :3, 3]
     for k in KEYS:
         KEYS[k] = np.einsum("nij,nj->ni", blend[:, :3, :3], KEYS[k])
-    for b in BONES:
-        if b in J:
-            J[b] = (T[b] @ np.append(J[b], 1))[:3]
+    for b in MIX:
+        ENDS[b] = [(T[b] @ np.append(p, 1))[:3] for p in ENDS[b]]
+    return {b: T[b][:3, :3] for b in MIX}
 
 
-repose()
+TURN = repose()
 
 # MakeHuman is Y-up in decimetres; Blender is Z-up in metres, front at -Y.
 _body_y = P[sorted({i for f in FACES["body"] for i in f})][:, 1]
@@ -645,7 +656,7 @@ def face_uvs(ob, src, head=None):
     uv = me.uv_layers.active.data
     co = np.array([v.co[:] for v in me.vertices])
     if head is None:
-        head = W[src, BONES.index("head")]
+        head = weight("head")[src]
     eye = (JB["lEye"] + JB["rEye"]) / 2
     half = 0.105
     cx, cz = 0.0, eye[2] - 0.035
@@ -788,7 +799,7 @@ def face_maps(ob, src):
     lip_pts = co[lips > 0.35]
     marks["mouthL"] = [round(x, 4) for x in to_canvas(lip_pts[lip_pts[:, 0].argmax()], rect)]
     marks["mouthR"] = [round(x, 4) for x in to_canvas(lip_pts[lip_pts[:, 0].argmin()], rect)]
-    head = W[src, BONES.index("head")] > 0.98
+    head = weight("head")[src] > 0.98
     tip = np.where(head, co[:, 1], 9).argmin()
     marks["noseTip"] = [round(x, 4) for x in to_canvas(co[tip], rect)]
     return marks
@@ -860,7 +871,21 @@ def build_armature():
     bpy.context.scene.collection.objects.link(ob)
     bpy.context.view_layer.objects.active = ob
     bpy.ops.object.mode_set(mode="EDIT")
-    for b in BONES:
+    # MakeHuman axes to Blender's (x, -z, y), for turning rest frames
+    C = Matrix(((1, 0, 0), (0, 0, -1), (0, 1, 0)))
+    for b in MIX:
+        eb = arm.edit_bones.new(b)
+        # the A-pose bone with the rig file's roll, then turned by repose()
+        # as a whole, so its axes keep the roll's meaning on the lowered arm
+        head, tail = (Vector(to_blender(p)[0]) for p in ENDS_A[b])
+        eb.head, eb.tail, eb.roll = head, tail, MIX[b]["roll"]
+        R = C @ Matrix(TURN[b].tolist()) @ C.transposed()
+        m = (R @ eb.matrix.to_3x3()).to_4x4()
+        m.translation = Vector(to_blender(ENDS[b][0])[0])
+        eb.matrix = m
+        eb.length = (Vector(to_blender(ENDS[b][1])[0]) - m.translation).length
+    # the extras point straight up (identity rest, as the old rig's bones)
+    for b in EXTRA:
         eb = arm.edit_bones.new(b)
         eb.head = Vector(JB[b])
         eb.tail = eb.head + Vector((0, 0, 0.05))
@@ -953,11 +978,11 @@ def main():
         "faceRect": list(body["faceRect"]),
         "eyeRadius": EYE["lEye"][1],
         "marks": MARKS,
-        "joints": {b: list(map(float, JB[b])) for b in BONES},
         "anchors": piercing_anchors(body),
     }
     ctx = SimpleNamespace(
         P=P, PB=PB, W=W, BONES=BONES, KEYS=KEYS, FACES=FACES, JB=JB,
+        HEAD=HEAD, HEADW=weight("head"), GROUPS=GROUPS, weight=weight,
         to_blender=to_blender, new_object=new_object,
     )
     parts = doll_hair.build(ctx) + doll_outfits.build(ctx, body, BODY_SRC)
@@ -975,7 +1000,7 @@ def main():
     proxy = "male1591/male1591" if SEX == "male" else "female1605/female1605"
     lo = proxies.build(ctx, "Lod_body", f"proxymeshes/{proxy}.proxy", material("skin"))
     heads = np.zeros(len(lo.data.vertices))
-    hi = lo.vertex_groups["head"].index
+    hi = lo.vertex_groups[HEAD].index
     for v in lo.data.vertices:
         for g in v.groups:
             if g.group == hi:
@@ -995,6 +1020,11 @@ def main():
         kind, name = ob.name.split("_", 1)
         export(rig, [ob], f"{kind.lower()}-{name}{SUFFIX}")
     print("wrote", OUT_DIR, "body verts", len(body.data.vertices))
+    # the bare rig, for mocap.py to bake clips onto the very same bones
+    for ob in list(bpy.data.objects):
+        if ob is not rig:
+            bpy.data.objects.remove(ob)
+    bpy.ops.wm.save_as_mainfile(filepath=RIG_BLEND)
 
 
 main()
