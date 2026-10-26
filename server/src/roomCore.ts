@@ -4,6 +4,7 @@
 // recent chat kept for reports. Blocks and bans last only as long as the copy;
 // the gateway re-applies stored ones.
 
+import { validateHome, type HomeSave } from "../../src/game/home/home.ts";
 import { validateLook, type Look } from "../../src/game/look.ts";
 import { isRoomId, ROOMS, type RoomId } from "../../src/game/rooms.ts";
 import { isValidDisplayName } from "../../src/game/save.ts";
@@ -58,10 +59,11 @@ export type RoomPlayer = {
 };
 /** Whether a join was let in, and why not. */
 export type JoinResult =
-  { ok: true } | { ok: false; reason: "full" | "banned" | "invalid" };
+  | { ok: true }
+  | { ok: false; reason: "full" | "banned" | "invalid" | "closed" };
 /** Passed to the socket's close callback; the player is already removed. */
 export type CloseReason =
-  "kicked" | "banned" | "invalid-messages" | "left" | "send-failed";
+  "kicked" | "banned" | "invalid-messages" | "left" | "send-failed" | "closed";
 // Every reason RoomCore can close or refuse with needs a code.
 CLOSE_CODES satisfies Record<
   CloseReason | Exclude<JoinResult, { ok: true }>["reason"],
@@ -77,6 +79,12 @@ export type RoomCoreOptions = {
   roomId: string;
   capacity?: number;
   now: () => number;
+  /**
+   * An apartment copy: its owner's id. Others (friends, checked by the
+   * gateway) come in only while the owner is home with the door unlocked;
+   * locking up or leaving sends them out.
+   */
+  owner?: string;
 };
 
 type Occupant = {
@@ -109,8 +117,16 @@ export class RoomCore {
   private readonly guestChat = createRateLimiter(GUEST_CHAT_LIMIT);
   private readonly emotes = createRateLimiter(EMOTE_LIMIT);
   private readonly games = createRateLimiter(GAME_LIMIT);
+  private readonly owner: string | null;
+  /** The owner's home layout, while they're home. */
+  private home: HomeSave | null = null;
 
-  constructor({ roomId, capacity = ROOM_CAPACITY, now }: RoomCoreOptions) {
+  constructor({
+    roomId,
+    capacity = ROOM_CAPACITY,
+    now,
+    owner,
+  }: RoomCoreOptions) {
     if (!isRoomId(roomId)) throw new TypeError("Unknown room");
     if (
       !Number.isInteger(capacity) ||
@@ -122,6 +138,7 @@ export class RoomCore {
     this.capacity = capacity;
     this.walkable = ROOMS[roomId].walkable;
     this.now = now;
+    this.owner = owner ?? null;
   }
 
   join(
@@ -134,6 +151,13 @@ export class RoomCore {
     if (this.banned.has(player.id)) return { ok: false, reason: "banned" };
     if (this.occupants.size >= this.capacity)
       return { ok: false, reason: "full" };
+    // an apartment: a visitor only while its owner is home and unlocked
+    if (
+      this.owner !== null &&
+      player.id !== this.owner &&
+      (!this.occupants.has(this.owner) || !this.home || this.home.locked)
+    )
+      return { ok: false, reason: "closed" };
 
     this.occupants.set(player.id, occupant);
     // with no position yet the newcomer sees everyone; their first move trims
@@ -155,6 +179,13 @@ export class RoomCore {
       this.sendTo(other, this.profile(occupant));
     }
     this.broadcastOccupancy();
+    // a visitor sees the owner's home as it is
+    if (this.home && player.id !== this.owner)
+      this.sendTo(occupant, {
+        type: "home",
+        roomId: this.roomId,
+        home: this.home,
+      });
     return { ok: true };
   }
 
@@ -183,6 +214,11 @@ export class RoomCore {
     const occupant = this.occupants.get(id);
     if (!occupant) return;
     this.occupants.delete(id);
+    // the owner going out closes up: visitors go home too
+    if (id === this.owner) {
+      this.home = null;
+      this.closeVisitors();
+    }
     for (const limiter of [
       this.movement,
       this.accountChat,
@@ -289,9 +325,28 @@ export class RoomCore {
         });
         return;
       }
+      case "home": {
+        // only the owner, in their own apartment, and only a real layout
+        if (id !== this.owner) return;
+        const home = validateHome(message.home);
+        if (JSON.stringify(home) !== JSON.stringify(message.home)) return;
+        this.home = home;
+        if (home.locked) this.closeVisitors();
+        else
+          for (const other of this.occupants.values())
+            if (other.id !== id)
+              this.sendTo(other, { type: "home", roomId: this.roomId, home });
+        return;
+      }
       case "leave":
         this.disconnect(occupant, "left");
     }
+  }
+
+  /** Sends everyone but the owner out of the apartment. */
+  private closeVisitors(): void {
+    for (const other of [...this.occupants.values()])
+      if (other.id !== this.owner) this.disconnect(other, "closed");
   }
 
   /** Hides the pair from each other in both directions. */

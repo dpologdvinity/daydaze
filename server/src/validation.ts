@@ -22,7 +22,12 @@ export type RoomCopy = { roomId: RoomId; copy: number };
 /**
  * What a hibernating room socket keeps: where it is, who it is and their look.
  */
-export type Attachment = RoomCopy & { identity: Identity; look: Look };
+export type Attachment = RoomCopy & {
+  identity: Identity;
+  look: Look;
+  /** An apartment copy's owner (their player id); absent in other rooms. */
+  owner?: string;
+};
 
 /** Largest save upload accepted, in UTF-8 bytes (64 KiB). */
 export const MAX_SAVE_BYTES = 65_536;
@@ -46,9 +51,15 @@ export function parseAttachment(value: unknown): Attachment | null {
   const identity = parseIdentity(f.get("identity"));
   const look = f.get("look");
   const room = parseRoomCopy(f);
-  return identity && validateLook(look) && room
-    ? { ...room, identity, look: { ...look } }
-    : null;
+  const owner = f.get("owner");
+  // absent, or a player id as the home route accepts it
+  const ownerOk =
+    owner === undefined ||
+    (typeof owner === "string" && /^[A-Za-z0-9_-]{1,32}$/.test(owner));
+  if (!identity || !validateLook(look) || !room || !ownerOk) return null;
+  return typeof owner === "string"
+    ? { ...room, identity, look: { ...look }, owner }
+    : { ...room, identity, look: { ...look } };
 }
 
 /**

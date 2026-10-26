@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  CLOSE_CODES,
   encodeEntityDelta,
   decodeEntityDelta,
   encodeClientMessage,
@@ -259,4 +260,32 @@ test("packet size limits count UTF-8 bytes rather than JavaScript code units", (
     ),
     null,
   );
+});
+
+test("a home layout travels as a shape: a lock flag and a bounded furniture list", () => {
+  const home = {
+    locked: false,
+    furniture: [{ id: "bed", cell: [1, 2], rotation: 0 }],
+  };
+  const sent = decodeClientMessage(JSON.stringify({ type: "home", home }));
+  assert.deepEqual(sent, { type: "home", home });
+  const back = decodeServerMessage(
+    JSON.stringify({ type: "home", roomId: "apartment", home }),
+  );
+  assert.deepEqual(back, { type: "home", roomId: "apartment", home });
+  for (const bad of [
+    { locked: "no", furniture: [] },
+    { locked: false, furniture: "bed" },
+    { locked: false, furniture: [1] },
+    { locked: false, furniture: Array.from({ length: 300 }, () => ({})) },
+    null,
+  ])
+    assert.equal(
+      decodeClientMessage(JSON.stringify({ type: "home", home: bad })),
+      null,
+    );
+});
+
+test("a closed home has its own final close code", () => {
+  assert.equal(CLOSE_CODES.closed, 4006);
 });

@@ -42,7 +42,8 @@ export type WebSocketTransportOptions = {
 };
 
 // Retrying these would fight the server: the copy is full, the player is
-// banned or kicked, another tab took over, or this client is broken.
+// banned or kicked, an apartment is locked or empty, another tab took over,
+// or this client is broken.
 const FINAL_CODES: ReadonlySet<number> = new Set([
   CLOSE_CODES.left,
   CLOSE_CODES.invalid,
@@ -50,6 +51,7 @@ const FINAL_CODES: ReadonlySet<number> = new Set([
   CLOSE_CODES.kicked,
   CLOSE_CODES.banned,
   CLOSE_CODES["invalid-messages"],
+  CLOSE_CODES.closed,
   CLOSE_CODES.replaced,
 ]);
 

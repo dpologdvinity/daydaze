@@ -30,20 +30,44 @@ test.afterEach(async ({ browser }) => {
   for (const context of browser.contexts()) await context.close();
 });
 
-test("two players meet in the Plaza, talk, become friends and play cards", async ({
-  browser,
-}) => {
-  // the whole social tour (cards, emotes, party, ride, race, accounts) on
-  // two SwiftShader pages runs past the config's 20 minutes
-  test.setTimeout(2_400_000);
-  const a = await player(browser);
-  const b = await player(browser);
-  // page errors show in the test output, for debugging a broken frame loop
+/** Page errors show in the test output, for debugging a broken frame loop. */
+function logErrors(a: Page, b: Page) {
   for (const [who, page] of [
     ["A", a],
     ["B", b],
   ] as const)
     page.on("pageerror", (e) => console.log(`${who} page error:`, e.message));
+}
+
+/** Two players in the Plaza who see each other and are friends. */
+async function friends(browser: Browser) {
+  const a = await player(browser);
+  const b = await player(browser);
+  logErrors(a, b);
+  const tagOnA = a.locator(".peer-tag .nametag");
+  const tagOnB = b.locator(".peer-tag .nametag");
+  await expect(tagOnA).toHaveCount(1, { timeout: 120_000 });
+  await expect(tagOnB).toHaveCount(1, { timeout: 120_000 });
+  await tagOnA.click();
+  await a.getByRole("button", { name: "Add friend" }).click();
+  await tagOnB.click({ timeout: 60_000 });
+  await b
+    .getByRole("button", { name: "Accept friend request" })
+    .click({ timeout: 60_000 });
+  await expect(b.getByRole("button", { name: "Unfriend" })).toBeVisible();
+  await b.getByRole("button", { name: "Close" }).click();
+  await a.getByRole("button", { name: "Close" }).click();
+  return { a, b, tagOnA, tagOnB };
+}
+
+test("two players meet in the Plaza, talk, become friends and play cards", async ({
+  browser,
+}) => {
+  // chat, cards, emotes and a cook-off on two SwiftShader pages
+  test.setTimeout(1_800_000);
+  const a = await player(browser);
+  const b = await player(browser);
+  logErrors(a, b);
   const tagOnA = a.locator(".peer-tag .nametag");
   const tagOnB = b.locator(".peer-tag .nametag");
   await expect(tagOnA).toHaveCount(1, { timeout: 120_000 });
@@ -189,7 +213,13 @@ test("two players meet in the Plaza, talk, become friends and play cards", async
   await expect(a.getByText("is in. Head to Kamayan Hall")).toBeVisible({
     timeout: 60_000,
   });
+});
 
+test("friends party through doors, ride in a car and race at the Speedway", async ({
+  browser,
+}) => {
+  test.setTimeout(1_800_000);
+  const { a, b, tagOnA, tagOnB } = await friends(browser);
   // A invites B (a friend now) to a party; when A goes through to the
   // Velvet Room, B follows into the same copy
   await tagOnA.click();
@@ -288,7 +318,45 @@ test("two players meet in the Plaza, talk, become friends and play cards", async
       "car:zip-kart",
       { timeout: 180_000 },
     );
+});
 
+test("a friend visits your apartment while the door is unlocked", async ({
+  browser,
+}) => {
+  test.setTimeout(1_200_000);
+  const { a, b, tagOnA, tagOnB } = await friends(browser);
+  // A goes home and unlocks the door; B visits from the Friends panel, and
+  // is sent back out when A locks up
+  await a.getByRole("button", { name: "Go to Apartment" }).click();
+  await a
+    .getByRole("button", { name: "Door: locked" })
+    .click({ timeout: 240_000 });
+  await expect(a.getByRole("button", { name: "Door: unlocked" })).toBeVisible();
+  await b.getByRole("button", { name: "Friends", exact: true }).click();
+  await b
+    .getByRole("button", { name: /^Visit .+'s place$/ })
+    .first()
+    .click();
+  await expect(b.getByText(/You're at .+'s place\./)).toBeVisible({
+    timeout: 240_000,
+  });
+  await expect(b.getByRole("heading", { level: 1 })).toHaveText(
+    /'s apartment$/,
+  );
+  await expect(tagOnA).toHaveCount(1, { timeout: 180_000 });
+  await expect(tagOnB).toHaveCount(1, { timeout: 180_000 });
+  await a.getByRole("button", { name: "Door: unlocked" }).click();
+  await expect(b.getByText(/locked up/)).toBeVisible({ timeout: 180_000 });
+  await expect(b.getByRole("heading", { level: 1 })).not.toHaveText(
+    /apartment/,
+    { timeout: 180_000 },
+  );
+});
+
+test("a guest signs up, logs out and logs back in, keeping their progress", async ({
+  browser,
+}) => {
+  const b = await player(browser);
   // B signs up (keeping the guest's progress), logs out, and logs back in
   const name = `Tester${Date.now() % 100000}`;
   await b.getByRole("button", { name: "Friends", exact: true }).click();

@@ -14,6 +14,8 @@ export const CLOSE_CODES = {
   banned: 4003,
   "invalid-messages": 4004,
   "send-failed": 4005,
+  /** An apartment you can't come in to: locked, or nobody home. */
+  closed: 4006,
   replaced: 4009,
 } as const;
 
@@ -39,6 +41,18 @@ export type JoinRoomMessage = {
 export type LeaveRoomMessage = { type: "leave" };
 export type EntityUpdateMessage = { type: "update"; entity: EntityDelta };
 export type ChatMessage = { type: "chat"; text: string };
+/** Furniture in a home layout, at most this many pieces. */
+export const MAX_HOME_ITEMS = 200;
+/**
+ * A home layout as it travels: the door and the furniture. Opaque here; the
+ * game layer's `validateHome` decides what's really in it.
+ */
+export type HomeShape = {
+  locked: boolean;
+  furniture: Record<string, unknown>[];
+};
+/** The owner's home layout, sent to their own apartment copy. */
+export type HomeMessage = { type: "home"; home: HomeShape };
 export type EmoteMessage = { type: "emote"; emote: string };
 /** A move in a game between two players, passed on to `to` only. */
 export type GameMessage = { type: "game"; to: string; data: string };
@@ -49,7 +63,8 @@ export type ClientMessage =
   | EntityUpdateMessage
   | ChatMessage
   | EmoteMessage
-  | GameMessage;
+  | GameMessage
+  | HomeMessage;
 export type RoomSnapshotMessage = {
   type: "snapshot";
   roomId: string;
@@ -85,7 +100,10 @@ export type ProfileMessage = {
   name: string;
   look: LookShape;
 };
+/** The owner's home layout, as a visitor's client draws it. */
+export type HomeBroadcast = HomeMessage & { roomId: string };
 export type ServerMessage =
+  | HomeBroadcast
   | RoomSnapshotMessage
   | EntityDeltaBroadcast
   | EntityLeaveBroadcast
@@ -140,6 +158,21 @@ export function isLookShape(value: unknown): value is LookShape {
         key.length <= 32 && typeof item === "string" && item.length <= 32,
     )
   );
+}
+function homeShape(value: unknown): HomeShape | null {
+  if (!record(value) || typeof value.locked !== "boolean") return null;
+  const items = value.furniture;
+  if (
+    !Array.isArray(items) ||
+    items.length > MAX_HOME_ITEMS ||
+    !items.every(record)
+  )
+    return null;
+  // detached from the caller's objects, like every other decoded packet
+  const furniture: Record<string, unknown>[] = JSON.parse(
+    JSON.stringify(items),
+  );
+  return { locked: value.locked, furniture };
 }
 function look(value: unknown): LookShape | null {
   return isLookShape(value) ? Object.fromEntries(Object.entries(value)) : null;
@@ -233,6 +266,10 @@ export function decodeClientMessage(raw: unknown): ClientMessage | null {
           ? { type: "game", to, data }
           : null;
       }
+      case "home": {
+        const home = homeShape(value.home);
+        return home ? { type: "home", home } : null;
+      }
       default:
         return null;
     }
@@ -289,6 +326,10 @@ export function decodeServerMessage(raw: unknown): ServerMessage | null {
         return isNetworkId(from) && text(data, MAX_GAME_DATA)
           ? { type: "game", roomId, from, data }
           : null;
+      }
+      case "home": {
+        const home = homeShape(value.home);
+        return home ? { type: "home", roomId, home } : null;
       }
       case "occupancy": {
         const count = value.count;

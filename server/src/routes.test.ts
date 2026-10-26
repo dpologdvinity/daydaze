@@ -61,3 +61,14 @@ test("wrong methods and unknown paths do not match", () => {
   ])
     assert.equal(matchRoute(method, path), null, `${method} ${path}`);
 });
+
+test("a home socket names its owner; a bad owner id matches nothing", () => {
+  assert.deepEqual(matchRoute("GET", "/ws/home/u_abc123"), {
+    kind: "home",
+    ownerId: "u_abc123",
+  });
+  assert.equal(matchRoute("POST", "/ws/home/u_abc123"), null);
+  assert.equal(matchRoute("GET", "/ws/home/"), null);
+  assert.equal(matchRoute("GET", `/ws/home/${"x".repeat(40)}`), null);
+  assert.equal(matchRoute("GET", "/ws/home/a%20b"), null);
+});

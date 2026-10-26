@@ -1,6 +1,6 @@
 // Maps an HTTP method and path to a typed Route for the Worker: the fixed /api
-// endpoints, a room's copy list and a room copy's WebSocket. Unknown rooms and
-// bad copy numbers match nothing.
+// endpoints, a room's copy list, a room copy's WebSocket and an apartment's
+// (by owner). Unknown rooms, bad copy numbers and bad owner ids match nothing.
 
 import { isRoomId, type RoomId } from "../../src/game/rooms.ts";
 
@@ -27,7 +27,9 @@ export type Route =
         | "admin-reports";
     }
   | { kind: "rooms"; roomId: RoomId }
-  | { kind: "ws"; roomId: RoomId; copy: number };
+  | { kind: "ws"; roomId: RoomId; copy: number }
+  /** An apartment copy's socket: the owner's home, by their player id. */
+  | { kind: "home"; ownerId: string };
 
 const FIXED = new Map<string, Route>([
   ["POST /api/guest", { kind: "guest" }],
@@ -68,5 +70,8 @@ export function matchRoute(method: string, pathname: string): Route | null {
   const ws = /^\/ws\/room\/([^/]+)\/([^/]+)$/.exec(pathname);
   const copy = ws && parseCopy(ws[2]);
   if (ws && copy && isRoomId(ws[1])) return { kind: "ws", roomId: ws[1], copy };
+  // player ids are short url-safe strings
+  const home = /^\/ws\/home\/([A-Za-z0-9_-]{1,32})$/.exec(pathname);
+  if (home?.[1]) return { kind: "home", ownerId: home[1] };
   return null;
 }

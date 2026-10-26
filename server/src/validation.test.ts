@@ -178,3 +178,19 @@ test("friend requests name only a target", () => {
   assert.equal(parseTarget({}), null);
   assert.equal(parseTarget(null), null);
 });
+
+test("an apartment socket's attachment keeps its owner; a bad owner is refused", () => {
+  const base = {
+    identity: { id: "u_friend", name: "Kai", isGuest: false, isAdmin: false },
+    look: DEFAULT_LOOK,
+    roomId: "apartment",
+    copy: 1,
+  };
+  assert.equal(
+    parseAttachment({ ...base, owner: "u_owner" })?.owner,
+    "u_owner",
+  );
+  assert.equal(parseAttachment(base)?.owner, undefined);
+  assert.equal(parseAttachment({ ...base, owner: "bad id!" }), null);
+  assert.equal(parseAttachment({ ...base, owner: 7 }), null);
+});

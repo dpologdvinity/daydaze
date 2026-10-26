@@ -47,6 +47,7 @@ import {
   DIRECTORY_NAME,
   IDENTITY_HEADER,
   roomObjectName,
+  homeObjectName,
 } from "./roomInstance.ts";
 
 export { Directory } from "./directory.ts";
@@ -191,6 +192,23 @@ async function unfriend(env: Env, a: string, b: string): Promise<void> {
   )
     .bind(a, b)
     .run();
+}
+
+/** Whether two players are friends (each asked the other) and neither has
+ * blocked the other. */
+async function areFriends(env: Env, a: string, b: string): Promise<boolean> {
+  const row = await env.DB.prepare(
+    `SELECT
+       (SELECT COUNT(*) FROM friend_requests
+        WHERE (from_id = ?1 AND to_id = ?2) OR (from_id = ?2 AND to_id = ?1))
+       AS asks,
+       (SELECT COUNT(*) FROM blocks
+        WHERE (blocker_id = ?1 AND blocked_id = ?2)
+           OR (blocker_id = ?2 AND blocked_id = ?1)) AS blocks`,
+  )
+    .bind(a, b)
+    .first();
+  return row?.asks === 2 && row?.blocks === 0;
 }
 
 async function friendsOf(env: Env, id: string) {
@@ -502,6 +520,24 @@ async function handle(
       const headers = new Headers(request.headers);
       headers.set(IDENTITY_HEADER, JSON.stringify(publicIdentity(session)));
       return roomStub(env, route.roomId, route.copy).fetch(
+        new Request(url, { headers }),
+      );
+    }
+    case "home": {
+      if (request.headers.get("Upgrade") !== "websocket")
+        return error(426, "expected-websocket");
+      if (await isBanned(env, session.id, clientIp(request)))
+        return error(403, "banned");
+      // your own place, or a friend's (the apartment itself checks that
+      // they're home and the door is unlocked)
+      if (
+        session.id !== route.ownerId &&
+        !(await areFriends(env, session.id, route.ownerId))
+      )
+        return error(403, "not-friends");
+      const headers = new Headers(request.headers);
+      headers.set(IDENTITY_HEADER, JSON.stringify(publicIdentity(session)));
+      return env.ROOMS.getByName(homeObjectName(route.ownerId)).fetch(
         new Request(url, { headers }),
       );
     }

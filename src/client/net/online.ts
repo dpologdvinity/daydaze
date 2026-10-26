@@ -7,6 +7,8 @@ import { OnlineSession } from "../../net/client/OnlineSession.ts";
 import { WebSocketTransport } from "../../net/client/WebSocketTransport.ts";
 import { readFlags } from "../flags.ts";
 import { beforeTravel } from "./party.ts";
+import { enterApartment, homeVisit } from "./home.ts";
+import type { HomeSave } from "../../game/home/home.ts";
 
 /**
  * Online play, for now behind `?online=1`: the game talks to the Worker's
@@ -47,14 +49,19 @@ export const joinCopy: { room: RoomId | null; copy: number } = {
   copy: invite?.copy ?? 1,
 };
 
-/** Keeps the session in the room the player is in, wearing their look. */
-export function useOnlineRoom(room: RoomId, look: Look) {
+/** Keeps the session in the room the player is in, wearing their look; at
+ * home, it also keeps the apartment's layout (`home`) current online. */
+export function useOnlineRoom(room: RoomId, look: Look, home: HomeSave) {
   const session = onlineSession();
   // the look as of now, for joining; a look change alone never rejoins
   const latestLook = useRef(look);
+  const latestHome = useRef(home);
+  // a new visit (or the end of one) while in the apartment re-enters it
+  const visitingId = homeVisit.use().owner?.id ?? null;
   useEffect(() => {
     latestLook.current = look;
-  }, [look]);
+    latestHome.current = home;
+  }, [look, home]);
   // join (and rejoin on each room change) once the session has an identity
   useEffect(() => {
     if (!session) return;
@@ -72,15 +79,23 @@ export function useOnlineRoom(room: RoomId, look: Look) {
       // follow, and a member heading off alone leaves the party
       const partyCopy = await beforeTravel(room);
       if (!live) return;
-      // your own flat or cell: nobody else's copy to join
-      if (SOLO_ROOMS.has(room)) session.leaveRoom();
+      // an apartment is its owner's own copy: yours, or a friend's you visit
+      if (room === "apartment")
+        await enterApartment(latestHome.current, latestLook.current);
+      // the cells: nobody else's copy to join
+      else if (SOLO_ROOMS.has(room)) session.leaveRoom();
       else await session.joinRoom(room, latestLook.current, partyCopy ?? copy);
     })();
     return () => {
       live = false;
     };
-  }, [session, room]);
+  }, [session, room, visitingId]);
   useEffect(() => {
     session?.setLook(look);
   }, [session, look]);
+  // at your own place, every change to the layout (the door, a new chair)
+  // goes out to your apartment copy
+  useEffect(() => {
+    if (room === "apartment" && !homeVisit.get().owner) session?.sendHome(home);
+  }, [session, room, home]);
 }

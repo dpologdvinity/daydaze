@@ -509,3 +509,51 @@ test("pickCopy names the copy a join would try first, null when offline", async 
   assert.equal(await session.pickCopy("karaoke"), 3);
   assert.equal(await session.pickCopy("bowling"), null);
 });
+
+test("going home joins your own apartment copy and sends its layout", async () => {
+  const { session } = setup();
+  await session.start();
+  const enter = session.enterHome(me.id, DEFAULT_LOOK);
+  await flush();
+  const socket = FakeSocket.latest();
+  assert.match(socket.url, /\/ws\/home\/g_me\?look=/);
+  socket.open();
+  serve(socket, snapshot());
+  assert.deepEqual(await enter, { ok: true, copy: 1 });
+  assert.equal(session.sendHome({ locked: false, furniture: [] }), true);
+  assert.ok(
+    sentBy(socket).some((m) => m.type === "home" && m.home.locked === false),
+  );
+});
+
+test("a friend's locked or empty apartment turns you away for good", async () => {
+  const { session } = setup();
+  await session.start();
+  const enter = session.enterHome("u_friend", DEFAULT_LOOK);
+  await flush();
+  FakeSocket.latest().open();
+  FakeSocket.latest().drop(4006);
+  assert.deepEqual(await enter, { ok: false, reason: "locked" });
+});
+
+test("a visitor hears the owner's layout", async () => {
+  const { session } = setup();
+  await session.start();
+  const homes: unknown[] = [];
+  session.on("home", (home) => homes.push(home));
+  const enter = session.enterHome("u_friend", DEFAULT_LOOK);
+  await flush();
+  const socket = FakeSocket.latest();
+  socket.open();
+  serve(socket, snapshot());
+  await enter;
+  serve(socket, {
+    type: "home",
+    roomId: "apartment",
+    home: {
+      locked: false,
+      furniture: [{ id: "bed", cell: [1, 1], rotation: 0 }],
+    },
+  });
+  assert.equal(homes.length, 1);
+});

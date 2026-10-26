@@ -1,6 +1,7 @@
 // The Friends panel: account controls, room copies, the strict chat setting,
-// and friend lists (incoming, friends with where they are, sent). Refreshes
-// every 20 seconds while open; renders nothing offline.
+// and friend lists (incoming; friends with where they are, a way to go to
+// them and a visit to their place; sent). Refreshes every 20 seconds while
+// open; renders nothing offline.
 
 import { useEffect, type Dispatch, type JSX, type SetStateAction } from "react";
 import type { SaveV1 } from "../../game/save.ts";
@@ -10,6 +11,7 @@ import { ReportsPanel } from "./ReportsPanel.tsx";
 import { ROOMS, type RoomId } from "../../game/rooms.ts";
 import { friends, refreshFriends } from "./friends.ts";
 import { joinCopy, onlineSession } from "./online.ts";
+import { visitFriend } from "./home.ts";
 
 const REFRESH_MS = 20_000;
 
@@ -110,6 +112,15 @@ export function FriendsPanel({
                   Go to {f.name}
                 </button>
               )}
+              <button
+                type="button"
+                onClick={() => {
+                  friends.set({ open: false });
+                  visitFriend({ id: f.id, name: f.name });
+                }}
+              >
+                Visit {f.name}&apos;s place
+              </button>
             </li>
           ))}
         </ul>

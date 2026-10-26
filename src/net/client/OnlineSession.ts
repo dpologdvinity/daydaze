@@ -7,6 +7,7 @@ import {
   encodeClientMessage,
   type ClientMessage,
   type EntityDelta,
+  type HomeShape,
 } from "../networkProtocol.ts";
 import {
   interpolateEntityState,
@@ -40,7 +41,15 @@ export type JoinOutcome =
   | { ok: true; copy: number }
   | {
       ok: false;
-      reason: "offline" | "network" | "full" | "banned" | "invalid" | "closed";
+      reason:
+        | "offline"
+        | "network"
+        | "full"
+        | "banned"
+        | "invalid"
+        /** An apartment that's locked, or with nobody home. */
+        | "locked"
+        | "closed";
     };
 export type SessionEvents = {
   status: SessionStatus;
@@ -51,6 +60,8 @@ export type SessionEvents = {
   chat: { id: string; name: string | null; text: string };
   emote: { id: string; emote: string };
   game: { from: string; data: string };
+  /** In an apartment: its owner's layout (validated by the game layer). */
+  home: HomeShape;
   occupancy: number;
   closeCode: number;
 };
@@ -67,7 +78,7 @@ type Pose = { x: number; z: number; yaw: number; action: string };
 type Listeners = {
   [K in keyof SessionEvents]: Set<(payload: SessionEvents[K]) => void>;
 };
-type Attempt = "joined" | "full" | "banned" | "invalid" | "closed";
+type Attempt = "joined" | "full" | "banned" | "invalid" | "locked" | "closed";
 
 const defaultSchedule: Schedule = (callback, delayMs) => {
   const handle = setTimeout(callback, delayMs);
@@ -93,6 +104,7 @@ export class OnlineSession {
     chat: new Set(),
     emote: new Set(),
     game: new Set(),
+    home: new Set(),
     occupancy: new Set(),
     closeCode: new Set(),
   };
@@ -100,6 +112,8 @@ export class OnlineSession {
   private self: Identity | null = null;
   private transport: RoomTransport | null = null;
   private current: { roomId: RoomId; copy: number } | null = null;
+  /** While in an apartment: whose. */
+  private homeOwner: string | null = null;
   private look: Look | null = null;
   private pose: Pose = { x: 0, z: 0, yaw: 0, action: "idle" };
   private lastMoveAt = -Infinity;
@@ -208,14 +222,58 @@ export class OnlineSession {
     const room = this.current;
     const look = this.look;
     const pose = this.pose;
+    const previous = this.self?.id;
     // The old socket still speaks for the old identity: drop it first.
     this.leaveRoom();
     const identity = await this.start();
     if (!identity || !room || !look) return { identity, join: null };
+    // at home, a new identity is a new owner: go to your own place again
+    const home = this.homeOwner;
+    if (home !== null)
+      return {
+        identity,
+        join: await this.enterHome(
+          home === previous ? identity.id : home,
+          look,
+          pose,
+        ),
+      };
     return {
       identity,
       join: await this.enter(room.roomId, look, pose, room.copy),
     };
+  }
+
+  /**
+   * Joins an apartment: your own (`ownerId` your id) or a friend's, which
+   * the server lets you into only while they're home and unlocked.
+   */
+  async enterHome(
+    ownerId: string,
+    look: Look,
+    pose: Pose = this.pose,
+  ): Promise<JoinOutcome> {
+    if (!this.self) return { ok: false, reason: "offline" };
+    this.leaveRoom();
+    this.look = { ...look };
+    this.pose = pose;
+    this.homeOwner = ownerId;
+    const attempt = await this.connect(
+      "apartment",
+      1,
+      `/ws/home/${encodeURIComponent(ownerId)}`,
+    );
+    if (attempt === "joined") return { ok: true, copy: 1 };
+    this.homeOwner = null;
+    return {
+      ok: false,
+      reason: attempt === "full" ? "closed" : attempt,
+    };
+  }
+
+  /** Sends your home layout (door and furniture) to your own apartment. */
+  sendHome(home: HomeShape): boolean {
+    return this.send({ type: "home", home });
   }
 
   private async enter(
@@ -248,6 +306,7 @@ export class OnlineSession {
     const transport = this.transport;
     this.transport = null;
     this.current = null;
+    this.homeOwner = null;
     this.cancelMove?.();
     this.cancelMove = null;
     this.players.clear();
@@ -366,11 +425,15 @@ export class OnlineSession {
     );
   }
 
-  private connect(roomId: RoomId, copy: number): Promise<Attempt> {
+  private connect(
+    roomId: RoomId,
+    copy: number,
+    path = `/ws/room/${roomId}/${copy}`,
+  ): Promise<Attempt> {
     return new Promise((resolve) => {
       const look = encodeURIComponent(JSON.stringify(this.look));
       const transport = this.openTransport(
-        `${this.wsBaseUrl}/ws/room/${roomId}/${copy}?look=${look}`,
+        `${this.wsBaseUrl}${path}?look=${look}`,
       );
       this.transport = transport;
       this.current = { roomId, copy };
@@ -407,7 +470,9 @@ export class OnlineSession {
               ? "banned"
               : lastCode === CLOSE_CODES.invalid
                 ? "invalid"
-                : "closed",
+                : lastCode === CLOSE_CODES.closed
+                  ? "locked"
+                  : "closed",
         );
       });
     });
@@ -432,6 +497,9 @@ export class OnlineSession {
             });
         this.emit("snapshot", { roomId, copy });
         return true;
+      case "home":
+        this.emit("home", message.home);
+        return false;
       case "profile": {
         if (message.id === selfId) return false;
         const player = this.player(message.id);

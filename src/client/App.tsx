@@ -23,6 +23,7 @@ import { PartyPanel } from "./net/PartyPanel.tsx";
 import { RidePanel } from "./net/RidePanel.tsx";
 import { RacePanel } from "./net/RacePanel.tsx";
 import { leaveParty } from "./net/party.ts";
+import { endVisit, homeVisit, listenForHomes } from "./net/home.ts";
 import { ConnectionNote } from "./net/ConnectionNote.tsx";
 import { chatPrefs } from "./net/chatPrefs.ts";
 import { useCloudSave } from "./net/cloudSave.ts";
@@ -141,7 +142,10 @@ export function App() {
     () => ({ ...save.look, swim: encodeSwim(save.swim) }),
     [save.look, save.swim],
   );
-  useOnlineRoom(here.room, onlineLook);
+  useOnlineRoom(here.room, onlineLook, save.home);
+  // visiting a friend's place: theirs is the home you see, read-only
+  const visiting = homeVisit.use();
+  useEffect(() => (ONLINE ? listenForHomes() : undefined), []);
   // the album remembers every place you've been
   useEffect(() => {
     setSave((s) =>
@@ -185,6 +189,30 @@ export function App() {
     },
     [travel, here.room],
   );
+
+  // walking out of a friend's apartment ends the visit (only a real exit:
+  // starting a visit from elsewhere mustn't cancel it)
+  const lastRoom = useRef(here.room);
+  useEffect(() => {
+    if (lastRoom.current === "apartment" && here.room !== "apartment")
+      endVisit();
+    lastRoom.current = here.room;
+  }, [here.room]);
+  // a visit starts: off to the apartment; turned away: back to the city
+  useEffect(() => {
+    if (visiting.owner && here.room !== "apartment")
+      travel("apartment", ROOMS.apartment.spawn);
+  }, [visiting.owner, here.room, travel]);
+  useEffect(() => {
+    if (!visiting.bounced) return;
+    homeVisit.set({ bounced: false });
+    setNotice(visiting.note);
+    if (here.room === "apartment") travel("city", ROOMS.city.spawn);
+  }, [visiting.bounced, visiting.note, here.room, travel]);
+  const shownHome =
+    visiting.owner && here.room === "apartment"
+      ? (visiting.home ?? { locked: false, furniture: [] })
+      : save.home;
 
   const tag = useRef<HTMLDivElement>(null);
   const [mood, setMood] = useState<Mood>("idle");
@@ -360,7 +388,7 @@ export function App() {
           quality={quality}
           still={flags.still}
           onPortal={(portal) => travel(portal.target, portal.targetSpawn)}
-          home={save.home}
+          home={shownHome}
           onShelf={() => setShopping(true)}
           car={parkedOrHome(save.car)}
           onPark={setCar}
@@ -396,7 +424,11 @@ export function App() {
         )}
         <Overlay
           room={here.room}
-          roomName={ROOMS[here.room].name}
+          roomName={
+            here.room === "apartment" && visiting.owner
+              ? `${visiting.owner.name}'s apartment`
+              : ROOMS[here.room].name
+          }
           look={save.look}
           setLook={setLook}
           swim={save.swim}
@@ -480,7 +512,12 @@ export function App() {
             return true;
           }}
         />
-        {here.room === "apartment" && (
+        {here.room === "apartment" && visiting.owner && (
+          <p className="notice" role="status">
+            You&apos;re at {visiting.owner.name}&apos;s place.
+          </p>
+        )}
+        {here.room === "apartment" && !visiting.owner && (
           <ApartmentPanel
             home={save.home}
             onChange={setHome}

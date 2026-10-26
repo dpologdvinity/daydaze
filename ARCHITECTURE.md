@@ -132,6 +132,14 @@ reached, the game is single-player and makes no network calls.
   relay. `Directory` tracks copies and who is where; `RateLimiter` keeps
   auth and report budgets in its SQLite storage.
 - `server/migrations/` is the D1 schema.
+- Apartments are one copy per owner: `/ws/home/<ownerId>` reaches the
+  `apartment:home:<ownerId>` Durable Object, for the owner or a friend
+  (checked in D1; never a blocked one). `RoomCore`'s home mode lets a visitor
+  in only while the owner is home with the door unlocked; the owner's client
+  sends its layout (`home` message: door and furniture), visitors receive it
+  and draw that home read-only, and locking up or leaving closes them out
+  (close code 4006, `closed`). Apartments aren't listed in the Directory.
+  Client side: `src/client/net/home.ts` and the Friends panel's "Visit".
 
 Accounts: signing up uploads the guest's save; logging in loads the
 account's; while signed in, changes push a few seconds later, but only after

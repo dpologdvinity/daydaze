@@ -616,3 +616,91 @@ test("a well-buzzed player's chat goes out slurred; a sober one's untouched", ()
   // the report log keeps what was typed
   assert.equal(room.recentChat(2)[0]?.text, line);
 });
+
+// ---- an apartment copy: its owner's home, open to friends when unlocked ----
+
+function homeSetup() {
+  const clock = { t: 0 };
+  const room = new RoomCore({
+    roomId: "apartment",
+    owner: "owner",
+    now: () => clock.t,
+  });
+  function join(id: string) {
+    const received: ServerMessage[] = [];
+    const closed: CloseReason[] = [];
+    const result = room.join(
+      { id, name: `Name-${id}`, isGuest: false, isAdmin: false, look },
+      (raw) => {
+        const message = decodeServerMessage(raw);
+        assert.ok(message);
+        received.push(message);
+      },
+      (reason) => closed.push(reason),
+    );
+    return { id, result, received, closed };
+  }
+  return { room, join };
+}
+const layout = (locked: boolean) =>
+  encodeClientMessage({
+    type: "home",
+    home: { locked, furniture: [{ id: "bed", cell: [1, 2], rotation: 0 }] },
+  });
+
+test("nobody comes in to an apartment while its owner is out", () => {
+  const { join } = homeSetup();
+  assert.deepEqual(join("friend").result, { ok: false, reason: "closed" });
+});
+
+test("a locked apartment keeps visitors out, an unlocked one lets them in with the layout", () => {
+  const { room, join } = homeSetup();
+  assert.deepEqual(join("owner").result, { ok: true });
+  room.handle("owner", layout(true));
+  assert.deepEqual(join("friend").result, { ok: false, reason: "closed" });
+  room.handle("owner", layout(false));
+  const friend = join("friend");
+  assert.deepEqual(friend.result, { ok: true });
+  const homes = ofType(friend.received, "home");
+  assert.equal(homes.length, 1);
+  assert.equal(homes[0]?.home.furniture.length, 1);
+});
+
+test("locking up or leaving sends visitors home", () => {
+  const { room, join } = homeSetup();
+  join("owner");
+  room.handle("owner", layout(false));
+  const friend = join("friend");
+  room.handle("owner", layout(true));
+  assert.deepEqual(friend.closed, ["closed"]);
+  room.handle("owner", layout(false));
+  const again = join("friend");
+  room.leave("owner");
+  assert.deepEqual(again.closed, ["closed"]);
+});
+
+test("only the owner sets the layout; a bad layout is refused", () => {
+  const { room, join } = homeSetup();
+  join("owner");
+  room.handle("owner", layout(false));
+  const friend = join("friend");
+  // a visitor trying to lock the owner out of their own visit: ignored
+  room.handle("friend", layout(true));
+  assert.deepEqual(friend.closed, []);
+  // furniture that isn't in the catalog: the layout stays as it was
+  room.handle(
+    "owner",
+    encodeClientMessage({
+      type: "home",
+      home: { locked: true, furniture: [{ id: "throne", cell: [0, 0] }] },
+    }),
+  );
+  assert.deepEqual(friend.closed, []);
+});
+
+test("an ordinary room ignores home layouts", () => {
+  const { room, join } = setup();
+  const a = join("a");
+  room.handle("a", layout(true));
+  assert.deepEqual(a.closed, []);
+});

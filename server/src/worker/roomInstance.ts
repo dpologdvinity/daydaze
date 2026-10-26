@@ -24,6 +24,11 @@ export function roomObjectName(roomId: string, copy: number): string {
   return `${roomId}:${copy}`;
 }
 
+/** The Durable Object name of a player's apartment. */
+export function homeObjectName(ownerId: string): string {
+  return `apartment:home:${ownerId}`;
+}
+
 function parseJson(text: string | null): unknown {
   try {
     return JSON.parse(text ?? "null");
@@ -36,6 +41,8 @@ function parseJson(text: string | null): unknown {
 export class RoomInstance extends DurableObject<Env> {
   private core: RoomCore | null = null;
   private room: RoomCopy | null = null;
+  /** An apartment copy's owner; apartments aren't listed in the Directory. */
+  private home: string | null = null;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -71,14 +78,14 @@ export class RoomInstance extends DurableObject<Env> {
     const identity = parseIdentity(
       parseJson(request.headers.get(IDENTITY_HEADER)),
     );
-    if (route?.kind !== "ws" || !identity)
+    if ((route?.kind !== "ws" && route?.kind !== "home") || !identity)
       return new Response("Bad request", { status: 400 });
-    const attachment: Attachment = {
-      identity,
-      look: parseLookParam(url.searchParams.get("look")),
-      roomId: route.roomId,
-      copy: route.copy,
-    };
+    const look = parseLookParam(url.searchParams.get("look"));
+    // an apartment is one copy per owner (copy 1, with the owner named)
+    const attachment: Attachment =
+      route.kind === "home"
+        ? { identity, look, roomId: "apartment", copy: 1, owner: route.ownerId }
+        : { identity, look, roomId: route.roomId, copy: route.copy };
     const core = this.coreFor(attachment);
     const [client, server] = Object.values(new WebSocketPair());
     this.ctx.acceptWebSocket(server, [identity.id]);
@@ -144,9 +151,14 @@ export class RoomInstance extends DurableObject<Env> {
     return kicked;
   }
 
-  private coreFor(room: RoomCopy): RoomCore {
+  private coreFor(room: Attachment): RoomCore {
     this.room ??= { roomId: room.roomId, copy: room.copy };
-    this.core ??= new RoomCore({ roomId: room.roomId, now: Date.now });
+    this.home ??= room.owner ?? null;
+    this.core ??= new RoomCore({
+      roomId: room.roomId,
+      now: Date.now,
+      ...(room.owner ? { owner: room.owner } : {}),
+    });
     return this.core;
   }
 
@@ -182,7 +194,7 @@ export class RoomInstance extends DurableObject<Env> {
   }
 
   private async reportOccupancy(): Promise<void> {
-    if (!this.core || !this.room) return;
+    if (!this.core || !this.room || this.home) return;
     try {
       await this.env.DIRECTORY.getByName(DIRECTORY_NAME).report(
         this.room.roomId,
