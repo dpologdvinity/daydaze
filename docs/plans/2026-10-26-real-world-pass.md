@@ -120,3 +120,47 @@ menu; the asset list with sources and licenses kept in `docs/assets.md`.
   Three.js Resources MCP is configured at project scope (`.mcp.json`).
 - Known: the city overview at noon draws 302k triangles on low (budget 300k);
   the street view 282k.
+
+## Asset map (owner's downloads, all CC0 Quaternius unless noted)
+
+Zips live in `C:\Users\mango\Downloads` (`/mnt/c/Users/mango/Downloads`),
+unpacked under `/tmp/daydaze-city/` (`megakit/`, `q/<pack>/`, `kenney/`;
+re-unzip if /tmp was cleared). Older packs are FBX only: convert with Blender
+(`blender --background --python` import FBX → export glTF), then
+gltf-transform. Every model gets the house look: our palette, the box-mapped
+tiling breakup and weathering (`boxMapped` with `weather`), day/night dimming,
+merged and instanced per kind. Record each in `docs/assets.md`.
+
+| Pack | Where it goes |
+|---|---|
+| Downtown City MegaKit (153 glTF) | NYC blocks in Downtown, Uptown and the Arts District: brick and stone walk-ups, cornices, fire escapes, storefronts with awnings, doors and stoops; replaces the box buildings there |
+| Ultimate Textured Building Pack, Buildings Packs 2017/2019 | variety elsewhere: Suburbia houses, Little Manila and Chinatown shophouses, Beachside pastel motels (Ocean City) |
+| Street Pack, Kenney City Kit Roads | street furniture everywhere: lamps, hydrants, benches, bins, traffic lights, signs, bus stops, mailboxes |
+| Stylized Nature MegaKit, Ultimate Stylized Nature, Ultimate Nature, Textured Stylized Trees | street trees on every block, the park (lawns, paths, pond, flower beds), beach palms and dune grass, planters |
+| Nature Crops | a community garden and the farmers market; Skyline Supply produce |
+| Public Transport, Realistic Car Pack | traffic variety (buses, taxis, vans, sedans) next to our lofted cars |
+| Train Pack | an elevated train (the "El") with stations, as a ride and fast travel |
+| Ships | the Marina and harbor boats, the Mermaid Cove boat |
+| Furniture Packs, Ultimate House Interior | the apartment furniture catalog; café, bookshop, bar and lounge interiors |
+| Ultimate Food, Junk Food | boardwalk food stands (fries, taffy, pizza, corn dogs), dishes in hand from Plate Rush, restaurant tables, grocery shelves |
+| Sushi Restaurant Kit (117 glTF) | rebuild Belt Sushi Yard and the ramen shop |
+| Animated Fish, Cute Fish | the Aquarium tanks, Mermaid Cove, fishing at the Marina |
+| Ultimate Animated Animals | the Zoo's animals; dogs being walked, pigeons and squirrels in the park |
+| Universal Base Characters | its 20 rigged hairstyles as new closet hair (refit to our head); body reference |
+| Universal Animation Library 1 and 2 | more clips baked onto our Mixamo skeleton (idles, sits, emotes, sports) |
+| Sci-Fi Essentials | Photon Zone (laser tag) and Player 2 (arcade bar) props |
+| Kenney Coaster Kit, City Kits Commercial/Suburban | the Fairground's coaster and rides; filler props |
+
+## New ideas (to build as this pass goes, or next)
+
+- Ride the El across the city (fast travel with a view), and hail a taxi.
+- A dog park and dog walking: adopt a pet (Zoo animals pack), take it out.
+- The boardwalk: a Ferris wheel, a tram along the planks, food stands with
+  real menus (Plate Rush), arcade games, a fishing pier.
+- Central park: picnic blankets, a pond with rowboats (Ships pack), a band
+  shell for club-night pop-ups by day.
+- Street vendors: hot dog and pretzel carts, a halal cart, an ice-cream truck
+  that drives a route (Public Transport + Food packs).
+- A farmers market on weekends (Crops pack), the community garden to tend.
+- Seasonal dressing: holiday lights and trees, summer umbrellas on the beach.
+- Bus stops with routes that NPCs ride; buses that stop for players.
