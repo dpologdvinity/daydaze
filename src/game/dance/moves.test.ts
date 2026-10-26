@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { clipOf } from "./clips.ts";
 import {
   ALL_DANCE_MOVES,
   DANCE_MOVE_IDS,
@@ -8,16 +9,11 @@ import {
   createPose,
   danceMove,
   isDanceMoveId,
-  loadMocap,
   PICKER_DANCE_MOVES,
-  STILL_CLIPS,
-  WALK_CLIPS,
   poseAt,
   type DanceMove,
   type Pose,
 } from "./moves.ts";
-
-await loadMocap();
 
 const FRAME = 1 / 60;
 const EPS = 1e-9;
@@ -141,14 +137,14 @@ test("danceMove finds a move by id and rejects unknown ids", () => {
   assert.equal(isDanceMoveId(3), false);
 });
 
-test("motion capture loads: dances get keys, walks and held poses appear", async () => {
-  await loadMocap();
-  for (const m of ALL_DANCE_MOVES)
-    if (m.captured) assert.ok(m.keys.length > 4, `${m.id} keys`);
-  assert.ok(WALK_CLIPS.has("walk-catwalk"));
-  assert.ok(STILL_CLIPS.has("sit-crossed"));
+test("captured moves are baked clips: no 13-joint keys, loops capped", () => {
+  for (const m of ALL_DANCE_MOVES) {
+    if (!m.captured) continue;
+    assert.equal(m.keys.length, 1, `${m.id} keys`);
+    assert.ok(clipOf(m.id), `${m.id} baked`);
+  }
   assert.ok(
-    ALL_DANCE_MOVES.every((m) => m.period < 7),
+    ALL_DANCE_MOVES.every((m) => m.period <= 8.1),
     "loops capped",
   );
 });
@@ -173,7 +169,7 @@ test("clip ids the game names stay generated", () => {
     "walk-feminine",
     "walk-casual",
   ])
-    assert.ok(WALK_CLIPS.has(id), id);
+    assert.equal(clipOf(id)?.kind, "walk", id);
   for (const id of [
     "pose-arms-down",
     "pose-over-shoulder",
@@ -184,7 +180,7 @@ test("clip ids the game names stay generated", () => {
     "sit-crossed",
     "lay-arched",
   ])
-    assert.ok(STILL_CLIPS.has(id), id);
+    assert.ok(clipOf(id), id);
   for (const id of [
     "salsa",
     "salsa-turns",
@@ -222,6 +218,11 @@ test("game clips resolve, carry real keys and stay out of the Dance picker", () 
   for (const id of GAME_CLIP_IDS) {
     const move = danceMove(id);
     assert.ok(!picker.has(id), `${id} is in the picker`);
+    // a captured one plays from the clip file
+    if (move.captured) {
+      assert.ok(clipOf(id), `${id} baked`);
+      continue;
+    }
     // a real pose, not the still placeholder: some joint leaves rest
     const pose = poseAt(move, move.period / 3);
     const furthest = Math.max(...flatten(pose).map(Math.abs));

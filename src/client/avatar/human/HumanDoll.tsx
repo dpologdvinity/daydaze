@@ -6,16 +6,14 @@ import * as THREE from "three";
 import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { couplePoseAt, type CoupleRole } from "../../../game/dance/couple.ts";
 import {
-  STILL_CLIPS,
-  WALK_CLIPS,
   stillClipsOf,
   createPose,
   danceMove,
-  loadMocap,
   poseAt,
   type DanceMoveId,
   type Pose,
 } from "../../../game/dance/moves.ts";
+import { MOVING, clipOf, pickClip } from "../../../game/dance/clips.ts";
 import {
   modelSuffix,
   FACE_PRESETS,
@@ -40,14 +38,11 @@ import {
   bodyScales,
   type BodyShape,
 } from "../../../game/body.ts";
-import { SIT_DROP, pose, type Rig } from "../pose.ts";
+import { pose, type Rig } from "../pose.ts";
 import { useQuality } from "../../world/quality.ts";
 import { gaitOf, type GaitId } from "../../../game/gaits.ts";
-import {
-  BUILT_STRIDE,
-  strideOf,
-  walkPhaseRate,
-} from "../../../game/dance/stride.ts";
+import { BUILT_STRIDE, walkPhaseRate } from "../../../game/dance/stride.ts";
+import { BONE, BuiltPose, clipsFor, loadAnims } from "./anims.ts";
 
 // strangers walk naturally, a few with more swing
 const NPC_GAITS: GaitId[] = [
@@ -64,21 +59,27 @@ import { Glasses } from "./Glasses.tsx";
 /**
  * The 3D doll: a skinned, shape-keyed body built in Blender from MakeHuman's
  * CC0 base (art/doll/blender/), with hair and clothes as separate models on
- * the same rig, loaded only when worn. Poses come from the same pose code as
- * the old doll: it poses plain groups, and their transforms are copied onto
- * the bones each frame.
+ * the same Mixamo skeleton, loaded only when worn. She moves by Mixamo clips
+ * baked onto that skeleton (anims.ts), played with one AnimationMixer:
+ * crossfades between idle, walk, dance and held poses, the walk's rate
+ * matched to the ground (clips.ts picks). The hand-made moves (pose.ts)
+ * pose plain groups that BuiltPose carries onto the bones, faded in and out
+ * over the clips.
  */
 
 const MODELS = "/models/doll";
 const REST_LID = 0.12;
 
-// the motion-capture keys come in their own chunk (a big one), fetched once
-// the first room shows, so they don't share the bandwidth it loads over;
-// poses are neutral until then
-afterSceneReady(() => void loadMocap(), 8000);
+// the baked clips come in their own file (a big one), fetched once the first
+// room shows, so they don't share the bandwidth it loads over; dolls wear
+// the built poses until then
+afterSceneReady(() => void loadAnims(), 8000);
+
+// seconds to crossfade between clips, and between clips and built poses
+const FADE = 0.3;
 
 // a doll given no held pose (an NPC) strikes one of these, by seed; the
-// first, none, keeps the built hip-pop pose (or the built sit)
+// first, none, keeps the built hip-pop pose (or the seat's own loop)
 const POSE_HOLDS = [undefined, ...stillClipsOf("pose").map((c) => c.id)];
 const SIT_HOLDS = [undefined, ...stillClipsOf("sit").map((c) => c.id)];
 // meters from the camera where a doll swaps to and from the low-poly body
@@ -90,6 +91,18 @@ const LOD_NEAR = 8;
 const LOW_TIER_FAR = 4.6;
 const LOW_TIER_NEAR = 4;
 const worldPos = new THREE.Vector3();
+// per-frame scratch for the ponytail and the drunk sway
+const sway = new THREE.Euler();
+const turn = new THREE.Quaternion();
+
+/** A doll's clip player: its mixer, the clip playing, and how far the
+ * built pose is faded in over it (0..1). */
+type Anim = {
+  mixer: THREE.AnimationMixer;
+  action: THREE.AnimationAction | null;
+  playing: string;
+  built: number;
+};
 const JOINTS = [
   "body",
   "head",
@@ -177,8 +190,9 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
     scene.traverse((o) => {
       if (o instanceof THREE.Bone) bones.set(o.name, o);
     });
-    const rest = new Map<string, THREE.Vector3>();
-    for (const [name, bone] of bones) rest.set(name, bone.position.clone());
+    // the built-pose driver reads the bones' rest, so it is made first
+    const built = new BuiltPose(bones, scene);
+    const pony = bones.get(BONE.pony) ?? null;
     // model space to each bone's rest frame, for jewelry hung on bones;
     // the fresh clone is unparented, so its world space is model space
     scene.updateMatrixWorld(true);
@@ -260,7 +274,12 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
       near,
       far: lods[0] ?? null,
       bones,
-      rest,
+      /** Names this skeleton for clipsFor: one per body file. */
+      key: m,
+      built,
+      hips: bones.get(BONE.hips) ?? null,
+      pony,
+      ponyRest: pony?.quaternion.clone() ?? new THREE.Quaternion(),
       marks: readMarks(meta),
       anchors: readAnchors(meta),
       restInverse,
@@ -268,7 +287,7 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
       eye,
       materials: [skin, lashes, eye, cornea],
     };
-  }, [gltf, loGltf]);
+  }, [gltf, loGltf, m]);
 
   useEffect(
     () => () => {
@@ -715,6 +734,17 @@ export function HumanDoll({
   const phase = useRef(0);
   const blinkAt = useRef(2 + seed);
   const sampled = useMemo<Pose>(createPose, []);
+  // one mixer per body, made and torn down with it
+  const anim = useRef<Anim | null>(null);
+  useEffect(() => {
+    const mixer = new THREE.AnimationMixer(body.scene);
+    anim.current = { mixer, action: null, playing: "", built: 1 };
+    return () => {
+      mixer.stopAllAction();
+      mixer.uncacheRoot(body.scene);
+      anim.current = null;
+    };
+  }, [body]);
   // the pose code writes plain groups; their transforms go onto the bones
   const proxy = useMemo(() => {
     const rig: Rig = {};
@@ -788,47 +818,102 @@ export function HumanDoll({
     }
     const t = state.clock.elapsedTime + seed * 7.3;
     const speed = walk?.current.speed ?? 0;
-    const moving = speed > 0.05;
-    // one turn of the phase per stride covered: each foot stays planted
-    const clip = gait.clip ? WALK_CLIPS.get(gait.clip) : undefined;
-    phase.current +=
-      dt *
-      walkPhaseRate(speed, clip ? strideOf(clip) : BUILT_STRIDE / gait.cadence);
+    const moving = speed > MOVING;
+    // the built stride's phase, for the hand-made walk worn until the clips load
+    phase.current += dt * walkPhaseRate(speed, BUILT_STRIDE / gait.cadence);
     // a seated NPC takes a seated hold, not a standing one lowered onto the seat
     const seeded = mood === "sit" ? SIT_HOLDS : POSE_HOLDS;
     const hold = picked ?? seeded[seed % seeded.length];
-    const held =
-      !moving && hold && (mood === "pose" || mood === "sit")
-        ? STILL_CLIPS.get(hold)
-        : undefined;
-    const move =
-      held ?? (mood === "dance" && !moving ? danceMove(dance) : null);
-    const danced = !move
-      ? null
-      : couple && !held
-        ? couplePoseAt(move, couple, t, sampled)
-        : poseAt(move, t, sampled);
-    // a captured sit keeps its legs but sits at the game's seat height
-    if (danced && held && mood === "sit") danced.root[1] = SIT_DROP;
-    pose(
-      proxy,
-      moving ? "walk" : held ? "dance" : mood,
-      t,
-      phase.current,
-      calm,
-      danced,
-      buzzed ? liveDrunk.wobble : 0,
-      gait,
-    );
-    for (const j of JOINTS) {
-      const g = proxy[j];
-      const bone = body.bones.get(j);
-      const r = body.rest.get(j);
-      if (!g || !bone || !r) continue;
-      bone.quaternion.copy(g.quaternion);
-      bone.position.copy(r).add(g.position);
-      if (j === "body") bone.position.y += lift.current;
-      bone.scale.copy(g.scale);
+    const a = anim.current;
+    if (a) {
+      const clips = clipsFor(body.key, body.bones);
+      const want = pickClip({
+        loaded: clips !== null,
+        speed,
+        walk: gait.clip,
+        mood,
+        hold,
+        dance,
+        couple,
+        seed,
+      });
+      const clip = want && clips?.get(want.id);
+      if (want && clip) {
+        if (a.playing !== want.id) {
+          const next = a.mixer.clipAction(clip);
+          next.reset();
+          // a pair dances in step on the shared clock (the follow half a loop
+          // behind); everyone else starts their loop somewhere of their own
+          const from =
+            couple && clipOf(want.id)?.kind !== "walk"
+              ? state.clock.elapsedTime
+              : seed * 1.37;
+          next.time = (from + want.offset) % clip.duration;
+          next.play();
+          if (a.action && a.action !== next)
+            next.crossFadeFrom(a.action, FADE, false);
+          a.action = next;
+          a.playing = want.id;
+        }
+        // a walk keeps pace with the ground (stride.ts)
+        if (a.action) a.action.timeScale = want.rate;
+      }
+      // the built pose fades in where no clip plays (before the file loads, the
+      // hand-made dances and poses for two, the hip-pop) and out where one does
+      const built = want && clip ? 0 : 1;
+      a.built +=
+        Math.sign(built - a.built) *
+        Math.min(dt / FADE, Math.abs(built - a.built));
+      body.built.restore();
+      if (a.action) a.mixer.update(dt);
+      if (a.built > 0) {
+        const move = mood === "dance" && !moving ? danceMove(dance) : null;
+        const danced = !move
+          ? null
+          : couple
+            ? couplePoseAt(move, couple, t, sampled)
+            : poseAt(move, t, sampled);
+        pose(
+          proxy,
+          moving ? "walk" : mood,
+          t,
+          phase.current,
+          calm,
+          danced,
+          0,
+          gait,
+        );
+        body.built.apply(proxy, a.built);
+      }
+      // a ponytail sways with the step, or idly; the clips leave it be
+      if (body.pony && a.built < 0.5) {
+        const ph =
+          moving && a.action
+            ? (a.action.time / a.action.getClip().duration) * Math.PI * 2
+            : 0;
+        sway.set(
+          moving ? 0.12 + Math.cos(ph) * 0.08 : Math.sin(t * 1.6) * 0.05,
+          0,
+          moving ? Math.sin(ph) * 0.12 : Math.sin(t * 1.1) * 0.06,
+        );
+        body.pony.quaternion
+          .copy(body.ponyRest)
+          .multiply(turn.setFromEuler(sway));
+      }
+      // the mixer writes a bone only when its value changes, so nothing is
+      // added onto bones here (a held pose would drift): the drink's sway
+      // and the soles' lift go on the model root, which nothing else moves
+      const wobble = buzzed ? liveDrunk.wobble : 0;
+      body.scene.rotation.set(
+        wobble * 0.05 * Math.sin(t * 0.9 + 1),
+        0,
+        wobble * 0.08 * Math.sin(t * 1.3),
+      );
+      body.scene.position.set(
+        wobble * 0.02 * Math.sin(t * 1.1),
+        lift.current,
+        0,
+      );
     }
     // blink and a faint smile, on every mesh that carries the keys
     const tm = state.clock.elapsedTime;

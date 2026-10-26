@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
+import { BONE } from "./anims.ts";
 import type {
   PiercingSpot,
   Piercings,
@@ -95,12 +96,12 @@ const GEMSTONE = new THREE.MeshStandardMaterial({
   roughness: 0.1,
 });
 
-// which bone each spot moves with
-const BONE: Record<PiercingSpot, string> = {
-  lip: "head",
-  nose: "head",
-  brow: "head",
-  navel: "body",
+// which bone each spot moves with (the navel rides the lower spine)
+const SPOT_BONE: Record<PiercingSpot, string> = {
+  lip: BONE.head,
+  nose: BONE.head,
+  brow: BONE.head,
+  navel: BONE.spine,
 };
 
 const X = new THREE.Vector3(1, 0, 0);
@@ -165,8 +166,8 @@ export function Jewelry({
       PiercingStyle,
     ][]) {
       const at = anchors[spot];
-      const bone = bones.get(BONE[spot]);
-      const inv = restInverse.get(BONE[spot]);
+      const bone = bones.get(SPOT_BONE[spot]);
+      const inv = restInverse.get(SPOT_BONE[spot]);
       if (style === "none" || !at || !bone || !inv) continue;
       const group = piece(spot, style, at);
       group.applyMatrix4(inv);

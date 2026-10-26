@@ -33,8 +33,8 @@ import {
   type Walker,
 } from "../../game/walker.ts";
 import { WALK_SPEED, type Vec2 } from "../../game/walk.ts";
-import { WALK_CLIPS } from "../../game/dance/moves.ts";
-import { gaitPace, strideOf } from "../../game/dance/stride.ts";
+import { clipOf } from "../../game/dance/clips.ts";
+import { gaitPace } from "../../game/dance/stride.ts";
 import { gaitOf } from "../../game/gaits.ts";
 import { useReducedMotion } from "../motion.ts";
 import { Doll, type WalkState } from "../avatar/Doll.tsx";
@@ -316,8 +316,7 @@ export function PlayerController({
       player.walk.target = null;
     } else {
       // she walks at her gait's pace (a strut is slower than a stride)
-      const clip = WALK_CLIPS.get(gaitOf(look.gait).clip ?? "");
-      pace.current = clip ? gaitPace(strideOf(clip), clip.period) : WALK_SPEED;
+      pace.current = gaitPace(clipOf(gaitOf(look.gait).clip)?.speed);
       // simulate in fixed steps, however fast frames arrive
       player.acc = Math.min(player.acc + dt, MAX_CATCH_UP);
       while (player.acc >= SIM_STEP) {
