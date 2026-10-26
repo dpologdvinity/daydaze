@@ -166,6 +166,30 @@ const SHOTS: {
     },
   },
   {
+    name: "credits",
+    query: "room=city&view=full",
+    act: async (page) => {
+      await page.getByRole("button", { name: "Menu", exact: true }).click();
+      await page.getByRole("button", { name: "Credits", exact: true }).click();
+      await expect(
+        page.getByRole("dialog", { name: "Credits", exact: true }),
+      ).toBeVisible();
+    },
+  },
+  {
+    name: "credits-mobile",
+    query: "room=city&view=full",
+    viewport: { width: 390, height: 844 },
+    touch: true,
+    act: async (page) => {
+      await page.getByRole("button", { name: "Menu", exact: true }).click();
+      await page.getByRole("button", { name: "Credits", exact: true }).click();
+      await expect(
+        page.getByRole("dialog", { name: "Credits", exact: true }),
+      ).toBeVisible();
+    },
+  },
+  {
     // the wheel zooms from the overview all the way in on her face
     name: "city-zoom",
     query: "room=city",

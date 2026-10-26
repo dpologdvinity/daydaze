@@ -85,6 +85,50 @@ test("the city screen keeps only the essentials; the rest is in the menu", async
   await expect(menu).toHaveCount(0);
 });
 
+// Credits must remain readable and keyboard-accessible from the menu.
+test("Credits opens from Menu and restores focus when closed", async ({
+  page,
+}) => {
+  await page.goto(`${VELVET}`);
+  const menuButton = page.getByRole("button", { name: "Menu", exact: true });
+  await (await fromMenu(page, "Credits")).click();
+  const panel = page.getByRole("dialog", { name: "Credits", exact: true });
+  const close = panel.getByRole("button", { name: "Close credits" });
+  await expect(panel).toBeVisible();
+  await expect(close).toBeFocused();
+  await expect(
+    page.getByRole("dialog", { name: "Menu", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    panel.getByText("All audio is procedural", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    panel.getByText("Mixamo animations (Adobe), used under Mixamo's terms"),
+  ).toBeVisible();
+  const entry = panel.getByRole("link", { name: "three.js", exact: true });
+  await entry.scrollIntoViewIfNeeded();
+  await expect(entry).toBeVisible();
+  await expect(entry).toHaveAttribute(
+    "href",
+    "https://github.com/mrdoob/three.js",
+  );
+  await expect(entry).toHaveAttribute("target", "_blank");
+  await expect(entry).toHaveAttribute("rel", "noopener noreferrer");
+  await page.keyboard.press("Escape");
+  await expect(panel).toHaveCount(0);
+  await expect(menuButton).toBeFocused();
+  // Check the Close path and a small phone layout in the same short journey.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await (await fromMenu(page, "Credits")).click();
+  await expect(close).toBeInViewport();
+  await entry.scrollIntoViewIfNeeded();
+  await expect(entry).toBeInViewport();
+  await expect(close).toBeInViewport();
+  await close.click();
+  await expect(panel).toHaveCount(0);
+  await expect(menuButton).toBeFocused();
+});
+
 test("the mouse wheel zooms in on your own character from the city's overview", async ({
   page,
 }) => {
