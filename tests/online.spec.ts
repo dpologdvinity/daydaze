@@ -2,11 +2,20 @@ import { expect, test, type Browser, type Page } from "@playwright/test";
 
 // Two players in one Plaza copy, each in their own browser context (their
 // own cookie, so their own guest).
+// the first-visit walkthrough would cover the HUD; mark it done
+const ONBOARDED = () => {
+  const key = "daydaze-save-v1";
+  const save = JSON.parse(localStorage.getItem(key) ?? "{}");
+  if (!("onboarded" in save))
+    localStorage.setItem(key, JSON.stringify({ ...save, onboarded: true }));
+};
+
 async function player(browser: Browser): Promise<Page> {
   // a smaller canvas: two SwiftShader pages share the CPU
   const context = await browser.newContext({
     viewport: { width: 900, height: 600 },
   });
+  await context.addInitScript(ONBOARDED);
   const page = await context.newPage();
   await page.goto("/?online=1&quality=low&room=plaza");
   await expect(page.locator("canvas")).toHaveAttribute("data-frames", "10", {
@@ -165,6 +174,7 @@ test("an invite link brings a friend into the same room copy", async ({
       viewport: { width: 900, height: 600 },
     });
     await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    await context.addInitScript(ONBOARDED);
     const page = await context.newPage();
     await page.goto(url);
     await expect(page.locator("canvas")).toHaveAttribute("data-frames", "10", {

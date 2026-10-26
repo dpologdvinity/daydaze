@@ -70,6 +70,7 @@ import { completeChallenge, dayOf } from "../game/challenges.ts";
 import { prizeFor } from "../game/prizes.ts";
 import { PrizeCard } from "./ui/PrizeCard.tsx";
 import { UpdatePrompt } from "./ui/UpdatePrompt.tsx";
+import { Onboarding } from "./ui/Onboarding.tsx";
 import { postPrize, prizeDesk } from "./ui/prizeDesk.ts";
 import { World } from "./world/World.tsx";
 
@@ -289,6 +290,17 @@ export function App() {
         <LoadingVeil />
         <PrizeCard />
         <UpdatePrompt />
+        {!save.onboarded && (
+          <Onboarding
+            name={save.name}
+            look={save.look}
+            inCity={here.room === "city"}
+            onName={(name) => setSave((s) => ({ ...s, name }))}
+            onLook={setLook}
+            onCustomize={() => setPanelOpen(true)}
+            onDone={() => setSave((s) => ({ ...s, onboarded: true }))}
+          />
+        )}
         <RoomAudio room={here.room} muted={save.settings.muted} />
         <World
           room={here.room}

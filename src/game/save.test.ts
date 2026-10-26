@@ -48,6 +48,7 @@ test("createDefaultSave uses the default look and auto quality", () => {
     car: null,
     garage: ["quill-lite"],
     records: [],
+    onboarded: false,
   });
 });
 
@@ -89,6 +90,7 @@ test("a save round-trips through serializeSave and loadSave", () => {
     },
     garage: ["quill-lite"],
     records: [],
+    onboarded: true,
   };
   assert.deepEqual(loadSave(serializeSave(save), "Fallback"), save);
 });
@@ -153,6 +155,7 @@ test("a save from before the swimsuit slot still loads", () => {
     car: null,
     garage: ["quill-lite"],
     records: [],
+    onboarded: true,
   });
 });
 
@@ -211,6 +214,7 @@ test("loadSave keeps a valid name when the look is bad", () => {
     car: null,
     garage: ["quill-lite"],
     records: [],
+    onboarded: true,
   });
 });
 
@@ -243,6 +247,7 @@ test("loadSave keeps a valid look when the name is bad", () => {
     car: null,
     garage: ["quill-lite"],
     records: [],
+    onboarded: true,
   });
 });
 
@@ -405,7 +410,11 @@ test("a save from before the body sliders loads at the default body", () => {
 
 test("loadSave salvages valid fields from a wrong version", () => {
   const raw = JSON.stringify({ version: 7, name: "Kept Name", look: 3 });
-  assert.deepEqual(loadSave(raw, "Fallback"), createDefaultSave("Kept Name"));
+  // a stored save of any version means a returning player: no walkthrough
+  assert.deepEqual(loadSave(raw, "Fallback"), {
+    ...createDefaultSave("Kept Name"),
+    onboarded: true,
+  });
 });
 
 test("loadSave drops unknown fields", () => {
@@ -507,4 +516,23 @@ test("the dressing-room drawer starts closed and keeps its saved state", () => {
     settings: { panelOpen: "yes" },
   });
   assert.equal(loadSave(bad, "Fallback").settings.panelOpen, false);
+});
+
+test("a new player has not been through onboarding yet", () => {
+  assert.equal(loadSave(null, "Mango Fan").onboarded, false);
+  assert.equal(loadSave("{not json", "Mango Fan").onboarded, false);
+});
+
+test("a save from before onboarding counts as onboarded", () => {
+  const old = JSON.stringify({ version: 1, name: "Old Timer", coins: 50 });
+  assert.equal(loadSave(old, "Mango Fan").onboarded, true);
+});
+
+test("the onboarded flag round-trips; a bad one counts as an existing save", () => {
+  const fresh = createDefaultSave("Mango Fan");
+  assert.equal(loadSave(serializeSave(fresh), "x").onboarded, false);
+  const done = { ...fresh, onboarded: true };
+  assert.equal(loadSave(serializeSave(done), "x").onboarded, true);
+  const bad = JSON.stringify({ ...fresh, onboarded: "yes" });
+  assert.equal(loadSave(bad, "x").onboarded, true);
 });

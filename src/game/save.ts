@@ -68,6 +68,8 @@ export type SaveV1 = {
   garage: string[];
   /** Records bought at Vinyl Vault, for the record player at home. */
   records: RecordId[];
+  /** Whether the first-visit walkthrough has been finished or skipped. */
+  onboarded: boolean;
 };
 
 /** The localStorage key the save lives under. */
@@ -111,6 +113,7 @@ export function createDefaultSave(name: string): SaveV1 {
     car: null,
     garage: [STARTER],
     records: [],
+    onboarded: false,
   };
 }
 
@@ -181,6 +184,12 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
     car: cleanParkedCar(save.get("car"), (id) => garage.includes(id)),
     garage,
     records: cleanRecords(save.get("records")),
+    // a save from before onboarding belongs to someone who already knows
+    // their way around; only a brand-new player gets the walkthrough
+    onboarded:
+      typeof save.get("onboarded") === "boolean"
+        ? save.get("onboarded") === true
+        : save.size > 0,
   };
 }
 

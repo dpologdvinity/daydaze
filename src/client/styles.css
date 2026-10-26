@@ -1828,7 +1828,7 @@ button:focus-visible {
   padding: 4px 10px;
   border: 0;
   border-radius: 999px;
-  background: var(--fuchsia);
+  background: var(--glow-button);
   color: #fff;
   font: inherit;
   font-size: 13px;
@@ -1839,6 +1839,126 @@ button:focus-visible {
   margin: 4px 0 0;
   font-size: 12px;
   overflow-wrap: anywhere;
+}
+
+/* The first-visit walkthrough: a card at the side, never over the world's
+   controls, so everything stays playable while it shows. */
+.onboarding {
+  position: fixed;
+  /* above the dock, so the room card's height (tickers) never matters */
+  bottom: 140px;
+  left: 16px;
+  z-index: 8;
+  width: min(320px, calc(100vw - 32px));
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: rgb(20 10 40 / 0.92);
+  box-shadow:
+    0 0 0 2px var(--fuchsia),
+    0 10px 40px rgb(255 47 154 / 0.3);
+  color: var(--champagne);
+  font-family: var(--sans);
+}
+
+/* phones: above the walking stick (bottom 196px, 120px tall) */
+@media (pointer: coarse) {
+  .onboarding {
+    bottom: 330px;
+  }
+}
+
+.onboarding-title {
+  margin: 0 0 6px;
+  font-family: var(--display);
+  font-size: 22px;
+  color: #ffd1f0;
+}
+
+.onboarding h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.onboarding p {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.onboarding-field {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.onboarding-field input {
+  padding: 8px 10px;
+  border: 1px solid rgb(255 255 255 / 0.3);
+  border-radius: 10px;
+  background: rgb(0 0 0 / 0.3);
+  color: inherit;
+  font: inherit;
+  font-size: 15px;
+}
+
+.onboarding-field input[aria-invalid="true"] {
+  border-color: var(--amber);
+}
+
+.onboarding .onboarding-note {
+  margin-top: 4px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.onboarding-looks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.onboarding button {
+  padding: 6px 12px;
+  border: 1px solid rgb(255 255 255 / 0.3);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.onboarding-looks [aria-checked="true"],
+.onboarding .onboarding-next {
+  border-color: transparent;
+  /* the darker house gradient: white on plain fuchsia is too faint */
+  background: var(--glow-button);
+  color: #fff;
+}
+
+.onboarding .onboarding-next:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.onboarding .onboarding-link {
+  border: 0;
+  padding: 4px 0;
+  text-decoration: underline;
+}
+
+.onboarding-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.onboarding-step {
+  margin-right: auto;
+  font-size: 12px;
+  opacity: 0.75;
 }
 
 /* A new version is waiting: reload when it suits the player. */

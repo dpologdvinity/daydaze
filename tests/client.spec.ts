@@ -19,6 +19,33 @@ function collectErrors(page: Page) {
   return errors;
 }
 
+const SAVE = "daydaze-save-v1";
+
+// A fresh save would open the first-visit walkthrough over every test; mark
+// it done (only if the save doesn't say otherwise), except in the
+// walkthrough's own tests, which use a context of their own.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript((key) => {
+    const save = JSON.parse(localStorage.getItem(key) ?? "{}");
+    if (!("onboarded" in save))
+      localStorage.setItem(key, JSON.stringify({ ...save, onboarded: true }));
+  }, SAVE);
+});
+
+/** Merges `fields` into the save on the tab's first load only, so a reload
+ * keeps what the game wrote since (and it commutes with the beforeEach). */
+async function seedSave(page: Page, fields: Record<string, unknown>) {
+  await page.addInitScript(
+    ([key, seed]) => {
+      if (sessionStorage.getItem("seeded")) return;
+      sessionStorage.setItem("seeded", "1");
+      const save = JSON.parse(localStorage.getItem(key) ?? "{}");
+      localStorage.setItem(key, JSON.stringify({ ...save, ...seed }));
+    },
+    [SAVE, fields] as const,
+  );
+}
+
 const roomTitle = (page: Page) => page.getByRole("heading", { level: 1 });
 const canvasOf = (page: Page) =>
   page.getByRole("img", { name: "3D room view" });
@@ -89,20 +116,14 @@ test("a car low on gas fills up at a pump for coins", async ({ page }) => {
   test.setTimeout(420_000);
   const errors = collectErrors(page);
   // the car waits at Glow Gas's first pump with a fifth of a tank
-  await page.addInitScript(() => {
-    if (localStorage.getItem("daydaze-save-v1")) return;
-    localStorage.setItem(
-      "daydaze-save-v1",
-      JSON.stringify({
-        car: {
-          id: "quill-lite",
-          color: "#3a6bff",
-          at: [-76.8, -121],
-          yaw: 0,
-          fuel: 0.2,
-        },
-      }),
-    );
+  await seedSave(page, {
+    car: {
+      id: "quill-lite",
+      color: "#3a6bff",
+      at: [-76.8, -121],
+      yaw: 0,
+      fuel: 0.2,
+    },
   });
   await page.goto(`${LOW}&room=city&at=-74,-118`);
   const canvas = canvasOf(page);
@@ -250,10 +271,7 @@ test("the Scrambler, the Starship and the Super Slide take riders", async ({
 
 test("Daydaze Motors sells a car into your garage", async ({ page }) => {
   const errors = collectErrors(page);
-  await page.addInitScript(() => {
-    if (localStorage.getItem("daydaze-save-v1")) return;
-    localStorage.setItem("daydaze-save-v1", JSON.stringify({ coins: 500 }));
-  });
+  await seedSave(page, { coins: 500 });
   await page.goto(`${STILL}&room=dealership`);
   const list = page.getByRole("region", { name: "Cars for sale" });
   await list
@@ -1945,13 +1963,20 @@ test("apartment: place, rotate and remove furniture, lock the door, and it persi
 test("jail: the sentence counts down, push-ups shorten it, cards deal a hand, and bail needs coins", async ({
   page,
 }) => {
-  await page.addInitScript(() => {
-    if (localStorage.getItem("daydaze-save-v1")) return;
+  // the sentence starts when the page loads, by the page's own clock
+  await page.addInitScript((key) => {
+    if (sessionStorage.getItem("seeded")) return;
+    sessionStorage.setItem("seeded", "1");
+    const save = JSON.parse(localStorage.getItem(key) ?? "{}");
     localStorage.setItem(
-      "daydaze-save-v1",
-      JSON.stringify({ jail: { endsAt: Date.now() + 240_000 }, coins: 0 }),
+      key,
+      JSON.stringify({
+        ...save,
+        jail: { endsAt: Date.now() + 240_000 },
+        coins: 0,
+      }),
     );
-  });
+  }, SAVE);
   await page.goto(`${VELVET}&debug=1`);
   await page.getByRole("button", { name: "Go to Jail" }).click();
   await expect(roomTitle(page)).toHaveText("City Jail, Block C");
@@ -2372,4 +2397,70 @@ test("the city map takes the player to Beachside", async ({ page }) => {
   await map.getByRole("button", { name: "Beachside" }).click();
   await expect(map).toBeHidden();
   await expect(roomTitle(page)).toHaveText("Beachside", { timeout: 60_000 });
+});
+
+test("a new player gets the walkthrough, and a skip keeps it away", async ({
+  browser,
+}) => {
+  test.setTimeout(330_000);
+  // a context of its own: no beforeEach seed, a truly fresh save
+  const context = await browser.newContext({
+    viewport: { width: 1280, height: 800 },
+  });
+  const page = await context.newPage();
+  await page.goto(VELVET);
+  const welcome = page.getByRole("dialog", { name: "Welcome to Daydaze" });
+  await expect(welcome).toBeVisible({ timeout: 150_000 });
+  await welcome.getByRole("button", { name: "Skip" }).click();
+  await expect(welcome).toHaveCount(0);
+  await page.reload();
+  await expect(roomTitle(page)).toBeVisible({ timeout: 150_000 });
+  await expect(
+    page.getByRole("button", { name: "Dressing room" }),
+  ).toBeVisible();
+  await expect(welcome).toHaveCount(0);
+  await context.close();
+});
+
+test("the walkthrough names you, dresses you and shows you around", async ({
+  browser,
+}) => {
+  test.setTimeout(330_000);
+  const context = await browser.newContext({
+    viewport: { width: 1280, height: 800 },
+  });
+  const page = await context.newPage();
+  await page.goto(VELVET);
+  const welcome = page.getByRole("dialog", { name: "Welcome to Daydaze" });
+  await welcome
+    .getByRole("textbox", { name: "Your name" })
+    .fill("Velvet Kat", { timeout: 150_000 });
+  const scan = async () =>
+    expect(
+      (await new AxeBuilder({ page }).include(".onboarding").analyze())
+        .violations,
+    ).toEqual([]);
+  await scan();
+  await welcome.getByRole("button", { name: "Next" }).click();
+  await welcome.getByRole("radio", { name: "Off duty" }).click();
+  await scan();
+  await expect(canvasOf(page)).toHaveAttribute("data-wearing", /outfit/);
+  await welcome.getByRole("button", { name: "Next" }).click();
+  await expect(welcome).toContainText("Getting around");
+  await welcome.getByRole("button", { name: "Next" }).click();
+  await expect(welcome).toContainText("City map");
+  await welcome.getByRole("button", { name: "Next" }).click();
+  await expect(welcome).toContainText("Play something");
+  await welcome.getByRole("button", { name: "Let's go" }).click();
+  await expect(welcome).toHaveCount(0);
+  await expect(page.locator(".nametag").first()).toHaveText("Velvet Kat");
+  const saved = JSON.parse(
+    (await page.evaluate((k) => localStorage.getItem(k), SAVE)) ?? "{}",
+  );
+  expect(saved).toMatchObject({
+    name: "Velvet Kat",
+    onboarded: true,
+    look: { outfit: "jeans", hairStyle: "coils" },
+  });
+  await context.close();
 });

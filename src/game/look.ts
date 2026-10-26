@@ -806,6 +806,53 @@ export const DEFAULT_LOOK: Look = {
   shadow: "#d23cff",
 };
 
+/**
+ * The three ready-made dolls the first-visit walkthrough offers (plus
+ * "customize", which opens the closet). Only the closet's base pieces, all
+ * free, so a new player wears exactly what they picked.
+ */
+export const STARTER_LOOKS: readonly { label: string; look: Look }[] = [
+  {
+    label: "Night out",
+    look: {
+      skin: "#633c29",
+      hairStyle: "braids",
+      hairColor: "#1b1014",
+      lips: "lips-burgundy-cherry",
+      brows: "brows-sculpted-espresso",
+      outfit: "mini",
+      outfitColor: "#9b5cff",
+      shadow: "#ffb02e",
+    },
+  },
+  {
+    label: "Y2K sweetheart",
+    look: {
+      skin: "#f3d4c4",
+      hairStyle: "buns",
+      hairColor: "#4a2a1c",
+      lips: "lips-nude-pink-gloss",
+      brows: "brows-y2k-thin",
+      outfit: "shorts",
+      outfitColor: "#ff2f9a",
+      shadow: "#ff2f9a",
+    },
+  },
+  {
+    label: "Off duty",
+    look: {
+      skin: "#c48d68",
+      hairStyle: "coils",
+      hairColor: "#4a2a1c",
+      lips: "lips-90s-caramel-ombre",
+      brows: "brows-feathered-honey",
+      outfit: "jeans",
+      outfitColor: "#141018",
+      shadow: "#8a5a3c",
+    },
+  },
+];
+
 // Velvet Room regulars from the prototype; `at` is [x, y, z] in meters.
 export const NPC_LOOKS: readonly {
   look: Look;

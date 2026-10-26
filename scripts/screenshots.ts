@@ -225,6 +225,13 @@ for (const shot of SHOTS) {
     hasTouch: shot.touch ?? false,
   });
   page.on("pageerror", (e) => console.error("page error:", e.message));
+  // a fresh save would show the first-visit walkthrough in every shot
+  await page.addInitScript(() => {
+    const key = "daydaze-save-v1";
+    const save = JSON.parse(localStorage.getItem(key) ?? "{}");
+    if (!("onboarded" in save))
+      localStorage.setItem(key, JSON.stringify({ ...save, onboarded: true }));
+  });
   const started = Date.now();
   await page.setViewportSize(shot.viewport ?? { width: 1280, height: 800 });
   const still = shot.live ? "" : "&still=1";

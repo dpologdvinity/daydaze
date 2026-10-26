@@ -1,7 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { unlockedLook } from "./shop.ts";
 import {
   BROWS,
+  STARTER_LOOKS,
   PRONOUNS,
   FIGURES,
   DEFAULT_FACE,
@@ -269,4 +271,15 @@ test("pronouns are an optional pick from the list", () => {
   assert.ok(!validateLook({ ...DEFAULT_LOOK, pronouns: "<script>" }));
   assert.ok(!validateLook({ ...DEFAULT_LOOK, pronouns: undefined }));
   assert.ok(PRONOUNS.includes("they/them"));
+});
+
+test("the three starter looks are valid, free and different", () => {
+  assert.equal(STARTER_LOOKS.length, 3);
+  for (const { label, look } of STARTER_LOOKS) {
+    assert.ok(validateLook(look), label);
+    // nothing from a shop: a new player owns none of it
+    assert.deepEqual(unlockedLook(look, []), look, label);
+  }
+  assert.equal(new Set(STARTER_LOOKS.map((s) => s.look.skin)).size, 3);
+  assert.equal(new Set(STARTER_LOOKS.map((s) => s.look.outfit)).size, 3);
 });

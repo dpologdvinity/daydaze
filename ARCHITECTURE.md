@@ -33,6 +33,12 @@ floors, looks, saves, chat effects) so both sides agree on the rules.
 
 - `main.tsx` mounts `App.tsx`, which owns the save (in `localStorage`, loaded
   through `loadSave`), the current room, mood and dance, and the HUD.
+- `ui/Onboarding.tsx` is the first-visit walkthrough (name, one of
+  `STARTER_LOOKS` or the closet, walking, the city map, the games). It shows
+  until the save's `onboarded` flag is set; a stored save from before the
+  flag loads as onboarded, so only brand-new players see it. Browser tests
+  seed the flag in a `beforeEach` (the walkthrough's own tests use a fresh
+  context).
 - `world/World.tsx` is the R3F canvas. It lazy-loads one scene per room from
   the `SCENES` table and renders the player (`PlayerController.tsx`), the
   camera (`CameraRig.tsx`, with a shot per room), seats and effects. The
