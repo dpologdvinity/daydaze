@@ -21,7 +21,12 @@ export type ApiFailure = { ok: false; status: number; error: string };
  */
 export type ApiResult<T> = { ok: true; value: T } | ApiFailure;
 /** One copy (shard) of a room, numbered from 1. */
-export type RoomCopy = { roomId: RoomId; copy: number };
+export type RoomCopy = {
+  roomId: RoomId;
+  copy: number;
+  /** An apartment copy's owner, so reports and blocks reach that home. */
+  owner?: string;
+};
 /**
  * `GET /api/rooms/:id`: every open copy with its head count and whether it is
  * full, plus the copy the server suggests joining (`pick`).

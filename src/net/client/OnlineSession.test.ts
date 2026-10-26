@@ -27,7 +27,10 @@ const me = {
 const other = { id: "g_other", name: "PeachyBloom2000" };
 const otherLook = { ...DEFAULT_LOOK, hairStyle: "buns" };
 
-type Routes = Record<string, () => Response | Promise<Response>>;
+type Routes = Record<
+  string,
+  (init?: RequestInit) => Response | Promise<Response>
+>;
 const json = (body: unknown, status = 200) => Response.json(body, { status });
 const listing = (pick = 1, copies = [{ copy: 1, count: 0, full: false }]) =>
   json({ copies, pick });
@@ -36,7 +39,7 @@ function setup(routes: Routes = {}) {
   const timers = new FakeTimers();
   const fetch: Fetch = async (url, init) => {
     const route = routes[`${init.method} ${url}`];
-    if (route) return route();
+    if (route) return route(init);
     if (url === "/api/me") return json(me);
     if (url.startsWith("/api/rooms/")) return listing();
     return json({ error: "not-found" }, 404);
@@ -556,4 +559,28 @@ test("a visitor hears the owner's layout", async () => {
     },
   });
   assert.equal(homes.length, 1);
+});
+
+test("a block in an apartment names its owner, so it reaches that home", async () => {
+  let body: unknown = null;
+  const { session } = setup({
+    "POST /api/block": async (init) => {
+      body = JSON.parse(String(init?.body));
+      return json({ ok: true }, 202);
+    },
+  });
+  await session.start();
+  const enter = session.enterHome("u_friend", DEFAULT_LOOK);
+  await flush();
+  const socket = FakeSocket.latest();
+  socket.open();
+  serve(socket, snapshot());
+  await enter;
+  assert.equal(await session.block("g_x"), true);
+  assert.deepEqual(body, {
+    targetId: "g_x",
+    roomId: "apartment",
+    copy: 1,
+    owner: "u_friend",
+  });
 });

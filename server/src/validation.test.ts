@@ -194,3 +194,24 @@ test("an apartment socket's attachment keeps its owner; a bad owner is refused",
   assert.equal(parseAttachment({ ...base, owner: "bad id!" }), null);
   assert.equal(parseAttachment({ ...base, owner: 7 }), null);
 });
+
+test("a report or block from inside an apartment names its owner", () => {
+  const room = { roomId: "apartment", copy: 1, owner: "u_owner" };
+  assert.equal(
+    parseReport({ targetId: "u_x", reason: "Spam", ...room })?.owner,
+    "u_owner",
+  );
+  assert.equal(
+    parseBlock({ targetId: "u_x", ...room })?.room?.owner,
+    "u_owner",
+  );
+  assert.equal(
+    parseBlock({ targetId: "u_x", ...room, owner: "no way!" }),
+    null,
+  );
+  assert.equal(
+    parseReport({ targetId: "u_x", reason: "Spam", roomId: "plaza", copy: 2 })
+      ?.owner,
+    undefined,
+  );
+});

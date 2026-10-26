@@ -271,6 +271,14 @@ export class OnlineSession {
     };
   }
 
+  /** The room copy you're in, naming its owner when it's an apartment. */
+  private where() {
+    if (!this.current) return null;
+    return this.homeOwner === null
+      ? this.current
+      : { ...this.current, owner: this.homeOwner };
+  }
+
   /** Sends your home layout (door and furniture) to your own apartment. */
   sendHome(home: HomeShape): boolean {
     return this.send({ type: "home", home });
@@ -353,15 +361,16 @@ export class OnlineSession {
   /** Reports a player in this room copy to the moderators. False when
    * there's no room or the server refused it. */
   async report(targetId: string, reason: string): Promise<boolean> {
-    if (!this.current) return false;
-    const r = await this.api.report({ ...this.current, targetId, reason });
+    const room = this.where();
+    if (!room) return false;
+    const r = await this.api.report({ ...room, targetId, reason });
     return r.ok;
   }
 
   /** Blocks a player: the server stops passing their chat and moves to you
    * in this copy at once, and in every room after. They leave your view. */
   async block(targetId: string): Promise<boolean> {
-    const r = await this.api.block(targetId, this.current ?? undefined);
+    const r = await this.api.block(targetId, this.where() ?? undefined);
     if (r.ok && this.players.delete(targetId)) this.emit("leave", targetId);
     return r.ok;
   }

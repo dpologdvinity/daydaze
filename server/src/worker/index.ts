@@ -41,6 +41,7 @@ import {
   parseSave,
   parseTarget,
   type Identity,
+  type RoomCopy,
 } from "../validation.ts";
 import { friendLists, type FriendRoom } from "../../../src/net/friends.ts";
 import {
@@ -192,6 +193,14 @@ async function unfriend(env: Env, a: string, b: string): Promise<void> {
   )
     .bind(a, b)
     .run();
+}
+
+/** The Durable Object of a room copy: an apartment's by its owner, or a
+ * numbered copy's. */
+function stubFor(env: Env, room: RoomCopy) {
+  return room.owner
+    ? env.ROOMS.getByName(homeObjectName(room.owner))
+    : roomStub(env, room.roomId, room.copy);
 }
 
 /** Whether two players are friends (each asked the other) and neither has
@@ -410,7 +419,7 @@ async function handle(
       if (!report) return error(400, "invalid-report");
       const limited = await rateLimited(env, request, "report", "", session.id);
       if (limited) return limited;
-      const chat = await roomStub(env, report.roomId, report.copy).recentChat();
+      const chat = await stubFor(env, report).recentChat();
       await env.DB.prepare(
         `INSERT INTO reports
            (reporter_id, target_id, reason, room_id, copy, chat, created_at)
@@ -479,10 +488,7 @@ async function handle(
         .run();
       await unfriend(env, session.id, block.targetId);
       if (block.room)
-        await roomStub(env, block.room.roomId, block.room.copy).block(
-          session.id,
-          block.targetId,
-        );
+        await stubFor(env, block.room).block(session.id, block.targetId);
       return new Response(null, { status: 204 });
     }
     case "friend": {

@@ -17,17 +17,17 @@ import { parseCopy } from "./routes.ts";
 
 export { parseIdentity, type Identity };
 
-/** One copy of a room, such as Downtown #2. */
-export type RoomCopy = { roomId: RoomId; copy: number };
-/**
- * What a hibernating room socket keeps: where it is, who it is and their look.
- */
-export type Attachment = RoomCopy & {
-  identity: Identity;
-  look: Look;
+/** One copy of a room, such as Downtown #2, or someone's apartment. */
+export type RoomCopy = {
+  roomId: RoomId;
+  copy: number;
   /** An apartment copy's owner (their player id); absent in other rooms. */
   owner?: string;
 };
+/**
+ * What a hibernating room socket keeps: where it is, who it is and their look.
+ */
+export type Attachment = RoomCopy & { identity: Identity; look: Look };
 
 /** Largest save upload accepted, in UTF-8 bytes (64 KiB). */
 export const MAX_SAVE_BYTES = 65_536;
@@ -42,7 +42,13 @@ function fields(value: unknown): Map<string, unknown> {
 function parseRoomCopy(f: Map<string, unknown>): RoomCopy | null {
   const roomId = f.get("roomId");
   const copy = parseCopy(f.get("copy"));
-  return isRoomId(roomId) && copy ? { roomId, copy } : null;
+  const owner = f.get("owner");
+  if (!isRoomId(roomId) || !copy) return null;
+  if (owner === undefined) return { roomId, copy };
+  // a player id, as the home route accepts it
+  return typeof owner === "string" && /^[A-Za-z0-9_-]{1,32}$/.test(owner)
+    ? { roomId, copy, owner }
+    : null;
 }
 
 /** What a room socket remembers across hibernation. */
@@ -51,15 +57,8 @@ export function parseAttachment(value: unknown): Attachment | null {
   const identity = parseIdentity(f.get("identity"));
   const look = f.get("look");
   const room = parseRoomCopy(f);
-  const owner = f.get("owner");
-  // absent, or a player id as the home route accepts it
-  const ownerOk =
-    owner === undefined ||
-    (typeof owner === "string" && /^[A-Za-z0-9_-]{1,32}$/.test(owner));
-  if (!identity || !validateLook(look) || !room || !ownerOk) return null;
-  return typeof owner === "string"
-    ? { ...room, identity, look: { ...look }, owner }
-    : { ...room, identity, look: { ...look } };
+  if (!identity || !validateLook(look) || !room) return null;
+  return { ...room, identity, look: { ...look } };
 }
 
 /**
