@@ -68,6 +68,7 @@ FILES=(
   $T/chin/chin-height-decr.target
   $T/head/head-fat-decr.target
   $T/neck/neck-scale-horiz-decr.target
+  $T/neck/neck-scale-vert-decr.target
   $T/nose/nose-scale-horiz-decr.target
   $T/nose/nose-scale-vert-decr.target
   $T/nose/nose-scale-depth-decr.target
@@ -111,6 +112,7 @@ FILES=(
   $T/macrodetails/universal-female-young-minmuscle-averageweight.target
   $T/torso/torso-scale-horiz-decr.target
   $T/torso/torso-vshape-decr.target
+  $T/torso/torso-vshape-incr.target
   $T/armslegs/l-upperarm-muscle-decr.target
   $T/armslegs/r-upperarm-muscle-decr.target
   $T/armslegs/l-upperarm-shoulder-muscle-decr.target

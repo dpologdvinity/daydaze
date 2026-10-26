@@ -1,5 +1,5 @@
 import { useFrame } from "@react-three/fiber";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type * as THREE from "three";
 import {
   PEDESTRIANS,
@@ -16,12 +16,12 @@ const RADIUS = 55;
 /** Seconds between re-picking who is nearest. */
 const REPICK = 0.75;
 
-const WALKING = { current: { speed: 1.35 } };
-
 function Walker({ index }: { index: number }) {
   const g = useRef<THREE.Group>(null);
   const pose = useRef<PedestrianPose>({ x: 0, z: 0, yaw: 0 });
   const p = PEDESTRIANS[index];
+  // her own pace over the ground, so her legs keep up with it
+  const walking = useMemo(() => ({ current: { speed: p.speed } }), [p]);
   useFrame(({ clock }) => {
     if (!g.current) return;
     pedestrianAt(p, clock.elapsedTime, pose.current);
@@ -30,7 +30,7 @@ function Walker({ index }: { index: number }) {
   });
   return (
     <group ref={g}>
-      <Doll look={p.look} mood="idle" walk={WALKING} seed={100 + index} />
+      <Doll look={p.look} mood="idle" walk={walking} seed={100 + index} />
     </group>
   );
 }

@@ -7,6 +7,7 @@ import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js
 import { couplePoseAt, type CoupleRole } from "../../../game/dance/couple.ts";
 import {
   STILL_CLIPS,
+  WALK_CLIPS,
   stillClipsOf,
   createPose,
   danceMove,
@@ -41,6 +42,11 @@ import {
 import { SIT_DROP, pose, type Rig } from "../pose.ts";
 import { useQuality } from "../../world/quality.ts";
 import { gaitOf, type GaitId } from "../../../game/gaits.ts";
+import {
+  BUILT_STRIDE,
+  strideOf,
+  walkPhaseRate,
+} from "../../../game/dance/stride.ts";
 
 // strangers walk naturally, a few with more swing
 const NPC_GAITS: GaitId[] = [
@@ -99,6 +105,7 @@ const JOINTS = [
   "pony",
 ] as const;
 
+/** How fast the doll is moving over the ground, m/s: the legs keep pace. */
 export type WalkState = { speed: number };
 
 type Props = {
@@ -737,7 +744,11 @@ export function HumanDoll({
     const t = state.clock.elapsedTime + seed * 7.3;
     const speed = walk?.current.speed ?? 0;
     const moving = speed > 0.05;
-    phase.current += dt * speed * 6.2 * gait.cadence;
+    // one turn of the phase per stride covered: each foot stays planted
+    const clip = gait.clip ? WALK_CLIPS.get(gait.clip) : undefined;
+    phase.current +=
+      dt *
+      walkPhaseRate(speed, clip ? strideOf(clip) : BUILT_STRIDE / gait.cadence);
     // a seated NPC takes a seated hold, not a standing one lowered onto the seat
     const seeded = mood === "sit" ? SIT_HOLDS : POSE_HOLDS;
     const hold = picked ?? seeded[seed % seeded.length];

@@ -5,8 +5,9 @@
 /** A point or direction on the ground plane, [x, z] in meters. */
 export type Vec2 = readonly [x: number, z: number];
 
-/** Meters per second. */
-export const WALK_SPEED = 2.2;
+/** Meters per second: a brisk walk. (2.2 m/s made the mocap walks play at
+ * twice their recorded tempo, a frantic shuffle.) */
+export const WALK_SPEED = 1.6;
 
 // Points this close to an edge count as on it, so clamped points test inside.
 const EDGE_EPSILON = 1e-9;

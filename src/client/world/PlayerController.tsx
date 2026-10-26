@@ -33,6 +33,9 @@ import {
   type Walker,
 } from "../../game/walker.ts";
 import { WALK_SPEED, type Vec2 } from "../../game/walk.ts";
+import { WALK_CLIPS } from "../../game/dance/moves.ts";
+import { gaitPace, strideOf } from "../../game/dance/stride.ts";
+import { gaitOf } from "../../game/gaits.ts";
 import { useReducedMotion } from "../motion.ts";
 import { Doll, type WalkState } from "../avatar/Doll.tsx";
 import { hdr } from "../rooms/shared/materials.ts";
@@ -163,10 +166,6 @@ function softGround(x: number, z: number): boolean {
   return x >= PARK.x0 && x <= PARK.x1 && z >= PARK.z0 && z <= PARK.z1;
 }
 
-// The prototype's walk cycle was tuned for 1.35 m/s; scale the stride rate so
-// feet keep up with the spec's faster walking speed.
-const STRIDE = WALK_SPEED / 1.35;
-
 function useHeldKeys() {
   const held = useRef(new Set<string>());
   useEffect(() => {
@@ -248,6 +247,8 @@ export function PlayerController({
   const lift = paired?.role === "follow" ? liftOf(paired.e) : 0;
   const g = useRef<THREE.Group>(null);
   const gait = useRef<WalkState>({ speed: 0 });
+  // her walking speed, m/s, from her gait (gaitPace)
+  const pace = useRef(WALK_SPEED);
   const marker = useRef<THREE.Mesh>(null);
   const held = useHeldKeys();
   const calm = useReducedMotion();
@@ -314,6 +315,9 @@ export function PlayerController({
       player.acc = 0;
       player.walk.target = null;
     } else {
+      // she walks at her gait's pace (a strut is slower than a stride)
+      const clip = WALK_CLIPS.get(gaitOf(look.gait).clip ?? "");
+      pace.current = clip ? gaitPace(strideOf(clip), clip.period) : WALK_SPEED;
       // simulate in fixed steps, however fast frames arrive
       player.acc = Math.min(player.acc + dt, MAX_CATCH_UP);
       while (player.acc >= SIM_STEP) {
@@ -325,7 +329,7 @@ export function PlayerController({
           area,
           intent,
           SIM_STEP,
-          skates.get().on ? SKATE_SPEED : 1,
+          skates.get().on ? SKATE_SPEED : pace.current / WALK_SPEED,
         );
         moving = moving || step.moved;
         if (step.portal) {
@@ -372,8 +376,13 @@ export function PlayerController({
     }
     gait.current.speed = THREE.MathUtils.damp(
       gait.current.speed,
-      // on skates the legs swing slow and long: pushes, not steps
-      moving || player.seat?.stride ? STRIDE * (skates.get().on ? 0.45 : 1) : 0,
+      // ground speed, m/s (the doll paces its legs to it); on skates the
+      // legs swing slow and long: pushes, not steps
+      moving || player.seat?.stride
+        ? skates.get().on
+          ? WALK_SPEED * 0.45
+          : pace.current
+        : 0,
       10,
       dt,
     );
