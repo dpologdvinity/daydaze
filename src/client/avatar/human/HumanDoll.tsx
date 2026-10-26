@@ -70,10 +70,7 @@ const REST_LID = 0.12;
 // the baked clips come in their own file (a big one), fetched once the first
 // room shows, so they don't share the bandwidth it loads over; dolls wear
 // the built poses until then
-afterSceneReady(() => {
-  void loadAnims("");
-  void loadAnims("-m");
-}, 8000);
+afterSceneReady(() => void loadAnims(""), 8000);
 
 // seconds to crossfade between clips, and between clips and built poses
 const FADE = 0.3;
@@ -310,6 +307,10 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
     hairColor,
     body: build,
   } = look;
+  // the man's clip file loads only once a man is in the scene
+  useEffect(() => {
+    if (body.key) afterSceneReady(() => void loadAnims(body.key), 8000);
+  }, [body.key]);
   useEffect(() => {
     const { marks, skin } = body;
     // plain skin until the painted face arrives, then the texture tints both
