@@ -8,10 +8,9 @@ import {
   type ParkedCar,
 } from "../../game/city/drive.ts";
 import { ROAD_CARS } from "../../game/driving/roster.ts";
-import { driving } from "../world/driving.ts";
 
-/** The dock's car controls in the city: pick your ride and its paint, then
- * Drive walks you over to it and puts you behind the wheel. */
+/** Your car's options in the city, in the game menu: which car and its
+ * paint, and the custom shop. (Drive your car stays in the dock.) */
 export function CarPicker({
   car,
   garage,
@@ -26,13 +25,6 @@ export function CarPicker({
   const [shop, setShop] = useState(false);
   return (
     <div className="car-picker" role="group" aria-label="Your car">
-      <button
-        type="button"
-        className="drink"
-        onClick={() => (driving.request = "city-drive")}
-      >
-        Drive your car
-      </button>
       <select
         aria-label="Car"
         value={car.id}

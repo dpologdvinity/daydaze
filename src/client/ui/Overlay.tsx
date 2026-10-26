@@ -52,6 +52,9 @@ import {
 import type { DanceMoveId, Holds } from "../../game/dance/moves.ts";
 import { INTENSITIES, type Intensity } from "../../game/effects/buzz.ts";
 import { CarPicker } from "../city/CarPicker.tsx";
+import { driving } from "../world/driving.ts";
+import { collectionsBook } from "./Collections.tsx";
+import { GameMenu, closeMenu } from "./GameMenu.tsx";
 import type { CrimeSave } from "../../game/crime/record.ts";
 import type { Caught } from "./ShopliftPanel.tsx";
 import { FuelStop } from "../city/FuelStop.tsx";
@@ -766,8 +769,9 @@ export function Overlay({
             {room === "city" ? NEIGHBORHOOD_NAMES[neighborhood] : roomName}
           </h1>
         </div>
-        <p className="venue-sub">{ROOM_HINTS[room]}</p>
-        <InviteButton />
+        <p className="venue-sub" key={room}>
+          {ROOM_HINTS[room]}
+        </p>
         {room === "city" && <FireworksTicker />}
         {PRIDE_CLUBS.has(room) && <PrideTicker />}
         <ClubNightTicker room={room} />
@@ -776,14 +780,6 @@ export function Overlay({
         </p>
       </header>
 
-      <button
-        type="button"
-        className="phone-open"
-        aria-haspopup="dialog"
-        onClick={() => setPhone(true)}
-      >
-        Plate Rush
-      </button>
       {phone && <DeliveryApp onClose={() => setPhone(false)} />}
       <FoodHud />
 
@@ -852,57 +848,16 @@ export function Overlay({
           />
         )}
         <div className="dock-actions" role="group" aria-label="Room actions">
-          <button
-            type="button"
-            className="drink"
-            aria-pressed={!muted}
-            onClick={() => setMuted(!muted)}
-          >
-            {muted ? "Sound off" : "Sound on"}
-          </button>
-          <button
-            type="button"
-            className="drink"
-            onClick={() =>
-              takePhoto(
-                room === "city" ? NEIGHBORHOOD_NAMES[neighborhood] : roomName,
-              )
-            }
-          >
-            Take a photo
-          </button>
-          {ONLINE && (
-            <button
-              type="button"
-              className="drink"
-              onClick={() => friends.set({ open: !friends.get().open })}
-            >
-              Friends
-            </button>
-          )}
-          {SKATE_ROOMS.has(room) && (
-            <button
-              type="button"
-              className="drink"
-              aria-pressed={skating}
-              onClick={() => setSkates(!skating)}
-            >
-              {skating ? "Take off skates" : "Put on skates"}
-            </button>
-          )}
           {room === "city" && (
             <button
               type="button"
               className="drink"
-              onClick={() => setMapOpen(true)}
+              onClick={() => (driving.request = "city-drive")}
             >
-              City map
+              Drive your car
             </button>
           )}
           {room === "apartment" && <RecordPlayer records={records} />}
-          {room === "city" && (
-            <CarPicker car={car} garage={garage} onChange={setCar} />
-          )}
           {(seatsIn(room).length > 0 || room === "apartment") && (
             <button
               type="button"
@@ -1021,13 +976,99 @@ export function Overlay({
             onPick={setMood}
             options={PLAYER_MOODS}
           />
-          <Segmented
-            className="views"
-            label="Camera"
-            value={view}
-            onPick={setView}
-            options={VIEWS}
-          />
+          <GameMenu>
+            <div className="game-menu-items" role="group" aria-label="Game">
+              <button
+                type="button"
+                className="drink"
+                aria-pressed={!muted}
+                onClick={() => setMuted(!muted)}
+              >
+                {muted ? "Sound off" : "Sound on"}
+              </button>
+              <button
+                type="button"
+                className="drink"
+                onClick={() => {
+                  closeMenu();
+                  takePhoto(
+                    room === "city"
+                      ? NEIGHBORHOOD_NAMES[neighborhood]
+                      : roomName,
+                  );
+                }}
+              >
+                Take a photo
+              </button>
+              {room === "city" && (
+                <button
+                  type="button"
+                  className="drink"
+                  onClick={() => {
+                    closeMenu();
+                    setMapOpen(true);
+                  }}
+                >
+                  City map
+                </button>
+              )}
+              <button
+                type="button"
+                className="drink"
+                aria-haspopup="dialog"
+                onClick={() => {
+                  closeMenu();
+                  setPhone(true);
+                }}
+              >
+                Plate Rush
+              </button>
+              <button
+                type="button"
+                className="drink"
+                aria-haspopup="dialog"
+                onClick={() => {
+                  closeMenu();
+                  collectionsBook.set({ open: true });
+                }}
+              >
+                Collections
+              </button>
+              {ONLINE && (
+                <button
+                  type="button"
+                  className="drink"
+                  onClick={() => {
+                    closeMenu();
+                    friends.set({ open: !friends.get().open });
+                  }}
+                >
+                  Friends
+                </button>
+              )}
+              {SKATE_ROOMS.has(room) && (
+                <button
+                  type="button"
+                  className="drink"
+                  aria-pressed={skating}
+                  onClick={() => setSkates(!skating)}
+                >
+                  {skating ? "Take off skates" : "Put on skates"}
+                </button>
+              )}
+            </div>
+            <InviteButton />
+            {room === "city" && (
+              <CarPicker car={car} garage={garage} onChange={setCar} />
+            )}
+            <Segmented
+              className="views"
+              label="Camera"
+              value={view}
+              onPick={setView}
+              options={VIEWS}
+            />
+          </GameMenu>
         </div>
       </div>
     </>

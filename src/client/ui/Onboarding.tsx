@@ -126,8 +126,8 @@ export function Onboarding({
           <h3>City map</h3>
           <p>
             Downtown is only the start: Little Manila, Koreatown, Beachside, the
-            Fairground and more. City map, at the bottom of the screen, takes
-            you to any of them.
+            Fairground and more. City map, in the Menu at the bottom right,
+            takes you to any of them.
           </p>
           {inCity && (
             <button

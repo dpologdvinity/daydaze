@@ -4,6 +4,7 @@
 // snapshots live on this device (albumSnaps.ts).
 
 import { useEffect, useState, type JSX } from "react";
+import { createStore } from "../rooms/shared/store.ts";
 import {
   ALBUM_PLACES,
   CLOSET_SETS,
@@ -13,6 +14,10 @@ import {
 import type { Bests } from "../../game/prizes.ts";
 import { ROOMS, type RoomId } from "../../game/rooms.ts";
 import { loadSnaps, snaps } from "../albumSnaps.ts";
+
+/** Whether the book is open: the game menu opens it (GameMenu.tsx). */
+export const collectionsBook = createStore({ open: false });
+const setOpen = (open: boolean) => collectionsBook.set({ open });
 
 const TABS = ["Album", "Sets", "Stickers"] as const;
 type Tab = (typeof TABS)[number];
@@ -31,7 +36,7 @@ export function Collections({
   bests: Bests;
   onClaim: (setId: string) => void;
 }): JSX.Element {
-  const [open, setOpen] = useState(false);
+  const { open } = collectionsBook.use();
   const [tab, setTab] = useState<Tab>("Album");
   const { list } = snaps.use();
   useEffect(() => {
@@ -48,14 +53,6 @@ export function Collections({
   const book = stickers(bests);
   return (
     <>
-      <button
-        type="button"
-        className="collections-open"
-        aria-expanded={open}
-        onClick={() => setOpen(!open)}
-      >
-        Collections
-      </button>
       {open && (
         <section
           className="home-panel collections-panel"

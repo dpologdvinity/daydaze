@@ -46,6 +46,16 @@ async function seedSave(page: Page, fields: Record<string, unknown>) {
   );
 }
 
+/** A control in the game menu, opening the menu first if it's shut. */
+async function fromMenu(page: Page, name: string | RegExp, timeout = 150_000) {
+  const toggle = page.getByRole("button", { name: "Menu", exact: true });
+  if ((await toggle.getAttribute("aria-expanded", { timeout })) !== "true")
+    await toggle.click();
+  return page
+    .getByRole("dialog", { name: "Menu" })
+    .getByRole("button", { name, exact: typeof name === "string" });
+}
+
 const roomTitle = (page: Page) => page.getByRole("heading", { level: 1 });
 const canvasOf = (page: Page) =>
   page.getByRole("img", { name: "3D room view" });
@@ -58,6 +68,21 @@ test("a new player starts in the city, on Downtown's square", async ({
   await page.goto("/?quality=low");
   await expect(roomTitle(page)).toHaveText("Downtown", { timeout: 150_000 });
   expect(errors).toEqual([]);
+});
+
+test("the city screen keeps only the essentials; the rest is in the menu", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  await page.goto(`${STILL}&room=city`);
+  await expect(roomTitle(page)).toHaveText("Downtown", { timeout: 150_000 });
+  // Dressing room, Drive your car, Take a seat, Say, Menu
+  await expect(page.getByRole("button")).toHaveCount(5);
+  const menu = page.getByRole("dialog", { name: "Menu" });
+  await (await fromMenu(page, "Sound on")).click();
+  await expect(menu.getByRole("button", { name: "Sound off" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(menu).toHaveCount(0);
 });
 
 test("the mouse wheel zooms in on your own character from the city's overview", async ({
@@ -100,10 +125,11 @@ test("the player drives their car down the avenue and parks it", async ({
   });
   // the custom shop: gold rims, a pink underglow and racing stripes, kept
   // with the car
-  await page.getByRole("button", { name: "Customize" }).click();
+  await (await fromMenu(page, "Customize")).click();
   await page.getByLabel("Rims").selectOption("gold");
   await page.getByLabel("Underglow").selectOption("pink");
   await page.getByLabel("Wrap").selectOption("stripes");
+  await page.getByRole("button", { name: "Close menu" }).click();
   await page.getByRole("button", { name: "Drive your car" }).click();
   // she walks over from the square and gets in
   await expect(canvas).toHaveAttribute("data-city-car", "driving", {
@@ -692,7 +718,7 @@ test("Take a photo saves a framed snapshot named for the place", async ({
     timeout: 150_000,
   });
   const saved = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Take a photo" }).click();
+  await (await fromMenu(page, "Take a photo")).click();
   expect((await saved).suggestedFilename()).toMatch(
     /^daydaze-the-coconut-grove-\d{4}-\d{2}-\d{2}-\d{4}\.png$/,
   );
@@ -1687,7 +1713,7 @@ test("the Roller Disco: put on skates, and they come off indoors", async ({
   await page.getByRole("button", { name: "Go to the Roller Disco" }).click();
   await expect(roomTitle(page)).toHaveText("Starlite Roller Disco");
   const skates = page.getByRole("button", { name: /skates/ });
-  await page.getByRole("button", { name: "Put on skates" }).click();
+  await (await fromMenu(page, "Put on skates")).click();
   await expect(skates).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Go to Pulse" }).click();
   await expect(roomTitle(page)).toHaveText("Pulse");
@@ -2057,7 +2083,7 @@ test("Plate Rush orders a dish and the courier drops it in hand", async ({
   test.setTimeout(90_000);
   const errors = collectErrors(page);
   await page.goto(VELVET);
-  await page.getByRole("button", { name: "Plate Rush" }).click();
+  await (await fromMenu(page, "Plate Rush")).click();
   const app = page.getByRole("dialog", { name: "Plate Rush" });
   await app.getByRole("button", { name: /Point and Eat Kitchen/ }).click();
   await app
@@ -2096,7 +2122,7 @@ test("the city map's directory takes the player to a venue's door", async ({
   test.setTimeout(330_000);
   await page.goto(`${LOW}&room=city`);
   await expect(roomTitle(page)).toHaveText("Downtown");
-  await page.getByRole("button", { name: "City map" }).click();
+  await (await fromMenu(page, "City map")).click();
   const places = page.getByRole("region", { name: "Places" });
   await places.locator("summary", { hasText: "Uptown" }).click();
   await places.getByRole("button", { name: "The Courtside Club" }).click();
@@ -2111,7 +2137,7 @@ test("beach volleyball at the city net: first to seven pays a prize", async ({
   const errors = collectErrors(page);
   await page.goto(`${LOW}&room=city`);
   await expect(roomTitle(page)).toHaveText("Downtown", { timeout: 150_000 });
-  await page.getByRole("button", { name: "City map" }).click();
+  await (await fromMenu(page, "City map")).click();
   const map = page.getByRole("dialog", { name: "City map" });
   await map.getByText("Beachside", { exact: false }).last().click();
   await map.getByRole("button", { name: "Beach volleyball" }).click();
@@ -2413,7 +2439,7 @@ test("the haunted house: losing your nerve ends the run with a prize", async ({
 test("the city map takes the player to Beachside", async ({ page }) => {
   await page.goto(`${LOW}&room=city`);
   await expect(roomTitle(page)).toHaveText("Downtown");
-  await page.getByRole("button", { name: "City map" }).click();
+  await (await fromMenu(page, "City map")).click();
   const map = page.getByRole("dialog", { name: "City map" });
   await expect(map).toBeVisible();
   // today's three challenges sit under the map
@@ -2498,9 +2524,7 @@ test("the city map lists the week's events, and a club glows on its night", asyn
 }) => {
   test.setTimeout(330_000);
   await page.goto(`${STILL}&room=city`);
-  await page
-    .getByRole("button", { name: "City map", exact: true })
-    .click({ timeout: 150_000 });
+  await (await fromMenu(page, "City map")).click();
   const events = page
     .getByRole("dialog", { name: "City map" })
     .getByRole("region", { name: "Events" });
@@ -2537,9 +2561,7 @@ test("collections: the album counts places, a full set pays, stickers show grade
     bests: { bowling: 190 },
   });
   await page.goto(VELVET);
-  await page
-    .getByRole("button", { name: "Collections" })
-    .click({ timeout: 150_000 });
+  await (await fromMenu(page, "Collections")).click();
   const panel = page.getByRole("dialog", { name: "Collections" });
   await expect(panel).toContainText(/Places · 1 of \d+/);
   await expect(

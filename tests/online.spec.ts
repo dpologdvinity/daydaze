@@ -10,6 +10,16 @@ const ONBOARDED = () => {
     localStorage.setItem(key, JSON.stringify({ ...save, onboarded: true }));
 };
 
+/** A control in the game menu, opening the menu first if it's shut. */
+async function fromMenu(page: Page, name: string | RegExp, timeout = 150_000) {
+  const toggle = page.getByRole("button", { name: "Menu", exact: true });
+  if ((await toggle.getAttribute("aria-expanded", { timeout })) !== "true")
+    await toggle.click();
+  return page
+    .getByRole("dialog", { name: "Menu" })
+    .getByRole("button", { name, exact: typeof name === "string" });
+}
+
 async function player(browser: Browser): Promise<Page> {
   // a smaller canvas: two SwiftShader pages share the CPU
   const context = await browser.newContext({
@@ -100,7 +110,7 @@ test("two players meet in the Plaza, talk, become friends and play cards", async
   await b.getByRole("button", { name: "Accept friend request" }).click();
   await expect(b.getByRole("button", { name: "Unfriend" })).toBeVisible();
   await b.getByRole("button", { name: "Close" }).click();
-  await b.getByRole("button", { name: "Friends", exact: true }).click();
+  await (await fromMenu(b, "Friends")).click();
   await expect(b.getByRole("list", { name: "Your friends" })).toContainText(
     "Daydaze Plaza #1",
   );
@@ -353,7 +363,7 @@ test("a friend visits your apartment while the door is unlocked", async ({
     .getByRole("button", { name: "Door: locked" })
     .click({ timeout: 240_000 });
   await expect(a.getByRole("button", { name: "Door: unlocked" })).toBeVisible();
-  await b.getByRole("button", { name: "Friends", exact: true }).click();
+  await (await fromMenu(b, "Friends")).click();
   await b
     .getByRole("button", { name: /^Visit .+'s place$/ })
     .first()
@@ -380,7 +390,7 @@ test("a guest signs up, logs out and logs back in, keeping their progress", asyn
   const b = await player(browser);
   // B signs up (keeping the guest's progress), logs out, and logs back in
   const name = `Tester${Date.now() % 100000}`;
-  await b.getByRole("button", { name: "Friends", exact: true }).click();
+  await (await fromMenu(b, "Friends")).click();
   const acct = b.getByRole("region", { name: "Account" });
   await acct.getByLabel("Name").fill(name);
   await acct.getByLabel("Password").fill("correct horse battery");
@@ -420,9 +430,7 @@ test("an invite link brings a friend into the same room copy", async ({
     return page;
   };
   const a = await open("/?join=plaza.2&quality=low");
-  await a
-    .getByRole("button", { name: "Copy invite link" })
-    .click({ timeout: 120_000 });
+  await (await fromMenu(a, "Copy invite link", 120_000)).click();
   const note = a.getByRole("status").filter({ hasText: "invite link" });
   await expect(note).toContainText("/?join=plaza.2");
   const link = /https?:\/\/\S+/.exec((await note.textContent()) ?? "")?.[0];
@@ -435,7 +443,7 @@ test("an invite link brings a friend into the same room copy", async ({
   await expect(b.locator(".peer-tag .nametag")).toHaveCount(1, {
     timeout: 120_000,
   });
-  await b.getByRole("button", { name: "Copy invite link" }).click();
+  await (await fromMenu(b, "Copy invite link")).click();
   await expect(
     b.getByRole("status").filter({ hasText: "invite link" }),
   ).toContainText("/?join=plaza.2");

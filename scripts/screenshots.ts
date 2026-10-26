@@ -149,6 +149,19 @@ const SHOTS: {
   { name: "city-street", query: "room=city&view=full" },
   { name: "city-overview", query: "room=city" },
   {
+    // the game menu open over the city: everything not needed this moment
+    name: "city-menu",
+    query: "room=city&view=full",
+    act: async (page) => {
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.frames) >= 6,
+        null,
+        { timeout: 300_000 },
+      );
+      await page.getByRole("button", { name: "Menu", exact: true }).click();
+    },
+  },
+  {
     // the wheel zooms from the overview all the way in on her face
     name: "city-zoom",
     query: "room=city",
@@ -222,6 +235,7 @@ const SHOTS: {
     name: "plate-rush-app",
     query: "room=city",
     act: async (page) => {
+      await page.getByRole("button", { name: "Menu", exact: true }).click();
       await page.getByRole("button", { name: "Plate Rush" }).click();
       await expect(
         page.getByRole("dialog", { name: "Plate Rush" }),
