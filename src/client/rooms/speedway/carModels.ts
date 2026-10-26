@@ -1,5 +1,6 @@
-// Procedural car geometry: each roster model's side profile extruded into a
-// painted shell and glass, plus wheels, rims, bumpers, lamps and per-model
+// Procedural car geometry: each roster model's side profile lofted into a
+// rounded painted shell and a greenhouse that leans in toward the roof
+// (src/game/driving/carBody.ts), plus wheels, rims, bumpers, lamps and per-model
 // extras (wings, rails, roll hoops), merged into one geometry per material
 // bucket. Built once per model and cached; the shared materials are
 // module-level.
@@ -8,19 +9,16 @@ import {
   BoxGeometry,
   BufferGeometry,
   CylinderGeometry,
-  ExtrudeGeometry,
   Float32BufferAttribute,
-  Matrix4,
   MeshBasicMaterial,
   MeshStandardMaterial,
-  Shape,
   SphereGeometry,
   TorusGeometry,
-  Vector2,
   type Color,
 } from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { CarSpec } from "../../../game/driving/car.ts";
+import { loftBody, type LoftOptions } from "../../../game/driving/carBody.ts";
 import { NEON } from "./neon.ts";
 
 // Side profiles are [z as a share of length, height in meters]. Nose at +z.
@@ -403,38 +401,29 @@ const PROFILES: Record<string, Profile> = {
   },
 };
 
-const TO_WORLD = new Matrix4().set(
-  0,
-  0,
-  -1,
-  0,
-  0,
-  1,
-  0,
-  0,
-  1,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  1,
-);
-
-// Extrudes a z-y outline across the width, centered on x. Det +1, so normals stay outward.
-function sideShell(pts: Pt[], length: number, depth: number): BufferGeometry {
-  const shape = new Shape(pts.map(([z, y]) => new Vector2(z * length, y)));
-  const g = new ExtrudeGeometry(shape, {
-    depth,
-    bevelEnabled: true,
-    bevelThickness: 0.04,
-    bevelSize: 0.04,
-    bevelSegments: 2,
-    curveSegments: 1,
-  });
-  g.translate(0, 0, -depth / 2);
-  g.applyMatrix4(TO_WORLD);
+/** A lofted shell as merge-ready geometry: smooth normals, blank UVs;
+ * `out` pushes it that far out along its normals (glass over paint). */
+function lofted(pts: Pt[], opts: LoftOptions, out = 0): BufferGeometry {
+  const { positions, indices } = loftBody(pts, opts);
+  const g = new BufferGeometry();
+  g.setAttribute("position", new Float32BufferAttribute(positions, 3));
+  g.setIndex(Array.from(indices));
+  g.computeVertexNormals();
+  if (out) {
+    const pos = g.attributes.position;
+    const nor = g.attributes.normal;
+    for (let i = 0; i < pos.count; i++)
+      pos.setXYZ(
+        i,
+        pos.getX(i) + nor.getX(i) * out,
+        pos.getY(i) + nor.getY(i) * out,
+        pos.getZ(i) + nor.getZ(i) * out,
+      );
+  }
+  g.setAttribute(
+    "uv",
+    new Float32BufferAttribute(new Float32Array((positions.length / 3) * 2), 2),
+  );
   return g;
 }
 
@@ -510,8 +499,27 @@ export const LIGHT = new MeshBasicMaterial({
 function carProfileParts(spec: CarSpec, p: Profile): CarParts {
   const L = spec.length;
   const W = spec.width;
-  const paint: BufferGeometry[] = [plain(sideShell(p.paint, L, W))];
-  const glass: BufferGeometry[] = [plain(sideShell(p.glass, L, W * 0.86))];
+  // the cabin is painted (roof and pillars); the glass is a band just proud
+  // of it, from the beltline up to the roof's edge: windshield and windows
+  const cabin = {
+    length: L,
+    tumble: 0.32,
+    taper: 0.3,
+    round: 4,
+    sections: 18,
+    ring: 14,
+  };
+  const ys = p.glass.map(([, y]) => y);
+  const belt = Math.min(...ys);
+  const roofEdge = belt + 0.78 * (Math.max(...ys) - belt);
+  const band = p.glass.map(([z, y]): Pt => [z, Math.min(y, roofEdge)]);
+  const paint: BufferGeometry[] = [
+    plain(lofted(p.paint, { length: L, width: W, sections: 28, ring: 16 })),
+    plain(lofted(p.glass, { ...cabin, width: W * 0.9 })),
+  ];
+  const glass: BufferGeometry[] = [
+    plain(lofted(band, { ...cabin, width: W * 0.9 }, 0.012)),
+  ];
   const trim: BufferGeometry[] = [];
   const tyre: BufferGeometry[] = [];
   const rim: BufferGeometry[] = [];

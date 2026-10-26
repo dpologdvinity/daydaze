@@ -1,24 +1,30 @@
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import { loftBody } from "../../game/driving/carBody.ts";
 
 /**
  * Car shapes for the instanced city: unit-sized (-0.5..0.5 on every axis), so
- * instances scale them to a car's size, with the nose at +x. Extruded from
- * side profiles, so they read as cars rather than stacked boxes.
+ * instances scale them to a car's size, with the nose at +x. Lofted from side
+ * profiles (src/game/driving/carBody.ts) at low resolution: rounded sides
+ * that lean in toward the roof, a hundred cars still cheap to draw.
  */
 
-function extrudeProfile(points: [number, number][]) {
-  const shape = new THREE.Shape(
-    points.map(([x, y]) => new THREE.Vector2(x, y)),
-  );
-  const g = new THREE.ExtrudeGeometry(shape, {
-    depth: 1,
-    // no bevel: a hundred parked cars share the low tier's triangle budget
-    bevelEnabled: false,
-    curveSegments: 1,
+function loftProfile(
+  points: [number, number][],
+  shape: { sections: number; ring: number; tumble: number; taper: number },
+) {
+  const { positions, indices } = loftBody(points, {
+    length: 1,
+    width: 1,
+    round: 4,
+    ...shape,
   });
-  // center the depth and squash everything back into the unit cube
-  g.translate(0, 0, -0.5);
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  g.setIndex(Array.from(indices));
+  // the loft's nose is at +z; the city's cars point along +x
+  g.rotateY(Math.PI / 2);
+  // squash everything back into the unit cube
   g.computeBoundingBox();
   const box = g.boundingBox ?? new THREE.Box3();
   const size = box.getSize(new THREE.Vector3());
@@ -30,24 +36,30 @@ function extrudeProfile(points: [number, number][]) {
 }
 
 /** Lower body: bumpers, a sloped bonnet and boot. */
-export const CAR_BODY = extrudeProfile([
-  [-0.5, -0.5],
-  [0.5, -0.5],
-  [0.5, -0.05],
-  [0.42, 0.35],
-  [0.2, 0.5],
-  [-0.3, 0.5],
-  [-0.47, 0.3],
-  [-0.5, 0.0],
-]);
+export const CAR_BODY = loftProfile(
+  [
+    [-0.5, -0.5],
+    [0.5, -0.5],
+    [0.5, -0.05],
+    [0.42, 0.35],
+    [0.2, 0.5],
+    [-0.3, 0.5],
+    [-0.47, 0.3],
+    [-0.5, 0.0],
+  ],
+  { sections: 6, ring: 8, tumble: 0.12, taper: 0.2 },
+);
 
 /** Cabin glass: raked windscreen and rear window. */
-export const CAR_CABIN = extrudeProfile([
-  [-0.5, -0.5],
-  [0.5, -0.5],
-  [0.18, 0.5],
-  [-0.32, 0.5],
-]);
+export const CAR_CABIN = loftProfile(
+  [
+    [-0.5, -0.5],
+    [0.5, -0.5],
+    [0.18, 0.5],
+    [-0.32, 0.5],
+  ],
+  { sections: 4, ring: 6, tumble: 0.3, taper: 0.25 },
+);
 
 // ---------------------------------------------------------------- jeepneys
 
