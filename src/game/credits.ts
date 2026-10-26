@@ -110,6 +110,35 @@ export const CREDITS: readonly {
         url: "https://kenney.nl/assets/nature-kit",
         usedFor: "Zoo fence panels and rocks.",
       },
+      {
+        title: "Street Pack",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://quaternius.com/packs/streetpack.html",
+        usedFor:
+          "Street lamp and stop and no-parking signs (Streetlight_Single, Sign_Stop, Sign_NoParking); lantern made see-through.",
+      },
+      {
+        title: "Fire Hydrant",
+        author: "Poly Haven",
+        license: "CC0 1.0",
+        url: "https://polyhaven.com/a/fire_hydrant",
+        usedFor: "Sidewalk hydrants, decimated to under 500 triangles.",
+      },
+      {
+        title: "Metal Trash Can",
+        author: "Poly Haven",
+        license: "CC0 1.0",
+        url: "https://polyhaven.com/a/metal_trash_can",
+        usedFor: "Sidewalk bins, decimated to about 300 triangles.",
+      },
+      {
+        title: "Painted Wooden Bench",
+        author: "Poly Haven",
+        license: "CC0 1.0",
+        url: "https://polyhaven.com/a/painted_wooden_bench",
+        usedFor: "Sidewalk benches.",
+      },
     ],
   },
   {

@@ -14,6 +14,7 @@ import {
 } from "./layout.ts";
 import type { Instance, Kind } from "./plan.ts";
 import { hash, pick } from "./hash.ts";
+import type { FurnitureKind, FurnitureSpot } from "./furniture.ts";
 import { detailBuilding, planter, trafficLights } from "./detail.ts";
 
 export { hash };
@@ -731,34 +732,12 @@ function puddles(out: Placed[]): void {
   }
 }
 
-/** Bins, hydrants, planters and scooters along the sidewalks, between the lamps. */
+/** Planters along the sidewalks, between the lamps (bins, hydrants and the rest are models: FURNITURE). */
 function furniture(out: Placed[]): void {
   for (const p of PROPS) {
     if (p.kind !== "lamp") continue;
     const [x, z] = p.position;
     const side = z > 0 ? 1 : -1;
-    if (!nearCross(x + 11, 7)) {
-      put(out, "furniture", {
-        x: x + 11,
-        y: 0.5,
-        z: side * 9.7,
-        sx: 0.7,
-        sy: 1,
-        sz: 0.7,
-        color: "#244c3f",
-      });
-    }
-    if (!nearCross(x - 11, 7) && hash(x, z, 9) < 0.6) {
-      put(out, "furniture", {
-        x: x - 11,
-        y: 0.4,
-        z: side * 9.6,
-        sx: 0.4,
-        sy: 0.8,
-        sz: 0.4,
-        color: "#ff3b4f",
-      });
-    }
     if (!nearCross(x + 6, 7) && hash(x, z, 10) < 0.5) {
       planter(out, x + 6, side * 9.6, hash(x, z, 12));
     }
@@ -774,39 +753,6 @@ function furniture(out: Placed[]): void {
       color: "#ff4fb3",
     });
     planter(out, x, -9.5, x);
-  }
-}
-
-/** Two lit bus shelters on the north avenue sidewalk, between the lamps and palms. */
-function busStops(out: Placed[]): void {
-  for (const x of [-112.5, 97.5]) {
-    put(out, "glass", {
-      x,
-      y: 1.2,
-      z: -9,
-      sx: 3.2,
-      sy: 2.4,
-      sz: 1.2,
-      color: "#4fe3ff",
-    });
-    put(out, "furniture", {
-      x,
-      y: 2.5,
-      z: -9,
-      sx: 3.6,
-      sy: 0.2,
-      sz: 1.5,
-      color: "#ff4fb3",
-    });
-    put(out, "furniture", {
-      x,
-      y: 0.3,
-      z: -9,
-      sx: 2.2,
-      sy: 0.45,
-      sz: 0.5,
-      color: "#ffd84f",
-    });
   }
 }
 
@@ -853,7 +799,6 @@ function streetDress(): Placed[] {
   parkedCars(out);
   puddles(out);
   furniture(out);
-  busStops(out);
   grates(out);
   strings(out);
   trafficLights(out, CROSS_X);
@@ -861,3 +806,69 @@ function streetDress(): Placed[] {
 }
 
 export const STREET_DRESS: readonly Placed[] = streetDress();
+
+/** Where the bus shelters stand: the north avenue sidewalk, between lamps and palms. */
+const BUS_STOPS = [-112.5, 97.5];
+
+/**
+ * The street furniture models (Street Pack, Poly Haven, originals; see
+ * art/street/build_street.py) along the avenue sidewalks, in slots around
+ * each lamp: a lamp's neighbors get a hydrant, bin, bench, mailbox and so on,
+ * each by its own odds, so no two stretches of pavement are alike. Models face
+ * +z, so a prop on the north (z > 0) sidewalk turns round to face the street.
+ */
+function furnitureSpots(): FurnitureSpot[] {
+  const out: FurnitureSpot[] = [];
+  const slots: readonly (readonly [number, FurnitureKind, number, number])[] = [
+    // [x from the lamp, kind, |z| on the sidewalk, odds]
+    [-11, "hydrant", 8.4, 0.6],
+    [-8, "bikerack", 9.6, 0.3],
+    [-5, "mailbox", 9.9, 0.4],
+    [-2.5, "meter", 8.0, 0.5],
+    [3, "bench", 10, 0.5],
+    [8.5, "newsbox", 9.9, 0.4],
+    [11, "trashcan", 9.7, 0.9],
+    [13.5, "meter", 8.0, 0.5],
+  ];
+  for (const p of PROPS) {
+    if (p.kind !== "lamp") continue;
+    const [x, z] = p.position;
+    // only the two downtown avenue sidewalks have the room (the lamps' z is +-9)
+    if (Math.abs(Math.abs(z) - 9) > 0.01) continue;
+    const side = z > 0 ? 1 : -1;
+    slots.forEach(([dx, kind, dz, odds], i) => {
+      if (nearCross(x + dx, 7) || hash(x, z, 20 + i) >= odds) return;
+      out.push({
+        kind,
+        x: x + dx,
+        z: side * dz,
+        yaw: side > 0 ? Math.PI : 0,
+        scale: kind === "mailbox" ? 0.8 : 1,
+      });
+    });
+  }
+  for (const x of BUS_STOPS)
+    out.push({ kind: "busstop", x, z: -9, yaw: 0, scale: 1 });
+  // stop signs and no-parking signs at the cross streets' corners
+  for (const cx of CROSS_X) {
+    for (const side of [-1, 1]) {
+      out.push({
+        kind: "sign-stop",
+        x: cx - 7,
+        z: side * 8.2,
+        yaw: side > 0 ? Math.PI : 0,
+        scale: 1,
+      });
+      out.push({
+        kind: "sign-noparking",
+        x: cx + 12,
+        z: side * 8.2,
+        yaw: side > 0 ? Math.PI : 0,
+        scale: 1,
+      });
+    }
+  }
+  return out;
+}
+
+export const FURNITURE: readonly FurnitureSpot[] = furnitureSpots();

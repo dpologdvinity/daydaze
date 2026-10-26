@@ -17,8 +17,10 @@ import {
   facingOf,
   frontOf,
   signSpec,
+  FURNITURE,
   STREET_DRESS,
 } from "./dressing.ts";
+import type { FurnitureSpot } from "./furniture.ts";
 
 export const KINDS = [
   "road",
@@ -108,6 +110,8 @@ export type CityPlan = {
   /** The neon signs nearest the player, for the real point lights. */
   lights: Light[];
   trees: TreeSpot[];
+  /** Street furniture models (lamps, hydrants, benches, ...), drawn by CityFurniture. */
+  furniture: FurnitureSpot[];
 };
 
 /** Triangles per instance of each kind's unit geometry, upper bounds. */
@@ -674,16 +678,18 @@ function propInstances(
   z: number,
   propKind: PropKind,
   out: Record<Kind, Instance[]>,
+  spots: FurnitureSpot[],
 ): void {
   if (propKind === "lamp") {
-    out.pole.push({ x, y: 3, z, sx: 0.14, sy: 6, sz: 0.14, color: "#2a2440" });
+    spots.push({ kind: "lamp", x, z, yaw: 0, scale: 1 });
+    // the post is a model (CityFurniture); this is the bulb glowing in its glass
     out.lamp.push({
       x,
-      y: 6.2,
+      y: 5.05,
       z,
-      sx: 0.6,
-      sy: 0.5,
-      sz: 0.6,
+      sx: 0.28,
+      sy: 0.34,
+      sz: 0.28,
       color: "#ffd08a",
     });
   } else if (propKind === "palm") {
@@ -784,11 +790,14 @@ export function planCity(
   }
 
   const trees: TreeSpot[] = [];
+  const furniture: FurnitureSpot[] = [];
+  for (const f of FURNITURE)
+    if (loaded.has(cellAt([f.x, f.z]).key)) furniture.push(f);
   for (const prop of PROPS) {
     const [x, z] = prop.position;
     if (cells.some((c) => cellAt([x, z]).key === c.key)) {
       if (prop.kind === "tree") trees.push(treeAt(x, z));
-      else propInstances(x, z, prop.kind, instances);
+      else propInstances(x, z, prop.kind, instances, furniture);
     }
   }
 
@@ -802,6 +811,7 @@ export function planCity(
     instances,
     lights: lights.slice(0, Math.max(0, lightCount)),
     trees,
+    furniture,
   };
 }
 
