@@ -30,3 +30,6 @@ tmp/
 CLAUDE.md
 .claude/
 coverage/
+
+# Tripo CLI home (API key), see scripts/tripo.sh
+.tripo-home/
