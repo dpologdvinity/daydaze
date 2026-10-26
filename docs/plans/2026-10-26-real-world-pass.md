@@ -164,3 +164,23 @@ merged and instanced per kind. Record each in `docs/assets.md`.
 - A farmers market on weekends (Crops pack), the community garden to tend.
 - Seasonal dressing: holiday lights and trees, summer umbrellas on the beach.
 - Bus stops with routes that NPCs ride; buses that stop for players.
+
+## Owner's ideas (2026-10-26, while downloading the packs)
+
+Each builds on what exists where it can; packs from the asset map above.
+
+| Idea | Builds on | Packs |
+|---|---|---|
+| Fishing | Starboard Marina's fishing game | Animated Fish, Cute Fish, Ships |
+| Oceans and beaches with fish and animals | Beachside, the Ocean, Mermaid Cove | Cute Fish, Animated Animals (crabs, gulls, dolphins if present) |
+| Swimming in the ocean with the fish | the water park's swim state, the Ocean | Cute Fish, Animated Fish |
+| Scuba diving | Mermaid Cove, the Aquarium's reef | fish packs, Ultimate Nature (corals/rocks) |
+| Pets | new: adopt at the Zoo or a shelter, follows you, lives at home | Ultimate Animated Animals |
+| Zoos | the Daydaze Zoo (swap procedural animals for animated ones) | Ultimate Animated Animals |
+| Parks and forests | new: a central park and a forest trail at the city's edge | Stylized Nature MegaKit, Ultimate Nature, Textured Stylized Trees |
+| Sci-fi places | Photon Zone, Player 2; new: a space-station club or museum | Sci-Fi Essentials |
+| Ships, boats, yachts | the Marina; new: rentable boats, a yacht party venue | Ships |
+| Public transportation | new: buses and stops, taxis | Public Transport |
+| Trains | new: the El across the city, a boardwalk train | Train Pack |
+| NASCAR race tracks | the Speedway (add a stock-car oval, pit crew, grandstand crowd) | Realistic Car Pack |
+| Farms | new: a farm at the city's edge (crops, animals, farm stand), feeding the farmers market | Nature Crops, Animated Animals |
