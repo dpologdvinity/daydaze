@@ -1,6 +1,7 @@
 // The Daydaze Zoo, behind its gate on Park Avenue in Uptown: a loop of
-// paths past five fenced habitats: the savanna (giraffes and zebras), the
-// elephants, the lions' rocks, the penguins' pool and the flamingo pond.
+// paths past six fenced habitats: the savanna (giraffes and zebras), the
+// elephants, the lions' rocks, the penguins' pool, the flamingo pond and the
+// petting farm (alpacas, a donkey and a cow, animated GLBs).
 // One layout, shared by the room's floor and blockers (rooms.ts) and the
 // client's scene, which walks the animals round inside their habitats.
 import type { Vec2 } from "./walk.ts";
@@ -23,7 +24,7 @@ export const ZOO_DOOR = {
 };
 
 export type Habitat =
-  "savanna" | "elephants" | "lions" | "penguins" | "flamingos";
+  "savanna" | "elephants" | "lions" | "penguins" | "flamingos" | "farm";
 export type Rect = { x0: number; z0: number; x1: number; z1: number };
 
 /** Each habitat's fenced rectangle. */
@@ -33,7 +34,23 @@ export const HABITATS: Record<Habitat, Rect> = {
   flamingos: { x0: -3, z0: -15, x1: 3, z1: -9 },
   lions: { x0: -19, z0: 0, x1: -7, z1: 9 },
   penguins: { x0: 7, z0: 0, x1: 19, z1: 9 },
+  farm: { x0: -5, z0: 0, x1: 5, z1: 8 },
 };
+
+/** The petting farm's animals: each wanders its own loop, `inset` meters
+ * inside the fence on top of loopAt's own, `speed` in meters per second. */
+export const FARM_ANIMALS: readonly {
+  kind: "alpaca" | "donkey" | "cow";
+  inset: number;
+  speed: number;
+  phase: number;
+  dir: 1 | -1;
+}[] = [
+  { kind: "alpaca", inset: 0, speed: 0.6, phase: 0, dir: 1 },
+  { kind: "alpaca", inset: 0.6, speed: 0.5, phase: 2.6, dir: -1 },
+  { kind: "donkey", inset: 1.2, speed: 0.7, phase: 4.4, dir: 1 },
+  { kind: "cow", inset: 0, speed: 0.4, phase: 1.3, dir: -1 },
+];
 
 /** Where an animal walking a loop round its habitat is at `t` seconds: an
  * ellipse inset from the fence, and the way it faces (yaw, walk.ts). */
