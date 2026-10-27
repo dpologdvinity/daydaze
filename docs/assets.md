@@ -18,6 +18,10 @@ future imported packs belong here when they enter the game.
 
 | Title | Author | License | URL | Used for |
 | --- | --- | --- | --- | --- |
+| Public Transport Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/publictransport.html | City bus, merged, recolored and simplified for near and far rendering. |
+| Realistic Car Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/cars.html | Yellow taxis and sedans mixed into street traffic with near and far models. |
+| Car Kit | Kenney | CC0 1.0 | https://kenney.nl/assets/car-kit | Delivery vans mixed into street traffic, merged and simplified. |
+| Bus Stop | Zsky | CC-BY 3.0 | https://poly.pizza/m/OWczicNWhO | Line 1 bus stops, rescaled with simplified distance models. |
 | MakeHuman | MakeHuman Community | CC0 1.0 | https://github.com/makehumancommunity/makehuman | Avatar bodies, morph targets, hair and clothing, adapted for Daydaze. |
 | MPFB2 Mixamo-named rig | MakeHuman Community | CC0 1.0 | https://github.com/makehumancommunity/mpfb2 | The 52-bone skeleton and skin weights the doll is rigged with, fitted to the shaped body. |
 | Stylized Nature MegaKit | Quaternius | CC0 1.0 | https://quaternius.com/packs/stylizednaturemegakit.html | Street trees, bushes, grass, flowers, ferns and rocks; optimized with near and far models. |

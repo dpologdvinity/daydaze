@@ -28,6 +28,37 @@ export const CREDITS: readonly {
     title: "3D models",
     entries: [
       {
+        title: "Public Transport Pack",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://quaternius.com/packs/publictransport.html",
+        usedFor:
+          "City bus, merged, recolored and simplified for near and far rendering.",
+      },
+      {
+        title: "Realistic Car Pack",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://quaternius.com/packs/cars.html",
+        usedFor:
+          "Yellow taxis and sedans mixed into street traffic with near and far models.",
+      },
+      {
+        title: "Car Kit",
+        author: "Kenney",
+        license: "CC0 1.0",
+        url: "https://kenney.nl/assets/car-kit",
+        usedFor:
+          "Delivery vans mixed into street traffic, merged and simplified.",
+      },
+      {
+        title: "Bus Stop",
+        author: "Zsky",
+        license: "CC-BY 3.0",
+        url: "https://poly.pizza/m/OWczicNWhO",
+        usedFor: "Line 1 bus stops, rescaled with simplified distance models.",
+      },
+      {
         title: "MakeHuman",
         author: "MakeHuman Community",
         license: "CC0 1.0",

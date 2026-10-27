@@ -71,7 +71,9 @@ export function PlayerCar({
   }, []);
 
   const getIn = () => {
-    if (!spec) return;
+    if (!spec || (player.seat && !player.sitting)) return;
+    player.seat = null;
+    player.sitting = false;
     const s = startCity(
       spec,
       parked.color,

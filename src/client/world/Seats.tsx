@@ -38,6 +38,10 @@ export function Seats({
 
   useFrame(({ gl }) => {
     if (!player.sitting) delete gl.domElement.dataset.seated;
+    if (player.seat && !player.sitting) {
+      seatRequest.nearest = false;
+      return;
+    }
     if (seatRequest.nearest) {
       seatRequest.nearest = false;
       const [px, pz] = player.walk.pos;
@@ -87,6 +91,7 @@ export function Seats({
 
   const sit = (seat: Seat) => (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
+    if (player.seat && !player.sitting) return;
     player.seat = null;
     player.sitting = false;
     pending.current = seat;

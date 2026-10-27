@@ -60,6 +60,7 @@ import { collectionsBook } from "./Collections.tsx";
 import { GameMenu, closeMenu } from "./GameMenu.tsx";
 import type { CrimeSave } from "../../game/crime/record.ts";
 import type { Caught } from "./ShopliftPanel.tsx";
+import { BusPanel } from "../city/BusPanel.tsx";
 import { FuelStop } from "../city/FuelStop.tsx";
 import { VolleyStop } from "../city/VolleyStop.tsx";
 import { DealershipPanel } from "../city/DealershipPanel.tsx";
@@ -839,6 +840,7 @@ export function Overlay({
       <RoomPanel room={room} />
       {room === "city" && <FuelStop coins={coins} onSpend={onSpend} />}
       {room === "city" && <VolleyStop />}
+      {room === "city" && <BusPanel />}
       {room === "vinyl-vault" && (
         <RecordsPanel coins={coins} records={records} onBuy={onBuyRecord} />
       )}

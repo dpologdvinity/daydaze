@@ -340,7 +340,12 @@ function playerRoom(car: TrafficCar, player: Vec2 | null): number {
 }
 
 /** Advances every car by dt seconds at simulation time t.time + dt. */
-export function stepTraffic(t: Traffic, dt: number, player: Vec2 | null): void {
+export function stepTraffic(
+  t: Traffic,
+  dt: number,
+  player: Vec2 | null,
+  bus: Vec2 | null = null,
+): void {
   t.time += dt;
   for (const car of t.cars) {
     const len = laneLength(car.lane);
@@ -350,6 +355,7 @@ export function stepTraffic(t: Traffic, dt: number, player: Vec2 | null): void {
       headroom(t, car, 60),
       lightRoom(t, car),
       playerRoom(car, player),
+      playerRoom(car, bus) - 3,
     );
     // the speed from which the car can still stop within `room`
     const safe = room <= 0 ? 0 : Math.sqrt(2 * BRAKE * room * 0.8);
