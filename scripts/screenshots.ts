@@ -11,7 +11,7 @@ const furnitureReady = async (page: Page) => {
       const canvas = document.querySelector("canvas");
       return (
         canvas?.dataset.furniture === "ready" &&
-        Number(canvas.dataset.frames) >= 10
+        Number(canvas.dataset.frames) >= 6
       );
     },
     null,
