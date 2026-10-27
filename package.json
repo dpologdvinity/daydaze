@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
+    "@elevenlabs/elevenlabs-js": "^2.74.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.64.0",
     "@types/node": "^24.19.1",
