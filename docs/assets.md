@@ -71,6 +71,13 @@ future imported packs belong here when they enter the game.
 | Farm Buildings Pack | Quaternius | CC0 1.0 | https://poly.pizza/bundle/Farm-Buildings-Bundle-ppbnhEfNEt | Barn, silo, wooden fences, hay bales, and market stand at Sunny Acres Farm. |
 | Tractor | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/5TGoA5N14c5 | Farm tractor at Sunny Acres Farm. |
 | Scarecrow | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/7qFs_DjjuVp | Scarecrow watching over the crop field at Sunny Acres Farm. |
+| Rock Large | Quaternius | CC0 1.0 | https://poly.pizza/m/54jZKTAt5p | Reef dive: flat boulders and arch lintels. |
+| Rock Large (pillar) | Quaternius | CC0 1.0 | https://poly.pizza/m/d2VWOdthtR | Reef dive: rock pillars and arch legs. |
+| Rock Medium | Quaternius | CC0 1.0 | https://poly.pizza/m/s1OJ3bBzqc | Reef dive: mossy boulders. |
+| Mountain Group | Quaternius | CC0 1.0 | https://poly.pizza/m/a52gSEEq8X | Reef dive: rock spires. |
+| Coral | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/4KUXdtDdgHR | Reef dive: branching coral. |
+| Anemone | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/1FMGb52XdD- | Reef dive: sea fans. |
+| Jellyfish | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/dA5osnS0Rzj | Reef dive: drifting jellyfish. |
 
 
 Street furniture is built by `art/street/build_street.py` into `public/models/street/` (every model cut down to a few hundred triangles).
