@@ -211,3 +211,19 @@ Each builds on what exists where it can; packs from the asset map above.
 - Asset sources other than CC0 packs: Unity Asset Store (owner downloads;
   check each EULA), freegameassets.com, itch.io free 3D, Sketchfab (per-asset
   license; CC-BY needs credits).
+
+## Handoff 2 (2026-10-27, paused: owner's weekly usage nearly spent)
+
+Merged tonight (all on main, pushed): street trees; full Mixamo rig with natural per-sex walks; zoo (animated farm, Sketchfab giraffe/elephant/lion/penguin, zebra) and aquarium sea life; pets; credits screen; street furniture, daytime paint and skyline, traffic lights; the park; NYC facades (Downtown, Uptown, Arts District, Little Manila, Chinatown/Koreatown, Suburbia houses, fire escapes); Seaside Swim and the scuba reef; Sunny Acres Farm; the stock-car oval; bus rides and taxis; the marina's boats and fish; two sound passes (ElevenLabs + Freesound); the 13+ gate (alcohol only on 18+ servers); fixes from a full code review. The repo is public (CI runs free).
+
+Open branches in `.worktrees/` (each has a WIP or finished commit; rebase onto main, verify, run its Playwright tests, then merge):
+- `feat/street`: boardwalk visual pass (planks, counters, animated Ferris wheel) in progress; then joggers (owner added `mixamo/running/Jogging.fbx`).
+- `feat/nyc`: the El elevated train; must fix its review findings (stuck ride after tab throttling, store reset on unmount, get-off teleport, per-frame alloc, online position, error boundary).
+- `feat/oval`: pit crew fixed and build cache untracked; verify green, Speedway tests were running.
+- `feat/fair`: Fairground rides from Kenney Coaster Kit (zoo agent), in progress.
+- `fix/zoom`: the slow city overview that times out the "mouse wheel zooms" test (reviewer agent), in progress.
+- `feat/wonder36`, `feat/wonder37`: wonder-pass Tasks 36 and 37, started.
+- `feat/scifi` (Codex): sci-fi props for Photon Zone/Player 2, committed; its laser-tag test was already failing on main before.
+- `feat/transit` (Codex): bus-shelter riders follow-up, committed, not browser-tested.
+
+Owner notes: Mixamo clips in `mixamo/` are named `Name_Description` with dashes for spaces; check there before asking for downloads. Don't spend Meshy credits yet (owner is looking for animals). Chrome GPU play-testing is postponed. `.env` has no VITE_ keys.
