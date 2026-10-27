@@ -11,6 +11,7 @@ import {
 import { facadeMaterials } from "./facades.ts";
 import { animate } from "./shaders.ts";
 import { laneTint } from "../../game/city/daylight.ts";
+import { BAY_NIGHT, bayMaterial } from "./NycFacades.tsx";
 
 // Kinds that glow: their colors run past 1.0 so bloom picks them up on high.
 const GLOW: ReadonlySet<Kind> = new Set<Kind>([
@@ -30,6 +31,13 @@ type Shared = Exclude<Kind, "label">;
 
 const BOX = new THREE.BoxGeometry(1, 1, 1);
 const CYLINDER = new THREE.CylinderGeometry(0.5, 0.5, 1, 8);
+// poles are thin and seen from the side: six sides, no caps
+const POLE = new THREE.CylinderGeometry(0.5, 0.5, 1, 6, 1, true);
+// ground marks lie flat: only the top of the box is ever seen, so a plane
+// (its top at y + sy / 2, where the box's top was) saves ten triangles each
+const MARK = new THREE.PlaneGeometry(1, 1)
+  .rotateX(-Math.PI / 2)
+  .translate(0, 0.5, 0);
 const SPHERE = new THREE.SphereGeometry(0.5, 10, 8);
 const CAPSULE = new THREE.CapsuleGeometry(0.5, 1, 2, 8);
 const PLANE = new THREE.PlaneGeometry(1, 1);
@@ -106,7 +114,7 @@ const GEOMETRY: Record<Shared, THREE.BufferGeometry> = {
   ground: BOX,
   lawn: BOX,
   planks: BOX,
-  lane: BOX,
+  lane: MARK,
   brick: BOX,
   stucco: BOX,
   concrete: BOX,
@@ -120,7 +128,7 @@ const GEOMETRY: Record<Shared, THREE.BufferGeometry> = {
   sign: BOX,
   tube: BOX,
   queue: CAPSULE,
-  pole: CYLINDER,
+  pole: POLE,
   lamp: SPHERE,
   palmTrunk: CYLINDER,
   palmFrond: PLANE,
@@ -453,6 +461,7 @@ export function dimForDay(meshes: KindMeshes, night: number): void {
   const lane = meshes.lane.material;
   if (lane instanceof THREE.MeshBasicMaterial)
     lane.color.setRGB(...laneTint(night));
+  BAY_NIGHT.value = night;
   for (const kind of NIGHT_LIT) {
     const m = meshes[kind].material;
     if (m instanceof THREE.MeshBasicMaterial)
@@ -462,6 +471,7 @@ export function dimForDay(meshes: KindMeshes, night: number): void {
   }
   const glows: THREE.MeshStandardMaterial[] = [
     ...Object.values(facadeMaterials()),
+    bayMaterial(),
     ...NIGHT_GLOW.map((k) => meshes[k].material).filter(
       (m): m is THREE.MeshStandardMaterial =>
         m instanceof THREE.MeshStandardMaterial,

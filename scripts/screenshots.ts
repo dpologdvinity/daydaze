@@ -241,6 +241,27 @@ const SHOTS: {
     act: furnitureReady,
   },
   { name: "city-day-overview", query: "room=city&time=12:00" },
+  // the New York blocks from the street (src/game/city/nyc.ts), by day and at night
+  ...[
+    ["nyc-street", "12:00", "-30,-6", 0],
+    ["nyc-night", "22:00", "-30,-6", 0],
+    ["nyc-corner", "12:00", "-70,-8", Math.PI / 2],
+    ["nyc-corner-before", "12:00", "-70,-8&bays=0", Math.PI / 2],
+  ].map(([name, time, at, yaw]) => ({
+    name: String(name),
+    query: `room=city&view=full&time=${time}&at=${at}&yaw=${yaw}`,
+    live: true,
+    act: async (page: Page) => {
+      await page.locator("canvas").waitFor();
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      await page.mouse.move(640, 400);
+      for (let i = 0; i < 12; i++) await page.mouse.wheel(0, 100);
+    },
+  })),
   { name: "city-sunset", query: "room=city&view=full&time=19:30" },
   {
     name: "city-night",
