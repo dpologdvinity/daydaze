@@ -9,6 +9,7 @@
 // spots on every plan reload (`cityFurniture`).
 
 import { useGLTF } from "@react-three/drei";
+import { useThree } from "@react-three/fiber";
 import { useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";
 import {
@@ -126,9 +127,12 @@ export function CityFurniture(): JSX.Element {
     return byKind;
   }, [gltfs]);
   const { spots, at } = cityFurniture.use();
+  const canvas = useThree((state) => state.gl.domElement);
   useEffect(() => {
     place(meshes, spots, at, low);
-  }, [meshes, spots, at, low]);
+    // read by the screenshot script: the models are in and placed
+    if (spots.length > 0) canvas.dataset.furniture = "ready";
+  }, [meshes, spots, at, low, canvas]);
   const all = useMemo(() => [...meshes.values()].flat(), [meshes]);
   return (
     <>
