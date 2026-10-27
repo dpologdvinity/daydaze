@@ -25,6 +25,7 @@ import { useQuality } from "../world/quality.ts";
 import { cityFurniture, dimMeshes, partsOf } from "./CityFurniture.tsx";
 import { useDaylight } from "./daylight.ts";
 import { useReducedMotion } from "../motion.ts";
+import { disposeInstanced } from "./dispose.ts";
 
 const KINDS = Object.keys(GROWTH_MODELS).filter(
   (k): k is GrowthKind => k in GROWTH_MODELS,
@@ -106,6 +107,7 @@ export function CityPark(): JSX.Element {
   }, [meshes, at, low]);
   const { neon } = useDaylight();
   const all = useMemo(() => [...meshes.values()].flat(), [meshes]);
+  useEffect(() => () => disposeInstanced(all, true), [all]);
   useEffect(() => dimMeshes(all, 1 - 0.55 * neon), [all, neon]);
   const water = useMemo(
     () =>
@@ -121,6 +123,7 @@ export function CityPark(): JSX.Element {
   useEffect(() => {
     water.color.copy(WATER).multiplyScalar(1 - 0.6 * neon);
   }, [water, neon]);
+  useEffect(() => () => water.dispose(), [water]);
   return (
     <>
       {all.map((mesh) => (

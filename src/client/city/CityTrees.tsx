@@ -15,6 +15,7 @@ import { TREE_LOW_FAR } from "../../game/city/tuning.ts";
 import { createStore } from "../rooms/shared/store.ts";
 import { useQuality } from "../world/quality.ts";
 import { floated } from "./floated.ts";
+import { disposeInstanced } from "./dispose.ts";
 
 const MODELS = "/models/nature";
 /** Trees nearer than this (meters, from where the plan was cut) get full detail. */
@@ -61,7 +62,7 @@ const up = new THREE.Vector3(0, 1, 0);
 /** One level of detail: an instanced mesh per model part. */
 function useLevel(lo: boolean) {
   const gltfs = useGLTF(urls(lo));
-  return useMemo(
+  const levels = useMemo(
     () =>
       gltfs.map((g) =>
         partsOf(g.scene).map(({ geometry, material }) => {
@@ -73,6 +74,9 @@ function useLevel(lo: boolean) {
       ),
     [gltfs],
   );
+  // the copies go with the city (the materials are the cached GLB's own)
+  useEffect(() => () => disposeInstanced(levels.flat(), false), [levels]);
+  return levels;
 }
 
 function place(

@@ -3,7 +3,14 @@ import assert from "node:assert/strict";
 import { cellsWithin } from "./cells.ts";
 import { BUILDINGS } from "./layout.ts";
 import { planCity, trianglesOf } from "./plan.ts";
-import { BAY_KINDS, BAY_TRIANGLES, isNyc, nycBays } from "./nyc.ts";
+import {
+  BAY_CAPACITY,
+  BAY_KINDS,
+  BAY_TRIANGLES,
+  isNyc,
+  nycBays,
+} from "./nyc.ts";
+import { BAY_RANGE, VIEW_RADIUS } from "./tuning.ts";
 
 // the blocks that face a street; those inside a lot keep plain walls
 const nyc = BUILDINGS.filter((b) => isNyc(b) && nycBays(b).length > 0);
@@ -89,4 +96,26 @@ test("the plan dresses only the blocks within range, and says what they cost", (
     p.instances.siding.length +
     p.instances.curtain.length;
   assert.equal(walls(near), walls(none));
+});
+
+test("no view on the high tier holds more bays of one kind than its instanced mesh", () => {
+  let worst = 0;
+  for (let x = -432; x <= 432; x += 32)
+    for (let z = -320; z <= 368; z += 32) {
+      const at: [number, number] = [x, z];
+      const plan = planCity(
+        cellsWithin(at, VIEW_RADIUS),
+        0,
+        at,
+        BAY_RANGE.high,
+      );
+      const counts = new Map<string, number>();
+      for (const bay of plan.bays)
+        counts.set(bay.kind, (counts.get(bay.kind) ?? 0) + 1);
+      for (const n of counts.values()) worst = Math.max(worst, n);
+    }
+  assert.ok(worst > 0);
+  assert.ok(worst <= BAY_CAPACITY, `${worst} bays of one kind`);
+  // and the meshes aren't sized far past what any view needs
+  assert.ok(BAY_CAPACITY <= worst * 4, `${BAY_CAPACITY} for ${worst}`);
 });

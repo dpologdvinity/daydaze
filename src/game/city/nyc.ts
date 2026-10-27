@@ -16,6 +16,11 @@ import {
   type Neighborhood,
 } from "./layout.ts";
 
+/** The most bays of one kind in any view (the busiest high-tier view holds
+ * about 300; nyc.test.ts keeps this within 4x of it). Sizes each kind's
+ * InstancedMesh, so it is not much bigger than a view needs. */
+export const BAY_CAPACITY = 1024;
+
 /** The bays the client draws, one InstancedMesh each (node names in bays.glb). */
 export const BAY_KINDS = [
   "winA",
