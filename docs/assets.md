@@ -34,7 +34,10 @@ future imported packs belong here when they enter the game.
 | Flamingo | Хмара Сергей | CC-BY 3.0 | https://poly.pizza/m/5hUIvLVFqet | Zoo flamingo pond (static mesh, swayed by the client). |
 | Cat | Quaternius | CC0 1.0 | https://poly.pizza/m/qKICY6xla2 | Adoptable pet cat, with idle, walk, run and eat clips. |
 | Bunny | Quaternius | CC0 1.0 | https://poly.pizza/m/irZjWFARyl | Adoptable pet rabbit, with idle, walk and run clips. |
-| Nature Kit | Kenney | CC0 1.0 | https://kenney.nl/assets/nature-kit | Zoo fence panels and rocks. |
+| Nature Kit | Kenney | CC0 1.0 | https://kenney.nl/assets/nature-kit | Zoo fence panels and rocks; dirt crop rows at Sunny Acres Farm. |
+| Pig | Quaternius | CC0 1.0 | https://poly.pizza/bundle/Farm-Animal-Pack-1kUvRTPLzT | Sunny Acres Farm pigs, with an idle clip (swayed along when walking). |
+| Sheep | Quaternius | CC0 1.0 | https://poly.pizza/bundle/Farm-Animal-Pack-1kUvRTPLzT | Sunny Acres Farm sheep, with an idle clip (swayed along when walking). |
+| Chicken - rigged | Maf'j Alvarez | CC-BY 4.0 | https://sketchfab.com/3d-models/chicken-rigged-6e3b93c078114c52bfe4cfa08b9843eb | Sunny Acres Farm chickens, with idle, walk, peck and sit clips. |
 | Street Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/streetpack.html | Street lamp and stop and no-parking signs (Streetlight_Single, Sign_Stop, Sign_NoParking); lantern made see-through. |
 | Fire Hydrant | Poly Haven | CC0 1.0 | https://polyhaven.com/a/fire_hydrant | Sidewalk hydrants, decimated to under 500 triangles. |
 | Metal Trash Can | Poly Haven | CC0 1.0 | https://polyhaven.com/a/metal_trash_can | Sidewalk bins, decimated to about 300 triangles. |
@@ -63,6 +66,10 @@ future imported packs belong here when they enter the game.
 | Crab | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/1O5Q4pE8X6e | Crabs scuttling on Seaside Swim's sand and the reef floor. |
 | Turtle | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/fklSEvGm1Q8 | Reef dive: the sea turtle. |
 | Seagull and Flying seagull | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/0WRzrtCIIRp | Gulls perched on Seaside Swim's sand and wheeling overhead. |
+| Nature Crops Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/ultimatecrops.html | Crops at Sunny Acres Farm (carrots, tomatoes, corn, wheat growth stages). |
+| Farm Buildings Pack | Quaternius | CC0 1.0 | https://poly.pizza/bundle/Farm-Buildings-Bundle-ppbnhEfNEt | Barn, silo, wooden fences, hay bales, and market stand at Sunny Acres Farm. |
+| Tractor | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/5TGoA5N14c5 | Farm tractor at Sunny Acres Farm. |
+| Scarecrow | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/7qFs_DjjuVp | Scarecrow watching over the crop field at Sunny Acres Farm. |
 
 
 Street furniture is built by `art/street/build_street.py` into `public/models/street/` (every model cut down to a few hundred triangles).
