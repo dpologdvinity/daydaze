@@ -13,9 +13,13 @@ blender --background --factory-startup --python art/fair/build_fair.py
 GT=(npx -y @gltf-transform/cli@4.5.1)
 OPTS=(--compress meshopt --texture-compress webp --simplify false --join false
   --instance false --flatten false --palette false --prune-attributes false)
+# the Sketchfab models are 2-3k triangles each and drawn 8-12 times: thin them
+TMP="$(mktemp -d)"
 for n in cabin horse; do
-  "${GT[@]}" optimize "art/fair/.cache/out/$n.glb" "$OUT/$n.glb" --texture-size 512 "${OPTS[@]}"
+  "${GT[@]}" simplify "art/fair/.cache/out/$n.glb" "$TMP/$n.glb" --ratio 0.2 --error 0.02
+  "${GT[@]}" optimize "$TMP/$n.glb" "$OUT/$n.glb" --texture-size 512 "${OPTS[@]}"
 done
+rm -r "$TMP"
 for n in coaster-train coaster-train-wooden train-log-flume stall-food stall-drinks \
   stall-information park-entrance bench trash; do
   "${GT[@]}" optimize "$KIT/$n.glb" "$OUT/$n.glb" --texture-size 256 "${OPTS[@]}"
