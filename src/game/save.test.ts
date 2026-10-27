@@ -51,6 +51,7 @@ test("createDefaultSave uses the default look and auto quality", () => {
     onboarded: false,
     visited: [],
     sets: [],
+    pet: null,
   });
 });
 
@@ -95,6 +96,7 @@ test("a save round-trips through serializeSave and loadSave", () => {
     onboarded: true,
     visited: [],
     sets: [],
+    pet: { kind: "cat", name: "Mochi", adoptedAt: 5, fedAt: 9 },
   };
   assert.deepEqual(loadSave(serializeSave(save), "Fallback"), save);
 });
@@ -162,6 +164,7 @@ test("a save from before the swimsuit slot still loads", () => {
     onboarded: true,
     visited: [],
     sets: [],
+    pet: null,
   });
 });
 
@@ -223,6 +226,7 @@ test("loadSave keeps a valid name when the look is bad", () => {
     onboarded: true,
     visited: [],
     sets: [],
+    pet: null,
   });
 });
 
@@ -258,6 +262,7 @@ test("loadSave keeps a valid look when the name is bad", () => {
     onboarded: true,
     visited: [],
     sets: [],
+    pet: null,
   });
 });
 
@@ -426,6 +431,7 @@ test("loadSave salvages valid fields from a wrong version", () => {
     onboarded: true,
     visited: [],
     sets: [],
+    pet: null,
   });
 });
 
@@ -561,4 +567,25 @@ test("the album's places and claimed sets round-trip and are cleaned", () => {
   const bad = JSON.stringify({ ...save, visited: ["moon"], sets: "y2k" });
   assert.deepEqual(loadSave(bad, "x").visited, []);
   assert.deepEqual(loadSave(bad, "x").sets, []);
+});
+
+test("a bad pet is dropped without losing the rest of the save", () => {
+  const raw = JSON.stringify({
+    name: "PeachyBloom4821",
+    coins: 77,
+    pet: { kind: "dragon", name: "Smaug", adoptedAt: 1, fedAt: 1 },
+  });
+  const save = loadSave(raw, "Fallback");
+  assert.equal(save.pet, null);
+  assert.equal(save.coins, 77);
+  const ok = loadSave(
+    JSON.stringify({ pet: { kind: "cat", name: "Mochi", adoptedAt: 1 } }),
+    "Fallback",
+  );
+  assert.deepEqual(ok.pet, {
+    kind: "cat",
+    name: "Mochi",
+    adoptedAt: 1,
+    fedAt: 1,
+  });
 });

@@ -28,6 +28,7 @@ import {
   type ChallengeSave,
 } from "./challenges.ts";
 import { cleanBests, type Bests } from "./prizes.ts";
+import { validatePet, type PetSave } from "./pet.ts";
 import { cleanParkedCar, type ParkedCar } from "./city/drive.ts";
 import { cleanGarage, STARTER } from "./garage.ts";
 import { cleanRecords, type RecordId } from "./records.ts";
@@ -76,6 +77,8 @@ export type SaveV1 = {
   visited: RoomId[];
   /** Closet sets whose reward you've claimed (collections.ts). */
   sets: string[];
+  /** The pet adopted at the Zoo, or null (pet.ts). */
+  pet: PetSave | null;
 };
 
 /** The localStorage key the save lives under. */
@@ -122,6 +125,7 @@ export function createDefaultSave(name: string): SaveV1 {
     onboarded: false,
     visited: [],
     sets: [],
+    pet: null,
   };
 }
 
@@ -200,6 +204,7 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
         : save.size > 0,
     visited: cleanVisited(save.get("visited")),
     sets: cleanSets(save.get("sets")),
+    pet: validatePet(save.get("pet")),
   };
 }
 

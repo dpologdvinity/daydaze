@@ -36,12 +36,12 @@ for n in ["Clownfish", "BlueTang", "YellowTang", "Goldfish", "Puffer", "Koi",
 # Zoo species downloaded from poly.pizza (see docs/assets.md): the zebra is
 # rigged with clips; the rest are static meshes the client sways and bobs.
 POLY = "../poly"
-for n in ["zebra", "giraffe", "elephant", "lion", "penguin", "flamingo"]:
+for n in ["zebra", "giraffe", "elephant", "lion", "penguin", "flamingo", "cat", "rabbit"]:
     SOURCES[n] = f"{POLY}/{n}.glb"
 
 # Clips kept (matched by suffix after the last "|"), renamed to the key.
 CLIPS = {
-    "Idle": "idle", "Idle_2": "idle2", "Idle_Headlow": "graze",
+    "Idle": "idle", "Idle_Eating": "eat", "Idle_2": "idle2", "Idle_Headlow": "graze",
     "Eating": "eat", "Walk": "walk", "Gallop": "run",
     "Idle_HitReact1": "react", "Run": "run", "Swim": "swim", "Swimming_Normal": "swim",
     "WalkSlow": "walkslow",

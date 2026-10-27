@@ -163,6 +163,10 @@ const PANELS: Partial<Record<RoomId, ComponentType>> = {
       "Feeding time",
       panel(() => import("../rooms/zoo/FeedingPanel.tsx"), "FeedingPanel"),
     ],
+    [
+      "Adopt a pet",
+      panel(() => import("../rooms/zoo/PetPanel.tsx"), "PetPanel"),
+    ],
   ),
   "sushi-bar": panel(
     () => import("../rooms/sushi/SushiPanel.tsx"),
