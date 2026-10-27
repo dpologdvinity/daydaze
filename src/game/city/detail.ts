@@ -1,11 +1,11 @@
 // The detail pass: the small parts that turn a facade, a corner or a planter
 // into a place. Balconies and fire escapes, rooftop kit, shopfront displays,
-// graffiti, planter foliage and traffic lights. Pure and deterministic, like
+// graffiti, planter foliage and signals. Pure and deterministic, like
 // the rest of the dressing, and types only from its neighbours so the module
 // loads on its own.
 import { hash, pick } from "./hash.ts";
 import type { Building } from "./layout.ts";
-import type { Buckets, Front, Placed } from "./dressing.ts";
+import type { Buckets, Front } from "./dressing.ts";
 
 // the window rows sit on the same floors as dressing's windows
 const FLOOR = 3.4;
@@ -238,34 +238,6 @@ export function detailBuilding(b: Building, f: Front, out: Buckets): void {
           color: pick(PRODUCT, hash(x, k, 31)),
         });
       }
-    }
-  }
-}
-
-function put(
-  out: Placed[],
-  kind: "treeCanopy" | "pole" | "furniture" | "bulb",
-  x: number,
-  y: number,
-  z: number,
-  sx: number,
-  sy: number,
-  sz: number,
-  color: string,
-): void {
-  out.push({ at: [x, z], kind, instance: { x, y, z, sx, sy, sz, color } });
-}
-
-/** Traffic lights on the avenue pavement, one each side of every cross street. */
-export function trafficLights(out: Placed[], crossX: readonly number[]): void {
-  for (const cx of crossX) {
-    for (const side of [-1, 1]) {
-      // the corner of the avenue pavement and the cross street's pavement
-      const x = cx + 7;
-      const z = side * 9;
-      put(out, "pole", x, 2.2, z, 0.16, 4.4, 0.16, "#2a2440");
-      put(out, "furniture", x, 4.2, z, 0.5, 1.2, 0.5, IRON);
-      // the lamps themselves cycle, so the client's Traffic layer draws them
     }
   }
 }

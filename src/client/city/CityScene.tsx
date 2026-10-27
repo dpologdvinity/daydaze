@@ -41,6 +41,7 @@ import {
 } from "./meshes.ts";
 import { useDaylight } from "./daylight.ts";
 import { CityFurniture, cityFurniture } from "./CityFurniture.tsx";
+import { CityPark } from "./CityPark.tsx";
 import { CityTrees, cityTrees } from "./CityTrees.tsx";
 import { CITY_CLOCK } from "./shaders.ts";
 import { Traffic } from "./Traffic.tsx";
@@ -224,6 +225,7 @@ export function CityScene({
       <Suspense fallback={null}>
         <CityTrees />
         <CityFurniture />
+        <CityPark />
       </Suspense>
       <NightMarket player={player} />
     </>

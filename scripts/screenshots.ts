@@ -221,6 +221,30 @@ const SHOTS: {
     act: furnitureReady,
   },
   {
+    // a signal head at a crossing, its lit bulbs cycling (Traffic.tsx)
+    name: "city-signal",
+    query: "room=city&view=full&time=12:00&at=-47,9.5",
+    act: furnitureReady,
+  },
+  {
+    // the palms stand on Shore Boulevard and the beach only
+    name: "city-palms",
+    query: "room=city&view=full&time=12:00&at=-100,262",
+    act: furnitureReady,
+  },
+  {
+    // Uptown's Park and Gardens (src/game/city/park.ts): the fountain plaza,
+    // paths, pond, bandstand and picnics
+    name: "city-park",
+    query: "room=city&view=full&time=14:00&at=250,-281",
+    act: furnitureReady,
+  },
+  {
+    name: "city-park-pond",
+    query: "room=city&view=full&time=14:00&at=233,-290",
+    act: furnitureReady,
+  },
+  {
     name: "city-sidewalk-night",
     query: "room=city&view=full&time=23:00&at=-36,9.5",
     act: furnitureReady,

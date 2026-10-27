@@ -8,6 +8,7 @@ import {
   type PedestrianPose,
 } from "../../game/city/pedestrians.ts";
 import { Doll } from "../avatar/Doll.tsx";
+import { Creature, type CreaturePose } from "../creatures/Creature.tsx";
 import type { Player } from "../world/PlayerController.tsx";
 
 /** At most this many walkers are drawn: each is a full doll. */
@@ -28,10 +29,22 @@ function Walker({ index }: { index: number }) {
     g.current.position.set(pose.current.x, 0, pose.current.z);
     g.current.rotation.y = pose.current.yaw;
   });
+  // a dog walker's dog trots at her right hand, a little ahead
+  const dog = p.dog;
+  const drive = (_dt: number, out: CreaturePose) => {
+    const { x, z, yaw } = pose.current;
+    out.x = x + Math.cos(yaw) * 1.0 + Math.sin(yaw) * 0.5;
+    out.z = z - Math.sin(yaw) * 1.0 + Math.cos(yaw) * 0.5;
+    out.yaw = yaw;
+    out.clip = "walk";
+  };
   return (
-    <group ref={g}>
-      <Doll look={p.look} mood="idle" walk={walking} seed={100 + index} />
-    </group>
+    <>
+      <group ref={g}>
+        <Doll look={p.look} mood="idle" walk={walking} seed={100 + index} />
+      </group>
+      {dog && <Creature kind={dog} drive={drive} />}
+    </>
   );
 }
 

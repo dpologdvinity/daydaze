@@ -16,6 +16,14 @@ import * as DOME from "../dome.ts";
 import * as GALLERIA from "../galleria.ts";
 import * as RINK from "../rollerRink.ts";
 import * as SKATEPARK from "../skatepark.ts";
+import {
+  PARK,
+  PARK_BLOCKERS,
+  PARK_LAWNS,
+  PARK_PATHS,
+  parkLamps,
+  parkTrees,
+} from "./park.ts";
 import * as MARINA from "../marina.ts";
 import * as COURTSIDE from "../courtside.ts";
 import * as COVE from "../mermaidCove.ts";
@@ -145,8 +153,7 @@ export const BONFIRES: readonly Vec2[] = [
 export const VOLLEYBALL = { x: 70, z: 312, half: 5, depth: 7 };
 /** The pier: planks from the sand out over the water, wider at its head. */
 export const PIER = { x: 24, half: 3, end: 378, head: 9 };
-/** Uptown's Park and Gardens: a lawn north of Park Avenue. */
-export const PARK = { x0: 204, x1: 300, z0: -316, z1: -266 };
+export { PARK };
 
 export const ROAD_NODES: readonly RoadNode[] = [
   { id: "west", position: [-192, 0] },
@@ -612,8 +619,14 @@ export const CITY_SURFACES: readonly Surface[] = [
   },
   { kind: "sand", polygon: rect(WEST_EDGE, BOARDWALK.z1, EAST_EDGE, WATER_Z) },
   // the park's lawn, round the Ice Rink lodge in its north-east corner
-  { kind: "lawn", polygon: rect(PARK.x0, PARK.z0, 272, PARK.z1) },
-  { kind: "lawn", polygon: rect(272, -290, PARK.x1, PARK.z1) },
+  ...PARK_LAWNS.map((b): Surface => ({
+    kind: "lawn",
+    polygon: rect(b.x0, b.z0, b.x1, b.z1),
+  })),
+  ...PARK_PATHS.map((b): Surface => ({
+    kind: "sidewalk",
+    polygon: rect(b.x0, b.z0, b.x1, b.z1),
+  })),
   ...SUBURB_LAWNS,
   {
     kind: "boardwalk",
@@ -2215,16 +2228,16 @@ function nearCross(x: number): boolean {
 // and cross streets get trees every 60 m. Props block the walk like a post.
 function buildProps(): Prop[] {
   const props: Prop[] = [];
-  // palms at the square's four corners
+  // trees at the square's four corners
   for (const x of [-44, 44])
-    for (const z of [17, 40]) props.push({ kind: "palm", position: [x, z] });
+    for (const z of [17, 40]) props.push({ kind: "tree", position: [x, z] });
   for (let x = -180; x <= 180; x += 30) {
     if (nearCross(x)) continue;
     for (const z of [-9, 9]) props.push({ kind: "lamp", position: [x, z] });
   }
   for (let x = -165; x <= 165; x += 30) {
     if (nearCross(x)) continue;
-    for (const z of [-9, 9]) props.push({ kind: "palm", position: [x, z] });
+    for (const z of [-9, 9]) props.push({ kind: "tree", position: [x, z] });
   }
   for (const cx of CROSS_STREETS) {
     for (const x of [cx - 7, cx + 7]) {
@@ -2258,9 +2271,8 @@ function buildProps(): Prop[] {
     for (const z of [GALLERY_Z - 8, GALLERY_Z + 8])
       props.push({ kind: "lamp", position: [x, z] });
   }
-  for (let x = PARK.x0 + 8; x < 268; x += 16)
-    for (let z = PARK.z0 + 8; z < PARK.z1 - 4; z += 14)
-      if ((x + z) % 3 !== 0) props.push({ kind: "tree", position: [x, z] });
+  for (const position of parkTrees()) props.push({ kind: "tree", position });
+  for (const position of parkLamps()) props.push({ kind: "lamp", position });
   // Chinatown and Koreatown: lamps down the avenue sidewalks
   for (let x = 204; x < EAST_EDGE - 6; x += 30) {
     if (nearCross(x)) continue;
@@ -2327,6 +2339,7 @@ const CITY_BLOCKERS: readonly (readonly Vec2[])[] = [
     rect(x - PROP_HALF, z - PROP_HALF, x + PROP_HALF, z + PROP_HALF),
   ),
   ...MARKET_BLOCKERS,
+  ...PARK_BLOCKERS,
   // gas station mini-marts and pump islands
   ...GAS_BLOCKERS,
 ];

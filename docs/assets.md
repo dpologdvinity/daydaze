@@ -43,6 +43,15 @@ future imported packs belong here when they enter the game.
 | Bus Stop | Zsky | CC-BY 3.0 | https://poly.pizza/m/OWczicNWhO | Avenue bus shelters, decimated. |
 | Palm Tree | Quaternius | CC0 1.0 | https://poly.pizza/m/A6cKJYFsIb | Street and beach palms, decimated. |
 | Planter and Bushes | J-Toastie | CC-BY 3.0 | https://poly.pizza/m/wn85Xr9lM3 | Sidewalk planter boxes, decimated. |
+| Traffic Light | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/57rxXzowK8w | Signal heads at the avenue crossings; head copied to four faces, lenses redrawn lit. |
+| Newspaper Box With Mat | neverfollow81 | CC-BY 4.0 | https://sketchfab.com/3d-models/newspaper-box-with-mat-e4dd34bb4e384dee82d80889fa3742b9 | Sidewalk newspaper boxes, decimated. |
+| Fountain | Isa Lousberg | CC0 1.0 | https://poly.pizza/m/WHc7dwttlk | The park's fountain, decimated. |
+| Gazebo | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/b_p530Qy_-t | The park's bandstand. |
+| Rowboat | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/dt1yhb5AYXD | The boat on the park pond. |
+| Duck | jeremy | CC-BY 3.0 | https://poly.pizza/m/2KHEgw1ztVI | Ducks on the park pond. |
+| Picnic Table | J-Toastie | CC-BY 3.0 | https://poly.pizza/m/GQieALI2C4 | Picnic tables in the park. |
+| Picnic Basket | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/aWBGhxXig8y | Baskets on the park's picnic blankets. |
+| Round Rug | Quaternius | CC0 1.0 | https://poly.pizza/m/ZYBzMHnSbM | Picnic blankets on the park lawn. |
 
 
 Street furniture is built by `art/street/build_street.py` into `public/models/street/` (every model cut down to a few hundred triangles).

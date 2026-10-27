@@ -1,6 +1,7 @@
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
+import { SIGNAL } from "../../game/city/furniture.ts";
 import { advance } from "../../game/driving/fixedStep.ts";
 import {
   carPose,
@@ -35,7 +36,7 @@ const WHEEL = new THREE.CylinderGeometry(0.36, 0.36, 0.26, 12).rotateX(
   Math.PI / 2,
 );
 const LAMP = new THREE.BoxGeometry(0.12, 0.16, 0.34);
-const BULB = new THREE.CircleGeometry(0.14, 12);
+const BULB = new THREE.CircleGeometry(SIGNAL.radius, 12);
 
 // vehicle-local offsets (nose at +x): wheels, then head and tail lamps
 const WHEELS: Record<VehicleKind, [number, number, number][]> = {
@@ -100,7 +101,11 @@ function signalBulbs(): Bulb[] {
         q.setFromAxisAngle(up, Math.atan2(nx, nz));
         ORDER.forEach((light, i) => {
           const m = new THREE.Matrix4().compose(
-            new THREE.Vector3(hx + nx * 0.27, 4.6 - i * 0.4, hz + nz * 0.27),
+            new THREE.Vector3(
+              hx + nx * SIGNAL.out,
+              SIGNAL.top - i * SIGNAL.gap,
+              hz + nz * SIGNAL.out,
+            ),
             q,
             new THREE.Vector3(1, 1, 1),
           );
