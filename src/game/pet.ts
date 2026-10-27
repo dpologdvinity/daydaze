@@ -105,7 +105,7 @@ const angleTo = (cur: number, goal: number, step: number) => {
 
 /**
  * Moves `pet` toward its place beside `you` for `dt` seconds. The place is
- * STAY meters to your right-behind (the pet trails on one side so it never
+ * STAY meters to your left-behind (the pet trails on one side so it never
  * stands in your way). `seated` makes it sit once it has come close.
  * `blocked` says whether a spot is a wall, and the pet then stays put.
  * Returns the pet's next state, written into `out` (which may be `pet`
@@ -125,7 +125,8 @@ export function followStep(
   if (dist > TELEPORT_FROM) {
     return placeBeside(you, out);
   }
-  // the spot beside you: STAY behind and to the right of where you face
+  // the spot beside you: STAY behind and to the left of where you face (at
+  // yaw 0 you face +z, and your left is +x)
   const gx = you.x + Math.sin(you.yaw + 2.5) * STAY - pet.x;
   const gz = you.z + Math.cos(you.yaw + 2.5) * STAY - pet.z;
   const toGoal = Math.hypot(gx, gz);
