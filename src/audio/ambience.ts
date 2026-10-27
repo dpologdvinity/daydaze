@@ -3,15 +3,18 @@ import type { RoomId } from "../game/rooms.ts";
 import type { Neighborhood } from "../game/city/layout.ts";
 import { daylightAt } from "../game/city/daylight.ts";
 
-export type AmbienceId =
-  | "city-day"
-  | "city-night"
-  | "beach"
-  | "park"
-  | "stadium"
-  | "fountain"
-  | "music-boardwalk"
-  | "music-lounge";
+/** Every looped sound file (public/audio/<id>.ogg). */
+export const AMBIENCE_IDS = [
+  "city-day",
+  "city-night",
+  "beach",
+  "park",
+  "stadium",
+  "fountain",
+  "music-boardwalk",
+  "music-lounge",
+] as const;
+export type AmbienceId = (typeof AMBIENCE_IDS)[number];
 
 /** Ids that are music beds: played on the music bus, instead of a jukebox track. */
 export function isMusicBed(id: AmbienceId): boolean {
@@ -69,4 +72,18 @@ function ambienceBase(
   if (room === "zoo") return { park: 0.3 };
   if (room === "plaza") return { fountain: 0.3 };
   return {};
+}
+
+/**
+ * Whether the sound files cover a place's ambience: some non-music file in
+ * `levels` is audible and has not `failed` (to load or decode, as on a
+ * browser without Ogg Opus). When they don't, the synthesized bed plays.
+ */
+export function filesCover(
+  levels: Partial<Record<AmbienceId, number>>,
+  failed: ReadonlySet<AmbienceId>,
+): boolean {
+  return AMBIENCE_IDS.some(
+    (id) => !!levels[id] && !isMusicBed(id) && !failed.has(id),
+  );
 }

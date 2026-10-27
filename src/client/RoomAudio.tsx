@@ -12,7 +12,7 @@ import {
   unlockAudio,
   type Ambience,
 } from "../audio/worldSounds.ts";
-import { ambienceFor } from "../audio/ambience.ts";
+import { ambienceFor, filesCover, type AmbienceId } from "../audio/ambience.ts";
 import { setFileAmbience } from "../audio/soundFiles.ts";
 import { cityHour } from "./city/daylight.ts";
 import type { RoomId } from "../game/rooms.ts";
@@ -194,8 +194,13 @@ export function RoomAudio({ room, muted }: { room: RoomId; muted: boolean }) {
   const fileFountain = fileLevels.fountain ?? 0;
   const fileBoardwalk = fileLevels["music-boardwalk"] ?? 0;
   const fileLounge = fileLevels["music-lounge"] ?? 0;
+  // files that would not play here: their places keep the synthesized bed
+  const [failed, setFailed] = useState<ReadonlySet<AmbienceId>>(
+    () => new Set(),
+  );
   useEffect(() => {
     if (!unlocked) return;
+    let live = true;
     void setFileAmbience({
       "city-day": fileDay,
       "city-night": fileNight,
@@ -205,7 +210,13 @@ export function RoomAudio({ room, muted }: { room: RoomId; muted: boolean }) {
       fountain: fileFountain,
       "music-boardwalk": fileBoardwalk,
       "music-lounge": fileLounge,
+    }).then((gone) => {
+      // the set only grows: a new size is news, the same size is not
+      if (live) setFailed((was) => (gone.size === was.size ? was : gone));
     });
+    return () => {
+      live = false;
+    };
   }, [
     unlocked,
     fileDay,
@@ -223,7 +234,7 @@ export function RoomAudio({ room, muted }: { room: RoomId; muted: boolean }) {
     },
     [],
   );
-  const bed: Ambience | null = Object.keys(fileLevels).length
+  const bed: Ambience | null = filesCover(fileLevels, failed)
     ? null
     : (AMBIENCE[room] ?? null);
   useEffect(() => {

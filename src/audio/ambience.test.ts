@@ -1,7 +1,7 @@
 // Ambience follows the active room, district, and the city's own daylight.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { ambienceFor } from "./ambience.ts";
+import { ambienceFor, filesCover } from "./ambience.ts";
 
 test("city ambience follows daylight and beachside", () => {
   assert.deepEqual(ambienceFor("city", "downtown", 12), {
@@ -45,4 +45,21 @@ test("in Uptown's park the city hears birds and the fountain, and less traffic",
       (ambienceFor("city", "uptown", 12)["city-day"] ?? 0),
   );
   assert.equal(ambienceFor("city", "uptown", 12).park, undefined);
+});
+
+test("the synthesized bed stays on unless a sound file that plays covers the place", () => {
+  const none = new Set<never>();
+  // a room with no files keeps its synthesized bed
+  assert.equal(filesCover({}, none), false);
+  // the beach file covers the marina, until it fails to load or decode
+  assert.equal(filesCover({ beach: 0.3 }, none), true);
+  assert.equal(filesCover({ beach: 0.3 }, new Set(["beach"])), false);
+  // a silent level covers nothing; a music bed alone is not ambience
+  assert.equal(filesCover({ "city-night": 0 }, none), false);
+  assert.equal(filesCover({ "music-lounge": 0.2 }, none), false);
+  // the city at dusk: one of its two beds still plays
+  assert.equal(
+    filesCover({ "city-day": 0.1, "city-night": 0.2 }, new Set(["city-day"])),
+    true,
+  );
 });
