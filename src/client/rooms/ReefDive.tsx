@@ -229,7 +229,12 @@ function Diving({ player }: { player: Player }) {
     startDive();
     state.current.air = dive.get().air;
     scuba.set({ wearing: true });
-    return endDive;
+    // she can leave by any travel (an arrest, a visit, a party), not only
+    // the ladder: the gear comes off with the dive
+    return () => {
+      endDive();
+      scuba.set({ wearing: false });
+    };
   }, []);
   const mouth = useRef<[number, number]>([0, 0]);
   const scratch = useRef({ x: 0, z: 0, above: 0, yaw: 0 });

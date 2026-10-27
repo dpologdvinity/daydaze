@@ -199,8 +199,12 @@ function SeaSurface({ onPick }: { onPick: PickHandler }) {
 export function OpenWater({ onPick }: { onPick: PickHandler }) {
   const bed = useMemo(seabed, []);
   useEffect(() => () => bed.dispose(), [bed]);
-  // her tank and mask come off when she leaves the sea
-  useEffect(() => () => scuba.set({ wearing: false }), []);
+  // rented gear goes back on in the sea (the reef takes it off as she
+  // surfaces) and comes off when she leaves
+  useEffect(() => {
+    scuba.set({ wearing: scuba.get().rented });
+    return () => scuba.set({ wearing: false });
+  }, []);
   return (
     <>
       <color attach="background" args={["#8fd6ff"]} />
