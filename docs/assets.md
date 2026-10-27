@@ -52,6 +52,15 @@ future imported packs belong here when they enter the game.
 | Picnic Table | J-Toastie | CC-BY 3.0 | https://poly.pizza/m/GQieALI2C4 | Picnic tables in the park. |
 | Picnic Basket | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/aWBGhxXig8y | Baskets on the park's picnic blankets. |
 | Round Rug | Quaternius | CC0 1.0 | https://poly.pizza/m/ZYBzMHnSbM | Picnic blankets on the park lawn. |
+| Coral Reef Set 1 | MiniPoly | CC0 1.0 | https://poly.pizza/m/74GL45Fvdh | Reef dive: coral heads, instanced; sets joined and compressed (art/ocean). |
+| Coral Reef Sets 2 to 6 | MiniPoly | CC-BY 3.0 | https://poly.pizza/bundle/Coral-Reef-Kit-ghN8EmbYa6 | Reef dive: coral, branching coral and anemones, instanced. |
+| Coral Grouper | Quaternius | CC0 1.0 | https://poly.pizza/m/Q2GNw9TRzF | Reef dive: the grouper, one vertex-colored skinned mesh. |
+| Ship Wreck | Kenney | CC0 1.0 | https://poly.pizza/m/4qia78IBmZ | Reef dive: the wreck to explore. |
+| Anchor | Quaternius | CC0 1.0 | https://poly.pizza/m/ejWQny9Gcz | Reef dive: the anchor by the wreck. |
+| Seaweed | Mohabins | CC0 1.0 | https://poly.pizza/m/oYxUdpyc4u | Reef dive: kelp stands. |
+| Crab | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/1O5Q4pE8X6e | Crabs scuttling on Seaside Swim's sand and the reef floor. |
+| Turtle | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/fklSEvGm1Q8 | Reef dive: the sea turtle. |
+| Seagull and Flying seagull | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/0WRzrtCIIRp | Gulls perched on Seaside Swim's sand and wheeling overhead. |
 
 
 Street furniture is built by `art/street/build_street.py` into `public/models/street/` (every model cut down to a few hundred triangles).

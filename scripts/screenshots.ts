@@ -126,6 +126,39 @@ const SHOTS: {
   { name: "courtside", query: "room=courtside" },
   { name: "catwalk", query: "room=catwalk" },
   { name: "mermaid-cove", query: "room=mermaid-cove" },
+  { name: "open-water", query: "room=open-water" },
+  { name: "open-water-full", query: "room=open-water&view=full" },
+  { name: "reef-dive", query: "room=reef-dive" },
+  {
+    // swimming out past the lane buoys, strokes and all, fish below
+    name: "open-water-swim",
+    query: "room=open-water&at=2,-9&yaw=3.14&view=full",
+    live: true,
+    act: async (page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      await page.keyboard.down("w");
+      await page.waitForTimeout(6_000);
+    },
+  },
+  {
+    // a diver on the reef: tank, mask, bubbles, the gauge, the log
+    name: "reef-dive-swim",
+    query: "room=reef-dive&at=0,-4&yaw=3.14&view=full",
+    live: true,
+    act: async (page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      await page.keyboard.down("w");
+      await page.waitForTimeout(6_000);
+    },
+  },
   { name: "skate-diner", query: "room=skate-diner" },
   { name: "museum", query: "room=museum" },
   { name: "salon", query: "room=salon" },

@@ -38,3 +38,4 @@ coverage/
 .playwright-cli/
 # direnv (loads .env when you cd in)
 .envrc
+art/ocean/.cache

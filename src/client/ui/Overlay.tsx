@@ -206,6 +206,10 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Mermaid Cove. The mermaids sing on the shells at the waterline: sing it back, one note longer each round. Or sit on a log and watch them swim.",
   catwalk:
     "The Catwalk. Walk the runway for the judges: strut, pose and twirl as each cue's ring closes.",
+  "open-water":
+    "Seaside Swim. Wade in and swim out among the fish: click the water to swim there. Rent scuba gear at the dive shack, then swim into the red buoy to dive.",
+  "reef-dive":
+    "The reef. Swim toward the sea life to spot it: find five kinds for a prize, and explore the wreck. Watch your air, and take the ladder up when it runs low.",
   courtside:
     "The Courtside Club. Play seven points against the club pro: swing as the ball reaches you, and a perfect swing deep in a rally is a winner.",
   marina:

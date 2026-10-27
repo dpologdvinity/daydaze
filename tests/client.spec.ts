@@ -1787,6 +1787,51 @@ test("Ink & Needle: buy a rose gold stud for the belly button", async ({
   expect(errors).toEqual([]);
 });
 
+test("Seaside Swim: rent gear, dive to the reef, spot a fish and surface with a prize", async ({
+  page,
+}) => {
+  test.setTimeout(600_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=open-water&debug=1`);
+  await expect(canvasOf(page)).toHaveAttribute("data-frames", "10", {
+    timeout: 240_000,
+  });
+  await page.getByRole("button", { name: "Rent scuba gear" }).click();
+  await page.getByRole("button", { name: "Go to the Reef" }).click();
+  const dive = page.getByRole("region", { name: "Reef dive" });
+  await expect(dive.getByRole("meter", { name: "Air" })).toBeVisible({
+    timeout: 120_000,
+  });
+  // swim out toward the yellow tang school ahead
+  await page.keyboard.down("w");
+  await expect(
+    dive.getByRole("listitem", { name: "Yellow tang, spotted" }),
+  ).toBeVisible({ timeout: 180_000 });
+  await page.keyboard.up("w");
+  // and back to the ladder, which brings her up to the surface
+  await page.keyboard.down("s");
+  await expect(page.getByRole("region", { name: "Dive shack" })).toBeVisible({
+    timeout: 240_000,
+  });
+  await page.keyboard.up("s");
+  await expect(page.getByRole("status", { name: "Prize" })).toContainText(
+    "Reef dive",
+  );
+  expect(errors).toEqual([]);
+});
+
+test("the dive buoy won't take a swimmer without gear", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=open-water&debug=1`);
+  await expect(canvasOf(page)).toHaveAttribute("data-frames", "10", {
+    timeout: 240_000,
+  });
+  await page.getByRole("button", { name: "Go to the Reef" }).click();
+  await expect(page.getByRole("status")).toContainText("Rent scuba gear");
+  await expect(page.getByRole("region", { name: "Dive shack" })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test("the debug buttons take the player into Kamayan Hall", async ({
   page,
 }) => {
@@ -2003,6 +2048,8 @@ for (const room of [
   "boardwalk-arcade",
   "drive-in",
   "wine-bar",
+  "open-water",
+  "reef-dive",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

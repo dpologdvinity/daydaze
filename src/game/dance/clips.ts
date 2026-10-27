@@ -46,6 +46,10 @@ export const IDLE_CLIPS: readonly string[] = idsOf("idle");
 /** Where a seated doll with no held pose of her own sits. */
 export const SEAT_CLIP = idsOf("seat")[0] ?? "";
 
+/** An afloat doll's strokes while she moves, and her tread when she stops. */
+export const SWIM_CLIP = "swim-front";
+export const TREAD_CLIP = "swim-tread";
+
 /** The Lean mood: an elbow on the bar. */
 export const LEAN_CLIP = "pose-lean";
 
@@ -70,6 +74,8 @@ export type DollState = {
   dance: string;
   couple: CoupleRole | undefined;
   seed: number;
+  /** In the sea, out of her depth: she strokes or treads whatever her mood. */
+  afloat?: boolean;
 };
 
 /** A clip to play: `rate` scales its speed; `offset` (seconds) shifts its
@@ -91,6 +97,7 @@ export function pickClip(s: DollState): Play | null {
   if (!s.loaded) return null;
   const play = (id: string, rate = 1, offset = 0): Play | null =>
     clipOf(id) ? { id, rate, offset } : null;
+  if (s.afloat) return play(s.speed > MOVING ? SWIM_CLIP : TREAD_CLIP);
   if (s.speed > MOVING) {
     const walk = clipOf(s.walk);
     return walk?.kind === "walk"

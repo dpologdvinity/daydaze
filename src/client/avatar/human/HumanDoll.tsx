@@ -48,6 +48,8 @@ import { useQuality } from "../../world/quality.ts";
 import { NPC_GAITS, gaitOf } from "../../../game/gaits.ts";
 import { BUILT_STRIDE, walkPhaseRate } from "../../../game/dance/stride.ts";
 import { BONE, BuiltPose, clipsFor, loadAnims } from "./anims.ts";
+import { afloat, scuba } from "./afloat.ts";
+import { ScubaGear } from "./ScubaGear.tsx";
 
 import { paintFace, paintIris, paintLashes, readMarks } from "./faceCanvas.ts";
 import { Jewelry, readAnchors } from "./Jewelry.tsx";
@@ -706,6 +708,7 @@ export function HumanDoll({
   const lowTierNpc = useQuality() === "low" && !own;
   const lodNear = lowTierNpc ? LOW_TIER_NEAR : LOD_NEAR;
   const lodFar = lowTierNpc ? LOW_TIER_FAR : LOD_FAR;
+  const gearOn = scuba.use().wearing;
   const root = useRef<THREE.Group>(null);
   const face = useMemo(
     () => (look.face || !seed ? faceOf(look) : seededFace(seed)),
@@ -838,6 +841,7 @@ export function HumanDoll({
         dance,
         couple,
         seed,
+        afloat: own && afloat.on,
       });
       const clip = want && clips?.get(want.id);
       if (want && clip) {
@@ -942,6 +946,12 @@ export function HumanDoll({
       <primitive object={body.scene} />
       <Jewelry
         piercings={piercings}
+        anchors={body.anchors}
+        bones={body.bones}
+        restInverse={body.restInverse}
+      />
+      <ScubaGear
+        on={own && gearOn}
         anchors={body.anchors}
         bones={body.bones}
         restInverse={body.restInverse}

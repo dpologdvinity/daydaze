@@ -235,6 +235,16 @@ const ROOM_SHOTS: Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }> =
       eye: new THREE.Vector3(3, 4.5, 13),
       look: new THREE.Vector3(0, 0, -4),
     },
+    // from up the sand, over the shack and the shallows to the dive buoy
+    "open-water": {
+      eye: new THREE.Vector3(4.5, 3.4, 16),
+      look: new THREE.Vector3(0, 0.5, 3),
+    },
+    // from behind the diver's start, down the reef toward the wreck
+    "reef-dive": {
+      eye: new THREE.Vector3(3, 3.4, 9),
+      look: new THREE.Vector3(-1, 1.2, -8),
+    },
     // from behind the south baseline, down the court to the pro
     courtside: {
       eye: new THREE.Vector3(6, 7, 20),
@@ -404,6 +414,8 @@ const MAX_DISTANCE: Record<RoomId, number> = {
   courtside: 32,
   catwalk: 20,
   "mermaid-cove": 24,
+  "open-water": 40,
+  "reef-dive": 22,
   "skate-diner": 20,
   museum: 20,
   salon: 16,

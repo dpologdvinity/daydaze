@@ -86,6 +86,7 @@ test("bumper cars, the Midway booths and the arcade cabinets have prizes", () =>
     "water-guns",
     "karaoke",
     "haunted",
+    "reef-dive",
   ] as const)
     assert.ok(PRIZE_GAMES.includes(game), game);
 });

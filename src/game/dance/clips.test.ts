@@ -7,6 +7,8 @@ import {
   MAN_STRIDE,
   naturalPace,
   SEAT_CLIP,
+  SWIM_CLIP,
+  TREAD_CLIP,
   clipOf,
   idleFor,
   pickClip,
@@ -125,4 +127,15 @@ test("a gait's natural pace: the woman's measured speed, the man's longer stride
   );
   assert.equal(naturalPace("salsa", false), undefined);
   assert.equal(naturalPace(undefined, true), undefined);
+});
+
+test("an afloat doll strokes while she moves and treads when she stops, whatever her mood", () => {
+  assert.equal(clipOf(SWIM_CLIP)?.kind, "swim");
+  assert.equal(clipOf(TREAD_CLIP)?.kind, "swim");
+  const swim = { ...base, afloat: true, mood: "dance" } as const;
+  assert.equal(pickClip({ ...swim, speed: 1 })?.id, SWIM_CLIP);
+  assert.equal(pickClip(swim)?.id, TREAD_CLIP);
+  assert.equal(pickClip({ ...base, afloat: false })?.id, idleFor(0));
+  // until the clips load she wears her built pose
+  assert.equal(pickClip({ ...swim, loaded: false }), null);
 });

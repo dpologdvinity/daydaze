@@ -3,7 +3,7 @@
 // swim clip does the rest. Time runs slower under reduced motion.
 
 import { useRef, type JSX } from "react";
-import type { FishKind } from "../../game/creatures.ts";
+import type { FishKind, SeaKind } from "../../game/creatures.ts";
 import { useReducedMotion } from "../motion.ts";
 import { Creature, type CreaturePose } from "./Creature.tsx";
 
@@ -12,7 +12,7 @@ export function SwimmingCreature({
   path,
   scale,
 }: {
-  kind: FishKind;
+  kind: FishKind | SeaKind;
   /** Fills in x, y, z and yaw for `t` seconds; no allocation. */
   path: (t: number, pose: CreaturePose) => void;
   scale?: number;

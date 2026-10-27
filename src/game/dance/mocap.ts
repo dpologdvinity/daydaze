@@ -381,6 +381,20 @@ export const MOCAP_CLIPS: readonly MocapClip[] = [
     period: 3.3,
   },
   {
+    id: "swim-front",
+    kind: "swim",
+    label: "Swim",
+    source: "Mixamo Swimming_Swimming-Underwater",
+    period: 4.5333,
+  },
+  {
+    id: "swim-tread",
+    kind: "swim",
+    label: "Tread water",
+    source: "Mixamo Treading-Water_Floating",
+    period: 3.0,
+  },
+  {
     id: "dig",
     kind: "emote",
     label: "Dig",

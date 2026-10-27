@@ -50,6 +50,8 @@ const MUSIC: Partial<Record<RoomId, TrackId>> = {
   courtside: "sugar-rush-pop",
   catwalk: "sugar-rush-pop",
   "mermaid-cove": "waterhole-twilight",
+  "open-water": "canopy-lofi",
+  "reef-dive": "waterhole-twilight",
   "skate-diner": "roller-disco",
   museum: "canopy-lofi",
   salon: "sugar-rush-pop",
@@ -91,6 +93,7 @@ const AMBIENCE: Partial<Record<RoomId, Ambience>> = {
   marina: "beach",
   courtside: "city",
   "mermaid-cove": "beach",
+  "open-water": "beach",
   stadium: "city",
   gridiron: "city",
   // the city's hum, thirty floors down

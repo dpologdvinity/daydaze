@@ -5,6 +5,8 @@
 // rooms.test.ts, ROOM_HINTS, ROOM_SHOTS, SCENES and a city door.
 
 import * as LUNE from "./lune.ts";
+import * as OPEN_WATER from "./openWater.ts";
+import * as REEF from "./dive.ts";
 import { CITY_AREA, CITY_BOUNDS, CITY_SPAWN } from "./city/layout.ts";
 import { FOOD_ROOM_EXITS } from "./food/storefronts.ts";
 import {
@@ -155,6 +157,8 @@ export type RoomId =
   | "courtside"
   | "catwalk"
   | "mermaid-cove"
+  | "open-water"
+  | "reef-dive"
   | "skate-diner"
   | "halo-halo-cafe"
   | "ramen-shop"
@@ -1237,6 +1241,48 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to Shore Boulevard",
         target: "city",
         targetSpawn: { position: COVE.COVE_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  "open-water": {
+    id: "open-water",
+    name: "Seaside Swim",
+    walkable: OPEN_WATER.FLOOR,
+    spawn: { position: OPEN_WATER.SPAWN, yaw: Math.PI },
+    swimwear: true,
+    portals: [
+      {
+        id: "open-water-to-city",
+        position: OPEN_WATER.EXIT,
+        radius: 0.8,
+        label: "Out to Shore Boulevard",
+        target: "city",
+        targetSpawn: { position: OPEN_WATER.WATER_DOOR.landing, yaw: 0 },
+      },
+      {
+        id: "open-water-to-reef",
+        position: OPEN_WATER.DIVE_BUOY,
+        radius: OPEN_WATER.DIVE_RADIUS,
+        label: "Down to the reef",
+        target: "reef-dive",
+        targetSpawn: { position: REEF.SPAWN, yaw: Math.PI },
+      },
+    ],
+  },
+  "reef-dive": {
+    id: "reef-dive",
+    name: "The Reef",
+    walkable: REEF.FLOOR,
+    spawn: { position: REEF.SPAWN, yaw: Math.PI },
+    swimwear: true,
+    portals: [
+      {
+        id: "reef-to-surface",
+        position: REEF.LADDER,
+        radius: 1.1,
+        label: "Up the ladder to the surface",
+        target: "open-water",
+        targetSpawn: { position: OPEN_WATER.SURFACE_LANDING, yaw: 0 },
       },
     ],
   },

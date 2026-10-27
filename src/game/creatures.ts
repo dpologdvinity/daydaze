@@ -41,7 +41,11 @@ export type FishKind =
   | "cute-mandarinfish"
   | "cute-zebraclownfish";
 
-export type CreatureKind = LandKind | FishKind;
+/** Sea life from Poly Pizza (CC0): the grouper swims, the turtle glides on
+ * its one pose, the crab walks the sand. */
+export type SeaKind = "grouper" | "turtle" | "crab";
+
+export type CreatureKind = LandKind | FishKind | SeaKind;
 
 /** The clips a GLB can carry: land animals have the first set, fish `swim`. */
 export type Clip =
@@ -92,6 +96,9 @@ export const LENGTH: Record<CreatureKind, number> = {
   "cute-lionfish": 0.5,
   "cute-mandarinfish": 0.4,
   "cute-zebraclownfish": 0.4,
+  grouper: 1.4,
+  turtle: 1.1,
+  crab: 0.55,
 };
 
 /** A creature's GLB path. */
