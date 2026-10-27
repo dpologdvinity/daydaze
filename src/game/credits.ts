@@ -207,6 +207,8 @@ export const CREDITS: readonly {
         license: "CC-BY 3.0",
         url: "https://poly.pizza/m/wn85Xr9lM3",
         usedFor: "Sidewalk planter boxes, decimated.",
+      },
+      {
         title: "Coral Reef Set 1",
         author: "MiniPoly",
         license: "CC0 1.0",
@@ -250,10 +252,10 @@ export const CREDITS: readonly {
         usedFor: "Reef dive: kelp stands.",
       },
       {
-        title: "Crab Enemy",
-        author: "Quaternius",
-        license: "CC0 1.0",
-        url: "https://poly.pizza/m/Gs3yfsV5lB",
+        title: "Crab",
+        author: "Poly by Google",
+        license: "CC-BY 3.0",
+        url: "https://poly.pizza/m/1O5Q4pE8X6e",
         usedFor: "Crabs scuttling on Seaside Swim's sand and the reef floor.",
       },
       {

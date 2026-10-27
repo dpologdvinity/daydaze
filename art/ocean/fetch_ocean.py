@@ -26,7 +26,7 @@ MODELS = {
     "4qia78IBmZ": "shipwreck",  # Kenney, CC0
     "ejWQny9Gcz": "anchor",  # Quaternius, CC0
     "oYxUdpyc4u": "seaweed",  # Mohabins, CC0
-    "Gs3yfsV5lB": "crab",  # Quaternius, CC0
+    "1O5Q4pE8X6e": "crab",  # Poly by Google, CC-BY 3.0
     "fklSEvGm1Q8": "turtle",  # Poly by Google, CC-BY 3.0
     "0WRzrtCIIRp": "seagull",  # Poly by Google, CC-BY 3.0
     "6Tpj_vcWP3f": "seagull-fly",  # Poly by Google, CC-BY 3.0

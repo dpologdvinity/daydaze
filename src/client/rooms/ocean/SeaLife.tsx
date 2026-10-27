@@ -68,7 +68,10 @@ function Crab({ at, i }: { at: readonly [number, number]; i: number }) {
         pose.z = at[1];
         pose.y = 0;
         pose.yaw = Math.cos(t * 0.35) > 0 ? Math.PI / 2 : -Math.PI / 2;
-        pose.clip = Math.abs(Math.cos(t * 0.35)) > 0.25 ? "walk" : "idle";
+        const moving = Math.abs(Math.cos(t * 0.35)) > 0.25;
+        pose.clip = moving ? "walk" : "idle";
+        // a static shell: a quick skitter in place of leg strokes
+        pose.y = moving ? Math.abs(Math.sin(t * 14)) * 0.025 : 0;
       }}
     />
   );

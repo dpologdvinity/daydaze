@@ -39,7 +39,7 @@ POLY = "../poly"
 for n in ["zebra", "giraffe", "elephant", "lion", "penguin", "flamingo", "cat", "rabbit"]:
     SOURCES[n] = f"{POLY}/{n}.glb"
 # Sea life from Poly Pizza (art/ocean/fetch_ocean.py puts them in
-# art/ocean/.cache/glb): the grouper and crab are skinned, the turtle is static.
+# art/ocean/.cache/glb): the grouper is skinned; the crab and turtle are static meshes.
 OCEAN = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ocean", ".cache", "glb")
 for n in ["grouper", "crab", "turtle"]:
     SOURCES[n] = os.path.join(OCEAN, n + ".glb")

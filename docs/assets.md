@@ -58,7 +58,7 @@ future imported packs belong here when they enter the game.
 | Ship Wreck | Kenney | CC0 1.0 | https://poly.pizza/m/4qia78IBmZ | Reef dive: the wreck to explore. |
 | Anchor | Quaternius | CC0 1.0 | https://poly.pizza/m/ejWQny9Gcz | Reef dive: the anchor by the wreck. |
 | Seaweed | Mohabins | CC0 1.0 | https://poly.pizza/m/oYxUdpyc4u | Reef dive: kelp stands. |
-| Crab Enemy | Quaternius | CC0 1.0 | https://poly.pizza/m/Gs3yfsV5lB | Crabs scuttling on Seaside Swim's sand and the reef floor. |
+| Crab | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/1O5Q4pE8X6e | Crabs scuttling on Seaside Swim's sand and the reef floor. |
 | Turtle | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/fklSEvGm1Q8 | Reef dive: the sea turtle. |
 | Seagull and Flying seagull | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/0WRzrtCIIRp | Gulls perched on Seaside Swim's sand and wheeling overhead. |
 
