@@ -445,11 +445,11 @@ export const BLOCKERS: readonly (readonly Vec2[])[] = [
   box(8, 10, 13, 14),
 ];
 
-/** Pasture fence panels (the Quaternius fence is 5.9 m long and 1.2 m tall; 0.9 brings it to a farm fence; the panels overlap so the rails run unbroken). */
+/** Pasture fence panels (the Quaternius fence is 5.9 m long and 1.2 m tall; 0.9 brings it to a farm fence; the picket run only fills about 40% of the model box, so panels are stretched to meet end to end). */
 export const PASTURE_FENCE_SPOTS = rectFenceSpots(
   Object.values(PASTURES),
   5.89,
   0.9,
   3.4,
-  1.12,
+  2.7,
 );

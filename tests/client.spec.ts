@@ -2089,7 +2089,6 @@ for (const room of [
   "paintball",
   "music-studio",
   "zoo",
-  "farm",
   "dealership",
   "jazz-club",
   "vinyl-vault",

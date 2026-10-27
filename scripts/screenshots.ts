@@ -460,6 +460,8 @@ const SHOTS: {
   { name: "jade-whisk-boba-matcha", query: "room=boba-matcha" },
   { name: "purple-pandesal-ube", query: "room=ube-bakery" },
   { name: "farm", query: "room=farm" },
+  // close on the north pasture's fence rails and the plots
+  { name: "farm-fence", query: "room=farm&cam=12,3.5,-1,12,0.6,-12" },
   {
     name: "plate-rush-app",
     query: "room=city",
