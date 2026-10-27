@@ -11,6 +11,7 @@ import tseslint from "typescript-eslint";
 export default defineConfig(
   {
     ignores: [
+      "docs/agents/**",
       "dist/",
       "coverage/",
       "test-results/",
