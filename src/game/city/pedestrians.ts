@@ -68,6 +68,8 @@ export const PEDESTRIANS: readonly Pedestrian[] = CITY_SURFACES.filter(
   ];
   // strollers keep to the open deck, in front of the storefronts
   const z0 = s.kind === "boardwalk" ? Math.max(minZ, SHOP_Z1) : minZ;
+  // the gaps between storefronts are no strips to walk: they have no depth left
+  if (s.kind === "boardwalk" && z1 - z0 < 2) return [];
   const along = x1 - x0 >= z1 - z0;
   const length = along ? x1 - x0 : z1 - z0;
   if (length < 30) return [];
@@ -75,7 +77,9 @@ export const PEDESTRIANS: readonly Pedestrian[] = CITY_SURFACES.filter(
   return Array.from({ length: count }, (_, k): Pedestrian => {
     const i = si * 7 + k;
     // lanes keep to the middle of the strip, clear of lamps at its edge
-    const lane = 0.3 + rand(i, 1) * 0.4;
+    // (on the deck: the stretch just south of the middle, clear of benches and carts)
+    const lane =
+      s.kind === "boardwalk" ? 0.25 + rand(i, 1) * 0.2 : 0.3 + rand(i, 1) * 0.4;
     const a: Vec2 = along
       ? [x0 + 1, z0 + (z1 - z0) * lane]
       : [x0 + (x1 - x0) * lane, z0 + 1];

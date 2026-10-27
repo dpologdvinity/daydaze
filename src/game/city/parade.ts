@@ -1,7 +1,7 @@
 // The Pride parade along the Beachside boardwalk: every few minutes a line
 // of floats rolls from the west end to the east, dancers aboard. Pure and
 // deterministic on the clock, so every player sees the same parade.
-import { BOARDWALK } from "./layout.ts";
+import { DECK_LANE_Z } from "./boardwalk.ts";
 
 export const PARADE_EVERY = 360;
 /** Meters a second the floats roll at. */
@@ -11,7 +11,8 @@ export const PARADE_FROM = -330;
 export const PARADE_TO = 330;
 export const FLOAT_GAP = 22;
 export const FLOATS = 4;
-export const PARADE_Z = (BOARDWALK.z0 + BOARDWALK.z1) / 2;
+/** The parade keeps to the middle of the open deck, clear of the storefronts and carts. */
+export const PARADE_Z = DECK_LANE_Z;
 /** Seconds from the first float's start to the last float's finish. */
 export const PARADE_SECONDS =
   (PARADE_TO - PARADE_FROM + FLOAT_GAP * (FLOATS - 1)) / PARADE_SPEED;

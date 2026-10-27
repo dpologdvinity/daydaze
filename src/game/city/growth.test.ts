@@ -21,5 +21,5 @@ test("dune grass stays on the sand between the deck and the water", () => {
 });
 
 test("the whole city's growth stays a size the client can sort on each plan reload", () => {
-  assert.ok(ALL_GROWTH.length < 40_000, `${ALL_GROWTH.length} tufts`);
+  assert.ok(ALL_GROWTH.length < 12_000, `${ALL_GROWTH.length} tufts`);
 });

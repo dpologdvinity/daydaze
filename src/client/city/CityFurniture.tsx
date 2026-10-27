@@ -28,6 +28,8 @@ import { disposeInstanced } from "./dispose.ts";
 const MODELS = "/models/street";
 /** The most pieces of one kind in view at once. */
 const CAPACITY = 256;
+/** `?debug=1` also reports how many of each kind are drawn (data-furniture-kinds). */
+const DEBUG = new URLSearchParams(location.search).get("debug") === "1";
 
 const url = (kind: FurnitureKind) => {
   const dir = MODEL_DIR[kind];
@@ -148,7 +150,7 @@ export function CityFurniture(): JSX.Element {
   useEffect(() => {
     const drawn = place(meshes, spots, at, low);
     // read by the screenshot script and tests: the models are in and placed
-    canvas.dataset.furnitureKinds = JSON.stringify(drawn);
+    if (DEBUG) canvas.dataset.furnitureKinds = JSON.stringify(drawn);
     if (spots.length > 0) canvas.dataset.furniture = "ready";
   }, [meshes, spots, at, low, canvas]);
   const all = useMemo(() => [...meshes.values()].flat(), [meshes]);

@@ -58,11 +58,12 @@ function nearby(
   at: readonly [number, number],
   low: boolean,
 ): Growth[] {
-  return growth
-    .map((g) => ({ g, d: Math.hypot(g.x - at[0], g.z - at[1]) }))
-    .filter(({ g, d }) => d <= GROWTH_RANGE[g.kind][low ? 0 : 1])
-    .sort((a, b) => a.d - b.d)
-    .map(({ g }) => g);
+  const near: { g: Growth; d: number }[] = [];
+  for (const g of growth) {
+    const d = Math.hypot(g.x - at[0], g.z - at[1]);
+    if (d <= GROWTH_RANGE[g.kind][low ? 0 : 1]) near.push({ g, d });
+  }
+  return near.sort((a, b) => a.d - b.d).map(({ g }) => g);
 }
 
 function place(

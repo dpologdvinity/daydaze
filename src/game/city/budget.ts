@@ -8,7 +8,7 @@
 import { cellsWithin } from "./cells.ts";
 import {
   FURNITURE_KINDS,
-  PARK_KINDS,
+  MODEL_DIR,
   furnitureVisible,
   type FurnitureKind,
 } from "./furniture.ts";
@@ -16,11 +16,11 @@ import {
   GROWTH_CAP,
   GROWTH_MODELS,
   GROWTH_RANGE,
-  parkGrowth,
   type GrowthKind,
 } from "./park.ts";
 import { elBoxes } from "./el.ts";
 import { BAY_TRIANGLES, HOUSE_MODELS, type BayInstance } from "./nyc.ts";
+import { ALL_GROWTH } from "./growth.ts";
 import { TREE_VARIANTS, drawCallsOf, planCity, trianglesOf } from "./plan.ts";
 import {
   BAY_RANGE,
@@ -68,13 +68,25 @@ export const MODEL_COST: Readonly<
   "park/picnic-table": { tris: 449, parts: 3 },
   "park/basket": { tris: 200, parts: 1 },
   "park/blanket": { tris: 128, parts: 2 },
+  "beach/carousel": { tris: 806, parts: 5 },
+  "beach/chaise": { tris: 300, parts: 2 },
+  "beach/cone": { tris: 250, parts: 2 },
+  "beach/ferris": { tris: 1599, parts: 1 },
+  "beach/hotdog-cart": { tris: 300, parts: 8 },
+  "beach/lifeguard": { tris: 500, parts: 7 },
+  "beach/popcorn-cart": { tris: 500, parts: 7 },
+  "beach/rail": { tris: 120, parts: 1 },
+  "beach/sandcastle": { tris: 249, parts: 1 },
+  "beach/towel": { tris: 60, parts: 2 },
+  "beach/umbrella-blue": { tris: 214, parts: 4 },
+  "beach/umbrella-red": { tris: 214, parts: 4 },
 };
 
 /** The low tier's far-twin tree model for a variant (CityTrees). */
 const treeModel = (variant: number) => `nature/commontree-${variant + 1}-lo`;
 /** A furniture kind's model (CityFurniture's url). */
 const furnitureModel = (kind: FurnitureKind) =>
-  `${PARK_KINDS.has(kind) ? "park" : "street"}/${kind}`;
+  `${MODEL_DIR[kind] ?? "street"}/${kind}`;
 const growthModel = (kind: GrowthKind) => `nature/${GROWTH_MODELS[kind]}`;
 
 /** Every model the low-tier cost reads. */
@@ -88,7 +100,7 @@ export function modelsInBudget(): string[] {
   ];
 }
 
-const GROWTH = parkGrowth();
+const GROWTH = ALL_GROWTH;
 
 /** The El is always drawn: four merged box meshes (trestle, stone, rails,
  * roofs) and three train cars of about 1,600 triangles each. */

@@ -85,9 +85,9 @@ export function deckGaps(
   return out;
 }
 
-/** The Ferris wheel (on the sand, facing the sea) and the carousel (on the deck). */
+/** The Ferris wheel and the carousel, both on the sand at the Fairground end, off the deck the parade and the strollers use. */
 export const FERRIS = { x: 338, z: 301 };
-export const CAROUSEL = { x: 296, z: 283, r: 4.5 };
+export const CAROUSEL = { x: 296, z: 300, r: 4.5 };
 
 const octagon = (cx: number, cz: number, r: number): Vec2[] =>
   Array.from({ length: 8 }, (_, i): Vec2 => {
@@ -147,7 +147,8 @@ export function boardwalkFurniture(
     [130, "hotdog-cart"],
     [-160, "hotdog-cart"],
   ] as const)
-    out.push(spot(kind, x, SHOP_Z1 + 4.5, Math.PI));
+    // on the sea side of the deck, clear of the lane down its middle
+    out.push(spot(kind, x, DECK.z1 - 4, Math.PI));
   // an ice cream cone on the roof of the ice cream shop
   for (const s of shops)
     if (s.sign.text.includes("ICE CREAM"))
@@ -178,3 +179,6 @@ export function boardwalkFurniture(
   }
   return out;
 }
+
+/** The lane down the middle of the open deck: the parade rolls along it and strollers walk beside it. */
+export const DECK_LANE_Z = (SHOP_Z1 + DECK.z1) / 2;
