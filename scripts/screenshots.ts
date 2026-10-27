@@ -246,7 +246,6 @@ const SHOTS: {
     ["nyc-street", "12:00", "-30,-6", 0],
     ["nyc-night", "22:00", "-30,-6", 0],
     ["nyc-corner", "12:00", "-70,-8", Math.PI / 2],
-    ["nyc-corner-before", "12:00", "-70,-8&bays=0", Math.PI / 2],
   ].map(([name, time, at, yaw]) => ({
     name: String(name),
     query: `room=city&view=full&time=${time}&at=${at}&yaw=${yaw}`,
