@@ -303,7 +303,13 @@ const SHOTS: {
     // Uptown's Park and Gardens (src/game/city/park.ts): the fountain plaza,
     // paths, pond, bandstand and picnics
     name: "city-park",
-    query: "room=city&view=full&time=14:00&at=250,-281",
+    query: "room=city&view=full&time=14:00&at=254,-280",
+    act: furnitureReady,
+  },
+  {
+    // the park's entrance from Park Avenue, flanked by trees
+    name: "city-park-entrance",
+    query: "room=city&view=full&time=14:00&at=254,-262",
     act: furnitureReady,
   },
   {

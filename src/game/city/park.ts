@@ -111,8 +111,19 @@ export function parkTrees(): Vec2[] {
       out.push([x, z]);
     }
   }
+  // trees flanking the park's entrance, where the path meets Park Avenue
+  for (const t of [
+    [247.5, -270.5],
+    [260.5, -270],
+    [245, -279],
+    [263, -280],
+  ] as const)
+    out.push([t[0], t[1]]);
   return out;
 }
+
+/** Whether (x, z) is inside the park (the player hears birds and the fountain). */
+export const inPark = (x: number, z: number) => inBox(PARK, x, z);
 
 /** Lamps down the east-west path, alternating its sides. */
 export function parkLamps(): Vec2[] {
@@ -146,7 +157,7 @@ export function parkFurniture(): FurnitureSpot[] {
   const out: FurnitureSpot[] = [
     spot("fountain", PARK_FOUNTAIN.x, PARK_FOUNTAIN.z),
     spot("gazebo", BANDSTAND.x, BANDSTAND.z),
-    spot("rowboat", POND.x + 3, POND.z + 2.5, 0.7, 1, 0.1),
+    spot("rowboat", POND.x + 2.5, POND.z + 3, 0.7, 1.6, 0.1),
   ];
   // benches along the path, facing it, and round the pond, facing the water
   for (const x of [222, 244, 262, 278]) {
@@ -158,16 +169,16 @@ export function parkFurniture(): FurnitureSpot[] {
   out.push(spot("bench", POND.x + POND.r + 1.4, POND.z, -Math.PI / 2));
   out.push(spot("bench", PATH_NS.x1 + 1.2, -276, -Math.PI / 2));
   // ducks on the water
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 6; i++) {
     const a = hash(i, 11) * Math.PI * 2;
-    const d = 1.5 + hash(i, 12) * (POND.r - 3.5);
+    const d = 2 + hash(i, 12) * (POND.r - 4.5);
     out.push(
       spot(
         "duck",
         POND.x + Math.cos(a) * d,
         POND.z + Math.sin(a) * d,
         hash(i, 13) * Math.PI * 2,
-        0.9 + hash(i, 14) * 0.3,
+        2 + hash(i, 14) * 0.5,
         0.15,
       ),
     );
@@ -212,10 +223,10 @@ export function parkGrowth(): Growth[] {
     });
   // grass: a jittered grid over each lawn
   for (const lawn of PARK_LAWNS) {
-    for (let gx = lawn.x0 + 0.8; gx < lawn.x1; gx += 1.6) {
-      for (let gz = lawn.z0 + 0.8; gz < lawn.z1; gz += 1.6) {
-        const x = gx + (hash(gx, gz, 30) - 0.5) * 1.3;
-        const z = gz + (hash(gx, gz, 31) - 0.5) * 1.3;
+    for (let gx = lawn.x0 + 0.8; gx < lawn.x1; gx += 1.1) {
+      for (let gz = lawn.z0 + 0.8; gz < lawn.z1; gz += 1.1) {
+        const x = gx + (hash(gx, gz, 30) - 0.5) * 0.9;
+        const z = gz + (hash(gx, gz, 31) - 0.5) * 0.9;
         if (!inBox(lawn, x, z, -0.2)) continue;
         // bare patches where people sit
         if (blanketNear(x, z)) continue;

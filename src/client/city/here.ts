@@ -32,3 +32,24 @@ function subscribe(listener: () => void) {
 export function useNeighborhood(): Neighborhood {
   return useSyncExternalStore(subscribe, () => current);
 }
+
+// Whether the player is inside Uptown's park (the ambience adds birds and the
+// fountain); written by the city scene, like the neighborhood.
+const parkListeners = new Set<() => void>();
+let inParkNow = false;
+
+export function setInPark(next: boolean): void {
+  if (next === inParkNow) return;
+  inParkNow = next;
+  parkListeners.forEach((l) => l());
+}
+
+export function useInPark(): boolean {
+  return useSyncExternalStore(
+    (listener) => {
+      parkListeners.add(listener);
+      return () => parkListeners.delete(listener);
+    },
+    () => inParkNow,
+  );
+}

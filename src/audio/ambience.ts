@@ -32,8 +32,16 @@ export function ambienceFor(
   room: RoomId,
   district: Neighborhood,
   hour: number,
+  inPark = false,
 ): Partial<Record<AmbienceId, number>> {
   const levels = ambienceBase(room, district, hour);
+  // in Uptown's park: birdsong and the fountain, the traffic fading
+  if (room === "city" && inPark) {
+    levels.park = 0.3;
+    levels.fountain = 0.2;
+    for (const k of ["city-day", "city-night"] as const)
+      if (levels[k]) levels[k] = (levels[k] ?? 0) * 0.5;
+  }
   if (
     BOARDWALK_ROOMS.includes(room) ||
     (room === "city" && district === "beachside")

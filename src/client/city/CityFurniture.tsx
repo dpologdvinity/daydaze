@@ -22,6 +22,7 @@ import {
 import { createStore } from "../rooms/shared/store.ts";
 import { useQuality } from "../world/quality.ts";
 import { useDaylight } from "./daylight.ts";
+import { floated } from "./floated.ts";
 
 const MODELS = "/models/street";
 /** The most pieces of one kind in view at once. */
@@ -35,34 +36,6 @@ export const cityFurniture = createStore({
   spots: [] as readonly FurnitureSpot[],
   at: [0, 0] as readonly [number, number],
 });
-
-/**
- * A copy with float positions and normals. The optimized GLBs store them
- * quantized (normalized integers whose node transform restores the scale), and
- * baking a transform into a normalized attribute would clamp it to +-1.
- */
-function floated(source: THREE.BufferGeometry): THREE.BufferGeometry {
-  const geometry = source.clone();
-  for (const name of ["position", "normal"]) {
-    const a = geometry.getAttribute(name);
-    if (!a || a instanceof THREE.InterleavedBufferAttribute) {
-      if (a) geometry.setAttribute(name, floatCopy(a));
-      continue;
-    }
-    if (a.normalized || !(a.array instanceof Float32Array))
-      geometry.setAttribute(name, floatCopy(a));
-  }
-  return geometry;
-}
-
-function floatCopy(
-  a: THREE.BufferAttribute | THREE.InterleavedBufferAttribute,
-) {
-  const out = new THREE.BufferAttribute(new Float32Array(a.count * 3), 3);
-  for (let i = 0; i < a.count; i++)
-    out.setXYZ(i, a.getX(i), a.getY(i), a.getZ(i));
-  return out;
-}
 
 /** A model's meshes, each with its node transform baked into the geometry. */
 export function partsOf(
@@ -101,6 +74,8 @@ const up = new THREE.Vector3(0, 1, 0);
 /** The downloaded palm's olive leaves, pushed toward a fresh green. */
 const TINT: Partial<Record<FurnitureKind, THREE.Color>> = {
   palm: new THREE.Color(0.7, 1.45, 0.75),
+  // the fountain's grey stone, warmed to sandstone
+  fountain: new THREE.Color(1.1, 0.95, 0.76),
 };
 
 /** Scales the (own-copy) materials of `meshes` to `k` of their base color: the night dims them. */

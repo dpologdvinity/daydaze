@@ -13,6 +13,7 @@ import * as THREE from "three";
 import { TREE_VARIANTS, type TreeSpot } from "../../game/city/plan.ts";
 import { createStore } from "../rooms/shared/store.ts";
 import { useQuality } from "../world/quality.ts";
+import { floated } from "./floated.ts";
 
 const MODELS = "/models/nature";
 /** Trees nearer than this (meters, from where the plan was cut) get full detail. */
@@ -44,7 +45,7 @@ function partsOf(scene: THREE.Object3D): Part[] {
   const parts: Part[] = [];
   scene.traverse((o) => {
     if (!(o instanceof THREE.Mesh)) return;
-    const geometry = (o.geometry as THREE.BufferGeometry).clone();
+    const geometry = floated(o.geometry as THREE.BufferGeometry);
     geometry.applyMatrix4(o.matrixWorld);
     const material = Array.isArray(o.material) ? o.material[0] : o.material;
     if (material) parts.push({ geometry, material });

@@ -7,10 +7,12 @@
 // here is allocated per frame.
 
 import { useGLTF } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";
 import {
   GROUND,
+  PARK_FOUNTAIN,
   parkGrowth,
   POND,
   type Growth,
@@ -19,6 +21,7 @@ import {
 import { useQuality } from "../world/quality.ts";
 import { cityFurniture, dimMeshes, partsOf } from "./CityFurniture.tsx";
 import { useDaylight } from "./daylight.ts";
+import { useReducedMotion } from "../motion.ts";
 
 const MODELS: Record<GrowthKind, string> = {
   grass: "grass-common-tall-lo",
@@ -34,8 +37,9 @@ const url = (kind: GrowthKind) => `/models/nature/${MODELS[kind]}.glb`;
 
 /** How far (m) from the player each kind is drawn on the low and high tiers. */
 const RANGE: Record<GrowthKind, readonly [low: number, high: number]> = {
-  grass: [24, 48],
-  wispy: [24, 48],
+  grass: [20, 48],
+  // the dearer tuft: high tier only
+  wispy: [0, 48],
   fern: [40, 80],
   bush: [60, 110],
   flowers3: [45, 90],
@@ -54,7 +58,7 @@ const SCALE: Record<GrowthKind, number> = {
 };
 /** The most of one kind drawn at once (low tier keeps it small). */
 const CAPACITY = 1400;
-const LOW_CAP = 220;
+const LOW_CAP = 420;
 
 const m = new THREE.Matrix4();
 const q = new THREE.Quaternion();
@@ -64,6 +68,19 @@ const up = new THREE.Vector3(0, 1, 0);
 
 const GROWTH = parkGrowth();
 
+/** Growth within range, nearest first, so a full cap drops the far tufts. */
+function nearby(
+  growth: readonly Growth[],
+  at: readonly [number, number],
+  low: boolean,
+): Growth[] {
+  return growth
+    .map((g) => ({ g, d: Math.hypot(g.x - at[0], g.z - at[1]) }))
+    .filter(({ g, d }) => d <= RANGE[g.kind][low ? 0 : 1])
+    .sort((a, b) => a.d - b.d)
+    .map(({ g }) => g);
+}
+
 function place(
   meshes: ReadonlyMap<GrowthKind, THREE.InstancedMesh[]>,
   growth: readonly Growth[],
@@ -71,9 +88,7 @@ function place(
   low: boolean,
 ) {
   const counts = new Map<GrowthKind, number>();
-  for (const g of growth) {
-    const d = Math.hypot(g.x - at[0], g.z - at[1]);
-    if (d > RANGE[g.kind][low ? 0 : 1]) continue;
+  for (const g of nearby(growth, at, low)) {
     const n = counts.get(g.kind) ?? 0;
     if (n >= (low ? LOW_CAP : CAPACITY)) continue;
     q.setFromAxisAngle(up, g.yaw);
@@ -129,6 +144,7 @@ export function CityPark(): JSX.Element {
       {all.map((mesh) => (
         <primitive key={mesh.uuid} object={mesh} />
       ))}
+      <FountainWater />
       <mesh
         position={[POND.x, GROUND + 0.01, POND.z]}
         rotation={[-Math.PI / 2, 0, 0]}
@@ -141,3 +157,101 @@ export function CityPark(): JSX.Element {
 }
 
 useGLTF.preload(KINDS.map(url));
+
+// ---- the fountain's water and spray -------------------------------------
+// The model (public/models/park/fountain.glb) is bare stone: its lower pool
+// rim stands 0.38 m high and r 3 m, its upper bowl 1.0 m high and r 2.7 m,
+// and the spout tops out at 2.3 m. Water discs fill both, and a few dozen
+// droplets arc from the spout into the bowl.
+const DROPS = 48;
+const FLIGHT = 0.95;
+const SPOUT_Y = 2.3;
+const FOUNTAIN_WATER = new THREE.Color("#7cc4e6");
+
+/** The fountain's water and spray; dims at night, rests when motion is reduced. */
+export function FountainWater(): JSX.Element {
+  const { neon } = useDaylight();
+  const reduced = useReducedMotion();
+  const material = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: FOUNTAIN_WATER,
+        roughness: 0.1,
+        metalness: 0.1,
+        transparent: true,
+        opacity: 0.85,
+      }),
+    [],
+  );
+  const geometry = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute(
+      "position",
+      new THREE.BufferAttribute(new Float32Array(DROPS * 3), 3),
+    );
+    return g;
+  }, []);
+  const spray = useMemo(() => {
+    // a soft round dot, so the droplets are not squares
+    const c = document.createElement("canvas");
+    c.width = c.height = 32;
+    const g = c.getContext("2d");
+    if (g) {
+      const grad = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+      grad.addColorStop(0, "rgba(255,255,255,1)");
+      grad.addColorStop(1, "rgba(255,255,255,0)");
+      g.fillStyle = grad;
+      g.fillRect(0, 0, 32, 32);
+    }
+    return new THREE.PointsMaterial({
+      map: new THREE.CanvasTexture(c),
+      alphaTest: 0.02,
+      color: "#e6f7ff",
+      size: 0.28,
+      transparent: true,
+      opacity: 0.85,
+      depthWrite: false,
+    });
+  }, []);
+  useEffect(() => {
+    material.color.copy(FOUNTAIN_WATER).multiplyScalar(1 - 0.6 * neon);
+    spray.color.set("#e6f7ff").multiplyScalar(1 - 0.5 * neon);
+  }, [material, spray, neon]);
+  useFrame(({ clock }) => {
+    const t = reduced ? 0 : clock.elapsedTime;
+    const pos = geometry.getAttribute("position");
+    for (let i = 0; i < DROPS; i++) {
+      const phase = (i * 0.6180339) % 1;
+      const age = (t * 0.8 + phase) % 1;
+      const u = age * FLIGHT;
+      const a = i * 2.399963;
+      const out = 0.9 + ((i * 7) % 5) * 0.25;
+      pos.setXYZ(
+        i,
+        Math.cos(a) * out * u,
+        SPOUT_Y + 3.1 * u - 4.9 * u * u,
+        Math.sin(a) * out * u,
+      );
+    }
+    pos.needsUpdate = true;
+  });
+  return (
+    <group position={[PARK_FOUNTAIN.x, GROUND, PARK_FOUNTAIN.z]}>
+      <mesh
+        position={[0, 0.41, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        material={material}
+      >
+        <circleGeometry args={[2.95, 28]} />
+      </mesh>
+      <mesh
+        position={[0, 1.02, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        material={material}
+      >
+        <circleGeometry args={[2.35, 24]} />
+      </mesh>
+      <points geometry={geometry} material={spray} frustumCulled={false} />
+    </group>
+  );
+}
