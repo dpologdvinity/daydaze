@@ -451,5 +451,5 @@ export const PASTURE_FENCE_SPOTS = rectFenceSpots(
   5.89,
   0.9,
   3.4,
-  2.7,
+  2.9,
 );

@@ -5,7 +5,7 @@
 // and perimeter trees and split-rail fencing.
 
 import { useGLTF } from "@react-three/drei";
-import { Suspense, useMemo, type JSX } from "react";
+import { Suspense, useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";
 import {
   BARN_POS,
@@ -153,6 +153,15 @@ function Furrows() {
     m.frustumCulled = false;
     return m;
   }, []);
+  // free the furrows' own geometry and material when the room unloads
+  useEffect(
+    () => () => {
+      mesh.geometry.dispose();
+      if (!Array.isArray(mesh.material)) mesh.material.dispose();
+      mesh.dispose();
+    },
+    [mesh],
+  );
   return <primitive object={mesh} />;
 }
 
