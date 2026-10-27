@@ -6,7 +6,7 @@
 // player.
 
 import { useFrame } from "@react-three/fiber";
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import {
   CAROUSEL_RADIUS,
@@ -36,6 +36,9 @@ import {
   type Track,
 } from "../../../game/amusementPark.ts";
 import type { Look } from "../../../game/look.ts";
+import { Scatter } from "../zoo/Scatter.tsx";
+import type { Spot } from "../../../game/zoo.ts";
+import { InstancedModel, type PlaceCopy } from "./InstancedModel.tsx";
 import { Doll } from "../../avatar/Doll.tsx";
 import { useReducedMotion } from "../../motion.ts";
 import { canvasTex, GOLD, hdr, LACQUER } from "../shared/materials.ts";
@@ -50,14 +53,9 @@ import {
   type Segment,
 } from "./Instanced.tsx";
 import {
-  CAROUSEL_POLE,
-  COASTER_CAR,
   COMET,
   FERRIS_FRAME,
   FLUME,
-  LOG_BOAT,
-  GONDOLA,
-  HORSE,
   STARLIGHT,
   type CoasterParts,
   rimBulbs,
@@ -74,27 +72,6 @@ const TAU = Math.PI * 2;
 
 // Shared materials for the detailed ride parts. Colors come per instance, so
 // the materials stay white.
-const PAINT = new THREE.MeshStandardMaterial({
-  roughness: 0.45,
-  metalness: 0.1,
-});
-const TRIM = new THREE.MeshStandardMaterial({
-  color: "#2b1238",
-  roughness: 0.6,
-});
-const GLASS = new THREE.MeshStandardMaterial({
-  color: "#bff6ff",
-  emissive: "#ffb02e",
-  emissiveIntensity: 0.6,
-  transparent: true,
-  opacity: 0.55,
-  roughness: 0.1,
-  depthWrite: false,
-});
-const GLOW = new THREE.MeshBasicMaterial({
-  color: "#ffffff",
-  toneMapped: false,
-});
 const MIRROR = new THREE.MeshStandardMaterial({
   color: "#e8f6ff",
   metalness: 1,
@@ -134,7 +111,8 @@ export function useStripes(a: string, b: string) {
 }
 
 const GONDOLAS = 12;
-const GONDOLA_COLORS = ["#ff2f9a", "#3fe0d0", "#ffb02e"];
+/** The cabins' pastel tints, in turn round the wheel. */
+const GONDOLA_TINTS = ["#ff9ad0", "#9ff0e6", "#ffd68a"];
 const RIM_RADIUS = FERRIS.radius;
 const RIM_LATTICE = rimLattice(RIM_RADIUS);
 const RIM_BULBS = rimBulbs(RIM_RADIUS);
@@ -167,29 +145,17 @@ const RIDERS: readonly { gondola: number; look: Look }[] = (
 export function FerrisWheel() {
   const calm = useReducedMotion();
   const rim = useRef<THREE.Group>(null);
-  const paint = useRef<THREE.InstancedMesh>(null);
-  const glass = useRef<THREE.InstancedMesh>(null);
-  const trim = useRef<THREE.InstancedMesh>(null);
   const riders = useRef<(THREE.Group | null)[]>([]);
-  useLayoutEffect(() => {
-    const m = paint.current;
-    if (!m) return;
-    for (let k = 0; k < GONDOLAS; k++) {
-      m.setColorAt(k, new THREE.Color(GONDOLA_COLORS[k % 3]));
-    }
-    if (m.instanceColor) m.instanceColor.needsUpdate = true;
-  }, []);
-  useFrame(({ clock }) => {
+  // each gondola hangs on the rim, always upright
+  const gondolas = (place: PlaceCopy, elapsed: number) => {
     // one turn every 36 s; calm mode turns at a third of that speed
-    const turn = (clock.elapsedTime / 36) * (calm ? 0.35 : 1);
+    const turn = (elapsed / 36) * (calm ? 0.35 : 1);
     if (rim.current) rim.current.rotation.z = turn * TAU;
     const { pose, matrix } = scratch;
     for (let k = 0; k < GONDOLAS; k++) {
       ferrisPose(FERRIS, k / GONDOLAS + turn, pose);
       matrix.makeTranslation(pose.x, pose.y, pose.z);
-      paint.current?.setMatrixAt(k, matrix);
-      glass.current?.setMatrixAt(k, matrix);
-      trim.current?.setMatrixAt(k, matrix);
+      place(k, matrix);
     }
     RIDERS.forEach((r, i) => {
       const g = riders.current[i];
@@ -197,10 +163,7 @@ export function FerrisWheel() {
       ferrisPose(FERRIS, r.gondola / GONDOLAS + turn, pose);
       g.position.set(pose.x, pose.y, pose.z);
     });
-    if (paint.current) paint.current.instanceMatrix.needsUpdate = true;
-    if (glass.current) glass.current.instanceMatrix.needsUpdate = true;
-    if (trim.current) trim.current.instanceMatrix.needsUpdate = true;
-  });
+  };
   return (
     <group>
       <Segments items={FERRIS_FRAME} />
@@ -222,9 +185,12 @@ export function FerrisWheel() {
         <Segments items={RIM_LATTICE} />
         <Bulbs points={RIM_BULBS} radius={0.08} detail={[6, 4]} />
       </group>
-      <instancedMesh ref={paint} args={[GONDOLA.paint, PAINT, GONDOLAS]} />
-      <instancedMesh ref={glass} args={[GONDOLA.glass, GLASS, GONDOLAS]} />
-      <instancedMesh ref={trim} args={[GONDOLA.trim, TRIM, GONDOLAS]} />
+      <InstancedModel
+        url="/models/fair/cabin.glb"
+        count={GONDOLAS}
+        tints={GONDOLA_TINTS}
+        update={gondolas}
+      />
       {RIDERS.map((r, i) => (
         <group
           key={r.gondola}
@@ -263,16 +229,16 @@ const HORSE_ITEMS: readonly Copy[] = Array.from(
     };
   },
 );
-const HORSE_BODY = HORSE_ITEMS.map((h, k) => ({
-  ...h,
-  color: k % 2 ? "#3fe0d0" : "#ffb02e",
-}));
-const HORSE_TRIM = HORSE_ITEMS.map((h, k) => ({
-  ...h,
-  color: k % 2 ? "#ff2f9a" : "#fff1c8",
-}));
-const HORSE_POLES: readonly Copy[] = HORSE_ITEMS.map((h) => ({
-  position: h.position,
+/** Ramon Ruiz's carousel horse (CC-BY): the model faces along +x, so each is
+ * turned a quarter to run along the ring. */
+const HORSE_SPOTS: readonly Spot[] = HORSE_ITEMS.map((h) => ({
+  x: h.position[0],
+  y: 0.24,
+  z: h.position[2],
+  yaw: (h.yaw ?? 0) + Math.PI / 2,
+  sx: 1,
+  sy: 1,
+  sz: 1,
 }));
 // Scallops hang from the canopy's lower edge, alternating two stripe colors.
 const SCALLOP_GEOMETRY = new THREE.SphereGeometry(
@@ -327,10 +293,7 @@ export function Carousel() {
       </mesh>
       <Bulbs points={CANOPY_BULBS} radius={0.09} />
       <group ref={ring}>
-        <Copies geometry={CAROUSEL_POLE} material={GOLD} items={HORSE_POLES} />
-        <Copies geometry={HORSE.paint} material={PAINT} items={HORSE_BODY} />
-        <Copies geometry={HORSE.trim} material={TRIM} items={HORSE_TRIM} />
-        <Copies geometry={HORSE.gilt} material={GOLD} items={HORSE_ITEMS} />
+        <Scatter url="/models/fair/horse.glb" spots={HORSE_SPOTS} />
       </group>
     </group>
   );
@@ -351,17 +314,19 @@ function CoasterTrack({
   parts,
   track,
   neon,
-  cars,
+  colors,
   speed,
-  car = COASTER_CAR,
+  carUrl = "/models/fair/coaster-train.glb",
+  carScale = 1.2,
   railMaterial = STEEL,
   lift = 0.2,
   spacing = CAR_SPACING,
 }: {
   id: TrackRide;
   parts: CoasterParts;
-  /** The car or boat model; a coaster car by default. */
-  car?: typeof COASTER_CAR;
+  /** The car or boat model (Kenney's coaster car by default) and its scale. */
+  carUrl?: string;
+  carScale?: number;
   /** What the "rails" (a trough, for the flume) are made of. */
   railMaterial?: THREE.Material;
   /** Car above the track line. */
@@ -370,42 +335,32 @@ function CoasterTrack({
   spacing?: number;
   track: Track;
   neon: string;
-  cars: readonly string[];
+  /** One entry per car (the count; the model brings its own colors). */
+  colors: readonly string[];
   /** Meters per second along the loop, and in calm mode. */
   speed: { normal: number; calm: number };
 }) {
   const calm = useReducedMotion();
-  const paint = useRef<THREE.InstancedMesh>(null);
-  const trim = useRef<THREE.InstancedMesh>(null);
-  const glow = useRef<THREE.InstancedMesh>(null);
   const line = useMemo(
     () => new THREE.TubeGeometry(parts.curve, 300, 0.07, 5, true),
     [parts],
   );
-  useLayoutEffect(() => {
-    const m = paint.current;
-    if (!m) return;
-    cars.forEach((c, k) => m.setColorAt(k, new THREE.Color(c)));
-    if (m.instanceColor) m.instanceColor.needsUpdate = true;
-  }, [cars]);
-  useFrame(({ clock }) => {
+  const cars = colors.length;
+  const train = (place: PlaceCopy, elapsed: number) => {
     const v = calm ? speed.calm : speed.normal;
-    const lead = coasterRiders[id] ?? clock.elapsedTime * v;
+    const lead = coasterRiders[id] ?? elapsed * v;
     const { pose, matrix, position, quaternion, scale } = scratch;
-    for (let k = 0; k < cars.length; k++) {
+    scale.setScalar(carScale);
+    for (let k = 0; k < cars; k++) {
       trackPose(track, lead - k * spacing, pose);
       position.set(pose.x, pose.y + lift, pose.z);
       // nose along +z: yaw about y, then nose up or down with the track
       quaternion.setFromEuler(tilt.set(-pose.pitch, pose.yaw, 0));
       matrix.compose(position, quaternion, scale);
-      paint.current?.setMatrixAt(k, matrix);
-      trim.current?.setMatrixAt(k, matrix);
-      glow.current?.setMatrixAt(k, matrix);
+      place(k, matrix);
     }
-    if (paint.current) paint.current.instanceMatrix.needsUpdate = true;
-    if (trim.current) trim.current.instanceMatrix.needsUpdate = true;
-    if (glow.current) glow.current.instanceMatrix.needsUpdate = true;
-  });
+    scale.setScalar(1);
+  };
   return (
     <group>
       <mesh geometry={line}>
@@ -414,9 +369,7 @@ function CoasterTrack({
       <mesh geometry={parts.rails} material={railMaterial} />
       <Boxes items={parts.ties} />
       <Segments items={parts.supports} />
-      <instancedMesh ref={paint} args={[car.paint, PAINT, cars.length]} />
-      <instancedMesh ref={trim} args={[car.trim, TRIM, cars.length]} />
-      <instancedMesh ref={glow} args={[car.glow, GLOW, cars.length]} />
+      <InstancedModel url={carUrl} count={cars} update={train} />
     </group>
   );
 }
@@ -429,7 +382,7 @@ export function Coaster() {
       parts={COMET}
       track={COASTER_TRACK}
       neon="#3fe0d0"
-      cars={CAR_COLORS}
+      colors={CAR_COLORS}
       speed={{ normal: 8, calm: 3 }}
     />
   );
@@ -443,7 +396,7 @@ export function Starlight() {
       parts={STARLIGHT}
       track={STARLIGHT_TRACK}
       neon="#ff2f9a"
-      cars={["#9b5cff", "#3fe0d0", "#ff2f9a", "#ffb02e", "#3dff9a"]}
+      colors={["#9b5cff", "#3fe0d0", "#ff2f9a", "#ffb02e", "#3dff9a"]}
       speed={{ normal: 13, calm: 4 }}
     />
   );
@@ -734,9 +687,10 @@ export function LogFlume() {
         parts={FLUME}
         track={FLUME_TRACK}
         neon="#5fe3ff"
-        cars={["#8a5a36", "#7a4a2a", "#94603a"]}
+        colors={["#8a5a36", "#7a4a2a", "#94603a"]}
         speed={{ normal: 6, calm: 2.5 }}
-        car={LOG_BOAT}
+        carUrl="/models/fair/train-log-flume.glb"
+        carScale={1.6}
         railMaterial={TROUGH}
         lift={0.05}
         spacing={22}

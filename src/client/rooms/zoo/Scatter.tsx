@@ -44,7 +44,7 @@ export function Scatter({
       spots.forEach((spot, i) => {
         q.setFromAxisAngle(up, spot.yaw);
         m.compose(
-          p.set(spot.x, 0, spot.z),
+          p.set(spot.x, spot.y ?? 0, spot.z),
           q,
           s.set(spot.sx, spot.sy, spot.sz),
         );

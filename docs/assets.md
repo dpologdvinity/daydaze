@@ -21,6 +21,9 @@ future imported packs belong here when they enter the game.
 | Public Transport Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/publictransport.html | City bus, merged, recolored and simplified for near and far rendering. |
 | Realistic Car Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/cars.html | Yellow taxis and sedans mixed into street traffic with near and far models. |
 | Car Kit | Kenney | CC0 1.0 | https://kenney.nl/assets/car-kit | Delivery vans mixed into street traffic, merged and simplified. |
+| Coaster Kit | Kenney | CC0 1.0 | https://kenney.nl/assets/coaster-kit | Amusement Park coaster trains, log flume logs and midway stalls. |
+| Cabin cart for Ferris Wheel | Enkarra | CC-BY 4.0 | https://sketchfab.com/3d-models/cabin-cart-for-ferris-wheel-3fef7c11a7c447acb9e7a5ee98e654b8 | Amusement Park Ferris wheel gondolas. |
+| Carousel Horse | Ramón Ruiz | CC-BY 4.0 | https://sketchfab.com/3d-models/carousel-horse-7872323d00cf4654845c8f39d907e57d | Amusement Park carousel horses. |
 | Bus Stop | Zsky | CC-BY 3.0 | https://poly.pizza/m/OWczicNWhO | Line 1 bus stops, rescaled with simplified distance models. |
 | Sci-Fi Essentials Kit | Quaternius | CC0 1.0 | https://quaternius.com/packs/scifiessentialskit.html | Photon Zone cover and lockers in Photon Zone and Player 2, fitted to the existing arena footprints. |
 | Arcade Machine | J-Toastie | CC-BY 3.0 | https://poly.pizza/m/GLDkMhiynM | Player 2 cabinet bodies, with the original screen removed and materials baked to vertex colors. |

@@ -179,6 +179,8 @@ export function animalsAt(t: number): { kind: Species; at: Vec2 }[] {
 /** A placed prop: where, which way (rotation about y) and its scale per axis. */
 export type Spot = {
   x: number;
+  /** Height of the prop's origin; the ground by default. */
+  y?: number;
   z: number;
   yaw: number;
   sx: number;
