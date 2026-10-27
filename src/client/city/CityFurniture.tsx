@@ -84,7 +84,7 @@ const p = new THREE.Vector3();
 const s = new THREE.Vector3();
 const up = new THREE.Vector3(0, 1, 0);
 
-type Meshes = Record<FurnitureKind, THREE.InstancedMesh[]>;
+type Meshes = ReadonlyMap<FurnitureKind, THREE.InstancedMesh[]>;
 
 function place(
   meshes: Meshes,
@@ -100,14 +100,14 @@ function place(
     p.set(f.x, 0, f.z);
     s.setScalar(f.scale);
     m.compose(p, q, s);
-    for (const mesh of meshes[f.kind]) {
+    for (const mesh of meshes.get(f.kind) ?? []) {
       const i = counts.get(mesh) ?? 0;
       if (i >= CAPACITY) continue;
       mesh.setMatrixAt(i, m);
       counts.set(mesh, i + 1);
     }
   }
-  for (const parts of Object.values(meshes))
+  for (const parts of meshes.values())
     for (const mesh of parts) {
       mesh.count = counts.get(mesh) ?? 0;
       mesh.instanceMatrix.needsUpdate = true;
@@ -117,18 +117,19 @@ function place(
 export function CityFurniture(): JSX.Element {
   const low = useQuality() === "low";
   const gltfs = useGLTF(FURNITURE_KINDS.map(url));
-  const meshes = useMemo(
-    () =>
-      Object.fromEntries(
-        FURNITURE_KINDS.map((kind, i) => [kind, partsOf(gltfs[i]!.scene)]),
-      ) as Meshes,
-    [gltfs],
-  );
+  const meshes = useMemo(() => {
+    const byKind = new Map<FurnitureKind, THREE.InstancedMesh[]>();
+    FURNITURE_KINDS.forEach((kind, i) => {
+      const gltf = gltfs[i];
+      if (gltf) byKind.set(kind, partsOf(gltf.scene));
+    });
+    return byKind;
+  }, [gltfs]);
   const { spots, at } = cityFurniture.use();
   useEffect(() => {
     place(meshes, spots, at, low);
   }, [meshes, spots, at, low]);
-  const all = useMemo(() => Object.values(meshes).flat(), [meshes]);
+  const all = useMemo(() => [...meshes.values()].flat(), [meshes]);
   return (
     <>
       {all.map((mesh) => (

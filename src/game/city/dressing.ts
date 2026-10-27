@@ -6,6 +6,7 @@ import { pointInPolygon, type Vec2 } from "../walk.ts";
 import {
   BUILDINGS,
   CITY_SURFACES,
+  GALLERY_Z,
   PROPS,
   ROAD_EDGES,
   ROAD_NODES,
@@ -15,7 +16,7 @@ import {
 import type { Instance, Kind } from "./plan.ts";
 import { hash, pick } from "./hash.ts";
 import type { FurnitureKind, FurnitureSpot } from "./furniture.ts";
-import { detailBuilding, planter, trafficLights } from "./detail.ts";
+import { detailBuilding, trafficLights } from "./detail.ts";
 
 export { hash };
 
@@ -732,30 +733,6 @@ function puddles(out: Placed[]): void {
   }
 }
 
-/** Planters along the sidewalks, between the lamps (bins, hydrants and the rest are models: FURNITURE). */
-function furniture(out: Placed[]): void {
-  for (const p of PROPS) {
-    if (p.kind !== "lamp") continue;
-    const [x, z] = p.position;
-    const side = z > 0 ? 1 : -1;
-    if (!nearCross(x + 6, 7) && hash(x, z, 10) < 0.5) {
-      planter(out, x + 6, side * 9.6, hash(x, z, 12));
-    }
-  }
-  for (const x of [152.5, 160]) {
-    put(out, "furniture", {
-      x,
-      y: 0.35,
-      z: -9.5,
-      sx: 1.6,
-      sy: 0.6,
-      sz: 0.5,
-      color: "#ff4fb3",
-    });
-    planter(out, x, -9.5, x);
-  }
-}
-
 /** Steam rising from the sidewalk grates, between the lamp and palm rows. */
 function grates(out: Placed[]): void {
   for (const x of [-23, 37, 127]) {
@@ -798,7 +775,6 @@ function streetDress(): Placed[] {
   const out: Placed[] = [];
   parkedCars(out);
   puddles(out);
-  furniture(out);
   grates(out);
   strings(out);
   trafficLights(out, CROSS_X);
@@ -826,27 +802,35 @@ function furnitureSpots(): FurnitureSpot[] {
     [-5, "mailbox", 9.9, 0.4],
     [-2.5, "meter", 8.0, 0.5],
     [3, "bench", 10, 0.5],
-    [8.5, "newsbox", 9.9, 0.4],
+    [6, "planter", 9.6, 0.5],
     [11, "trashcan", 9.7, 0.9],
     [13.5, "meter", 8.0, 0.5],
   ];
   for (const p of PROPS) {
     if (p.kind !== "lamp") continue;
     const [x, z] = p.position;
-    // only the two downtown avenue sidewalks have the room (the lamps' z is +-9)
-    if (Math.abs(Math.abs(z) - 9) > 0.01) continue;
-    const side = z > 0 ? 1 : -1;
+    // the lamp rows down the avenue and down Gallery Row (Park Avenue goes on
+    // along it); lamps elsewhere (boardwalk, pier) have no pavement to dress
+    const center = [0, GALLERY_Z].find(
+      (c) => Math.abs(Math.abs(z - c) - (c ? 8 : 9)) < 0.01,
+    );
+    if (center === undefined) continue;
+    const side = z > center ? 1 : -1;
+    const half = Math.abs(z - center);
     slots.forEach(([dx, kind, dz, odds], i) => {
       if (nearCross(x + dx, 7) || hash(x, z, 20 + i) >= odds) return;
       out.push({
         kind,
         x: x + dx,
-        z: side * dz,
+        // slots are written for the avenue's 9 m half width
+        z: center + side * (half + dz - 9),
         yaw: side > 0 ? Math.PI : 0,
-        scale: kind === "mailbox" ? 0.8 : 1,
+        scale: 1,
       });
     });
   }
+  for (const x of [152.5, 160])
+    out.push({ kind: "planter", x, z: -9.5, yaw: 0, scale: 1 });
   for (const x of BUS_STOPS)
     out.push({ kind: "busstop", x, z: -9, yaw: 0, scale: 1 });
   // stop signs and no-parking signs at the cross streets' corners

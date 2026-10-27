@@ -10,9 +10,10 @@ export const FURNITURE_KINDS = [
   "trashcan",
   "bench",
   "mailbox",
-  "newsbox",
   "meter",
   "bikerack",
+  "planter",
+  "palm",
   "busstop",
   "sign-stop",
   "sign-noparking",
@@ -29,6 +30,9 @@ export type FurnitureSpot = {
   scale: number;
 };
 
+/** Lamps are drawn, with their glow, out to this distance on every tier. */
+export const LAMP_RANGE = 80;
+
 /**
  * How far (meters) a kind is drawn from the player on the low tier and on the
  * high tier: small props vanish early, tall landmarks (lamps, bus shelters)
@@ -38,15 +42,17 @@ export const FURNITURE_RANGE: Record<
   FurnitureKind,
   readonly [low: number, high: number]
 > = {
-  lamp: [90, 200],
-  hydrant: [35, 80],
-  trashcan: [35, 80],
-  bench: [40, 90],
-  mailbox: [40, 90],
-  newsbox: [35, 80],
-  meter: [30, 70],
-  bikerack: [35, 80],
-  busstop: [70, 140],
+  // the plan culls the lamp's night glow at the same distance (plan.ts)
+  lamp: [LAMP_RANGE, LAMP_RANGE],
+  hydrant: [25, 70],
+  trashcan: [25, 70],
+  bench: [30, 80],
+  mailbox: [30, 80],
+  meter: [22, 60],
+  bikerack: [25, 70],
+  planter: [30, 80],
+  palm: [45, 110],
+  busstop: [60, 140],
   "sign-stop": [50, 110],
   "sign-noparking": [40, 90],
 };

@@ -35,9 +35,15 @@ future imported packs belong here when they enter the game.
 | Fire Hydrant | Poly Haven | CC0 1.0 | https://polyhaven.com/a/fire_hydrant | Sidewalk hydrants, decimated to under 500 triangles. |
 | Metal Trash Can | Poly Haven | CC0 1.0 | https://polyhaven.com/a/metal_trash_can | Sidewalk bins, decimated to about 300 triangles. |
 | Painted Wooden Bench | Poly Haven | CC0 1.0 | https://polyhaven.com/a/painted_wooden_bench | Sidewalk benches. |
+| Mailbox | CreativeTrio | CC0 1.0 | https://poly.pizza/m/2olZ0G8iur | Sidewalk mailboxes, decimated. |
+| Parking Meter | Zsky | CC-BY 3.0 | https://poly.pizza/m/SIePMtqLF8 | Curbside parking meters, decimated. |
+| Bike Rack | J-Toastie | CC-BY 3.0 | https://poly.pizza/m/DzsJ2LPVKZ | Sidewalk bike racks, decimated. |
+| Bus Stop | Zsky | CC-BY 3.0 | https://poly.pizza/m/OWczicNWhO | Avenue bus shelters, decimated. |
+| Palm Tree | Quaternius | CC0 1.0 | https://poly.pizza/m/A6cKJYFsIb | Street and beach palms, decimated. |
+| Planter and Bushes | J-Toastie | CC-BY 3.0 | https://poly.pizza/m/wn85Xr9lM3 | Sidewalk planter boxes, decimated. |
 
 
-Street furniture is built by `art/street/build_street.py` into `public/models/street/`; the mailbox, newspaper box, parking meter, bike rack and bus shelter there are original primitives (nothing free fit; see STEPS-FOR-OWNER).
+Street furniture is built by `art/street/build_street.py` into `public/models/street/` (every model cut down to a few hundred triangles).
 
 The animals and fish are converted by `art/animals/build_animals.py` (Blender:
 one skinned mesh, colors baked to vertex colors, only the clips the game plays)
