@@ -2,6 +2,7 @@
 // building footprints and street props. Pure data; the renderer and the
 // walk rules both read it. Axis-aligned throughout, so every surface is a
 // rectangle that the cell grid can clip.
+import { byTier } from "../age.ts";
 import type { WalkArea } from "../area.ts";
 import { FOOD_STOREFRONTS } from "../food/storefronts.ts";
 import { MARKET, MARKET_BLOCKERS } from "./nightMarket.ts";
@@ -1423,7 +1424,7 @@ const ASIA_FRONT: readonly {
     h: 12,
     north: false,
     color: "#4361ee",
-    sign: { text: "SOJU BAR", color: "#ff2f9a" },
+    sign: { text: byTier("SOJU BAR", "SODA BAR"), color: "#ff2f9a" },
     style: "storefront",
   },
   {

@@ -2,6 +2,7 @@
 // as pure data. Every name is original, and each menu has real dishes with
 // placeholder coin prices (food is free until the wallet lands). Three venues
 // have an interior room; the rest stand in the city as storefronts.
+import { byTier } from "../age.ts";
 import type { RoomId } from "../rooms.ts";
 import type { NeighborhoodId } from "../dialogue/types.ts";
 
@@ -557,7 +558,7 @@ const RESTAURANTS: readonly FoodVenue[] = [
       ["Chicken karaage", 7],
       ["Agedashi tofu", 6],
       ["Seaweed salad", 5],
-      ["Sake flight", 6, "drink"],
+      [byTier("Sake flight", "Tea flight"), 6, "drink"],
     ],
   ),
   venue(
@@ -588,7 +589,7 @@ const RESTAURANTS: readonly FoodVenue[] = [
   ),
   venue(
     "seoul-fried-pub",
-    "Seoul Fried Chicken Pub",
+    byTier("Seoul Fried Chicken Pub", "Seoul Fried Chicken House"),
     "Korean fried chicken",
     "restaurant",
     NIGHTLIFE,
@@ -641,7 +642,7 @@ const RESTAURANTS: readonly FoodVenue[] = [
       ["Chili con queso", 6],
       ["Cheese enchiladas", 9],
       ["Chips and salsa", 4],
-      ["Frozen margarita", 6, "drink"],
+      [byTier("Frozen margarita", "Frozen limeade"), 6, "drink"],
     ],
   ),
   venue(
@@ -784,7 +785,7 @@ const RESTAURANTS: readonly FoodVenue[] = [
       ["Strip steak", 28],
       ["Creamed spinach", 7],
       ["Baked potato", 5],
-      ["Old fashioned", 9, "drink"],
+      [byTier("Old fashioned", "Smoked orange soda"), 9, "drink"],
     ],
   ),
   venue("burger-barn", "Burger Barn", "Burger joint", "restaurant", SUBURBIA, [
@@ -855,7 +856,7 @@ const RESTAURANTS: readonly FoodVenue[] = [
     ["Patatas bravas", 6],
     ["Gambas al ajillo", 10],
     ["Jamon board", 12],
-    ["Sangria jug", 9, "drink"],
+    [byTier("Sangria jug", "Fruit punch jug"), 9, "drink"],
   ]),
   venue(
     "gyro-corner",
@@ -945,7 +946,7 @@ const RESTAURANTS: readonly FoodVenue[] = [
       ["Steak frites", 16],
       ["Onion soup", 7],
       ["Croque monsieur", 8],
-      ["Kir royale", 7, "drink"],
+      [byTier("Kir royale", "Cassis soda"), 7, "drink"],
     ],
     "bistro",
   ),
@@ -964,15 +965,15 @@ const RESTAURANTS: readonly FoodVenue[] = [
   ),
   venue(
     "bierhaus-kraft",
-    "Bierhaus Kraft",
-    "German beer hall",
+    byTier("Bierhaus Kraft", "Haus Kraft"),
+    byTier("German beer hall", "German hall"),
     "restaurant",
     FAIRGROUND,
     [
       ["Soft pretzel with mustard", 5],
       ["Schnitzel plate", 12],
       ["Sausage platter", 10],
-      ["Lager stein", 5, "drink"],
+      [byTier("Lager stein", "Malt soda stein"), 5, "drink"],
     ],
   ),
   venue(
@@ -1024,7 +1025,7 @@ const RESTAURANTS: readonly FoodVenue[] = [
       ["Half dozen oysters", 12],
       ["Seafood tower for two", 30],
       ["Lobster roll", 15],
-      ["Dry martini", 9, "drink"],
+      [byTier("Dry martini", "Cucumber sparkler"), 9, "drink"],
     ],
   ),
   venue(
@@ -1037,7 +1038,7 @@ const RESTAURANTS: readonly FoodVenue[] = [
       ["Chef's selection, five courses", 40],
       ["Seasonal sashimi plate", 22],
       ["Miso soup", 4],
-      ["Sake pour", 8, "drink"],
+      [byTier("Sake pour", "Hot barley tea"), 8, "drink"],
     ],
   ),
   venue(
@@ -1048,7 +1049,7 @@ const RESTAURANTS: readonly FoodVenue[] = [
     UPTOWN,
     [
       ["Seven-course tasting menu", 45],
-      ["Wine pairing", 20, "drink"],
+      [byTier("Wine pairing", "Juice pairing"), 20, "drink"],
       ["Bread and butter course", 5],
       ["Dessert trio", 9],
     ],

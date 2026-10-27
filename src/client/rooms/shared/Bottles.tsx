@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { byTier } from "../../../game/age.ts";
 import * as THREE from "three";
 import { canvasTex } from "./materials.ts";
 
@@ -141,15 +142,16 @@ const lathe = (pts: readonly (readonly [number, number])[]) =>
   );
 
 /** Label designs in a 4 by 2 atlas: [paper, ink, name, small print]. */
+// At 13+ the same bottles hold syrups, tonics and juices (byTier).
 const LABELS = [
-  ["#f4ead2", "#3a1a0a", "OAKHART", "AGED 12 YEARS"],
-  ["#141018", "#f6c46a", "No. 7", "LONDON DRY"],
-  ["#c8102e", "#fff3d6", "REINA", "BLANCO"],
-  ["#ffffff", "#1a2a6a", "LUNA", "CITRUS VODKA"],
-  ["#1f4a2e", "#f4e6b0", "VERDE", "BOTANICAL GIN"],
-  ["#f6c46a", "#2a0a0a", "XO", "GRANDE RÉSERVE"],
-  ["#2a0a3a", "#ff8ad8", "VELVET", "BERRY LIQUEUR"],
-  ["#d9c7a0", "#5a1a1a", "CASA ROJA", "TINTO 2019"],
+  ["#f4ead2", "#3a1a0a", "OAKHART", byTier("AGED 12 YEARS", "MAPLE SYRUP")],
+  ["#141018", "#f6c46a", "No. 7", byTier("LONDON DRY", "TONIC WATER")],
+  ["#c8102e", "#fff3d6", "REINA", byTier("BLANCO", "AGAVE SYRUP")],
+  ["#ffffff", "#1a2a6a", "LUNA", byTier("CITRUS VODKA", "CITRUS SODA")],
+  ["#1f4a2e", "#f4e6b0", "VERDE", byTier("BOTANICAL GIN", "BASIL TONIC")],
+  ["#f6c46a", "#2a0a0a", "XO", byTier("GRANDE RÉSERVE", "COLD BREW")],
+  ["#2a0a3a", "#ff8ad8", "VELVET", byTier("BERRY LIQUEUR", "BERRY SYRUP")],
+  ["#d9c7a0", "#5a1a1a", "CASA ROJA", byTier("TINTO 2019", "POMEGRANATE")],
 ] as const;
 const ATLAS = [4, 2] as const;
 

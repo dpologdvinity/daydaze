@@ -3,6 +3,8 @@
  * TypeScript: no DOM, no audio, so every rule is testable in Node.
  */
 
+import { activeTier, byTier, type ContentTier } from "../../game/age.ts";
+
 export type IngredientId =
   | "tequila"
   | "rum"
@@ -24,7 +26,7 @@ export type Ingredient = {
   spirit: boolean;
 };
 
-export const INGREDIENTS: readonly Ingredient[] = [
+export const ALL_INGREDIENTS: readonly Ingredient[] = [
   { id: "tequila", label: "Tequila", color: "#f3e2b0", spirit: true },
   { id: "rum", label: "White rum", color: "#e9edf2", spirit: true },
   { id: "vodka", label: "Vodka", color: "#dfe9ff", spirit: true },
@@ -59,8 +61,8 @@ export type GlassId = "rocks" | "highball" | "martini" | "wine";
 export const GLASSES: readonly { id: GlassId; label: string }[] = [
   { id: "rocks", label: "Rocks" },
   { id: "highball", label: "Highball" },
-  { id: "martini", label: "Martini" },
-  { id: "wine", label: "Wine glass" },
+  { id: "martini", label: byTier("Martini", "Coupe") },
+  { id: "wine", label: byTier("Wine glass", "Flute") },
 ];
 
 export type GarnishId =
@@ -95,7 +97,7 @@ export type Recipe = {
 };
 
 // Zero-proof drinks always wear a cherry so the guest can tell them apart.
-export const RECIPES: readonly Recipe[] = [
+export const ALL_RECIPES: readonly Recipe[] = [
   {
     id: "peach_margarita",
     name: "Peach margarita",
@@ -184,6 +186,34 @@ export const RECIPES: readonly Recipe[] = [
   },
 ];
 
+// At 13+ the bar pours only the zero-proof drinks, under mocktail names, with
+// no spirits on the shelf.
+const TEEN_NAMES: Record<string, string> = {
+  zero_peach_margarita: "Peach limeade fizz",
+  zero_peach_mojito: "Peach mint cooler",
+  zero_passionfruit_martini: "Passionfruit sparkler",
+  zero_pink_lemonade_spritz: "Pink lemonade fizz",
+};
+
+export function recipesFor(tier: ContentTier): readonly Recipe[] {
+  if (tier === "adult") return ALL_RECIPES;
+  return ALL_RECIPES.filter((r) => r.zeroProof).map((r) => ({
+    ...r,
+    name: TEEN_NAMES[r.id] ?? r.name,
+  }));
+}
+
+export function ingredientsFor(tier: ContentTier): readonly Ingredient[] {
+  if (tier === "adult") return ALL_INGREDIENTS;
+  return ALL_INGREDIENTS.filter((i) => !i.spirit).map((i) =>
+    i.id === "zero_spirit" ? { ...i, label: "Botanical base" } : i,
+  );
+}
+
+/** The recipes and ingredients of this client's tier. */
+export const RECIPES: readonly Recipe[] = recipesFor(activeTier());
+export const INGREDIENTS: readonly Ingredient[] = ingredientsFor(activeTier());
+
 export type Guest = { name: string; look: 0 | 1 | 2; hue: number };
 
 export const GUESTS: readonly Guest[] = [
@@ -208,12 +238,16 @@ function pick<T>(list: readonly T[], random: () => number): T {
 }
 
 /** A round of orders; neither the drink nor the guest repeats back to back. */
-export function generateOrders(count: number, random: () => number): Order[] {
+export function generateOrders(
+  count: number,
+  random: () => number,
+  recipes: readonly Recipe[] = RECIPES,
+): Order[] {
   const orders: Order[] = [];
   for (let id = 0; id < count; id++) {
     const previous = orders[id - 1];
     const recipe = pick(
-      RECIPES.filter((r) => r !== previous?.recipe),
+      recipes.filter((r) => r !== previous?.recipe),
       random,
     );
     const guest = pick(
