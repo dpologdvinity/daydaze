@@ -18,8 +18,8 @@ export const MOCAP_CLIPS: readonly MocapClip[] = [
     id: "walk-brisk",
     kind: "walk",
     label: "Brisk",
-    period: 0.8667,
-    speed: 1.497,
+    period: 1.4333,
+    speed: 0.895,
   },
   {
     id: "walk-catwalk",

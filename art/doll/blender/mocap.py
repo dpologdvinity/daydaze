@@ -77,7 +77,7 @@ CLIPS = {
     # real walk's ~15 / ~65 degrees; bouncier takes read as jogging.
     "walk-easy": ("walking/styled/Catwalk-Walk-Forward_Female-Walk-Forward", "walk", "Easy"),  # 15 / 60
     "walk-relaxed": ("walking/Standard-Walk_Standard-Walk", "walk", "Relaxed"),  # 20 / 70
-    "walk-brisk": ("walking/Walking_Male-Hurried-Walk", "walk", "Brisk"),  # 14 / 70
+    "walk-brisk": ("walking/styled/Strut-Walking_Male-Strut-Walk", "walk", "Brisk"),  # 23 / 76
     "walk-catwalk": ("walking/styled/Catwalk-Walk-Forward-Crossed_Female-Walk-Forward-Legs-Crossing", "walk", "Catwalk"),  # 14 / 67
     "walk-normal": ("walking/Walk_Female-Walk-2", "walk", "Normal"),  # 32 / 67
     "walk-sexy": ("walking/styled/Walking_Female-Sexy-Walk", "walk", "Sexy"),  # 16 / 69
