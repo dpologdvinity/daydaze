@@ -103,7 +103,7 @@ export const regularBank: RoleBank = {
     },
     {
       text: "What's up, love? I've got gossip, cue advice, and a good pour on tap.",
-      when: { venue: "violet-hour" },
+      when: { tier: "adult", venue: "violet-hour" },
     },
     {
       text: "Ask me anything, I'm basically the house mascot at this point.",
@@ -242,6 +242,10 @@ export const regularBank: RoleBank = {
     },
     {
       text: "Hey you. Pull up a chair and tell me about your day.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "What is up, love? I have got gossip, cue advice, and a very good cream soda float.",
       when: { tier: "teen" },
     },
   ],

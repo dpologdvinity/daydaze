@@ -27,3 +27,8 @@ test("the tier gate: 13+ by default, adult content only for the adult tier", () 
   assert.equal(byTier("beer", "soda"), "soda");
   assert.equal(byTier("beer", "soda", "adult"), "beer");
 });
+
+test("allows() answers per feature", () => {
+  assert.equal(allows("teen", "alcohol"), false);
+  assert.equal(allows("adult", "drugs"), true);
+});

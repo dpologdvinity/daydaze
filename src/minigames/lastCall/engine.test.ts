@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   GARNISHES,
-  GLASSES,
+  glassesFor,
   ALL_INGREDIENTS as INGREDIENTS,
   MAX_POURS,
   ALL_RECIPES as RECIPES,
@@ -71,7 +71,7 @@ test("recipes only use known bottles, glasses and garnishes and fit the glass", 
     );
     assert.ok(r.ingredients.length <= MAX_POURS, r.id);
     assert.ok(
-      GLASSES.some((g) => g.id === r.glass),
+      glassesFor("adult").some((g) => g.id === r.glass),
       r.id,
     );
     assert.ok(

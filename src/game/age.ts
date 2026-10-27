@@ -27,15 +27,24 @@ export function contentTier(adultOk: boolean): ContentTier {
   return adultOk ? "adult" : "teen";
 }
 
-/** Whether `tier` may show `feature`. Every feature is adult-only today. */
+/** The lowest tier each feature appears at; all are adult-only today. */
+const MIN_TIER: Record<Feature, ContentTier> = {
+  alcohol: "adult",
+  drugs: "adult",
+  "adult-venues": "adult",
+};
+
+/** Whether `tier` may show `feature`. */
 export function allows(tier: ContentTier, feature: Feature): boolean {
-  return (
-    tier === "adult" && ["alcohol", "drugs", "adult-venues"].includes(feature)
-  );
+  return MIN_TIER[feature] === "teen" || tier === "adult";
 }
 
 // The tier this client runs at, set once at startup (client/adult.ts) before
 // any module that builds tier-dependent data loads. Teen until told otherwise.
+// IMPORT ORDER MATTERS: modules that call byTier/activeTier at load time (the
+// food menus, the wine flight, the shelf labels, layout signs) read this
+// value once, so every entry point must import client/adult.ts before them
+// (main.tsx and minigames/fixture.tsx do). Prefer the *For(tier) builders.
 let active: ContentTier = "teen";
 
 export function setActiveTier(tier: ContentTier): void {

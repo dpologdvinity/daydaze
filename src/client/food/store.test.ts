@@ -47,3 +47,11 @@ test("a delivery lands after the timer, puts the item in hand and toasts", () =>
   assert.equal(getFoodState().toast, null);
   resetFood();
 });
+
+test("a 13+ drink toasts a mocktail and leaves no buzz", () => {
+  resetFood();
+  const before = getBuzz();
+  drink("cocktail");
+  assert.match(getFoodState().toast ?? "", /^You sip /);
+  assert.equal(getBuzz(), before);
+});

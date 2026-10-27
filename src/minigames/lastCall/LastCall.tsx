@@ -5,13 +5,15 @@
 // round of the visit, reported once on close.
 
 import { useEffect, useRef, useState } from "react";
+import { activeTier } from "../../game/age.ts";
 import { Dialog } from "../Dialog.tsx";
 import { playBarSound, type BarSound } from "../../audio/barSynths.ts";
 import {
   EMPTY_DRINK,
   GARNISHES,
-  GLASSES,
-  INGREDIENTS,
+  ALL_INGREDIENTS,
+  glassesFor,
+  ingredientsFor,
   MAX_POURS,
   ROUND_ORDERS,
   SWEET_SPOT,
@@ -45,8 +47,9 @@ declare module "react" {
   }
 }
 
-const INGREDIENT = new Map(INGREDIENTS.map((i) => [i.id, i]));
 // A stray double tap must not also press the button that replaces the one tapped.
+// Colors are the same at every tier; labels and the menu are per tier.
+const COLORS = new Map(ALL_INGREDIENTS.map((i) => [i.id, i.color]));
 const STEP_GUARD_MS = 300;
 
 const GRADE_LINE: Record<Grade, string> = {
@@ -233,9 +236,7 @@ function Glass({
   const shape = GLASS_SHAPE[drink.glass ?? "highball"];
   const clipId = `mx-clip-${drink.glass ?? "ghost"}`;
   const layer = (shape.bottom - shape.top) / MAX_POURS;
-  const colors = drink.ingredients.map(
-    (id) => INGREDIENT.get(id)?.color ?? "#ffffff",
-  );
+  const colors = drink.ingredients.map((id) => COLORS.get(id) ?? "#ffffff");
   const [rimX, rimY] = shape.rim;
   return (
     <svg
@@ -365,6 +366,11 @@ export function LastCall({
   reducedMotion = false,
   muted = false,
 }: LastCallProps) {
+  // built per render, from the tier the client runs at
+  const tier = activeTier();
+  const INGREDIENTS = ingredientsFor(tier);
+  const INGREDIENT = new Map(INGREDIENTS.map((i) => [i.id, i]));
+  const GLASSES = glassesFor(tier);
   const [phase, setPhase] = useState<Phase>("intro");
   const [round, setRound] = useState<Round>(() => newRound([]));
   const [drink, setDrink] = useState<Drink>(EMPTY_DRINK);

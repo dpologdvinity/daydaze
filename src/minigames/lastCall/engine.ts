@@ -58,11 +58,14 @@ export const ALL_INGREDIENTS: readonly Ingredient[] = [
 
 export type GlassId = "rocks" | "highball" | "martini" | "wine";
 
-export const GLASSES: readonly { id: GlassId; label: string }[] = [
+/** The glass choices as `tier` names them. */
+export const glassesFor = (
+  tier: ContentTier,
+): readonly { id: GlassId; label: string }[] => [
   { id: "rocks", label: "Rocks" },
   { id: "highball", label: "Highball" },
-  { id: "martini", label: byTier("Martini", "Coupe") },
-  { id: "wine", label: byTier("Wine glass", "Flute") },
+  { id: "martini", label: byTier("Martini", "Coupe", tier) },
+  { id: "wine", label: byTier("Wine glass", "Flute", tier) },
 ];
 
 export type GarnishId =
@@ -210,10 +213,6 @@ export function ingredientsFor(tier: ContentTier): readonly Ingredient[] {
   );
 }
 
-/** The recipes and ingredients of this client's tier. */
-export const RECIPES: readonly Recipe[] = recipesFor(activeTier());
-export const INGREDIENTS: readonly Ingredient[] = ingredientsFor(activeTier());
-
 export type Guest = { name: string; look: 0 | 1 | 2; hue: number };
 
 export const GUESTS: readonly Guest[] = [
@@ -241,7 +240,7 @@ function pick<T>(list: readonly T[], random: () => number): T {
 export function generateOrders(
   count: number,
   random: () => number,
-  recipes: readonly Recipe[] = RECIPES,
+  recipes: readonly Recipe[] = recipesFor(activeTier()),
 ): Order[] {
   const orders: Order[] = [];
   for (let id = 0; id < count; id++) {

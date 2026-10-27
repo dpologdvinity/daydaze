@@ -7,6 +7,7 @@
 // it. Pride night keeps its own quick cycle (prideNight.ts), as do the
 // city's fireworks and parade; the city map lists them all. Pure.
 
+import { byTier } from "./age.ts";
 import type { TrackId } from "../audio/proceduralJukebox.ts";
 import type { DialogueSituation } from "./dialogue/types.ts";
 import type { RoomId } from "./rooms.ts";
@@ -100,7 +101,7 @@ export const CLUB_NIGHTS: readonly ClubNight[] = [
   },
   {
     id: "speakeasy-night",
-    label: "Speakeasy night",
+    label: byTier("Speakeasy night", "Jazz age night"),
     clubs: ["jazz-club", "back-room"],
     days: [0, 3],
     track: "canopy-lofi",

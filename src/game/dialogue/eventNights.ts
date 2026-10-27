@@ -237,7 +237,10 @@ export const djNightLines: RoleBank = {
   "event-foam-party": [
     "Foam cannons in three, two, one... let it snow!",
     "If you can still see your knees, you're not close enough to the cannons.",
-    "Keep your phones dry and your spirits wet.",
+    {
+      text: "Keep your phones dry and your spirits wet.",
+      when: { tier: "adult" },
+    },
     "Bubbles rising, bass rising, everybody rising!",
     "The foam is hypoallergenic, the music is not.",
     "Next drop gets a fresh foam blast. Get ready.",
@@ -245,6 +248,10 @@ export const djNightLines: RoleBank = {
     "Splash zone is every zone tonight.",
     "Dance like the foam is lava. No, wait, dance like it's foam.",
     "One more blast, then we dry off and keep going.",
+    {
+      text: "Keep your phones dry and your sneakers wet.",
+      when: { tier: "teen" },
+    },
   ],
   "event-speakeasy-night": [
     {
@@ -430,7 +437,14 @@ export const djNightLines: RoleBank = {
     "Ukulele break! Everybody wave your hands like the waves.",
     "If you're wearing a grass skirt, you get to request a song.",
     "Sunset set's done. Now it's the moonlight set.",
-    "Coconut cups up! Cheers to island time!",
+    {
+      text: "Coconut cups up! Cheers to island time!",
+      when: { tier: "adult" },
+    },
     "One more slow tropical number, then the fire dancers.",
+    {
+      text: "Coconut cups up! Here is to island time!",
+      when: { tier: "teen" },
+    },
   ],
 };

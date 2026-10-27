@@ -29,7 +29,7 @@ export const bartenderBank: RoleBank = {
     },
     {
       text: "Hola, bienvenida. The sunset special's on tap, want to try it?",
-      when: { venue: "violet-hour" },
+      when: { tier: "adult", venue: "violet-hour" },
     },
     {
       text: "Welcome! Tell me a flavor and I'll make you something that matches the neon.",
@@ -150,6 +150,10 @@ export const bartenderBank: RoleBank = {
       text: "New face! I am the best mocktail maker on this block, ask anyone.",
       when: { tier: "teen" },
     },
+    {
+      text: "Hola, bienvenida. The sunset special is a mango fizz, want to try it?",
+      when: { tier: "teen" },
+    },
   ],
   tapped: [
     // The Violet Hour: the sapphic bar on Nightlife Row
@@ -215,12 +219,19 @@ export const bartenderBank: RoleBank = {
     "Anyone else's feet hurting or is it just me?",
     "I swear the ice machine has a personality.",
     "Quiet hour, perfect time to restock the limes.",
-    "Cheers to everybody who came out tonight, even the sad ones.",
+    {
+      text: "Cheers to everybody who came out tonight, even the sad ones.",
+      when: { tier: "adult" },
+    },
     "The bass is loud. Somebody tell the DJ we can still hear each other.",
     "Ay, I could use a nap and a cafe con leche.",
     "The neon's reflecting off every glass. It's giving movie.",
     "Lowkey my favorite part of work is the regulars and their stories.",
     "Nobody's touching the bowl of cherries, rude.",
+    {
+      text: "Here is to everybody who came out tonight, even the sad ones. Free cherries!",
+      when: { tier: "teen" },
+    },
   ],
   goodbye: [
     "Take care out there, text me when you get home.",
