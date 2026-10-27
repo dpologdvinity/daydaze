@@ -7,7 +7,8 @@ import {
   SPECIES,
   type Hunt,
 } from "../../../game/safari.ts";
-import { animalsAt } from "../../../game/zoo.ts";
+import type { Species } from "../../../game/zoo.ts";
+import type { Vec2 } from "../../../game/walk.ts";
 import { playClick } from "../../../audio/worldSounds.ts";
 import { award } from "../../ui/prizeDesk.ts";
 import { createStore } from "../shared/store.ts";
@@ -19,6 +20,10 @@ export const zooView: { t: number; from: [number, number]; yaw: number } = {
   from: [0, 0],
   yaw: 0,
 };
+
+/** Where each animal stands right now; every animal registers one entry and
+ * keeps its `at` current, so a snap sees where they really are. */
+export const zooAnimals = new Set<{ kind: Species; at: Vec2 }>();
 
 const OFF = {
   on: false,
@@ -60,12 +65,9 @@ export function press(now: number) {
   const s = safari.get();
   if (!s.on || s.over) return;
   playClick();
-  const { hunt, got } = snap(
-    s.hunt,
-    zooView.from,
-    zooView.yaw,
-    animalsAt(zooView.t),
-  );
+  const { hunt, got } = snap(s.hunt, zooView.from, zooView.yaw, [
+    ...zooAnimals,
+  ]);
   safari.set({
     hunt,
     last: got.length

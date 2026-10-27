@@ -12,6 +12,7 @@ import {
 } from "../../game/creature.ts";
 import { MOOD_CLIP, type LandKind } from "../../game/creatures.ts";
 import { loopAt, type Rect } from "../../game/zoo.ts";
+import type { Vec2 } from "../../game/walk.ts";
 import type { Player } from "../world/PlayerController.tsx";
 import { Creature, type CreaturePose } from "./Creature.tsx";
 
@@ -25,6 +26,7 @@ export function WanderingCreature({
   phase,
   dir = 1,
   player,
+  track,
 }: {
   kind: LandKind;
   pen: Rect;
@@ -35,6 +37,8 @@ export function WanderingCreature({
   /** 1 walks the loop one way, -1 the other. */
   dir?: 1 | -1;
   player?: Player;
+  /** Kept up to date with where the animal stands (for the photo hunt). */
+  track?: { at: Vec2 };
 }): JSX.Element {
   const w = useMemo(() => newWanderer(phase, 1 + (phase % 3)), [phase]);
   const yaw = useMemo(
@@ -46,6 +50,7 @@ export function WanderingCreature({
     const here = loopAt(pen, 0, 1, w.a);
     pose.x = here.at[0];
     pose.z = here.at[1];
+    if (track) track.at = here.at;
     const near =
       player !== undefined &&
       Math.hypot(player.pos.x - pose.x, player.pos.z - pose.z) < ALERT_RANGE;

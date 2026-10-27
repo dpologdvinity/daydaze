@@ -137,3 +137,89 @@ export function animalsAt(t: number): { kind: Species; at: Vec2 }[] {
     })),
   ];
 }
+
+/** A placed prop: where, which way (rotation about y) and its scale per axis. */
+export type Spot = {
+  x: number;
+  z: number;
+  yaw: number;
+  sx: number;
+  sy: number;
+  sz: number;
+};
+
+/** Fence panel length (meters) the fence model is stretched to, about. */
+const PANEL = 2.2;
+/** Panel height scale: Kenney's fence is 0.35 m tall at scale 1. */
+const FENCE_K = 2.4;
+
+/** The fence panels round every habitat: the model is 1 m long along x, so
+ * each panel's x scale is its share of the side (a whole number per side). */
+export function fenceSpots(): Spot[] {
+  const out: Spot[] = [];
+  for (const h of Object.values(HABITATS)) {
+    const sides: [number, number, number, number][] = [
+      [h.x0, h.z0, h.x1, h.z0],
+      [h.x1, h.z0, h.x1, h.z1],
+      [h.x1, h.z1, h.x0, h.z1],
+      [h.x0, h.z1, h.x0, h.z0],
+    ];
+    for (const [ax, az, bx, bz] of sides) {
+      const len = Math.hypot(bx - ax, bz - az);
+      const n = Math.max(1, Math.round(len / PANEL));
+      const seg = len / n;
+      for (let k = 0; k < n; k++) {
+        const f = (k + 0.5) / n;
+        out.push({
+          x: ax + (bx - ax) * f,
+          z: az + (bz - az) * f,
+          // the model's length runs along x: turn x onto the side's direction
+          yaw: Math.atan2(-(bz - az), bx - ax),
+          sx: seg,
+          sy: FENCE_K,
+          sz: FENCE_K,
+        });
+      }
+    }
+  }
+  return out;
+}
+
+export const FENCE_SPOTS = fenceSpots();
+
+const spot = (x: number, z: number, yaw: number, k: number): Spot => ({
+  x,
+  z,
+  yaw,
+  sx: k,
+  sy: k,
+  sz: k,
+});
+
+/** Rock piles: tall ones are the lions' rocks, large ones edge the penguins'
+ * pool. Kenney's rocks are about a meter, so the scale is meters. */
+export const ROCK_SPOTS = {
+  tall: [
+    spot(-13, 4.5, 0.3, 3.2),
+    spot(-11.2, 3.4, 2.1, 2.4),
+    spot(-14.6, 5.8, 4, 2.6),
+    spot(-12.3, 6.2, 1.2, 2),
+  ],
+  large: [
+    spot(9.2, 1.8, 0.4, 2.2),
+    spot(16.8, 7.4, 2.2, 2.4),
+    spot(9.8, 7.6, 4.1, 1.8),
+    spot(16.2, 1.6, 1, 2),
+  ],
+} as const satisfies Record<string, readonly Spot[]>;
+
+/** Shade trees in the savanna and by the paths: Quaternius' common tree,
+ * which is about 8 m tall, brought down to a zoo tree. */
+export const TREE_SPOTS: readonly Spot[] = [
+  [-16.5, -12.5, 0.5],
+  [-7.5, -6, 0.42],
+  [16.5, -6, 0.46],
+  [5, 11.5, 0.38],
+  [12, 11, 0.42],
+  [-12, 11.5, 0.42],
+].map(([x, z, k], i) => spot(x ?? 0, z ?? 0, i * 1.3, k ?? 0.4));

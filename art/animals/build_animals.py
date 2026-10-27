@@ -25,7 +25,7 @@ CUTE = "Cute_Fish_Pack__Feb_2020/Cute Fish Pack - Feb 2020/FBX"
 
 # output name -> source file
 SOURCES = {}
-for n in ["Alpaca", "Horse", "Donkey", "Cow", "Deer", "Fox", "Wolf"]:
+for n in ["Alpaca", "Horse", "Donkey", "Cow", "Deer", "Fox", "Wolf", "Husky", "ShibaInu"]:
     SOURCES[n.lower()] = f"{ANIMALS}/{n}.gltf"
 for n in ["Dolphin", "Fish1", "Fish2", "Fish3", "Manta ray", "Shark", "Whale"]:
     SOURCES[n.lower().replace(" ", "-")] = f"{FISH}/{n}.fbx"
@@ -33,11 +33,18 @@ for n in ["Clownfish", "BlueTang", "YellowTang", "Goldfish", "Puffer", "Koi",
           "ButterflyFish", "Lionfish", "MandarinFish", "ZebraClownFish"]:
     SOURCES["cute-" + n.lower()] = f"{CUTE}/{n}.fbx"
 
+# Zoo species downloaded from poly.pizza (see docs/assets.md): the zebra is
+# rigged with clips; the rest are static meshes the client sways and bobs.
+POLY = "../poly"
+for n in ["zebra", "giraffe", "elephant", "lion", "penguin", "flamingo"]:
+    SOURCES[n] = f"{POLY}/{n}.glb"
+
 # Clips kept (matched by suffix after the last "|"), renamed to the key.
 CLIPS = {
     "Idle": "idle", "Idle_2": "idle2", "Idle_Headlow": "graze",
     "Eating": "eat", "Walk": "walk", "Gallop": "run",
-    "Idle_HitReact1": "react", "Swim": "swim", "Swimming_Normal": "swim",
+    "Idle_HitReact1": "react", "Run": "run", "Swim": "swim", "Swimming_Normal": "swim",
+    "WalkSlow": "walkslow",
 }
 
 
@@ -45,6 +52,10 @@ def vertex_color_single_material(meshes):
     """Bakes each material's base color into one COLOR_0 and joins the meshes."""
     for ob in meshes:
         me = ob.data
+        # drop imported vertex colors (the zebra's are plain white): the
+        # materials' colors are the look
+        for old in list(me.color_attributes):
+            me.color_attributes.remove(old)
         attr = me.color_attributes.new("Color", "FLOAT_COLOR", "CORNER")
         cols = []
         for mat in me.materials:
@@ -53,6 +64,13 @@ def vertex_color_single_material(meshes):
                 bsdf = next((n for n in mat.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
                 if bsdf:
                     c = tuple(bsdf.inputs["Base Color"].default_value)
+                    # glTF import wires vertex color x factor through a Mix node:
+                    # the material's own color is that node's B color input
+                    for link in bsdf.inputs["Base Color"].links:
+                        if link.from_node.type == "MIX":
+                            b = [i for i in link.from_node.inputs if i.name == "B" and i.type == "RGBA"]
+                            if b:
+                                c = tuple(b[0].default_value)
             cols.append(c)
         for poly in me.polygons:
             c = cols[poly.material_index] if poly.material_index < len(cols) else (0.8, 0.8, 0.8, 1.0)
@@ -100,9 +118,9 @@ def convert(name, path):
     meshes = [o for o in bpy.data.objects if o.type == "MESH" and o.dimensions.length > 1e-4]
     for o in [o for o in bpy.data.objects if o.type == "MESH" and o not in meshes]:
         bpy.data.objects.remove(o)
-    arm = next(o for o in bpy.data.objects if o.type == "ARMATURE")
+    arm = next((o for o in bpy.data.objects if o.type == "ARMATURE"), None)
     vertex_color_single_material(meshes)
-    kept = keep_clips(arm)
+    kept = keep_clips(arm) if arm else {}
     out = os.path.join(OUT, name + ".glb")
     bpy.ops.export_scene.gltf(
         filepath=out, export_format="GLB", export_animations=True,

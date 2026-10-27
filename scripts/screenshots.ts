@@ -88,6 +88,10 @@ const SHOTS: {
   { name: "paintball", query: "room=paintball" },
   { name: "music-studio", query: "room=music-studio" },
   { name: "zoo", query: "room=zoo" },
+  // close on the savanna: the static giraffes and the zebras
+  { name: "zoo-savanna", query: "room=zoo&cam=-8,3.2,-1,-13,1,-9" },
+  // close on the elephants and the lions' rocks
+  { name: "zoo-elephants", query: "room=zoo&cam=8,3.4,-1,13,1.2,-9" },
   { name: "dealership", query: "room=dealership" },
   { name: "jazz-club", query: "room=jazz-club" },
   { name: "vinyl-vault", query: "room=vinyl-vault" },

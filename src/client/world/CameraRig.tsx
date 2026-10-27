@@ -459,6 +459,20 @@ const chest = new THREE.Vector3();
  * Orbit camera that follows the player without fighting the user's orbit,
  * and flies between the room, full-look and face shots.
  */
+/** `?cam=ex,ey,ez,lx,ly,lz` pins the room's overview camera (for screenshots). */
+const CAM_OVERRIDE = (() => {
+  if (typeof location === "undefined") return null;
+  const n = new URLSearchParams(location.search)
+    .get("cam")
+    ?.split(",")
+    .map(Number);
+  if (!n || n.length !== 6 || n.some((x) => !Number.isFinite(x))) return null;
+  return {
+    eye: new THREE.Vector3(n[0], n[1], n[2]),
+    look: new THREE.Vector3(n[3], n[4], n[5]),
+  };
+})();
+
 export function CameraRig({
   player,
   view,
@@ -578,7 +592,8 @@ export function CameraRig({
     if (f) {
       if (view === "room" || view === "detail") {
         const shot =
-          (view === "detail" && DETAIL_SHOTS[room]) || ROOM_SHOTS[room];
+          CAM_OVERRIDE ??
+          ((view === "detail" && DETAIL_SHOTS[room]) || ROOM_SHOTS[room]);
         goalPos.copy(shot.eye);
         goalTarget.copy(shot.look);
       } else {
