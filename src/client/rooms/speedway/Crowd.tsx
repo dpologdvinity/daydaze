@@ -29,7 +29,7 @@ function seatPlan(): Seat[][] {
         z: -r * 1.1 + 0.15,
         // facing the track (-z), a little each way
         yaw: Math.PI + (rand() - 0.5) * 0.4,
-        scale: PERSON_SCALE * (0.9 + rand() * 0.12) * 0.62,
+        scale: PERSON_SCALE * (0.88 + rand() * 0.12) * 0.9,
       });
     }
   }

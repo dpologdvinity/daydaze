@@ -67,7 +67,7 @@ export function PitRoad({
       for (const dx of [-1.9, 1.9, 0]) {
         dummy.position.set(bx + dx, 0, CREW_Z);
         dummy.rotation.set(0, Math.PI, 0);
-        dummy.scale.setScalar(PERSON_SCALE * 0.4);
+        dummy.scale.setScalar(PERSON_SCALE * 0.62);
         dummy.updateMatrix();
         mesh.setMatrixAt(idx, dummy.matrix);
         idx++;

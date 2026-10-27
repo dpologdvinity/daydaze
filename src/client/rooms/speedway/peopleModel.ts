@@ -19,7 +19,7 @@ export const FAN_MODELS = [
 ] as const;
 export const CREW_MODEL = "male-b-crouch";
 
-/** Kenney's characters are about 0.67 m tall; a fan stands about 1.7 m. */
+/** Kenney's characters are 0.67 m tall: this makes a person 1.7 m. */
 export const PERSON_SCALE = 2.5;
 
 const url = (name: string) => `/models/speedway/people-${name}.glb`;
@@ -36,9 +36,16 @@ export function usePerson(name: string): {
       geometry: THREE.BufferGeometry;
       material: THREE.Material;
     } | null = null;
+    // the optimized files quantize positions and keep the real size in the
+    // node's transform: bake it into a copy of the geometry, so a person is
+    // really 0.67 m tall here
+    scene.updateMatrixWorld(true);
     scene.traverse((o) => {
       if (o instanceof THREE.Mesh && !Array.isArray(o.material) && !found)
-        found = { geometry: o.geometry, material: o.material };
+        found = {
+          geometry: o.geometry.clone().applyMatrix4(o.matrixWorld),
+          material: o.material,
+        };
     });
     return found;
   }, [scene]);
