@@ -12,6 +12,9 @@ const workerPort = process.env.WORKER_PORT ?? "8787";
 // `npm run dev -- --port <n>` overrides the default port.
 export default defineConfig({
   plugins: [react()],
+  // worktrees share node_modules (a symlink), so two dev servers fight over
+  // its .vite dependency cache: `VITE_CACHE_DIR=/tmp/vite-<port>` gives one its own
+  cacheDir: process.env.VITE_CACHE_DIR ?? "node_modules/.vite",
   // names the service worker's cache: each build gets its own (public/sw.js)
   define: { __BUILD_ID__: JSON.stringify(Date.now().toString(36)) },
   server: {

@@ -193,7 +193,8 @@ function seaLevel(
   moving: boolean,
 ): number {
   if (!water || state === "dry") return 0;
-  if (water.dive) return moving ? 0.9 : 0.3;
+  if (water.dive)
+    return (water.floorAt?.(at[0], at[1]) ?? 0) + (moving ? 0.9 : 0.3);
   if (state === "wade") return -water.depthAt(at[0], at[1]);
   return moving ? FLOAT_Y : TREAD_Y;
 }

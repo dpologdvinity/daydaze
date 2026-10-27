@@ -240,43 +240,179 @@ function rng(seed: number) {
   };
 }
 
-/** A placed prop: which model, where, how it faces and how big. */
-export type Placed = { kind: number; at: Vec2; yaw: number; scale: number };
+/** A placed prop: which model, where, how it faces, how big, and how far
+ * above the seabed (a lintel on its pillars). */
+export type Placed = {
+  kind: number;
+  at: Vec2;
+  yaw: number;
+  scale: number;
+  lift?: number;
+};
+
+const smooth = (t: number) => t * t * (3 - 2 * t);
+const bump = (
+  x: number,
+  z: number,
+  cx: number,
+  cz: number,
+  r2: number,
+  h: number,
+) => h * Math.exp(-((x - cx) ** 2 + (z - cz) ** 2) / r2);
 
 /**
- * The reef's coral ridges (`kind` 0-5 is the coral set) and kelp stands,
- * scattered over the floor in clumps, kept off the spawn and the wreck.
+ * The seabed's height, meters, at a point: long dunes, fine sand ripples and
+ * a few reef mounds, easing to flat sand round the diver's start so she
+ * lands on level ground. Pure, so the mesh, the props and the diver agree.
  */
-export function reefPlan(seed = 7): { coral: Placed[]; kelp: Placed[] } {
+export function terrainY(x: number, z: number): number {
+  const d = Math.hypot(x - SPAWN[0], z - SPAWN[1]);
+  const flat = smooth(Math.min(1, Math.max(0, (d - 3) / 7)));
+  const dunes =
+    0.45 * Math.sin(x * 0.19 + z * 0.11) +
+    0.3 * Math.sin(x * 0.43 - z * 0.29 + 1.3);
+  const ripples = 0.045 * Math.sin(z * 2.6 + Math.sin(x * 0.7) * 1.4);
+  const mounds =
+    bump(x, z, 12, -10, 50, 1.1) +
+    bump(x, z, -14, -36, 70, 1.0) +
+    bump(x, z, 9, -26, 40, 0.8) +
+    bump(x, z, -9, -8, 30, 0.7);
+  return (dunes + ripples + mounds) * flat;
+}
+
+/** The reef's scattered props, each kind its own list. */
+export type ReefPlan = {
+  /** `kind` 0-5 is the coral set. */
+  coral: Placed[];
+  fans: Placed[];
+  branches: Placed[];
+  kelp: Placed[];
+  /** `kind`: 0 pillar, 1 flat boulder, 2 mossy boulder, 3 spires. */
+  rocks: Placed[];
+  jellies: Placed[];
+};
+
+/** Arches of two pillars and a lintel: `at` is the middle, `span` the gap. */
+export const ARCHES: readonly { at: Vec2; yaw: number; span: number }[] = [
+  { at: [-17, -14], yaw: 0.5, span: 6 },
+  { at: [14, -34], yaw: -0.3, span: 5.5 },
+  { at: [-2, -39], yaw: 1.2, span: 6.5 },
+];
+
+/**
+ * The reef: coral heads, sea fans, branching coral, a kelp forest, rocks and
+ * drifting jellies, scattered in clumps over the floor and kept off the
+ * spawn, the wreck and the arches. Seeded, so it is the same every dive.
+ */
+export function reefPlan(seed = 7): ReefPlan {
   const random = rng(seed);
-  const coral: Placed[] = [];
-  const kelp: Placed[] = [];
   const free = (x: number, z: number) =>
     Math.hypot(x - SPAWN[0], z - SPAWN[1]) > 4 &&
-    Math.hypot(x - WRECK.at[0], z - WRECK.at[1]) > WRECK.radius + 0.5;
-  for (let i = 0; coral.length < 36 && i < 400; i++) {
-    const x = (random() * 2 - 1) * 21;
-    const z = SPAWN[1] - 2 - random() * 44;
-    if (!free(x, z)) continue;
-    coral.push({
-      kind: Math.floor(random() * 6),
-      at: [x, z],
-      yaw: random() * Math.PI * 2,
-      scale: 1.1 + random() * 1.1,
-    });
+    Math.hypot(x - WRECK.at[0], z - WRECK.at[1]) > WRECK.radius + 0.5 &&
+    ARCHES.every((a) => Math.hypot(x - a.at[0], z - a.at[1]) > a.span * 0.7);
+  // clump centers: props gather in patches with open sand between them
+  const clumps: Vec2[] = [];
+  for (let i = 0; clumps.length < 16 && i < 200; i++) {
+    const x = (random() * 2 - 1) * 20;
+    const z = SPAWN[1] - 4 - random() * 40;
+    if (free(x, z)) clumps.push([x, z]);
   }
-  for (let i = 0; kelp.length < 40 && i < 600; i++) {
-    const x = (random() * 2 - 1) * 22;
-    const z = SPAWN[1] - 3 - random() * 44;
-    if (!free(x, z)) continue;
-    kelp.push({
-      kind: 0,
-      at: [x, z],
-      yaw: random() * Math.PI * 2,
-      scale: 0.8 + random() * 0.9,
-    });
+  const near = (spread: number): Vec2 => {
+    const c = clumps[Math.floor(random() * clumps.length)] ?? [0, -10];
+    const a = random() * Math.PI * 2;
+    const r = Math.sqrt(random()) * spread;
+    return [c[0] + Math.cos(a) * r, c[1] + Math.sin(a) * r];
+  };
+  const scatter = (
+    count: number,
+    spread: number,
+    pick: () => number,
+    size: () => number,
+  ): Placed[] => {
+    const out: Placed[] = [];
+    for (let i = 0; out.length < count && i < count * 20; i++) {
+      const [x, z] = near(spread);
+      if (!free(x, z) || Math.abs(x) > 23 || z < -46) continue;
+      out.push({
+        kind: pick(),
+        at: [x, z],
+        yaw: random() * Math.PI * 2,
+        scale: size(),
+      });
+    }
+    return out;
+  };
+  // the light coral sets (2, 4, 6) are cheap to draw: they get most places
+  const coralKinds = [0, 1, 1, 1, 2, 3, 3, 3, 4, 5, 5, 5];
+  const rocks = [
+    ...scatter(
+      8,
+      6,
+      () => 1 + Math.floor(random() * 2),
+      () => 0.8 + random() * 1.1,
+    ),
+    ...scatter(
+      5,
+      5,
+      () => 3,
+      () => 0.9 + random() * 0.8,
+    ),
+    ...scatter(
+      4,
+      5,
+      () => 0,
+      () => 0.6 + random() * 0.5,
+    ),
+  ];
+  for (const a of ARCHES) {
+    const dx = Math.cos(a.yaw) * a.span * 0.5;
+    const dz = -Math.sin(a.yaw) * a.span * 0.5;
+    rocks.push(
+      { kind: 0, at: [a.at[0] - dx, a.at[1] - dz], yaw: a.yaw, scale: 1 },
+      { kind: 0, at: [a.at[0] + dx, a.at[1] + dz], yaw: a.yaw + 3, scale: 1 },
+      // the lintel rests across the tops
+      {
+        kind: 1,
+        at: [a.at[0], a.at[1]],
+        yaw: a.yaw,
+        scale: a.span / 3.2,
+        lift: 4.6,
+      },
+    );
   }
-  return { coral, kelp };
+  return {
+    coral: scatter(
+      44,
+      5.5,
+      () => coralKinds[Math.floor(random() * coralKinds.length)] ?? 0,
+      () => 1.5 + random() * 1.7,
+    ),
+    fans: scatter(
+      80,
+      6,
+      () => 0,
+      () => 0.55 + random() * 0.6,
+    ),
+    branches: scatter(
+      44,
+      6,
+      () => 0,
+      () => 0.9 + random() * 1.0,
+    ),
+    kelp: scatter(
+      220,
+      8,
+      () => 0,
+      () => 0.55 + random() * 0.6,
+    ),
+    rocks,
+    jellies: scatter(
+      6,
+      14,
+      () => 0,
+      () => 0.8 + random() * 0.6,
+    ),
+  };
 }
 
 // ------------------------------------------------------------ the species log

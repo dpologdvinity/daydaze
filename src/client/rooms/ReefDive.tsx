@@ -10,6 +10,7 @@ import {
   depthAt,
   lifePose,
   reefPlan,
+  terrainY,
   stepAir,
   type Life,
 } from "../../game/dive.ts";
@@ -32,7 +33,23 @@ import { Sparkles } from "./shared/Sparkles.tsx";
 import { dive } from "./ocean/session.ts";
 
 const FOG = "#0b6d8e";
+/** The reef.glb rock nodes, in the plan's `kind` order. */
+const ROCKS = ["rock-pillar", "rock-flat", "rock-moss", "rock-spires"] as const;
 const clock = () => performance.now() / 1000;
+
+const SEABED_Z = -21;
+
+/** The seabed mesh: a grid lifted by terrainY, so the dunes, ripples and
+ * mounds are real shape the diver swims over. */
+function seabedGeometry(): THREE.BufferGeometry {
+  const g = new THREE.PlaneGeometry(60, 80, 70, 92);
+  g.rotateX(-Math.PI / 2);
+  const pos = g.getAttribute("position");
+  for (let i = 0; i < pos.count; i++)
+    pos.setY(i, terrainY(pos.getX(i), pos.getZ(i) + SEABED_Z));
+  g.computeVertexNormals();
+  return g;
+}
 
 /** The seabed: warm sand with moving caustics, the light the surface throws
  * down, folded into the emissive term so it costs no extra draw. */
@@ -78,6 +95,8 @@ function Seabed({ onPick }: { onPick: PickHandler }) {
   useFrame(({ clock: c }) => {
     uniforms.uTime.value = calm ? 0 : c.elapsedTime;
   });
+  const geometry = useMemo(seabedGeometry, []);
+  useEffect(() => () => geometry.dispose(), [geometry]);
   const click = (e: ThreeEvent<MouseEvent>) => {
     if (e.delta > 6) return;
     e.stopPropagation();
@@ -85,14 +104,12 @@ function Seabed({ onPick }: { onPick: PickHandler }) {
   };
   return (
     <mesh
-      rotation-x={-Math.PI / 2}
-      position={[0, 0, -21]}
+      position={[0, 0, SEABED_Z]}
       onClick={click}
       name="floor"
       material={material}
-    >
-      <planeGeometry args={[60, 80]} />
-    </mesh>
+      geometry={geometry}
+    />
   );
 }
 
@@ -213,7 +230,7 @@ function Swimmer({ life, i }: { life: Life; i: number }) {
         const p = lifePose(life, i, calm ? 0 : clock(), scratch.current);
         pose.x = p.x;
         pose.z = p.z;
-        pose.y = p.above;
+        pose.y = p.above + terrainY(p.x, p.z);
         pose.yaw = p.yaw;
         pose.clip = walk ? "walk" : "swim";
       }}
@@ -295,14 +312,20 @@ export function ReefDive({
       ),
     [plan],
   );
-  const kelp = useMemo(
-    () => plan.kelp.map((k) => ({ ...k, scale: k.scale * 0.55 })),
+  const kelp = plan.kelp;
+  const rocksByKind = useMemo(
+    () => ROCKS.map((_, k) => plan.rocks.filter((r) => r.kind === k)),
+    [plan],
+  );
+  // jellies drift well above the floor
+  const jellies = useMemo(
+    () => plan.jellies.map((j) => ({ ...j, lift: 3 + (j.at[0] % 3) })),
     [plan],
   );
   return (
     <>
       <color attach="background" args={[FOG]} />
-      <fog attach="fog" args={[FOG, 3, 34]} />
+      <fog attach="fog" args={[FOG, 6, 42]} />
       <hemisphereLight args={["#8fe4ff", "#16485c", 1.6]} />
       <directionalLight position={[2, 22, 4]} intensity={2.2} color="#c8f4ff" />
       <Seabed onPick={onPick} />
@@ -314,12 +337,39 @@ export function ReefDive({
         <meshStandardMaterial color="#f4f0e0" />
       </mesh>
       {byKind.map((items, k) => (
-        <Scatter key={k} name={`coral-${k + 1}`} items={items} />
+        <Scatter
+          key={k}
+          name={`coral-${k + 1}`}
+          items={items}
+          floorY={terrainY}
+          sink={0.05}
+        />
       ))}
-      <Scatter name="seaweed" items={kelp} />
+      <Scatter name="fan" items={plan.fans} floorY={terrainY} sink={0.1} />
+      <Scatter
+        name="branch"
+        items={plan.branches}
+        floorY={terrainY}
+        sink={0.1}
+      />
+      <Scatter name="seaweed" items={kelp} floorY={terrainY} sink={0.1} />
+      {ROCKS.map((name, k) => (
+        <Scatter
+          key={name}
+          name={name}
+          items={rocksByKind[k] ?? []}
+          floorY={terrainY}
+          sink={0.3}
+        />
+      ))}
+      <Scatter name="jelly" items={jellies} floorY={terrainY} far={30} />
       <Single
         name="wreck"
-        position={[WRECK.at[0], -0.5, WRECK.at[1]]}
+        position={[
+          WRECK.at[0],
+          terrainY(WRECK.at[0], WRECK.at[1]) - 0.5,
+          WRECK.at[1],
+        ]}
         rotation={[0.08, WRECK.yaw, 0.14]}
       />
       <Single
