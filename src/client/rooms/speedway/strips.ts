@@ -71,7 +71,7 @@ const UV_METRES = 12;
 /** One layer of flat quads at a height, each quad tinted by `colorOf`. */
 export type Ribbon = {
   quads: readonly (readonly Vec2[])[];
-  y: number;
+  y: number | ((p: Vec2, quadIndex: number) => number);
   colorOf?: (i: number) => THREE.Color;
 };
 
@@ -95,7 +95,7 @@ export function ribbonGeometry(
       const [a, b, cc, d] = q;
       for (const p of [a, b, cc, a, cc, d]) {
         positions[k++] = p[0];
-        positions[k++] = y;
+        positions[k++] = typeof y === "function" ? y(p, i) : y;
         positions[k++] = p[1];
         colors[k - 3] = c.r;
         colors[k - 2] = c.g;

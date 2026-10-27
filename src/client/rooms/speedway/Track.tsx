@@ -68,6 +68,22 @@ export function RaceTrack({ track, origin }: { track: Track; origin: Vec2 }) {
     const line = track.centerline;
     const walls = trackWalls(track);
     const inner = half - KERB;
+    const bank = track.banking ?? 0;
+
+    // Banking height for any track point: raises outer edge in turns
+    const bankAt = (p: Vec2, base: number) => {
+      if (bank <= 0) return base;
+      const corner = Math.min(1, Math.max(0, (Math.abs(p[0]) - 50) / 25));
+      if (corner <= 0) return base;
+      const turnCenter = p[0] > 0 ? 60 : -60;
+      const rad = Math.hypot(p[0] - turnCenter, p[1]);
+      const outerShare = Math.min(
+        1,
+        Math.max(0, (rad - (40 - half)) / track.width),
+      );
+      return base + outerShare * Math.sin(bank) * track.width * corner;
+    };
+
     // dashed center line: three segments on, three off
     const dashes = strips(line, 1, -0.12, 0.12).filter((_, i) => i % 6 < 3);
     const edges = [
@@ -82,22 +98,36 @@ export function RaceTrack({ track, origin }: { track: Track; origin: Vec2 }) {
       road: ribbonGeometry([
         {
           quads: [...strips(line, 1, 0, half), ...strips(line, -1, 0, half)],
-          y: 0.01,
+          y: (p) => bankAt(p, 0.01),
           colorOf: () => ROAD,
         },
-        { quads: [...dashes, ...edges], y: 0.014, colorOf: () => PAINT },
+        {
+          quads: [...dashes, ...edges],
+          y: (p) => bankAt(p, 0.014),
+          colorOf: () => PAINT,
+        },
       ]),
       // kerbs on the ground and neon on the barrier tops share one glow draw
       glow: ribbonGeometry([
         {
           quads: kerbs,
-          y: 0.02,
+          y: (p) => bankAt(p, 0.02),
           colorOf: (i) => (i % 2 ? NEON.red : NEON.white),
         },
-        { quads: walls, y: BARRIER_HEIGHT, colorOf: neonCycle },
+        {
+          quads: walls,
+          y: (p) => bankAt(p, BARRIER_HEIGHT),
+          colorOf: neonCycle,
+        },
       ]),
-      barriers: quadBoxes(walls, 0, BARRIER_HEIGHT),
-      tyres: tyreWalls(track),
+      barriers: quadBoxes(walls, 0, BARRIER_HEIGHT).map((b) => ({
+        ...b,
+        y: bankAt([b.x, b.z], b.y),
+      })),
+      tyres: tyreWalls(track).map((t) => ({
+        ...t,
+        y: bankAt(t.at, t.y),
+      })),
     };
   }, [track]);
   return (
