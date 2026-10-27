@@ -413,6 +413,7 @@ export const CREDITS: readonly {
         usedFor: "Picnic blankets on the park lawn.",
       },
       {
+<<<<<<< HEAD
         title: "Nature Crops Pack",
         author: "Quaternius",
         license: "CC0 1.0",
@@ -465,6 +466,30 @@ export const CREDITS: readonly {
         license: "CC-BY 3.0",
         url: "https://poly.pizza/m/7qFs_DjjuVp",
         usedFor: "Scarecrow watching over the crop field at Sunny Acres Farm.",
+=======
+        title: "Mini Characters",
+        author: "Kenney",
+        license: "CC0 1.0",
+        url: "https://kenney.nl/assets/mini-characters",
+        usedFor:
+          "Instanced grandstand crowd and pit road pit crew for the Speedway oval.",
+      },
+      {
+        title: "Racing Kit",
+        author: "Kenney",
+        license: "CC0 1.0",
+        url: "https://kenney.nl/assets/racing-kit",
+        usedFor:
+          "Grandstand, pit garages, barriers, overhead flag gantry, and billboards for the Speedway oval.",
+      },
+      {
+        title: "Realistic Car Pack",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://quaternius.com/packs/realisticcarpack.html",
+        usedFor:
+          "NASCAR stock cars (models 1-4) with canvas liveries for the Speedway oval.",
+>>>>>>> bf5588f7 (feat(speedway): stock-car oval assets: Kenney and Quaternius models, credits and the stock car's spec)
       },
     ],
   },
