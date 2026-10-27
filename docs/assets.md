@@ -27,10 +27,10 @@ future imported packs belong here when they enter the game.
 | Animated Fish Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/animatedfish.html | Aquarium shark, manta ray and fish; dolphin and whale ready for the ocean. |
 | Cute Fish Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/cutefish.html | Aquarium reef fish. |
 | Zebra (rigged) | Quaternius | CC0 1.0 | https://poly.pizza/m/iclPBR6SBZ | Zoo savanna zebras, with idle, walk and run clips. |
-| Giraffe | elkiotbear | CC-BY 3.0 | https://poly.pizza/m/gTFDiaGp8D | Zoo savanna giraffes (static mesh, swayed by the client). |
-| Elephant | jeremy | CC-BY 3.0 | https://poly.pizza/m/9J-cG39KYFC | Zoo elephants (static mesh, swayed by the client). |
-| Lion | jeremy | CC-BY 3.0 | https://poly.pizza/m/cC_IFclYA4c | Zoo lions (static mesh, swayed by the client). |
-| Penguin | jeremy | CC-BY 3.0 | https://poly.pizza/m/9Ift-39Akov | Zoo penguin pool (static mesh, swayed by the client). |
+| Giraffe | BlueMesh | CC-BY 4.0 | https://sketchfab.com/3d-models/giraffe-522c042aad9f4348a74c2985ec3f99f9 | Zoo savanna giraffes, with a calm idle clip (swayed along when walking). |
+| Elephant | Rukh3D | CC-BY 4.0 | https://sketchfab.com/3d-models/elephant-4ae161372d6a4219a87340339d1ffe03 | Zoo elephants, with idle, walk, run and eat clips. |
+| Baby Lion | kenchoo | CC-BY 4.0 | https://sketchfab.com/3d-models/baby-lion-c9599625dc474262aab754d7b63841f5 | Zoo lions, with a calm idle clip (swayed along when walking). |
+| African penguin (Spheniscus demersus) Low poly | Major | CC-BY 4.0 | https://sketchfab.com/3d-models/african-penguin-spheniscus-demersus-low-poly-9e59070815fe451d93398e2ebdb9bb92 | Zoo penguin pool, with idle, walk, sit and sleep clips. |
 | Flamingo | Хмара Сергей | CC-BY 3.0 | https://poly.pizza/m/5hUIvLVFqet | Zoo flamingo pond (static mesh, swayed by the client). |
 | Cat | Quaternius | CC0 1.0 | https://poly.pizza/m/qKICY6xla2 | Adoptable pet cat, with idle, walk, run and eat clips. |
 | Bunny | Quaternius | CC0 1.0 | https://poly.pizza/m/irZjWFARyl | Adoptable pet rabbit, with idle, walk and run clips. |
