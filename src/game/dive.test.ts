@@ -8,6 +8,8 @@ import {
   LADDER,
   LIFE,
   LIFE_COUNT,
+  ARCHES,
+  terrainY,
   LOW_AIR,
   NEW_LOG,
   SPAWN,
@@ -73,20 +75,51 @@ test("every life is a known species, and every species is somewhere", () => {
 });
 
 test("the reef stays inside the low-tier creature budget", () => {
-  assert.ok(LIFE_COUNT <= 40, `${LIFE_COUNT} creatures`);
+  assert.ok(LIFE_COUNT <= 64, `${LIFE_COUNT} creatures`);
 });
 
-test("the reef plan is seeded, scattered and clear of the spawn and the wreck", () => {
+test("the reef plan is seeded, dense, and clear of the spawn and the wreck", () => {
   const a = reefPlan();
   assert.deepEqual(a, reefPlan());
   assert.notDeepEqual(a, reefPlan(8));
-  assert.ok(a.coral.length >= 30 && a.kelp.length >= 30);
-  for (const p of [...a.coral, ...a.kelp]) {
+  assert.ok(a.coral.length >= 40 && a.fans.length >= 60);
+  assert.ok(a.kelp.length >= 150 && a.branches.length >= 30);
+  assert.ok(a.jellies.length >= 4);
+  const everything = [
+    ...a.coral,
+    ...a.fans,
+    ...a.branches,
+    ...a.kelp,
+    ...a.jellies,
+  ];
+  for (const p of everything) {
     assert.ok(pointInPolygon(FLOOR, p.at));
     assert.ok(Math.hypot(p.at[0] - SPAWN[0], p.at[1] - SPAWN[1]) > 4);
     assert.ok(!atWreck(p.at));
   }
   assert.ok(a.coral.every((c) => c.kind >= 0 && c.kind < 6));
+  // each arch brings two pillars and a lintel, and the lintel rides high
+  const lintels = a.rocks.filter((r) => r.lift !== undefined);
+  assert.equal(lintels.length, ARCHES.length);
+  assert.ok(lintels.every((r) => (r.lift ?? 0) > 3));
+});
+
+test("the seabed is gently varied, level at the start, and never a cliff", () => {
+  assert.equal(terrainY(SPAWN[0], SPAWN[1]), 0);
+  assert.ok(Math.abs(terrainY(LADDER[0], LADDER[1])) < 0.05);
+  let lo = 0;
+  let hi = 0;
+  for (let x = -22; x <= 22; x += 1)
+    for (let z = -46; z <= 5; z += 1) {
+      const h = terrainY(x, z);
+      lo = Math.min(lo, h);
+      hi = Math.max(hi, h);
+      // a diver can swim over any step between neighbors
+      assert.ok(Math.abs(terrainY(x + 1, z) - h) < 0.9);
+      assert.ok(Math.abs(terrainY(x, z + 1) - h) < 0.9);
+    }
+  assert.ok(hi - lo > 1.2, "it is not flat");
+  assert.ok(lo > -1.5 && hi < 3);
 });
 
 test("sightings: in front and in range only", () => {

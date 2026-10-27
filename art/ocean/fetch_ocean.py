@@ -30,6 +30,13 @@ MODELS = {
     "fklSEvGm1Q8": "turtle",  # Poly by Google, CC-BY 3.0
     "0WRzrtCIIRp": "seagull",  # Poly by Google, CC-BY 3.0
     "6Tpj_vcWP3f": "seagull-fly",  # Poly by Google, CC-BY 3.0
+    "54jZKTAt5p": "rock-large",  # Quaternius, CC0
+    "d2VWOdthtR": "rock-large2",  # Quaternius, CC0
+    "s1OJ3bBzqc": "rock-medium",  # Quaternius, CC0
+    "a52gSEEq8X": "rock-mountains",  # Quaternius, CC0
+    "4KUXdtDdgHR": "fan-coral",  # Poly by Google, CC-BY 3.0
+    "1FMGb52XdD-": "anemone",  # Poly by Google, CC-BY 3.0
+    "dA5osnS0Rzj": "jellyfish",  # Poly by Google, CC-BY 3.0
 }
 
 

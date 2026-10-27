@@ -150,6 +150,10 @@ const SHOTS: {
   { name: "open-water-full", query: "room=open-water&view=full" },
   { name: "reef-dive", query: "room=reef-dive" },
   {
+    name: "reef-dive-deep",
+    query: "room=reef-dive&at=3,-14&yaw=3.14&view=full",
+  },
+  {
     // swimming out past the lane buoys, strokes and all, fish below
     name: "open-water-swim",
     query: "room=open-water&at=2,-9&yaw=3.14&view=full",

@@ -4,7 +4,8 @@
 // a whole reef is a handful of draw calls.
 
 import { useGLTF } from "@react-three/drei";
-import { useLayoutEffect, useMemo, type JSX } from "react";
+import { useEffect, useMemo, type JSX } from "react";
+import { InstancedMesh2 } from "@three.ez/instanced-mesh";
 import * as THREE from "three";
 import type { Placed } from "../../../game/dive.ts";
 
@@ -29,48 +30,53 @@ export function usePart(name: string): Part | null {
   }, [gltf, name]);
 }
 
-const m = new THREE.Matrix4();
-const q = new THREE.Quaternion();
-const e = new THREE.Euler();
-const p = new THREE.Vector3();
-const s = new THREE.Vector3();
+const UP = new THREE.Vector3(0, 1, 0);
 
-/** Many copies of one reef part: `floorY(x, z)` is the ground under each. */
+/** Culls an instance this far from the camera (past the reef's fog). */
+const FAR = 40;
+
+/**
+ * Many copies of one reef part as one InstancedMesh2: each instance is
+ * frustum-culled (through a BVH) and dropped past the fog, so a dense reef
+ * only pays for what is in view. `floorY(x, z)` is the ground under each.
+ */
 export function Scatter({
   name,
   items,
   floorY = () => 0,
   sink = 0,
+  far = FAR,
 }: {
   name: string;
   items: readonly Placed[];
   floorY?: (x: number, z: number) => number;
   /** Meters of the part buried in the ground (a coral's base). */
   sink?: number;
+  far?: number;
 }): JSX.Element | null {
   const part = usePart(name);
   const mesh = useMemo(() => {
-    if (!part) return null;
-    const im = new THREE.InstancedMesh(
-      part.geometry,
-      part.material,
-      Math.max(1, items.length),
-    );
-    im.frustumCulled = false;
-    im.count = items.length;
-    return im;
-  }, [part, items.length]);
-  useLayoutEffect(() => {
-    if (!mesh) return;
-    items.forEach((it, i) => {
-      p.set(it.at[0], floorY(it.at[0], it.at[1]) - sink, it.at[1]);
-      q.setFromEuler(e.set(0, it.yaw, 0));
-      s.setScalar(it.scale);
-      mesh.setMatrixAt(i, m.compose(p, q, s));
+    if (!part || items.length === 0) return null;
+    const im = new InstancedMesh2(part.geometry, part.material, {
+      capacity: items.length,
     });
-    mesh.instanceMatrix.needsUpdate = true;
-  }, [mesh, items, floorY, sink]);
-  useLayoutEffect(() => () => mesh?.dispose(), [mesh]);
+    im.addInstances(items.length, (o, i) => {
+      const it = items[i];
+      if (!it) return;
+      o.position.set(
+        it.at[0],
+        floorY(it.at[0], it.at[1]) + (it.lift ?? 0) - sink,
+        it.at[1],
+      );
+      o.quaternion.setFromAxisAngle(UP, it.yaw);
+      o.scale.setScalar(it.scale);
+    });
+    im.computeBVH();
+    im.onFrustumEnter = (index, camera) =>
+      im.getPositionAt(index).distanceToSquared(camera.position) < far * far;
+    return im;
+  }, [part, items, floorY, sink, far]);
+  useEffect(() => () => mesh?.dispose(), [mesh]);
   return mesh ? <primitive object={mesh} /> : null;
 }
 

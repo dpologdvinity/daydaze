@@ -27,6 +27,10 @@ SIZES = {
     "coral-1": 5.0, "coral-2": 4.5, "coral-3": 5.0, "coral-4": 4.5,
     "coral-5": 5.5, "coral-6": 5.5, "seaweed": 2.4, "anchor": 1.6,
     "wreck": 11.0, "gull": 0.55, "gull-fly": 1.3,
+    # the dense reef: sea fans (the anemone, stood tall), branching coral,
+    # drifting jellies and four kinds of rock, built into arches in code
+    "fan": 1.5, "branch": 1.4, "jelly": 0.9,
+    "rock-pillar": 4.2, "rock-flat": 4.0, "rock-moss": 3.0, "rock-spires": 4.5,
 }
 
 
@@ -90,7 +94,18 @@ def main():
     for i in range(1, 7):
         ob = join(import_meshes(os.path.join(IN, f"coral-set{i}.glb")), f"coral-{i}")
         fit(ob, SIZES[f"coral-{i}"])
-    for src, name in (("seaweed", "seaweed"), ("anchor", "anchor"), ("shipwreck", "wreck")):
+    for src, name in (
+        ("seaweed", "seaweed"),
+        ("anchor", "anchor"),
+        ("shipwreck", "wreck"),
+        ("anemone", "fan"),
+        ("fan-coral", "branch"),
+        ("jellyfish", "jelly"),
+        ("rock-large2", "rock-pillar"),
+        ("rock-large", "rock-flat"),
+        ("rock-medium", "rock-moss"),
+        ("rock-mountains", "rock-spires"),
+    ):
         ob = join(import_meshes(os.path.join(IN, src + ".glb")), name)
         fit(ob, SIZES[name])
     export(os.path.join(OUT, "reef.glb"))
