@@ -21,7 +21,13 @@ import {
 import { elBoxes } from "./el.ts";
 import { BAY_TRIANGLES, HOUSE_MODELS, type BayInstance } from "./nyc.ts";
 import { ALL_GROWTH } from "./growth.ts";
-import { TREE_VARIANTS, drawCallsOf, planCity, trianglesOf } from "./plan.ts";
+import {
+  TREE_VARIANTS,
+  drawCallsOf,
+  planCity,
+  trianglesOf,
+  type CityPlan,
+} from "./plan.ts";
 import {
   BAY_RANGE,
   POINT_LIGHTS,
@@ -141,6 +147,22 @@ export function worstViewBayTriangles(
   return worst + always;
 }
 
+/** The streamed city plan from where she stands on a tier: what CityScene
+ * draws and what lowTierCost prices, so the two cannot drift apart.
+ * `bays: false` is the `?bays=0` comparison view. */
+export function planView(
+  at: Vec2,
+  tier: "low" | "high",
+  bays = true,
+): CityPlan {
+  return planCity(
+    cellsWithin(at, VIEW_RADIUS),
+    POINT_LIGHTS[tier],
+    at,
+    bays ? BAY_RANGE[tier] : 0,
+  );
+}
+
 /** The low tier's draw calls and triangles at `at`, plus what the plan
  * alone costs and how many bays it wears. */
 export function lowTierCost(at: Vec2): {
@@ -149,12 +171,7 @@ export function lowTierCost(at: Vec2): {
   planTriangles: number;
   bays: number;
 } {
-  const plan = planCity(
-    cellsWithin(at, VIEW_RADIUS),
-    POINT_LIGHTS.low,
-    at,
-    BAY_RANGE.low,
-  );
+  const plan = planView(at, "low");
   // instances per model; a model with any costs one draw call per part
   const counts = new Map<string, number>();
   const add = (model: string) =>

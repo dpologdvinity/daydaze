@@ -2,20 +2,15 @@ import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { Environment } from "@react-three/drei";
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
+import { ALL_CELLS, neighborhoodAt } from "../../game/city/cells.ts";
 import {
-  ALL_CELLS,
-  cellsWithin,
-  neighborhoodAt,
-} from "../../game/city/cells.ts";
-import {
-  BAY_RANGE,
   LIGHT_DISTANCE,
   LIGHT_INTENSITY,
   POINT_LIGHTS,
   RELOAD_DISTANCE,
-  VIEW_RADIUS,
 } from "../../game/city/tuning.ts";
 import { KINDS, planCity, type Kind } from "../../game/city/plan.ts";
+import { planView } from "../../game/city/budget.ts";
 import type { Vec2 } from "../../game/walk.ts";
 import type { PickHandler } from "../rooms/shared/Floor.tsx";
 import { useReducedMotion } from "../motion.ts";
@@ -147,12 +142,8 @@ export function CityScene({
       const at: Vec2 = [x, z];
       loadedAt.current = at;
       // shortcut: planCity allocates a fresh plan on each 16 m reload, not per frame; stream into pooled buffers if reloads show up in a profile
-      const plan = planCity(
-        cellsWithin(at, VIEW_RADIUS),
-        lightCount,
-        at,
-        NO_BAYS ? 0 : BAY_RANGE[tier],
-      );
+      // the same plan the low-tier budget test prices (budget.ts)
+      const plan = planView(at, tier, !NO_BAYS);
       for (const kind of KINDS)
         writeKind(meshes[kind], kind, plan.instances[kind]);
       cityTrees.set({ spots: plan.trees, at });
