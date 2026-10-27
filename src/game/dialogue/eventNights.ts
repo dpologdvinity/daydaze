@@ -66,6 +66,26 @@ export const regularNightLines: RoleBank = {
       text: "Dress sharp, speak low, tip the band. That is the whole code.",
       when: { tier: "teen" },
     },
+    {
+      text: "Knock twice, whisper the password, and the soda fountain is yours.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Feather boas, fedoras and fizzy water. Dress code accepted.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "The piano man takes requests, but only the swingy ones.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Lean in close, the secret tonight is a honey lemon fizz.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Shh, the band is about to start. Find a candlelit table.",
+      when: { tier: "teen" },
+    },
   ],
   "event-eighties-night": [
     "'80s night! My hair is ninety percent hairspray and ten percent hope.",
@@ -258,6 +278,26 @@ export const djNightLines: RoleBank = {
     },
     {
       text: "Hats low, voices lower, and a Smoky Rose soda for everyone.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Good evening, swells. The next number is a slow, sweet one.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Trumpets up! This one is for everyone in a fedora.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Swing it, don't squash it. That's the rule tonight.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "The clarinet is warmed up and the floor is yours.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Low lights, big smiles. Let's take it from the top.",
       when: { tier: "teen" },
     },
   ],

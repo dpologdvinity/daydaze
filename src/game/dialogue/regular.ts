@@ -220,6 +220,30 @@ export const regularBank: RoleBank = {
       text: "Try the Violet Fizz. The bartender swears it is a secret recipe.",
       when: { tier: "teen" },
     },
+    {
+      text: "Oh hey! We are debating the best mocktail on the menu. Vote with us.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Sit down, I will tell you everything about tonight's regulars.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Perfect timing, we need a fourth for trivia.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Hi! Have you tried the lavender lemonade? Life changing.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Did you see the band? They are unreal tonight.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Hey you. Pull up a chair and tell me about your day.",
+      when: { tier: "teen" },
+    },
   ],
   idle: [
     // The Violet Hour: the sapphic bar on Nightlife Row

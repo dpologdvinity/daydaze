@@ -118,6 +118,38 @@ export const bartenderBank: RoleBank = {
       text: "Pulse bar, where the sodas glow and so do the people. What will it be?",
       when: { tier: "teen" },
     },
+    {
+      text: "Welcome in! The menu glows, the sodas fizz, and the straws are striped.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Pull up a stool. Tonight's special is the Sunset Spritzer, zero percent and all sparkle.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Hey, first time? Try the Violet Fizz, everybody starts there.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Hola! Tell me a flavor and I will invent a mocktail for it.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Welcome! Everything here is mixed fresh, and the cherries are free.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Hi there. Mint, lime or berry? I can do all three in one glass.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "You made it! Grab a seat and I will bring you something bubbly.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "New face! I am the best mocktail maker on this block, ask anyone.",
+      when: { tier: "teen" },
+    },
   ],
   tapped: [
     // The Violet Hour: the sapphic bar on Nightlife Row
@@ -262,6 +294,26 @@ export const bartenderBank: RoleBank = {
       text: "The after-midnight menu is all hot chocolate and glitter soda. Pick one.",
       when: { tier: "teen" },
     },
+    {
+      text: "The stars are out and so is the cold brew soda. Sit anywhere.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Midnight menu: hot chocolate with a toasted marshmallow crown.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Night owl energy! Do you want sweet, sour or glittery?",
+      when: { tier: "teen" },
+    },
+    {
+      text: "The music is low and the lemonade is cold. Perfect hour.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Closing in a bit, so tell me your last order and I will make it a good one.",
+      when: { tier: "teen" },
+    },
   ],
   "outfit-glam": [
     "That fit is serious. Are you going to a wedding or to my bar?",
@@ -292,6 +344,30 @@ export const bartenderBank: RoleBank = {
     },
     {
       text: "Gala-ready! I will garnish yours with a candied violet.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Look at you! That outfit deserves a glass with a sugar rim.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Red carpet fit. Let me garnish your drink with a little gold leaf.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Those colors are gorgeous. I will mix a drink to match them.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "You walked in and the whole bar turned. Here, a Rosewater Fizz.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Dressed like a headline. This round of sparkling juice is on me.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Now that is a statement piece. Sit, I will fix you a pink peppercorn soda.",
       when: { tier: "teen" },
     },
   ],
