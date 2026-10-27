@@ -17,6 +17,8 @@ LO="$(mktemp -d)"
 # ONLY="hair-locs*" rebuilds just the parts that match (default: every part)
 for src in "$IN"/${ONLY:-*}.glb; do
   name="$(basename "$src" .glb)"
+  # ONLY='hair-(buzz|edges)' rebuilds just the parts whose names match
+  if [ -n "${ONLY:-}" ] && ! echo "$name" | grep -Eq "^($ONLY)"; then continue; fi
   f="$LO/$name-pruned.glb"
   # the baked clips (art/doll/blender/mocap.py): no meshes to prune; keys
   # that a straight line through their neighbors meets within ~0.2 degrees

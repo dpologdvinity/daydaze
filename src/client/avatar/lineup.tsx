@@ -390,6 +390,16 @@ const SHOTS = {
     target: [0, 1.55, 0] as const,
     fov: 30,
   },
+  // the close-cropped styles, front on and close: buzz, shaved sides, bald, edges
+  cropped: {
+    looks: (["buzz", "shaved-sides", "bald", "edges"] as const).map(
+      (hairStyle, i) => ({ ...LINEUP[i % LINEUP.length], hairStyle }),
+    ),
+    x: (i: number) => (i - 1.5) * 0.36,
+    cam: [0, 1.62, 1.8] as const,
+    target: [0, 1.58, 0] as const,
+    fov: 28,
+  },
   // every free outfit, front on
   outfits: {
     looks: (

@@ -57,6 +57,12 @@ export const HAIR_STYLES = [
   { id: "textured", label: "Textured top" },
   { id: "swept", label: "Side sweep" },
   { id: "fringe", label: "Fringe" },
+  // close-cropped: a buzz cut, shaved sides over a short top, bald (no hair
+  // model at all), and slicked edges with baby hairs along the hairline
+  { id: "buzz", label: "Buzz cut" },
+  { id: "shaved-sides", label: "Shaved sides" },
+  { id: "bald", label: "Bald" },
+  { id: "edges", label: "Slicked edges" },
 ] as const;
 
 /** Hair colors as hex ids; the Blowout Bar's are locked until bought. */
@@ -802,6 +808,8 @@ export const SHORT_CUTS: readonly HairStyle[] = [
   "swept",
   "fringe",
   "coils",
+  "buzz",
+  "shaved-sides",
 ];
 
 /** Pronouns to pick from; a fixed list, so nothing else reaches others. */

@@ -151,7 +151,11 @@ export function partsFor(look: Look, swim: SwimLook | null) {
   // a man wears the parts fitted to the man's body
   const m = modelSuffix(look);
   return {
-    hair: `${MODELS}/hair-${HAIR[look.hairStyle] ?? look.hairStyle}${m}.glb`,
+    // bald wears no hair model at all
+    hair:
+      look.hairStyle === "bald"
+        ? null
+        : `${MODELS}/hair-${HAIR[look.hairStyle] ?? look.hairStyle}${m}.glb`,
     outfit: swim
       ? `${MODELS}/swim-${swim.style}${m}.glb`
       : `${MODELS}/outfit-${cut}${m}.glb`,
@@ -978,17 +982,19 @@ export function HumanDoll({
         bones={body.bones}
         restInverse={body.restInverse}
       />
-      <Suspense fallback={null}>
-        <Part
-          key={parts.hair}
-          url={parts.hair}
-          bones={body.bones}
-          tint={{ color: look.hairColor, kind: "hair" }}
-          far={farParts}
-          full={own}
-          onMeshes={track.hair}
-        />
-      </Suspense>
+      {parts.hair && (
+        <Suspense fallback={null}>
+          <Part
+            key={parts.hair}
+            url={parts.hair}
+            bones={body.bones}
+            tint={{ color: look.hairColor, kind: "hair" }}
+            far={farParts}
+            full={own}
+            onMeshes={track.hair}
+          />
+        </Suspense>
+      )}
       <Suspense fallback={null}>
         <Part
           key={parts.outfit}

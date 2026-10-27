@@ -672,6 +672,25 @@ def build(ctx):
     swing(ctx, low, ctx.JB["head"] + np.array([0, 0.07, -0.05]))
     out.append(low)
     out.append(pigtails(ctx, strand, combed))
+    # close-cropped styles. bald has no model (the client wears none).
+    # buzz: the combed cap alone, a few millimetres of fuzz
+    buzz = scalp_hair(ctx, "Hair_buzz", combed, lambda bm, ctx: None, rise=0.0)
+    strands.comb_cap(ctx, buzz)
+    out.append(buzz)
+    # shaved sides: the cap everywhere, a short top of cards from the crown only
+    out.append(
+        strand_style(ctx, "Hair_shaved-sides", strand, combed, seed=21, length=0.075, count=300, volume=1.4, crown=0.07)
+    )
+    # edges: a sleek short slick, plus tiny curled baby hairs along the hairline
+    sleek = strand_style(ctx, "Hair_edges", strand, combed, seed=23, length=0.085, count=330, wave=0.002, volume=0.7)
+    babies = strands.build(
+        ctx, "Hair_edges_baby", strand, seed=27, length=0.022, count=70, wave=0.004, volume=0.5, edge=0.025
+    )
+    import doll_outfits
+
+    edges = doll_outfits.join(sleek, babies)
+    edges.name = "Hair_edges"
+    out.append(edges)
     for ob in out:
         shade_strands(ctx, ob)
     return out
