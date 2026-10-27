@@ -20,6 +20,7 @@ import {
   drainPerSecond,
   exploreWreck,
   gaugeOf,
+  lifePose,
   mayDive,
   reefPlan,
   scoreOf,
@@ -79,7 +80,7 @@ test("the reef plan is seeded, scattered and clear of the spawn and the wreck", 
   const a = reefPlan();
   assert.deepEqual(a, reefPlan());
   assert.notDeepEqual(a, reefPlan(8));
-  assert.ok(a.coral.length >= 20 && a.kelp.length >= 30);
+  assert.ok(a.coral.length >= 30 && a.kelp.length >= 30);
   for (const p of [...a.coral, ...a.kelp]) {
     assert.ok(pointInPolygon(FLOOR, p.at));
     assert.ok(Math.hypot(p.at[0] - SPAWN[0], p.at[1] - SPAWN[1]) > 4);
@@ -114,4 +115,27 @@ test("the wreck zone, and the gear check for the reef", () => {
   assert.ok(!mayDive("reef-dive", false));
   assert.ok(mayDive("reef-dive", true));
   assert.ok(mayDive("city", false));
+});
+
+test("creatures circle their home, stay on the reef floor, and face the way they swim", () => {
+  for (const life of LIFE)
+    for (let i = 0; i < life.count; i++)
+      for (let t = 0; t < 120; t += 7) {
+        const p = lifePose(life, i, t);
+        // the big swimmers range out past the diver's floor into the blue
+        assert.ok(
+          Math.abs(p.x) < 40 && p.z > -64 && p.z < 8,
+          `${life.species} t${t}`,
+        );
+        assert.ok(p.above >= 0);
+        const a = lifePose(life, i, t);
+        const b = lifePose(life, i, t + 0.01);
+        // the nose points the way it is going (yaw 0 faces +z)
+        const heading = Math.atan2(b.x - a.x, b.z - a.z);
+        const off = Math.atan2(
+          Math.sin(heading - a.yaw),
+          Math.cos(heading - a.yaw),
+        );
+        assert.ok(Math.abs(off) < 0.5, `${life.species} yaw off ${off}`);
+      }
 });

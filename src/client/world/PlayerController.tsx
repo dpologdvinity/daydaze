@@ -41,6 +41,9 @@ import { WALK_SPEED, type Vec2 } from "../../game/walk.ts";
 import { naturalPace } from "../../game/dance/clips.ts";
 import { gaitPace } from "../../game/dance/stride.ts";
 import { gaitOf } from "../../game/gaits.ts";
+import { paceIn, waterState, type WaterState } from "../../game/openWater.ts";
+import { afloat } from "../avatar/human/afloat.ts";
+import type { Water } from "./water.ts";
 import { useReducedMotion } from "../motion.ts";
 import { Doll, type WalkState } from "../avatar/Doll.tsx";
 import { hdr } from "../rooms/shared/materials.ts";
@@ -171,6 +174,30 @@ function softGround(x: number, z: number): boolean {
   return x >= PARK.x0 && x <= PARK.x1 && z >= PARK.z0 && z <= PARK.z1;
 }
 
+/** How the sea holds her at a point: dry, wading or afloat (always, diving). */
+function stateIn(water: Water | null, at: Vec2): WaterState {
+  if (!water) return "dry";
+  return water.dive ? "swim" : waterState(water.depthAt(at[0], at[1]));
+}
+
+/** Meters of the doll's feet above the room's surface level (the sand, the
+ * seabed). Wading stands on the seabed under the surface; swimming lowers
+ * her until the stroke's body floats half under; treading drops her to the
+ * shoulders. Diving lifts her off the bottom. */
+const FLOAT_Y = -0.5;
+const TREAD_Y = -1.15;
+function seaLevel(
+  water: Water | null,
+  state: WaterState,
+  at: Vec2,
+  moving: boolean,
+): number {
+  if (!water || state === "dry") return 0;
+  if (water.dive) return moving ? 0.9 : 0.3;
+  if (state === "wade") return -water.depthAt(at[0], at[1]);
+  return moving ? FLOAT_Y : TREAD_Y;
+}
+
 function useHeldKeys() {
   const held = useRef(new Set<string>());
   useEffect(() => {
@@ -224,6 +251,7 @@ export function PlayerController({
   onMove,
   tag,
   onPortal,
+  water = null,
 }: {
   player: Player;
   area: WalkArea;
@@ -239,6 +267,8 @@ export function PlayerController({
   /** DOM name tag and chat bubble, pinned above the doll's head each frame. */
   tag: RefObject<HTMLDivElement | null>;
   onPortal: (portal: Portal) => void;
+  /** In a sea room: the depth under her, which wades, swims or dives her. */
+  water?: Water | null;
 }) {
   // an emote with another player overrides the picked mood (see net/together.ts)
   const { pair } = pairUp.use();
@@ -268,6 +298,9 @@ export function PlayerController({
     y: number;
   }>({ el: null, shown: false, x: NaN, y: NaN });
   const stepDist = useRef(0);
+  const swimY = useRef(0);
+  // she is out of the water when she leaves the sea room
+  useEffect(() => () => void (afloat.on = false), []);
   const lastPos = useRef(new THREE.Vector3().copy(player.pos));
 
   useFrame((state, dt) => {
@@ -335,7 +368,8 @@ export function PlayerController({
           area,
           intent,
           SIM_STEP,
-          skates.get().on ? SKATE_SPEED : pace.current / WALK_SPEED,
+          (skates.get().on ? SKATE_SPEED : pace.current / WALK_SPEED) *
+            paceIn(stateIn(water, player.walk.pos)),
         );
         moving = moving || step.moved;
         if (step.portal) {
@@ -349,7 +383,14 @@ export function PlayerController({
       const a = player.acc / SIM_STEP;
       const [bx, bz] = player.before.pos;
       const [x, z] = player.walk.pos;
-      player.pos.set(bx + (x - bx) * a, 0, bz + (z - bz) * a);
+      // in the sea she wades, or floats at the surface, or hangs in the deep
+      const wet = stateIn(water, [x, z]);
+      const rise = seaLevel(water, wet, [x, z], moving || !!intent);
+      swimY.current = calm
+        ? rise
+        : THREE.MathUtils.damp(swimY.current, rise, 5, dt);
+      player.pos.set(bx + (x - bx) * a, swimY.current, bz + (z - bz) * a);
+      afloat.on = wet === "swim";
       player.yaw =
         player.before.yaw + turnBetween(player.before.yaw, player.walk.yaw) * a;
     }

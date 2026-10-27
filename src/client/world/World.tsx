@@ -37,6 +37,9 @@ import type { MinigameId } from "../../game/hotspots.ts";
 import type { PickHandler } from "../rooms/shared/Floor.tsx";
 import { CameraRig, type View } from "./CameraRig.tsx";
 import { NeonClamp } from "./NeonClamp.tsx";
+import { WATER } from "./water.ts";
+import { mayDive } from "../../game/dive.ts";
+import { scuba } from "../avatar/human/afloat.ts";
 import {
   createPlayer,
   PlayerController,
@@ -216,6 +219,12 @@ const MermaidCove = lazy(() =>
   import("../rooms/MermaidCove.tsx").then((m) => ({
     default: m.MermaidCove,
   })),
+);
+const OpenWater = lazy(() =>
+  import("../rooms/OpenWater.tsx").then((m) => ({ default: m.OpenWater })),
+);
+const ReefDive = lazy(() =>
+  import("../rooms/ReefDive.tsx").then((m) => ({ default: m.ReefDive })),
 );
 const Courtside = lazy(() =>
   import("../rooms/Courtside.tsx").then((m) => ({ default: m.Courtside })),
@@ -429,6 +438,8 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   courtside: Courtside,
   catwalk: Catwalk,
   "mermaid-cove": MermaidCove,
+  "open-water": OpenWater,
+  "reef-dive": ReefDive,
   "skate-diner": SkateDiner,
   museum: Museum,
   salon: Salon,
@@ -630,9 +641,13 @@ export function World({
             holds={holds}
             onMove={onMove}
             tag={tag}
+            water={WATER[room] ?? null}
             onPortal={(portal) => {
               // a shut door (an 18+ venue): step back off it and stay
-              if (!mayEnter(portal.target, ADULT_OK)) {
+              if (
+                !mayEnter(portal.target, ADULT_OK) ||
+                !mayDive(portal.target, scuba.get().rented)
+              ) {
                 const back = 1.6;
                 placePlayer(
                   player,

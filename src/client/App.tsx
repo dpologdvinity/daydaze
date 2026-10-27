@@ -45,6 +45,8 @@ import { buyCar } from "../game/garage.ts";
 import { buyRecord } from "../game/records.ts";
 import { ADULT_NOTICE, ADULT_OK } from "./adult.ts";
 import { arrive } from "../game/portals.ts";
+import { DIVE_NOTICE, mayDive } from "../game/dive.ts";
+import { scuba } from "./avatar/human/afloat.ts";
 import { ROOMS, type RoomId, type Spawn } from "../game/rooms.ts";
 import {
   generateGuestName,
@@ -174,6 +176,10 @@ export function App() {
   const travel = useCallback((room: RoomId, spawn: Spawn) => {
     if (!mayEnter(room, ADULT_OK)) {
       setNotice(ADULT_NOTICE);
+      return;
+    }
+    if (!mayDive(room, scuba.get().rented)) {
+      setNotice(DIVE_NOTICE);
       return;
     }
     if (traveling.current) return;

@@ -2839,3 +2839,54 @@ button:focus-visible {
   color: #d6b7d2;
   font-size: 14px;
 }
+
+/* the reef dive: air gauge and the species checklist */
+.air-gauge {
+  position: relative;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: rgba(8, 40, 56, 0.7);
+  overflow: hidden;
+  border: 1px solid rgba(160, 240, 255, 0.5);
+}
+.air-gauge span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #3fe0d0, #8af0ff);
+  transition: width 0.4s linear;
+}
+.air-gauge[data-gauge="low"] span {
+  background: linear-gradient(90deg, #ff9f3f, #ffd166);
+}
+.air-gauge[data-gauge="out"] span {
+  background: #ff4f6f;
+}
+.air-gauge b {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #06222e;
+}
+.species-log {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.species-log li {
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.55);
+}
+.species-log li[data-seen="true"] {
+  background: #3fe0d0;
+  color: #06222e;
+  font-weight: 700;
+}

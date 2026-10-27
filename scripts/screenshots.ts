@@ -126,6 +126,8 @@ const SHOTS: {
   { name: "courtside", query: "room=courtside" },
   { name: "catwalk", query: "room=catwalk" },
   { name: "mermaid-cove", query: "room=mermaid-cove" },
+  { name: "open-water", query: "room=open-water" },
+  { name: "reef-dive", query: "room=reef-dive" },
   { name: "skate-diner", query: "room=skate-diner" },
   { name: "museum", query: "room=museum" },
   { name: "salon", query: "room=salon" },

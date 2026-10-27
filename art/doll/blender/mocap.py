@@ -69,7 +69,8 @@ SEAT_BELOW_HIPS = 0.1
 # and idles by index, and the first sit is the default seat.
 # Kinds: walk (a gait's loop), idle (standing, looped), dance, emote (looped
 # like a dance, NPCs and games only), pose / sit / lay (held: the middle
-# frame), and seat (a looped sit).
+# frame), seat (a looped sit) and swim (a looped stroke or tread in the sea:
+# the hips keep the take's own height, nothing is grounded).
 CLIPS = {
     # walks only play when a gait names them (src/game/gaits.ts)
     # Walks keep the trailing leg long: measured on the takes (knee flex at
@@ -129,6 +130,9 @@ CLIPS = {
     "talk-question": ("talking/Talking_Asking-A-Question-With-One-Hand", "emote", "Asking"),
     "laugh": ("talking/Talking_Talking-Finding-Something-Funny", "emote", "Laughing"),
     "bartending": ("drinking/Bartending_Pouring-And-Serving-Drinks", "emote", "Bartending"),
+    # in the sea (Seaside Swim, the reef): played by the player's afloat doll
+    "swim-front": ("swimming/Swimming_Swimming-Underwater", "swim", "Swim"),
+    "swim-tread": ("swimming/Treading-Water_Floating", "swim", "Tread water"),
     # game clips: the player's doll plays these during in-world games
     "dig": ("sports/Receiver-Catch_Receiver-Catch-On-Boundary-Line", "emote", "Dig"),
     "spike": ("sports/Goalie-Throw_Goalie-Overhand-Throw", "emote", "Spike"),
@@ -380,10 +384,11 @@ def bake(rig, tgt_rest, cid, rel, kind):
         rots.append(r)
         heads.append(head)
         hips.append(hip_t + (h - hip_s) * k)
-    fix = foot_fix(tgt_rest, heads)
+    # a swimmer's feet never plant: nothing to tip flat
+    fix = {} if kind == "swim" else foot_fix(tgt_rest, heads)
     print(cid, "foot fix", {k: round(v) for k, v in fix.items()})
     n = len(frames)
-    if kind in ("dance", "emote", "idle") and n / FPS > MAX_LOOP:
+    if kind in ("dance", "emote", "idle", "swim") and n / FPS > MAX_LOOP:
         n = best_loop(rots, int(MIN_LOOP * FPS), int(MAX_LOOP * FPS)) + 1
         frames, rots, hips = frames[:n], rots[:n], hips[:n]
     speed = walk_speed(src, f0, f1, k) if kind == "walk" else None
@@ -417,7 +422,7 @@ def bake(rig, tgt_rest, cid, rel, kind):
             rows.setdefault(name, []).append(q)
     # on her feet: the lowest the feet reach over the clip meets the floor
     # (the takes' own rest hips differ, a pose file's most of all)
-    if kind not in ("sit", "seat", "lay"):
+    if kind not in ("sit", "seat", "lay", "swim"):
         lift = -min(drops)
         print(cid, "grounded by", round(lift, 3))
         for p in pos:

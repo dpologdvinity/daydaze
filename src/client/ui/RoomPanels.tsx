@@ -119,6 +119,11 @@ const PANELS: Partial<Record<RoomId, ComponentType>> = {
       panel(() => import("../rooms/icerink/CurlingPanel.tsx"), "CurlingPanel"),
     ],
   ),
+  "open-water": panel(
+    () => import("../rooms/ocean/ShackPanel.tsx"),
+    "ShackPanel",
+  ),
+  "reef-dive": panel(() => import("../rooms/ocean/DivePanel.tsx"), "DivePanel"),
   "mermaid-cove": panel(
     () => import("../rooms/cove/SirenPanel.tsx"),
     "SirenPanel",

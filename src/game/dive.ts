@@ -198,6 +198,37 @@ export const LIFE: readonly Life[] = [
 /** Individuals drawn at once: the reef's creature budget on the low tier. */
 export const LIFE_COUNT = LIFE.reduce((n, l) => n + l.count, 0);
 
+/** Where member `i` of a life is at time `t`, and which way it faces: round
+ * the life's home point, a school staggered round the ring, each drifting in
+ * and out a little. `above` is meters over the seabed. Pure, so the scene's
+ * creatures and the spotter agree on where everything is. */
+export function lifePose(
+  life: Life,
+  i: number,
+  t: number,
+  out: { x: number; z: number; above: number; yaw: number } = {
+    x: 0,
+    z: 0,
+    above: 0,
+    yaw: 0,
+  },
+): { x: number; z: number; above: number; yaw: number } {
+  const stagger = (i / Math.max(1, life.count)) * Math.PI * 2;
+  const at = (u: number, k: "x" | "z"): number => {
+    const a = life.turn * u + stagger + life.at[0] * 0.37;
+    const r = life.radius * (1 + 0.18 * Math.sin(u * 0.4 + i * 1.7));
+    return k === "x"
+      ? life.at[0] + Math.cos(a) * r
+      : life.at[1] + Math.sin(a) * r * 0.8;
+  };
+  out.x = at(t, "x");
+  out.z = at(t, "z");
+  out.above = life.above + (life.above > 0 ? Math.sin(t * 0.7 + i) * 0.3 : 0);
+  // the nose points the way it is going (a short step ahead on its path)
+  out.yaw = Math.atan2(at(t + 0.1, "x") - out.x, at(t + 0.1, "z") - out.z);
+  return out;
+}
+
 function rng(seed: number) {
   let a = seed >>> 0;
   return () => {
@@ -221,9 +252,9 @@ export function reefPlan(seed = 7): { coral: Placed[]; kelp: Placed[] } {
   const coral: Placed[] = [];
   const kelp: Placed[] = [];
   const free = (x: number, z: number) =>
-    Math.hypot(x - SPAWN[0], z - SPAWN[1]) > 4.5 &&
+    Math.hypot(x - SPAWN[0], z - SPAWN[1]) > 4 &&
     Math.hypot(x - WRECK.at[0], z - WRECK.at[1]) > WRECK.radius + 0.5;
-  for (let i = 0; coral.length < 26 && i < 400; i++) {
+  for (let i = 0; coral.length < 36 && i < 400; i++) {
     const x = (random() * 2 - 1) * 21;
     const z = SPAWN[1] - 2 - random() * 44;
     if (!free(x, z)) continue;
@@ -231,7 +262,7 @@ export function reefPlan(seed = 7): { coral: Placed[]; kelp: Placed[] } {
       kind: Math.floor(random() * 6),
       at: [x, z],
       yaw: random() * Math.PI * 2,
-      scale: 0.7 + random() * 0.8,
+      scale: 1.1 + random() * 1.1,
     });
   }
   for (let i = 0; kelp.length < 40 && i < 600; i++) {
@@ -300,6 +331,9 @@ export function canSee(
   const wrapped = Math.atan2(Math.sin(off), Math.cos(off));
   return Math.abs(wrapped) <= half;
 }
+
+/** What the shut buoy says to a swimmer without gear. */
+export const DIVE_NOTICE = "Rent scuba gear at the dive shack before you dive.";
 
 /** Whether a dive may start: gear is rented, and the room is the reef. */
 export function mayDive(room: string, gear: boolean): boolean {
