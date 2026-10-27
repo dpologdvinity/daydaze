@@ -262,10 +262,14 @@ function Diving({ player }: { player: Player }) {
           sighted(life.species);
       }
     if (atWreck(mouth.current)) wreckFound();
-    // out of air: an emergency ascent to the ladder
-    if (s.air <= 0) {
+    // out of air: an emergency ascent, once: she is brought beside the
+    // ladder and swims the last stroke into it, which takes her up
+    if (s.air <= 0 && s.out <= 1.5) {
       s.out += 0.25;
-      if (s.out > 1.5) placePlayer(player, LADDER[0], LADDER[1] - 0.2);
+      if (s.out > 1.5) {
+        placePlayer(player, LADDER[0], LADDER[1] - 1.6);
+        player.walk.target = LADDER;
+      }
     }
   });
   return null;
