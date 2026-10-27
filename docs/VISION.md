@@ -50,6 +50,6 @@ Two throwaway prototypes of the same neon lounge were compared: 3D in the style 
 ## What came from Club Lion
 
 - `src/net/`: the network protocol and room server, with tests.
-- `src/audio/`: procedural Web Audio synthesis (shared audio bus, instruments, jukebox), with tests. All audio is synthesized; no audio files.
+- `src/audio/`: procedural Web Audio synthesis (shared audio bus, instruments, jukebox), with tests. Sound files are allowed too (owner, 2026-10-26) where synthesis falls short: ambience, effects, voices.
 - `art/doll/`: the layered 2D doll art (skin-tone bases, hair, brows, lips, makeup, clothes, jewelry) and its browser compositor (`art/doll/compositor.html`).
 - `docs/specs/`: the online foundation design.
