@@ -49,6 +49,8 @@ export type BayInstance = {
   /** Width and height stretch, around 1. */
   sx: number;
   sy: number;
+  /** On a back wall rather than a street face (drawn only when close). */
+  back: boolean;
   /** Tint over the brick (stone and metal keep their own colors). */
   color: string;
 };
@@ -127,6 +129,8 @@ type Face = {
   nx: number;
   nz: number;
   length: number;
+  /** Faces a street (shopfronts and doors); the rest are plain back walls. */
+  street: boolean;
 };
 
 const paved = (p: Vec2): boolean =>
@@ -135,9 +139,9 @@ const paved = (p: Vec2): boolean =>
       s.kind !== "lawn" && s.kind !== "sand" && pointInPolygon(s.polygon, p),
   );
 
-/** The faces of a building's bounding box that look onto a street, or its
- * door's face. Three.js turns yaw about y: +z at 0, +x at pi/2. */
-function streetFaces(b: Building): Face[] {
+/** The four faces of a building's bounding box, each marked street or back
+ * (a street face looks onto pavement, or has the door). Three.js turns yaw about y: +z at 0, +x at pi/2. */
+function facesOf(b: Building): Face[] {
   const xs = b.footprint.map(([x]) => x);
   const zs = b.footprint.map(([, z]) => z);
   const x0 = Math.min(...xs);
@@ -146,7 +150,7 @@ function streetFaces(b: Building): Face[] {
   const z1 = Math.max(...zs);
   const cx = (x0 + x1) / 2;
   const cz = (z0 + z1) / 2;
-  const all: (Face & { mid: Vec2 })[] = [
+  const all: (Omit<Face, "street"> & { mid: Vec2 })[] = [
     {
       yaw: 0,
       ox: x0,
@@ -204,18 +208,15 @@ function streetFaces(b: Building): Face[] {
   const nearestDoor = door
     ? all.reduce((a, c) => (doorGap(c) < doorGap(a) ? c : a))
     : null;
-  return (
-    all
-      // a sidewalk or road within 10 m of the face makes it a street face
-      .filter(
-        (f) =>
-          f === nearestDoor ||
-          [1, 4, 8].some((k) =>
-            paved([f.mid[0] + f.nx * k, f.mid[1] + f.nz * k]),
-          ),
-      )
-      .map((f) => ({ ...f, mid: undefined }))
-  );
+  return all.map(({ mid, ...face }) => ({
+    ...face,
+    // a sidewalk or road within 10 m of the face makes it a street face
+    street:
+      face === nearestDoor ||
+      [1, 4, 8].some((k) =>
+        paved([mid[0] + face.nx * k, mid[1] + face.nz * k]),
+      ),
+  }));
 }
 
 /** The bays that dress one building: ground floor, window storeys, cornice,
@@ -223,9 +224,9 @@ function streetFaces(b: Building): Face[] {
  * each storey to land exactly on it. */
 export function nycBays(b: Building): BayInstance[] {
   const out: BayInstance[] = [];
-  const faces = streetFaces(b);
+  const faces = facesOf(b);
   // a block with no street to face (inside a lot) keeps its plain walls
-  if (faces.length === 0) return out;
+  if (!faces.some((f) => f.street)) return out;
   const seed = hash(b.footprint[0][0], b.footprint[0][1], 11);
   const floors = Math.max(
     1,
@@ -249,8 +250,8 @@ export function nycBays(b: Building): BayInstance[] {
       const r = (k: number) => hash(seed, face.yaw, lot, k);
       const color = pick(tints, r(2));
       const window = pick(upper, r(3));
-      const cornice = pick(CORNICES, r(4));
-      const escape = r(5) < 0.45 && floors >= 3;
+      const cornice = face.street ? pick(CORNICES, r(4)) : "corniceB";
+      const escape = r(5) < (face.street ? 0.45 : 0.7) && floors >= 3;
       for (let i = 0; i < size; i++) {
         const along = (lotStart + i + 0.5) * BAY_WIDTH * sx;
         const x = face.ox + face.dx * along;
@@ -263,17 +264,24 @@ export function nycBays(b: Building): BayInstance[] {
           yaw: face.yaw,
           sx,
           sy: tall,
+          back: !face.street,
           color,
         });
         // ground: a door at the start of each lot, shopfronts after it
-        const ground: BayKind =
-          i === 0
+        const ground: BayKind = !face.street
+          ? window
+          : i === 0
             ? pick(["doorA", "doorB"] as const, r(6))
             : b.style === "brick" && r(7) < 0.4
               ? "shopW"
               : pick(["shopA", "shopB"] as const, r(8 + i));
         out.push(at(ground, 0));
-        if (i === 0 && ground === "doorB" && b.style === "brick") {
+        if (
+          face.street &&
+          i === 0 &&
+          ground === "doorB" &&
+          b.style === "brick"
+        ) {
           out.push(at("stoop", 0, 1));
         }
         for (let f = 1; f < floors; f++) {
@@ -306,6 +314,7 @@ export function nycBays(b: Building): BayInstance[] {
           yaw: 0,
           sx: 1,
           sy,
+          back: false,
           color: "#ffffff",
         });
   return out;

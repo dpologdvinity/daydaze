@@ -131,20 +131,20 @@ export const TRIANGLES: Record<Kind, number> = {
   lawn: 12,
   planks: 12,
   lane: 2,
-  brick: 12,
-  stucco: 12,
-  concrete: 12,
-  siding: 12,
-  curtain: 12,
-  band: 12,
-  roof: 12,
-  ledge: 12,
-  glow: 12,
+  brick: 10,
+  stucco: 10,
+  concrete: 10,
+  siding: 10,
+  curtain: 10,
+  band: 10,
+  roof: 10,
+  ledge: 10,
+  glow: 10,
   awning: 12,
-  sign: 12,
-  tube: 12,
+  sign: 10,
+  tube: 10,
   queue: 200,
-  pole: 12,
+  pole: 32,
   lamp: 160,
   palmTrunk: 32,
   palmFrond: 2,
@@ -152,7 +152,7 @@ export const TRIANGLES: Record<Kind, number> = {
   treeCanopy: 96,
   window: 2,
   label: 2,
-  panel: 12,
+  panel: 10,
   arch: 12,
   bulb: 12,
   // lofted (carGeometry.ts): 4 slices x 8 around, and 3 x 6, plus end caps
@@ -236,6 +236,9 @@ function boundsOf(poly: readonly Vec2[]): Box {
     z1: Math.max(...zs),
   };
 }
+
+/** Back walls wear bays within this fraction of the bay range. */
+const BACK_RANGE = 0.6;
 
 /** How far a point is from a box (0 inside it). */
 function distanceToBox(p: Vec2, b: Box): number {
@@ -794,7 +797,11 @@ export function planCity(
       isNyc(b) && distanceToBox(from, box) < bayRange ? nycBays(b) : [];
     const kit = dressed.length > 0;
     buildingInstances(b, instances, lights, kit);
-    bays.push(...dressed);
+    // back walls dress only the nearest blocks, the street faces farther out
+    const d = distanceToBox(from, box);
+    bays.push(
+      ...dressed.filter((bay) => !bay.back || d < bayRange * BACK_RANGE),
+    );
   }
 
   const loaded = new Set(cells.map((c) => c.key));

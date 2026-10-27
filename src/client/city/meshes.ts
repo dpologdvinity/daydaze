@@ -30,9 +30,17 @@ const GLOW_SCALE = 2.5;
 type Shared = Exclude<Kind, "label">;
 
 const BOX = new THREE.BoxGeometry(1, 1, 1);
+// walls, trim and signs never show their undersides: BoxGeometry's faces run
+// +x, -x, +y, -y, +z, -z (six indices each), so drop the -y face (ten triangles)
+const BOX5 = (() => {
+  const g = new THREE.BoxGeometry(1, 1, 1);
+  const index = g.getIndex();
+  if (!index) throw new Error("BoxGeometry is indexed");
+  const all = Array.from(index.array);
+  g.setIndex([...all.slice(0, 18), ...all.slice(24)]);
+  return g;
+})();
 const CYLINDER = new THREE.CylinderGeometry(0.5, 0.5, 1, 8);
-// poles are thin and seen from the side: six sides, no caps
-const POLE = new THREE.CylinderGeometry(0.5, 0.5, 1, 6, 1, true);
 // ground marks lie flat: only the top of the box is ever seen, so a plane
 // (its top at y + sy / 2, where the box's top was) saves ten triangles each
 const MARK = new THREE.PlaneGeometry(1, 1)
@@ -115,27 +123,27 @@ const GEOMETRY: Record<Shared, THREE.BufferGeometry> = {
   lawn: BOX,
   planks: BOX,
   lane: MARK,
-  brick: BOX,
-  stucco: BOX,
-  concrete: BOX,
-  siding: BOX,
-  curtain: BOX,
-  band: BOX,
-  roof: BOX,
-  ledge: BOX,
-  glow: BOX,
+  brick: BOX5,
+  stucco: BOX5,
+  concrete: BOX5,
+  siding: BOX5,
+  curtain: BOX5,
+  band: BOX5,
+  roof: BOX5,
+  ledge: BOX5,
+  glow: BOX5,
   awning: BOX,
-  sign: BOX,
-  tube: BOX,
+  sign: BOX5,
+  tube: BOX5,
   queue: CAPSULE,
-  pole: POLE,
+  pole: CYLINDER,
   lamp: SPHERE,
   palmTrunk: CYLINDER,
   palmFrond: PLANE,
   treeTrunk: CYLINDER,
   treeCanopy: CANOPY,
   window: PLANE,
-  panel: BOX,
+  panel: BOX5,
   arch: BOX,
   bulb: BOX,
   car: CAR_BODY,
