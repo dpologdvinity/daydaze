@@ -165,50 +165,195 @@ def afro(ctx, mat):
     return scalp_hair(ctx, "Hair_afro", mat, extra)
 
 
-def braids(ctx, mat, count=48, length=0.5):
-    """Knotless braids: plaits from two rows round the back and sides of the
-    hairline, falling behind the shoulders. Each plait is a five-sided tube
-    whose radius pulses, so it reads as woven."""
+def plaits(
+    ctx,
+    mat,
+    name,
+    count=48,
+    length=0.5,
+    radius=0.0075,
+    pulse=0.35,
+    cycles=16,
+    rows=2,
+    jitter=0.0,
+    sides=5,
+    seed=1,
+):
+    """Hanging tubes from rows round the back and sides of the hairline, falling
+    behind the shoulders. `pulse` and `cycles` make the tube's radius swell
+    like a weave; `jitter` varies each tube's length and thickness (locs)."""
     head = ctx.JB["head"]
     eye_z = ctx.JB["lEye"][2]
     shoulder_z = ctx.JB["lArm"][2]
+    rng = np.random.default_rng(seed)
+    row_z = [0.085, 0.035, -0.015, -0.06][:rows]
 
     def extra(bm, ctx):
-        top = _top(bm)
         scalp = [v.co.copy() for v in bm.verts]
+        per_row = count // rows
         for k in range(count):
-            row = k % 2
-            a = np.radians(-150 + 300 * (k // 2) / (count // 2 - 1))
+            row = k % rows
+            a = np.radians(-150 + 300 * (k // rows) / (per_row - 1))
             # angle 0 is the back of the head (+y), +-150 the temples
             d = np.array([np.sin(a), np.cos(a)])
-            z = eye_z + (0.035 if row else 0.085)
+            z = eye_z + row_z[row]
             probe = Vector((head[0] + d[0] * 0.2, head[1] + d[1] * 0.2, z))
             start = min(scalp, key=lambda c: (c - probe).length)
-            rings = []
+            reach = length * (1 + jitter * (rng.random() - 0.5) * 1.2)
+            thick = radius * (1 + jitter * (rng.random() - 0.3))
+            phase = rng.random() * 6.28
+            prev = None
             steps = 26
             for i in range(steps):
                 t = i / (steps - 1)
-                zz = start.z - t * length
+                zz = start.z - t * reach
                 # out from the scalp, then behind the shoulders below the neck
                 out = 0.012 + (0.05 * min(1, (start.z - zz) / 0.12))
                 xy = np.array([start.x, start.y]) + np.append(d, 0)[:2] * out
                 if zz < shoulder_z + 0.05:
                     xy[1] = max(xy[1], head[1] + 0.07 + 0.05 * (shoulder_z + 0.05 - zz))
                     xy[0] *= 0.85
-                r = 0.0075 * (1 + 0.35 * abs(np.sin(t * np.pi * 16)))
-                rings.append((Vector((xy[0], xy[1], zz)), r))
-            prev = None
-            for c, r in rings:
+                r = thick * (1 + pulse * abs(np.sin(t * np.pi * cycles + phase))) * min(1.0, 0.55 + t * 6)
+                c = Vector((xy[0], xy[1], zz))
                 ring = []
-                for j in range(5):
-                    th = 2 * np.pi * j / 5
+                for j in range(sides):
+                    th = 2 * np.pi * j / sides
                     ring.append(bm.verts.new(c + Vector((np.cos(th) * r, np.sin(th) * r, 0))))
+                if prev:
+                    for j in range(sides):
+                        bm.faces.new((prev[j], prev[(j + 1) % sides], ring[(j + 1) % sides], ring[j]))
+                prev = ring
+            # a rounded tip, so no tube is left open
+            bm.faces.new(prev)
+
+    return scalp_hair(ctx, name, mat, extra)
+
+
+def braids(ctx, mat, count=48, length=0.5):
+    """Knotless braids: plaits from two rows round the back and sides."""
+    return plaits(ctx, mat, "Hair_braids", count=count, length=length)
+
+
+def box_braids(ctx, mat):
+    """Box braids: thicker, longer plaits in three rows, a heavier weave."""
+    return plaits(
+        ctx, mat, "Hair_box-braids", count=100, length=0.66, radius=0.0058, pulse=0.55, cycles=26, rows=4, seed=3
+    )
+
+
+def locs(ctx, mat):
+    """Locs: thick ropes of uneven length and thickness, a soft irregular
+    swell rather than a weave."""
+    return plaits(
+        ctx,
+        mat,
+        "Hair_locs",
+        count=120,
+        length=0.42,
+        radius=0.0062,
+        pulse=0.12,
+        cycles=4,
+        rows=4,
+        jitter=0.9,
+        sides=6,
+        seed=5,
+    )
+
+
+def _surface_z(scalp, x, y, window=0.014):
+    """Height of the scalp shell at (x, y): the highest vertex nearby."""
+    zs = [c.z for c in scalp if abs(c.x - x) < window and abs(c.y - y) < window]
+    if not zs:
+        zs = [c.z for c in scalp if abs(c.x - x) < 2 * window and abs(c.y - y) < 2 * window]
+    return max(zs) if zs else None
+
+
+def cornrows(ctx, mat, rows=11):
+    """Cornrows: raised ridges combed from the front hairline to the crown's
+    back, converging toward the nape, then dropping as short plaits."""
+    head = ctx.JB["head"]
+    eye_z = ctx.JB["lEye"][2]
+
+    def extra(bm, ctx):
+        scalp = [v.co.copy() for v in bm.verts]
+        steps = 40
+        for k in range(rows):
+            side = -1 + 2 * k / (rows - 1)
+            ts = [i / (steps - 1) for i in range(steps)]
+            xs = [head[0] + side * 0.075 * (1 - 0.55 * t**1.5) for t in ts]
+            ys = [head[1] - 0.085 + t * 0.19 for t in ts]
+            zs = [_surface_z(scalp, x, y, 0.02) for x, y in zip(xs, ys)]
+            # fill gaps, then smooth: the shell's vertex spacing would make the
+            # ridge climb in steps
+            known = [z for z in zs if z is not None]
+            if not known:
+                continue
+            zs = [z if z is not None else known[-1] for z in zs]
+            for _ in range(6):
+                zs = [zs[0]] + [(zs[i - 1] + 2 * zs[i] + zs[i + 1]) / 4 for i in range(1, steps - 1)] + [zs[-1]]
+            prev = None
+            for t, x, y, z in zip(ts, xs, ys, zs):
+                # past the crown the row leaves the scalp and hangs as a plait
+                drop = max(0.0, t - 0.8) / 0.2
+                zz = z + 0.003 - drop * 0.16
+                yy = y + drop * 0.02
+                r = 0.0085 * (1 + 0.2 * abs(np.sin(t * np.pi * 22)))
+                c = Vector((x * (1 - 0.1 * drop), yy, zz))
+                ring = [
+                    bm.verts.new(c + Vector((np.cos(th) * r, np.sin(th) * r, 0)))
+                    for th in (2 * np.pi * j / 5 for j in range(5))
+                ]
                 if prev:
                     for j in range(5):
                         bm.faces.new((prev[j], prev[(j + 1) % 5], ring[(j + 1) % 5], ring[j]))
                 prev = ring
 
-    return scalp_hair(ctx, "Hair_braids", mat, extra)
+    return scalp_hair(ctx, "Hair_cornrows", mat, extra)
+
+
+def bantu_knots(ctx, mat):
+    """Bantu knots: sixteen small twisted knots over the head."""
+    head = ctx.JB["head"]
+
+    def extra(bm, ctx):
+        scalp = [v.co.copy() for v in bm.verts]
+        spots = [(0.0, 0.0)]
+        for ring_r, n, off in ((0.045, 6, 0.0), (0.085, 9, 0.35)):
+            for i in range(n):
+                a = 2 * np.pi * i / n + off
+                # keep the front free so the face stays framed
+                spots.append((ring_r * np.sin(a), ring_r * np.cos(a) * 1.05 + 0.01))
+        for dx, dy in spots:
+            x, y = head[0] + dx, head[1] + dy
+            z = _surface_z(scalp, x, y)
+            if z is None:
+                continue
+            ret = bmesh.ops.create_uvsphere(bm, u_segments=20, v_segments=14, radius=0.021)
+            for v in ret["verts"]:
+                d = v.co.normalized()
+                ang = np.arctan2(d.y, d.x)
+                v.co *= 1 + 0.12 * np.sin(ang * 3 + d.z * 9)
+                v.co.z *= 1.15
+                v.co += Vector((x, y, z + 0.012))
+
+    return scalp_hair(ctx, "Hair_bantu-knots", mat, extra)
+
+
+def puffs(ctx, mat):
+    """Two high puffs, one each side of a centre part: fine-curled clouds."""
+    head = ctx.JB["head"]
+
+    def extra(bm, ctx):
+        top = _top(bm)
+        for side in (1, -1):
+            c = Vector((head[0] + side * 0.066, head[1] + 0.02, top - 0.008))
+            ret = bmesh.ops.create_uvsphere(bm, u_segments=36, v_segments=24, radius=1)
+            for v in ret["verts"]:
+                d = v.co.copy()
+                bump = 1 + 0.06 * np.sin(d.x * 53 + d.z * 17) * np.sin(d.y * 47 + d.z * 31)
+                v.co = Vector((d.x * 0.066, d.y * 0.064, d.z * 0.06)) * bump + c
+
+    return scalp_hair(ctx, "Hair_puffs", mat, extra)
 
 
 def shade_strands(ctx, ob):
@@ -290,6 +435,13 @@ def build(ctx):
         out.append(ob)
     solid = bpy.data.materials.new("hair_solid")
     out += [buns(ctx, solid), afro(ctx, solid), braids(ctx, solid), top_knot(ctx, solid)]
+    out += [
+        box_braids(ctx, solid),
+        locs(ctx, solid),
+        cornrows(ctx, solid),
+        bantu_knots(ctx, solid),
+        puffs(ctx, solid),
+    ]
     strand = strands.material("hair_strands")
     combed = strands.cap_material("hair_cap")
     # strand-card styles: length (m), wave (slow S), curl (tight spirals),
@@ -307,6 +459,8 @@ def build(ctx):
         "mermaid": dict(length=0.76, count=480, wave=0.024),
         "shag": dict(length=0.27, count=432, wave=0.009, volume=1.5),
         "coils": dict(length=0.2, count=468, curl=0.016, volume=1.7),
+        # a defined twist-out: loose spirals with lift, to the shoulder
+        "twist-out": dict(length=0.3, count=480, curl=0.03, wave=0.02, volume=2.2),
     }.items():
         out.append(strand_style(ctx, f"Hair_{name}", strand, combed, seed=len(name), **style))
     # a high ponytail: slicked back to a band at the crown's back, the tail
