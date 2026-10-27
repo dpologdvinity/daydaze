@@ -60,6 +60,14 @@ export const CREDITS: readonly {
           "Fire escapes on New York walk-ups: the landing and railing, thinned and painted iron black.",
       },
       {
+        title: "City Kit Suburban",
+        author: "Kenney",
+        license: "CC0 1.0",
+        url: "https://kenney.nl/assets/city-kit-suburban",
+        usedFor:
+          "Suburbia's houses near the player, optimized with a small colormap.",
+      },
+      {
         title: "Stylized Nature MegaKit",
         author: "Quaternius",
         license: "CC0 1.0",

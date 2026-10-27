@@ -23,6 +23,7 @@ future imported packs belong here when they enter the game.
 | Stylized Nature MegaKit | Quaternius | CC0 1.0 | https://quaternius.com/packs/stylizednaturemegakit.html | Street trees, bushes, grass, flowers, ferns and rocks; optimized with near and far models. |
 | Downtown City MegaKit | Quaternius | CC0 1.0 | https://quaternius.com/packs/downtowncitymegakit.html | New York walk-up, prewar and loft facades (storefronts, windows, cornices, doors, stoops) merged and thinned into storey-high bays for Downtown, Uptown and the Arts District; textures replaced by the city's own. |
 | Modular Fire Escape | Poly Haven | CC0 1.0 | https://polyhaven.com/a/modular_fire_escape | Fire escapes on New York walk-ups: the landing and railing, thinned and painted iron black. |
+| City Kit Suburban | Kenney | CC0 1.0 | https://kenney.nl/assets/city-kit-suburban | Suburbia's houses near the player, optimized with a small colormap. |
 | Ultimate Animated Animals | Quaternius | CC0 1.0 | https://quaternius.com/packs/ultimateanimatedanimals.html | Petting farm at the Zoo (alpaca, donkey, cow) and the adoptable husky and Shiba Inu; horse, deer, fox and wolf built for farms. |
 | Animated Fish Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/animatedfish.html | Aquarium shark, manta ray and fish; dolphin and whale ready for the ocean. |
 | Cute Fish Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/cutefish.html | Aquarium reef fish. |

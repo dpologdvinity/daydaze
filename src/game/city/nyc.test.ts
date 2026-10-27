@@ -1,12 +1,15 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { cellsWithin } from "./cells.ts";
-import { BUILDINGS } from "./layout.ts";
+import { BUILDINGS, GALLERY_Z } from "./layout.ts";
 import { planCity, trianglesOf } from "./plan.ts";
 import {
   BAY_CAPACITY,
   BAY_KINDS,
   BAY_TRIANGLES,
+  HOUSE_MODELS,
+  houseAt,
+  isHouse,
   isNyc,
   nycBays,
 } from "./nyc.ts";
@@ -25,12 +28,18 @@ const box = (b: (typeof BUILDINGS)[number]) => {
   };
 };
 
-test("only brick, storefront and tower blocks in the New York districts get bays", () => {
+test("only brick, storefront and tower blocks in the New York and shophouse districts get bays", () => {
   assert.ok(nyc.length > 20);
   for (const b of nyc) {
     assert.ok(["storefront", "brick", "tower"].includes(b.style), b.id);
     assert.ok(
-      ["downtown", "uptown", "arts-district"].includes(b.neighborhood),
+      [
+        "downtown",
+        "uptown",
+        "arts-district",
+        "little-manila",
+        "chinatown-koreatown",
+      ].includes(b.neighborhood),
       b.id,
     );
   }
@@ -118,4 +127,22 @@ test("no view on the high tier holds more bays of one kind than its instanced me
   assert.ok(worst <= BAY_CAPACITY, `${worst} bays of one kind`);
   // and the meshes aren't sized far past what any view needs
   assert.ok(BAY_CAPACITY <= worst * 4, `${BAY_CAPACITY} for ${worst}`);
+});
+
+test("a near Suburbia lot is a house facing the street; far ones stay boxes", () => {
+  const lots = BUILDINGS.filter(isHouse);
+  assert.ok(lots.length >= 6);
+  for (const b of lots) {
+    const spot = houseAt(b);
+    const { x0, x1, z0, z1 } = box(b);
+    assert.ok(spot.x > x0 && spot.x < x1 && spot.z > z0 && spot.z < z1, b.id);
+    assert.ok(spot.variant >= 0 && spot.variant < HOUSE_MODELS.length);
+    // the door side points at Maple Drive
+    assert.equal(Math.cos(spot.yaw) > 0, (z0 + z1) / 2 < GALLERY_Z, b.id);
+  }
+  const at = lots.map((b) => houseAt(b))[0];
+  const near = planCity(cellsWithin([at.x, at.z], 160), 0, [at.x, at.z], 40);
+  const far = planCity(cellsWithin([at.x, at.z], 160), 0, [at.x, at.z], 0);
+  assert.ok(near.houses.length > 0);
+  assert.equal(far.houses.length, 0);
 });

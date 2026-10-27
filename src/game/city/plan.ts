@@ -16,6 +16,10 @@ import {
   isNyc,
   nycBays,
   BAY_TRIANGLES,
+  HOUSE_TRIANGLES,
+  houseAt,
+  isHouse,
+  type HouseSpot,
   WALL_INSET,
   type BayInstance,
 } from "./nyc.ts";
@@ -121,6 +125,8 @@ export type CityPlan = {
   furniture: FurnitureSpot[];
   /** New York bays for the buildings within `bayRange` of the player. */
   bays: BayInstance[];
+  /** Suburbia houses within reach of the player, drawn as models. */
+  houses: HouseSpot[];
 };
 
 /** Triangles per instance of each kind's unit geometry, upper bounds. */
@@ -788,9 +794,15 @@ export function planCity(
   streetMarks(cells, instances);
 
   const bays: BayInstance[] = [];
+  const houses: HouseSpot[] = [];
   for (const b of BUILDINGS) {
     const box = boundsOf(b.footprint);
     if (!inView(box)) continue;
+    // a near Suburbia lot is a real house; far ones stay boxes
+    if (isHouse(b) && distanceToBox(from, box) < bayRange * 2) {
+      houses.push(houseAt(b));
+      continue;
+    }
     // near New York blocks wear the kit's bays instead of box walls and
     // painted windows; the rest of the city keeps the cheap boxes
     const dressed =
@@ -833,6 +845,7 @@ export function planCity(
     trees,
     furniture,
     bays,
+    houses,
   };
 }
 
@@ -842,7 +855,9 @@ export function trianglesOf(plan: CityPlan): number {
     KINDS.reduce(
       (sum, kind) => sum + plan.instances[kind].length * TRIANGLES[kind],
       0,
-    ) + plan.bays.reduce((sum, bay) => sum + BAY_TRIANGLES[bay.kind], 0)
+    ) +
+    plan.bays.reduce((sum, bay) => sum + BAY_TRIANGLES[bay.kind], 0) +
+    plan.houses.length * HOUSE_TRIANGLES
   );
 }
 

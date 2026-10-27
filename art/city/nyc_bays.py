@@ -239,6 +239,13 @@ def fire_escape():
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     for o in (slab, rail):
         paint(o, override=(*IRON[:3], 0, 0))
+    # the grating thins well; the railing is thin bars, so thin it gently
+    thin(slab, float(os.environ.get("FIRE_RATIO", "0.1")))
+    thin(rail, float(os.environ.get("RAIL_RATIO", "0.3")))
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in (slab, rail):
+        o.select_set(True)
+    bpy.context.view_layer.objects.active = slab
     bpy.ops.object.join()
     obj = bpy.context.view_layer.objects.active
     # the kit's Z is up already: bottom at 0, wall edge at y = 0, narrower
@@ -251,14 +258,33 @@ def fire_escape():
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     obj.name = "fireEscape"
     obj.data.name = "fireEscape"
-    before_tris = tris(obj)
-    thin(obj, 0.1)
-    print(f"fireEscape: {before_tris} -> {tris(obj)} triangles")
+    print(f"fireEscape: {tris(obj)} triangles")
     return obj
+
+
+def preview_one(obj):
+    """Renders one bay from a three-quarter view to PREVIEW."""
+    scene = bpy.context.scene
+    scene.render.engine = "BLENDER_WORKBENCH"
+    scene.display.shading.light = "STUDIO"
+    scene.display.shading.color_type = "VERTEX"
+    scene.render.resolution_x, scene.render.resolution_y = 900, 900
+    cam = bpy.data.objects.new("cam", bpy.data.cameras.new("cam"))
+    cam.data.type = "ORTHO"
+    cam.data.ortho_scale = 6
+    cam.location = (6, -8, 6)
+    cam.rotation_euler = (math.radians(65), 0, math.radians(35))
+    scene.collection.objects.link(cam)
+    scene.camera = cam
+    scene.render.filepath = PREVIEW
+    bpy.ops.render.render(write_still=True)
 
 
 def main():
     clear()
+    if os.environ.get("ONLY_FIRE"):
+        preview_one(fire_escape())
+        return
     # collapse ratios: busy modules go lower; windows keep their recess
     ratio = {
         "winA": 0.3, "winB": 0.12, "winC": 0.1, "winD": 0.2, "winE": 0.3,
