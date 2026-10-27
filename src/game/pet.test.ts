@@ -122,3 +122,19 @@ test("at home it sleeps until you come near, then sits up facing you", () => {
   assert.equal(sleeping(pet, { x: 20, z: 20 }, [1, 1]).clip, "sleep");
   assert.equal(sleeping(pet, { x: 1, z: 2 }, [1, 1]).clip, "sit");
 });
+
+test("a pet fed 'in the future' (a clock that ran ahead) is full, not over 100, and can be fed", () => {
+  const now = 1_000_000_000;
+  const pet = validatePet({
+    kind: "cat",
+    name: "Mochi",
+    adoptedAt: now,
+    fedAt: now + 3 * 86_400_000,
+  });
+  assert.ok(pet);
+  assert.equal(happiness(pet, now), 100);
+  assert.equal(moodOf(pet, now), "happy");
+  // the treat resets the clock to now, so hunger counts from here again
+  assert.equal(canFeed(pet, now), true);
+  assert.equal(feed(pet, now).fedAt, now);
+});

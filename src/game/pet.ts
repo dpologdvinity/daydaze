@@ -57,10 +57,14 @@ export function adopt(
     : null;
 }
 
-/** Hunger: a full pet is 100 and loses a point every 6 minutes, to 10. */
+/** Hunger: a full pet is 100 and loses a point every 6 minutes, to 10. A
+ * feeding time ahead of now (another device's clock) counts as just fed. */
 const MS_PER_POINT = 6 * 60_000;
 export const happiness = (pet: PetSave, now: number): number =>
-  Math.max(10, Math.round(100 - (now - pet.fedAt) / MS_PER_POINT));
+  Math.min(
+    100,
+    Math.max(10, Math.round(100 - (now - pet.fedAt) / MS_PER_POINT)),
+  );
 
 export type PetMood = "happy" | "fine" | "hungry";
 export const moodOf = (pet: PetSave, now: number): PetMood => {
@@ -68,10 +72,11 @@ export const moodOf = (pet: PetSave, now: number): PetMood => {
   return h > 66 ? "happy" : h > 33 ? "fine" : "hungry";
 };
 
-/** A treat only helps when it is hungry enough to want one. */
+/** A treat only helps when it is hungry enough to want one; one fed "in the
+ * future" can always be fed, which brings its clock back to now. */
 export const FEED_AFTER = 60_000;
 export const canFeed = (pet: PetSave, now: number): boolean =>
-  now - pet.fedAt >= FEED_AFTER;
+  now < pet.fedAt || now - pet.fedAt >= FEED_AFTER;
 export const feed = (pet: PetSave, now: number): PetSave =>
   canFeed(pet, now) ? { ...pet, fedAt: now } : pet;
 
