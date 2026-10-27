@@ -211,50 +211,49 @@ def build(name, parts, collapse):
     return obj
 
 
-def box(name, center, size, color):
-    """A plain box (glTF axes: x, y up, z out) for the parts the kit lacks."""
-    bm = bmesh.new()
-    bmesh.ops.create_cube(bm, size=1.0)
-    for v in bm.verts:
-        v.co = Vector((v.co.x * size[0], -v.co.z * size[2], v.co.y * size[1]))
-        v.co += Vector((center[0], -center[2], center[1]))
-    return bm
-
-
 def fire_escape():
-    """One storey of fire escape: a grated landing with rails, and a ladder
-    run; boxes in a dark iron color. Fits one 4 m bay, sticking out 1.1 m."""
-    bm = bmesh.new()
-    parts = [
-        ((0, 0.05, 0.55), (2.6, 0.08, 1.1)),  # landing
-        ((0, 1.0, 1.08), (2.6, 0.05, 0.05)),  # top rail, front
-        ((-1.28, 1.0, 0.55), (0.05, 0.05, 1.1)),  # top rail, sides
-        ((1.28, 1.0, 0.55), (0.05, 0.05, 1.1)),
-        ((-1.28, 0.5, 1.08), (0.05, 1.0, 0.05)),  # posts
-        ((1.28, 0.5, 1.08), (0.05, 1.0, 0.05)),
-        ((0, 0.5, 1.08), (0.05, 1.0, 0.05)),
-        ((0.7, 0.4, 0.2), (0.05, 0.05, 0.3)),
-        ((0.9, 1.5, 0.05), (0.06, 3.0, 0.06)),  # ladder rails up to the next landing
-        ((0.5, 1.5, 0.05), (0.06, 3.0, 0.06)),
-    ]
-    for center, size in parts:
-        sub = box("p", center, size, IRON)
-        mesh = bpy.data.meshes.new("tmp")
-        sub.to_mesh(mesh)
-        sub.free()
-        bm.from_mesh(mesh)
-        bpy.data.meshes.remove(mesh)
-    mesh = bpy.data.meshes.new("fireEscape")
-    col = bm.loops.layers.float_color.new("Col")
-    uv = bm.loops.layers.uv.new("UVMap")
-    for f in bm.faces:
-        for loop in f.loops:
-            loop[col] = (*IRON[:3], 1.0)
-            loop[uv].uv = (0, 0)
-    bm.to_mesh(mesh)
-    bm.free()
-    obj = bpy.data.objects.new("fireEscape", mesh)
-    bpy.context.scene.collection.objects.link(obj)
+    """One storey of fire escape from Poly Haven's Modular Fire Escape (CC0):
+    its landing slab and the railing that stands on it, squeezed to fit a 4 m
+    bay, painted iron black and thinned. Wall side at y = 0, sticking out 1.4 m."""
+    path = os.environ.get("FIRE_ESCAPE", "/tmp/nyc-fe/modular_fire_escape_1k.gltf")
+    before = set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=path)
+    new = [o for o in bpy.data.objects if o not in before]
+    keep = {}
+    for o in new:
+        if o.type == "MESH" and o.name.endswith(("platform_middle", "railing_middle")):
+            keep[o.name.rsplit("_", 2)[-2]] = o
+    slab, rail = keep["platform"], keep["railing"]
+    for o in new:
+        if o not in (slab, rail) and o.name in bpy.data.objects:
+            bpy.data.objects.remove(o, do_unlink=True)
+    for o in (slab, rail):
+        o.parent = None
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in (slab, rail):
+        o.select_set(True)
+    bpy.context.view_layer.objects.active = slab
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    # the rail stands one storey-gap above the slab in the kit; seat it on it
+    rail.location.z -= 1.0
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    for o in (slab, rail):
+        paint(o, override=(*IRON[:3], 0, 0))
+    bpy.ops.object.join()
+    obj = bpy.context.view_layer.objects.active
+    # the kit's Z is up already: bottom at 0, wall edge at y = 0, narrower
+    xs = [v.co.x for v in obj.data.vertices]
+    ys = [v.co.y for v in obj.data.vertices]
+    zs = [v.co.z for v in obj.data.vertices]
+    obj.location = (-(max(xs) + min(xs)) / 2, -max(ys), -min(zs))
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    obj.scale = (0.8, 1.0, 1.0)
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    obj.name = "fireEscape"
+    obj.data.name = "fireEscape"
+    before_tris = tris(obj)
+    thin(obj, 0.1)
+    print(f"fireEscape: {before_tris} -> {tris(obj)} triangles")
     return obj
 
 

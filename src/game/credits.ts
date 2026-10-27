@@ -52,6 +52,14 @@ export const CREDITS: readonly {
           "New York walk-up, prewar and loft facades (storefronts, windows, cornices, doors, stoops) merged and thinned into storey-high bays for Downtown, Uptown and the Arts District; textures replaced by the city's own.",
       },
       {
+        title: "Modular Fire Escape",
+        author: "Poly Haven",
+        license: "CC0 1.0",
+        url: "https://polyhaven.com/a/modular_fire_escape",
+        usedFor:
+          "Fire escapes on New York walk-ups: the landing and railing, thinned and painted iron black.",
+      },
+      {
         title: "Stylized Nature MegaKit",
         author: "Quaternius",
         license: "CC0 1.0",

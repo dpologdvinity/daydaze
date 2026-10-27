@@ -74,7 +74,7 @@ export const BAY_TRIANGLES: Record<BayKind, number> = {
   corniceB: 12,
   corniceM: 24,
   post: 32,
-  fireEscape: 72,
+  fireEscape: 196,
 };
 
 export const BAY_WIDTH = 4;
