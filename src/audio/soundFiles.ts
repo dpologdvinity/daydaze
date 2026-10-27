@@ -68,8 +68,10 @@ export async function setFileAmbience(
     }),
   );
 }
+/** One-shot files; `gain` (0..1) turns a far-off sound down. */
 export async function playSoundFile(
-  id: "door" | "horn" | "coin" | "camera",
+  id: "door" | "horn" | "coin" | "camera" | "elephant" | "lion" | "flamingos",
+  gain = 1,
 ): Promise<void> {
   const bus = getSharedAudioBus();
   const ctx = bus.getContext();
@@ -79,7 +81,12 @@ export async function playSoundFile(
     const buffer = await load(id, ctx);
     const source = ctx.createBufferSource();
     source.buffer = buffer;
-    source.connect(dest);
+    if (gain >= 1) source.connect(dest);
+    else {
+      const level = ctx.createGain();
+      level.gain.value = Math.max(0, gain);
+      source.connect(level).connect(dest);
+    }
     source.start();
   } catch {
     /* Missing audio should never interrupt the game. */

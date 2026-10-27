@@ -35,6 +35,8 @@ import type { Player } from "../world/PlayerController.tsx";
 import { tick, zooAnimals, zooView } from "./zoo/session.ts";
 import type { Vec2 } from "../../game/walk.ts";
 import type { LandKind } from "../../game/creatures.ts";
+import { playSoundFile } from "../../audio/soundFiles.ts";
+import { nextDelay, pickCall } from "../../game/zooSounds.ts";
 import { Creature } from "../creatures/Creature.tsx";
 import { Scatter } from "./zoo/Scatter.tsx";
 import { WanderingCreature } from "../creatures/Wanderer.tsx";
@@ -241,6 +243,23 @@ function useGrounds(signs: THREE.Texture) {
  * penguins round a pool, flamingos in a pond (all procedurally built) and a
  * petting farm of animated alpacas, a donkey and a cow.
  */
+/** Now and then one of the animals calls, as loud as it is near. */
+function AnimalCalls({ player }: { player: Player }) {
+  const wait = useRef(nextDelay(0.3));
+  useFrame((_, dt) => {
+    wait.current -= Math.min(dt, 0.1);
+    if (wait.current > 0) return;
+    wait.current = nextDelay(Math.random());
+    const call = pickCall(
+      [player.pos.x, player.pos.z],
+      [...zooAnimals],
+      Math.random(),
+    );
+    if (call) void playSoundFile(call.id, call.gain);
+  });
+  return null;
+}
+
 /** Tells the photo hunt the animals' clock and where the player faces. */
 function SafariTracker({ player }: { player: Player }) {
   const calm = useReducedMotion();
@@ -308,6 +327,7 @@ export function Zoo({
       <Animals player={player} />
       <Farm player={player} />
       <SafariTracker player={player} />
+      <AnimalCalls player={player} />
       <NeonText
         text="DAYDAZE ZOO"
         color="#2d6a4f"
