@@ -1,3 +1,4 @@
+import { playSoundFile } from "../../audio/soundFiles.ts";
 import { useThree } from "@react-three/fiber";
 import { useEffect } from "react";
 import { photoCaption, photoFileName } from "../../game/photo.ts";
@@ -8,6 +9,7 @@ import { createStore } from "../rooms/shared/store.ts";
 export const photoRequest = createStore({ n: 0, place: "" });
 
 export function takePhoto(place: string) {
+  void playSoundFile("camera");
   photoRequest.set({ n: photoRequest.get().n + 1, place });
 }
 

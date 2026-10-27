@@ -35,7 +35,7 @@ export function CreditsPanel({
       </div>
       <div className="credits-list">
         <p>Made possible by these artists and open-source communities.</p>
-        <p>All audio is procedural</p>
+        <p>Procedural music and generated sound effects</p>
         <p>Mixamo animations (Adobe), used under Mixamo&apos;s terms</p>
         {CREDITS.map((group) => (
           <section key={group.title} aria-label={group.title}>

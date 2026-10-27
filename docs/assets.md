@@ -1,6 +1,6 @@
 # Asset credits
 
-Sources for third-party assets shipped in Daydaze. All audio is procedural.
+Sources for third-party assets shipped in Daydaze. Game music is procedural; ambience, sound effects and two music beds are generated audio.
 Mixamo animations (Adobe), used under Mixamo's terms.
 
 To add an asset, append a row under the appropriate group and a matching entry
@@ -150,3 +150,9 @@ it and writes the GLB parts; `scripts/optimize-doll.sh` compresses them into
 `public/models/doll/`.
 
 Only the clips listed in `mocap.py`'s `CLIPS` ship, retargeted onto our own skeleton and baked into `public/models/doll/anims.glb` and `anims-m.glb` (keyframes only, no Mixamo character or mesh). Never commit the FBX files or a GLB that carries a Mixamo character.
+
+## Audio
+
+| Title | Author | License | URL | Used for |
+| --- | --- | --- | --- | --- |
+| ElevenLabs-generated sounds | ElevenLabs | Per ElevenLabs terms for paid plans | https://elevenlabs.io/terms-of-use | Generated for Daydaze: ambience, sound effects and two music beds. |

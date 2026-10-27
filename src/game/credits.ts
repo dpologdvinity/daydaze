@@ -12,6 +12,19 @@ export const CREDITS: readonly {
   readonly entries: readonly Credit[];
 }[] = [
   {
+    title: "Audio",
+    entries: [
+      {
+        title: "ElevenLabs-generated sounds",
+        author: "ElevenLabs",
+        license: "Per ElevenLabs terms for paid plans",
+        url: "https://elevenlabs.io/terms-of-use",
+        usedFor:
+          "Generated for Daydaze: ambience, sound effects and two music beds.",
+      },
+    ],
+  },
+  {
     title: "3D models",
     entries: [
       {

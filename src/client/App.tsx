@@ -70,7 +70,8 @@ import type { View } from "./world/CameraRig.tsx";
 import { LoadingVeil } from "./ui/LoadingVeil.tsx";
 import { preloadLook } from "./avatar/human/HumanDoll.tsx";
 import { RoomAudio } from "./RoomAudio.tsx";
-import { playFanfare, playWhoosh } from "../audio/worldSounds.ts";
+import { playSoundFile } from "../audio/soundFiles.ts";
+import { playFanfare } from "../audio/worldSounds.ts";
 import { completeChallenge, dayOf } from "../game/challenges.ts";
 import { prizeFor } from "../game/prizes.ts";
 import { PrizeCard } from "./ui/PrizeCard.tsx";
@@ -127,6 +128,11 @@ export function App() {
     return loaded;
   });
   useEffect(() => writeStorage(save), [save]);
+  const previousCoins = useRef(save.coins);
+  useEffect(() => {
+    if (save.coins > previousCoins.current) void playSoundFile("coin");
+    previousCoins.current = save.coins;
+  }, [save.coins]);
 
   const [here, setHere] = useState(() => {
     // a sentence still running resumes in the cell block
@@ -172,7 +178,7 @@ export function App() {
     }
     if (traveling.current) return;
     traveling.current = true;
-    playWhoosh();
+    void playSoundFile("door");
     setFading(true);
     window.setTimeout(() => {
       setHere(visit(room, spawn));
