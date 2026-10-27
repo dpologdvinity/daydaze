@@ -6,7 +6,7 @@
 // SafariTracker feeds the player's view to it each frame.
 
 import { useFrame } from "@react-three/fiber";
-import { Suspense, useEffect, useMemo, useRef, type JSX } from "react";
+import { useEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";
 import { ROOMS } from "../../game/rooms.ts";
 import {
@@ -289,26 +289,24 @@ export function Zoo({
       />
       <PortalPads room={ROOMS.zoo} color="#7dff6b" />
       <primitive object={grounds} />
-      <Suspense fallback={null}>
-        <Scatter
-          url="/models/zoo/fence_planks.glb"
-          spots={FENCE_SPOTS}
-          color="#7a5232"
-        />
-        <Scatter
-          url="/models/zoo/rock_tallA.glb"
-          spots={ROCK_SPOTS.tall}
-          color="#9a9288"
-        />
-        <Scatter
-          url="/models/zoo/rock_largeB.glb"
-          spots={ROCK_SPOTS.large}
-          color="#8c867e"
-        />
-        <Scatter url="/models/nature/commontree-2.glb" spots={TREE_SPOTS} />
-        <Animals player={player} />
-        <Farm player={player} />
-      </Suspense>
+      <Scatter
+        url="/models/zoo/fence_planks.glb"
+        spots={FENCE_SPOTS}
+        color="#7a5232"
+      />
+      <Scatter
+        url="/models/zoo/rock_tallA.glb"
+        spots={ROCK_SPOTS.tall}
+        color="#9a9288"
+      />
+      <Scatter
+        url="/models/zoo/rock_largeB.glb"
+        spots={ROCK_SPOTS.large}
+        color="#8c867e"
+      />
+      <Scatter url="/models/nature/commontree-2.glb" spots={TREE_SPOTS} />
+      <Animals player={player} />
+      <Farm player={player} />
       <SafariTracker player={player} />
       <NeonText
         text="DAYDAZE ZOO"

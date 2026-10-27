@@ -48,19 +48,14 @@ CLIPS = {
 }
 
 
-# models whose artist-painted vertex colors are the look (kept, not rebuilt)
-KEEP_COLORS = {"zebra"}
-
-
-def vertex_color_single_material(meshes, keep=False):
+def vertex_color_single_material(meshes):
     """Bakes each material's base color into one COLOR_0 and joins the meshes."""
     for ob in meshes:
         me = ob.data
-        if keep and len(me.color_attributes):
-            # the artist painted vertex colors already (the zebra's stripes)
-            me.color_attributes.active_color = me.color_attributes[0]
-            me.materials.clear()
-            continue
+        # drop imported vertex colors (the zebra's are plain white): the
+        # materials' colors are the look
+        for old in list(me.color_attributes):
+            me.color_attributes.remove(old)
         attr = me.color_attributes.new("Color", "FLOAT_COLOR", "CORNER")
         cols = []
         for mat in me.materials:
@@ -69,6 +64,13 @@ def vertex_color_single_material(meshes, keep=False):
                 bsdf = next((n for n in mat.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
                 if bsdf:
                     c = tuple(bsdf.inputs["Base Color"].default_value)
+                    # glTF import wires vertex color x factor through a Mix node:
+                    # the material's own color is that node's B color input
+                    for link in bsdf.inputs["Base Color"].links:
+                        if link.from_node.type == "MIX":
+                            b = [i for i in link.from_node.inputs if i.name == "B" and i.type == "RGBA"]
+                            if b:
+                                c = tuple(b[0].default_value)
             cols.append(c)
         for poly in me.polygons:
             c = cols[poly.material_index] if poly.material_index < len(cols) else (0.8, 0.8, 0.8, 1.0)
@@ -117,7 +119,7 @@ def convert(name, path):
     for o in [o for o in bpy.data.objects if o.type == "MESH" and o not in meshes]:
         bpy.data.objects.remove(o)
     arm = next((o for o in bpy.data.objects if o.type == "ARMATURE"), None)
-    vertex_color_single_material(meshes, name in KEEP_COLORS)
+    vertex_color_single_material(meshes)
     kept = keep_clips(arm) if arm else {}
     out = os.path.join(OUT, name + ".glb")
     bpy.ops.export_scene.gltf(

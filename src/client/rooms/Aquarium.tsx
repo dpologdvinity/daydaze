@@ -1,5 +1,4 @@
 import { SealShow } from "./aquarium/SealShow.tsx";
-import { Suspense } from "react";
 import { SwimmingCreature } from "../creatures/Swimmer.tsx";
 import type { CreaturePose } from "../creatures/Creature.tsx";
 import type { FishKind } from "../../game/creatures.ts";
@@ -273,9 +272,7 @@ export function Aquarium({ onPick }: { onPick: PickHandler }) {
           depthWrite={false}
         />
       </mesh>
-      <Suspense fallback={null}>
-        <Swimmers />
-      </Suspense>
+      <Swimmers />
       {/* the jellyfish bay, along the left wall */}
       <mesh position={[-7.6, 2, 0]}>
         <boxGeometry args={[0.2, 4, 13.6]} />
