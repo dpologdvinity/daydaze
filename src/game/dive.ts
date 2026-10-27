@@ -475,3 +475,9 @@ export const DIVE_NOTICE = "Rent scuba gear at the dive shack before you dive.";
 export function mayDive(room: string, gear: boolean): boolean {
   return room !== "reef-dive" || gear;
 }
+
+/** Whether rented scuba gear is on in `room`: only in the sea rooms. App
+ * sets it on every arrival, so no other travel leaves it on. */
+export function wearsGear(room: string, rented: boolean): boolean {
+  return rented && (room === "open-water" || room === "reef-dive");
+}

@@ -45,8 +45,8 @@ import { buyCar } from "../game/garage.ts";
 import { buyRecord } from "../game/records.ts";
 import { ADULT_NOTICE, ADULT_OK } from "./adult.ts";
 import { arrive } from "../game/portals.ts";
-import { DIVE_NOTICE, mayDive } from "../game/dive.ts";
-import { scuba } from "./avatar/human/afloat.ts";
+import { DIVE_NOTICE, mayDive, wearsGear } from "../game/dive.ts";
+import { afloat, scuba } from "./avatar/human/afloat.ts";
 import { ROOMS, type RoomId, type Spawn } from "../game/rooms.ts";
 import {
   generateGuestName,
@@ -203,6 +203,14 @@ export function App() {
     },
     [travel, here.room],
   );
+
+  // the session's sea state is set in one place on every arrival, however
+  // she got here (a door, an arrest, a visit, a party): rented gear is on
+  // only in the sea rooms, and she is never left afloat in a dry room
+  useEffect(() => {
+    scuba.set({ wearing: wearsGear(here.room, scuba.get().rented) });
+    afloat.on = false;
+  }, [here.room]);
 
   // walking out of a friend's apartment ends the visit (only a real exit:
   // starting a visit from elsewhere mustn't cancel it)
