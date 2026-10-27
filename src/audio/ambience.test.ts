@@ -35,3 +35,14 @@ test("music beds play only in their rooms", () => {
     undefined,
   );
 });
+
+test("in Uptown's park the city hears birds and the fountain, and less traffic", () => {
+  const park = ambienceFor("city", "uptown", 12, true);
+  assert.equal(park.park, 0.3);
+  assert.equal(park.fountain, 0.2);
+  assert.ok(
+    (park["city-day"] ?? 0) <
+      (ambienceFor("city", "uptown", 12)["city-day"] ?? 0),
+  );
+  assert.equal(ambienceFor("city", "uptown", 12).park, undefined);
+});

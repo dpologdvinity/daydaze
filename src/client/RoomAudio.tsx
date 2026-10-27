@@ -16,7 +16,7 @@ import { ambienceFor } from "../audio/ambience.ts";
 import { setFileAmbience } from "../audio/soundFiles.ts";
 import { cityHour } from "./city/daylight.ts";
 import type { RoomId } from "../game/rooms.ts";
-import { useNeighborhood } from "./city/here.ts";
+import { useInPark, useNeighborhood } from "./city/here.ts";
 import { musicPick } from "./musicPick.ts";
 import { carExtras } from "./city/carExtras.ts";
 
@@ -109,6 +109,7 @@ const AMBIENCE: Partial<Record<RoomId, Ambience>> = {
 export function RoomAudio({ room, muted }: { room: RoomId; muted: boolean }) {
   const [unlocked, setUnlocked] = useState(false);
   const neighborhood = useNeighborhood();
+  const inPark = useInPark();
   const [hour, setHour] = useState(cityHour);
   useEffect(() => {
     const id = window.setInterval(() => setHour(cityHour()), 30_000);
@@ -168,7 +169,7 @@ export function RoomAudio({ room, muted }: { room: RoomId; muted: boolean }) {
     return () => window.clearInterval(id);
   }, [room]);
 
-  const fileLevels = ambienceFor(room, neighborhood, hour);
+  const fileLevels = ambienceFor(room, neighborhood, hour, inPark);
   const hasBed = !!(
     fileLevels["music-boardwalk"] || fileLevels["music-lounge"]
   );

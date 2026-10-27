@@ -47,7 +47,7 @@ test("trees, lamps and growth stay on the lawn and out of the water", () => {
     assert.ok(Math.hypot(x - PARK_FOUNTAIN.x, z - PARK_FOUNTAIN.z) > 5);
   }
   const growth = parkGrowth();
-  assert.ok(growth.filter((g) => g.kind === "grass").length > 500);
+  assert.ok(growth.filter((g) => g.kind === "grass").length > 1000);
   for (const g of growth.filter((g) => g.kind === "grass"))
     assert.ok(
       Math.hypot(g.x - POND.x, g.z - POND.z) > POND.r * 0.7,

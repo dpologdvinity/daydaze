@@ -31,7 +31,8 @@ import { Parols } from "./Parols.tsx";
 import { Pedestrians } from "./Pedestrians.tsx";
 import { NightMarket } from "./NightMarket.tsx";
 import { WATER_Z } from "../../game/city/layout.ts";
-import { setNeighborhood } from "./here.ts";
+import { setInPark, setNeighborhood } from "./here.ts";
+import { inPark } from "../../game/city/park.ts";
 import { createLabelAtlas } from "./labelAtlas.ts";
 import {
   createKindMeshes,
@@ -168,6 +169,7 @@ export function CityScene({
     dom.playerX = x.toFixed(2);
     dom.playerZ = z.toFixed(2);
     setNeighborhood(neighborhoodAt([x, z]));
+    setInPark(inPark(x, z));
   });
 
   // a drag orbits the camera; only a click walks the player

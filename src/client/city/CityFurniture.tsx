@@ -101,6 +101,8 @@ const up = new THREE.Vector3(0, 1, 0);
 /** The downloaded palm's olive leaves, pushed toward a fresh green. */
 const TINT: Partial<Record<FurnitureKind, THREE.Color>> = {
   palm: new THREE.Color(0.7, 1.45, 0.75),
+  // the fountain's grey stone, warmed to sandstone
+  fountain: new THREE.Color(1.1, 0.95, 0.76),
 };
 
 /** Scales the (own-copy) materials of `meshes` to `k` of their base color: the night dims them. */
