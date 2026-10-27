@@ -237,8 +237,8 @@ const ROOM_SHOTS: Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }> =
     },
     // from up the sand, over the shack and the shallows to the dive buoy
     "open-water": {
-      eye: new THREE.Vector3(-9, 3.6, 13.5),
-      look: new THREE.Vector3(4, 0.3, -5),
+      eye: new THREE.Vector3(4.5, 3.4, 16),
+      look: new THREE.Vector3(0, 0.5, 3),
     },
     // from behind the diver's start, down the reef toward the wreck
     "reef-dive": {

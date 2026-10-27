@@ -179,7 +179,8 @@ function SeaSurface({ onPick }: { onPick: PickHandler }) {
   return (
     <mesh
       rotation-x={-Math.PI / 2}
-      position={[0, 0, (SHORE_Z + SEA.far) / 2]}
+      // from the waterline out past the far end, so the sand stays dry
+      position={[0, 0, SHORE_Z - (SEA_LENGTH + 40) / 2]}
       onClick={click}
       name="floor"
       material={material}
@@ -204,7 +205,7 @@ export function OpenWater({ onPick }: { onPick: PickHandler }) {
     <>
       <color attach="background" args={["#8fd6ff"]} />
       <fog attach="fog" args={["#bfe8ff", 40, 130]} />
-      <hemisphereLight args={["#e4f4ff", "#f2d9a8", 1.5]} />
+      <hemisphereLight args={["#fff1d8", "#f2d9a8", 1.6]} />
       <directionalLight
         position={[18, 30, 12]}
         intensity={2.4}
@@ -214,7 +215,7 @@ export function OpenWater({ onPick }: { onPick: PickHandler }) {
         width={SAND.x1 - SAND.x0}
         depth={SAND.z1 - SAND.z0}
         center={[0, (SAND.z0 + SAND.z1) / 2]}
-        color="#ffffff"
+        color="#ffd9a0"
         texture={{ id: "coast_sand_01", scale: 0.4 }}
         low={{ metalness: 0, roughness: 0.95 }}
         mirror={0}

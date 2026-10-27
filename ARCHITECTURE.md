@@ -158,6 +158,16 @@ The 3D doll is built in Blender from MakeHuman's CC0 assets
 it into `public/models/doll/anims.glb` and lists them in
 `src/game/dance/mocap.ts`. Sources and licenses: `docs/assets.md`.
 
+The sea: `art/ocean/fetch_ocean.py` downloads the reef and sea-life models
+(Poly Pizza), `art/ocean/build_ocean.py` joins and fits the reef props and
+gulls, `art/animals/build_animals.py` bakes the grouper, crab and turtle, and
+`scripts/import-ocean.sh` compresses them into `public/models/ocean/` and
+`public/models/animals/`. Seaside Swim (`openWater.ts`) and the reef
+(`dive.ts`: air, species log, seeded layout, creature paths) are pure; the
+player's swim state is `src/client/world/water.ts` plus the `swim-front` and
+`swim-tread` clips (`afloat` in `HumanDoll`), and the rented gear is
+`ScubaGear.tsx` on her spine and head bones.
+
 ## Service worker
 
 `public/sw.js` registers in production builds only
