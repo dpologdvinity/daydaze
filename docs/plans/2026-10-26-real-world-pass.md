@@ -222,7 +222,7 @@ Open branches in `.worktrees/` (each has a WIP or finished commit; rebase onto m
 - `feat/oval`: pit crew fixed and build cache untracked; verify green, Speedway tests were running.
 - `feat/fair`: Fairground rides from Kenney Coaster Kit (zoo agent), in progress.
 - `fix/zoom`: the slow city overview that times out the "mouse wheel zooms" test (reviewer agent), in progress.
-- `feat/wonder36`, `feat/wonder37`: wonder-pass Tasks 36 and 37, started.
+- `feat/wonder36`, `feat/wonder37`: wonder-pass Tasks 36 and 37, WIP-committed when the session limit hit (36: in-game lineup shot pending; 37: Playwright 8/8 passed, lineup shot pending).
 - `feat/scifi` (Codex): sci-fi props for Photon Zone/Player 2, committed; its laser-tag test was already failing on main before.
 - `feat/transit` (Codex): bus-shelter riders follow-up, committed, not browser-tested.
 
