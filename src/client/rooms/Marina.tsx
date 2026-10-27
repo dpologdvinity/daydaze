@@ -1,4 +1,4 @@
-import { Stars } from "@react-three/drei";
+import { Stars, useGLTF } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -13,6 +13,9 @@ import {
   YACHTS,
 } from "../../game/marina.ts";
 import { ROOMS } from "../../game/rooms.ts";
+import { Creature } from "../creatures/Creature.tsx";
+import { SwimmingCreature } from "../creatures/Swimmer.tsx";
+import type { FishKind } from "../../game/creatures.ts";
 import { useReducedMotion } from "../motion.ts";
 import type { Player } from "../world/PlayerController.tsx";
 import { placePlayer } from "../world/PlayerController.tsx";
@@ -20,7 +23,7 @@ import { cameraHold } from "../world/cameraHold.ts";
 import { JetSkiRace } from "./marina/JetSkiRace.tsx";
 import { MarinaNpcs } from "./marina/Npcs.tsx";
 import { FLIGHT, fishing, leave, tick } from "./marina/session.ts";
-import { Floor, type PickHandler } from "./shared/Floor.tsx";
+import { type PickHandler } from "./shared/Floor.tsx";
 import { Batch } from "./shared/batch.ts";
 import { Bottles, type ShelfRow } from "./shared/Bottles.tsx";
 import { GLOSS, painted, plant, stringLights } from "./shared/details.ts";
@@ -86,16 +89,6 @@ function buildDressing() {
         rotation: [Math.PI / 2, 0, 0],
         scale: 1 - k * 0.18,
       });
-  const box = new THREE.BoxGeometry(1, 1, 1);
-  for (const [x, z, s] of [
-    [-8.2, 4, 0.6],
-    [-7.6, 4.1, 0.45],
-    [-8.1, 4.05, 0.4],
-  ] as const)
-    b.add(box, TEAK, {
-      position: [x, s / 2 + (s < 0.45 ? 0.6 : 0), z],
-      scale: s,
-    });
   for (const [x, z] of [
     [-8.4, 8.4],
     [8.4, 8.4],
@@ -166,18 +159,29 @@ function Pilings() {
   );
 }
 
-/** A moored yacht: white hull, a cabin with lit windows, its name in neon
- * and string lights from the bow to the mast, rocking on the swell. */
+/** Downloaded boats, fitted to their berths and rocked gently on the swell. */
 function Yacht({
   at,
   length,
-  beam,
-  name,
-  color,
   seed,
 }: (typeof YACHTS)[number] & { seed: number }) {
   const calm = useReducedMotion();
   const boat = useRef<THREE.Group>(null);
+  const gltf = useGLTF(
+    seed > 4 ? "/models/marina/sailboat.glb" : "/models/marina/yacht.glb",
+  );
+  const model = useMemo(() => {
+    const root = gltf.scene.clone(true);
+    const bounds = new THREE.Box3().setFromObject(root);
+    const size = bounds.getSize(new THREE.Vector3());
+    const center = bounds.getCenter(new THREE.Vector3());
+    root.position.set(-center.x, -bounds.min.y, -center.z);
+    return {
+      root,
+      scale: length / Math.max(size.x, size.z),
+      turn: size.x > size.z ? Math.PI / 2 : 0,
+    };
+  }, [gltf, length]);
   useFrame(({ clock }) => {
     const g = boat.current;
     if (!g || calm) return;
@@ -188,47 +192,66 @@ function Yacht({
   });
   return (
     <group ref={boat} position={[at[0], WATER_Y, at[1]]}>
-      {/* the hull: a stretched half-sphere, keel down, rim at the deck */}
-      <mesh position-y={0.9} scale={[beam / 2, 0.9, length / 2]}>
-        <sphereGeometry
-          args={[1, 18, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2]}
-        />
-        <meshStandardMaterial color="#f4f4f8" roughness={0.3} />
-      </mesh>
-      <mesh position-y={0.92} scale={[beam / 2, 1, length / 2]}>
-        <cylinderGeometry args={[1, 1, 0.05, 18]} />
-        <meshStandardMaterial color="#c8a27a" />
-      </mesh>
-      {/* a neon stripe round the rim */}
-      <mesh position-y={0.82} scale={[beam / 2 + 0.01, 1, length / 2 + 0.01]}>
-        <cylinderGeometry args={[1, 1, 0.1, 18, 1, true]} />
-        <meshBasicMaterial
-          color={hdr(color, 1.6)}
-          side={THREE.DoubleSide}
-          toneMapped={false}
-        />
-      </mesh>
-      <mesh position={[0, 1.5, length * 0.08]}>
-        <boxGeometry args={[beam * 0.55, 1.1, length * 0.34]} />
-        <meshStandardMaterial color="#e8e8f0" roughness={0.4} />
-      </mesh>
-      <mesh position={[0, 1.6, length * 0.08]}>
-        <boxGeometry args={[beam * 0.57, 0.32, length * 0.28]} />
-        <meshBasicMaterial color={hdr("#ffe3b0", 1.4)} toneMapped={false} />
-      </mesh>
-      <mesh position={[0, 3.4, -length * 0.08]}>
-        <cylinderGeometry args={[0.05, 0.06, 4, 6]} />
-        <meshStandardMaterial color="#d8d8e0" metalness={0.6} />
-      </mesh>
-      <NeonText
-        text={name}
-        color={color}
-        font={MARQUEE}
-        width={length * 0.4}
-        k={2.6}
-        position={[0, 2.35, length * 0.25 + 0.02]}
-      />
+      <group rotation-y={model.turn} scale={model.scale}>
+        <primitive object={model.root} />
+      </group>
     </group>
+  );
+}
+
+/** Cargo on the landing, sized from the downloaded models. */
+function Cargo({
+  kind,
+  at,
+  size,
+}: {
+  kind: "crate" | "barrel";
+  at: [number, number];
+  size: number;
+}) {
+  const gltf = useGLTF(`/models/marina/${kind}.glb`);
+  const model = useMemo(() => {
+    const root = gltf.scene.clone(true);
+    const bounds = new THREE.Box3().setFromObject(root);
+    const extent = bounds.getSize(new THREE.Vector3());
+    const center = bounds.getCenter(new THREE.Vector3());
+    root.position.set(-center.x, -bounds.min.y, -center.z);
+    return { root, scale: size / Math.max(extent.x, extent.y, extent.z) };
+  }, [gltf, size]);
+  return (
+    <group position={[at[0], 0, at[1]]} scale={model.scale}>
+      <primitive object={model.root} />
+    </group>
+  );
+}
+
+const CATCH_MODELS: Record<string, FishKind> = {
+  Sardine: "fish1",
+  Mackerel: "fish2",
+  "Sea bass": "fish3",
+  "Red snapper": "cute-goldfish",
+  Yellowtail: "cute-yellowtang",
+  "Sunset marlin": "fish3",
+};
+
+function MarinaFish() {
+  return (
+    <>
+      {(["fish1", "fish2", "cute-yellowtang"] as const).map((kind, i) => (
+        <SwimmingCreature
+          key={kind}
+          kind={kind}
+          scale={2.5}
+          path={(t, p) => {
+            const angle = t * 0.25 + i * 2;
+            p.x = Math.cos(angle) * 3.5;
+            p.y = WATER_Y - 0.12;
+            p.z = -3 + Math.sin(angle) * 2.5;
+            p.yaw = -angle;
+          }}
+        />
+      ))}
+    </>
   );
 }
 
@@ -236,6 +259,7 @@ function Yacht({
  * bobber, and the camera over your shoulder while you fish. */
 function Fishing({ player }: { player: Player }) {
   const calm = useReducedMotion();
+  const state = fishing.use();
   const camera = useThree((st) => st.camera);
   const bobber = useRef<THREE.Mesh>(null);
   const eye = useMemo(() => new THREE.Vector3(), []);
@@ -321,6 +345,19 @@ function Fishing({ player }: { player: Player }) {
   });
   return (
     <>
+      {state.phase === "result" && state.last?.outcome === "landed" && (
+        <Creature
+          kind={CATCH_MODELS[state.last.species] ?? "fish1"}
+          scale={2}
+          drive={(_dt, p) => {
+            p.x = FISH_SPOT[0] + 0.8;
+            p.y = 1.3;
+            p.z = FISH_SPOT[1] - 2;
+            p.yaw = Math.PI / 2;
+            p.clip = "swim";
+          }}
+        />
+      )}
       <mesh
         position={[
           (FISH_SPOT[0] + 0.55 + tip.x) / 2,
@@ -384,14 +421,26 @@ export function Marina({
       {/* the water: the room's floor, under the decks; tapping it walks
           you to the nearest point of the dock */}
       <group position-y={WATER_Y}>
-        <Floor
-          width={120}
-          depth={120}
-          center={[0, -20]}
-          color="#0b2a4a"
-          low={{ metalness: 0.5, roughness: 0.25 }}
-          onPick={onPick}
-        />
+        <mesh
+          rotation-x={-Math.PI / 2}
+          position={[0, 0, -20]}
+          onClick={(e) => {
+            if (e.delta <= 6) {
+              e.stopPropagation();
+              onPick([e.point.x, e.point.z]);
+            }
+          }}
+        >
+          <planeGeometry args={[120, 120]} />
+          <meshStandardMaterial
+            color="#0b2a4a"
+            metalness={0.5}
+            roughness={0.25}
+            transparent
+            opacity={0.68}
+            depthWrite={false}
+          />
+        </mesh>
       </group>
       {DECKS.map((d, i) => (
         <mesh
@@ -403,6 +452,10 @@ export function Marina({
           <boxGeometry args={[d.w, 0.6, d.d]} />
         </mesh>
       ))}
+      <Cargo kind="crate" at={[-8.2, 4]} size={0.7} />
+      <Cargo kind="crate" at={[-7.5, 4.2]} size={0.5} />
+      <Cargo kind="barrel" at={[-8.4, 5]} size={0.7} />
+      <MarinaFish />
       <Pilings />
       <PortalPads room={ROOMS.marina} color={TEAL} />
       {YACHTS.map((y, i) => (

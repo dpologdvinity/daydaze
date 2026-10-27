@@ -29,8 +29,8 @@ future imported packs belong here when they enter the game.
 | Modular Fire Escape | Poly Haven | CC0 1.0 | https://polyhaven.com/a/modular_fire_escape | Fire escapes on New York walk-ups: the landing and railing, thinned and painted iron black. |
 | City Kit Suburban | Kenney | CC0 1.0 | https://kenney.nl/assets/city-kit-suburban | Suburbia's houses near the player, optimized with a small colormap. |
 | Ultimate Animated Animals | Quaternius | CC0 1.0 | https://quaternius.com/packs/ultimateanimatedanimals.html | Petting farm at the Zoo (alpaca, donkey, cow) and the adoptable husky and Shiba Inu; horse, deer, fox and wolf built for farms. |
-| Animated Fish Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/animatedfish.html | Aquarium shark, manta ray and fish; dolphin and whale ready for the ocean. |
-| Cute Fish Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/cutefish.html | Aquarium reef fish. |
+| Animated Fish Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/animatedfish.html | Aquarium shark, manta ray and fish; marina fishing and swimming fish; dolphin and whale ready for the ocean. |
+| Cute Fish Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/cutefish.html | Aquarium reef fish and marina fishing. |
 | Zebra (rigged) | Quaternius | CC0 1.0 | https://poly.pizza/m/iclPBR6SBZ | Zoo savanna zebras, with idle, walk and run clips. |
 | Giraffe | BlueMesh | CC-BY 4.0 | https://sketchfab.com/3d-models/giraffe-522c042aad9f4348a74c2985ec3f99f9 | Zoo savanna giraffes, with a calm idle clip (swayed along when walking). |
 | Elephant | Rukh3D | CC-BY 4.0 | https://sketchfab.com/3d-models/elephant-4ae161372d6a4219a87340339d1ffe03 | Zoo elephants, with idle, walk, run and eat clips. |
@@ -85,6 +85,10 @@ future imported packs belong here when they enter the game.
 | Mini Characters | Kenney | CC0 1.0 | https://kenney.nl/assets/mini-characters | Instanced grandstand crowd and pit road pit crew for the Speedway oval. |
 | Racing Kit | Kenney | CC0 1.0 | https://kenney.nl/assets/racing-kit | Grandstand, pit garages, barriers, overhead flag gantry, and billboards for the Speedway oval. |
 | Realistic Car Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/realisticcarpack.html | NASCAR stock cars (models 1-4) with canvas liveries for the Speedway oval. |
+| Ships | Quaternius | CC0 1.0 | https://quaternius.com/packs/ships.html | Marina sailboat, converted and optimized. |
+| Yacht | Alex Safayan | CC BY 3.0 | https://poly.pizza/m/9znU2c-dTSR | Marina yachts, optimized. |
+| Crate | Quaternius | CC0 1.0 | https://poly.pizza/m/3OEFd1AWfa | Marina dock cargo, optimized. |
+| Barrel | Quaternius | CC0 1.0 | https://poly.pizza/m/zjCQP1TAci | Marina dock cargo, optimized. |
 
 
 Street furniture is built by `art/street/build_street.py` into `public/models/street/` (every model cut down to a few hundred triangles).
