@@ -5,7 +5,7 @@
 // and perimeter trees and split-rail fencing.
 
 import { useGLTF } from "@react-three/drei";
-import { Suspense, useMemo, type JSX } from "react";
+import { Suspense, useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";
 import {
   BARN_POS,
@@ -131,6 +131,38 @@ function CropField({ plots }: { plots: PlotState[] }) {
       })}
     </group>
   );
+}
+
+/** Tilled furrows across every plot: dark ridges in one instanced draw. */
+const FURROWS_PER_PLOT = 5;
+function Furrows() {
+  const mesh = useMemo(() => {
+    const m = new THREE.InstancedMesh(
+      new THREE.BoxGeometry(3.1, 0.05, 0.13),
+      new THREE.MeshStandardMaterial({ color: "#5a3a22", roughness: 1 }),
+      PLOTS.length * FURROWS_PER_PLOT,
+    );
+    const mat = new THREE.Matrix4();
+    PLOTS.forEach((plot, i) => {
+      for (let k = 0; k < FURROWS_PER_PLOT; k++) {
+        const dz = (k - (FURROWS_PER_PLOT - 1) / 2) * 0.42;
+        mat.makeTranslation(plot.position[0], 0.07, plot.position[1] + dz);
+        m.setMatrixAt(i * FURROWS_PER_PLOT + k, mat);
+      }
+    });
+    m.frustumCulled = false;
+    return m;
+  }, []);
+  // free the furrows' own geometry and material when the room unloads
+  useEffect(
+    () => () => {
+      mesh.geometry.dispose();
+      if (!Array.isArray(mesh.material)) mesh.material.dispose();
+      mesh.dispose();
+    },
+    [mesh],
+  );
+  return <primitive object={mesh} />;
 }
 
 /** Pasture fences along the animal pen borders, one instanced draw. */
@@ -282,6 +314,7 @@ export function Farm({
         />
 
         {/* Crop plots with real-time growth models */}
+        <Furrows />
         <CropField plots={farm.plots} />
 
         {/* Fences for pastures */}
