@@ -128,18 +128,28 @@ export function Creature({
       }
       s.clip = p.clip;
     }
-    if (calm) return;
-    // a model with no skeleton: walk it with a bob and roll, bow it to graze
+    // posture: a sitting animal tips back, a sleeping one lies on its side,
+    // and a model with no skeleton walks with a bob and roll and bows to graze
     const w = sway.current;
-    if (w && rig.actions.size === 0) {
-      s.t += dt;
-      const walking = p.clip === "walk" || p.clip === "run";
-      const bow = p.clip === "graze" || p.clip === "eat" ? 0.4 : 0;
-      w.position.y = walking ? Math.abs(Math.sin(s.t * STRIDE)) * 0.05 : 0;
-      w.rotation.z = walking ? Math.sin(s.t * STRIDE) * 0.05 : 0;
-      w.rotation.x += (bow - w.rotation.x) * Math.min(1, dt * 4);
-      w.scale.y = 1 + Math.sin(s.t * 2) * 0.012;
+    if (w) {
+      if (!calm) s.t += dt;
+      const still = rig.actions.size === 0;
+      const walking = still && !calm && (p.clip === "walk" || p.clip === "run");
+      const bow = still && (p.clip === "graze" || p.clip === "eat") ? 0.4 : 0;
+      const k = Math.min(1, dt * 4);
+      const sitting = p.clip === "sit";
+      const stride = Math.sin(s.t * STRIDE);
+      const lower = sitting ? -0.08 * LENGTH[kind] * scale : 0;
+      w.rotation.x += ((sitting ? -0.55 : bow) - w.rotation.x) * k;
+      w.rotation.z +=
+        ((p.clip === "sleep" ? 1.4 : walking ? stride * 0.05 : 0) -
+          w.rotation.z) *
+        k;
+      w.position.y +=
+        (lower + (walking ? Math.abs(stride) * 0.05 : 0) - w.position.y) * k;
+      if (still && !calm) w.scale.y = 1 + Math.sin(s.t * 2) * 0.012;
     }
+    if (calm) return;
     // animate every frame near the camera, every n-th frame far away
     s.owed += dt;
     const far = camera.position.distanceToSquared(g.position) > FAR[tier] ** 2;

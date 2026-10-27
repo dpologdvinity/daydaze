@@ -18,7 +18,9 @@ export type LandKind =
   | "elephant"
   | "lion"
   | "penguin"
-  | "flamingo";
+  | "flamingo"
+  | "cat"
+  | "rabbit";
 
 export type FishKind =
   | "dolphin"
@@ -43,7 +45,16 @@ export type CreatureKind = LandKind | FishKind;
 
 /** The clips a GLB can carry: land animals have the first set, fish `swim`. */
 export type Clip =
-  "idle" | "idle2" | "graze" | "eat" | "walk" | "run" | "react" | "swim";
+  | "idle"
+  | "idle2"
+  | "graze"
+  | "eat"
+  | "walk"
+  | "run"
+  | "react"
+  | "sit"
+  | "sleep"
+  | "swim";
 
 /** Body length in meters (nose to tail) each kind is scaled to. */
 export const LENGTH: Record<CreatureKind, number> = {
@@ -62,6 +73,8 @@ export const LENGTH: Record<CreatureKind, number> = {
   lion: 2,
   penguin: 0.7,
   flamingo: 0.7,
+  cat: 0.6,
+  rabbit: 0.45,
   dolphin: 2.6,
   shark: 3.4,
   whale: 5,

@@ -12,6 +12,43 @@ const furnitureReady = async (page: Page) => {
     { timeout: 300_000 },
   );
 };
+/** A shot with a saved pet: seeds the save, reloads and waits for the pet. */
+function petShot(
+  name: string,
+  query: string,
+  kind: string,
+  petName: string,
+): (typeof SHOTS)[number] {
+  return {
+    name,
+    query,
+    live: true,
+    act: async (page) => {
+      await page.evaluate(
+        ([k, n]) => {
+          localStorage.setItem(
+            "daydaze-save-v1",
+            JSON.stringify({
+              pet: { kind: k, name: n, adoptedAt: 1, fedAt: Date.now() },
+            }),
+          );
+        },
+        [kind, petName],
+      );
+      await page.reload();
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.frames) >= 6,
+        undefined,
+        { timeout: 150_000 },
+      );
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.petClip !== undefined,
+        undefined,
+        { timeout: 150_000 },
+      );
+    },
+  };
+}
 
 const SHOTS: {
   name: string;
@@ -159,6 +196,9 @@ const SHOTS: {
   { name: "aquarium", query: "room=aquarium" },
   { name: "ice-rink", query: "room=ice-rink" },
   { name: "haunted-house", query: "room=haunted-house" },
+  // your adopted pet beside you in the city, and asleep in its bed at home
+  petShot("pet-city", "room=city&view=full&time=12:00", "husky", "Biscuit"),
+  petShot("pet-home", "room=apartment", "shibainu", "Kiko"),
   { name: "city-street", query: "room=city&view=full", act: furnitureReady },
   { name: "city-overview", query: "room=city" },
   // the city by day and at sunset (daylight.ts), pinned with ?time=

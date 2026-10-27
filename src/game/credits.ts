@@ -44,7 +44,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/ultimateanimatedanimals.html",
         usedFor:
-          "Petting farm at the Zoo (alpaca, donkey, cow); horse, deer, fox and wolf built for pets and farms.",
+          "Petting farm at the Zoo (alpaca, donkey, cow) and the adoptable husky and Shiba Inu; horse, deer, fox and wolf built for farms.",
       },
       {
         title: "Animated Fish Pack",
@@ -102,6 +102,20 @@ export const CREDITS: readonly {
         license: "CC-BY 3.0",
         url: "https://poly.pizza/m/5hUIvLVFqet",
         usedFor: "Zoo flamingo pond (static mesh, swayed by the client).",
+      },
+      {
+        title: "Cat",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/m/qKICY6xla2",
+        usedFor: "Adoptable pet cat, with idle, walk, run and eat clips.",
+      },
+      {
+        title: "Bunny",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/m/irZjWFARyl",
+        usedFor: "Adoptable pet rabbit, with idle, walk and run clips.",
       },
       {
         title: "Nature Kit",

@@ -352,6 +352,52 @@ test("the zoo's gate on Park Avenue leads in, and its animals walk", async ({
   expect(errors).toEqual([]);
 });
 
+test("adopt a pet at the zoo: it comes along to the next room", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=zoo&debug=1`);
+  await page
+    .getByRole("group", { name: "Games here" })
+    .getByRole("button", { name: "Adopt a pet" })
+    .click({ timeout: 150_000 });
+  const panel = page.getByRole("region", { name: "Pet adoption" });
+  await panel.getByRole("button", { name: "Cat" }).click();
+  await panel.getByLabel("Pet's name").fill("Mochi");
+  await panel.getByRole("button", { name: "Adopt Cat" }).click();
+  await expect(page.getByRole("region", { name: "Your pet" })).toContainText(
+    "Mochi the Cat",
+  );
+  // it stands beside you
+  await expect
+    .poll(async () =>
+      Number(await canvasOf(page).getAttribute("data-pet-dist")),
+    )
+    .toBeLessThan(3);
+  // and arrives with you in the next room
+  await page.getByRole("button", { name: "Go to Plaza" }).click();
+  await expect(roomTitle(page)).toHaveText("Daydaze Plaza");
+  await expect
+    .poll(async () =>
+      Number(await canvasOf(page).getAttribute("data-pet-dist")),
+    )
+    .toBeLessThan(3);
+  expect(errors).toEqual([]);
+});
+
+test("your pet sleeps at your apartment", async ({ page }) => {
+  const errors = collectErrors(page);
+  await seedSave(page, {
+    pet: { kind: "shibainu", name: "Kiko", adoptedAt: 1, fedAt: 1 },
+  });
+  await page.goto(`${LOW}&room=apartment`);
+  await expect(canvasOf(page)).toHaveAttribute("data-pet-clip", "sleep", {
+    timeout: 150_000,
+  });
+  expect(errors).toEqual([]);
+});
+
 test("the Scrambler, the Starship and the Super Slide take riders", async ({
   page,
 }) => {

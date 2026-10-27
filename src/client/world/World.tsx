@@ -52,6 +52,8 @@ import { Photo } from "./Photo.tsx";
 import { OnlinePeers } from "../net/OnlinePeers.tsx";
 import { Confetti } from "./Confetti.tsx";
 import { CreatorFrame } from "./CreatorFrame.tsx";
+import { PetFollower } from "../creatures/PetFollower.tsx";
+import type { PetSave } from "../../game/pet.ts";
 
 // The city is the heaviest scene, so it loads on first visit only.
 const VelvetRoom = lazy(() =>
@@ -497,6 +499,8 @@ export type WorldProps = {
   /** Your car, parked in the city, and where to save it when you park. */
   car: ParkedCar;
   onPark: (car: ParkedCar) => void;
+  /** Your adopted pet, which follows you everywhere. */
+  pet: PetSave | null;
 };
 
 export function World({
@@ -522,6 +526,7 @@ export function World({
   onShelf,
   car,
   onPark,
+  pet,
 }: WorldProps) {
   const [auto, setAuto] = useState<QualityTier>("high");
   // a struggling machine first gives up the extra resolution, then the
@@ -608,6 +613,11 @@ export function World({
               onShelf={onShelf}
             />
           ) : null}
+          {pet && (
+            <Suspense fallback={null}>
+              <PetFollower pet={pet} room={room} area={area} player={player} />
+            </Suspense>
+          )}
           <Seats room={room} player={player} area={area} home={home} />
           <PlayerController
             player={player}

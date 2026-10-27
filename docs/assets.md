@@ -21,7 +21,7 @@ future imported packs belong here when they enter the game.
 | MakeHuman | MakeHuman Community | CC0 1.0 | https://github.com/makehumancommunity/makehuman | Avatar bodies, morph targets, hair and clothing, adapted for Daydaze. |
 | MPFB2 Mixamo-named rig | MakeHuman Community | CC0 1.0 | https://github.com/makehumancommunity/mpfb2 | The 52-bone skeleton and skin weights the doll is rigged with, fitted to the shaped body. |
 | Stylized Nature MegaKit | Quaternius | CC0 1.0 | https://quaternius.com/packs/stylizednaturemegakit.html | Street trees, bushes, grass, flowers, ferns and rocks; optimized with near and far models. |
-| Ultimate Animated Animals | Quaternius | CC0 1.0 | https://quaternius.com/packs/ultimateanimatedanimals.html | Petting farm at the Zoo (alpaca, donkey, cow); horse, deer, fox and wolf built for pets and farms. |
+| Ultimate Animated Animals | Quaternius | CC0 1.0 | https://quaternius.com/packs/ultimateanimatedanimals.html | Petting farm at the Zoo (alpaca, donkey, cow) and the adoptable husky and Shiba Inu; horse, deer, fox and wolf built for farms. |
 | Animated Fish Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/animatedfish.html | Aquarium shark, manta ray and fish; dolphin and whale ready for the ocean. |
 | Cute Fish Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/cutefish.html | Aquarium reef fish. |
 | Zebra (rigged) | Quaternius | CC0 1.0 | https://poly.pizza/m/iclPBR6SBZ | Zoo savanna zebras, with idle, walk and run clips. |
@@ -30,6 +30,8 @@ future imported packs belong here when they enter the game.
 | Lion | jeremy | CC-BY 3.0 | https://poly.pizza/m/cC_IFclYA4c | Zoo lions (static mesh, swayed by the client). |
 | Penguin | jeremy | CC-BY 3.0 | https://poly.pizza/m/9Ift-39Akov | Zoo penguin pool (static mesh, swayed by the client). |
 | Flamingo | Хмара Сергей | CC-BY 3.0 | https://poly.pizza/m/5hUIvLVFqet | Zoo flamingo pond (static mesh, swayed by the client). |
+| Cat | Quaternius | CC0 1.0 | https://poly.pizza/m/qKICY6xla2 | Adoptable pet cat, with idle, walk, run and eat clips. |
+| Bunny | Quaternius | CC0 1.0 | https://poly.pizza/m/irZjWFARyl | Adoptable pet rabbit, with idle, walk and run clips. |
 | Nature Kit | Kenney | CC0 1.0 | https://kenney.nl/assets/nature-kit | Zoo fence panels and rocks. |
 | Street Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/streetpack.html | Street lamp and stop and no-parking signs (Streetlight_Single, Sign_Stop, Sign_NoParking); lantern made see-through. |
 | Fire Hydrant | Poly Haven | CC0 1.0 | https://polyhaven.com/a/fire_hydrant | Sidewalk hydrants, decimated to under 500 triangles. |

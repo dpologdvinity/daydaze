@@ -79,6 +79,7 @@ import { Collections } from "./ui/Collections.tsx";
 import { claimSet, visit as visitPlace } from "../game/collections.ts";
 import { Onboarding } from "./ui/Onboarding.tsx";
 import { postPrize, prizeDesk } from "./ui/prizeDesk.ts";
+import { petDesk } from "./rooms/zoo/petDesk.ts";
 import { World } from "./world/World.tsx";
 
 const FADE_MS = 300;
@@ -247,6 +248,15 @@ export function App() {
       setSave((s) => ({ ...s, settings: { ...s.settings, panelOpen } })),
     [],
   );
+  // the Zoo's adoption panel reads the saved pet and changes it through `act`
+  useEffect(() => petDesk.set({ pet: save.pet }), [save.pet]);
+  useEffect(
+    () =>
+      petDesk.set({
+        act: (change) => setSave((s) => ({ ...s, pet: change(s.pet) })),
+      }),
+    [],
+  );
   const setHome = (home: HomeSave) => setSave((s) => ({ ...s, home }));
   const setCar = (car: ParkedCar) => setSave((s) => ({ ...s, car }));
   const setJail = (jail: SaveV1["jail"]) => setSave((s) => ({ ...s, jail }));
@@ -392,6 +402,7 @@ export function App() {
           onShelf={() => setShopping(true)}
           car={parkedOrHome(save.car)}
           onPark={setCar}
+          pet={save.pet}
         />
         <div className="tag" ref={tag}>
           {chat && (
