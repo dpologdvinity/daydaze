@@ -21,6 +21,17 @@ const cityReady = async (page: Page) => {
     { timeout: 300_000 },
   );
 };
+/** Waits for either the New York bays or Suburbia's houses (a shot may see only one). */
+const blocksReady = async (page: Page) => {
+  await page.waitForFunction(
+    () => {
+      const d = document.querySelector("canvas")?.dataset;
+      return d?.bays === "ready" || d?.houses === "ready";
+    },
+    null,
+    { timeout: 300_000 },
+  );
+};
 /** A shot with a saved pet: seeds the save, reloads and waits for the pet. */
 function petShot(
   name: string,
@@ -259,13 +270,16 @@ const SHOTS: {
     ["nyc-street", "12:00", "-30,-6", 0],
     ["nyc-night", "22:00", "-30,-6", 0],
     ["nyc-corner", "12:00", "-70,-8", Math.PI / 2],
+    ["nyc-manila", "12:00", "-262,-6", 0],
+    ["nyc-chinatown", "12:00", "262,-6", 0],
+    ["nyc-suburbia", "12:00", "-404,-236", 0],
   ].map(([name, time, at, yaw]) => ({
     name: String(name),
     query: `room=city&view=full&time=${time}&at=${at}&yaw=${yaw}`,
     live: true,
     act: async (page: Page) => {
       await page.locator("canvas").waitFor();
-      await cityReady(page);
+      await blocksReady(page);
       await page.waitForFunction(
         () => document.querySelector("canvas")?.dataset.frames === "10",
         null,
@@ -304,13 +318,13 @@ const SHOTS: {
     // paths, pond, bandstand and picnics
     name: "city-park",
     query: "room=city&view=full&time=14:00&at=254,-280",
-    act: furnitureReady,
+    act: cityReady,
   },
   {
     // the park's entrance from Park Avenue, flanked by trees
     name: "city-park-entrance",
     query: "room=city&view=full&time=14:00&at=254,-262",
-    act: furnitureReady,
+    act: cityReady,
   },
   {
     name: "city-park-pond",

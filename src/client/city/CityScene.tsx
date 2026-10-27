@@ -46,6 +46,7 @@ import { CityFurniture, cityFurniture } from "./CityFurniture.tsx";
 import { CityPark } from "./CityPark.tsx";
 import { CityTrees, cityTrees } from "./CityTrees.tsx";
 import { NycFacades, cityBays } from "./NycFacades.tsx";
+import { CityHouses, cityHouses } from "./CityHouses.tsx";
 import { CITY_CLOCK } from "./shaders.ts";
 import { Traffic } from "./Traffic.tsx";
 import { PlayerCar } from "./PlayerCar.tsx";
@@ -152,6 +153,7 @@ export function CityScene({
       cityTrees.set({ spots: plan.trees, at });
       cityFurniture.set({ spots: plan.furniture, at });
       cityBays.set({ bays: plan.bays });
+      cityHouses.set({ spots: plan.houses });
       lights.current.forEach((light, i) => {
         if (!light) return;
         const sign = plan.lights[i];
@@ -240,6 +242,7 @@ export function CityScene({
         <CityFurniture />
         <CityPark />
         <NycFacades />
+        <CityHouses />
       </Suspense>
       <NightMarket player={player} />
     </>

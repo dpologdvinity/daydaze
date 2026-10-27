@@ -11,6 +11,7 @@ import { pointInPolygon, type Vec2 } from "../walk.ts";
 import { hash, pick } from "./hash.ts";
 import {
   CITY_SURFACES,
+  GALLERY_Z,
   type Building,
   type BuildingStyle,
   type Neighborhood,
@@ -79,7 +80,7 @@ export const BAY_TRIANGLES: Record<BayKind, number> = {
   corniceB: 12,
   corniceM: 24,
   post: 32,
-  fireEscape: 196,
+  fireEscape: 366,
 };
 
 export const BAY_WIDTH = 4;
@@ -93,6 +94,8 @@ const NYC_NEIGHBORHOODS: ReadonlySet<Neighborhood> = new Set([
   "downtown",
   "uptown",
   "arts-district",
+  "little-manila",
+  "chinatown-koreatown",
 ]);
 const NYC_STYLES: ReadonlySet<BuildingStyle> = new Set<BuildingStyle>([
   "storefront",
@@ -115,6 +118,24 @@ const BRICKS = [
 ];
 // Prewar limestone and terra cotta.
 const STONES = ["#e8dcc4", "#d8ccb4", "#e0d0b8", "#cfc0a8"];
+// Little Manila's shophouses: sun-faded pastels over the brick photo.
+const PASTELS = [
+  "#e8b4a0",
+  "#e6c27a",
+  "#9cc9a8",
+  "#d98a8a",
+  "#8fb8d8",
+  "#d9a3c4",
+];
+// Chinatown and Koreatown: lacquer red, jade and lantern gold.
+const LACQUER = [
+  "#b83a30",
+  "#9c2f2a",
+  "#c98b3a",
+  "#4a7a62",
+  "#8a3a3a",
+  "#c4574a",
+];
 const UPPER: Record<"storefront" | "brick" | "tower", readonly BayKind[]> = {
   storefront: ["winA", "winB", "winE", "winF"],
   brick: ["winB", "winE", "winF", "winC", "winA"],
@@ -238,7 +259,14 @@ export function nycBays(b: Building): BayInstance[] {
     Math.round((b.height - CORNICE_HEIGHT) / BAY_HEIGHT),
   );
   const sy = (b.height - CORNICE_HEIGHT) / (floors * BAY_HEIGHT);
-  const tints = b.style === "tower" ? STONES : BRICKS;
+  const tints =
+    b.neighborhood === "little-manila"
+      ? PASTELS
+      : b.neighborhood === "chinatown-koreatown"
+        ? LACQUER
+        : b.style === "tower"
+          ? STONES
+          : BRICKS;
   const upper = UPPER[b.style as keyof typeof UPPER];
 
   for (const face of faces) {
@@ -323,4 +351,43 @@ export function nycBays(b: Building): BayInstance[] {
           color: "#ffffff",
         });
   return out;
+}
+
+/** Suburbia's houses are Kenney's City Kit Suburban models (CC0) instead of
+ * boxes when you are near: which model, where, and which way it faces. */
+export const HOUSE_MODELS = ["a", "c", "e", "g", "h", "i", "j", "l"] as const;
+/** Triangles of the largest house model, for the budget. */
+export const HOUSE_TRIANGLES = 1800;
+
+export type HouseSpot = {
+  x: number;
+  z: number;
+  yaw: number;
+  variant: number;
+  /** Meters per model unit; the kit's houses are about one unit wide. */
+  scale: number;
+};
+
+/** A Suburbia house lot (the `deck` blocks, which carry no door or sign). */
+export const isHouse = (b: Building): boolean =>
+  b.neighborhood === "suburbia" && b.style === "deck";
+
+/** The house for a lot: set back from the lawn edge, facing Maple Drive. */
+export function houseAt(b: Building): HouseSpot {
+  const xs = b.footprint.map(([x]) => x);
+  const zs = b.footprint.map(([, z]) => z);
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+  const cz = (Math.min(...zs) + Math.max(...zs)) / 2;
+  // north lots front the street on their +z side, south lots on their -z
+  const toStreet = cz < GALLERY_Z ? 1 : -1;
+  const front = toStreet > 0 ? Math.max(...zs) : Math.min(...zs);
+  const h = (k: number) => hash(cx, cz, k);
+  const scale = 7.2 + h(2) * 1.6;
+  return {
+    x: cx,
+    z: front - toStreet * (scale * 0.5 + 1.5),
+    yaw: toStreet > 0 ? 0 : Math.PI,
+    variant: Math.floor(h(1) * HOUSE_MODELS.length),
+    scale,
+  };
 }
