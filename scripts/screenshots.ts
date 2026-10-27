@@ -289,6 +289,8 @@ const SHOTS: {
     ["nyc-manila", "12:00", "-262,-6", 0],
     ["nyc-chinatown", "12:00", "262,-6", 0],
     ["nyc-suburbia", "12:00", "-404,-236", 0],
+    ["el-station", "12:00", "10,12", 0],
+    ["el-train", "12:00", "-6,14&elat=69", 0],
   ].map(([name, time, at, yaw]) => ({
     name: String(name),
     query: `room=city&view=full&time=${time}&at=${at}&yaw=${yaw}`,
@@ -302,7 +304,8 @@ const SHOTS: {
         { timeout: 300_000 },
       );
       await page.mouse.move(640, 400);
-      for (let i = 0; i < 12; i++) await page.mouse.wheel(0, 100);
+      for (let i = 0; i < (String(name).startsWith("el-train") ? 24 : 12); i++)
+        await page.mouse.wheel(0, 100);
     },
   })),
   { name: "city-sunset", query: "room=city&view=full&time=19:30" },

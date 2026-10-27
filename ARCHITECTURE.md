@@ -61,7 +61,10 @@ floors, looks, saves, chat effects) so both sides agree on the rules.
   `game/city/nyc.ts` picks storey-high bays per street face (seeded lots,
   ground floor, cornice, fire escapes) and `city/NycFacades.tsx` draws them
   from `public/models/nyc/bays.glb` (`scripts/import-nyc.sh`), one
-  InstancedMesh per bay; farther blocks keep the cheap box walls.
+  InstancedMesh2 per bay (culled per instance); farther blocks keep the cheap
+  box walls. The El (`game/city/el.ts` timetable, `city/ElLine.tsx` trestle,
+  stations and train, `city/ElRide.tsx` + `ElPanel.tsx` fast travel) runs
+  over Main Avenue on the shared clock.
 - `avatar/` is the doll: `human/HumanDoll.tsx` loads the Blender-built GLB
   parts, paints the face and plays baked Mixamo clips on the full skeleton
   with an AnimationMixer (`human/anims.ts`; `game/dance/clips.ts` picks the

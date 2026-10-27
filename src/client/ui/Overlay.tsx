@@ -5,6 +5,7 @@
 // restores the old view on close.
 
 import { activeTier, allows, byTier } from "../../game/age.ts";
+import { ElPanel } from "../city/ElPanel.tsx";
 import { ClubNightTicker } from "./EventCalendar.tsx";
 import { InviteButton } from "../net/InviteButton.tsx";
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
@@ -892,6 +893,7 @@ export function Overlay({
           />
         )}
         <div className="dock-actions" role="group" aria-label="Room actions">
+          {room === "city" && <ElPanel />}
           {room === "city" && (
             <button
               type="button"

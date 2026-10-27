@@ -13,6 +13,7 @@ import { useThree } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import { useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";
+import { InstancedMesh2, patchShader } from "@three.ez/instanced-mesh";
 import {
   BAY_CAPACITY,
   BAY_KINDS,
@@ -20,7 +21,6 @@ import {
   type BayKind,
 } from "../../game/city/nyc.ts";
 import { createStore } from "../rooms/shared/store.ts";
-import { disposeInstanced } from "./dispose.ts";
 import { groundMaps, boxMapped } from "./worldTexture.ts";
 
 const URL = "/models/nyc/bays.glb";
@@ -62,16 +62,14 @@ export function bayMaterial(): THREE.MeshStandardMaterial {
       .replace(
         "#include <color_vertex>",
         [
-          "vColor = vec4(1.0);",
-          "#ifdef USE_COLOR",
-          "vColor.rgb *= color.rgb;",
-          "#endif",
-          "#ifdef USE_INSTANCING_COLOR",
-          // the building's tint dyes brick only; stone and metal keep theirs
-          "vColor.rgb *= mix(vec3(1.0), instanceColor.xyz, aMat.y);",
-          "#endif",
+          "#include <color_vertex>",
+          // the chunk left vertex color x instance tint: the tint dyes brick
+          // only; stone and metal keep their own colors
+          "vColor.rgb = mix(color.rgb, vColor.rgb, aMat.y);",
         ].join("\n"),
       );
+    // InstancedMesh2 draws through USE_INSTANCING_INDIRECT: patch our chunks
+    shader.vertexShader = patchShader(shader.vertexShader);
     shader.fragmentShader = shader.fragmentShader
       .replace(
         "void main() {",
@@ -142,65 +140,59 @@ function prepared(node: THREE.Mesh): THREE.BufferGeometry {
   return g;
 }
 
-const m4 = new THREE.Matrix4();
-const q = new THREE.Quaternion();
-const p = new THREE.Vector3();
-const s = new THREE.Vector3();
 const tint = new THREE.Color();
 const up = new THREE.Vector3(0, 1, 0);
 
 /** Writes every bay into its kind's mesh. */
 function place(
-  meshes: Record<BayKind, THREE.InstancedMesh>,
+  meshes: Record<BayKind, InstancedMesh2>,
   bays: readonly BayInstance[],
 ) {
-  const counts = Object.fromEntries(BAY_KINDS.map((k) => [k, 0])) as Record<
-    BayKind,
-    number
-  >;
+  const byKind = new Map<BayKind, BayInstance[]>();
   for (const bay of bays) {
-    const mesh = meshes[bay.kind];
-    const i = counts[bay.kind];
-    if (i >= BAY_CAPACITY) continue;
-    q.setFromAxisAngle(up, bay.yaw);
-    m4.compose(p.set(bay.x, bay.y, bay.z), q, s.set(bay.sx, bay.sy, 1));
-    mesh.setMatrixAt(i, m4);
-    mesh.setColorAt(i, tint.set(bay.color));
-    counts[bay.kind] = i + 1;
+    const list = byKind.get(bay.kind) ?? [];
+    list.push(bay);
+    byKind.set(bay.kind, list);
   }
   for (const kind of BAY_KINDS) {
     const mesh = meshes[kind];
-    mesh.count = counts[kind];
-    mesh.instanceMatrix.needsUpdate = true;
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    const list = (byKind.get(kind) ?? []).slice(0, BAY_CAPACITY);
+    mesh.clearInstances();
+    mesh.addInstances(list.length, (obj, i) => {
+      const bay = list[i];
+      obj.position.set(bay.x, bay.y, bay.z);
+      obj.quaternion.setFromAxisAngle(up, bay.yaw);
+      obj.scale.set(bay.sx, bay.sy, 1);
+      obj.color = tint.set(bay.color);
+    });
   }
 }
 
 export function NycFacades(): JSX.Element {
   const gltf = useGLTF(URL);
   const meshes = useMemo(() => {
-    const out = {} as Record<BayKind, THREE.InstancedMesh>;
+    const out = {} as Record<BayKind, InstancedMesh2>;
     for (const kind of BAY_KINDS) {
       const node = gltf.scene.getObjectByName(kind);
       if (!(node instanceof THREE.Mesh))
         throw new Error(`bays.glb has no ${kind}`);
-      const mesh = new THREE.InstancedMesh(
-        prepared(node),
-        bayMaterial(),
-        BAY_CAPACITY,
-      );
-      mesh.count = 0;
-      mesh.frustumCulled = false;
-      // colors exist from the start so the shader keeps one program
-      mesh.setColorAt(0, tint.set("#ffffff"));
-      out[kind] = mesh;
+      // each bay is culled on its own against the camera, so the range can
+      // reach behind the player's back at no cost
+      out[kind] = new InstancedMesh2(prepared(node), bayMaterial(), {
+        capacity: BAY_CAPACITY,
+      });
     }
     return out;
   }, [gltf]);
   // the geometry copies and instance buffers go with the city; the one
   // shared material stays for the next visit
   useEffect(
-    () => () => disposeInstanced(Object.values(meshes), false),
+    () => () => {
+      for (const mesh of Object.values(meshes)) {
+        mesh.geometry.dispose();
+        mesh.dispose();
+      }
+    },
     [meshes],
   );
   const { bays } = cityBays.use();
