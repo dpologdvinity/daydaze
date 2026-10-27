@@ -6,6 +6,7 @@ import {
   dressBuilding,
   labelUv,
   LABELS,
+  FURNITURE,
   STREET_DRESS,
   type Buckets,
 } from "./dressing.ts";
@@ -80,7 +81,7 @@ test("parked cars stand in the road, at the kerbs", () => {
 test("street furniture stands on the pavement, clear of the asphalt", () => {
   const furniture: readonly Kind[] = ["furniture", "glass", "treeCanopy"];
   const items = STREET_DRESS.filter((p) => furniture.includes(p.kind));
-  assert.ok(items.length > 10, `${items.length} pieces of furniture`);
+  assert.ok(items.length > 5, `${items.length} pieces of furniture`);
   for (const p of items) {
     assert.ok(!inRoad(p.at[0], p.at[1]), `${p.kind} at ${p.at} is on the road`);
   }
@@ -141,4 +142,14 @@ test("the blade signs and ads are dressed on their own buildings", () => {
     const b = BUILDINGS.find((x) => x.id === id);
     assert.equal(dressed(id).label.length, (b?.sign ? 1 : 0) + 1, id);
   }
+});
+
+test("street furniture models stand on the pavement and face the street", () => {
+  assert.ok(FURNITURE.length > 100, `${FURNITURE.length} pieces`);
+  for (const f of FURNITURE) {
+    assert.ok(!inRoad(f.x, f.z), `${f.kind} at ${f.x},${f.z} is on the road`);
+  }
+  const kinds = new Set(FURNITURE.map((f) => f.kind));
+  for (const k of ["hydrant", "trashcan", "bench", "mailbox", "busstop"])
+    assert.ok(kinds.has(k as never), `no ${k}`);
 });

@@ -18,8 +18,6 @@ const NEON = ["#ff4fb3", "#4fe3ff", "#ffd84f", "#7dff6b", "#b06bff", "#ff8a3d"];
 const PRODUCT = ["#ffd84f", "#ff4fb3", "#f2eefc", "#4fe3ff", "#7dff6b"];
 const POSTER = ["#ff4fb3", "#4fe3ff", "#ffd84f", "#b06bff", "#f2eefc"];
 const GRAFFITI = ["#ff4fb3", "#4fe3ff", "#7dff6b", "#ffd84f"];
-const PLANTER = "#c0633f";
-const LEAF = ["#2fa36b", "#1f6b52", "#3dbf7a", "#25905c"];
 
 /** Rooftop kit, balconies, fire escapes and shopfront displays for one building. */
 export function detailBuilding(b: Building, f: Front, out: Buckets): void {
@@ -256,30 +254,6 @@ function put(
   color: string,
 ): void {
   out.push({ at: [x, z], kind, instance: { x, y, z, sx, sy, sz, color } });
-}
-
-/** A planter box with a clump of leaves, sitting on the pavement at (x, z). */
-export function planter(
-  out: Placed[],
-  x: number,
-  z: number,
-  seed: number,
-): void {
-  put(out, "furniture", x, 0.25, z, 1.6, 0.5, 1, PLANTER);
-  for (let k = 0; k < 4; k++) {
-    const r = hash(seed, k, 50);
-    put(
-      out,
-      "treeCanopy",
-      x + (k - 1.5) * 0.4,
-      0.7 + r * 0.15,
-      z + (hash(seed, k, 51) - 0.5) * 0.4,
-      0.5 + r * 0.3,
-      0.45 + r * 0.25,
-      0.5 + r * 0.3,
-      pick(LEAF, r),
-    );
-  }
 }
 
 /** Traffic lights on the avenue pavement, one each side of every cross street. */

@@ -150,3 +150,12 @@ export function parseTimeFlag(search: string): number | null {
   if (h > 23 || min > 59) return null;
   return h + min / 60;
 }
+
+/**
+ * The tint of flat-lit street paint (lane marks, seams, manholes): white by
+ * day so paint reads as paint, a dim violet at night so it does not glow
+ * against the dark asphalt. `neon` is Daylight.neon (0 day, 1 night).
+ */
+export function laneTint(neon: number): Rgb {
+  return mixRgb([1, 1, 1], [0.5, 0.45, 0.72], Math.min(1, Math.max(0, neon)));
+}

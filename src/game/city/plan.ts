@@ -17,8 +17,10 @@ import {
   facingOf,
   frontOf,
   signSpec,
+  FURNITURE,
   STREET_DRESS,
 } from "./dressing.ts";
+import { LAMP_RANGE, type FurnitureSpot } from "./furniture.ts";
 
 export const KINDS = [
   "road",
@@ -108,6 +110,8 @@ export type CityPlan = {
   /** The neon signs nearest the player, for the real point lights. */
   lights: Light[];
   trees: TreeSpot[];
+  /** Street furniture models (lamps, hydrants, benches, ...), drawn by CityFurniture. */
+  furniture: FurnitureSpot[];
 };
 
 /** Triangles per instance of each kind's unit geometry, upper bounds. */
@@ -197,8 +201,9 @@ const NEON_STYLES: ReadonlySet<BuildingStyle> = new Set([
   "billboard",
 ]);
 export const wearsNeon = (style: BuildingStyle) => NEON_STYLES.has(style);
-const FROND_COLORS = ["#1f7a4f", "#2fa36b", "#25905c", "#3dbf7a"];
-const DASH_COLOR = "#ffe6a8";
+// street paint as it is by day (faded yellow and white); lane paint is flat-lit,
+// so laneTint (daylight.ts) tints it down to a violet dusk at night
+const DASH_COLOR = "#e6bf4a";
 const SURFACE_COLOR = {
   // real asphalt and concrete: the night's color comes from the lights
   road: "#4a4a52",
@@ -355,10 +360,10 @@ const SIDEWALK_BOXES: readonly Box[] = CITY_SURFACES.filter(
 const PAVED_BOXES: readonly Box[] = CITY_SURFACES.filter(
   (s) => s.kind !== "road" && s.kind !== "sand" && s.kind !== "lawn",
 ).map((s) => boundsOf(s.polygon));
-const CURB_COLOR = "#8c80c0";
-const SEAM_COLOR = "#3d2f6e";
-const ZEBRA_COLOR = "#e8e6f5";
-const MANHOLE_COLOR = "#1a1230";
+const CURB_COLOR = "#aaa59c";
+const SEAM_COLOR = "#85807a";
+const ZEBRA_COLOR = "#ebe8df";
+const MANHOLE_COLOR = "#2a2a2f";
 const CURB_EPS = 1e-6;
 
 /** The shared edge of two boxes that touch along a line, or null. */
@@ -672,55 +677,39 @@ function propInstances(
   z: number,
   propKind: PropKind,
   out: Record<Kind, Instance[]>,
+  spots: FurnitureSpot[],
+  from: Vec2,
 ): void {
   if (propKind === "lamp") {
-    out.pole.push({ x, y: 3, z, sx: 0.14, sy: 6, sz: 0.14, color: "#2a2440" });
+    spots.push({ kind: "lamp", x, z, yaw: 0, scale: 1 });
+    // the post is a model (CityFurniture); this is the bulb glowing in its
+    // glass, and it goes with the model (a bulb alone reads as a floating dot)
+    if (Math.hypot(x - from[0], z - from[1]) > LAMP_RANGE) return;
     out.lamp.push({
       x,
-      y: 6.2,
+      y: 5.05,
       z,
-      sx: 0.6,
-      sy: 0.5,
-      sz: 0.6,
+      sx: 0.28,
+      sy: 0.34,
+      sz: 0.28,
       color: "#ffd08a",
     });
   } else if (propKind === "palm") {
-    out.palmTrunk.push({ x, y: 3.5, z, sx: 0.3, sy: 7, sz: 0.3 });
-    // nine fronds of three lengths, each drooping a little more than the last
-    for (let k = 0; k < 9; k++) {
-      const a = (k * Math.PI * 2) / 9 + (k % 2) * 0.12;
-      const len = 2.8 + (k % 3) * 0.5;
-      const droop = 0.3 + (k % 4) * 0.14;
-      const reach = len / 2 + 0.3;
-      out.palmFrond.push({
-        x: x + Math.cos(a) * reach,
-        y: 6.8 - droop * reach * 0.5,
-        z: z + Math.sin(a) * reach,
-        sx: 1.6,
-        sy: len,
-        sz: 1,
-        rot: [0, -a, -Math.PI / 2 - droop],
-        color: FROND_COLORS[k % FROND_COLORS.length],
-      });
-    }
-    // coconuts tucked under the crown
-    for (const [dx, dz] of [
-      [0.3, 0.2],
-      [-0.25, 0.3],
-      [0.1, -0.3],
-    ]) {
-      out.treeCanopy.push({
-        x: x + dx,
-        y: 6.3,
-        z: z + dz,
-        sx: 0.4,
-        sy: 0.4,
-        sz: 0.4,
-        color: "#5a3a1f",
-      });
-    }
+    // the palm is a model (CityFurniture)
+    spots.push({
+      kind: "palm",
+      x,
+      z,
+      yaw: yawAt(x, z),
+      scale: 0.9 + 0.2 * fract(x * 0.37 + z * 0.61),
+    });
   }
 }
+
+const fract = (v: number) => v - Math.floor(v);
+/** A fixed turn for the prop at (x, z), so the same palm faces the same way every visit. */
+const yawAt = (x: number, z: number) =>
+  fract(Math.sin(x * 12.9898 + z * 78.233) * 43758.5453) * Math.PI * 2;
 
 /** A street tree at (x, z): a model, size and turn picked from its spot. */
 function treeAt(x: number, z: number): TreeSpot {
@@ -782,11 +771,14 @@ export function planCity(
   }
 
   const trees: TreeSpot[] = [];
+  const furniture: FurnitureSpot[] = [];
+  for (const f of FURNITURE)
+    if (loaded.has(cellAt([f.x, f.z]).key)) furniture.push(f);
   for (const prop of PROPS) {
     const [x, z] = prop.position;
     if (cells.some((c) => cellAt([x, z]).key === c.key)) {
       if (prop.kind === "tree") trees.push(treeAt(x, z));
-      else propInstances(x, z, prop.kind, instances);
+      else propInstances(x, z, prop.kind, instances, furniture, from);
     }
   }
 
@@ -800,6 +792,7 @@ export function planCity(
     instances,
     lights: lights.slice(0, Math.max(0, lightCount)),
     trees,
+    furniture,
   };
 }
 

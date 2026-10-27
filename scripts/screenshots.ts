@@ -4,6 +4,15 @@
 import { chromium, expect, type Page } from "@playwright/test";
 
 const BASE = process.env.BASE_URL ?? "http://localhost:5195";
+/** Waits for the street furniture models (CityFurniture sets data-furniture). */
+const furnitureReady = async (page: Page) => {
+  await page.waitForFunction(
+    () => document.querySelector("canvas")?.dataset.furniture === "ready",
+    null,
+    { timeout: 300_000 },
+  );
+};
+
 const SHOTS: {
   name: string;
   query: string;
@@ -150,12 +159,32 @@ const SHOTS: {
   { name: "aquarium", query: "room=aquarium" },
   { name: "ice-rink", query: "room=ice-rink" },
   { name: "haunted-house", query: "room=haunted-house" },
-  { name: "city-street", query: "room=city&view=full" },
+  { name: "city-street", query: "room=city&view=full", act: furnitureReady },
   { name: "city-overview", query: "room=city" },
   // the city by day and at sunset (daylight.ts), pinned with ?time=
-  { name: "city-day", query: "room=city&view=full&time=12:00" },
+  {
+    name: "city-day",
+    query: "room=city&view=full&time=12:00",
+    act: furnitureReady,
+  },
   { name: "city-day-overview", query: "room=city&time=12:00" },
   { name: "city-sunset", query: "room=city&view=full&time=19:30" },
+  {
+    name: "city-night",
+    query: "room=city&view=full&time=23:00",
+    act: furnitureReady,
+  },
+  // the avenue sidewalk with its street furniture (src/client/city/CityFurniture.tsx)
+  {
+    name: "city-sidewalk",
+    query: "room=city&view=full&time=12:00&at=-36,9.5",
+    act: furnitureReady,
+  },
+  {
+    name: "city-sidewalk-night",
+    query: "room=city&view=full&time=23:00&at=-36,9.5",
+    act: furnitureReady,
+  },
   {
     // the game menu open over the city: everything not needed this moment
     name: "city-menu",

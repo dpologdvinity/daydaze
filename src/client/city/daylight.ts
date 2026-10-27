@@ -21,6 +21,7 @@ export const SKY_UNIFORMS = {
   uZenith: { value: new THREE.Color() },
   uHorizon: { value: new THREE.Color() },
   uGlow: { value: new THREE.Color() },
+  uNeon: { value: 1 },
 };
 
 /** The light now, refreshed every 30 s (a pinned hour never changes). */
@@ -37,6 +38,7 @@ export function useDaylight(): Daylight {
     SKY_UNIFORMS.uZenith.value.setRGB(...light.zenith);
     SKY_UNIFORMS.uHorizon.value.setRGB(...light.horizon);
     SKY_UNIFORMS.uGlow.value.setRGB(...light.glow);
+    SKY_UNIFORMS.uNeon.value = light.neon;
   }, [light]);
   return light;
 }

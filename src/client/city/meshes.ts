@@ -10,6 +10,7 @@ import {
 } from "../../game/city/plan.ts";
 import { facadeMaterials } from "./facades.ts";
 import { animate } from "./shaders.ts";
+import { laneTint } from "../../game/city/daylight.ts";
 
 // Kinds that glow: their colors run past 1.0 so bloom picks them up on high.
 const GLOW: ReadonlySet<Kind> = new Set<Kind>([
@@ -448,6 +449,10 @@ const NIGHT_GLOW: readonly Kind[] = [
  * the sky instead of lamps, and the walls' and ground's night glow fades.
  */
 export function dimForDay(meshes: KindMeshes, night: number): void {
+  // street paint is flat-lit: white by day, dusky violet at night
+  const lane = meshes.lane.material;
+  if (lane instanceof THREE.MeshBasicMaterial)
+    lane.color.setRGB(...laneTint(night));
   for (const kind of NIGHT_LIT) {
     const m = meshes[kind].material;
     if (m instanceof THREE.MeshBasicMaterial)

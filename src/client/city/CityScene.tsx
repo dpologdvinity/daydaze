@@ -40,6 +40,7 @@ import {
   writeKind,
 } from "./meshes.ts";
 import { useDaylight } from "./daylight.ts";
+import { CityFurniture, cityFurniture } from "./CityFurniture.tsx";
 import { CityTrees, cityTrees } from "./CityTrees.tsx";
 import { CITY_CLOCK } from "./shaders.ts";
 import { Traffic } from "./Traffic.tsx";
@@ -137,6 +138,7 @@ export function CityScene({
       for (const kind of KINDS)
         writeKind(meshes[kind], kind, plan.instances[kind]);
       cityTrees.set({ spots: plan.trees, at });
+      cityFurniture.set({ spots: plan.furniture, at });
       lights.current.forEach((light, i) => {
         if (!light) return;
         const sign = plan.lights[i];
@@ -221,6 +223,7 @@ export function CityScene({
       <Pedestrians player={player} />
       <Suspense fallback={null}>
         <CityTrees />
+        <CityFurniture />
       </Suspense>
       <NightMarket player={player} />
     </>
