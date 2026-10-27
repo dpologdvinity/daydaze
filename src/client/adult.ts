@@ -1,3 +1,4 @@
+import { contentTier, setActiveTier } from "../game/age.ts";
 import { readFlags } from "./flags.ts";
 
 /**
@@ -7,6 +8,9 @@ import { readFlags } from "./flags.ts";
  */
 export const ADULT_OK: boolean =
   import.meta.env.DEV && readFlags(location.search).adult;
+
+// Sets the game-wide tier; main.tsx imports this module first.
+setActiveTier(contentTier(ADULT_OK));
 
 export const ADULT_NOTICE =
   "That's an 18+ venue. It opens once age checks are live.";
