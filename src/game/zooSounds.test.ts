@@ -19,7 +19,14 @@ test("only animals with a recorded call speak, and only when near", () => {
   const call = pickCall([0, 0], near, 0.5);
   assert.equal(call?.id, "lion");
   assert.ok((call?.gain ?? 0) > 0.5);
-  assert.equal(pickCall([0, 0], [{ kind: "zebra", at: [1, 0] }], 0.5), null);
+  assert.equal(pickCall([0, 0], [{ kind: "giraffe", at: [1, 0] }], 0.5), null);
+  for (const [kind, id] of [
+    ["zebra", "zebra"],
+    ["penguin", "penguin"],
+    ["cow", "cow"],
+    ["donkey", "donkey"],
+  ] as const)
+    assert.equal(pickCall([0, 0], [{ kind, at: [2, 0] }], 0.5)?.id, id);
   assert.equal(pickCall([0, 0], [{ kind: "lion", at: [40, 0] }], 0.5), null);
   assert.equal(pickCall([0, 0], [], 0.5), null);
   assert.equal(

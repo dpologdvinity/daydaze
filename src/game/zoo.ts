@@ -52,6 +52,24 @@ export const FARM_ANIMALS: readonly {
   { kind: "cow", inset: 0, speed: 0.4, phase: 1.3, dir: -1 },
 ];
 
+/** The farm animals that call (the cow and the donkey) at `t` seconds, near
+ * where they wander; the calls are distant, so the loop's phase is enough. */
+export function farmVoicesAt(
+  t: number,
+): { kind: "cow" | "donkey"; at: Vec2 }[] {
+  return FARM_ANIMALS.flatMap((a) => {
+    if (a.kind === "alpaca") return [];
+    const h = HABITATS.farm;
+    const pen = {
+      x0: h.x0 + a.inset,
+      z0: h.z0 + a.inset,
+      x1: h.x1 - a.inset,
+      z1: h.z1 - a.inset,
+    };
+    return [{ kind: a.kind, at: loopAt(pen, t, a.speed, a.phase).at }];
+  });
+}
+
 /** Where an animal walking a loop round its habitat is at `t` seconds: an
  * ellipse inset from the fence, and the way it faces (yaw, walk.ts). */
 export function loopAt(

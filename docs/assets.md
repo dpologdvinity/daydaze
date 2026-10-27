@@ -201,3 +201,20 @@ Only the clips listed in `mocap.py`'s `CLIPS` ship, retargeted onto our own skel
 | Title | Author | License | URL | Used for |
 | --- | --- | --- | --- | --- |
 | ElevenLabs-generated sounds | ElevenLabs | Per ElevenLabs terms for paid plans | https://elevenlabs.io/terms-of-use | Generated for Daydaze: ambience, sound effects and two music beds. |
+| Concrete Footstep 2 | matth3wc04 | CC0 1.0 | https://freesound.org/people/matth3wc04/sounds/690006/ | Pavement footstep. |
+| WoodType_1_Footstep_MensDressShoe | monte32 | CC0 1.0 | https://freesound.org/people/monte32/sounds/405115/ | Boardwalk plank footstep (one step cut from it). |
+| Steps_Fine_Snow_Or_Sand_Strong_29 | BlondPanda | CC0 1.0 | https://freesound.org/people/BlondPanda/sounds/778568/ | Sand footstep. |
+| Vehicle_Car_Peugeot_308_Idle_Exterior_Loop_Mono_01 | Nox_Sound | CC0 1.0 | https://freesound.org/people/Nox_Sound/sounds/522218/ | Your car's engine loop. |
+| truck driving sound | joni_ompong | CC0 1.0 | https://freesound.org/people/joni_ompong/sounds/785698/ | Tire hum while driving (low-passed). |
+| school bus truck ext idle engine close shut off | kyles | CC0 1.0 | https://freesound.org/people/kyles/sounds/451666/ | City bus engine loop while riding. |
+| bus_door_opening | 13FPanska_Sychra_Petr | CC0 1.0 | https://freesound.org/people/13FPanska_Sychra_Petr/sounds/379372/ | City bus doors. |
+| R01-23-Beach Scene | craigsmith | CC0 1.0 | https://freesound.org/people/craigsmith/sounds/479528/ | Boardwalk crowd and gulls. |
+| Zebras - Grant's Zebra Braying | TheKingOfGeeks360 | CC0 1.0 | https://freesound.org/people/TheKingOfGeeks360/sounds/850661/ | Zoo: zebra call. |
+| Bovines - Cattle; Cow Mooing, Take 3 | TheKingOfGeeks360 | CC0 1.0 | https://freesound.org/people/TheKingOfGeeks360/sounds/847404/ | Zoo farm: cow call. |
+| Donkeys - Donkey Bray, Close Perspective | TheKingOfGeeks360 | CC0 1.0 | https://freesound.org/people/TheKingOfGeeks360/sounds/787564/ | Zoo farm: donkey call. |
+| Penguin Calls & Noises | iamaviolin | CC BY 4.0 | https://freesound.org/people/iamaviolin/sounds/463033/ | Zoo: penguin call (trimmed). |
+| Watersplash | Sheyvan | CC0 1.0 | https://freesound.org/people/Sheyvan/sounds/469608/ | Splashes in the water park, dives and volleyball. |
+| Ambience, designed, deep, muffled, wavy, underwater | Oldome | CC0 1.0 | https://freesound.org/people/Oldome/sounds/862788/ | Underwater loop while diving. |
+| Ambiance_Fountain_Small_Loop_Stereo | Nox_Sound | CC0 1.0 | https://freesound.org/people/Nox_Sound/sounds/676173/ | Fountain and park water loop. |
+
+The Freesound recordings are fetched with `scripts/freesound.mjs` and cut into `public/audio/` by `scripts/build-recordings.sh`.

@@ -1,7 +1,7 @@
 // Ambience follows the active room, district, and the city's own daylight.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { ambienceFor, filesCover } from "./ambience.ts";
+import { ambienceFor, filesCover, soundsFor } from "./ambience.ts";
 
 test("city ambience follows daylight and beachside", () => {
   assert.deepEqual(ambienceFor("city", "downtown", 12), {
@@ -18,6 +18,7 @@ test("city ambience follows daylight and beachside", () => {
   assert.deepEqual(ambienceFor("city", "beachside", 12), {
     beach: 0.3,
     "music-boardwalk": 0.2,
+    boardwalk: 0.22,
   });
 });
 test("rooms select only their own ambience", () => {
@@ -62,4 +63,19 @@ test("the synthesized bed stays on unless a sound file that plays covers the pla
     filesCover({ "city-day": 0.1, "city-night": 0.2 }, new Set(["city-day"])),
     true,
   );
+});
+
+test("the boardwalk gets its crowd and gulls, a dive only the underwater loop", () => {
+  assert.equal(ambienceFor("city", "beachside", 12).boardwalk, 0.22);
+  assert.equal(ambienceFor("city", "downtown", 12).boardwalk, undefined);
+  assert.deepEqual(ambienceFor("water-park", "downtown", 12, false, true), {
+    underwater: 0.4,
+  });
+});
+
+test("rooms preload only the one-shots they use", () => {
+  assert.deepEqual(soundsFor("apartment"), []);
+  assert.ok(soundsFor("city").includes("step-wood"));
+  assert.ok(soundsFor("zoo").includes("penguin"));
+  assert.deepEqual(soundsFor("water-park"), ["splash"]);
 });

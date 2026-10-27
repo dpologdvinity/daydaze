@@ -51,7 +51,10 @@ import { driving } from "./driving.ts";
 import { ignoresKeys } from "./keyTargets.ts";
 import { playGlide, playStep } from "../../audio/worldSounds.ts";
 import { SKATE_SPEED, skates } from "./skates.ts";
-import { BOARDWALK, CITY_AREA, PARK, WATER_Z } from "../../game/city/layout.ts";
+import { CITY_AREA } from "../../game/city/layout.ts";
+import { groundAt, type Ground } from "../../game/city/ground.ts";
+import { playStepFile } from "../../audio/soundFiles.ts";
+import { submergedView } from "./submerged.ts";
 import { stick } from "./joystick.ts";
 
 /** Frame time the simulation may catch up on; longer gaps (a hidden tab) are dropped. */
@@ -168,10 +171,11 @@ const GLIDE_METRES = 2.2;
 /** Where a flip pivots: about her hips. */
 const HIP = 0.95;
 
-/** In the city, sand and the park lawn take a softer step than pavement. */
-function softGround(x: number, z: number): boolean {
-  if (z > BOARDWALK.z1 && z < WATER_Z) return true;
-  return x >= PARK.x0 && x <= PARK.x1 && z >= PARK.z0 && z <= PARK.z1;
+/** One footstep: the recording for pavement, planks or sand once it has
+ * loaded; otherwise the synthesized step (softer on sand and lawn). */
+function stepOn(ground: Ground | "floor"): void {
+  if (playStepFile(ground)) return;
+  playStep(ground === "sand" || ground === "grass" ? "soft" : "hard");
 }
 
 /** How the sea holds her at a point: dry, wading or afloat (always, diving). */
@@ -304,6 +308,8 @@ export function PlayerController({
   useEffect(() => () => void (afloat.on = false), []);
   const lastPos = useRef(new THREE.Vector3().copy(player.pos));
 
+  // leaving the room mid-dive must not leave the next one underwater
+  useEffect(() => () => submergedView.set({ on: false }), []);
   useFrame((state, dt) => {
     playerSpot.x = player.pos.x;
     playerSpot.z = player.pos.z;
@@ -386,6 +392,9 @@ export function PlayerController({
       const [x, z] = player.walk.pos;
       // in the sea she wades, or floats at the surface, or hangs in the deep
       const wet = stateIn(water, player.walk.pos);
+      // diving puts the sound under water; the store only notifies on a change
+      const under = !!water?.dive;
+      if (submergedView.get().on !== under) submergedView.set({ on: under });
       const rise = seaLevel(water, wet, player.walk.pos, moving || !!intent);
       swimY.current = calm
         ? rise
@@ -408,10 +417,8 @@ export function PlayerController({
         stepDist.current = 0;
         if (skating) playGlide();
         else
-          playStep(
-            area === CITY_AREA && softGround(player.pos.x, player.pos.z)
-              ? "soft"
-              : "hard",
+          stepOn(
+            area === CITY_AREA ? groundAt(player.pos.x, player.pos.z) : "floor",
           );
       }
     }
