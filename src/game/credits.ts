@@ -164,6 +164,22 @@ export const CREDITS: readonly {
         usedFor: "Line 1 bus stops, rescaled with simplified distance models.",
       },
       {
+        title: "Sci-Fi Essentials Kit",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://quaternius.com/packs/scifiessentialskit.html",
+        usedFor:
+          "Photon Zone cover and lockers in Photon Zone and Player 2, fitted to the existing arena footprints.",
+      },
+      {
+        title: "Arcade Machine",
+        author: "J-Toastie",
+        license: "CC-BY 3.0",
+        url: "https://poly.pizza/m/GLDkMhiynM",
+        usedFor:
+          "Player 2 cabinet bodies, with the original screen removed and materials baked to vertex colors.",
+      },
+      {
         title: "MakeHuman",
         author: "MakeHuman Community",
         license: "CC0 1.0",

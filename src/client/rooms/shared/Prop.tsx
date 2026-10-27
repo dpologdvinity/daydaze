@@ -2,6 +2,7 @@ import { useGLTF } from "@react-three/drei";
 import type { ThreeElements } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
+import { floated } from "../../city/floated.ts";
 
 // Generated props (Meshy) live in public/models/props/<model>.glb, one mesh
 // each. Wrap users in Suspense, with the old placeholder as the fallback.
@@ -20,7 +21,7 @@ function useFitted(model: string, { width, depth, height }: Fit) {
     });
     const mesh = meshes[0];
     if (!mesh) throw new Error(`${model}.glb has no mesh`);
-    const g = mesh.geometry.clone().applyMatrix4(mesh.matrixWorld);
+    const g = floated(mesh.geometry).applyMatrix4(mesh.matrixWorld);
     g.computeBoundingBox();
     const box = g.boundingBox ?? new THREE.Box3();
     const size = box.getSize(new THREE.Vector3());
