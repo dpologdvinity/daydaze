@@ -125,6 +125,9 @@ const WineBar = lazy(() =>
 const DriveIn = lazy(() =>
   import("../rooms/DriveIn.tsx").then((m) => ({ default: m.DriveIn })),
 );
+const Farm = lazy(() =>
+  import("../rooms/Farm.tsx").then((m) => ({ default: m.Farm })),
+);
 const BoardwalkArcade = lazy(() =>
   import("../rooms/BoardwalkArcade.tsx").then((m) => ({
     default: m.BoardwalkArcade,
@@ -466,6 +469,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   "drive-in": DriveIn,
   "wine-bar": WineBar,
   "video-store": VideoStore,
+  farm: Farm,
   "halo-halo-cafe": HaloHaloCafe,
   "ramen-shop": RamenShop,
   "sushi-bar": SushiBar,
