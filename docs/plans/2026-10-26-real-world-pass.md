@@ -97,8 +97,8 @@ menu; the asset list with sources and licenses kept in `docs/assets.md`.
   Quaternius free bodies are superhero-proportioned; MPFB2 rig keeps our
   closet). Merge it after verify + doll browser tests.
 - The Quaternius Downtown City MegaKit (Standard, CC0) is downloaded:
-  `C:\Users\mango\Downloads\Downtown City MegaKit[Standard].zip` (WSL
-  `/mnt/c/Users/mango/Downloads/`), unpacked to `/tmp/daydaze-city/megakit/`
+  `the owner's Windows Downloads folder\Downtown City MegaKit[Standard].zip` (WSL
+  `/mnt/c/Users/<owner>/Downloads/`), unpacked to `/tmp/daydaze-city/megakit/`
   (re-unzip if /tmp was cleared): 153 glTF pieces in `Exports/glTF (Godot)`
   (89 MB) plus shared `Textures/` (142 MB) — brick and stone facade modules,
   columns, cornices, windows, doors, storefronts, roads, sidewalks and three
@@ -109,7 +109,7 @@ menu; the asset list with sources and licenses kept in `docs/assets.md`.
   unpacked to `/tmp/daydaze-city/Stylized_Nature_MegaKit_Standard__zip/`) and
   `Universal Animation Library[Standard].zip` (unpacked to
   `/tmp/daydaze-city/Universal_Animation_Library_Standard__zi/`), both in
-  `C:\Users\mango\Downloads`.
+  `the owner's Windows Downloads folder`.
 - Next: remaining purple night palette by day (parking lines, lane strips,
   the far skyline backdrop); street trees and lawns (EZ-Tree / Quaternius
   nature, InstancedMesh2, impostors far off); the park; the boardwalk
@@ -123,7 +123,7 @@ menu; the asset list with sources and licenses kept in `docs/assets.md`.
 
 ## Asset map (owner's downloads, all CC0 Quaternius unless noted)
 
-Zips live in `C:\Users\mango\Downloads` (`/mnt/c/Users/mango/Downloads`),
+Zips live in `the owner's Windows Downloads folder` (`/mnt/c/Users/<owner>/Downloads`),
 unpacked under `/tmp/daydaze-city/` (`megakit/`, `q/<pack>/`, `kenney/`;
 re-unzip if /tmp was cleared). Older packs are FBX only: convert with Blender
 (`blender --background --python` import FBX → export glTF), then
