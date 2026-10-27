@@ -12,6 +12,15 @@ const furnitureReady = async (page: Page) => {
     { timeout: 300_000 },
   );
 };
+/** Waits for the New York bays and the furniture (NycFacades sets data-bays). */
+const cityReady = async (page: Page) => {
+  await furnitureReady(page);
+  await page.waitForFunction(
+    () => document.querySelector("canvas")?.dataset.bays === "ready",
+    null,
+    { timeout: 300_000 },
+  );
+};
 /** A shot with a saved pet: seeds the save, reloads and waits for the pet. */
 function petShot(
   name: string,
@@ -232,15 +241,19 @@ const SHOTS: {
   // your adopted pet beside you in the city, and asleep in its bed at home
   petShot("pet-city", "room=city&view=full&time=12:00", "husky", "Biscuit"),
   petShot("pet-home", "room=apartment", "shibainu", "Kiko"),
-  { name: "city-street", query: "room=city&view=full", act: furnitureReady },
+  { name: "city-street", query: "room=city&view=full", act: cityReady },
   { name: "city-overview", query: "room=city" },
   // the city by day and at sunset (daylight.ts), pinned with ?time=
   {
     name: "city-day",
     query: "room=city&view=full&time=12:00",
-    act: furnitureReady,
+    act: cityReady,
   },
-  { name: "city-day-overview", query: "room=city&time=12:00" },
+  {
+    name: "city-day-overview",
+    query: "room=city&time=12:00",
+    act: cityReady,
+  },
   // the New York blocks from the street (src/game/city/nyc.ts), by day and at night
   ...[
     ["nyc-street", "12:00", "-30,-6", 0],
@@ -252,6 +265,7 @@ const SHOTS: {
     live: true,
     act: async (page: Page) => {
       await page.locator("canvas").waitFor();
+      await cityReady(page);
       await page.waitForFunction(
         () => document.querySelector("canvas")?.dataset.frames === "10",
         null,

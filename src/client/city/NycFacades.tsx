@@ -199,11 +199,14 @@ export function NycFacades(): JSX.Element {
   }, [gltf]);
   const { bays } = cityBays.use();
   const invalidate = useThree((state) => state.invalidate);
+  const canvas = useThree((state) => state.gl.domElement);
   useEffect(() => {
     place(meshes, bays);
     // a still or paused frame loop draws only when asked
     invalidate();
-  }, [meshes, bays, invalidate]);
+    // read by the screenshot script: the bays are in and placed
+    if (bays.length > 0) canvas.dataset.bays = "ready";
+  }, [meshes, bays, invalidate, canvas]);
   return (
     <>
       {BAY_KINDS.map((kind) => (
