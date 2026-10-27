@@ -1,6 +1,6 @@
 # Daydaze: Vision and Decisions
 
-Daydaze is a multiplayer social hangout game that brings back the feeling of Club Penguin and Fantage for the people who grew up playing them, now in their late teens and early twenties. It is not a kids' game.
+Daydaze is a multiplayer social hangout game that brings back the feeling of Club Penguin and Fantage for the people who grew up playing them, now in their late teens and early twenties. The game is rated for 13 and older, with separate 18+ servers for adult content.
 
 The name is a mix of daydream, a buzzed daze, and "the good old days".
 
@@ -10,8 +10,8 @@ GTA meets IMVU meets Fantage: an open city you drive, explore and get into troub
 
 ## Who it is for
 
-- Players who grew up on Club Penguin and Fantage, now 16 and older.
-- Not intended for children.
+- Players who grew up on Club Penguin and Fantage, now in their late teens and twenties; open to everyone 13 and older.
+- Not for children under 13 (no accounts under 13, so no COPPA data from children).
 
 ## What it feels like
 
@@ -25,10 +25,13 @@ GTA meets IMVU meets Fantage: an open city you drive, explore and get into troub
 
 ## Age tiers
 
-- Main world: 16+. Bars, clubs and nightlife with drinks are part of the main world.
-- 18+ area: strip club and weed lounge. Suggestive, no nudity.
-- Age confirmation is deferred. When it ships: birthdate entered at signup and locked, under 16 cannot create an account, the 18+ area unlocks automatically on the player's 18th birthday, and the birthdate is stored only on the server.
-- Rule: 18+ venues must not go live to real players before the age gate ships.
+Decided 2026-10-26 (replaces the 16+ main world of 2026-10-14):
+
+- 13+ servers (the default): the whole city and its games, dress-up, pets, sports, nightlife venues as dance clubs. Bars serve mocktails and sodas; no alcohol, no drunk effects, no weed, shrooms or 18+ venues. Teen safety applies: chat filter, block, mute and report, moderation.
+- 18+ servers: the same city plus alcohol with drunk effects, Green Haze (weed and shrooms), the strip club and the other 18+ venues. Suggestive, no nudity. Only age-checked players 18 and older can join; under-18s can never join an 18+ server, so teens never share chat or rooms with 18+ content.
+- Age confirmation is deferred. When it ships: birthdate entered at signup and locked, stored only on the server; under 13 cannot create an account; 18+ servers unlock on the player's 18th birthday.
+- Rule: no 18+ content (alcohol, drugs, 18+ venues) reaches real players before the age check and 18+ servers ship; until then it stays behind the development flag.
+- Drinks, venues and brands in the game are made up; no real alcohol or tobacco brands.
 
 ## Platform
 
