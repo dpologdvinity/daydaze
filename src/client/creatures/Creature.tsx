@@ -77,11 +77,25 @@ export function Creature({
       // skinned bounds come from the bind pose; the walk leaves them
       o.frustumCulled = false;
     });
-    const { k, shift } = fit(root, LENGTH[kind]);
     const mixer = new THREE.AnimationMixer(root);
     const actions = new Map<string, THREE.AnimationAction>();
     for (const clip of gltf.animations)
       actions.set(clip.name, mixer.clipAction(clip));
+    // measure the model standing in its idle pose, not the bind pose (the
+    // bind pose can hold legs spread or raised, which floats the feet)
+    const idle = actions.get("idle");
+    if (idle) {
+      idle.play();
+      mixer.update(0);
+      root.traverse((o) => {
+        if (o instanceof THREE.SkinnedMesh) {
+          o.skeleton.update();
+          o.computeBoundingBox();
+        }
+      });
+    }
+    const { k, shift } = fit(root, LENGTH[kind]);
+    mixer.stopAllAction();
     return { root, k, shift, mixer, actions };
   }, [gltf, kind]);
   useEffect(() => () => void rig.mixer.stopAllAction(), [rig]);
