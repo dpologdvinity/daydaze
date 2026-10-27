@@ -27,6 +27,7 @@ import {
 import * as MARINA from "../marina.ts";
 import * as COURTSIDE from "../courtside.ts";
 import * as COVE from "../mermaidCove.ts";
+import * as OPEN_WATER from "../openWater.ts";
 import * as MUSEUM from "../museum.ts";
 import * as SALON from "../salon.ts";
 import { PHOTON_DOOR, SPAWN as PHOTON_SPAWN } from "../laserTag.ts";
@@ -890,7 +891,22 @@ const BEACH_FRONT: readonly {
       targetSpawn: { position: SKEE.SPAWN, yaw: Math.PI },
     },
   },
-  { x: 124, w: 18, h: 9, color: "#fff3c9" },
+  {
+    // Seaside Swim's gate: wade in, swim out, and dive at the buoy
+    x: OPEN_WATER.WATER_DOOR.position[0],
+    w: 18,
+    h: 9,
+    color: "#fff3c9",
+    sign: { text: "SEASIDE SWIM", color: "#3fd6ff" },
+    style: "gate",
+    door: {
+      position: OPEN_WATER.WATER_DOOR.position,
+      radius: 1.5,
+      label: "Into Seaside Swim",
+      target: "open-water",
+      targetSpawn: { position: OPEN_WATER.SPAWN, yaw: Math.PI },
+    },
+  },
   {
     x: 148,
     w: 18,

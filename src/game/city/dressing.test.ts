@@ -111,6 +111,7 @@ test("each gate raises two tall arches either side of its door", () => {
     "marina",
     "mermaid-cove",
     "mini-golf",
+    "open-water",
     "skatepark",
     "speedway",
     "stadium",
