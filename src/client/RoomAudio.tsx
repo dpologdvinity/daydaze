@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { eventTrack } from "../game/events.ts";
 import { nightClock } from "./city/eventClocks.ts";
 import { getSharedAudioBus } from "../audio/audioBus.ts";
@@ -12,8 +12,15 @@ import {
   unlockAudio,
   type Ambience,
 } from "../audio/worldSounds.ts";
-import { ambienceFor, filesCover, type AmbienceId } from "../audio/ambience.ts";
-import { setFileAmbience } from "../audio/soundFiles.ts";
+import {
+  AMBIENCE_IDS,
+  ambienceFor,
+  filesCover,
+  soundsFor,
+  type AmbienceId,
+} from "../audio/ambience.ts";
+import { submergedView } from "./world/submerged.ts";
+import { preloadSounds, setFileAmbience } from "../audio/soundFiles.ts";
 import { cityHour } from "./city/daylight.ts";
 import type { RoomId } from "../game/rooms.ts";
 import { useInPark, useNeighborhood } from "./city/here.ts";
@@ -169,7 +176,8 @@ export function RoomAudio({ room, muted }: { room: RoomId; muted: boolean }) {
     return () => window.clearInterval(id);
   }, [room]);
 
-  const fileLevels = ambienceFor(room, neighborhood, hour, inPark);
+  const submerged = submergedView.use().on;
+  const fileLevels = ambienceFor(room, neighborhood, hour, inPark, submerged);
   const hasBed = !!(
     fileLevels["music-boardwalk"] || fileLevels["music-lounge"]
   );
@@ -186,14 +194,16 @@ export function RoomAudio({ room, muted }: { room: RoomId; muted: boolean }) {
     } else jukebox.stopTrack();
   }, [room, unlocked, pick, nightTrack, hasBed]);
 
-  const fileDay = fileLevels["city-day"] ?? 0;
-  const fileNight = fileLevels["city-night"] ?? 0;
-  const fileBeach = fileLevels.beach ?? 0;
-  const filePark = fileLevels.park ?? 0;
-  const fileStadium = fileLevels.stadium ?? 0;
-  const fileFountain = fileLevels.fountain ?? 0;
-  const fileBoardwalk = fileLevels["music-boardwalk"] ?? 0;
-  const fileLounge = fileLevels["music-lounge"] ?? 0;
+  // the effect re-runs only when a level really changes
+  const levelsKey = AMBIENCE_IDS.map((id) =>
+    (fileLevels[id] ?? 0).toFixed(3),
+  ).join();
+  const levelsRef = useRef(fileLevels);
+  const keyRef = useRef(levelsKey);
+  if (keyRef.current !== levelsKey) {
+    keyRef.current = levelsKey;
+    levelsRef.current = fileLevels;
+  }
   // files that would not play here: their places keep the synthesized bed
   const [failed, setFailed] = useState<ReadonlySet<AmbienceId>>(
     () => new Set(),
@@ -201,33 +211,18 @@ export function RoomAudio({ room, muted }: { room: RoomId; muted: boolean }) {
   useEffect(() => {
     if (!unlocked) return;
     let live = true;
-    void setFileAmbience({
-      "city-day": fileDay,
-      "city-night": fileNight,
-      beach: fileBeach,
-      park: filePark,
-      stadium: fileStadium,
-      fountain: fileFountain,
-      "music-boardwalk": fileBoardwalk,
-      "music-lounge": fileLounge,
-    }).then((gone) => {
+    void setFileAmbience(levelsRef.current).then((gone) => {
       // the set only grows: a new size is news, the same size is not
       if (live) setFailed((was) => (gone.size === was.size ? was : gone));
     });
     return () => {
       live = false;
     };
-  }, [
-    unlocked,
-    fileDay,
-    fileNight,
-    fileBeach,
-    filePark,
-    fileStadium,
-    fileFountain,
-    fileBoardwalk,
-    fileLounge,
-  ]);
+  }, [unlocked, levelsKey]);
+  // the one-shots this place will want, fetched ahead (after the first gesture)
+  useEffect(() => {
+    if (unlocked) preloadSounds(soundsFor(room));
+  }, [unlocked, room]);
   useEffect(
     () => () => {
       void setFileAmbience({});

@@ -2834,7 +2834,10 @@ test("city audio files load only after a gesture", async ({ page }) => {
       timeout: 60_000,
     })
     .toBe(true);
-  expect(requests.every((url) => url.includes("city-day.ogg"))).toBe(true);
+  // the city loads its own bed and footsteps/bus doors, nothing from other rooms
+  expect(requests.every((url) => /city-day|step-|bus-door/.test(url))).toBe(
+    true,
+  );
 });
 
 // Board a real scheduled bus, travel, and leave only when its doors reopen.

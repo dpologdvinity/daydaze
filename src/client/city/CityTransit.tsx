@@ -16,6 +16,7 @@ import { cameraHold } from "../world/cameraHold.ts";
 import { driving } from "../world/driving.ts";
 import { isSceneReady } from "../world/ready.ts";
 import { useQuality } from "../world/quality.ts";
+import { playSoundFile, setLoop } from "../../audio/soundFiles.ts";
 import { busMotion, busRide } from "./busRide.ts";
 import {
   useTransitModels,
@@ -49,6 +50,7 @@ export function CityTransit({ player }: { player: Player }) {
       busMotion.active = false;
       busMotion.request = null;
       busRide.set({ riding: false, near: -1, stop: -1 });
+      setLoop("bus-engine", 0);
     },
     [player, seat],
   );
@@ -134,6 +136,11 @@ export function CityTransit({ player }: { player: Player }) {
     if (near >= 0 && distance > 4 && !riding.current) near = -1;
     const eta = near < 0 ? 0 : Math.ceil(nextBusIn(t, near));
     const state = busRide.get();
+    if (state.riding !== riding.current) {
+      // the doors open as you board or step off; the engine runs while you ride
+      void playSoundFile("bus-door", 0.8);
+      setLoop("bus-engine", riding.current ? 0.16 : 0);
+    }
     if (
       state.riding !== riding.current ||
       state.near !== near ||

@@ -4,13 +4,16 @@
 
 import { useEffect, type JSX } from "react";
 import { nextStation, STATIONS } from "../../audio/carRadio.ts";
-import { playSoundFile } from "../../audio/soundFiles.ts";
+import { engineMix } from "../../audio/engineMix.ts";
+import { playSoundFile, setLoop } from "../../audio/soundFiles.ts";
 import { ignoresKeys } from "../world/keyTargets.ts";
 import { carExtras } from "./carExtras.ts";
 import { DriveControls } from "../rooms/speedway/DriveControls.tsx";
 import { useHud } from "../rooms/speedway/RaceHud.tsx";
 
 const MPH = 2.23694;
+/** Meters per second the fastest road car tops out at (game/driving/roster.ts). */
+const TOP_SPEED = 52;
 
 /** While you drive in the city: the speedometer and the car's controls. */
 export function CityDrivePanel(): JSX.Element {
@@ -31,6 +34,25 @@ export function CityDrivePanel(): JSX.Element {
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
   }, [inCar]);
+  // the engine and tires, shaped by how fast you go; silent when out of the car
+  const speed = inCar ? Math.abs(hud.speed) / TOP_SPEED : 0;
+  useEffect(() => {
+    if (!inCar) {
+      setLoop("car-engine", 0);
+      setLoop("tire-hum", 0);
+      return;
+    }
+    const mix = engineMix(speed);
+    setLoop("car-engine", mix.engine.level, mix.engine.rate);
+    setLoop("tire-hum", mix.tire.level);
+  }, [inCar, speed]);
+  useEffect(
+    () => () => {
+      setLoop("car-engine", 0);
+      setLoop("tire-hum", 0);
+    },
+    [],
+  );
   const tuned = STATIONS.find((s) => s.track === station);
   return (
     <>

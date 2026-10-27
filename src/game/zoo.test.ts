@@ -36,3 +36,14 @@ test("fence panels line every side of every habitat end to end", () => {
     assert.ok(Number.isFinite(s.yaw));
   }
 });
+
+test("the farm's cow and donkey have a voice inside the farm", async () => {
+  const { farmVoicesAt, HABITATS } = await import("./zoo.ts");
+  const voices = farmVoicesAt(12);
+  assert.deepEqual(voices.map((v) => v.kind).sort(), ["cow", "donkey"]);
+  const f = HABITATS.farm;
+  for (const v of voices) {
+    assert.ok(v.at[0] >= f.x0 && v.at[0] <= f.x1);
+    assert.ok(v.at[1] >= f.z0 && v.at[1] <= f.z1);
+  }
+});

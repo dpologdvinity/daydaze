@@ -1,6 +1,7 @@
 // Pure selection of the ambience appropriate to a place and its daylight.
 import type { RoomId } from "../game/rooms.ts";
 import type { Neighborhood } from "../game/city/layout.ts";
+import type { OneShotId } from "./soundFiles.ts";
 import { daylightAt } from "../game/city/daylight.ts";
 
 /** Every looped sound file (public/audio/<id>.ogg). */
@@ -11,6 +12,8 @@ export const AMBIENCE_IDS = [
   "park",
   "stadium",
   "fountain",
+  "boardwalk",
+  "underwater",
   "music-boardwalk",
   "music-lounge",
 ] as const;
@@ -36,7 +39,10 @@ export function ambienceFor(
   district: Neighborhood,
   hour: number,
   inPark = false,
+  submerged = false,
 ): Partial<Record<AmbienceId, number>> {
+  // under the water only the muffled loop is heard
+  if (submerged) return { underwater: 0.4 };
   const levels = ambienceBase(room, district, hour);
   // in Uptown's park: birdsong and the fountain, the traffic fading
   if (room === "city" && inPark) {
@@ -51,6 +57,12 @@ export function ambienceFor(
   )
     levels["music-boardwalk"] = BED;
   if (LOUNGE_ROOMS.includes(room)) levels["music-lounge"] = BED;
+  // the boardwalk's crowd and gulls, on the planks and in its arcade
+  if (
+    room === "boardwalk-arcade" ||
+    (room === "city" && district === "beachside")
+  )
+    levels.boardwalk = 0.22;
   return levels;
 }
 
@@ -86,4 +98,20 @@ export function filesCover(
   return AMBIENCE_IDS.some(
     (id) => !!levels[id] && !isMusicBed(id) && !failed.has(id),
   );
+}
+
+/** One-shot sounds worth fetching ahead for a room (after the first gesture),
+ * so the first step or splash is already a recording. */
+export function soundsFor(room: RoomId): readonly OneShotId[] {
+  if (room === "city")
+    return ["step-pavement", "step-wood", "step-sand", "bus-door"];
+  if (room === "zoo") return ["zebra", "penguin", "cow", "donkey"];
+  if (
+    room === "water-park" ||
+    room === "marina" ||
+    room === "mermaid-cove" ||
+    room === "hotel-rooftop"
+  )
+    return ["splash"];
+  return [];
 }

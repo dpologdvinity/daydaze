@@ -5,6 +5,7 @@
  * so the global mute reaches it. Nothing here throws when audio is missing.
  */
 
+import { playCachedSound } from "./soundFiles.ts";
 import { getSharedAudioBus } from "./audioBus.ts";
 
 export type Ambience = "city" | "beach" | "aquarium" | "rink" | "haunted";
@@ -525,6 +526,15 @@ export function playSquirt(): boolean {
 export function playSplash(size: number): boolean {
   const out = sfx();
   if (!out) return false;
+  // the recording, once it has loaded: bigger splashes lower and louder
+  if (
+    playCachedSound(
+      "splash",
+      Math.min(1, 0.35 + size * 0.4),
+      1.15 - Math.min(2, Math.max(0.1, size)) * 0.2,
+    )
+  )
+    return true;
   const { ctx, dest } = out;
   const k = Math.min(2, Math.max(0.1, size));
   const now = ctx.currentTime;

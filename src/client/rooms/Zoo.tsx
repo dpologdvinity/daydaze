@@ -18,6 +18,7 @@ import {
   TREE_SPOTS,
   flamingoAt,
   HABITATS,
+  farmVoicesAt,
   PENGUINS,
   WALKERS,
   type Habitat,
@@ -252,7 +253,7 @@ function AnimalCalls({ player }: { player: Player }) {
     wait.current = nextDelay(Math.random());
     const call = pickCall(
       [player.pos.x, player.pos.z],
-      [...zooAnimals],
+      [...zooAnimals, ...farmVoicesAt(performance.now() / 1000)],
       Math.random(),
     );
     if (call) void playSoundFile(call.id, call.gain);

@@ -1,5 +1,5 @@
 // The Zoo's animal calls: now and then one of the animals that has a recorded
-// call (the elephants, the lions, the flamingos) lets one out, as loud as it
+// call (elephants, lions, flamingos, zebras, penguins, the cow and the donkey) lets one out, as loud as it
 // is near. Pure: the client passes where the listener and the animals are.
 import type { Vec2 } from "./walk.ts";
 import type { Species } from "./zoo.ts";
@@ -9,9 +9,15 @@ export const CALLS = {
   elephant: "elephant",
   lion: "lion",
   flamingo: "flamingos",
-} as const satisfies Partial<Record<Species, string>>;
+  zebra: "zebra",
+  penguin: "penguin",
+  cow: "cow",
+  donkey: "donkey",
+} as const satisfies Partial<Record<Species | "cow" | "donkey", string>>;
 export type CallId = (typeof CALLS)[keyof typeof CALLS];
-const hasCall = (kind: Species): kind is keyof typeof CALLS =>
+/** An animal that may call: a habitat species or one of the farm's voices. */
+export type Caller = Species | "cow" | "donkey";
+const hasCall = (kind: Caller): kind is keyof typeof CALLS =>
   Object.hasOwn(CALLS, kind);
 
 /** Past this many meters a call is not worth playing. */
@@ -31,7 +37,7 @@ export function loudness(distance: number): number {
  * which of the animals with a call speaks up. */
 export function pickCall(
   listener: Vec2,
-  animals: readonly { kind: Species; at: Vec2 }[],
+  animals: readonly { kind: Caller; at: Vec2 }[],
   pick: number,
 ): { id: CallId; gain: number } | null {
   const voices = animals.flatMap((a) =>
