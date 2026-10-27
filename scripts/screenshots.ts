@@ -156,6 +156,13 @@ const SHOTS: {
   { name: "city-day", query: "room=city&view=full&time=12:00" },
   { name: "city-day-overview", query: "room=city&time=12:00" },
   { name: "city-sunset", query: "room=city&view=full&time=19:30" },
+  { name: "city-night", query: "room=city&view=full&time=23:00" },
+  // the avenue sidewalk with its street furniture (src/client/city/CityFurniture.tsx)
+  { name: "city-sidewalk", query: "room=city&view=full&time=12:00&at=-36,9.5" },
+  {
+    name: "city-sidewalk-night",
+    query: "room=city&view=full&time=23:00&at=-36,9.5",
+  },
   {
     // the game menu open over the city: everything not needed this moment
     name: "city-menu",
