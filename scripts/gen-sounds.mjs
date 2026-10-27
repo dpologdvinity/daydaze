@@ -1,14 +1,28 @@
-// Generate the fixed Daydaze sound library offline; never ship the API key.
-import {
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-  unlinkSync,
-} from "node:fs";
-import { spawnSync } from "node:child_process";
+// Generates Daydaze's sound library offline with the ElevenLabs SDK: the
+// ambience loops and one-shots in SOUNDS (Sound Effects API) and the music
+// beds in MUSIC (Music API), written to public/audio/ as small Opus/OGG files
+// (MP3 when ffmpeg is missing). Ids that already have a file are skipped, so
+// rerunning only fills gaps; the game never calls the API.
+//
+//   node --env-file=../../.env scripts/gen-sounds.mjs          # sound effects
+//   node --env-file=../../.env scripts/gen-sounds.mjs --music  # music beds too
+//
+// The SDK reads ELEVENLABS_API_KEY from the environment (`--env-file` loads it
+// from the git-ignored .env); the key never appears in code or output.
+// Every call prints its credit cost; BUDGET caps one run.
 
-const sounds = [
+import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
+import { spawnSync } from "node:child_process";
+import { existsSync, mkdirSync, unlinkSync, writeFileSync } from "node:fs";
+
+const OUT = "public/audio";
+/** The most credits one run may spend. */
+const BUDGET = 3000;
+/** Sound Effects cost per second of explicit duration (ElevenLabs pricing). */
+const SFX_CREDITS_PER_SECOND = 40;
+
+/** [id, prompt, seconds, loop] */
+const SOUNDS = [
   [
     "city-day",
     "Daytime city ambience, distant traffic hum, occasional distant horns and birds, no voices or music",
@@ -50,88 +64,91 @@ const sounds = [
   ["horn", "Short car horn honk", 3, false],
   ["bus-brake", "Bus air brake hisses briefly", 3, false],
 ];
-const envFile = existsSync(".env") ? readFileSync(".env", "utf8") : "";
-const key =
-  process.env.ELEVENLABS_API_KEY ??
-  envFile.match(/^ELEVENLABS_API_KEY\s*=\s*["']?([^"'\s]+)["']?/m)?.[1];
-if (!key) throw new Error("Set ELEVENLABS_API_KEY in the environment or .env");
-const headers = { "xi-api-key": key };
-async function usage() {
-  const response = await fetch(
-    "https://api.elevenlabs.io/v1/user/subscription",
-    { headers },
-  );
-  if (!response.ok)
-    throw new Error(`Subscription request failed: ${response.status}`);
-  return (await response.json()).character_count;
-}
+
+/** [id, prompt, milliseconds]: instrumental beds for rooms, generated with --music. */
+const MUSIC = [
+  [
+    "music-boardwalk",
+    "Sunny, carefree beach boardwalk pop instrumental, ukulele, hand claps, light percussion, loopable, no vocals",
+    30000,
+  ],
+  [
+    "music-lounge",
+    "Smooth late-night lounge instrumental, warm Rhodes piano, soft bass, brushed drums, loopable, no vocals",
+    30000,
+  ],
+];
+
+const client = new ElevenLabsClient();
 const ffmpeg =
   spawnSync("ffmpeg", ["-version"], { stdio: "ignore" }).status === 0;
-const extension = ffmpeg ? "ogg" : "mp3";
-mkdirSync("public/audio", { recursive: true });
-const initial = await usage();
+mkdirSync(OUT, { recursive: true });
+
+const credits = async () =>
+  (await client.user.subscription.get()).characterCount;
+const has = (id) =>
+  existsSync(`${OUT}/${id}.ogg`) || existsSync(`${OUT}/${id}.mp3`);
+
+/** Saves MP3 bytes as Opus/OGG at `kbps` (MP3 if ffmpeg can't). */
+function save(id, bytes, kbps) {
+  if (!ffmpeg) return writeFileSync(`${OUT}/${id}.mp3`, bytes);
+  const temporary = `${OUT}/${id}.tmp.mp3`;
+  writeFileSync(temporary, bytes);
+  const target = `${OUT}/${id}.ogg`;
+  const result = spawnSync(
+    "ffmpeg",
+    ["-v", "error", "-y", "-i", temporary, "-c:a", "libopus"].concat([
+      "-b:a",
+      `${kbps}k`,
+      target,
+    ]),
+    { stdio: "inherit" },
+  );
+  if (result.status === 0) return unlinkSync(temporary);
+  if (existsSync(target)) unlinkSync(target);
+  writeFileSync(`${OUT}/${id}.mp3`, bytes);
+  unlinkSync(temporary);
+  console.log(`${id}: Opus unavailable; saved MP3`);
+}
+
+const bytesOf = async (stream) =>
+  Buffer.from(await new Response(stream).arrayBuffer());
+
+const start = await credits();
 let reserved = 0;
-for (const [id, text, duration, loop] of sounds) {
-  if (
-    existsSync(`public/audio/${id}.ogg`) ||
-    existsSync(`public/audio/${id}.mp3`)
-  )
-    continue;
-  // ElevenLabs publishes a cost of 40 credits per second for explicit durations.
-  if (reserved + duration * 40 > 3000)
-    throw new Error("Credit budget exhausted");
-  reserved += duration * 40;
-  const response = await fetch(
-    "https://api.elevenlabs.io/v1/sound-generation?output_format=mp3_44100_128",
-    {
-      method: "POST",
-      headers: { ...headers, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        text,
-        duration_seconds: duration,
-        loop,
-        model_id: "eleven_text_to_sound_v2",
-      }),
-    },
-  );
-  const current = await usage();
-  const reported = response.headers.get("character-cost");
-  console.log(
-    `${id}: ${reported === null ? `up to ${duration * 40} estimated` : reported} credits; account counter +${current - initial}`,
-  );
-  if (!response.ok)
-    throw new Error(
-      `Generation failed: ${response.status} ${await response.text()}`,
-    );
-  const target = `public/audio/${id}.${extension}`;
-  const data = Buffer.from(await response.arrayBuffer());
-  if (!ffmpeg) writeFileSync(target, data);
-  else {
-    const temporary = `public/audio/${id}.tmp.mp3`;
-    writeFileSync(temporary, data);
-    const result = spawnSync(
-      "ffmpeg",
-      [
-        "-v",
-        "error",
-        "-y",
-        "-i",
-        temporary,
-        "-c:a",
-        "libopus",
-        "-b:a",
-        "32k",
-        target,
-      ],
-      { stdio: "inherit" },
-    );
-    if (result.status === 0) unlinkSync(temporary);
-    else {
-      if (existsSync(target)) unlinkSync(target);
-      writeFileSync(`public/audio/${id}.mp3`, data);
-      unlinkSync(temporary);
-      console.log(`${id}: Opus unavailable; saved MP3`);
-    }
+const reserve = (amount) => {
+  if (reserved + amount > BUDGET) throw new Error("Credit budget exhausted");
+  reserved += amount;
+};
+
+for (const [id, text, seconds, loop] of SOUNDS) {
+  if (has(id)) continue;
+  reserve(seconds * SFX_CREDITS_PER_SECOND);
+  const audio = await client.textToSoundEffects.convert({
+    text,
+    durationSeconds: seconds,
+    loop,
+    modelId: "eleven_text_to_sound_v2",
+    outputFormat: "mp3_44100_128",
+  });
+  save(id, await bytesOf(audio), 32);
+  console.log(`${id}: done; run total ${(await credits()) - start} credits`);
+}
+
+if (process.argv.includes("--music")) {
+  for (const [id, prompt, ms] of MUSIC) {
+    if (has(id)) continue;
+    // music is billed per generation; reserve a cautious share of the budget
+    reserve(1000);
+    const audio = await client.music.compose({
+      prompt,
+      musicLengthMs: ms,
+      modelId: "music_v2_5",
+      forceInstrumental: true,
+    });
+    save(id, await bytesOf(audio), 64);
+    console.log(`${id}: done; run total ${(await credits()) - start} credits`);
   }
 }
-console.log(`Total: ${(await usage()) - initial} credits`);
+
+console.log(`Total: ${(await credits()) - start} credits`);
