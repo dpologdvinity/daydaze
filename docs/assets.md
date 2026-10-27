@@ -120,11 +120,9 @@ and compressed by `scripts/import-animals.sh` into `public/models/animals/`.
 
 ## Doll build inputs
 
-| Input | Source | License | Fetched by |
-| --- | --- | --- | --- |
-| Base mesh, morph targets, default skeleton | [MakeHuman](https://github.com/makehumancommunity/makehuman) `makehuman/data`, commit `a8bc2d54` | CC0 1.0 (`LICENSE.ASSETS.md`) | `art/doll/blender/fetch_makehuman.sh` |
-| Hair, clothes, shoes and far-LOD body proxies | MakeHuman system asset pack (`makehuman_system_assets_cc0.zip`) | CC0 1.0 | `fetch_makehuman.sh` |
-| Skeleton: `rig.mixamo.json` (52 bones named `mixamorig:*`) and its skin weights `weights.mixamo.json` | [MPFB2](https://github.com/makehumancommunity/mpfb2) `src/mpfb/data/rigs/standard/`, commit `6ff1eb35` | CC0 1.0: MPFB's rigs and weights are assets (its `LICENSE.md`, section C); only MPFB's program code is GPL, and none of it is used | `fetch_makehuman.sh` |
+- Base mesh, morph targets, default skeleton: MakeHuman `makehuman/data`, commit `a8bc2d54` (CC0 1.0, `LICENSE.ASSETS.md`), fetched by `art/doll/blender/fetch_makehuman.sh`.
+- Hair, clothes, shoes and far-LOD body proxies: MakeHuman system asset pack (`makehuman_system_assets_cc0.zip`, CC0 1.0), same script.
+- Skeleton `rig.mixamo.json` (52 bones named `mixamorig:*`) and skin weights `weights.mixamo.json`: MPFB2 `src/mpfb/data/rigs/standard/`, commit `6ff1eb35`. CC0 1.0: MPFB's rigs and weights are assets (its `LICENSE.md`, section C); only its program code is GPL, and none of it is used.
 
 `art/doll/blender/build_doll.py` shapes the mesh, fits the MPFB2 skeleton to
 it and writes the GLB parts; `scripts/optimize-doll.sh` compresses them into

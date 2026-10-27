@@ -449,7 +449,13 @@ def bake(rig, tgt_rest, cid, rel, kind):
         bpy.data.objects.remove(ob)
     bpy.data.actions.remove(act)
     period = round((n - 1) / FPS, 4) if not held else 0
-    meta = {"id": cid, "kind": kind, "label": CLIP_LABEL[cid], "period": period}
+    meta = {
+        "id": cid,
+        "kind": kind,
+        "label": CLIP_LABEL[cid],
+        "source": "Mixamo " + os.path.basename(rel),
+        "period": period,
+    }
     if speed is not None:
         meta["speed"] = round(speed, 3)
     print(cid, kind, "frames", n, "period", period, "speed", speed)
