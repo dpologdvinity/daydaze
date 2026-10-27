@@ -85,7 +85,7 @@ const DRUG_PATTERN =
 // Alcohol talk is for 18+ servers; at 13+ it must be tagged `tier: "adult"`.
 // The drunk situations never come up at 13+ (buzz cannot rise).
 const ALCOHOL_PATTERN =
-  /\b(beers?|wines?|cocktails?|whisk(e)?y|vodka|tequila|soju|sake|champagne|prosecco|mojitos?|margaritas?|martinis?|rum|gin|lager|bourbon|spritz|sangria|liquor|alcohol\w*|tipsy|booze|boozy|hangover|sommelier|something strong|nightcap|on tap|spirits|kegs?|cheers to|(?:round|rounds) of drinks)\b|\bshots? of\b|\b(no more|take a|do a|a) shots?\b/i;
+  /\b(beers?|wines?|cocktails?|whisk(e)?y|vodka|tequila|soju|sake|champagne|prosecco|mojitos?|margaritas?|martinis?|rum|gin|lager|bourbon|spritz|sangria|liquor|alcohol\w*|tipsy|booze|boozy|hangover|sommelier|something strong|nightcap|on tap|spirits|kegs?|cheers to|drinks are on the (?:regulars|house)|drinks come in|dinner, drinks)\b|\bshots? of\b|\b(no more|take a|do a|a) shots?\b/i;
 const DRUNK_SITUATIONS = new Set<DialogueSituation>(["state-drunk"]);
 
 function textOf(entry: LineEntry): string {

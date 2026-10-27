@@ -381,7 +381,10 @@ export const regularBank: RoleBank = {
     "Pride night! Look at all these flags, my heart is so full.",
     "Okay, the rainbow lights are doing something to me tonight. Love it.",
     "I brought my best jacket for pride, and I'm not taking it off.",
-    "Happy pride, babe! Drinks are on the regulars, go enjoy.",
+    {
+      text: "Happy pride, babe! Drinks are on the regulars, go enjoy.",
+      when: { tier: "adult" },
+    },
     "This room is so loud and so proud. I'm crying a little.",
     "Pride night is my favorite night of the year, I swear on my stool.",
     "Look at the dance floor! Two girls slow dancing right now, sweet.",
@@ -389,6 +392,10 @@ export const regularBank: RoleBank = {
     "The DJ played my song! I'm about to lose my mind in the best way.",
     "Everybody is so cute tonight. Pride gives the whole bar a glow.",
     "Happy pride, {name}! Go find your people, they're all in this room.",
+    {
+      text: "Happy pride, babe! Lemonade is on the regulars, go enjoy.",
+      when: { tier: "teen" },
+    },
   ],
   "action-dancing-nearby": [
     "Ooh, you're dancing right next to me! Watch the drink, I'm dancing too.",

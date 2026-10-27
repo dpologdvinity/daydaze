@@ -212,12 +212,19 @@ export const regularNightLines: RoleBank = {
     "Tiki torches, ukuleles and pineapple everything. Paradise.",
     "I'm wearing my loudest floral shirt. It's audible from the street.",
     "Somebody's teaching hula by the bar. I'm terrible and delighted.",
-    "The drinks come in coconuts tonight. Hold it with both hands.",
+    {
+      text: "The drinks come in coconuts tonight. Hold it with both hands.",
+      when: { tier: "adult" },
+    },
     "Limbo contest at midnight. I've been stretching all day.",
     "This breeze, this music, this view. Nobody wake me up.",
     "Flower behind your left ear means taken, right ear means flirting.",
     "I could live in this playlist. Just steel guitar, forever.",
     "Aloha means hello and goodbye. I'm saying hello to another round.",
+    {
+      text: "The mocktails come in coconuts tonight. Hold yours with both hands.",
+      when: { tier: "teen" },
+    },
   ],
 };
 
