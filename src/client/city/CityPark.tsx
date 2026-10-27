@@ -191,17 +191,28 @@ export function FountainWater(): JSX.Element {
     );
     return g;
   }, []);
-  const spray = useMemo(
-    () =>
-      new THREE.PointsMaterial({
-        color: "#e6f7ff",
-        size: 0.16,
-        transparent: true,
-        opacity: 0.85,
-        depthWrite: false,
-      }),
-    [],
-  );
+  const spray = useMemo(() => {
+    // a soft round dot, so the droplets are not squares
+    const c = document.createElement("canvas");
+    c.width = c.height = 32;
+    const g = c.getContext("2d");
+    if (g) {
+      const grad = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+      grad.addColorStop(0, "rgba(255,255,255,1)");
+      grad.addColorStop(1, "rgba(255,255,255,0)");
+      g.fillStyle = grad;
+      g.fillRect(0, 0, 32, 32);
+    }
+    return new THREE.PointsMaterial({
+      map: new THREE.CanvasTexture(c),
+      alphaTest: 0.02,
+      color: "#e6f7ff",
+      size: 0.28,
+      transparent: true,
+      opacity: 0.85,
+      depthWrite: false,
+    });
+  }, []);
   useEffect(() => {
     material.color.copy(FOUNTAIN_WATER).multiplyScalar(1 - 0.6 * neon);
     spray.color.set("#e6f7ff").multiplyScalar(1 - 0.5 * neon);
@@ -227,14 +238,14 @@ export function FountainWater(): JSX.Element {
   return (
     <group position={[PARK_FOUNTAIN.x, GROUND, PARK_FOUNTAIN.z]}>
       <mesh
-        position={[0, 0.34, 0]}
+        position={[0, 0.41, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
         material={material}
       >
         <circleGeometry args={[2.95, 28]} />
       </mesh>
       <mesh
-        position={[0, 0.98, 0]}
+        position={[0, 1.02, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
         material={material}
       >
