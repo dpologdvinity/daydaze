@@ -628,7 +628,8 @@ export function World({
               onShelf={onShelf}
             />
           ) : null}
-          {pet && (
+          {/* a pet waits on the shore: it can't swim out or dive with you */}
+          {pet && !WATER[room] && (
             <Suspense fallback={null}>
               <PetFollower pet={pet} room={room} area={area} player={player} />
             </Suspense>
