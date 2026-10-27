@@ -108,7 +108,8 @@ const angleTo = (cur: number, goal: number, step: number) => {
  * STAY meters to your right-behind (the pet trails on one side so it never
  * stands in your way). `seated` makes it sit once it has come close.
  * `blocked` says whether a spot is a wall, and the pet then stays put.
- * Returns the pet's next state; allocates one small object.
+ * Returns the pet's next state, written into `out` (which may be `pet`
+ * itself; a new record when left out), so a frame loop allocates nothing.
  */
 export function followStep(
   pet: Follower,
@@ -116,30 +117,28 @@ export function followStep(
   dt: number,
   seated: boolean,
   blocked: (at: Vec2) => boolean,
+  out: Follower = { x: 0, z: 0, yaw: 0, clip: "idle" },
 ): Follower {
   const dx = you.x - pet.x;
   const dz = you.z - pet.z;
   const dist = Math.hypot(dx, dz);
   if (dist > TELEPORT_FROM) {
-    return placeBeside(you);
+    return placeBeside(you, out);
   }
   // the spot beside you: STAY behind and to the right of where you face
-  const goal: Vec2 = [
-    you.x + Math.sin(you.yaw + 2.5) * STAY,
-    you.z + Math.cos(you.yaw + 2.5) * STAY,
-  ];
-  const gx = goal[0] - pet.x;
-  const gz = goal[1] - pet.z;
+  const gx = you.x + Math.sin(you.yaw + 2.5) * STAY - pet.x;
+  const gz = you.z + Math.cos(you.yaw + 2.5) * STAY - pet.z;
   const toGoal = Math.hypot(gx, gz);
   const lookAtYou = Math.atan2(dx, dz);
   // close to you and it is not walking: sit when you do, otherwise stand
   if (dist < WALK_FROM && toGoal < 0.5) {
-    return {
-      x: pet.x,
-      z: pet.z,
-      yaw: angleTo(pet.yaw, lookAtYou, TURN * dt),
-      clip: seated ? "sit" : "idle",
-    };
+    return set(
+      out,
+      pet.x,
+      pet.z,
+      angleTo(pet.yaw, lookAtYou, TURN * dt),
+      seated ? "sit" : "idle",
+    );
   }
   const run = dist > RUN_FROM;
   const step = Math.min(toGoal, (run ? RUN_SPEED : WALK_SPEED) * dt);
@@ -150,31 +149,52 @@ export function followStep(
     nx = pet.x;
     nz = pet.z;
   }
-  if (blocked([nx, nz])) {
+  probe[0] = nx;
+  probe[1] = nz;
+  if (blocked(probe)) {
     nx = pet.x;
     nz = pet.z;
   }
   const moved = Math.hypot(nx - pet.x, nz - pet.z) > 1e-6;
-  return {
-    x: nx,
-    z: nz,
-    yaw: angleTo(pet.yaw, moved ? Math.atan2(gx, gz) : lookAtYou, TURN * dt),
-    clip: moved ? (run ? "run" : "walk") : seated ? "sit" : "idle",
-  };
+  return set(
+    out,
+    nx,
+    nz,
+    angleTo(pet.yaw, moved ? Math.atan2(gx, gz) : lookAtYou, TURN * dt),
+    moved ? (run ? "run" : "walk") : seated ? "sit" : "idle",
+  );
 }
 
-/** The pet beside you, just arrived (a new room, or left far behind). */
-export function placeBeside(you: {
-  x: number;
-  z: number;
-  yaw: number;
-}): Follower {
-  return {
-    x: you.x + Math.sin(you.yaw + 2.5) * STAY,
-    z: you.z + Math.cos(you.yaw + 2.5) * STAY,
-    yaw: you.yaw,
-    clip: "idle",
-  };
+/** The spot followStep asks `blocked` about (reused, never kept). */
+const probe: [number, number] = [0, 0];
+
+const set = (
+  out: Follower,
+  x: number,
+  z: number,
+  yaw: number,
+  clip: PetClip,
+): Follower => {
+  out.x = x;
+  out.z = z;
+  out.yaw = yaw;
+  out.clip = clip;
+  return out;
+};
+
+/** The pet beside you, just arrived (a new room, or left far behind),
+ * written into `out` when given. */
+export function placeBeside(
+  you: { x: number; z: number; yaw: number },
+  out: Follower = { x: 0, z: 0, yaw: 0, clip: "idle" },
+): Follower {
+  return set(
+    out,
+    you.x + Math.sin(you.yaw + 2.5) * STAY,
+    you.z + Math.cos(you.yaw + 2.5) * STAY,
+    you.yaw,
+    "idle",
+  );
 }
 
 /** Where the pet sleeps in your apartment, and how near you can come before
@@ -184,12 +204,14 @@ export const sleeping = (
   pet: Follower,
   you: { x: number; z: number },
   rest: Vec2,
-) =>
+  out: Follower = { x: 0, z: 0, yaw: 0, clip: "idle" },
+): Follower =>
   Math.hypot(you.x - rest[0], you.z - rest[1]) > WAKE_RANGE
-    ? ({ x: rest[0], z: rest[1], yaw: pet.yaw, clip: "sleep" } as const)
-    : ({
-        x: rest[0],
-        z: rest[1],
-        yaw: Math.atan2(you.x - rest[0], you.z - rest[1]),
-        clip: "sit",
-      } as const);
+    ? set(out, rest[0], rest[1], pet.yaw, "sleep")
+    : set(
+        out,
+        rest[0],
+        rest[1],
+        Math.atan2(you.x - rest[0], you.z - rest[1]),
+        "sit",
+      );

@@ -237,6 +237,8 @@ function Diving({ player }: { player: Player }) {
     };
   }, []);
   const mouth = useRef<[number, number]>([0, 0]);
+  // reused for each creature's spot as the sightings are checked
+  const seen = useRef<[number, number]>([0, 0]);
   const scratch = useRef({ x: 0, z: 0, above: 0, yaw: 0 });
   useFrame((_, dt) => {
     const s = state.current;
@@ -252,7 +254,11 @@ function Diving({ player }: { player: Player }) {
     for (const life of LIFE)
       for (let i = 0; i < life.count; i++) {
         const p = lifePose(life, i, clock(), scratch.current);
-        if (canSee(mouth.current, player.yaw, [p.x, p.z], undefined, undefined))
+        seen.current[0] = p.x;
+        seen.current[1] = p.z;
+        if (
+          canSee(mouth.current, player.yaw, seen.current, undefined, undefined)
+        )
           sighted(life.species);
       }
     if (atWreck(mouth.current)) wreckFound();
