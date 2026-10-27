@@ -2,6 +2,7 @@
 // bubble, tap for their card) and sends your own position and action to the
 // session. Renders nothing offline.
 
+import { activeTier, allows } from "../../game/age.ts";
 import { Html } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import {
@@ -194,7 +195,8 @@ function PeerDoll({
           }
         >
           {said && <p className="bubble npc-bubble">{said}</p>}
-          {doing.buzz && (
+          {/* a 13+ client never shows a buzz tag, whatever a peer sends */}
+          {allows(activeTier(), "alcohol") && doing.buzz && (
             <span
               className="peer-buzz"
               role="img"
