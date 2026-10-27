@@ -4,6 +4,7 @@
 // deterministic given the rng. The line banks (~200 KB) are a separate chunk:
 // loadDialogue() fetches them, and until then every NPC says "...".
 
+import { activeTier, type ContentTier } from "../age.ts";
 import {
   PLACEHOLDER_IDS,
   type DialogueContext,
@@ -78,6 +79,8 @@ export type PickArgs = {
   rng: Rng;
   recent?: RecentLines;
   bank?: RoleBank;
+  /** Defaults to the client's active tier. */
+  tier?: ContentTier;
 };
 
 /** The filled-in line and the updated recent list to pass to the next pick. */
@@ -110,9 +113,10 @@ export function pickLine({
   rng,
   recent = [],
   bank = banks?.[role],
+  tier = activeTier(),
 }: PickArgs): PickResult {
   if (!bank) return { text: "...", recent };
-  const lines = eligibleLines(bank, situation, context);
+  const lines = eligibleLines(bank, situation, context, tier);
   if (lines.length === 0) return { text: "...", recent };
 
   const key = (line: Line) => `${role}:${line.text}`;
@@ -147,11 +151,12 @@ function eligibleLines(
   bank: RoleBank,
   situation: DialogueSituation,
   context: DialogueContext,
+  tier: ContentTier,
 ): Line[] {
   for (const id of [situation, ...FALLBACK_SITUATIONS]) {
     const lines = (bank[id] ?? [])
       .map(normalize)
-      .filter((line) => matches(line.when, context));
+      .filter((line) => matches(line.when, context, tier));
     if (lines.length > 0) return lines;
   }
   return [];
@@ -164,9 +169,11 @@ function normalize(entry: LineEntry): Line {
 function matches(
   when: LineConditions | undefined,
   context: DialogueContext,
+  tier: ContentTier,
 ): boolean {
   if (!when) return true;
   return (
+    (when.tier === undefined || when.tier === tier) &&
     allowed(when.neighborhood, context.neighborhood) &&
     allowed(when.venue, context.venue) &&
     allowed(when.time, context.time)

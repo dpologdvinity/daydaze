@@ -139,7 +139,7 @@ export const regularBank: RoleBank = {
     },
     {
       text: "Hey! Sit with us, we've got a whole theory about the bartender's sunset cocktail.",
-      when: { venue: "violet-hour" },
+      when: { tier: "adult", venue: "violet-hour" },
     },
     {
       text: "I came for the coaster and stayed for the lights. The lights were the plan.",
@@ -204,6 +204,22 @@ export const regularBank: RoleBank = {
     "Ask me anything, I'm basically furniture at this point.",
     "Hey, you rang the bell and the whole bar turned. Impressive.",
     "Okay, what do you need? I was just about to win this trivia.",
+    {
+      text: "Hey! Sit with us, we have a whole theory about the bartender's sunset mocktail.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Pull up a chair. We are ranking every soda on the menu.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "What's up, love? I have gossip, cue advice, and a very good lemonade.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Try the Violet Fizz. The bartender swears it is a secret recipe.",
+      when: { tier: "teen" },
+    },
   ],
   idle: [
     // The Violet Hour: the sapphic bar on Nightlife Row

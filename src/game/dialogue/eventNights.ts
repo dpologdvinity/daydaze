@@ -38,11 +38,34 @@ export const regularNightLines: RoleBank = {
     "The trumpet player winked at me and I've decided we're engaged.",
     "I ordered something with an egg white in it. I'm very sophisticated now.",
     "The lights are low enough that everyone looks like a movie star.",
-    "Keep your voice down, darling. The walls have ears and the bar has gin.",
+    {
+      text: "Keep your voice down, darling. The walls have ears and the bar has gin.",
+      when: { tier: "adult" },
+    },
     "I've been practicing my old-timey accent all week. See? Swell.",
     "There's a lady in a fringe dress who just out-danced the whole room.",
     "Jazz is just music that's allowed to take the scenic route.",
     "If anybody asks, we were never here.",
+    {
+      text: "Keep your voice down, darling. The walls have ears and the bar has ginger fizz.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Evening, swells. The band is warm and the ginger ale is cold.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Psst. The password is lemonade. Do not tell a soul.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Candlelight, a trumpet, and a Smoky Rose soda. Perfect night.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Dress sharp, speak low, tip the band. That is the whole code.",
+      when: { tier: "teen" },
+    },
   ],
   "event-eighties-night": [
     "'80s night! My hair is ninety percent hairspray and ten percent hope.",
@@ -204,7 +227,10 @@ export const djNightLines: RoleBank = {
     "One more blast, then we dry off and keep going.",
   ],
   "event-speakeasy-night": [
-    "Evening, swells. The band's warm and the gin is cold.",
+    {
+      text: "Evening, swells. The band's warm and the gin is cold.",
+      when: { tier: "adult" },
+    },
     "This number's a little slow, a little smoky. Find a partner.",
     "If you can Charleston, the floor is yours.",
     "Keep it hush-hush, but this next one swings hard.",
@@ -214,6 +240,26 @@ export const djNightLines: RoleBank = {
     "This one's from a time when dance halls ran all night long.",
     "Shake a leg, darling. The night won't wait.",
     "One more for the flappers, then the band takes five.",
+    {
+      text: "Evening, swells. The band is warm and the ginger ale is cold.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Tonight's set list is all slow jazz and soft lights.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "The password at the door is lemonade. Do not tell a soul.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "One more ballad, then the horns take over.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Hats low, voices lower, and a Smoky Rose soda for everyone.",
+      when: { tier: "teen" },
+    },
   ],
   "event-eighties-night": [
     "'80s night! Synths up, hair up, hands up!",

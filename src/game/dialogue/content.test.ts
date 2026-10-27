@@ -82,6 +82,12 @@ const BANNED_PATTERNS: Array<[string, RegExp]> = [
 const DRUG_PATTERN =
   /\b(weed|marijuana|cannabis|joints?|blunts?|edibles?|shrooms?|mushrooms?|molly|cocaine|coke|lsd|acid|pills?|dope|stoned|420|high|trippy|tripping)\b/i;
 
+// Alcohol talk is for 18+ servers; at 13+ it must be tagged `tier: "adult"`.
+// The drunk situations never come up at 13+ (buzz cannot rise).
+const ALCOHOL_PATTERN =
+  /\b(beers?|wines?|cocktails?|whisk(e)?y|vodka|tequila|soju|sake|champagne|prosecco|mojitos?|margaritas?|martinis?|rum|gin|lager|bourbon|spritz|sangria|liquor|alcohol\w*|tipsy|booze|boozy|hangover|sommelier|something strong|nightcap)\b|\bshots? of\b|\b(no more|take a|do a|a) shots?\b/i;
+const DRUNK_SITUATIONS = new Set<DialogueSituation>(["state-drunk"]);
+
 function textOf(entry: LineEntry): string {
   return typeof entry === "string" ? entry : entry.text;
 }
@@ -178,6 +184,27 @@ for (const role of ROLE_IDS) {
         }
       }
     }
+  });
+}
+
+for (const role of ROLE_IDS) {
+  test(`${role} has no alcohol talk at 13+ and enough lines left`, () => {
+    const offenders: string[] = [];
+    for (const [situation, entries] of entriesOf(LINE_BANKS[role])) {
+      const teen = entries.filter(
+        (e) => typeof e === "string" || e.when?.tier !== "adult",
+      );
+      assert.ok(
+        teen.length >= MIN_LINES_PER_SITUATION,
+        `${role}/${situation} has ${teen.length} 13+ lines`,
+      );
+      if (DRUNK_SITUATIONS.has(situation)) continue;
+      for (const entry of teen) {
+        if (ALCOHOL_PATTERN.test(textOf(entry)))
+          offenders.push(`${role}/${situation}: ${textOf(entry)}`);
+      }
+    }
+    assert.deepEqual(offenders, []);
   });
 }
 

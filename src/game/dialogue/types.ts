@@ -2,6 +2,8 @@
 // placeholder ids, plus the shapes of lines, conditions and role banks. The id
 // lists are the single source; the union types derive from them.
 
+import type { ContentTier } from "../age.ts";
+
 /** Every NPC role with a line bank; LINE_BANKS in index.ts must cover each. */
 export const ROLE_IDS = [
   "bartender",
@@ -125,6 +127,12 @@ export type LineConditions = {
   neighborhood?: NeighborhoodId | readonly NeighborhoodId[];
   venue?: string | readonly string[];
   time?: TimeOfDay | readonly TimeOfDay[];
+  /**
+   * Content tier: "adult" lines (alcohol talk) show only on 18+ servers,
+   * "teen" lines (the mocktail versions) only on 13+. Untagged lines show on
+   * both. The tier is the client's, not part of the context.
+   */
+  tier?: ContentTier;
 };
 
 /**

@@ -225,3 +225,29 @@ test("a failed bank load is retried on the next call, not cached", async () => {
   assert.equal(failed, true);
   assert.ok(typeof line === "string" && line !== "...");
 });
+
+test("tier-tagged lines show only at their tier", () => {
+  const bank = {
+    tapped: [
+      "plain",
+      { text: "beer talk", when: { tier: "adult" as const } },
+      { text: "soda talk", when: { tier: "teen" as const } },
+    ],
+  };
+  const seen = (tier: "teen" | "adult") => {
+    const out = new Set<string>();
+    for (let seed = 0; seed < 40; seed++)
+      out.add(
+        pickLine({
+          role: "bartender",
+          situation: "tapped",
+          rng: seededRng(seed),
+          bank,
+          tier,
+        }).text,
+      );
+    return [...out].sort();
+  };
+  assert.deepEqual(seen("teen"), ["plain", "soda talk"]);
+  assert.deepEqual(seen("adult"), ["beer talk", "plain"]);
+});
