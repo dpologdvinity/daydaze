@@ -101,7 +101,18 @@ export function Creature({
     mixer.stopAllAction();
     return { root, k, shift, mixer, actions };
   }, [gltf, kind]);
-  useEffect(() => () => void rig.mixer.stopAllAction(), [rig]);
+  useEffect(
+    () => () => {
+      rig.mixer.stopAllAction();
+      // each clone has its own skeleton, whose bone texture lives on the GPU
+      // (rebuilt if the rig is shown again; the mixer's cache is not dropped:
+      // a remount, as React's dev check does, plays the same actions again)
+      rig.root.traverse((o) => {
+        if (o instanceof THREE.SkinnedMesh) o.skeleton.dispose();
+      });
+    },
+    [rig],
+  );
 
   const group = useRef<THREE.Group>(null);
   const sway = useRef<THREE.Group>(null);
