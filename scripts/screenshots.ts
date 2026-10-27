@@ -504,6 +504,10 @@ for (const shot of SHOTS) {
   const still = shot.live ? "" : "&still=1";
   await page.goto(`${BASE}/?quality=low${still}&${shot.query}`);
   if (shot.act) await shot.act(page);
+  const canvas = page.getByRole("img", { name: "3D room view" });
+  await expect(canvas).toHaveAttribute("data-frames", /\d+/, {
+    timeout: 600_000,
+  });
   // wait until the demand loop has rendered and then gone quiet for 8 s
   let last = "";
   let quietSince = Date.now();
@@ -526,7 +530,6 @@ for (const shot of SHOTS) {
     timeout: 180_000,
   });
   // renderer stats for the first frames: draw calls and triangles
-  const canvas = page.getByRole("img", { name: "3D room view" });
   const calls = await canvas.getAttribute("data-calls");
   const triangles = await canvas.getAttribute("data-triangles");
   console.log(
