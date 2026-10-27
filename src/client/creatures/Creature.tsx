@@ -87,6 +87,8 @@ export function Creature({
     if (idle) {
       idle.play();
       mixer.update(0);
+      // bone matrices follow the posed bones, not the bind pose
+      root.updateMatrixWorld(true);
       root.traverse((o) => {
         if (o instanceof THREE.SkinnedMesh) {
           o.skeleton.update();
@@ -136,7 +138,12 @@ export function Creature({
       // no walk clip of its own: sway it along instead
       const still = !rig.actions.has("walk");
       const walking = still && !calm && (p.clip === "walk" || p.clip === "run");
-      const bow = still && (p.clip === "graze" || p.clip === "eat") ? 0.4 : 0;
+      const bow =
+        still && (p.clip === "graze" || p.clip === "eat")
+          ? rig.actions.size === 0
+            ? 0.4
+            : 0.12
+          : 0;
       const k = Math.min(1, dt * 4);
       const sitting = p.clip === "sit";
       const stride = Math.sin(s.t * STRIDE);
