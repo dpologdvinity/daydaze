@@ -4,7 +4,7 @@
 
 import { useEffect, type JSX } from "react";
 import { nextStation, STATIONS } from "../../audio/carRadio.ts";
-import { playHorn } from "../../audio/worldSounds.ts";
+import { playSoundFile } from "../../audio/soundFiles.ts";
 import { ignoresKeys } from "../world/keyTargets.ts";
 import { carExtras } from "./carExtras.ts";
 import { DriveControls } from "../rooms/speedway/DriveControls.tsx";
@@ -26,7 +26,7 @@ export function CityDrivePanel(): JSX.Element {
     const key = (e: KeyboardEvent) => {
       if (e.code !== "KeyH" || e.repeat || ignoresKeys(e.target, e.code))
         return;
-      playHorn();
+      void playSoundFile("horn");
     };
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
@@ -48,7 +48,7 @@ export function CityDrivePanel(): JSX.Element {
       )}
       {inCar && (
         <div className="car-extras" role="group" aria-label="In the car">
-          <button type="button" onClick={() => playHorn()}>
+          <button type="button" onClick={() => void playSoundFile("horn")}>
             Horn (H)
           </button>
           <button

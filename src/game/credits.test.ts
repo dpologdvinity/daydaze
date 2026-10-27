@@ -37,7 +37,7 @@ const sorted = (entries: string[][]) =>
 test("credits include all four groups and complete CC-BY attribution", () => {
   assert.deepEqual(
     CREDITS.map((group) => group.title),
-    ["3D models", "Textures", "Animations", "Code libraries"],
+    ["Audio", "3D models", "Textures", "Animations", "Code libraries"],
   );
   for (const entry of CREDITS.flatMap((group) => group.entries)) {
     assert.ok(entry.title.trim());

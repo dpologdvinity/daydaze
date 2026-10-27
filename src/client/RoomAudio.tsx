@@ -12,6 +12,9 @@ import {
   unlockAudio,
   type Ambience,
 } from "../audio/worldSounds.ts";
+import { ambienceFor } from "../audio/ambience.ts";
+import { setFileAmbience } from "../audio/soundFiles.ts";
+import { cityHour } from "./city/daylight.ts";
 import type { RoomId } from "../game/rooms.ts";
 import { useNeighborhood } from "./city/here.ts";
 import { musicPick } from "./musicPick.ts";
@@ -103,6 +106,11 @@ const AMBIENCE: Partial<Record<RoomId, Ambience>> = {
 export function RoomAudio({ room, muted }: { room: RoomId; muted: boolean }) {
   const [unlocked, setUnlocked] = useState(false);
   const neighborhood = useNeighborhood();
+  const [hour, setHour] = useState(cityHour);
+  useEffect(() => {
+    const id = window.setInterval(() => setHour(cityHour()), 30_000);
+    return () => window.clearInterval(id);
+  }, []);
   const picked = musicPick.use().track;
   const radio = carExtras.use().station;
   // a record on at the shop or the record player at home wins, and the car
@@ -169,12 +177,41 @@ export function RoomAudio({ room, muted }: { room: RoomId; muted: boolean }) {
     } else jukebox.stopTrack();
   }, [room, unlocked, pick, nightTrack]);
 
-  const bed: Ambience | null =
-    room === "city"
-      ? neighborhood === "beachside"
-        ? "beach"
-        : "city"
-      : (AMBIENCE[room] ?? null);
+  const fileLevels = ambienceFor(room, neighborhood, hour);
+  const fileDay = fileLevels["city-day"] ?? 0;
+  const fileNight = fileLevels["city-night"] ?? 0;
+  const fileBeach = fileLevels.beach ?? 0;
+  const filePark = fileLevels.park ?? 0;
+  const fileStadium = fileLevels.stadium ?? 0;
+  const fileFountain = fileLevels.fountain ?? 0;
+  useEffect(() => {
+    if (!unlocked) return;
+    void setFileAmbience({
+      "city-day": fileDay,
+      "city-night": fileNight,
+      beach: fileBeach,
+      park: filePark,
+      stadium: fileStadium,
+      fountain: fileFountain,
+    });
+  }, [
+    unlocked,
+    fileDay,
+    fileNight,
+    fileBeach,
+    filePark,
+    fileStadium,
+    fileFountain,
+  ]);
+  useEffect(
+    () => () => {
+      void setFileAmbience({});
+    },
+    [],
+  );
+  const bed: Ambience | null = Object.keys(fileLevels).length
+    ? null
+    : (AMBIENCE[room] ?? null);
   useEffect(() => {
     if (!unlocked || !bed) return;
     return startAmbience(bed);

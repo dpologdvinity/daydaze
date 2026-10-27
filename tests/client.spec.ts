@@ -2712,3 +2712,22 @@ test("collections: the album counts places, a full set pays, stickers show grade
     panel.getByRole("listitem").filter({ hasText: "Bowling" }),
   ).toContainText("grade S");
 });
+
+test("city audio files load only after a gesture", async ({ page }) => {
+  test.setTimeout(330_000);
+  const requests: string[] = [];
+  page.on("request", (request) => {
+    if (new URL(request.url()).pathname.includes("/audio/"))
+      requests.push(request.url());
+  });
+  await page.goto("/?quality=low&still=1&room=city&time=12");
+  await expect(roomTitle(page)).toHaveText("Downtown", { timeout: 150_000 });
+  expect(requests).toEqual([]);
+  await page.keyboard.press("Shift");
+  await expect
+    .poll(() => requests.some((url) => url.includes("city-day.ogg")), {
+      timeout: 60_000,
+    })
+    .toBe(true);
+  expect(requests.every((url) => url.includes("city-day.ogg"))).toBe(true);
+});
