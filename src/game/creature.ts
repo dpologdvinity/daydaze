@@ -65,3 +65,17 @@ export function turnToward(cur: number, target: number, step: number): number {
   const d = Math.atan2(Math.sin(target - cur), Math.cos(target - cur));
   return Math.abs(d) <= step ? target : cur + Math.sign(d) * step;
 }
+
+/**
+ * The clip a model actually plays for `requested`: that clip when the model
+ * has it, else its idle, else "" (nothing). The player compares and stores
+ * this name, not the request, so a fallback idle is always the clip that
+ * fades out on the next change.
+ */
+export function clipToPlay(
+  has: { has(name: string): boolean },
+  requested: string,
+): string {
+  if (has.has(requested)) return requested;
+  return has.has("idle") ? "idle" : "";
+}

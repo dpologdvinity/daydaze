@@ -122,3 +122,38 @@ test("at home it sleeps until you come near, then sits up facing you", () => {
   assert.equal(sleeping(pet, { x: 20, z: 20 }, [1, 1]).clip, "sleep");
   assert.equal(sleeping(pet, { x: 1, z: 2 }, [1, 1]).clip, "sit");
 });
+
+test("a pet fed 'in the future' (a clock that ran ahead) is full, not over 100, and can be fed", () => {
+  const now = 1_000_000_000;
+  const pet = validatePet({
+    kind: "cat",
+    name: "Mochi",
+    adoptedAt: now,
+    fedAt: now + 3 * 86_400_000,
+  });
+  assert.ok(pet);
+  assert.equal(happiness(pet, now), 100);
+  assert.equal(moodOf(pet, now), "happy");
+  // the treat resets the clock to now, so hunger counts from here again
+  assert.equal(canFeed(pet, now), true);
+  assert.equal(feed(pet, now).fedAt, now);
+});
+
+test("following and sleeping can write into one record, frame after frame", () => {
+  const start: Follower = { x: 5, z: 5, yaw: 0, clip: "idle" };
+  const fresh = followStep(start, you, 0.1, false, free);
+  const out: Follower = { ...start };
+  // in place: the same record in and out, the same step as a fresh one
+  assert.equal(followStep(out, you, 0.1, false, free, out), out);
+  assert.deepEqual(out, fresh);
+  // far behind: it arrives beside you, still in the same record
+  const far: Follower = { x: 40, z: 40, yaw: 0, clip: "run" };
+  assert.equal(followStep(far, you, 0.1, false, free, far), far);
+  assert.deepEqual(far, placeBeside(you));
+  // asleep in its bed, then woken
+  const bed: Follower = { x: 0, z: 0, yaw: 0, clip: "idle" };
+  assert.equal(sleeping(bed, { x: 9, z: 9 }, [1, 1], bed), bed);
+  assert.equal(bed.clip, "sleep");
+  sleeping(bed, { x: 1.5, z: 1 }, [1, 1], bed);
+  assert.equal(bed.clip, "sit");
+});

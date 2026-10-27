@@ -53,24 +53,29 @@ export function PetFollower({
     );
     canvas.dataset.petClip = f.clip;
   });
+  // reused every frame: where you are, and the wall test
+  const you = useRef({ x: 0, z: 0, yaw: 0 }).current;
+  const blocked = useMemo(() => (at: Vec2) => isBlocked(area, at), [area]);
   const drive = (dt: number, pose: CreaturePose) => {
-    const you = { x: player.pos.x, z: player.pos.z, yaw: player.yaw };
+    you.x = player.pos.x;
+    you.z = player.pos.z;
+    you.yaw = player.yaw;
     const f = state.current;
-    state.current =
-      room === "apartment"
-        ? sleeping(f, you, PET_BED)
-        : followStep(
-            f,
-            you,
-            Math.min(dt, 0.1),
-            player.sitting || player.seat?.sit === true,
-            (at) => isBlocked(area, at),
-          );
-    const n = state.current;
-    pose.x = n.x;
-    pose.z = n.z;
-    pose.yaw = n.yaw;
-    pose.clip = n.clip;
+    // the next state is written over the last one, in place
+    if (room === "apartment") sleeping(f, you, PET_BED, f);
+    else
+      followStep(
+        f,
+        you,
+        Math.min(dt, 0.1),
+        player.sitting || player.seat?.sit === true,
+        blocked,
+        f,
+      );
+    pose.x = f.x;
+    pose.z = f.z;
+    pose.yaw = f.yaw;
+    pose.clip = f.clip;
   };
   return <Creature key={pet.kind} kind={pet.kind} drive={drive} />;
 }

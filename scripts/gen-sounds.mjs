@@ -4,11 +4,11 @@
 // (MP3 when ffmpeg is missing). Ids that already have a file are skipped, so
 // rerunning only fills gaps; the game never calls the API.
 //
-//   node --env-file=../../.env scripts/gen-sounds.mjs          # sound effects
-//   node --env-file=../../.env scripts/gen-sounds.mjs --music  # music beds too
+//   bash scripts/with-env.sh node scripts/gen-sounds.mjs          # sound effects
+//   bash scripts/with-env.sh node scripts/gen-sounds.mjs --music  # music beds too
 //
-// The SDK reads ELEVENLABS_API_KEY from the environment (`--env-file` loads it
-// from the git-ignored .env); the key never appears in code or output.
+// The SDK reads ELEVENLABS_API_KEY from the environment (scripts/with-env.sh
+// loads it from the git-ignored .env); the key never appears in code or output.
 // Every call prints its credit cost; BUDGET caps one run.
 
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";

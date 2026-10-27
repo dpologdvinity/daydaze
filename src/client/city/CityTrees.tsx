@@ -4,22 +4,22 @@
 // src/game/city/plan.ts). Each model is one instanced mesh per part (bark,
 // leaves) at two levels of detail: the full tree near the player, the
 // simplified `-lo` twin farther out and everywhere on the low tier, which
-// also leaves out trees past LOW_FAR. CityScene
+// also leaves out trees past TREE_LOW_FAR. CityScene
 // hands over the spots on every plan reload (`cityTrees`).
 
 import { useGLTF } from "@react-three/drei";
 import { useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";
 import { TREE_VARIANTS, type TreeSpot } from "../../game/city/plan.ts";
+import { TREE_LOW_FAR } from "../../game/city/tuning.ts";
 import { createStore } from "../rooms/shared/store.ts";
 import { useQuality } from "../world/quality.ts";
 import { floated } from "./floated.ts";
+import { disposeInstanced } from "./dispose.ts";
 
 const MODELS = "/models/nature";
 /** Trees nearer than this (meters, from where the plan was cut) get full detail. */
 const NEAR = 45;
-/** On the low tier, trees past this are left out (the triangle budget). */
-const LOW_FAR = 70;
 /** The most trees of one model at one detail level. */
 const CAPACITY = 160;
 /** The models stand 7-9 m; city trees are a little smaller. */
@@ -62,7 +62,7 @@ const up = new THREE.Vector3(0, 1, 0);
 /** One level of detail: an instanced mesh per model part. */
 function useLevel(lo: boolean) {
   const gltfs = useGLTF(urls(lo));
-  return useMemo(
+  const levels = useMemo(
     () =>
       gltfs.map((g) =>
         partsOf(g.scene).map(({ geometry, material }) => {
@@ -74,6 +74,9 @@ function useLevel(lo: boolean) {
       ),
     [gltfs],
   );
+  // the copies go with the city (the materials are the cached GLB's own)
+  useEffect(() => () => disposeInstanced(levels.flat(), false), [levels]);
+  return levels;
 }
 
 function place(
@@ -85,7 +88,7 @@ function place(
   const counts = new Map<THREE.InstancedMesh, number>();
   for (const t of spots) {
     const d = Math.hypot(t.x - at[0], t.z - at[1]);
-    if (allFar && d > LOW_FAR) continue;
+    if (allFar && d > TREE_LOW_FAR) continue;
     const near = !allFar && d < NEAR;
     const parts = (near ? levels.near : levels.far)[t.variant] ?? [];
     q.setFromAxisAngle(up, t.yaw);
@@ -111,7 +114,9 @@ function place(
 export function CityTrees(): JSX.Element {
   const low = useQuality() === "low";
   const far = useLevel(true);
-  const near = useLevel(false);
+  // the low tier draws every tree far off, so its near level is the cached
+  // far models (never filled): the full-detail files are never fetched
+  const near = useLevel(low);
   const { spots, at } = cityTrees.use();
   useEffect(() => {
     place({ near, far }, spots, at, low);

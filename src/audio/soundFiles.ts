@@ -1,25 +1,30 @@
 // Lazy file playback through the shared SFX bus; no requests before unlock.
 import { getSharedAudioBus } from "./audioBus.ts";
-import { isMusicBed, type AmbienceId } from "./ambience.ts";
+import { AMBIENCE_IDS, isMusicBed, type AmbienceId } from "./ambience.ts";
 
 const buffers = new Map<string, Promise<AudioBuffer>>();
+/** Files that would not load or decode (no Ogg Opus in this browser, say):
+ * never fetched again this session; their places keep the synthesized bed. */
+const failed = new Set<string>();
+const decode = async (url: string, ctx: AudioContext) => {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`${url}: ${r.status}`);
+  return ctx.decodeAudioData(await r.arrayBuffer());
+};
 async function load(id: string, ctx: AudioContext): Promise<AudioBuffer> {
+  if (failed.has(id)) throw new Error(`Audio ${id} is unavailable`);
   let promise = buffers.get(id);
   if (!promise) {
-    promise = fetch(`${import.meta.env.BASE_URL}audio/${id}.ogg`)
-      .then((r) => {
-        if (r.ok) return r.arrayBuffer();
-        return fetch(`${import.meta.env.BASE_URL}audio/${id}.mp3`).then(
-          (fallback) => {
-            if (!fallback.ok)
-              throw new Error(`Audio ${id}: ${fallback.status}`);
-            return fallback.arrayBuffer();
-          },
-        );
-      })
-      .then((data) => ctx.decodeAudioData(data));
+    const base = `${import.meta.env.BASE_URL}audio/${id}`;
+    // the MP3 twin, where one ships, for a browser that can't play the OGG
+    promise = decode(`${base}.ogg`, ctx).catch(() =>
+      decode(`${base}.mp3`, ctx),
+    );
     buffers.set(id, promise);
-    promise.catch(() => buffers.delete(id));
+    promise.catch(() => {
+      buffers.delete(id);
+      failed.add(id);
+    });
   }
   return promise;
 }
@@ -28,15 +33,19 @@ const active = new Map<
   { source: AudioBufferSourceNode; gain: GainNode }
 >();
 let generation = 0;
+const failedIds = (): ReadonlySet<AmbienceId> =>
+  new Set(AMBIENCE_IDS.filter((id) => failed.has(id)));
+/** Fades the looped files to `levels`; resolves with the ids that failed to
+ * load or decode, so the caller can keep the synthesized bed for them. */
 export async function setFileAmbience(
   levels: Partial<Record<AmbienceId, number>>,
-): Promise<void> {
+): Promise<ReadonlySet<AmbienceId>> {
   const token = ++generation;
   const bus = getSharedAudioBus();
   const ctx = bus.getContext();
   const sfx = bus.getSfxDestination();
   const music = bus.getMusicDestination();
-  if (!ctx || !sfx || !music || ctx.state !== "running") return;
+  if (!ctx || !sfx || !music || ctx.state !== "running") return failedIds();
   for (const [id, node] of active) {
     const level = levels[id] ?? 0;
     node.gain.gain.cancelScheduledValues(ctx.currentTime);
@@ -47,8 +56,8 @@ export async function setFileAmbience(
     }
   }
   await Promise.all(
-    Object.entries(levels).map(async ([key, level]) => {
-      const id = key as AmbienceId;
+    AMBIENCE_IDS.map(async (id) => {
+      const level = levels[id];
       if (!level || active.has(id)) return;
       try {
         const buffer = await load(id, ctx);
@@ -67,7 +76,9 @@ export async function setFileAmbience(
       }
     }),
   );
+  return failedIds();
 }
+
 /** One-shot files; `gain` (0..1) turns a far-off sound down. */
 export async function playSoundFile(
   id: "door" | "horn" | "coin" | "camera" | "elephant" | "lion" | "flamingos",

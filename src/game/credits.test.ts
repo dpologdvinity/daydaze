@@ -34,7 +34,7 @@ const rows = () =>
 const sorted = (entries: string[][]) =>
   entries.map((row) => JSON.stringify(row)).sort();
 
-test("credits include all four groups and complete CC-BY attribution", () => {
+test("credits include all five groups and complete CC-BY attribution", () => {
   assert.deepEqual(
     CREDITS.map((group) => group.title),
     ["Audio", "3D models", "Textures", "Animations", "Code libraries"],

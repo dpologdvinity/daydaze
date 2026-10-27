@@ -3,9 +3,10 @@
 // once. Used for the zoo's fences, rocks and trees.
 
 import { useGLTF } from "@react-three/drei";
-import { useMemo, type JSX } from "react";
+import { useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";
 import type { Spot } from "../../../game/zoo.ts";
+import { disposeInstanced } from "../../city/dispose.ts";
 
 export function Scatter({
   url,
@@ -50,6 +51,7 @@ export function Scatter({
     });
     return out;
   }, [gltf, spots, color]);
+  useEffect(() => () => disposeInstanced(meshes, true), [meshes]);
   return (
     <>
       {meshes.map((m, i) => (

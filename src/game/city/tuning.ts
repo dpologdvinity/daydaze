@@ -13,3 +13,7 @@ export const LIGHT_INTENSITY = 6;
 export const LIGHT_DISTANCE = 34;
 /** Simulation rate for walking, in steps per second. */
 export const SIM_HZ = 50;
+/** New York bays are drawn on buildings this near the player, per tier. */
+export const BAY_RANGE = { low: 40, high: 90 } as const;
+/** On the low tier, street trees past this many meters are left out. */
+export const TREE_LOW_FAR = 70;

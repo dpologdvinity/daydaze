@@ -11,6 +11,8 @@ export const CALLS = {
   flamingo: "flamingos",
 } as const satisfies Partial<Record<Species, string>>;
 export type CallId = (typeof CALLS)[keyof typeof CALLS];
+const hasCall = (kind: Species): kind is keyof typeof CALLS =>
+  Object.hasOwn(CALLS, kind);
 
 /** Past this many meters a call is not worth playing. */
 export const HEARING = 24;
@@ -32,7 +34,9 @@ export function pickCall(
   animals: readonly { kind: Species; at: Vec2 }[],
   pick: number,
 ): { id: CallId; gain: number } | null {
-  const voices = animals.filter((a) => a.kind in CALLS);
+  const voices = animals.flatMap((a) =>
+    hasCall(a.kind) ? [{ id: CALLS[a.kind], at: a.at }] : [],
+  );
   const one =
     voices[Math.min(voices.length - 1, Math.floor(pick * voices.length))];
   if (!one) return null;
@@ -40,6 +44,5 @@ export function pickCall(
     Math.hypot(one.at[0] - listener[0], one.at[1] - listener[1]),
   );
   if (gain < 0.03) return null;
-  const id = CALLS[one.kind as keyof typeof CALLS];
-  return { id, gain: Math.min(1, gain) };
+  return { id: one.id, gain: Math.min(1, gain) };
 }

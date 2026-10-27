@@ -229,9 +229,16 @@ function Diving({ player }: { player: Player }) {
     startDive();
     state.current.air = dive.get().air;
     scuba.set({ wearing: true });
-    return endDive;
+    // she can leave by any travel (an arrest, a visit, a party), not only
+    // the ladder: the gear comes off with the dive
+    return () => {
+      endDive();
+      scuba.set({ wearing: false });
+    };
   }, []);
   const mouth = useRef<[number, number]>([0, 0]);
+  // reused for each creature's spot as the sightings are checked
+  const seen = useRef<[number, number]>([0, 0]);
   const scratch = useRef({ x: 0, z: 0, above: 0, yaw: 0 });
   useFrame((_, dt) => {
     const s = state.current;
@@ -247,14 +254,22 @@ function Diving({ player }: { player: Player }) {
     for (const life of LIFE)
       for (let i = 0; i < life.count; i++) {
         const p = lifePose(life, i, clock(), scratch.current);
-        if (canSee(mouth.current, player.yaw, [p.x, p.z], undefined, undefined))
+        seen.current[0] = p.x;
+        seen.current[1] = p.z;
+        if (
+          canSee(mouth.current, player.yaw, seen.current, undefined, undefined)
+        )
           sighted(life.species);
       }
     if (atWreck(mouth.current)) wreckFound();
-    // out of air: an emergency ascent to the ladder
-    if (s.air <= 0) {
+    // out of air: an emergency ascent, once: she is brought beside the
+    // ladder and swims the last stroke into it, which takes her up
+    if (s.air <= 0 && s.out <= 1.5) {
       s.out += 0.25;
-      if (s.out > 1.5) placePlayer(player, LADDER[0], LADDER[1] - 0.2);
+      if (s.out > 1.5) {
+        placePlayer(player, LADDER[0], LADDER[1] - 1.6);
+        player.walk.target = LADDER;
+      }
     }
   });
   return null;

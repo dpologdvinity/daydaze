@@ -23,6 +23,7 @@ import { createStore } from "../rooms/shared/store.ts";
 import { useQuality } from "../world/quality.ts";
 import { useDaylight } from "./daylight.ts";
 import { floated } from "./floated.ts";
+import { disposeInstanced } from "./dispose.ts";
 
 const MODELS = "/models/street";
 /** The most pieces of one kind in view at once. */
@@ -144,6 +145,7 @@ export function CityFurniture(): JSX.Element {
     if (spots.length > 0) canvas.dataset.furniture = "ready";
   }, [meshes, spots, at, low, canvas]);
   const all = useMemo(() => [...meshes.values()].flat(), [meshes]);
+  useEffect(() => () => disposeInstanced(all, true), [all]);
   return (
     <>
       {all.map((mesh) => (

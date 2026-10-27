@@ -18,6 +18,7 @@ import {
   type Clip,
   type CreatureKind,
 } from "../../game/creatures.ts";
+import { clipToPlay } from "../../game/creature.ts";
 import { useReducedMotion } from "../motion.ts";
 import { useQuality } from "../world/quality.ts";
 
@@ -100,7 +101,18 @@ export function Creature({
     mixer.stopAllAction();
     return { root, k, shift, mixer, actions };
   }, [gltf, kind]);
-  useEffect(() => () => void rig.mixer.stopAllAction(), [rig]);
+  useEffect(
+    () => () => {
+      rig.mixer.stopAllAction();
+      // each clone has its own skeleton, whose bone texture lives on the GPU
+      // (rebuilt if the rig is shown again; the mixer's cache is not dropped:
+      // a remount, as React's dev check does, plays the same actions again)
+      rig.root.traverse((o) => {
+        if (o instanceof THREE.SkinnedMesh) o.skeleton.dispose();
+      });
+    },
+    [rig],
+  );
 
   const group = useRef<THREE.Group>(null);
   const sway = useRef<THREE.Group>(null);
@@ -120,15 +132,18 @@ export function Creature({
     g.position.set(p.x, p.y, p.z);
     g.rotation.y = p.yaw;
     const s = state.current;
-    if (s.clip !== p.clip) {
-      const next = rig.actions.get(p.clip) ?? rig.actions.get("idle");
+    // the clip it really plays (idle for one the model lacks), so the
+    // fallback idle is what fades out on the next change
+    const want = clipToPlay(rig.actions, p.clip);
+    if (s.clip !== want) {
+      const next = rig.actions.get(want);
       const prev = rig.actions.get(s.clip);
-      if (next && next !== prev) {
+      if (next) {
         next.reset().play();
         if (prev) prev.crossFadeTo(next, FADE, false);
         else next.fadeIn(FADE);
       }
-      s.clip = p.clip;
+      s.clip = want;
     }
     // posture: a sitting animal tips back, a sleeping one lies on its side,
     // and a model with no skeleton walks with a bob and roll and bows to graze

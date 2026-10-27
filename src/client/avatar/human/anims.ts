@@ -26,9 +26,15 @@ export const BONE = {
 const baked = new Map<string, ReadonlyMap<string, THREE.AnimationClip>>();
 const loading = new Map<string, Promise<void>>();
 
+// seconds before a failed clip file may be fetched again, doubling per miss
+const RETRY_FIRST = 15;
+const RETRY_MOST = 300;
+const retryIn = new Map<string, number>();
+
 /** Starts fetching a skeleton's clip file (once; `suffix` as modelSuffix);
- * resolves when it has loaded. A failed fetch is logged and retried on the
- * next call, and the dolls keep their built poses meanwhile. */
+ * resolves when it has loaded. A failed fetch is logged and retried after a
+ * wait that doubles each time (so a crowd of dolls asks once, not once
+ * each), and the dolls keep their built poses meanwhile. */
 export function loadAnims(suffix = ""): Promise<void> {
   let p = loading.get(suffix);
   if (!p) {
@@ -37,10 +43,13 @@ export function loadAnims(suffix = ""): Promise<void> {
       .loadAsync(`/models/doll/anims${suffix}.glb`)
       .then((gltf) => {
         baked.set(suffix, new Map(gltf.animations.map((c) => [c.name, c])));
+        retryIn.delete(suffix);
       })
       .catch((e: unknown) => {
         console.warn(e);
-        loading.delete(suffix);
+        const wait = retryIn.get(suffix) ?? RETRY_FIRST;
+        retryIn.set(suffix, Math.min(RETRY_MOST, wait * 2));
+        window.setTimeout(() => loading.delete(suffix), wait * 1000);
       });
     loading.set(suffix, p);
   }

@@ -14,16 +14,16 @@ import { useGLTF } from "@react-three/drei";
 import { useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";
 import {
+  BAY_CAPACITY,
   BAY_KINDS,
   type BayInstance,
   type BayKind,
 } from "../../game/city/nyc.ts";
 import { createStore } from "../rooms/shared/store.ts";
+import { disposeInstanced } from "./dispose.ts";
 import { groundMaps, boxMapped } from "./worldTexture.ts";
 
 const URL = "/models/nyc/bays.glb";
-/** The most bays of one kind in view. */
-const CAPACITY = 4096;
 
 /** The bays near the player and where the plan was cut; set by CityScene. */
 export const cityBays = createStore({ bays: [] as readonly BayInstance[] });
@@ -161,7 +161,7 @@ function place(
   for (const bay of bays) {
     const mesh = meshes[bay.kind];
     const i = counts[bay.kind];
-    if (i >= CAPACITY) continue;
+    if (i >= BAY_CAPACITY) continue;
     q.setFromAxisAngle(up, bay.yaw);
     m4.compose(p.set(bay.x, bay.y, bay.z), q, s.set(bay.sx, bay.sy, 1));
     mesh.setMatrixAt(i, m4);
@@ -187,7 +187,7 @@ export function NycFacades(): JSX.Element {
       const mesh = new THREE.InstancedMesh(
         prepared(node),
         bayMaterial(),
-        CAPACITY,
+        BAY_CAPACITY,
       );
       mesh.count = 0;
       mesh.frustumCulled = false;
@@ -197,6 +197,12 @@ export function NycFacades(): JSX.Element {
     }
     return out;
   }, [gltf]);
+  // the geometry copies and instance buffers go with the city; the one
+  // shared material stays for the next visit
+  useEffect(
+    () => () => disposeInstanced(Object.values(meshes), false),
+    [meshes],
+  );
   const { bays } = cityBays.use();
   const invalidate = useThree((state) => state.invalidate);
   const canvas = useThree((state) => state.gl.domElement);

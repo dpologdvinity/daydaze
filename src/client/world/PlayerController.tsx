@@ -384,8 +384,8 @@ export function PlayerController({
       const [bx, bz] = player.before.pos;
       const [x, z] = player.walk.pos;
       // in the sea she wades, or floats at the surface, or hangs in the deep
-      const wet = stateIn(water, [x, z]);
-      const rise = seaLevel(water, wet, [x, z], moving || !!intent);
+      const wet = stateIn(water, player.walk.pos);
+      const rise = seaLevel(water, wet, player.walk.pos, moving || !!intent);
       swimY.current = calm
         ? rise
         : THREE.MathUtils.damp(swimY.current, rise, 5, dt);

@@ -29,7 +29,8 @@ function Walker({ index }: { index: number }) {
     g.current.position.set(pose.current.x, 0, pose.current.z);
     g.current.rotation.y = pose.current.yaw;
   });
-  // a dog walker's dog trots at her right hand, a little ahead
+  // a dog walker's dog trots at her left hand (+x at yaw 0, facing +z), a
+  // little ahead
   const dog = p.dog;
   const drive = (_dt: number, out: CreaturePose) => {
     const { x, z, yaw } = pose.current;

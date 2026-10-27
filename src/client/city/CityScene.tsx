@@ -8,6 +8,7 @@ import {
   neighborhoodAt,
 } from "../../game/city/cells.ts";
 import {
+  BAY_RANGE,
   LIGHT_DISTANCE,
   LIGHT_INTENSITY,
   POINT_LIGHTS,
@@ -51,8 +52,6 @@ import { PlayerCar } from "./PlayerCar.tsx";
 import { GasStations } from "./GasStations.tsx";
 import type { ParkedCar } from "../../game/city/drive.ts";
 
-/** How far from the player New York blocks wear real bays (meters). */
-const BAY_RANGE = { low: 40, high: 90 } as const;
 /** `?bays=0` turns the New York bays off, to compare budgets. */
 const NO_BAYS = new URLSearchParams(location.search).get("bays") === "0";
 
