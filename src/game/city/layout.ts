@@ -18,6 +18,13 @@ import * as GALLERIA from "../galleria.ts";
 import * as RINK from "../rollerRink.ts";
 import * as SKATEPARK from "../skatepark.ts";
 import {
+  BOARDWALK_BLOCKERS,
+  boardwalkShops,
+  deckGaps,
+  DECK,
+  SHOP_Z1,
+} from "./boardwalk.ts";
+import {
   PARK,
   PARK_BLOCKERS,
   PARK_LAWNS,
@@ -124,7 +131,7 @@ export const SHORE_Z = 256;
 // The Fairground, south-east between the avenue's old edge and Shore
 // Boulevard: its gates stand on a forecourt along the boulevard's north side.
 export const FAIR_FORECOURT_Z = 239;
-export const BOARDWALK = { z0: 267, z1: 279 };
+export const BOARDWALK = { z0: DECK.z0, z1: DECK.z1 };
 export const WATER_Z = 340;
 /** Downtown Plaza, the city square between the avenue and the arcade: a
  * tiered fountain in the middle, benches round it facing in, and a bus
@@ -282,6 +289,8 @@ export type Building = {
   /** A line of people waits on the forecourt. */
   queue?: boolean;
   door?: Door;
+  /** Which wall carries the dressing, when not the one the street or door picks. */
+  front?: "zmin" | "zmax" | "xmin" | "xmax";
 };
 
 export type Surface = {
@@ -557,7 +566,7 @@ const SUBURB_BUILDINGS: readonly Building[] = SUBURB_FRONT.map(
   },
 );
 
-const SUBURB_LAWNS: readonly Surface[] = SUBURB_FRONT.filter(
+export const SUBURB_LAWNS: readonly Surface[] = SUBURB_FRONT.filter(
   (b) => b.house,
 ).map((b): Surface => ({
   kind: "lawn",
@@ -570,6 +579,24 @@ const SUBURB_LAWNS: readonly Surface[] = SUBURB_FRONT.filter(
         GALLERY_Z + 19,
       ),
 }));
+
+// x of each north-south street; each has two edges, so dedupe.
+const CROSS_STREETS = [
+  ...new Set(
+    ROAD_EDGES.filter((e) => nodeAt(e.from)[0] === nodeAt(e.to)[0]).map(
+      (e) => nodeAt(e.from)[0],
+    ),
+  ),
+];
+
+function nearCross(x: number): boolean {
+  return CROSS_STREETS.some((cx) => Math.abs(x - cx) < 11);
+}
+
+/** The boardwalk's storefronts, clear of the cross streets and the pier's approach. */
+const BOARDWALK_SHOPS = boardwalkShops(
+  (x) => nearCross(x) || Math.abs(x - PIER.x) < 12,
+);
 
 export const CITY_SURFACES: readonly Surface[] = [
   // gas station forecourts, off the cross streets
@@ -634,8 +661,13 @@ export const CITY_SURFACES: readonly Surface[] = [
   { kind: "sidewalk", polygon: rect(330, FAIR_FORECOURT_Z, 440, SHORE_Z - 11) },
   {
     kind: "boardwalk",
-    polygon: rect(WEST_EDGE, BOARDWALK.z0, EAST_EDGE, BOARDWALK.z1),
+    polygon: rect(WEST_EDGE, SHOP_Z1, EAST_EDGE, BOARDWALK.z1),
   },
+  // the deck between the storefronts, down from the sidewalk
+  ...deckGaps(BOARDWALK_SHOPS, WEST_EDGE, EAST_EDGE).map((g): Surface => ({
+    kind: "boardwalk",
+    polygon: rect(g.x0, DECK.z0, g.x1, SHOP_Z1),
+  })),
   { kind: "sand", polygon: rect(WEST_EDGE, BOARDWALK.z1, EAST_EDGE, WATER_Z) },
   // the park's lawn, round the Ice Rink lodge in its north-east corner
   ...PARK_LAWNS.map((b): Surface => ({
@@ -1826,6 +1858,17 @@ const BEACH_BUILDINGS: readonly Building[] = [
     sign: b.sign,
     ...(b.door ? { door: b.door } : {}),
   })),
+  // the boardwalk's storefronts, facing the deck
+  ...BOARDWALK_SHOPS.map((b, i): Building => ({
+    id: `boardwalk-shop-${i}`,
+    neighborhood: "beachside",
+    footprint: rect(b.x - b.w / 2, DECK.z0, b.x + b.w / 2, SHOP_Z1),
+    height: b.h,
+    style: "storefront",
+    color: b.color,
+    sign: b.sign,
+    front: "zmax",
+  })),
 ];
 
 export const BUILDINGS: readonly Building[] = [
@@ -2245,19 +2288,6 @@ export const BUILDINGS: readonly Building[] = [
   ...SUBURB_BUILDINGS,
 ];
 
-// x of each north-south street; each has two edges, so dedupe.
-const CROSS_STREETS = [
-  ...new Set(
-    ROAD_EDGES.filter((e) => nodeAt(e.from)[0] === nodeAt(e.to)[0]).map(
-      (e) => nodeAt(e.from)[0],
-    ),
-  ),
-];
-
-function nearCross(x: number): boolean {
-  return CROSS_STREETS.some((cx) => Math.abs(x - cx) < 11);
-}
-
 // Street props sit on the sidewalks; the avenue lamps and palms alternate,
 // and cross streets get trees every 60 m. Props block the walk like a post.
 function buildProps(): Prop[] {
@@ -2335,13 +2365,14 @@ function buildProps(): Prop[] {
   for (let i = 0; i < 20; i++) {
     // a fixed scatter, not random: the same beach every visit
     const x = WEST_EDGE + 20 + ((i * 113) % (EAST_EDGE - WEST_EDGE - 40));
-    const z = BOARDWALK.z1 + 8 + ((i * 37) % 44);
+    const z = BOARDWALK.z1 + 8 + ((i * 37) % 36);
     props.push({ kind: "palm", position: [x, z] });
   }
   return props;
 }
 
 export const PROPS: readonly Prop[] = buildProps();
+export { BOARDWALK_SHOPS };
 
 const PROP_HALF = 0.25;
 
@@ -2374,6 +2405,7 @@ const CITY_BLOCKERS: readonly (readonly Vec2[])[] = [
   ),
   ...MARKET_BLOCKERS,
   ...PARK_BLOCKERS,
+  ...BOARDWALK_BLOCKERS,
   // gas station mini-marts and pump islands
   ...GAS_BLOCKERS,
 ];

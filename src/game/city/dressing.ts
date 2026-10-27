@@ -6,8 +6,12 @@ import { pointInPolygon, type Vec2 } from "../walk.ts";
 import {
   BUILDINGS,
   CITY_SURFACES,
+  BONFIRES,
+  BOARDWALK_SHOPS,
   GALLERY_Z,
+  PIER,
   PROPS,
+  VOLLEYBALL,
   ROAD_EDGES,
   ROAD_NODES,
   type Building,
@@ -17,6 +21,7 @@ import type { Instance, Kind } from "./plan.ts";
 import { hash, pick } from "./hash.ts";
 import type { FurnitureKind, FurnitureSpot } from "./furniture.ts";
 import { parkFurniture } from "./park.ts";
+import { boardwalkFurniture } from "./boardwalk.ts";
 import { detailBuilding } from "./detail.ts";
 
 export { hash };
@@ -209,6 +214,7 @@ export function facingOf(b: Building): Facing {
     const order: Face[] = [avenue === "zmin" ? "zmax" : "zmin", "xmin", "xmax"];
     face = order.find((f) => paved(outside[f])) ?? avenue;
   }
+  if (b.front) face = b.front;
   let facing: Facing;
   if (face === "zmin" || face === "zmax") {
     facing = {
@@ -845,6 +851,17 @@ function furnitureSpots(): FurnitureSpot[] {
         scale: 1,
       });
   out.push(...parkFurniture());
+  out.push(
+    ...boardwalkFurniture(BOARDWALK_SHOPS, (x, z) => {
+      if (Math.abs(x - PIER.x) < 8) return true;
+      if (BONFIRES.some(([bx, bz]) => Math.hypot(x - bx, z - bz) < 7))
+        return true;
+      return (
+        Math.abs(x - VOLLEYBALL.x) < VOLLEYBALL.half + 4 &&
+        Math.abs(z - VOLLEYBALL.z) < VOLLEYBALL.depth + 4
+      );
+    }),
+  );
   for (const x of BUS_STOPS)
     out.push({ kind: "busstop", x, z: -9, yaw: 0, scale: 1 });
   // stop signs and no-parking signs at the cross streets' corners

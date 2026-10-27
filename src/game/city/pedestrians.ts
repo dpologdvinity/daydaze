@@ -18,6 +18,7 @@ import { NPC_GAITS, gaitOf } from "../gaits.ts";
 import type { Vec2 } from "../walk.ts";
 import type { LandKind } from "../creatures.ts";
 import { PARK } from "./park.ts";
+import { SHOP_Z1 } from "./boardwalk.ts";
 import { CITY_SURFACES } from "./layout.ts";
 
 export type Pedestrian = {
@@ -55,16 +56,18 @@ const STREET_HAIR = HAIR_STYLES.filter((h) =>
 
 /** About one pedestrian per 40 m of sidewalk, on every long strip. */
 export const PEDESTRIANS: readonly Pedestrian[] = CITY_SURFACES.filter(
-  (s) => s.kind === "sidewalk",
+  (s) => s.kind === "sidewalk" || s.kind === "boardwalk",
 ).flatMap((s, si) => {
   const xs = s.polygon.map(([x]) => x);
   const zs = s.polygon.map(([, z]) => z);
-  const [x0, x1, z0, z1] = [
+  const [x0, x1, minZ, z1] = [
     Math.min(...xs),
     Math.max(...xs),
     Math.min(...zs),
     Math.max(...zs),
   ];
+  // strollers keep to the open deck, in front of the storefronts
+  const z0 = s.kind === "boardwalk" ? Math.max(minZ, SHOP_Z1) : minZ;
   const along = x1 - x0 >= z1 - z0;
   const length = along ? x1 - x0 : z1 - z0;
   if (length < 30) return [];

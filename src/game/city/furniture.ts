@@ -26,6 +26,18 @@ export const FURNITURE_KINDS = [
   "busstop",
   "sign-stop",
   "sign-noparking",
+  "umbrella-red",
+  "umbrella-blue",
+  "lifeguard",
+  "chaise",
+  "rail",
+  "popcorn-cart",
+  "hotdog-cart",
+  "cone",
+  "ferris",
+  "carousel",
+  "towel",
+  "sandcastle",
 ] as const;
 
 export type FurnitureKind = (typeof FURNITURE_KINDS)[number];
@@ -72,6 +84,18 @@ export const FURNITURE_RANGE: Record<
   "picnic-table": [45, 100],
   basket: [30, 70],
   blanket: [40, 90],
+  "umbrella-red": [60, 120],
+  "umbrella-blue": [60, 120],
+  lifeguard: [90, 150],
+  chaise: [40, 90],
+  rail: [45, 100],
+  "popcorn-cart": [50, 100],
+  "hotdog-cart": [50, 100],
+  cone: [110, 180],
+  ferris: [200, 260],
+  carousel: [110, 180],
+  towel: [30, 70],
+  sandcastle: [30, 70],
   busstop: [60, 140],
   "sign-stop": [50, 110],
   "sign-noparking": [40, 90],
@@ -96,13 +120,25 @@ export const SIGNAL = {
   radius: 0.2,
 } as const;
 
-/** The park's kinds, whose models live in public/models/park/. */
-export const PARK_KINDS: ReadonlySet<FurnitureKind> = new Set([
-  "fountain",
-  "gazebo",
-  "rowboat",
-  "duck",
-  "picnic-table",
-  "basket",
-  "blanket",
-]);
+/** Where each kind's model lives, when not in public/models/street/. */
+export const MODEL_DIR: Partial<Record<FurnitureKind, string>> = {
+  fountain: "park",
+  gazebo: "park",
+  rowboat: "park",
+  duck: "park",
+  "picnic-table": "park",
+  basket: "park",
+  blanket: "park",
+  "umbrella-red": "beach",
+  "umbrella-blue": "beach",
+  lifeguard: "beach",
+  chaise: "beach",
+  rail: "beach",
+  "popcorn-cart": "beach",
+  "hotdog-cart": "beach",
+  cone: "beach",
+  ferris: "beach",
+  carousel: "beach",
+  towel: "beach",
+  sandcastle: "beach",
+};

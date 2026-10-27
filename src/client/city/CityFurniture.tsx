@@ -14,7 +14,7 @@ import { useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";
 import {
   FURNITURE_KINDS,
-  PARK_KINDS,
+  MODEL_DIR,
   furnitureVisible,
   type FurnitureKind,
   type FurnitureSpot,
@@ -29,8 +29,10 @@ const MODELS = "/models/street";
 /** The most pieces of one kind in view at once. */
 const CAPACITY = 256;
 
-const url = (kind: FurnitureKind) =>
-  `${PARK_KINDS.has(kind) ? "/models/park" : MODELS}/${kind}.glb`;
+const url = (kind: FurnitureKind) => {
+  const dir = MODEL_DIR[kind];
+  return `${dir ? `/models/${dir}` : MODELS}/${kind}.glb`;
+};
 
 /** The furniture in view and where the plan was cut; set by CityScene. */
 export const cityFurniture = createStore({

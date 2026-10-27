@@ -72,6 +72,18 @@ future imported packs belong here when they enter the game.
 | Picnic Table | J-Toastie | CC-BY 3.0 | https://poly.pizza/m/GQieALI2C4 | Picnic tables in the park. |
 | Picnic Basket | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/aWBGhxXig8y | Baskets on the park's picnic blankets. |
 | Round Rug | Quaternius | CC0 1.0 | https://poly.pizza/m/ZYBzMHnSbM | Picnic blankets on the park lawn. |
+| Red/White Beach Umbrella | S. Paul Michael | CC-BY 3.0 | https://poly.pizza/m/2li3sdSkmCI | Beach umbrellas on Beachside's sand, decimated. |
+| Blue/White Beach Umbrella | S. Paul Michael | CC-BY 3.0 | https://poly.pizza/m/1BLLDjRdxoa | Beach umbrellas on Beachside's sand, decimated. |
+| Lifeguard Tower | Daniel Doran | CC-BY 3.0 | https://poly.pizza/m/eTXK45QuLQT | Lifeguard stands on the beach, decimated. |
+| Orange Chaise Lounge Chair | S. Paul Michael | CC-BY 3.0 | https://poly.pizza/m/8ir-Gw1ZObm | Lounge chairs under the beach umbrellas. |
+| Fence | Quaternius | CC0 1.0 | https://poly.pizza/m/e02PFKKhbr | The boardwalk's rail and the dune fence. |
+| Popcorn Cart | Don Carson | CC-BY 3.0 | https://poly.pizza/m/1T9untmohmj | Food carts on the boardwalk deck. |
+| Hot dogs! Get your hot dogs! | Anonymous | CC-BY 3.0 | https://poly.pizza/m/8n7WTYXqb2n | Food carts on the boardwalk deck. |
+| Ice Cream | Quaternius | CC0 1.0 | https://poly.pizza/m/iZiAPq7Sne | The giant cone on the ice cream shop's roof. |
+| Ferris wheel | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/1VmmK6Gus8f | The Ferris wheel at the boardwalk's fairground end. |
+| Merry go 'round | sirkitree | CC-BY 3.0 | https://poly.pizza/m/8BliGG-e55g | The carousel on the boardwalk deck. |
+| Towel | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/19oMd_9kHDT | Beach towels on the sand. |
+| Sand castle | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/5iuHHfVoaza | Sand castles on the beach. |
 | Coral Reef Set 1 | MiniPoly | CC0 1.0 | https://poly.pizza/m/74GL45Fvdh | Reef dive: coral heads, instanced; sets joined and compressed (art/ocean). |
 | Coral Reef Sets 2 to 6 | MiniPoly | CC-BY 3.0 | https://poly.pizza/bundle/Coral-Reef-Kit-ghN8EmbYa6 | Reef dive: coral, branching coral and anemones, instanced. |
 | Coral Grouper | Quaternius | CC0 1.0 | https://poly.pizza/m/Q2GNw9TRzF | Reef dive: the grouper, one vertex-colored skinned mesh. |

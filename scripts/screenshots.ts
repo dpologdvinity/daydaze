@@ -355,6 +355,24 @@ const SHOTS: {
     act: furnitureReady,
   },
   {
+    // Beachside's boardwalk (src/game/city/boardwalk.ts)
+    name: "city-boardwalk",
+    query: "room=city&view=full&time=15:00&at=-34,286",
+    act: furnitureReady,
+  },
+  {
+    // the boardwalk's fairground end: carousel and Ferris wheel
+    name: "city-boardwalk-fair",
+    query: "room=city&view=full&time=15:00&at=330,322",
+    act: furnitureReady,
+  },
+  {
+    // sunbathers' umbrellas, a lifeguard stand and the dune fence
+    name: "city-beach",
+    query: "room=city&view=full&time=15:00&at=-135,317",
+    act: furnitureReady,
+  },
+  {
     name: "city-sidewalk-night",
     query: "room=city&view=full&time=23:00&at=-36,9.5",
     act: furnitureReady,
