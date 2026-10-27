@@ -36,7 +36,7 @@ for n in ["Clownfish", "BlueTang", "YellowTang", "Goldfish", "Puffer", "Koi",
 # Zoo species downloaded from poly.pizza (see docs/assets.md): the zebra is
 # rigged with clips; the rest are static meshes the client sways and bobs.
 POLY = "../poly"
-for n in ["zebra", "giraffe", "elephant", "lion", "penguin", "flamingo", "cat", "rabbit"]:
+for n in ["zebra", "giraffe", "elephant", "lion", "penguin", "flamingo", "cat", "rabbit", "pig", "sheep"]:
     SOURCES[n] = f"{POLY}/{n}.glb"
 # Sea life from Poly Pizza (art/ocean/fetch_ocean.py puts them in
 # art/ocean/.cache/glb): the grouper is skinned; the crab and turtle are static meshes.
@@ -49,7 +49,7 @@ for n in ["grouper", "crab", "turtle"]:
 # giraffe's and lion's single clip is a calm idle, used for every state.
 SKETCHFAB = "../sketchfab"
 TEXTURED = {"giraffe", "elephant", "lion", "penguin"}
-for n in TEXTURED:
+for n in TEXTURED | {"chicken"}:
     SOURCES[n] = f"{SKETCHFAB}/{n}.glb"
 
 # Clips kept (matched by suffix after the last "|"), renamed to the key.
@@ -61,6 +61,7 @@ CLIPS = {
     # Sketchfab elephant ("TRS|...") and penguin
     "idle": "idle", "walk": "walk", "run": "run", "eating": "eat", "idle down": "graze",
     "idle trumpet": "react", "Preen": "graze", "Sleep": "sleep", "Sit1": "sit",
+    "pecking": "graze", "walking": "walk", "rest": "sleep", "sitting-idle": "sit",
     "Take 01": "idle", "Animation": "idle",
 }
 
