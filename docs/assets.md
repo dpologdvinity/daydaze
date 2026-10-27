@@ -1,6 +1,6 @@
 # Asset credits
 
-Sources for third-party assets shipped in Daydaze. Music is procedural; sound effects include generated audio.
+Sources for third-party assets shipped in Daydaze. Game music is procedural; ambience, sound effects and two music beds are generated audio.
 Mixamo animations (Adobe), used under Mixamo's terms.
 
 To add an asset, append a row under the appropriate group and a matching entry
@@ -155,4 +155,4 @@ Only the clips listed in `mocap.py`'s `CLIPS` ship, retargeted onto our own skel
 
 | Title | Author | License | URL | Used for |
 | --- | --- | --- | --- | --- |
-| ElevenLabs-generated sounds | ElevenLabs | Per ElevenLabs terms for paid plans | https://elevenlabs.io/terms-of-use | Generated for Daydaze: ambience and sound effects. |
+| ElevenLabs-generated sounds | ElevenLabs | Per ElevenLabs terms for paid plans | https://elevenlabs.io/terms-of-use | Generated for Daydaze: ambience, sound effects and two music beds. |

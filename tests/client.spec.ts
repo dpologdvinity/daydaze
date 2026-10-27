@@ -2717,7 +2717,7 @@ test("city audio files load only after a gesture", async ({ page }) => {
   test.setTimeout(330_000);
   const requests: string[] = [];
   page.on("request", (request) => {
-    if (new URL(request.url()).pathname.includes("/audio/"))
+    if (/^\/audio\/.*\.(ogg|mp3)$/.test(new URL(request.url()).pathname))
       requests.push(request.url());
   });
   await page.goto("/?quality=low&still=1&room=city&time=12");

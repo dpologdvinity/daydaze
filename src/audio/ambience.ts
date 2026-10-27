@@ -4,8 +4,46 @@ import type { Neighborhood } from "../game/city/layout.ts";
 import { daylightAt } from "../game/city/daylight.ts";
 
 export type AmbienceId =
-  "city-day" | "city-night" | "beach" | "park" | "stadium" | "fountain";
+  | "city-day"
+  | "city-night"
+  | "beach"
+  | "park"
+  | "stadium"
+  | "fountain"
+  | "music-boardwalk"
+  | "music-lounge";
+
+/** Ids that are music beds: played on the music bus, instead of a jukebox track. */
+export function isMusicBed(id: AmbienceId): boolean {
+  return id.startsWith("music-");
+}
+
+const BED = 0.2;
+const BOARDWALK_ROOMS: readonly RoomId[] = ["surf-shack", "tiki-bar"];
+const LOUNGE_ROOMS: readonly RoomId[] = [
+  "velvet-room",
+  "violet-hour",
+  "green-haze",
+  "wine-bar",
+];
+
+/** Ambience plus the quiet music bed (if any) for a place. */
 export function ambienceFor(
+  room: RoomId,
+  district: Neighborhood,
+  hour: number,
+): Partial<Record<AmbienceId, number>> {
+  const levels = ambienceBase(room, district, hour);
+  if (
+    BOARDWALK_ROOMS.includes(room) ||
+    (room === "city" && district === "beachside")
+  )
+    levels["music-boardwalk"] = BED;
+  if (LOUNGE_ROOMS.includes(room)) levels["music-lounge"] = BED;
+  return levels;
+}
+
+function ambienceBase(
   room: RoomId,
   district: Neighborhood,
   hour: number,

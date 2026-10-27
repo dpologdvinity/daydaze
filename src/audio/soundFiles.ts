@@ -1,6 +1,6 @@
 // Lazy file playback through the shared SFX bus; no requests before unlock.
 import { getSharedAudioBus } from "./audioBus.ts";
-import type { AmbienceId } from "./ambience.ts";
+import { isMusicBed, type AmbienceId } from "./ambience.ts";
 
 const buffers = new Map<string, Promise<AudioBuffer>>();
 async function load(id: string, ctx: AudioContext): Promise<AudioBuffer> {
@@ -34,8 +34,9 @@ export async function setFileAmbience(
   const token = ++generation;
   const bus = getSharedAudioBus();
   const ctx = bus.getContext();
-  const dest = bus.getSfxDestination();
-  if (!ctx || !dest || ctx.state !== "running") return;
+  const sfx = bus.getSfxDestination();
+  const music = bus.getMusicDestination();
+  if (!ctx || !sfx || !music || ctx.state !== "running") return;
   for (const [id, node] of active) {
     const level = levels[id] ?? 0;
     node.gain.gain.cancelScheduledValues(ctx.currentTime);
@@ -57,7 +58,7 @@ export async function setFileAmbience(
         source.buffer = buffer;
         source.loop = true;
         gain.gain.value = 0;
-        source.connect(gain).connect(dest);
+        source.connect(gain).connect(isMusicBed(id) ? music : sfx);
         gain.gain.setTargetAtTime(level, ctx.currentTime, 0.5);
         source.start();
         active.set(id, { source, gain });

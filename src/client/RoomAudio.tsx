@@ -165,25 +165,31 @@ export function RoomAudio({ room, muted }: { room: RoomId; muted: boolean }) {
     return () => window.clearInterval(id);
   }, [room]);
 
+  const fileLevels = ambienceFor(room, neighborhood, hour);
+  const hasBed = !!(
+    fileLevels["music-boardwalk"] || fileLevels["music-lounge"]
+  );
   useEffect(() => {
     if (!unlocked) return;
     const jukebox = getSharedJukeboxController();
     // music sits under the room, not over it
     jukebox.setMusicVolume(0.35);
-    const track = pick ?? nightTrack ?? MUSIC[room];
+    // a file music bed stands in for the room's default track
+    const track = pick ?? nightTrack ?? (hasBed ? undefined : MUSIC[room]);
     if (track) {
       if (jukebox.getCurrentTrack() !== track || !jukebox.isPlaying())
         jukebox.playTrack(track);
     } else jukebox.stopTrack();
-  }, [room, unlocked, pick, nightTrack]);
+  }, [room, unlocked, pick, nightTrack, hasBed]);
 
-  const fileLevels = ambienceFor(room, neighborhood, hour);
   const fileDay = fileLevels["city-day"] ?? 0;
   const fileNight = fileLevels["city-night"] ?? 0;
   const fileBeach = fileLevels.beach ?? 0;
   const filePark = fileLevels.park ?? 0;
   const fileStadium = fileLevels.stadium ?? 0;
   const fileFountain = fileLevels.fountain ?? 0;
+  const fileBoardwalk = fileLevels["music-boardwalk"] ?? 0;
+  const fileLounge = fileLevels["music-lounge"] ?? 0;
   useEffect(() => {
     if (!unlocked) return;
     void setFileAmbience({
@@ -193,6 +199,8 @@ export function RoomAudio({ room, muted }: { room: RoomId; muted: boolean }) {
       park: filePark,
       stadium: fileStadium,
       fountain: fileFountain,
+      "music-boardwalk": fileBoardwalk,
+      "music-lounge": fileLounge,
     });
   }, [
     unlocked,
@@ -202,6 +210,8 @@ export function RoomAudio({ room, muted }: { room: RoomId; muted: boolean }) {
     filePark,
     fileStadium,
     fileFountain,
+    fileBoardwalk,
+    fileLounge,
   ]);
   useEffect(
     () => () => {

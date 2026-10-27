@@ -19,7 +19,8 @@ export const CREDITS: readonly {
         author: "ElevenLabs",
         license: "Per ElevenLabs terms for paid plans",
         url: "https://elevenlabs.io/terms-of-use",
-        usedFor: "Generated for Daydaze: ambience and sound effects.",
+        usedFor:
+          "Generated for Daydaze: ambience, sound effects and two music beds.",
       },
     ],
   },
