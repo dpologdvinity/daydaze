@@ -56,7 +56,12 @@ floors, looks, saves, chat effects) so both sides agree on the rules.
   `Dressing.tsx`, the prize card (`prizeDesk.ts` → `App` grades, pays and
   records bests and daily challenges), the city map, shops, jail.
 - `city/` is the streamed open city: chunks, traffic, your car, the fuel
-  stops, the beach net, events (fireworks, the Pride parade).
+  stops, the beach net, events (fireworks, the Pride parade). New York
+  blocks (Downtown, Uptown, Arts District) wear real facades near the player:
+  `game/city/nyc.ts` picks storey-high bays per street face (seeded lots,
+  ground floor, cornice, fire escapes) and `city/NycFacades.tsx` draws them
+  from `public/models/nyc/bays.glb` (`scripts/import-nyc.sh`), one
+  InstancedMesh per bay; farther blocks keep the cheap box walls.
 - `avatar/` is the doll: `human/HumanDoll.tsx` loads the Blender-built GLB
   parts, paints the face and plays baked Mixamo clips on the full skeleton
   with an AnimationMixer (`human/anims.ts`; `game/dance/clips.ts` picks the

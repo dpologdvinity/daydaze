@@ -545,7 +545,7 @@ function sideDoor(b: Building, f: Front, out: Buckets, accent: string): void {
 }
 
 /** Everything a building adds to its own frontage, after its body is drawn. */
-export function dressBuilding(b: Building, out: Buckets): void {
+export function dressBuilding(b: Building, out: Buckets, kit = false): void {
   const f = frontOf(b);
   const accent = b.sign?.color ?? pick(PAINT, hash(f.cx, f.cz));
   if (SHOPFRONT.has(b.style)) {
@@ -561,7 +561,8 @@ export function dressBuilding(b: Building, out: Buckets): void {
       color: b.style === "storefront" ? "#ffb36b" : accent,
     });
   }
-  windows(b, f, out);
+  // the kit's bays have their own windows and sills
+  if (!kit) windows(b, f, out);
   awning(out, f, accent);
   if (SHOPFRONT.has(b.style) && b.style !== "gate") {
     vent(out, f.cx + (hash(f.cx, 8) - 0.5) * f.w * 0.4, f.h + 0.5, f.cz);

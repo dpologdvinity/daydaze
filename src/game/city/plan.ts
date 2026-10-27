@@ -13,6 +13,13 @@ import {
   type Surface,
 } from "./layout.ts";
 import {
+  isNyc,
+  nycBays,
+  BAY_TRIANGLES,
+  WALL_INSET,
+  type BayInstance,
+} from "./nyc.ts";
+import {
   dressBuilding,
   facingOf,
   frontOf,
@@ -112,6 +119,8 @@ export type CityPlan = {
   trees: TreeSpot[];
   /** Street furniture models (lamps, hydrants, benches, ...), drawn by CityFurniture. */
   furniture: FurnitureSpot[];
+  /** New York bays for the buildings within `bayRange` of the player. */
+  bays: BayInstance[];
 };
 
 /** Triangles per instance of each kind's unit geometry, upper bounds. */
@@ -121,19 +130,19 @@ export const TRIANGLES: Record<Kind, number> = {
   ground: 12,
   lawn: 12,
   planks: 12,
-  lane: 12,
-  brick: 12,
-  stucco: 12,
-  concrete: 12,
-  siding: 12,
-  curtain: 12,
-  band: 12,
-  roof: 12,
-  ledge: 12,
-  glow: 12,
+  lane: 2,
+  brick: 10,
+  stucco: 10,
+  concrete: 10,
+  siding: 10,
+  curtain: 10,
+  band: 10,
+  roof: 10,
+  ledge: 10,
+  glow: 10,
   awning: 12,
-  sign: 12,
-  tube: 12,
+  sign: 10,
+  tube: 10,
   queue: 200,
   pole: 32,
   lamp: 160,
@@ -143,7 +152,7 @@ export const TRIANGLES: Record<Kind, number> = {
   treeCanopy: 96,
   window: 2,
   label: 2,
-  panel: 12,
+  panel: 10,
   arch: 12,
   bulb: 12,
   // lofted (carGeometry.ts): 4 slices x 8 around, and 3 x 6, plus end caps
@@ -226,6 +235,17 @@ function boundsOf(poly: readonly Vec2[]): Box {
     x1: Math.max(...xs),
     z1: Math.max(...zs),
   };
+}
+
+/** Back walls wear bays within this fraction of the bay range. */
+const BACK_RANGE = 0.6;
+
+/** How far a point is from a box (0 inside it). */
+function distanceToBox(p: Vec2, b: Box): number {
+  return Math.hypot(
+    Math.max(b.x0 - p[0], 0, p[0] - b.x1),
+    Math.max(b.z0 - p[1], 0, p[1] - b.z1),
+  );
 }
 
 function overlap(a: Box, b: Box): Box | null {
@@ -544,15 +564,16 @@ function buildingInstances(
   b: Building,
   out: Record<Kind, Instance[]>,
   lights: Light[],
+  kit: boolean,
 ): void {
   const { yaw, front } = facingOf(b);
   if (yaw === 0) {
-    buildingInstancesFacing(b, out, lights);
+    buildingInstancesFacing(b, out, lights, kit);
     return;
   }
   const local = emptyInstances();
   const localLights: Light[] = [];
-  buildingInstancesFacing(b, local, localLights);
+  buildingInstancesFacing(b, local, localLights, kit);
   const cos = Math.cos(yaw);
   const sin = Math.sin(yaw);
   // three.js turns (x, z) about y as (x cos + z sin, -x sin + z cos)
@@ -578,17 +599,20 @@ function buildingInstancesFacing(
   b: Building,
   out: Record<Kind, Instance[]>,
   lights: Light[],
+  kit: boolean,
 ): void {
   const f = frontOf(b);
   const signColor = b.sign?.color;
+  // behind the kit's bays the wall steps back, so their trim stands proud
+  const inset = kit ? 2 * WALL_INSET : 0;
 
   out[FACADE[b.style]].push({
     x: f.cx,
     y: f.h / 2,
     z: f.cz,
-    sx: f.w,
+    sx: f.w - inset,
     sy: f.h,
-    sz: f.z1 - f.z0,
+    sz: f.z1 - f.z0 - inset,
     color: b.color ?? BODY_COLOR[b.style],
   });
   // neon tubes up the four corners, on nightlife buildings only
@@ -626,7 +650,7 @@ function buildingInstancesFacing(
   // stone belt course over the storefronts (lit by the sun and the street,
   // not glowing) and a deeper cornice crowning the roofline, as on a NYC
   // walk-up
-  for (let y = 3.6; y < f.h - 1; y += 3.6) {
+  for (let y = 3.6; y < f.h - 1 && !kit; y += 3.6) {
     if (!neon && y > 3.6) break;
     const band = {
       x: f.cx,
@@ -639,7 +663,7 @@ function buildingInstancesFacing(
     if (neon) out.band.push({ ...band, color: BAND_COLOR });
     else out.ledge.push({ ...band, sy: 0.22, color: CORNICE_COLOR });
   }
-  if (!neon)
+  if (!neon && !kit)
     out.ledge.push({
       x: f.cx,
       y: f.h - 0.3,
@@ -649,16 +673,17 @@ function buildingInstancesFacing(
       sz: f.z1 - f.z0 + 0.5,
       color: CORNICE_COLOR,
     });
-  out.glow.push({
-    x: f.cx,
-    y: 1.6,
-    z: f.faceZ + f.out1 * 0.06,
-    sx: f.w * 0.86,
-    sy: 2.6,
-    sz: 0.12,
-    // shopfronts glow warm; signed fronts stay dim so the neon carries the color
-    color: b.style === "storefront" ? "#f2b26b" : "#3a2452",
-  });
+  if (!kit)
+    out.glow.push({
+      x: f.cx,
+      y: 1.6,
+      z: f.faceZ + f.out1 * 0.06,
+      sx: f.w * 0.86,
+      sy: 2.6,
+      sz: 0.12,
+      // shopfronts glow warm; signed fronts stay dim so the neon carries the color
+      color: b.style === "storefront" ? "#f2b26b" : "#3a2452",
+    });
 
   if (b.sign) {
     const s = signSpec(b, f);
@@ -669,7 +694,7 @@ function buildingInstancesFacing(
       color: b.sign.color,
     });
   }
-  dressBuilding(b, out);
+  dressBuilding(b, out, kit);
 }
 
 function propInstances(
@@ -735,6 +760,7 @@ export function planCity(
   cells: readonly Cell[],
   lightCount: number,
   from: Vec2,
+  bayRange = 0,
 ): CityPlan {
   const instances = emptyInstances();
   const lights: Light[] = [];
@@ -761,8 +787,21 @@ export function planCity(
   laneDashes(cells, instances.lane);
   streetMarks(cells, instances);
 
+  const bays: BayInstance[] = [];
   for (const b of BUILDINGS) {
-    if (inView(boundsOf(b.footprint))) buildingInstances(b, instances, lights);
+    const box = boundsOf(b.footprint);
+    if (!inView(box)) continue;
+    // near New York blocks wear the kit's bays instead of box walls and
+    // painted windows; the rest of the city keeps the cheap boxes
+    const dressed =
+      isNyc(b) && distanceToBox(from, box) < bayRange ? nycBays(b) : [];
+    const kit = dressed.length > 0;
+    buildingInstances(b, instances, lights, kit);
+    // back walls dress only the nearest blocks, the street faces farther out
+    const d = distanceToBox(from, box);
+    bays.push(
+      ...dressed.filter((bay) => !bay.back || d < bayRange * BACK_RANGE),
+    );
   }
 
   const loaded = new Set(cells.map((c) => c.key));
@@ -793,18 +832,24 @@ export function planCity(
     lights: lights.slice(0, Math.max(0, lightCount)),
     trees,
     furniture,
+    bays,
   };
 }
 
 /** Upper bound on triangles the plan draws. */
 export function trianglesOf(plan: CityPlan): number {
-  return KINDS.reduce(
-    (sum, kind) => sum + plan.instances[kind].length * TRIANGLES[kind],
-    0,
+  return (
+    KINDS.reduce(
+      (sum, kind) => sum + plan.instances[kind].length * TRIANGLES[kind],
+      0,
+    ) + plan.bays.reduce((sum, bay) => sum + BAY_TRIANGLES[bay.kind], 0)
   );
 }
 
 /** One draw call per kind that has instances. */
 export function drawCallsOf(plan: CityPlan): number {
-  return KINDS.filter((kind) => plan.instances[kind].length > 0).length;
+  return (
+    KINDS.filter((kind) => plan.instances[kind].length > 0).length +
+    new Set(plan.bays.map((bay) => bay.kind)).size
+  );
 }

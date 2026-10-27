@@ -11,6 +11,7 @@ import {
 import { facadeMaterials } from "./facades.ts";
 import { animate } from "./shaders.ts";
 import { laneTint } from "../../game/city/daylight.ts";
+import { BAY_NIGHT, bayMaterial } from "./NycFacades.tsx";
 
 // Kinds that glow: their colors run past 1.0 so bloom picks them up on high.
 const GLOW: ReadonlySet<Kind> = new Set<Kind>([
@@ -29,7 +30,22 @@ const GLOW_SCALE = 2.5;
 type Shared = Exclude<Kind, "label">;
 
 const BOX = new THREE.BoxGeometry(1, 1, 1);
+// walls, trim and signs never show their undersides: BoxGeometry's faces run
+// +x, -x, +y, -y, +z, -z (six indices each), so drop the -y face (ten triangles)
+const BOX5 = (() => {
+  const g = new THREE.BoxGeometry(1, 1, 1);
+  const index = g.getIndex();
+  if (!index) throw new Error("BoxGeometry is indexed");
+  const all = Array.from(index.array);
+  g.setIndex([...all.slice(0, 18), ...all.slice(24)]);
+  return g;
+})();
 const CYLINDER = new THREE.CylinderGeometry(0.5, 0.5, 1, 8);
+// ground marks lie flat: only the top of the box is ever seen, so a plane
+// (its top at y + sy / 2, where the box's top was) saves ten triangles each
+const MARK = new THREE.PlaneGeometry(1, 1)
+  .rotateX(-Math.PI / 2)
+  .translate(0, 0.5, 0);
 const SPHERE = new THREE.SphereGeometry(0.5, 10, 8);
 const CAPSULE = new THREE.CapsuleGeometry(0.5, 1, 2, 8);
 const PLANE = new THREE.PlaneGeometry(1, 1);
@@ -106,19 +122,19 @@ const GEOMETRY: Record<Shared, THREE.BufferGeometry> = {
   ground: BOX,
   lawn: BOX,
   planks: BOX,
-  lane: BOX,
-  brick: BOX,
-  stucco: BOX,
-  concrete: BOX,
-  siding: BOX,
-  curtain: BOX,
-  band: BOX,
-  roof: BOX,
-  ledge: BOX,
-  glow: BOX,
+  lane: MARK,
+  brick: BOX5,
+  stucco: BOX5,
+  concrete: BOX5,
+  siding: BOX5,
+  curtain: BOX5,
+  band: BOX5,
+  roof: BOX5,
+  ledge: BOX5,
+  glow: BOX5,
   awning: BOX,
-  sign: BOX,
-  tube: BOX,
+  sign: BOX5,
+  tube: BOX5,
   queue: CAPSULE,
   pole: CYLINDER,
   lamp: SPHERE,
@@ -127,7 +143,7 @@ const GEOMETRY: Record<Shared, THREE.BufferGeometry> = {
   treeTrunk: CYLINDER,
   treeCanopy: CANOPY,
   window: PLANE,
-  panel: BOX,
+  panel: BOX5,
   arch: BOX,
   bulb: BOX,
   car: CAR_BODY,
@@ -453,6 +469,7 @@ export function dimForDay(meshes: KindMeshes, night: number): void {
   const lane = meshes.lane.material;
   if (lane instanceof THREE.MeshBasicMaterial)
     lane.color.setRGB(...laneTint(night));
+  BAY_NIGHT.value = night;
   for (const kind of NIGHT_LIT) {
     const m = meshes[kind].material;
     if (m instanceof THREE.MeshBasicMaterial)
@@ -462,6 +479,7 @@ export function dimForDay(meshes: KindMeshes, night: number): void {
   }
   const glows: THREE.MeshStandardMaterial[] = [
     ...Object.values(facadeMaterials()),
+    bayMaterial(),
     ...NIGHT_GLOW.map((k) => meshes[k].material).filter(
       (m): m is THREE.MeshStandardMaterial =>
         m instanceof THREE.MeshStandardMaterial,

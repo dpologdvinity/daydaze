@@ -43,11 +43,17 @@ import { useDaylight } from "./daylight.ts";
 import { CityFurniture, cityFurniture } from "./CityFurniture.tsx";
 import { CityPark } from "./CityPark.tsx";
 import { CityTrees, cityTrees } from "./CityTrees.tsx";
+import { NycFacades, cityBays } from "./NycFacades.tsx";
 import { CITY_CLOCK } from "./shaders.ts";
 import { Traffic } from "./Traffic.tsx";
 import { PlayerCar } from "./PlayerCar.tsx";
 import { GasStations } from "./GasStations.tsx";
 import type { ParkedCar } from "../../game/city/drive.ts";
+
+/** How far from the player New York blocks wear real bays (meters). */
+const BAY_RANGE = { low: 40, high: 90 } as const;
+/** `?bays=0` turns the New York bays off, to compare budgets. */
+const NO_BAYS = new URLSearchParams(location.search).get("bays") === "0";
 
 // Enough for the busiest view of the whole city, so meshes never reallocate.
 const WHOLE_CITY = planCity(ALL_CELLS, 0, [0, 0]);
@@ -135,11 +141,17 @@ export function CityScene({
       const at: Vec2 = [x, z];
       loadedAt.current = at;
       // shortcut: planCity allocates a fresh plan on each 16 m reload, not per frame; stream into pooled buffers if reloads show up in a profile
-      const plan = planCity(cellsWithin(at, VIEW_RADIUS), lightCount, at);
+      const plan = planCity(
+        cellsWithin(at, VIEW_RADIUS),
+        lightCount,
+        at,
+        NO_BAYS ? 0 : BAY_RANGE[tier],
+      );
       for (const kind of KINDS)
         writeKind(meshes[kind], kind, plan.instances[kind]);
       cityTrees.set({ spots: plan.trees, at });
       cityFurniture.set({ spots: plan.furniture, at });
+      cityBays.set({ bays: plan.bays });
       lights.current.forEach((light, i) => {
         if (!light) return;
         const sign = plan.lights[i];
@@ -226,6 +238,7 @@ export function CityScene({
         <CityTrees />
         <CityFurniture />
         <CityPark />
+        <NycFacades />
       </Suspense>
       <NightMarket player={player} />
     </>
