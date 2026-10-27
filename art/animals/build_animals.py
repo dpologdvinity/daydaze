@@ -25,7 +25,7 @@ CUTE = "Cute_Fish_Pack__Feb_2020/Cute Fish Pack - Feb 2020/FBX"
 
 # output name -> source file
 SOURCES = {}
-for n in ["Alpaca", "Horse", "Donkey", "Cow", "Deer", "Fox", "Wolf"]:
+for n in ["Alpaca", "Horse", "Donkey", "Cow", "Deer", "Fox", "Wolf", "Husky", "ShibaInu"]:
     SOURCES[n.lower()] = f"{ANIMALS}/{n}.gltf"
 for n in ["Dolphin", "Fish1", "Fish2", "Fish3", "Manta ray", "Shark", "Whale"]:
     SOURCES[n.lower().replace(" ", "-")] = f"{FISH}/{n}.fbx"
@@ -33,18 +33,34 @@ for n in ["Clownfish", "BlueTang", "YellowTang", "Goldfish", "Puffer", "Koi",
           "ButterflyFish", "Lionfish", "MandarinFish", "ZebraClownFish"]:
     SOURCES["cute-" + n.lower()] = f"{CUTE}/{n}.fbx"
 
+# Zoo species downloaded from poly.pizza (see docs/assets.md): the zebra is
+# rigged with clips; the rest are static meshes the client sways and bobs.
+POLY = "../poly"
+for n in ["zebra", "giraffe", "elephant", "lion", "penguin", "flamingo"]:
+    SOURCES[n] = f"{POLY}/{n}.glb"
+
 # Clips kept (matched by suffix after the last "|"), renamed to the key.
 CLIPS = {
     "Idle": "idle", "Idle_2": "idle2", "Idle_Headlow": "graze",
     "Eating": "eat", "Walk": "walk", "Gallop": "run",
-    "Idle_HitReact1": "react", "Swim": "swim", "Swimming_Normal": "swim",
+    "Idle_HitReact1": "react", "Run": "run", "Swim": "swim", "Swimming_Normal": "swim",
+    "WalkSlow": "walkslow",
 }
 
 
-def vertex_color_single_material(meshes):
+# models whose artist-painted vertex colors are the look (kept, not rebuilt)
+KEEP_COLORS = {"zebra"}
+
+
+def vertex_color_single_material(meshes, keep=False):
     """Bakes each material's base color into one COLOR_0 and joins the meshes."""
     for ob in meshes:
         me = ob.data
+        if keep and len(me.color_attributes):
+            # the artist painted vertex colors already (the zebra's stripes)
+            me.color_attributes.active_color = me.color_attributes[0]
+            me.materials.clear()
+            continue
         attr = me.color_attributes.new("Color", "FLOAT_COLOR", "CORNER")
         cols = []
         for mat in me.materials:
@@ -100,9 +116,9 @@ def convert(name, path):
     meshes = [o for o in bpy.data.objects if o.type == "MESH" and o.dimensions.length > 1e-4]
     for o in [o for o in bpy.data.objects if o.type == "MESH" and o not in meshes]:
         bpy.data.objects.remove(o)
-    arm = next(o for o in bpy.data.objects if o.type == "ARMATURE")
-    vertex_color_single_material(meshes)
-    kept = keep_clips(arm)
+    arm = next((o for o in bpy.data.objects if o.type == "ARMATURE"), None)
+    vertex_color_single_material(meshes, name in KEEP_COLORS)
+    kept = keep_clips(arm) if arm else {}
     out = os.path.join(OUT, name + ".glb")
     bpy.ops.export_scene.gltf(
         filepath=out, export_format="GLB", export_animations=True,
