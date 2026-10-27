@@ -161,6 +161,7 @@ export function rectFenceSpots(
   modelLength: number,
   height: number,
   panel = PANEL,
+  overlap = 1,
 ): Spot[] {
   const out: Spot[] = [];
   for (const h of rects) {
@@ -181,7 +182,8 @@ export function rectFenceSpots(
           z: az + (bz - az) * f,
           // the model's length runs along x: turn x onto the side's direction
           yaw: Math.atan2(-(bz - az), bx - ax),
-          sx: seg / modelLength,
+          // overlap closes the gaps a model's open ends would leave
+          sx: (seg / modelLength) * overlap,
           sy: height,
           sz: height,
         });

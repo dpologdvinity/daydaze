@@ -133,6 +133,29 @@ function CropField({ plots }: { plots: PlotState[] }) {
   );
 }
 
+/** Tilled furrows across every plot: dark ridges in one instanced draw. */
+const FURROWS_PER_PLOT = 5;
+function Furrows() {
+  const mesh = useMemo(() => {
+    const m = new THREE.InstancedMesh(
+      new THREE.BoxGeometry(3.1, 0.05, 0.13),
+      new THREE.MeshStandardMaterial({ color: "#5a3a22", roughness: 1 }),
+      PLOTS.length * FURROWS_PER_PLOT,
+    );
+    const mat = new THREE.Matrix4();
+    PLOTS.forEach((plot, i) => {
+      for (let k = 0; k < FURROWS_PER_PLOT; k++) {
+        const dz = (k - (FURROWS_PER_PLOT - 1) / 2) * 0.42;
+        mat.makeTranslation(plot.position[0], 0.07, plot.position[1] + dz);
+        m.setMatrixAt(i * FURROWS_PER_PLOT + k, mat);
+      }
+    });
+    m.frustumCulled = false;
+    return m;
+  }, []);
+  return <primitive object={mesh} />;
+}
+
 /** Pasture fences along the animal pen borders, one instanced draw. */
 function PastureFences() {
   return <Scatter url="/models/farm/fence.glb" spots={PASTURE_FENCE_SPOTS} />;
@@ -282,6 +305,7 @@ export function Farm({
         />
 
         {/* Crop plots with real-time growth models */}
+        <Furrows />
         <CropField plots={farm.plots} />
 
         {/* Fences for pastures */}
