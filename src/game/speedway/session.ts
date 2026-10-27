@@ -175,6 +175,10 @@ export type Hud = {
   speed: number;
   /** The city car's tank, 0..1; 1 elsewhere. */
   fuel: number;
+  /** Drafting intensity 0..1 when drafting behind a leader. */
+  draft?: number;
+  /** True while inside a pit box. */
+  inPit?: boolean;
 };
 
 /** What the HUD shows. The player is always the first car. */
@@ -227,5 +231,7 @@ export function hudOf(session: Session): Hud {
     hits: 0,
     speed: me.state.speed,
     fuel: 1,
+    draft: me.draft ?? 0,
+    inPit: me.pit?.inBox ?? false,
   };
 }

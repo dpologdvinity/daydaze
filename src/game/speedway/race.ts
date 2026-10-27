@@ -12,7 +12,14 @@ import {
 } from "../driving/car.ts";
 import { TICK_HZ } from "../driving/fixedStep.ts";
 import { botInput, type BotSkill } from "./bots.ts";
+import { calcDraft, applyDraftBonus } from "./drafting.ts";
 import { initialLap, updateLap, type LapState } from "./laps.ts";
+import {
+  createPitState,
+  stepPitState,
+  applyTireGrip,
+  type PitState,
+} from "./pit.ts";
 import { trackWalls, type Track } from "./track.ts";
 
 /**
@@ -33,6 +40,10 @@ export type RaceCar = {
   isPlayer: boolean;
   skill?: BotSkill;
   finishedMs: number | null;
+  /** Drafting intensity 0..1 behind a car ahead. */
+  draft?: number;
+  /** Pit stop and tire wear state. */
+  pit?: PitState;
 };
 
 /**
@@ -87,6 +98,8 @@ export function createRace(
       isPlayer: i === 0,
       skill: i === 0 ? undefined : skill,
       finishedMs: null,
+      draft: 0,
+      pit: createPitState(),
     });
   }
   return { track, laps, phase: "countdown", countdownMs: COUNTDOWN_MS, cars };
@@ -109,6 +122,9 @@ export function stepRace(
       : { ...race, countdownMs: 0, phase: "racing" };
   }
   const walls = wallsOf(race.track);
+  const allStates = race.cars.map((c) => c.state);
+  const pitBox = race.track.pitBox;
+
   const cars = race.cars.map((car): RaceCar => {
     // Finished cars coast to a stop.
     const input =
@@ -119,7 +135,18 @@ export function stepRace(
             ? botInput(race.track, car.spec, car.state, "medium")
             : playerInput
           : botInput(race.track, car.spec, car.state, car.skill ?? "medium");
-    const state = stepCar(car.spec, car.state, input, walls);
+
+    const draft = calcDraft(car.state, allStates);
+    const pitPrev = car.pit ?? createPitState();
+    const effectiveSpec = applyDraftBonus(
+      {
+        ...car.spec,
+        grip: applyTireGrip(car.spec.grip, pitPrev.tireWear),
+      },
+      draft,
+    );
+
+    const state = stepCar(effectiveSpec, car.state, input, walls);
     const lap = updateLap(
       race.track,
       car.lap,
@@ -127,9 +154,12 @@ export function stepRace(
       state.position,
       nowMs,
     );
+    const pit = pitBox
+      ? stepPitState(pitPrev, state, pitBox, TICK_MS)
+      : pitPrev;
     const finishedMs =
       car.finishedMs ?? (lap.lapTimesMs.length >= race.laps ? nowMs : null);
-    return { ...car, state, lap, finishedMs };
+    return { ...car, state, lap, finishedMs, draft, pit };
   });
   const playerDone = cars.some((c) => c.isPlayer && c.finishedMs !== null);
   return { ...race, cars, phase: playerDone ? "finished" : "racing" };
