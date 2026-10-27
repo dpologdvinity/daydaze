@@ -52,7 +52,14 @@ export function RaceHud(): JSX.Element | null {
         {formatLap(hud.lapMs)}
       </p>
       <p>Best {hud.bestMs === null ? "--" : formatLap(hud.bestMs)}</p>
-      <p role="status">{STATUS[hud.phase] ?? ""}</p>
+      <p role="status">
+        {STATUS[hud.phase] ??
+          (hud.inPit
+            ? "Pit Box"
+            : (hud.draft ?? 0) > 0.15
+              ? `Drafting +${Math.round((hud.draft ?? 0) * 100)}%`
+              : "")}
+      </p>
     </section>
   );
 }

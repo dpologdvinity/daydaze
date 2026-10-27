@@ -3,6 +3,7 @@ import * as THREE from "three";
 import type { Vec2 } from "../../../game/walk.ts";
 import { Boxes } from "./Boxes.tsx";
 import { useCanvasTexture } from "./canvasTextures.ts";
+import { Crowd } from "./Crowd.tsx";
 import { Floodlights } from "./Floodlights.tsx";
 import { NEON } from "./neon.ts";
 import { bannerPaint, scoreboardPaint } from "./speedwayArt.ts";
@@ -236,7 +237,7 @@ export function Grandstand() {
     <>
       <group position={[GRANDSTAND_ORIGIN[0], 0, GRANDSTAND_ORIGIN[1]]}>
         <Boxes boxes={parts.solid} />
-        <Boxes boxes={parts.heads} ball />
+        <Crowd origin={[0, 0]} />
         <Boxes boxes={parts.glow} glow />
         <mesh position={[0, 7.4, 1.16]}>
           <planeGeometry args={[7.2, 1.9]} />

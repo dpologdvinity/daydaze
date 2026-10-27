@@ -4,6 +4,7 @@
 // facing +z.
 
 import type { Vec2 } from "../walk.ts";
+import type { PitBox } from "./pit.ts";
 
 /**
  * A closed-loop course and everything derived from it. `width` is the drivable
@@ -21,6 +22,10 @@ export type Track = {
   /** Unit driving direction across each checkpoint. */
   checkpointForward: readonly Vec2[];
   grid: readonly { position: Vec2; yaw: number }[];
+  /** Bank angle on turns in radians, if banked. */
+  banking?: number;
+  /** Primary pit stop box coordinates and service radius. */
+  pitBox?: PitBox;
 };
 
 const BARRIER_THICKNESS = 3;
@@ -135,7 +140,30 @@ function build(
   return { id, name, centerline, width, checkpoints, checkpointForward, grid };
 }
 
-const neonOval = build("neon-oval", "Neon Oval", roundedLoop(100, 40, 40), 14);
+const neonOvalBase = build(
+  "neon-oval",
+  "Neon Oval",
+  roundedLoop(100, 40, 40),
+  14,
+);
+/**
+ * Pit road runs along the infield edge of the front straight, in the track's
+ * own frame (like the centerline: the room places it at the track's origin).
+ * The front straight's centerline is at z = -40 and the tarmac reaches 7.5 m
+ * either side, so the lane sits on the inner part of the road itself: a car
+ * can roll in off the racing line, and no barrier stands between it and its
+ * box. The garages and crew stand behind the inner wall.
+ */
+export const PIT_LANE_Z = -35.2;
+/** The centers of the six pit boxes along the lane (x, meters). */
+export const PIT_BOX_X: readonly number[] = [-25, -15, -5, 5, 15, 25];
+
+const neonOval: Track = {
+  ...neonOvalBase,
+  banking: 0.22,
+  // the player's box is the one in front of the start line
+  pitBox: { position: [PIT_BOX_X[3], PIT_LANE_Z], radius: 3.5 },
+};
 
 const boardwalkLoop = build(
   "boardwalk-loop",

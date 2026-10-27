@@ -241,7 +241,29 @@ export const CARS: readonly CarSpec[] = [
     seats: 1,
     price: 0,
   }),
+  car({
+    id: "stock-car",
+    name: "Stock Car",
+    basedOn: "oval racer stock car",
+    class: "kart",
+    topSpeed: 65,
+    accel: 9,
+    brake: 12,
+    turnRate: 1.8,
+    grip: 0.96,
+    length: 4.8,
+    width: 1.85,
+    seats: 1,
+    price: 0,
+  }),
 ];
+
+/** The Neon Oval's stock car (not for the city's streets: it is a kart class). */
+export const STOCK_CAR: CarSpec = (() => {
+  const spec = CARS.find((c) => c.id === "stock-car");
+  if (!spec) throw new Error("the roster has no stock car");
+  return spec;
+})();
 
 export const BUMPER_CAR: CarSpec = {
   id: "bumper",

@@ -1,9 +1,14 @@
-// A debug lineup of every roster car side by side, for the docs screenshot.
-// Renders nothing unless the URL has `?lineup=cars`.
+// Car lineup for the Speedway:
+// 1. With `?lineup=cars`, displays all roster cars for documentation screenshots.
+// 2. In normal play, displays stock cars in the paddock that the player can click
+//    to join the stock-car oval race.
 
 import type { Group } from "three";
 import { CARS } from "../../../game/driving/roster.ts";
+import { driving } from "../../world/driving.ts";
 import { CarMesh } from "./CarMesh.tsx";
+import { StockCarMesh } from "./StockCarMesh.tsx";
+import { STOCK_LIVERIES } from "./stockCarArt.ts";
 
 const LINEUP_COLORS = [
   "#ffffff",
@@ -15,25 +20,51 @@ const LINEUP_COLORS = [
   "#ff7a2e",
 ];
 
-/**
- * Every roster car side by side, for the screenshot in docs/screenshots.
- * Only mounts with `?lineup=cars`, so it never shows in play.
- */
 export function CarLineup() {
-  if (new URLSearchParams(window.location.search).get("lineup") !== "cars") {
-    return null;
-  }
-  return (
-    <group rotation-y={0.5}>
-      {CARS.map((spec, i) => (
-        <group key={spec.id} position={[(i - 3) * 3.4, 0, 0]}>
-          <CarMesh
-            spec={spec}
-            color={LINEUP_COLORS[i % LINEUP_COLORS.length]}
-            ref={(g: Group | null) => {
-              if (g) g.visible = true;
+  const isDebug =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("lineup") === "cars";
+
+  if (isDebug) {
+    return (
+      <group rotation-y={0.5}>
+        {CARS.map((spec, i) => (
+          <group
+            key={spec.id}
+            position={[(i - 3) * 3.4, 0, 0]}
+            onClick={(e) => {
+              if (e.delta > 6) return;
+              e.stopPropagation();
+              driving.request = "race-oval";
             }}
-          />
+          >
+            <CarMesh
+              spec={spec}
+              color={LINEUP_COLORS[i % LINEUP_COLORS.length]}
+              ref={(g: Group | null) => {
+                if (g) g.visible = true;
+              }}
+            />
+          </group>
+        ))}
+      </group>
+    );
+  }
+
+  // Stock car lineup in the Speedway paddock: clickable to join race
+  return (
+    <group position={[0, 0, -15]} rotation-y={0}>
+      {STOCK_LIVERIES.slice(0, 4).map((liv, i) => (
+        <group
+          key={`lineup-stock-${i}`}
+          position={[(i - 1.5) * 4.5, 0, 0]}
+          onClick={(e) => {
+            if (e.delta > 6) return;
+            e.stopPropagation();
+            driving.request = "race-oval";
+          }}
+        >
+          <StockCarMesh index={i} livery={liv} visible={true} />
         </group>
       ))}
     </group>

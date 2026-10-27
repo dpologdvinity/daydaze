@@ -69,3 +69,58 @@ test("before anyone crosses the line, standings follow the grid", () => {
   );
   assert.equal(standings(race)[0], "player");
 });
+
+test("a trailing car drafting in race steps gains drafting intensity", () => {
+  let race = createRace(TRACKS[0], 3, spec, 1, "medium", 0);
+  race = { ...race, phase: "racing", countdownMs: 0 };
+  // Place bot ahead of player, both heading east (+x) on bottom straight
+  const leaderPos: [number, number] = [20, -40];
+  const trailerPos: [number, number] = [12, -40];
+  race = {
+    ...race,
+    cars: [
+      {
+        ...race.cars[0],
+        state: { position: trailerPos, yaw: Math.PI / 2, speed: 25 },
+      },
+      {
+        ...race.cars[1],
+        state: { position: leaderPos, yaw: Math.PI / 2, speed: 25 },
+      },
+    ],
+  };
+  const stepped = stepRace(race, GAS, 20);
+  assert.ok((stepped.cars[0].draft ?? 0) > 0);
+});
+
+test("stopping inside the track pit box completes pit service", () => {
+  const track = TRACKS[0]; // neon-oval's pit box is on the road, beside the racing line
+  assert.ok(track.pitBox !== undefined);
+  let race = createRace(track, 3, spec, 1, "medium", 0);
+  race = { ...race, phase: "racing", countdownMs: 0 };
+  // Place player in the pit box, stopped
+  race = {
+    ...race,
+    cars: [
+      {
+        ...race.cars[0],
+        state: { position: track.pitBox?.position ?? [0, 0], yaw: 0, speed: 0 },
+        pit: {
+          inBox: true,
+          stoppedMs: 0,
+          serviced: false,
+          stopsCompleted: 0,
+          tireWear: 0.8,
+        },
+      },
+      race.cars[1],
+    ],
+  };
+  // Step for 2.1 seconds (105 ticks of 20ms) with idle pedals (holding stopped)
+  for (let t = 1; t <= 105; t++) {
+    race = stepRace(race, { throttle: 0, brake: 0, steer: 0 }, t * 20);
+  }
+  assert.equal(race.cars[0].pit?.serviced, true);
+  assert.equal(race.cars[0].pit?.stopsCompleted, 1);
+  assert.equal(race.cars[0].pit?.tireWear, 0);
+});

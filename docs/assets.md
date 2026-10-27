@@ -78,6 +78,9 @@ future imported packs belong here when they enter the game.
 | Coral | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/4KUXdtDdgHR | Reef dive: branching coral. |
 | Anemone | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/1FMGb52XdD- | Reef dive: sea fans. |
 | Jellyfish | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/dA5osnS0Rzj | Reef dive: drifting jellyfish. |
+| Mini Characters | Kenney | CC0 1.0 | https://kenney.nl/assets/mini-characters | Instanced grandstand crowd and pit road pit crew for the Speedway oval. |
+| Racing Kit | Kenney | CC0 1.0 | https://kenney.nl/assets/racing-kit | Grandstand, pit garages, barriers, overhead flag gantry, and billboards for the Speedway oval. |
+| Realistic Car Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/realisticcarpack.html | NASCAR stock cars (models 1-4) with canvas liveries for the Speedway oval. |
 
 
 Street furniture is built by `art/street/build_street.py` into `public/models/street/` (every model cut down to a few hundred triangles).
@@ -160,7 +163,6 @@ and compressed by `scripts/import-animals.sh` into `public/models/animals/`.
 | Title | Author | License | URL | Used for |
 | --- | --- | --- | --- | --- |
 | Mixamo animations | Adobe | Mixamo terms | https://www.mixamo.com/ | Retargeted character walks, idles, dances and gestures. |
-
 | CMU motion capture | CMU Graphics Lab | CMU terms: free to copy, modify and redistribute | http://mocap.cs.cmu.edu/ | Retargeted walks and dances, using BVH conversions from una-dinosauria/cmu-mocap. |
 
 

@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import type { Group } from "three";
 import { advance } from "../../game/driving/fixedStep.ts";
 import type { CarState } from "../../game/driving/car.ts";
-import { BUMPER_CAR, carById } from "../../game/driving/roster.ts";
+import { BUMPER_CAR, carById, STOCK_CAR } from "../../game/driving/roster.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import type { BotSkill } from "../../game/speedway/bots.ts";
 import {
@@ -31,7 +31,7 @@ import { surface } from "../city/worldTexture.ts";
 // the infield's blacktop, all round the pits and the tracks
 const BLACKTOP = surface("asphalt_02", {
   scale: 0.25,
-  color: "#3a3450",
+  color: "#5a5380",
   roughness: 0.9,
 });
 import { PortalPads } from "./shared/PortalPads.tsx";
@@ -39,10 +39,16 @@ import { BumperArena } from "./speedway/BumperArena.tsx";
 import { CarLineup } from "./speedway/CarLineup.tsx";
 import { CarMesh } from "./speedway/CarMesh.tsx";
 import { ChaseCamera } from "./speedway/ChaseCamera.tsx";
+import { Flagstand } from "./speedway/Flagstand.tsx";
 import { Grandstand } from "./speedway/Grandstand.tsx";
+import { Infield } from "./speedway/Infield.tsx";
 import { Locals } from "./speedway/Locals.tsx";
 import { NEON } from "./speedway/neon.ts";
 import { PitGarage } from "./speedway/PitGarage.tsx";
+import { PitRoad } from "./speedway/PitRoad.tsx";
+import { SponsorSignage } from "./speedway/SponsorSignage.tsx";
+import { StockCarMesh } from "./speedway/StockCarMesh.tsx";
+import { STOCK_LIVERIES } from "./speedway/stockCarArt.ts";
 import { RaceTrack } from "./speedway/Track.tsx";
 
 type RaceSetup = { track: Track; origin: Vec2; skill: BotSkill };
@@ -91,6 +97,10 @@ function setupFor(
   if (request === "bumper-cars") {
     return { session: startBumpers(), origin: ARENA_ORIGIN };
   }
+  if (request === "race-oval") {
+    const { track, origin, skill } = RACES["race-oval"];
+    return { session: startRace(track, STOCK_CAR, RACE_BOTS, skill), origin };
+  }
   if (!KART) return null;
   const { track, origin, skill } = RACES[request];
   return { session: startRace(track, KART, RACE_BOTS, skill), origin };
@@ -128,6 +138,7 @@ export function Speedway({ onPick }: { onPick: PickHandler }) {
   const origin = useRef<Vec2>(ARENA_ORIGIN);
   const step = useRef<() => void>(() => {});
   const raceCars = useRef<(Group | null)[]>([]);
+  const stockCars = useRef<(Group | null)[]>([]);
   const bumperCars = useRef<(Group | null)[]>([]);
   const player = useRef<Group | null>(null);
   // Set while mounted. A request taken before the mount effect has run would
@@ -184,6 +195,7 @@ export function Speedway({ onPick }: { onPick: PickHandler }) {
     const session = driving.session;
     if (!session) {
       for (const g of raceCars.current) if (g) g.visible = false;
+      for (const g of stockCars.current) if (g) g.visible = false;
       for (const g of bumperCars.current) if (g) g.visible = false;
       player.current = null;
       return;
@@ -203,22 +215,26 @@ export function Speedway({ onPick }: { onPick: PickHandler }) {
       } else award("speedway", hudOf(session).place);
     }
     if (session.kind === "race") {
+      const isOval = session.track.id === "neon-oval";
+      const active = isOval ? stockCars.current : raceCars.current;
+      const inactive = isOval ? raceCars.current : stockCars.current;
       const cars = session.race.cars;
       for (let i = 0; i < cars.length; i++) {
         place(
-          raceCars.current[i],
+          active[i],
           session.prev.cars[i].state,
           cars[i].state,
           alpha,
           origin.current,
         );
       }
-      for (let i = cars.length; i < raceCars.current.length; i++) {
-        const g = raceCars.current[i];
+      for (let i = cars.length; i < active.length; i++) {
+        const g = active[i];
         if (g) g.visible = false;
       }
+      for (const g of inactive) if (g) g.visible = false;
       for (const g of bumperCars.current) if (g) g.visible = false;
-      player.current = raceCars.current[0] ?? null;
+      player.current = active[0] ?? null;
     } else if (session.kind === "bumpers") {
       const cars = session.cars;
       for (let i = 0; i < cars.length; i++) {
@@ -231,15 +247,23 @@ export function Speedway({ onPick }: { onPick: PickHandler }) {
         );
       }
       for (const g of raceCars.current) if (g) g.visible = false;
+      for (const g of stockCars.current) if (g) g.visible = false;
       player.current = bumperCars.current[0] ?? null;
     }
   });
 
   return (
     <>
-      <color attach="background" args={["#05030d"]} />
-      <fog attach="fog" args={["#120a24", 60, 260]} />
-      <ambientLight intensity={0.35} color="#3b2f6b" />
+      <color attach="background" args={["#0d0820"]} />
+      <fog attach="fog" args={["#241a44", 80, 420]} />
+      {/* a night race under floodlights: sky wash, and a light from the masts
+          that reads the crowd, the pits, the flagstand and the numbered cars */}
+      <hemisphereLight args={["#9a8cff", "#352a66", 1.5]} />
+      <directionalLight
+        position={[30, 90, -40]}
+        intensity={2.4}
+        color="#fff1dc"
+      />
       <pointLight
         position={[-14, 9, -18]}
         color="#ff4fb3"
@@ -274,6 +298,10 @@ export function Speedway({ onPick }: { onPick: PickHandler }) {
       <Locals />
       <PitGarage />
       <Grandstand />
+      <Infield origin={RACES["race-oval"].origin} />
+      <Flagstand origin={RACES["race-oval"].origin} />
+      <SponsorSignage origin={RACES["race-oval"].origin} />
+      <PitRoad origin={RACES["race-oval"].origin} />
       <RaceTrack
         track={RACES["race-oval"].track}
         origin={RACES["race-oval"].origin}
@@ -283,6 +311,16 @@ export function Speedway({ onPick }: { onPick: PickHandler }) {
         origin={RACES["race-boardwalk"].origin}
       />
       <BumperArena />
+      {STOCK_LIVERIES.map((livery, i) => (
+        <StockCarMesh
+          key={`stock-car-${i}`}
+          index={i}
+          livery={livery}
+          ref={(g: Group | null) => {
+            stockCars.current[i] = g;
+          }}
+        />
+      ))}
       {KART &&
         CAR_COLORS.map((color, i) => (
           <CarMesh
