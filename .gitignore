@@ -36,3 +36,5 @@ coverage/
 .venv/
 # Playwright CLI output (may contain credentials)
 .playwright-cli/
+# direnv (loads .env when you cd in)
+.envrc
