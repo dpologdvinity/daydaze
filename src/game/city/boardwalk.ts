@@ -85,7 +85,7 @@ export function deckGaps(
   return out;
 }
 
-/** The Ferris wheel and the carousel, both on the sand at the Fairground end, off the deck the parade and the strollers use. */
+/** The Ferris wheel (animated: FerrisWheel.tsx) and the carousel, both on the sand at the Fairground end, off the deck the parade and the strollers use. */
 export const FERRIS = { x: 338, z: 301 };
 export const CAROUSEL = { x: 296, z: 300, r: 4.5 };
 
@@ -155,7 +155,6 @@ export function boardwalkFurniture(
       out.push(spot("cone", s.x, DECK.z0 + 4.5, 0, 1, GROUND + s.h));
   // the fairground end
   out.push(spot("carousel", CAROUSEL.x, CAROUSEL.z));
-  out.push(spot("ferris", FERRIS.x, FERRIS.z));
   // lifeguard stands facing the water
   for (const x of [-250, -120, 160, 280])
     out.push(spot("lifeguard", x, 303, 0));

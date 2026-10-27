@@ -225,7 +225,7 @@ const SURFACE_COLOR = {
   sidewalk: "#a39e96",
   square: "#b3ab9e",
   // Beachside at night: weathered planks, moonlit sand
-  boardwalk: "#9a6a4a",
+  boardwalk: "#d6cbbb",
   sand: "#c9a274",
   lawn: "#2e5e3a",
 };
@@ -384,7 +384,12 @@ const SIDEWALK_BOXES: readonly Box[] = CITY_SURFACES.filter(
   (s) => s.kind !== "road",
 ).map((s) => boundsOf(s.polygon));
 const PAVED_BOXES: readonly Box[] = CITY_SURFACES.filter(
-  (s) => s.kind !== "road" && s.kind !== "sand" && s.kind !== "lawn",
+  (s) =>
+    s.kind !== "road" &&
+    s.kind !== "sand" &&
+    s.kind !== "lawn" &&
+    // planks have their own joints (the texture), not a pavement's seams
+    s.kind !== "boardwalk",
 ).map((s) => boundsOf(s.polygon));
 const CURB_COLOR = "#aaa59c";
 const SEAM_COLOR = "#85807a";

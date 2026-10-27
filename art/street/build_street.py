@@ -213,7 +213,7 @@ def beach_set():
     imported(PK("popcorn"), length=2.2, tris=500); export("popcorn-cart")
     imported(PK("hotdog"), height=2.4, tris=300); export("hotdog-cart")
     imported(PK("icecream"), height=4.5, tris=250); export("cone")
-    imported(PK("ferris1"), height=26.0, tris=1600); export("ferris")
+    # the Ferris wheel is the animated download, optimized straight from its glTF (no Blender)
     imported(PK("carousel"), length=9.0, tris=1200); export("carousel")
     imported(PK("towel"), length=1.8, tris=60); export("towel")
     imported(PK("castle"), length=1.4, tris=250); export("sandcastle")

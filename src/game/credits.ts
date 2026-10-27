@@ -789,11 +789,11 @@ export const CREDITS: readonly {
         usedFor: "The giant cone on the ice cream shop's roof.",
       },
       {
-        title: "Ferris wheel",
-        author: "Poly by Google",
+        title: "Animated Ferris Wheel",
+        author: "Arif",
         license: "CC-BY 3.0",
-        url: "https://poly.pizza/m/1VmmK6Gus8f",
-        usedFor: "The Ferris wheel at the boardwalk's fairground end.",
+        url: "https://poly.pizza/m/HknNtngih0",
+        usedFor: "The turning Ferris wheel at the boardwalk's fairground end.",
       },
       {
         title: "Merry go 'round",
@@ -1212,6 +1212,13 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://polyhaven.com/a/white_plaster_02",
         usedFor: "Surface textures for the city, venues and furnishings.",
+      },
+      {
+        title: "Wood Floor Deck",
+        author: "Dimitrios Savva",
+        license: "CC0 1.0",
+        url: "https://polyhaven.com/a/wood_floor_deck",
+        usedFor: "The boardwalk's weathered deck planks.",
       },
       {
         title: "Wood Floor",

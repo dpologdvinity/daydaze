@@ -80,7 +80,7 @@ future imported packs belong here when they enter the game.
 | Popcorn Cart | Don Carson | CC-BY 3.0 | https://poly.pizza/m/1T9untmohmj | Food carts on the boardwalk deck. |
 | Hot dogs! Get your hot dogs! | Anonymous | CC-BY 3.0 | https://poly.pizza/m/8n7WTYXqb2n | Food carts on the boardwalk deck. |
 | Ice Cream | Quaternius | CC0 1.0 | https://poly.pizza/m/iZiAPq7Sne | The giant cone on the ice cream shop's roof. |
-| Ferris wheel | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/1VmmK6Gus8f | The Ferris wheel at the boardwalk's fairground end. |
+| Animated Ferris Wheel | Arif | CC-BY 3.0 | https://poly.pizza/m/HknNtngih0 | The turning Ferris wheel at the boardwalk's fairground end. |
 | Merry go 'round | sirkitree | CC-BY 3.0 | https://poly.pizza/m/8BliGG-e55g | The carousel on the boardwalk deck. |
 | Towel | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/19oMd_9kHDT | Beach towels on the sand. |
 | Sand castle | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/5iuHHfVoaza | Sand castles on the beach. |
@@ -183,6 +183,7 @@ CC-BY-NC (or NC-SA/ND) and are not used; only the CC-BY rows above are.
 | Velour Velvet | colormass, Rico Cilliers | CC0 1.0 | https://polyhaven.com/a/velour_velvet | Surface textures for the city, venues and furnishings. |
 | Wallpaper | ambientCG | CC0 1.0 | https://ambientcg.com/view?id=Wallpaper001A | Surface textures for the city, venues and furnishings. |
 | White Plaster 02 | Rob Tuytel | CC0 1.0 | https://polyhaven.com/a/white_plaster_02 | Surface textures for the city, venues and furnishings. |
+| Wood Floor Deck | Dimitrios Savva | CC0 1.0 | https://polyhaven.com/a/wood_floor_deck | The boardwalk's weathered deck planks. |
 | Wood Floor | Dimitrios Savva | CC0 1.0 | https://polyhaven.com/a/wood_floor | Surface textures for the city, venues and furnishings. |
 | Wood Plank Wall | Dimitrios Savva | CC0 1.0 | https://polyhaven.com/a/wood_plank_wall | Surface textures for the city, venues and furnishings. |
 | Wood veneer | ambientCG | CC0 1.0 | https://ambientcg.com/view?id=Wood049 | Surface textures for the city, venues and furnishings. |

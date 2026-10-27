@@ -71,7 +71,6 @@ export const MODEL_COST: Readonly<
   "beach/carousel": { tris: 806, parts: 5 },
   "beach/chaise": { tris: 300, parts: 2 },
   "beach/cone": { tris: 250, parts: 2 },
-  "beach/ferris": { tris: 1599, parts: 1 },
   "beach/hotdog-cart": { tris: 300, parts: 8 },
   "beach/lifeguard": { tris: 500, parts: 7 },
   "beach/popcorn-cart": { tris: 500, parts: 7 },

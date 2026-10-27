@@ -7,7 +7,13 @@ const BASE = process.env.BASE_URL ?? "http://localhost:5195";
 /** Waits for the street furniture models (CityFurniture sets data-furniture). */
 const furnitureReady = async (page: Page) => {
   await page.waitForFunction(
-    () => document.querySelector("canvas")?.dataset.furniture === "ready",
+    () => {
+      const canvas = document.querySelector("canvas");
+      return (
+        canvas?.dataset.furniture === "ready" &&
+        Number(canvas.dataset.frames) >= 10
+      );
+    },
     null,
     { timeout: 300_000 },
   );
@@ -370,6 +376,18 @@ const SHOTS: {
     // sunbathers' umbrellas, a lifeguard stand and the dune fence
     name: "city-beach",
     query: "room=city&view=full&time=15:00&at=-135,317",
+    act: furnitureReady,
+  },
+  {
+    // along the boardwalk, looking east: shops on the left, beach and sea on
+    // the right, the Ferris wheel ahead (the camera is pinned with ?cam=)
+    name: "city-boardwalk-wide",
+    query: "room=city&time=15:00&at=100,283&cam=-70,4.5,283.5,300,11,286",
+    act: furnitureReady,
+  },
+  {
+    name: "city-boardwalk-dusk",
+    query: "room=city&time=19:40&at=100,283&cam=-70,4.5,283.5,300,11,286",
     act: furnitureReady,
   },
   {
