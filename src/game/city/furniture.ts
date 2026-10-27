@@ -3,7 +3,7 @@
 // way street trees are. Pure types and the per-kind draw rules; the spots
 // themselves are laid out in dressing.ts (FURNITURE) and plan.ts (lamps).
 
-/** The kinds that have a model under public/models/street/<kind>.glb. */
+/** The kinds that have a model under public/models/street/<kind>.glb (the park's under park/). */
 export const FURNITURE_KINDS = [
   "lamp",
   "hydrant",
@@ -16,6 +16,13 @@ export const FURNITURE_KINDS = [
   "planter",
   "palm",
   "trafficlight",
+  "fountain",
+  "gazebo",
+  "rowboat",
+  "duck",
+  "picnic-table",
+  "basket",
+  "blanket",
   "busstop",
   "sign-stop",
   "sign-noparking",
@@ -30,6 +37,8 @@ export type FurnitureSpot = {
   z: number;
   yaw: number;
   scale: number;
+  /** Height of the ground it stands on, when it is not the street (the park's lawn). */
+  y?: number;
 };
 
 /** Lamps are drawn, with their glow, out to this distance on every tier. */
@@ -56,6 +65,13 @@ export const FURNITURE_RANGE: Record<
   planter: [30, 80],
   palm: [45, 110],
   trafficlight: [60, 120],
+  fountain: [80, 150],
+  gazebo: [80, 150],
+  rowboat: [45, 100],
+  duck: [40, 90],
+  "picnic-table": [45, 100],
+  basket: [30, 70],
+  blanket: [40, 90],
   busstop: [60, 140],
   "sign-stop": [50, 110],
   "sign-noparking": [40, 90],
@@ -79,3 +95,14 @@ export const SIGNAL = {
   out: 0.245,
   radius: 0.2,
 } as const;
+
+/** The park's kinds, whose models live in public/models/park/. */
+export const PARK_KINDS: ReadonlySet<FurnitureKind> = new Set([
+  "fountain",
+  "gazebo",
+  "rowboat",
+  "duck",
+  "picnic-table",
+  "basket",
+  "blanket",
+]);

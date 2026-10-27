@@ -18,9 +18,10 @@ import os
 import bpy
 from mathutils import Vector
 
-SRC_Q = os.environ["SRC_Q"]
-SRC_PH = os.environ["SRC_PH"]
-SRC_PP = os.environ["SRC_PP"]
+SRC_Q = os.environ.get("SRC_Q", "")
+SRC_PH = os.environ.get("SRC_PH", "")
+SRC_PP = os.environ.get("SRC_PP", "")
+SRC_PK = os.environ.get("SRC_PK", "")
 OUT = os.environ["OUT"]
 os.makedirs(OUT, exist_ok=True)
 
@@ -170,18 +171,39 @@ def traffic_light(path):
 
 PP = lambda n: f"{SRC_PP}/{n}.glb"
 
-imported(Q("Streetlight_Single"), height=5.4, tris=350); export("lamp")
-imported(Q("Sign_Stop"), height=2.4); export("sign-stop")
-imported(Q("Sign_NoParking"), height=2.4); export("sign-noparking")
-imported(PH("fire_hydrant"), height=0.8, tris=300); export("hydrant")
-imported(PH("metal_trash_can"), height=0.95, tris=250); export("trashcan")
-imported(PH("painted_wooden_bench"), length=1.8); export("bench")
-# Poly Pizza downloads (see docs/assets.md)
-imported(PP("mailbox"), height=1.15, tris=240); export("mailbox")
-imported(PP("meter"), height=1.4, tris=400); export("meter")
-imported(PP("bikerack"), length=1.1, tris=800); export("bikerack")
-imported(PP("busstop"), height=2.9, tris=300); export("busstop")
-imported(PP("palm1"), height=7.0, tris=350); export("palm")
-traffic_light(PP("traffic2")); export("trafficlight")
-imported(f"{SRC_PP}/newsbox-src/scene.gltf", height=1.1, tris=700); export("newsbox")
-imported(PP("planter"), length=1.8, tris=1000); export("planter")
+def street_set():
+    imported(Q("Streetlight_Single"), height=5.4, tris=350); export("lamp")
+    imported(Q("Sign_Stop"), height=2.4); export("sign-stop")
+    imported(Q("Sign_NoParking"), height=2.4); export("sign-noparking")
+    imported(PH("fire_hydrant"), height=0.8, tris=300); export("hydrant")
+    imported(PH("metal_trash_can"), height=0.95, tris=250); export("trashcan")
+    imported(PH("painted_wooden_bench"), length=1.8); export("bench")
+    # Poly Pizza downloads (see docs/assets.md)
+    imported(PP("mailbox"), height=1.15, tris=240); export("mailbox")
+    imported(PP("meter"), height=1.4, tris=400); export("meter")
+    imported(PP("bikerack"), length=1.1, tris=800); export("bikerack")
+    imported(PP("busstop"), height=2.9, tris=300); export("busstop")
+    imported(PP("palm1"), height=7.0, tris=350); export("palm")
+    traffic_light(PP("traffic2")); export("trafficlight")
+    imported(f"{SRC_PP}/newsbox-src/scene.gltf", height=1.1, tris=700); export("newsbox")
+    imported(PP("planter"), length=1.8, tris=1000); export("planter")
+
+
+PK = lambda n: f"{SRC_PK}/{n}.glb"
+
+
+def park_set():
+    """The park's props (Poly Pizza, CC0 / CC-BY; see docs/assets.md)."""
+    imported(PK("fountain3"), length=6.0, tris=900); export("fountain")
+    imported(PK("gazebo2"), length=7.0, tris=700); export("gazebo")
+    imported(PK("rowboat2"), length=3.0, tris=350); export("rowboat")
+    imported(PK("duck2"), length=0.5, tris=250); export("duck")
+    imported(PK("picnic1"), length=2.2, tris=450); export("picnic-table")
+    imported(PK("basket"), height=0.35, tris=200); export("basket")
+    imported(PK("rug"), length=2.4, tris=200); export("blanket")
+
+
+if os.environ.get("SET") == "park":
+    park_set()
+else:
+    street_set()

@@ -14,6 +14,7 @@ import { useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";
 import {
   FURNITURE_KINDS,
+  PARK_KINDS,
   furnitureVisible,
   type FurnitureKind,
   type FurnitureSpot,
@@ -26,7 +27,8 @@ const MODELS = "/models/street";
 /** The most pieces of one kind in view at once. */
 const CAPACITY = 256;
 
-const url = (kind: FurnitureKind) => `${MODELS}/${kind}.glb`;
+const url = (kind: FurnitureKind) =>
+  `${PARK_KINDS.has(kind) ? "/models/park" : MODELS}/${kind}.glb`;
 
 /** The furniture in view and where the plan was cut; set by CityScene. */
 export const cityFurniture = createStore({
@@ -63,9 +65,10 @@ function floatCopy(
 }
 
 /** A model's meshes, each with its node transform baked into the geometry. */
-function partsOf(
+export function partsOf(
   scene: THREE.Object3D,
   tint: THREE.Color | null,
+  capacity: number = CAPACITY,
 ): THREE.InstancedMesh[] {
   scene.updateMatrixWorld(true);
   const parts: THREE.InstancedMesh[] = [];
@@ -81,7 +84,7 @@ function partsOf(
       if (tint) material.color.multiply(tint);
       material.userData.base = material.color.clone();
     }
-    const mesh = new THREE.InstancedMesh(geometry, material, CAPACITY);
+    const mesh = new THREE.InstancedMesh(geometry, material, capacity);
     mesh.count = 0;
     mesh.frustumCulled = false;
     parts.push(mesh);
@@ -100,6 +103,17 @@ const TINT: Partial<Record<FurnitureKind, THREE.Color>> = {
   palm: new THREE.Color(0.7, 1.45, 0.75),
 };
 
+/** Scales the (own-copy) materials of `meshes` to `k` of their base color: the night dims them. */
+export function dimMeshes(meshes: readonly THREE.InstancedMesh[], k: number) {
+  for (const mesh of meshes) {
+    const m = mesh.material;
+    const base: unknown =
+      m instanceof THREE.MeshStandardMaterial && m.userData.base;
+    if (m instanceof THREE.MeshStandardMaterial && base instanceof THREE.Color)
+      m.color.copy(base).multiplyScalar(k);
+  }
+}
+
 type Meshes = ReadonlyMap<FurnitureKind, THREE.InstancedMesh[]>;
 
 function place(
@@ -113,7 +127,7 @@ function place(
     if (!furnitureVisible(f.kind, Math.hypot(f.x - at[0], f.z - at[1]), low))
       continue;
     q.setFromAxisAngle(up, f.yaw);
-    p.set(f.x, 0, f.z);
+    p.set(f.x, f.y ?? 0, f.z);
     s.setScalar(f.scale);
     m.compose(p, q, s);
     for (const mesh of meshes.get(f.kind) ?? []) {
@@ -144,19 +158,10 @@ export function CityFurniture(): JSX.Element {
   const { spots, at } = cityFurniture.use();
   // dim with the night like the rest of the city (dimForDay in meshes.ts)
   const { neon } = useDaylight();
-  useEffect(() => {
-    const k = 1 - 0.55 * neon;
-    for (const mesh of [...meshes.values()].flat()) {
-      const m = mesh.material;
-      const base: unknown =
-        m instanceof THREE.MeshStandardMaterial && m.userData.base;
-      if (
-        m instanceof THREE.MeshStandardMaterial &&
-        base instanceof THREE.Color
-      )
-        m.color.copy(base).multiplyScalar(k);
-    }
-  }, [meshes, neon]);
+  useEffect(
+    () => dimMeshes([...meshes.values()].flat(), 1 - 0.55 * neon),
+    [meshes, neon],
+  );
   const canvas = useThree((state) => state.gl.domElement);
   useEffect(() => {
     place(meshes, spots, at, low);

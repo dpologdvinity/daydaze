@@ -16,6 +16,8 @@ import {
 import { naturalPace } from "../dance/clips.ts";
 import { NPC_GAITS, gaitOf } from "../gaits.ts";
 import type { Vec2 } from "../walk.ts";
+import type { LandKind } from "../creatures.ts";
+import { PARK } from "./park.ts";
 import { CITY_SURFACES } from "./layout.ts";
 
 export type Pedestrian = {
@@ -26,6 +28,8 @@ export type Pedestrian = {
   /** Seconds into her walk at time 0. */
   start: number;
   look: Look;
+  /** A dog trotting beside her (the park's dog walkers). */
+  dog?: LandKind;
 };
 
 export type PedestrianPose = { x: number; z: number; yaw: number };
@@ -79,9 +83,13 @@ export const PEDESTRIANS: readonly Pedestrian[] = CITY_SURFACES.filter(
     // bare lips and a man's easy walk
     const man = rand(i, 9) < 0.4;
     const gait = man ? "stride" : pick(NPC_GAITS, rand(i, 11));
+    // on the park's paths the first walker of each strip has a dog with her
+    const inPark =
+      x0 >= PARK.x0 && x1 <= PARK.x1 && z0 >= PARK.z0 && z1 <= PARK.z1;
     return {
       a,
       b,
+      dog: inPark && k === 0 ? (si % 2 ? "husky" : "shibainu") : undefined,
       // her gait clip's own pace, give or take a little, so her legs keep
       // up with the ground at 1x (src/game/dance/stride.ts)
       speed:

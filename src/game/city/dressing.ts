@@ -16,6 +16,7 @@ import {
 import type { Instance, Kind } from "./plan.ts";
 import { hash, pick } from "./hash.ts";
 import type { FurnitureKind, FurnitureSpot } from "./furniture.ts";
+import { parkFurniture } from "./park.ts";
 import { detailBuilding } from "./detail.ts";
 
 export { hash };
@@ -842,6 +843,7 @@ function furnitureSpots(): FurnitureSpot[] {
         yaw: 0,
         scale: 1,
       });
+  out.push(...parkFurniture());
   for (const x of BUS_STOPS)
     out.push({ kind: "busstop", x, z: -9, yaw: 0, scale: 1 });
   // stop signs and no-parking signs at the cross streets' corners
