@@ -20,7 +20,7 @@ import type { Player } from "../world/PlayerController.tsx";
 import { Creature, type CreaturePose } from "./Creature.tsx";
 
 /** Where the pet's bed is in the apartment. */
-export const PET_BED: Vec2 = [-3.3, -2.3];
+export const PET_BED: Vec2 = [2.8, -1.6];
 
 export function PetFollower({
   pet,
