@@ -48,6 +48,7 @@ import { CityTrees, cityTrees } from "./CityTrees.tsx";
 import { NycFacades, cityBays } from "./NycFacades.tsx";
 import { CityHouses, cityHouses } from "./CityHouses.tsx";
 import { CITY_CLOCK } from "./shaders.ts";
+import { CityTransit } from "./CityTransit.tsx";
 import { Traffic } from "./Traffic.tsx";
 import { PlayerCar } from "./PlayerCar.tsx";
 import { GasStations } from "./GasStations.tsx";
@@ -233,7 +234,10 @@ export function CityScene({
       {KINDS.map((kind) => (
         <primitive key={kind} object={meshes[kind]} onClick={click} />
       ))}
-      <Traffic player={player} />
+      <Suspense fallback={null}>
+        <CityTransit player={player} />
+        <Traffic player={player} />
+      </Suspense>
       <PlayerCar player={player} parked={car} onPark={onPark} />
       <GasStations player={player} />
       <Pedestrians player={player} />

@@ -256,7 +256,19 @@ const SHOTS: {
   // your adopted pet beside you in the city, and asleep in its bed at home
   petShot("pet-city", "room=city&view=full&time=12:00", "husky", "Biscuit"),
   petShot("pet-home", "room=apartment", "shibainu", "Kiko"),
-  { name: "city-street", query: "room=city&view=full", act: cityReady },
+  { name: "city-street", query: "room=city&view=full&time=12:00&at=45,11" },
+  {
+    name: "transit-city-street-before",
+    query: "room=city&view=full&time=12:00&at=45,11",
+  },
+  {
+    name: "transit-bus-stop-before",
+    query: "room=city&view=full&time=12:00&at=-24,13",
+  },
+  {
+    name: "transit-bus-stop",
+    query: "room=city&view=full&time=12:00&at=-24,13",
+  },
   { name: "city-overview", query: "room=city" },
   // the city by day and at sunset (daylight.ts), pinned with ?time=
   {

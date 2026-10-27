@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { BUS_STOPS } from "../src/game/city/transit.ts";
 
 // Every test forces the low tier: headless WebGL is SwiftShader on the CPU.
 // Most also use still=1 so the scene renders a few frames and then idles.
@@ -2834,4 +2835,75 @@ test("city audio files load only after a gesture", async ({ page }) => {
     })
     .toBe(true);
   expect(requests.every((url) => url.includes("city-day.ogg"))).toBe(true);
+});
+
+// Board a real scheduled bus, travel, and leave only when its doors reopen.
+test("city bus: board at a stop, ride to the next stop and get off", async ({
+  page,
+}) => {
+  test.setTimeout(420_000);
+  const errors = collectErrors(page);
+  // Keep rendering latency from consuming the boarding/exit windows.
+  const epoch = new Date("2026-01-01T12:00:00Z");
+  await page.clock.install({ time: new Date(epoch.getTime() - 60_000) });
+  await page.clock.pauseAt(epoch);
+  await page.goto(`${LOW}&room=city&view=full&time=12:00&at=-24,11`);
+  const canvas = canvasOf(page);
+  const panel = page.getByRole("region", { name: "City bus", exact: true });
+  await expect
+    .poll(
+      async () => {
+        await page.clock.runFor(16);
+        return page.evaluate(
+          () => document.querySelector("canvas")?.dataset.frames,
+        );
+      },
+      { timeout: 180_000 },
+    )
+    .toBe("10");
+  const board = panel.getByRole("button", {
+    name: "Ride the bus",
+    exact: true,
+  });
+  await expect(board).toBeEnabled({ timeout: 150_000 });
+  await board.press("Enter");
+  // A click made at an open stop must survive a delayed next frame.
+  await page.clock.fastForward(12_000);
+  await page.clock.runFor(32);
+  await expect(canvas).toHaveAttribute("data-bus-ride", "riding");
+  await expect(canvas).toHaveAttribute("data-city-car", "parked");
+  await expect(canvas).toHaveAttribute("data-bus-stop", "-1", {
+    timeout: 45_000,
+  });
+  const leave = panel.getByRole("button", { name: "Get off", exact: true });
+  await expect(leave).toBeDisabled();
+  await page.clock.fastForward(22_000);
+  await page.clock.runFor(32);
+  await expect(canvas).toHaveAttribute("data-bus-stop", "1");
+  await expect(leave).toBeEnabled();
+  await leave.press("Enter");
+  await page.clock.fastForward(12_000);
+  await page.clock.runFor(32);
+  await expect(canvas).toHaveAttribute("data-bus-ride", "on-foot");
+  await expect
+    .poll(async () => {
+      const x = Number(await canvas.getAttribute("data-player-x"));
+      const z = Number(await canvas.getAttribute("data-player-z"));
+      return BUS_STOPS.some((s) => Math.hypot(x - s.at[0], z - s.at[1]) < 0.1);
+    })
+    .toBe(true);
+  const x = Number(await canvas.getAttribute("data-player-x"));
+  const z = Number(await canvas.getAttribute("data-player-z"));
+  await page.keyboard.down("KeyD");
+  for (let i = 0; i < 8; i++) await page.clock.fastForward(250);
+  await expect
+    .poll(async () =>
+      Math.hypot(
+        Number(await canvas.getAttribute("data-player-x")) - x,
+        Number(await canvas.getAttribute("data-player-z")) - z,
+      ),
+    )
+    .toBeGreaterThan(1);
+  await page.keyboard.up("KeyD");
+  expect(errors).toEqual([]);
 });

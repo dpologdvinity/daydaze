@@ -128,3 +128,17 @@ test("lanes run along real road edges", () => {
   assert.ok(EDGES.length > 0);
   for (const e of EDGES) assert.ok(e.laneOffset > 1 && e.length > 50);
 });
+
+test("traffic brakes for a bus in its path", () => {
+  const t = createTraffic(1, 3);
+  const car = t.cars[0];
+  carPose(car, pose);
+  const bus: [number, number] = [
+    pose.x + Math.cos(pose.yaw) * 12,
+    pose.z - Math.sin(pose.yaw) * 12,
+  ];
+  for (let i = 0; i < 150; i++) stepTraffic(t, DT, null, bus);
+  carPose(car, pose);
+  assert.ok(Math.hypot(pose.x - bus[0], pose.z - bus[1]) > 4);
+  assert.ok(car.speed < 0.1);
+});

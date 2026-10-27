@@ -2890,3 +2890,18 @@ button:focus-visible {
   color: #06222e;
   font-weight: 700;
 }
+
+/* Transit uses the existing compact game panel and a sign at the downloaded stop. */
+.bus-stop-sign {
+  background: #153c48;
+  color: #fff3cf;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e7cf8e;
+  white-space: nowrap;
+  text-align: center;
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+.bus-panel p {
+  margin: 0.35rem 0;
+}

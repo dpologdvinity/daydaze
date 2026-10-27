@@ -8,6 +8,8 @@ import {
   VOLLEYBALL,
   type Neighborhood,
 } from "./layout.ts";
+import { neighborhoodAt } from "./cells.ts";
+import { BUS_STOPS } from "./transit.ts";
 import { ADULT_ROOMS } from "../age.ts";
 
 export type Place = { id: Neighborhood; label: string; spawn: Spawn };
@@ -52,12 +54,17 @@ export const CITY_PLACES: readonly Place[] = [
   },
 ];
 
-/** Games out in the open, with no door, for the map's directory. */
+/** Outdoor destinations with no door, for the map's directory. */
 export const OUTDOOR_SPOTS: readonly {
   label: string;
   neighborhood: Neighborhood;
   spawn: Spawn;
 }[] = [
+  ...BUS_STOPS.map((s) => ({
+    label: `Bus stop: ${s.name}`,
+    neighborhood: neighborhoodAt(s.at),
+    spawn: { position: s.at, yaw: s.yaw },
+  })),
   {
     label: "Beach volleyball",
     neighborhood: "beachside",

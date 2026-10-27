@@ -1,3 +1,4 @@
+// Moving lane traffic: procedural city cars and downloaded transport share one simulation.
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -13,7 +14,15 @@ import {
   type VehicleKind,
 } from "../../game/city/traffic.ts";
 import type { Player } from "../world/PlayerController.tsx";
+import { busMotion } from "./busRide.ts";
 import { driving } from "../world/driving.ts";
+import {
+  useTransitModels,
+  resetTransit,
+  placeTransit,
+  updateTransit,
+  type TransitModel,
+} from "./transitModels.ts";
 import { useQuality } from "../world/quality.ts";
 import {
   CAR_BODY,
@@ -31,6 +40,8 @@ import {
  * and interiors; everyone's wheels and lamps) and the signal bulbs, which
  * change color only when the phase does.
  */
+
+const DOWNLOADED: readonly TransitModel[] = ["taxi", "sedan", "van"];
 
 const WHEEL = new THREE.CylinderGeometry(0.36, 0.36, 0.26, 12).rotateX(
   Math.PI / 2,
@@ -151,19 +162,23 @@ function placePart(
 
 export function Traffic({ player }: { player: Player }) {
   const tier = useQuality();
+  const downloaded = useTransitModels(DOWNLOADED, 22);
   const count = tier === "high" ? 22 : 12;
   const traffic = useMemo(() => createTraffic(count, 11), [count]);
   const clock = useRef({ accumulator: 0 });
   const here = useRef<[number, number]>([0, 0]);
+  const busPosition = useRef<[number, number]>([0, 0]);
   const phase = useRef("");
   const bulbs = useMemo(signalBulbs, []);
 
-  // each vehicle's slot among the meshes of its own kind
-  const slots = useMemo(() => {
-    const next: Record<VehicleKind, number> = { car: 0, jeepney: 0 };
-    const slot = traffic.cars.map((car) => next[car.kind]++);
-    return { slot, cars: next.car, jeepneys: next.jeepney };
-  }, [traffic]);
+  // Capacity stays fixed; each frame packs only the visible procedural vehicles.
+  const slots = useMemo(
+    () => ({
+      cars: traffic.cars.filter((car) => car.kind === "car").length,
+      jeepneys: traffic.cars.filter((car) => car.kind === "jeepney").length,
+    }),
+    [traffic],
+  );
 
   const meshes = useMemo(() => {
     const cars = Math.max(1, slots.cars);
@@ -244,16 +259,7 @@ export function Traffic({ player }: { player: Player }) {
       new THREE.MeshBasicMaterial({ toneMapped: false }),
       bulbs.length,
     );
-    traffic.cars.forEach((car, i) => {
-      const slot = slots.slot[i];
-      if (car.kind === "car") body.setColorAt(slot, color.set(car.color));
-      else {
-        shell.setColorAt(slot, color.set(car.color));
-        const n = TRIM_COLORS.length;
-        let stripe = TRIM_COLORS[car.id % n];
-        if (stripe === car.color) stripe = TRIM_COLORS[(car.id + 1) % n];
-        trim.setColorAt(slot, color.set(stripe));
-      }
+    traffic.cars.forEach((_, i) => {
       LAMP_COLORS.forEach((c, k) =>
         lamps.setColorAt(i * PER_VEHICLE + k, color.set(c).multiplyScalar(2)),
       );
@@ -278,15 +284,25 @@ export function Traffic({ player }: { player: Player }) {
   useFrame((_, dt) => {
     here.current[0] = player.pos.x;
     here.current[1] = player.pos.z;
+    busPosition.current[0] = busMotion.pose.x;
+    busPosition.current[1] = busMotion.pose.z;
     advance(clock.current, dt, () =>
-      stepTraffic(traffic, 1 / 50, here.current),
+      stepTraffic(
+        traffic,
+        1 / 50,
+        here.current,
+        busMotion.active ? busPosition.current : null,
+      ),
     );
     const { body, cabin, shell, trim, chrome, dark, wheels, lamps, signals } =
       meshes;
     const city = driving.session?.kind === "city" ? driving.session : null;
+    resetTransit(downloaded.all);
+    let carCount = 0,
+      jeepCount = 0,
+      partCount = 0;
     for (let i = 0; i < traffic.cars.length; i++) {
       const car = traffic.cars[i];
-      const slot = slots.slot[i];
       carPose(car, pose);
       // your own car out on the street bumps into this one
       if (city) {
@@ -295,6 +311,30 @@ export function Traffic({ player }: { player: Player }) {
           c[0] = pose.x;
           c[1] = pose.z;
         } else city.traffic[i] = [pose.x, pose.z];
+      }
+      const distance = Math.hypot(pose.x - player.pos.x, pose.z - player.pos.z);
+      if (distance > (tier === "low" ? 80 : 180)) continue;
+      const model = car.kind === "car" ? car.id % 4 : 0;
+      if (model > 0) {
+        placeTransit(
+          downloaded.models,
+          model - 1,
+          pose.x,
+          pose.z,
+          pose.yaw,
+          distance,
+          tier === "low",
+        );
+        continue;
+      }
+      const slot = car.kind === "car" ? carCount++ : jeepCount++;
+      if (car.kind === "car") body.setColorAt(slot, color.set(car.color));
+      else {
+        shell.setColorAt(slot, color.set(car.color));
+        const n = TRIM_COLORS.length;
+        let stripe = TRIM_COLORS[car.id % n];
+        if (stripe === car.color) stripe = TRIM_COLORS[(car.id + 1) % n];
+        trim.setColorAt(slot, color.set(stripe));
       }
       // the car's own matrix once; each part is a car-local offset on it
       carMatrix.compose(
@@ -314,13 +354,46 @@ export function Traffic({ player }: { player: Player }) {
       const lampAt = LAMPS[car.kind];
       for (let k = 0; k < PER_VEHICLE; k++) {
         const [x, y, z] = wheelAt[k];
-        placePart(wheels, i * PER_VEHICLE + k, x, y, z, 1, 1, 1);
+        placePart(wheels, partCount * PER_VEHICLE + k, x, y, z, 1, 1, 1);
         const [lx, ly, lz] = lampAt[k];
-        placePart(lamps, i * PER_VEHICLE + k, lx, ly, lz, 1, 1, 1);
+        placePart(lamps, partCount * PER_VEHICLE + k, lx, ly, lz, 1, 1, 1);
       }
+      partCount++;
     }
-    for (const mesh of [body, cabin, shell, trim, chrome, dark, wheels, lamps])
+    if (city) {
+      // Three collision points cover the bus's full length for your own car.
+      const bus = busMotion.pose;
+      const n = traffic.cars.length;
+      city.traffic.length = n + (busMotion.active ? 3 : 0);
+      if (busMotion.active)
+        for (let k = 0; k < 3; k++) {
+          const offset = (k - 1) * 3;
+          const x = bus.x + Math.cos(bus.yaw) * offset;
+          const z = bus.z - Math.sin(bus.yaw) * offset;
+          const point = city.traffic[n + k];
+          if (point) {
+            point[0] = x;
+            point[1] = z;
+          } else city.traffic[n + k] = [x, z];
+        }
+    }
+    body.count = cabin.count = carCount;
+    shell.count = trim.count = chrome.count = dark.count = jeepCount;
+    wheels.count = lamps.count = partCount * PER_VEHICLE;
+    for (const mesh of [
+      body,
+      cabin,
+      shell,
+      trim,
+      chrome,
+      dark,
+      wheels,
+      lamps,
+    ]) {
       mesh.instanceMatrix.needsUpdate = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    }
+    updateTransit(downloaded.all);
 
     // the bulbs only change with the light phase
     const ew = signalAt(traffic.time, "ew");
@@ -341,6 +414,9 @@ export function Traffic({ player }: { player: Player }) {
 
   return (
     <>
+      {downloaded.all.map((mesh) => (
+        <primitive key={mesh.uuid} object={mesh} />
+      ))}
       {Object.entries(meshes).map(([name, mesh]) => (
         <primitive key={name} object={mesh} />
       ))}
