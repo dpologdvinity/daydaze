@@ -6,6 +6,8 @@ import {
   BUS_DWELL,
   BUS_CYCLE,
   busAt,
+  busRiderAt,
+  busStopPhase,
   nextBusIn,
   canBoard,
   canGetOff,
@@ -87,5 +89,21 @@ test("the whole loop follows city asphalt", () => {
         (s) => s.kind === "road" && contains(s.polygon, [pose.x, pose.z]),
       ),
     );
+  }
+});
+
+test("riders wait, board and leave only at their own stop", () => {
+  const rider: BusPose = { x: 0, z: 0, yaw: 0, stop: -1, next: 0 };
+  assert.equal(busRiderAt(BUS_CYCLE - 4, 0, false, rider), true);
+  assert.deepEqual([rider.x, rider.z], BUS_STOPS[0].at);
+  assert.equal(busRiderAt(0, 0, false, rider), true);
+  assert.equal(busRiderAt(4, 0, false, rider), false);
+  assert.equal(busRiderAt(0, 0, true, rider), true);
+  assert.equal(busRiderAt(4, 0, true, rider), false);
+  for (let i = 0; i < BUS_STOPS.length; i++) {
+    const arrival = nextBusIn(0, i);
+    assert.equal(busStopPhase(arrival, i), 0);
+    assert.equal(busRiderAt(arrival, i, true, rider), true);
+    assert.equal(busRiderAt(arrival + 5, i, true, rider), false);
   }
 });

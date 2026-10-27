@@ -1,12 +1,13 @@
 // Downloaded Line 1 bus and stops. The pure timetable owns motion; this scene
 // validates requests, carries the existing ride seat, and follows with a camera.
-import { Html } from "@react-three/drei";
+import { Html, useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import {
   BUS_STOPS,
   busAt,
+  busRiderAt,
   canBoard,
   canGetOff,
   nextBusIn,
@@ -17,6 +18,10 @@ import { driving } from "../world/driving.ts";
 import { isSceneReady } from "../world/ready.ts";
 import { useQuality } from "../world/quality.ts";
 import { playSoundFile, setLoop } from "../../audio/soundFiles.ts";
+import { Doll } from "../avatar/Doll.tsx";
+import { PEDESTRIANS } from "../../game/city/pedestrians.ts";
+import { partsOf, dimMeshes } from "./CityFurniture.tsx";
+import { useDaylight } from "./daylight.ts";
 import { busMotion, busRide } from "./busRide.ts";
 import {
   useTransitModels,
@@ -26,10 +31,82 @@ import {
   type TransitModel,
 } from "./transitModels.ts";
 
-const KINDS: readonly TransitModel[] = ["bus", "stop"];
+const KINDS: readonly TransitModel[] = ["bus"];
+const STOP_URL = "/models/street/busstop.glb";
+
+function Rider({
+  stop,
+  leaving,
+  origin,
+}: {
+  stop: number;
+  leaving: boolean;
+  origin: React.RefObject<number | null>;
+}) {
+  const group = useRef<THREE.Group>(null);
+  const pose = useMemo(() => ({ x: 0, z: 0, yaw: 0, stop: -1, next: 0 }), []);
+  const walk = useMemo(() => ({ current: { speed: 1.2 } }), []);
+  useFrame(() => {
+    if (!group.current || origin.current === null) return;
+    const visible = busRiderAt(
+      performance.now() / 1000 - origin.current,
+      stop,
+      leaving,
+      pose,
+    );
+    group.current.visible = visible;
+    if (visible) {
+      group.current.position.set(pose.x, 0, pose.z);
+      group.current.rotation.y = pose.yaw;
+    }
+  });
+  return (
+    <group ref={group} visible={false}>
+      <Doll
+        look={
+          PEDESTRIANS[(stop * 2 + Number(leaving)) % PEDESTRIANS.length].look
+        }
+        mood="idle"
+        walk={walk}
+        seed={220 + stop * 2 + Number(leaving)}
+      />
+    </group>
+  );
+}
 export function CityTransit({ player }: { player: Player }) {
   const low = useQuality() === "low";
   const { models, all } = useTransitModels(KINDS, 4);
+  const shelter = useGLTF(STOP_URL);
+  const stopMeshes = useMemo(
+    () => partsOf(shelter.scene, null, BUS_STOPS.length),
+    [shelter],
+  );
+  const { neon } = useDaylight();
+  useEffect(() => dimMeshes(stopMeshes, 1 - 0.55 * neon), [stopMeshes, neon]);
+  useEffect(() => {
+    const matrix = new THREE.Matrix4(),
+      p = new THREE.Vector3(),
+      q = new THREE.Quaternion();
+    for (const mesh of stopMeshes) {
+      BUS_STOPS.forEach((stop, i) => {
+        matrix.compose(
+          p.set(stop.at[0], 0, stop.at[1]),
+          q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), stop.yaw),
+          new THREE.Vector3(1, 1, 1),
+        );
+        mesh.setMatrixAt(i, matrix);
+      });
+      mesh.count = BUS_STOPS.length;
+      mesh.instanceMatrix.needsUpdate = true;
+    }
+    return () => {
+      for (const mesh of stopMeshes) {
+        mesh.geometry.dispose();
+        (mesh.material as THREE.Material).dispose();
+        mesh.dispose();
+      }
+    };
+  }, [stopMeshes]);
   const origin = useRef<number | null>(null);
   const riding = useRef(false);
   const lastStop = useRef(0);
@@ -165,16 +242,6 @@ export function CityTransit({ player }: { player: Player }) {
       Math.hypot(pose.x - player.pos.x, pose.z - player.pos.z),
       low,
     );
-    for (const s of BUS_STOPS)
-      placeTransit(
-        models,
-        1,
-        s.at[0],
-        s.at[1],
-        s.yaw,
-        Math.hypot(s.at[0] - player.pos.x, s.at[1] - player.pos.z),
-        low,
-      );
     updateTransit(all);
     gl.domElement.dataset.busRide = riding.current ? "riding" : "on-foot";
     gl.domElement.dataset.busStop = String(pose.stop);
@@ -184,6 +251,15 @@ export function CityTransit({ player }: { player: Player }) {
   const stop = BUS_STOPS[shown.near];
   return (
     <>
+      {stopMeshes.map((mesh) => (
+        <primitive key={mesh.uuid} object={mesh} />
+      ))}
+      {BUS_STOPS.map((_, i) => (
+        <Rider key={i} stop={i} leaving={false} origin={origin} />
+      ))}
+      {BUS_STOPS.map((_, i) => (
+        <Rider key={`leave-${i}`} stop={i} leaving origin={origin} />
+      ))}
       {all.map((mesh) => (
         <primitive key={mesh.uuid} object={mesh} />
       ))}
@@ -206,3 +282,5 @@ export function CityTransit({ player }: { player: Player }) {
     </>
   );
 }
+
+useGLTF.preload(STOP_URL);
