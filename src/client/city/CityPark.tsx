@@ -13,6 +13,9 @@ import * as THREE from "three";
 import {
   GROUND,
   PARK_FOUNTAIN,
+  GROWTH_CAP,
+  GROWTH_MODELS,
+  GROWTH_RANGE,
   parkGrowth,
   POND,
   type Growth,
@@ -23,29 +26,11 @@ import { cityFurniture, dimMeshes, partsOf } from "./CityFurniture.tsx";
 import { useDaylight } from "./daylight.ts";
 import { useReducedMotion } from "../motion.ts";
 
-const MODELS: Record<GrowthKind, string> = {
-  grass: "grass-common-tall-lo",
-  wispy: "grass-wispy-short-lo",
-  fern: "fern-1-lo",
-  bush: "bush-common-lo",
-  flowers3: "flower-3-group-lo",
-  flowers4: "flower-4-group-lo",
-  rock: "rock-medium-1-lo",
-};
-const KINDS = Object.keys(MODELS).filter((k): k is GrowthKind => k in MODELS);
-const url = (kind: GrowthKind) => `/models/nature/${MODELS[kind]}.glb`;
+const KINDS = Object.keys(GROWTH_MODELS).filter(
+  (k): k is GrowthKind => k in GROWTH_MODELS,
+);
+const url = (kind: GrowthKind) => `/models/nature/${GROWTH_MODELS[kind]}.glb`;
 
-/** How far (m) from the player each kind is drawn on the low and high tiers. */
-const RANGE: Record<GrowthKind, readonly [low: number, high: number]> = {
-  grass: [20, 48],
-  // the dearer tuft: high tier only
-  wispy: [0, 48],
-  fern: [40, 80],
-  bush: [60, 110],
-  flowers3: [45, 90],
-  flowers4: [45, 90],
-  rock: [50, 100],
-};
 /** The kit's plants are sized for its 8 m trees; the undergrowth shrinks to a park's. */
 const SCALE: Record<GrowthKind, number> = {
   grass: 0.3,
@@ -56,9 +41,6 @@ const SCALE: Record<GrowthKind, number> = {
   flowers4: 0.4,
   rock: 0.45,
 };
-/** The most of one kind drawn at once (low tier keeps it small). */
-const CAPACITY = 1400;
-const LOW_CAP = 420;
 
 const m = new THREE.Matrix4();
 const q = new THREE.Quaternion();
@@ -76,7 +58,7 @@ function nearby(
 ): Growth[] {
   return growth
     .map((g) => ({ g, d: Math.hypot(g.x - at[0], g.z - at[1]) }))
-    .filter(({ g, d }) => d <= RANGE[g.kind][low ? 0 : 1])
+    .filter(({ g, d }) => d <= GROWTH_RANGE[g.kind][low ? 0 : 1])
     .sort((a, b) => a.d - b.d)
     .map(({ g }) => g);
 }
@@ -90,7 +72,7 @@ function place(
   const counts = new Map<GrowthKind, number>();
   for (const g of nearby(growth, at, low)) {
     const n = counts.get(g.kind) ?? 0;
-    if (n >= (low ? LOW_CAP : CAPACITY)) continue;
+    if (n >= GROWTH_CAP[low ? "low" : "high"]) continue;
     q.setFromAxisAngle(up, g.yaw);
     p.set(g.x, GROUND, g.z);
     s.setScalar(g.scale * SCALE[g.kind]);
@@ -114,7 +96,7 @@ export function CityPark(): JSX.Element {
     const byKind = new Map<GrowthKind, THREE.InstancedMesh[]>();
     KINDS.forEach((kind, i) => {
       const gltf = gltfs[i];
-      if (gltf) byKind.set(kind, partsOf(gltf.scene, null, CAPACITY));
+      if (gltf) byKind.set(kind, partsOf(gltf.scene, null, GROWTH_CAP.high));
     });
     return byKind;
   }, [gltfs]);

@@ -197,6 +197,35 @@ export function parkFurniture(): FurnitureSpot[] {
 export type GrowthKind =
   "grass" | "wispy" | "fern" | "bush" | "flowers3" | "flowers4" | "rock";
 
+/** The model (public/models/nature/<name>.glb) each kind is drawn with. */
+export const GROWTH_MODELS: Record<GrowthKind, string> = {
+  grass: "grass-common-tall-lo",
+  wispy: "grass-wispy-short-lo",
+  fern: "fern-1-lo",
+  bush: "bush-common-lo",
+  flowers3: "flower-3-group-lo",
+  flowers4: "flower-4-group-lo",
+  rock: "rock-medium-1-lo",
+};
+
+/** How far (m) from the player each kind is drawn on the low and high tiers. */
+export const GROWTH_RANGE: Record<
+  GrowthKind,
+  readonly [low: number, high: number]
+> = {
+  grass: [20, 48],
+  // the dearer tuft: high tier only
+  wispy: [0, 48],
+  fern: [40, 80],
+  bush: [60, 110],
+  flowers3: [45, 90],
+  flowers4: [45, 90],
+  rock: [50, 100],
+};
+
+/** The most of one kind drawn at once, per tier (the low tier keeps it small). */
+export const GROWTH_CAP = { low: 420, high: 1400 } as const;
+
 /** A plant or rock on the lawn; CityPark draws these near the player. */
 export type Growth = {
   kind: GrowthKind;
