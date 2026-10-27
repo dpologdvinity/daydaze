@@ -2906,6 +2906,7 @@ test("city bus: board at a stop, ride to the next stop and get off", async ({
     .toBeGreaterThan(1);
   await page.keyboard.up("KeyD");
   expect(errors).toEqual([]);
+});
 
 test("13+ bars serve mocktails: no drink button, no buzz", async ({ page }) => {
   test.setTimeout(330_000);
