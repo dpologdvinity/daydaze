@@ -119,51 +119,8 @@ def process_stock_car(name: str, out_name: str):
     print(f"Exported {tmp_glb}")
 
 
-def process_character(in_glb: str, out_name: str, decimate_ratio=0.25):
-    bpy.ops.wm.read_factory_settings(use_empty=True)
-    if not os.path.exists(in_glb):
-        print(f"Skipping {in_glb}")
-        return
-
-    bpy.ops.import_scene.gltf(filepath=in_glb)
-    meshes = [obj for obj in bpy.data.objects if obj.type == "MESH"]
-    if not meshes:
-        return
-    for obj in bpy.context.selected_objects:
-        obj.select_set(False)
-    for m in meshes:
-        m.select_set(True)
-    bpy.context.view_layer.objects.active = meshes[0]
-    bpy.ops.object.join()
-    char = bpy.context.active_object
-    char.name = out_name
-
-    # Decimate to ultra-low poly for massive instancing
-    mod = char.modifiers.new(name="Decimate", type="DECIMATE")
-    mod.ratio = decimate_ratio
-    bpy.ops.object.modifier_apply(modifier="Decimate")
-
-    # Center on feet
-    bbox = [char.matrix_world @ Vector(b) for b in char.bound_box]
-    min_z = min(v.z for v in bbox)
-    char.location.z -= min_z
-    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-
-    tmp_glb = os.path.join(TMP_DIR, f"{out_name}.glb")
-    bpy.ops.export_scene.gltf(filepath=tmp_glb, export_format="GLB")
-    print(f"Exported {tmp_glb}")
-
-
 # 1. Process 4 stock cars
 process_stock_car("SportsCar", "stock-car-1")
 process_stock_car("SportsCar2", "stock-car-2")
 process_stock_car("NormalCar1", "stock-car-3")
 process_stock_car("NormalCar2", "stock-car-4")
-
-# 2. Process Spectator and Pit Crew figures
-process_character(
-    os.path.join(KENNEY_CHAR, "character-male-a.glb"), "spectator", 0.2
-)
-process_character(
-    os.path.join(KENNEY_CHAR, "character-male-b.glb"), "pit-crew", 0.3
-)

@@ -31,7 +31,7 @@ import { surface } from "../city/worldTexture.ts";
 // the infield's blacktop, all round the pits and the tracks
 const BLACKTOP = surface("asphalt_02", {
   scale: 0.25,
-  color: "#5a5380",
+  color: "#b4aed6",
   roughness: 0.9,
 });
 import { PortalPads } from "./shared/PortalPads.tsx";
@@ -254,15 +254,15 @@ export function Speedway({ onPick }: { onPick: PickHandler }) {
 
   return (
     <>
-      <color attach="background" args={["#0d0820"]} />
-      <fog attach="fog" args={["#241a44", 80, 420]} />
-      {/* a night race under floodlights: sky wash, and a light from the masts
-          that reads the crowd, the pits, the flagstand and the numbered cars */}
-      <hemisphereLight args={["#9a8cff", "#352a66", 1.5]} />
+      <color attach="background" args={["#7db9ff"]} />
+      <fog attach="fog" args={["#c4dcff", 120, 520]} />
+      {/* a race day: sky wash and sun, so the crowd, the pits, the flagstand
+          and the numbered cars all read; the neon still glows */}
+      <hemisphereLight args={["#ffffff", "#9a96b8", 2.1]} />
       <directionalLight
-        position={[30, 90, -40]}
-        intensity={2.4}
-        color="#fff1dc"
+        position={[40, 90, -30]}
+        intensity={2.8}
+        color="#fff4e0"
       />
       <pointLight
         position={[-14, 9, -18]}
@@ -289,7 +289,7 @@ export function Speedway({ onPick }: { onPick: PickHandler }) {
         width={20}
         depth={13}
         center={[0, 0.5]}
-        color="#6a6080"
+        color="#a89ccc"
         texture={{ id: "garage_floor", scale: 0.4 }}
         low={{ metalness: 0.1, roughness: 0.6 }}
         onPick={onPick}

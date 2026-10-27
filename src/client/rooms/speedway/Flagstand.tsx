@@ -53,13 +53,13 @@ export function Flagstand({
       <group position={[-4, 0, -28.5]}>
         <primitive
           object={pylon.clone(true)}
-          scale={[2.5, 3.5, 2.5]}
+          scale={[0.3, 0.45, 0.3]}
           position={[0, 0, 0]}
         />
         <primitive
           object={flag.clone(true)}
-          scale={[3, 3, 3]}
-          position={[0, 4.2, 0]}
+          scale={[1.5, 1.5, 1.5]}
+          position={[0, 1.2, 0]}
         />
       </group>
     </group>
