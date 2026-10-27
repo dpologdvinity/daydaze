@@ -74,7 +74,7 @@ export const LENGTH: Record<CreatureKind, number> = {
   zebra: 2.3,
   giraffe: 2.4,
   elephant: 4,
-  lion: 2,
+  lion: 1.6,
   penguin: 0.7,
   flamingo: 0.7,
   cat: 0.6,
@@ -115,7 +115,7 @@ export const MOOD_CLIP = {
 
 /** How far each downloaded model must turn about y to face +z, the way the
  * game's yaw 0 does. The Animated Fish Pack faces -z; the poly.pizza zoo
- * models face along x (found by rendering them from above). The Quaternius
+ * models face along x, and the Sketchfab giraffe faces -z (found by rendering them). The Quaternius
  * animal and Cute Fish packs already face +z. */
 const MODEL_YAW: Partial<Record<CreatureKind, number>> = {
   dolphin: Math.PI,
@@ -125,9 +125,7 @@ const MODEL_YAW: Partial<Record<CreatureKind, number>> = {
   fish1: Math.PI,
   fish2: Math.PI,
   fish3: Math.PI,
-  giraffe: -Math.PI / 2,
-  elephant: Math.PI / 2,
-  penguin: -Math.PI / 2,
+  giraffe: Math.PI,
   flamingo: Math.PI / 2,
 };
 

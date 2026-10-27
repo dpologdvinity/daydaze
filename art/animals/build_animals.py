@@ -44,12 +44,24 @@ OCEAN = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 for n in ["grouper", "crab", "turtle"]:
     SOURCES[n] = os.path.join(OCEAN, n + ".glb")
 
+# Sketchfab downloads (CC-BY, see docs/assets.md): textured and realistic, so
+# they keep their materials and images instead of baking vertex colors. The
+# giraffe's and lion's single clip is a calm idle, used for every state.
+SKETCHFAB = "../sketchfab"
+TEXTURED = {"giraffe", "elephant", "lion", "penguin"}
+for n in TEXTURED:
+    SOURCES[n] = f"{SKETCHFAB}/{n}.glb"
+
 # Clips kept (matched by suffix after the last "|"), renamed to the key.
 CLIPS = {
     "Idle": "idle", "Idle_Eating": "eat", "Idle_2": "idle2", "Idle_Headlow": "graze",
     "Eating": "eat", "Walk": "walk", "Gallop": "run",
     "Idle_HitReact1": "react", "Run": "run", "Swim": "swim", "Swimming_Normal": "swim",
     "WalkSlow": "walkslow",
+    # Sketchfab elephant ("TRS|...") and penguin
+    "idle": "idle", "walk": "walk", "run": "run", "eating": "eat", "idle down": "graze",
+    "idle trumpet": "react", "Preen": "graze", "Sleep": "sleep", "Sit1": "sit",
+    "Take 01": "idle", "Animation": "idle",
 }
 
 
@@ -123,15 +135,20 @@ def convert(name, path):
     meshes = [o for o in bpy.data.objects if o.type == "MESH" and o.dimensions.length > 1e-4]
     for o in [o for o in bpy.data.objects if o.type == "MESH" and o not in meshes]:
         bpy.data.objects.remove(o)
+    # helper shapes some artists leave in: a ground disc, a stand-in sphere
+    for o in [o for o in meshes if o.name.startswith(("Circle", "Icosphere"))]:
+        bpy.data.objects.remove(o)
+        meshes.remove(o)
     arm = next((o for o in bpy.data.objects if o.type == "ARMATURE"), None)
-    vertex_color_single_material(meshes)
+    if name not in TEXTURED:
+        vertex_color_single_material(meshes)
     kept = keep_clips(arm) if arm else {}
     out = os.path.join(OUT, name + ".glb")
     bpy.ops.export_scene.gltf(
         filepath=out, export_format="GLB", export_animations=True,
         export_animation_mode="ACTIONS", export_force_sampling=True,
         export_optimize_animation_size=True, export_apply=False,
-        export_vertex_color="ACTIVE", export_image_format="NONE",
+        export_vertex_color="ACTIVE", export_image_format="AUTO" if name in TEXTURED else "NONE",
         export_extras=False, export_yup=True,
     )
     print("BUILT", name, sorted(kept), os.path.getsize(out))

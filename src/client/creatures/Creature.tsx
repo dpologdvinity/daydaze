@@ -133,7 +133,8 @@ export function Creature({
     const w = sway.current;
     if (w) {
       if (!calm) s.t += dt;
-      const still = rig.actions.size === 0;
+      // no walk clip of its own: sway it along instead
+      const still = !rig.actions.has("walk");
       const walking = still && !calm && (p.clip === "walk" || p.clip === "run");
       const bow = still && (p.clip === "graze" || p.clip === "eat") ? 0.4 : 0;
       const k = Math.min(1, dt * 4);
