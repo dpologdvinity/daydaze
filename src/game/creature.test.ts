@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  clipToPlay,
   newWanderer,
   stepWanderer,
   turnToward,
@@ -42,4 +43,15 @@ test("turnToward takes the short way round and never overshoots", () => {
   assert.equal(turnToward(0, 1, 2), 1);
   assert.ok(Math.abs(turnToward(3, -3, 0.1) - 3.1) < 1e-9);
   assert.equal(turnToward(0, -0.5, 0.2), -0.2);
+});
+
+test("a clip the model lacks plays its idle, so the next change fades that idle out", () => {
+  // a pet model with no sit clip (the pets' GLBs carry idle, walk and run)
+  const has = new Set(["idle", "walk", "run"]);
+  assert.equal(clipToPlay(has, "sit"), "idle");
+  assert.equal(clipToPlay(has, "walk"), "walk");
+  // the change sit -> walk is then idle -> walk: the walk crossfades from idle
+  assert.notEqual(clipToPlay(has, "sit"), clipToPlay(has, "walk"));
+  // nothing to play at all (a static model): the empty name
+  assert.equal(clipToPlay(new Set(), "walk"), "");
 });
