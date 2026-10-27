@@ -16,7 +16,7 @@ import {
 import type { Instance, Kind } from "./plan.ts";
 import { hash, pick } from "./hash.ts";
 import type { FurnitureKind, FurnitureSpot } from "./furniture.ts";
-import { detailBuilding, trafficLights } from "./detail.ts";
+import { detailBuilding } from "./detail.ts";
 
 export { hash };
 
@@ -777,7 +777,6 @@ function streetDress(): Placed[] {
   puddles(out);
   grates(out);
   strings(out);
-  trafficLights(out, CROSS_X);
   return out;
 }
 
@@ -831,6 +830,17 @@ function furnitureSpots(): FurnitureSpot[] {
   }
   for (const x of [152.5, 160])
     out.push({ kind: "planter", x, z: -9.5, yaw: 0, scale: 1 });
+  // a signal on the avenue pavement, one each side of every cross street (the
+  // lit bulbs cycle in Traffic.tsx)
+  for (const cx of CROSS_X)
+    for (const side of [-1, 1])
+      out.push({
+        kind: "trafficlight",
+        x: cx + 7,
+        z: side * 9,
+        yaw: 0,
+        scale: 1,
+      });
   for (const x of BUS_STOPS)
     out.push({ kind: "busstop", x, z: -9, yaw: 0, scale: 1 });
   // stop signs and no-parking signs at the cross streets' corners

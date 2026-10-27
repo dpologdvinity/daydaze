@@ -221,6 +221,12 @@ const SHOTS: {
     act: furnitureReady,
   },
   {
+    // a signal head at a crossing, its lit bulbs cycling (Traffic.tsx)
+    name: "city-signal",
+    query: "room=city&view=full&time=12:00&at=-47,9.5",
+    act: furnitureReady,
+  },
+  {
     name: "city-sidewalk-night",
     query: "room=city&view=full&time=23:00&at=-36,9.5",
     act: furnitureReady,

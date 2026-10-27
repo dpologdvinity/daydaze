@@ -2215,16 +2215,16 @@ function nearCross(x: number): boolean {
 // and cross streets get trees every 60 m. Props block the walk like a post.
 function buildProps(): Prop[] {
   const props: Prop[] = [];
-  // palms at the square's four corners
+  // trees at the square's four corners
   for (const x of [-44, 44])
-    for (const z of [17, 40]) props.push({ kind: "palm", position: [x, z] });
+    for (const z of [17, 40]) props.push({ kind: "tree", position: [x, z] });
   for (let x = -180; x <= 180; x += 30) {
     if (nearCross(x)) continue;
     for (const z of [-9, 9]) props.push({ kind: "lamp", position: [x, z] });
   }
   for (let x = -165; x <= 165; x += 30) {
     if (nearCross(x)) continue;
-    for (const z of [-9, 9]) props.push({ kind: "palm", position: [x, z] });
+    for (const z of [-9, 9]) props.push({ kind: "tree", position: [x, z] });
   }
   for (const cx of CROSS_STREETS) {
     for (const x of [cx - 7, cx + 7]) {

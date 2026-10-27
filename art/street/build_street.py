@@ -133,6 +133,40 @@ def imported(path, height=None, length=None, tris=None, turn=0.0, keep_xy=False)
 Q = lambda n: f"{SRC_Q}/{n}.fbx"
 PH = lambda n: f"{SRC_PH}/{n}/{n}.gltf"
 
+def traffic_light(path):
+    """Poly Google's traffic light: the pole and one head, the head copied to all
+    four sides, its lenses dropped (the client draws them lit, cycling red,
+    yellow and green: SIGNAL in src/game/city/furniture.ts matches this scale)."""
+    reset()
+    bpy.ops.import_scene.gltf(filepath=path)
+    bpy.ops.object.select_all(action="SELECT")
+    bpy.ops.object.parent_clear(type="CLEAR_KEEP_TRANSFORM")
+    for o in [o for o in bpy.context.scene.objects if o.type != "MESH"]:
+        bpy.data.objects.remove(o)
+    by = {o.name: o for o in meshes()}
+    for n in ("Cylinder002", "Cylinder003", "Cylinder004"):
+        bpy.data.objects.remove(by.pop(n))
+    pole = by.pop("Cylinder001")
+    lo, hi = bounds(pole)
+    ax = (lo + hi) / 2
+    for o in meshes():
+        o.location = (-ax.x, -ax.y, -lo.z)
+    bpy.ops.object.select_all(action="SELECT")
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    heads = list(by.values())
+    for k in (1, 2, 3):
+        bpy.ops.object.select_all(action="DESELECT")
+        for h in heads:
+            h.select_set(True)
+        bpy.ops.object.duplicate()
+        for d in bpy.context.selected_objects:
+            d.rotation_euler[2] = k * math.pi / 2
+        bpy.ops.object.transform_apply(rotation=True)
+    o = bake_and_join()
+    o.scale = (0.0029, 0.0029, 0.0029)
+    bpy.ops.object.transform_apply(scale=True)
+
+
 PP = lambda n: f"{SRC_PP}/{n}.glb"
 
 imported(Q("Streetlight_Single"), height=5.4, tris=350); export("lamp")
@@ -144,7 +178,8 @@ imported(PH("painted_wooden_bench"), length=1.8); export("bench")
 # Poly Pizza downloads (see docs/assets.md)
 imported(PP("mailbox"), height=1.15, tris=240); export("mailbox")
 imported(PP("meter"), height=1.4, tris=400); export("meter")
-imported(PP("bikerack"), height=0.9, tris=800); export("bikerack")
+imported(PP("bikerack"), length=1.1, tris=800); export("bikerack")
 imported(PP("busstop"), height=2.9, tris=300); export("busstop")
 imported(PP("palm1"), height=7.0, tris=350); export("palm")
+traffic_light(PP("traffic2")); export("trafficlight")
 imported(PP("planter"), length=1.8, tris=250); export("planter")

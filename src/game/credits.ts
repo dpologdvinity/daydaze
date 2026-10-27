@@ -208,6 +208,14 @@ export const CREDITS: readonly {
         url: "https://poly.pizza/m/wn85Xr9lM3",
         usedFor: "Sidewalk planter boxes, decimated.",
       },
+      {
+        title: "Traffic Light",
+        author: "Poly by Google",
+        license: "CC-BY 3.0",
+        url: "https://poly.pizza/m/57rxXzowK8w",
+        usedFor:
+          "Signal heads at the avenue crossings; head copied to four faces, lenses redrawn lit.",
+      },
     ],
   },
   {

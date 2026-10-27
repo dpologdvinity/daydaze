@@ -14,6 +14,7 @@ export const FURNITURE_KINDS = [
   "bikerack",
   "planter",
   "palm",
+  "trafficlight",
   "busstop",
   "sign-stop",
   "sign-noparking",
@@ -52,6 +53,7 @@ export const FURNITURE_RANGE: Record<
   bikerack: [25, 70],
   planter: [30, 80],
   palm: [45, 110],
+  trafficlight: [60, 120],
   busstop: [60, 140],
   "sign-stop": [50, 110],
   "sign-noparking": [40, 90],
@@ -63,3 +65,15 @@ export const furnitureVisible = (
   distance: number,
   low: boolean,
 ): boolean => distance <= FURNITURE_RANGE[kind][low ? 0 : 1];
+
+/**
+ * Where the signal lenses sit on the traffic light model (art/street/build_street.py
+ * scales it to match): the top lens' height, the gap between lenses, and how far
+ * the lens face stands out from the pole. Traffic.tsx draws the lit bulbs there.
+ */
+export const SIGNAL = {
+  top: 4.06,
+  gap: 0.535,
+  out: 0.245,
+  radius: 0.2,
+} as const;

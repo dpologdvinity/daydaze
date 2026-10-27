@@ -43,6 +43,7 @@ future imported packs belong here when they enter the game.
 | Bus Stop | Zsky | CC-BY 3.0 | https://poly.pizza/m/OWczicNWhO | Avenue bus shelters, decimated. |
 | Palm Tree | Quaternius | CC0 1.0 | https://poly.pizza/m/A6cKJYFsIb | Street and beach palms, decimated. |
 | Planter and Bushes | J-Toastie | CC-BY 3.0 | https://poly.pizza/m/wn85Xr9lM3 | Sidewalk planter boxes, decimated. |
+| Traffic Light | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/57rxXzowK8w | Signal heads at the avenue crossings; head copied to four faces, lenses redrawn lit. |
 
 
 Street furniture is built by `art/street/build_street.py` into `public/models/street/` (every model cut down to a few hundred triangles).

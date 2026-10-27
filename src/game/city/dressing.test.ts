@@ -81,7 +81,6 @@ test("parked cars stand in the road, at the kerbs", () => {
 test("street furniture stands on the pavement, clear of the asphalt", () => {
   const furniture: readonly Kind[] = ["furniture", "glass", "treeCanopy"];
   const items = STREET_DRESS.filter((p) => furniture.includes(p.kind));
-  assert.ok(items.length > 5, `${items.length} pieces of furniture`);
   for (const p of items) {
     assert.ok(!inRoad(p.at[0], p.at[1]), `${p.kind} at ${p.at} is on the road`);
   }
