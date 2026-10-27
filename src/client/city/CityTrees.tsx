@@ -114,7 +114,9 @@ function place(
 export function CityTrees(): JSX.Element {
   const low = useQuality() === "low";
   const far = useLevel(true);
-  const near = useLevel(false);
+  // the low tier draws every tree far off, so its near level is the cached
+  // far models (never filled): the full-detail files are never fetched
+  const near = useLevel(low);
   const { spots, at } = cityTrees.use();
   useEffect(() => {
     place({ near, far }, spots, at, low);
