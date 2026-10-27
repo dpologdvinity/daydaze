@@ -153,11 +153,17 @@ const PANEL = 2.2;
 /** Panel height scale: Kenney's fence is 0.35 m tall at scale 1. */
 const FENCE_K = 2.4;
 
-/** The fence panels round every habitat: the model is 1 m long along x, so
- * each panel's x scale is its share of the side (a whole number per side). */
-export function fenceSpots(): Spot[] {
+/** Fence panels round each of `rects`, end to end: a model `modelLength`
+ * meters long along x gets an x scale that makes a whole number of panels fill
+ * every side exactly, and `height` scales it up and thick. */
+export function rectFenceSpots(
+  rects: readonly Rect[],
+  modelLength: number,
+  height: number,
+  panel = PANEL,
+): Spot[] {
   const out: Spot[] = [];
-  for (const h of Object.values(HABITATS)) {
+  for (const h of rects) {
     const sides: [number, number, number, number][] = [
       [h.x0, h.z0, h.x1, h.z0],
       [h.x1, h.z0, h.x1, h.z1],
@@ -166,7 +172,7 @@ export function fenceSpots(): Spot[] {
     ];
     for (const [ax, az, bx, bz] of sides) {
       const len = Math.hypot(bx - ax, bz - az);
-      const n = Math.max(1, Math.round(len / PANEL));
+      const n = Math.max(1, Math.round(len / panel));
       const seg = len / n;
       for (let k = 0; k < n; k++) {
         const f = (k + 0.5) / n;
@@ -175,15 +181,19 @@ export function fenceSpots(): Spot[] {
           z: az + (bz - az) * f,
           // the model's length runs along x: turn x onto the side's direction
           yaw: Math.atan2(-(bz - az), bx - ax),
-          sx: seg,
-          sy: FENCE_K,
-          sz: FENCE_K,
+          sx: seg / modelLength,
+          sy: height,
+          sz: height,
         });
       }
     }
   }
   return out;
 }
+
+/** The Zoo's fence panels (Kenney's is 1 m long). */
+export const fenceSpots = (): Spot[] =>
+  rectFenceSpots(Object.values(HABITATS), 1, FENCE_K);
 
 export const FENCE_SPOTS = fenceSpots();
 
