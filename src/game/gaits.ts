@@ -156,6 +156,16 @@ export const GAITS = [
 
 export type GaitId = (typeof GAITS)[number]["id"];
 
+/** Strangers walk naturally, a few with more swing; an NPC with no gait of
+ * its own takes one of these by seed (HumanDoll) or by draw (pedestrians). */
+export const NPC_GAITS: readonly GaitId[] = [
+  "natural",
+  "relaxed",
+  "natural",
+  "confident",
+  "sassy",
+];
+
 export function isGait(value: unknown): value is GaitId {
   return GAITS.some((g) => g.id === value);
 }

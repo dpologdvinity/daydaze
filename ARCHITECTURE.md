@@ -58,7 +58,10 @@ floors, looks, saves, chat effects) so both sides agree on the rules.
 - `city/` is the streamed open city: chunks, traffic, your car, the fuel
   stops, the beach net, events (fireworks, the Pride parade).
 - `avatar/` is the doll: `human/HumanDoll.tsx` loads the Blender-built GLB
-  parts and paints the face; `Doll.tsx` picks poses, dances and couple poses.
+  parts, paints the face and plays baked Mixamo clips on the full skeleton
+  with an AnimationMixer (`human/anims.ts`; `game/dance/clips.ts` picks the
+  clip). The hand-made 13-joint poses in `pose.ts` (built dances, poses for
+  two, the toon doll) reach the skeleton through `BuiltPose`.
 - `net/` wires the online session into React (see Online below).
 
 Quality tiers (`world/quality.ts`, `?quality=low|high`) keep the low tier
@@ -150,8 +153,10 @@ the account's own save has loaded (`saveSync.ts`, `client/net/cloudSave.ts`).
 The 3D doll is built in Blender from MakeHuman's CC0 assets
 (`art/doll/blender/`), optimized with gltf-transform into
 `public/models/doll/`. Textures are CC0 PBR sets fetched by
-`scripts/fetch-textures.ts`. Motion capture is retargeted by
-`art/doll/blender/mocap.py` into `src/game/dance/mocap.ts`.
+`scripts/fetch-textures.ts`. The doll's skeleton is Mixamo's 52 bones
+(MPFB2's CC0 rig); `art/doll/blender/mocap.py` retargets Mixamo clips onto
+it into `public/models/doll/anims.glb` and lists them in
+`src/game/dance/mocap.ts`. Sources and licenses: `docs/assets.md`.
 
 ## Service worker
 

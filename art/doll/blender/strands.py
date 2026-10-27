@@ -64,10 +64,9 @@ def scalp_points(ctx, count, rng, front_line=0.0):
     hairline, with their surface normals."""
     from doll_hair import hairline  # avoid a cycle at import time
 
-    head_i = ctx.BONES.index("head")
     tris = []
     for f in ctx.FACES["body"]:
-        if ctx.W[f][:, head_i].min() < 0.98:
+        if ctx.HEADW[f].min() < 0.98:
             continue
         pts = ctx.PB[f]
         c = pts.mean(0)
@@ -110,7 +109,7 @@ def build(
     segments = int(np.clip(round(length / 0.045), 10, 13))
     head = np.array(ctx.JB["head"])
     # the head as an ellipsoid, a touch bigger than the skull, for collision
-    top_z = max(p[2] for p in ctx.PB[[i for f in ctx.FACES["body"] for i in f if ctx.W[i, ctx.BONES.index("head")] > 0.98]])
+    top_z = max(p[2] for p in ctx.PB[[i for f in ctx.FACES["body"] for i in f if ctx.HEADW[i] > 0.98]])
     centre = np.array([head[0], head[1] + 0.01, top_z - 0.105])
     radii = np.array([0.077, 0.094, 0.11]) * (1 + 0.03 * volume)
     shoulder_z = ctx.JB["lArm"][2]
@@ -174,8 +173,7 @@ def build(
         from mathutils import Vector
         from mathutils.bvhtree import BVHTree
 
-        head_i = ctx.BONES.index("head")
-        scalp_f = [f for f in ctx.FACES["body"] if ctx.W[f][:, head_i].min() > 0.98]
+        scalp_f = [f for f in ctx.FACES["body"] if ctx.HEADW[f].min() > 0.98]
         skull = BVHTree.FromPolygons([tuple(p) for p in ctx.PB], [list(f) for f in scalp_f])
 
         def on_skull(p, off):
@@ -348,8 +346,7 @@ def build(
         for li in poly.loop_indices:
             uv[li].uv = uvs[ob.data.loops[li].vertex_index]
     # every card rides the scalp vertex nearest its root
-    head_i = ctx.BONES.index("head")
-    skin = np.array(sorted({i for f in ctx.FACES["body"] for i in f if ctx.W[i, head_i] > 0.98}))
+    skin = np.array(sorted({i for f in ctx.FACES["body"] for i in f if ctx.HEADW[i] > 0.98}))
     tree = KDTree(len(skin))
     for i, p in enumerate(ctx.PB[skin]):
         tree.insert(p, i)

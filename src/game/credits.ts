@@ -23,6 +23,14 @@ export const CREDITS: readonly {
           "Avatar bodies, morph targets, hair and clothing, adapted for Daydaze.",
       },
       {
+        title: "MPFB2 Mixamo-named rig",
+        author: "MakeHuman Community",
+        license: "CC0 1.0",
+        url: "https://github.com/makehumancommunity/mpfb2",
+        usedFor:
+          "The 52-bone skeleton and skin weights the doll is rigged with, fitted to the shaped body.",
+      },
+      {
         title: "Stylized Nature MegaKit",
         author: "Quaternius",
         license: "CC0 1.0",

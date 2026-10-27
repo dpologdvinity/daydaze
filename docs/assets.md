@@ -19,6 +19,7 @@ future imported packs belong here when they enter the game.
 | Title | Author | License | URL | Used for |
 | --- | --- | --- | --- | --- |
 | MakeHuman | MakeHuman Community | CC0 1.0 | https://github.com/makehumancommunity/makehuman | Avatar bodies, morph targets, hair and clothing, adapted for Daydaze. |
+| MPFB2 Mixamo-named rig | MakeHuman Community | CC0 1.0 | https://github.com/makehumancommunity/mpfb2 | The 52-bone skeleton and skin weights the doll is rigged with, fitted to the shaped body. |
 | Stylized Nature MegaKit | Quaternius | CC0 1.0 | https://quaternius.com/packs/stylizednaturemegakit.html | Street trees, bushes, grass, flowers, ferns and rocks; optimized with near and far models. |
 | Ultimate Animated Animals | Quaternius | CC0 1.0 | https://quaternius.com/packs/ultimateanimatedanimals.html | Petting farm at the Zoo (alpaca, donkey, cow); horse, deer, fox and wolf built for pets and farms. |
 | Animated Fish Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/animatedfish.html | Aquarium shark, manta ray and fish; dolphin and whale ready for the ocean. |
@@ -116,3 +117,15 @@ and compressed by `scripts/import-animals.sh` into `public/models/animals/`.
 | drei | Poimandres contributors | MIT | https://github.com/pmndrs/drei | Scene helpers and model loading. |
 | React Three Postprocessing | Poimandres contributors | MIT | https://github.com/pmndrs/react-postprocessing | Postprocessing effects. |
 | React | Meta Platforms, Inc. and affiliates | MIT | https://github.com/facebook/react | Game interface and UI rendering. |
+
+## Doll build inputs
+
+- Base mesh, morph targets, default skeleton: MakeHuman `makehuman/data`, commit `a8bc2d54` (CC0 1.0, `LICENSE.ASSETS.md`), fetched by `art/doll/blender/fetch_makehuman.sh`.
+- Hair, clothes, shoes and far-LOD body proxies: MakeHuman system asset pack (`makehuman_system_assets_cc0.zip`, CC0 1.0), same script.
+- Skeleton `rig.mixamo.json` (52 bones named `mixamorig:*`) and skin weights `weights.mixamo.json`: MPFB2 `src/mpfb/data/rigs/standard/`, commit `6ff1eb35`. CC0 1.0: MPFB's rigs and weights are assets (its `LICENSE.md`, section C); only its program code is GPL, and none of it is used.
+
+`art/doll/blender/build_doll.py` shapes the mesh, fits the MPFB2 skeleton to
+it and writes the GLB parts; `scripts/optimize-doll.sh` compresses them into
+`public/models/doll/`.
+
+Only the clips listed in `mocap.py`'s `CLIPS` ship, retargeted onto our own skeleton and baked into `public/models/doll/anims.glb` and `anims-m.glb` (keyframes only, no Mixamo character or mesh). Never commit the FBX files or a GLB that carries a Mixamo character.

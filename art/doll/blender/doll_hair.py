@@ -29,7 +29,7 @@ def swing(ctx, ob, start):
     """Moves weight from the head to the pony bone for strands hanging
     behind and below `start` (Blender space), so tails sway."""
     pony = ob.vertex_groups["pony"]
-    head = ob.vertex_groups["head"]
+    head = ob.vertex_groups[ctx.HEAD]
     for v in ob.data.vertices:
         behind = v.co.y - start[1]
         below = start[2] - v.co.z
@@ -55,11 +55,10 @@ def scalp_hair(ctx, name, mat, extra, rise=0.0):
     adds to the bmesh. Added verts ride the nearest scalp vertex. `rise`
     lifts the hairline, for a cap whose edge hides under strand roots."""
     eye_z = ctx.JB["lEye"][2]
-    head_i = ctx.BONES.index("head")
     faces = []
     for f in ctx.FACES["body"]:
         pts = ctx.PB[f]
-        if ctx.W[f][:, head_i].min() < 0.98:
+        if ctx.HEADW[f].min() < 0.98:
             continue
         # any face reaching above the hairline; its low corners clamp to it
         if (pts[:, 2] > hairline(ctx, pts[:, 0], pts[:, 1]) + rise).any():
@@ -216,8 +215,7 @@ def shade_strands(ctx, ob):
     """Root-to-tip shading as vertex colours: hair near the scalp sits in its
     own shadow and reads darker and denser; lengths and tips catch the light.
     The client multiplies these into the hair colour."""
-    head_i = ctx.BONES.index("head")
-    scalp = ctx.PB[[i for f in ctx.FACES["body"] for i in f if ctx.W[i, head_i] > 0.98]]
+    scalp = ctx.PB[[i for f in ctx.FACES["body"] for i in f if ctx.HEADW[i] > 0.98]]
     tree = KDTree(len(scalp))
     for i, p in enumerate(scalp):
         tree.insert(p, i)

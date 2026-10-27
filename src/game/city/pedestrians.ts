@@ -13,6 +13,8 @@ import {
   DEFAULT_LOOK,
   type Look,
 } from "../look.ts";
+import { naturalPace } from "../dance/clips.ts";
+import { NPC_GAITS, gaitOf } from "../gaits.ts";
 import type { Vec2 } from "../walk.ts";
 import { CITY_SURFACES } from "./layout.ts";
 
@@ -73,36 +75,42 @@ export const PEDESTRIANS: readonly Pedestrian[] = CITY_SURFACES.filter(
     const b: Vec2 = along
       ? [x1 - 1, z0 + (z1 - z0) * lane]
       : [x0 + (x1 - x0) * lane, z1 - 1];
+    // about two in five are men: menswear, a short cut, often a beard,
+    // bare lips and a man's easy walk
+    const man = rand(i, 9) < 0.4;
+    const gait = man ? "stride" : pick(NPC_GAITS, rand(i, 11));
     return {
       a,
       b,
-      speed: 1.1 + rand(i, 2) * 0.5,
+      // her gait clip's own pace, give or take a little, so her legs keep
+      // up with the ground at 1x (src/game/dance/stride.ts)
+      speed:
+        (naturalPace(gaitOf(gait).clip, man) ?? 1.3) *
+        (0.95 + rand(i, 2) * 0.1),
       start: rand(i, 3) * 400,
-      // about two in five are men: menswear, a short cut, often a beard,
-      // bare lips and a man's easy walk
-      look:
-        rand(i, 9) < 0.4
-          ? {
-              ...DEFAULT_LOOK,
-              body: "masculine",
-              skin: pick(SKINS, rand(i, 4)).id,
-              hairStyle: pick(SHORT_CUTS, rand(i, 5)),
-              hairColor: pick(HAIR_COLORS.slice(0, 4), rand(i, 6)).id,
-              outfit: pick(MENSWEAR, rand(i, 7)),
-              outfitColor: pick(OUTFIT_COLORS, rand(i, 8)).id,
-              lips: "lips-bare-balm",
-              brows: "brows-sculpted-espresso",
-              beard: pick(BEARDS, rand(i, 10)).id,
-              gait: "stride",
-            }
-          : {
-              ...DEFAULT_LOOK,
-              skin: pick(SKINS, rand(i, 4)).id,
-              hairStyle: pick(STREET_HAIR, rand(i, 5)).id,
-              hairColor: pick(HAIR_COLORS, rand(i, 6)).id,
-              outfit: pick(STREET_OUTFITS, rand(i, 7)),
-              outfitColor: pick(OUTFIT_COLORS, rand(i, 8)).id,
-            },
+      look: man
+        ? {
+            ...DEFAULT_LOOK,
+            body: "masculine",
+            skin: pick(SKINS, rand(i, 4)).id,
+            hairStyle: pick(SHORT_CUTS, rand(i, 5)),
+            hairColor: pick(HAIR_COLORS.slice(0, 4), rand(i, 6)).id,
+            outfit: pick(MENSWEAR, rand(i, 7)),
+            outfitColor: pick(OUTFIT_COLORS, rand(i, 8)).id,
+            lips: "lips-bare-balm",
+            brows: "brows-sculpted-espresso",
+            beard: pick(BEARDS, rand(i, 10)).id,
+            gait,
+          }
+        : {
+            ...DEFAULT_LOOK,
+            skin: pick(SKINS, rand(i, 4)).id,
+            hairStyle: pick(STREET_HAIR, rand(i, 5)).id,
+            hairColor: pick(HAIR_COLORS, rand(i, 6)).id,
+            outfit: pick(STREET_OUTFITS, rand(i, 7)),
+            outfitColor: pick(OUTFIT_COLORS, rand(i, 8)).id,
+            gait,
+          },
     };
   });
 });

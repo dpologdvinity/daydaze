@@ -149,8 +149,8 @@ def sync_keys(ob, basis):
 
 
 def arm_weight(ctx, f):
-    i = [ctx.BONES.index(b) for b in ("lArm", "rArm", "lFore", "rFore")]
-    return ctx.W[f][:, i].sum(axis=1).max()
+    i = ("lArm", "rArm", "lFore", "rFore")
+    return sum(ctx.weight(g)[f] for g in i).max()
 
 
 def tuck(ctx, body, body_src, garment, name):
@@ -397,7 +397,6 @@ def platforms(ctx, name, top, mat):
     The sole hangs below the foot; the client lifts the doll to stand on it."""
     upper = shell(ctx, name, ["helper-tights"], [(-1.0, top)], 0.0035, mat, arms=0.2)
     co = np.array([v.co[:] for v in upper.data.vertices])
-    foot_bones = [ctx.BONES.index(b) for b in ("lFoot", "rFoot")]
     sole_parts = []
     for side, bone in (("l", "lFoot"), ("r", "rFoot")):
         sel = co[(co[:, 0] > 0) == (side == "l")]
@@ -435,7 +434,7 @@ def platforms(ctx, name, top, mat):
         sole.data.materials.append(mat)
         n = len(sole.data.vertices)
         w = np.zeros((n, len(ctx.BONES)))
-        w[:, ctx.BONES.index(bone)] = 1
+        w[:, ctx.BONES.index(ctx.GROUPS[bone][0])] = 1
         proxies.attach(ctx, sole, w, {k: np.zeros((n, 3)) for k in ctx.KEYS})
         sole_parts.append(sole)
     for sole in sole_parts:

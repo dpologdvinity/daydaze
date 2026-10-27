@@ -1,19 +1,18 @@
-import type { Joint, Vec3 } from "./moves.ts";
-
-/** A motion-capture loop retargeted onto the doll rig (see mocap.ts). */
+/** A motion-capture clip baked onto the doll's skeleton (see mocap.ts; the
+ * keyframes live in public/models/doll/anims.glb, played by HumanDoll). */
 export type MocapClip = {
   id: string;
-  /** An emote loops like a dance, for NPCs; it stays out of the Dance picker. */
-  kind: "walk" | "dance" | "emote" | "pose" | "sit" | "lay";
+  /**
+   * walk: a gait's loop. idle: a standing loop. dance, emote: looped moves
+   * (an emote is for NPCs and games, kept out of the Dance picker). pose,
+   * sit, lay: held, a single pose. seat: a looped sit.
+   */
+  kind: "walk" | "idle" | "dance" | "emote" | "pose" | "sit" | "lay" | "seat";
   label: string;
-  /** The take it came from. */
+  /** The take it was baked from, led by its provider ("Mixamo <take>"). */
   source: string;
+  /** Loop length, seconds; 0 for a held pose. */
   period: number;
-};
-
-/** One sampled pose of a clip (see mocapKeys.ts). */
-export type MocapKey = {
-  at: number;
-  root: Vec3;
-  joints: Partial<Record<Joint, Vec3>>;
+  /** A walk's natural ground speed, m/s (see stride.ts). */
+  speed?: number;
 };

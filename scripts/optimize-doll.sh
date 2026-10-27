@@ -17,6 +17,14 @@ LO="$(mktemp -d)"
 for src in "$IN"/*.glb; do
   name="$(basename "$src" .glb)"
   f="$LO/$name-pruned.glb"
+  # the baked clips (art/doll/blender/mocap.py): no meshes to prune; keys
+  # that a straight line through their neighbors meets within ~0.2 degrees
+  # go, then meshopt packs the rest
+  if [ "${name%-m}" = anims ]; then
+    npx -y @gltf-transform/cli@4.5.1 resample "$src" "$f" --tolerance 0.003
+    npx -y @gltf-transform/cli@4.5.1 optimize "$f" "$OUT/$name.glb" "${OPTS[@]}" --meshopt-level high
+    continue
+  fi
   node --experimental-strip-types "$(dirname "$0")/pruneMorphs.ts" "$src" "$f"
   npx -y @gltf-transform/cli@4.5.1 optimize "$f" "$OUT/$name.glb" "${OPTS[@]}"
   # worn parts get a low-poly twin for far-off dolls: the same vertices'

@@ -148,6 +148,18 @@ for f in "${FILES[@]}"; do
 done
 echo "MakeHuman assets in $OUT"
 
+# The Mixamo-compatible skeleton (52 bones with real mixamorig: names) and its
+# skin weights for this same base mesh, from MPFB2. Its rigs are CC0 assets
+# (LICENSE.md, section C); the commit is pinned like MakeHuman's above.
+MPFB_SHA=6ff1eb358f6c1959ced77e79e6dd2406d9a71f49
+MPFB="https://raw.githubusercontent.com/makehumancommunity/mpfb2/$MPFB_SHA/src/mpfb/data/rigs/standard"
+for f in rig.mixamo.json weights.mixamo.json; do
+  [ -s "$OUT/rigs/$f" ] && continue
+  mkdir -p "$OUT/rigs"
+  curl -fsSL "$MPFB/$f" -o "$OUT/rigs/$f"
+done
+echo "MPFB2 Mixamo rig in $OUT/rigs"
+
 # Hair, clothes and shoe proxies from MakeHuman's CC0 system asset pack
 # (280 MB zip; only the folders proxies.py uses are kept).
 PACK="$(dirname "$0")/.cache/mhassets"

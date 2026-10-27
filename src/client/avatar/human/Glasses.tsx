@@ -4,6 +4,7 @@
 
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
+import { BONE } from "./anims.ts";
 import type { Makeup } from "../../../game/look.ts";
 import type { Anchors } from "./Jewelry.tsx";
 
@@ -105,8 +106,8 @@ export function Glasses({
 }) {
   const built = useMemo(() => {
     const nose = anchors.nose;
-    const bone = bones.get("head");
-    const inv = restInverse.get("head");
+    const bone = bones.get(BONE.head);
+    const inv = restInverse.get(BONE.head);
     if (style === "none" || !nose || !bone || !inv) return null;
     const group = new THREE.Group();
     for (const g of frameGeometry(style))
