@@ -120,6 +120,10 @@ function place(
       mesh.count = counts.get(mesh) ?? 0;
       mesh.instanceMatrix.needsUpdate = true;
     }
+  // how many of each kind are drawn (the first part's count), for browser tests
+  return Object.fromEntries(
+    [...meshes].map(([kind, parts]) => [kind, parts[0]?.count ?? 0]),
+  );
 }
 
 export function CityFurniture(): JSX.Element {
@@ -142,8 +146,9 @@ export function CityFurniture(): JSX.Element {
   );
   const canvas = useThree((state) => state.gl.domElement);
   useEffect(() => {
-    place(meshes, spots, at, low);
-    // read by the screenshot script: the models are in and placed
+    const drawn = place(meshes, spots, at, low);
+    // read by the screenshot script and tests: the models are in and placed
+    canvas.dataset.furnitureKinds = JSON.stringify(drawn);
     if (spots.length > 0) canvas.dataset.furniture = "ready";
   }, [meshes, spots, at, low, canvas]);
   const all = useMemo(() => [...meshes.values()].flat(), [meshes]);

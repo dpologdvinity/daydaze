@@ -1864,7 +1864,8 @@ const BEACH_BUILDINGS: readonly Building[] = [
     neighborhood: "beachside",
     footprint: rect(b.x - b.w / 2, DECK.z0, b.x + b.w / 2, SHOP_Z1),
     height: b.h,
-    style: "storefront",
+    // plastered pastel walls (the club style), not New York brick
+    style: "club",
     color: b.color,
     sign: b.sign,
     front: "zmax",
