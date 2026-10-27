@@ -4,6 +4,7 @@
 // display-name rules and random guest names.
 
 import { cleanSets, cleanVisited } from "./collections.ts";
+import { cleanFarm, createDefaultFarm, type FarmSave } from "./farm.ts";
 import type { RoomId } from "./rooms.ts";
 import { isIntensity, type Intensity } from "./effects/buzz.ts";
 import {
@@ -79,6 +80,8 @@ export type SaveV1 = {
   sets: string[];
   /** The pet adopted at the Zoo, or null (pet.ts). */
   pet: PetSave | null;
+  /** Sunny Acres Farm plot state, harvested produce and animal interactions. */
+  farm: FarmSave;
 };
 
 /** The localStorage key the save lives under. */
@@ -126,6 +129,7 @@ export function createDefaultSave(name: string): SaveV1 {
     visited: [],
     sets: [],
     pet: null,
+    farm: createDefaultFarm(),
   };
 }
 
@@ -205,6 +209,7 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
     visited: cleanVisited(save.get("visited")),
     sets: cleanSets(save.get("sets")),
     pet: validatePet(save.get("pet")),
+    farm: cleanFarm(save.get("farm")),
   };
 }
 

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { DEFAULT_LOOK, DEFAULT_SWIM, type Look } from "./look.ts";
 import { DEFAULT_BODY } from "./body.ts";
 import { STARTING_COINS } from "./wallet.ts";
+import { createDefaultFarm } from "./farm.ts";
 import {
   SAVE_KEY,
   createDefaultSave,
@@ -52,6 +53,7 @@ test("createDefaultSave uses the default look and auto quality", () => {
     visited: [],
     sets: [],
     pet: null,
+    farm: createDefaultFarm(),
   });
 });
 
@@ -97,6 +99,7 @@ test("a save round-trips through serializeSave and loadSave", () => {
     visited: [],
     sets: [],
     pet: { kind: "cat", name: "Mochi", adoptedAt: 5, fedAt: 9 },
+    farm: createDefaultFarm(),
   };
   assert.deepEqual(loadSave(serializeSave(save), "Fallback"), save);
 });
@@ -165,6 +168,7 @@ test("a save from before the swimsuit slot still loads", () => {
     visited: [],
     sets: [],
     pet: null,
+    farm: createDefaultFarm(),
   });
 });
 
@@ -227,6 +231,7 @@ test("loadSave keeps a valid name when the look is bad", () => {
     visited: [],
     sets: [],
     pet: null,
+    farm: createDefaultFarm(),
   });
 });
 
@@ -263,6 +268,7 @@ test("loadSave keeps a valid look when the name is bad", () => {
     visited: [],
     sets: [],
     pet: null,
+    farm: createDefaultFarm(),
   });
 });
 
@@ -432,6 +438,7 @@ test("loadSave salvages valid fields from a wrong version", () => {
     visited: [],
     sets: [],
     pet: null,
+    farm: createDefaultFarm(),
   });
 });
 
@@ -588,4 +595,14 @@ test("a bad pet is dropped without losing the rest of the save", () => {
     adoptedAt: 1,
     fedAt: 1,
   });
+});
+
+test("farm state round-trips through the save system", () => {
+  const save = createDefaultSave("Farmer John");
+  save.farm.plots[0] = { crop: "carrot", plantedAt: 5000, wateredAt: 6000 };
+  save.farm.groceries.carrot = 12;
+  save.farm.animalsFedAt.cow = 7000;
+
+  const back = loadSave(serializeSave(save), "x");
+  assert.deepEqual(back.farm, save.farm);
 });

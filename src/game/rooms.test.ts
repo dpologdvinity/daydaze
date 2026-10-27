@@ -43,6 +43,7 @@ test("every room is registered under its own id", () => {
     "drive-in",
     "driving-range",
     "espresso-lab",
+    "farm",
     "filipino-joint",
     "galleria",
     "gallery",

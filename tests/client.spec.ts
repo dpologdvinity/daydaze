@@ -398,6 +398,62 @@ test("your pet sleeps at your apartment", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("the farm gate leads in, and crops can be planted, watered, grown, harvested and sold", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=city&debug=1`);
+  await expect(canvasOf(page)).toHaveAttribute("data-frames", "10", {
+    timeout: 150_000,
+  });
+
+  // Enter Sunny Acres Farm via debug button
+  await page.getByRole("button", { name: "Go to Sunny Acres Farm" }).click();
+  await expect(roomTitle(page)).toHaveText("Sunny Acres Farm", {
+    timeout: 150_000,
+  });
+  await expect(canvasOf(page)).toHaveAttribute("data-frames", "10", {
+    timeout: 150_000,
+  });
+
+  // Plant carrot on plot 0
+  const plantBtn = page.getByRole("button", {
+    name: "Plant Carrot on plot 0",
+  });
+  await expect(plantBtn).toBeVisible({ timeout: 20_000 });
+  await plantBtn.click();
+
+  // Water plot 0
+  const waterBtn = page.getByRole("button", { name: "Water plot 0" });
+  await expect(waterBtn).toBeVisible({ timeout: 20_000 });
+  await waterBtn.click();
+
+  // Fast forward growth using debug time skip
+  const skipBtn = page.getByRole("button", { name: "Debug: Skip 120s" });
+  await expect(skipBtn).toBeVisible({ timeout: 20_000 });
+  await skipBtn.click();
+
+  // Harvest plot 0
+  const harvestBtn = page.getByRole("button", { name: "Harvest plot 0" });
+  await expect(harvestBtn).toBeVisible({ timeout: 20_000 });
+  await harvestBtn.click();
+
+  // Sell at farm stand
+  await page.getByRole("button", { name: "Farm Stand" }).click();
+  const sellBtn = page.getByRole("button", { name: "Sell all Carrot" });
+  await expect(sellBtn).toBeVisible({ timeout: 20_000 });
+  await sellBtn.click();
+
+  // Animals pasture feed
+  await page.getByRole("button", { name: "Pastures" }).click();
+  const feedBtn = page.getByRole("button", { name: "Feed cow" });
+  await expect(feedBtn).toBeVisible({ timeout: 20_000 });
+  await feedBtn.click();
+  await expect(page.getByText("You fed the cow! ❤️")).toBeVisible();
+
+  expect(errors).toEqual([]);
+});
+
 test("the Scrambler, the Starship and the Super Slide take riders", async ({
   page,
 }) => {
@@ -2050,6 +2106,7 @@ for (const room of [
   "wine-bar",
   "open-water",
   "reef-dive",
+  "farm",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

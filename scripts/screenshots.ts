@@ -429,6 +429,7 @@ const SHOTS: {
   { name: "point-and-eat-kitchen", query: "room=filipino-joint" },
   { name: "jade-whisk-boba-matcha", query: "room=boba-matcha" },
   { name: "purple-pandesal-ube", query: "room=ube-bakery" },
+  { name: "farm", query: "room=farm" },
   {
     name: "plate-rush-app",
     query: "room=city",

@@ -83,6 +83,7 @@ import { claimSet, visit as visitPlace } from "../game/collections.ts";
 import { Onboarding } from "./ui/Onboarding.tsx";
 import { postPrize, prizeDesk } from "./ui/prizeDesk.ts";
 import { petDesk } from "./rooms/zoo/petDesk.ts";
+import { farmDesk } from "./rooms/farm/farmSession.ts";
 import { World } from "./world/World.tsx";
 
 const FADE_MS = 300;
@@ -266,6 +267,19 @@ export function App() {
     () =>
       petDesk.set({
         act: (change) => setSave((s) => ({ ...s, pet: change(s.pet) })),
+      }),
+    [],
+  );
+  // Sunny Acres Farm's panel reads the saved farm and coins and writes them back
+  useEffect(
+    () => farmDesk.set({ farm: save.farm, coins: save.coins }),
+    [save.farm, save.coins],
+  );
+  useEffect(
+    () =>
+      farmDesk.set({
+        commit: (next) =>
+          setSave((s) => ({ ...s, farm: next.farm, coins: next.coins })),
       }),
     [],
   );

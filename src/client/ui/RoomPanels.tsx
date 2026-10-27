@@ -226,6 +226,7 @@ const PANELS: Partial<Record<RoomId, ComponentType>> = {
     () => import("../rooms/speedway/SpeedwayPanels.tsx"),
     "SpeedwayPanels",
   ),
+  farm: panel(() => import("../rooms/farm/FarmPanel.tsx"), "FarmPanel"),
 };
 
 /**

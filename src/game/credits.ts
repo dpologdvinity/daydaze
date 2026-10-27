@@ -153,7 +153,8 @@ export const CREDITS: readonly {
         author: "Kenney",
         license: "CC0 1.0",
         url: "https://kenney.nl/assets/nature-kit",
-        usedFor: "Zoo fence panels and rocks.",
+        usedFor:
+          "Zoo fence panels and rocks; dirt crop rows at Sunny Acres Farm.",
       },
       {
         title: "Street Pack",
@@ -353,6 +354,60 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://poly.pizza/m/ZYBzMHnSbM",
         usedFor: "Picnic blankets on the park lawn.",
+      },
+      {
+        title: "Nature Crops Pack",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://quaternius.com/packs/ultimatecrops.html",
+        usedFor:
+          "Crops at Sunny Acres Farm (carrots, tomatoes, corn, wheat growth stages).",
+      },
+      {
+        title: "Pig",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/bundle/Farm-Animal-Pack-1kUvRTPLzT",
+        usedFor:
+          "Sunny Acres Farm pigs, with an idle clip (swayed along when walking).",
+      },
+      {
+        title: "Sheep",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/bundle/Farm-Animal-Pack-1kUvRTPLzT",
+        usedFor:
+          "Sunny Acres Farm sheep, with an idle clip (swayed along when walking).",
+      },
+      {
+        title: "Chicken - rigged",
+        author: "Maf'j Alvarez",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/chicken-rigged-6e3b93c078114c52bfe4cfa08b9843eb",
+        usedFor:
+          "Sunny Acres Farm chickens, with idle, walk, peck and sit clips.",
+      },
+      {
+        title: "Farm Buildings Pack",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/bundle/Farm-Buildings-Bundle-ppbnhEfNEt",
+        usedFor:
+          "Barn, silo, wooden fences, hay bales, and market stand at Sunny Acres Farm.",
+      },
+      {
+        title: "Tractor",
+        author: "Poly by Google",
+        license: "CC-BY 3.0",
+        url: "https://poly.pizza/m/5TGoA5N14c5",
+        usedFor: "Farm tractor at Sunny Acres Farm.",
+      },
+      {
+        title: "Scarecrow",
+        author: "Poly by Google",
+        license: "CC-BY 3.0",
+        url: "https://poly.pizza/m/7qFs_DjjuVp",
+        usedFor: "Scarecrow watching over the crop field at Sunny Acres Farm.",
       },
     ],
   },

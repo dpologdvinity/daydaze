@@ -51,6 +51,7 @@ import * as SKEE from "../boardwalkArcade.ts";
 import * as DRIVE from "../driveIn.ts";
 import * as CELLAR from "../wineBar.ts";
 import * as REWIND from "../videoStore.ts";
+import * as FARM from "../farm.ts";
 import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
 import * as RANGE from "../drivingRange.ts";
@@ -445,6 +446,22 @@ const SUBURB_FRONT: readonly {
       label: "Into the Starlite Drive-In",
       target: "drive-in",
       targetSpawn: { position: DRIVE.SPAWN, yaw: Math.PI },
+    },
+  },
+  {
+    x: FARM.FARM_GATE_DOOR.position[0],
+    w: 4,
+    h: 8,
+    north: true,
+    color: "#52b788",
+    sign: { text: "SUNNY ACRES", color: "#ffd166" },
+    style: "gate",
+    door: {
+      position: FARM.FARM_GATE_DOOR.position,
+      radius: 1.8,
+      label: "Into Sunny Acres Farm",
+      target: "farm",
+      targetSpawn: { position: FARM.SPAWN, yaw: Math.PI },
     },
   },
   {

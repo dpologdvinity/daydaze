@@ -117,6 +117,7 @@ import * as BOARDWALK from "./boardwalkArcade.ts";
 import * as DRIVE from "./driveIn.ts";
 import * as CELLAR from "./wineBar.ts";
 import * as REWIND from "./videoStore.ts";
+import * as FARM from "./farm.ts";
 import type { Vec2 } from "./walk.ts";
 
 /** Every room's id; ROOMS has one entry per id. */
@@ -190,6 +191,7 @@ export type RoomId =
   | "drive-in"
   | "wine-bar"
   | "video-store"
+  | "farm"
   | "city";
 
 /** Where a player appears: a floor point and a yaw (0 faces +z). */
@@ -714,6 +716,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to Maple Drive",
         target: "city",
         targetSpawn: { position: REWIND.REWIND_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  farm: {
+    id: "farm",
+    name: "Sunny Acres Farm",
+    walkable: FARM.FLOOR,
+    blockers: FARM.BLOCKERS,
+    spawn: { position: FARM.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "farm-to-city",
+        position: FARM.EXIT,
+        radius: 1.2,
+        label: "Out to the City",
+        target: "city",
+        targetSpawn: { position: FARM.FARM_GATE_DOOR.landing, yaw: 0 },
       },
     ],
   },
