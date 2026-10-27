@@ -29,7 +29,7 @@ export const bartenderBank: RoleBank = {
     },
     {
       text: "Hola, bienvenida. The sunset special's on tap, want to try it?",
-      when: { venue: "violet-hour" },
+      when: { tier: "adult", venue: "violet-hour" },
     },
     {
       text: "Welcome! Tell me a flavor and I'll make you something that matches the neon.",
@@ -66,7 +66,7 @@ export const bartenderBank: RoleBank = {
     },
     {
       text: "Come on up to the bar. The LED lights make everything look like a cocktail.",
-      when: { venue: "pulse" },
+      when: { tier: "adult", venue: "pulse" },
     },
     {
       text: "Pulse bar, where the drinks light up and so do the people. What's yours?",
@@ -109,6 +109,50 @@ export const bartenderBank: RoleBank = {
     {
       text: "Welcome to the Velvet Room, {name}. Booth or bar?",
       when: { venue: "velvet-room" },
+    },
+    {
+      text: "Come on up to the bar. The LED lights make every mocktail look like a lava lamp.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Pulse bar, where the sodas glow and so do the people. What will it be?",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Welcome in! The menu glows, the sodas fizz, and the straws are striped.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Pull up a stool. Tonight's special is the Sunset Spritzer, zero percent and all sparkle.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Hey, first time? Try the Violet Fizz, everybody starts there.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Hola! Tell me a flavor and I will invent a mocktail for it.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Welcome! Everything here is mixed fresh, and the cherries are free.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Hi there. Mint, lime or berry? I can do all three in one glass.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "You made it! Grab a seat and I will bring you something bubbly.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "New face! I am the best mocktail maker on this block, ask anyone.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Hola, bienvenida. The sunset special is a mango fizz, want to try it?",
+      when: { tier: "teen" },
     },
   ],
   tapped: [
@@ -175,12 +219,19 @@ export const bartenderBank: RoleBank = {
     "Anyone else's feet hurting or is it just me?",
     "I swear the ice machine has a personality.",
     "Quiet hour, perfect time to restock the limes.",
-    "Cheers to everybody who came out tonight, even the sad ones.",
+    {
+      text: "Cheers to everybody who came out tonight, even the sad ones.",
+      when: { tier: "adult" },
+    },
     "The bass is loud. Somebody tell the DJ we can still hear each other.",
     "Ay, I could use a nap and a cafe con leche.",
     "The neon's reflecting off every glass. It's giving movie.",
     "Lowkey my favorite part of work is the regulars and their stories.",
     "Nobody's touching the bowl of cherries, rude.",
+    {
+      text: "Here is to everybody who came out tonight, even the sad ones. Free cherries!",
+      when: { tier: "teen" },
+    },
   ],
   goodbye: [
     "Take care out there, text me when you get home.",
@@ -210,13 +261,19 @@ export const bartenderBank: RoleBank = {
   ],
   "late-night": [
     "Late-night crowd, my favorite. Sit wherever.",
-    "It's past two and the cocktails are still on. Ha.",
+    {
+      text: "It's past two and the cocktails are still on. Ha.",
+      when: { tier: "adult" },
+    },
     "Last call's coming, so let's make the next one count.",
     "The city's quiet out there, but in here we're just warming up.",
     "Late nights are where the best stories happen, tell me yours.",
     "Ay, the 3 a.m. crowd. Respect. Water first, then whatever.",
     "Most people left, which means the good conversations start now.",
-    "You look like you need something strong and something sweet.",
+    {
+      text: "You look like you need something strong and something sweet.",
+      when: { tier: "adult" },
+    },
     "Night owls only past this hour. Welcome to the club.",
     "The sun's coming up in a few hours, let's enjoy the dark.",
     "Last round energy. What's your pick before I start cleaning?",
@@ -226,12 +283,55 @@ export const bartenderBank: RoleBank = {
     },
     {
       text: "Late-night downtown is my favorite, babe. Lights and cocktails.",
-      when: { neighborhood: "downtown" },
+      when: { tier: "adult", neighborhood: "downtown" },
+    },
+    {
+      text: "It is past two and the mocktails are still flowing. Ha.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Last order is coming, so let us make the next one count.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "You look like you need something fizzy and something sweet.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Late-night downtown is my favorite, babe. Lights and sparkling lemonade.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "The after-midnight menu is all hot chocolate and glitter soda. Pick one.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "The stars are out and so is the cold brew soda. Sit anywhere.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Midnight menu: hot chocolate with a toasted marshmallow crown.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Night owl energy! Do you want sweet, sour or glittery?",
+      when: { tier: "teen" },
+    },
+    {
+      text: "The music is low and the lemonade is cold. Perfect hour.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Closing in a bit, so tell me your last order and I will make it a good one.",
+      when: { tier: "teen" },
     },
   ],
   "outfit-glam": [
     "That fit is serious. Are you going to a wedding or to my bar?",
-    "Glam like that needs a signature cocktail. Here, try this.",
+    {
+      text: "Glam like that needs a signature cocktail. Here, try this.",
+      when: { tier: "adult" },
+    },
     "Okay, the sequins are doing everything. Sit and be seen.",
     "{name}, you came dressed to win the whole night.",
     "Fierce. I'm taking mental notes for my own closet.",
@@ -241,6 +341,46 @@ export const bartenderBank: RoleBank = {
     "Ay, that glam is stunning. What's the plan tonight?",
     "Honestly the outfit pulled me out of the back room. Obsessed.",
     "Okay, that look deserves a drink with a little drama.",
+    {
+      text: "Glam like that needs a signature mocktail. Here, try the Starlight Fizz.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "That look deserves a tall glass of something sparkly. On the house.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "The sequins and the sparkling cherry soda were made for each other.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Gala-ready! I will garnish yours with a candied violet.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Look at you! That outfit deserves a glass with a sugar rim.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Red carpet fit. Let me garnish your drink with a little gold leaf.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Those colors are gorgeous. I will mix a drink to match them.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "You walked in and the whole bar turned. Here, a Rosewater Fizz.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Dressed like a headline. This round of sparkling juice is on me.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Now that is a statement piece. Sit, I will fix you a pink peppercorn soda.",
+      when: { tier: "teen" },
+    },
   ],
   "action-ordering": [
     // The Violet Hour: the sapphic bar on Nightlife Row

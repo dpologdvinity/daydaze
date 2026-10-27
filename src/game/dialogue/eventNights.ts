@@ -38,11 +38,54 @@ export const regularNightLines: RoleBank = {
     "The trumpet player winked at me and I've decided we're engaged.",
     "I ordered something with an egg white in it. I'm very sophisticated now.",
     "The lights are low enough that everyone looks like a movie star.",
-    "Keep your voice down, darling. The walls have ears and the bar has gin.",
+    {
+      text: "Keep your voice down, darling. The walls have ears and the bar has gin.",
+      when: { tier: "adult" },
+    },
     "I've been practicing my old-timey accent all week. See? Swell.",
     "There's a lady in a fringe dress who just out-danced the whole room.",
     "Jazz is just music that's allowed to take the scenic route.",
     "If anybody asks, we were never here.",
+    {
+      text: "Keep your voice down, darling. The walls have ears and the bar has ginger fizz.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Evening, swells. The band is warm and the ginger ale is cold.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Psst. The password is lemonade. Do not tell a soul.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Candlelight, a trumpet, and a Smoky Rose soda. Perfect night.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Dress sharp, speak low, tip the band. That is the whole code.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Knock twice, whisper the password, and the soda fountain is yours.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Feather boas, fedoras and fizzy water. Dress code accepted.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "The piano man takes requests, but only the swingy ones.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Lean in close, the secret tonight is a honey lemon fizz.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Shh, the band is about to start. Find a candlelit table.",
+      when: { tier: "teen" },
+    },
   ],
   "event-eighties-night": [
     "'80s night! My hair is ninety percent hairspray and ten percent hope.",
@@ -169,12 +212,19 @@ export const regularNightLines: RoleBank = {
     "Tiki torches, ukuleles and pineapple everything. Paradise.",
     "I'm wearing my loudest floral shirt. It's audible from the street.",
     "Somebody's teaching hula by the bar. I'm terrible and delighted.",
-    "The drinks come in coconuts tonight. Hold it with both hands.",
+    {
+      text: "The drinks come in coconuts tonight. Hold it with both hands.",
+      when: { tier: "adult" },
+    },
     "Limbo contest at midnight. I've been stretching all day.",
     "This breeze, this music, this view. Nobody wake me up.",
     "Flower behind your left ear means taken, right ear means flirting.",
     "I could live in this playlist. Just steel guitar, forever.",
     "Aloha means hello and goodbye. I'm saying hello to another round.",
+    {
+      text: "The mocktails come in coconuts tonight. Hold yours with both hands.",
+      when: { tier: "teen" },
+    },
   ],
 };
 
@@ -194,7 +244,10 @@ export const djNightLines: RoleBank = {
   "event-foam-party": [
     "Foam cannons in three, two, one... let it snow!",
     "If you can still see your knees, you're not close enough to the cannons.",
-    "Keep your phones dry and your spirits wet.",
+    {
+      text: "Keep your phones dry and your spirits wet.",
+      when: { tier: "adult" },
+    },
     "Bubbles rising, bass rising, everybody rising!",
     "The foam is hypoallergenic, the music is not.",
     "Next drop gets a fresh foam blast. Get ready.",
@@ -202,9 +255,16 @@ export const djNightLines: RoleBank = {
     "Splash zone is every zone tonight.",
     "Dance like the foam is lava. No, wait, dance like it's foam.",
     "One more blast, then we dry off and keep going.",
+    {
+      text: "Keep your phones dry and your sneakers wet.",
+      when: { tier: "teen" },
+    },
   ],
   "event-speakeasy-night": [
-    "Evening, swells. The band's warm and the gin is cold.",
+    {
+      text: "Evening, swells. The band's warm and the gin is cold.",
+      when: { tier: "adult" },
+    },
     "This number's a little slow, a little smoky. Find a partner.",
     "If you can Charleston, the floor is yours.",
     "Keep it hush-hush, but this next one swings hard.",
@@ -214,6 +274,46 @@ export const djNightLines: RoleBank = {
     "This one's from a time when dance halls ran all night long.",
     "Shake a leg, darling. The night won't wait.",
     "One more for the flappers, then the band takes five.",
+    {
+      text: "Evening, swells. The band is warm and the ginger ale is cold.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Tonight's set list is all slow jazz and soft lights.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "The password at the door is lemonade. Do not tell a soul.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "One more ballad, then the horns take over.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Hats low, voices lower, and a Smoky Rose soda for everyone.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Good evening, swells. The next number is a slow, sweet one.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Trumpets up! This one is for everyone in a fedora.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Swing it, don't squash it. That's the rule tonight.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "The clarinet is warmed up and the floor is yours.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Low lights, big smiles. Let's take it from the top.",
+      when: { tier: "teen" },
+    },
   ],
   "event-eighties-night": [
     "'80s night! Synths up, hair up, hands up!",
@@ -344,7 +444,14 @@ export const djNightLines: RoleBank = {
     "Ukulele break! Everybody wave your hands like the waves.",
     "If you're wearing a grass skirt, you get to request a song.",
     "Sunset set's done. Now it's the moonlight set.",
-    "Coconut cups up! Cheers to island time!",
+    {
+      text: "Coconut cups up! Cheers to island time!",
+      when: { tier: "adult" },
+    },
     "One more slow tropical number, then the fire dancers.",
+    {
+      text: "Coconut cups up! Here is to island time!",
+      when: { tier: "teen" },
+    },
   ],
 };

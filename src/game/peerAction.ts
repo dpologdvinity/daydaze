@@ -7,6 +7,7 @@
 // drinks, how buzzed ("idle~2"); in an emote with someone, which and which
 // side ("pair:hug:f"); riding in someone's car, just "ride". A move id too
 // long to fit goes as a plain "dance".
+import { allows, type ContentTier } from "./age.ts";
 import { isDanceMoveId, type DanceMoveId } from "./dance/moves.ts";
 import { RIMS, TINTS, UNDERGLOWS, WRAPS, type CarMods } from "./city/drive.ts";
 import { carById } from "./driving/roster.ts";
@@ -147,4 +148,12 @@ function decodeBody(action: string): Doing {
       : { mood: "dance" };
   }
   return { mood: isMood(action) ? action : "idle" };
+}
+
+/** The buzz tier to show over a peer: a 13+ client never shows one, whatever the peer sends. */
+export function shownBuzz(
+  buzz: Tier | undefined,
+  tier: ContentTier,
+): Tier | undefined {
+  return allows(tier, "alcohol") ? buzz : undefined;
 }

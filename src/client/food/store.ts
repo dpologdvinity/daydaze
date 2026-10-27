@@ -6,7 +6,7 @@ import {
   type Order,
 } from "../../game/food/delivery.ts";
 import { menuItemById, type MenuItem } from "../../game/food/venues.ts";
-import { relieve } from "../effects/drunk.ts";
+import { relieve, setSoftDrinkListener } from "../effects/drunk.ts";
 
 export type FoodState = {
   held: MenuItem | null;
@@ -80,3 +80,22 @@ export function clearToast(): void {
 export function resetFood(): void {
   set({ held: null, orders: [], toast: null });
 }
+
+// Mocktail names a 13+ player is served, in turn.
+const MOCKTAILS = [
+  "a Starlight Fizz",
+  "a Violet Lemonade",
+  "a Sunset Berry Fizz, zero percent",
+  "a Mango Mint Cooler",
+  "a Cherry Cream Soda",
+] as const;
+let served = 0;
+
+/** A 13+ bar's drink: a mocktail toast (no buzz). */
+export function sipMocktail(): void {
+  set({
+    ...state,
+    toast: `You sip ${MOCKTAILS[served++ % MOCKTAILS.length]}.`,
+  });
+}
+setSoftDrinkListener(sipMocktail);

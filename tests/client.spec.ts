@@ -737,7 +737,7 @@ test("the Blowout Bar's nail station: paint a nail, hand over the set", async ({
 test("Cellar 214: pour a glass and it scores", async ({ page }) => {
   test.setTimeout(330_000);
   const errors = collectErrors(page);
-  await page.goto(`${LOW}&room=wine-bar`);
+  await page.goto(`${LOW}&room=wine-bar&adult=1`);
   const panel = page.getByRole("region", { name: "Wine flight" });
   await panel
     .getByRole("button", { name: "Pour a flight" })
@@ -877,7 +877,7 @@ test("the Marquise Rooftop: swimsuit on, a drink, then a lounger", async ({
 }) => {
   test.setTimeout(330_000);
   const errors = collectErrors(page);
-  await page.goto(`${LOW}&room=hotel-rooftop`);
+  await page.goto(`${LOW}&room=hotel-rooftop&adult=1`);
   await page
     .getByRole("button", { name: "Have a drink" })
     .click({ timeout: 150_000 });
@@ -965,7 +965,7 @@ test("the Coconut Grove pours a drink and seats the player by the fire", async (
 }) => {
   test.setTimeout(330_000);
   const errors = collectErrors(page);
-  await page.goto(`${LOW}&room=tiki-bar`);
+  await page.goto(`${LOW}&room=tiki-bar&adult=1`);
   await page
     .getByRole("button", { name: "Have a drink" })
     .click({ timeout: 150_000 });
@@ -1024,7 +1024,7 @@ test("the Back Room pours a drink and seats the player at the bar", async ({
 }) => {
   test.setTimeout(330_000);
   const errors = collectErrors(page);
-  await page.goto(`${LOW}&room=back-room`);
+  await page.goto(`${LOW}&room=back-room&adult=1`);
   await page
     .getByRole("button", { name: "Have a drink" })
     .click({ timeout: 150_000 });
@@ -1190,7 +1190,7 @@ test("the debug panel is hidden without the flag", async ({ page }) => {
 
 test("a few drinks in, chat stretches its vowels", async ({ page }) => {
   test.setTimeout(330_000);
-  await page.goto(`${LOW}&room=back-room`);
+  await page.goto(`${LOW}&room=back-room&adult=1`);
   const drink = page.getByRole("button", { name: "Have a drink" });
   await drink.click({ timeout: 150_000 });
   for (let i = 0; i < 4; i++) await drink.click();
@@ -1467,7 +1467,7 @@ test("the Dance mood opens a move picker, and the picked move plays", async ({
 test("a drink in the Velvet Room raises the buzz and sways the view", async ({
   page,
 }) => {
-  await page.goto(VELVET);
+  await page.goto(`${VELVET}&adult=1`);
   const canvas = canvasOf(page);
   await expect(canvas).toHaveAttribute("data-buzz", "0.00");
   await page.getByRole("button", { name: "Have a drink" }).click();
@@ -1482,7 +1482,7 @@ test.describe("with reduced motion", () => {
   test.use({ reducedMotion: "reduce" });
 
   test("the drunk sway is off, but the buzz still shows", async ({ page }) => {
-    await page.goto(VELVET);
+    await page.goto(`${VELVET}&adult=1`);
     const canvas = canvasOf(page);
     await page.getByRole("button", { name: "Have a drink" }).click();
     await expect
@@ -2906,4 +2906,18 @@ test("city bus: board at a stop, ride to the next stop and get off", async ({
     .toBeGreaterThan(1);
   await page.keyboard.up("KeyD");
   expect(errors).toEqual([]);
+});
+
+test("13+ bars serve mocktails: no drink button, no buzz", async ({ page }) => {
+  test.setTimeout(330_000);
+  await page.goto(`${LOW}&room=tiki-bar`);
+  await expect(roomTitle(page)).toHaveText("The Coconut Grove", {
+    timeout: 150_000,
+  });
+  await expect(page.getByRole("button", { name: "Have a drink" })).toHaveCount(
+    0,
+  );
+  await page.getByRole("button", { name: "Have a mocktail" }).click();
+  await expect(canvasOf(page)).toHaveAttribute("data-buzz", "0.00");
+  await expect(page.getByText(/cocktail|wine|beer|vodka/i)).toHaveCount(0);
 });

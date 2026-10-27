@@ -2,6 +2,7 @@
 // bubble, tap for their card) and sends your own position and action to the
 // session. Renders nothing offline.
 
+import { activeTier } from "../../game/age.ts";
 import { Html } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import {
@@ -19,6 +20,7 @@ import { ROOMS, type RoomId } from "../../game/rooms.ts";
 import {
   buzzTier,
   decodeAction,
+  shownBuzz,
   encodeAction,
   type Doing,
 } from "../../game/peerAction.ts";
@@ -144,6 +146,7 @@ function PeerDoll({
       setDoing(next);
   });
   const car = doing.car ? carById(doing.car.id) : null;
+  const buzz = shownBuzz(doing.buzz, activeTier());
   return (
     <group
       ref={group}
@@ -194,13 +197,10 @@ function PeerDoll({
           }
         >
           {said && <p className="bubble npc-bubble">{said}</p>}
-          {doing.buzz && (
-            <span
-              className="peer-buzz"
-              role="img"
-              aria-label={BUZZ[doing.buzz]}
-            >
-              {"🍸".repeat(doing.buzz)}
+          {/* a 13+ client never shows a buzz tag, whatever a peer sends */}
+          {buzz && (
+            <span className="peer-buzz" role="img" aria-label={BUZZ[buzz]}>
+              {"🍸".repeat(buzz)}
             </span>
           )}
           <button

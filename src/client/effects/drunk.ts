@@ -4,6 +4,7 @@ import {
   type Drink,
   type DrunkLook,
 } from "../../game/effects/buzz.ts";
+import { activeTier, allows } from "../../game/age.ts";
 import { relieveBuzz } from "../../game/food/consume.ts";
 
 // The local player's buzz. It lives in memory, so a reload sobers the doll up.
@@ -17,7 +18,19 @@ export function getBuzz(): number {
   return level;
 }
 
+let softDrinkListener: (() => void) | null = null;
+
+/** The food store registers here to show a toast when a 13+ player "has a drink". */
+export function setSoftDrinkListener(listener: (() => void) | null): void {
+  softDrinkListener = listener;
+}
+
+/** Alcohol only exists on 18+ servers; at 13+ the drink is a mocktail and the buzz stays 0. */
 export function drink(kind: Drink): void {
+  if (!allows(activeTier(), "alcohol")) {
+    softDrinkListener?.();
+    return;
+  }
   level = addDrink(level, kind);
   for (const listen of listeners) listen();
 }

@@ -12,13 +12,16 @@ import {
 import { addDrink, decayBuzz } from "../../game/effects/buzz.ts";
 import { FOOD_VENUES } from "../../game/food/venues.ts";
 import { DELIVERY_SECONDS } from "../../game/food/delivery.ts";
+import { setActiveTier } from "../../game/age.ts";
 import { getBuzz, drink } from "../effects/drunk.ts";
 
 const item = FOOD_VENUES[0].menu[0];
 
 test("a held item is replaced, and eating empties the tray and lowers the buzz", () => {
   resetFood();
+  setActiveTier("adult"); // buzz exists only at 18+
   drink("cocktail");
+  setActiveTier("teen");
   const before = getBuzz();
   holdItem(item);
   assert.equal(getFoodState().held, item);
@@ -43,4 +46,12 @@ test("a delivery lands after the timer, puts the item in hand and toasts", () =>
   clearToast();
   assert.equal(getFoodState().toast, null);
   resetFood();
+});
+
+test("a 13+ drink toasts a mocktail and leaves no buzz", () => {
+  resetFood();
+  const before = getBuzz();
+  drink("cocktail");
+  assert.match(getFoodState().toast ?? "", /^You sip /);
+  assert.equal(getBuzz(), before);
 });

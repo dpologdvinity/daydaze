@@ -1,3 +1,5 @@
+// Sets the content tier from ?adult=1 (dev builds), like the game does.
+import "../client/adult.ts";
 import { StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Bassline } from "./bassline/Bassline.tsx";

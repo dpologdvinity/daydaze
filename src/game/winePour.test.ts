@@ -10,6 +10,7 @@ import {
   pointsFor,
   pour,
   WINES,
+  winesFor,
 } from "./winePour.ts";
 
 test("on the line scores 100, off it less, over the rim nothing", () => {
@@ -31,4 +32,12 @@ test("a perfect flight is five glasses on the line", () => {
   assert.ok(flightOver(f));
   assert.equal(f.pours.length, GLASSES);
   assert.equal(flightScore(f), 500);
+});
+
+test("the flight pours wines at 18+ and juices at 13+", () => {
+  assert.ok(winesFor("adult").some((w) => w.name === "Lambrusco"));
+  assert.equal(
+    winesFor("teen").some((w) => /Lambrusco|Sangiovese|rosé/.test(w.name)),
+    false,
+  );
 });

@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { buzzTier, decodeAction, encodeAction } from "./peerAction.ts";
+import {
+  buzzTier,
+  decodeAction,
+  encodeAction,
+  shownBuzz,
+} from "./peerAction.ts";
 
 test("a dance goes out with its move, other moods plain", () => {
   assert.equal(encodeAction("dance", "salsa"), "dance:salsa");
@@ -115,4 +120,10 @@ test("a passenger rides, out of sight, in someone's car", () => {
     ),
     { mood: "sit", ride: true, buzz: 2 },
   );
+});
+
+test("a 13+ client never shows a peer's buzz tag", () => {
+  assert.equal(shownBuzz(2, "teen"), undefined);
+  assert.equal(shownBuzz(2, "adult"), 2);
+  assert.equal(shownBuzz(undefined, "adult"), undefined);
 });

@@ -159,7 +159,10 @@ export const djBank: RoleBank = {
     "Doors are open and the first song's about to hit.",
     "Early set, soft groove, the kind of night you can build on.",
     "Evening crowd, it's time to warm the room up together.",
-    "Dinner, drinks, dance? I'm starting you off nice and easy.",
+    {
+      text: "Dinner, drinks, dance? I'm starting you off nice and easy.",
+      when: { tier: "adult" },
+    },
     "The sun's down and the bass is up. Welcome.",
     "First hour's for the warm-up, so let's go slow and sweet.",
     "Golden hour playlist is on, come feel it with me.",
@@ -169,6 +172,10 @@ export const djBank: RoleBank = {
     {
       text: "Evening, {name}. I've got a slow jam queued just for you.",
       when: { time: ["evening"] },
+    },
+    {
+      text: "Dinner, mocktails, dance? I am starting you off nice and easy.",
+      when: { tier: "teen" },
     },
   ],
   "late-night": [

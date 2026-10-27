@@ -2,12 +2,14 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   GARNISHES,
-  GLASSES,
-  INGREDIENTS,
+  glassesFor,
+  ALL_INGREDIENTS as INGREDIENTS,
   MAX_POURS,
-  RECIPES,
+  ALL_RECIPES as RECIPES,
   ROUND_ORDERS,
   generateOrders,
+  recipesFor,
+  ingredientsFor,
   gradeFor,
   ingredientsMatch,
   judgeDrink,
@@ -69,7 +71,7 @@ test("recipes only use known bottles, glasses and garnishes and fit the glass", 
     );
     assert.ok(r.ingredients.length <= MAX_POURS, r.id);
     assert.ok(
-      GLASSES.some((g) => g.id === r.glass),
+      glassesFor("adult").some((g) => g.id === r.glass),
       r.id,
     );
     assert.ok(
@@ -101,7 +103,11 @@ test("pouring stops when the glass is full", () => {
 });
 
 test("orders come from the injected random and never repeat back to back", () => {
-  const orders = generateOrders(ROUND_ORDERS, sequence(0, 0, 0.5, 0.99));
+  const orders = generateOrders(
+    ROUND_ORDERS,
+    sequence(0, 0, 0.5, 0.99),
+    RECIPES,
+  );
   assert.equal(orders.length, ROUND_ORDERS);
   assert.deepEqual(
     orders.map((o) => o.id),
@@ -112,10 +118,10 @@ test("orders come from the injected random and never repeat back to back", () =>
     assert.notEqual(orders[i].guest.name, orders[i - 1].guest.name);
   }
   assert.deepEqual(
-    generateOrders(3, sequence(0.3, 0.7)),
-    generateOrders(3, sequence(0.3, 0.7)),
+    generateOrders(3, sequence(0.3, 0.7), RECIPES),
+    generateOrders(3, sequence(0.3, 0.7), RECIPES),
   );
-  assert.deepEqual(generateOrders(0, Math.random), []);
+  assert.deepEqual(generateOrders(0, Math.random, RECIPES), []);
 });
 
 test("the meter sweeps across and back every 1.6 seconds", () => {
@@ -213,7 +219,7 @@ test("a perfect streak adds a growing bonus, capped at 3", () => {
 });
 
 test("serving fills the order book in order and ignores repeats", () => {
-  const orders = generateOrders(2, sequence(0.1, 0.6));
+  const orders = generateOrders(2, sequence(0.1, 0.6), RECIPES);
   let round = newRound(orders);
   const first = exact(orders[0].recipe);
   round = serve(round, 0, first, "perfect", 1_000);
@@ -241,7 +247,7 @@ test("serving fills the order book in order and ignores repeats", () => {
 });
 
 test("sent-back drinks do not count as served and reset the streak", () => {
-  const orders = generateOrders(3, sequence(0.2, 0.5, 0.8));
+  const orders = generateOrders(3, sequence(0.2, 0.5, 0.8), RECIPES);
   let round = newRound(orders);
   round = serve(round, 0, exact(orders[0].recipe), "perfect", 1_000);
   round = serve(
@@ -267,4 +273,24 @@ test("grades compare tips with the best possible round", () => {
   assert.equal(gradeFor(50, 100), "B");
   assert.equal(gradeFor(49, 100), "C");
   assert.equal(gradeFor(0, 0), "C");
+});
+
+test("at 13+ the bar pours only zero-proof drinks, with no spirits or alcohol names", () => {
+  const recipes = recipesFor("teen");
+  assert.ok(recipes.length >= 4);
+  for (const r of recipes) {
+    assert.equal(r.zeroProof, true);
+    assert.doesNotMatch(r.name, /margarita|mojito|martini|spritz/i);
+    assert.equal(
+      r.ingredients.some((i) =>
+        ingredientsFor("teen").every((x) => x.id !== i),
+      ),
+      false,
+    );
+  }
+  assert.equal(
+    ingredientsFor("teen").some((i) => i.spirit),
+    false,
+  );
+  assert.equal(recipesFor("adult").length, RECIPES.length);
 });

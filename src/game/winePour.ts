@@ -2,18 +2,43 @@
 // speed. Hold to pour and let go on the line; how close the wine comes to it
 // scores, and over the rim scores nothing. Pure: the client times the hold.
 
+import { activeTier, byTier, type ContentTier } from "./age.ts";
+
 export const GLASSES = 5;
 /** The line, as a fraction of the glass, and the rim. */
 export const LINE = 0.6;
 export const RIM = 1;
 
-export const WINES = [
-  { name: "Sangiovese", color: "#6a0a1a", speed: 0.32 },
-  { name: "Grüner Veltliner", color: "#e8d878", speed: 0.4 },
-  { name: "Provence rosé", color: "#ff9ab0", speed: 0.36 },
-  { name: "Orange skin-contact", color: "#e8902a", speed: 0.46 },
-  { name: "Lambrusco", color: "#8a1a4a", speed: 0.52 },
-] as const;
+/** The five pours of a flight: wines at 18+, sparkling juices at 13+. */
+export const winesFor = (tier: ContentTier) => {
+  const pick = <T>(adult: T, teen: T): T => byTier(adult, teen, tier);
+  return [
+    {
+      name: pick("Sangiovese", "Concord grape"),
+      color: "#6a0a1a",
+      speed: 0.32,
+    },
+    {
+      name: pick("Grüner Veltliner", "White grape"),
+      color: "#e8d878",
+      speed: 0.4,
+    },
+    {
+      name: pick("Provence rosé", "Pink guava"),
+      color: "#ff9ab0",
+      speed: 0.36,
+    },
+    {
+      name: pick("Orange skin-contact", "Blood orange"),
+      color: "#e8902a",
+      speed: 0.46,
+    },
+    { name: pick("Lambrusco", "Black cherry"), color: "#8a1a4a", speed: 0.52 },
+  ] as const;
+};
+
+/** This client's five pours. */
+export const WINES = winesFor(activeTier());
 
 export type Pour = { level: number; points: number };
 

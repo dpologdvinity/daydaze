@@ -4,6 +4,7 @@
 // switched on by room id here. Opening the closet reframes the camera and
 // restores the old view on close.
 
+import { activeTier, allows, byTier } from "../../game/age.ts";
 import { ClubNightTicker } from "./EventCalendar.tsx";
 import { InviteButton } from "../net/InviteButton.tsx";
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
@@ -147,10 +148,14 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "The Blowout Bar. Book with Dani for the salon's colors, take a chair by the mirrors, or work the nail station.",
   "video-store":
     "Rewind Video. Browse the tapes and the new releases, then play Throwback Trivia at Tasha's counter.",
-  "back-room":
+  "back-room": byTier(
     "The Back Room. A speakeasy behind an unmarked door: order a drink from Odette, then take a stool or a leather booth.",
-  "wine-bar":
+    "The Back Room. A hidden lounge behind an unmarked door: order a mocktail from Odette, then take a stool or a leather booth.",
+  ),
+  "wine-bar": byTier(
     "Cellar 214. A glass at the bar or a barrel table, or let Inès hand you the bottle: pour a flight of five to the line.",
+    "Cellar 214. A sparkling juice at the bar or a barrel table, or let Inès hand you the bottle: pour a flight of five to the line.",
+  ),
   "drive-in":
     "The Starlite Drive-In. Moon Girls is playing on the big screen: grab a picnic bench, or order from Dot at the window.",
   "boardwalk-arcade":
@@ -170,8 +175,10 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Espresso Lab. Grab a table, or take a shift at the barista station: build each ticket's drink from the recipe card, fast for tips.",
   "thrift-temple":
     "Thrift Temple. Tap Juno at the counter for vintage dyes and today's find on the pedestal, half the boutique's price.",
-  "tiki-bar":
+  "tiki-bar": byTier(
     "The Coconut Grove. Order something with an umbrella from Malia, take a stool or a lounge by the fire, and watch the sun go down.",
+    "The Coconut Grove. Order a coconut mocktail with an umbrella from Malia, take a stool or a lounge by the fire, and watch the sun go down.",
+  ),
   "vinyl-vault":
     "Vinyl Vault. Dig the crates, play a sample of any record and buy the ones you love for the record player at home.",
   "jazz-club":
@@ -183,8 +190,10 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Loft Studios. Walk up to the piano, the drums, the marimba or the floor piano and play: tap the notes or press 1 to 8.",
   paintball:
     "Splat City. Gear up for sixty seconds of speedball: mark rivals when they lean out of their bunkers, and stay behind yours.",
-  market:
+  market: byTier(
     "Skyline Supply. Wander the aisles, then grab a snack or a water at Rosa's till: either takes the edge off a buzz.",
+    "Skyline Supply. Wander the aisles, then grab a snack or a water at Rosa's till.",
+  ),
   "laser-tag":
     "Photon Zone. Suit up for a 60-second round: tag rivals when they pop out of cover, and keep cover between you when they fire.",
   "green-haze":
@@ -193,8 +202,10 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Ink & Needle. Pick a spot and a piece of fine jewelry at the counter; Vix does the rest.",
   museum:
     "Museo ng Little Manila. Walk the hall, or pick an exhibit from the guide to read its plaque: the bahay kubo, the jeepney, the parol and more.",
-  bistro:
+  bistro: byTier(
     "Bistro Rue Vert. Tap Élodie at the zinc for steak frites, onion soup or a kir royale.",
+    "Bistro Rue Vert. Tap Élodie at the zinc for steak frites, onion soup or a cassis soda.",
+  ),
   lune: "Lune Tasting Room. Take a free chair at a table for two, and tap Margot at the pass for the next course.",
   "sushi-bar":
     "Belt Sushi Yard. Tap Aiko to order, or play Sushi Catch: grab plates off the belt.",
@@ -232,8 +243,10 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Lagoon Links, three holes on the sand. Press Play a round: turn your aim, then time the power and putt. Leilani runs the hut.",
   "la-noche":
     "La Noche, the Latin club. The band's playing salsa: dance on the floor, take a table, or tap Yara for a drink.",
-  "arcade-bar":
+  "arcade-bar": byTier(
     "Player 2, the arcade bar. Step up to a lit cabinet to play, or try Last Call at the bar. Kit pours.",
+    "Player 2, the arcade bar. Step up to a lit cabinet to play, or try Last Call at the bar. Kit pours the sodas.",
+  ),
   bowling:
     "Glow Bowl. Press Bowl a game for lane three: slide along the line, pick a hook, then time the aim and the power. Rent shoes from Dana.",
   karaoke:
@@ -623,15 +636,17 @@ function Mirror({
             onPick={(color) => setSwim({ ...swim, color })}
           />
         </section>
-        <section>
-          <h3>Drunk effects</h3>
-          <Chips
-            label="Drunk effects"
-            options={EFFECT_LEVELS}
-            value={effects}
-            onPick={setEffects}
-          />
-        </section>
+        {allows(activeTier(), "alcohol") && (
+          <section>
+            <h3>Drunk effects</h3>
+            <Chips
+              label="Drunk effects"
+              options={EFFECT_LEVELS}
+              value={effects}
+              onPick={setEffects}
+            />
+          </section>
+        )}
       </>
     ),
   };
@@ -914,7 +929,7 @@ export function Overlay({
               onClick={() => drink("cocktail")}
             >
               <CocktailIcon />
-              Have a drink
+              {byTier("Have a drink", "Have a mocktail")}
             </button>
           )}
           {room === "market" && (

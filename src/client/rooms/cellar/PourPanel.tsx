@@ -1,3 +1,4 @@
+import { byTier } from "../../../game/age.ts";
 import { useEffect, type JSX } from "react";
 import {
   flightOver,
@@ -36,7 +37,10 @@ export function PourPanel(): JSX.Element {
   }, [s.on, over]);
   if (!s.on)
     return (
-      <section className="game-panel" aria-label="Wine flight">
+      <section
+        className="game-panel"
+        aria-label={byTier("Wine flight", "Juice flight")}
+      >
         <p className="game-call">
           Pour a flight of five: hold to pour, let go on the line. Each wine
           runs at its own speed.
@@ -50,7 +54,10 @@ export function PourPanel(): JSX.Element {
   const wine = WINES[glass % WINES.length];
   const last = s.flight.pours[glass - 1];
   return (
-    <section className="game-panel" aria-label="Wine flight">
+    <section
+      className="game-panel"
+      aria-label={byTier("Wine flight", "Juice flight")}
+    >
       <p className="game-score" aria-label="Flight">
         <span>{flightScore(s.flight)} points</span>
         <span>

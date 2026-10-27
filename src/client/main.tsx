@@ -1,3 +1,5 @@
+// First, so the content tier is set before any tier-dependent data builds.
+import "./adult.ts";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { setConsoleFunction } from "three";

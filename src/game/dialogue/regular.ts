@@ -103,7 +103,7 @@ export const regularBank: RoleBank = {
     },
     {
       text: "What's up, love? I've got gossip, cue advice, and a good pour on tap.",
-      when: { venue: "violet-hour" },
+      when: { tier: "adult", venue: "violet-hour" },
     },
     {
       text: "Ask me anything, I'm basically the house mascot at this point.",
@@ -139,7 +139,7 @@ export const regularBank: RoleBank = {
     },
     {
       text: "Hey! Sit with us, we've got a whole theory about the bartender's sunset cocktail.",
-      when: { venue: "violet-hour" },
+      when: { tier: "adult", venue: "violet-hour" },
     },
     {
       text: "I came for the coaster and stayed for the lights. The lights were the plan.",
@@ -204,6 +204,50 @@ export const regularBank: RoleBank = {
     "Ask me anything, I'm basically furniture at this point.",
     "Hey, you rang the bell and the whole bar turned. Impressive.",
     "Okay, what do you need? I was just about to win this trivia.",
+    {
+      text: "Hey! Sit with us, we have a whole theory about the bartender's sunset mocktail.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Pull up a chair. We are ranking every soda on the menu.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "What's up, love? I have gossip, cue advice, and a very good lemonade.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Try the Violet Fizz. The bartender swears it is a secret recipe.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Oh hey! We are debating the best mocktail on the menu. Vote with us.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Sit down, I will tell you everything about tonight's regulars.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Perfect timing, we need a fourth for trivia.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Hi! Have you tried the lavender lemonade? Life changing.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Did you see the band? They are unreal tonight.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "Hey you. Pull up a chair and tell me about your day.",
+      when: { tier: "teen" },
+    },
+    {
+      text: "What is up, love? I have got gossip, cue advice, and a very good cream soda float.",
+      when: { tier: "teen" },
+    },
   ],
   idle: [
     // The Violet Hour: the sapphic bar on Nightlife Row
@@ -337,7 +381,10 @@ export const regularBank: RoleBank = {
     "Pride night! Look at all these flags, my heart is so full.",
     "Okay, the rainbow lights are doing something to me tonight. Love it.",
     "I brought my best jacket for pride, and I'm not taking it off.",
-    "Happy pride, babe! Drinks are on the regulars, go enjoy.",
+    {
+      text: "Happy pride, babe! Drinks are on the regulars, go enjoy.",
+      when: { tier: "adult" },
+    },
     "This room is so loud and so proud. I'm crying a little.",
     "Pride night is my favorite night of the year, I swear on my stool.",
     "Look at the dance floor! Two girls slow dancing right now, sweet.",
@@ -345,6 +392,10 @@ export const regularBank: RoleBank = {
     "The DJ played my song! I'm about to lose my mind in the best way.",
     "Everybody is so cute tonight. Pride gives the whole bar a glow.",
     "Happy pride, {name}! Go find your people, they're all in this room.",
+    {
+      text: "Happy pride, babe! Lemonade is on the regulars, go enjoy.",
+      when: { tier: "teen" },
+    },
   ],
   "action-dancing-nearby": [
     "Ooh, you're dancing right next to me! Watch the drink, I'm dancing too.",
