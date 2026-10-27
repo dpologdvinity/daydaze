@@ -216,6 +216,13 @@ export const CREDITS: readonly {
         usedFor:
           "Signal heads at the avenue crossings; head copied to four faces, lenses redrawn lit.",
       },
+      {
+        title: "Newspaper Box With Mat",
+        author: "neverfollow81",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/newspaper-box-with-mat-e4dd34bb4e384dee82d80889fa3742b9",
+        usedFor: "Sidewalk newspaper boxes, decimated.",
+      },
     ],
   },
   {

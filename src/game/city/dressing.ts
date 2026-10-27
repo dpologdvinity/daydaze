@@ -802,6 +802,7 @@ function furnitureSpots(): FurnitureSpot[] {
     [-2.5, "meter", 8.0, 0.5],
     [3, "bench", 10, 0.5],
     [6, "planter", 9.6, 0.5],
+    [8.5, "newsbox", 9.9, 0.4],
     [11, "trashcan", 9.7, 0.9],
     [13.5, "meter", 8.0, 0.5],
   ];

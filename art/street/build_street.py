@@ -3,6 +3,7 @@
 Builds one GLB per kind in $OUT: Quaternius' Street Pack lamp and signs (CC0),
 Poly Haven's hydrant, trash can and bench (CC0), and Poly Pizza downloads
 (mailbox, parking meter, bike rack, bus shelter, palm, planter, traffic light),
+and the Sketchfab newspaper box (CC-BY),
 all cut down to a few hundred triangles. Each model
 stands on y = 0, centered on x and z, facing +z (toward the street), sized in
 meters, with its materials kept apart so the client can instance each part.
@@ -182,4 +183,5 @@ imported(PP("bikerack"), length=1.1, tris=800); export("bikerack")
 imported(PP("busstop"), height=2.9, tris=300); export("busstop")
 imported(PP("palm1"), height=7.0, tris=350); export("palm")
 traffic_light(PP("traffic2")); export("trafficlight")
+imported(f"{SRC_PP}/newsbox-src/scene.gltf", height=1.1, tris=700); export("newsbox")
 imported(PP("planter"), length=1.8, tris=1000); export("planter")

@@ -44,6 +44,7 @@ future imported packs belong here when they enter the game.
 | Palm Tree | Quaternius | CC0 1.0 | https://poly.pizza/m/A6cKJYFsIb | Street and beach palms, decimated. |
 | Planter and Bushes | J-Toastie | CC-BY 3.0 | https://poly.pizza/m/wn85Xr9lM3 | Sidewalk planter boxes, decimated. |
 | Traffic Light | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/57rxXzowK8w | Signal heads at the avenue crossings; head copied to four faces, lenses redrawn lit. |
+| Newspaper Box With Mat | neverfollow81 | CC-BY 4.0 | https://sketchfab.com/3d-models/newspaper-box-with-mat-e4dd34bb4e384dee82d80889fa3742b9 | Sidewalk newspaper boxes, decimated. |
 
 
 Street furniture is built by `art/street/build_street.py` into `public/models/street/` (every model cut down to a few hundred triangles).
