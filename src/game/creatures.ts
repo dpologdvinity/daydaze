@@ -4,7 +4,21 @@
 // client's <Creature> loads a kind once and clones it per instance.
 
 export type LandKind =
-  "alpaca" | "horse" | "donkey" | "cow" | "deer" | "fox" | "wolf";
+  | "alpaca"
+  | "horse"
+  | "donkey"
+  | "cow"
+  | "deer"
+  | "fox"
+  | "wolf"
+  | "husky"
+  | "shibainu"
+  | "zebra"
+  | "giraffe"
+  | "elephant"
+  | "lion"
+  | "penguin"
+  | "flamingo";
 
 export type FishKind =
   | "dolphin"
@@ -40,6 +54,14 @@ export const LENGTH: Record<CreatureKind, number> = {
   deer: 1.9,
   fox: 0.9,
   wolf: 1.3,
+  husky: 1.1,
+  shibainu: 0.9,
+  zebra: 2.3,
+  giraffe: 2.4,
+  elephant: 4,
+  lion: 2,
+  penguin: 0.7,
+  flamingo: 0.7,
   dolphin: 2.6,
   shark: 3.4,
   whale: 5,
@@ -71,17 +93,22 @@ export const MOOD_CLIP = {
   alert: "idle2",
 } as const satisfies Record<string, Clip>;
 
-/** The Animated Fish Pack models face -z (the other packs face +z, the way
- * the game's yaw 0 does), so they carry a half turn. */
-export const modelYaw = (kind: CreatureKind): number =>
-  [
-    "dolphin",
-    "shark",
-    "whale",
-    "manta-ray",
-    "fish1",
-    "fish2",
-    "fish3",
-  ].includes(kind)
-    ? Math.PI
-    : 0;
+/** How far each downloaded model must turn about y to face +z, the way the
+ * game's yaw 0 does. The Animated Fish Pack faces -z; the poly.pizza zoo
+ * models face along x (found by rendering them from above). The Quaternius
+ * animal and Cute Fish packs already face +z. */
+const MODEL_YAW: Partial<Record<CreatureKind, number>> = {
+  dolphin: Math.PI,
+  shark: Math.PI,
+  whale: Math.PI,
+  "manta-ray": Math.PI,
+  fish1: Math.PI,
+  fish2: Math.PI,
+  fish3: Math.PI,
+  giraffe: -Math.PI / 2,
+  elephant: Math.PI / 2,
+  penguin: -Math.PI / 2,
+  flamingo: Math.PI / 2,
+};
+
+export const modelYaw = (kind: CreatureKind): number => MODEL_YAW[kind] ?? 0;

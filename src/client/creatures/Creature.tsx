@@ -43,14 +43,19 @@ const FADE = 0.3;
 const FAR = { high: 22, low: 12 } as const;
 const FAR_EVERY = 4;
 
-/** The scale that makes a model's longest horizontal extent `length` meters. */
-function fitScale(root: THREE.Object3D, length: number): number {
+/** The scale that makes a model's longest horizontal extent `length` meters,
+ * and where to shift it so it stands centered on the ground. */
+function fit(root: THREE.Object3D, length: number) {
   root.updateMatrixWorld(true);
-  const size = new THREE.Box3()
-    .setFromObject(root)
-    .getSize(new THREE.Vector3());
-  return length / Math.max(size.x, size.z, 1e-3);
+  const box = new THREE.Box3().setFromObject(root);
+  const size = box.getSize(new THREE.Vector3());
+  const k = length / Math.max(size.x, size.z, 1e-3);
+  const c = box.getCenter(new THREE.Vector3());
+  return { k, shift: new THREE.Vector3(-c.x * k, -box.min.y * k, -c.z * k) };
 }
+
+/** Stride speed (rad/s) of the sway that walks a model with no skeleton. */
+const STRIDE = 7;
 
 export function Creature({
   kind,
@@ -72,21 +77,23 @@ export function Creature({
       // skinned bounds come from the bind pose; the walk leaves them
       o.frustumCulled = false;
     });
-    const fit = fitScale(root, LENGTH[kind]);
+    const { k, shift } = fit(root, LENGTH[kind]);
     const mixer = new THREE.AnimationMixer(root);
     const actions = new Map<string, THREE.AnimationAction>();
     for (const clip of gltf.animations)
       actions.set(clip.name, mixer.clipAction(clip));
-    return { root, fit, mixer, actions };
+    return { root, k, shift, mixer, actions };
   }, [gltf, kind]);
   useEffect(() => () => void rig.mixer.stopAllAction(), [rig]);
 
   const group = useRef<THREE.Group>(null);
+  const sway = useRef<THREE.Group>(null);
   const pose = useRef(newPose());
   const state = useRef({
     clip: "" as string,
     owed: 0,
     frame: 0,
+    t: 0,
   });
 
   useFrame(({ camera }, dt) => {
@@ -108,6 +115,17 @@ export function Creature({
       s.clip = p.clip;
     }
     if (calm) return;
+    // a model with no skeleton: walk it with a bob and roll, bow it to graze
+    const w = sway.current;
+    if (w && rig.actions.size === 0) {
+      s.t += dt;
+      const walking = p.clip === "walk" || p.clip === "run";
+      const bow = p.clip === "graze" || p.clip === "eat" ? 0.4 : 0;
+      w.position.y = walking ? Math.abs(Math.sin(s.t * STRIDE)) * 0.05 : 0;
+      w.rotation.z = walking ? Math.sin(s.t * STRIDE) * 0.05 : 0;
+      w.rotation.x += (bow - w.rotation.x) * Math.min(1, dt * 4);
+      w.scale.y = 1 + Math.sin(s.t * 2) * 0.012;
+    }
     // animate every frame near the camera, every n-th frame far away
     s.owed += dt;
     const far = camera.position.distanceToSquared(g.position) > FAR[tier] ** 2;
@@ -118,11 +136,11 @@ export function Creature({
 
   return (
     <group ref={group}>
-      <primitive
-        object={rig.root}
-        scale={rig.fit * scale}
-        rotation-y={modelYaw(kind)}
-      />
+      <group ref={sway} rotation-y={modelYaw(kind)}>
+        <group position={rig.shift.clone().multiplyScalar(scale)}>
+          <primitive object={rig.root} scale={rig.k * scale} />
+        </group>
+      </group>
     </group>
   );
 }
