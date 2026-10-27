@@ -50,6 +50,18 @@ export async function setFileAmbience(
   const ctx = bus.getContext();
   const sfx = bus.getSfxDestination();
   const music = bus.getMusicDestination();
+  if (ctx && ctx.state !== "running") {
+    // not playing: still stop what the new levels no longer want
+    for (const [id, node] of active) {
+      if (levels[id]) continue;
+      active.delete(id);
+      try {
+        node.source.stop(0);
+      } catch {
+        /* already stopped */
+      }
+    }
+  }
   if (!ctx || !sfx || !music || ctx.state !== "running") return failedIds();
   for (const [id, node] of active) {
     const level = levels[id] ?? 0;
@@ -156,15 +168,24 @@ export function setLoop(id: LoopId, level: number, rate = 1): void {
   const bus = getSharedAudioBus();
   const ctx = bus.getContext();
   const dest = bus.getSfxDestination();
-  if (!ctx || !dest || ctx.state !== "running") return;
   const node = loops.get(id);
+  // stopping never waits on the context: a loop left running while it is
+  // suspended would sound again the moment it resumes
+  if (level <= 0 && node) {
+    loops.delete(id);
+    try {
+      node.source.stop(
+        ctx && ctx.state === "running" ? ctx.currentTime + 0.5 : 0,
+      );
+    } catch {
+      /* already stopped */
+    }
+    return;
+  }
+  if (!ctx || !dest || ctx.state !== "running") return;
   if (node) {
     node.gain.gain.setTargetAtTime(level, ctx.currentTime, 0.15);
     node.source.playbackRate.setTargetAtTime(rate, ctx.currentTime, 0.15);
-    if (level <= 0) {
-      node.source.stop(ctx.currentTime + 1);
-      loops.delete(id);
-    }
     return;
   }
   if (level <= 0 || starting.has(id)) return;

@@ -308,6 +308,8 @@ export function PlayerController({
   useEffect(() => () => void (afloat.on = false), []);
   const lastPos = useRef(new THREE.Vector3().copy(player.pos));
 
+  // leaving the room mid-dive must not leave the next one underwater
+  useEffect(() => () => submergedView.set({ on: false }), []);
   useFrame((state, dt) => {
     playerSpot.x = player.pos.x;
     playerSpot.z = player.pos.z;

@@ -1,6 +1,6 @@
 // The Zoo's animal calls: now and then one of the animals that has a recorded
-// call (elephants, lions, flamingos, zebras, penguins, the cow and the donkey) lets one out, as loud as it
-// is near. Pure: the client passes where the listener and the animals are.
+// call (elephants, lions, flamingos, zebras, penguins, the cow and the donkey)
+// lets one out, as loud as it is near. Pure: the client passes where the listener and the animals are.
 import type { Vec2 } from "./walk.ts";
 import type { Species } from "./zoo.ts";
 

@@ -253,7 +253,7 @@ function AnimalCalls({ player }: { player: Player }) {
     wait.current = nextDelay(Math.random());
     const call = pickCall(
       [player.pos.x, player.pos.z],
-      [...zooAnimals, ...farmVoicesAt(performance.now() / 1000)],
+      [...zooAnimals, ...farmVoicesAt(zooView.t)],
       Math.random(),
     );
     if (call) void playSoundFile(call.id, call.gain);
