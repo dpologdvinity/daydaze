@@ -212,3 +212,20 @@ export function lowTierCost(at: Vec2): {
   }
   return { drawCalls, triangles, planTriangles, bays: plan.bays.length };
 }
+
+/**
+ * Camera distances (meters from her) where the New York bays come and go.
+ * Pulled out to the overview, the bays near her are a few pixels each yet
+ * cost about a third of the frame under a software renderer, so the plan
+ * drops them and the walls wear their painted windows; zooming back in
+ * brings them back. Two edges, so a camera resting near one doesn't flicker.
+ */
+export const BAYS_CAMERA = { on: 90, off: 120 } as const;
+
+/** Whether the plan should wear bays with the camera `distance` out, given
+ * whether it wears them now. */
+export function baysWanted(distance: number, wearing: boolean): boolean {
+  if (distance <= BAYS_CAMERA.on) return true;
+  if (distance >= BAYS_CAMERA.off) return false;
+  return wearing;
+}

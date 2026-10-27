@@ -10,7 +10,7 @@ import {
   RELOAD_DISTANCE,
 } from "../../game/city/tuning.ts";
 import { KINDS, planCity, type Kind } from "../../game/city/plan.ts";
-import { planView } from "../../game/city/budget.ts";
+import { baysWanted, planView } from "../../game/city/budget.ts";
 import type { Vec2 } from "../../game/walk.ts";
 import type { PickHandler } from "../rooms/shared/Floor.tsx";
 import { useReducedMotion } from "../motion.ts";
@@ -96,6 +96,7 @@ export function CityScene({
   }, [reduced]);
   const lights = useRef<(THREE.PointLight | null)[]>([]);
   const loadedAt = useRef<Vec2 | null>(null);
+  const wearsBays = useRef(false);
 
   // day and night (daylight.ts): sky, fog, sun and hemisphere follow the
   // hour; neon, signs, lit windows and the walls' night glow dim by day
@@ -133,17 +134,29 @@ export function CityScene({
     dimForDay(meshes, day.neon);
   }, [day, background, meshes]);
 
-  useFrame(({ gl, clock }) => {
+  useFrame(({ gl, clock, camera }) => {
     CITY_CLOCK.uTime.value = clock.elapsedTime;
     const x = player.pos.x;
     const z = player.pos.z;
     const last = loadedAt.current;
-    if (!last || Math.hypot(x - last[0], z - last[1]) > RELOAD_DISTANCE) {
+    // pulled out to the overview, the plan drops the bays (budget.ts)
+    const away = Math.hypot(
+      camera.position.x - x,
+      camera.position.y - player.pos.y,
+      camera.position.z - z,
+    );
+    const bays = !NO_BAYS && baysWanted(away, wearsBays.current);
+    if (
+      !last ||
+      bays !== wearsBays.current ||
+      Math.hypot(x - last[0], z - last[1]) > RELOAD_DISTANCE
+    ) {
+      wearsBays.current = bays;
       const at: Vec2 = [x, z];
       loadedAt.current = at;
       // shortcut: planCity allocates a fresh plan on each 16 m reload, not per frame; stream into pooled buffers if reloads show up in a profile
       // the same plan the low-tier budget test prices (budget.ts)
-      const plan = planView(at, tier, !NO_BAYS);
+      const plan = planView(at, tier, bays);
       for (const kind of KINDS)
         writeKind(meshes[kind], kind, plan.instances[kind]);
       cityTrees.set({ spots: plan.trees, at });
