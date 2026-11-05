@@ -153,6 +153,7 @@ const SHOTS: {
   { name: "catwalk", query: "room=catwalk" },
   { name: "mermaid-cove", query: "room=mermaid-cove" },
   { name: "open-water", query: "room=open-water" },
+  { name: "open-water-whale", query: "room=open-water&cam=8,4,-40,8,-1,-64" },
   { name: "open-water-full", query: "room=open-water&view=full" },
   { name: "reef-dive", query: "room=reef-dive" },
   {
@@ -203,7 +204,12 @@ const SHOTS: {
   { name: "zoo-elephants", query: "room=zoo&cam=8,3.4,-1,13,1.2,-9" },
   // the big cats' rocks (lions and tigers) and the woods (bear and elk)
   { name: "zoo-bigcats", query: "room=zoo&cam=-13,3.2,-2.5,-13,1,4" },
-  { name: "zoo-woods", query: "room=zoo&cam=0,4.6,-0.4,0,0.4,-6.4" },
+  {
+    name: "park-deer",
+    query: "room=city&time=14:00&at=268,-279&cam=277,22,-252,277,0,-277",
+    act: cityReady,
+  },
+  { name: "zoo-woods", query: "room=zoo&cam=0,7,2,0,1,-6.2" },
   { name: "dealership", query: "room=dealership" },
   { name: "jazz-club", query: "room=jazz-club" },
   { name: "vinyl-vault", query: "room=vinyl-vault" },

@@ -27,6 +27,7 @@ export type LandKind =
   | "tiger"
   | "bear"
   | "elk"
+  | "doe"
   | "labrador";
 
 export type FishKind =
@@ -34,6 +35,7 @@ export type FishKind =
   | "shark"
   | "whale"
   | "manta-ray"
+  | "bluewhale"
   | "fish1"
   | "fish2"
   | "fish3"
@@ -92,10 +94,12 @@ export const LENGTH: Record<CreatureKind, number> = {
   tiger: 2.2,
   bear: 2.2,
   elk: 2.4,
+  doe: 1.9,
   labrador: 1,
   dolphin: 2.6,
   shark: 3.4,
   whale: 5,
+  bluewhale: 9,
   "manta-ray": 2.4,
   fish1: 0.5,
   fish2: 0.5,

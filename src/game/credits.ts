@@ -387,6 +387,20 @@ export const CREDITS: readonly {
           "Adoptable pet Labrador, decimated to 8k triangles, with a calm idle clip (swayed along when walking).",
       },
       {
+        title: "Blue Whale - Textured",
+        author: "Bohdan Lvov",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/blue-whale-textured-d24d19021c724c3a9134eebcb76b0e0f",
+        usedFor: "Seaside Swim: the blue whale cruising far offshore.",
+      },
+      {
+        title: "Realistic Animated Doe 3D Model",
+        author: "WildMesh 3D",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/realistic-animated-doe-3d-model-b6172618aa304473a4cf7b9246c0a218",
+        usedFor: "Uptown park wildlife: the doe on the west lawn (high tier).",
+      },
+      {
         title: "African penguin (Spheniscus demersus) Low poly",
         author: "Major",
         license: "CC-BY 4.0",

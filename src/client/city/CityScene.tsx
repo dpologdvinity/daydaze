@@ -45,6 +45,7 @@ import { useDaylight } from "./daylight.ts";
 import { CityFurniture, cityFurniture } from "./CityFurniture.tsx";
 import { BoardwalkFerris } from "./BoardwalkFerris.tsx";
 import { CityPark } from "./CityPark.tsx";
+import { ParkWildlife } from "./ParkWildlife.tsx";
 import { CityTrees, cityTrees } from "./CityTrees.tsx";
 import { NycFacades, cityBays } from "./NycFacades.tsx";
 import { CityHouses, cityHouses } from "./CityHouses.tsx";
@@ -249,6 +250,7 @@ export function CityScene({
         <CityFurniture />
         <CityPark />
         <BoardwalkFerris />
+        <ParkWildlife player={player} />
         <NycFacades />
         <CityHouses />
         <ElLineBoundary>

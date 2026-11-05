@@ -7,6 +7,7 @@ import { useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";
 import type { Spot } from "../../../game/zoo.ts";
 import { disposeInstanced } from "../../city/dispose.ts";
+import { floated } from "../../city/floated.ts";
 
 export function Scatter({
   url,
@@ -30,7 +31,9 @@ export function Scatter({
     const out: THREE.InstancedMesh[] = [];
     gltf.scene.traverse((o) => {
       if (!(o instanceof THREE.Mesh)) return;
-      const geometry = (o.geometry as THREE.BufferGeometry).clone();
+      // floated: the optimized GLBs store quantized integers, which a baked
+      // transform would truncate or clamp (squashed trees, black normals)
+      const geometry = floated(o.geometry as THREE.BufferGeometry);
       geometry.applyMatrix4(o.matrixWorld);
       const source = Array.isArray(o.material) ? o.material[0] : o.material;
       const material = source?.clone();

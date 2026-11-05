@@ -25,6 +25,7 @@ export function WanderingCreature({
   speed,
   phase,
   dir = 1,
+  y = 0,
   player,
   track,
 }: {
@@ -36,6 +37,8 @@ export function WanderingCreature({
   phase: number;
   /** 1 walks the loop one way, -1 the other. */
   dir?: 1 | -1;
+  /** Height of the ground the animal stands on. */
+  y?: number;
   player?: Player;
   /** Kept up to date with where the animal stands (for the photo hunt). */
   track?: { at: Vec2 };
@@ -50,6 +53,7 @@ export function WanderingCreature({
     const here = loopAt(pen, 0, 1, w.a);
     pose.x = here.at[0];
     pose.z = here.at[1];
+    pose.y = y;
     if (track) track.at = here.at;
     const near =
       player !== undefined &&

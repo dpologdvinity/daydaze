@@ -45,8 +45,10 @@ future imported packs belong here when they enter the game.
 | Baby Lion | kenchoo | CC-BY 4.0 | https://sketchfab.com/3d-models/baby-lion-c9599625dc474262aab754d7b63841f5 | Zoo lions, with a calm idle clip (swayed along when walking). |
 | Realistic Animated Bear 3D Model | WildMesh 3D | CC-BY 4.0 | https://sketchfab.com/3d-models/realistic-animated-bear-3d-model-bffc3c87d2d148ff8533e1cc8a11c9f1 | Zoo woods bear, with idle, walk, run, graze, sit and sleep clips (kept 9 of 81, textures shrunk). |
 | Realistic Animated Elk 3D Model | WildMesh 3D | CC-BY 4.0 | https://sketchfab.com/3d-models/realistic-animated-elk-3d-model-787834f9caa2474d9f1814b807c072d7 | Zoo woods elk, with idle, walk, run, graze, sit and sleep clips (kept 8 of 53, textures shrunk). |
+| Realistic Animated Doe 3D Model | WildMesh 3D | CC-BY 4.0 | https://sketchfab.com/3d-models/realistic-animated-doe-3d-model-b6172618aa304473a4cf7b9246c0a218 | Uptown park wildlife: the doe on the west lawn (high tier). |
 | Tiger | Blender Artist | CC-BY 4.0 | https://sketchfab.com/3d-models/tiger-67bbedd727a047869ef7c7b608445484 | Zoo big cats' tigers, with rest, walk, run, eat and howl clips. |
 | Labrador Dog | kenchoo | CC-BY 4.0 | https://sketchfab.com/3d-models/labrador-dog-1f56cfbab07e4fe49b5d9e521c82073a | Adoptable pet Labrador, decimated to 8k triangles, with a calm idle clip (swayed along when walking). |
+| Blue Whale - Textured | Bohdan Lvov | CC-BY 4.0 | https://sketchfab.com/3d-models/blue-whale-textured-d24d19021c724c3a9134eebcb76b0e0f | Seaside Swim: the blue whale cruising far offshore. |
 | African penguin (Spheniscus demersus) Low poly | Major | CC-BY 4.0 | https://sketchfab.com/3d-models/african-penguin-spheniscus-demersus-low-poly-9e59070815fe451d93398e2ebdb9bb92 | Zoo penguin pool, with idle, walk, sit and sleep clips. |
 | Flamingo | Хмара Сергей | CC-BY 3.0 | https://poly.pizza/m/5hUIvLVFqet | Zoo flamingo pond (static mesh, swayed by the client). |
 | Cat | Quaternius | CC0 1.0 | https://poly.pizza/m/qKICY6xla2 | Adoptable pet cat, with idle, walk, run and eat clips. |

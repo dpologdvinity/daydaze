@@ -13,6 +13,7 @@ import {
   FLYING_GULLS,
   GULLS,
   SCHOOLS,
+  WHALES,
   type School,
 } from "../../../game/openWater.ts";
 import { Creature, type CreaturePose } from "../../creatures/Creature.tsx";
@@ -54,6 +55,25 @@ function Dolphin({
     [center, radius, phase],
   );
   return <SwimmingCreature kind="dolphin" path={path} scale={1.1} />;
+}
+
+function Whale({
+  center,
+  radius,
+  phase,
+}: (typeof WHALES)[number]): JSX.Element {
+  const path = useMemo(
+    () => (t: number, pose: CreaturePose) => {
+      const a = t * 0.08 + phase;
+      pose.x = center[0] + Math.cos(a) * radius;
+      pose.z = center[1] + Math.sin(a) * radius;
+      // rises to the surface and sinks again
+      pose.y = -2.2 + Math.sin(t * 0.2) * 1.3;
+      pose.yaw = Math.atan2(-Math.sin(a), Math.cos(a));
+    },
+    [center, radius, phase],
+  );
+  return <SwimmingCreature kind="bluewhale" path={path} />;
 }
 
 function Crab({ at, i }: { at: readonly [number, number]; i: number }) {
@@ -147,6 +167,9 @@ export function SeaLife(): JSX.Element {
       )}
       {DOLPHINS.map((d, i) => (
         <Dolphin key={i} {...d} />
+      ))}
+      {WHALES.map((w, i) => (
+        <Whale key={i} {...w} />
       ))}
       {CRABS.map((at, i) => (
         <Crab key={i} at={at} i={i} />
