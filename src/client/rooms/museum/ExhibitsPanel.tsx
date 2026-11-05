@@ -5,6 +5,8 @@ import { look, tour } from "./tour.ts";
 /** The museum guide: pick an exhibit to go and read its plaque. */
 export function ExhibitsPanel(): JSX.Element {
   const { focus } = tour.use();
+  // leaving the museum closes the panel, which ends the tour
+  useEffect(() => () => look(null), []);
   useEffect(() => {
     if (focus === null) return;
     const key = (e: KeyboardEvent) => {

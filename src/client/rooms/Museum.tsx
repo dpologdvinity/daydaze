@@ -335,7 +335,8 @@ function Guide({ player }: { player: Player }) {
   const at = useMemo(() => new THREE.Vector3(), []);
   useEffect(
     () => () => {
-      lookAt(null);
+      // not lookAt(null): the scene may re-suspend and remount mid-tour (a late
+      // asset), and that must not drop the exhibit; the panel ends the tour
       if (cameraHold.by === "museum") cameraHold.by = null;
     },
     [],
