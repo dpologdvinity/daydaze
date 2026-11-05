@@ -15,6 +15,8 @@ export const CITY_CLOCK = { uTime: { value: 0 }, uMotion: { value: 1 } };
  * - bob: idle dolls sway in place
  * - fade: the fade also applies to alpha, for see-through steam
  * - atlas: the instance picks its name from the label atlas
+ * - baked: the pieces are merged into one mesh (bake.ts), so each one's
+ *   phase comes from its `aOrigin` rather than its instance matrix
  */
 export type Motion = {
   blink?: boolean;
@@ -24,6 +26,7 @@ export type Motion = {
   sway?: boolean;
   fade?: boolean;
   atlas?: boolean;
+  baked?: boolean;
 };
 
 /** Hooks the shared clock into a material; reduced motion freezes all of it. */
@@ -37,6 +40,7 @@ export function animate<M extends Material>(material: M, motion: Motion): M {
       "uniform float uTime;",
       "uniform float uMotion;",
       "varying float vFx;",
+      motion.baked ? "attribute vec3 aOrigin;" : "",
       shader.vertexShader,
     ].join("\n");
     shader.vertexShader = shader.vertexShader.replace(
@@ -47,9 +51,11 @@ ${motion.atlas ? "vMapUv = (mapTransform * vec3(uv * aUv.zw + aUv.xy, 1.0)).xy;"
 #endif`,
     );
     // a phase per instance: the same place always blinks or sways the same way
-    const phase = motion.bob
-      ? "vec3 ip = vec3(instanceMatrix[3].x, 0.0, instanceMatrix[3].z);"
-      : "vec3 ip = instanceMatrix[3].xyz;";
+    const phase = motion.baked
+      ? "vec3 ip = aOrigin;"
+      : motion.bob
+        ? "vec3 ip = vec3(instanceMatrix[3].x, 0.0, instanceMatrix[3].z);"
+        : "vec3 ip = instanceMatrix[3].xyz;";
     shader.vertexShader = shader.vertexShader.replace(
       "#include <begin_vertex>",
       `#include <begin_vertex>
