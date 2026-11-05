@@ -8,6 +8,8 @@ import {
   FURNITURE_CATALOG,
   FURNITURE_GROUPS,
   FURNITURE_IDS,
+  WINDOW_COLUMNS,
+  defaultVariant,
   HOME_GRID,
   moveFurniture,
   pieceAt,
@@ -137,7 +139,7 @@ export function ApartmentPanel({
                 aria-pressed={choice === id}
                 onClick={() => {
                   setChoice(choice === id ? null : id);
-                  setVariant_(0);
+                  setVariant_(defaultVariant(id));
                   setPicked(null);
                   setMoving(false);
                   setNote(
@@ -158,8 +160,10 @@ export function ApartmentPanel({
       >
         {Array.from({ length: HOME_GRID.columns }, (_, column) => {
           const index = wallPieceAt(home.furniture, column);
-          const label =
-            index >= 0
+          const inWindow = WINDOW_COLUMNS.includes(column);
+          const label = inWindow
+            ? `Window ${column + 1}`
+            : index >= 0
               ? `${FURNITURE_CATALOG[home.furniture[index].id].name} on the wall at ${column + 1}`
               : `Empty wall ${column + 1}`;
           return (
@@ -169,6 +173,7 @@ export function ApartmentPanel({
               className="home-cell home-wall"
               aria-label={label}
               aria-pressed={index >= 0 && index === picked}
+              disabled={inWindow}
               onClick={() => onWall(column)}
             >
               {index >= 0 ? "▬" : ""}

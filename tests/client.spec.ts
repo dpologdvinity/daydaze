@@ -2442,14 +2442,14 @@ test("apartment: pick a sofa's look, hang a print on the back wall, and both per
     "Tap the back wall strip to hang it.",
   );
   await page.getByRole("button", { name: "Heart" }).click();
-  await page.getByRole("button", { name: "Empty wall 3" }).click();
+  await page.getByRole("button", { name: "Empty wall 1" }).click();
   await expect(page.getByRole("status").last()).toHaveText(
     "Hung Framed print.",
   );
   await page.reload();
   await page.getByRole("button", { name: "Go to Apartment" }).click();
   await expect(
-    page.getByRole("button", { name: /^Framed print on the wall at 3/ }),
+    page.getByRole("button", { name: /^Framed print on the wall at 1/ }),
   ).toBeVisible();
   await page.getByRole("button", { name: /^Velvet sofa at 1, 2/ }).click();
   await expect(

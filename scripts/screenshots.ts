@@ -185,9 +185,8 @@ const SHOTS: {
     at("kitchen-sink", 5, 5),
     at("toilet", 7, 5),
     at("wall-art", 0, 0, 2),
-    at("wall-mirror", 1, 0),
-    at("wall-lights", 2, 0, 1),
-    at("wall-neon", 5, 0, 1),
+    at("wall-neon", 4, 0, 1),
+    at("wall-mirror", 6, 0),
   ]),
   ...catalogPages().map((page, i) =>
     homeShot(`apartment-catalog-${i + 1}`, page, "0,7.5,6,0,0.4,0.5"),
@@ -200,11 +199,9 @@ const SHOTS: {
   homeShot(
     "apartment-catalog-wall",
     [
-      at("wall-mirror", 0, 0),
-      at("wall-art", 1, 0, 5),
-      at("wall-shelf", 2, 0),
+      at("wall-art", 0, 0, 5),
       at("wall-art-wide", 4, 0, 4),
-      at("wall-art", 6, 0, 3),
+      at("wall-shelf", 6, 0),
     ],
     "0,3,8,0,1.6,-3",
   ),
