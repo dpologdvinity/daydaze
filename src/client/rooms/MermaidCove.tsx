@@ -1,14 +1,13 @@
 import { Stars } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import type { Look } from "../../game/look.ts";
 import { LOG_SEATS, SAND, SHELL_SPOTS } from "../../game/mermaidCove.ts";
 import { ROOMS } from "../../game/rooms.ts";
-import { Doll } from "../avatar/Doll.tsx";
 import { useReducedMotion } from "../motion.ts";
 import { leave, SHELL_COLORS, siren, tick } from "./cove/session.ts";
-import { fluke, Tail } from "./cove/Tail.tsx";
+import { Mermaid } from "./cove/Mermaid.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { surface } from "../city/worldTexture.ts";
 
@@ -25,179 +24,17 @@ import { TalkingNpc } from "./shared/TalkingNpc.tsx";
 const PINK = "#ff4fb3";
 const WATER_Y = -0.05;
 
-/** The mermaids in the lagoon: where each swims, her look and her tail. */
-const MERMAIDS: readonly {
-  at: [number, number];
-  look: Look;
-  tail: string;
-  turn: number;
-}[] = [
-  {
-    at: [-3.2, -2.4],
-    turn: 0.4,
-    tail: "#3fe0d0",
-    look: {
-      skin: "#e6b48e",
-      hairStyle: "mermaid",
-      hairColor: "#ff4fb3",
-      lips: "lips-hot-pink-glam",
-      brows: "brows-feathered-honey",
-      outfit: "baby-tee-mini",
-      outfitColor: "#3fe0d0",
-      shadow: "#3fe0d0",
-    },
-  },
-  {
-    at: [3.4, -3.2],
-    turn: -0.5,
-    tail: "#9b5cff",
-    look: {
-      skin: "#633c29",
-      hairStyle: "long-curly",
-      hairColor: "#7b4dff",
-      lips: "lips-burgundy-cherry",
-      brows: "brows-sculpted-espresso",
-      outfit: "baby-tee-mini",
-      outfitColor: "#9b5cff",
-      shadow: "#d23cff",
-    },
-  },
-  {
-    at: [0.4, -6.4],
-    turn: 0,
-    tail: "#ffb02e",
-    look: {
-      skin: "#f3d4c4",
-      hairStyle: "long-straight",
-      hairColor: "#f1d78f",
-      lips: "lips-nude-pink-gloss",
-      brows: "brows-y2k-thin",
-      outfit: "baby-tee-mini",
-      outfitColor: "#ffb02e",
-      shadow: "#ffd1f0",
-    },
-  },
-];
-
-/** A mermaid waist-deep in the lagoon, swaying, her tail flicking up out of
- * the water behind her every few seconds. */
-function Mermaid({
-  at,
-  look,
-  tail,
-  turn,
-  seed,
-}: (typeof MERMAIDS)[number] & { seed: number }) {
-  const calm = useReducedMotion();
-  const body = useRef<THREE.Group>(null);
-  const fin = useRef<THREE.Group>(null);
-  const finShape = useMemo(fluke, []);
-  useEffect(() => () => finShape.dispose(), [finShape]);
-  useFrame(({ clock }) => {
-    const t = clock.elapsedTime + seed * 2.1;
-    if (body.current && !calm)
-      body.current.position.y = -0.95 + Math.sin(t * 1.3) * 0.06;
-    if (fin.current) {
-      // a flick out of the water every seven seconds
-      const k = calm ? 0 : Math.max(0, Math.sin(((t % 7) / 1.4) * Math.PI));
-      const up = t % 7 < 1.4 ? k : 0;
-      fin.current.position.y = WATER_Y - 0.4 + up * 0.75;
-      fin.current.rotation.x = -0.4 - up * 0.9;
-    }
-  });
-  return (
-    <group position={[at[0], 0, at[1]]} rotation-y={turn}>
-      <group ref={body} position-y={-0.95}>
-        <Doll look={look} mood="dance" dance="body-roll" seed={seed} />
-      </group>
-      <group ref={fin} position={[0, WATER_Y - 0.4, -1.1]}>
-        <mesh geometry={finShape} rotation-x={-Math.PI / 2}>
-          <meshStandardMaterial
-            color={tail}
-            emissive={tail}
-            emissiveIntensity={0.5}
-            metalness={0.5}
-            roughness={0.3}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
-      </group>
-      {/* a ring of ripples round her waist */}
-      <mesh position-y={WATER_Y + 0.01} rotation-x={-Math.PI / 2}>
-        <ringGeometry args={[0.32, 0.4, 24]} />
-        <meshBasicMaterial color="#bff8ff" transparent opacity={0.35} />
-      </mesh>
-    </group>
-  );
-}
-
-/** Mermaids perched on the lagoon's rocks, full tails draped down the rock
- * into the water: [rock x, z, size], her look, tail color and turn. */
-const PERCHED: readonly {
-  rock: readonly [number, number, number];
-  look: Look;
-  tail: string;
-  turn: number;
-}[] = [
-  {
-    rock: [-7, -3, 1.6],
-    turn: 0.5,
-    tail: "#ff4fb3",
-    look: {
-      skin: "#c48d68",
-      hairStyle: "mermaid",
-      hairColor: "#7ee8a2",
-      lips: "lips-90s-caramel-ombre",
-      brows: "brows-fox-snatched",
-      outfit: "baby-tee-mini",
-      outfitColor: "#ff2f9a",
-      shadow: "#ff2f9a",
-    },
-  },
-  {
-    rock: [6.5, -5, 1.3],
-    turn: -0.6,
-    tail: "#3a6bff",
-    look: {
-      skin: "#94603f",
-      hairStyle: "waves",
-      hairColor: "#c0c0c8",
-      lips: "lips-hot-pink-glam",
-      brows: "brows-sculpted-espresso",
-      outfit: "baby-tee-mini",
-      outfitColor: "#3fe0d0",
-      shadow: "#2e7dff",
-    },
-  },
-];
-
-/** A mermaid sitting on a rock's front edge, leaning back, her tail
- * hanging down the rock and her fluke over the water. */
-function PerchedMermaid({
-  rock: [x, z, r],
-  look,
-  tail,
-  turn,
-  seed,
-}: (typeof PERCHED)[number] & { seed: number }) {
-  return (
-    <group position={[x, 0, z]} rotation-y={turn}>
-      {/* seated on the rock's front edge, leaning back on her hands; the
-          sit pose's thighs rest this far above her root */}
-      <group position={[0, r * 1.05 - 0.5, r * 0.45]}>
-        {/* a shell-top bikini, and no shoes to poke out of the tail */}
-        <Doll
-          look={look}
-          swim={{ style: "bikini", color: look.outfitColor }}
-          mood="sit"
-          hold="sit-lean-back"
-          seed={seed}
-        />
-        <Tail color={tail} pose="seated" />
-      </group>
-    </group>
-  );
-}
+// Marina's look is shared by her talking NPC.
+const MARINA_LOOK: Look = {
+  skin: "#e6b48e",
+  hairStyle: "mermaid",
+  hairColor: "#ff4fb3",
+  lips: "lips-hot-pink-glam",
+  brows: "brows-feathered-honey",
+  outfit: "baby-tee-mini",
+  outfitColor: "#3fe0d0",
+  shadow: "#3fe0d0",
+};
 
 /** The four singing shells at the waterline, lighting up as they sing. */
 function Shells() {
@@ -332,12 +169,10 @@ export function MermaidCove({ onPick }: { onPick: PickHandler }) {
           toneMapped={false}
         />
       </mesh>
-      {MERMAIDS.map((m, i) => (
-        <Mermaid key={i} {...m} seed={271 + i} />
-      ))}
-      {PERCHED.map((m, i) => (
-        <PerchedMermaid key={i} {...m} seed={281 + i} />
-      ))}
+      <Mermaid x={-7} y={1.4} z={-2.4} yaw={0.5} tint="#ffd8e8" singer />
+      <Mermaid x={6.5} y={1.2} z={-4.4} yaw={-0.6} tint="#c2daff" />
+      <Mermaid x={-3.2} y={0.05} z={-2.4} yaw={0.4} tint="#bbfff0" swim />
+      <Mermaid x={1.4} y={0.05} z={-5.2} yaw={-0.5} tint="#f4ccff" swim />
       <Shells />
       <SongClock />
       {/* driftwood logs up the beach */}
@@ -372,7 +207,7 @@ export function MermaidCove({ onPick }: { onPick: PickHandler }) {
       <TalkingNpc
         name="Marina"
         role="regular"
-        look={MERMAIDS[0].look}
+        look={MARINA_LOOK}
         mood="idle"
         at={[SAND.x1 - 1.6, 0, 4.4]}
         rot={-Math.PI / 2}
