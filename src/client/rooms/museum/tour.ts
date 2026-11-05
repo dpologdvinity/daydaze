@@ -5,5 +5,11 @@ import { createStore } from "../shared/store.ts";
 export const tour = createStore({ focus: null as number | null });
 
 export function look(focus: number | null) {
+  console.log(
+    "LOOK " +
+      focus +
+      " " +
+      new Error().stack?.split("\n").slice(1, 4).join(" | "),
+  );
   tour.set({ focus });
 }
