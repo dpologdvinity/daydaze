@@ -201,7 +201,7 @@ const MATERIAL: Record<Exclude<Shared, FacadeKind>, THREE.Material> = {
       emissive: "#10241a",
       emissiveIntensity: 0.35,
     }),
-    0.3,
+    0.5,
   ),
   planks: worldMapped(
     new THREE.MeshStandardMaterial({

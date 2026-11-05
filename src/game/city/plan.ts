@@ -226,7 +226,7 @@ const SURFACE_COLOR = {
   square: "#b3ab9e",
   // Beachside at night: weathered planks, moonlit sand
   boardwalk: "#d6cbbb",
-  sand: "#c9a274",
+  sand: "#e6d3ab",
   lawn: "#2e5e3a",
 };
 
