@@ -133,6 +133,13 @@ export const CREDITS: readonly {
     title: "3D models",
     entries: [
       {
+        title: "Mermaid",
+        author: "charliecatling",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/none-30534d0eff154f73b5afc16f90b4eb4b",
+        usedFor: "Mermaid Cove mermaids, decimated and animated.",
+      },
+      {
         title: "Ultimate Food Pack",
         author: "Quaternius",
         license: "CC0 1.0",
