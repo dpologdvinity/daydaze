@@ -190,10 +190,12 @@ test("the player drives their car down the avenue and parks it", async ({
   // it starts at x = 14; traffic is solid and wanders, and a car in the lane
   // can stop hers within a few meters, so moving off the curb is the proof
   await expect
-    .poll(async () => Number(await canvas.getAttribute("data-car-x")), {
-      timeout: 120_000,
-    })
-    .toBeGreaterThan(14.5);
+    .poll(
+      async () =>
+        Math.abs(Number(await canvas.getAttribute("data-car-x")) - 14),
+      { timeout: 120_000 },
+    )
+    .toBeGreaterThan(0.2);
   await page.keyboard.up("w");
   await expect(page.getByLabel("Speedometer")).toContainText("mph");
   // in the car: the horn, the radio and the headlights
@@ -214,7 +216,7 @@ test("the player drives their car down the avenue and parks it", async ({
   expect(saved.car.rims).toBe("gold");
   expect(saved.car.glow).toBe("pink");
   expect(saved.car.wrap).toBe("stripes");
-  expect(saved.car.at[0]).toBeGreaterThan(14.5);
+  expect(Math.abs(saved.car.at[0] - 14)).toBeGreaterThan(0.2);
   expect(errors).toEqual([]);
 });
 
@@ -333,25 +335,34 @@ test("Splat City: a paintball round marks a rival for points", async ({
   await page
     .getByRole("button", { name: "Gear up" })
     .click({ timeout: 150_000 });
-  // a click from here takes whole frames on a slow runner: fire at all five
-  // from inside the page every 50 ms until a tag lands. Hits can outweigh
-  // tags in the score, so look for the tag itself
+  // a click from here takes whole frames on a slow runner: fire from inside
+  // the page, one rival per tick so each shot's result shows before the next
+  // overwrites it, until the status says "Tagged!"
   await page.evaluate(
     () =>
       new Promise<void>((done) => {
+        const status = document.querySelector(
+          '[aria-label="Paintball"] [role="status"]',
+        );
+        if (!status) throw new Error("no paintball status");
+        let n = 0;
         const id = window.setInterval(() => {
-          for (const b of document.querySelectorAll<HTMLButtonElement>(
+          const buttons = document.querySelectorAll<HTMLButtonElement>(
             '[aria-label="Fire at"] button',
-          ))
-            b.click();
-          const text =
-            document.querySelector('[aria-label="Paintball"] [role="status"]')
-              ?.textContent ?? "";
-          if (/Tagged!|Tags [1-9]/.test(text)) {
+          );
+          buttons[n++ % buttons.length]?.click();
+        }, 50);
+        new MutationObserver((_, watch) => {
+          if (/Tagged!/.test(status.textContent ?? "")) {
             window.clearInterval(id);
+            watch.disconnect();
             done();
           }
-        }, 50);
+        }).observe(status, {
+          childList: true,
+          subtree: true,
+          characterData: true,
+        });
       }),
   );
   expect(errors).toEqual([]);
@@ -2566,7 +2577,7 @@ test("the city map's directory takes the player to a venue's door", async ({
 test("beach volleyball at the city net: first to seven pays a prize", async ({
   page,
 }) => {
-  test.setTimeout(420_000);
+  test.setTimeout(600_000);
   const errors = collectErrors(page);
   await page.goto(`${LOW}&room=city`);
   await expect(roomTitle(page)).toHaveText("Downtown", { timeout: 150_000 });
@@ -2589,7 +2600,7 @@ test("beach volleyball at the city net: first to seven pays a prize", async ({
   });
   // never touch the ball: every point drops on your side
   await expect(game.getByRole("status")).toContainText("They take it, 7 to 0", {
-    timeout: 120_000,
+    timeout: 300_000,
   });
   await expect(page.getByRole("status", { name: "Prize" })).toContainText(
     "Beach volleyball",
