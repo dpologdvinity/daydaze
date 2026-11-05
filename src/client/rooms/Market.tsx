@@ -239,7 +239,7 @@ const PRODUCE_GOODS = [
   "food-Apple_Green",
   "food-Orange",
   "food-Tomato",
-  "food-Carrot",
+  "food-Broccoli",
 ] as const;
 const shelfStock = SHELF_GOODS.map(
   () => [] as (readonly [number, number, number, number])[],
