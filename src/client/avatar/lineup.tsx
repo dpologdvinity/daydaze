@@ -395,6 +395,22 @@ const SHOTS = {
     target: [0, 1.45, 0] as const,
     fov: 50,
   },
+  // the plus-size figure on the masculine build, and seated in a wheelchair
+  plusMen: {
+    looks: [
+      { ...MEN[0], face: encodeFace({ ...DEFAULT_FACE, figure: "plus" }) },
+      { ...MEN[1], face: encodeFace({ ...DEFAULT_FACE, figure: "plus" }) },
+      {
+        ...LINEUP[1],
+        gait: "wheelchair",
+        face: encodeFace({ ...DEFAULT_FACE, figure: "plus" }),
+      },
+    ] as Look[],
+    x: (i: number) => (i - 1) * 1.1,
+    cam: [0.6, 1.0, 4.6] as const,
+    target: [0, 0.8, 0] as const,
+    fov: 32,
+  },
   // the plus-size figure in different outfits, hair and head coverings
   plus: {
     looks: (

@@ -107,7 +107,7 @@ def shell(ctx, name, groups, bands, push, mat, arms=0.3):
     tree.balance()
     near = skin[[tree.find(ctx.PB[i])[1] for i in src]]
     proxies.attach(
-        ctx, ob, ctx.W[src], {k: d[near] * 1.05 for k, d in ctx.KEYS.items()}
+        ctx, ob, ctx.W[src], {k: d[near] * (1.3 if k == "plus" else 1.05) for k, d in ctx.KEYS.items()}
     )
     return ob
 

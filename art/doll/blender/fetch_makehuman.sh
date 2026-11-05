@@ -38,6 +38,15 @@ FILES=(
   $T/hip/hip-waist-up.target
   $T/buttocks/buttocks-volume-incr.target
   $T/stomach/stomach-tone-incr.target
+  $T/stomach/stomach-pregnant-incr.target
+  $T/armslegs/l-upperarm-fat-incr.target
+  $T/armslegs/r-upperarm-fat-incr.target
+  $T/armslegs/l-upperleg-fat-incr.target
+  $T/armslegs/r-upperleg-fat-incr.target
+  $T/armslegs/l-lowerleg-fat-incr.target
+  $T/armslegs/r-lowerleg-fat-incr.target
+  $T/neck/neck-double-incr.target
+  $T/torso/torso-scale-depth-incr.target
   $T/eyes/l-eye-scale-incr.target
   $T/eyes/r-eye-scale-incr.target
   $T/eyes/l-eye-corner1-up.target
