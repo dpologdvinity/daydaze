@@ -604,8 +604,11 @@ export function CameraRig({
     const at = (!overview && player.seat?.position) || player.pos;
     moved.subVectors(at, last.current);
     last.current.copy(at);
-    camera.position.add(moved);
-    c.target.add(moved);
+    // a pinned screenshot camera (?cam=) stays where it was put
+    if (!(CAM_OVERRIDE && overview)) {
+      camera.position.add(moved);
+      c.target.add(moved);
+    }
     const f = fly.current;
     if (f) {
       if (view === "room" || view === "detail") {
@@ -622,7 +625,7 @@ export function CameraRig({
           .add(at);
         goalTarget.copy(at).setY(at.y + v.look);
       }
-      const k = f.snap ? 1 : 1 - Math.exp(-dt * 5);
+      const k = f.snap || CAM_OVERRIDE ? 1 : 1 - Math.exp(-dt * 5);
       camera.position.lerp(goalPos, k);
       c.target.lerp(goalTarget, k);
       f.t += dt;

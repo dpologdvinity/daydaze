@@ -375,7 +375,7 @@ const SHOTS: {
   {
     // the boardwalk's fairground end: carousel and Ferris wheel
     name: "city-boardwalk-fair",
-    query: "room=city&view=full&time=15:00&at=330,322",
+    query: "room=city&view=room&time=15:00&at=320,292&cam=290,3,289,338,12,301",
     act: furnitureReady,
   },
   {
@@ -388,7 +388,8 @@ const SHOTS: {
     // along the boardwalk, looking east: shops on the left, beach and sea on
     // the right, the Ferris wheel ahead (the camera is pinned with ?cam=)
     name: "city-boardwalk-wide",
-    query: "room=city&time=15:00&at=100,283&cam=-30,2.6,282,300,8,287",
+    query:
+      "room=city&view=room&time=15:00&at=250,284&cam=160,2.8,282,340,3,296",
     act: furnitureReady,
   },
   {
@@ -399,7 +400,8 @@ const SHOTS: {
   },
   {
     name: "city-boardwalk-dusk",
-    query: "room=city&time=19:40&at=100,283&cam=-30,2.6,282,300,8,287",
+    query:
+      "room=city&view=room&time=19:40&at=250,284&cam=160,2.8,282,340,3,296",
     act: furnitureReady,
   },
   {
