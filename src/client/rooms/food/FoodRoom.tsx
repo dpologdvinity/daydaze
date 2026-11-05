@@ -141,7 +141,9 @@ export function FoodRoom({
         width={8}
         depth={6}
         center={[0, 2.4]}
-        color={palette.floor}
+        color={japanese ? "#d9b99a" : palette.floor}
+        texture={japanese ? { id: "wood_floor", scale: 0.6 } : undefined}
+        low={japanese ? { metalness: 0, roughness: 0.8 } : undefined}
         onPick={onPick}
       />
       <PortalPads room={ROOMS[palette.room]} color={palette.accent} />
@@ -154,6 +156,14 @@ export function FoodRoom({
       <mesh position={[4.2, 2, 2.4]} material={wall}>
         <boxGeometry args={[0.2, 4, 6.4]} />
       </mesh>
+      {japanese && (
+        <mesh
+          position={[0, 0.55, -0.85]}
+          material={surface("wood_veneer", { scale: 1.5, color: "#b78b69" })}
+        >
+          <boxGeometry args={[6.8, 1.1, 0.7]} />
+        </mesh>
+      )}
       {!japanese && (
         <>
           <mesh position={[0, 0.55, -0.85]} material={counter}>
