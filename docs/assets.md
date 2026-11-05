@@ -36,7 +36,7 @@ future imported packs belong here when they enter the game.
 | Furniture Pack (Oct 2017) | Quaternius | CC0 1.0 | https://quaternius.com/packs/furniturepack.html | Apartment furniture: bookcase and closet. |
 | Television Vintage | Kenney | CC0 1.0 | https://poly.pizza/m/aSmz6H8aeu | Apartment Retro TV. |
 | Television | Kenney | CC0 1.0 | https://poly.pizza/m/9trLeWoBek | Apartment flat-screen TV. |
-| Car Kit | Kenney | CC0 1.0 | https://kenney.nl/assets/car-kit | Delivery vans mixed into street traffic, merged and simplified. |
+| Car Kit | Kenney | CC0 1.0 | https://kenney.nl/assets/car-kit | Delivery vans mixed into street traffic and the pastel ice-cream truck, merged and simplified. |
 | Coaster Kit | Kenney | CC0 1.0 | https://kenney.nl/assets/coaster-kit | Amusement Park coaster trains, log flume logs and midway stalls. |
 | Cabin cart for Ferris Wheel | Enkarra | CC-BY 4.0 | https://sketchfab.com/3d-models/cabin-cart-for-ferris-wheel-3fef7c11a7c447acb9e7a5ee98e654b8 | Amusement Park Ferris wheel gondolas. |
 | Carousel Horse | Ramón Ruiz | CC-BY 4.0 | https://sketchfab.com/3d-models/carousel-horse-7872323d00cf4654845c8f39d907e57d | Amusement Park carousel horses. |
@@ -102,8 +102,8 @@ future imported packs belong here when they enter the game.
 | Carnival Booth | sirkitree | CC-BY 3.0 | https://poly.pizza/m/4NizXJZsuO2 | A striped booth on the boardwalk deck. |
 | Bicycle | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/19VoUuA2pcN | Bicycles for the boardwalk cyclists, decimated. |
 | Pickup Truck | Quaternius | CC0 1.0 | https://poly.pizza/m/qn4grQgHm8 | The floats of the Pride parade. |
-| Hot dogs! Get your hot dogs! | Anonymous | CC-BY 3.0 | https://poly.pizza/m/8n7WTYXqb2n | Food carts on the boardwalk deck. |
-| Ice Cream | Quaternius | CC0 1.0 | https://poly.pizza/m/iZiAPq7Sne | The giant cone on the ice cream shop's roof. |
+| Hot dogs! Get your hot dogs! | Anonymous | CC-BY 3.0 | https://poly.pizza/m/8n7WTYXqb2n | Boardwalk carts and the instanced downtown and park street-food carts. |
+| Ice Cream | Quaternius | CC0 1.0 | https://poly.pizza/m/iZiAPq7Sne | The giant cone on the ice cream shop's roof and the street ice-cream truck. |
 | Animated Ferris Wheel | Arif | CC-BY 3.0 | https://poly.pizza/m/HknNtngih0 | The turning Ferris wheel at the boardwalk's fairground end. |
 | Merry go 'round | sirkitree | CC-BY 3.0 | https://poly.pizza/m/8BliGG-e55g | The carousel on the boardwalk deck. |
 | Towel | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/19oMd_9kHDT | Beach towels on the sand. |

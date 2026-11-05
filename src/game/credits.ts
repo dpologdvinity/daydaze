@@ -275,7 +275,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://kenney.nl/assets/car-kit",
         usedFor:
-          "Delivery vans mixed into street traffic, merged and simplified.",
+          "Delivery vans mixed into street traffic and the pastel ice-cream truck, merged and simplified.",
       },
       {
         title: "Coaster Kit",
@@ -992,14 +992,16 @@ export const CREDITS: readonly {
         author: "Anonymous",
         license: "CC-BY 3.0",
         url: "https://poly.pizza/m/8n7WTYXqb2n",
-        usedFor: "Food carts on the boardwalk deck.",
+        usedFor:
+          "Boardwalk carts and the instanced downtown and park street-food carts.",
       },
       {
         title: "Ice Cream",
         author: "Quaternius",
         license: "CC0 1.0",
         url: "https://poly.pizza/m/iZiAPq7Sne",
-        usedFor: "The giant cone on the ice cream shop's roof.",
+        usedFor:
+          "The giant cone on the ice cream shop's roof and the street ice-cream truck.",
       },
       {
         title: "Animated Ferris Wheel",

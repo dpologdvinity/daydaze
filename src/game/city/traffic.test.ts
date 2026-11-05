@@ -142,3 +142,17 @@ test("traffic brakes for a bus in its path", () => {
   assert.ok(Math.hypot(pose.x - bus[0], pose.z - bus[1]) > 4);
   assert.ok(car.speed < 0.1);
 });
+
+test("traffic brakes for the ice-cream truck as well as the city bus", () => {
+  const t = createTraffic(1, 3);
+  const car = t.cars[0];
+  carPose(car, pose);
+  const truck: [number, number] = [
+    pose.x + Math.cos(pose.yaw) * 12,
+    pose.z - Math.sin(pose.yaw) * 12,
+  ];
+  for (let i = 0; i < 150; i++) stepTraffic(t, DT, null, null, truck);
+  carPose(car, pose);
+  assert.ok(Math.hypot(pose.x - truck[0], pose.z - truck[1]) > 4);
+  assert.ok(car.speed < 0.1);
+});

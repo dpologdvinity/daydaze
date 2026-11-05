@@ -93,3 +93,27 @@ test("the bays come in as the camera nears her and go as it pulls out to the ove
   assert.equal(baysWanted(mid, false), false);
   assert.ok(BAYS_CAMERA.on < BAYS_CAMERA.off);
 });
+
+test("street-food downloads and nearby vendor costumes are included in the budget", () => {
+  for (const model of [
+    "vendors/truck",
+    "vendors/cart",
+    "doll/body",
+    "doll/hair-bob",
+    "doll/outfit-jeans",
+    "doll/shoes-platforms",
+  ]) {
+    assert.ok(modelsInBudget().includes(model), model);
+    assert.deepEqual(MODEL_COST[model], glbCost(model), model);
+  }
+  for (const at of [
+    [246, -267.4],
+    [262, -267.4],
+    [-18, 15.6],
+    [20, 15.6],
+  ] satisfies Vec2[]) {
+    const cost = lowTierCost(at);
+    assert.ok(cost.triangles < 300_000, `${cost.triangles} at ${at}`);
+    assert.ok(cost.drawCalls < 250);
+  }
+});

@@ -5,6 +5,7 @@
 // it to the low tier's 250 draw calls and 300k triangles and checks every
 // model cost below against the shipped file.
 
+import { FOOD_CARTS, FOOD_DRAW_RANGE, VENDOR_RANGE } from "./vendors.ts";
 import { cellsWithin } from "./cells.ts";
 import {
   FURNITURE_KINDS,
@@ -50,6 +51,12 @@ import type { Vec2 } from "../walk.ts";
 export const MODEL_COST: Readonly<
   Record<string, { tris: number; parts: number }>
 > = {
+  "vendors/truck": { tris: 3360, parts: 1 },
+  "vendors/cart": { tris: 6952, parts: 1 },
+  "doll/body": { tris: 31056, parts: 4 },
+  "doll/hair-bob": { tris: 8572, parts: 2 },
+  "doll/outfit-jeans": { tris: 4236, parts: 1 },
+  "doll/shoes-platforms": { tris: 6436, parts: 1 },
   "nature/commontree-1-lo": { tris: 643, parts: 2 },
   "nature/commontree-2-lo": { tris: 517, parts: 2 },
   "nature/commontree-3-lo": { tris: 600, parts: 1 },
@@ -109,6 +116,12 @@ const growthModel = (kind: GrowthKind) => `nature/${GROWTH_MODELS[kind]}`;
 /** Every model the low-tier cost reads. */
 export function modelsInBudget(): string[] {
   return [
+    "vendors/truck",
+    "vendors/cart",
+    "doll/body",
+    "doll/hair-bob",
+    "doll/outfit-jeans",
+    "doll/shoes-platforms",
     ...Array.from({ length: TREE_VARIANTS }, (_, i) => treeModel(i)),
     ...FURNITURE_KINDS.map(furnitureModel),
     ...Object.keys(GROWTH_MODELS)
@@ -258,6 +271,21 @@ export function lowTierCost(at: Vec2): {
   const add = (model: string) =>
     counts.set(model, (counts.get(model) ?? 0) + 1);
   const away = (x: number, z: number) => Math.hypot(x - at[0], z - at[1]);
+  // Worst case: truck in range. Repeated cart instances share one draw.
+  add("vendors/truck");
+  for (const cart of FOOD_CARTS)
+    if (away(cart.at[0], cart.at[1]) <= FOOD_DRAW_RANGE) add("vendors/cart");
+  // StreetFood mounts at most one nearby vendor; full costume is conservative
+  // because HumanDoll drops to low LOD at 4.6 meters on low quality.
+  if (FOOD_CARTS.some((cart) => away(cart.at[0], cart.at[1]) < VENDOR_RANGE)) {
+    for (const model of [
+      "doll/body",
+      "doll/hair-bob",
+      "doll/outfit-jeans",
+      "doll/shoes-platforms",
+    ])
+      add(model);
+  }
   for (const t of plan.trees)
     if (away(t.x, t.z) <= TREE_LOW_FAR) add(treeModel(t.variant));
   for (const f of plan.furniture)
