@@ -1,9 +1,14 @@
 // Skyline Supply grocery scene: shelving aisles, freezer wall, produce and
-// checkouts, with all stock drawn as three instanced meshes. Box labels come
-// from one 8-slot atlas texture; a patched shader picks each box's slot from
-// its aLabel instance attribute.
+// checkouts, stocked with instanced Quaternius food props.
 
-import { useEffect, useLayoutEffect, useMemo, useRef, type JSX } from "react";
+import {
+  Suspense,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  type JSX,
+} from "react";
 import * as THREE from "three";
 import type { Look } from "../../game/look.ts";
 import {
@@ -22,6 +27,7 @@ import { Batch } from "./shared/batch.ts";
 import { CrowdFigure } from "./shared/CrowdFigure.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { canvasTex, hdr } from "./shared/materials.ts";
+import { PropSet } from "./shared/Prop.tsx";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
@@ -219,16 +225,62 @@ function useShell() {
   }, []);
 }
 
-/** Products on every shelf, produce in the bins, candy on the racks. */
-function Goods() {
-  const boxes = useRef<THREE.InstancedMesh>(null);
-  const cans = useRef<THREE.InstancedMesh>(null);
-  const fruit = useRef<THREE.InstancedMesh>(null);
+// Each product kind shares one instanced mesh across the aisles or produce bin.
+const SHELF_GOODS = [
+  "food-Bread",
+  "food-PeanutButter",
+  "food-KetchupBottle",
+  "food-MustardBottle",
+  "food-ChocolateBar",
+  "junk-SodaCan",
+] as const;
+const PRODUCE_GOODS = [
+  "food-Apple",
+  "food-Apple_Green",
+  "food-Orange",
+  "food-Tomato",
+  "food-Broccoli",
+] as const;
+const shelfStock = SHELF_GOODS.map(
+  () => [] as (readonly [number, number, number, number])[],
+);
+for (const [aisleIndex, aisle] of AISLES.entries())
+  for (const side of [-1, 1])
+    SHELF_LEVELS.forEach((y, level) => {
+      for (let k = 1; k < 16; k += 2) {
+        const kind =
+          (Math.floor(k / 4) + level + aisleIndex) % SHELF_GOODS.length;
+        shelfStock[kind].push([
+          aisle.x + side * 0.24,
+          y,
+          aisle.z0 + 0.2 + (k * (aisle.z1 - aisle.z0 - 0.4)) / 15,
+          side < 0 ? Math.PI : 0,
+        ]);
+      }
+    });
+const produceStock = PRODUCE_GOODS.map((_, bin) =>
+  Array.from(
+    { length: 18 },
+    (_, j) =>
+      [
+        PRODUCE.x0 +
+          0.4 +
+          bin * ((PRODUCE.x1 - PRODUCE.x0 - 0.8) / 4) +
+          ((j % 4) - 1.5) * 0.13,
+        0.71 + Math.floor(j / 8) * 0.08,
+        PRODUCE.z0 + 0.3 + (Math.floor(j / 4) % 2) * 0.6 + (j % 3) * 0.12,
+        ((j % 4) * Math.PI) / 2,
+      ] as const,
+  ),
+);
+// Packaged staples keep their labels while modeled food fills the other slots.
+function Boxes() {
+  const ref = useRef<THREE.InstancedMesh>(null);
   const label = useMemo(productTex, []);
-  const mats = useMemo(() => {
-    const box = new THREE.MeshStandardMaterial({ map: label, roughness: 0.6 });
-    // each box shows one of the eight labels on its faces
-    box.onBeforeCompile = (shader) => {
+  const geometry = useMemo(() => new THREE.BoxGeometry(0.22, 0.3, 0.14), []);
+  const material = useMemo(() => {
+    const mat = new THREE.MeshStandardMaterial({ map: label, roughness: 0.6 });
+    mat.onBeforeCompile = (shader) => {
       shader.vertexShader = shader.vertexShader
         .replace("void main() {", "attribute float aLabel;\nvoid main() {")
         .replace(
@@ -236,98 +288,74 @@ function Goods() {
           "#include <uv_vertex>\nvMapUv.x = (vMapUv.x + aLabel) / 8.0;",
         );
     };
-    return {
-      box,
-      can: new THREE.MeshStandardMaterial({ roughness: 0.3, metalness: 0.6 }),
-      fruit: new THREE.MeshStandardMaterial({ roughness: 0.5 }),
-    };
+    return mat;
   }, [label]);
   useEffect(
     () => () => {
       label.dispose();
-      for (const m of Object.values(mats)) m.dispose();
+      geometry.dispose();
+      material.dispose();
     },
-    [label, mats],
+    [label, geometry, material],
   );
-  const geo = useMemo(
-    () => ({
-      box: new THREE.BoxGeometry(0.22, 0.3, 0.14),
-      can: new THREE.CylinderGeometry(0.05, 0.05, 0.14, 10),
-      fruit: new THREE.SphereGeometry(0.065, 8, 6),
-    }),
-    [],
-  );
-  useEffect(
-    () => () => {
-      for (const g of Object.values(geo)) g.dispose();
-    },
-    [geo],
-  );
-  const per = 16;
-  const BOXES = AISLES.length * 2 * 2 * per;
-  const CANS = AISLES.length * 2 * 2 * per;
-  const FRUIT = 90;
+  const count = AISLES.length * 2 * SHELF_LEVELS.length * 8;
   useLayoutEffect(() => {
-    const m = new THREE.Matrix4();
-    const c = new THREE.Color();
-    const labels = new Float32Array(BOXES);
-    let nb = 0;
-    let nc = 0;
-    for (const a of AISLES) {
+    const mesh = ref.current;
+    if (!mesh) return;
+    const matrix = new THREE.Matrix4();
+    const rotation = new THREE.Matrix4().makeRotationY(Math.PI);
+    const labels = new Float32Array(count);
+    let i = 0;
+    for (const aisle of AISLES)
       for (const side of [-1, 1])
         SHELF_LEVELS.forEach((y, level) => {
-          for (let k = 0; k < per; k++) {
-            const z = a.z0 + 0.2 + (k * (a.z1 - a.z0 - 0.4)) / (per - 1);
-            const x = a.x + side * 0.24;
-            if (level % 2 === 0) {
-              m.makeTranslation(x, y + 0.15, z);
-              if (side < 0)
-                m.multiply(new THREE.Matrix4().makeRotationY(Math.PI));
-              boxes.current?.setMatrixAt(nb, m);
-              labels[nb] = (k * 3 + level + (a.x > 0 ? 4 : 0)) % 8;
-              nb++;
-            } else {
-              cans.current?.setMatrixAt(nc, m.makeTranslation(x, y + 0.07, z));
-              cans.current?.setColorAt(
-                nc,
-                c.setHSL(((k * 37 + level * 11) % 100) / 100, 0.7, 0.5),
-              );
-              nc++;
-            }
+          for (let k = 0; k < 16; k += 2) {
+            matrix.makeTranslation(
+              aisle.x + side * 0.24,
+              y + 0.15,
+              aisle.z0 + 0.2 + (k * (aisle.z1 - aisle.z0 - 0.4)) / 15,
+            );
+            if (side < 0) matrix.multiply(rotation);
+            mesh.setMatrixAt(i, matrix);
+            labels[i++] = (k * 3 + level + (aisle.x > 0 ? 4 : 0)) % 8;
           }
         });
-    }
-    boxes.current?.geometry.setAttribute(
+    geometry.setAttribute(
       "aLabel",
       new THREE.InstancedBufferAttribute(labels, 1),
     );
-    const fruitColors = ["#e63946", "#ff8a3d", "#7dff6b", "#ffd84f", "#7b2d8a"];
-    for (let i = 0; i < FRUIT; i++) {
-      const bin = i % 5;
-      const bx = PRODUCE.x0 + 0.4 + bin * ((PRODUCE.x1 - PRODUCE.x0 - 0.8) / 4);
-      const j = Math.floor(i / 5);
-      fruit.current?.setMatrixAt(
-        i,
-        m.makeTranslation(
-          bx + ((j % 4) - 1.5) * 0.13,
-          0.76 + Math.floor(j / 8) * 0.08,
-          PRODUCE.z0 + 0.3 + (Math.floor(j / 4) % 2) * 0.6 + (j % 3) * 0.12,
-        ),
-      );
-      fruit.current?.setColorAt(i, c.set(fruitColors[bin] ?? "#e63946"));
-    }
-    for (const r of [boxes, cans, fruit])
-      if (r.current) {
-        r.current.instanceMatrix.needsUpdate = true;
-        if (r.current.instanceColor) r.current.instanceColor.needsUpdate = true;
-        r.current.computeBoundingSphere();
-      }
-  }, [BOXES]);
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.computeBoundingSphere();
+  }, [count, geometry]);
+  return <instancedMesh ref={ref} args={[geometry, material, count]} />;
+}
+
+function Goods() {
   return (
     <>
-      <instancedMesh ref={boxes} args={[geo.box, mats.box, BOXES]} />
-      <instancedMesh ref={cans} args={[geo.can, mats.can, CANS]} />
-      <instancedMesh ref={fruit} args={[geo.fruit, mats.fruit, FRUIT]} />
+      <Boxes />
+      <Suspense fallback={null}>
+        {SHELF_GOODS.map((model, i) => (
+          <PropSet
+            key={model}
+            model={model}
+            width={0.2}
+            depth={0.2}
+            height={0.28}
+            at={shelfStock[i]}
+          />
+        ))}
+        {PRODUCE_GOODS.map((model, i) => (
+          <PropSet
+            key={model}
+            model={model}
+            width={0.13}
+            depth={0.13}
+            height={0.13}
+            at={produceStock[i]}
+          />
+        ))}
+      </Suspense>
     </>
   );
 }

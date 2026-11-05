@@ -9,7 +9,7 @@
 
 import { claimSeat, releaseSeat } from "../shared/game3d/seatClaim.ts";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { playChop, playGong, playSizzle } from "../../../audio/worldSounds.ts";
 import { COOKOFF, myStove } from "../../../game/cookOff.ts";
@@ -26,6 +26,7 @@ import type { Player } from "../../world/PlayerController.tsx";
 import { cookOffSession } from "../food/cookOffSession.ts";
 import { useGameClip } from "../shared/game3d/gameClip.ts";
 import { useGameShot } from "../shared/game3d/useGameShot.ts";
+import { Prop } from "../shared/Prop.tsx";
 
 /** How each ingredient looks in the wok: a color and a piece's size. */
 const LOOKS: Record<string, { color: string; size: Vec3; pieces: number }> = {
@@ -404,21 +405,23 @@ function Plate({
         <cylinderGeometry args={[0.16, 0.12, 0.025, 20]} />
         <meshStandardMaterial color="#fbfaf6" roughness={0.3} />
       </mesh>
-      {items.map((id, i) => {
-        const look = LOOKS[id];
-        if (!look) return null;
-        const a = (i / items.length) * Math.PI * 2;
-        return (
-          <mesh
-            key={id}
-            position={[Math.cos(a) * 0.06, 0.035, Math.sin(a) * 0.06]}
-            scale={[0.06, 0.03, 0.06]}
-          >
-            <icosahedronGeometry args={[1, 0]} />
-            <meshStandardMaterial color={look.color} roughness={0.6} />
-          </mesh>
-        );
-      })}
+      <Suspense fallback={null}>
+        <Prop
+          model={
+            items.includes("chicken")
+              ? "food-ChickenLeg"
+              : items.includes("pork")
+                ? "food-Steak"
+                : items.includes("egg")
+                  ? "food-Egg_Fried"
+                  : "food-Broccoli"
+          }
+          width={0.2}
+          depth={0.2}
+          height={0.09}
+          position={[0, 0.015, 0]}
+        />
+      </Suspense>
     </group>
   );
 }

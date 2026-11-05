@@ -29,6 +29,7 @@ import { TalkingNpc } from "./shared/TalkingNpc.tsx";
 import { Batch } from "./shared/batch.ts";
 import { plant, poster, tableSetting } from "./shared/details.ts";
 import { surface } from "../city/worldTexture.ts";
+import { PlatedFood } from "./shared/PlatedFood.tsx";
 
 const VENUE = FOOD_VENUES.find((v) => v.id === "drive-in-skate-diner");
 const CHERRY = "#ff2f4f";
@@ -214,6 +215,10 @@ export function SkateDiner({ onPick }: { onPick: PickHandler }): JSX.Element {
         onPick={onPick}
       />
       <primitive object={dressing} />
+      <PlatedFood
+        model="food-Burger"
+        at={BOOTHS.map(([x, z]) => [x + 0.27, 0.75, z + 0.2, 0] as const)}
+      />
       <PortalPads room={ROOMS["skate-diner"]} color={CHERRY} />
       {/* walls: mint below, cream above, chrome trim */}
       {(
