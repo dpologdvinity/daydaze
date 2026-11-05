@@ -4,14 +4,16 @@ import bpy
 import os
 import sys
 
-root, output = sys.argv[sys.argv.index('--') + 1:]
+root, output, *selected = sys.argv[sys.argv.index('--') + 1:]
 packs = {
-    'Ultimate Food Pack - Oct 2019': ['Apple', 'Apple_Green', 'Orange', 'Banana', 'Carrot', 'Tomato', 'Broccoli', 'Bread', 'PeanutButter', 'KetchupBottle', 'MustardBottle', 'ChocolateBar', 'Burger', 'Fries', 'Pizza_Slice', 'Hotdog', 'Pancakes_Stack', 'ChickenLeg', 'Fish', 'Plate'],
+    'Ultimate Food Pack - Oct 2019': ['Apple', 'Apple_Green', 'Orange', 'Banana', 'Carrot', 'Tomato', 'Broccoli', 'Bread', 'PeanutButter', 'KetchupBottle', 'MustardBottle', 'ChocolateBar', 'Burger', 'Fries', 'Pizza_Slice', 'Hotdog', 'Pancakes_Stack', 'ChickenLeg', 'Fish', 'Plate', 'Steak', 'Egg_Fried'],
     'Junk Food Pack - Apr 2017': ['SodaCan', 'Donut'],
 }
 os.makedirs(output, exist_ok=True)
 for pack, names in packs.items():
     for name in names:
+        if selected and name not in selected:
+            continue
         bpy.ops.object.select_all(action='SELECT')
         bpy.ops.object.delete(use_global=False)
         bpy.ops.import_scene.fbx(filepath=os.path.join(root, pack, 'FBX', name + '.fbx'))

@@ -10,6 +10,7 @@ import {
   tableSetting,
 } from "../shared/details.ts";
 import { PropSet } from "../shared/Prop.tsx";
+import { PlatedFood } from "../shared/PlatedFood.tsx";
 import type { FoodPalette } from "./FoodRoom.tsx";
 
 /**
@@ -165,25 +166,10 @@ export function Fitout({ palette }: { palette: FoodPalette }) {
 
     // display case on the counter: chrome frame, trays of food under glass
     put(s, BOX, chrome, [-1.6, 1.14, -0.85], [2.2, 0.03, 0.62]);
-    const treats = [
-      accent,
-      light,
-      tileA,
-      new THREE.Color("#7dff6b"),
-      new THREE.Color("#4fe3ff"),
-    ];
     for (let i = 0; i < 10; i++) {
       const x = -2.55 + (i % 5) * 0.47;
       const z = i < 5 ? -1.0 : -0.72;
       put(s, BOX, chrome, [x, 1.17, z], [0.4, 0.02, 0.22]);
-      for (let k = 0; k < 3; k++)
-        put(
-          s,
-          SPHERE,
-          treats[(i + k) % treats.length],
-          [x - 0.12 + k * 0.12, 1.22, z],
-          [0.1, 0.07, 0.1],
-        );
     }
     // register and tip jar on the right
     put(s, BOX, dark, [1.9, 1.25, -0.85], [0.45, 0.22, 0.35]);
@@ -282,6 +268,28 @@ export function Fitout({ palette }: { palette: FoodPalette }) {
   return (
     <>
       <primitive object={built.group} />
+      <PlatedFood
+        model="food-Burger"
+        at={TABLES.map(([x, z]) => [x - 0.25, 0.805, z, 0] as const)}
+      />
+      <Suspense fallback={null}>
+        <PropSet
+          model="junk-Donut"
+          width={0.1}
+          depth={0.1}
+          height={0.07}
+          at={Array.from(
+            { length: 15 },
+            (_, i) =>
+              [
+                -2.67 + (i % 5) * 0.47 + Math.floor(i / 5) * 0.12,
+                1.19,
+                -1,
+                0,
+              ] as const,
+          )}
+        />
+      </Suspense>
       <Suspense fallback={null}>
         <PropSet
           model="cafe-chair"
