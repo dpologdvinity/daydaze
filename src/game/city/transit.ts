@@ -121,6 +121,39 @@ export function busAt(seconds: number, out: BusPose): void {
   out.yaw = Math.atan2(a[1] - b[1], b[0] - a[0]);
 }
 
+/** A stop's position in the repeating timetable, including its dwell. */
+export function busStopPhase(seconds: number, stop: number): number {
+  const elapsed = phase(seconds) - ARRIVALS[stop];
+  return elapsed > -1e-9 ? Math.max(0, elapsed) : elapsed + BUS_CYCLE;
+}
+
+/** Two visible riders per stop: one boards, one leaves at each arrival. */
+export function busRiderAt(
+  seconds: number,
+  stop: number,
+  leaving: boolean,
+  out: BusPose,
+): boolean {
+  const t = busStopPhase(seconds, stop);
+  const s = BUS_STOPS[stop];
+  const walk = 4;
+  let progress: number;
+  if (leaving) {
+    if (t >= walk) return false;
+    progress = 1 - t / walk;
+  } else {
+    if (t < BUS_CYCLE - walk && t >= walk) return false;
+    progress = t >= BUS_CYCLE - walk ? 0 : t / walk;
+  }
+  const doorX = s.road[0] + (s.at[0] - s.road[0]) * 0.2;
+  const doorZ = s.road[1] + (s.at[1] - s.road[1]) * 0.2;
+  out.x = s.at[0] + (doorX - s.at[0]) * progress;
+  out.z = s.at[1] + (doorZ - s.at[1]) * progress;
+  out.yaw =
+    Math.atan2(doorX - s.at[0], doorZ - s.at[1]) + (leaving ? Math.PI : 0);
+  return true;
+}
+
 /** Zero while doors are open; otherwise seconds until this stop's next arrival. */
 export function nextBusIn(seconds: number, stop: number): number {
   const t = phase(seconds),
