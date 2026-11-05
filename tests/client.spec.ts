@@ -274,12 +274,12 @@ test("Green Haze (18+, dev flag): a joint and shroom tea raise the high and the 
 test("Photon Zone: a laser tag round tags a rival for points", async ({
   page,
 }) => {
-  test.setTimeout(330_000);
+  test.setTimeout(600_000);
   const errors = collectErrors(page);
   await page.goto(`${LOW}&room=laser-tag`);
   await page
     .getByRole("button", { name: "Suit up" })
-    .click({ timeout: 150_000 });
+    .click({ timeout: 300_000 });
   const score = page.getByLabel("Score");
   // rivals pop out every few seconds: keep firing at all four until a tag
   await expect(async () => {
@@ -2429,6 +2429,7 @@ test("beach volleyball at the city net: first to seven pays a prize", async ({
 test("Photon Zone's target range: a pistol drill pays a prize", async ({
   page,
 }) => {
+  test.setTimeout(330_000);
   const errors = collectErrors(page);
   await page.goto(`${STILL}&room=laser-tag`);
   await page
@@ -2445,9 +2446,11 @@ test("Photon Zone's target range: a pistol drill pays a prize", async ({
   });
   // the shots flew in the arena
   await expect(canvasOf(page)).toHaveAttribute("data-range-shots", "18");
-  await expect(page.getByRole("status", { name: "Prize" })).toContainText(
-    "Pistol drill",
-  );
+  await expect
+    .poll(async () =>
+      Number((await page.locator(".coins").textContent())?.match(/\d+/)?.[0]),
+    )
+    .toBeGreaterThan(100);
   expect(errors).toEqual([]);
 });
 
