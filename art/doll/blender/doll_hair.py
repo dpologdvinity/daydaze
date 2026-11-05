@@ -5,10 +5,12 @@ Each style is one object named Hair_<id> (ids match HAIR_STYLES in
 src/game/look.ts). Textures become grey strand maps the client tints.
 """
 
+import os
+
 import bmesh
 import bpy
 import numpy as np
-from mathutils import Vector
+from mathutils import Euler, Vector
 from mathutils.kdtree import KDTree
 
 import proxies
@@ -356,6 +358,192 @@ def puffs(ctx, mat):
     return scalp_hair(ctx, "Hair_puffs", mat, extra)
 
 
+def _surface(bm, zs, n, point, skip=None):
+    """Grid surface of rings over heights `zs` with `n` samples round each:
+    `point(z, a)` gives a vertex for the angle a (0 = the back, pi = the
+    front); `skip(z, a)` returns None, or the angle of the opening's rim when
+    the vertex falls inside the opening, which cuts the faces inside it. Rings wrap, so the surface is a closed sleeve."""
+    grid = []
+    cut = []
+    for z in zs:
+        row, gone = [], []
+        for j in range(n):
+            a = 2 * np.pi * j / n
+            edge = skip(z, a) if skip else None
+            # a vertex inside the opening slides sideways onto its rim, so
+            # the cut edge is smooth instead of stepping ring by ring
+            row.append(bm.verts.new(point(z, edge if edge is not None else a)))
+            gone.append(edge is not None)
+        grid.append(row)
+        cut.append(gone)
+    for r in range(len(zs) - 1):
+        for j in range(n):
+            k = (j + 1) % n
+            if cut[r][j] and cut[r][k] and cut[r + 1][k] and cut[r + 1][j]:
+                continue
+            bm.faces.new((grid[r][j], grid[r][k], grid[r + 1][k], grid[r + 1][j]))
+
+
+def _head_box(bm, ctx):
+    """Centre and half-extents (x, y) of the scalp shell, and its top."""
+    eye_z = ctx.JB["lEye"][2]
+    pts = [v.co for v in bm.verts if v.co.z > eye_z]
+    xs = [p.x for p in pts]
+    ys = [p.y for p in pts]
+    return (
+        (max(xs) + min(xs)) / 2,
+        (max(ys) + min(ys)) / 2,
+        (max(xs) - min(xs)) / 2,
+        (max(ys) - min(ys)) / 2,
+        max(p.z for p in pts),
+    )
+
+
+HIJAB_SRC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src", "hijab-sketchfab.glb")
+# the scan's mannequin head: width and top height, its y centre, in its own units
+HIJAB_HEAD = dict(width=1.75, top=1.93, cy=0.1)
+
+
+def hijab(ctx, mat):
+    """A hijab: the draped scarf of Sketchfab's "Hijab" (CC-BY, see
+    docs/assets.md) with its mannequin cut out, scaled to the doll's head,
+    pushed clear of the body and skinned from the nearest body vertices, so
+    it frames the face, covers hair and neck and falls over the shoulders."""
+    import bmesh as bm_
+
+    eye_z = ctx.JB["lEye"][2]
+    head = [i for i in range(len(ctx.PB)) if ctx.HEADW[i] >= 0.98 and ctx.PB[i][2] > eye_z]
+    hp = ctx.PB[head]
+    cx, cy = (hp[:, 0].max() + hp[:, 0].min()) / 2, (hp[:, 1].max() + hp[:, 1].min()) / 2
+    scale = (hp[:, 0].max() - hp[:, 0].min()) * 1.16 / HIJAB_HEAD["width"]
+    top = hp[:, 2].max()
+
+    before = set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=HIJAB_SRC)
+    src = next(o for o in bpy.data.objects if o not in before and o.type == "MESH")
+    bm = bm_.new()
+    bm.from_mesh(src.data)
+    uv = bm.loops.layers.uv.active
+    # the texture's top-left corner paints the mannequin's skin: those faces go
+    bm_.ops.delete(
+        bm,
+        geom=[f for f in bm.faces if all(l[uv].uv.x < 0.21 and l[uv].uv.y > 0.8 for l in f.loops)],
+        context="FACES",
+    )
+    bm_.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context="VERTS")
+    # the scan splits vertices along UV seams; welded, it smooths across them
+    bm_.ops.remove_doubles(bm, verts=bm.verts, dist=1e-4)
+    world = src.matrix_world.copy()
+    verts = np.array([(world @ v.co)[:] for v in bm.verts])
+    faces = [[v.index for v in f.verts] for f in bm.faces]
+    bm.free()
+    for o in [o for o in bpy.data.objects if o not in before]:
+        bpy.data.objects.remove(o)
+
+    verts = np.array(verts)
+    verts[:, 0] = cx + verts[:, 0] * scale
+    verts[:, 1] = cy - 0.012 + (verts[:, 1] - HIJAB_HEAD["cy"]) * scale
+    verts[:, 2] = top + 0.006 + (verts[:, 2] - HIJAB_HEAD["top"]) * scale
+
+    # nearest body vertex: its weights, and a push out along its normal so no
+    # fold sinks into the skin or the shoulders
+    nrm = np.zeros_like(ctx.PB)
+    for f in ctx.FACES["body"]:
+        pts = ctx.PB[f]
+        n = np.cross(pts[1] - pts[0], pts[2] - pts[0])
+        nrm[list(f)] += n
+    nrm /= np.maximum(np.linalg.norm(nrm, axis=1, keepdims=True), 1e-9)
+    tree = KDTree(len(ctx.PB))
+    for i, p in enumerate(ctx.PB):
+        tree.insert(p, i)
+    tree.balance()
+    near = np.array([tree.find(v)[1] for v in verts], int)
+    for i, (v, n) in enumerate(zip(verts, near)):
+        out = float(np.dot(v - ctx.PB[n], nrm[n]))
+        if out < 0.007:
+            verts[i] = v + nrm[n] * (0.007 - out)
+
+    ob = ctx.new_object("Hair_hijab", verts, faces)
+    ob.data.materials.append(mat)
+    for p in ob.data.polygons:
+        p.use_smooth = True
+    proxies.attach(ctx, ob, ctx.W[near], {k: d[near] for k, d in ctx.KEYS.items()})
+    return ob
+
+
+def _cloth_dome(ctx, bm, top, rise, grow, fold_fn, n, rows):
+    """A dome of cloth from the brow round the skull, lower at the back where
+    the hairline is, closing at the crown `rise` above the scalp. `grow` is how
+    far it stands off the head; `fold_fn(t, a)` adds the cloth's ridges."""
+    cx, cy, rx, ry, _ = _head_box(bm, ctx)
+    eye_z = ctx.JB["lEye"][2]
+    crown = top + rise
+
+    def base(a):
+        # the front edge sits at the brow, the back reaches the nape
+        return eye_z + 0.012 - 0.05 * (1 + np.cos(a)) / 2
+
+    zs = list(np.linspace(crown, eye_z - 0.04, rows))
+
+    def point(z, a):
+        z = max(z, base(a))
+        t = np.clip((z - base(a)) / (crown - base(a)), 0, 1)
+        k = np.sqrt(max(0.0, 1 - t**2))
+        # a head narrows toward the nape
+        taper = 1 - 2.2 * max(0.0, eye_z - z)
+        w = ((rx + grow + fold_fn(t, a)) * k + 0.003) * taper
+        d = ((ry + grow + fold_fn(t, a)) * k + 0.003) * taper
+        return Vector((cx + np.sin(a) * w, cy + np.cos(a) * d, z))
+
+    _surface(bm, zs, n, point)
+    return cx, cy, rx, ry
+
+
+def head_wrap(ctx, mat):
+    """A head wrap: a snug dome of cloth, two wound bands and a knot at the
+    front, the way a scarf is tied."""
+
+    def extra(bm, ctx):
+        top = _head_box(bm, ctx)[4]
+        eye_z = ctx.JB["lEye"][2]
+
+        def fold(t, a):
+            # the cloth swells where it is wound over itself
+            return 0.005 * (np.exp(-(((t - 0.18) / 0.07) ** 2)) + np.exp(-(((t - 0.5) / 0.07) ** 2)))
+
+        cx, cy, rx, ry = _cloth_dome(ctx, bm, top, 0.012, 0.012, fold, 72, 44)
+        # the knot: two flat lobes and a squashed centre twist, tied at the
+        # front of the crown
+        at = Vector((cx, cy - ry * 0.7, top - 0.022))
+        for side in (1, -1):
+            ret = bmesh.ops.create_uvsphere(bm, u_segments=20, v_segments=12, radius=1)
+            for v in ret["verts"]:
+                d = v.co.copy()
+                v.co = Vector((d.x * 0.042, d.y * 0.02, d.z * 0.024))
+                v.co.rotate(Euler((0, side * 0.55, 0)))
+                v.co += at + Vector((side * 0.05, -0.008, 0.006))
+        ret = bmesh.ops.create_uvsphere(bm, u_segments=16, v_segments=10, radius=1)
+        for v in ret["verts"]:
+            v.co = Vector((v.co.x * 0.016, v.co.y * 0.014, v.co.z * 0.02)) + at + Vector((0, -0.012, 0.004))
+
+    return scalp_hair(ctx, "Hair_head-wrap", mat, extra)
+
+
+def turban(ctx, mat):
+    """A turban: a tall wound dome, ridged folds climbing round it."""
+
+    def extra(bm, ctx):
+        top = _head_box(bm, ctx)[4]
+
+        def fold(t, a):
+            # twisted cloth: sharp ridges spiralling up the dome
+            return 0.014 * np.abs(np.sin(a * 3 + t * 11)) ** 0.7 * (0.3 + t)
+
+        _cloth_dome(ctx, bm, top, 0.05, 0.022, fold, 96, 64)
+
+    return scalp_hair(ctx, "Hair_turban", mat, extra)
+
+
 def shade_strands(ctx, ob):
     """Root-to-tip shading as vertex colours: hair near the scalp sits in its
     own shadow and reads darker and denser; lengths and tips catch the light.
@@ -426,6 +614,12 @@ def pigtails(ctx, strand_mat, cap_mat):
 
 def build(ctx):
     out = []
+    only = [n for n in os.environ.get("HAIR_ONLY", "").split(",") if n]
+    if only:
+        # HAIR_ONLY=hijab,turban builds just those sculpted parts (fast)
+        solid = bpy.data.materials.new("hair_solid")
+        make = {"hijab": hijab, "head-wrap": head_wrap, "turban": turban}
+        return [make[n](ctx, solid) for n in only]
     for style, path in PROXY.items():
         img = proxies.detail_texture(TEXTURE[style], 1024)
         mat = proxies.textured(f"hair_{style}", img, alpha=True)
@@ -442,6 +636,7 @@ def build(ctx):
         bantu_knots(ctx, solid),
         puffs(ctx, solid),
     ]
+    out += [hijab(ctx, solid), head_wrap(ctx, solid), turban(ctx, solid)]
     strand = strands.material("hair_strands")
     combed = strands.cap_material("hair_cap")
     # strand-card styles: length (m), wave (slow S), curl (tight spirals),

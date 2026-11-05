@@ -24,6 +24,7 @@ HAIR = [
     "long-curly", "mid-straight", "mid-wavy", "mid-curly", "pixie",
     "mermaid", "shag", "coils", "low-pony", "pigtails", "top-knot",
     "locs", "box-braids", "cornrows", "bantu-knots", "twist-out", "puffs",
+    "hijab", "head-wrap", "turban",
 ]
 PRESETS = {
     "eye": ["almond", "round", "hooded", "upturned", "downturned"],

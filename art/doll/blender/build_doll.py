@@ -985,7 +985,8 @@ def main():
         HEAD=HEAD, HEADW=weight("head"), GROUPS=GROUPS, weight=weight,
         to_blender=to_blender, new_object=new_object,
     )
-    parts = doll_hair.build(ctx) + doll_outfits.build(ctx, body, BODY_SRC)
+    hair_only = bool(os.environ.get("HAIR_ONLY"))
+    parts = doll_hair.build(ctx) + ([] if hair_only else doll_outfits.build(ctx, body, BODY_SRC))
     for ob in parts:
         bind(ob, rig)
         # build-time bookkeeping; glTF would ship it as (large) node extras
@@ -995,27 +996,28 @@ def main():
     # on the body, not the rig: optimisers flatten the rig node away
     body["doll"] = json.dumps(meta)
     os.makedirs(OUT_DIR, exist_ok=True)
-    export(rig, [body, eyes], f"body{SUFFIX}")
-    # far LOD: MakeHuman's CC0 1.6k-vertex proxy, painted with the same face
-    proxy = "male1591/male1591" if SEX == "male" else "female1605/female1605"
-    lo = proxies.build(ctx, "Lod_body", f"proxymeshes/{proxy}.proxy", material("skin"))
-    heads = np.zeros(len(lo.data.vertices))
-    hi = lo.vertex_groups[HEAD].index
-    for v in lo.data.vertices:
-        for g in v.groups:
-            if g.group == hi:
-                heads[v.index] = g.weight
-    face_uvs(lo, None, heads)
-    # same tuck keys, in the same order as the full body's
-    no_src = np.full(len(lo.data.vertices), -1)
-    for part in parts:
-        if part.name.startswith(("Outfit", "Swim", "Shoes")):
-            doll_outfits.tuck(ctx, lo, no_src, part, part.name.split("_", 1)[1])
-    bind(lo, rig)
-    for key in ("deleted", "src"):
-        if key in lo:
-            del lo[key]
-    export(rig, [lo], f"body{SUFFIX}-lo")
+    if not hair_only:
+        export(rig, [body, eyes], f"body{SUFFIX}")
+        # far LOD: MakeHuman's CC0 1.6k-vertex proxy, painted with the same face
+        proxy = "male1591/male1591" if SEX == "male" else "female1605/female1605"
+        lo = proxies.build(ctx, "Lod_body", f"proxymeshes/{proxy}.proxy", material("skin"))
+        heads = np.zeros(len(lo.data.vertices))
+        hi = lo.vertex_groups[HEAD].index
+        for v in lo.data.vertices:
+            for g in v.groups:
+                if g.group == hi:
+                    heads[v.index] = g.weight
+        face_uvs(lo, None, heads)
+        # same tuck keys, in the same order as the full body's
+        no_src = np.full(len(lo.data.vertices), -1)
+        for part in parts:
+            if part.name.startswith(("Outfit", "Swim", "Shoes")):
+                doll_outfits.tuck(ctx, lo, no_src, part, part.name.split("_", 1)[1])
+        bind(lo, rig)
+        for key in ("deleted", "src"):
+            if key in lo:
+                del lo[key]
+        export(rig, [lo], f"body{SUFFIX}-lo")
     for ob in parts:
         kind, name = ob.name.split("_", 1)
         export(rig, [ob], f"{kind.lower()}-{name}{SUFFIX}")

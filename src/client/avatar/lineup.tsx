@@ -354,6 +354,42 @@ const SHOTS = {
     target: [0, 1.45, 0] as const,
     fov: 50,
   },
+  // the head coverings, three-quarters on
+  coverings: {
+    looks: (["hijab", "head-wrap", "turban"] as const).map((hairStyle, i) => ({
+      ...LINEUP[i],
+      hairStyle,
+      hairColor: "#7b4dff" as const,
+    })),
+    x: (i: number) => (i - 1) * 0.55,
+    cam: [0.6, 1.6, 2.6] as const,
+    target: [0, 1.45, 0] as const,
+    fov: 40,
+  },
+  // the same coverings on the masculine build
+  coveringsMen: {
+    looks: (["turban", "head-wrap", "hijab"] as const).map((hairStyle, i) => ({
+      ...MEN[i],
+      hairStyle,
+      hairColor: "#3a6bff" as const,
+    })),
+    x: (i: number) => (i - 1) * 0.55,
+    cam: [0.6, 1.6, 2.6] as const,
+    target: [0, 1.45, 0] as const,
+    fov: 40,
+  },
+  // a bindi and hearing aids, close up from the side and front
+  accessories: {
+    looks: [
+      { ...LINEUP[0], hairStyle: "pixie" as const, makeup: "221010000013" },
+      { ...LINEUP[3], hairStyle: "bob" as const, makeup: "221010010022" },
+      { ...LINEUP[5], hairStyle: "pixie" as const, makeup: "221010010013" },
+    ],
+    x: (i: number) => (i - 1) * 0.3,
+    cam: [0.55, 1.58, 1.0] as const,
+    target: [0, 1.55, 0] as const,
+    fov: 30,
+  },
   // every free outfit, front on
   outfits: {
     looks: (

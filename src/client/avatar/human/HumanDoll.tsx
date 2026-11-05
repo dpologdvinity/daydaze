@@ -54,6 +54,7 @@ import { ScubaGear } from "./ScubaGear.tsx";
 import { paintFace, paintIris, paintLashes, readMarks } from "./faceCanvas.ts";
 import { Jewelry, readAnchors } from "./Jewelry.tsx";
 import { Glasses } from "./Glasses.tsx";
+import { HearingAids } from "./HearingAids.tsx";
 
 /**
  * The 3D doll: a skinned, shape-keyed body built in Blender from MakeHuman's
@@ -967,6 +968,12 @@ export function HumanDoll({
       />
       <Glasses
         style={makeupOf(look).glasses}
+        anchors={body.anchors}
+        bones={body.bones}
+        restInverse={body.restInverse}
+      />
+      <HearingAids
+        shell={makeupOf(look).hearing}
         anchors={body.anchors}
         bones={body.bones}
         restInverse={body.restInverse}

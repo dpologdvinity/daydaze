@@ -48,6 +48,10 @@ export const HAIR_STYLES = [
   { id: "bantu-knots", label: "Bantu knots" },
   { id: "twist-out", label: "Twist-out" },
   { id: "puffs", label: "Puffs" },
+  // head coverings: the hair color tints the cloth
+  { id: "hijab", label: "Hijab" },
+  { id: "head-wrap", label: "Head wrap" },
+  { id: "turban", label: "Turban" },
   // short cuts
   { id: "crop", label: "Crop" },
   { id: "textured", label: "Textured top" },
@@ -447,6 +451,13 @@ export function seededMakeup(seed: number): Makeup {
         "moles",
       ] as const
     )[(n >> 19) % 7],
+    // a few strangers wear a bindi or hearing aids
+    bindi: (["none", "none", "none", "none", "none", "red", "gold"] as const)[
+      (n >> 22) % 7
+    ],
+    hearing: (
+      ["none", "none", "none", "none", "none", "none", "beige", "pink"] as const
+    )[(n >> 25) % 8],
   };
 }
 
@@ -536,6 +547,23 @@ export const GLASSES = [
   { id: "square", label: "Square" },
 ] as const;
 
+/** Bindis: a dot between the brows (swatch colors live in faceCanvas.ts). */
+export const BINDIS = [
+  { id: "none", label: "None" },
+  { id: "red", label: "Red" },
+  { id: "gold", label: "Gold" },
+  { id: "black", label: "Black" },
+  { id: "plum", label: "Plum" },
+] as const;
+
+/** Hearing aids worn behind both ears, in a shell color. */
+export const HEARING_AIDS = [
+  { id: "none", label: "None" },
+  { id: "beige", label: "Beige" },
+  { id: "pink", label: "Pink" },
+  { id: "teal", label: "Teal" },
+] as const;
+
 /** The makeup bag's choices, one id per catalog. */
 export type Makeup = {
   liner: IdOf<typeof LINERS>;
@@ -548,6 +576,8 @@ export type Makeup = {
   glasses: IdOf<typeof GLASSES>;
   vitiligo: IdOf<typeof VITILIGO>;
   birthmark: IdOf<typeof BIRTHMARKS>;
+  bindi: IdOf<typeof BINDIS>;
+  hearing: IdOf<typeof HEARING_AIDS>;
 };
 
 /** Makeup for looks without a makeup code. */
@@ -562,6 +592,8 @@ export const DEFAULT_MAKEUP: Makeup = {
   glasses: "none",
   vitiligo: "none",
   birthmark: "none",
+  bindi: "none",
+  hearing: "none",
 };
 
 // Makeup travels as one short code, like the face: one digit per choice,
@@ -578,8 +610,10 @@ const MAKEUP_PARTS = [
   ["glasses", GLASSES],
   ["vitiligo", VITILIGO],
   ["birthmark", BIRTHMARKS],
+  ["bindi", BINDIS],
+  ["hearing", HEARING_AIDS],
 ] as const;
-/** The code's length before freckles and glasses. */
+/** The code's length before freckles, glasses, bindis and hearing aids. */
 const MAKEUP_V1 = 6;
 
 /**

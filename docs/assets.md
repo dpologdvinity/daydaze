@@ -40,6 +40,7 @@ future imported packs belong here when they enter the game.
 | Zebra (rigged) | Quaternius | CC0 1.0 | https://poly.pizza/m/iclPBR6SBZ | Zoo savanna zebras, with idle, walk and run clips. |
 | Giraffe | BlueMesh | CC-BY 4.0 | https://sketchfab.com/3d-models/giraffe-522c042aad9f4348a74c2985ec3f99f9 | Zoo savanna giraffes, with a calm idle clip (swayed along when walking). |
 | Elephant | Rukh3D | CC-BY 4.0 | https://sketchfab.com/3d-models/elephant-4ae161372d6a4219a87340339d1ffe03 | Zoo elephants, with idle, walk, run and eat clips. |
+| Hijab | lam_m_zack | CC-BY 4.0 | https://sketchfab.com/3d-models/hijab-ee50e01adc864ccc880caed9b5eb3bcb | The closet's hijab: the scarf's drape with its mannequin cut out, scaled and skinned to the doll. |
 | Baby Lion | kenchoo | CC-BY 4.0 | https://sketchfab.com/3d-models/baby-lion-c9599625dc474262aab754d7b63841f5 | Zoo lions, with a calm idle clip (swayed along when walking). |
 | Realistic Animated Bear 3D Model | WildMesh 3D | CC-BY 4.0 | https://sketchfab.com/3d-models/realistic-animated-bear-3d-model-bffc3c87d2d148ff8533e1cc8a11c9f1 | Zoo woods bear, with idle, walk, run, graze, sit and sleep clips (kept 9 of 81, textures shrunk). |
 | Realistic Animated Elk 3D Model | WildMesh 3D | CC-BY 4.0 | https://sketchfab.com/3d-models/realistic-animated-elk-3d-model-787834f9caa2474d9f1814b807c072d7 | Zoo woods elk, with idle, walk, run, graze, sit and sleep clips (kept 8 of 53, textures shrunk). |
