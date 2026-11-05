@@ -14,7 +14,7 @@ import { TREE_VARIANTS, type TreeSpot } from "../../game/city/plan.ts";
 import { TREE_LOW_FAR } from "../../game/city/tuning.ts";
 import { createStore } from "../rooms/shared/store.ts";
 import { useQuality } from "../world/quality.ts";
-import { floated } from "./floated.ts";
+import { bakedGeometry } from "../world/bakedGeometry.ts";
 import { disposeInstanced } from "./dispose.ts";
 
 const MODELS = "/models/nature";
@@ -45,8 +45,7 @@ function partsOf(scene: THREE.Object3D): Part[] {
   const parts: Part[] = [];
   scene.traverse((o) => {
     if (!(o instanceof THREE.Mesh)) return;
-    const geometry = floated(o.geometry as THREE.BufferGeometry);
-    geometry.applyMatrix4(o.matrixWorld);
+    const geometry = bakedGeometry(o);
     const material = Array.isArray(o.material) ? o.material[0] : o.material;
     if (material) parts.push({ geometry, material });
   });

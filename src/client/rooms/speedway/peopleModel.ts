@@ -2,6 +2,7 @@
 // art/speedway/build_people.py (public/models/speedway/people-*.glb): one
 // joined, textured mesh each, so a crowd of them is a few InstancedMeshes.
 
+import { bakedGeometry } from "../../world/bakedGeometry.ts";
 import { useGLTF } from "@react-three/drei";
 import { useMemo } from "react";
 import * as THREE from "three";
@@ -43,7 +44,7 @@ export function usePerson(name: string): {
     scene.traverse((o) => {
       if (o instanceof THREE.Mesh && !Array.isArray(o.material) && !found)
         found = {
-          geometry: o.geometry.clone().applyMatrix4(o.matrixWorld),
+          geometry: bakedGeometry(o),
           material: o.material,
         };
     });

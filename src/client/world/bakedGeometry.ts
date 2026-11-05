@@ -1,5 +1,6 @@
 // Float copies of glTF geometry, for models optimized with meshopt
-// quantization (CityFurniture, CityTrees, CityPark bake node transforms in).
+// quantization: every place that bakes a loaded mesh's node transform into its
+// geometry (instanced props, merged scenery) goes through bakedGeometry().
 import * as THREE from "three";
 
 /**
@@ -28,4 +29,9 @@ function floatCopy(
   for (let i = 0; i < a.count; i++)
     out.setXYZ(i, a.getX(i), a.getY(i), a.getZ(i));
   return out;
+}
+
+/** A loaded mesh's geometry with its world transform baked in, safe for quantized GLBs. */
+export function bakedGeometry(mesh: THREE.Mesh): THREE.BufferGeometry {
+  return floated(mesh.geometry).applyMatrix4(mesh.matrixWorld);
 }

@@ -3063,3 +3063,19 @@ test("13+ bars serve mocktails: no drink button, no buzz", async ({ page }) => {
   await expect(canvasOf(page)).toHaveAttribute("data-buzz", "0.00");
   await expect(page.getByText(/cocktail|wine|beer|vodka/i)).toHaveCount(0);
 });
+
+test("the park's wildlife appears near the park, and the doe only on the high tier", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto("/?quality=low&room=city&at=268,-279");
+  await expect(page.locator("canvas")).toHaveAttribute("data-wildlife", "5", {
+    timeout: 240_000,
+  });
+  await page.goto("/?quality=high&room=city&at=268,-279");
+  await expect(page.locator("canvas")).toHaveAttribute("data-wildlife", "6", {
+    timeout: 240_000,
+  });
+  expect(errors).toEqual([]);
+});
