@@ -7,13 +7,18 @@ import { PRIZE_TABLES } from "../../game/prizes.ts";
 import { dismissPrize, prizeDesk } from "./prizeDesk.ts";
 
 const SHOW_MS = 5000;
+// `?prizehold=1` keeps the card up until dismissed, for tests: a slow runner
+// can poll less often than every 5 s and miss the card. Development builds only.
+const HOLD =
+  import.meta.env.DEV &&
+  new URLSearchParams(window.location.search).get("prizehold") === "1";
 
 /** The prize card a finished game slides in: the grade, the score, the coins
  * paid and a personal-best ribbon. */
 export function PrizeCard() {
   const { shown, at, challenge } = prizeDesk.use();
   useEffect(() => {
-    if (!shown) return;
+    if (!shown || HOLD) return;
     const id = window.setTimeout(dismissPrize, SHOW_MS);
     return () => window.clearTimeout(id);
   }, [shown, at]);
