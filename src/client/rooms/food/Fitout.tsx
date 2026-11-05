@@ -269,7 +269,13 @@ export function Fitout({ palette }: { palette: FoodPalette }) {
     <>
       <primitive object={built.group} />
       <PlatedFood
-        model="food-Burger"
+        model={
+          palette.room === "filipino-joint"
+            ? "food-ChickenLeg"
+            : palette.room === "bistro"
+              ? "food-Steak"
+              : "junk-Donut"
+        }
         at={TABLES.map(([x, z]) => [x - 0.25, 0.805, z, 0] as const)}
       />
       <Suspense fallback={null}>

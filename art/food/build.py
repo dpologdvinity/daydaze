@@ -23,12 +23,13 @@ for pack, names in packs.items():
             mesh = obj.data
             for attr in list(mesh.color_attributes):
                 mesh.color_attributes.remove(attr)
-            colors = mesh.color_attributes.new(name='Color', type='FLOAT_COLOR', domain='CORNER')
-            for poly in mesh.polygons:
-                mat = mesh.materials[poly.material_index] if poly.material_index < len(mesh.materials) else None
-                color = tuple(mat.diffuse_color) if mat else (0.8, 0.8, 0.8, 1)
-                for index in poly.loop_indices:
-                    colors.data[index].color = color
+            if not pack.startswith('Junk'):
+                colors = mesh.color_attributes.new(name='Color', type='FLOAT_COLOR', domain='CORNER')
+                for poly in mesh.polygons:
+                    mat = mesh.materials[poly.material_index] if poly.material_index < len(mesh.materials) else None
+                    color = tuple(mat.diffuse_color) if mat else (0.8, 0.8, 0.8, 1)
+                    for index in poly.loop_indices:
+                        colors.data[index].color = color
             mesh.materials.clear()
         bpy.ops.object.select_all(action='DESELECT')
         for obj in meshes:
@@ -39,8 +40,13 @@ for pack, names in packs.items():
         mat = bpy.data.materials.new('Food')
         mat.use_nodes = True
         nodes = mat.node_tree.nodes
-        color = nodes.new('ShaderNodeVertexColor')
-        color.layer_name = 'Color'
+        if pack.startswith('Junk'):
+            color = nodes.new('ShaderNodeTexImage')
+            texture = 'SodaCan.png' if name == 'SodaCan' else 'DonutTexture.png'
+            color.image = bpy.data.images.load(os.path.join(root, pack, 'Blender', 'Textures', texture), check_existing=True)
+        else:
+            color = nodes.new('ShaderNodeVertexColor')
+            color.layer_name = 'Color'
         mat.node_tree.links.new(color.outputs['Color'], nodes.get('Principled BSDF').inputs['Base Color'])
         obj.data.materials.append(mat)
         prefix = 'junk' if pack.startswith('Junk') else 'food'
