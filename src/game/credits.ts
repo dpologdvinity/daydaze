@@ -136,7 +136,7 @@ export const CREDITS: readonly {
         title: "Sushi Restaurant Kit",
         author: "Quaternius",
         license: "CC0 1.0",
-        url: "https://quaternius.com/packs/sushirestaurant.html",
+        url: "https://quaternius.com/packs/sushirestaurantkit.html",
         usedFor:
           "Sushi and ramen restaurant furnishings, kitchen equipment, dishes and food, converted and optimized.",
       },
