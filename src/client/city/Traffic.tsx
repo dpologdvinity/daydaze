@@ -282,15 +282,18 @@ export function Traffic({ player }: { player: Player }) {
   );
 
   useFrame((_, dt) => {
+    // a rider on a seat (the El, a bus) is not in the road, whatever the
+    // walker's ground position says
     here.current[0] = player.pos.x;
     here.current[1] = player.pos.z;
+    const onFoot = player.seat === null;
     busPosition.current[0] = busMotion.pose.x;
     busPosition.current[1] = busMotion.pose.z;
     advance(clock.current, dt, () =>
       stepTraffic(
         traffic,
         1 / 50,
-        here.current,
+        onFoot ? here.current : null,
         busMotion.active ? busPosition.current : null,
       ),
     );

@@ -5,7 +5,14 @@
 
 import { useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, type JSX } from "react";
+import {
+  Component,
+  useEffect,
+  useMemo,
+  useRef,
+  type JSX,
+  type ReactNode,
+} from "react";
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { ROAD_NODES } from "../../game/city/layout.ts";
@@ -22,6 +29,13 @@ const FRONT = "/models/el/train-front.glb";
 const WAGON = "/models/el/train-wagon.glb";
 /** Cars are 12 m long; the train is front, wagon, front turned about. */
 const CAR = 12;
+
+const KINDS = [
+  "steel",
+  "stone",
+  "rail",
+  "roof",
+] as const satisfies readonly ElBox["kind"][];
 
 const MATERIALS: Record<ElBox["kind"], THREE.MeshStandardMaterial> = {
   steel: new THREE.MeshStandardMaterial({
@@ -114,13 +128,31 @@ function firstMesh(root: THREE.Object3D): THREE.Mesh {
   return found;
 }
 
+/** A train that fails to load (a missing file, a bad GLB) must not take the
+ * city down with it: the scene carries on without the El. */
+export class ElLineBoundary extends Component<
+  { children: ReactNode },
+  { failed: boolean }
+> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidCatch(error: Error) {
+    console.warn("the El could not be drawn", error);
+  }
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
+
 export function ElLine(): JSX.Element {
   const front = useGLTF(FRONT);
   const wagon = useGLTF(WAGON);
   const train = useRef<THREE.Group>(null);
   const trestle = useMemo(() => {
     const boxes = elBoxes(CROSS);
-    return (Object.keys(MATERIALS) as ElBox["kind"][]).map((kind) => ({
+    return KINDS.map((kind) => ({
       kind,
       geometry: merged(boxes.filter((b) => b.kind === kind)),
     }));

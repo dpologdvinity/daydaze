@@ -10,10 +10,16 @@ export type ElStatus =
   | { kind: "waiting"; trip: ElTrip }
   | { kind: "riding"; trip: ElTrip };
 
-export const elRide = createStore({
-  status: { kind: "idle" } as ElStatus,
+export type ElRequest = { to: ElStation["id"] } | "cancel" | null;
+type ElState = {
+  status: ElStatus;
   /** The station whose stairs she is near, else null. */
-  near: null as ElStation | null,
+  near: ElStation | null;
   /** A trip the panel asks for: to this station id, or "cancel". */
-  request: null as { to: ElStation["id"] } | "cancel" | null,
-});
+  request: ElRequest;
+};
+const IDLE: ElState = { status: { kind: "idle" }, near: null, request: null };
+
+export const elRide = createStore<ElState>(IDLE);
+/** Back to nothing happening (the scene unmounted). */
+export const resetElRide = () => elRide.set(IDLE);

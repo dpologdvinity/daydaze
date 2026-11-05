@@ -1,8 +1,8 @@
 // The El: an elevated train over Main Avenue on a steel trestle. One train
 // shuttles end to end on a fixed timetable that depends only on the clock, so
 // every player sees it in the same place. It stops at three stations (Little
-// Manila, Downtown, Chinatown and Koreatown) in both directions and turns
-// round past the last of them. Pure: the client draws the trestle and train
+// Manila, Downtown, and Chinatown with Koreatown) in both directions and turns
+// round past the end of the line. Pure: the client draws the trestle and train
 // from these numbers and rides the player along (src/client/city/ElLine.tsx,
 // ElRide.tsx).
 import { hash } from "./hash.ts";
@@ -35,6 +35,12 @@ export const EL_TURN_DWELL = 20;
 export const EL_TRAIN_LENGTH = 36;
 /** Platforms are this long, centered on the station. */
 export const EL_PLATFORM = 44;
+/** The stairs climb this far along the avenue, in meters, to the platform. */
+export const STAIRS_RUN = 18;
+/** Steps in a flight: EL_DECK_Y over this is one riser. */
+const STEPS = 18;
+/** Where a flight of stairs stands along the avenue, from a station's x. */
+const STAIRS_SPAN: readonly [number, number] = [6, STAIRS_RUN + 10];
 
 type Leg =
   | {
@@ -166,7 +172,7 @@ export type ElTrip = {
   arrive: number;
 };
 
-/** The first train from `from` toward `to` that she can still catch at
+/** The first train from `from` toward `to` that a rider can still catch at
  * clock time `t` (the doors must have at least `EL_BOARD_MARGIN` s to go). */
 export const EL_BOARD_MARGIN = 3;
 export function planTrip(from: ElStation, to: ElStation, t: number): ElTrip {
@@ -193,6 +199,22 @@ export function planTrip(from: ElStation, to: ElStation, t: number): ElTrip {
   };
 }
 
+/** The station nearest to `x` along the avenue (where a rider gets off if
+ * she leaves the train between stops). */
+export function nearestStation(x: number): ElStation {
+  return EL_STATIONS.reduce((best, s) =>
+    Math.abs(s.x - x) < Math.abs(best.x - x) ? s : best,
+  );
+}
+
+/** Whether a rider bound for `trip.to` is to step off at clock time `t`: the
+ * doors are open there, or (a throttled tab skipped the stop) the dwell is
+ * over, so she is never carried on forever. */
+export function hasArrived(trip: ElTrip, train: ElTrain, t: number): boolean {
+  if (t < trip.arrive) return false;
+  return train.at?.id === trip.to.id || t >= trip.arrive + EL_DWELL;
+}
+
 /** Trestle columns: where the pairs stand along the avenue, every
  * `spacing` meters, skipping `gaps` (cross streets) by `clear` meters. */
 export function trestleColumns(
@@ -205,7 +227,11 @@ export function trestleColumns(
     // a column that would stand in a crossing slides to its edge
     const gap = gaps.find((g) => Math.abs(x - g) < clear);
     const at = gap === undefined ? x : gap + Math.sign(x - gap || 1) * clear;
-    if (!out.some((o) => Math.abs(o - at) < 2)) out.push(at);
+    // none stands in a station's stairs (the curb pair would pierce them)
+    const inStairs = EL_STATIONS.some(
+      (s) => at > s.x + STAIRS_SPAN[0] && at < s.x + STAIRS_SPAN[1],
+    );
+    if (!inStairs && !out.some((o) => Math.abs(o - at) < 2)) out.push(at);
   }
   return out.map((x) => Math.round(x * 10) / 10).sort((a, b) => a - b);
 }
@@ -230,11 +256,6 @@ export const stairsFoot = (station: ElStation): [number, number] => [
   station.x + STAIRS_RUN + 4,
   8.4,
 ];
-/** The stairs climb this far along the avenue, in meters, to the platform. */
-export const STAIRS_RUN = 18;
-/** Steps in a flight: EL_DECK_Y over this is one riser. */
-const STEPS = 18;
-
 /** Every box of the line: the trestle over the avenue, then each station's
  * platform, roof and stairs. `gaps` are the cross streets' x. */
 export function elBoxes(gaps: readonly number[]): ElBox[] {

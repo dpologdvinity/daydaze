@@ -47,7 +47,7 @@ import { CityPark } from "./CityPark.tsx";
 import { CityTrees, cityTrees } from "./CityTrees.tsx";
 import { NycFacades, cityBays } from "./NycFacades.tsx";
 import { CityHouses, cityHouses } from "./CityHouses.tsx";
-import { ElLine } from "./ElLine.tsx";
+import { ElLine, ElLineBoundary } from "./ElLine.tsx";
 import { ElRide } from "./ElRide.tsx";
 import { CITY_CLOCK } from "./shaders.ts";
 import { CityTransit } from "./CityTransit.tsx";
@@ -249,7 +249,9 @@ export function CityScene({
         <CityPark />
         <NycFacades />
         <CityHouses />
-        <ElLine />
+        <ElLineBoundary>
+          <ElLine />
+        </ElLineBoundary>
       </Suspense>
       <ElRide player={player} />
       <NightMarket player={player} />

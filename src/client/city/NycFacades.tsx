@@ -11,7 +11,7 @@
 
 import { useThree } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
-import { useEffect, useMemo, type JSX } from "react";
+import { useEffect, useState, type JSX } from "react";
 import * as THREE from "three";
 import { InstancedMesh2, patchShader } from "@three.ez/instanced-mesh";
 import {
@@ -64,8 +64,11 @@ export function bayMaterial(): THREE.MeshStandardMaterial {
         [
           "#include <color_vertex>",
           // the chunk left vertex color x instance tint: the tint dyes brick
-          // only; stone and metal keep their own colors
+          // only; stone and metal keep their own colors (`color` exists only
+          // with vertex colors, and the material is shared with meshes.ts)
+          "#ifdef USE_COLOR",
           "vColor.rgb = mix(color.rgb, vColor.rgb, aMat.y);",
+          "#endif",
         ].join("\n"),
       );
     // InstancedMesh2 draws through USE_INSTANCING_INDIRECT: patch our chunks
@@ -125,7 +128,7 @@ function floats(
 /** A bay's geometry in bay space: float attributes, the node's quantization
  * transform baked in, colors cut to RGB, the glass/brick flags as `aMat`. */
 function prepared(node: THREE.Mesh): THREE.BufferGeometry {
-  const src = node.geometry as THREE.BufferGeometry;
+  const src = node.geometry;
   node.updateWorldMatrix(true, false);
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", floats(src.getAttribute("position"), 3));
@@ -143,19 +146,17 @@ function prepared(node: THREE.Mesh): THREE.BufferGeometry {
 const tint = new THREE.Color();
 const up = new THREE.Vector3(0, 1, 0);
 
+type BayMesh = { kind: BayKind; mesh: InstancedMesh2 };
+
 /** Writes every bay into its kind's mesh. */
-function place(
-  meshes: Record<BayKind, InstancedMesh2>,
-  bays: readonly BayInstance[],
-) {
+function place(meshes: readonly BayMesh[], bays: readonly BayInstance[]) {
   const byKind = new Map<BayKind, BayInstance[]>();
   for (const bay of bays) {
     const list = byKind.get(bay.kind) ?? [];
     list.push(bay);
     byKind.set(bay.kind, list);
   }
-  for (const kind of BAY_KINDS) {
-    const mesh = meshes[kind];
+  for (const { kind, mesh } of meshes) {
     const list = (byKind.get(kind) ?? []).slice(0, BAY_CAPACITY);
     mesh.clearInstances();
     mesh.addInstances(list.length, (obj, i) => {
@@ -168,33 +169,32 @@ function place(
   }
 }
 
-export function NycFacades(): JSX.Element {
+export function NycFacades(): JSX.Element | null {
   const gltf = useGLTF(URL);
-  const meshes = useMemo(() => {
-    const out = {} as Record<BayKind, InstancedMesh2>;
-    for (const kind of BAY_KINDS) {
+  const [meshes, setMeshes] = useState<readonly BayMesh[]>([]);
+  // built and disposed in the effect, so a StrictMode remount (cleanup, then
+  // setup again) gets fresh meshes instead of reusing disposed ones; the one
+  // shared material stays for the next visit
+  useEffect(() => {
+    const built = BAY_KINDS.map((kind) => {
       const node = gltf.scene.getObjectByName(kind);
       if (!(node instanceof THREE.Mesh))
         throw new Error(`bays.glb has no ${kind}`);
       // each bay is culled on its own against the camera, so the range can
       // reach behind the player's back at no cost
-      out[kind] = new InstancedMesh2(prepared(node), bayMaterial(), {
+      const mesh = new InstancedMesh2(prepared(node), bayMaterial(), {
         capacity: BAY_CAPACITY,
       });
-    }
-    return out;
-  }, [gltf]);
-  // the geometry copies and instance buffers go with the city; the one
-  // shared material stays for the next visit
-  useEffect(
-    () => () => {
-      for (const mesh of Object.values(meshes)) {
+      return { kind, mesh };
+    });
+    setMeshes(built);
+    return () => {
+      for (const { mesh } of built) {
         mesh.geometry.dispose();
         mesh.dispose();
       }
-    },
-    [meshes],
-  );
+    };
+  }, [gltf]);
   const { bays } = cityBays.use();
   const invalidate = useThree((state) => state.invalidate);
   const canvas = useThree((state) => state.gl.domElement);
@@ -203,12 +203,12 @@ export function NycFacades(): JSX.Element {
     // a still or paused frame loop draws only when asked
     invalidate();
     // read by the screenshot script: the bays are in and placed
-    if (bays.length > 0) canvas.dataset.bays = "ready";
+    if (bays.length > 0 && meshes.length > 0) canvas.dataset.bays = "ready";
   }, [meshes, bays, invalidate, canvas]);
   return (
     <>
-      {BAY_KINDS.map((kind) => (
-        <primitive key={kind} object={meshes[kind]} />
+      {meshes.map(({ kind, mesh }) => (
+        <primitive key={kind} object={mesh} />
       ))}
     </>
   );

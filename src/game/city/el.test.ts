@@ -9,7 +9,10 @@ import {
   elBoxes,
   elStopsFrom,
   elTrainAt,
+  hasArrived,
+  nearestStation,
   planTrip,
+  STAIRS_RUN,
   trestleColumns,
 } from "./el.ts";
 
@@ -101,4 +104,51 @@ test("the line has a deck, rails, columns and, at each station, a platform, a ro
     assert.ok(b.sx > 0 && b.sy > 0 && b.sz > 0);
     assert.ok(b.y - b.sy / 2 >= -0.2, "nothing under the ground");
   }
+});
+
+test("a trip can be planned between every pair of stations, in both directions", () => {
+  for (const from of EL_STATIONS)
+    for (const to of EL_STATIONS) {
+      if (from.id === to.id) continue;
+      for (let t = 0; t < EL_CYCLE * 2; t += 7.3) {
+        const trip = planTrip(from, to, t);
+        assert.equal(trip.from.id, from.id);
+        assert.equal(trip.to.id, to.id);
+        assert.ok(trip.board < trip.leave && trip.leave < trip.arrive);
+        assert.ok(trip.leave - t >= 3, `${from.id}>${to.id} at ${t}`);
+        const there = elTrainAt(trip.arrive + 0.5);
+        assert.equal(there.at?.id, to.id);
+        assert.equal(there.dir, Math.sign(to.x - from.x));
+      }
+    }
+});
+
+test("a rider steps off at the stop, or after its dwell if the tab skipped it", () => {
+  const trip = planTrip(manila, chinatown, 0);
+  const train = (t: number) => elTrainAt(t);
+  assert.equal(
+    hasArrived(trip, train(trip.arrive - 1), trip.arrive - 1),
+    false,
+  );
+  assert.equal(hasArrived(trip, train(trip.arrive + 1), trip.arrive + 1), true);
+  // the train has left again by the time a throttled tab wakes up
+  const late = trip.arrive + EL_DWELL + 5;
+  assert.notEqual(train(late).at?.id, chinatown.id);
+  assert.equal(hasArrived(trip, train(late), late), true);
+});
+
+test("leaving mid-ride drops her at the nearest station", () => {
+  assert.equal(nearestStation(-400).id, "manila");
+  assert.equal(nearestStation(120).id, "downtown");
+  assert.equal(nearestStation(200).id, "chinatown");
+});
+
+test("no trestle column stands in a station's stairs", () => {
+  const cols = trestleColumns([]);
+  for (const s of EL_STATIONS)
+    for (const c of cols)
+      assert.ok(
+        !(c > s.x + 6 && c < s.x + STAIRS_RUN + 10),
+        `column ${c} in the stairs of ${s.id}`,
+      );
 });

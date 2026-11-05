@@ -16,6 +16,7 @@ export function ElPanel(): JSX.Element | null {
   const [now, setNow] = useState(elClock());
   useEffect(() => {
     if (status.kind === "idle") return;
+    setNow(elClock());
     const id = setInterval(() => setNow(elClock()), 500);
     return () => clearInterval(id);
   }, [status.kind]);
@@ -33,7 +34,7 @@ export function ElPanel(): JSX.Element | null {
           className="drink"
           onClick={() => elRide.set({ request: "cancel" })}
         >
-          Get off
+          {status.kind === "waiting" ? "Cancel" : "Get off"}
         </button>
       </div>
     );
