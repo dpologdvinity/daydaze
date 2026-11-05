@@ -236,11 +236,14 @@ Merged since Handoff 2 (all on main): oval polish, the El train, transit riders,
 Open branches (rebase onto main, `npm run verify`, the feature's Playwright tests with a unique PORT via `flock -w 7200 /tmp/daydaze-pw.lock`, look at screenshots, then `git merge --no-ff` only if `git merge-base --is-ancestor main <branch>`):
 - `feat/animals`: MERGED (5e24f728) — one `bakedGeometry()` helper for every baked GLB.
 - `fix/review-2` (.worktrees/fixes, head b3711a5b): static city pieces merged into one mesh per reload (17.5k -> 800 instances), the zoom test uses 6 large wheel flicks; 28/29 city tests passed; open: "the city map takes the player to Beachside" timed out once (check branch vs main). Then merge.
-- `feat/orbit` (.worktrees/orbit, head 420980f9): Orbit 9 space-station club, ready to merge (verify + its tests green before the last rebase).
+- `feat/orbit`: MERGED — Orbit 9 space-station club (follow-up: the bartender's head pokes through the bar counter in docs/screenshots/orbit.png).
 - `feat/cove` (.worktrees/cove): Codex's Mermaid Cove mermaids are in a T-pose floating above the water (animations not playing): needs fixing before merge.
 - `feat/street`: boardwalk round 5 (real low-poly crowd instead of pills, downloaded carts, cyclists) in progress.
 - `feat/home2`: TV that reads as a TV, wall pieces off the window, pink default; then `feat/motels` (Ocean City motels, Suburbia variety) in progress.
-- `feat/plus2` (.worktrees/wonder38): deepen plus-size so it reads plus, both sexes.
+- `feat/plus2`: MERGED (68972109).
+- `feat/park2` (el agent): dog park + weekend farmers market in the city park.
+- `feat/vendors` (Codex 6.1-sol): ice-cream truck route with a jingle, hot dog/pretzel/halal/churro carts.
+- `feat/seasons` (Codex 6.1-terra): seasonal dressing on the player's date (`?date=`): holiday lights, Halloween, autumn foliage, summer umbrellas, Lunar New Year lanterns.
 - `feat/wonder43`: flake sweep on GitHub Actions (5 runs of playwright.yml on the branch).
 - `feat/forest`: forest trail area with Ultimate Nature pack, wildlife, birdsong.
 
