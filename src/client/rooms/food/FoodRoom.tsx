@@ -11,6 +11,7 @@ import { MARQUEE, NeonText } from "../shared/Neon.tsx";
 import { PortalPads } from "../shared/PortalPads.tsx";
 import { TalkingNpc } from "../shared/TalkingNpc.tsx";
 import { Fitout } from "./Fitout.tsx";
+import { SushiFitout } from "./SushiFitout.tsx";
 import {
   FOOD_CHAIR_HEIGHT,
   FOOD_DINERS,
@@ -116,6 +117,8 @@ export function FoodRoom({
     color: palette.counter,
     roughness: 0.4,
   });
+  const japanese =
+    palette.room === "ramen-shop" || palette.room === "sushi-bar";
   const next = useRef(0);
   // The staff hands over the next menu item each time; the doll holds one at a time.
   const order = () => {
@@ -151,17 +154,21 @@ export function FoodRoom({
       <mesh position={[4.2, 2, 2.4]} material={wall}>
         <boxGeometry args={[0.2, 4, 6.4]} />
       </mesh>
-      <mesh position={[0, 0.55, -0.85]} material={counter}>
-        <boxGeometry args={[6, 1.1, 0.6]} />
-      </mesh>
-      <mesh position={[0, 1.13, -0.85]}>
-        <boxGeometry args={[6.2, 0.08, 0.7]} />
-        <meshStandardMaterial
-          color={palette.accent}
-          emissive={palette.accent}
-          emissiveIntensity={0.4}
-        />
-      </mesh>
+      {!japanese && (
+        <>
+          <mesh position={[0, 0.55, -0.85]} material={counter}>
+            <boxGeometry args={[6, 1.1, 0.6]} />
+          </mesh>
+          <mesh position={[0, 1.13, -0.85]}>
+            <boxGeometry args={[6.2, 0.08, 0.7]} />
+            <meshStandardMaterial
+              color={palette.accent}
+              emissive={palette.accent}
+              emissiveIntensity={0.4}
+            />
+          </mesh>
+        </>
+      )}
       <NeonText
         text={venue.name.toUpperCase()}
         color={palette.accent}
@@ -182,8 +189,17 @@ export function FoodRoom({
         context={{ venue: palette.room }}
         onTap={order}
       />
-      <Fitout palette={palette} />
-      <Diners room={palette.room} />
+      {japanese ? (
+        <>
+          <SushiFitout ramen={palette.room === "ramen-shop"} />
+          <Diners room={palette.room} />
+        </>
+      ) : (
+        <>
+          <Fitout palette={palette} />
+          <Diners room={palette.room} />
+        </>
+      )}
       {children}
     </>
   );

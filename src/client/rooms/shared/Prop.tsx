@@ -11,7 +11,7 @@ type Fit = { width: number; depth: number; height: number };
 
 /** The model's mesh, its geometry scaled to fit `width` by `depth` meters and
  * no taller than `height`, centered, standing on y = 0. */
-function useFitted(model: string, { width, depth, height }: Fit) {
+export function useFitted(model: string, { width, depth, height }: Fit) {
   const { scene } = useGLTF(`/models/props/${model}.glb`);
   return useMemo(() => {
     const meshes: THREE.Mesh[] = [];

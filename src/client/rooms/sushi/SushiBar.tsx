@@ -6,7 +6,6 @@ import type { JSX } from "react";
 import { FOOD_VENUES } from "../../../game/food/venues.ts";
 import { FoodRoom, type FoodPalette } from "../food/FoodRoom.tsx";
 import type { PickHandler } from "../shared/Floor.tsx";
-import { hdr } from "../shared/materials.ts";
 import { SushiBelt } from "./SushiBelt.tsx";
 
 const VENUE = FOOD_VENUES.find((v) => v.id === "belt-sushi-yard");
@@ -52,19 +51,6 @@ export function SushiBar({ onPick }: { onPick: PickHandler }): JSX.Element {
       onPick={onPick}
     >
       <SushiBelt />
-      {/* paper lamps, cool white */}
-      {[-2.6, 0, 2.6].map((x) => (
-        <group key={x} position={[x, 2.5, 0.5]}>
-          <mesh>
-            <boxGeometry args={[0.3, 0.4, 0.3]} />
-            <meshBasicMaterial color={hdr("#f4f8ff", 1.4)} toneMapped={false} />
-          </mesh>
-          <mesh position-y={0.8}>
-            <cylinderGeometry args={[0.008, 0.008, 1.2, 4]} />
-            <meshBasicMaterial color="#1a1010" />
-          </mesh>
-        </group>
-      ))}
     </FoodRoom>
   );
 }

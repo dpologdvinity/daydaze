@@ -1,5 +1,6 @@
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef, type JSX } from "react";
+import { Suspense, useRef, type JSX } from "react";
+import { useFitted } from "../shared/Prop.tsx";
 import * as THREE from "three";
 import {
   BELT,
@@ -27,16 +28,26 @@ const hidden = new THREE.Matrix4().makeScale(0, 0, 0);
  * starting speed; in one it is the round's own belt.
  */
 export function SushiBelt(): JSX.Element {
+  return (
+    <Suspense fallback={null}>
+      <Belt />
+    </Suspense>
+  );
+}
+
+function Belt(): JSX.Element {
   const plates = useRef<THREE.InstancedMesh>(null);
   const pieces = useRef<THREE.InstancedMesh>(null);
-  const plateMat = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: "#f4f0e8", roughness: 0.4 }),
-    [],
-  );
-  const pieceMat = useMemo(
-    () => new THREE.MeshStandardMaterial({ roughness: 0.5 }),
-    [],
-  );
+  const plate = useFitted("sushi-Environment_Plate", {
+    width: 0.24,
+    depth: 0.24,
+    height: 0.05,
+  });
+  const food = useFitted("sushi-Food_SalmonNigiri", {
+    width: 0.14,
+    depth: 0.1,
+    height: 0.07,
+  });
   useFrame(() => {
     const p = plates.current;
     const q = pieces.current;
@@ -87,18 +98,14 @@ export function SushiBelt(): JSX.Element {
       </mesh>
       <instancedMesh
         ref={plates}
-        args={[undefined, plateMat, MAX]}
+        args={[plate.geometry, plate.material, MAX]}
         frustumCulled={false}
-      >
-        <cylinderGeometry args={[0.12, 0.09, 0.03, 16]} />
-      </instancedMesh>
+      ></instancedMesh>
       <instancedMesh
         ref={pieces}
-        args={[undefined, pieceMat, MAX]}
+        args={[food.geometry, food.material, MAX]}
         frustumCulled={false}
-      >
-        <boxGeometry args={[0.12, 0.05, 0.07]} />
-      </instancedMesh>
+      ></instancedMesh>
     </group>
   );
 }
