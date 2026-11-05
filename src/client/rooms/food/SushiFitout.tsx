@@ -1,5 +1,6 @@
 // Shared Quaternius restaurant furnishings for the sushi and ramen counters.
 import { Suspense } from "react";
+import { KitSet } from "./KitSet.tsx";
 import { PropSet } from "../shared/Prop.tsx";
 
 const curtains = [-0.75, -0.25, 0.25, 0.75].map((x) => [x, 0, 0, 0] as const);
@@ -68,22 +69,22 @@ export function SushiFitout({ ramen }: { ramen: boolean }) {
         height={1.1}
         at={counter}
       />
-      <PropSet
-        model="sushi-Decoration_Light"
+      <KitSet
+        model="Decoration_Light"
         width={0.45}
         depth={0.45}
         height={0.65}
         at={lanterns}
       />
-      <PropSet
-        model="sushi-Wall_Shoji"
+      <KitSet
+        model="Wall_Shoji"
         width={2}
         depth={0.15}
         height={2.5}
         at={shoji}
       />
-      <PropSet
-        model="sushi-Wall_Door"
+      <KitSet
+        model="Wall_Door"
         width={1.5}
         depth={0.25}
         height={2.3}
