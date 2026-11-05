@@ -6,6 +6,8 @@ import { useRef } from "react";
 import { createRoot } from "react-dom/client";
 import * as THREE from "three";
 import {
+  decodeFace,
+  SKINS,
   decodeMakeup,
   DEFAULT_LOOK,
   HAIR_STYLES,
@@ -39,11 +41,17 @@ function hairParam(): Look["hairStyle"] {
 function makeupParam(): Partial<Look> {
   const q = new URLSearchParams(location.search);
   const code = q.get("makeup");
+  // `?face=<code>` likewise puts encodeFace's code on it (a monolid, say)
+  const faceCode = q.get("face");
+  // `?skin=<index>` picks a SKINS tone, to see skin marks on each
+  const skin = SKINS[Number(q.get("skin"))]?.id;
   // `?men=1` puts the face and portrait shots on the masculine body, with
   // `?beard=` (a BEARDS id)
   const beard = BEARDS.find((b) => b.id === q.get("beard"))?.id;
   return {
     ...(code && decodeMakeup(code) ? { makeup: code } : {}),
+    ...(faceCode && decodeFace(faceCode) ? { face: faceCode } : {}),
+    ...(skin ? { skin } : {}),
     ...(q.get("men") === "1"
       ? { body: "masculine", lips: "lips-bare-balm", beard: beard ?? "none" }
       : {}),
