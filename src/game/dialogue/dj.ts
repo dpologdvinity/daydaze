@@ -3,6 +3,7 @@
 // directly.
 
 import type { RoleBank } from "./types.ts";
+import { orbitDj } from "./orbit.ts";
 import { djNightLines } from "./eventNights.ts";
 
 export const djBank: RoleBank = {
@@ -80,6 +81,7 @@ export const djBank: RoleBank = {
     "Hey, you tapped, so you're the next song. Just kidding. Ask away.",
     "Requests, hype, or just vibes? I'm all three.",
     "Talk to me, DJ's always got time for a good dancer.",
+    ...orbitDj.tapped,
   ],
   idle: [
     // Pulse: the main dance club on Nightlife Row

@@ -3,6 +3,7 @@
 // Room. Read through `pickLine`, never directly.
 
 import type { RoleBank } from "./types.ts";
+import { orbitBouncer } from "./orbit.ts";
 
 export const bouncerBank: RoleBank = {
   "greeting-first": [
@@ -110,6 +111,7 @@ export const bouncerBank: RoleBank = {
       text: "Nightlife Row, {name}. Go in, the room's warm.",
       when: { neighborhood: "nightlife-row" },
     },
+    ...orbitBouncer["greeting-first"],
   ],
   tapped: [
     // The Violet Hour: the sapphic bar on Nightlife Row
@@ -213,6 +215,7 @@ export const bouncerBank: RoleBank = {
     "I'm the friendly one. Pinky promise. What's the question?",
     "Something I can help with, or just testing my reflexes?",
     "Hey, sweetie, I'm all ears for two seconds.",
+    ...orbitBouncer.tapped,
   ],
   idle: [
     "The line's long tonight. Y'all are the best kind of patient.",

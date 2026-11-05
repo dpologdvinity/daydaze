@@ -252,6 +252,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Lagoon Links, three holes on the sand. Press Play a round: turn your aim, then time the power and putt. Leilani runs the hut.",
   "la-noche":
     "La Noche, the Latin club. The band's playing salsa: dance on the floor, take a table, or tap Yara for a drink.",
+  orbit:
+    "Orbit 9, a club on a space station. Dance under the window, sip a soda at the bar, play Bassline at the decks or Star Siege on the cabinet, and tap the DJ for a request.",
   "arcade-bar": byTier(
     "Player 2, the arcade bar. Step up to a lit cabinet to play, or try Last Call at the bar. Kit pours.",
     "Player 2, the arcade bar. Step up to a lit cabinet to play, or try Last Call at the bar. Kit pours the sodas.",

@@ -147,6 +147,18 @@ export const CREDITS: readonly {
         url: "https://quaternius.com/packs/junkfood.html",
         usedFor:
           "Grocery soda cans and restaurant display doughnuts, converted and optimized.",
+        title: "Ringed Gas Giant Planet",
+        author: "berzerkey",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/ringed-gas-giant-planet-b4e21775e84e4cf3890f7796cfab1aca",
+        usedFor: "The planet in Orbit 9's window.",
+      },
+      {
+        title: "Billions stars Skybox HDRI panorama",
+        author: "Aliaksandr.melas",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/billions-stars-skybox-hdri-panorama-7e3e8f94810b44dd837bacad6c65b5e8",
+        usedFor: "The starfield behind the planet in Orbit 9's window.",
       },
       {
         title: "Sushi Restaurant Kit",
@@ -275,7 +287,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/scifiessentialskit.html",
         usedFor:
-          "Photon Zone cover and lockers in Photon Zone and Player 2, fitted to the existing arena footprints.",
+          "Photon Zone cover and lockers in Photon Zone and Player 2, fitted to the existing arena footprints; Orbit 9's chairs, tables, shelves and mugs (art/scifi/orbit.sh).",
       },
       {
         title: "Arcade Machine",

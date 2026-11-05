@@ -226,6 +226,18 @@ export const regularNightLines: RoleBank = {
       when: { tier: "teen" },
     },
   ],
+  "event-cosmic-night": [
+    "Cosmic night! I wore my best star-print everything.",
+    "The planet's full in the window and I'm full of snacks. Perfect.",
+    "Glow sticks are basically tiny comets you hold. I have six.",
+    "I asked the DJ for something spacey and she gave me the whole galaxy.",
+    "Every light on the floor is a different constellation tonight.",
+    "I'm dancing so hard I think I'm in orbit. Don't check.",
+    "Somebody painted stars on my cheek and now I'm in a movie.",
+    "The window plus the bass plus this crowd: that's the whole universe.",
+    "Moon boots are not practical, but wow, are they spectacular.",
+    "I came to wish on every star in the window. All of them.",
+  ],
 };
 
 export const djNightLines: RoleBank = {
@@ -453,5 +465,17 @@ export const djNightLines: RoleBank = {
       text: "Coconut cups up! Here is to island time!",
       when: { tier: "teen" },
     },
+  ],
+  "event-cosmic-night": [
+    "Cosmic night! Eyes on the window, ears on me.",
+    "This next one's a slow build, like a rocket on the pad. Ten, nine, eight...",
+    "Everybody point at the planet. Now dance like it's pointing back.",
+    "Synths to the stars, basslines to the floor. Tonight we go up.",
+    "If you can see the rings, you're close enough to the speakers.",
+    "That was a meteor shower of beats. Here comes the next one!",
+    "Cosmic night means no gravity on the dance floor. Jump if you dare!",
+    "A big hello to every traveler who docked at Orbit 9 tonight.",
+    "The stars are my lighting rig, the planet's my disco ball.",
+    "Last call for liftoff! Hands up, here's the drop.",
   ],
 };

@@ -118,6 +118,13 @@ import * as DRIVE from "./driveIn.ts";
 import * as CELLAR from "./wineBar.ts";
 import * as REWIND from "./videoStore.ts";
 import * as FARM from "./farm.ts";
+import {
+  BLOCKERS as ORBIT_BLOCKERS,
+  EXIT as ORBIT_EXIT,
+  FLOOR as ORBIT_FLOOR,
+  ORBIT_DOOR,
+  SPAWN as ORBIT_SPAWN,
+} from "./orbit.ts";
 import type { Vec2 } from "./walk.ts";
 
 /** Every room's id; ROOMS has one entry per id. */
@@ -171,6 +178,7 @@ export type RoomId =
   | "piercing"
   | "green-haze"
   | "laser-tag"
+  | "orbit"
   | "market"
   | "paintball"
   | "music-studio"
@@ -1068,6 +1076,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the avenue",
         target: "city",
         targetSpawn: { position: MARKET.MARKET_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  orbit: {
+    id: "orbit",
+    name: "Orbit 9",
+    walkable: ORBIT_FLOOR,
+    blockers: ORBIT_BLOCKERS,
+    spawn: { position: ORBIT_SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "orbit-to-city",
+        position: ORBIT_EXIT,
+        radius: 0.8,
+        label: "Out to Gallery Row",
+        target: "city",
+        targetSpawn: { position: ORBIT_DOOR.landing, yaw: Math.PI },
       },
     ],
   },

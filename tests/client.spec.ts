@@ -2126,6 +2126,28 @@ test("Star Siege: the fleet marches, a shot flies, and the game closes", async (
   expect(errors).toEqual([]);
 });
 
+test("Orbit 9: the window shows the planet, the cabinet plays Star Siege, and the door leads home", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${VELVET}&debug=1`);
+  await page.getByRole("button", { name: "Go to Orbit 9" }).click();
+  await expect(roomTitle(page)).toHaveText("Orbit 9");
+  // the planet and star sphere outside the window have loaded and drawn
+  await expect(canvasOf(page)).toHaveAttribute("data-frames", "10", {
+    timeout: 150_000,
+  });
+  await page
+    .getByRole("button", { name: "Play Star Siege on the cabinet" })
+    .click();
+  const dialog = page.getByRole("dialog", { name: "Star Siege" });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole("button", { name: "Close Star Siege" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(roomTitle(page)).toHaveText("Orbit 9");
+  expect(errors).toEqual([]);
+});
+
 test("Throwback Trivia: answer a question and the right one lights up", async ({
   page,
 }) => {
@@ -2153,6 +2175,7 @@ for (const room of [
   "karaoke",
   "bowling",
   "arcade-bar",
+  "orbit",
   "la-noche",
   "mini-golf",
   "dome",

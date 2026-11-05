@@ -38,6 +38,7 @@ import * as COVE from "../mermaidCove.ts";
 import * as OPEN_WATER from "../openWater.ts";
 import * as MUSEUM from "../museum.ts";
 import * as SALON from "../salon.ts";
+import { ORBIT_DOOR, SPAWN as ORBIT_SPAWN } from "../orbit.ts";
 import { PHOTON_DOOR, SPAWN as PHOTON_SPAWN } from "../laserTag.ts";
 import { MARKET_DOOR, SPAWN as MARKET_SPAWN } from "../market.ts";
 import { SPLAT_DOOR, SPAWN as SPLAT_SPAWN } from "../paintball.ts";
@@ -1252,8 +1253,16 @@ const ARTS_FRONT: readonly {
     h: 24,
     north: false,
     color: "#3a0ca3",
-    sign: { text: "WAREHOUSE", color: "#4fe3ff" },
+    sign: { text: "ORBIT 9", color: "#9b7bff" },
     style: "club",
+    // the space-station club
+    door: {
+      position: ORBIT_DOOR.position,
+      radius: 1.8,
+      label: "Into Orbit 9",
+      target: "orbit",
+      targetSpawn: { position: ORBIT_SPAWN, yaw: Math.PI },
+    },
   },
   {
     x: GREEN_HAZE_DOOR.position[0],

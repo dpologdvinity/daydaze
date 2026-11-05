@@ -72,6 +72,7 @@ export const SITUATION_IDS = [
   "event-ladies-night",
   "event-house-night",
   "event-luau-night",
+  "event-cosmic-night",
   "event-dance-off",
   "event-ride-ended",
   "action-dancing-nearby",

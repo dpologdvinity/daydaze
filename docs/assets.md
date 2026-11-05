@@ -20,6 +20,8 @@ future imported packs belong here when they enter the game.
 | --- | --- | --- | --- | --- |
 | Ultimate Food Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/ultimatefood.html | Grocery stock, produce and restaurant dishes, converted and optimized. |
 | Junk Food Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/junkfood.html | Grocery soda cans and restaurant display doughnuts, converted and optimized. |
+| Ringed Gas Giant Planet | berzerkey | CC-BY 4.0 | https://sketchfab.com/3d-models/ringed-gas-giant-planet-b4e21775e84e4cf3890f7796cfab1aca | The planet in Orbit 9's window. |
+| Billions stars Skybox HDRI panorama | Aliaksandr.melas | CC-BY 4.0 | https://sketchfab.com/3d-models/billions-stars-skybox-hdri-panorama-7e3e8f94810b44dd837bacad6c65b5e8 | The starfield behind the planet in Orbit 9's window. |
 | Sushi Restaurant Kit | Quaternius | CC0 1.0 | https://quaternius.com/packs/sushirestaurantkit.html | Sushi and ramen restaurant furnishings, kitchen equipment, dishes and food, converted and optimized. |
 | WheelChair | Loïc | CC-BY 4.0 | https://sketchfab.com/3d-models/wheelchair-f0ef4adc17ee4929b40e894c608061ea | The wheelchair a doll rolls in when her walk style is Wheelchair (fitted by art/doll/blender/wheelchair.py). |
 | leg prosthesis | victorghys | CC-BY 4.0 | https://sketchfab.com/3d-models/leg-prosthesis-59d7e2b28b8b45ec8b179fff0134ceec | The lower leg of a doll's prosthetic leg (cut and fitted by art/doll/blender/prosthesis.py). |
@@ -36,7 +38,7 @@ future imported packs belong here when they enter the game.
 | Cabin cart for Ferris Wheel | Enkarra | CC-BY 4.0 | https://sketchfab.com/3d-models/cabin-cart-for-ferris-wheel-3fef7c11a7c447acb9e7a5ee98e654b8 | Amusement Park Ferris wheel gondolas. |
 | Carousel Horse | Ramón Ruiz | CC-BY 4.0 | https://sketchfab.com/3d-models/carousel-horse-7872323d00cf4654845c8f39d907e57d | Amusement Park carousel horses. |
 | Bus Stop | Zsky | CC-BY 3.0 | https://poly.pizza/m/OWczicNWhO | Line 1 bus stops, rescaled with simplified distance models. |
-| Sci-Fi Essentials Kit | Quaternius | CC0 1.0 | https://quaternius.com/packs/scifiessentialskit.html | Photon Zone cover and lockers in Photon Zone and Player 2, fitted to the existing arena footprints. |
+| Sci-Fi Essentials Kit | Quaternius | CC0 1.0 | https://quaternius.com/packs/scifiessentialskit.html | Photon Zone cover and lockers in Photon Zone and Player 2, fitted to the existing arena footprints; Orbit 9's chairs, tables, shelves and mugs (art/scifi/orbit.sh). |
 | Arcade Machine | J-Toastie | CC-BY 3.0 | https://poly.pizza/m/GLDkMhiynM | Player 2 cabinet bodies, with the original screen removed and materials baked to vertex colors. |
 | MakeHuman | MakeHuman Community | CC0 1.0 | https://github.com/makehumancommunity/makehuman | Avatar bodies, morph targets, hair and clothing, adapted for Daydaze. |
 | MPFB2 Mixamo-named rig | MakeHuman Community | CC0 1.0 | https://github.com/makehumancommunity/mpfb2 | The 52-bone skeleton and skin weights the doll is rigged with, fitted to the shaped body. |
