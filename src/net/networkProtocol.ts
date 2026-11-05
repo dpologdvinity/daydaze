@@ -145,14 +145,14 @@ function coordinate(value: unknown): value is number {
 export function normalizeYaw(yaw: number): number {
   return yaw - 2 * Math.PI * Math.ceil((yaw - Math.PI) / (2 * Math.PI));
 }
-/** Plain object of at most 16 string entries, keys and values ≤ 32 chars. */
+/** Plain object of at most 24 string entries (a look is 8 required fields and up to 10 optional ones), keys and values ≤ 32 chars. */
 export function isLookShape(value: unknown): value is LookShape {
   if (!record(value)) return false;
   const proto: unknown = Object.getPrototypeOf(value);
   if (proto !== Object.prototype && proto !== null) return false;
   const entries = Object.entries(value);
   return (
-    entries.length <= 16 &&
+    entries.length <= 24 &&
     entries.every(
       ([key, item]) =>
         key.length <= 32 && typeof item === "string" && item.length <= 32,

@@ -733,6 +733,56 @@ export function piercingsOf(look: Pick<Look, "piercings">): Piercings {
   return decodePiercings(look.piercings) ?? NO_PIERCINGS;
 }
 
+/** The limbs a doll can have a prosthesis on; each takes one of LIMB_STYLES. */
+export const LIMB_SPOTS = [
+  { id: "legL", label: "Left leg" },
+  { id: "legR", label: "Right leg" },
+] as const;
+
+/** What a limb can be. */
+export const LIMB_STYLES = [
+  { id: "natural", label: "Natural" },
+  { id: "prosthetic", label: "Prosthetic" },
+] as const;
+
+/** One of LIMB_SPOTS' ids. */
+export type LimbSpot = IdOf<typeof LIMB_SPOTS>;
+/** One of LIMB_STYLES' ids. */
+export type LimbStyle = IdOf<typeof LIMB_STYLES>;
+/** What each limb is; "natural" for the one she was born with. */
+export type Limbs = Record<LimbSpot, LimbStyle>;
+
+/** Every limb natural. */
+export const NATURAL_LIMBS: Limbs = { legL: "natural", legR: "natural" };
+
+/** One digit per spot: the style's index in LIMB_STYLES. */
+export function encodeLimbs(l: Limbs): string {
+  return LIMB_SPOTS.map((s) =>
+    Math.max(
+      0,
+      LIMB_STYLES.findIndex((o) => o.id === l[s.id]),
+    ),
+  ).join("");
+}
+
+/** The limbs a code describes; null unless it has one valid digit per spot. */
+export function decodeLimbs(code: unknown): Limbs | null {
+  if (typeof code !== "string" || code.length !== LIMB_SPOTS.length)
+    return null;
+  const out: Limbs = { ...NATURAL_LIMBS };
+  for (const [i, s] of LIMB_SPOTS.entries()) {
+    const style = LIMB_STYLES[Number(code[i])];
+    if (!style || !/^[0-9]$/.test(code[i])) return null;
+    out[s.id] = style.id;
+  }
+  return out;
+}
+
+/** A look's limbs, all natural when it has no valid code. */
+export function limbsOf(look: Pick<Look, "limbs">): Limbs {
+  return decodeLimbs(look.limbs) ?? NATURAL_LIMBS;
+}
+
 /**
  * Everything a doll wears and is. The catalog fields are required; the code
  * fields are optional so older looks stay valid.
@@ -766,6 +816,8 @@ export type Look = {
   body?: Body;
   /** Facial hair from BEARDS; looks without one have none. */
   beard?: Beard;
+  /** encodeLimbs' code (prostheses); looks without one are all natural. */
+  limbs?: string;
 };
 
 /** The two builds: separate dolls, each with its own body, skeleton and
@@ -838,6 +890,7 @@ const LOOK_CATALOGS: {
       | "pronouns"
       | "body"
       | "beard"
+      | "limbs"
     >
   ]: readonly {
     readonly id: Look[K];
@@ -877,6 +930,7 @@ export function validateLook(value: unknown): value is Look {
   const hasPronouns = fields.has("pronouns");
   const hasBody = fields.has("body");
   const hasBeard = fields.has("beard");
+  const hasLimbs = fields.has("limbs");
   return (
     fields.size ===
       catalogs.length +
@@ -888,7 +942,9 @@ export function validateLook(value: unknown): value is Look {
         (hasShoes ? 1 : 0) +
         (hasPronouns ? 1 : 0) +
         (hasBody ? 1 : 0) +
-        (hasBeard ? 1 : 0) &&
+        (hasBeard ? 1 : 0) +
+        (hasLimbs ? 1 : 0) &&
+    (!hasLimbs || decodeLimbs(fields.get("limbs")) !== null) &&
     (!hasBody || isId(BODIES, fields.get("body"))) &&
     (!hasBeard || isId(BEARDS, fields.get("beard"))) &&
     (!hasShoes || isShoe(fields.get("shoes"))) &&

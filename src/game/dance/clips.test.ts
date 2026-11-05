@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { GAITS } from "../gaits.ts";
+import { GAIT_LIST } from "../gaits.ts";
 import {
   IDLE_CLIPS,
   LEAN_CLIP,
@@ -43,7 +43,9 @@ test("the clip catalog is sound: unique ids, real loops, walk speeds", () => {
 });
 
 test("every clip the game names is baked", () => {
-  for (const g of GAITS) assert.equal(clipOf(g.clip)?.kind, "walk", g.id);
+  // a wheelchair gait has no stride: it plays the seat clip
+  for (const g of GAIT_LIST.filter((g) => !g.seated))
+    assert.equal(clipOf(g.clip)?.kind, "walk", g.id);
   assert.ok(clipOf("walk-masc"));
   assert.ok(IDLE_CLIPS.length >= 4);
   assert.equal(clipOf(SEAT_CLIP)?.kind, "seat");
@@ -138,4 +140,13 @@ test("an afloat doll strokes while she moves and treads when she stops, whatever
   assert.equal(pickClip({ ...base, afloat: false })?.id, idleFor(0));
   // until the clips load she wears her built pose
   assert.equal(pickClip({ ...swim, loaded: false }), null);
+});
+
+test("a wheelchair user sits whether she rolls or waits, and swims when afloat", () => {
+  const seated = { ...base, seated: true };
+  assert.equal(pickClip({ ...seated, speed: 1.4 })?.id, SEAT_CLIP);
+  assert.equal(pickClip(seated)?.id, SEAT_CLIP);
+  assert.equal(pickClip({ ...seated, mood: "dance" })?.id, SEAT_CLIP);
+  assert.equal(pickClip({ ...seated, afloat: true })?.id, TREAD_CLIP);
+  assert.equal(pickClip({ ...seated, loaded: false }), null);
 });

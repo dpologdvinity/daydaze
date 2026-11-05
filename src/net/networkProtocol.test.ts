@@ -1,6 +1,19 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  DEFAULT_FACE,
+  DEFAULT_LOOK,
+  DEFAULT_MAKEUP,
+  NATURAL_LIMBS,
+  NO_PIERCINGS,
+  encodeFace,
+  encodeLimbs,
+  encodeMakeup,
+  encodePiercings,
+  encodeSwim,
+  validateLook,
+} from "../game/look.ts";
+import {
   CLOSE_CODES,
   encodeEntityDelta,
   decodeEntityDelta,
@@ -78,10 +91,10 @@ test("look shapes are plain string records with bounded keys and values", () => 
   assert.equal(isLookShape(look), true);
   assert.equal(isLookShape({}), true);
   assert.equal(isLookShape(Object.create(null)), true);
-  const sixteen = Object.fromEntries(
-    Array.from({ length: 16 }, (_, i) => [`k${i}`, "v"]),
+  const full = Object.fromEntries(
+    Array.from({ length: 24 }, (_, i) => [`k${i}`, "v"]),
   );
-  assert.equal(isLookShape(sixteen), true);
+  assert.equal(isLookShape(full), true);
   for (const value of [
     null,
     "bob",
@@ -91,9 +104,28 @@ test("look shapes are plain string records with bounded keys and values", () => 
     { hair: 1 },
     { hair: "x".repeat(33) },
     { ["k".repeat(33)]: "v" },
-    { ...sixteen, extra: "v" },
+    { ...full, extra: "v" },
   ])
     assert.equal(isLookShape(value), false);
+});
+
+test("a look with every optional field is valid and fits the wire limit (client and server share both checks)", () => {
+  const full = {
+    ...DEFAULT_LOOK,
+    face: encodeFace(DEFAULT_FACE),
+    makeup: encodeMakeup(DEFAULT_MAKEUP),
+    piercings: encodePiercings(NO_PIERCINGS),
+    gait: "wheelchair",
+    shoes: "boots",
+    swim: encodeSwim({ style: "bikini", color: "#ff2f9a" }),
+    pronouns: "they/them",
+    body: "masculine",
+    beard: "full",
+    limbs: encodeLimbs({ ...NATURAL_LIMBS, legL: "prosthetic" }),
+  };
+  assert.ok(Object.keys(full).length > 16, "more keys than the old limit");
+  assert.equal(validateLook(full), true);
+  assert.equal(isLookShape(full), true);
 });
 
 const clients: ClientMessage[] = [

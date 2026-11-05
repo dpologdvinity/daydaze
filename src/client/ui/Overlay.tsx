@@ -23,6 +23,10 @@ import {
   GLOSSES,
   HIGHLIGHTERS,
   FRECKLES,
+  LIMB_SPOTS,
+  LIMB_STYLES,
+  encodeLimbs,
+  limbsOf,
   VITILIGO,
   BIRTHMARKS,
   GLASSES,
@@ -584,6 +588,27 @@ function Mirror({
             value={gaitOf(look.gait).id}
             onPick={(gait) => setLook({ ...look, gait })}
           />
+        </section>
+        <section>
+          <h3>Limbs</h3>
+          {LIMB_SPOTS.map((spot) => (
+            <Chips
+              key={spot.id}
+              label={spot.label}
+              options={LIMB_STYLES}
+              value={limbsOf(look)[spot.id]}
+              onPick={(style) => {
+                const limbs = { ...limbsOf(look), [spot.id]: style };
+                // all natural drops the key: validateLook refuses an undefined field
+                const { limbs: _, ...rest } = look;
+                setLook(
+                  Object.values(limbs).every((l) => l === "natural")
+                    ? rest
+                    : { ...rest, limbs: encodeLimbs(limbs) },
+                );
+              }}
+            />
+          ))}
         </section>
         <section>
           <h3>Pronouns</h3>
