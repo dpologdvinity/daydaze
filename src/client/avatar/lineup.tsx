@@ -320,6 +320,23 @@ const SHOTS = {
     target: [0, 1.45, 0] as const,
     fov: 50,
   },
+  // the textured styles, from behind and the side
+  textured: {
+    looks: (
+      [
+        "locs",
+        "box-braids",
+        "cornrows",
+        "bantu-knots",
+        "twist-out",
+        "puffs",
+      ] as const
+    ).map((hairStyle, i) => ({ ...LINEUP[i % LINEUP.length], hairStyle })),
+    x: (i: number) => (i - 2.5) * 0.62,
+    cam: [0.6, 1.6, 2.6] as const,
+    target: [0, 1.45, 0] as const,
+    fov: 50,
+  },
   // every free outfit, front on
   outfits: {
     looks: (
