@@ -26,11 +26,39 @@ const GLOW: ReadonlySet<Kind> = new Set<Kind>([
 ]);
 const GLOW_SCALE = 2.5;
 
-// Kinds with thousands of tiny pieces in view (window panes, sills and
-// cornices, lane paint), merged into one mesh on each reload (bake.ts): as
-// instances, software WebGL pays a whole draw for each one. Their materials
-// read the pieces' colors from vertex colors.
-const BAKED: ReadonlySet<Kind> = new Set<Kind>(["window", "ledge", "lane"]);
+// Kinds drawn as one merged mesh, rebuilt on each reload (bake.ts), rather
+// than instanced: software WebGL (SwiftShader) pays about as much for each
+// instance as for a separate draw, and these are the static kinds with
+// hundreds or thousands of pieces in view (window panes, sills, poles,
+// bulbs, parked cars...). Their materials read the pieces' colors from vertex
+// colors; animated ones take their phase from `aOrigin` (Motion.baked).
+// Left instanced: the box- and world-mapped kinds (their shaders read the
+// instance matrix), the facades, the labels, and motion that needs the
+// piece's own frame (sway, bob, drift).
+type Baked = Exclude<Shared, FacadeKind>;
+const BAKED: ReadonlySet<Kind> = new Set<Baked>([
+  "lane",
+  "band",
+  "ledge",
+  "glow",
+  "awning",
+  "sign",
+  "tube",
+  "pole",
+  "lamp",
+  "palmTrunk",
+  "treeTrunk",
+  "treeCanopy",
+  "window",
+  "panel",
+  "arch",
+  "bulb",
+  "car",
+  "carGlass",
+  "furniture",
+  "glass",
+  "puddle",
+]);
 
 // The label kind gets its own geometry and material, because each mount
 // owns the atlas its names are drawn on.
@@ -221,7 +249,7 @@ const MATERIAL: Record<Exclude<Shared, FacadeKind>, THREE.Material> = {
     0.3,
     true,
   ),
-  lane: new THREE.MeshBasicMaterial({ toneMapped: false, vertexColors: true }),
+  lane: new THREE.MeshBasicMaterial({ toneMapped: false }),
   band: new THREE.MeshBasicMaterial({ toneMapped: false }),
   roof: boxMapped(
     new THREE.MeshStandardMaterial({
@@ -230,16 +258,13 @@ const MATERIAL: Record<Exclude<Shared, FacadeKind>, THREE.Material> = {
     }),
     0.25,
   ),
-  ledge: new THREE.MeshStandardMaterial({
-    roughness: 0.55,
-    metalness: 0.1,
-    vertexColors: true,
-  }),
+  ledge: new THREE.MeshStandardMaterial({ roughness: 0.55, metalness: 0.1 }),
   glow: new THREE.MeshBasicMaterial({ toneMapped: false }),
   // flat-lit, so the striped colors read at night without a lamp on them
   awning: new THREE.MeshBasicMaterial({ toneMapped: false }),
   sign: animate(new THREE.MeshBasicMaterial({ toneMapped: false }), {
     blink: true,
+    baked: true,
   }),
   tube: new THREE.MeshBasicMaterial({ toneMapped: false }),
   queue: animate(new THREE.MeshStandardMaterial({ roughness: 0.6 }), {
@@ -265,15 +290,17 @@ const MATERIAL: Record<Exclude<Shared, FacadeKind>, THREE.Material> = {
     roughness: 0.9,
   }),
   treeCanopy: new THREE.MeshStandardMaterial({ roughness: 0.9 }),
-  window: animate(
-    new THREE.MeshBasicMaterial({ toneMapped: false, vertexColors: true }),
-    { flicker: true, baked: true },
-  ),
+  window: animate(new THREE.MeshBasicMaterial({ toneMapped: false }), {
+    flicker: true,
+    baked: true,
+  }),
   panel: animate(new THREE.MeshBasicMaterial({ toneMapped: false }), {
     blink: true,
+    baked: true,
   }),
   arch: animate(new THREE.MeshBasicMaterial({ toneMapped: false }), {
     blink: true,
+    baked: true,
   }),
   bulb: new THREE.MeshBasicMaterial({ toneMapped: false }),
   car: new THREE.MeshStandardMaterial({
@@ -314,6 +341,10 @@ const MATERIAL: Record<Exclude<Shared, FacadeKind>, THREE.Material> = {
     { drift: true, fade: true },
   ),
 };
+
+// the baked kinds carry their pieces' colors per vertex
+for (const kind of BAKED)
+  if (kind !== "label" && !isFacade(kind)) MATERIAL[kind].vertexColors = true;
 
 export type KindMeshes = Record<Kind, THREE.InstancedMesh>;
 
