@@ -133,6 +133,22 @@ export const CREDITS: readonly {
     title: "3D models",
     entries: [
       {
+        title: "Ultimate Food Pack",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://quaternius.com/packs/ultimatefood.html",
+        usedFor:
+          "Grocery stock, produce and restaurant dishes, converted and optimized.",
+      },
+      {
+        title: "Junk Food Pack",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://quaternius.com/packs/junkfood.html",
+        usedFor:
+          "Grocery soda cans and restaurant display doughnuts, converted and optimized.",
+      },
+      {
         title: "Sushi Restaurant Kit",
         author: "Quaternius",
         license: "CC0 1.0",
