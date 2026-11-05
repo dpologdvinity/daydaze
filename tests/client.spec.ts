@@ -101,7 +101,9 @@ test("Credits opens from Menu and restores focus when closed", async ({
     page.getByRole("dialog", { name: "Menu", exact: true }),
   ).toHaveCount(0);
   await expect(
-    panel.getByText("All audio is procedural", { exact: true }),
+    panel.getByText("Procedural music and generated sound effects", {
+      exact: true,
+    }),
   ).toBeVisible();
   await expect(
     panel.getByText("Mixamo animations (Adobe), used under Mixamo's terms"),

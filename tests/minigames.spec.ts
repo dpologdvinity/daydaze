@@ -143,9 +143,10 @@ test("reduced motion stills the crowd and lights but keeps notes falling", async
   await expect(page.locator(".md-lane-0 .md-note")).toHaveCount(1);
 });
 
-async function openBar(page: Page) {
+async function openBar(page: Page, adult = false) {
   await page.clock.install({ time: new Date("2026-10-14T22:00:00Z") });
-  await page.goto("/minigames.html");
+  // the spirits (Tequila) are poured only at the adult tier
+  await page.goto(adult ? "/minigames.html?adult=1" : "/minigames.html");
   await page.clock.pauseAt(new Date("2026-10-14T23:00:00Z"));
   await page.getByRole("button", { name: "Open the bar" }).click();
   await page.getByRole("button", { name: "Take the first order" }).click();
@@ -284,7 +285,7 @@ test("audio failure cannot interrupt pouring, mixing or serving", async ({
 test("the bar plays by keyboard alone, has big tap targets, and passes axe", async ({
   page,
 }) => {
-  await openBar(page);
+  await openBar(page, true);
   await expect(page.getByRole("button", { name: "Tequila" })).toBeFocused();
   const ticket = await readTicket(page);
   for (const name of [...ticket.pours, ticket.glass, ticket.garnish]) {
