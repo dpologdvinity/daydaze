@@ -82,9 +82,23 @@ export function worldMapped<M extends THREE.MeshStandardMaterial>(
         "void main() {",
         "uniform float uWorldScale;\nvarying vec2 vWorldXZ;\nvoid main() {",
       )
-      .replaceAll("vMapUv", uv)
-      .replaceAll("vNormalMapUv", uv)
-      .replaceAll("vRoughnessMapUv", uv);
+      // onBeforeCompile sees the template, whose chunks are still
+      // `#include` lines, so the three that sample the maps are expanded here
+      .replace(
+        "#include <map_fragment>",
+        THREE.ShaderChunk.map_fragment.replaceAll("vMapUv", uv),
+      )
+      .replace(
+        "#include <normal_fragment_maps>",
+        THREE.ShaderChunk.normal_fragment_maps.replaceAll("vNormalMapUv", uv),
+      )
+      .replace(
+        "#include <roughnessmap_fragment>",
+        THREE.ShaderChunk.roughnessmap_fragment.replaceAll(
+          "vRoughnessMapUv",
+          uv,
+        ),
+      );
   };
   const key = material.customProgramCacheKey.bind(material);
   material.customProgramCacheKey = () =>
