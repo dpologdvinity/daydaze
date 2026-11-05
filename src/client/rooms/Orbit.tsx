@@ -250,7 +250,7 @@ function Outside() {
       <group position={[0, 0, -20]} scale={90}>
         <primitive object={sphere} />
       </group>
-      <group position={[2.5, 4.2, -42]} scale={1.5} rotation={[0.4, 0, -0.35]}>
+      <group position={[3.5, -4.2, -42]} scale={1} rotation={[0.4, 0, -0.35]}>
         <group ref={turn}>
           <primitive object={world} />
         </group>
