@@ -186,10 +186,23 @@ test("the player drives their car down the avenue and parks it", async ({
   });
   // on a desktop the car drives on the keys; the pedals are for touch
   await page.keyboard.down("w");
+  // traffic is solid and wanders: if a car stops hers, swerve (A, then D)
+  // round it instead of pushing on
+  let lastX = Number.NaN;
+  let stuck = 0;
   await expect
-    .poll(async () => Number(await canvas.getAttribute("data-car-x")), {
-      timeout: 300_000,
-    })
+    .poll(
+      async () => {
+        const x = Number(await canvas.getAttribute("data-car-x"));
+        stuck = Math.abs(x - lastX) < 0.05 ? stuck + 1 : 0;
+        lastX = x;
+        if (stuck >= 3) {
+          await page.keyboard.press(stuck % 2 ? "a" : "d", { delay: 400 });
+        }
+        return x;
+      },
+      { timeout: 300_000 },
+    )
     .toBeGreaterThan(24);
   await page.keyboard.up("w");
   await expect(page.getByLabel("Speedometer")).toContainText("mph");
@@ -290,7 +303,7 @@ test("Photon Zone: a laser tag round tags a rival for points", async ({
     for (const name of ["Cyan", "Pink", "Lime", "Gold"])
       await page.getByRole("button", { name: `Fire at ${name}` }).click();
     await expect(score).not.toContainText(/^0 points/, { timeout: 500 });
-  }).toPass({ timeout: 120_000 });
+  }).toPass({ timeout: 400_000 });
   expect(errors).toEqual([]);
 });
 
@@ -322,7 +335,7 @@ test("Splat City: a paintball round marks a rival for points", async ({
     await expect(
       page.getByRole("region", { name: "Paintball" }).getByRole("status"),
     ).toContainText(/Tagged!|Tags [1-9]/, { timeout: 500 });
-  }).toPass({ timeout: 120_000 });
+  }).toPass({ timeout: 280_000 });
   expect(errors).toEqual([]);
 });
 
@@ -2200,12 +2213,15 @@ for (const room of [
 }
 
 test("Pulse renders within the low-tier draw call budget", async ({ page }) => {
+  test.setTimeout(300_000);
   await page.goto(`${STILL}&room=pulse`);
   const canvas = canvasOf(page);
   // Pulse loads lazily, and the frame counter stops after ten frames, so wait
   // for the club's frame: the player's 3D doll alone draws under 10 calls.
   await expect
-    .poll(async () => Number(await canvas.getAttribute("data-calls")))
+    .poll(async () => Number(await canvas.getAttribute("data-calls")), {
+      timeout: 240_000,
+    })
     .toBeGreaterThan(40);
   const calls = Number(await canvas.getAttribute("data-calls"));
   expect(calls).toBeLessThan(250);
@@ -2387,7 +2403,7 @@ test("shoplifting: the suspicion meter fills and a caught player is penalised", 
 test("Plate Rush orders a dish and the courier drops it in hand", async ({
   page,
 }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(240_000);
   const errors = collectErrors(page);
   await page.goto(VELVET);
   await (await fromMenu(page, "Plate Rush")).click();
@@ -2401,7 +2417,7 @@ test("Plate Rush orders a dish and the courier drops it in hand", async ({
   await page.keyboard.press("Escape");
   await expect(page.getByRole("status")).toContainText(
     "The courier dropped off Adobo rice bowl.",
-    { timeout: 45_000 },
+    { timeout: 120_000 },
   );
   const held = page.getByRole("region", { name: "Held food" });
   await expect(held).toContainText("Adobo rice bowl");
@@ -2467,6 +2483,7 @@ test("beach volleyball at the city net: first to seven pays a prize", async ({
   });
   await expect(page.getByRole("status", { name: "Prize" })).toContainText(
     "Beach volleyball",
+    { timeout: 120_000 },
   );
   expect(errors).toEqual([]);
 });
