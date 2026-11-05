@@ -1062,7 +1062,7 @@ test("loads the Velvet Room with no errors and mounts the canvas", async ({
   expect(errors).toEqual([]);
 });
 
-test("glasses and freckles from the closet go into the saved makeup", async ({
+test("glasses, freckles, a bindi and hearing aids from the closet go into the saved makeup", async ({
   page,
 }) => {
   test.setTimeout(300_000);
@@ -1080,15 +1080,25 @@ test("glasses and freckles from the closet go into the saved makeup", async ({
     .getByRole("radiogroup", { name: "Freckles" })
     .getByRole("radio", { name: "Lots" })
     .click();
-  // the makeup code's digits 7 and 8: freckles (lots = 2), glasses (cat-eye = 2)
+  await page
+    .getByRole("radiogroup", { name: "Bindi" })
+    .getByRole("radio", { name: "Gold" })
+    .click();
+  await page
+    .getByRole("radiogroup", { name: "Hearing aids" })
+    .getByRole("radio", { name: "Teal" })
+    .click();
+  // the makeup code's digits 7, 8, 11 and 12: freckles (lots = 2), glasses
+  // (cat-eye = 2), bindi (gold = 2), hearing aids (teal = 3)
   await expect
     .poll(async () => {
       const save = await page.evaluate(() =>
         JSON.parse(localStorage.getItem("daydaze-save-v1") ?? "{}"),
       );
-      return String(save.look?.makeup ?? "").slice(6, 8);
+      const code = String(save.look?.makeup ?? "");
+      return code.slice(6, 8) + code.slice(10, 12);
     })
-    .toBe("22");
+    .toBe("2223");
 });
 
 test("vitiligo, a birthmark and the monolid from the closet go into the saved look", async ({

@@ -219,7 +219,7 @@ test("freckles and glasses ride in the makeup code; 6-digit codes still decode",
     glasses: "cat-eye" as const,
   };
   const code = encodeMakeup(m);
-  assert.equal(code.length, 10);
+  assert.equal(code.length, 12);
   assert.deepEqual(decodeMakeup(code), m);
   // a code from before freckles and glasses: the same makeup, none of either
   const old = code.slice(0, 6);
