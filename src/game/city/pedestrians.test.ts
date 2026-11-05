@@ -111,3 +111,18 @@ test("a few joggers run the park's paths and the boardwalk's deck, none with a d
   );
   assert.ok(joggers.every((p) => !p.dog));
 });
+
+test("the deck is a crowd by day, spread along it, and thins out at night", async () => {
+  const { pedestrianOut } = await import("./pedestrians.ts");
+  const deck = PEDESTRIANS.filter((p) => p.a[1] > 276 && p.a[1] < 292);
+  assert.ok(deck.length >= 60, `${deck.length} on the deck`);
+  // by day a few hundred meters of deck hold a dozen of them
+  const near = deck.filter((p) => {
+    const x = pedestrianAt(p, 500).x;
+    return x > 0 && x < 150;
+  });
+  assert.ok(near.length >= 6, `${near.length} within 150 m`);
+  assert.ok(deck.every((p) => pedestrianOut(p, 14)));
+  const late = deck.filter((p) => pedestrianOut(p, 2)).length;
+  assert.ok(late > 0 && late < deck.length / 2, `${late} out at 2 am`);
+});
