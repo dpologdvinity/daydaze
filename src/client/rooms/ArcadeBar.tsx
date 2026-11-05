@@ -4,7 +4,7 @@
 // local to this file.
 
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef, type ReactNode } from "react";
+import { Suspense, useMemo, useRef, type ReactNode } from "react";
 import * as THREE from "three";
 import {
   BAR,
@@ -26,6 +26,7 @@ import { GamePad } from "./shared/GamePad.tsx";
 import { canvasTex, hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
+import { PropSet } from "./shared/Prop.tsx";
 import { BarStools } from "./shared/BarStools.tsx";
 import { Batch } from "./shared/batch.ts";
 import { Bottles, type ShelfRow } from "./shared/Bottles.tsx";
@@ -312,24 +313,19 @@ function Cabinets() {
   const z = CABINET_Z;
   return (
     <>
-      <Boxes boxes={CABINET_XS.map((x): Box => [x, 0.9, z, 0.78, 1.8, 0.8])}>
-        <primitive object={CABINET} attach="material" />
-      </Boxes>
-      <Boxes
-        boxes={CABINET_XS.map((x): Box => [x, 1.95, z + 0.12, 0.78, 0.3, 0.56])}
-        colors={MARQUEES.map((c) => hdr(c, 1.8))}
-      >
-        <meshBasicMaterial toneMapped={false} />
-      </Boxes>
-      <Boxes
-        boxes={CABINET_XS.map((x): Box => [x, 0.98, z + 0.48, 0.74, 0.08, 0.3])}
-      >
-        <meshStandardMaterial color="#2a2440" roughness={0.5} />
-      </Boxes>
+      <Suspense fallback={null}>
+        <PropSet
+          model="scifi-arcade"
+          width={0.98}
+          depth={0.9}
+          height={2.1}
+          at={CABINET_XS.map((x) => [x, 0, z, -Math.PI / 2] as const)}
+        />
+      </Suspense>
       {CABINET_XS.map((x, i) => {
         const game = PLAYABLE_GAMES[i];
         return (
-          <mesh key={x} position={[x, 1.42, z + 0.41]} rotation-x={-0.25}>
+          <mesh key={x} position={[x, 1.42, z + 0.15]} rotation-x={-0.045}>
             <planeGeometry args={[0.6, 0.62]} />
             <meshBasicMaterial
               map={screens[game ?? "attract"]}
@@ -544,6 +540,18 @@ export function ArcadeBar({
         <GamePad key={spot.id} spot={spot} onGame={onGame} />
       ))}
       <Shell />
+      <Suspense fallback={null}>
+        <PropSet
+          model="scifi-locker"
+          width={0.9}
+          depth={0.5}
+          height={2.4}
+          at={[
+            [WALL_X0 + 0.35, 0, BACK_Z + 0.65, Math.PI / 2],
+            [WALL_X1 - 0.35, 0, BACK_Z + 0.65, -Math.PI / 2],
+          ]}
+        />
+      </Suspense>
       <Cabinets />
       <Pinball />
       <AirHockey />

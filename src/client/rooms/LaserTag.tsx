@@ -5,12 +5,14 @@
 
 import { Range } from "./lasertag/Range.tsx";
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, type JSX } from "react";
+import { useGLTF } from "@react-three/drei";
+import { Suspense, useEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";
 import { ARENA, COVER, rivalAt } from "../../game/laserTag.ts";
 import type { Look } from "../../game/look.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import { surface } from "../city/worldTexture.ts";
+import { floated } from "../city/floated.ts";
 import type { Player } from "../world/PlayerController.tsx";
 import { useReducedMotion } from "../motion.ts";
 import { Batch } from "./shared/batch.ts";
@@ -19,6 +21,7 @@ import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { canvasTex, hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
+import { PropSet } from "./shared/Prop.tsx";
 import { Sparkles } from "./shared/Sparkles.tsx";
 import { laserTag, type TagGame } from "./lasertag/session.ts";
 
@@ -30,11 +33,6 @@ const D = z1 - z0;
 const H = 4.4;
 const BEAM_SECONDS = 0.18;
 
-const SHELL = surface("plastic", {
-  scale: 1,
-  color: "#4a3a8a",
-  roughness: 0.5,
-});
 const WALL = surface("concrete_wall_008", { scale: 0.5, color: "#2a1a4a" });
 
 const RIVAL_BASE: Look = {
@@ -121,9 +119,6 @@ function useShell(paint: THREE.Texture) {
       const cz = (c.z0 + c.z1) / 2;
       const edge = edges[i % edges.length] ?? edges[0];
       if (!edge) return;
-      b.add(new THREE.BoxGeometry(w, h, d), SHELL, {
-        position: [cx, h / 2, cz],
-      });
       // glowing strips round the top and the base
       for (const y of [0.04, h - 0.03]) {
         b.add(new THREE.BoxGeometry(w + 0.04, 0.05, 0.04), edge, {
@@ -142,6 +137,77 @@ function useShell(paint: THREE.Texture) {
     });
     return b.build();
   }, [paint]);
+}
+
+/** Solid cover remains visible while its model loads. */
+function CoverFallback() {
+  const cover = useMemo(() => {
+    const batch = new Batch();
+    const material = surface("plastic", {
+      scale: 1,
+      color: "#4a3a8a",
+      roughness: 0.5,
+    });
+    COVER.forEach((c) => {
+      const w = c.x1 - c.x0;
+      const d = c.z1 - c.z0;
+      const h = w > 2 || d > 2 ? 1.25 : 2.4;
+      batch.add(new THREE.BoxGeometry(w, h, d), material, {
+        position: [(c.x0 + c.x1) / 2, h / 2, (c.z0 + c.z1) / 2],
+      });
+    });
+    return batch.build();
+  }, []);
+  return <primitive object={cover} />;
+}
+
+/** Sci-fi crates fitted to the same cover footprints used by line of sight. */
+function CoverModels() {
+  const { scene } = useGLTF("/models/props/scifi-crate.glb");
+  const mesh = useMemo(() => {
+    scene.updateMatrixWorld(true);
+    let source: THREE.Mesh | undefined;
+    scene.traverse((object) => {
+      if (object instanceof THREE.Mesh && !source) source = object;
+    });
+    if (!source) throw new Error("Sci-fi crate has no mesh");
+    const geometry = floated(source.geometry).applyMatrix4(source.matrixWorld);
+    geometry.computeBoundingBox();
+    const bounds = geometry.boundingBox!;
+    const size = bounds.getSize(new THREE.Vector3());
+    const center = bounds.getCenter(new THREE.Vector3());
+    geometry.translate(-center.x, -bounds.min.y, -center.z);
+    const instances = new THREE.InstancedMesh(
+      geometry,
+      source.material,
+      COVER.length,
+    );
+    const transform = new THREE.Object3D();
+    COVER.forEach((cover, i) => {
+      const width = cover.x1 - cover.x0;
+      const depth = cover.z1 - cover.z0;
+      const height = width > 2 || depth > 2 ? 1.25 : 2.4;
+      transform.position.set(
+        (cover.x0 + cover.x1) / 2,
+        0,
+        (cover.z0 + cover.z1) / 2,
+      );
+      transform.scale.set(width / size.x, height / size.y, depth / size.z);
+      transform.updateMatrix();
+      instances.setMatrixAt(i, transform.matrix);
+    });
+    instances.instanceMatrix.needsUpdate = true;
+    instances.computeBoundingSphere();
+    return instances;
+  }, [scene]);
+  useEffect(
+    () => () => {
+      mesh.geometry.dispose();
+      mesh.dispose();
+    },
+    [mesh],
+  );
+  return <primitive object={mesh} />;
 }
 
 /** The four rivals, moving between cover and their peek spots, with a
@@ -315,6 +381,21 @@ export function LaserTag({
       />
       <PortalPads room={ROOMS["laser-tag"]} color="#4fe3ff" />
       <primitive object={shell} />
+      <Suspense fallback={<CoverFallback />}>
+        <CoverModels />
+      </Suspense>
+      <Suspense fallback={null}>
+        <PropSet
+          model="scifi-locker"
+          width={0.9}
+          depth={0.5}
+          height={2.4}
+          at={[
+            [x0 + 0.3, 0, -0.5, Math.PI / 2],
+            [x1 - 0.3, 0, -0.5, -Math.PI / 2],
+          ]}
+        />
+      </Suspense>
       <Rivals game={laserTag} />
       <Beams game={laserTag} player={player} />
       <NeonText

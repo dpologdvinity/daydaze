@@ -8,6 +8,7 @@ import {
   roundScore,
   type Shot,
 } from "../../../game/laserTag.ts";
+import { useSceneReady } from "../../world/ready.ts";
 import { laserTag, paintball, type TagGame } from "./session.ts";
 
 const SAID: Record<Shot, string> = {
@@ -30,13 +31,19 @@ function TagPanel({
   intro: string;
   suitUp: string;
 }): JSX.Element {
+  const ready = useSceneReady();
   const s = game.store.use();
   const { round } = s;
   if (s.phase === "off")
     return (
       <section className="game-panel" aria-label={label}>
         <p className="game-call">{intro}</p>
-        <button type="button" className="game-main" onClick={game.start}>
+        <button
+          type="button"
+          className="game-main"
+          onClick={game.start}
+          disabled={!ready}
+        >
           {suitUp}
         </button>
       </section>
