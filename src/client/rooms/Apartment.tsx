@@ -20,28 +20,6 @@ import { Floor, type PickHandler } from "./shared/Floor.tsx";
 // Grid origin: the floor runs x -4..4 and z -3..3, one cell per meter.
 const ORIGIN = { x: -4, z: -3 };
 
-const HEIGHT = {
-  sofa: 0.5,
-  bed: 0.6,
-  table: 0.8,
-  lamp: 1.6,
-  rug: 0.04,
-  plant: 1.0,
-  bookshelf: 1.4,
-  tv: 0.7,
-} as const;
-
-const COLOR = {
-  sofa: "#c2185b",
-  bed: "#ffd6e7",
-  table: "#8d5a3b",
-  lamp: "#ffe08a",
-  rug: "#4a1f6b",
-  plant: "#2e8b57",
-  bookshelf: "#5b3a7a",
-  tv: "#222233",
-} as const;
-
 // The rented flat: a rug-and-sofa living room with the practice shelf on
 // the right wall. Furniture comes from the saved home layout.
 export function Apartment({
@@ -115,29 +93,16 @@ function HungPainting() {
   );
 }
 
-// the tallest each generated model may stand, meters
-const MODEL_HEIGHT = {
-  sofa: 0.95,
-  bed: 1.2,
-  table: 0.55,
-  lamp: 1.7,
-  rug: 0.15,
-  plant: 1.4,
-  bookshelf: 1.1,
-  tv: 1.1,
-} as const;
-
 function Piece({ item }: { item: Furniture }) {
   const size = footprint(item.id, item.rotation);
   const x = ORIGIN.x + item.cell[0] + size.w / 2;
   const z = ORIGIN.z + item.cell[1] + size.d / 2;
-  const height = HEIGHT[item.id];
-  const { width, depth } = FURNITURE_CATALOG[item.id];
+  const { width, depth, height } = FURNITURE_CATALOG[item.id];
   // the box shows while the model loads
   const box = (
     <mesh position={[x, height / 2, z]}>
       <boxGeometry args={[size.w * 0.92, height, size.d * 0.92]} />
-      <meshStandardMaterial color={COLOR[item.id]} />
+      <meshStandardMaterial color="#8d5a3b" />
     </mesh>
   );
   return (
@@ -146,7 +111,8 @@ function Piece({ item }: { item: Furniture }) {
         model={item.id}
         width={width * 0.92}
         depth={depth * 0.92}
-        height={MODEL_HEIGHT[item.id]}
+        height={height}
+        dir="home"
         yaw={(item.rotation * Math.PI) / 2}
         position={[x, 0, z]}
       />

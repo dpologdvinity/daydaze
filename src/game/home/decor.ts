@@ -5,15 +5,66 @@ export const HOME_GRID = { columns: 8, rows: 6 } as const;
 
 export type Rotation = 0 | 1 | 2 | 3;
 
+/** The tabs the decorating panel lists furniture under. */
+export const FURNITURE_GROUPS = [
+  "Living",
+  "Bed and desk",
+  "Kitchen",
+  "Bath",
+  "Plants and decor",
+] as const;
+export type FurnitureGroup = (typeof FURNITURE_GROUPS)[number];
+
+// One entry per piece: its footprint in 1 m cells, the tallest it may stand
+// (meters; the model is scaled to fit all three) and the panel group. The
+// model is public/models/home/<id>.glb (Quaternius, CC0; see docs/assets.md).
+// The first eight ids are the original catalog: saved homes keep working.
+const piece = (
+  name: string,
+  width: number,
+  depth: number,
+  height: number,
+  group: FurnitureGroup,
+) => ({ name, width, depth, height, group });
+
 export const FURNITURE_CATALOG = {
-  sofa: { name: "Velvet sofa", width: 3, depth: 1 },
-  bed: { name: "Sunny bed", width: 2, depth: 3 },
-  table: { name: "Round table", width: 2, depth: 2 },
-  lamp: { name: "Floor lamp", width: 1, depth: 1 },
-  rug: { name: "Scalloped rug", width: 3, depth: 2 },
-  plant: { name: "Monstera", width: 1, depth: 1 },
-  bookshelf: { name: "Record shelf", width: 2, depth: 1 },
-  tv: { name: "Retro TV", width: 2, depth: 1 },
+  sofa: piece("Velvet sofa", 3, 1, 1.0, "Living"),
+  bed: piece("Sunny bed", 2, 3, 1.0, "Bed and desk"),
+  table: piece("Round table", 2, 2, 0.8, "Living"),
+  lamp: piece("Floor lamp", 1, 1, 1.7, "Plants and decor"),
+  rug: piece("Scalloped rug", 3, 2, 0.15, "Living"),
+  plant: piece("Monstera", 1, 1, 1.0, "Plants and decor"),
+  bookshelf: piece("Record shelf", 2, 1, 1.5, "Living"),
+  tv: piece("Retro TV", 2, 1, 1.1, "Living"),
+  "sofa-small": piece("Loveseat", 2, 1, 0.9, "Living"),
+  "sofa-corner": piece("Corner sofa", 3, 3, 1.0, "Living"),
+  armchair: piece("Armchair", 1, 1, 0.9, "Living"),
+  "coffee-table": piece("Coffee table", 1, 2, 0.45, "Living"),
+  "tv-flat": piece("Flat-screen TV", 2, 1, 1.0, "Living"),
+  fireplace: piece("Fireplace", 3, 1, 2.2, "Living"),
+  "rug-round": piece("Round rug", 2, 2, 0.1, "Living"),
+  drawer: piece("Sideboard", 3, 1, 1.0, "Living"),
+  "bed-single": piece("Single bed", 1, 2, 0.8, "Bed and desk"),
+  nightstand: piece("Nightstand", 1, 1, 0.6, "Bed and desk"),
+  desk: piece("Desk", 2, 1, 0.85, "Bed and desk"),
+  "office-chair": piece("Office chair", 1, 1, 1.0, "Bed and desk"),
+  stool: piece("Stool", 1, 1, 0.7, "Bed and desk"),
+  closet: piece("Closet", 1, 1, 1.9, "Bed and desk"),
+  "table-small": piece("Side table", 1, 1, 0.7, "Living"),
+  fridge: piece("Fridge", 1, 1, 1.9, "Kitchen"),
+  oven: piece("Oven", 1, 1, 0.95, "Kitchen"),
+  "kitchen-sink": piece("Kitchen sink", 1, 1, 0.95, "Kitchen"),
+  "kitchen-cabinet": piece("Kitchen counter", 1, 1, 0.95, "Kitchen"),
+  bathtub: piece("Bathtub", 1, 2, 0.65, "Bath"),
+  shower: piece("Shower", 1, 1, 2.0, "Bath"),
+  toilet: piece("Toilet", 1, 1, 0.8, "Bath"),
+  sink: piece("Bathroom sink", 1, 1, 0.9, "Bath"),
+  washer: piece("Washing machine", 1, 1, 0.9, "Bath"),
+  mirror: piece("Standing mirror", 1, 1, 1.4, "Bath"),
+  "plant-tall": piece("Fern", 1, 1, 1.4, "Plants and decor"),
+  vase: piece("Vase", 1, 1, 0.45, "Plants and decor"),
+  "lamp-desk": piece("Desk lamp", 1, 1, 0.5, "Plants and decor"),
+  trash: piece("Trash can", 1, 1, 0.5, "Plants and decor"),
 } as const;
 
 export type FurnitureId = keyof typeof FURNITURE_CATALOG;

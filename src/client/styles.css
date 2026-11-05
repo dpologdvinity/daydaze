@@ -1170,6 +1170,18 @@ button:focus-visible {
   margin: 0;
 }
 
+.home-panel details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex-basis: 100%;
+}
+
+.home-panel summary {
+  flex-basis: 100%;
+  cursor: pointer;
+}
+
 .home-panel fieldset:disabled {
   opacity: 0.5;
 }

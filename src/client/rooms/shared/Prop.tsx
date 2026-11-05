@@ -9,27 +9,48 @@ import { floated } from "../../city/floated.ts";
 
 type Fit = { width: number; depth: number; height: number };
 
-/** The model's mesh, its geometry scaled to fit `width` by `depth` meters and
- * no taller than `height`, centered, standing on y = 0. */
-export function useFitted(model: string, { width, depth, height }: Fit) {
-  const { scene } = useGLTF(`/models/props/${model}.glb`);
+/** The model's parts (one mesh per material), their geometry scaled together to
+ * fit `width` by `depth` meters and no taller than `height`, centered, standing
+ * on y = 0. */
+function useFittedParts(
+  model: string,
+  { width, depth, height }: Fit,
+  dir = "props",
+) {
+  const { scene } = useGLTF(`/models/${dir}/${model}.glb`);
   return useMemo(() => {
-    const meshes: THREE.Mesh[] = [];
+    const parts: {
+      geometry: THREE.BufferGeometry;
+      material: THREE.Material;
+    }[] = [];
     scene.updateMatrixWorld(true);
     scene.traverse((o) => {
-      if (o instanceof THREE.Mesh) meshes.push(o);
+      if (!(o instanceof THREE.Mesh)) return;
+      const material = Array.isArray(o.material) ? o.material[0] : o.material;
+      if (!material) return;
+      const geometry = floated(o.geometry).applyMatrix4(o.matrixWorld);
+      parts.push({ geometry, material });
     });
-    const mesh = meshes[0];
-    if (!mesh) throw new Error(`${model}.glb has no mesh`);
-    const g = floated(mesh.geometry).applyMatrix4(mesh.matrixWorld);
-    g.computeBoundingBox();
-    const box = g.boundingBox ?? new THREE.Box3();
+    if (parts.length === 0) throw new Error(`${model}.glb has no mesh`);
+    const box = new THREE.Box3();
+    for (const { geometry } of parts) {
+      geometry.computeBoundingBox();
+      if (geometry.boundingBox) box.union(geometry.boundingBox);
+    }
     const size = box.getSize(new THREE.Vector3());
     const s = Math.min(width / size.x, depth / size.z, height / size.y);
     const c = box.getCenter(new THREE.Vector3());
-    g.translate(-c.x, -box.min.y, -c.z).scale(s, s, s);
-    return { geometry: g, material: mesh.material };
+    for (const { geometry } of parts)
+      geometry.translate(-c.x, -box.min.y, -c.z).scale(s, s, s);
+    return parts;
   }, [scene, model, width, depth, height]);
+}
+
+/** The model's first part, fitted like useFittedParts (for instanced users). */
+export function useFitted(model: string, fit: Fit, dir = "props") {
+  const [part] = useFittedParts(model, fit, dir);
+  if (!part) throw new Error(`${model}.glb has no mesh`);
+  return part;
 }
 
 /** One prop, `yaw` turning it about its own center. */
@@ -39,13 +60,18 @@ export function Prop({
   depth,
   height,
   yaw = 0,
+  dir,
   ...rest
-}: { model: string; yaw?: number } & Fit &
+}: { model: string; yaw?: number; dir?: string } & Fit &
   Omit<ThreeElements["group"], "children">) {
-  const { geometry, material } = useFitted(model, { width, depth, height });
+  const parts = useFittedParts(model, { width, depth, height }, dir);
   return (
     <group {...rest}>
-      <mesh geometry={geometry} material={material} rotation-y={yaw} />
+      <group rotation-y={yaw}>
+        {parts.map((p, i) => (
+          <mesh key={i} geometry={p.geometry} material={p.material} />
+        ))}
+      </group>
     </group>
   );
 }

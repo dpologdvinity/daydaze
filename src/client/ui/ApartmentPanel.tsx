@@ -6,6 +6,7 @@
 import { useState } from "react";
 import {
   FURNITURE_CATALOG,
+  FURNITURE_GROUPS,
   FURNITURE_IDS,
   HOME_GRID,
   moveFurniture,
@@ -81,20 +82,29 @@ export function ApartmentPanel({
       </button>
       <fieldset>
         <legend>Furniture</legend>
-        {FURNITURE_IDS.map((id) => (
-          <button
-            key={id}
-            type="button"
-            aria-pressed={choice === id}
-            onClick={() => {
-              setChoice(choice === id ? null : id);
-              setPicked(null);
-              setMoving(false);
-              setNote(`Tap a cell to place the ${FURNITURE_CATALOG[id].name}.`);
-            }}
-          >
-            {FURNITURE_CATALOG[id].name}
-          </button>
+        {FURNITURE_GROUPS.map((group) => (
+          <details key={group} open>
+            <summary>{group}</summary>
+            {FURNITURE_IDS.filter(
+              (id) => FURNITURE_CATALOG[id].group === group,
+            ).map((id) => (
+              <button
+                key={id}
+                type="button"
+                aria-pressed={choice === id}
+                onClick={() => {
+                  setChoice(choice === id ? null : id);
+                  setPicked(null);
+                  setMoving(false);
+                  setNote(
+                    `Tap a cell to place the ${FURNITURE_CATALOG[id].name}.`,
+                  );
+                }}
+              >
+                {FURNITURE_CATALOG[id].name}
+              </button>
+            ))}
+          </details>
         ))}
       </fieldset>
       <div

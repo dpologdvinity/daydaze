@@ -102,6 +102,54 @@ const SHOTS: {
     },
   },
   {
+    // a furnished flat; ids this build does not know are dropped on load, so
+    // the same shot on an older build shows only the original eight pieces
+    name: "apartment-furnished",
+    query: "room=apartment",
+    act: async (page) => {
+      await page.evaluate(() => {
+        const at = (id: string, c: number, r: number, rotation = 0) => ({
+          id,
+          cell: [c, r],
+          rotation,
+        });
+        localStorage.setItem(
+          "daydaze-save-v1",
+          JSON.stringify({
+            home: {
+              locked: true,
+              furniture: [
+                at("plant", 0, 0),
+                at("tv", 1, 0),
+                at("sofa", 3, 0),
+                at("lamp", 6, 0),
+                at("armchair", 2, 2),
+                at("coffee-table", 3, 1),
+                at("table-small", 5, 1),
+                at("rug", 3, 3),
+                at("bed", 6, 2),
+                at("nightstand", 5, 2),
+                at("desk", 0, 4),
+                at("office-chair", 0, 5),
+                at("bookshelf", 1, 5),
+                at("fridge", 3, 5),
+                at("oven", 4, 5),
+                at("kitchen-sink", 5, 5),
+                at("toilet", 7, 5),
+              ],
+            },
+          }),
+        );
+      });
+      await page.reload();
+      // fold the furniture lists so the panel leaves the room in view
+      await page.evaluate(() => {
+        for (const d of document.querySelectorAll(".home-panel details"))
+          d.removeAttribute("open");
+      });
+    },
+  },
+  {
     name: "jail",
     query: "room=jail",
     act: async (page) => {
