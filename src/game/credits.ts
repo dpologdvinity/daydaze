@@ -157,6 +157,28 @@ export const CREDITS: readonly {
           "Delivery vans mixed into street traffic, merged and simplified.",
       },
       {
+        title: "Coaster Kit",
+        author: "Kenney",
+        license: "CC0 1.0",
+        url: "https://kenney.nl/assets/coaster-kit",
+        usedFor:
+          "Amusement Park coaster trains, log flume logs and midway stalls.",
+      },
+      {
+        title: "Cabin cart for Ferris Wheel",
+        author: "Enkarra",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/cabin-cart-for-ferris-wheel-3fef7c11a7c447acb9e7a5ee98e654b8",
+        usedFor: "Amusement Park Ferris wheel gondolas.",
+      },
+      {
+        title: "Carousel Horse",
+        author: "Ramón Ruiz",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/carousel-horse-7872323d00cf4654845c8f39d907e57d",
+        usedFor: "Amusement Park carousel horses.",
+      },
+      {
         title: "Bus Stop",
         author: "Zsky",
         license: "CC-BY 3.0",

@@ -1,12 +1,11 @@
+import { useGLTF } from "@react-three/drei";
 import { useMemo } from "react";
 import * as THREE from "three";
-import { surface } from "../../city/worldTexture.ts";
 import { stringPoints, type Vec3 } from "../../../game/amusementPark.ts";
 import { BOOTHS, type Booth as BoothSpec } from "./layout.ts";
 import { Bulbs } from "./Bulbs.tsx";
 import { Copies, type Copy } from "./Instanced.tsx";
 import { merged } from "./models.ts";
-import { useStripes } from "./Rides.tsx";
 import { LACQUER } from "../shared/materials.ts";
 import { MARQUEE, NeonText } from "../shared/Neon.tsx";
 
@@ -109,36 +108,35 @@ function Wire({ a, b, sag }: { a: Vec3; b: Vec3; sag: number }) {
 }
 
 const PRIZE = new THREE.MeshStandardMaterial({ roughness: 0.6 });
-// painted plank booths
-const COUNTER = surface("wood_plank_wall", { scale: 0.9, color: "#a070b0" });
 
-/** One booth: a counter, a striped awning and a neon sign on the front. */
-function Booth({ sign, color, accent, at, rot }: BoothSpec) {
-  const awning = useStripes(color, accent);
+// Kenney's Coaster Kit stalls (CC0), one look per booth in turn
+const STALLS = ["stall-food", "stall-drinks", "stall-information"] as const;
+const STALL_SCALE = 2.3;
+
+/** A downloaded stall model, front to +z like the booth's counter. */
+function Stall({ kind }: { kind: (typeof STALLS)[number] }) {
+  const gltf = useGLTF(`/models/fair/${kind}.glb`);
+  const root = useMemo(() => gltf.scene.clone(true), [gltf]);
+  return <primitive object={root} scale={STALL_SCALE} />;
+}
+
+/** One booth: a stall with a neon sign over its roof. */
+function Booth({
+  sign,
+  color,
+  at,
+  rot,
+  kind,
+}: BoothSpec & { kind: (typeof STALLS)[number] }) {
   return (
     <group position={[at[0], 0, at[1]]} rotation-y={rot}>
-      <mesh position={[0, 0.55, 0]} material={COUNTER}>
-        <boxGeometry args={[2.6, 1.1, 1]} />
-      </mesh>
-      <mesh
-        position={[0, 1.9, -0.4]}
-        material={surface("wood_plank_wall", { scale: 0.9, color: accent })}
-      >
-        <boxGeometry args={[2.8, 2.6, 0.12]} />
-      </mesh>
-      <mesh position={[0, 3.25, 0.2]} material={LACQUER}>
-        <boxGeometry args={[3.1, 0.14, 1.9]} />
-      </mesh>
-      <mesh position={[0, 3.35, 0.2]}>
-        <boxGeometry args={[3.0, 0.26, 1.7]} />
-        <meshStandardMaterial map={awning} roughness={0.5} />
-      </mesh>
+      <Stall kind={kind} />
       <NeonText
         text={sign}
         color={color}
         font={MARQUEE}
         width={2.5}
-        position={[0, 2.55, 0.56]}
+        position={[0, 4.1, 0.2]}
         flicker
       />
     </group>
@@ -149,8 +147,12 @@ function Booth({ sign, color, accent, at, rot }: BoothSpec) {
 export function Midway() {
   return (
     <>
-      {BOOTHS.map((b) => (
-        <Booth key={b.sign} {...b} />
+      {BOOTHS.map((b, i) => (
+        <Booth
+          key={b.sign}
+          {...b}
+          kind={STALLS[i % STALLS.length] ?? "stall-food"}
+        />
       ))}
       {STRINGS.map(([a, b, sag], i) => (
         <Wire key={i} a={a} b={b} sag={sag} />
