@@ -228,3 +228,20 @@ Open branches in `.worktrees/` (each has a WIP or finished commit; rebase onto m
 
 Owner notes: Mixamo clips in `mixamo/` are named `Name_Description` with dashes for spaces; check there before asking for downloads. Don't spend Meshy credits yet (owner is looking for animals). Chrome GPU play-testing is postponed. `.env` has no VITE_ keys.
 - `feat/nyc` second review (d66e6308..4a959cdf), new Important items beyond the first list: NycFacades disposes memoized InstancedMesh2 in cleanup (StrictMode remount reuses disposed meshes: build them in the effect); verify the patchShader + instance-color tint with one screenshot and guard `color` with `#ifdef USE_COLOR` (bayMaterial is shared with meshes.ts:482); wrap planTrip in try/catch inside useFrame; the El request branch must skip when driving, sliding or mid-portal (same guards as PlayerController L206/L311); the waiting "Get off" label should read "Cancel". Minors: `as` casts in ElLine/elStore/NycFacades, unused `_trainX`, ElPanel stale `now`, gate `?elspeed`/`?elat` on DEV, el.ts header and declaration order, budget El gaps and VIEW_WEDGE margin.
+
+## Handoff 3 (2026-11-05 evening)
+
+Merged since Handoff 2 (all on main): oval polish, the El train, transit riders, sci-fi rooms (laser-tag test fixed), owner animals (tigers, bear, elk, Labrador), zoo Scatter quantization fix + habitat plants + blue whale + park wildlife, Fairground downloads, wonder-pass Tasks 36-41 (textured hair, short cuts, plus-size, hijab/wrap/turban/bindi/hearing aids, vitiligo/birthmarks/monolid, wheelchair + prosthetic legs), the boardwalk (planks, counters, shops on the deck, crowd, joggers, world-mapped texture fix), apartment furniture catalog + color looks + wall pieces, sushi/ramen interiors, grocery + plated food.
+
+Open branches (rebase onto main, `npm run verify`, the feature's Playwright tests with a unique PORT via `flock -w 7200 /tmp/daydaze-pw.lock`, look at screenshots, then `git merge --no-ff` only if `git merge-base --is-ancestor main <branch>`):
+- `feat/animals` (.worktrees/animals): one `bakedGeometry()` helper for every baked GLB (fixes quantized houses, rides, fans); verify green; a props/zoo browser check was queued to auto-merge. Check whether it merged.
+- `fix/review-2` (.worktrees/fixes, head b3711a5b): static city pieces merged into one mesh per reload (17.5k -> 800 instances), the zoom test uses 6 large wheel flicks; 28/29 city tests passed; open: "the city map takes the player to Beachside" timed out once (check branch vs main). Then merge.
+- `feat/orbit` (.worktrees/orbit, head 420980f9): Orbit 9 space-station club, ready to merge (verify + its tests green before the last rebase).
+- `feat/cove` (.worktrees/cove): Codex's Mermaid Cove mermaids are in a T-pose floating above the water (animations not playing): needs fixing before merge.
+- `feat/street`: boardwalk round 5 (real low-poly crowd instead of pills, downloaded carts, cyclists) in progress.
+- `feat/home2`: TV that reads as a TV, wall pieces off the window, pink default; then `feat/motels` (Ocean City motels, Suburbia variety) in progress.
+- `feat/plus2` (.worktrees/wonder38): deepen plus-size so it reads plus, both sexes.
+- `feat/wonder43`: flake sweep on GitHub Actions (5 runs of playwright.yml on the branch).
+- `feat/forest`: forest trail area with Ultimate Nature pack, wildlife, birdsong.
+
+Lessons: subagent code reviews report to the lead; agents must check for conflict markers before `git add`; always use a unique Playwright PORT; keep lock holds under ~10 min; most owner Sketchfab downloads were NC (check licenses first); the shared agent brief is /tmp/daydaze-agent-rules.md.
