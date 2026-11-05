@@ -43,6 +43,7 @@ import {
 } from "./meshes.ts";
 import { useDaylight } from "./daylight.ts";
 import { CityFurniture, cityFurniture } from "./CityFurniture.tsx";
+import { BoardwalkFerris } from "./BoardwalkFerris.tsx";
 import { CityPark } from "./CityPark.tsx";
 import { CityTrees, cityTrees } from "./CityTrees.tsx";
 import { NycFacades, cityBays } from "./NycFacades.tsx";
@@ -247,6 +248,7 @@ export function CityScene({
         <CityTrees />
         <CityFurniture />
         <CityPark />
+        <BoardwalkFerris />
         <NycFacades />
         <CityHouses />
         <ElLineBoundary>

@@ -7,7 +7,13 @@ const BASE = process.env.BASE_URL ?? "http://localhost:5195";
 /** Waits for the street furniture models (CityFurniture sets data-furniture). */
 const furnitureReady = async (page: Page) => {
   await page.waitForFunction(
-    () => document.querySelector("canvas")?.dataset.furniture === "ready",
+    () => {
+      const canvas = document.querySelector("canvas");
+      return (
+        canvas?.dataset.furniture === "ready" &&
+        Number(canvas.dataset.frames) >= 6
+      );
+    },
     null,
     { timeout: 300_000 },
   );
@@ -352,6 +358,42 @@ const SHOTS: {
   {
     name: "city-park-pond",
     query: "room=city&view=full&time=14:00&at=233,-290",
+    act: furnitureReady,
+  },
+  {
+    // Beachside's boardwalk (src/game/city/boardwalk.ts)
+    name: "city-boardwalk",
+    query: "room=city&view=full&time=15:00&at=-34,286",
+    act: furnitureReady,
+  },
+  {
+    // the boardwalk's fairground end: carousel and Ferris wheel
+    name: "city-boardwalk-fair",
+    query: "room=city&view=full&time=15:00&at=330,322",
+    act: furnitureReady,
+  },
+  {
+    // sunbathers' umbrellas, a lifeguard stand and the dune fence
+    name: "city-beach",
+    query: "room=city&view=full&time=15:00&at=-135,317",
+    act: furnitureReady,
+  },
+  {
+    // along the boardwalk, looking east: shops on the left, beach and sea on
+    // the right, the Ferris wheel ahead (the camera is pinned with ?cam=)
+    name: "city-boardwalk-wide",
+    query: "room=city&time=15:00&at=100,283&cam=-30,2.6,282,300,8,287",
+    act: furnitureReady,
+  },
+  {
+    // straight down on the planks: the boards run north-south, across the walk
+    name: "city-deck-top",
+    query: "room=city&time=15:00&at=-34,286&cam=-34,14,283,-34,0,283.5",
+    act: furnitureReady,
+  },
+  {
+    name: "city-boardwalk-dusk",
+    query: "room=city&time=19:40&at=100,283&cam=-30,2.6,282,300,8,287",
     act: furnitureReady,
   },
   {

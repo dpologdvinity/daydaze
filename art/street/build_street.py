@@ -203,7 +203,25 @@ def park_set():
     imported(PK("rug"), length=2.4, tris=200); export("blanket")
 
 
+def beach_set():
+    """Beachside's boardwalk props (Poly Pizza, CC0 / CC-BY; see docs/assets.md)."""
+    imported(PK("umb1"), height=2.6, tris=250); export("umbrella-red")
+    imported(PK("umb2"), height=2.6, tris=250); export("umbrella-blue")
+    imported(PK("lifeguard"), height=3.8, tris=500); export("lifeguard")
+    imported(PK("chaise"), length=1.9, tris=300); export("chaise")
+    imported(PK("fence1"), length=3.0, tris=120); export("rail")
+    imported(PK("popcorn"), length=2.2, tris=500); export("popcorn-cart")
+    imported(PK("hotdog"), height=2.4, tris=300); export("hotdog-cart")
+    imported(PK("icecream"), height=4.5, tris=250); export("cone")
+    # the Ferris wheel is the animated download, optimized straight from its glTF (no Blender)
+    imported(PK("carousel"), length=9.0, tris=1200); export("carousel")
+    imported(PK("towel"), length=1.8, tris=60); export("towel")
+    imported(PK("castle"), length=1.4, tris=250); export("sandcastle")
+
+
 if os.environ.get("SET") == "park":
     park_set()
+elif os.environ.get("SET") == "beach":
+    beach_set()
 else:
     street_set()

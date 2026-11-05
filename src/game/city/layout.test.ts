@@ -4,8 +4,10 @@ import { areaOf, clampToArea, isBlocked, stepInArea } from "../area.ts";
 import { isRoomId, ROOMS } from "../rooms.ts";
 import { portalAt } from "../portals.ts";
 import { pointInPolygon, type Vec2 } from "../walk.ts";
+import { deckGaps, SHOP_Z1 } from "./boardwalk.ts";
 import {
   BOARDWALK,
+  BOARDWALK_SHOPS,
   BUILDINGS,
   CITY_AREA,
   CITY_BOUNDS,
@@ -15,6 +17,8 @@ import {
   ROAD_EDGES,
   ROAD_NODES,
   SHORE_Z,
+  EAST_EDGE,
+  WEST_EDGE,
   WATER_Z,
   roadRect,
   sidewalkRects,
@@ -244,17 +248,29 @@ test("Beachside: the cross streets run down to Shore Boulevard, and the boardwal
     assert.equal(edges.length, 3, `${id} is a T junction`);
   }
   for (const p of [
-    [0, BOARDWALK.z0 + 1],
+    [0, SHOP_Z1 + 1],
     [0, (BOARDWALK.z1 + WATER_Z) / 2],
   ] as const)
     assert.equal(isBlocked(CITY_AREA, p), false, `${p}`);
+  // every gap between storefronts leads from the sidewalk to the deck
+  for (const g of deckGaps(BOARDWALK_SHOPS, WEST_EDGE, EAST_EDGE)) {
+    const x = (g.x0 + g.x1) / 2;
+    assert.equal(
+      isBlocked(CITY_AREA, [x, BOARDWALK.z0 + 2]),
+      false,
+      `gap at ${x}`,
+    );
+  }
   assert.deepEqual(clampToArea(CITY_AREA, [0, 300]), [0, 300]);
   // the water itself is not walkable
   assert.notDeepEqual(clampToArea(CITY_AREA, [0, WATER_Z + 10]), [
     0,
     WATER_Z + 10,
   ]);
-  for (const b of BUILDINGS.filter((b) => b.neighborhood === "beachside"))
+  // the boardwalk's storefronts stand south of Shore Boulevard, facing the deck
+  for (const b of BUILDINGS.filter(
+    (b) => b.neighborhood === "beachside" && !b.id.startsWith("boardwalk-shop"),
+  ))
     assert.ok(
       b.footprint.every(([, z]) => z < SHORE_Z),
       b.id,

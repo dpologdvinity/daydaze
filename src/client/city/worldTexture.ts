@@ -56,7 +56,10 @@ export function groundMaps(id: string, { full = false } = {}) {
 export function worldMapped<M extends THREE.MeshStandardMaterial>(
   material: M,
   scale: number,
+  /** Swap the axes, turning the texture a quarter (planks across, not along, x). */
+  turn = false,
 ): M {
+  const uv = turn ? "(vWorldXZ.yx * uWorldScale)" : "(vWorldXZ * uWorldScale)";
   const previous = material.onBeforeCompile;
   material.onBeforeCompile = (shader, renderer) => {
     previous.call(material, shader, renderer);
@@ -79,12 +82,27 @@ export function worldMapped<M extends THREE.MeshStandardMaterial>(
         "void main() {",
         "uniform float uWorldScale;\nvarying vec2 vWorldXZ;\nvoid main() {",
       )
-      .replaceAll("vMapUv", "(vWorldXZ * uWorldScale)")
-      .replaceAll("vNormalMapUv", "(vWorldXZ * uWorldScale)")
-      .replaceAll("vRoughnessMapUv", "(vWorldXZ * uWorldScale)");
+      // onBeforeCompile sees the template, whose chunks are still
+      // `#include` lines, so the three that sample the maps are expanded here
+      .replace(
+        "#include <map_fragment>",
+        THREE.ShaderChunk.map_fragment.replaceAll("vMapUv", uv),
+      )
+      .replace(
+        "#include <normal_fragment_maps>",
+        THREE.ShaderChunk.normal_fragment_maps.replaceAll("vNormalMapUv", uv),
+      )
+      .replace(
+        "#include <roughnessmap_fragment>",
+        THREE.ShaderChunk.roughnessmap_fragment.replaceAll(
+          "vRoughnessMapUv",
+          uv,
+        ),
+      );
   };
   const key = material.customProgramCacheKey.bind(material);
-  material.customProgramCacheKey = () => `${key()}|world${scale}`;
+  material.customProgramCacheKey = () =>
+    `${key()}|world${scale}${turn ? "t" : ""}`;
   return material;
 }
 

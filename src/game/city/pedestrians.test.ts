@@ -78,3 +78,36 @@ test("every pedestrian walks at her gait clip's own pace, so it plays near 1x", 
     assert.ok(rate > 0.94 && rate < 1.06, `rate ${rate}`);
   }
 });
+
+test("boardwalk strollers keep to the open deck, never through a shop, cart or the carousel", async () => {
+  const { isBlocked } = await import("../area.ts");
+  const { CITY_AREA } = await import("./layout.ts");
+  const { SHOP_Z1 } = await import("./boardwalk.ts");
+  const deck = PEDESTRIANS.filter((p) => p.a[1] > SHOP_Z1 && p.a[1] < 292);
+  assert.ok(deck.length > 5, "strollers on the deck");
+  for (const p of deck)
+    for (let t = 0; t <= 1; t += 0.02) {
+      const at: [number, number] = [
+        p.a[0] + (p.b[0] - p.a[0]) * t,
+        p.a[1] + (p.b[1] - p.a[1]) * t,
+      ];
+      assert.equal(isBlocked(CITY_AREA, at), false, `${at}`);
+    }
+  // nobody is pinned on a storefront wall
+  for (const p of PEDESTRIANS)
+    assert.ok(
+      Math.hypot(p.b[0] - p.a[0], p.b[1] - p.a[1]) >= 20,
+      `a strip of ${p.a} to ${p.b} is too short to pace`,
+    );
+});
+
+test("a few joggers run the park's paths and the boardwalk's deck, none with a dog", () => {
+  const joggers = PEDESTRIANS.filter((p) => p.look.gait === "jog");
+  assert.ok(joggers.length >= 3, `${joggers.length} joggers`);
+  assert.ok(joggers.length < PEDESTRIANS.length / 3);
+  assert.ok(
+    joggers.some((p) => p.a[1] > 276 && p.a[1] < 292),
+    "on the deck",
+  );
+  assert.ok(joggers.every((p) => !p.dog));
+});

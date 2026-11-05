@@ -18,6 +18,7 @@ import { NPC_GAITS, gaitOf } from "../gaits.ts";
 import type { Vec2 } from "../walk.ts";
 import type { LandKind } from "../creatures.ts";
 import { PARK } from "./park.ts";
+import { SHOP_Z1 } from "./boardwalk.ts";
 import { CITY_SURFACES } from "./layout.ts";
 
 export type Pedestrian = {
@@ -55,16 +56,20 @@ const STREET_HAIR = HAIR_STYLES.filter((h) =>
 
 /** About one pedestrian per 40 m of sidewalk, on every long strip. */
 export const PEDESTRIANS: readonly Pedestrian[] = CITY_SURFACES.filter(
-  (s) => s.kind === "sidewalk",
+  (s) => s.kind === "sidewalk" || s.kind === "boardwalk",
 ).flatMap((s, si) => {
   const xs = s.polygon.map(([x]) => x);
   const zs = s.polygon.map(([, z]) => z);
-  const [x0, x1, z0, z1] = [
+  const [x0, x1, minZ, z1] = [
     Math.min(...xs),
     Math.max(...xs),
     Math.min(...zs),
     Math.max(...zs),
   ];
+  // strollers keep to the open deck, in front of the storefronts
+  const z0 = s.kind === "boardwalk" ? Math.max(minZ, SHOP_Z1) : minZ;
+  // the gaps between storefronts are no strips to walk: they have no depth left
+  if (s.kind === "boardwalk" && z1 - z0 < 2) return [];
   const along = x1 - x0 >= z1 - z0;
   const length = along ? x1 - x0 : z1 - z0;
   if (length < 30) return [];
@@ -72,7 +77,9 @@ export const PEDESTRIANS: readonly Pedestrian[] = CITY_SURFACES.filter(
   return Array.from({ length: count }, (_, k): Pedestrian => {
     const i = si * 7 + k;
     // lanes keep to the middle of the strip, clear of lamps at its edge
-    const lane = 0.3 + rand(i, 1) * 0.4;
+    // (on the deck: the stretch just south of the middle, clear of benches and carts)
+    const lane =
+      s.kind === "boardwalk" ? 0.25 + rand(i, 1) * 0.2 : 0.3 + rand(i, 1) * 0.4;
     const a: Vec2 = along
       ? [x0 + 1, z0 + (z1 - z0) * lane]
       : [x0 + (x1 - x0) * lane, z0 + 1];
@@ -82,10 +89,15 @@ export const PEDESTRIANS: readonly Pedestrian[] = CITY_SURFACES.filter(
     // about two in five are men: menswear, a short cut, often a beard,
     // bare lips and a man's easy walk
     const man = rand(i, 9) < 0.4;
-    const gait = man ? "stride" : pick(NPC_GAITS, rand(i, 11));
     // on the park's paths the first walker of each strip has a dog with her
     const inPark =
       x0 >= PARK.x0 && x1 <= PARK.x1 && z0 >= PARK.z0 && z1 <= PARK.z1;
+    // a few joggers on the park's paths and the boardwalk's deck lane
+    const jogs =
+      (inPark || s.kind === "boardwalk") &&
+      !(inPark && k === 0) &&
+      rand(i, 12) < 0.3;
+    const gait = jogs ? "jog" : man ? "stride" : pick(NPC_GAITS, rand(i, 11));
     return {
       a,
       b,
@@ -115,7 +127,7 @@ export const PEDESTRIANS: readonly Pedestrian[] = CITY_SURFACES.filter(
             skin: pick(SKINS, rand(i, 4)).id,
             hairStyle: pick(STREET_HAIR, rand(i, 5)).id,
             hairColor: pick(HAIR_COLORS, rand(i, 6)).id,
-            outfit: pick(STREET_OUTFITS, rand(i, 7)),
+            outfit: jogs ? "shorts" : pick(STREET_OUTFITS, rand(i, 7)),
             outfitColor: pick(OUTFIT_COLORS, rand(i, 8)).id,
             gait,
           },

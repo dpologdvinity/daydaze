@@ -23,6 +23,7 @@ const SETS: readonly (readonly [string, Source, string?])[] = [
   ["marble_mosaic_tiles", "polyhaven"],
   ["terrazzo_tiles", "polyhaven"],
   ["wood_floor", "polyhaven"],
+  ["wood_floor_deck", "polyhaven"],
   ["oak_wood_planks", "polyhaven"],
   ["laminate_floor_02", "polyhaven"],
   ["floor_tiles_06", "polyhaven"],

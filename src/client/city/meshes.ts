@@ -205,12 +205,14 @@ const MATERIAL: Record<Exclude<Shared, FacadeKind>, THREE.Material> = {
   ),
   planks: worldMapped(
     new THREE.MeshStandardMaterial({
-      ...groundMaps("wood_floor"),
-      roughness: 0.8,
+      ...groundMaps("wood_floor_deck"),
+      roughness: 0.85,
       emissive: "#2a1d3a",
       emissiveIntensity: 0.3,
     }),
-    0.4,
+    // weathered boards, laid crosswise to the way people walk the deck
+    0.3,
+    true,
   ),
   lane: new THREE.MeshBasicMaterial({ toneMapped: false }),
   band: new THREE.MeshBasicMaterial({ toneMapped: false }),

@@ -6,8 +6,14 @@ import { pointInPolygon, type Vec2 } from "../walk.ts";
 import {
   BUILDINGS,
   CITY_SURFACES,
+  BONFIRES,
+  BOARDWALK,
+  BOARDWALK_SHOPS,
+  WEST_EDGE,
   GALLERY_Z,
+  PIER,
   PROPS,
+  VOLLEYBALL,
   ROAD_EDGES,
   ROAD_NODES,
   type Building,
@@ -17,6 +23,7 @@ import type { Instance, Kind } from "./plan.ts";
 import { hash, pick } from "./hash.ts";
 import type { FurnitureKind, FurnitureSpot } from "./furniture.ts";
 import { parkFurniture } from "./park.ts";
+import { boardwalkFurniture } from "./boardwalk.ts";
 import { detailBuilding } from "./detail.ts";
 
 export { hash };
@@ -209,6 +216,7 @@ export function facingOf(b: Building): Facing {
     const order: Face[] = [avenue === "zmin" ? "zmax" : "zmin", "xmin", "xmax"];
     face = order.find((f) => paved(outside[f])) ?? avenue;
   }
+  if (b.front) face = b.front;
   let facing: Facing;
   if (face === "zmin" || face === "zmax") {
     facing = {
@@ -408,6 +416,71 @@ function awning(out: Buckets, f: Front, accent: string): void {
   }
 }
 
+/**
+ * A boardwalk stand's front: three serving windows lit warm, each with a
+ * counter and its own striped awning, and chalkboard menus either side, so the
+ * ground floor reads as open counters, not a dark wall behind a sign.
+ */
+function servingWindows(out: Buckets, f: Front, accent: string): void {
+  const z = f.faceZ + f.out1;
+  for (const dx of [-4.2, 0, 4.2]) {
+    const x = f.cx + dx;
+    // the lit window, its counter and the striped awning over it
+    out.glow.push({
+      x,
+      y: 1.75,
+      z: z * 1 - f.out1 * 0.9,
+      sx: 2.8,
+      sy: 1.5,
+      sz: 0.1,
+      color: "#ffcf8a",
+    });
+    out.ledge.push({
+      x,
+      y: 1.0,
+      z: z - f.out1 * 0.4,
+      sx: 3.1,
+      sy: 0.12,
+      sz: 0.7,
+      color: "#f2e6d0",
+    });
+    for (let i = 0; i < 6; i++)
+      out.awning.push({
+        x: x - 1.4 + 0.47 * (i + 0.5),
+        y: 2.75,
+        z: z + f.out1 * 0.1,
+        sx: 0.47,
+        sy: 0.08,
+        sz: 1.3,
+        rot: [f.out1 * 0.32, 0, 0],
+        color: i % 2 ? "#fff6e6" : accent,
+      });
+  }
+  // chalkboard menus at the ends, with a few lines of chalk
+  for (const side of [-1, 1]) {
+    const x = f.cx + side * (f.w / 2 - 1.1);
+    out.furniture.push({
+      x,
+      y: 1.5,
+      z: z - f.out1 * 0.85,
+      sx: 1.1,
+      sy: 1.5,
+      sz: 0.1,
+      color: "#1d2a24",
+    });
+    for (let k = 0; k < 4; k++)
+      out.glow.push({
+        x: x - 0.25 + hash(f.cx, k, side) * 0.3,
+        y: 1.95 - k * 0.3,
+        z: z - f.out1 * 0.78,
+        sx: 0.5 + hash(k, f.cx, 7) * 0.3,
+        sy: 0.07,
+        sz: 0.04,
+        color: "#f4efe0",
+      });
+  }
+}
+
 /** Steam from a rooftop vent: three puffs stacked up, drifting in the shader. */
 function vent(out: Buckets, x: number, y: number, z: number): void {
   for (let k = 0; k < 3; k++) {
@@ -564,6 +637,7 @@ export function dressBuilding(b: Building, out: Buckets, kit = false): void {
   // the kit's bays have their own windows and sills
   if (!kit) windows(b, f, out);
   awning(out, f, accent);
+  if (b.id.startsWith("boardwalk-shop")) servingWindows(out, f, accent);
   if (SHOPFRONT.has(b.style) && b.style !== "gate") {
     vent(out, f.cx + (hash(f.cx, 8) - 0.5) * f.w * 0.4, f.h + 0.5, f.cz);
   }
@@ -765,6 +839,18 @@ function strings(out: Placed[]): void {
     if (Math.abs(x - 320) < 12) continue;
     garland(out, [x, -13.5], [x, 13.5], 7, 1.1, 14, x + 7);
   }
+  // the boardwalk: string lights from lamp post to lamp post along the deck's
+  // sea edge (the lamps stand every 31 m from the west edge + 6)
+  for (let x = WEST_EDGE + 6 + 31 * 8; x < 190; x += 31)
+    garland(
+      out,
+      [x, BOARDWALK.z1 - 0.6],
+      [x + 31, BOARDWALK.z1 - 0.6],
+      5,
+      0.7,
+      14,
+      x,
+    );
   // Little Manila: lantern strings across the avenue
   for (let x = -440; x <= -204; x += 22) {
     if (Math.abs(x + 320) < 12) continue;
@@ -845,6 +931,17 @@ function furnitureSpots(): FurnitureSpot[] {
         scale: 1,
       });
   out.push(...parkFurniture());
+  out.push(
+    ...boardwalkFurniture(BOARDWALK_SHOPS, (x, z) => {
+      if (Math.abs(x - PIER.x) < 8) return true;
+      if (BONFIRES.some(([bx, bz]) => Math.hypot(x - bx, z - bz) < 7))
+        return true;
+      return (
+        Math.abs(x - VOLLEYBALL.x) < VOLLEYBALL.half + 4 &&
+        Math.abs(z - VOLLEYBALL.z) < VOLLEYBALL.depth + 4
+      );
+    }),
+  );
   for (const x of BUS_STOPS)
     out.push({ kind: "busstop", x, z: -9, yaw: 0, scale: 1 });
   // stop signs and no-parking signs at the cross streets' corners

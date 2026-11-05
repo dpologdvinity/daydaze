@@ -80,6 +80,14 @@ export const MOCAP_CLIPS: readonly MocapClip[] = [
     speed: 0.984,
   },
   {
+    id: "jog",
+    kind: "walk",
+    label: "Jog",
+    source: "Mixamo Jogging",
+    period: 2.5667,
+    speed: 1.676,
+  },
+  {
     id: "idle-breathing",
     kind: "idle",
     label: "Breathing",

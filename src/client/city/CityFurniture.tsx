@@ -14,7 +14,7 @@ import { useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";
 import {
   FURNITURE_KINDS,
-  PARK_KINDS,
+  MODEL_DIR,
   furnitureVisible,
   type FurnitureKind,
   type FurnitureSpot,
@@ -28,9 +28,13 @@ import { disposeInstanced } from "./dispose.ts";
 const MODELS = "/models/street";
 /** The most pieces of one kind in view at once. */
 const CAPACITY = 256;
+/** `?debug=1` also reports how many of each kind are drawn (data-furniture-kinds). */
+const DEBUG = new URLSearchParams(location.search).get("debug") === "1";
 
-const url = (kind: FurnitureKind) =>
-  `${PARK_KINDS.has(kind) ? "/models/park" : MODELS}/${kind}.glb`;
+const url = (kind: FurnitureKind) => {
+  const dir = MODEL_DIR[kind];
+  return `${dir ? `/models/${dir}` : MODELS}/${kind}.glb`;
+};
 
 /** The furniture in view and where the plan was cut; set by CityScene. */
 export const cityFurniture = createStore({
@@ -118,6 +122,10 @@ function place(
       mesh.count = counts.get(mesh) ?? 0;
       mesh.instanceMatrix.needsUpdate = true;
     }
+  // how many of each kind are drawn (the first part's count), for browser tests
+  return Object.fromEntries(
+    [...meshes].map(([kind, parts]) => [kind, parts[0]?.count ?? 0]),
+  );
 }
 
 export function CityFurniture(): JSX.Element {
@@ -140,8 +148,9 @@ export function CityFurniture(): JSX.Element {
   );
   const canvas = useThree((state) => state.gl.domElement);
   useEffect(() => {
-    place(meshes, spots, at, low);
-    // read by the screenshot script: the models are in and placed
+    const drawn = place(meshes, spots, at, low);
+    // read by the screenshot script and tests: the models are in and placed
+    if (DEBUG) canvas.dataset.furnitureKinds = JSON.stringify(drawn);
     if (spots.length > 0) canvas.dataset.furniture = "ready";
   }, [meshes, spots, at, low, canvas]);
   const all = useMemo(() => [...meshes.values()].flat(), [meshes]);
