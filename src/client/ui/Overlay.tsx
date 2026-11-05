@@ -26,6 +26,8 @@ import {
   VITILIGO,
   BIRTHMARKS,
   GLASSES,
+  BINDIS,
+  HEARING_AIDS,
   LINERS,
   SHADOW_STYLES,
   STRENGTHS,
@@ -488,6 +490,21 @@ function Mirror({
             options={GLASSES}
             value={makeup.glasses}
             onPick={(glasses) => setMakeup({ ...makeup, glasses })}
+          />
+        </section>
+        <section>
+          <h3>Bindi and hearing aids</h3>
+          <Chips
+            label="Bindi"
+            options={BINDIS}
+            value={makeup.bindi}
+            onPick={(bindi) => setMakeup({ ...makeup, bindi })}
+          />
+          <Chips
+            label="Hearing aids"
+            options={HEARING_AIDS}
+            value={makeup.hearing}
+            onPick={(hearing) => setMakeup({ ...makeup, hearing })}
           />
         </section>
         <section>

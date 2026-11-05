@@ -157,6 +157,15 @@ function channel(img: HTMLImageElement, ch: 0 | 1, color: string) {
   return canvas;
 }
 
+/** Bindi ink, by BINDIS id; none is absent. */
+const BINDI_INK: Record<Makeup["bindi"], string | null> = {
+  none: null,
+  red: "#c4161c",
+  gold: "#d9a93a",
+  black: "#15101a",
+  plum: "#6b1f55",
+};
+
 function blob(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -584,6 +593,17 @@ export async function paintFace(
       const r = 0.0022 + rand() * 0.0028;
       blob(ctx, x, y, r, r * (0.8 + rand() * 0.4), fleck, 0.35 + rand() * 0.3);
     }
+  }
+
+  // a bindi: a crisp dot on the brow midline, a little above the eyes
+  const bindi = BINDI_INK[makeup.bindi];
+  if (bindi) {
+    const x = (lEye[0] + rEye[0]) / 2;
+    const y = (lEye[1] + rEye[1]) / 2 - 0.075;
+    ctx.fillStyle = bindi;
+    ctx.beginPath();
+    ctx.arc(x * SIZE, y * SIZE, 0.0085 * SIZE, 0, Math.PI * 2);
+    ctx.fill();
   }
 
   // highlighter: cheekbone tops, nose bridge, cupid's bow and brow bone
