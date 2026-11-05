@@ -33,8 +33,10 @@ const GLOW_SCALE = 2.5;
 // bulbs, parked cars...). Their materials read the pieces' colors from vertex
 // colors; animated ones take their phase from `aOrigin` (Motion.baked).
 // Left instanced: the box- and world-mapped kinds (their shaders read the
-// instance matrix), the facades, the labels, and motion that needs the
-// piece's own frame (sway, bob, drift).
+// instance matrix), the facades, the labels, motion that needs the piece's
+// own frame (sway, bob, drift), and the gate arches, whose posts stand out
+// from the wall and stay clickable as walk targets (baked meshes skip
+// raycasts).
 type Baked = Exclude<Shared, FacadeKind>;
 const BAKED: ReadonlySet<Kind> = new Set<Baked>([
   "lane",
@@ -51,7 +53,6 @@ const BAKED: ReadonlySet<Kind> = new Set<Baked>([
   "treeCanopy",
   "window",
   "panel",
-  "arch",
   "bulb",
   "car",
   "carGlass",
@@ -300,7 +301,6 @@ const MATERIAL: Record<Exclude<Shared, FacadeKind>, THREE.Material> = {
   }),
   arch: animate(new THREE.MeshBasicMaterial({ toneMapped: false }), {
     blink: true,
-    baked: true,
   }),
   bulb: new THREE.MeshBasicMaterial({ toneMapped: false }),
   car: new THREE.MeshStandardMaterial({
@@ -517,7 +517,6 @@ const NIGHT_LIT: readonly Kind[] = [
   "tube",
   "lamp",
   "panel",
-  "arch",
   "bulb",
   "glow",
   "window",
