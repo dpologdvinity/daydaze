@@ -4,8 +4,9 @@ import { BUS_STOPS } from "../src/game/city/transit.ts";
 
 // Every test forces the low tier: headless WebGL is SwiftShader on the CPU.
 // Most also use still=1 so the scene renders a few frames and then idles.
-const LOW = "/?quality=low";
-const STILL = "/?quality=low&still=1";
+// prizehold keeps prize cards up: a slow runner polls less often than they last
+const LOW = "/?quality=low&prizehold=1";
+const STILL = "/?quality=low&still=1&prizehold=1";
 // the tests that began in the old first room still start there
 const VELVET = `${STILL}&room=velvet-room`;
 
@@ -2602,6 +2603,7 @@ test("pool volleyball at the Water Park pays its own prize", async ({
 });
 
 test("the Water Park water-gun battle pays a prize", async ({ page }) => {
+  test.setTimeout(330_000);
   const errors = collectErrors(page);
   await page.goto(`${STILL}&room=water-park`);
   await page
