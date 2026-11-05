@@ -7,7 +7,7 @@ import sys
 
 args = sys.argv[sys.argv.index('--') + 1:]
 source, output = args
-names = ['Environment_Stool', 'Environment_Table', 'Environment_Chair1', 'Environment_Counter_Straight', 'Environment_Counter_Sink', 'Environment_Oven', 'Environment_Cabinet_Shelves', 'Environment_Pot_1_Filled', 'Environment_Plate', 'Decoration_Light', 'Wall_Door', 'Wall_Shoji', 'Food_Ramen', 'Food_SalmonNigiri', 'Food_Roll']
+names = ['Environment_Stool', 'Environment_Table', 'Environment_Chair1', 'Environment_Counter_Straight', 'Environment_Counter_Sink', 'Environment_Oven', 'Environment_Cabinet_Shelves', 'Environment_Pot_1_Filled', 'Environment_Plate', 'Decoration_Light', 'Decoration_Carpet', 'Wall_Door', 'Wall_Shoji', 'Food_Ramen', 'Food_SalmonNigiri', 'Food_Roll']
 os.makedirs(output, exist_ok=True)
 for name in names:
     bpy.ops.object.select_all(action='SELECT')
