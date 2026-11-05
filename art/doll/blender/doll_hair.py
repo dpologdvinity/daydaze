@@ -399,51 +399,76 @@ def _head_box(bm, ctx):
     )
 
 
+HIJAB_SRC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src", "hijab-sketchfab.glb")
+# the scan's mannequin head: width and top height, its y centre, in its own units
+HIJAB_HEAD = dict(width=1.75, top=1.93, cy=0.1)
+
+
 def hijab(ctx, mat):
-    """A hijab: fabric over the whole head, framing the face in an oval, under
-    the chin and draped over the shoulders."""
+    """A hijab: the draped scarf of Sketchfab's "Hijab" (CC-BY, see
+    docs/assets.md) with its mannequin cut out, scaled to the doll's head,
+    pushed clear of the body and skinned from the nearest body vertices, so
+    it frames the face, covers hair and neck and falls over the shoulders."""
+    import bmesh as bm_
+
     eye_z = ctx.JB["lEye"][2]
-    shoulder_z = ctx.JB["lArm"][2]
-    reach = abs(ctx.JB["lArm"][0])
+    head = [i for i in range(len(ctx.PB)) if ctx.HEADW[i] >= 0.98 and ctx.PB[i][2] > eye_z]
+    hp = ctx.PB[head]
+    cx, cy = (hp[:, 0].max() + hp[:, 0].min()) / 2, (hp[:, 1].max() + hp[:, 1].min()) / 2
+    scale = (hp[:, 0].max() - hp[:, 0].min()) * 1.16 / HIJAB_HEAD["width"]
+    top = hp[:, 2].max()
 
-    def extra(bm, ctx):
-        cx, cy, rx, ry, top = _head_box(bm, ctx)
-        chin = eye_z - 0.115
-        zs = list(np.linspace(top + 0.012, shoulder_z - 0.07, 110))
-        face_c = (eye_z + 0.032 + chin) / 2
-        face_h = (eye_z + 0.032 - chin) / 2
+    before = set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=HIJAB_SRC)
+    src = next(o for o in bpy.data.objects if o not in before and o.type == "MESH")
+    bm = bm_.new()
+    bm.from_mesh(src.data)
+    uv = bm.loops.layers.uv.active
+    # the texture's top-left corner paints the mannequin's skin: those faces go
+    bm_.ops.delete(
+        bm,
+        geom=[f for f in bm.faces if all(l[uv].uv.x < 0.21 and l[uv].uv.y > 0.8 for l in f.loops)],
+        context="FACES",
+    )
+    bm_.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context="VERTS")
+    # the scan splits vertices along UV seams; welded, it smooths across them
+    bm_.ops.remove_doubles(bm, verts=bm.verts, dist=1e-4)
+    world = src.matrix_world.copy()
+    verts = np.array([(world @ v.co)[:] for v in bm.verts])
+    faces = [[v.index for v in f.verts] for f in bm.faces]
+    bm.free()
+    for o in [o for o in bpy.data.objects if o not in before]:
+        bpy.data.objects.remove(o)
 
-        def radii(z):
-            if z > eye_z:
-                k = np.sqrt(max(0.0, 1 - ((z - eye_z) / (top + 0.012 - eye_z)) ** 2))
-                return (rx + 0.014) * k + 0.004, (ry + 0.014) * k + 0.004
-            # the neck, then the flare to the shoulders
-            t = np.clip((eye_z - z) / (eye_z - shoulder_z), 0, 1)
-            neck = np.clip(t / 0.5, 0, 1)
-            flare = np.clip((t - 0.5) / 0.5, 0, 1) ** 1.6
-            w = (rx + 0.014) * (1 - 0.3 * neck) + (reach * 0.92 - rx) * flare
-            d = (ry + 0.014) * (1 - 0.2 * neck) + 0.02 * flare
-            return w, d
+    verts = np.array(verts)
+    verts[:, 0] = cx + verts[:, 0] * scale
+    verts[:, 1] = cy - 0.012 + (verts[:, 1] - HIJAB_HEAD["cy"]) * scale
+    verts[:, 2] = top + 0.006 + (verts[:, 2] - HIJAB_HEAD["top"]) * scale
 
-        def point(z, a):
-            w, d = radii(z)
-            fold = 1 + 0.025 * np.sin(a * 7 + z * 40) * (1 if z < eye_z else 0.4)
-            return Vector((cx + np.sin(a) * w * fold, cy + np.cos(a) * d * fold, z))
+    # nearest body vertex: its weights, and a push out along its normal so no
+    # fold sinks into the skin or the shoulders
+    nrm = np.zeros_like(ctx.PB)
+    for f in ctx.FACES["body"]:
+        pts = ctx.PB[f]
+        n = np.cross(pts[1] - pts[0], pts[2] - pts[0])
+        nrm[list(f)] += n
+    nrm /= np.maximum(np.linalg.norm(nrm, axis=1, keepdims=True), 1e-9)
+    tree = KDTree(len(ctx.PB))
+    for i, p in enumerate(ctx.PB):
+        tree.insert(p, i)
+    tree.balance()
+    near = np.array([tree.find(v)[1] for v in verts], int)
+    for i, (v, n) in enumerate(zip(verts, near)):
+        out = float(np.dot(v - ctx.PB[n], nrm[n]))
+        if out < 0.007:
+            verts[i] = v + nrm[n] * (0.007 - out)
 
-        def skip(z, a):
-            # the front (a near pi): an oval opening round the face
-            if abs(z - face_c) >= face_h or np.cos(a) >= 0:
-                return None
-            half = 0.068 * np.sqrt(1 - ((z - face_c) / face_h) ** 2)
-            w = radii(z)[0]
-            if abs(np.sin(a) * w) >= half:
-                return None
-            rim = np.arcsin(min(1.0, half / w))
-            return np.pi - rim if np.sin(a) > 0 else np.pi + rim
-
-        _surface(bm, zs, 128, point, skip)
-
-    return scalp_hair(ctx, "Hair_hijab", mat, extra)
+    ob = ctx.new_object("Hair_hijab", verts, faces)
+    ob.data.materials.append(mat)
+    for p in ob.data.polygons:
+        p.use_smooth = True
+    proxies.attach(ctx, ob, ctx.W[near], {k: d[near] for k, d in ctx.KEYS.items()})
+    return ob
 
 
 def _cloth_dome(ctx, bm, top, rise, grow, fold_fn, n, rows):

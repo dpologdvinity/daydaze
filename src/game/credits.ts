@@ -324,6 +324,14 @@ export const CREDITS: readonly {
           "Zoo savanna giraffes, with a calm idle clip (swayed along when walking).",
       },
       {
+        title: "Hijab",
+        author: "lam_m_zack",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/hijab-ee50e01adc864ccc880caed9b5eb3bcb",
+        usedFor:
+          "The closet's hijab: the scarf's drape with its mannequin cut out, scaled and skinned to the doll.",
+      },
+      {
         title: "Elephant",
         author: "Rukh3D",
         license: "CC-BY 4.0",
