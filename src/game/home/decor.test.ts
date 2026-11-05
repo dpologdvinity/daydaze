@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   FURNITURE_CATALOG,
+  FURNITURE_IDS,
   HOME_GRID,
   moveFurniture,
   pieceAt,
@@ -134,4 +135,27 @@ test("pieceAt finds the piece covering a cell, turned or not", () => {
   assert.ok(turned);
   assert.equal(pieceAt(turned, 0, 2), 0);
   assert.equal(pieceAt(turned, 1, 0), -1);
+});
+
+test("every catalog piece has a model file and a sane footprint", async () => {
+  const { existsSync } = await import("node:fs");
+  for (const id of FURNITURE_IDS) {
+    const { width, depth, height } = FURNITURE_CATALOG[id];
+    assert.ok(existsSync(`public/models/home/${id}.glb`), `${id}.glb`);
+    assert.ok(width >= 1 && depth >= 1 && width <= HOME_GRID.columns);
+    assert.ok(depth <= HOME_GRID.rows && height > 0, id);
+  }
+});
+
+test("saves from the original eight-piece catalog still load", () => {
+  const old = [
+    { id: "sofa", cell: [0, 0], rotation: 0 },
+    { id: "bed", cell: [4, 0], rotation: 1 },
+    { id: "tv", cell: [0, 2], rotation: 0 },
+    { id: "ghost", cell: [0, 5], rotation: 0 },
+  ];
+  assert.deepEqual(
+    validateFurniture(old).map((f) => f.id),
+    ["sofa", "bed", "tv"],
+  );
 });

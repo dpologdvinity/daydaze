@@ -181,6 +181,42 @@ export const CREDITS: readonly {
           "Yellow taxis and sedans mixed into street traffic with near and far models.",
       },
       {
+        title: "Ultimate House Interior Pack",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://quaternius.com/packs/ultimatehouseinterior.html",
+        usedFor:
+          "Apartment furniture: sofas, beds, tables, kitchen, bath, plants and more, joined into one mesh each.",
+      },
+      {
+        title: "Furniture Pack (March 2019)",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://quaternius.com/packs/furniturepack.html",
+        usedFor: "Apartment furniture: armchair, vase and a few small pieces.",
+      },
+      {
+        title: "Furniture Pack (Oct 2017)",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://quaternius.com/packs/furniturepack.html",
+        usedFor: "Apartment furniture: bookcase and closet.",
+      },
+      {
+        title: "Television Vintage",
+        author: "Kenney",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/m/aSmz6H8aeu",
+        usedFor: "Apartment Retro TV.",
+      },
+      {
+        title: "Television",
+        author: "Kenney",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/m/9trLeWoBek",
+        usedFor: "Apartment flat-screen TV.",
+      },
+      {
         title: "Car Kit",
         author: "Kenney",
         license: "CC0 1.0",
