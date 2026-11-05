@@ -743,7 +743,7 @@ def build(ctx):
     # at the sides and back
     def top_volume(z, t):
         k = np.clip((z - (t - 0.075)) / 0.05, 0, 1)
-        return 0.032 * k * k * (3 - 2 * k)
+        return 0.018 * k * k * (3 - 2 * k)
 
     shaved = ubc_hair(ctx, "Hair_shaved-sides", "Hair_SimpleParted.gltf", solid, lift=top_volume)
     out.append(shaved)
