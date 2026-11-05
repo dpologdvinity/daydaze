@@ -2,6 +2,12 @@
 // Needs a dev server: `npm run dev -- --port 5195 --strictPort`, then
 // `node --experimental-strip-types scripts/screenshots.ts [name...]`.
 import { chromium, expect, type Page } from "@playwright/test";
+import {
+  FURNITURE_CATALOG,
+  FURNITURE_IDS,
+  placeFurniture,
+  type Furniture,
+} from "../src/game/home/decor.ts";
 
 const BASE = process.env.BASE_URL ?? "http://localhost:5195";
 /** Waits for the street furniture models (CityFurniture sets data-furniture). */
@@ -76,6 +82,65 @@ function petShot(
   };
 }
 
+/** Every floor piece packed greedily onto the grid, front to the camera; the
+ * pieces that no longer fit go to the next page. Used to check each model. */
+function catalogPages(): Furniture[][] {
+  let rest = FURNITURE_IDS.filter((id) => !FURNITURE_CATALOG[id].wall);
+  const pages: Furniture[][] = [];
+  while (rest.length > 0) {
+    let items: Furniture[] = [];
+    const left: typeof rest = [];
+    for (const id of rest) {
+      let placed = false;
+      for (let r = 0; r < 6 && !placed; r++)
+        for (let c = 0; c < 8 && !placed; c++) {
+          const next = placeFurniture(items, id, [c, r], 0);
+          if (next) {
+            items = next;
+            placed = true;
+          }
+        }
+      if (!placed) left.push(id);
+    }
+    pages.push(items);
+    rest = left;
+  }
+  return pages;
+}
+
+const at = (
+  id: Furniture["id"],
+  c: number,
+  r: number,
+  variant = 0,
+  rotation: Furniture["rotation"] = 0,
+): Furniture =>
+  variant > 0
+    ? { id, cell: [c, r], rotation, variant }
+    : { id, cell: [c, r], rotation };
+
+/** A shot of the apartment with this furniture already saved. */
+function homeShot(name: string, furniture: readonly Furniture[], cam?: string) {
+  return {
+    name,
+    query: `room=apartment${cam ? `&cam=${cam}` : ""}`,
+    act: async (page: Page) => {
+      await page.evaluate((f) => {
+        localStorage.setItem(
+          "daydaze-save-v1",
+          JSON.stringify({ home: { locked: true, furniture: f } }),
+        );
+      }, furniture);
+      await page.reload();
+      // fold the furniture lists so the panel leaves the room in view
+      await page.evaluate(() => {
+        for (const d of document.querySelectorAll(".home-panel details"))
+          d.removeAttribute("open");
+      });
+    },
+  };
+}
+
 const SHOTS: {
   name: string;
   query: string;
@@ -101,54 +166,48 @@ const SHOTS: {
       }
     },
   },
-  {
-    // a furnished flat; ids this build does not know are dropped on load, so
-    // the same shot on an older build shows only the original eight pieces
-    name: "apartment-furnished",
-    query: "room=apartment",
-    act: async (page) => {
-      await page.evaluate(() => {
-        const at = (id: string, c: number, r: number, rotation = 0) => ({
-          id,
-          cell: [c, r],
-          rotation,
-        });
-        localStorage.setItem(
-          "daydaze-save-v1",
-          JSON.stringify({
-            home: {
-              locked: true,
-              furniture: [
-                at("plant", 0, 0),
-                at("tv", 1, 0),
-                at("sofa", 3, 0),
-                at("lamp", 6, 0),
-                at("armchair", 2, 2),
-                at("coffee-table", 3, 1),
-                at("table-small", 5, 1),
-                at("rug", 3, 3),
-                at("bed", 6, 2),
-                at("nightstand", 5, 2),
-                at("desk", 0, 4),
-                at("office-chair", 0, 5),
-                at("bookshelf", 1, 5),
-                at("fridge", 3, 5),
-                at("oven", 4, 5),
-                at("kitchen-sink", 5, 5),
-                at("toilet", 7, 5),
-              ],
-            },
-          }),
-        );
-      });
-      await page.reload();
-      // fold the furniture lists so the panel leaves the room in view
-      await page.evaluate(() => {
-        for (const d of document.querySelectorAll(".home-panel details"))
-          d.removeAttribute("open");
-      });
-    },
-  },
+  homeShot("apartment-furnished", [
+    at("plant", 0, 0),
+    at("tv", 1, 0),
+    at("sofa", 3, 0, 1),
+    at("lamp", 6, 0),
+    at("armchair", 2, 2, 3),
+    at("coffee-table", 3, 1),
+    at("table-small", 5, 1),
+    at("rug", 3, 3, 3),
+    at("bed", 6, 2, 2),
+    at("nightstand", 5, 2, 2),
+    at("desk", 0, 4),
+    at("office-chair", 0, 5, 1),
+    at("bookshelf", 1, 5, 1),
+    at("fridge", 3, 5),
+    at("oven", 4, 5),
+    at("kitchen-sink", 5, 5),
+    at("toilet", 7, 5),
+    at("wall-art", 0, 0, 2),
+    at("wall-mirror", 1, 0),
+    at("wall-lights", 2, 0, 1),
+    at("wall-neon", 5, 0, 1),
+  ]),
+  ...catalogPages().map((page, i) =>
+    homeShot(`apartment-catalog-${i + 1}`, page, "0,7.5,6,0,0.4,0.5"),
+  ),
+  homeShot(
+    "apartment-tv",
+    [at("tv", 3, 2), at("tv-flat", 3, 4)],
+    "0,3,5,0,0.3,0.5",
+  ),
+  homeShot(
+    "apartment-catalog-wall",
+    [
+      at("wall-mirror", 0, 0),
+      at("wall-art", 1, 0, 5),
+      at("wall-shelf", 2, 0),
+      at("wall-art-wide", 4, 0, 4),
+      at("wall-art", 6, 0, 3),
+    ],
+    "0,3,8,0,1.6,-3",
+  ),
   {
     name: "jail",
     query: "room=jail",

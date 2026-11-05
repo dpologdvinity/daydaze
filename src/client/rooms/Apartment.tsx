@@ -12,6 +12,7 @@ import { GOLD } from "./shared/materials.ts";
 import { usePaintingTexture } from "./gallery/painting.ts";
 import { surface } from "../city/worldTexture.ts";
 import { Prop } from "./shared/Prop.tsx";
+import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { HdriLight } from "./shared/HdriLight.tsx";
 import type { HomeSave } from "../../game/home/home.ts";
 import { PortalPads } from "./shared/PortalPads.tsx";
@@ -93,7 +94,65 @@ function HungPainting() {
   );
 }
 
+/** The neon sign's tubes, by look. */
+const NEON = ["#ff2f9a", "#3fe0d0", "#ffb02e", "#9b5cff"] as const;
+/** String-light bulb colors, by look. */
+const BULB = ["#ffd8a0", "#ff9ad0", "#9ff0e6"] as const;
+
+/** A piece hung on the back wall; `cell[0]` is its left column. */
+function WallPiece({ item }: { item: Furniture }) {
+  const { width, height } = FURNITURE_CATALOG[item.id];
+  const variant = item.variant ?? 0;
+  const x = ORIGIN.x + item.cell[0] + width / 2;
+  const left = ORIGIN.x + item.cell[0] + 0.2;
+  const right = ORIGIN.x + item.cell[0] + width - 0.2;
+  const drawn = useMemo(() => {
+    if (item.id !== "wall-art" && item.id !== "wall-art-wide") {
+      if (item.id !== "wall-lights") return null;
+      const b = new Batch();
+      stringLights(
+        b,
+        [left, height, -2.85],
+        [right, height, -2.85],
+        3 * width + 3,
+        BULB[variant] ?? BULB[0],
+        0.25,
+      );
+      return b.build();
+    }
+    const b = new Batch();
+    const w = item.id === "wall-art" ? 0.6 : 1.5;
+    poster(b, { x, y: height, z: -2.93 }, variant, w, w * 0.7 + 0.1, GOLD);
+    return b.build();
+  }, [item.id, variant, x, left, right, height, width]);
+  if (item.id === "wall-neon") {
+    return (
+      <NeonText
+        text="DAYDAZE"
+        color={NEON[variant] ?? NEON[0]}
+        font={MARQUEE}
+        width={1.8}
+        position={[x, height, -2.9]}
+      />
+    );
+  }
+  if (drawn) return <primitive object={drawn} />;
+  return (
+    <Suspense fallback={null}>
+      <Prop
+        model={item.id}
+        dir="home"
+        width={width * 0.9}
+        depth={0.5}
+        height={item.id === "wall-mirror" ? 1.3 : 0.5}
+        position={[x, item.id === "wall-mirror" ? height - 0.65 : height, -2.9]}
+      />
+    </Suspense>
+  );
+}
+
 function Piece({ item }: { item: Furniture }) {
+  if (FURNITURE_CATALOG[item.id].wall) return <WallPiece item={item} />;
   const size = footprint(item.id, item.rotation);
   const x = ORIGIN.x + item.cell[0] + size.w / 2;
   const z = ORIGIN.z + item.cell[1] + size.d / 2;
@@ -113,6 +172,7 @@ function Piece({ item }: { item: Furniture }) {
         depth={depth * 0.92}
         height={height}
         dir="home"
+        tint={item.variant ?? 0}
         yaw={(item.rotation * Math.PI) / 2}
         position={[x, 0, z]}
       />

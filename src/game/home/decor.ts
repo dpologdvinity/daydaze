@@ -12,6 +12,7 @@ export const FURNITURE_GROUPS = [
   "Kitchen",
   "Bath",
   "Plants and decor",
+  "Wall",
 ] as const;
 export type FurnitureGroup = (typeof FURNITURE_GROUPS)[number];
 
@@ -19,38 +20,67 @@ export type FurnitureGroup = (typeof FURNITURE_GROUPS)[number];
 // (meters; the model is scaled to fit all three) and the panel group. The
 // model is public/models/home/<id>.glb (Quaternius, CC0; see docs/assets.md).
 // The first eight ids are the original catalog: saved homes keep working.
+/** Looks a fabric or wood piece can wear (variant 0 keeps the model's own). */
+export const TINT_NAMES = ["Natural", "Pink velvet", "Cream", "Teal"] as const;
+const NEON_NAMES = ["Pink", "Teal", "Amber", "Violet"] as const;
+const PRINT_NAMES = [
+  "Sunset",
+  "Palm",
+  "Heart",
+  "Stars",
+  "Moon",
+  "Wave",
+] as const;
+
+export type FurniturePiece = {
+  name: string;
+  width: number;
+  depth: number;
+  height: number;
+  group: FurnitureGroup;
+  /** Hangs on the back wall (cell [column, 0]) instead of standing on the floor. */
+  wall: boolean;
+  /** The names of the looks the player can pick; the first is the default. */
+  variants: readonly string[];
+};
+
 const piece = (
   name: string,
   width: number,
   depth: number,
   height: number,
   group: FurnitureGroup,
-) => ({ name, width, depth, height, group });
+  variants: readonly string[] = ["Original"],
+  wall = false,
+): FurniturePiece => ({ name, width, depth, height, group, wall, variants });
+
+// helpers for the entries below
+const tinted = TINT_NAMES;
 
 export const FURNITURE_CATALOG = {
-  sofa: piece("Velvet sofa", 3, 1, 1.0, "Living"),
-  bed: piece("Sunny bed", 2, 3, 1.0, "Bed and desk"),
-  table: piece("Round table", 2, 2, 0.8, "Living"),
+  sofa: piece("Velvet sofa", 3, 1, 1.0, "Living", tinted),
+  bed: piece("Sunny bed", 2, 3, 1.0, "Bed and desk", tinted),
+  table: piece("Round table", 2, 2, 0.8, "Living", tinted),
   lamp: piece("Floor lamp", 1, 1, 1.7, "Plants and decor"),
-  rug: piece("Scalloped rug", 3, 2, 0.15, "Living"),
+  rug: piece("Scalloped rug", 3, 2, 0.15, "Living", tinted),
   plant: piece("Monstera", 1, 1, 1.0, "Plants and decor"),
-  bookshelf: piece("Record shelf", 2, 1, 1.5, "Living"),
-  tv: piece("Retro TV", 2, 1, 1.1, "Living"),
-  "sofa-small": piece("Loveseat", 2, 1, 0.9, "Living"),
-  "sofa-corner": piece("Corner sofa", 3, 3, 1.0, "Living"),
-  armchair: piece("Armchair", 1, 1, 0.9, "Living"),
+  bookshelf: piece("Record shelf", 2, 1, 1.5, "Living", tinted),
+  tv: piece("Retro TV", 2, 1, 0.7, "Living"),
+  "sofa-small": piece("Loveseat", 2, 1, 0.9, "Living", tinted),
+  "sofa-corner": piece("Corner sofa", 3, 3, 1.0, "Living", tinted),
+  armchair: piece("Armchair", 1, 1, 0.9, "Living", tinted),
   "coffee-table": piece("Coffee table", 1, 2, 0.45, "Living"),
   "tv-flat": piece("Flat-screen TV", 2, 1, 1.0, "Living"),
   fireplace: piece("Fireplace", 3, 1, 2.2, "Living"),
-  "rug-round": piece("Round rug", 2, 2, 0.1, "Living"),
-  drawer: piece("Sideboard", 3, 1, 1.0, "Living"),
-  "bed-single": piece("Single bed", 1, 2, 0.8, "Bed and desk"),
-  nightstand: piece("Nightstand", 1, 1, 0.6, "Bed and desk"),
-  desk: piece("Desk", 2, 1, 0.85, "Bed and desk"),
-  "office-chair": piece("Office chair", 1, 1, 1.0, "Bed and desk"),
-  stool: piece("Stool", 1, 1, 0.7, "Bed and desk"),
-  closet: piece("Closet", 1, 1, 1.9, "Bed and desk"),
-  "table-small": piece("Side table", 1, 1, 0.7, "Living"),
+  "rug-round": piece("Round rug", 2, 2, 0.1, "Living", tinted),
+  drawer: piece("Sideboard", 3, 1, 1.0, "Living", tinted),
+  "bed-single": piece("Single bed", 1, 2, 0.8, "Bed and desk", tinted),
+  nightstand: piece("Nightstand", 1, 1, 0.6, "Bed and desk", tinted),
+  desk: piece("Desk", 2, 1, 0.85, "Bed and desk", tinted),
+  "office-chair": piece("Office chair", 1, 1, 1.0, "Bed and desk", tinted),
+  stool: piece("Stool", 1, 1, 0.7, "Bed and desk", tinted),
+  closet: piece("Closet", 1, 1, 1.9, "Bed and desk", tinted),
+  "table-small": piece("Side table", 1, 1, 0.7, "Living", tinted),
   fridge: piece("Fridge", 1, 1, 1.9, "Kitchen"),
   oven: piece("Oven", 1, 1, 0.95, "Kitchen"),
   "kitchen-sink": piece("Kitchen sink", 1, 1, 0.95, "Kitchen"),
@@ -65,7 +95,22 @@ export const FURNITURE_CATALOG = {
   vase: piece("Vase", 1, 1, 0.45, "Plants and decor"),
   "lamp-desk": piece("Desk lamp", 1, 1, 0.5, "Plants and decor"),
   trash: piece("Trash can", 1, 1, 0.5, "Plants and decor"),
-} as const;
+  // wall pieces: `height` is where the piece hangs (its center), meters
+  "wall-mirror": piece("Wall mirror", 1, 1, 1.4, "Wall", ["Original"], true),
+  "wall-shelf": piece("Wall shelf", 2, 1, 1.5, "Wall", ["Original"], true),
+  "wall-art": piece("Framed print", 1, 1, 1.7, "Wall", PRINT_NAMES, true),
+  "wall-art-wide": piece("Large print", 2, 1, 1.7, "Wall", PRINT_NAMES, true),
+  "wall-lights": piece(
+    "String lights",
+    3,
+    1,
+    2.6,
+    "Wall",
+    ["Warm", "Pink", "Teal"],
+    true,
+  ),
+  "wall-neon": piece("Neon sign", 2, 1, 2.1, "Wall", NEON_NAMES, true),
+} as const satisfies Record<string, FurniturePiece>;
 
 export type FurnitureId = keyof typeof FURNITURE_CATALOG;
 
@@ -73,6 +118,8 @@ export type Furniture = {
   id: FurnitureId;
   cell: readonly [number, number];
   rotation: Rotation;
+  /** Index into the piece's `variants`; absent means the first. */
+  variant?: number;
 };
 
 export const FURNITURE_IDS = Object.keys(FURNITURE_CATALOG) as FurnitureId[];
@@ -88,13 +135,28 @@ export function footprint(id: FurnitureId, rotation: Rotation) {
   return rotation % 2 === 0 ? { w: width, d: depth } : { w: depth, d: width };
 }
 
+const isWall = (item: Furniture) => FURNITURE_CATALOG[item.id].wall;
+
+// Floor pieces share the grid; wall pieces share the back wall's columns and
+// never touch the floor, so the two kinds do not collide.
 function fits(items: readonly Furniture[], skip: number, piece: Furniture) {
-  const size = footprint(piece.id, piece.rotation);
   const [c, r] = piece.cell;
+  if (isWall(piece)) {
+    const w = FURNITURE_CATALOG[piece.id].width;
+    if (r !== 0 || piece.rotation !== 0 || c < 0 || c + w > HOME_GRID.columns) {
+      return false;
+    }
+    return items.every((other, index) => {
+      if (index === skip || !isWall(other)) return true;
+      const ow = FURNITURE_CATALOG[other.id].width;
+      return c + w <= other.cell[0] || other.cell[0] + ow <= c;
+    });
+  }
+  const size = footprint(piece.id, piece.rotation);
   if (c < 0 || r < 0 || c + size.w > HOME_GRID.columns) return false;
   if (r + size.d > HOME_GRID.rows) return false;
   return items.every((other, index) => {
-    if (index === skip) return true;
+    if (index === skip || isWall(other)) return true;
     const o = footprint(other.id, other.rotation);
     const [oc, or] = other.cell;
     return (
@@ -108,22 +170,39 @@ export function placeFurniture(
   id: FurnitureId,
   cell: readonly [number, number],
   rotation: Rotation,
+  variant = 0,
 ): Furniture[] | null {
-  const piece: Furniture = { id, cell, rotation };
+  const piece: Furniture =
+    variant > 0 ? { id, cell, rotation, variant } : { id, cell, rotation };
+  if (variant >= FURNITURE_CATALOG[id].variants.length) return null;
   return fits(items, -1, piece) ? [...items, piece] : null;
 }
 
-// Index of the piece covering a grid cell, or -1 for an empty cell.
+// Index of the floor piece covering a grid cell, or -1 for an empty cell.
 export function pieceAt(
   items: readonly Furniture[],
   column: number,
   row: number,
 ): number {
   return items.findIndex((item) => {
+    if (isWall(item)) return false;
     const size = footprint(item.id, item.rotation);
     const [c, r] = item.cell;
     return column >= c && column < c + size.w && row >= r && row < r + size.d;
   });
+}
+
+// Index of the wall piece covering a back-wall column, or -1.
+export function wallPieceAt(
+  items: readonly Furniture[],
+  column: number,
+): number {
+  return items.findIndex(
+    (item) =>
+      isWall(item) &&
+      column >= item.cell[0] &&
+      column < item.cell[0] + FURNITURE_CATALOG[item.id].width,
+  );
 }
 
 function replaceAt(
@@ -151,9 +230,25 @@ export function rotateFurniture(
   index: number,
 ): Furniture[] | null {
   const current = items[index];
-  if (!current) return null;
+  if (!current || isWall(current)) return null;
   const rotation = ((current.rotation + 1) % 4) as Rotation;
   return replaceAt(items, index, { ...current, rotation });
+}
+
+/** Gives a placed piece another of its looks. */
+export function setVariant(
+  items: readonly Furniture[],
+  index: number,
+  variant: number,
+): Furniture[] | null {
+  const current = items[index];
+  if (!current) return null;
+  if (!Number.isInteger(variant)) return null;
+  if (variant < 0 || variant >= FURNITURE_CATALOG[current.id].variants.length) {
+    return null;
+  }
+  const { variant: _old, ...rest } = current;
+  return replaceAt(items, index, variant > 0 ? { ...rest, variant } : rest);
 }
 
 export function removeFurniture(
@@ -165,13 +260,14 @@ export function removeFurniture(
 }
 
 // Saved furniture is untrusted: keep only well-formed pieces that fit the grid
-// and do not overlap an earlier piece.
+// and do not overlap an earlier piece. A variant out of range falls back to
+// the piece's first look.
 export function validateFurniture(value: unknown): Furniture[] {
   if (!Array.isArray(value)) return [];
   const kept: Furniture[] = [];
   for (const entry of value) {
     if (typeof entry !== "object" || entry === null) continue;
-    const { id, cell, rotation } = entry as Record<string, unknown>;
+    const { id, cell, rotation, variant } = entry as Record<string, unknown>;
     if (!isFurnitureId(id)) continue;
     if (!Array.isArray(cell) || cell.length !== 2) continue;
     const [c, r] = cell;
@@ -179,7 +275,14 @@ export function validateFurniture(value: unknown): Furniture[] {
     if (rotation !== 0 && rotation !== 1 && rotation !== 2 && rotation !== 3) {
       continue;
     }
-    const piece: Furniture = { id, cell: [c, r], rotation };
+    const known =
+      typeof variant === "number" &&
+      Number.isInteger(variant) &&
+      variant > 0 &&
+      variant < FURNITURE_CATALOG[id].variants.length;
+    const piece: Furniture = known
+      ? { id, cell: [c, r], rotation, variant }
+      : { id, cell: [c, r], rotation };
     if (fits(kept, -1, piece)) kept.push(piece);
   }
   return kept;

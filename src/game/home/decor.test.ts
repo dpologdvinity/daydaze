@@ -9,6 +9,7 @@ import {
   placeFurniture,
   removeFurniture,
   rotateFurniture,
+  setVariant,
   validateFurniture,
   type Furniture,
 } from "./decor.ts";
@@ -141,7 +142,10 @@ test("every catalog piece has a model file and a sane footprint", async () => {
   const { existsSync } = await import("node:fs");
   for (const id of FURNITURE_IDS) {
     const { width, depth, height } = FURNITURE_CATALOG[id];
-    assert.ok(existsSync(`public/models/home/${id}.glb`), `${id}.glb`);
+    // wall prints, lights and the neon sign are drawn in code, not modeled
+    const drawn = ["wall-art", "wall-art-wide", "wall-lights", "wall-neon"];
+    if (!drawn.includes(id))
+      assert.ok(existsSync(`public/models/home/${id}.glb`), `${id}.glb`);
     assert.ok(width >= 1 && depth >= 1 && width <= HOME_GRID.columns);
     assert.ok(depth <= HOME_GRID.rows && height > 0, id);
   }
@@ -157,5 +161,40 @@ test("saves from the original eight-piece catalog still load", () => {
   assert.deepEqual(
     validateFurniture(old).map((f) => f.id),
     ["sofa", "bed", "tv"],
+  );
+});
+
+test("wall pieces share the back wall, not the floor", () => {
+  const floor = placeFurniture([], "sofa", [0, 0], 0);
+  assert.ok(floor);
+  // a mirror hangs over the sofa's cells
+  const hung = placeFurniture(floor, "wall-mirror", [1, 0], 0);
+  assert.ok(hung);
+  // two wall pieces cannot share a column; wall pieces stay on the wall row
+  assert.equal(placeFurniture(hung, "wall-shelf", [0, 0], 0), null);
+  assert.ok(placeFurniture(hung, "wall-shelf", [2, 0], 0));
+  assert.equal(placeFurniture([], "wall-mirror", [0, 1], 0), null);
+  assert.equal(placeFurniture([], "wall-neon", [7, 0], 0), null);
+  // the wall piece does not block the floor, and cannot be rotated
+  assert.equal(pieceAt(hung, 1, 0), 0);
+  assert.equal(rotateFurniture(hung, 1), null);
+});
+
+test("looks: set, clear and validate a variant", () => {
+  const one = placeFurniture([], "sofa", [0, 0], 0, 1);
+  assert.ok(one);
+  assert.equal(one[0]?.variant, 1);
+  assert.equal(placeFurniture([], "sofa", [0, 0], 0, 9), null);
+  const back = setVariant(one, 0, 0);
+  assert.deepEqual(back?.[0], { id: "sofa", cell: [0, 0], rotation: 0 });
+  assert.equal(setVariant(one, 0, 4), null);
+  const loaded = validateFurniture([
+    { id: "sofa", cell: [0, 0], rotation: 0, variant: 2 },
+    { id: "bed", cell: [4, 0], rotation: 0, variant: 99 },
+    { id: "tv", cell: [0, 3], rotation: 0, variant: "x" },
+  ]);
+  assert.deepEqual(
+    loaded.map((f) => f.variant),
+    [2, undefined, undefined],
   );
 });
