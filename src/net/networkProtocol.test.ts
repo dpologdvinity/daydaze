@@ -1,6 +1,19 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  DEFAULT_FACE,
+  DEFAULT_LOOK,
+  DEFAULT_MAKEUP,
+  NATURAL_LIMBS,
+  NO_PIERCINGS,
+  encodeFace,
+  encodeLimbs,
+  encodeMakeup,
+  encodePiercings,
+  encodeSwim,
+  validateLook,
+} from "../game/look.ts";
+import {
   CLOSE_CODES,
   encodeEntityDelta,
   decodeEntityDelta,
@@ -94,6 +107,25 @@ test("look shapes are plain string records with bounded keys and values", () => 
     { ...full, extra: "v" },
   ])
     assert.equal(isLookShape(value), false);
+});
+
+test("a look with every optional field is valid and fits the wire limit (client and server share both checks)", () => {
+  const full = {
+    ...DEFAULT_LOOK,
+    face: encodeFace(DEFAULT_FACE),
+    makeup: encodeMakeup(DEFAULT_MAKEUP),
+    piercings: encodePiercings(NO_PIERCINGS),
+    gait: "wheelchair",
+    shoes: "boots",
+    swim: encodeSwim({ style: "bikini", color: "#ff2f9a" }),
+    pronouns: "they/them",
+    body: "masculine",
+    beard: "full",
+    limbs: encodeLimbs({ ...NATURAL_LIMBS, legL: "prosthetic" }),
+  };
+  assert.ok(Object.keys(full).length > 16, "more keys than the old limit");
+  assert.equal(validateLook(full), true);
+  assert.equal(isLookShape(full), true);
 });
 
 const clients: ClientMessage[] = [

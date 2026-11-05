@@ -1,7 +1,7 @@
 import { useGLTF } from "@react-three/drei";
 import { afterSceneReady } from "../../world/ready.ts";
 import { useFrame, useThree, type ThreeElements } from "@react-three/fiber";
-import { Prosthetics } from "./Prosthetics.tsx";
+import { HIDDEN_BONES, Prosthetics } from "./Prosthetics.tsx";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js";
@@ -176,11 +176,48 @@ const morphMeshes = (root: THREE.Object3D) => {
   return out;
 };
 
+/** Gives a skinned mesh's geometry `aShin`: per vertex, the weight on the
+ * left and on the right shin bone, for hiding the skin over a prosthesis. */
+function addShinWeights(mesh: THREE.SkinnedMesh) {
+  const g = mesh.geometry;
+  if (g.getAttribute("aShin")) return;
+  const index = g.getAttribute("skinIndex");
+  const weight = g.getAttribute("skinWeight");
+  if (!index || !weight) return;
+  const names = mesh.skeleton.bones.map((b) => b.name);
+  const sides = [HIDDEN_BONES.legL, HIDDEN_BONES.legR].map(
+    (list) => new Set(list.map((n) => names.indexOf(n)).filter((i) => i >= 0)),
+  );
+  const out = new Float32Array(index.count * 2);
+  for (let i = 0; i < index.count; i++)
+    for (const [k, bones] of sides.entries())
+      for (let c = 0; c < 4; c++)
+        if (bones.has(index.getComponent(i, c)))
+          out[i * 2 + k] += weight.getComponent(i, c);
+  g.setAttribute("aShin", new THREE.BufferAttribute(out, 2));
+}
+
+/** The big wheels' radius, meters (art/doll/blender/wheelchair.py). */
+const WHEEL_RADIUS = 0.32;
+
 /** The wheelchair a seated gait rolls in (art/doll/blender/wheelchair.py,
- * CC-BY by Loic): feet on the floor, the seat under the doll's hips. */
-function Wheelchair() {
+ * CC-BY by Loic): feet on the floor, the seat under the doll's hips; its rear
+ * wheels turn with the ground speed. */
+function Wheelchair({ walk }: { walk?: { current: WalkState } }) {
   const { scene } = useGLTF(`${MODELS}/wheelchair.glb`);
   const chair = useMemo(() => scene.clone(true), [scene]);
+  const wheels = useMemo(
+    () =>
+      ["wheelL", "wheelR"].flatMap((name) => {
+        const wheel = chair.getObjectByName(name);
+        return wheel ? [wheel] : [];
+      }),
+    [chair],
+  );
+  useFrame((_, dt) => {
+    const turn = ((walk?.current.speed ?? 0) * dt) / WHEEL_RADIUS;
+    for (const wheel of wheels) wheel.rotation.x += turn;
+  });
   return <primitive object={chair} />;
 }
 
@@ -224,6 +261,23 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
       emissive: "#ffffff",
       emissiveIntensity: 0.07,
     });
+    // a prosthetic leg hides the skin skinned to its shin (Prosthetics.tsx):
+    // each vertex carries its left and right shin weights as `aShin`
+    const shinHide: THREE.IUniform<THREE.Vector2> = {
+      value: new THREE.Vector2(),
+    };
+    skin.onBeforeCompile = (shader) => {
+      shader.uniforms.uHideShin = shinHide;
+      shader.vertexShader = shader.vertexShader.replace(
+        "void main() {",
+        "attribute vec2 aShin;\nvarying vec2 vShin;\nvoid main() {\nvShin = aShin;",
+      );
+      shader.fragmentShader = shader.fragmentShader.replace(
+        "void main() {",
+        "varying vec2 vShin;\nuniform vec2 uHideShin;\nvoid main() {\nif (dot(vShin, uHideShin) > 0.25) discard;",
+      );
+    };
+    skin.customProgramCacheKey = () => "doll-skin-shin";
     const lashes = new THREE.MeshStandardMaterial({
       color: "#0d0609",
       map: paintLashes(),
@@ -280,12 +334,16 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
       mesh.material = skin;
       mesh.frustumCulled = false;
       mesh.visible = false;
+      addShinWeights(mesh);
       lods.push(mesh);
       scene.add(mesh);
     });
+    for (const mesh of near)
+      if (mesh instanceof THREE.SkinnedMesh) addShinWeights(mesh);
     return {
       scene,
       near,
+      shinHide,
       far: lods[0] ?? null,
       bones,
       /** Names this skeleton for clipsFor: one per body file. */
@@ -986,11 +1044,12 @@ export function HumanDoll({
           limbs={limbsOf(look)}
           bones={body.bones}
           restInverse={body.restInverse}
+          shinHide={body.shinHide}
         />
       </Suspense>
       {gait.seated && (
         <Suspense fallback={null}>
-          <Wheelchair />
+          <Wheelchair walk={walk} />
         </Suspense>
       )}
       <Glasses

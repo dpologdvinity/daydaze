@@ -241,12 +241,24 @@ const SHOTS = {
     target: [0, 1.53, 0] as const,
     fov: 24,
   },
-  // prosthetic legs: shorts and a mini show them, jeans cover the thigh only
+  // prosthetic legs: shorts and a mini show the pylon, jeans cover it
   limbs: {
     looks: [
       { ...LINEUP[0], outfit: "shorts", limbs: "10" },
-      { ...LINEUP[5], outfit: "shorts", limbs: "11" },
+      { ...LINEUP[5], outfit: "jeans", limbs: "11" },
       { ...LINEUP[2], outfit: "mini", limbs: "01" },
+    ] as Look[],
+    x: (i: number) => (i - 1) * 1.1,
+    cam: [0.6, 0.8, 4.2] as const,
+    target: [0, 0.6, 0] as const,
+    fov: 30,
+  },
+  // the same three walking in place, side on
+  limbswalk: {
+    looks: [
+      { ...LINEUP[0], outfit: "shorts", limbs: "11" },
+      { ...LINEUP[5], outfit: "jeans", limbs: "11" },
+      { ...LINEUP[2], outfit: "mini", limbs: "11" },
     ] as Look[],
     x: (i: number) => (i - 1) * 1.1,
     cam: [0.6, 0.8, 4.2] as const,
@@ -581,8 +593,14 @@ function Lab() {
                     : DANCES[i % DANCES.length]
                 }
                 seed={i}
-                walk={shot === "walk" ? WALKING[i % WALKING.length] : undefined}
-                rotation-y={shot === "walk" ? Math.PI / 2 : 0}
+                walk={
+                  shot === "walk" || shot === "limbswalk"
+                    ? WALKING[i % WALKING.length]
+                    : undefined
+                }
+                rotation-y={
+                  shot === "walk" || shot === "limbswalk" ? Math.PI / 2 : 0
+                }
               />
             </Suspense>
           ) : (
