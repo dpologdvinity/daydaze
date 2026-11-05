@@ -18,6 +18,7 @@ future imported packs belong here when they enter the game.
 
 | Title | Author | License | URL | Used for |
 | --- | --- | --- | --- | --- |
+| Sushi Restaurant Kit | Quaternius | CC0 1.0 | https://quaternius.com/packs/sushirestaurantkit.html | Sushi and ramen restaurant furnishings, kitchen equipment, dishes and food, converted and optimized. |
 | Public Transport Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/publictransport.html | City bus, merged, recolored and simplified for near and far rendering. |
 | Realistic Car Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/cars.html | Yellow taxis and sedans mixed into street traffic with near and far models. |
 | Universal Base Characters | Quaternius | CC0 1.0 | https://quaternius.com/packs/universalbasecharacters.html | Buzz cut, parted cut and their refits as the buzz, shaved-sides and slicked-edges hair, scaled to our head. |
