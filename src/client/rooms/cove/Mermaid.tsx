@@ -54,7 +54,7 @@ export function Mermaid({
     const box = new THREE.Box3().setFromObject(root);
     const size = box.getSize(new THREE.Vector3());
     const center = box.getCenter(new THREE.Vector3());
-    const scale = 2.2 / Math.max(size.x, size.y, size.z);
+    const scale = 2.8 / Math.max(size.x, size.y, size.z);
     const mixer = new THREE.AnimationMixer(root);
     const actions = new Map(
       gltf.animations.map((clip) => [clip.name, mixer.clipAction(clip)]),

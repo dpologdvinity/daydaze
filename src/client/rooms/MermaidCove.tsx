@@ -169,10 +169,10 @@ export function MermaidCove({ onPick }: { onPick: PickHandler }) {
           toneMapped={false}
         />
       </mesh>
-      <Mermaid x={-7} y={1.4} z={-2.4} yaw={0.5} tint="#ffd8e8" singer />
-      <Mermaid x={6.5} y={1.2} z={-4.4} yaw={-0.6} tint="#c2daff" />
-      <Mermaid x={-3.2} y={0.05} z={-2.4} yaw={0.4} tint="#bbfff0" swim />
-      <Mermaid x={1.4} y={0.05} z={-5.2} yaw={-0.5} tint="#f4ccff" swim />
+      <Mermaid x={-7} y={2.5} z={-1.9} yaw={3.6} tint="#ffd8e8" singer />
+      <Mermaid x={6.5} y={2.3} z={-3.9} yaw={2.6} tint="#c2daff" />
+      <Mermaid x={-3.2} y={0.45} z={-2.4} yaw={3.5} tint="#bbfff0" swim />
+      <Mermaid x={1.4} y={0.45} z={-5.2} yaw={2.6} tint="#f4ccff" swim />
       <Shells />
       <SongClock />
       {/* driftwood logs up the beach */}
