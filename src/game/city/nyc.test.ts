@@ -9,7 +9,8 @@ import {
   BAY_TRIANGLES,
   HOUSE_MODELS,
   houseAt,
-  isHouse,
+  isBeachHouse,
+  isSuburbHouse,
   isNyc,
   nycBays,
 } from "./nyc.ts";
@@ -130,7 +131,7 @@ test("no view on the high tier holds more bays of one kind than its instanced me
 });
 
 test("a near Suburbia lot is a house facing the street; far ones stay boxes", () => {
-  const lots = BUILDINGS.filter(isHouse);
+  const lots = BUILDINGS.filter(isSuburbHouse);
   assert.ok(lots.length >= 6);
   for (const b of lots) {
     const spot = houseAt(b);
@@ -145,4 +146,25 @@ test("a near Suburbia lot is a house facing the street; far ones stay boxes", ()
   const far = planCity(cellsWithin([at.x, at.z], 160), 0, [at.x, at.z], 0);
   assert.ok(near.houses.length > 0);
   assert.equal(far.houses.length, 0);
+});
+
+test("Beachside's motels and cottages: a lot's model fits it, faces south and stays under the height cap", () => {
+  const lots = BUILDINGS.filter(isBeachHouse);
+  // the beach front's two houses and the thirteen-lot (twelve now) back row
+  assert.ok(lots.length >= 12, `${lots.length} lots`);
+  assert.ok(lots.some((b) => b.id.startsWith("motel-")));
+  const seen = new Set<number>();
+  for (const b of lots) {
+    const spot = houseAt(b);
+    const { x0, x1, z0, z1 } = box(b);
+    // the whole model, not just its middle, is inside the lot
+    const model = HOUSE_MODELS[spot.variant];
+    assert.ok(model?.startsWith("beachside/"), b.id);
+    assert.ok(spot.x > x0 && spot.x < x1 && spot.z > z0 && spot.z < z1, b.id);
+    assert.ok(spot.scale > 0 && spot.scale <= x1 - x0, b.id);
+    assert.equal(Math.cos(spot.yaw) > 0, true, b.id);
+    seen.add(spot.variant);
+  }
+  // the row is varied, not one model repeated
+  assert.ok(seen.size >= 5, `${seen.size} models`);
 });

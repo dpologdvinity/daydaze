@@ -620,6 +620,14 @@ const BOARDWALK_SHOPS = boardwalkShops(
   (x) => nearCross(x) || Math.abs(x - PIER.x) < 12,
 );
 
+// Palm Court, the lane behind Beachside's beach front (the motels' lots are below)
+export const PALM_COURT = { z0: SHORE_Z - 49, z1: SHORE_Z - 37 };
+/** Palm Court's runs: from x0 to x1. */
+export const PALM_COURT_RUNS: readonly (readonly [number, number])[] = [
+  [-196, -95],
+  [-57, 57],
+  [84, 184],
+];
 export const CITY_SURFACES: readonly Surface[] = [
   // gas station forecourts, off the cross streets
   ...GAS_SURFACES.map((polygon): Surface => ({ kind: "square", polygon })),
@@ -637,6 +645,18 @@ export const CITY_SURFACES: readonly Surface[] = [
   { kind: "sidewalk", polygon: FORECOURT_SOUTH },
   { kind: "sidewalk", polygon: FORECOURT_NORTH },
   { kind: "sidewalk", polygon: BASSLINE_ALLEY },
+  // Palm Court: the lane behind Beachside's beach front, with sidewalks
+  ...PALM_COURT_RUNS.flatMap(([x0, x1]): Surface[] => [
+    { kind: "road", polygon: rect(x0, PALM_COURT.z0, x1, PALM_COURT.z1) },
+    {
+      kind: "sidewalk",
+      polygon: rect(x0, PALM_COURT.z0 - 2, x1, PALM_COURT.z0),
+    },
+    {
+      kind: "sidewalk",
+      polygon: rect(x0, PALM_COURT.z1, x1, PALM_COURT.z1 + 2),
+    },
+  ]),
   // the Splash Zone gate's forecourt, off Shore Boulevard's north sidewalk
   { kind: "sidewalk", polygon: rect(-91, SHORE_Z - 13, -77, SHORE_Z - 11) },
   // up to the skatepark's gate
@@ -1003,6 +1023,38 @@ const BEACH_FRONT: readonly {
       targetSpawn: { position: COVE.SPAWN, yaw: Math.PI },
     },
   },
+];
+
+// Beachside, one block back from the boardwalk: pastel motels and beach
+// cottages along Palm Court, a lane behind the beach front. They face south
+// onto it; near the player each lot is one of the Quaternius motel models
+// (houseAt in nyc.ts), far away a pastel box. The runs keep clear of the two
+// cross streets (x = -64 and 64), the Splash Zone gate and the food stalls' strips (x -81 to
+// -74 and 74 to 81).
+const MOTEL_Z0 = SHORE_Z - 72;
+const MOTEL_Z1 = SHORE_Z - 52;
+const MOTEL_PASTELS = [
+  "#ffd6e0",
+  "#c1fba4",
+  "#a0e7e5",
+  "#fdffb6",
+  "#ffc6ff",
+  "#bde0fe",
+  "#ffdac1",
+];
+const BEACH_BACK: readonly { x: number; w: number; h: number }[] = [
+  { x: -184, w: 18, h: 9 },
+  { x: -162, w: 20, h: 12 },
+  { x: -139, w: 18, h: 9 },
+  { x: -114, w: 22, h: 8 },
+  { x: -44, w: 20, h: 9 },
+  { x: -20, w: 18, h: 12 },
+  { x: 4, w: 22, h: 8 },
+  { x: 30, w: 20, h: 10 },
+  { x: 98, w: 22, h: 9 },
+  { x: 122, w: 18, h: 12 },
+  { x: 146, w: 20, h: 8 },
+  { x: 170, w: 18, h: 10 },
 ];
 
 // Little Manila, both sides of the avenue west of Downtown: bakeries,
@@ -1912,6 +1964,14 @@ const BEACH_BUILDINGS: readonly Building[] = [
     color: b.color,
     sign: b.sign,
     ...(b.door ? { door: b.door } : {}),
+  })),
+  ...BEACH_BACK.map((b, i): Building => ({
+    id: `motel-${i}`,
+    neighborhood: "beachside",
+    footprint: rect(b.x - b.w / 2, MOTEL_Z0, b.x + b.w / 2, MOTEL_Z1),
+    height: b.h,
+    style: "deck",
+    color: MOTEL_PASTELS[i % MOTEL_PASTELS.length],
   })),
   // the boardwalk's storefronts, facing the deck
   ...BOARDWALK_SHOPS.map((b, i): Building => ({

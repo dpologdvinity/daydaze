@@ -1,5 +1,6 @@
-// Suburbia's houses near the player: Kenney's City Kit Suburban models (CC0,
-// imported by scripts/import-nyc.sh into public/models/suburbia/), drawn as
+// The houses near the player: Suburbia's (Kenney's City Kit Suburban and
+// Quaternius's Buildings packs, CC0, imported by scripts/import-nyc.sh and
+// scripts/import-motels.sh) and Beachside's motels and cottages, drawn as
 // instanced meshes at the spots the city plan gives (HouseSpot in
 // src/game/city/nyc.ts). One InstancedMesh per model part; CityScene hands
 // over the spots on every plan reload (`cityHouses`).
@@ -12,7 +13,7 @@ import * as THREE from "three";
 import { HOUSE_MODELS, type HouseSpot } from "../../game/city/nyc.ts";
 import { createStore } from "../rooms/shared/store.ts";
 
-const URLS = HOUSE_MODELS.map((m) => `/models/suburbia/house-${m}.glb`);
+const URLS = HOUSE_MODELS.map((m) => `/models/${m}.glb`);
 /** The most houses of one model in view. */
 const CAPACITY = 16;
 

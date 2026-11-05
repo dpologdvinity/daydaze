@@ -379,6 +379,22 @@ export const CREDITS: readonly {
           "Suburbia's houses near the player, optimized with a small colormap.",
       },
       {
+        title: "Ultimate Textured Building Pack",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://quaternius.com/packs/ultimatetexturedbuilding.html",
+        usedFor:
+          "Beachside's motels and beach cottages on Palm Court, and a Suburbia house, thinned to 3000 triangles.",
+      },
+      {
+        title: "Buildings Pack (Aug 2017)",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://quaternius.com/packs/buildings.html",
+        usedFor:
+          "Beachside's flats and wide cottage, and four more Suburbia houses, thinned to 3000 triangles.",
+      },
+      {
         title: "Train Pack",
         author: "Quaternius",
         license: "CC0 1.0",
