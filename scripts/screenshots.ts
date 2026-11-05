@@ -607,6 +607,26 @@ const SHOTS: {
     query: "room=city&view=room&time=15:00&at=320,292&cam=290,3,289,338,12,301",
     act: furnitureReady,
   },
+  ...[
+    // Palm Court: the lane one block back from the boardwalk, with the motels
+    // along its north side (the camera is pinned with ?cam=)
+    ["beachside-motels", "-212,10,214,-130,6,194"],
+    ["beachside-motels-east", "-60,9,214,40,6,194"],
+    ["beachside-motels-far", "-60,30,260,-60,4,190"],
+  ].map(([name, cam]) => ({
+    name: String(name),
+    query: `room=city&view=room&time=15:00&at=-110,213&cam=${cam}`,
+    live: true,
+    act: async (page: Page) => {
+      await page.locator("canvas").waitFor();
+      await blocksReady(page);
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+    },
+  })),
   {
     // sunbathers' umbrellas, a lifeguard stand and the dune fence
     name: "city-beach",
