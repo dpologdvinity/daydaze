@@ -4,7 +4,7 @@ import { PropSet } from "../shared/Prop.tsx";
 
 const stools = [-2.5, -1.25, 0, 1.25, 2.5].map((x) => [x, 0, 0.2, 0] as const);
 const lanterns = [-2.7, 0, 2.7].map((x) => [x, 2.5, 0.1, 0] as const);
-const counter = [-2, 0, 2].map((x) => [x, 0, -0.85, 0] as const);
+const counter = [-2.3, 0, 2.3].map((x) => [x, 0, -0.85, 0] as const);
 const shoji = [-3, -1, 1, 3].map((x) => [x, 0, -2.05, 0] as const);
 const tables = [
   [-2.5, 0, 3.4, 0],
@@ -53,8 +53,8 @@ export function SushiFitout({ ramen }: { ramen: boolean }) {
       />
       <PropSet
         model="sushi-Environment_Counter_Straight"
-        width={2}
-        depth={0.65}
+        width={2.3}
+        depth={1.1}
         height={1.1}
         at={counter}
       />
