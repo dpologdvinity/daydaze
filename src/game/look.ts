@@ -41,6 +41,13 @@ export const HAIR_STYLES = [
   { id: "low-pony", label: "Low pony" },
   { id: "pigtails", label: "Pigtails" },
   { id: "top-knot", label: "Top knot" },
+  // textured styles
+  { id: "locs", label: "Locs" },
+  { id: "box-braids", label: "Box braids" },
+  { id: "cornrows", label: "Cornrows" },
+  { id: "bantu-knots", label: "Bantu knots" },
+  { id: "twist-out", label: "Twist-out" },
+  { id: "puffs", label: "Puffs" },
   // short cuts
   { id: "crop", label: "Crop" },
   { id: "textured", label: "Textured top" },

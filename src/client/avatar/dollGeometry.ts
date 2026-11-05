@@ -493,6 +493,12 @@ const TOON_HAIR: Partial<Record<HairStyle, HairStyle>> = {
   "low-pony": "ponytail",
   pigtails: "braids",
   "top-knot": "buns",
+  locs: "braids",
+  "box-braids": "braids",
+  cornrows: "braids",
+  "bantu-knots": "buns",
+  "twist-out": "curl-cloud",
+  puffs: "buns",
 };
 
 export function hairGeometry(asked: HairStyle): HairGeo {

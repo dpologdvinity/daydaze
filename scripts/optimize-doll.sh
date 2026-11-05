@@ -14,7 +14,8 @@ mkdir -p "$OUT"
 OPTS=(--compress meshopt --texture-compress webp --texture-size 1024
   --simplify false --join false --instance false --flatten false --palette false --prune-attributes false)
 LO="$(mktemp -d)"
-for src in "$IN"/*.glb; do
+# ONLY="hair-locs*" rebuilds just the parts that match (default: every part)
+for src in "$IN"/${ONLY:-*}.glb; do
   name="$(basename "$src" .glb)"
   f="$LO/$name-pruned.glb"
   # the baked clips (art/doll/blender/mocap.py): no meshes to prune; keys

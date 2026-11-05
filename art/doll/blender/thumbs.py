@@ -23,6 +23,7 @@ HAIR = [
     "waves", "ponytail", "buns", "bob", "braids", "afro", "long-straight",
     "long-curly", "mid-straight", "mid-wavy", "mid-curly", "pixie",
     "mermaid", "shag", "coils", "low-pony", "pigtails", "top-knot",
+    "locs", "box-braids", "cornrows", "bantu-knots", "twist-out", "puffs",
 ]
 PRESETS = {
     "eye": ["almond", "round", "hooded", "upturned", "downturned"],
@@ -219,7 +220,7 @@ def main():
             camera((0, -3.3, 0.95), (0, 0, 0.88), 30)
             render(f"swim-{style}")
     if not only or "hair" in only:
-        for style in HAIR:
+        for style in os.environ.get("HAIR_ONLY", "").split(",") if os.environ.get("HAIR_ONLY") else HAIR:
             reset()
             load("body", f"hair-{style}")
             camera((0.55, -0.95, 1.6), (0, 0, 1.47), 34)
