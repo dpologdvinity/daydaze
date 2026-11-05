@@ -232,6 +232,15 @@ const SHOTS = {
     target: [0, 1.42, 0] as const,
     fov: 22,
   },
+  // the closet's eye tile (public/closet/eye-*.webp): the eyes, close up,
+  // on a clear background (`?clear=1`)
+  eyetile: {
+    looks: [{ ...LINEUP[0], hairStyle: "buns" as const, ...makeupParam() }],
+    x: () => 0,
+    cam: [0, 1.53, 0.55] as const,
+    target: [0, 1.53, 0] as const,
+    fov: 24,
+  },
   // head and shoulders with the crown in frame, for judging hair
   portrait: {
     looks: [{ ...LINEUP[0], hairStyle: hairParam(), ...makeupParam() }],
@@ -435,7 +444,10 @@ function Lab() {
         // dev-only: lets a test script inspect the lab scene
         Reflect.set(window, "labScene", scene);
         camera.lookAt(plan.target[0], plan.target[1], plan.target[2]);
-        gl.setClearColor("#07020b");
+        gl.setClearColor(
+          "#07020b",
+          new URLSearchParams(location.search).get("clear") === "1" ? 0 : 1,
+        );
       }}
     >
       {human && (

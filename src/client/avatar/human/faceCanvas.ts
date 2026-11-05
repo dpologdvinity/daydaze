@@ -282,7 +282,12 @@ function paintSkinMarks(
   const { lEye, rEye, lCheek, rCheek, mouthL, mouthR, noseTip } = marks;
   const side = (c: readonly [number, number]) => (c[0] > 0.5 ? 1 : -1);
   if (makeup.vitiligo !== "none") {
-    const bare = mixRgb(skin, [250, 232, 222], 0.7);
+    // pigment gone: ivory-pink. On fair skin that is barely lighter than the
+    // skin, so the patch is pinker and gets a faint darker rim to read at all
+    const fair = (skin[0] + skin[1] + skin[2]) / 3 > 190;
+    const bare = fair
+      ? mixRgb(skin, [255, 218, 214], 0.75)
+      : mixRgb(skin, [250, 232, 222], 0.7);
     // [center, rx, ry]; "light" takes the first three
     const spots: [[number, number], number, number][] = [
       [[mouthR[0] + 0.012, mouthR[1] + 0.012], 0.03, 0.022],
@@ -295,9 +300,12 @@ function paintSkinMarks(
       [[mouthL[0] - 0.012, mouthL[1] + 0.01], 0.026, 0.02],
       [[noseTip[0] + 0.03, noseTip[1] - 0.04], 0.012, 0.03],
     ];
+    const rim = skin.map((v) => v * 0.9);
     const count = makeup.vitiligo === "patchy" ? spots.length : 3;
-    for (const [at, rx, ry] of spots.slice(0, count))
+    for (const [at, rx, ry] of spots.slice(0, count)) {
+      if (fair) patch(ctx, at, rx * 1.65, ry * 1.65, rim, 0.3, rand, 5);
       patch(ctx, at, rx * 1.5, ry * 1.5, bare, 0.92, rand, 5);
+    }
   }
   if (makeup.birthmark === "port-wine") {
     // a flat, irregular rose-red stain over one cheek and toward the temple
