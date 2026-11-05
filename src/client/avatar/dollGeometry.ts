@@ -499,6 +499,9 @@ const TOON_HAIR: Partial<Record<HairStyle, HairStyle>> = {
   "bantu-knots": "buns",
   "twist-out": "curl-cloud",
   puffs: "buns",
+  hijab: "buns",
+  "head-wrap": "buns",
+  turban: "buns",
 };
 
 export function hairGeometry(asked: HairStyle): HairGeo {
