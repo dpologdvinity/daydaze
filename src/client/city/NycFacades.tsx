@@ -11,8 +11,9 @@
 
 import { useThree } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
-import { useEffect, useMemo, type JSX } from "react";
+import { useEffect, useState, type JSX } from "react";
 import * as THREE from "three";
+import { InstancedMesh2, patchShader } from "@three.ez/instanced-mesh";
 import {
   BAY_CAPACITY,
   BAY_KINDS,
@@ -20,7 +21,6 @@ import {
   type BayKind,
 } from "../../game/city/nyc.ts";
 import { createStore } from "../rooms/shared/store.ts";
-import { disposeInstanced } from "./dispose.ts";
 import { groundMaps, boxMapped } from "./worldTexture.ts";
 
 const URL = "/models/nyc/bays.glb";
@@ -62,16 +62,17 @@ export function bayMaterial(): THREE.MeshStandardMaterial {
       .replace(
         "#include <color_vertex>",
         [
-          "vColor = vec4(1.0);",
+          "#include <color_vertex>",
+          // the chunk left vertex color x instance tint: the tint dyes brick
+          // only; stone and metal keep their own colors (`color` exists only
+          // with vertex colors, and the material is shared with meshes.ts)
           "#ifdef USE_COLOR",
-          "vColor.rgb *= color.rgb;",
-          "#endif",
-          "#ifdef USE_INSTANCING_COLOR",
-          // the building's tint dyes brick only; stone and metal keep theirs
-          "vColor.rgb *= mix(vec3(1.0), instanceColor.xyz, aMat.y);",
+          "vColor.rgb = mix(color.rgb, vColor.rgb, aMat.y);",
           "#endif",
         ].join("\n"),
       );
+    // InstancedMesh2 draws through USE_INSTANCING_INDIRECT: patch our chunks
+    shader.vertexShader = patchShader(shader.vertexShader);
     shader.fragmentShader = shader.fragmentShader
       .replace(
         "void main() {",
@@ -127,7 +128,7 @@ function floats(
 /** A bay's geometry in bay space: float attributes, the node's quantization
  * transform baked in, colors cut to RGB, the glass/brick flags as `aMat`. */
 function prepared(node: THREE.Mesh): THREE.BufferGeometry {
-  const src = node.geometry as THREE.BufferGeometry;
+  const src = node.geometry;
   node.updateWorldMatrix(true, false);
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", floats(src.getAttribute("position"), 3));
@@ -142,67 +143,58 @@ function prepared(node: THREE.Mesh): THREE.BufferGeometry {
   return g;
 }
 
-const m4 = new THREE.Matrix4();
-const q = new THREE.Quaternion();
-const p = new THREE.Vector3();
-const s = new THREE.Vector3();
 const tint = new THREE.Color();
 const up = new THREE.Vector3(0, 1, 0);
 
+type BayMesh = { kind: BayKind; mesh: InstancedMesh2 };
+
 /** Writes every bay into its kind's mesh. */
-function place(
-  meshes: Record<BayKind, THREE.InstancedMesh>,
-  bays: readonly BayInstance[],
-) {
-  const counts = Object.fromEntries(BAY_KINDS.map((k) => [k, 0])) as Record<
-    BayKind,
-    number
-  >;
+function place(meshes: readonly BayMesh[], bays: readonly BayInstance[]) {
+  const byKind = new Map<BayKind, BayInstance[]>();
   for (const bay of bays) {
-    const mesh = meshes[bay.kind];
-    const i = counts[bay.kind];
-    if (i >= BAY_CAPACITY) continue;
-    q.setFromAxisAngle(up, bay.yaw);
-    m4.compose(p.set(bay.x, bay.y, bay.z), q, s.set(bay.sx, bay.sy, 1));
-    mesh.setMatrixAt(i, m4);
-    mesh.setColorAt(i, tint.set(bay.color));
-    counts[bay.kind] = i + 1;
+    const list = byKind.get(bay.kind) ?? [];
+    list.push(bay);
+    byKind.set(bay.kind, list);
   }
-  for (const kind of BAY_KINDS) {
-    const mesh = meshes[kind];
-    mesh.count = counts[kind];
-    mesh.instanceMatrix.needsUpdate = true;
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  for (const { kind, mesh } of meshes) {
+    const list = (byKind.get(kind) ?? []).slice(0, BAY_CAPACITY);
+    mesh.clearInstances();
+    mesh.addInstances(list.length, (obj, i) => {
+      const bay = list[i];
+      obj.position.set(bay.x, bay.y, bay.z);
+      obj.quaternion.setFromAxisAngle(up, bay.yaw);
+      obj.scale.set(bay.sx, bay.sy, 1);
+      obj.color = tint.set(bay.color);
+    });
   }
 }
 
-export function NycFacades(): JSX.Element {
+export function NycFacades(): JSX.Element | null {
   const gltf = useGLTF(URL);
-  const meshes = useMemo(() => {
-    const out = {} as Record<BayKind, THREE.InstancedMesh>;
-    for (const kind of BAY_KINDS) {
+  const [meshes, setMeshes] = useState<readonly BayMesh[]>([]);
+  // built and disposed in the effect, so a StrictMode remount (cleanup, then
+  // setup again) gets fresh meshes instead of reusing disposed ones; the one
+  // shared material stays for the next visit
+  useEffect(() => {
+    const built = BAY_KINDS.map((kind) => {
       const node = gltf.scene.getObjectByName(kind);
       if (!(node instanceof THREE.Mesh))
         throw new Error(`bays.glb has no ${kind}`);
-      const mesh = new THREE.InstancedMesh(
-        prepared(node),
-        bayMaterial(),
-        BAY_CAPACITY,
-      );
-      mesh.count = 0;
-      mesh.frustumCulled = false;
-      // colors exist from the start so the shader keeps one program
-      mesh.setColorAt(0, tint.set("#ffffff"));
-      out[kind] = mesh;
-    }
-    return out;
+      // each bay is culled on its own against the camera, so the range can
+      // reach behind the player's back at no cost
+      const mesh = new InstancedMesh2(prepared(node), bayMaterial(), {
+        capacity: BAY_CAPACITY,
+      });
+      return { kind, mesh };
+    });
+    setMeshes(built);
+    return () => {
+      for (const { mesh } of built) {
+        mesh.geometry.dispose();
+        mesh.dispose();
+      }
+    };
   }, [gltf]);
-  // the geometry copies and instance buffers go with the city; the one
-  // shared material stays for the next visit
-  useEffect(
-    () => () => disposeInstanced(Object.values(meshes), false),
-    [meshes],
-  );
   const { bays } = cityBays.use();
   const invalidate = useThree((state) => state.invalidate);
   const canvas = useThree((state) => state.gl.domElement);
@@ -211,12 +203,12 @@ export function NycFacades(): JSX.Element {
     // a still or paused frame loop draws only when asked
     invalidate();
     // read by the screenshot script: the bays are in and placed
-    if (bays.length > 0) canvas.dataset.bays = "ready";
+    if (bays.length > 0 && meshes.length > 0) canvas.dataset.bays = "ready";
   }, [meshes, bays, invalidate, canvas]);
   return (
     <>
-      {BAY_KINDS.map((kind) => (
-        <primitive key={kind} object={meshes[kind]} />
+      {meshes.map(({ kind, mesh }) => (
+        <primitive key={kind} object={mesh} />
       ))}
     </>
   );

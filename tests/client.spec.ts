@@ -1402,6 +1402,35 @@ test("the city loads, the player walks with the keys, and the scene renders", as
   expect(errors).toEqual([]);
 });
 
+test("the El: ride from Downtown's stairs to Chinatown and step off at its stairs", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  // the timetable at twenty times speed, standing at Downtown's stairs
+  await page.goto(`${LOW}&room=city&at=22,9.5&elspeed=20`);
+  const view = page.getByRole("img", { name: "3D room view" });
+  await expect(view).toHaveAttribute("data-frames", "10", { timeout: 150_000 });
+  await page
+    .getByRole("button", { name: "Ride the El to Chinatown and Koreatown" })
+    .click();
+  await expect(page.getByText(/Riding to Chinatown and Koreatown/)).toBeVisible(
+    {
+      timeout: 120_000,
+    },
+  );
+  // the train carries her east; she steps off at Chinatown's stairs
+  await expect
+    .poll(async () => Number(await view.getAttribute("data-player-x")), {
+      timeout: 120_000,
+    })
+    .toBeGreaterThan(300);
+  await expect(
+    page.getByRole("button", { name: "Ride the El to Downtown" }),
+  ).toBeVisible({ timeout: 60_000 });
+  expect(errors).toEqual([]);
+});
+
 test("Speedway: race starts, car moves, HUD shows lap 1", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto(`${LOW}&room=speedway`);

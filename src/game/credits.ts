@@ -204,6 +204,14 @@ export const CREDITS: readonly {
           "Suburbia's houses near the player, optimized with a small colormap.",
       },
       {
+        title: "Train Pack",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://quaternius.com/packs/trainpack.html",
+        usedFor:
+          "The El's train cars (high-speed front and wagon), thinned and baked to vertex colors.",
+      },
+      {
         title: "Stylized Nature MegaKit",
         author: "Quaternius",
         license: "CC0 1.0",

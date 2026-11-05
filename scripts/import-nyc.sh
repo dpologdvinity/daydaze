@@ -19,6 +19,15 @@ KIT="$KIT" blender --background --factory-startup \
 npx -y @gltf-transform/cli@4.5.1 optimize "$TMP/bays.glb" "$OUT/bays.glb" \
   --compress meshopt --simplify false --join false --instance false \
   --flatten false --palette false --prune-attributes false
+# The El's train cars: Quaternius' Train Pack (CC0), unzipped under $TRAINS
+ELOUT="$(dirname "$0")/../public/models/el"
+mkdir -p "$ELOUT"
+blender --background --factory-startup --python "$(dirname "$0")/../art/city/el_train.py" -- "$TMP/el" > /dev/null
+for f in train-front train-wagon; do
+  npx -y @gltf-transform/cli@4.5.1 optimize "$TMP/el/$f.glb" "$ELOUT/$f.glb" \
+    --compress meshopt --simplify false --join false --instance false \
+    --flatten false --palette false --prune-attributes false
+done
 # Suburbia's houses: Kenney's City Kit Suburban (CC0), unzipped to $SUBURBAN
 SUBURBAN="${SUBURBAN:-/tmp/nyc-sub/Models/GLB format}"
 HOUSES="$(dirname "$0")/../public/models/suburbia"

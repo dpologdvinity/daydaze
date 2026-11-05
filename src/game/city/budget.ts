@@ -19,6 +19,8 @@ import {
   parkGrowth,
   type GrowthKind,
 } from "./park.ts";
+import { elBoxes } from "./el.ts";
+import { BAY_TRIANGLES, HOUSE_MODELS, type BayInstance } from "./nyc.ts";
 import { TREE_VARIANTS, drawCallsOf, planCity, trianglesOf } from "./plan.ts";
 import {
   BAY_RANGE,
@@ -88,6 +90,46 @@ export function modelsInBudget(): string[] {
 
 const GROWTH = parkGrowth();
 
+/** The El is always drawn: four merged box meshes (trestle, stone, rails,
+ * roofs) and three train cars of about 1,600 triangles each. */
+const EL_TRIANGLES = elBoxes([]).length * 12 + 3 * 1600;
+const EL_DRAW_CALLS = 4 + 3;
+
+/** The widest view she can have of the ground, in radians: the camera sits
+ * behind her and looks ahead, so about a third of the circle is on screen. */
+const VIEW_WEDGE = (2 * Math.PI) / 3;
+/** Bays this near are always counted: the camera can swing round them. */
+const ALWAYS_SEEN = 6;
+
+/** The triangles of the bays in the worst view: bays are culled one by one
+ * (InstancedMesh2), so only those inside the best wedge of `VIEW_WEDGE` count. */
+export function worstViewBayTriangles(
+  bays: readonly BayInstance[],
+  at: Vec2,
+): number {
+  const BINS = 36;
+  const bins = new Array<number>(BINS).fill(0);
+  let always = 0;
+  for (const bay of bays) {
+    const cost = BAY_TRIANGLES[bay.kind];
+    const dx = bay.x - at[0];
+    const dz = bay.z - at[1];
+    if (Math.hypot(dx, dz) < ALWAYS_SEEN) always += cost;
+    else {
+      const angle = (Math.atan2(dz, dx) + 2 * Math.PI) % (2 * Math.PI);
+      bins[Math.floor((angle / (2 * Math.PI)) * BINS) % BINS] += cost;
+    }
+  }
+  const span = Math.ceil((VIEW_WEDGE / (2 * Math.PI)) * BINS) + 1;
+  let worst = 0;
+  for (let start = 0; start < BINS; start++) {
+    let sum = 0;
+    for (let k = 0; k < span; k++) sum += bins[(start + k) % BINS];
+    worst = Math.max(worst, sum);
+  }
+  return worst + always;
+}
+
 /** The low tier's draw calls and triangles at `at`, plus what the plan
  * alone costs and how many bays it wears. */
 export function lowTierCost(at: Vec2): {
@@ -120,9 +162,20 @@ export function lowTierCost(at: Vec2): {
     grown.set(g.kind, n + 1);
     add(growthModel(g.kind));
   }
-  let drawCalls = drawCallsOf(plan);
+  // houses are drawn from their models: one draw call per part, 4 at most
+  const houseModels = new Set(plan.houses.map((h) => h.variant)).size;
+  let drawCalls =
+    EL_DRAW_CALLS +
+    drawCallsOf(plan) +
+    Math.min(houseModels, HOUSE_MODELS.length) * 4;
+  const allBays = plan.bays.reduce((n, b) => n + BAY_TRIANGLES[b.kind], 0);
   const planTriangles = trianglesOf(plan);
-  let triangles = planTriangles;
+  // the bays are culled per instance: count only the worst view of them
+  let triangles =
+    planTriangles -
+    allBays +
+    worstViewBayTriangles(plan.bays, at) +
+    EL_TRIANGLES;
   for (const [model, n] of counts) {
     const cost = MODEL_COST[model];
     if (!cost) throw new Error(`no cost for ${model}`);
