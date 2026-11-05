@@ -16,6 +16,8 @@ import {
   FLAMINGOS,
   ROCK_SPOTS,
   TREE_SPOTS,
+  WOODS_DRESSING,
+  BIGCATS_DRESSING,
   flamingoAt,
   HABITATS,
   farmVoicesAt,
@@ -327,6 +329,27 @@ export function Zoo({
         color="#8c867e"
       />
       <Scatter url="/models/nature/commontree-2.glb" spots={TREE_SPOTS} />
+      <Scatter
+        url="/models/nature/commontree-2.glb"
+        spots={[...WOODS_DRESSING.trees, ...BIGCATS_DRESSING.trees]}
+      />
+      <Scatter
+        url="/models/nature/fern-1-lo.glb"
+        spots={[
+          ...WOODS_DRESSING.ferns,
+          ...WOODS_DRESSING.bushes,
+          ...BIGCATS_DRESSING.bushes,
+        ]}
+      />
+      <Scatter
+        url="/models/zoo/rock_smallA.glb"
+        color="#9a9288"
+        spots={WOODS_DRESSING.rocks}
+      />
+      <Scatter
+        url="/models/nature/grass-common-tall-lo.glb"
+        spots={[...WOODS_DRESSING.grass, ...BIGCATS_DRESSING.grass]}
+      />
       <Animals player={player} />
       <Farm player={player} />
       <SafariTracker player={player} />

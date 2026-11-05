@@ -275,3 +275,64 @@ export const TREE_SPOTS: readonly Spot[] = [
   [12, 11, 0.42],
   [-12, 11.5, 0.42],
 ].map(([x, z, k], i) => spot(x ?? 0, z ?? 0, i * 1.3, k ?? 0.4));
+
+/** Plants dressing the Woods and the Big Cats' yard (the Stylized Nature
+ * MegaKit in public/models/nature/): [x, z, scale] each, kept to the edges so
+ * the animals' loops stay clear. */
+const dress = (rows: readonly (readonly [number, number, number])[]): Spot[] =>
+  rows.map(([x, z, k], i) => spot(x, z, i * 2.1, k));
+
+export const WOODS_DRESSING = {
+  trees: dress([
+    [-3.8, -7.8, 0.4],
+    [3.8, -7.8, 0.36],
+    [-1.2, -8, 0.32],
+    [1.8, -7.9, 0.44],
+  ]),
+  bushes: dress([
+    [-4, -5.2, 0.57],
+    [4, -5.2, 0.53],
+    [-2.5, -7.6, 0.48],
+    [0.5, -7.7, 0.62],
+    [3, -7.5, 0.48],
+    [-4.1, -6.6, 0.53],
+  ]),
+  ferns: dress([
+    [-3, -5, 0.52],
+    [2.5, -5, 0.48],
+    [3.9, -6.4, 0.52],
+    [-1.5, -7.2, 0.45],
+  ]),
+  rocks: dress([
+    [-0.5, -5, 1.4],
+    [2.8, -7.2, 0.45],
+  ]),
+  grass: dress([
+    [-3.4, -5.6, 0.36],
+    [1.2, -5.1, 0.34],
+    [-0.8, -7.3, 0.31],
+    [3.5, -5.9, 0.36],
+    [-4.2, -7.4, 0.34],
+  ]),
+} as const;
+
+export const BIGCATS_DRESSING = {
+  trees: dress([
+    [-17.5, 1.5, 0.42],
+    [-8.5, 8, 0.38],
+  ]),
+  bushes: dress([
+    [-18, 6, 0.62],
+    [-8, 1.2, 0.57],
+    [-16, 8.2, 0.53],
+    [-9, 7.6, 0.53],
+  ]),
+  grass: dress([
+    [-18, 3, 0.39],
+    [-17, 8.5, 0.36],
+    [-8.2, 4, 0.39],
+    [-10, 8.5, 0.36],
+    [-15, 1, 0.36],
+    [-11, 1.2, 0.34],
+  ]),
+} as const;

@@ -62,12 +62,15 @@ DOWNLOADS = {
     "elk": "realistic_animated_elk_3d_model/scene.gltf",
     "tiger": "tiger/source/Tiger.fbx",
     "labrador": "labrador-dog/source/Labrador.glb",
+    "doe": "realistic-animated-doe-3d-model/source/Doe Animated.fbx",
+    # the .rar's FBX unpacked next to the pack's textures/ (see docs/assets.md)
+    "bluewhale": "whale-x/WhaleAnim03.fbx",
 }
 for n, rel in DOWNLOADS.items():
     SOURCES[n] = os.path.join(DL, rel)
 TEXTURED |= set(DOWNLOADS)
 # Triangle budget per model; heavier sources are decimated down to it.
-MAX_TRIS = {"bear": 8000, "elk": 8000, "tiger": 8000, "labrador": 8000}
+MAX_TRIS = {"bear": 8000, "elk": 8000, "tiger": 8000, "labrador": 8000, "doe": 8000, "bluewhale": 8000}
 
 # Clips kept (matched by suffix after the last "|"), renamed to the key.
 CLIPS = {
@@ -79,7 +82,7 @@ CLIPS = {
     "idle": "idle", "walk": "walk", "run": "run", "eating": "eat", "idle down": "graze",
     "idle trumpet": "react", "Preen": "graze", "Sleep": "sleep", "Sit1": "sit",
     "pecking": "graze", "walking": "walk", "rest": "sleep", "sitting-idle": "sit",
-    "Take 01": "idle", "Animation": "idle",
+    "Take 01": "idle", "Animation": "idle", "Swimming": "swim",
     # WildMesh bear and elk: breathing is the calm idle, the other stand idle
     # the alert one; the elk's and bear's lying and sitting breaths serve pets
     "Stand_Breathing_01": "idle", "Stand_Idle_01": "idle2", "Stand_Eating_01": "graze",
@@ -151,7 +154,8 @@ def keep_clips(arm, bones_only=False):
             continue
         parts = act.name.split("|")
         # FBX takes are named "Node|Take|" (empty last part)
-        key = (parts[-1] or parts[-2] if len(parts) > 1 else parts[-1]).split(".")[0]
+        # glTF clips are plain names; FBX takes are "Node|Take|Layer"
+        key = (parts[1] if len(parts) >= 3 else parts[-1]).split(".")[0]
         if key in CLIPS and CLIPS[key] not in kept:
             act.name = CLIPS[key]
             act.use_fake_user = True
@@ -176,6 +180,20 @@ def matte(meshes):
                 bsdf.inputs["Metallic"].default_value = 0.0
             if not bsdf.inputs["Roughness"].links and bsdf.inputs["Roughness"].default_value < 0.5:
                 bsdf.inputs["Roughness"].default_value = 0.7
+
+
+def paint_whale(meshes, path):
+    """The whale's FBX arrives untextured: wire its BaseColor and Normal PNGs in."""
+    tex = os.path.join(os.path.dirname(path), "textures")
+    mat = bpy.data.materials.new("Whale")
+    mat.use_nodes = True
+    bsdf = next(n for n in mat.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+    base = mat.node_tree.nodes.new("ShaderNodeTexImage")
+    base.image = bpy.data.images.load(os.path.join(tex, "WhaleLow_lambert1_BaseColor.png"))
+    mat.node_tree.links.new(base.outputs["Color"], bsdf.inputs["Base Color"])
+    for ob in meshes:
+        ob.data.materials.clear()
+        ob.data.materials.append(mat)
 
 
 def decimate(meshes, budget):
@@ -208,11 +226,13 @@ def convert(name, path):
     arm = next((o for o in bpy.data.objects if o.type == "ARMATURE"), None)
     if name not in TEXTURED:
         vertex_color_single_material(meshes)
+    if name == "bluewhale":
+        paint_whale(meshes, path)
     if name in DOWNLOADS:
         matte(meshes)
     if name in MAX_TRIS:
         decimate(meshes, MAX_TRIS[name])
-    kept = keep_clips(arm, bones_only=name in DOWNLOADS) if arm else {}
+    kept = keep_clips(arm, bones_only=name in DOWNLOADS and name != "bluewhale") if arm else {}
     out = os.path.join(OUT, name + ".glb")
     bpy.ops.export_scene.gltf(
         filepath=out, export_format="GLB", export_animations=True,

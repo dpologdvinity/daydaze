@@ -91,6 +91,13 @@ export const DOLPHINS: readonly {
   { center: [-19, -42], radius: 6, phase: 4.2 },
 ];
 
+/** A blue whale far offshore, cruising a wide slow loop just under the surface. */
+export const WHALES: readonly {
+  center: Vec2;
+  radius: number;
+  phase: number;
+}[] = [{ center: [8, -64], radius: 12, phase: 1 }];
+
 /** Gulls and crabs on the beach. */
 export const GULLS: readonly { at: Vec2; yaw: number }[] = [
   { at: [-12, 6.5], yaw: 0.6 },
