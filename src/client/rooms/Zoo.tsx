@@ -330,24 +330,21 @@ export function Zoo({
       />
       <Scatter url="/models/nature/commontree-2.glb" spots={TREE_SPOTS} />
       <Scatter
-        url="/models/nature/commontree-2.glb"
+        url="/models/nature/commontree-4.glb"
         spots={[...WOODS_DRESSING.trees, ...BIGCATS_DRESSING.trees]}
       />
       <Scatter
-        url="/models/nature/fern-1-lo.glb"
-        spots={[
-          ...WOODS_DRESSING.ferns,
-          ...WOODS_DRESSING.bushes,
-          ...BIGCATS_DRESSING.bushes,
-        ]}
+        url="/models/nature/bush-common.glb"
+        spots={[...WOODS_DRESSING.bushes, ...BIGCATS_DRESSING.bushes]}
       />
+      <Scatter url="/models/nature/fern-1.glb" spots={WOODS_DRESSING.ferns} />
       <Scatter
-        url="/models/zoo/rock_smallA.glb"
+        url="/models/nature/rock-medium-1.glb"
         color="#9a9288"
         spots={WOODS_DRESSING.rocks}
       />
       <Scatter
-        url="/models/nature/grass-common-tall-lo.glb"
+        url="/models/nature/grass-common-tall.glb"
         spots={[...WOODS_DRESSING.grass, ...BIGCATS_DRESSING.grass]}
       />
       <Animals player={player} />

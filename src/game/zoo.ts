@@ -304,7 +304,7 @@ export const WOODS_DRESSING = {
     [-1.5, -7.2, 0.45],
   ]),
   rocks: dress([
-    [-0.5, -5, 1.4],
+    [-0.5, -5, 0.5],
     [2.8, -7.2, 0.45],
   ]),
   grass: dress([
