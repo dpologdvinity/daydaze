@@ -36,9 +36,9 @@ export function SushiFitout({ ramen }: { ramen: boolean }) {
       </group>
       <PropSet
         model="sushi-Food_Roll"
-        width={0.18}
-        depth={0.18}
-        height={0.12}
+        width={0.06}
+        depth={0.06}
+        height={0.04}
         at={tables.map(([x, , z]) => [x, 0.8, z, 0] as const)}
       />
       <PropSet
