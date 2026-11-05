@@ -745,10 +745,30 @@ def build(ctx):
         k = np.clip((z - (t - 0.075)) / 0.05, 0, 1)
         return 0.018 * k * k * (3 - 2 * k)
 
-    shaved = ubc_hair(ctx, "Hair_shaved-sides", "Hair_SimpleParted.gltf", solid, lift=top_volume)
+    def tapered(volume):
+        """The fade: the cut hugs the scalp at its hem (roots read dark, so
+        it shades into skin) and swells only toward the crown."""
+
+        def lift(z, t):
+            k = np.clip((z - (t - 0.14)) / 0.06, 0, 1)
+            return volume(z, t) - 0.011 * (1 - k * k * (3 - 2 * k))
+
+        return lift
+
+    # above the ears the sides are clipped away: bare skin, then the fade
+    def undercut(c, t):
+        return c[2] > t - 0.1 or abs(c[0]) < 0.045
+
+    shaved = ubc_hair(
+        ctx, "Hair_shaved-sides", "Hair_SimpleParted.gltf", solid,
+        lift=tapered(top_volume), keep=undercut,
+    )
     out.append(shaved)
-    # edges: the sleek parted cut, hugging the scalp
-    sleek = ubc_hair(ctx, "Hair_sleek", "Hair_SimpleParted.gltf", solid, grow=0.016)
+    # edges: the sleek parted cut, hugging the scalp and faded at the nape
+    sleek = ubc_hair(
+        ctx, "Hair_sleek", "Hair_SimpleParted.gltf", solid, grow=0.016,
+        lift=tapered(lambda z, t: 0.0),
+    )
     edges = sleek
     edges.name = "Hair_edges"
     out.append(edges)
