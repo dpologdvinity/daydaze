@@ -36,6 +36,10 @@ future imported packs belong here when they enter the game.
 | Giraffe | BlueMesh | CC-BY 4.0 | https://sketchfab.com/3d-models/giraffe-522c042aad9f4348a74c2985ec3f99f9 | Zoo savanna giraffes, with a calm idle clip (swayed along when walking). |
 | Elephant | Rukh3D | CC-BY 4.0 | https://sketchfab.com/3d-models/elephant-4ae161372d6a4219a87340339d1ffe03 | Zoo elephants, with idle, walk, run and eat clips. |
 | Baby Lion | kenchoo | CC-BY 4.0 | https://sketchfab.com/3d-models/baby-lion-c9599625dc474262aab754d7b63841f5 | Zoo lions, with a calm idle clip (swayed along when walking). |
+| Realistic Animated Bear 3D Model | WildMesh 3D | CC-BY 4.0 | https://sketchfab.com/3d-models/realistic-animated-bear-3d-model-bffc3c87d2d148ff8533e1cc8a11c9f1 | Zoo woods bear, with idle, walk, run, graze, sit and sleep clips (kept 9 of 81, textures shrunk). |
+| Realistic Animated Elk 3D Model | WildMesh 3D | CC-BY 4.0 | https://sketchfab.com/3d-models/realistic-animated-elk-3d-model-787834f9caa2474d9f1814b807c072d7 | Zoo woods elk, with idle, walk, run, graze, sit and sleep clips (kept 8 of 53, textures shrunk). |
+| Tiger | Blender Artist | CC-BY 4.0 | https://sketchfab.com/3d-models/tiger-67bbedd727a047869ef7c7b608445484 | Zoo big cats' tigers, with rest, walk, run, eat and howl clips. |
+| Labrador Dog | kenchoo | CC-BY 4.0 | https://sketchfab.com/3d-models/labrador-dog-1f56cfbab07e4fe49b5d9e521c82073a | Adoptable pet Labrador, decimated to 8k triangles, with a calm idle clip (swayed along when walking). |
 | African penguin (Spheniscus demersus) Low poly | Major | CC-BY 4.0 | https://sketchfab.com/3d-models/african-penguin-spheniscus-demersus-low-poly-9e59070815fe451d93398e2ebdb9bb92 | Zoo penguin pool, with idle, walk, sit and sleep clips. |
 | Flamingo | Хмара Сергей | CC-BY 3.0 | https://poly.pizza/m/5hUIvLVFqet | Zoo flamingo pond (static mesh, swayed by the client). |
 | Cat | Quaternius | CC0 1.0 | https://poly.pizza/m/qKICY6xla2 | Adoptable pet cat, with idle, walk, run and eat clips. |
@@ -97,6 +101,10 @@ Street furniture is built by `art/street/build_street.py` into `public/models/st
 The animals and fish are converted by `art/animals/build_animals.py` (Blender:
 one skinned mesh, colors baked to vertex colors, only the clips the game plays)
 and compressed by `scripts/import-animals.sh` into `public/models/animals/`.
+The owner's Sketchfab downloads (2026-11-04) were checked against each model's
+license: the WildMesh 3D "demo free" animals, the 100-animal pack, the
+DigitalLife3D turtles and reef shark, the 3DHaupt wolf and Munchkin Cat are
+CC-BY-NC (or NC-SA/ND) and are not used; only the CC-BY rows above are.
 
 ## Textures
 

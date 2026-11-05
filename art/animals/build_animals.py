@@ -52,6 +52,23 @@ TEXTURED = {"giraffe", "elephant", "lion", "penguin"}
 for n in TEXTURED | {"chicken"}:
     SOURCES[n] = f"{SKETCHFAB}/{n}.glb"
 
+# Owner-downloaded Sketchfab animals (CC-BY; see docs/assets.md), unpacked one
+# per directory under $ANIMAL_DOWNLOADS. They are textured like the giraffe and
+# lion. The WildMesh bear and elk carry 50-80 clips; the tiger is an FBX whose
+# takes sit on many helper nodes, so only actions that pose bones are kept.
+DL = os.environ.get("ANIMAL_DOWNLOADS", "/tmp/animals")
+DOWNLOADS = {
+    "bear": "realistic_animated_bear_3d_model/scene.gltf",
+    "elk": "realistic_animated_elk_3d_model/scene.gltf",
+    "tiger": "tiger/source/Tiger.fbx",
+    "labrador": "labrador-dog/source/Labrador.glb",
+}
+for n, rel in DOWNLOADS.items():
+    SOURCES[n] = os.path.join(DL, rel)
+TEXTURED |= set(DOWNLOADS)
+# Triangle budget per model; heavier sources are decimated down to it.
+MAX_TRIS = {"bear": 8000, "elk": 8000, "tiger": 8000, "labrador": 8000}
+
 # Clips kept (matched by suffix after the last "|"), renamed to the key.
 CLIPS = {
     "Idle": "idle", "Idle_Eating": "eat", "Idle_2": "idle2", "Idle_Headlow": "graze",
@@ -63,6 +80,13 @@ CLIPS = {
     "idle trumpet": "react", "Preen": "graze", "Sleep": "sleep", "Sit1": "sit",
     "pecking": "graze", "walking": "walk", "rest": "sleep", "sitting-idle": "sit",
     "Take 01": "idle", "Animation": "idle",
+    # WildMesh bear and elk: breathing is the calm idle, the other stand idle
+    # the alert one; the elk's and bear's lying and sitting breaths serve pets
+    "Stand_Breathing_01": "idle", "Stand_Idle_01": "idle2", "Stand_Eating_01": "graze",
+    "Lying_Breathing_01": "sleep", "Sitting_Breathing_01": "sit", "SittingSpec_Breathing_01": "sit",
+    "Hit_Stand_F01": "react", "Hit_Stand_L01": "react",
+    # Tiger: no standing idle, so the prone rest is its idle and the howl its alert
+    "Idle_Lie Prone": "idle", "Howl": "idle2", "Eat": "graze", "Walk Fast": "run",
 }
 
 
@@ -110,11 +134,24 @@ def vertex_color_single_material(meshes):
     return ob
 
 
-def keep_clips(arm):
+def poses_bones(act):
+    """True for actions that animate bones (FBX imports also make one per helper node)."""
+    if hasattr(act, "fcurves"):
+        curves = list(act.fcurves)
+    else:  # Blender 5 layered actions
+        curves = [fc for l in act.layers for st in l.strips for cb in st.channelbags for fc in cb.fcurves]
+    return any(fc.data_path.startswith("pose.bones") for fc in curves)
+
+
+def keep_clips(arm, bones_only=False):
     """Drops every action the game doesn't play and renames the rest."""
     kept = {}
     for act in list(bpy.data.actions):
-        key = act.name.split("|")[-1].split(".")[0]
+        if bones_only and not poses_bones(act):
+            continue
+        parts = act.name.split("|")
+        # FBX takes are named "Node|Take|" (empty last part)
+        key = (parts[-1] or parts[-2] if len(parts) > 1 else parts[-1]).split(".")[0]
         if key in CLIPS and CLIPS[key] not in kept:
             act.name = CLIPS[key]
             act.use_fake_user = True
@@ -125,6 +162,34 @@ def keep_clips(arm):
     if arm.animation_data and kept:
         arm.animation_data.action = kept.get("idle") or kept.get("swim")
     return kept
+
+
+def matte(meshes):
+    """FBX materials import shiny and metal (the tiger's glTF reads as black):
+    make unlinked metallic/roughness inputs a plain, matte fur and skin."""
+    for ob in meshes:
+        for mat in ob.data.materials:
+            bsdf = next((n for n in mat.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None) if mat and mat.node_tree else None
+            if not bsdf:
+                continue
+            if not bsdf.inputs["Metallic"].links:
+                bsdf.inputs["Metallic"].default_value = 0.0
+            if not bsdf.inputs["Roughness"].links and bsdf.inputs["Roughness"].default_value < 0.5:
+                bsdf.inputs["Roughness"].default_value = 0.7
+
+
+def decimate(meshes, budget):
+    """Collapses the meshes together to about `budget` triangles (UVs and skin weights follow)."""
+    total = sum(sum(len(p.vertices) - 2 for p in o.data.polygons) for o in meshes)
+    if total <= budget:
+        return
+    ratio = budget / total
+    for ob in meshes:
+        bpy.context.view_layer.objects.active = ob
+        ob.shape_key_clear()  # a modifier can't be applied over shape keys
+        mod = ob.modifiers.new("Decimate", "DECIMATE")
+        mod.ratio = ratio
+        bpy.ops.object.modifier_apply(modifier=mod.name)
 
 
 def convert(name, path):
@@ -143,7 +208,11 @@ def convert(name, path):
     arm = next((o for o in bpy.data.objects if o.type == "ARMATURE"), None)
     if name not in TEXTURED:
         vertex_color_single_material(meshes)
-    kept = keep_clips(arm) if arm else {}
+    if name in DOWNLOADS:
+        matte(meshes)
+    if name in MAX_TRIS:
+        decimate(meshes, MAX_TRIS[name])
+    kept = keep_clips(arm, bones_only=name in DOWNLOADS) if arm else {}
     out = os.path.join(OUT, name + ".glb")
     bpy.ops.export_scene.gltf(
         filepath=out, export_format="GLB", export_animations=True,
