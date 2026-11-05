@@ -115,7 +115,7 @@ def build(ctx, name, rel_path, mat):
             li += 1
     for p in ob.data.polygons:
         p.use_smooth = True
-    attach(ctx, ob, mix(clo, ctx.W), {k: mix(clo, d) for k, d in ctx.KEYS.items()})
+    attach(ctx, ob, mix(clo, ctx.W), {k: mix(clo, d) * (1.25 if k == "plus" else 1) for k, d in ctx.KEYS.items()})
     ob["deleted"] = sorted(clo["deleted"])
     return ob
 

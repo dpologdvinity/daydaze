@@ -255,10 +255,18 @@ KEYS = {
         else 0
     ),
     "athletic": (target(UNI + "maxmuscle-averageweight.target") - AVG) * 0.6,
-    # plus-size: the full-weight macro target, softened a little, with wider
-    # hips; every outfit carries the key like the other figures
-    "plus": (target(UNI + "averagemuscle-maxweight.target") - AVG) * 0.85
-    + target("hip/hip-scale-horiz-incr.target") * 0.3,
+    # plus-size: the full-weight macro target pushed past 1, with a fuller
+    # belly, upper arms, thighs, calves, hips, seat, double chin and back;
+    # every outfit and hair carries the key like the other figures
+    "plus": (target(UNI + "averagemuscle-maxweight.target") - AVG) * 1.3
+    + target("stomach/stomach-pregnant-incr.target") * 0.4
+    + pair("armslegs/{s}-upperarm-fat-incr.target") * 0.9
+    + pair("armslegs/{s}-upperleg-fat-incr.target") * 0.9
+    + pair("armslegs/{s}-lowerleg-fat-incr.target") * 0.5
+    + target("neck/neck-double-incr.target") * 0.6
+    + target("torso/torso-scale-depth-incr.target") * 0.35
+    + target("hip/hip-scale-horiz-incr.target") * 0.4
+    + target("buttocks/buttocks-volume-incr.target") * 0.4,
     "blink": target("expression/units/caucasian/eye-left-closure.target")
     + target("expression/units/caucasian/eye-right-closure.target"),
     "smile": target("expression/units/caucasian/mouth-corner-puller.target") * 0.5,
