@@ -1,4 +1,4 @@
-// The Zoo's pet-adoption corner: pick a husky, Shiba Inu, cat or rabbit, name
+// The Zoo's pet-adoption corner: pick a husky, Shiba Inu, Labrador, cat or rabbit, name
 // it and take it home. It then follows you everywhere (PetFollower) and
 // sleeps at your apartment. The panel feeds and renames it too. The rules are
 // in src/game/pet.ts; the saved pet reaches here through petDesk.

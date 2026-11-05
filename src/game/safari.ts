@@ -18,6 +18,8 @@ export const SPECIES: readonly { id: Species; label: string }[] = [
   { id: "zebra", label: "Zebra" },
   { id: "elephant", label: "Elephant" },
   { id: "lion", label: "Lion" },
+  { id: "tiger", label: "Tiger" },
+  { id: "bear", label: "Bear" },
   { id: "penguin", label: "Penguin" },
   { id: "flamingo", label: "Flamingo" },
 ];

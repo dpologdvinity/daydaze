@@ -195,6 +195,9 @@ const SHOTS: {
   { name: "zoo-savanna", query: "room=zoo&cam=-8,3.2,-1,-13,1,-9" },
   // close on the elephants and the lions' rocks
   { name: "zoo-elephants", query: "room=zoo&cam=8,3.4,-1,13,1.2,-9" },
+  // the big cats' rocks (lions and tigers) and the woods (bear and elk)
+  { name: "zoo-bigcats", query: "room=zoo&cam=-13,3.2,-2.5,-13,1,4" },
+  { name: "zoo-woods", query: "room=zoo&cam=0,4.6,-0.4,0,0.4,-6.4" },
   { name: "dealership", query: "room=dealership" },
   { name: "jazz-club", query: "room=jazz-club" },
   { name: "vinyl-vault", query: "room=vinyl-vault" },
@@ -256,6 +259,7 @@ const SHOTS: {
   // your adopted pet beside you in the city, and asleep in its bed at home
   petShot("pet-city", "room=city&view=full&time=12:00", "husky", "Biscuit"),
   petShot("pet-home", "room=apartment", "shibainu", "Kiko"),
+  petShot("pet-lab", "room=city&view=full&time=12:00", "labrador", "Maple"),
   { name: "city-street", query: "room=city&view=full&time=12:00&at=45,11" },
   {
     name: "transit-city-street-before",

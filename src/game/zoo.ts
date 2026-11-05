@@ -1,6 +1,6 @@
 // The Daydaze Zoo, behind its gate on Park Avenue in Uptown: a loop of
 // paths past six fenced habitats: the savanna (giraffes and zebras), the
-// elephants, the lions' rocks, the penguins' pool, the flamingo pond and the
+// elephants, the big cats' rocks, the woods (a bear and an elk), the penguins' pool, the flamingo pond and the
 // petting farm (alpacas, a donkey and a cow, animated GLBs).
 // One layout, shared by the room's floor and blockers (rooms.ts) and the
 // client's scene, which walks the animals round inside their habitats.
@@ -24,7 +24,13 @@ export const ZOO_DOOR = {
 };
 
 export type Habitat =
-  "savanna" | "elephants" | "lions" | "penguins" | "flamingos" | "farm";
+  | "savanna"
+  | "elephants"
+  | "lions"
+  | "penguins"
+  | "flamingos"
+  | "farm"
+  | "woods";
 export type Rect = { x0: number; z0: number; x1: number; z1: number };
 
 /** Each habitat's fenced rectangle. */
@@ -35,6 +41,8 @@ export const HABITATS: Record<Habitat, Rect> = {
   lions: { x0: -19, z0: 0, x1: -7, z1: 9 },
   penguins: { x0: 7, z0: 0, x1: 19, z1: 9 },
   farm: { x0: -5, z0: 0, x1: 5, z1: 8 },
+  // the bear and elk, in the pocket between the pond and the path
+  woods: { x0: -4.5, z0: -8.4, x1: 4.5, z1: -4.4 },
 };
 
 /** The petting farm's animals: each wanders its own loop, `inset` meters
@@ -102,11 +110,19 @@ export const BLOCKERS: readonly (readonly Vec2[])[] = Object.values(
 ).map((h) => box(h.x0, h.z0, h.x1, h.z1));
 
 export type Species =
-  "giraffe" | "zebra" | "elephant" | "lion" | "penguin" | "flamingo";
+  | "giraffe"
+  | "zebra"
+  | "elephant"
+  | "lion"
+  | "tiger"
+  | "bear"
+  | "elk"
+  | "penguin"
+  | "flamingo";
 
 /** The four-legged animals, each walking its habitat's loop. */
 export const WALKERS: readonly {
-  kind: "giraffe" | "zebra" | "elephant" | "lion";
+  kind: "giraffe" | "zebra" | "elephant" | "lion" | "tiger" | "bear" | "elk";
   home: Habitat;
   speed: number;
   phase: number;
@@ -120,6 +136,10 @@ export const WALKERS: readonly {
   { kind: "elephant", home: "elephants", speed: 0.5, phase: 3.1 },
   { kind: "lion", home: "lions", speed: 0.6, phase: 0.5 },
   { kind: "lion", home: "lions", speed: 0.6, phase: 3.6 },
+  { kind: "tiger", home: "lions", speed: 0.7, phase: 2 },
+  { kind: "tiger", home: "lions", speed: 0.7, phase: 5.2 },
+  { kind: "bear", home: "woods", speed: 0.4, phase: 0 },
+  { kind: "elk", home: "woods", speed: 0.5, phase: Math.PI },
 ];
 
 export const PENGUINS = 6;
