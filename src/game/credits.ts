@@ -141,6 +141,14 @@ export const CREDITS: readonly {
           "City bus, merged, recolored and simplified for near and far rendering.",
       },
       {
+        title: "Universal Base Characters",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://quaternius.com/packs/universalbasecharacters.html",
+        usedFor:
+          "Buzz cut, parted cut and their refits as the buzz, shaved-sides and slicked-edges hair, scaled to our head.",
+      },
+      {
         title: "Realistic Car Pack",
         author: "Quaternius",
         license: "CC0 1.0",

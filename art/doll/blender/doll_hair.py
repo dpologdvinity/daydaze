@@ -99,6 +99,67 @@ def scalp_hair(ctx, name, mat, extra, rise=0.0):
     return ob
 
 
+UBC = "/tmp/ubc/Universal Base Characters[Standard]/Hairstyles/Rigged to Head Bone/glTF (Godot -Unreal)/"
+
+
+def _ubc_mesh(ctx, gltf):
+    """Vertices (world space) and faces of a pack hairstyle's mesh."""
+    ctx.existing = {o.name for o in bpy.context.scene.objects}
+    bpy.ops.import_scene.gltf(filepath=UBC + gltf)
+    src = next(o for o in bpy.context.scene.objects if o.type == "MESH" and o.name.startswith("Hair_"))
+    co = np.array([(src.matrix_world @ v.co)[:] for v in src.data.vertices])
+    faces = [list(p.vertices) for p in src.data.polygons]
+    # the pack's helper empties and icosphere come along: drop them all
+    for o in list(bpy.context.scene.objects):
+        if o.name not in ctx.existing:
+            bpy.data.objects.remove(o)
+    return co, faces
+
+
+def ubc_hair(ctx, name, gltf, mat, grow=0.012, keep=None, lift=None):
+    """A Quaternius (CC0) hairstyle refitted to our head: the pack's buzz cut
+    (the same sex's) is mapped onto the head's bounding box (brow up, grown a
+    little) and every style takes that same map, so a taller cut keeps its
+    height. Each vertex then rides its nearest head-skin vertex for bones and
+    shape keys."""
+    female = os.environ.get("DOLL_SEX", "female") == "female"
+    ref, _ = _ubc_mesh(ctx, "Hair_BuzzedFemale.gltf" if female else "Hair_Buzzed.gltf")
+    co, faces = _ubc_mesh(ctx, gltf)
+    hlo, hhi = ref.min(axis=0), ref.max(axis=0)
+    head = np.array([i for f in ctx.FACES["body"] for i in f if ctx.HEADW[i] > 0.98])
+    head = np.unique(head)
+    pts = ctx.PB[head]
+    pts = pts[pts[:, 2] > ctx.JB["lEye"][2] - 0.02]
+    lo, hi = pts.min(axis=0) - grow, pts.max(axis=0) + grow
+    co = lo + (co - hlo) / (hhi - hlo) * (hi - lo)
+    if lift is not None:
+        # `lift(z, top)` pushes each vertex out from the head's center by that
+        # many metres: volume on top, tight at the sides
+        c = (lo + hi) / 2
+        d = co - c
+        d /= np.linalg.norm(d, axis=1, keepdims=True)
+        co = co + d * np.array([lift(p[2], hi[2]) for p in co])[:, None]
+    if keep is not None:
+        # `keep(centroid, top)` drops faces, e.g. the sides, for shaved cuts
+        faces = [f for f in faces if keep(co[f].mean(axis=0), hi[2])]
+        used = sorted({i for f in faces for i in f})
+        remap = {o: n for n, o in enumerate(used)}
+        co = co[used]
+        faces = [[remap[i] for i in f] for f in faces]
+    ob = ctx.new_object(name, co, faces)
+    ob.data.materials.append(mat)
+    for p in ob.data.polygons:
+        p.use_smooth = True
+    skin = np.unique(np.array([i for f in ctx.FACES["body"] for i in f if ctx.HEADW[i] > 0.5]))
+    tree = KDTree(len(skin))
+    for i, p in enumerate(ctx.PB[skin]):
+        tree.insert(p, i)
+    tree.balance()
+    near = skin[[tree.find(p)[1] for p in co]]
+    proxies.attach(ctx, ob, ctx.W[near], {k: d[near] for k, d in ctx.KEYS.items()})
+    return ob
+
+
 def _top(bm):
     return max(v.co.z for v in bm.verts)
 
@@ -613,6 +674,8 @@ def pigtails(ctx, strand_mat, cap_mat):
 
 
 def build(ctx):
+    import doll_outfits
+
     out = []
     only = [n for n in os.environ.get("HAIR_ONLY", "").split(",") if n]
     if only:
@@ -674,21 +737,19 @@ def build(ctx):
     out.append(pigtails(ctx, strand, combed))
     # close-cropped styles. bald has no model (the client wears none).
     # buzz: the combed cap alone, a few millimetres of fuzz
-    buzz = scalp_hair(ctx, "Hair_buzz", combed, lambda bm, ctx: None, rise=0.0)
-    strands.comb_cap(ctx, buzz)
+    buzz = ubc_hair(ctx, "Hair_buzz", "Hair_BuzzedFemale.gltf" if os.environ.get("DOLL_SEX", "female") == "female" else "Hair_Buzzed.gltf", solid)
     out.append(buzz)
-    # shaved sides: the cap everywhere, a short top of cards from the crown only
-    out.append(
-        strand_style(ctx, "Hair_shaved-sides", strand, combed, seed=21, length=0.075, count=300, volume=1.4, crown=0.07)
-    )
-    # edges: a sleek short slick, plus tiny curled baby hairs along the hairline
-    sleek = strand_style(ctx, "Hair_edges", strand, combed, seed=23, length=0.085, count=330, wave=0.002, volume=0.7)
-    babies = strands.build(
-        ctx, "Hair_edges_baby", strand, seed=27, length=0.022, count=70, wave=0.004, volume=0.5, edge=0.025
-    )
-    import doll_outfits
+    # shaved sides: the parted cut, lifted into volume on top and left tight
+    # at the sides and back
+    def top_volume(z, t):
+        k = np.clip((z - (t - 0.075)) / 0.05, 0, 1)
+        return 0.032 * k * k * (3 - 2 * k)
 
-    edges = doll_outfits.join(sleek, babies)
+    shaved = ubc_hair(ctx, "Hair_shaved-sides", "Hair_SimpleParted.gltf", solid, lift=top_volume)
+    out.append(shaved)
+    # edges: the sleek parted cut, hugging the scalp
+    sleek = ubc_hair(ctx, "Hair_sleek", "Hair_SimpleParted.gltf", solid, grow=0.016)
+    edges = sleek
     edges.name = "Hair_edges"
     out.append(edges)
     for ob in out:
