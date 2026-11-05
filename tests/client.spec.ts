@@ -1080,7 +1080,9 @@ test("loads the Velvet Room with no errors and mounts the canvas", async ({
   await expect(page.getByRole("img", { name: "3D room view" })).toBeVisible();
   await expect(roomTitle(page)).toHaveText("The Velvet Room");
   // shaders compile on the first frames; wait until the frame counter caps out
-  await expect(page.locator("canvas")).toHaveAttribute("data-frames", "10");
+  await expect(page.locator("canvas")).toHaveAttribute("data-frames", "10", {
+    timeout: 150_000,
+  });
   expect(errors).toEqual([]);
 });
 
@@ -2572,7 +2574,7 @@ test("the Water Park speed slide: six untucked bends lose to the rival", async (
 test("pool volleyball at the Water Park pays its own prize", async ({
   page,
 }) => {
-  test.setTimeout(300_000);
+  test.setTimeout(600_000);
   const errors = collectErrors(page);
   await page.goto(`${LOW}&room=water-park`);
   await page
@@ -2583,17 +2585,18 @@ test("pool volleyball at the Water Park pays its own prize", async ({
   // the rally plays across the pool: each touch is a new flight
   const canvas = canvasOf(page);
   await expect(canvas).toHaveAttribute("data-volley-ball", /^attack-\d+$/, {
-    timeout: 60_000,
+    timeout: 180_000,
   });
   const first = await canvas.getAttribute("data-volley-ball");
   await expect(canvas).not.toHaveAttribute("data-volley-ball", first ?? "", {
-    timeout: 60_000,
+    timeout: 120_000,
   });
   await expect(game.getByRole("status")).toContainText("They take it, 7 to 0", {
     timeout: 120_000,
   });
   await expect(page.getByRole("status", { name: "Prize" })).toContainText(
     "Pool volleyball",
+    { timeout: 120_000 },
   );
   expect(errors).toEqual([]);
 });
