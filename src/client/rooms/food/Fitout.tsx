@@ -276,7 +276,7 @@ export function Fitout({ palette }: { palette: FoodPalette }) {
               ? "food-Steak"
               : "junk-Donut"
         }
-        at={TABLES.map(([x, z]) => [x - 0.25, 0.805, z, 0] as const)}
+        at={TABLES.map(([x, z]) => [x - 0.27, 0.805, z + 0.2, 0] as const)}
       />
       <Suspense fallback={null}>
         <PropSet

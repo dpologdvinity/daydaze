@@ -217,7 +217,7 @@ export function SkateDiner({ onPick }: { onPick: PickHandler }): JSX.Element {
       <primitive object={dressing} />
       <PlatedFood
         model="food-Burger"
-        at={BOOTHS.map(([x, z]) => [x + 0.25, 0.75, z, 0] as const)}
+        at={BOOTHS.map(([x, z]) => [x + 0.27, 0.75, z + 0.2, 0] as const)}
       />
       <PortalPads room={ROOMS["skate-diner"]} color={CHERRY} />
       {/* walls: mint below, cream above, chrome trim */}
