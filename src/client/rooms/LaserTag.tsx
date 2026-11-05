@@ -12,7 +12,7 @@ import { ARENA, COVER, rivalAt } from "../../game/laserTag.ts";
 import type { Look } from "../../game/look.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import { surface } from "../city/worldTexture.ts";
-import { floated } from "../city/floated.ts";
+import { bakedGeometry } from "../world/bakedGeometry.ts";
 import type { Player } from "../world/PlayerController.tsx";
 import { useReducedMotion } from "../motion.ts";
 import { Batch } from "./shared/batch.ts";
@@ -171,7 +171,7 @@ function CoverModels() {
       if (object instanceof THREE.Mesh && !source) source = object;
     });
     if (!source) throw new Error("Sci-fi crate has no mesh");
-    const geometry = floated(source.geometry).applyMatrix4(source.matrixWorld);
+    const geometry = bakedGeometry(source);
     geometry.computeBoundingBox();
     const bounds = geometry.boundingBox!;
     const size = bounds.getSize(new THREE.Vector3());

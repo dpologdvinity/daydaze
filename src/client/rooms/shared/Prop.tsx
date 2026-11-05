@@ -2,7 +2,7 @@ import { useGLTF } from "@react-three/drei";
 import type { ThreeElements } from "@react-three/fiber";
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { floated } from "../../city/floated.ts";
+import { bakedGeometry } from "../../world/bakedGeometry.ts";
 import { tintHsl } from "../../../game/home/palette.ts";
 
 // Generated props (Meshy) live in public/models/props/<model>.glb, one mesh
@@ -29,7 +29,7 @@ function useFittedParts(
       if (!(o instanceof THREE.Mesh)) return;
       const material = Array.isArray(o.material) ? o.material[0] : o.material;
       if (!material) return;
-      const geometry = floated(o.geometry).applyMatrix4(o.matrixWorld);
+      const geometry = bakedGeometry(o);
       parts.push({ geometry, material });
     });
     if (parts.length === 0) throw new Error(`${model}.glb has no mesh`);

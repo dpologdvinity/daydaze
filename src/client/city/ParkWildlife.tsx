@@ -4,7 +4,7 @@
 // on the low tier.
 
 import { useFrame } from "@react-three/fiber";
-import { useState, type JSX } from "react";
+import { useEffect, useState, type JSX } from "react";
 import {
   WILDLIFE,
   WILDLIFE_Y,
@@ -25,10 +25,18 @@ export function ParkWildlife({
     const now = wildlifeNear(player.pos.x, player.pos.z);
     if (now !== near) setNear(now);
   });
+  const shown = near
+    ? WILDLIFE.filter((w) => !(w.highOnly && tier === "low"))
+    : [];
+  // how many animals are drawn, for the browser tests
+  useEffect(() => {
+    const dom = document.querySelector("canvas")?.dataset;
+    if (dom) dom.wildlife = String(shown.length);
+  }, [shown.length]);
   if (!near) return null;
   return (
     <>
-      {WILDLIFE.filter((w) => !(w.highOnly && tier === "low")).map((w, i) => (
+      {shown.map((w, i) => (
         <WanderingCreature
           key={i}
           kind={w.kind}

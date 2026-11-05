@@ -4,6 +4,7 @@
 // src/game/city/nyc.ts). One InstancedMesh per model part; CityScene hands
 // over the spots on every plan reload (`cityHouses`).
 
+import { bakedGeometry } from "../world/bakedGeometry.ts";
 import { useGLTF } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import { useEffect, useMemo, type JSX } from "react";
@@ -33,8 +34,7 @@ export function CityHouses(): JSX.Element {
         const parts: THREE.InstancedMesh[] = [];
         g.scene.traverse((o) => {
           if (!(o instanceof THREE.Mesh)) return;
-          const geometry = (o.geometry as THREE.BufferGeometry).clone();
-          geometry.applyMatrix4(o.matrixWorld);
+          const geometry = bakedGeometry(o);
           const material = Array.isArray(o.material)
             ? o.material[0]
             : o.material;

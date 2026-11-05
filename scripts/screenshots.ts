@@ -313,8 +313,9 @@ const SHOTS: {
   { name: "zoo-bigcats", query: "room=zoo&cam=-13,3.2,-2.5,-13,1,4" },
   {
     name: "park-deer",
-    query: "room=city&time=14:00&at=268,-279&cam=277,22,-252,277,0,-277",
-    act: cityReady,
+    query:
+      "room=city&quality=high&time=14:00&at=268,-279&cam=277,26,-250,277,0,-277",
+    act: furnitureReady,
   },
   { name: "zoo-woods", query: "room=zoo&cam=0,7,2,0,1,-6.2" },
   { name: "dealership", query: "room=dealership" },

@@ -3,7 +3,7 @@
 import { useGLTF } from "@react-three/drei";
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
-import { modelGeometry } from "./modelGeometry.ts";
+import { bakedGeometry } from "../world/bakedGeometry.ts";
 import { boxMapped } from "./worldTexture.ts";
 import { useDaylight } from "./daylight.ts";
 
@@ -34,7 +34,7 @@ export function useTransitModels(
           scene.updateMatrixWorld(true);
           let geometry: THREE.BufferGeometry | undefined;
           scene.traverse((o) => {
-            if (o instanceof THREE.Mesh) geometry = modelGeometry(o);
+            if (o instanceof THREE.Mesh) geometry = bakedGeometry(o);
           });
           if (!geometry) throw new Error(`Empty transit model: ${kind}`);
           const mat = boxMapped(

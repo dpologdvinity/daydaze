@@ -22,7 +22,7 @@ import {
 import { createStore } from "../rooms/shared/store.ts";
 import { useQuality } from "../world/quality.ts";
 import { useDaylight } from "./daylight.ts";
-import { floated } from "./floated.ts";
+import { bakedGeometry } from "../world/bakedGeometry.ts";
 import { disposeInstanced } from "./dispose.ts";
 
 const MODELS = "/models/street";
@@ -52,8 +52,7 @@ export function partsOf(
   const parts: THREE.InstancedMesh[] = [];
   scene.traverse((o) => {
     if (!(o instanceof THREE.Mesh)) return;
-    const geometry = floated(o.geometry as THREE.BufferGeometry);
-    geometry.applyMatrix4(o.matrixWorld);
+    const geometry = bakedGeometry(o);
     const found = Array.isArray(o.material) ? o.material[0] : o.material;
     if (!found) return;
     // own copy, so the daylight dimming below never touches a shared material

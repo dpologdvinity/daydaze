@@ -3,6 +3,7 @@
 // places copy k with a matrix. Used for the coaster cars, flume logs and
 // Ferris wheel gondolas. Nothing is allocated per frame.
 
+import { bakedGeometry } from "../../world/bakedGeometry.ts";
 import { useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, type JSX } from "react";
@@ -29,8 +30,7 @@ export function InstancedModel({
     const out: THREE.InstancedMesh[] = [];
     gltf.scene.traverse((o) => {
       if (!(o instanceof THREE.Mesh)) return;
-      const geometry = (o.geometry as THREE.BufferGeometry).clone();
-      geometry.applyMatrix4(o.matrixWorld);
+      const geometry = bakedGeometry(o);
       const source = Array.isArray(o.material) ? o.material[0] : o.material;
       const material = source?.clone();
       // transmission makes three.js draw the whole scene a second time into
