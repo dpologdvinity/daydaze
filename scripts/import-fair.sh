@@ -21,6 +21,6 @@ for n in cabin horse; do
 done
 rm -r "$TMP"
 for n in coaster-train coaster-train-wooden train-log-flume stall-food stall-drinks \
-  stall-information park-entrance bench trash; do
+  stall-information; do
   "${GT[@]}" optimize "$KIT/$n.glb" "$OUT/$n.glb" --texture-size 256 "${OPTS[@]}"
 done
