@@ -100,3 +100,14 @@ test("boardwalk strollers keep to the open deck, never through a shop, cart or t
       `a strip of ${p.a} to ${p.b} is too short to pace`,
     );
 });
+
+test("a few joggers run the park's paths and the boardwalk's deck, none with a dog", () => {
+  const joggers = PEDESTRIANS.filter((p) => p.look.gait === "jog");
+  assert.ok(joggers.length >= 3, `${joggers.length} joggers`);
+  assert.ok(joggers.length < PEDESTRIANS.length / 3);
+  assert.ok(
+    joggers.some((p) => p.a[1] > 276 && p.a[1] < 292),
+    "on the deck",
+  );
+  assert.ok(joggers.every((p) => !p.dog));
+});

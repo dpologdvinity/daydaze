@@ -89,10 +89,15 @@ export const PEDESTRIANS: readonly Pedestrian[] = CITY_SURFACES.filter(
     // about two in five are men: menswear, a short cut, often a beard,
     // bare lips and a man's easy walk
     const man = rand(i, 9) < 0.4;
-    const gait = man ? "stride" : pick(NPC_GAITS, rand(i, 11));
     // on the park's paths the first walker of each strip has a dog with her
     const inPark =
       x0 >= PARK.x0 && x1 <= PARK.x1 && z0 >= PARK.z0 && z1 <= PARK.z1;
+    // a few joggers on the park's paths and the boardwalk's deck lane
+    const jogs =
+      (inPark || s.kind === "boardwalk") &&
+      !(inPark && k === 0) &&
+      rand(i, 12) < 0.3;
+    const gait = jogs ? "jog" : man ? "stride" : pick(NPC_GAITS, rand(i, 11));
     return {
       a,
       b,
@@ -122,7 +127,7 @@ export const PEDESTRIANS: readonly Pedestrian[] = CITY_SURFACES.filter(
             skin: pick(SKINS, rand(i, 4)).id,
             hairStyle: pick(STREET_HAIR, rand(i, 5)).id,
             hairColor: pick(HAIR_COLORS, rand(i, 6)).id,
-            outfit: pick(STREET_OUTFITS, rand(i, 7)),
+            outfit: jogs ? "shorts" : pick(STREET_OUTFITS, rand(i, 7)),
             outfitColor: pick(OUTFIT_COLORS, rand(i, 8)).id,
             gait,
           },

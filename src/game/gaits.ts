@@ -152,6 +152,22 @@ export const GAITS = [
     chin: 0,
     clip: "walk-masc",
   },
+  {
+    // a jog: the park's and the boardwalk's runners; not an NPC's pick
+    id: "jog",
+    label: "Jog",
+    stride: 0.7,
+    knee: 1.2,
+    armSwing: 0.5,
+    elbow: 1.3,
+    hipSway: 0.02,
+    cross: 0.05,
+    twist: 0.1,
+    bounce: 0.03,
+    cadence: 1.6,
+    chin: 0,
+    clip: "jog",
+  },
 ] as const satisfies readonly Gait[];
 
 export type GaitId = (typeof GAITS)[number]["id"];

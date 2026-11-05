@@ -85,6 +85,8 @@ CLIPS = {
     "walk-feminine": ("walking/styled/Walking-With-A-Swagger-2", "walk", "Feminine"),  # 15 / 75
     "walk-casual": ("walking/styled/Catwalk-Walk-Forward-02_Male-Walk-Forward-02", "walk", "Casual"),  # 21 / 74
     "walk-masc": ("walking/Walking_Male-Standard-Walk", "walk", "Easy stride"),  # 18 / 67
+    # a jog for the park's and the boardwalk's runners: 13 at toe-off, 96 at most
+    "jog": ("running/Jogging", "walk", "Jog"),
     # standing idles: the player breathes, NPCs pick one by seed
     "idle-breathing": ("idle/Breathing-Idle_Breathing-Idle", "idle", "Breathing"),
     "idle-weight-shift": ("idle/Neutral-Idle_Neutral-Idle", "idle", "Weight shift"),
