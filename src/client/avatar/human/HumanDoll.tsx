@@ -308,6 +308,7 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
     beard,
     hairColor,
     body: build,
+    face: faceCode,
   } = look;
   // the man's clip file loads only once a man is in the scene
   useEffect(() => {
@@ -331,6 +332,7 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
         beard,
         hairColor,
         body: build,
+        face: faceCode,
       },
       marks,
     )
@@ -362,6 +364,7 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
     beard,
     hairColor,
     build,
+    faceCode,
     invalidate,
   ]);
   useEffect(() => {
@@ -769,6 +772,12 @@ export function HumanDoll({
     for (const g of FACE_PRESETS)
       for (const o of g.options.slice(1))
         keys.push([`${g.key}_${o.id}`, face[g.field] === o.id ? 1 : 0]);
+    // the monolid has no key of its own: a deep fold-down (the hooded key)
+    // with a slight lift at the outer corners
+    if (face.eyeShape === "monolid") {
+      keys.push(["eye_hooded", 0.9]);
+      keys.push(["eye_upturned", 0.3]);
+    }
     // the man's body has no bust key (setMorph skips a missing key)
     keys.push(["bust", (shape.bust - 50) / 50]);
     keys.push(["hips", (shape.hips - 50) / 50]);

@@ -219,7 +219,7 @@ test("freckles and glasses ride in the makeup code; 6-digit codes still decode",
     glasses: "cat-eye" as const,
   };
   const code = encodeMakeup(m);
-  assert.equal(code.length, 8);
+  assert.equal(code.length, 10);
   assert.deepEqual(decodeMakeup(code), m);
   // a code from before freckles and glasses: the same makeup, none of either
   const old = code.slice(0, 6);
@@ -229,6 +229,32 @@ test("freckles and glasses ride in the makeup code; 6-digit codes still decode",
     glasses: "none",
   });
   assert.equal(decodeMakeup(`${code}0`), null);
+});
+
+test("skin marks and the monolid ride in the codes and fit the wire limit", () => {
+  const m = {
+    ...DEFAULT_MAKEUP,
+    vitiligo: "patchy" as const,
+    birthmark: "port-wine" as const,
+  };
+  const code = encodeMakeup(m);
+  assert.deepEqual(decodeMakeup(code), m);
+  // an 8-digit code from before skin marks: the same makeup, no marks
+  assert.deepEqual(decodeMakeup(code.slice(0, 8)), {
+    ...m,
+    vitiligo: "none",
+    birthmark: "none",
+  });
+  const face = { ...DEFAULT_FACE, eyeShape: "monolid" as const };
+  assert.deepEqual(decodeFace(encodeFace(face)), face);
+  const look = {
+    ...DEFAULT_LOOK,
+    makeup: code,
+    face: encodeFace(face),
+  };
+  assert.equal(validateLook(look), true);
+  // no new Look field: a full look stays within the 16-key wire limit
+  assert.ok(Object.keys(look).length <= 16);
 });
 
 test("face presets ride in the code; 8-character codes still decode", () => {

@@ -261,6 +261,8 @@ export const EYE_SHAPES = [
   { id: "hooded", label: "Hooded" },
   { id: "upturned", label: "Upturned" },
   { id: "downturned", label: "Downturned" },
+  // a smooth lid with no crease (HumanDoll maps it onto the hooded key)
+  { id: "monolid", label: "Monolid" },
 ] as const;
 /** Nose presets; see EYE_SHAPES. */
 export const NOSES = [
@@ -430,6 +432,21 @@ export function seededMakeup(seed: number): Makeup {
     glasses: (
       ["none", "none", "none", "none", "round", "cat-eye", "square"] as const
     )[(n >> 13) % 7],
+    // strangers come with marks too, now and then
+    vitiligo: (
+      ["none", "none", "none", "none", "none", "light", "patchy"] as const
+    )[(n >> 16) % 7],
+    birthmark: (
+      [
+        "none",
+        "none",
+        "none",
+        "none",
+        "port-wine",
+        "cafe-au-lait",
+        "moles",
+      ] as const
+    )[(n >> 19) % 7],
   };
 }
 
@@ -496,6 +513,21 @@ export const FRECKLES = [
   { id: "lots", label: "Lots" },
 ] as const;
 
+/** Vitiligo: patches of skin without pigment, painted on the face. */
+export const VITILIGO = [
+  { id: "none", label: "None" },
+  { id: "light", label: "A few patches" },
+  { id: "patchy", label: "Patchy" },
+] as const;
+
+/** Birthmarks, painted on the face. */
+export const BIRTHMARKS = [
+  { id: "none", label: "None" },
+  { id: "port-wine", label: "Port-wine stain" },
+  { id: "cafe-au-lait", label: "Café-au-lait patch" },
+  { id: "moles", label: "Beauty marks" },
+] as const;
+
 /** Glasses frames. */
 export const GLASSES = [
   { id: "none", label: "No glasses" },
@@ -514,6 +546,8 @@ export type Makeup = {
   shadowStyle: IdOf<typeof SHADOW_STYLES>;
   freckles: IdOf<typeof FRECKLES>;
   glasses: IdOf<typeof GLASSES>;
+  vitiligo: IdOf<typeof VITILIGO>;
+  birthmark: IdOf<typeof BIRTHMARKS>;
 };
 
 /** Makeup for looks without a makeup code. */
@@ -526,6 +560,8 @@ export const DEFAULT_MAKEUP: Makeup = {
   shadowStyle: "wash",
   freckles: "none",
   glasses: "none",
+  vitiligo: "none",
+  birthmark: "none",
 };
 
 // Makeup travels as one short code, like the face: one digit per choice,
@@ -540,6 +576,8 @@ const MAKEUP_PARTS = [
   ["shadowStyle", SHADOW_STYLES],
   ["freckles", FRECKLES],
   ["glasses", GLASSES],
+  ["vitiligo", VITILIGO],
+  ["birthmark", BIRTHMARKS],
 ] as const;
 /** The code's length before freckles and glasses. */
 const MAKEUP_V1 = 6;
@@ -559,7 +597,8 @@ export function encodeMakeup(m: Makeup): string {
 
 /**
  * The makeup a code describes; null when malformed. Codes from before freckles
- * and glasses (6 digits) decode with those at their defaults.
+ * and glasses (6 digits) or before skin marks (8) decode with the missing
+ * parts at their defaults.
  */
 export function decodeMakeup(code: unknown): Makeup | null {
   if (

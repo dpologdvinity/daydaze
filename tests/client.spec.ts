@@ -1080,15 +1080,47 @@ test("glasses and freckles from the closet go into the saved makeup", async ({
     .getByRole("radiogroup", { name: "Freckles" })
     .getByRole("radio", { name: "Lots" })
     .click();
-  // the makeup code's last two digits: freckles (lots = 2), glasses (cat-eye = 2)
+  // the makeup code's digits 7 and 8: freckles (lots = 2), glasses (cat-eye = 2)
   await expect
     .poll(async () => {
       const save = await page.evaluate(() =>
         JSON.parse(localStorage.getItem("daydaze-save-v1") ?? "{}"),
       );
-      return String(save.look?.makeup ?? "").slice(-2);
+      return String(save.look?.makeup ?? "").slice(6, 8);
     })
     .toBe("22");
+});
+
+test("vitiligo, a birthmark and the monolid from the closet go into the saved look", async ({
+  page,
+}) => {
+  test.setTimeout(300_000);
+  await page.goto(VELVET);
+  await page
+    .getByRole("button", { name: "Dressing room", exact: true })
+    .click();
+  await page
+    .getByRole("radiogroup", { name: "Vitiligo" })
+    .getByRole("radio", { name: "Patchy" })
+    .click();
+  await page
+    .getByRole("radiogroup", { name: "Birthmark" })
+    .getByRole("radio", { name: "Port-wine stain" })
+    .click();
+  await page
+    .getByRole("radiogroup", { name: "Eye shape" })
+    .getByRole("radio", { name: "Monolid" })
+    .click();
+  // the makeup code's last two digits: vitiligo (patchy = 2), birthmark (port-wine = 1)
+  await expect
+    .poll(async () => {
+      const save = await page.evaluate(() =>
+        JSON.parse(localStorage.getItem("daydaze-save-v1") ?? "{}"),
+      );
+      return `${String(save.look?.makeup ?? "").slice(-2)} ${String(save.look?.face ?? "")[8]}`;
+    })
+    // ...and the face code's eye shape digit (monolid = 5)
+    .toBe("21 5");
 });
 
 test("a hair style picked in the closet survives a reload", async ({

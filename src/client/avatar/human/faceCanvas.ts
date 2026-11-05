@@ -3,6 +3,7 @@ import {
   BLUSHES,
   HIGHLIGHTERS,
   LIPS,
+  decodeFace,
   makeupOf,
   type Look,
   type Makeup,
@@ -226,6 +227,124 @@ const SHADOW_BANDS: Record<Makeup["shadowStyle"], [number, number, number][]> =
     ],
   };
 
+/** A monolid has no crease to cut: the crease styles become a plain wash. */
+const creaseless = (style: Makeup["shadowStyle"]): Makeup["shadowStyle"] =>
+  style === "cut-crease" ? "wash" : style;
+
+/** A soft-edged, slightly lumpy patch: a few overlapping ellipses, jittered
+ * by `rand`, filled flat with a blurred edge (a stain, not a gradient). */
+function patch(
+  ctx: CanvasRenderingContext2D,
+  [x, y]: readonly [number, number],
+  rx: number,
+  ry: number,
+  color: readonly number[],
+  alpha: number,
+  rand: () => number,
+  lumps = 3,
+) {
+  ctx.save();
+  ctx.filter = "blur(1.5px)";
+  ctx.fillStyle = rgba(color, alpha);
+  for (let i = 0; i < lumps; i++) {
+    const cx = x + (rand() - 0.5) * rx * 0.9;
+    const cy = y + (rand() - 0.5) * ry * 0.9;
+    ctx.beginPath();
+    ctx.ellipse(
+      cx * SIZE,
+      cy * SIZE,
+      rx * SIZE * (0.55 + rand() * 0.45),
+      ry * SIZE * (0.55 + rand() * 0.45),
+      rand() * Math.PI,
+      0,
+      Math.PI * 2,
+    );
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+/** Vitiligo and birthmarks, in the same places for the same face. Vitiligo
+ * favors the mouth, eyes, cheeks and brow (as it often does); each patch is
+ * the skin with its pigment gone, so it reads on every tone. */
+function paintSkinMarks(
+  ctx: CanvasRenderingContext2D,
+  marks: Marks,
+  skin: readonly number[],
+  makeup: Makeup,
+) {
+  if (makeup.vitiligo === "none" && makeup.birthmark === "none") return;
+  let seed = 777;
+  const rand = () => {
+    seed = (seed * 16807) % 2147483647;
+    return seed / 2147483647;
+  };
+  const { lEye, rEye, lCheek, rCheek, mouthL, mouthR, noseTip } = marks;
+  const side = (c: readonly [number, number]) => (c[0] > 0.5 ? 1 : -1);
+  if (makeup.vitiligo !== "none") {
+    // pigment gone: ivory-pink. On fair skin that is barely lighter than the
+    // skin, so the patch is pinker and gets a faint darker rim to read at all
+    const fair = (skin[0] + skin[1] + skin[2]) / 3 > 190;
+    const bare = fair
+      ? mixRgb(skin, [255, 218, 214], 0.75)
+      : mixRgb(skin, [250, 232, 222], 0.7);
+    // [center, rx, ry]; "light" takes the first three
+    const spots: [[number, number], number, number][] = [
+      [[mouthR[0] + 0.012, mouthR[1] + 0.012], 0.03, 0.022],
+      [[lCheek[0] - side(lCheek) * 0.03, lCheek[1] + 0.02], 0.035, 0.028],
+      [[0.5, mouthL[1] + 0.075], 0.03, 0.02],
+      [[lEye[0], lEye[1] + 0.045], 0.032, 0.014],
+      [[rEye[0], rEye[1] + 0.045], 0.032, 0.014],
+      [[0.5, lEye[1] - 0.1], 0.045, 0.025],
+      [[rCheek[0] - side(rCheek) * 0.03, rCheek[1] + 0.03], 0.03, 0.025],
+      [[mouthL[0] - 0.012, mouthL[1] + 0.01], 0.026, 0.02],
+      [[noseTip[0] + 0.03, noseTip[1] - 0.04], 0.012, 0.03],
+    ];
+    const rim = skin.map((v) => v * 0.9);
+    const count = makeup.vitiligo === "patchy" ? spots.length : 3;
+    for (const [at, rx, ry] of spots.slice(0, count)) {
+      if (fair) patch(ctx, at, rx * 1.65, ry * 1.65, rim, 0.3, rand, 5);
+      patch(ctx, at, rx * 1.5, ry * 1.5, bare, 0.92, rand, 5);
+    }
+  }
+  if (makeup.birthmark === "port-wine") {
+    // a flat, irregular rose-red stain over one cheek and toward the temple
+    const wine = mixRgb(skin, [150, 38, 70], 0.55);
+    patch(
+      ctx,
+      [rCheek[0] + side(rCheek) * 0.01, rCheek[1] - 0.01],
+      0.045,
+      0.06,
+      wine,
+      0.55,
+      rand,
+      5,
+    );
+  } else if (makeup.birthmark === "cafe-au-lait") {
+    // a smooth, even tan patch on the jaw
+    const tan = mixRgb(skin, [120, 78, 46], 0.4);
+    patch(
+      ctx,
+      [lCheek[0] - side(lCheek) * 0.02, lCheek[1] + 0.1],
+      0.04,
+      0.028,
+      tan,
+      0.6,
+      rand,
+      2,
+    );
+  } else if (makeup.birthmark === "moles") {
+    const dot = mixRgb(skin, [60, 34, 26], 0.75);
+    for (const [x, y, r] of [
+      [lCheek[0] - side(lCheek) * 0.01, lCheek[1] - 0.02, 0.0042],
+      [rEye[0] + side(rEye) * 0.05, rEye[1] + 0.02, 0.0032],
+      [0.5 + 0.03, lEye[1] - 0.06, 0.0034],
+      [mouthL[0] + 0.01, mouthL[1] + 0.05, 0.0036],
+    ] as const)
+      blob(ctx, x, y, r, r, dot, 0.9);
+  }
+}
+
 function paintShadow(
   ctx: CanvasRenderingContext2D,
   lid: readonly [number, number][],
@@ -371,6 +490,7 @@ export async function paintFace(
     | "beard"
     | "hairColor"
     | "body"
+    | "face"
   >,
   marks: Marks,
 ) {
@@ -486,8 +606,12 @@ export async function paintFace(
     );
   }
 
-  paintShadow(ctx, marks.lLidUpper, look.shadow, makeup.shadowStyle);
-  paintShadow(ctx, marks.rLidUpper, look.shadow, makeup.shadowStyle);
+  const shadowStyle =
+    decodeFace(look.face)?.eyeShape === "monolid"
+      ? creaseless(makeup.shadowStyle)
+      : makeup.shadowStyle;
+  paintShadow(ctx, marks.lLidUpper, look.shadow, shadowStyle);
+  paintShadow(ctx, marks.rLidUpper, look.shadow, shadowStyle);
   // lower lash line smudge
   ctx.save();
   ctx.filter = "blur(2px)";
@@ -531,6 +655,8 @@ export async function paintFace(
     [64, 32, 26],
     0.9,
   );
+
+  paintSkinMarks(ctx, marks, skin, makeup);
 
   // lips: color through the sculpted lip mask, a deeper liner edge, gloss
   const [base, liner] = lipInk(look.lips);

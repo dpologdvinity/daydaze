@@ -6,6 +6,8 @@ import { useRef } from "react";
 import { createRoot } from "react-dom/client";
 import * as THREE from "three";
 import {
+  decodeFace,
+  SKINS,
   decodeMakeup,
   DEFAULT_LOOK,
   HAIR_STYLES,
@@ -39,11 +41,17 @@ function hairParam(): Look["hairStyle"] {
 function makeupParam(): Partial<Look> {
   const q = new URLSearchParams(location.search);
   const code = q.get("makeup");
+  // `?face=<code>` likewise puts encodeFace's code on it (a monolid, say)
+  const faceCode = q.get("face");
+  // `?skin=<index>` picks a SKINS tone, to see skin marks on each
+  const skin = SKINS[Number(q.get("skin"))]?.id;
   // `?men=1` puts the face and portrait shots on the masculine body, with
   // `?beard=` (a BEARDS id)
   const beard = BEARDS.find((b) => b.id === q.get("beard"))?.id;
   return {
     ...(code && decodeMakeup(code) ? { makeup: code } : {}),
+    ...(faceCode && decodeFace(faceCode) ? { face: faceCode } : {}),
+    ...(skin ? { skin } : {}),
     ...(q.get("men") === "1"
       ? { body: "masculine", lips: "lips-bare-balm", beard: beard ?? "none" }
       : {}),
@@ -223,6 +231,15 @@ const SHOTS = {
     cam: [0, 1.5, 0.95] as const,
     target: [0, 1.42, 0] as const,
     fov: 22,
+  },
+  // the closet's eye tile (public/closet/eye-*.webp): the eyes, close up,
+  // on a clear background (`?clear=1`)
+  eyetile: {
+    looks: [{ ...LINEUP[0], hairStyle: "buns" as const, ...makeupParam() }],
+    x: () => 0,
+    cam: [0, 1.53, 0.55] as const,
+    target: [0, 1.53, 0] as const,
+    fov: 24,
   },
   // head and shoulders with the crown in frame, for judging hair
   portrait: {
@@ -427,7 +444,10 @@ function Lab() {
         // dev-only: lets a test script inspect the lab scene
         Reflect.set(window, "labScene", scene);
         camera.lookAt(plan.target[0], plan.target[1], plan.target[2]);
-        gl.setClearColor("#07020b");
+        gl.setClearColor(
+          "#07020b",
+          new URLSearchParams(location.search).get("clear") === "1" ? 0 : 1,
+        );
       }}
     >
       {human && (

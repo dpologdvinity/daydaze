@@ -23,6 +23,8 @@ import {
   GLOSSES,
   HIGHLIGHTERS,
   FRECKLES,
+  VITILIGO,
+  BIRTHMARKS,
   GLASSES,
   LINERS,
   SHADOW_STYLES,
@@ -325,6 +327,19 @@ function Mirror({
             options={SKINS}
             value={look.skin}
             onPick={(skin) => setLook({ ...look, skin })}
+          />
+          <Segmented
+            label="Vitiligo"
+            options={VITILIGO}
+            value={makeup.vitiligo}
+            onPick={(vitiligo) => setMakeup({ ...makeup, vitiligo })}
+            className="strength"
+          />
+          <Chips
+            label="Birthmark"
+            options={BIRTHMARKS}
+            value={makeup.birthmark}
+            onPick={(birthmark) => setMakeup({ ...makeup, birthmark })}
           />
         </section>
         <section>
