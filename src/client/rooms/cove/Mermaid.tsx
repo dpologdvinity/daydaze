@@ -85,7 +85,7 @@ export function Mermaid({
         next.reset().play();
         if (previous && !calm) previous.crossFadeTo(next, 0.3, false);
         else if (previous) previous.stop();
-        if (calm) rig.mixer.update(0);
+        rig.mixer.update(0);
       }
       s.clip = want;
     }
