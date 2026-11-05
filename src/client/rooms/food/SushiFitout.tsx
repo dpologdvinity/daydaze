@@ -1,7 +1,8 @@
 // Shared Quaternius restaurant furnishings for the sushi and ramen counters.
 import { Suspense } from "react";
-import { Prop, PropSet } from "../shared/Prop.tsx";
+import { PropSet } from "../shared/Prop.tsx";
 
+const curtains = [-0.75, -0.25, 0.25, 0.75].map((x) => [x, 0, 0, 0] as const);
 const stools = [-2.5, -1.25, 0, 1.25, 2.5].map((x) => [x, 0, 0.2, 0] as const);
 const lanterns = [-2.7, 0, 2.7].map((x) => [x, 2.5, 0.1, 0] as const);
 const counter = [-2.3, 0, 2.3].map((x) => [x, 0, -0.85, 0] as const);
@@ -23,17 +24,15 @@ const bowls = [-2.4, -1.2, 0, 1.2, 2.4].map(
 export function SushiFitout({ ramen }: { ramen: boolean }) {
   return (
     <Suspense fallback={null}>
-      {[-0.75, -0.25, 0.25, 0.75].map((x) => (
-        <Prop
-          key={x}
+      <group position={[0, 2.5, -1.65]} rotation-x={Math.PI / 2}>
+        <PropSet
           model="sushi-Decoration_Carpet"
           width={0.6}
           depth={0.8}
           height={0.1}
-          position={[x, 2.5, -1.65]}
-          rotation-x={Math.PI / 2}
+          at={curtains}
         />
-      ))}
+      </group>
       <PropSet
         model="sushi-Food_Roll"
         width={0.18}
