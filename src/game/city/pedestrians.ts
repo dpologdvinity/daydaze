@@ -18,6 +18,7 @@ import { NPC_GAITS, gaitOf } from "../gaits.ts";
 import type { Vec2 } from "../walk.ts";
 import type { LandKind } from "../creatures.ts";
 import { PARK } from "./park.ts";
+import { daylightAt } from "./daylight.ts";
 import { SHOP_Z1 } from "./boardwalk.ts";
 import { CITY_SURFACES } from "./layout.ts";
 
@@ -31,6 +32,8 @@ export type Pedestrian = {
   look: Look;
   /** A dog trotting beside her (the park's dog walkers). */
   dog?: LandKind;
+  /** 0..1: she stays out later than those with lower numbers (see pedestrianOut). */
+  night: number;
 };
 
 export type PedestrianPose = { x: number; z: number; yaw: number };
@@ -73,13 +76,17 @@ export const PEDESTRIANS: readonly Pedestrian[] = CITY_SURFACES.filter(
   const along = x1 - x0 >= z1 - z0;
   const length = along ? x1 - x0 : z1 - z0;
   if (length < 30) return [];
-  const count = Math.max(1, Math.round(length / 40));
+  // the deck is the city's promenade: a walker every 12 m, the rest every 40
+  const count = Math.max(
+    1,
+    Math.round(length / (s.kind === "boardwalk" ? 12 : 40)),
+  );
   return Array.from({ length: count }, (_, k): Pedestrian => {
     const i = si * 7 + k;
     // lanes keep to the middle of the strip, clear of lamps at its edge
     // (on the deck: the stretch just south of the middle, clear of benches and carts)
     const lane =
-      s.kind === "boardwalk" ? 0.25 + rand(i, 1) * 0.2 : 0.3 + rand(i, 1) * 0.4;
+      s.kind === "boardwalk" ? 0.2 + rand(i, 1) * 0.45 : 0.3 + rand(i, 1) * 0.4;
     const a: Vec2 = along
       ? [x0 + 1, z0 + (z1 - z0) * lane]
       : [x0 + (x1 - x0) * lane, z0 + 1];
@@ -107,7 +114,12 @@ export const PEDESTRIANS: readonly Pedestrian[] = CITY_SURFACES.filter(
       speed:
         (naturalPace(gaitOf(gait).clip, man) ?? 1.3) *
         (0.95 + rand(i, 2) * 0.1),
-      start: rand(i, 3) * 400,
+      // on the deck the crowd is spread evenly along the whole strip
+      start:
+        s.kind === "boardwalk"
+          ? ((k + rand(i, 3)) / count) * ((2 * length) / 1.3)
+          : rand(i, 3) * 400,
+      night: rand(i, 13),
       look: man
         ? {
             ...DEFAULT_LOOK,
@@ -160,6 +172,12 @@ export function pedestrianAt(
   return out;
 }
 
+/** Whether she is out at `hour` (0..24): everyone by day, a quarter of the
+ * crowd at the dead of night. */
+export function pedestrianOut(p: Pedestrian, hour: number): boolean {
+  return p.night >= 0.75 * daylightAt(hour).neon;
+}
+
 const scratch: PedestrianPose = { x: 0, z: 0, yaw: 0 };
 
 /** The indices of the `count` pedestrians nearest `at` at `time`, within
@@ -169,9 +187,11 @@ export function nearestPedestrians(
   time: number,
   count: number,
   radius: number,
+  hour?: number,
 ): number[] {
   const near: { i: number; d: number }[] = [];
   PEDESTRIANS.forEach((p, i) => {
+    if (hour !== undefined && !pedestrianOut(p, hour)) return;
     // cheap reject: her whole strip is out of range
     const cx = (p.a[0] + p.b[0]) / 2;
     const cz = (p.a[1] + p.b[1]) / 2;

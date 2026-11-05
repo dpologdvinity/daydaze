@@ -14,6 +14,8 @@ import type { FurnitureSpot } from "./furniture.ts";
 export const DECK = { z0: 267, z1: 291 };
 /** The storefronts' south wall; the open deck is SHOP_Z1 to DECK.z1. */
 export const SHOP_Z1 = 276;
+/** The storefronts and deck furniture run this far either way from x = 0, nearly the whole deck (it ends at +-448). */
+const SHOP_EDGE = 430;
 /** Ground level of deck and sand: things stand on top of this. */
 const GROUND = 0.14;
 
@@ -44,13 +46,13 @@ const SHOP_KINDS: readonly {
 ];
 
 /**
- * The storefronts: 14 m wide, 17 m apart, from x -190 to 190, skipping the
+ * The storefronts: 14 m wide, 17 m apart, one row along the whole deck, skipping the
  * cross streets (they run down to the boardwalk) and the pier's approach.
  */
 export function boardwalkShops(blocked: (x: number) => boolean): Shop[] {
   const out: Shop[] = [];
   let i = 0;
-  for (let x = -187; x <= 187; x += 17) {
+  for (let x = -(SHOP_EDGE - 3); x <= SHOP_EDGE - 3; x += 17) {
     if (blocked(x) || blocked(x - 7) || blocked(x + 7)) continue;
     const kind = SHOP_KINDS[i % SHOP_KINDS.length];
     i += 1;
@@ -128,27 +130,28 @@ export function boardwalkFurniture(
 ): FurnitureSpot[] {
   const out: FurnitureSpot[] = [];
   // the rail along the deck's sea edge, with a gap every 51 m for the beach
-  for (let x = -189; x <= 189; x += 3) {
-    if (Math.abs(((x + 189) % 51) - 25) < 4.5 || skip(x, DECK.z1 - 0.2))
+  for (let x = -SHOP_EDGE; x <= SHOP_EDGE; x += 3) {
+    if (Math.abs(((x + SHOP_EDGE) % 51) - 25) < 4.5 || skip(x, DECK.z1 - 0.2))
       continue;
-    out.push(spot("rail", x, DECK.z1 - 0.2, 0));
+    // 1.4x, so the rail is thick enough to read from 100 m
+    out.push(spot("rail", x, DECK.z1 - 0.2, 0, 1.4));
   }
   // benches facing the sea, in front of the shops' south wall and by the rail
-  for (let x = -180; x <= 180; x += 24) {
+  for (let x = -SHOP_EDGE + 6; x <= SHOP_EDGE - 6; x += 24) {
     if (skip(x, DECK.z1 - 2)) continue;
     out.push(spot("bench", x + 6, DECK.z1 - 2.2, 0));
-    if (hash(x, 5) < 0.6) out.push(spot("bench", x + 18, SHOP_Z1 + 1.2, 0));
+    out.push(spot("bench", x + 18, SHOP_Z1 + 1.2, 0));
+    // a trash can at the end of each row of benches
+    out.push(spot("trashcan", x + 12, DECK.z1 - 1.6, 0));
+    out.push(spot("trashcan", x + 24, SHOP_Z1 + 0.8, 0));
   }
   // food carts on the deck
-  for (const [x, kind] of [
-    [-100, "popcorn-cart"],
-    [-30, "hotdog-cart"],
-    [60, "popcorn-cart"],
-    [130, "hotdog-cart"],
-    [-160, "hotdog-cart"],
-  ] as const)
+  for (let i = 0, x = -SHOP_EDGE + 40; x <= SHOP_EDGE - 40; x += 70, i++)
     // on the sea side of the deck, clear of the lane down its middle
-    out.push(spot(kind, x, DECK.z1 - 4, Math.PI));
+    if (!skip(x, DECK.z1 - 4))
+      out.push(
+        spot(i % 2 ? "hotdog-cart" : "popcorn-cart", x, DECK.z1 - 4, Math.PI),
+      );
   // an ice cream cone on the roof of the ice cream shop
   for (const s of shops)
     if (s.sign.text.includes("ICE CREAM"))
@@ -156,15 +159,15 @@ export function boardwalkFurniture(
   // the fairground end
   out.push(spot("carousel", CAROUSEL.x, CAROUSEL.z));
   // lifeguard stands facing the water
-  for (const x of [-250, -120, 160, 280])
+  for (const x of [-400, -250, -120, 160, 280, 400])
     out.push(spot("lifeguard", x, 303, 0));
   // dune fences along the line between the deck and the beach
-  for (let x = -189; x <= 189; x += 3) {
+  for (let x = -SHOP_EDGE; x <= SHOP_EDGE; x += 3) {
     if (skip(x, DECK.z1 + 3) || hash(x, 8) < 0.35) continue;
     out.push(spot("rail", x, DECK.z1 + 3, 0));
   }
   // sunbathers: an umbrella over two lounge chairs and a towel, every 22 m
-  for (let i = 0, x = -200; x <= 200; x += 22, i++) {
+  for (let i = 0, x = -SHOP_EDGE; x <= SHOP_EDGE; x += 22, i++) {
     const z = 300 + hash(x, 9) * 8;
     if (skip(x, z) || skip(x, z + 3)) continue;
     out.push(spot(i % 2 ? "umbrella-red" : "umbrella-blue", x, z));
