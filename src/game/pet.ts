@@ -6,12 +6,19 @@
 
 import type { Vec2 } from "./walk.ts";
 
-export const PET_KINDS = ["husky", "shibainu", "cat", "rabbit"] as const;
+export const PET_KINDS = [
+  "husky",
+  "shibainu",
+  "labrador",
+  "cat",
+  "rabbit",
+] as const;
 export type PetKind = (typeof PET_KINDS)[number];
 
 export const PET_LABEL: Record<PetKind, string> = {
   husky: "Husky",
   shibainu: "Shiba Inu",
+  labrador: "Labrador",
   cat: "Cat",
   rabbit: "Rabbit",
 };

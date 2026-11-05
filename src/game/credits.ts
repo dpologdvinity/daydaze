@@ -301,6 +301,38 @@ export const CREDITS: readonly {
           "Zoo lions, with a calm idle clip (swayed along when walking).",
       },
       {
+        title: "Realistic Animated Bear 3D Model",
+        author: "WildMesh 3D",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/realistic-animated-bear-3d-model-bffc3c87d2d148ff8533e1cc8a11c9f1",
+        usedFor:
+          "Zoo woods bear, with idle, walk, run, graze, sit and sleep clips (kept 9 of 81, textures shrunk).",
+      },
+      {
+        title: "Realistic Animated Elk 3D Model",
+        author: "WildMesh 3D",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/realistic-animated-elk-3d-model-787834f9caa2474d9f1814b807c072d7",
+        usedFor:
+          "Zoo woods elk, with idle, walk, run, graze, sit and sleep clips (kept 8 of 53, textures shrunk).",
+      },
+      {
+        title: "Tiger",
+        author: "Blender Artist",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/tiger-67bbedd727a047869ef7c7b608445484",
+        usedFor:
+          "Zoo big cats' tigers, with rest, walk, run, eat and howl clips.",
+      },
+      {
+        title: "Labrador Dog",
+        author: "kenchoo",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/labrador-dog-1f56cfbab07e4fe49b5d9e521c82073a",
+        usedFor:
+          "Adoptable pet Labrador, decimated to 8k triangles, with a calm idle clip (swayed along when walking).",
+      },
+      {
         title: "African penguin (Spheniscus demersus) Low poly",
         author: "Major",
         license: "CC-BY 4.0",

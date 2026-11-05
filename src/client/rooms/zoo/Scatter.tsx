@@ -34,8 +34,12 @@ export function Scatter({
       geometry.applyMatrix4(o.matrixWorld);
       const source = Array.isArray(o.material) ? o.material[0] : o.material;
       const material = source?.clone();
-      if (color && material instanceof THREE.MeshStandardMaterial)
+      if (color && material instanceof THREE.MeshStandardMaterial) {
         material.color.set(color);
+        // Kenney's rocks are fully metallic, which reads as black without an
+        // environment map
+        material.metalness = 0;
+      }
       const inst = new THREE.InstancedMesh(geometry, material, spots.length);
       spots.forEach((spot, i) => {
         q.setFromAxisAngle(up, spot.yaw);

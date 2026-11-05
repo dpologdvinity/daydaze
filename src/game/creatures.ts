@@ -23,7 +23,11 @@ export type LandKind =
   | "rabbit"
   | "pig"
   | "sheep"
-  | "chicken";
+  | "chicken"
+  | "tiger"
+  | "bear"
+  | "elk"
+  | "labrador";
 
 export type FishKind =
   | "dolphin"
@@ -85,6 +89,10 @@ export const LENGTH: Record<CreatureKind, number> = {
   pig: 1.3,
   sheep: 1.2,
   chicken: 0.5,
+  tiger: 2.2,
+  bear: 2.2,
+  elk: 2.4,
+  labrador: 1,
   dolphin: 2.6,
   shark: 3.4,
   whale: 5,

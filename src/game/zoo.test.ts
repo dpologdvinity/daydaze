@@ -47,3 +47,20 @@ test("the farm's cow and donkey have a voice inside the farm", async () => {
     assert.ok(v.at[1] >= f.z0 && v.at[1] <= f.z1);
   }
 });
+
+test("every photo-hunt species has an animal in the zoo, and every walker a model", async () => {
+  const { existsSync } = await import("node:fs");
+  const { SPECIES } = await import("./safari.ts");
+  const { animalsAt, WALKERS } = await import("./zoo.ts");
+  const here = new Set(animalsAt(0).map((a) => a.kind));
+  for (const s of SPECIES) assert.ok(here.has(s.id), `${s.id} is nowhere`);
+  for (const w of WALKERS)
+    assert.ok(existsSync(`public/models/animals/${w.kind}.glb`), w.kind);
+});
+
+test("every adoptable pet has a model", async () => {
+  const { existsSync } = await import("node:fs");
+  const { PET_KINDS } = await import("./pet.ts");
+  for (const k of PET_KINDS)
+    assert.ok(existsSync(`public/models/animals/${k}.glb`), k);
+});

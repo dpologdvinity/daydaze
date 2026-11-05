@@ -176,10 +176,11 @@ const GRASS = new THREE.MeshStandardMaterial({
 const SIGN_NAMES: Record<Habitat, string> = {
   savanna: "SAVANNA",
   elephants: "ELEPHANTS",
-  lions: "PRIDE ROCK",
+  lions: "BIG CATS",
   penguins: "PENGUIN POOL",
   flamingos: "FLAMINGO POND",
   farm: "PETTING FARM",
+  woods: "THE WOODS",
 };
 
 /** A painted board for each habitat. */
@@ -213,6 +214,7 @@ function useGrounds(signs: THREE.Texture) {
     rect(HABITATS.penguins, 0.02, ROCK);
     rect(HABITATS.flamingos, 0.03, WATER);
     rect(HABITATS.farm, 0.02, GRASS);
+    rect(HABITATS.woods, 0.02, GRASS);
     // the penguins' pool, inset in its rocks
     const pp = HABITATS.penguins;
     rect(
