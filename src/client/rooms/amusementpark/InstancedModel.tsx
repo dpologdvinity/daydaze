@@ -32,7 +32,19 @@ export function InstancedModel({
       const geometry = (o.geometry as THREE.BufferGeometry).clone();
       geometry.applyMatrix4(o.matrixWorld);
       const source = Array.isArray(o.material) ? o.material[0] : o.material;
-      const inst = new THREE.InstancedMesh(geometry, source?.clone(), count);
+      const material = source?.clone();
+      // transmission makes three.js draw the whole scene a second time into
+      // a buffer: fake the glass with plain alpha blending instead
+      if (
+        material instanceof THREE.MeshPhysicalMaterial &&
+        material.transmission > 0
+      ) {
+        material.transmission = 0;
+        material.transparent = true;
+        material.opacity = 0.55;
+        material.depthWrite = false;
+      }
+      const inst = new THREE.InstancedMesh(geometry, material, count);
       // the copies move far from the origin: skip the culling test
       inst.frustumCulled = false;
       if (tints?.length)
