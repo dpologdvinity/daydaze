@@ -255,6 +255,10 @@ KEYS = {
         else 0
     ),
     "athletic": (target(UNI + "maxmuscle-averageweight.target") - AVG) * 0.6,
+    # plus-size: the full-weight macro target, softened a little, with wider
+    # hips; every outfit carries the key like the other figures
+    "plus": (target(UNI + "averagemuscle-maxweight.target") - AVG) * 0.85
+    + target("hip/hip-scale-horiz-incr.target") * 0.3,
     "blink": target("expression/units/caucasian/eye-left-closure.target")
     + target("expression/units/caucasian/eye-right-closure.target"),
     "smile": target("expression/units/caucasian/mouth-corner-puller.target") * 0.5,

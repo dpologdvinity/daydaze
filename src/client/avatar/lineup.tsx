@@ -7,6 +7,8 @@ import { createRoot } from "react-dom/client";
 import * as THREE from "three";
 import {
   decodeFace,
+  encodeFace,
+  DEFAULT_FACE,
   SKINS,
   decodeMakeup,
   DEFAULT_LOOK,
@@ -392,6 +394,27 @@ const SHOTS = {
     cam: [0.6, 1.6, 2.6] as const,
     target: [0, 1.45, 0] as const,
     fov: 50,
+  },
+  // the plus-size figure in different outfits, hair and head coverings
+  plus: {
+    looks: (
+      [
+        ["flares", "waves"],
+        ["mini", "hijab"],
+        ["blouse", "buzz"],
+        ["sundress", "turban"],
+        ["hoodie-bikers", "head-wrap"],
+      ] as const
+    ).map(([outfit, hairStyle], i) => ({
+      ...LINEUP[i],
+      outfit,
+      hairStyle,
+      face: encodeFace({ ...DEFAULT_FACE, figure: "plus" }),
+    })),
+    x: (i: number) => (i - 2) * 0.8,
+    cam: [0, 1.0, 5.6] as const,
+    target: [0, 0.9, 0] as const,
+    fov: 32,
   },
   // the head coverings, three-quarters on
   coverings: {

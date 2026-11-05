@@ -2,7 +2,7 @@
 per hair style and face preset, on the built doll, so the character creator
 shows options instead of words.
 
-    blender --background --factory-startup --python art/doll/blender/thumbs.py [-- outfits hair]
+    blender --background --factory-startup --python art/doll/blender/thumbs.py [-- outfits hair figures]
 
 Run after build_doll.py, then convert to WebP (192 px) with sharp, as the
 commit that added it did; the client loads `/closet/<group>-<id>.webp`. Hair tiles are three-quarter views in a warm brown;
@@ -32,7 +32,7 @@ PRESETS = {
     "lips": ["natural", "full", "thin", "heart", "wide"],
     "face": ["oval", "round", "heart", "square", "diamond"],
 }
-FIGURES = ["classic", "curvy", "slim", "athletic"]
+FIGURES = ["classic", "curvy", "slim", "athletic", "plus"]
 # outfit id -> (cut, shoes, linear colour); ids match OUTFITS in src/game/look.ts
 OUTFITS = {
     "flares": ("flares", "sneakers", (0.02, 0.6, 0.55, 1)),
@@ -226,9 +226,9 @@ def main():
             load("body", f"hair-{style}")
             camera((0.55, -0.95, 1.6), (0, 0, 1.47), 34)
             render(f"hair-{style}")
-    if only:
+    if only and "figures" not in only:
         return
-    for group, options in PRESETS.items():
+    for group, options in {} if only else PRESETS.items():
         for o in options:
             reset()
             load("body", "hair-buns")

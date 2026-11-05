@@ -251,6 +251,7 @@ export const FIGURES = [
   { id: "curvy", label: "Curvy" },
   { id: "slim", label: "Slim" },
   { id: "athletic", label: "Athletic" },
+  { id: "plus", label: "Plus-size" },
 ] as const;
 
 /** Face sliders, -1..1; ids are the doll model's shape-key names. */
