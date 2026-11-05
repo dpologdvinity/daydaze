@@ -20,6 +20,7 @@ future imported packs belong here when they enter the game.
 | --- | --- | --- | --- | --- |
 | Public Transport Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/publictransport.html | City bus, merged, recolored and simplified for near and far rendering. |
 | Realistic Car Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/cars.html | Yellow taxis and sedans mixed into street traffic with near and far models. |
+| Universal Base Characters | Quaternius | CC0 1.0 | https://quaternius.com/packs/universalbasecharacters.html | Buzz cut, parted cut and their refits as the buzz, shaved-sides and slicked-edges hair, scaled to our head. |
 | Car Kit | Kenney | CC0 1.0 | https://kenney.nl/assets/car-kit | Delivery vans mixed into street traffic, merged and simplified. |
 | Coaster Kit | Kenney | CC0 1.0 | https://kenney.nl/assets/coaster-kit | Amusement Park coaster trains, log flume logs and midway stalls. |
 | Cabin cart for Ferris Wheel | Enkarra | CC-BY 4.0 | https://sketchfab.com/3d-models/cabin-cart-for-ferris-wheel-3fef7c11a7c447acb9e7a5ee98e654b8 | Amusement Park Ferris wheel gondolas. |

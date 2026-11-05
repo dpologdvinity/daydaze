@@ -12,7 +12,8 @@ const WORN_AS: Record<string, string> = {
 
 test("every hair style has all four model files", () => {
   const missing: string[] = [];
-  for (const { id } of HAIR_STYLES)
+  // bald wears no model at all
+  for (const { id } of HAIR_STYLES.filter((h) => h.id !== "bald"))
     for (const suffix of ["", "-m", "-lo", "-m-lo"]) {
       const file = `public/models/doll/hair-${WORN_AS[id] ?? id}${suffix}.glb`;
       if (!existsSync(file)) missing.push(file);

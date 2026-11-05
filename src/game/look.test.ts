@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { unlockedLook } from "./shop.ts";
 import {
   BEARDS,
+  SHORT_CUTS,
   modelSuffix,
   bodyOf,
   BROWS,
@@ -349,6 +350,19 @@ test("a look can have a masculine body and a beard; old looks stay valid", () =>
   assert.equal(bodyOf(DEFAULT_LOOK), "feminine");
   assert.ok(validateLook(man));
   assert.equal(bodyOf(man), "masculine");
+});
+
+test("close-cropped styles are pickable, valid and validate", () => {
+  for (const id of ["buzz", "shaved-sides", "bald", "edges"] as const) {
+    assert.ok(
+      HAIR_STYLES.some((h) => h.id === id),
+      id,
+    );
+    const look = { ...DEFAULT_LOOK, hairStyle: id };
+    assert.ok(validateLook(look), id);
+  }
+  // two of them suit the men's short cuts; bald and edges are for anyone
+  assert.ok(SHORT_CUTS.includes("buzz") && SHORT_CUTS.includes("shaved-sides"));
 });
 
 test("short cuts and menswear are in the closet's catalogs", () => {

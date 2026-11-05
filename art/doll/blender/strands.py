@@ -59,7 +59,7 @@ def strand_texture(size=(256, 1024), seed=3):
     return im
 
 
-def scalp_points(ctx, count, rng, front_line=0.0):
+def scalp_points(ctx, count, rng, front_line=0.0, max_above=None):
     """Area-weighted random root points over the head skin above the
     hairline, with their surface normals."""
     from doll_hair import hairline  # avoid a cycle at import time
@@ -70,7 +70,11 @@ def scalp_points(ctx, count, rng, front_line=0.0):
             continue
         pts = ctx.PB[f]
         c = pts.mean(0)
-        if c[2] < hairline(ctx, c[0], c[1]) + front_line:
+        line = hairline(ctx, c[0], c[1])
+        if c[2] < line + front_line:
+            continue
+        # only the band of scalp within `max_above` of the hairline (baby hairs)
+        if max_above is not None and c[2] > line + max_above:
             continue
         for k in range(1, len(f) - 1):
             tris.append((pts[0], pts[k], pts[k + 1]))
@@ -91,7 +95,8 @@ def scalp_points(ctx, count, rng, front_line=0.0):
 
 
 def build(
-    ctx, name, mat, length=0.42, count=420, wave=0.0, curl=0.0, volume=1.0, part=0.0, seed=1, tie=None, side=None
+    ctx, name, mat, length=0.42, count=420, wave=0.0, curl=0.0, volume=1.0, part=0.0, seed=1, tie=None, side=None,
+    crown=None, edge=None
 ):
     """A strand-card hairstyle.
 
@@ -313,7 +318,15 @@ def build(
         # hairline is made of their ragged roots, not the cap's cut (slicked
         # strands would project onto the face from there)
         below = -0.008 if tie_at is None else 0.0
-        roots = scalp_points(ctx, guides * (2 if side else 1), rng, front_line=below)
+        # crown: roots only that far above the hairline (shaved sides);
+        # edge: only within that band of it (baby hairs)
+        roots = scalp_points(
+            ctx,
+            guides * (2 if side else 1),
+            rng,
+            front_line=crown if crown is not None else below,
+            max_above=edge,
+        )
         if side:
             # one side of the part only (a hair over, so the part closes)
             roots = [(r, n) for r, n in roots if (r[0] - part) * side > -0.004][:guides]
