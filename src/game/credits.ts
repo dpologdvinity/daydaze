@@ -147,6 +147,8 @@ export const CREDITS: readonly {
         url: "https://quaternius.com/packs/junkfood.html",
         usedFor:
           "Grocery soda cans and restaurant display doughnuts, converted and optimized.",
+      },
+      {
         title: "Ringed Gas Giant Planet",
         author: "berzerkey",
         license: "CC-BY 4.0",
