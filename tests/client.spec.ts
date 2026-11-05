@@ -145,8 +145,10 @@ test("the mouse wheel zooms in on your own character from the city's overview", 
   const box = await canvas.boundingBox();
   if (!box) throw new Error("no canvas");
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  // the overview is about 255 m out; 60 notches bring it to her face
-  for (let i = 0; i < 60; i++) await page.mouse.wheel(0, -100);
+  // the overview is about 255 m out; 60 notches bring it to her face. Pixel
+  // deltas scale (100 = a notch), so six events do it: each wheel call waits
+  // on a rendered city frame, and 60 of them outlast the test under SwiftShader
+  for (let i = 0; i < 6; i++) await page.mouse.wheel(0, -1000);
   await expect
     .poll(
       // no attribute yet (no zoom happened) reads as NaN, never "close"
