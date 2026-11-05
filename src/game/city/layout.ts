@@ -5,6 +5,7 @@
 import { byTier } from "../age.ts";
 import type { WalkArea } from "../area.ts";
 import { FOOD_STOREFRONTS } from "../food/storefronts.ts";
+import { FOOD_BLOCKERS } from "./vendors.ts";
 import { MARKET, MARKET_BLOCKERS } from "./nightMarket.ts";
 import { DOG_PARK_BLOCKERS } from "./dogPark.ts";
 import { MARKET_BLOCKERS as FARMERS_BLOCKERS } from "./farmersMarket.ts";
@@ -2416,6 +2417,7 @@ const CITY_BLOCKERS: readonly (readonly Vec2[])[] = [
     rect(x - PROP_HALF, z - PROP_HALF, x + PROP_HALF, z + PROP_HALF),
   ),
   ...MARKET_BLOCKERS,
+  ...FOOD_BLOCKERS,
   ...PARK_BLOCKERS,
   ...DOG_PARK_BLOCKERS,
   ...FARMERS_BLOCKERS,

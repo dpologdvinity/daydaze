@@ -51,6 +51,10 @@ import type { Vec2 } from "../walk.ts";
 export const MODEL_COST: Readonly<
   Record<string, { tris: number; parts: number }>
 > = {
+  "doll/body-lo": { tris: 3168, parts: 1 },
+  "doll/hair-bob-lo": { tris: 2053, parts: 2 },
+  "doll/outfit-jeans-lo": { tris: 847, parts: 1 },
+  "doll/shoes-platforms-lo": { tris: 1286, parts: 1 },
   "vendors/truck": { tris: 3360, parts: 1 },
   "vendors/cart": { tris: 6952, parts: 1 },
   "doll/body": { tris: 31056, parts: 4 },
@@ -116,6 +120,10 @@ const growthModel = (kind: GrowthKind) => `nature/${GROWTH_MODELS[kind]}`;
 /** Every model the low-tier cost reads. */
 export function modelsInBudget(): string[] {
   return [
+    "doll/body-lo",
+    "doll/hair-bob-lo",
+    "doll/outfit-jeans-lo",
+    "doll/shoes-platforms-lo",
     "vendors/truck",
     "vendors/cart",
     "doll/body",
@@ -275,14 +283,26 @@ export function lowTierCost(at: Vec2): {
   add("vendors/truck");
   for (const cart of FOOD_CARTS)
     if (away(cart.at[0], cart.at[1]) <= FOOD_DRAW_RANGE) add("vendors/cart");
-  // StreetFood mounts at most one nearby vendor; full costume is conservative
-  // because HumanDoll drops to low LOD at 4.6 meters on low quality.
+  // Vendors stand at least 16 m apart. At most one can wear a full costume
+  // within HumanDoll's 4.6 m low-tier LOD range; neighbors wear low twins.
   if (FOOD_CARTS.some((cart) => away(cart.at[0], cart.at[1]) < VENDOR_RANGE)) {
     for (const model of [
       "doll/body",
       "doll/hair-bob",
       "doll/outfit-jeans",
       "doll/shoes-platforms",
+    ])
+      add(model);
+  }
+  const nearbyVendors = FOOD_CARTS.filter(
+    (cart) => away(cart.at[0], cart.at[1]) < VENDOR_RANGE,
+  ).length;
+  for (let i = 1; i < nearbyVendors; i++) {
+    for (const model of [
+      "doll/body-lo",
+      "doll/hair-bob-lo",
+      "doll/outfit-jeans-lo",
+      "doll/shoes-platforms-lo",
     ])
       add(model);
   }

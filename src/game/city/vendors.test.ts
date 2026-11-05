@@ -2,6 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  visibleFoodVendors,
   ICE_CREAM_ROUTE,
   FOOD_CARTS,
   FOOD_MENUS,
@@ -62,6 +63,10 @@ test("all four carts have small menus and reachable service positions", () => {
   );
   for (const cart of FOOD_CARTS) {
     assert.ok(FOOD_MENUS[cart.kind].length >= 2);
+    assert.ok(
+      CITY_AREA.blockers.some((s) => pointInPolygon(s, cart.at)),
+      `${cart.kind} body is solid`,
+    );
     assert.ok(CITY_AREA.surfaces.some((s) => pointInPolygon(s, cart.service)));
     assert.ok(!CITY_AREA.blockers.some((s) => pointInPolygon(s, cart.service)));
     assert.equal(canOrderFood(cart.kind, cart.service, pose, true), true);
@@ -84,4 +89,10 @@ test("truck serves the park north curb westbound and the beach south curb eastbo
   assert.deepEqual(pose, beach);
   ICE_CREAM_ROUTE.at(ICE_CREAM_ROUTE.arrivals[1] + 30, pose);
   assert.equal(pose.stop, -1);
+});
+
+test("both nearby park carts keep their vendors instead of only the nearest", () => {
+  assert.equal(visibleFoodVendors([254, -270]), (1 << 2) | (1 << 3));
+  assert.equal(visibleFoodVendors(FOOD_CARTS[0].at), 1);
+  assert.equal(visibleFoodVendors([0, 100]), 0);
 });

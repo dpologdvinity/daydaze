@@ -107,6 +107,7 @@ test("street-food downloads and nearby vendor costumes are included in the budge
     assert.deepEqual(MODEL_COST[model], glbCost(model), model);
   }
   for (const at of [
+    [254, -270],
     [246, -267.4],
     [262, -267.4],
     [-18, 15.6],

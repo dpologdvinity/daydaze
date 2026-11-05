@@ -117,3 +117,14 @@ export const FOOD_BLOCKERS: readonly (readonly Vec2[])[] = FOOD_CARTS.map(
     [x - 1.2, z + 1],
   ],
 );
+
+/** Bit per cart: every nearby vendor stays present, including adjacent carts. */
+export function visibleFoodVendors(at: Vec2): number {
+  let mask = 0;
+  for (let i = 0; i < FOOD_CARTS.length; i++) {
+    const cart = FOOD_CARTS[i];
+    if (Math.hypot(cart.at[0] - at[0], cart.at[1] - at[1]) < VENDOR_RANGE)
+      mask |= 1 << i;
+  }
+  return mask;
+}

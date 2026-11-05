@@ -3250,5 +3250,81 @@ test("dog park: dogs romp in the yard, and your pet can be let off the leash", a
   await expect(page.locator("canvas")).toHaveAttribute("data-pet-free", "0", {
     timeout: 30_000,
   });
+
+// Walk-up purchasing must close exactly when the scheduled truck departs.
+test("ice-cream truck sells treats at its park stop and closes on departure", async ({
+  page,
+}) => {
+  test.setTimeout(420_000);
+  const errors = collectErrors(page);
+  await seedSave(page, { coins: 100 });
+  const epoch = new Date("2026-01-01T12:00:00Z");
+  await page.clock.install({ time: new Date(epoch.getTime() - 60_000) });
+  await page.clock.pauseAt(epoch);
+  await page.goto(
+    `${LOW}&room=city&view=full&time=12:00&at=254,-264&cam=267,9,-249,253,1,-265`,
+  );
+  const canvas = canvasOf(page);
+  await expect
+    .poll(
+      async () => {
+        await page.clock.runFor(100);
+        return canvas.getAttribute("data-street-food");
+      },
+      { timeout: 180_000 },
+    )
+    .toBe("ready");
+  await page.clock.runFor(200);
+  await expect(canvas).toHaveAttribute("data-ice-cream-stop", "0");
+  await expect(canvas).toHaveAttribute("data-food-vendors", "12");
+  const truck = page.getByRole("region", {
+    name: "Ice-cream truck",
+    exact: true,
+  });
+  await expect(truck).toBeVisible();
+  await truck
+    .getByRole("button", { name: "Vanilla cone · 5 coins", exact: true })
+    .press("Enter");
+  await expect(truck.locator("[data-food-receipt]")).toHaveText(
+    "Vanilla cone purchased",
+  );
+  await expect(truck).toContainText("95 coins");
+  await page.screenshot({ path: "docs/screenshots/street-food-park.png" });
+  console.log(
+    "street-food-park:",
+    await canvas.getAttribute("data-calls"),
+    "draw calls,",
+    await canvas.getAttribute("data-triangles"),
+    "triangles on low",
+  );
+  await page.clock.fastForward(31_000);
+  await page.clock.runFor(200);
+  await expect(canvas).toHaveAttribute("data-ice-cream-stop", "-1");
+  await expect(truck).toHaveCount(0);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => JSON.parse(localStorage.getItem("daydaze-save-v1") ?? "{}").coins,
+      ),
+    )
+    .toBe(95);
+  await page.goto(`${LOW}&room=city&time=12:00&at=246,-267.4`);
+  await expect
+    .poll(
+      async () => {
+        await page.clock.runFor(100);
+        return canvas.getAttribute("data-food-near");
+      },
+      { timeout: 180_000 },
+    )
+    .toBe("pretzel");
+  const cart = page.getByRole("region", { name: "Pretzels", exact: true });
+  await cart
+    .getByRole("button", { name: "Salted pretzel · 4 coins", exact: true })
+    .press("Enter");
+  await expect(cart.locator("[data-food-receipt]")).toHaveText(
+    "Salted pretzel purchased",
+  );
+  await expect(cart).toContainText("91 coins");
   expect(errors).toEqual([]);
 });

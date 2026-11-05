@@ -18,6 +18,7 @@ export const ROLE_IDS = [
   "nail-tech",
   "lifeguard",
   "snack-cashier",
+  "street-food-vendor",
   "swimmer",
   "ride-operator",
   "ticket-cashier",

@@ -16,6 +16,7 @@ import type { PickHandler } from "../rooms/shared/Floor.tsx";
 import { useReducedMotion } from "../motion.ts";
 import type { Player } from "../world/PlayerController.tsx";
 import { useQuality } from "../world/quality.ts";
+import { StreetFood } from "./StreetFood.tsx";
 import { CitySky } from "./CitySky.tsx";
 import { Ocean } from "./Ocean.tsx";
 import { Fireworks } from "./Fireworks.tsx";
@@ -257,6 +258,7 @@ export function CityScene({
       ))}
       <Suspense fallback={null}>
         <CityTransit player={player} />
+        <StreetFood player={player} />
         <Traffic player={player} />
       </Suspense>
       <PlayerCar player={player} parked={car} onPark={onPark} />
