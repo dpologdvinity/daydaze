@@ -3,6 +3,7 @@
 // untagged ones play at any bar. Read through `pickLine`, never directly.
 
 import type { RoleBank } from "./types.ts";
+import { orbitBartender } from "./orbit.ts";
 
 export const bartenderBank: RoleBank = {
   "greeting-first": [
@@ -212,6 +213,7 @@ export const bartenderBank: RoleBank = {
     "Menu, specials, or a little gossip? I've got all three.",
     "Mija, you're making me blush. What do you need?",
     "Talk to me. Bartender therapy is free, drinks are not.",
+    ...orbitBartender.tapped,
   ],
   idle: [
     "This playlist is a whole mood tonight.",
@@ -488,6 +490,7 @@ export const bartenderBank: RoleBank = {
       text: "Velvet Room signature coming up, the good glasses come out for you.",
       when: { venue: "velvet-room" },
     },
+    ...orbitBartender["action-ordering"],
   ],
   "action-tipping": [
     "Oh, you didn't have to! Thank you, that's sweet.",

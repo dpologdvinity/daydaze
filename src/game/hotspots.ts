@@ -3,6 +3,7 @@
 import type { RoomId } from "./rooms.ts";
 import type { Vec2 } from "./walk.ts";
 import { DECKS_SPOT } from "./warehouse.ts";
+import { CABINET_SPOT, DECKS_SPOT as ORBIT_DECKS } from "./orbit.ts";
 import { LAST_CALL_SPOT, PLAYABLE, playSpot } from "./arcadeBar.ts";
 import { TRIVIA_SPOT as REWIND_TRIVIA } from "./videoStore.ts";
 
@@ -103,6 +104,24 @@ export const HOTSPOTS: readonly Hotspot[] = [
     label: "Play Last Call at the bar",
     position: LAST_CALL_SPOT,
     radius: 0.6,
+  },
+  {
+    // In front of Orbit 9's DJ stage, at the window
+    id: "orbit-decks",
+    room: "orbit",
+    game: "bassline",
+    label: "Play Bassline at the decks",
+    position: ORBIT_DECKS,
+    radius: 0.9,
+  },
+  {
+    // Orbit 9's cabinet by the window
+    id: "orbit-star-siege",
+    room: "orbit",
+    game: "star-siege",
+    label: "Play Star Siege on the cabinet",
+    position: CABINET_SPOT,
+    radius: 0.7,
   },
   {
     // In front of the shipping container the DJ plays from.

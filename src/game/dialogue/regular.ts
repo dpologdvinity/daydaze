@@ -3,6 +3,7 @@
 // directly.
 
 import type { RoleBank } from "./types.ts";
+import { orbitRegular } from "./orbit.ts";
 import { regularNightLines } from "./eventNights.ts";
 
 export const regularBank: RoleBank = {
@@ -248,6 +249,7 @@ export const regularBank: RoleBank = {
       text: "What is up, love? I have got gossip, cue advice, and a very good cream soda float.",
       when: { tier: "teen" },
     },
+    ...orbitRegular.tapped,
   ],
   idle: [
     // The Violet Hour: the sapphic bar on Nightlife Row

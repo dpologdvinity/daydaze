@@ -39,7 +39,8 @@ export type ClubNight = {
     | "cosmic-bowling"
     | "ladies-night"
     | "house-night"
-    | "luau-night";
+    | "luau-night"
+    | "cosmic-night";
   label: string;
   /** The clubs that host it. */
   clubs: readonly RoomId[];
@@ -206,6 +207,15 @@ export const CLUB_NIGHTS: readonly ClubNight[] = [
     track: "waterhole-twilight",
     color: "#3fe0d0",
     situation: "event-luau-night",
+  },
+  {
+    id: "cosmic-night",
+    label: "Cosmic night",
+    clubs: ["orbit"],
+    days: [4, 6],
+    track: "savanna-nightclub",
+    color: "#9b7bff",
+    situation: "event-cosmic-night",
   },
 ];
 

@@ -68,6 +68,7 @@ test("every room is registered under its own id", () => {
     "museum",
     "music-studio",
     "open-water",
+    "orbit",
     "paintball",
     "patisserie",
     "piercing",
@@ -380,6 +381,27 @@ test("Player 2's door opens onto its floor, and every cabinet, stool and the bar
     assert.equal(isBlocked(area, goal), false, `clear at ${goal}`);
     let pos: Vec2 = room.spawn.position;
     for (let k = 0; k < 600; k++) pos = stepInArea(area, pos, goal, 0.05);
+    assert.ok(
+      Math.hypot(pos[0] - goal[0], pos[1] - goal[1]) < 0.3,
+      `reached ${goal}`,
+    );
+  }
+});
+
+test("Orbit 9's door opens onto its floor, and its stools, chairs and games are reachable", () => {
+  const room = ROOMS.orbit;
+  const area = areaOf(room);
+  assert.equal(isBlocked(area, room.spawn.position), false);
+  const goals: Vec2[] = [
+    ...hotspotsIn("orbit").map((h) => h.position),
+    ...seatsIn("orbit").map((s) => s.approach),
+  ];
+  assert.equal(hotspotsIn("orbit").length, 2);
+  assert.equal(seatsIn("orbit").length, 8);
+  for (const goal of goals) {
+    assert.equal(isBlocked(area, goal), false, `clear at ${goal}`);
+    let pos: Vec2 = room.spawn.position;
+    for (let k = 0; k < 800; k++) pos = stepInArea(area, pos, goal, 0.05);
     assert.ok(
       Math.hypot(pos[0] - goal[0], pos[1] - goal[1]) < 0.3,
       `reached ${goal}`,

@@ -270,6 +270,9 @@ const MiniGolf = lazy(() =>
 const LaNoche = lazy(() =>
   import("../rooms/LaNoche.tsx").then((m) => ({ default: m.LaNoche })),
 );
+const Orbit = lazy(() =>
+  import("../rooms/Orbit.tsx").then((m) => ({ default: m.Orbit })),
+);
 const ArcadeBar = lazy(() =>
   import("../rooms/ArcadeBar.tsx").then((m) => ({ default: m.ArcadeBar })),
 );
@@ -428,6 +431,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   karaoke: Karaoke,
   bowling: Bowling,
   "arcade-bar": ArcadeBar,
+  orbit: Orbit,
   "la-noche": LaNoche,
   "mini-golf": MiniGolf,
   dome: Dome,

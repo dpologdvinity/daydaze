@@ -246,6 +246,7 @@ const SHOTS: {
   { name: "karaoke", query: "room=karaoke" },
   { name: "bowling", query: "room=bowling" },
   { name: "arcade-bar", query: "room=arcade-bar" },
+  { name: "orbit", query: "room=orbit" },
   { name: "la-noche", query: "room=la-noche" },
   { name: "mini-golf", query: "room=mini-golf" },
   { name: "dome", query: "room=dome" },

@@ -44,6 +44,7 @@ const MUSIC: Partial<Record<RoomId, TrackId>> = {
   warehouse: "warehouse-acid",
   bowling: "savanna-nightclub",
   "arcade-bar": "player-two-chiptune",
+  orbit: "savanna-nightclub",
   "la-noche": "la-noche-salsa",
   "mini-golf": "waterhole-twilight",
   dome: "savanna-nightclub",

@@ -34,6 +34,7 @@ import { FOUNTAIN, SQUARE_BENCHES } from "./city/layout.ts";
 import { BENCH_SEATS } from "./bowlingAlley.ts";
 import { BOOTH_SEATS, MIC } from "./karaoke.ts";
 import * as WAREHOUSE from "./warehouse.ts";
+import * as ORBIT from "./orbit.ts";
 import { yawTowards, type Vec2 } from "./walk.ts";
 
 /**
@@ -188,6 +189,19 @@ const bowlingSeats = BENCH_SEATS.map((at, i) =>
 const arcadeSeats = ARCADE.STOOL_ZS.map((z, i) =>
   seat(`arcade-stool-${i}`, "arcade-bar", [ARCADE.STOOL_X, z], 0.8, [6, z]),
 );
+
+// Orbit 9: stools at the soda bar, chairs round the lounge tables
+const orbitSeats = [
+  ...ORBIT.STOOL_ZS.map((z, i) =>
+    seat(`orbit-stool-${i}`, "orbit", [ORBIT.STOOL_X, z], 0.8, [
+      ORBIT.BAR.front,
+      z,
+    ]),
+  ),
+  ...ORBIT.LOUNGE_CHAIRS.map(({ at, table }, i) =>
+    seat(`orbit-chair-${i}`, "orbit", at, 0.5, ORBIT.LOUNGE_TABLES[table]),
+  ),
+];
 
 // the Midnight Horn: stools at the bar, a chair at each table facing the
 // stage across it
@@ -527,6 +541,7 @@ export const SEATS: readonly Seat[] = [
   ...karaokeSeats,
   ...bowlingSeats,
   ...arcadeSeats,
+  ...orbitSeats,
   ...laNocheSeats,
   ...jazzSeats,
   ...backRoomSeats,
