@@ -1,8 +1,9 @@
 import { useGLTF } from "@react-three/drei";
 import type { ThreeElements } from "@react-three/fiber";
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { floated } from "../../city/floated.ts";
+import { tintHsl } from "../../../game/home/palette.ts";
 
 // Generated props (Meshy) live in public/models/props/<model>.glb, one mesh
 // each. Wrap users in Suspense, with the old placeholder as the fallback.
@@ -61,10 +62,37 @@ export function Prop({
   height,
   yaw = 0,
   dir,
+  tint = 0,
   ...rest
-}: { model: string; yaw?: number; dir?: string } & Fit &
+}: {
+  model: string;
+  yaw?: number;
+  dir?: string;
+  /** A furniture look (game/home/palette.ts); 0 keeps the model's colors. */
+  tint?: number;
+} & Fit &
   Omit<ThreeElements["group"], "children">) {
-  const parts = useFittedParts(model, { width, depth, height }, dir);
+  const fitted = useFittedParts(model, { width, depth, height }, dir);
+  const parts = useMemo(() => {
+    if (tint === 0) return fitted;
+    // the loaded materials are shared by every copy: recolor clones
+    return fitted.map(({ geometry, material }) => {
+      const copy = material.clone();
+      if (copy instanceof THREE.MeshStandardMaterial) {
+        const hsl = { h: 0, s: 0, l: 0 };
+        copy.color.getHSL(hsl);
+        const t = tintHsl(hsl, tint);
+        copy.color.setHSL(t.h, t.s, t.l);
+      }
+      return { geometry, material: copy };
+    });
+  }, [fitted, tint]);
+  useEffect(
+    () => () => {
+      if (parts !== fitted) for (const p of parts) p.material.dispose();
+    },
+    [parts, fitted],
+  );
   return (
     <group {...rest}>
       <group rotation-y={yaw}>

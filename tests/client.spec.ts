@@ -2345,6 +2345,44 @@ test("apartment: place, rotate and remove furniture, lock the door, and it persi
   expect(errors).toEqual([]);
 });
 
+test("apartment: pick a sofa's look, hang a print on the back wall, and both persist", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${VELVET}&debug=1`);
+  await page.getByRole("button", { name: "Go to Apartment" }).click();
+  await expect(roomTitle(page)).toHaveText("Your apartment");
+  // a look chosen before placing goes with the piece
+  await page.getByRole("button", { name: "Velvet sofa" }).click();
+  await page.getByRole("button", { name: "Pink velvet" }).click();
+  await page.getByRole("button", { name: "Empty cell 1, 2" }).click();
+  await page.getByRole("button", { name: /^Velvet sofa at 1, 2/ }).click();
+  await expect(
+    page.getByRole("button", { name: "Pink velvet" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  // wall pieces hang from the strip, not the floor grid
+  await page.getByRole("button", { name: "Framed print", exact: true }).click();
+  await page.getByRole("button", { name: "Empty cell 3, 3" }).click();
+  await expect(page.getByRole("status").last()).toHaveText(
+    "Tap the back wall strip to hang it.",
+  );
+  await page.getByRole("button", { name: "Heart" }).click();
+  await page.getByRole("button", { name: "Empty wall 3" }).click();
+  await expect(page.getByRole("status").last()).toHaveText(
+    "Hung Framed print.",
+  );
+  await page.reload();
+  await page.getByRole("button", { name: "Go to Apartment" }).click();
+  await expect(
+    page.getByRole("button", { name: /^Framed print on the wall at 3/ }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: /^Velvet sofa at 1, 2/ }).click();
+  await expect(
+    page.getByRole("button", { name: "Pink velvet" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  expect(errors).toEqual([]);
+});
+
 test("jail: the sentence counts down, push-ups shorten it, cards deal a hand, and bail needs coins", async ({
   page,
 }) => {

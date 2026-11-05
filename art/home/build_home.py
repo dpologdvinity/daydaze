@@ -73,6 +73,8 @@ MODELS = {
     "washer": "uh:Bathroom_WashingMachine",
     "mirror": "uh:Bathroom_Mirror1",
     "trash": "uh:Trashcan_Small1",
+    "wall-mirror": "uh:Bathroom_Mirror2",
+    "wall-shelf": "uh:Shelf_Small1",
 }
 
 
@@ -81,6 +83,23 @@ def bounds(ob):
     mn = Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts)))
     mx = Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
     return mn, mx
+
+
+def glow_screen(ob):
+    """Kenney's TVs have no screen material: give the dark front faces (the
+    glass) a glowing one so the set reads as switched on."""
+    mat = bpy.data.materials.new("screen")
+    mat.use_nodes = True
+    bsdf = next(n for n in mat.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+    bsdf.inputs["Base Color"].default_value = (0.05, 0.35, 0.5, 1)
+    bsdf.inputs["Emission Color"].default_value = (0.2, 0.75, 1.0, 1)
+    bsdf.inputs["Emission Strength"].default_value = 1.2
+    ob.data.materials.append(mat)
+    index = len(ob.data.materials) - 1
+    for poly in ob.data.polygons:
+        # glTF +z (front) is Blender -y
+        if poly.normal.y < -0.7 and ob.data.materials[poly.material_index].name == "metalDark":
+            poly.material_index = index
 
 
 os.makedirs(OUT, exist_ok=True)
@@ -112,6 +131,8 @@ for name, ref in MODELS.items():
     if len(meshes) > 1:
         bpy.ops.object.join()
     ob = bpy.context.view_layer.objects.active
+    if name.startswith("tv"):
+        glow_screen(ob)
     mn, mx = bounds(ob)
     ob.location -= Vector(((mn.x + mx.x) / 2, (mn.y + mx.y) / 2, mn.z))
     bpy.ops.object.transform_apply(location=True)
