@@ -857,7 +857,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://kenney.nl/assets/mini-characters",
         usedFor:
-          "Instanced grandstand crowd and pit road pit crew for the Speedway oval.",
+          "Instanced grandstand crowd and pit road pit crew for the Speedway oval; the boardwalk's far crowd (walking poses) and cyclists' riders.",
       },
       {
         title: "Racing Kit",
@@ -909,6 +909,41 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://poly.pizza/m/e02PFKKhbr",
         usedFor: "The boardwalk's rail and the dune fence.",
+      },
+      {
+        title: "Market Stand",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/m/DGIM5HGISb",
+        usedFor: "A kiosk on the boardwalk deck.",
+      },
+      {
+        title: "Street Vendor Cart",
+        author: "Alan Zimmerman",
+        license: "CC-BY 3.0",
+        url: "https://poly.pizza/m/f_LuAcP2_Yh",
+        usedFor: "A vendor cart on the boardwalk deck.",
+      },
+      {
+        title: "Carnival Booth",
+        author: "sirkitree",
+        license: "CC-BY 3.0",
+        url: "https://poly.pizza/m/4NizXJZsuO2",
+        usedFor: "A striped booth on the boardwalk deck.",
+      },
+      {
+        title: "Bicycle",
+        author: "Poly by Google",
+        license: "CC-BY 3.0",
+        url: "https://poly.pizza/m/19VoUuA2pcN",
+        usedFor: "Bicycles for the boardwalk cyclists, decimated.",
+      },
+      {
+        title: "Pickup Truck",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/m/qn4grQgHm8",
+        usedFor: "The floats of the Pride parade.",
       },
       {
         title: "Popcorn Cart",

@@ -1,7 +1,7 @@
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useGLTF } from "@react-three/drei";
+import { useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import {
   PEDESTRIANS,
   nearestPedestrians,
@@ -12,9 +12,10 @@ import { Doll } from "../avatar/Doll.tsx";
 import { Creature, type CreaturePose } from "../creatures/Creature.tsx";
 import type { Player } from "../world/PlayerController.tsx";
 import { cityHour } from "./daylight.ts";
+import { PERSON_SCALE, usePersonAt } from "../rooms/speedway/peopleModel.ts";
 
 /** At most this many walkers are drawn: each is a full doll. */
-const DRAWN = 6;
+const DRAWN = 4;
 const RADIUS = 55;
 /** Seconds between re-picking who is nearest. */
 const REPICK = 0.75;
@@ -51,24 +52,96 @@ function Walker({ index }: { index: number }) {
   );
 }
 
-/** Beyond the dolls: the rest of the crowd within this far, as small figures. */
-const CROWD_RADIUS = 130;
-const CROWD_MAX = 80;
-const CROWD_COLORS = [
-  "#ff6fa8",
-  "#4fb8ff",
-  "#ffd23f",
-  "#3fcf7a",
-  "#b06bff",
-  "#ff8a3d",
-  "#f2f2f2",
-  "#2fd0c0",
-];
+/** Beyond the dolls: the rest of the crowd within this far, as small people. */
+const CROWD_RADIUS = 110;
+/** Per look and stride: 4 looks x 2 strides, each its own instanced mesh. */
+const CROWD_CAP = 24;
+const LOOKS = ["male-a", "female-c", "male-d", "female-a"] as const;
+const STRIDES = ["walk-a", "walk-b"] as const;
+const walkerUrl = (look: string, stride: string) =>
+  `/models/street/walker-${look}-${stride}.glb`;
+for (const l of LOOKS)
+  for (const s of STRIDES) useGLTF.preload(walkerUrl(l, s));
+/** Steps per second of the far crowd's two-pose walk. */
+const STEP_RATE = 2.2;
+
+/** One look in one stride: an instanced mesh holding whoever is in it now. */
+function WalkerMesh({
+  look,
+  stride,
+  mesh,
+}: {
+  look: string;
+  stride: string;
+  mesh: (m: THREE.InstancedMesh | null) => void;
+}) {
+  const person = usePersonAt(walkerUrl(look, stride));
+  if (!person) return null;
+  return (
+    <instancedMesh
+      ref={mesh}
+      args={[person.geometry, person.material, CROWD_CAP]}
+      frustumCulled={false}
+    />
+  );
+}
+
+const BIKE_URL = "/models/street/bicycle.glb";
+const rideUrl = (look: string) => `/models/street/walker-${look}-ride.glb`;
+useGLTF.preload(BIKE_URL);
+useGLTF.preload(rideUrl("male-a"));
+useGLTF.preload(rideUrl("female-c"));
+
+/** One cyclist: a downloaded bicycle with a posed Kenney rider, riding the deck. */
+function Cyclist({
+  slot,
+  bikers,
+}: {
+  slot: number;
+  bikers: React.RefObject<readonly number[]>;
+}) {
+  const group = useRef<THREE.Group>(null);
+  const pose = useRef<PedestrianPose>({ x: 0, z: 0, yaw: 0 });
+  const bike = useGLTF(BIKE_URL).scene;
+  const male = useGLTF(rideUrl("male-a")).scene;
+  const female = useGLTF(rideUrl("female-c")).scene;
+  const parts = useMemo(
+    () => ({
+      bike: bike.clone(true),
+      male: male.clone(true),
+      female: female.clone(true),
+    }),
+    [bike, male, female],
+  );
+  useFrame(({ clock }) => {
+    const g = group.current;
+    if (!g) return;
+    const i = bikers.current[slot];
+    g.visible = i !== undefined;
+    if (i === undefined) return;
+    pedestrianAt(PEDESTRIANS[i], clock.elapsedTime, pose.current);
+    g.position.set(pose.current.x, 0.14, pose.current.z);
+    g.rotation.y = pose.current.yaw;
+    // the rider is the one this walker's number picks
+    parts.male.visible = i % 2 === 0;
+    parts.female.visible = i % 2 === 1;
+  });
+  return (
+    <group ref={group} visible={false}>
+      <primitive object={parts.bike} />
+      <group position={[0, 0.02, -0.05]} scale={PERSON_SCALE}>
+        <primitive object={parts.male} />
+        <primitive object={parts.female} />
+      </group>
+    </group>
+  );
+}
 
 /**
- * The crowd past the nearest dolls: one instanced mesh of capsule-and-head
- * figures (about 100 triangles each) walking the same paths, so the deck
- * reads as busy from a distance. Allocates nothing per frame.
+ * The crowd past the nearest dolls: Kenney Mini Characters (CC0) baked in two
+ * stride poses (art/speedway/build_people.py), instanced per look and pose.
+ * Each walker swaps between the two poses as she goes, so the far deck reads
+ * as people walking. Allocates nothing per frame.
  */
 function CrowdFigures({
   player,
@@ -77,65 +150,72 @@ function CrowdFigures({
   player: Player;
   dolls: React.RefObject<readonly number[]>;
 }) {
-  const mesh = useRef<THREE.InstancedMesh>(null);
+  const bikers = useRef<readonly number[]>([]);
+  const meshes = useRef<(THREE.InstancedMesh | null)[]>([]);
   const picked = useRef<readonly number[]>([]);
   const last = useRef(-Infinity);
-  const dummy = useMemo(() => new THREE.Object3D(), []);
+  const dummy = useMemo(() => {
+    const d = new THREE.Object3D();
+    d.scale.setScalar(PERSON_SCALE);
+    return d;
+  }, []);
   const pose = useRef<PedestrianPose>({ x: 0, z: 0, yaw: 0 });
-  const geometry = useMemo(() => {
-    const body = new THREE.CapsuleGeometry(0.22, 0.85, 2, 6).translate(
-      0,
-      0.85,
-      0,
-    );
-    const head = new THREE.SphereGeometry(0.15, 6, 4).translate(0, 1.62, 0);
-    const merged = mergeGeometries([body.toNonIndexed(), head.toNonIndexed()]);
-    body.dispose();
-    head.dispose();
-    return merged;
-  }, []);
-  useEffect(() => {
-    const m = mesh.current;
-    if (!m) return;
-    for (let i = 0; i < CROWD_MAX; i += 1)
-      m.setColorAt(i, new THREE.Color(CROWD_COLORS[i % CROWD_COLORS.length]));
-    if (m.instanceColor) m.instanceColor.needsUpdate = true;
-  }, []);
+  const counts = useRef<number[]>(
+    new Array(LOOKS.length * STRIDES.length).fill(0),
+  );
   useFrame(({ clock }) => {
-    const m = mesh.current;
-    if (!m) return;
     const t = clock.elapsedTime;
     if (t - last.current >= REPICK) {
       last.current = t;
       const all = nearestPedestrians(
         [player.pos.x, player.pos.z],
         t,
-        CROWD_MAX + DRAWN,
+        CROWD_CAP * LOOKS.length + DRAWN,
         CROWD_RADIUS,
         cityHour(),
+        true,
       );
-      picked.current = all.filter((i) => !dolls.current.includes(i));
+      const rest = all.filter((i) => !dolls.current.includes(i));
+      picked.current = rest.filter((i) => !PEDESTRIANS[i].bike);
+      bikers.current = rest.filter((i) => PEDESTRIANS[i].bike);
     }
-    const n = Math.min(picked.current.length, CROWD_MAX);
-    for (let k = 0; k < n; k += 1) {
-      const p = PEDESTRIANS[picked.current[k]];
-      pedestrianAt(p, t, pose.current);
+    counts.current.fill(0);
+    for (const i of picked.current) {
+      const look = i % LOOKS.length;
+      const stride = (t * STEP_RATE + i * 0.37) % 1 < 0.5 ? 0 : 1;
+      const slot = look * STRIDES.length + stride;
+      const m = meshes.current[slot];
+      if (!m || counts.current[slot] >= CROWD_CAP) continue;
+      pedestrianAt(PEDESTRIANS[i], t, pose.current);
       dummy.position.set(pose.current.x, 0.14, pose.current.z);
       dummy.rotation.y = pose.current.yaw;
       dummy.updateMatrix();
-      m.setMatrixAt(k, dummy.matrix);
+      m.setMatrixAt(counts.current[slot]++, dummy.matrix);
     }
-    m.count = n;
-    m.instanceMatrix.needsUpdate = true;
+    meshes.current.forEach((m, slot) => {
+      if (!m) return;
+      m.count = counts.current[slot];
+      m.instanceMatrix.needsUpdate = true;
+    });
   });
   return (
-    <instancedMesh
-      ref={mesh}
-      args={[geometry, undefined, CROWD_MAX]}
-      frustumCulled={false}
-    >
-      <meshStandardMaterial roughness={0.8} />
-    </instancedMesh>
+    <>
+      {[0, 1, 2].map((slot) => (
+        <Cyclist key={slot} slot={slot} bikers={bikers} />
+      ))}
+      {LOOKS.flatMap((look, l) =>
+        STRIDES.map((stride, s) => (
+          <WalkerMesh
+            key={`${look}-${stride}`}
+            look={look}
+            stride={stride}
+            mesh={(m) => {
+              meshes.current[l * STRIDES.length + s] = m;
+            }}
+          />
+        )),
+      )}
+    </>
   );
 }
 

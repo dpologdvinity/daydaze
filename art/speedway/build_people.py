@@ -27,6 +27,28 @@ LOOKS = ["character-male-a", "character-female-c", "character-male-d", "characte
 POSES = {
     # arms down at the sides (the model rests in a T)
     "idle": {"arm-left": (0, 0, 78), "arm-right": (0, 0, -78)},
+    # mid-stride, left leg forward and right arm forward; walk-b is its mirror
+    # (the street's far crowd swaps between the two)
+    "walk-a": {
+        "leg-left": (-32, 0, 0),
+        "leg-right": (28, 0, 0),
+        "arm-left": (25, 0, 78),
+        "arm-right": (-25, 0, -78),
+    },
+    "walk-b": {
+        "leg-left": (28, 0, 0),
+        "leg-right": (-32, 0, 0),
+        "arm-left": (-25, 0, 78),
+        "arm-right": (25, 0, -78),
+    },
+    # in the saddle: knees up, one a little higher, hands out to the bars
+    "ride": {
+        "leg-left": (-75, 0, 0),
+        "leg-right": (-40, 0, 0),
+        "torso": (12, 0, 0),
+        "arm-left": (-55, 0, 78),
+        "arm-right": (-55, 0, -78),
+    },
     # both arms thrown up
     "cheer": {"arm-left": (0, 0, -150), "arm-right": (0, 0, 150)},
     # down on the heels, leaning in, hands forward
@@ -80,7 +102,14 @@ def bake(look: str, pose: str) -> None:
     print("BUILT", path, len(ob.data.polygons), [round(d, 2) for d in ob.dimensions])
 
 
-for look in LOOKS:
-    for pose in ("idle", "cheer"):
-        bake(look, pose)
-bake("character-male-b", "crouch")
+if os.environ.get("ONLY") == "walk":
+    for look in LOOKS:
+        for pose in ("walk-a", "walk-b"):
+            bake(look, pose)
+    for look in LOOKS[:2]:
+        bake(look, "ride")
+else:
+    for look in LOOKS:
+        for pose in ("idle", "cheer"):
+            bake(look, pose)
+    bake("character-male-b", "crouch")

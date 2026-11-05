@@ -559,6 +559,20 @@ const SHOTS: {
     act: furnitureReady,
   },
   {
+    // eye level on the deck: the crowd, the kiosks and carts, the cyclists
+    name: "city-boardwalk-crowd",
+    query:
+      "room=city&view=room&time=15:00&at=40,283&cam=-10,2.2,284,90,1.8,283.5",
+    act: furnitureReady,
+  },
+  {
+    // a parade float up close (the parade is under way when the HUD says so)
+    name: "city-parade-float",
+    query:
+      "room=city&view=room&time=15:00&parade=60&at=-40,283&cam=-62,2.6,288,-10,2.2,283",
+    act: furnitureReady,
+  },
+  {
     // straight down on the planks: the boards run north-south, across the walk
     name: "city-deck-top",
     query: "room=city&time=15:00&at=-34,286&cam=-34,14,283,-34,0,283.5",

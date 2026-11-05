@@ -219,8 +219,19 @@ def beach_set():
     imported(PK("castle"), length=1.4, tris=250); export("sandcastle")
 
 
+def deck_set():
+    """Boardwalk kiosks and the cyclists' bicycle (Poly Pizza; see docs/assets.md)."""
+    imported(PK("market"), length=3.2, tris=700); export("kiosk-market")
+    imported(PK("vendor"), length=2.6, tris=900); export("kiosk-vendor")
+    imported(PK("booth"), length=3.4, tris=700); export("kiosk-booth")
+    imported(PK("bicycle"), length=1.8, tris=1000); export("bicycle")
+    imported(PK("pickup"), length=6.0, tris=1500); export("parade-truck")
+
+
 if os.environ.get("SET") == "park":
     park_set()
+elif os.environ.get("SET") == "deck":
+    deck_set()
 elif os.environ.get("SET") == "beach":
     beach_set()
 else:

@@ -97,6 +97,11 @@ future imported packs belong here when they enter the game.
 | Orange Chaise Lounge Chair | S. Paul Michael | CC-BY 3.0 | https://poly.pizza/m/8ir-Gw1ZObm | Lounge chairs under the beach umbrellas. |
 | Fence | Quaternius | CC0 1.0 | https://poly.pizza/m/e02PFKKhbr | The boardwalk's rail and the dune fence. |
 | Popcorn Cart | Don Carson | CC-BY 3.0 | https://poly.pizza/m/1T9untmohmj | Food carts on the boardwalk deck. |
+| Market Stand | Quaternius | CC0 1.0 | https://poly.pizza/m/DGIM5HGISb | A kiosk on the boardwalk deck. |
+| Street Vendor Cart | Alan Zimmerman | CC-BY 3.0 | https://poly.pizza/m/f_LuAcP2_Yh | A vendor cart on the boardwalk deck. |
+| Carnival Booth | sirkitree | CC-BY 3.0 | https://poly.pizza/m/4NizXJZsuO2 | A striped booth on the boardwalk deck. |
+| Bicycle | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/19VoUuA2pcN | Bicycles for the boardwalk cyclists, decimated. |
+| Pickup Truck | Quaternius | CC0 1.0 | https://poly.pizza/m/qn4grQgHm8 | The floats of the Pride parade. |
 | Hot dogs! Get your hot dogs! | Anonymous | CC-BY 3.0 | https://poly.pizza/m/8n7WTYXqb2n | Food carts on the boardwalk deck. |
 | Ice Cream | Quaternius | CC0 1.0 | https://poly.pizza/m/iZiAPq7Sne | The giant cone on the ice cream shop's roof. |
 | Animated Ferris Wheel | Arif | CC-BY 3.0 | https://poly.pizza/m/HknNtngih0 | The turning Ferris wheel at the boardwalk's fairground end. |
@@ -123,7 +128,7 @@ future imported packs belong here when they enter the game.
 | Coral | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/4KUXdtDdgHR | Reef dive: branching coral. |
 | Anemone | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/1FMGb52XdD- | Reef dive: sea fans. |
 | Jellyfish | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/dA5osnS0Rzj | Reef dive: drifting jellyfish. |
-| Mini Characters | Kenney | CC0 1.0 | https://kenney.nl/assets/mini-characters | Instanced grandstand crowd and pit road pit crew for the Speedway oval. |
+| Mini Characters | Kenney | CC0 1.0 | https://kenney.nl/assets/mini-characters | Instanced grandstand crowd and pit road pit crew for the Speedway oval; the boardwalk's far crowd (walking poses) and cyclists' riders. |
 | Racing Kit | Kenney | CC0 1.0 | https://kenney.nl/assets/racing-kit | Grandstand, pit garages, barriers, overhead flag gantry, and billboards for the Speedway oval. |
 | Realistic Car Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/realisticcarpack.html | NASCAR stock cars (models 1-4) with canvas liveries for the Speedway oval. |
 | Ships | Quaternius | CC0 1.0 | https://quaternius.com/packs/ships.html | Marina sailboat, converted and optimized. |
