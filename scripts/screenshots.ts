@@ -388,7 +388,8 @@ const SHOTS: {
     // along the boardwalk, looking east: shops on the left, beach and sea on
     // the right, the Ferris wheel ahead (the camera is pinned with ?cam=)
     name: "city-boardwalk-wide",
-    query: "room=city&view=room&time=15:00&at=250,284&cam=160,2.8,282,340,3,296",
+    query:
+      "room=city&view=room&time=15:00&at=250,284&cam=160,2.8,282,340,3,296",
     act: furnitureReady,
   },
   {
@@ -399,7 +400,8 @@ const SHOTS: {
   },
   {
     name: "city-boardwalk-dusk",
-    query: "room=city&view=room&time=19:40&at=250,284&cam=160,2.8,282,340,3,296",
+    query:
+      "room=city&view=room&time=19:40&at=250,284&cam=160,2.8,282,340,3,296",
     act: furnitureReady,
   },
   {
