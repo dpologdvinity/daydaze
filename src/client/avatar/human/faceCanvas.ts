@@ -599,7 +599,7 @@ export async function paintFace(
   const bindi = BINDI_INK[makeup.bindi];
   if (bindi) {
     const x = (lEye[0] + rEye[0]) / 2;
-    const y = (lEye[1] + rEye[1]) / 2 - 0.075;
+    const y = (lEye[1] + rEye[1]) / 2 - 0.06;
     ctx.fillStyle = bindi;
     ctx.beginPath();
     ctx.arc(x * SIZE, y * SIZE, 0.0085 * SIZE, 0, Math.PI * 2);
