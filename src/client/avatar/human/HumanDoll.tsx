@@ -820,7 +820,7 @@ export function HumanDoll({
     // loaded: a doll stays hidden while they're still downloading
     if (root.current)
       root.current.visible =
-        worn.current.has("outfit") && worn.current.has("hair");
+        worn.current.has("outfit") && (!parts.hair || worn.current.has("hair"));
     // far dolls swap to the low-poly body; the gap is hysteresis
     if (root.current && body.far) {
       // last frame's world matrix is close enough for picking a LOD, and

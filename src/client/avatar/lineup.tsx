@@ -395,8 +395,8 @@ const SHOTS = {
     looks: (["buzz", "shaved-sides", "bald", "edges"] as const).map(
       (hairStyle, i) => ({ ...LINEUP[i % LINEUP.length], hairStyle }),
     ),
-    x: (i: number) => (i - 1.5) * 0.36,
-    cam: [0, 1.62, 1.8] as const,
+    x: (i: number) => (i - 1.5) * 0.6,
+    cam: [0, 1.62, 2.6] as const,
     target: [0, 1.58, 0] as const,
     fov: 28,
   },
