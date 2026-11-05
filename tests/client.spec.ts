@@ -101,7 +101,9 @@ test("Credits opens from Menu and restores focus when closed", async ({
     page.getByRole("dialog", { name: "Menu", exact: true }),
   ).toHaveCount(0);
   await expect(
-    panel.getByText("All audio is procedural", { exact: true }),
+    panel.getByText("Procedural music and generated sound effects", {
+      exact: true,
+    }),
   ).toBeVisible();
   await expect(
     panel.getByText("Mixamo animations (Adobe), used under Mixamo's terms"),
@@ -1121,13 +1123,13 @@ test("vitiligo, a birthmark and the monolid from the closet go into the saved lo
     .getByRole("radiogroup", { name: "Eye shape" })
     .getByRole("radio", { name: "Monolid" })
     .click();
-  // the makeup code's last two digits: vitiligo (patchy = 2), birthmark (port-wine = 1)
+  // the makeup code's digits 9 and 10: vitiligo (patchy = 2), birthmark (port-wine = 1)
   await expect
     .poll(async () => {
       const save = await page.evaluate(() =>
         JSON.parse(localStorage.getItem("daydaze-save-v1") ?? "{}"),
       );
-      return `${String(save.look?.makeup ?? "").slice(-2)} ${String(save.look?.face ?? "")[8]}`;
+      return `${String(save.look?.makeup ?? "").slice(8, 10)} ${String(save.look?.face ?? "")[8]}`;
     })
     // ...and the face code's eye shape digit (monolid = 5)
     .toBe("21 5");
