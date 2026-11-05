@@ -76,6 +76,8 @@ export type DollState = {
   seed: number;
   /** In the sea, out of her depth: she strokes or treads whatever her mood. */
   afloat?: boolean;
+  /** She rides a wheelchair: she sits whether she rolls or waits. */
+  seated?: boolean;
 };
 
 /** A clip to play: `rate` scales its speed; `offset` (seconds) shifts its
@@ -98,6 +100,8 @@ export function pickClip(s: DollState): Play | null {
   const play = (id: string, rate = 1, offset = 0): Play | null =>
     clipOf(id) ? { id, rate, offset } : null;
   if (s.afloat) return play(s.speed > MOVING ? SWIM_CLIP : TREAD_CLIP);
+  // a wheelchair user rolls along sitting: no stride, whatever her mood
+  if (s.seated) return play(SEAT_CLIP);
   if (s.speed > MOVING) {
     const walk = clipOf(s.walk);
     return walk?.kind === "walk"

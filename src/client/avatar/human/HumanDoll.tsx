@@ -1,6 +1,7 @@
 import { useGLTF } from "@react-three/drei";
 import { afterSceneReady } from "../../world/ready.ts";
 import { useFrame, useThree, type ThreeElements } from "@react-three/fiber";
+import { Prosthetics } from "./Prosthetics.tsx";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js";
@@ -22,6 +23,7 @@ import {
 import {
   modelSuffix,
   FACE_PRESETS,
+  limbsOf,
   FIGURES,
   FACE_SLIDERS,
   faceOf,
@@ -173,6 +175,14 @@ const morphMeshes = (root: THREE.Object3D) => {
   });
   return out;
 };
+
+/** The wheelchair a seated gait rolls in (art/doll/blender/wheelchair.py,
+ * CC-BY by Loic): feet on the floor, the seat under the doll's hips. */
+function Wheelchair() {
+  const { scene } = useGLTF(`${MODELS}/wheelchair.glb`);
+  const chair = useMemo(() => scene.clone(true), [scene]);
+  return <primitive object={chair} />;
+}
 
 function setMorph(meshes: THREE.Mesh[], name: string, value: number) {
   for (const m of meshes) {
@@ -856,6 +866,7 @@ export function HumanDoll({
         couple,
         seed,
         afloat: own && afloat.on,
+        seated: gait.seated,
       });
       const clip = want && clips?.get(want.id);
       if (want && clip) {
@@ -895,7 +906,7 @@ export function HumanDoll({
             : poseAt(move, t, sampled);
         pose(
           proxy,
-          moving ? "walk" : mood,
+          gait.seated ? "sit" : moving ? "walk" : mood,
           t,
           phase.current,
           calm,
@@ -970,6 +981,18 @@ export function HumanDoll({
         bones={body.bones}
         restInverse={body.restInverse}
       />
+      <Suspense fallback={null}>
+        <Prosthetics
+          limbs={limbsOf(look)}
+          bones={body.bones}
+          restInverse={body.restInverse}
+        />
+      </Suspense>
+      {gait.seated && (
+        <Suspense fallback={null}>
+          <Wheelchair />
+        </Suspense>
+      )}
       <Glasses
         style={makeupOf(look).glasses}
         anchors={body.anchors}

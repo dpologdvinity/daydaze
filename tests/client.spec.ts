@@ -1161,6 +1161,33 @@ test("a hair style picked in the closet survives a reload", async ({
   ).toHaveAttribute("aria-checked", "true");
 });
 
+test("a wheelchair and a prosthetic leg from the closet go into the saved look", async ({
+  page,
+}) => {
+  test.setTimeout(300_000);
+  await page.goto(VELVET);
+  await page
+    .getByRole("button", { name: "Dressing room", exact: true })
+    .click();
+  await page.getByRole("tab", { name: "Body" }).click();
+  await page
+    .getByRole("radiogroup", { name: "Walk style" })
+    .getByRole("radio", { name: "Wheelchair" })
+    .click();
+  await page
+    .getByRole("radiogroup", { name: "Right leg" })
+    .getByRole("radio", { name: "Prosthetic" })
+    .click();
+  await expect
+    .poll(async () => {
+      const save = await page.evaluate(() =>
+        JSON.parse(localStorage.getItem("daydaze-save-v1") ?? "{}"),
+      );
+      return `${save.look?.gait} ${save.look?.limbs}`;
+    })
+    .toBe("wheelchair 01");
+});
+
 test("the closet's Build makes a man, with a beard, and it survives a reload", async ({
   page,
 }) => {

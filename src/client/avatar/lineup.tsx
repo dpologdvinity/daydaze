@@ -19,7 +19,7 @@ import { ToonDoll as Doll } from "./Doll.tsx";
 import { HumanDoll } from "./human/HumanDoll.tsx";
 import { isDanceMoveId, stillClipsOf } from "../../game/dance/moves.ts";
 import { liftOf, roleMove, together } from "../../game/dance/together.ts";
-import { GAITS } from "../../game/gaits.ts";
+import { GAIT_LIST } from "../../game/gaits.ts";
 import { naturalPace } from "../../game/dance/clips.ts";
 import { Environment, Lightformer } from "@react-three/drei";
 import { Suspense } from "react";
@@ -78,7 +78,7 @@ const HOLDS = {
   lay: holdsOf("lay"),
 };
 // the walk shot: each gait at its clip's own pace, so it plays at 1x
-const WALKING = GAITS.map((g) => ({
+const WALKING = GAIT_LIST.map((g) => ({
   current: { speed: naturalPace(g.clip, false) ?? 1.4 },
 }));
 
@@ -241,6 +241,30 @@ const SHOTS = {
     target: [0, 1.53, 0] as const,
     fov: 24,
   },
+  // prosthetic legs: shorts and a mini show them, jeans cover the thigh only
+  limbs: {
+    looks: [
+      { ...LINEUP[0], outfit: "shorts", limbs: "10" },
+      { ...LINEUP[5], outfit: "shorts", limbs: "11" },
+      { ...LINEUP[2], outfit: "mini", limbs: "01" },
+    ] as Look[],
+    x: (i: number) => (i - 1) * 1.1,
+    cam: [0.6, 0.8, 4.2] as const,
+    target: [0, 0.6, 0] as const,
+    fov: 30,
+  },
+  // wheelchair users, a woman, a man and a woman in a long skirt, from the front
+  chair: {
+    looks: [
+      { ...LINEUP[0], gait: "wheelchair" },
+      { ...LINEUP[5], gait: "wheelchair" },
+      { ...LINEUP[2], outfit: "corset-maxi", gait: "wheelchair" },
+    ] as Look[],
+    x: (i: number) => (i - 1) * 1.3,
+    cam: [0.8, 1.1, 4.4] as const,
+    target: [0, 0.7, 0] as const,
+    fov: 30,
+  },
   // head and shoulders with the crown in frame, for judging hair
   portrait: {
     looks: [{ ...LINEUP[0], hairStyle: hairParam(), ...makeupParam() }],
@@ -276,8 +300,11 @@ const SHOTS = {
   },
   // every walk style, walking in place, side on
   walk: {
-    looks: GAITS.map((g, i) => ({ ...LINEUP[i % LINEUP.length], gait: g.id })),
-    x: (i: number) => (i - (GAITS.length - 1) / 2) * 0.9,
+    looks: GAIT_LIST.map((g, i) => ({
+      ...LINEUP[i % LINEUP.length],
+      gait: g.id,
+    })),
+    x: (i: number) => (i - (GAIT_LIST.length - 1) / 2) * 0.9,
     cam: [0, 1.0, 9] as const,
     target: [0, 0.9, 0] as const,
     fov: 36,

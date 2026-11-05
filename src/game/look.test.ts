@@ -2,6 +2,10 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { unlockedLook } from "./shop.ts";
 import {
+  NATURAL_LIMBS,
+  decodeLimbs,
+  encodeLimbs,
+  limbsOf,
   BEARDS,
   SHORT_CUTS,
   modelSuffix,
@@ -254,7 +258,7 @@ test("skin marks and the monolid ride in the codes and fit the wire limit", () =
     face: encodeFace(face),
   };
   assert.equal(validateLook(look), true);
-  // no new Look field: a full look stays within the 16-key wire limit
+  // no new Look field: a full look stays within the 24-key wire limit
   assert.ok(Object.keys(look).length <= 16);
 });
 
@@ -393,4 +397,30 @@ test("men and women are separate dolls: a man's models carry the -m suffix", () 
   assert.equal(modelSuffix(DEFAULT_LOOK), "");
   assert.equal(modelSuffix({ ...DEFAULT_LOOK, body: "feminine" }), "");
   assert.equal(modelSuffix({ ...DEFAULT_LOOK, body: "masculine" }), "-m");
+});
+
+test("prostheses ride in one more look field, within the wire limit", () => {
+  const limbs = { ...NATURAL_LIMBS, legR: "prosthetic" as const };
+  const code = encodeLimbs(limbs);
+  assert.equal(code, "01");
+  assert.deepEqual(decodeLimbs(code), limbs);
+  assert.deepEqual(limbsOf(DEFAULT_LOOK), NATURAL_LIMBS);
+  assert.equal(validateLook({ ...DEFAULT_LOOK, limbs: code }), true);
+  for (const bad of ["", "0", "012", "02", "a0", 1, null])
+    assert.equal(validateLook({ ...DEFAULT_LOOK, limbs: bad }), false);
+  // every optional field at once still fits the 24-key wire limit
+  const full = {
+    ...DEFAULT_LOOK,
+    face: encodeFace(DEFAULT_FACE),
+    makeup: encodeMakeup(DEFAULT_MAKEUP),
+    piercings: encodePiercings(NO_PIERCINGS),
+    gait: "wheelchair",
+    shoes: "boots",
+    swim: "bikini-0",
+    pronouns: "they/them",
+    body: "masculine",
+    beard: "full",
+    limbs: code,
+  };
+  assert.ok(Object.keys(full).length <= 24, `${Object.keys(full).length} keys`);
 });

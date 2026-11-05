@@ -78,10 +78,10 @@ test("look shapes are plain string records with bounded keys and values", () => 
   assert.equal(isLookShape(look), true);
   assert.equal(isLookShape({}), true);
   assert.equal(isLookShape(Object.create(null)), true);
-  const sixteen = Object.fromEntries(
-    Array.from({ length: 16 }, (_, i) => [`k${i}`, "v"]),
+  const full = Object.fromEntries(
+    Array.from({ length: 24 }, (_, i) => [`k${i}`, "v"]),
   );
-  assert.equal(isLookShape(sixteen), true);
+  assert.equal(isLookShape(full), true);
   for (const value of [
     null,
     "bob",
@@ -91,7 +91,7 @@ test("look shapes are plain string records with bounded keys and values", () => 
     { hair: 1 },
     { hair: "x".repeat(33) },
     { ["k".repeat(33)]: "v" },
-    { ...sixteen, extra: "v" },
+    { ...full, extra: "v" },
   ])
     assert.equal(isLookShape(value), false);
 });

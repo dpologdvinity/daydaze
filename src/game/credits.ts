@@ -141,6 +141,22 @@ export const CREDITS: readonly {
           "Sushi and ramen restaurant furnishings, kitchen equipment, dishes and food, converted and optimized.",
       },
       {
+        title: "WheelChair",
+        author: "Loïc",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/wheelchair-f0ef4adc17ee4929b40e894c608061ea",
+        usedFor:
+          "The wheelchair a doll rolls in when her walk style is Wheelchair (fitted by art/doll/blender/wheelchair.py).",
+      },
+      {
+        title: "leg prosthesis",
+        author: "victorghys",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/leg-prosthesis-59d7e2b28b8b45ec8b179fff0134ceec",
+        usedFor:
+          "The lower leg of a doll's prosthetic leg (cut and fitted by art/doll/blender/prosthesis.py).",
+      },
+      {
         title: "Public Transport Pack",
         author: "Quaternius",
         license: "CC0 1.0",

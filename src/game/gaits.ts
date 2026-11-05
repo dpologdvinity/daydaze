@@ -28,6 +28,8 @@ export type Gait = {
   chin: number;
   /** A motion-capture walk loop that replaces the built stride. */
   clip?: string;
+  /** A wheelchair: the doll sits and rolls (HumanDoll draws the chair). */
+  seated?: boolean;
 };
 
 export const GAITS = [
@@ -170,7 +172,25 @@ export const GAITS = [
     chin: 0,
     clip: "jog",
   },
+  {
+    id: "wheelchair",
+    label: "Wheelchair",
+    stride: 0,
+    knee: 0,
+    armSwing: 0,
+    elbow: 0,
+    hipSway: 0,
+    cross: 0,
+    twist: 0,
+    bounce: 0,
+    cadence: 1,
+    chin: 0,
+    seated: true,
+  },
 ] as const satisfies readonly Gait[];
+
+/** The same list typed as plain gaits, for reading optional fields (`clip`, `seated`). */
+export const GAIT_LIST: readonly Gait[] = GAITS;
 
 export type GaitId = (typeof GAITS)[number]["id"];
 
