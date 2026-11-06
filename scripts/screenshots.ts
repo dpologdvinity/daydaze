@@ -496,6 +496,12 @@ const SHOTS: {
     query: `room=city&quality=${quality}&date=${date}&time=${time}&at=${at}&cam=${cam}`,
     act: furnitureReady,
   })),
+  // the string lights over Nightlife Row's avenue (garland in dressing.ts)
+  {
+    name: "cubes-strings",
+    query: "room=city&quality=high&time=21:00&at=100,8&cam=100,2.2,8,150,7,-2",
+    act: furnitureReady,
+  },
   // the avenue sidewalk with its street furniture (src/client/city/CityFurniture.tsx)
   {
     name: "city-sidewalk",

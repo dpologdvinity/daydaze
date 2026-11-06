@@ -63,6 +63,11 @@ const WINDOW_COLORS = [
 const UNLIT_WINDOW = "#2a2250";
 const SILL = "#3a2f63";
 const BULB_COLORS = ["#ffd08a", "#ff4fb3", "#4fe3ff", "#7dff6b", "#ffd84f"];
+/** A string light bulb is a small round glow, this wide (m). */
+const BULB_SIZE = 0.16;
+const CORD_COLOR = "#2a2230";
+/** Chinatown and Koreatown hang red and gold lights, not the party mix. */
+const LANTERN_COLORS = ["#ff4a3d", "#ffb347", "#ff4a3d", "#ffd84f"];
 const QUEUE_COLORS = ["#ff4fb3", "#4fe3ff", "#ffd84f"];
 const OUTFITS = [
   "#ff4fb3",
@@ -677,19 +682,42 @@ function garland(
   sag: number,
   n: number,
   seed: number,
+  palette: readonly string[] = BULB_COLORS,
 ): void {
-  for (let i = 0; i <= n; i++) {
+  const point = (i: number): [number, number, number] => {
     const t = i / n;
-    const x = from[0] + (to[0] - from[0]) * t;
-    const z = from[1] + (to[1] - from[1]) * t;
+    return [
+      from[0] + (to[0] - from[0]) * t,
+      y - sag * 4 * t * (1 - t),
+      from[1] + (to[1] - from[1]) * t,
+    ];
+  };
+  for (let i = 0; i <= n; i++) {
+    const [x, py, z] = point(i);
+    // each round bulb hangs just under its cord
     put(out, "bulb", {
       x,
-      y: y - sag * 4 * t * (1 - t),
+      y: py - 0.1,
       z,
-      sx: 0.22,
-      sy: 0.22,
-      sz: 0.22,
-      color: pick(BULB_COLORS, hash(i, seed, x)),
+      sx: BULB_SIZE,
+      sy: BULB_SIZE,
+      sz: BULB_SIZE,
+      color: pick(palette, hash(i, seed, x)),
+    });
+    if (i === n) continue;
+    // the thin dark cord to the next point, so the lights read as a string
+    const [nx, ny, nz] = point(i + 1);
+    const run = Math.hypot(nx - x, nz - z);
+    put(out, "ledge", {
+      x: (x + nx) / 2,
+      y: (py + ny) / 2,
+      z: (z + nz) / 2,
+      sx: 0.03,
+      sy: 0.03,
+      sz: Math.hypot(run, ny - py),
+      // yaw about y, then pitch about the cord's own x axis
+      rot: [-Math.atan2(ny - py, run), Math.atan2(nx - x, nz - z), 0],
+      color: CORD_COLOR,
     });
   }
 }
@@ -837,7 +865,7 @@ function strings(out: Placed[]): void {
   // Chinatown and Koreatown: red lantern strings across the avenue
   for (let x = 206; x <= 440; x += 18) {
     if (Math.abs(x - 320) < 12) continue;
-    garland(out, [x, -13.5], [x, 13.5], 7, 1.1, 14, x + 7);
+    garland(out, [x, -13.5], [x, 13.5], 7, 1.1, 14, x + 7, LANTERN_COLORS);
   }
   // the boardwalk: string lights from lamp post to lamp post along the deck's
   // sea edge (the lamps stand every 31 m from the west edge + 6)
