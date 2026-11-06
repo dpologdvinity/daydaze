@@ -30,6 +30,7 @@ import { taxiDriverBank } from "./taxi-driver.ts";
 import { hikerBank } from "./hiker.ts";
 import { captainBank } from "./captain.ts";
 import { crewBank } from "./crew.ts";
+import { gardenerBank } from "./gardener.ts";
 import type { DialogueRole, RoleBank } from "./types.ts";
 
 /**
@@ -66,4 +67,5 @@ export const LINE_BANKS: Record<DialogueRole, RoleBank> = {
   hiker: hikerBank,
   captain: captainBank,
   crew: crewBank,
+  gardener: gardenerBank,
 };
