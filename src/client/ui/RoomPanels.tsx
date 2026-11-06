@@ -200,6 +200,10 @@ const PANELS: Partial<Record<RoomId, ComponentType>> = {
     "SkeePanel",
   ),
   "surf-shack": panel(() => import("../rooms/surf/SurfPanel.tsx"), "SurfPanel"),
+  pottery: panel(
+    () => import("../rooms/pottery/PotteryPanel.tsx"),
+    "PotteryPanel",
+  ),
   gallery: panel(() => import("../rooms/gallery/PaintPanel.tsx"), "PaintPanel"),
   patisserie: panel(
     () => import("../rooms/patisserie/TowerPanel.tsx"),

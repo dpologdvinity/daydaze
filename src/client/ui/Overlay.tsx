@@ -135,6 +135,8 @@ const PLAYER_MOODS: readonly { id: Mood; label: string }[] = [
 ];
 
 const ROOM_HINTS: Record<RoomId, string> = {
+  pottery:
+    "Clay Day · Throw a pot, choose a glaze, and fire a piece for your apartment.",
   "velvet-room": "Daydaze VIP lounge. Tap the floor or use WASD to walk.",
   pulse: "Pulse. Tap the floor to walk, tap the DJ booth to play, or use WASD.",
   "violet-hour":

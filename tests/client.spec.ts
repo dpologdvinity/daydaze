@@ -3389,3 +3389,91 @@ test("taxi: hail on a sidewalk, pick Beachside on the map, pay the fare and ride
   await expect(page.getByText("100 coins", { exact: true })).toHaveCount(0);
   expect(errors).toEqual([]);
 });
+
+test.describe("Clay Day studio", () => {
+  test.use({ hasTouch: true });
+  test("Clay Day: throw, glaze and fire a pot", async ({ page }) => {
+    test.setTimeout(360_000);
+    const errors = collectErrors(page);
+    await page.goto(`${STILL}&room=pottery`, { timeout: 150_000 });
+    await expect(roomTitle(page)).toHaveText("Clay Day", { timeout: 150_000 });
+    await expect(canvasOf(page)).toHaveAttribute("data-pottery", "ready", {
+      timeout: 150_000,
+    });
+    const panel = page.getByRole("region", { name: "Clay Day pottery" });
+    await panel.getByRole("button", { name: "bowl", exact: true }).click();
+    await panel
+      .getByRole("button", { name: "Throw a pot", exact: true })
+      .click();
+    await expect(canvasOf(page)).toHaveAttribute("data-pottery-seated", "true");
+    // Keyboard is a complete alternative to touching the live profile.
+    const height = panel.getByRole("slider", { name: "Pot height" });
+    await height.focus();
+    await height.press("Home");
+    await height.press("ArrowRight");
+    const profile = panel.getByLabel("Drag to shape your pot");
+    await profile.scrollIntoViewIfNeeded();
+    const box = await profile.boundingBox();
+    if (!box) throw new Error("Pottery profile has no bounds");
+    await page.mouse.move(box.x + box.width * 0.67, box.y + box.height * 0.46);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * 0.72, box.y + box.height * 0.46);
+    await page.mouse.up();
+    await expect(
+      panel.getByRole("slider", { name: "Right radius" }),
+    ).not.toHaveValue("0.4");
+    // A real touchscreen tap uses the same profile editing path.
+    await page.touchscreen.tap(
+      box.x + box.width * 0.28,
+      box.y + box.height * 0.35,
+    );
+    await panel.getByRole("button", { name: "Ready to glaze" }).click();
+    await expect(canvasOf(page)).not.toHaveAttribute(
+      "data-pottery-seated",
+      "true",
+    );
+    await panel.getByRole("button", { name: "Sea glass", exact: true }).click();
+    await panel.getByRole("button", { name: "Fire in the kiln" }).click();
+    await expect(panel.getByRole("status")).toContainText("Firing");
+    await expect(panel).toContainText("Fired!", { timeout: 60_000 });
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            JSON.parse(localStorage.getItem("daydaze-save-v1") ?? "{}").pottery
+              ?.glaze,
+        ),
+      )
+      .toBe("#68b5a4");
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            JSON.parse(localStorage.getItem("daydaze-save-v1") ?? "{}").bests
+              ?.pottery,
+        ),
+      )
+      .toBeGreaterThanOrEqual(0);
+    const first = await page.evaluate(() =>
+      JSON.parse(localStorage.getItem("daydaze-save-v1") ?? "{}"),
+    );
+    expect(first.bests.pottery).toBe(first.pottery.score);
+    expect(first.pottery.target).toBe("bowl");
+    // Reloading a completed kiln cannot award the same piece again.
+    await page.reload();
+    await expect(roomTitle(page)).toHaveText("Clay Day");
+    await expect(
+      panel.getByRole("button", { name: "Throw a pot", exact: true }),
+    ).toBeVisible();
+    const reloaded = await page.evaluate(() =>
+      JSON.parse(localStorage.getItem("daydaze-save-v1") ?? "{}"),
+    );
+    expect(reloaded.coins).toBe(first.coins);
+    expect(reloaded.pottery).toEqual(first.pottery);
+    await page.goto(`${STILL}&room=apartment`);
+    await expect(canvasOf(page)).toHaveAttribute("data-pottery-piece", "bowl", {
+      timeout: 150_000,
+    });
+    expect(errors).toEqual([]);
+  });
+});

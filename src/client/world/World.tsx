@@ -416,6 +416,10 @@ type SceneProps = {
   onShelf: () => void;
 };
 
+const Pottery = lazy(() =>
+  import("../rooms/Pottery.tsx").then((m) => ({ default: m.Pottery })),
+);
+
 const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   "velvet-room": VelvetRoom,
   pulse: Pulse,
@@ -471,6 +475,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   bookshop: Bookshop,
   patisserie: Patisserie,
   gallery: Gallery,
+  pottery: Pottery,
   "surf-shack": SurfShack,
   "boardwalk-arcade": BoardwalkArcade,
   "drive-in": DriveIn,

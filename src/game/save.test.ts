@@ -54,6 +54,7 @@ test("createDefaultSave uses the default look and auto quality", () => {
     sets: [],
     pet: null,
     farm: createDefaultFarm(),
+    pottery: null,
   });
 });
 
@@ -100,6 +101,7 @@ test("a save round-trips through serializeSave and loadSave", () => {
     sets: [],
     pet: { kind: "cat", name: "Mochi", adoptedAt: 5, fedAt: 9 },
     farm: createDefaultFarm(),
+    pottery: null,
   };
   assert.deepEqual(loadSave(serializeSave(save), "Fallback"), save);
 });
@@ -169,6 +171,7 @@ test("a save from before the swimsuit slot still loads", () => {
     sets: [],
     pet: null,
     farm: createDefaultFarm(),
+    pottery: null,
   });
 });
 
@@ -232,6 +235,7 @@ test("loadSave keeps a valid name when the look is bad", () => {
     sets: [],
     pet: null,
     farm: createDefaultFarm(),
+    pottery: null,
   });
 });
 
@@ -269,6 +273,7 @@ test("loadSave keeps a valid look when the name is bad", () => {
     sets: [],
     pet: null,
     farm: createDefaultFarm(),
+    pottery: null,
   });
 });
 
@@ -439,6 +444,7 @@ test("loadSave salvages valid fields from a wrong version", () => {
     sets: [],
     pet: null,
     farm: createDefaultFarm(),
+    pottery: null,
   });
 });
 
@@ -605,4 +611,35 @@ test("farm state round-trips through the save system", () => {
 
   const back = loadSave(serializeSave(save), "x");
   assert.deepEqual(back.farm, save.farm);
+});
+
+test("Clay Day saves the latest validated piece without losing other progress", () => {
+  const piece = {
+    clay: {
+      left: Array<number>(8).fill(0.4),
+      right: Array<number>(8).fill(0.4),
+      height: 0.9,
+    },
+    target: "mug",
+    glaze: "#68b5a4",
+  };
+  const saved = loadSave(
+    JSON.stringify({ name: "Clay Fan", coins: 123, pottery: piece }),
+    "Guest",
+  );
+  assert.equal(saved.pottery?.target, "mug");
+  assert.equal(saved.pottery?.glaze, "#68b5a4");
+  assert.equal(saved.coins, 123);
+  assert.deepEqual(
+    loadSave(serializeSave(saved), "Guest").pottery,
+    saved.pottery,
+  );
+  assert.equal(
+    loadSave(
+      JSON.stringify({ pottery: { ...piece, glaze: "bad" }, coins: 123 }),
+      "Guest",
+    ).pottery,
+    null,
+  );
+  assert.equal(createDefaultSave("Guest").pottery, null);
 });

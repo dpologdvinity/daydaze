@@ -83,6 +83,7 @@ import { claimSet, visit as visitPlace } from "../game/collections.ts";
 import { Onboarding } from "./ui/Onboarding.tsx";
 import { postPrize, prizeDesk } from "./ui/prizeDesk.ts";
 import { petDesk } from "./rooms/zoo/petDesk.ts";
+import { pottery } from "./rooms/pottery/session.ts";
 import { farmDesk } from "./rooms/farm/farmSession.ts";
 import { World } from "./world/World.tsx";
 
@@ -291,6 +292,13 @@ export function App() {
       }),
     [],
   );
+  useEffect(() => pottery.set({ saved: save.pottery }), [save.pottery]);
+  useEffect(() => {
+    pottery.set({
+      commit: (piece) => setSave((s) => ({ ...s, pottery: piece })),
+    });
+    return () => pottery.set({ commit: null });
+  }, []);
   const setHome = (home: HomeSave) => setSave((s) => ({ ...s, home }));
   const setCar = (car: ParkedCar) => setSave((s) => ({ ...s, car }));
   const setJail = (jail: SaveV1["jail"]) => setSave((s) => ({ ...s, jail }));
