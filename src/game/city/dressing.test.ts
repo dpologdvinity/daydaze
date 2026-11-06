@@ -154,3 +154,20 @@ test("street furniture models stand on the pavement and face the street", () => 
   for (const k of ["hydrant", "trashcan", "bench", "mailbox", "busstop"])
     assert.ok(kinds.has(k as never), `no ${k}`);
 });
+
+test("string lights are small round bulbs on a thin cord, not big cubes", () => {
+  const bulbs = STREET_DRESS.filter(
+    (p) => p.kind === "bulb" && p.instance.y > 4,
+  );
+  assert.ok(bulbs.length > 100);
+  for (const p of bulbs) assert.ok(p.instance.sx <= 0.2, "bulb too big");
+  const cords = STREET_DRESS.filter(
+    (p) => p.kind === "ledge" && p.instance.sx === 0.03,
+  );
+  // one cord between every two bulbs of a string
+  assert.ok(cords.length > 100);
+  for (const p of cords) {
+    assert.ok(p.instance.sz > 0.5 && p.instance.sz < 6, "cord segment length");
+    assert.ok(p.instance.y > 4, "cord hangs over the street");
+  }
+});

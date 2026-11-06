@@ -83,6 +83,8 @@ const MARK = new THREE.PlaneGeometry(1, 1)
   .rotateX(-Math.PI / 2)
   .translate(0, 0.5, 0);
 const SPHERE = new THREE.SphereGeometry(0.5, 10, 8);
+// string-light bulbs and headlights: a low round blob (20 triangles), not a cube
+const BULB = new THREE.IcosahedronGeometry(0.5, 0);
 const CAPSULE = new THREE.CapsuleGeometry(0.5, 1, 2, 8);
 const PLANE = new THREE.PlaneGeometry(1, 1);
 const CIRCLE = new THREE.CircleGeometry(0.5, 12);
@@ -181,7 +183,7 @@ const GEOMETRY: Record<Shared, THREE.BufferGeometry> = {
   window: PLANE,
   panel: BOX5,
   arch: BOX,
-  bulb: BOX,
+  bulb: BULB,
   car: CAR_BODY,
   carGlass: CAR_CABIN,
   furniture: BOX,

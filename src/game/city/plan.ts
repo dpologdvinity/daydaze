@@ -160,7 +160,7 @@ export const TRIANGLES: Record<Kind, number> = {
   label: 2,
   panel: 10,
   arch: 12,
-  bulb: 12,
+  bulb: 20,
   // lofted (carGeometry.ts): 4 slices x 8 around, and 3 x 6, plus end caps
   car: 80,
   carGlass: 48,
