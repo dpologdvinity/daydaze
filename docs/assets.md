@@ -18,7 +18,10 @@ future imported packs belong here when they enter the game.
 
 | Title | Author | License | URL | Used for |
 | --- | --- | --- | --- | --- |
-| Ultimate Food Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/ultimatefood.html | Grocery stock, produce and restaurant dishes, converted and optimized. |
+| Ultimate Food Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/ultimatefood.html | Grocery stock, produce and restaurant dishes, Halloween pumpkins, converted and optimized. |
+| Christmas Tree | Alex Safayan | CC-BY 3.0 | https://poly.pizza/m/fO1vTvI0QIc | The Plaza's tree in the winter holidays (art/seasons/build_seasonal.py). |
+| red lantern | Sophie Kim | CC-BY 3.0 | https://poly.pizza/m/7PZhxLFiGc2 | Lanterns strung over Chinatown and Koreatown for Lunar New Year. |
+| Bat | Quaternius | CC0 1.0 | https://poly.pizza/m/hNO9XvjlKa | Paper bats over the avenue doors at Halloween. |
 | Junk Food Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/junkfood.html | Grocery soda cans and restaurant display doughnuts, converted and optimized. |
 | Ringed Gas Giant Planet | berzerkey | CC-BY 4.0 | https://sketchfab.com/3d-models/ringed-gas-giant-planet-b4e21775e84e4cf3890f7796cfab1aca | The planet in Orbit 9's window. |
 | Billions stars Skybox HDRI panorama | Aliaksandr.melas | CC-BY 4.0 | https://sketchfab.com/3d-models/billions-stars-skybox-hdri-panorama-7e3e8f94810b44dd837bacad6c65b5e8 | The starfield behind the planet in Orbit 9's window. |

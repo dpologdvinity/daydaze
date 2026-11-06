@@ -22,6 +22,9 @@ const MODELS = "/models/nature";
 const NEAR = 45;
 /** The most trees of one model at one detail level. */
 const CAPACITY = 160;
+/** Multiplier that turns the green leaf texture to autumn orange. */
+const AUTUMN_LEAF = [2.8, 1, 0.3] as const;
+const LEAF_PLAIN = [1, 1, 1] as const;
 /** The models stand 7-9 m; city trees are a little smaller. */
 const BASE_SCALE = 0.8;
 
@@ -129,7 +132,9 @@ export function CityTrees({ autumn }: { autumn: boolean }): JSX.Element {
         material instanceof THREE.MeshStandardMaterial &&
         material.name.includes("Leaves")
       ) {
-        material.color.set(autumn ? "#e77430" : "#ffffff");
+        // the leaf texture is green: push it past orange so it lands on red-gold
+        const [r, g, b] = autumn ? AUTUMN_LEAF : LEAF_PLAIN;
+        material.color.setRGB(r, g, b);
       }
     }
   }, [all, autumn]);
