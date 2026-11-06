@@ -5,7 +5,13 @@
 import type { JSX } from "react";
 import type { DialogueContext } from "../../../game/dialogue/types.ts";
 import type { Look } from "../../../game/look.ts";
-import { BAR, DANCE, LOUNGE_CHAIRS, STAGE } from "../../../game/orbit.ts";
+import {
+  BAR,
+  BARTENDER,
+  DANCE,
+  LOUNGE_CHAIRS,
+  STAGE,
+} from "../../../game/orbit.ts";
 import { CrowdFigure } from "../shared/CrowdFigure.tsx";
 import { TalkingNpc } from "../shared/TalkingNpc.tsx";
 
@@ -170,7 +176,7 @@ export function OrbitNpcs({ onDrink }: { onDrink?: () => void }): JSX.Element {
         look={BARTENDER_LOOK}
         mood="dance"
         dance="bartending"
-        at={[BAR.back + 0.05 - 0.45, 0, (BAR.z0 + BAR.z1) / 2 - 0.2]}
+        at={[BARTENDER[0], 0, BARTENDER[1]]}
         rot={-Math.PI / 2}
         seed={192}
         situation="action-ordering"

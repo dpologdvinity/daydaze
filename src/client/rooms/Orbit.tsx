@@ -12,6 +12,7 @@ import * as THREE from "three";
 import { ROOMS } from "../../game/rooms.ts";
 import {
   BAR,
+  SHELF_X,
   CABINET,
   DANCE,
   JUKEBOX,
@@ -283,7 +284,7 @@ function Bar() {
           width={0.5}
           depth={4.4}
           height={2.6}
-          position={[BAR.back + 0.2, 0, cz]}
+          position={[SHELF_X + 0.25, 0, cz]}
         />
         {[-0.5, 0.6, 1.7].map((dz) => (
           <Prop

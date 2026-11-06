@@ -25,8 +25,15 @@ export const STAGE = {
 export const DANCE: Vec2 = [0, -1.2];
 
 /** The soda bar along the east wall; its front at x = BAR.front. */
-export const BAR = { front: 6.5, back: 7.5, z0: -1.4, z1: 4 } as const;
-export const STOOL_X = 6.05;
+export const BAR = { front: 5.9, back: 6.6, z0: -1.4, z1: 4 } as const;
+export const STOOL_X = 5.45;
+/** The back shelf's front face, against the east wall. */
+export const SHELF_X = 7.5;
+/** Where the bartender works: the aisle between the bar and the shelf. */
+export const BARTENDER: Vec2 = [
+  (BAR.back + SHELF_X) / 2,
+  (BAR.z0 + BAR.z1) / 2 - 0.2,
+];
 export const STOOL_ZS: readonly number[] = [-0.6, 0.7, 2, 3.3];
 
 /** The lounge along the west wall: chairs round two low tables. */
@@ -76,7 +83,8 @@ export const FLOOR: readonly Vec2[] = box(
 );
 
 export const BLOCKERS: readonly (readonly Vec2[])[] = [
-  box(BAR.front, BAR.z0, BAR.back, BAR.z1),
+  // the bar and the aisle behind it, up to the shelf
+  box(BAR.front, BAR.z0, SHELF_X, BAR.z1),
   ...LOUNGE_TABLES.map(([x, z]) => box(x - 0.4, z - 0.4, x + 0.4, z + 0.4)),
   box(JUKEBOX[0] - 0.5, JUKEBOX[1] - 0.4, JUKEBOX[0] + 0.5, JUKEBOX[1] + 0.4),
   box(CABINET[0] - 0.5, CABINET[1] - 0.4, CABINET[0] + 0.5, CABINET[1] + 0.4),
