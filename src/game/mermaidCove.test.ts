@@ -36,6 +36,14 @@ test("a swimmer's nose (her -z) points where she swims next", () => {
   }
 });
 
+test("swimPose fills and returns the object it is given", () => {
+  const out = { x: 0, z: 0, yaw: 0 };
+  const loop = SWIM_LOOPS[0];
+  assert.ok(loop);
+  assert.equal(swimPose(loop, 3, out), out);
+  assert.deepEqual(out, swimPose(loop, 3));
+});
+
 test("the swim loops stay in the lagoon and clear of the rocks", () => {
   for (const loop of SWIM_LOOPS) {
     for (let t = 0; t < 60; t += 0.25) {

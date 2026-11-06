@@ -31,11 +31,12 @@ import { TalkingNpc } from "./shared/TalkingNpc.tsx";
 const PINK = "#ff4fb3";
 /** The lounging mermaids' tints, by rock. */
 const LOUNGE_TINTS = ["#ffd8e8", "#c2daff"];
-/** The reef kit's flat boulder, scaled long under a lounging mermaid: its
- * top (0.41 of the unscaled height above center) sits LOUNGE_TOP up. */
+/** The reef kit's flat boulder, scaled long under a lounging mermaid. Its
+ * domed top peaks 0.41 of the unscaled height above center; she sits 8 cm
+ * over the peak, so her tail lies along the dome instead of sinking in. */
 const LOUNGE_SCALE = [2, 2.2, 3.1] as const;
 const LOUNGE_LIFT = 0.2;
-const LOUNGE_TOP = LOUNGE_LIFT + 0.41 * LOUNGE_SCALE[1] - 0.03;
+const LOUNGE_TOP = LOUNGE_LIFT + 0.41 * LOUNGE_SCALE[1] + 0.08;
 
 /** A rock from the reef kit (Quaternius, CC0) in the cove's lavender stone:
  * the long flat boulder a mermaid lounges on, or a rounder one `r` across. */

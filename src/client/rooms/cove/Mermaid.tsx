@@ -67,6 +67,7 @@ export function Mermaid({
     owed: 0,
     frame: 0,
     sing: 0,
+    at: { x: 0, z: 0, yaw: 0 },
   });
   const rig = useMemo(() => {
     // SkeletonUtils' clone rebinds each copy's skin to its own bones
@@ -145,7 +146,7 @@ export function Mermaid({
     const path = loop === undefined ? undefined : SWIM_LOOPS[loop];
     const g = group.current;
     if (!path || !g || !tilt.current || !body.current) return;
-    const at = swimPose(path, s.time);
+    const at = swimPose(path, s.time, s.at);
     const k = smooth(s.sing);
     g.position.set(
       at.x + (SINGER_SPOT[0] - at.x) * k,

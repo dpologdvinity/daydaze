@@ -61,22 +61,26 @@ export const SWIM_LOOPS: readonly SwimLoop[] = [
 /** Where the singer rises to sing Siren Song, in the shallows off the shells. */
 export const SINGER_SPOT: Vec2 = [0, 0.4];
 
+/** A swimmer's place on the lagoon and the way she faces. */
+export type SwimPose = { x: number; z: number; yaw: number };
+
 /**
  * Where a mermaid on `loop` is `t` seconds in, and the yaw that turns her
- * nose (the model's -z) along the path.
+ * nose (the model's -z) along the path. Writes into `out` (a frame loop
+ * passes the same one every frame) and returns it.
  */
 export function swimPose(
   loop: SwimLoop,
   t: number,
-): { x: number; z: number; yaw: number } {
+  out: SwimPose = { x: 0, z: 0, yaw: 0 },
+): SwimPose {
   const a = loop.phase + loop.rate * t;
   const [rx, rz] = loop.radii;
   // the velocity's direction; its sign follows the rate
   const vx = -rx * Math.sin(a) * Math.sign(loop.rate);
   const vz = rz * Math.cos(a) * Math.sign(loop.rate);
-  return {
-    x: loop.center[0] + rx * Math.cos(a),
-    z: loop.center[1] + rz * Math.sin(a),
-    yaw: Math.atan2(-vx, -vz),
-  };
+  out.x = loop.center[0] + rx * Math.cos(a);
+  out.z = loop.center[1] + rz * Math.sin(a);
+  out.yaw = Math.atan2(-vx, -vz);
+  return out;
 }
