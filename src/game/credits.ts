@@ -137,7 +137,8 @@ export const CREDITS: readonly {
         author: "charliecatling",
         license: "CC-BY 4.0",
         url: "https://sketchfab.com/3d-models/none-30534d0eff154f73b5afc16f90b4eb4b",
-        usedFor: "Mermaid Cove mermaids (lounging, swimming, singing), decimated, skeleton cut to its deform bones.",
+        usedFor:
+          "Mermaid Cove mermaids (lounging, swimming, singing), decimated, skeleton cut to its deform bones.",
       },
       {
         title: "Ultimate Food Pack",
@@ -696,7 +697,8 @@ export const CREDITS: readonly {
         author: "Quaternius",
         license: "CC0 1.0",
         url: "https://poly.pizza/m/54jZKTAt5p",
-        usedFor: "Reef dive: flat boulders and arch lintels; the rocks the Mermaid Cove mermaids lounge on.",
+        usedFor:
+          "Reef dive: flat boulders and arch lintels; the rocks the Mermaid Cove mermaids lounge on.",
       },
       {
         title: "Rock Large (pillar)",

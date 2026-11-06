@@ -1,8 +1,9 @@
 // Animated, independently posed copies of the cove's downloaded mermaid
 // (charliecatling's CC-BY "mermaid", rebuilt by art/cove/build_mermaid.py).
 // The model is in meters and faces -z; her clips are "sit" (lounging, tail
-// out in front, on the ground at y 0), "swim" (prone, in place, shoulders
-// at y 1.45) and "idle" (upright, treading water, hips at y 1.28).
+// out in front, on the ground at y 0), "swim" (prone, in place, upper
+// chest at (0, 1.45, -0.6)) and "idle" (upright, treading water, waist at
+// (0, 1.2, 0)).
 import { useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
@@ -23,9 +24,12 @@ const URL = "/models/cove/mermaid.glb";
 const SCALE = 1.1;
 /** Shifts the lounging pose (tail to z -2.1, hand to +0.5) onto the rock's middle. */
 const SIT_SHIFT = 0.8 * SCALE;
-/** Heights that put the waterline across her shoulders (swim) or waist (idle). */
-const SWIM_Y = WATER_Y - 1.45 * SCALE;
-const SING_Y = WATER_Y - 1.2 * SCALE;
+/** The points that sit on the waterline: her upper chest as she swims, her
+ * waist as she sings. */
+const SWIM_PIVOT = [1.45 * SCALE, -0.6 * SCALE] as const;
+const SING_PIVOT = [1.2 * SCALE, 0] as const;
+/** Nose up while she swims (radians), so her head is out and her tail under. */
+const SWIM_PITCH = 0.35;
 /** Seconds to glide between her loop and the singing spot. */
 const GLIDE = 1.8;
 
@@ -53,6 +57,9 @@ export function Mermaid({
   const calm = useReducedMotion();
   const tier = useQuality();
   const group = useRef<THREE.Group>(null);
+  const tilt = useRef<THREE.Group>(null);
+  const body = useRef<THREE.Group>(null);
+  const ripple = useRef<THREE.Mesh>(null);
   const state = useRef({
     time: 0,
     clip: "",
@@ -137,21 +144,44 @@ export function Mermaid({
     }
     const path = loop === undefined ? undefined : SWIM_LOOPS[loop];
     const g = group.current;
-    if (!path || !g) return;
+    if (!path || !g || !tilt.current || !body.current) return;
     const at = swimPose(path, s.time);
     const k = smooth(s.sing);
     g.position.set(
       at.x + (SINGER_SPOT[0] - at.x) * k,
-      SWIM_Y + (SING_Y - SWIM_Y) * k,
+      WATER_Y,
       at.z + (SINGER_SPOT[1] - at.z) * k,
     );
     // facing +z, the beach, is a yaw of pi
     g.rotation.y = at.yaw + turn(at.yaw, Math.PI) * k;
+    // turn about the point on the waterline, which slides from her chest to
+    // her waist as she rises to sing
+    tilt.current.rotation.x = SWIM_PITCH * (1 - k);
+    // the ripples run long round a swimmer, round about a singer's waist
+    if (ripple.current) ripple.current.scale.y = 1.6 - 0.6 * k;
+    body.current.position.set(
+      0,
+      -(SWIM_PIVOT[0] + (SING_PIVOT[0] - SWIM_PIVOT[0]) * k),
+      -(SWIM_PIVOT[1] + (SING_PIVOT[1] - SWIM_PIVOT[1]) * k),
+    );
   });
   return (
     <group ref={group}>
-      <group scale={SCALE} position-z={loop === undefined ? SIT_SHIFT : 0}>
-        <primitive object={rig.root} />
+      {loop !== undefined && (
+        // a ring of ripples where she breaks the surface
+        <mesh ref={ripple} position-y={0.01} rotation-x={-Math.PI / 2}>
+          <ringGeometry args={[0.36, 0.46, 24]} />
+          <meshBasicMaterial color="#bff8ff" transparent opacity={0.35} />
+        </mesh>
+      )}
+      <group ref={tilt}>
+        <group
+          ref={body}
+          scale={SCALE}
+          position-z={loop === undefined ? SIT_SHIFT : 0}
+        >
+          <primitive object={rig.root} />
+        </group>
       </group>
     </group>
   );

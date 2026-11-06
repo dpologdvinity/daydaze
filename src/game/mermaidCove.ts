@@ -37,8 +37,8 @@ export const FLOOR: readonly Vec2[] = [
  */
 export const COVE_ROCKS = [
   { x: -7, z: -3.5, yaw: -2.05, r: 2.9, lounge: true },
-  { x: 7.2, z: -6, yaw: 2.05, r: 2.9, lounge: true },
-  { x: -5.5, z: -9.5, yaw: 0.6, r: 1.1, lounge: false },
+  { x: 5.5, z: -6.5, yaw: -2.5, r: 2.9, lounge: true },
+  { x: -6.5, z: -10, yaw: 0.6, r: 1.1, lounge: false },
   { x: 9.5, z: -1.5, yaw: 2.2, r: 0.9, lounge: false },
 ] as const;
 
@@ -55,7 +55,7 @@ export type SwimLoop = {
  * a negative rate swims the other way round. About 0.8 m/s each. */
 export const SWIM_LOOPS: readonly SwimLoop[] = [
   { center: [0.5, -3], radii: [2.4, 1.2], rate: 0.42, phase: 0 },
-  { center: [0.5, -9.8], radii: [3, 1.4], rate: -0.33, phase: 2 },
+  { center: [-0.5, -10.2], radii: [3, 1.4], rate: -0.33, phase: 2 },
 ];
 
 /** Where the singer rises to sing Siren Song, in the shallows off the shells. */
