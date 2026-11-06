@@ -170,6 +170,11 @@ const ROOM_SHOTS: Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }> =
       eye: new THREE.Vector3(0, 12, 19),
       look: new THREE.Vector3(0, 0, -3),
     },
+    // from the trailhead up the winding path into the woods
+    forest: {
+      eye: new THREE.Vector3(0, 6, 28),
+      look: new THREE.Vector3(0, 1.5, 4),
+    },
     // wide shot over the farm gate across the crop field, barn, and pastures
     farm: {
       eye: new THREE.Vector3(0, 14, 25),
@@ -454,6 +459,7 @@ const MAX_DISTANCE: Record<RoomId, number> = {
   "wine-bar": 14,
   "video-store": 14,
   farm: 36,
+  forest: 30,
   "halo-halo-cafe": 14,
   "ramen-shop": 14,
   "sushi-bar": 14,

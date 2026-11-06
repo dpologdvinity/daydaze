@@ -13,12 +13,16 @@ export function Scatter({
   url,
   spots,
   color,
+  cutout,
 }: {
   url: string;
   spots: readonly Spot[];
   /** Repaints every material this color (keeps each one's shading), so the
    * downloaded prop wears the zoo's palette. */
   color?: string;
+  /** Treats a material with a texture as leaves: cut out where the texture
+   * is clear (alpha test, two-sided) instead of blended. */
+  cutout?: boolean;
 }): JSX.Element {
   const gltf = useGLTF(url);
   const meshes = useMemo(() => {
@@ -42,6 +46,16 @@ export function Scatter({
         // environment map
         material.metalness = 0;
       }
+      if (
+        cutout &&
+        material instanceof THREE.MeshStandardMaterial &&
+        material.map
+      ) {
+        material.alphaTest = 0.5;
+        material.transparent = false;
+        material.depthWrite = true;
+        material.side = THREE.DoubleSide;
+      }
       const inst = new THREE.InstancedMesh(geometry, material, spots.length);
       spots.forEach((spot, i) => {
         q.setFromAxisAngle(up, spot.yaw);
@@ -56,7 +70,7 @@ export function Scatter({
       out.push(inst);
     });
     return out;
-  }, [gltf, spots, color]);
+  }, [gltf, spots, color, cutout]);
   useEffect(() => () => disposeInstanced(meshes, true), [meshes]);
   return (
     <>

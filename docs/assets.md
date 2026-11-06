@@ -52,6 +52,8 @@ future imported packs belong here when they enter the game.
 | City Kit Suburban | Kenney | CC0 1.0 | https://kenney.nl/assets/city-kit-suburban | Suburbia's houses near the player, optimized with a small colormap. |
 | Train Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/trainpack.html | The El's train cars (high-speed front and wagon), thinned and baked to vertex colors. |
 | Ultimate Animated Animals | Quaternius | CC0 1.0 | https://quaternius.com/packs/ultimateanimatedanimals.html | Petting farm at the Zoo (alpaca, donkey, cow) and the adoptable husky and Shiba Inu; horse, deer, fox and wolf built for farms. |
+| Ultimate Nature Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/ultimatenaturepack.html | Forest Trail pines, birches, autumn trees, willows, bushes, grass, flowers, logs, stumps and mossy rocks (one vertex-colored mesh each). |
+| Textured Stylized Trees | Quaternius | CC0 1.0 | https://quaternius.com/packs/texturedstylizedtrees.html | Forest Trail textured trees, birches and pines with cutout leaves. |
 | Animated Fish Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/animatedfish.html | Aquarium shark, manta ray and fish; marina fishing and swimming fish; dolphin and whale ready for the ocean. |
 | Cute Fish Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/cutefish.html | Aquarium reef fish and marina fishing. |
 | Zebra (rigged) | Quaternius | CC0 1.0 | https://poly.pizza/m/iclPBR6SBZ | Zoo savanna zebras, with idle, walk and run clips. |
@@ -152,6 +154,11 @@ The owner's Sketchfab downloads (2026-11-04) were checked against each model's
 license: the WildMesh 3D "demo free" animals, the 100-animal pack, the
 DigitalLife3D turtles and reef shark, the 3DHaupt wolf and Munchkin Cat are
 CC-BY-NC (or NC-SA/ND) and are not used; only the CC-BY rows above are.
+
+The forest trail's trees and plants are converted by `art/forest/build_forest.py`
+(Blender: one mesh each, origin at the base, colors baked to vertex colors for
+the Ultimate Nature Pack) and compressed by `scripts/import-forest.sh` into
+`public/models/forest/`.
 
 ## Textures
 
@@ -273,5 +280,6 @@ Only the clips listed in `mocap.py`'s `CLIPS` ship, retargeted onto our own skel
 | Watersplash | Sheyvan | CC0 1.0 | https://freesound.org/people/Sheyvan/sounds/469608/ | Splashes in the water park, dives and volleyball. |
 | Ambience, designed, deep, muffled, wavy, underwater | Oldome | CC0 1.0 | https://freesound.org/people/Oldome/sounds/862788/ | Underwater loop while diving. |
 | Ambiance_Fountain_Small_Loop_Stereo | Nox_Sound | CC0 1.0 | https://freesound.org/people/Nox_Sound/sounds/676173/ | Fountain and park water loop. |
+| Small Brook Loopable (field recording walk with daughter - rec 4) | gis_sweden | CC0 1.0 | https://freesound.org/people/gis_sweden/sounds/425141/ | Forest Trail creek loop (mono, recompressed). |
 
 The Freesound recordings are fetched with `scripts/freesound.mjs` and cut into `public/audio/` by `scripts/build-recordings.sh`.

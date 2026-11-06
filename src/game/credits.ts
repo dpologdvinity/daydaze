@@ -127,6 +127,14 @@ export const CREDITS: readonly {
         url: "https://freesound.org/people/Nox_Sound/sounds/676173/",
         usedFor: "Fountain and park water loop.",
       },
+      {
+        title:
+          "Small Brook Loopable (field recording walk with daughter - rec 4)",
+        author: "gis_sweden",
+        license: "CC0 1.0",
+        url: "https://freesound.org/people/gis_sweden/sounds/425141/",
+        usedFor: "Forest Trail creek loop (mono, recompressed).",
+      },
     ],
   },
   {
@@ -393,6 +401,22 @@ export const CREDITS: readonly {
         url: "https://quaternius.com/packs/ultimateanimatedanimals.html",
         usedFor:
           "Petting farm at the Zoo (alpaca, donkey, cow) and the adoptable husky and Shiba Inu; horse, deer, fox and wolf built for farms.",
+      },
+      {
+        title: "Ultimate Nature Pack",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://quaternius.com/packs/ultimatenaturepack.html",
+        usedFor:
+          "Forest Trail pines, birches, autumn trees, willows, bushes, grass, flowers, logs, stumps and mossy rocks (one vertex-colored mesh each).",
+      },
+      {
+        title: "Textured Stylized Trees",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://quaternius.com/packs/texturedstylizedtrees.html",
+        usedFor:
+          "Forest Trail textured trees, birches and pines with cutout leaves.",
       },
       {
         title: "Animated Fish Pack",

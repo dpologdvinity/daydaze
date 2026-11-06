@@ -125,6 +125,7 @@ import {
   ORBIT_DOOR,
   SPAWN as ORBIT_SPAWN,
 } from "./orbit.ts";
+import * as FOREST from "./forest.ts";
 import type { Vec2 } from "./walk.ts";
 
 /** Every room's id; ROOMS has one entry per id. */
@@ -200,6 +201,7 @@ export type RoomId =
   | "wine-bar"
   | "video-store"
   | "farm"
+  | "forest"
   | "city";
 
 /** Where a player appears: a floor point and a yaw (0 faces +z). */
@@ -741,6 +743,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the City",
         target: "city",
         targetSpawn: { position: FARM.FARM_GATE_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  forest: {
+    id: "forest",
+    name: "Larkspur Forest Trail",
+    walkable: FOREST.FLOOR,
+    blockers: FOREST.BLOCKERS,
+    spawn: { position: FOREST.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "forest-to-city",
+        position: FOREST.EXIT,
+        radius: 1.2,
+        label: "Out to the City",
+        target: "city",
+        targetSpawn: { position: FOREST.FOREST_GATE_DOOR.landing, yaw: 0 },
       },
     ],
   },

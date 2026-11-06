@@ -25,6 +25,7 @@ import { produceVendorBank } from "./produce-vendor.ts";
 import { guardBank } from "./guard.ts";
 import { policeBank } from "./police.ts";
 import { taxiDriverBank } from "./taxi-driver.ts";
+import { hikerBank } from "./hiker.ts";
 import type { DialogueRole, RoleBank } from "./types.ts";
 
 /**
@@ -55,4 +56,5 @@ export const LINE_BANKS: Record<DialogueRole, RoleBank> = {
   guard: guardBank,
   police: policeBank,
   "taxi-driver": taxiDriverBank,
+  hiker: hikerBank,
 };

@@ -10,6 +10,7 @@ export const AMBIENCE_IDS = [
   "city-night",
   "beach",
   "park",
+  "creek",
   "stadium",
   "fountain",
   "boardwalk",
@@ -82,6 +83,8 @@ function ambienceBase(
   if (room === "marina" || room === "mermaid-cove" || room === "mini-golf")
     return { beach: 0.3 };
   if (room === "zoo") return { park: 0.3 };
+  // birdsong in the trees and the creek under them
+  if (room === "forest") return { park: 0.35, creek: 0.3 };
   if (room === "plaza") return { fountain: 0.3 };
   return {};
 }
