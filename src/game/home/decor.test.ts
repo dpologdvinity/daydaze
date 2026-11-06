@@ -168,11 +168,14 @@ test("wall pieces share the back wall, not the floor", () => {
   const floor = placeFurniture([], "sofa", [0, 0], 0);
   assert.ok(floor);
   // a mirror hangs over the sofa's cells
-  const hung = placeFurniture(floor, "wall-mirror", [1, 0], 0);
+  const hung = placeFurniture(floor, "wall-mirror", [0, 0], 0);
   assert.ok(hung);
   // two wall pieces cannot share a column; wall pieces stay on the wall row
   assert.equal(placeFurniture(hung, "wall-shelf", [0, 0], 0), null);
-  assert.ok(placeFurniture(hung, "wall-shelf", [2, 0], 0));
+  assert.ok(placeFurniture(hung, "wall-shelf", [4, 0], 0));
+  // nothing hangs over the window
+  assert.equal(placeFurniture([], "wall-art", [2, 0], 0), null);
+  assert.equal(placeFurniture([], "wall-shelf", [0, 0], 0), null);
   assert.equal(placeFurniture([], "wall-mirror", [0, 1], 0), null);
   assert.equal(placeFurniture([], "wall-neon", [7, 0], 0), null);
   // the wall piece does not block the floor, and cannot be rotated

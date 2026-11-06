@@ -3,6 +3,9 @@
 
 export const HOME_GRID = { columns: 8, rows: 6 } as const;
 
+/** Back-wall columns the window (and its curtains) covers: nothing hangs there. */
+export const WINDOW_COLUMNS: readonly number[] = [1, 2, 3];
+
 export type Rotation = 0 | 1 | 2 | 3;
 
 /** The tabs the decorating panel lists furniture under. */
@@ -56,6 +59,11 @@ const piece = (
 
 // helpers for the entries below
 const tinted = TINT_NAMES;
+
+/** The look a piece starts with: fabric and wood pieces come in pink velvet. */
+export function defaultVariant(id: FurnitureId): number {
+  return FURNITURE_CATALOG[id].variants === TINT_NAMES ? 1 : 0;
+}
 
 export const FURNITURE_CATALOG = {
   sofa: piece("Velvet sofa", 3, 1, 1.0, "Living", tinted),
@@ -146,6 +154,8 @@ function fits(items: readonly Furniture[], skip: number, piece: Furniture) {
     if (r !== 0 || piece.rotation !== 0 || c < 0 || c + w > HOME_GRID.columns) {
       return false;
     }
+    for (let k = c; k < c + w; k++)
+      if (WINDOW_COLUMNS.includes(k)) return false;
     return items.every((other, index) => {
       if (index === skip || !isWall(other)) return true;
       const ow = FURNITURE_CATALOG[other.id].width;

@@ -87,13 +87,13 @@ def bounds(ob):
 
 def glow_screen(ob):
     """Kenney's TVs have no screen material: give the dark front faces (the
-    glass) a glowing one so the set reads as switched on."""
+    glass) a dim bluish one; the game paints a picture on it."""
     mat = bpy.data.materials.new("screen")
     mat.use_nodes = True
     bsdf = next(n for n in mat.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
-    bsdf.inputs["Base Color"].default_value = (0.05, 0.35, 0.5, 1)
-    bsdf.inputs["Emission Color"].default_value = (0.2, 0.75, 1.0, 1)
-    bsdf.inputs["Emission Strength"].default_value = 1.2
+    bsdf.inputs["Base Color"].default_value = (0.02, 0.08, 0.12, 1)
+    bsdf.inputs["Emission Color"].default_value = (0.1, 0.4, 0.6, 1)
+    bsdf.inputs["Emission Strength"].default_value = 0.5
     ob.data.materials.append(mat)
     index = len(ob.data.materials) - 1
     for poly in ob.data.polygons:

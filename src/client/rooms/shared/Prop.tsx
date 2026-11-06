@@ -54,6 +54,32 @@ export function useFitted(model: string, fit: Fit, dir = "props") {
   return part;
 }
 
+/** Paints `picture` over the screen faces: planar UVs from the faces' own
+ * bounds (the front is +z, x runs right, y up), lit by itself. */
+function showPicture(
+  geometry: THREE.BufferGeometry,
+  material: THREE.MeshStandardMaterial,
+  picture: THREE.Texture,
+) {
+  geometry.computeBoundingBox();
+  const box = geometry.boundingBox ?? new THREE.Box3();
+  const pos = geometry.getAttribute("position");
+  const uv = new THREE.BufferAttribute(new Float32Array(pos.count * 2), 2);
+  for (let i = 0; i < pos.count; i++)
+    uv.setXY(
+      i,
+      (pos.getX(i) - box.min.x) / (box.max.x - box.min.x || 1),
+      (pos.getY(i) - box.min.y) / (box.max.y - box.min.y || 1),
+    );
+  geometry.setAttribute("uv", uv);
+  material.map = picture;
+  material.emissiveMap = picture;
+  material.color.set("#000000");
+  material.emissive.set("#ffffff");
+  material.emissiveIntensity = 0.7;
+  material.needsUpdate = true;
+}
+
 /** One prop, `yaw` turning it about its own center. */
 export function Prop({
   model,
@@ -63,6 +89,7 @@ export function Prop({
   yaw = 0,
   dir,
   tint = 0,
+  screen,
   ...rest
 }: {
   model: string;
@@ -70,15 +97,23 @@ export function Prop({
   dir?: string;
   /** A furniture look (game/home/palette.ts); 0 keeps the model's colors. */
   tint?: number;
+  /** A picture for the model's "screen" material (a TV showing something). */
+  screen?: THREE.Texture;
 } & Fit &
   Omit<ThreeElements["group"], "children">) {
   const fitted = useFittedParts(model, { width, depth, height }, dir);
   const parts = useMemo(() => {
-    if (tint === 0) return fitted;
+    if (tint === 0 && !screen) return fitted;
     // the loaded materials are shared by every copy: recolor clones
     return fitted.map(({ geometry, material }) => {
       const copy = material.clone();
-      if (copy instanceof THREE.MeshStandardMaterial) {
+      if (
+        screen &&
+        copy.name === "screen" &&
+        copy instanceof THREE.MeshStandardMaterial
+      ) {
+        showPicture(geometry, copy, screen);
+      } else if (copy instanceof THREE.MeshStandardMaterial && tint > 0) {
         const hsl = { h: 0, s: 0, l: 0 };
         copy.color.getHSL(hsl);
         const t = tintHsl(hsl, tint);
@@ -86,7 +121,7 @@ export function Prop({
       }
       return { geometry, material: copy };
     });
-  }, [fitted, tint]);
+  }, [fitted, tint, screen]);
   useEffect(
     () => () => {
       if (parts !== fitted) for (const p of parts) p.material.dispose();

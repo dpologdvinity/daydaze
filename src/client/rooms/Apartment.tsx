@@ -8,7 +8,7 @@ import { Suspense, useMemo } from "react";
 import * as THREE from "three";
 import { Batch } from "./shared/batch.ts";
 import { plant, poster, stringLights } from "./shared/details.ts";
-import { GOLD } from "./shared/materials.ts";
+import { GOLD, canvasTex } from "./shared/materials.ts";
 import { usePaintingTexture } from "./gallery/painting.ts";
 import { surface } from "../city/worldTexture.ts";
 import { Prop } from "./shared/Prop.tsx";
@@ -94,6 +94,34 @@ function HungPainting() {
   );
 }
 
+let tvPicture: THREE.Texture | null = null;
+/** What the TVs show: a retro game's sunset level, drawn once. */
+function tvShow(): THREE.Texture {
+  tvPicture ??= canvasTex(256, 192, (g) => {
+    const sky = g.createLinearGradient(0, 0, 0, 192);
+    sky.addColorStop(0, "#2a0f5c");
+    sky.addColorStop(0.55, "#ff5fa8");
+    sky.addColorStop(1, "#ffd27a");
+    g.fillStyle = sky;
+    g.fillRect(0, 0, 256, 192);
+    g.fillStyle = "#fff2b0";
+    g.beginPath();
+    g.arc(180, 96, 30, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = "#1b0a33";
+    for (let x = 0; x < 256; x += 32)
+      g.fillRect(x, 140 + ((x / 32) % 3) * 8, 32, 60);
+    g.fillStyle = "#3fe0d0";
+    g.fillRect(40, 118, 14, 22); // the player
+    g.fillStyle = "#ffffff";
+    g.font = "bold 16px monospace";
+    g.fillText("SCORE 004200", 10, 22);
+    g.fillStyle = "rgba(0,0,0,0.18)";
+    for (let y = 0; y < 192; y += 4) g.fillRect(0, y, 256, 2); // scanlines
+  });
+  return tvPicture;
+}
+
 /** The neon sign's tubes, by look. */
 const NEON = ["#ff2f9a", "#3fe0d0", "#ffb02e", "#9b5cff"] as const;
 /** String-light bulb colors, by look. */
@@ -173,6 +201,9 @@ function Piece({ item }: { item: Furniture }) {
         height={height}
         dir="home"
         tint={item.variant ?? 0}
+        screen={
+          item.id === "tv" || item.id === "tv-flat" ? tvShow() : undefined
+        }
         yaw={(item.rotation * Math.PI) / 2}
         position={[x, 0, z]}
       />
