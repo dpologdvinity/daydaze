@@ -84,6 +84,7 @@ import { Onboarding } from "./ui/Onboarding.tsx";
 import { postPrize, prizeDesk } from "./ui/prizeDesk.ts";
 import { petDesk } from "./rooms/zoo/petDesk.ts";
 import { farmDesk } from "./rooms/farm/farmSession.ts";
+import { gardenDesk } from "./rooms/garden/gardenSession.ts";
 import { World } from "./world/World.tsx";
 
 const FADE_MS = 300;
@@ -288,6 +289,19 @@ export function App() {
       farmDesk.set({
         commit: (next) =>
           setSave((s) => ({ ...s, farm: next.farm, coins: next.coins })),
+      }),
+    [],
+  );
+  // Suburbia Community Garden panel reads the saved garden and coins and writes them back
+  useEffect(
+    () => gardenDesk.set({ garden: save.garden, coins: save.coins }),
+    [save.garden, save.coins],
+  );
+  useEffect(
+    () =>
+      gardenDesk.set({
+        commit: (next) =>
+          setSave((s) => ({ ...s, garden: next.garden, coins: next.coins })),
       }),
     [],
   );

@@ -131,6 +131,9 @@ const Farm = lazy(() =>
 const Forest = lazy(() =>
   import("../rooms/Forest.tsx").then((m) => ({ default: m.Forest })),
 );
+const Garden = lazy(() =>
+  import("../rooms/Garden.tsx").then((m) => ({ default: m.Garden })),
+);
 const BoardwalkArcade = lazy(() =>
   import("../rooms/BoardwalkArcade.tsx").then((m) => ({
     default: m.BoardwalkArcade,
@@ -478,6 +481,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   "video-store": VideoStore,
   farm: Farm,
   forest: Forest,
+  garden: Garden,
   "halo-halo-cafe": HaloHaloCafe,
   "ramen-shop": RamenShop,
   "sushi-bar": SushiBar,

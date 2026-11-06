@@ -118,6 +118,7 @@ import * as DRIVE from "./driveIn.ts";
 import * as CELLAR from "./wineBar.ts";
 import * as REWIND from "./videoStore.ts";
 import * as FARM from "./farm.ts";
+import * as GARDEN from "./garden.ts";
 import {
   BLOCKERS as ORBIT_BLOCKERS,
   EXIT as ORBIT_EXIT,
@@ -202,6 +203,7 @@ export type RoomId =
   | "video-store"
   | "farm"
   | "forest"
+  | "garden"
   | "city";
 
 /** Where a player appears: a floor point and a yaw (0 faces +z). */
@@ -760,6 +762,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the City",
         target: "city",
         targetSpawn: { position: FOREST.FOREST_GATE_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  garden: {
+    id: "garden",
+    name: "Community Garden",
+    walkable: GARDEN.FLOOR,
+    blockers: GARDEN.BLOCKERS,
+    spawn: { position: GARDEN.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "garden-to-city",
+        position: GARDEN.EXIT,
+        radius: 1.2,
+        label: "Out to the City",
+        target: "city",
+        targetSpawn: { position: GARDEN.GARDEN_GATE_DOOR.landing, yaw: 0 },
       },
     ],
   },

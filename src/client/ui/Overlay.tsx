@@ -177,6 +177,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
   farm: "Sunny Acres Farm. Plant seeds, water the plots, harvest crops and sell fresh produce at the farm stand, or visit the animals in the pasture.",
   forest:
     "Larkspur Forest Trail. Follow the dirt path north through the woods, over the creek and up to the lookout. Deer, a fox and rabbits roam the clearings; tap a hiker to chat.",
+  garden:
+    "Suburbia Community Garden. Claim a raised bed, plant seeds, water thirsty soil, and harvest fresh produce with your neighbors.",
   "surf-shack":
     "Swell Surf Co. Grab a beach chair, or paddle out and ride a wave: lean to stay in the pocket, trick when you're charged.",
   gallery:

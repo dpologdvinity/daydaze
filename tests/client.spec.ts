@@ -513,6 +513,56 @@ test("the farm gate leads in, and crops can be planted, watered, grown, harveste
   expect(errors).toEqual([]);
 });
 
+test("community garden: plant, water and harvest", async ({ page }) => {
+  test.setTimeout(300_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=garden&debug=1`);
+  await expect(roomTitle(page)).toHaveText("Community Garden", {
+    timeout: 150_000,
+  });
+  await expect(canvasOf(page)).toHaveAttribute("data-frames", "10", {
+    timeout: 150_000,
+  });
+
+  // Bed 1 is claimed by default on a fresh save. Plant Heirloom Tomato on Bed 1
+  const plantBtn = page.getByRole("button", {
+    name: "Plant Heirloom Tomato on bed 1",
+  });
+  await expect(plantBtn).toBeVisible({ timeout: 20_000 });
+  await plantBtn.click();
+
+  // Water Bed 1
+  const waterBtn = page.getByRole("button", { name: "Water bed 1" });
+  await expect(waterBtn).toBeVisible({ timeout: 20_000 });
+  await waterBtn.click();
+
+  // Claim Bed 2
+  const claimBtn = page.getByRole("button", { name: "Claim bed 2" });
+  await expect(claimBtn).toBeVisible({ timeout: 20_000 });
+  await claimBtn.click();
+
+  // Fast forward growth using +1 hour button
+  const fastForwardBtn = page.getByRole("button", {
+    name: "Fast-forward garden 1 hour",
+  });
+  await expect(fastForwardBtn).toBeVisible({ timeout: 20_000 });
+  await fastForwardBtn.click();
+
+  // Harvest Bed 1
+  const harvestBtn = page.getByRole("button", { name: "Harvest bed 1" });
+  await expect(harvestBtn).toBeVisible({ timeout: 20_000 });
+  await harvestBtn.click();
+
+  // Verify produce stored in shed
+  await page.getByRole("button", { name: "Produce Shed" }).click();
+  const tomatoCount = page.locator('[data-produce-count="tomato"]');
+  await expect(tomatoCount).toBeVisible({ timeout: 20_000 });
+  const countText = await tomatoCount.textContent();
+  expect(Number(countText)).toBeGreaterThan(0);
+
+  expect(errors).toEqual([]);
+});
+
 test("the Scrambler, the Starship and the Super Slide take riders", async ({
   page,
 }) => {
@@ -2294,6 +2344,7 @@ for (const room of [
   "reef-dive",
   "farm",
   "forest",
+  "garden",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,

@@ -12,6 +12,7 @@ import {
   claimPlot,
   cleanGarden,
   createDefaultGarden,
+  fastForwardGarden,
   harvestPlot,
   isGardenCropId,
   plantSeed,
@@ -174,8 +175,20 @@ test("cleanGarden validates and salvages corrupted save data", () => {
 
   const corrupted = {
     plots: [
-      { claimed: true, crop: "tomato", plantedAt: 1234, wateredAt: 5678, growthMs: 100 },
-      { claimed: "yes", crop: "banana", plantedAt: -10, wateredAt: "now", growthMs: -5 },
+      {
+        claimed: true,
+        crop: "tomato",
+        plantedAt: 1234,
+        wateredAt: 5678,
+        growthMs: 100,
+      },
+      {
+        claimed: "yes",
+        crop: "banana",
+        plantedAt: -10,
+        wateredAt: "now",
+        growthMs: -5,
+      },
       null,
     ],
     produce: {
@@ -206,4 +219,19 @@ test("cleanGarden validates and salvages corrupted save data", () => {
   assert.equal(cleaned.produce.strawberry, 0);
   assert.equal(cleaned.produce.pepper, 3);
   assert.equal(cleaned.produce.herb, 0);
+});
+
+test("fastForwardGarden advances planted crop growth timestamps", () => {
+  const garden = createDefaultGarden();
+  const now = 1_000_000;
+  const planted = plantSeed(garden, 0, "herb", now)!;
+  const watered = waterPlot(planted.garden, 0, now)!;
+  const before = plotGrowth(watered.plots[0], now);
+  assert.equal(before.stage, 0);
+  assert.equal(before.ready, false);
+
+  const advanced = fastForwardGarden(watered, 65_000);
+  const after = plotGrowth(advanced.plots[0], now);
+  assert.equal(after.stage, 4);
+  assert.equal(after.ready, true);
 });
