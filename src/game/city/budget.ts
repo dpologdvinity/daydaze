@@ -21,7 +21,13 @@ import {
 import { elBoxes } from "./el.ts";
 import { BAY_TRIANGLES, HOUSE_MODELS, type BayInstance } from "./nyc.ts";
 import { ALL_GROWTH } from "./growth.ts";
-import { TREE_VARIANTS, drawCallsOf, planCity, trianglesOf } from "./plan.ts";
+import {
+  TREE_VARIANTS,
+  drawCallsOf,
+  planCity,
+  trianglesOf,
+  type CityPlan,
+} from "./plan.ts";
 import {
   BAY_RANGE,
   POINT_LIGHTS,
@@ -141,6 +147,22 @@ export function worstViewBayTriangles(
   return worst + always;
 }
 
+/** The streamed city plan from where she stands on a tier: what CityScene
+ * draws and what lowTierCost prices, so the two cannot drift apart.
+ * `bays: false` is the `?bays=0` comparison view. */
+export function planView(
+  at: Vec2,
+  tier: "low" | "high",
+  bays = true,
+): CityPlan {
+  return planCity(
+    cellsWithin(at, VIEW_RADIUS),
+    POINT_LIGHTS[tier],
+    at,
+    bays ? BAY_RANGE[tier] : 0,
+  );
+}
+
 /** The low tier's draw calls and triangles at `at`, plus what the plan
  * alone costs and how many bays it wears. */
 export function lowTierCost(at: Vec2): {
@@ -149,12 +171,7 @@ export function lowTierCost(at: Vec2): {
   planTriangles: number;
   bays: number;
 } {
-  const plan = planCity(
-    cellsWithin(at, VIEW_RADIUS),
-    POINT_LIGHTS.low,
-    at,
-    BAY_RANGE.low,
-  );
+  const plan = planView(at, "low");
   // instances per model; a model with any costs one draw call per part
   const counts = new Map<string, number>();
   const add = (model: string) =>
@@ -194,4 +211,21 @@ export function lowTierCost(at: Vec2): {
     triangles += cost.tris * n;
   }
   return { drawCalls, triangles, planTriangles, bays: plan.bays.length };
+}
+
+/**
+ * Camera distances (meters from her) where the New York bays come and go.
+ * Pulled out to the overview, the bays near her are a few pixels each yet
+ * cost about a third of the frame under a software renderer, so the plan
+ * drops them and the walls wear their painted windows; zooming back in
+ * brings them back. Two edges, so a camera resting near one doesn't flicker.
+ */
+export const BAYS_CAMERA = { on: 90, off: 120 } as const;
+
+/** Whether the plan should wear bays with the camera `distance` out, given
+ * whether it wears them now. */
+export function baysWanted(distance: number, wearing: boolean): boolean {
+  if (distance <= BAYS_CAMERA.on) return true;
+  if (distance >= BAYS_CAMERA.off) return false;
+  return wearing;
 }

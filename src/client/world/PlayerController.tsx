@@ -304,8 +304,6 @@ export function PlayerController({
   }>({ el: null, shown: false, x: NaN, y: NaN });
   const stepDist = useRef(0);
   const swimY = useRef(0);
-  // she is out of the water when she leaves the sea room
-  useEffect(() => () => void (afloat.on = false), []);
   const lastPos = useRef(new THREE.Vector3().copy(player.pos));
 
   // leaving the room mid-dive must not leave the next one underwater

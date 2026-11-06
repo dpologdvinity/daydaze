@@ -12,7 +12,6 @@ import {
 } from "../../game/openWater.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import type { Look } from "../../game/look.ts";
-import { scuba } from "../avatar/human/afloat.ts";
 import { useReducedMotion } from "../motion.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
@@ -199,12 +198,6 @@ function SeaSurface({ onPick }: { onPick: PickHandler }) {
 export function OpenWater({ onPick }: { onPick: PickHandler }) {
   const bed = useMemo(seabed, []);
   useEffect(() => () => bed.dispose(), [bed]);
-  // rented gear goes back on in the sea (the reef takes it off as she
-  // surfaces) and comes off when she leaves
-  useEffect(() => {
-    scuba.set({ wearing: scuba.get().rented });
-    return () => scuba.set({ wearing: false });
-  }, []);
   return (
     <>
       <color attach="background" args={["#8fd6ff"]} />

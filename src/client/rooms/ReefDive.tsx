@@ -15,7 +15,6 @@ import {
   type Life,
 } from "../../game/dive.ts";
 import { ROOMS } from "../../game/rooms.ts";
-import { scuba } from "../avatar/human/afloat.ts";
 import { Creature } from "../creatures/Creature.tsx";
 import { useReducedMotion } from "../motion.ts";
 import { placePlayer, type Player } from "../world/PlayerController.tsx";
@@ -245,13 +244,8 @@ function Diving({ player }: { player: Player }) {
   useEffect(() => {
     startDive();
     state.current.air = dive.get().air;
-    scuba.set({ wearing: true });
-    // she can leave by any travel (an arrest, a visit, a party), not only
-    // the ladder: the gear comes off with the dive
-    return () => {
-      endDive();
-      scuba.set({ wearing: false });
-    };
+    // the gear itself is App's, set on every arrival (wearsGear)
+    return endDive;
   }, []);
   const mouth = useRef<[number, number]>([0, 0]);
   // reused for each creature's spot as the sightings are checked

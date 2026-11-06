@@ -24,6 +24,7 @@ import {
   gaugeOf,
   lifePose,
   mayDive,
+  wearsGear,
   reefPlan,
   scoreOf,
   spot,
@@ -171,4 +172,12 @@ test("creatures circle their home, stay on the reef floor, and face the way they
         );
         assert.ok(Math.abs(off) < 0.5, `${life.species} yaw off ${off}`);
       }
+});
+
+test("rented gear is worn in the sea rooms only, and never without the rental", () => {
+  assert.equal(wearsGear("open-water", true), true);
+  assert.equal(wearsGear("reef-dive", true), true);
+  assert.equal(wearsGear("city", true), false);
+  assert.equal(wearsGear("jail", true), false);
+  assert.equal(wearsGear("open-water", false), false);
 });

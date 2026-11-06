@@ -5,7 +5,13 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { CITY_SPAWN } from "./layout.ts";
-import { lowTierCost, MODEL_COST, modelsInBudget } from "./budget.ts";
+import {
+  BAYS_CAMERA,
+  baysWanted,
+  lowTierCost,
+  MODEL_COST,
+  modelsInBudget,
+} from "./budget.ts";
 import type { Vec2 } from "../walk.ts";
 
 type Gltf = {
@@ -69,4 +75,15 @@ test("the low tier's cost counts the bays it draws", () => {
   const cost = lowTierCost(at);
   assert.ok(cost.bays > 0, "the spawn is near New York blocks");
   assert.ok(cost.triangles > cost.planTriangles);
+});
+
+test("the bays come in as the camera nears her and go as it pulls out to the overview, without flicker between", () => {
+  // the overview (about 255 m out) and a street view
+  assert.equal(baysWanted(255, true), false);
+  assert.equal(baysWanted(30, false), true);
+  // between the two edges it keeps what it had
+  const mid = (BAYS_CAMERA.on + BAYS_CAMERA.off) / 2;
+  assert.equal(baysWanted(mid, true), true);
+  assert.equal(baysWanted(mid, false), false);
+  assert.ok(BAYS_CAMERA.on < BAYS_CAMERA.off);
 });

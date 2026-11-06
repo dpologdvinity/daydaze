@@ -10,6 +10,7 @@ import {
 } from "../../game/city/plan.ts";
 import { facadeMaterials } from "./facades.ts";
 import { animate } from "./shaders.ts";
+import { bakeShapes } from "./bake.ts";
 import { laneTint } from "../../game/city/daylight.ts";
 import { BAY_NIGHT, bayMaterial } from "./NycFacades.tsx";
 
@@ -24,6 +25,41 @@ const GLOW: ReadonlySet<Kind> = new Set<Kind>([
   "bulb",
 ]);
 const GLOW_SCALE = 2.5;
+
+// Kinds drawn as one merged mesh, rebuilt on each reload (bake.ts), rather
+// than instanced: software WebGL (SwiftShader) pays about as much for each
+// instance as for a separate draw, and these are the static kinds with
+// hundreds or thousands of pieces in view (window panes, sills, poles,
+// bulbs, parked cars...). Their materials read the pieces' colors from vertex
+// colors; animated ones take their phase from `aOrigin` (Motion.baked).
+// Left instanced: the box- and world-mapped kinds (their shaders read the
+// instance matrix), the facades, the labels, motion that needs the piece's
+// own frame (sway, bob, drift), and the gate arches, whose posts stand out
+// from the wall and stay clickable as walk targets (baked meshes skip
+// raycasts).
+type Baked = Exclude<Shared, FacadeKind>;
+const BAKED: ReadonlySet<Kind> = new Set<Baked>([
+  "lane",
+  "band",
+  "ledge",
+  "glow",
+  "awning",
+  "sign",
+  "tube",
+  "pole",
+  "lamp",
+  "palmTrunk",
+  "treeTrunk",
+  "treeCanopy",
+  "window",
+  "panel",
+  "bulb",
+  "car",
+  "carGlass",
+  "furniture",
+  "glass",
+  "puddle",
+]);
 
 // The label kind gets its own geometry and material, because each mount
 // owns the atlas its names are drawn on.
@@ -229,6 +265,7 @@ const MATERIAL: Record<Exclude<Shared, FacadeKind>, THREE.Material> = {
   awning: new THREE.MeshBasicMaterial({ toneMapped: false }),
   sign: animate(new THREE.MeshBasicMaterial({ toneMapped: false }), {
     blink: true,
+    baked: true,
   }),
   tube: new THREE.MeshBasicMaterial({ toneMapped: false }),
   queue: animate(new THREE.MeshStandardMaterial({ roughness: 0.6 }), {
@@ -256,9 +293,11 @@ const MATERIAL: Record<Exclude<Shared, FacadeKind>, THREE.Material> = {
   treeCanopy: new THREE.MeshStandardMaterial({ roughness: 0.9 }),
   window: animate(new THREE.MeshBasicMaterial({ toneMapped: false }), {
     flicker: true,
+    baked: true,
   }),
   panel: animate(new THREE.MeshBasicMaterial({ toneMapped: false }), {
     blink: true,
+    baked: true,
   }),
   arch: animate(new THREE.MeshBasicMaterial({ toneMapped: false }), {
     blink: true,
@@ -303,6 +342,10 @@ const MATERIAL: Record<Exclude<Shared, FacadeKind>, THREE.Material> = {
   ),
 };
 
+// the baked kinds carry their pieces' colors per vertex
+for (const kind of BAKED)
+  if (kind !== "label" && !isFacade(kind)) MATERIAL[kind].vertexColors = true;
+
 export type KindMeshes = Record<Kind, THREE.InstancedMesh>;
 
 function instanced(
@@ -325,12 +368,17 @@ export function createKindMeshes(
   atlas: THREE.Texture,
 ): KindMeshes {
   const walls = facadeMaterials();
-  const make = (kind: Shared) =>
-    instanced(
-      GEOMETRY[kind],
-      isFacade(kind) ? walls[kind] : MATERIAL[kind],
-      capacity[kind],
-    );
+  const make = (kind: Shared) => {
+    const material = isFacade(kind) ? walls[kind] : MATERIAL[kind];
+    if (!BAKED.has(kind))
+      return instanced(GEOMETRY[kind], material, capacity[kind]);
+    // one identity instance over its own merged geometry; clicks fall
+    // through to the wall or road just behind, so its tens of thousands of
+    // triangles are never raycast
+    const mesh = instanced(new THREE.BufferGeometry(), material, 1);
+    mesh.raycast = () => undefined;
+    return mesh;
+  };
   // the card and frame textures are drawn once, on first mount
   const windowMaterial = MATERIAL.window as THREE.MeshBasicMaterial;
   windowMaterial.map ??= windowTexture();
@@ -394,7 +442,10 @@ export function createKindMeshes(
 }
 
 export function disposeKindMeshes(meshes: KindMeshes) {
-  for (const kind of KINDS) meshes[kind].dispose();
+  for (const kind of KINDS) {
+    meshes[kind].dispose();
+    if (BAKED.has(kind)) meshes[kind].geometry.dispose();
+  }
   meshes.label.geometry.dispose();
   [meshes.label.material].flat().forEach((m) => m.dispose());
 }
@@ -412,24 +463,23 @@ export function writeKind(
   kind: Kind,
   items: readonly Instance[],
 ) {
+  if (kind !== "label" && BAKED.has(kind)) {
+    mesh.geometry = bakeShapes(
+      mesh.geometry,
+      GEOMETRY[kind],
+      items.length,
+      (i, m, c) => place(items[i], kind, m, c),
+    );
+    mesh.count = items.length > 0 ? 1 : 0;
+    mesh.computeBoundingSphere();
+    return;
+  }
   mesh.count = items.length;
   // only the label kind carries a per-instance atlas rectangle
   const names = kind === "label" ? mesh.geometry.getAttribute("aUv") : null;
   items.forEach((item, i) => {
-    const [rx = 0, ry = 0, rz = 0] = item.rot ?? [];
-    euler.set(rx, ry, rz, "YXZ");
-    quaternion.setFromEuler(euler);
-    matrix.compose(
-      position.set(item.x, item.y, item.z),
-      quaternion,
-      scale.set(item.sx, item.sy, item.sz),
-    );
+    if (place(item, kind, matrix, color)) mesh.setColorAt(i, color);
     mesh.setMatrixAt(i, matrix);
-    if (item.color) {
-      color.set(item.color);
-      if (GLOW.has(kind)) color.multiplyScalar(GLOW_SCALE);
-      mesh.setColorAt(i, color);
-    }
     if (names && item.uv) names.setXYZW(i, ...item.uv);
   });
   mesh.instanceMatrix.needsUpdate = true;
@@ -439,6 +489,27 @@ export function writeKind(
   mesh.computeBoundingSphere();
 }
 
+/** Sets `m` to where `item` goes; sets `c` and returns true if it has a color. */
+function place(
+  item: Instance,
+  kind: Kind,
+  m: THREE.Matrix4,
+  c: THREE.Color,
+): boolean {
+  const [rx = 0, ry = 0, rz = 0] = item.rot ?? [];
+  euler.set(rx, ry, rz, "YXZ");
+  quaternion.setFromEuler(euler);
+  m.compose(
+    position.set(item.x, item.y, item.z),
+    quaternion,
+    scale.set(item.sx, item.sy, item.sz),
+  );
+  if (!item.color) return false;
+  c.set(item.color);
+  if (GLOW.has(kind)) c.multiplyScalar(GLOW_SCALE);
+  return true;
+}
+
 // the kinds that are lit at night: neon, signs, lamps, bulbs and windows
 const NIGHT_LIT: readonly Kind[] = [
   "band",
@@ -446,7 +517,6 @@ const NIGHT_LIT: readonly Kind[] = [
   "tube",
   "lamp",
   "panel",
-  "arch",
   "bulb",
   "glow",
   "window",

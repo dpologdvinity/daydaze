@@ -35,9 +35,11 @@ export function parolGeometry() {
     else shape.moveTo(Math.cos(a) * r, Math.sin(a) * r);
   }
   const parts = [
-    new THREE.ExtrudeGeometry(shape, { depth: 0.16, bevelEnabled: false })
-      .translate(0, 0, -0.08)
-      .toNonIndexed(),
+    // an extrusion is built non-indexed already
+    new THREE.ExtrudeGeometry(shape, {
+      depth: 0.16,
+      bevelEnabled: false,
+    }).translate(0, 0, -0.08),
     ...[-0.14, 0.14].map((x) =>
       new THREE.BoxGeometry(0.06, 0.8, 0.02)
         .translate(x, -0.8, 0)
