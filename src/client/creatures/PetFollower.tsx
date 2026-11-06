@@ -2,7 +2,8 @@
 // (pet.ts followStep keeps it beside you, never through you, sitting when you
 // sit) and sleeps in the corner of your apartment until you come close. It is
 // drawn with the Creature component, so it costs one draw call and a mixer.
-// The canvas carries `data-pet-dist` and `data-pet-clip` for the browser tests.
+// The canvas carries `data-pet-dist`, `data-pet-clip` and `data-pet-free` (off the
+// leash in the dog yard) for the browser tests.
 
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, type JSX } from "react";
@@ -44,6 +45,8 @@ export function PetFollower({
   const canvas = useThree((s) => s.gl.domElement);
   const frame = useRef(0);
   // a fresh start beside you (or in its bed) in every new room or arrival
+  // the dog yard: off the leash the pet romps on the yard's own rules
+  const free = useRef<Dog | null>(null);
   const state = useRef<Follower>({ x: 0, z: 0, yaw: 0, clip: "idle" });
   useMemo(() => {
     const you = { x: player.pos.x, z: player.pos.z, yaw: player.yaw };
@@ -60,12 +63,11 @@ export function PetFollower({
       Math.round(Math.hypot(player.pos.x - f.x, player.pos.z - f.z) * 10) / 10,
     );
     canvas.dataset.petClip = f.clip;
+    canvas.dataset.petFree = free.current ? "1" : "0";
   });
   // reused every frame: where you are, and the wall test
   const you = useRef({ x: 0, z: 0, yaw: 0 }).current;
   const blocked = useMemo(() => (at: Vec2) => isBlocked(area, at), [area]);
-  // the dog yard: off the leash the pet romps on the yard's own rules
-  const free = useRef<Dog | null>(null);
   useEffect(() => {
     parkDesk.set({ petName: pet.name });
     return () =>

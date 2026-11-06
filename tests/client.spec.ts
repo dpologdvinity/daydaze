@@ -3171,3 +3171,84 @@ test("the park's wildlife appears near the park, and the doe only on the high ti
   });
   expect(errors).toEqual([]);
 });
+
+test("farmers market: open on a weekend, a vendor greets you and a bunch of carrots goes to your groceries", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  // by the first west stall, Marigold Roots (the market is forced open)
+  await page.goto(
+    "/?quality=low&room=city&time=11:00&market=1&at=244.7,-309.6",
+  );
+  await expect(page.locator("canvas")).toHaveAttribute("data-market", "open", {
+    timeout: 240_000,
+  });
+  await expect(page.locator("canvas")).not.toHaveAttribute(
+    "data-market-items",
+    "0",
+  );
+  const stall = page.getByRole("region", { name: /Marigold Roots/ });
+  await expect(stall).toBeVisible({ timeout: 60_000 });
+  // the vendor's greeting is a handwritten line, never the "..." placeholder
+  await expect(stall.locator(".park-line")).toContainText("Hollis:");
+  await expect(stall.locator(".park-line")).not.toContainText("...");
+  await stall.getByRole("button", { name: /^Buy carrot: 18 coins$/ }).click();
+  await expect(stall).toContainText("In your groceries: 1");
+  const save = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("daydaze-save-v1") ?? "{}"),
+  );
+  expect(save.coins).toBe(82);
+  expect(save.farm.groceries.carrot).toBe(1);
+  expect(errors).toEqual([]);
+});
+
+test("farmers market: shut on a weekday, the stalls stand bare", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(
+    "/?quality=low&room=city&time=11:00&market=0&at=244.7,-309.6",
+  );
+  await expect(page.locator("canvas")).toHaveAttribute(
+    "data-market",
+    "closed",
+    { timeout: 240_000 },
+  );
+  await expect(page.locator("canvas")).toHaveAttribute(
+    "data-market-items",
+    "0",
+  );
+  await expect(page.locator(".park-panel")).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+test("dog park: dogs romp in the yard, and your pet can be let off the leash", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await seedSave(page, {
+    pet: { kind: "labrador", name: "Biscuit", adoptedAt: 1, fedAt: Date.now() },
+  });
+  // inside the fence, by the gate (the low tier draws three of the four dogs)
+  await page.goto("/?quality=low&room=city&time=14:00&market=0&at=265,-297");
+  await expect(page.locator("canvas")).toHaveAttribute("data-dogs", "3", {
+    timeout: 240_000,
+  });
+  const leash = page.getByRole("button", {
+    name: "Let Biscuit off the leash",
+  });
+  await expect(leash).toBeVisible({ timeout: 60_000 });
+  await expect(page.locator("canvas")).toHaveAttribute("data-pet-free", "0");
+  await leash.click();
+  await expect(page.locator("canvas")).toHaveAttribute("data-pet-free", "1", {
+    timeout: 30_000,
+  });
+  await page.getByRole("button", { name: "Leash Biscuit up" }).click();
+  await expect(page.locator("canvas")).toHaveAttribute("data-pet-free", "0", {
+    timeout: 30_000,
+  });
+  expect(errors).toEqual([]);
+});

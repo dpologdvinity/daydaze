@@ -73,42 +73,47 @@ test("the gear fits in the yard and leaves the gate's lane open", () => {
   }
 });
 
-test("dogs stay inside the fence and out of the gear, and do everything", () => {
-  const world = newWorld();
-  const roll = seededRng(7);
-  const seen = new Set<DogMode>();
-  for (let i = 0; i < 60 * 600; i++) {
-    stepWorld(world, 1 / 20, roll);
-    for (const d of world.dogs) {
-      seen.add(d.mode);
-      assert.ok(
-        inDogPark(d.x, d.z),
-        `${d.kind} left the yard at ${d.x}, ${d.z}`,
-      );
-      for (const g of GEAR)
+for (const seed of [7, 21, 99]) {
+  test(`dogs stay inside the fence and out of the gear, and do everything (seed ${seed})`, () => {
+    const world = newWorld();
+    const roll = seededRng(seed);
+    const seen = new Set<DogMode>();
+    for (let i = 0; i < 60 * 600; i++) {
+      stepWorld(world, 1 / 20, roll);
+      for (const d of world.dogs) {
+        seen.add(d.mode);
         assert.ok(
-          !(
-            d.x > g.box.x0 &&
-            d.x < g.box.x1 &&
-            d.z > g.box.z0 &&
-            d.z < g.box.z1
-          ),
-          `${d.kind} stands in the ${g.kind}`,
+          inDogPark(d.x, d.z),
+          `${d.kind} left the yard at ${d.x}, ${d.z}`,
         );
+        for (const g of GEAR)
+          assert.ok(
+            !(
+              d.x > g.box.x0 &&
+              d.x < g.box.x1 &&
+              d.z > g.box.z0 &&
+              d.z < g.box.z1
+            ),
+            `${d.kind} stands in the ${g.kind}`,
+          );
+      }
     }
-  }
-  for (const m of [
-    "roam",
-    "sniff",
-    "chase",
-    "drink",
-    "rest",
-    "fetch",
-    "return",
-  ] as const)
-    assert.ok(seen.has(m), `no dog ever did ${m}`);
-  assert.ok(world.fetches >= 5, `only ${world.fetches} fetches in ten minutes`);
-});
+    for (const m of [
+      "roam",
+      "sniff",
+      "chase",
+      "drink",
+      "rest",
+      "fetch",
+      "return",
+    ] as const)
+      assert.ok(seen.has(m), `no dog ever did ${m}`);
+    assert.ok(
+      world.fetches >= 5,
+      `only ${world.fetches} fetches in ten minutes`,
+    );
+  });
+}
 
 test("the fetcher brings the ball back to the bench-sitter's feet", () => {
   const world = newWorld();

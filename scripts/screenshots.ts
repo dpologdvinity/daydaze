@@ -528,6 +528,48 @@ const SHOTS: {
     act: cityReady,
   },
   {
+    // the dog yard east of the park's north-south path (src/game/city/dogPark.ts)
+    name: "dog-park",
+    query:
+      "room=city&view=room&time=14:00&at=264,-292&cam=276,7,-292,264,0.5,-304",
+    act: async (page) => {
+      await cityReady(page);
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.dogs !== undefined,
+        null,
+        { timeout: 300_000 },
+      );
+    },
+  },
+  {
+    // the weekend farmers market (src/game/city/farmersMarket.ts), forced open
+    name: "farmers-market",
+    query:
+      "room=city&view=room&time=11:00&market=1&at=252,-290&cam=253,6.5,-290,244,1.2,-302",
+    act: async (page) => {
+      await cityReady(page);
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.market === "open",
+        null,
+        { timeout: 300_000 },
+      );
+    },
+  },
+  {
+    // the same stalls on a weekday: closed, bare and unmanned
+    name: "farmers-market-closed",
+    query:
+      "room=city&view=room&time=11:00&market=0&at=252,-290&cam=253,6.5,-290,244,1.2,-302",
+    act: async (page) => {
+      await cityReady(page);
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.market === "closed",
+        null,
+        { timeout: 300_000 },
+      );
+    },
+  },
+  {
     name: "city-park-pond",
     query: "room=city&view=full&time=14:00&at=233,-290",
     act: furnitureReady,

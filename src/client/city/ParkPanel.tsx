@@ -54,7 +54,6 @@ export function ParkPanel(): JSX.Element | null {
     say(visited.has(stallId) ? "greeting-regular" : "greeting-first");
     visited.add(stallId);
     // greet once per stall in reach
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stallId]);
 
   const crop = stall?.sells ?? null;
