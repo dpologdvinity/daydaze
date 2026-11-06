@@ -1,7 +1,7 @@
 """Street furniture for the city (see docs/assets.md for sources).
 
 Builds one GLB per kind in $OUT: Quaternius' Street Pack lamp and signs (CC0),
-Poly Haven's hydrant, trash can and bench (CC0), and Poly Pizza downloads
+Poly Haven's hydrant and trash can, Quaternius' bench (CC0), and Poly Pizza downloads
 (mailbox, parking meter, bike rack, bus shelter, palm, planter, traffic light),
 and the Sketchfab newspaper box (CC-BY),
 all cut down to a few hundred triangles. Each model
@@ -177,7 +177,6 @@ def street_set():
     imported(Q("Sign_NoParking"), height=2.4); export("sign-noparking")
     imported(PH("fire_hydrant"), height=0.8, tris=300); export("hydrant")
     imported(PH("metal_trash_can"), height=0.95, tris=250); export("trashcan")
-    imported(PH("painted_wooden_bench"), length=1.8); export("bench")
     # Poly Pizza downloads (see docs/assets.md)
     imported(PP("mailbox"), height=1.15, tris=240); export("mailbox")
     imported(PP("meter"), height=1.4, tris=400); export("meter")
@@ -190,6 +189,25 @@ def street_set():
 
 
 PK = lambda n: f"{SRC_PK}/{n}.glb"
+
+
+def paint(o, rgb, rough=0.8):
+    """Recolors the (single) wood material: the Quaternius bench ships one flat brown."""
+    for m in o.data.materials:
+        for n in m.node_tree.nodes:
+            if n.type == "BSDF_PRINCIPLED":
+                n.inputs["Base Color"].default_value = (*rgb, 1.0)
+                n.inputs["Roughness"].default_value = rough
+
+
+def bench_set():
+    """Quaternius' rustic bench (CC0, Poly Pizza), 1.8 m long, seat at 0.46 m: painted
+    park green for the city and the park, bleached gray for Beachside's deck. The
+    bench's back is at +z in the source; turn it to face +z like the other kinds."""
+    for name, rgb in (("bench", (0.1, 0.27, 0.17)), ("boardbench", (0.62, 0.56, 0.48))):
+        o = imported(PP("bench-quaternius"), length=1.8, turn=math.pi)
+        paint(o, rgb)
+        export(name)
 
 
 def park_set():
@@ -232,6 +250,8 @@ if os.environ.get("SET") == "park":
     park_set()
 elif os.environ.get("SET") == "deck":
     deck_set()
+elif os.environ.get("SET") == "bench":
+    bench_set()
 elif os.environ.get("SET") == "beach":
     beach_set()
 else:

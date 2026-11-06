@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { makeCanvas } from "../canvas.ts";
+import { LIPS } from "../../game/look.ts";
 
 // The face canvas is a window onto the 1024px template's coordinate space.
 // Head UVs are planar-projected into the same window (see Doll.tsx), so
@@ -28,6 +29,31 @@ function loadImage(name: string) {
       img.src = `/doll/${name}.png`;
     });
     images.set(name, p);
+  }
+  return p;
+}
+
+// Only four lipsticks ship as art; the rest of LIPS are the nude gloss shape
+// tinted to their swatch, so every look id paints and none fails to load.
+type LipArt = HTMLImageElement | HTMLCanvasElement;
+const ART_LIPS = new Set<string>(LIPS.slice(0, 4).map((l) => l.id));
+const lipArt = new Map<string, Promise<LipArt>>();
+function lipsImage(id: string): Promise<LipArt> {
+  if (ART_LIPS.has(id)) return loadImage(id);
+  let p = lipArt.get(id);
+  if (!p) {
+    const swatch = LIPS.find((l) => l.id === id)?.swatch ?? "#c98f86";
+    p = loadImage("lips-nude-pink-gloss").then((base) => {
+      const { canvas, ctx } = makeCanvas(base.width, base.height);
+      ctx.drawImage(base, 0, 0);
+      // source-atop keeps the lip shape (alpha) and the gloss shading under the tint
+      ctx.globalCompositeOperation = "source-atop";
+      ctx.globalAlpha = 0.8;
+      ctx.fillStyle = swatch;
+      ctx.fillRect(0, 0, base.width, base.height);
+      return canvas;
+    });
+    lipArt.set(id, p);
   }
   return p;
 }
@@ -304,7 +330,7 @@ async function paint(opts: FaceOpts, closed: boolean) {
   const skin = hexRgb(opts.skin);
   const [features, lips, brows] = await Promise.all([
     featureLayer(skin),
-    loadImage(opts.lips),
+    lipsImage(opts.lips),
     loadImage(opts.brows).then(inkOnly),
   ]);
   const { canvas: c, ctx } = makeCanvas(

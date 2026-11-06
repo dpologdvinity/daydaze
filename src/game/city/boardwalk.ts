@@ -148,8 +148,8 @@ export function boardwalkFurniture(
   // benches facing the sea, in front of the shops' south wall and by the rail
   for (let x = -SHOP_EDGE + 6; x <= SHOP_EDGE - 6; x += 24) {
     if (skip(x, DECK.z1 - 2)) continue;
-    out.push(spot("bench", x + 6, DECK.z1 - 2.2, 0));
-    out.push(spot("bench", x + 18, SHOP_Z1 + 1.2, 0));
+    out.push(spot("boardbench", x + 6, DECK.z1 - 2.2, 0));
+    out.push(spot("boardbench", x + 18, SHOP_Z1 + 1.2, 0));
     // a trash can at the end of each row of benches
     out.push(spot("trashcan", x + 12, DECK.z1 - 1.6, 0));
     out.push(spot("trashcan", x + 24, SHOP_Z1 + 0.8, 0));

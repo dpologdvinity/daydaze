@@ -78,7 +78,7 @@ future imported packs belong here when they enter the game.
 | Street Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/streetpack.html | Street lamp and stop and no-parking signs (Streetlight_Single, Sign_Stop, Sign_NoParking); lantern made see-through. |
 | Fire Hydrant | Poly Haven | CC0 1.0 | https://polyhaven.com/a/fire_hydrant | Sidewalk hydrants, decimated to under 500 triangles. |
 | Metal Trash Can | Poly Haven | CC0 1.0 | https://polyhaven.com/a/metal_trash_can | Sidewalk bins, decimated to about 300 triangles. |
-| Painted Wooden Bench | Poly Haven | CC0 1.0 | https://polyhaven.com/a/painted_wooden_bench | Sidewalk benches. |
+| Bench | Quaternius | CC0 1.0 | https://poly.pizza/m/jLxjFxFRpw | Park-green benches on sidewalks and in the park, bleached gray on Beachside's deck. |
 | Mailbox | CreativeTrio | CC0 1.0 | https://poly.pizza/m/2olZ0G8iur | Sidewalk mailboxes, decimated. |
 | Parking Meter | Zsky | CC-BY 3.0 | https://poly.pizza/m/SIePMtqLF8 | Curbside parking meters, decimated. |
 | Bike Rack | J-Toastie | CC-BY 3.0 | https://poly.pizza/m/DzsJ2LPVKZ | Sidewalk bike racks, decimated. |
