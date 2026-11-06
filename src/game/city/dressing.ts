@@ -571,6 +571,12 @@ function sideDoor(b: Building, f: Front, out: Buckets, accent: string): void {
   });
 }
 
+/** Just a building's blade sign: a house lot drawn as a model keeps its neon. */
+export function dressBlade(b: Building, out: Buckets): void {
+  const blades = BLADE_SIGNS[b.id];
+  if (blades) blade(out, frontOf(b), blades.text, blades.color);
+}
+
 /** Everything a building adds to its own frontage, after its body is drawn. */
 export function dressBuilding(b: Building, out: Buckets, kit = false): void {
   const f = frontOf(b);
