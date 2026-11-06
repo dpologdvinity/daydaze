@@ -5,6 +5,7 @@ import { areaOf, isBlocked, type WalkArea } from "./area.ts";
 import { ROOMS } from "./rooms.ts";
 import {
   BRIDGE,
+  CREEK_STONES,
   CREEK,
   GLADES,
   HIKERS,
@@ -15,6 +16,7 @@ import {
   TREES,
   WILDLIFE,
   creekZ,
+  distToCreek,
   distToPath,
 } from "./forest.ts";
 import { loopAt } from "./zoo.ts";
@@ -77,4 +79,17 @@ test("the room's portal leads back to the city gate", () => {
   const room = ROOMS.forest;
   assert.equal(room.portals[0]?.target, "city");
   assert.equal(ROOMS.city.id, "city");
+});
+
+test("creek stones sit on the banks, never on the bridge", () => {
+  assert.ok(CREEK_STONES.length > 8);
+  for (const r of CREEK_STONES) {
+    const d = distToCreek(r.x, r.z);
+    assert.ok(d >= CREEK.halfWidth - 0.1 && d < CREEK.halfWidth + 1, `${d}`);
+    assert.ok(Math.abs(r.x - BRIDGE.x) >= BRIDGE.width);
+  }
+});
+
+test("no tree stands in the lane the default camera looks up", () => {
+  for (const t of TREES) assert.ok(!(Math.abs(t.x) < 3.5 && t.z > 2));
 });

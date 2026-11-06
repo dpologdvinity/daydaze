@@ -275,6 +275,8 @@ function kept(x: number, z: number): boolean {
   if (inside(LOOKOUT, x, z, 1.5)) return true;
   if (BENCH_SPOTS.some((b) => Math.hypot(b.x - x, b.z - z) < 2.2)) return true;
   if (Math.hypot(PICNIC_SPOT.x - x, PICNIC_SPOT.z - z) < 3) return true;
+  // the default camera looks up the trailhead's lane: keep it clear
+  if (Math.abs(x) < 3.5 && z > 2) return true;
   return Math.hypot(SPAWN[0] - x, SPAWN[1] - z) < 4;
 }
 
@@ -409,15 +411,31 @@ export function undergrowth(count = 260): Plant[] {
 }
 export const PLANTS_SPOTS: readonly Plant[] = undergrowth();
 
-/** Ducks on the creek: where each floats. */
-export const DUCK_SPOTS: readonly Spot[] = [-15, -11, 8, 15].map((x, i) => ({
-  x,
-  z: creekZ(x),
-  yaw: i * 1.7,
-  sx: 1,
-  sy: 1,
-  sz: 1,
-}));
+/** Stones set along both creek banks, half in the water's edge. */
+export const CREEK_STONES: readonly (Spot & { id: PlantId })[] = (() => {
+  const ids: readonly PlantId[] = ["rock-moss-1", "rock-moss-3", "rock-5"];
+  const out: (Spot & { id: PlantId })[] = [];
+  for (let x = BOUNDS.x0 + 2; x < BOUNDS.x1 - 1; x += 2.6) {
+    for (const side of [-1, 1]) {
+      if (hash(x, side, 31) < 0.3 || Math.abs(x - BRIDGE.x) < BRIDGE.width + 2)
+        continue;
+      const k = 0.45 + hash(x, side, 32) * 0.5;
+      const sx = x + hash(x, side, 34);
+      out.push({
+        id: ids[Math.floor(hash(x, side, 33) * ids.length)] as PlantId,
+        x: sx,
+        z:
+          creekZ(sx) +
+          side * (CREEK.halfWidth + 0.05 + hash(x, side, 35) * 0.5),
+        yaw: hash(x, side, 36) * Math.PI * 2,
+        sx: k,
+        sy: k * 0.8,
+        sz: k,
+      });
+    }
+  }
+  return out;
+})();
 
 export const FLOOR: readonly Vec2[] = box(
   BOUNDS.x0,

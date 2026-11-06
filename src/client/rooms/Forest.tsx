@@ -2,10 +2,12 @@
 // through the woods from the trailhead, a creek under a plank bridge, benches,
 // clearings with deer, a fox and rabbits, and a lookout deck. The trees,
 // undergrowth and props are instanced downloads (Quaternius' Ultimate Nature
-// Pack and Textured Stylized Trees, the park's duck and picnic table, the
-// street bench), one InstancedMesh per kind; the low tier keeps 60% of the
-// trees. The path, creek and decks are small merged meshes.
+// Pack and Textured Stylized Trees, the park's picnic table), one
+// InstancedMesh per kind; the low tier keeps half the trees. The soft-edged
+// path, the rippling creek, the slatted benches and the decks are small merged
+// meshes; rocks and bushes are smooth-shaded.
 
+import { useFrame } from "@react-three/fiber";
 import { Suspense, useMemo, type JSX } from "react";
 import * as THREE from "three";
 import {
@@ -13,7 +15,7 @@ import {
   BOUNDS,
   BRIDGE,
   CREEK,
-  DUCK_SPOTS,
+  CREEK_STONES,
   LOOKOUT,
   LOOKOUT_RAIL,
   LOW_TREE_SHARE,
@@ -32,6 +34,7 @@ import type { Vec2 } from "../../game/walk.ts";
 import { surface } from "../city/worldTexture.ts";
 import { WanderingCreature } from "../creatures/Wanderer.tsx";
 import type { Player } from "../world/PlayerController.tsx";
+import { useReducedMotion } from "../motion.ts";
 import { useQuality } from "../world/quality.ts";
 import { Batch } from "./shared/batch.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
@@ -50,16 +53,37 @@ const TEXTURED: ReadonlySet<TreeId> = new Set([
 ]);
 const model = (id: string) => `/models/forest/${id}.glb`;
 
+/** Cross-section of a ribbon: offsets across it (-1 left edge .. 1 right edge)
+ * and the RGBA each carries, so a path or creek fades into the ground. */
+type Section = readonly (readonly [number, number, number, number, number])[];
+const PATH_SECTION: Section = [
+  [-1, 1, 1, 1, 0],
+  [-0.62, 1, 1, 1, 1],
+  [0.62, 1, 1, 1, 1],
+  [1, 1, 1, 1, 0],
+];
+/** Shallow edges are pale and see-through, the middle deep and darker. */
+const CREEK_SECTION: Section = [
+  [-1, 0.78, 0.92, 0.84, 0.25],
+  [-0.55, 0.42, 0.68, 0.78, 0.85],
+  [0.55, 0.42, 0.68, 0.78, 0.85],
+  [1, 0.78, 0.92, 0.84, 0.25],
+];
+
 /** A flat ribbon along `line`, `width` wide, `y` above the ground, with UVs
- * running along its length (a meter of path is one repeat). */
+ * running along its length (a meter is one repeat) and the section's vertex
+ * colors, so its edges blend into the ground instead of cutting off. */
 function ribbon(
   line: readonly Vec2[],
   width: number,
   y: number,
+  section: Section,
 ): THREE.BufferGeometry {
   const pos: number[] = [];
   const uv: number[] = [];
+  const col: number[] = [];
   const idx: number[] = [];
+  const cols = section.length;
   let run = 0;
   line.forEach(([x, z], i) => {
     const a = line[Math.max(0, i - 1)] as Vec2;
@@ -74,23 +98,23 @@ function ribbon(
       const p = line[i - 1] as Vec2;
       run += Math.hypot(x - p[0], z - p[1]);
     }
-    pos.push(
-      x + (nx * width) / 2,
-      y,
-      z + (nz * width) / 2,
-      x - (nx * width) / 2,
-      y,
-      z - (nz * width) / 2,
-    );
-    uv.push(0, run / width, 1, run / width);
+    for (const [off, r, g, bl, al] of section) {
+      pos.push(x + (nx * width * off) / 2, y, z + (nz * width * off) / 2);
+      uv.push((off + 1) / 2, run / width);
+      col.push(r, g, bl, al);
+    }
     if (i > 0) {
-      const k = i * 2;
-      idx.push(k - 2, k, k - 1, k - 1, k, k + 1);
+      for (let c = 0; c < cols - 1; c++) {
+        const k = i * cols + c;
+        const q = k - cols;
+        idx.push(q, k, q + 1, q + 1, k, k + 1);
+      }
     }
   });
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
   g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+  g.setAttribute("color", new THREE.Float32BufferAttribute(col, 4));
   g.setIndex(idx);
   g.computeVertexNormals();
   // the winding above faces down on some bends: normals point up regardless
@@ -99,16 +123,73 @@ function ribbon(
   return g;
 }
 
-const DIRT = surface("park_sand", { scale: 0.45, color: "#d2b585" });
-const MUD = surface("park_sand", { scale: 0.3, color: "#5f4630" });
-const WATER = new THREE.MeshStandardMaterial({
-  color: "#4aa3c9",
-  emissive: "#0d4f6e",
-  emissiveIntensity: 0.35,
-  roughness: 0.15,
-  metalness: 0.1,
-});
+/** The soft-edged ribbons: vertex alpha fades them into the grass. */
+const soft = (m: THREE.MeshStandardMaterial) => {
+  const c = m.clone();
+  c.vertexColors = true;
+  c.transparent = true;
+  c.depthWrite = false;
+  c.polygonOffset = true;
+  c.polygonOffsetFactor = -1;
+  return c;
+};
+const DIRT = soft(surface("park_sand", { scale: 0.45, color: "#c9a574" }));
+const MUD = soft(surface("park_sand", { scale: 0.3, color: "#5f4630" }));
+const time = { value: 0 };
+/** Creek water: scrolling ripple normals and glints over a depth tint. */
+const WATER = (() => {
+  const m = new THREE.MeshStandardMaterial({
+    color: "#ffffff",
+    vertexColors: true,
+    transparent: true,
+    depthWrite: false,
+    roughness: 0.12,
+    metalness: 0.05,
+    emissive: "#0b4660",
+    emissiveIntensity: 0.3,
+  });
+  m.onBeforeCompile = (shader) => {
+    shader.uniforms.uTime = time;
+    shader.vertexShader = shader.vertexShader
+      .replace("void main() {", "varying vec2 vCreek;\nvoid main() {")
+      .replace(
+        "#include <worldpos_vertex>",
+        "#include <worldpos_vertex>\nvCreek = (modelMatrix * vec4(transformed, 1.0)).xz;",
+      );
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        "void main() {",
+        "uniform float uTime;\nvarying vec2 vCreek;\nvoid main() {",
+      )
+      .replace(
+        "#include <normal_fragment_maps>",
+        [
+          "#include <normal_fragment_maps>",
+          // two crossing ripple trains tilt the normal; the creek flows toward +x
+          "vec2 rp = vCreek * vec2(2.4, 3.1);",
+          "float r1 = sin(rp.x * 2.0 - uTime * 1.6 + sin(rp.y * 1.7) * 1.3);",
+          "float r2 = sin(rp.y * 2.3 + rp.x * 0.8 - uTime * 1.1);",
+          "normal = normalize(normal + vec3(r1 * 0.09, 0.0, r2 * 0.09));",
+        ].join("\n"),
+      )
+      .replace(
+        "#include <emissivemap_fragment>",
+        [
+          "#include <emissivemap_fragment>",
+          "float glint = pow(max(0.0, sin(vCreek.x * 3.7 - uTime * 2.2) * sin(vCreek.y * 4.3 + uTime)), 18.0);",
+          "totalEmissiveRadiance += vec3(0.5, 0.7, 0.8) * glint * 0.7;",
+        ].join("\n"),
+      );
+  };
+  return m;
+})();
 const PLANK = surface("oak_wood_planks", { scale: 1, color: "#e0cba6" });
+const IRON = surface("metal_plate", {
+  scale: 1,
+  color: "#2b2f2e",
+  metalness: 0.4,
+  roughness: 0.6,
+});
 const POST = surface("oak_wood_planks", { scale: 1, color: "#6e5233" });
 const HILL = new THREE.MeshBasicMaterial({ color: "#7ea58f", fog: true });
 const HILL_FAR = new THREE.MeshBasicMaterial({ color: "#9bbfb0", fog: true });
@@ -117,11 +198,11 @@ const HILL_FAR = new THREE.MeshBasicMaterial({ color: "#9bbfb0", fog: true });
 function useGrounds() {
   return useMemo(() => {
     const b = new Batch();
-    b.add(ribbon(PATH, PATH_WIDTH, 0.03), DIRT);
     const creek: Vec2[] = [];
     for (let x = x0; x <= x1; x += 1) creek.push([x, creekZ(x)]);
-    b.add(ribbon(creek, CREEK.halfWidth * 2 + 1.2, 0.02), MUD);
-    b.add(ribbon(creek, CREEK.halfWidth * 2, 0.05), WATER);
+    b.add(ribbon(creek, CREEK.halfWidth * 2 + 2, 0.02, PATH_SECTION), MUD);
+    b.add(ribbon(creek, CREEK.halfWidth * 2.3, 0.05, CREEK_SECTION), WATER);
+    b.add(ribbon(PATH, PATH_WIDTH * 1.5, 0.03, PATH_SECTION), DIRT);
     // the bridge: a low plank deck with a rail each side, over the creek
     const bz = creekZ(BRIDGE.x);
     b.add(new THREE.BoxGeometry(BRIDGE.width, 0.08, BRIDGE.length), PLANK, {
@@ -136,6 +217,39 @@ function useGrounds() {
         b.add(new THREE.BoxGeometry(0.14, 1, 0.14), POST, {
           position: [rx, 0.5, bz + (end * BRIDGE.length) / 2.2],
         });
+    }
+    // park benches: three slats and a two-slat back on iron legs
+    for (const { x, z, yaw } of BENCH_SPOTS) {
+      const at = (
+        lx: number,
+        ly: number,
+        lz: number,
+      ): [number, number, number] => [
+        x + lx * Math.cos(yaw) + lz * Math.sin(yaw),
+        ly,
+        z - lx * Math.sin(yaw) + lz * Math.cos(yaw),
+      ];
+      const rot: [number, number, number] = [0, yaw, 0];
+      for (const lz of [-0.18, 0, 0.18])
+        b.add(new THREE.BoxGeometry(1.7, 0.05, 0.14), PLANK, {
+          position: at(0, 0.5, lz),
+          rotation: rot,
+        });
+      for (const ly of [0.72, 0.9])
+        b.add(new THREE.BoxGeometry(1.7, 0.12, 0.04), PLANK, {
+          position: at(0, ly, -0.3),
+          rotation: rot,
+        });
+      for (const lx of [-0.8, 0.8]) {
+        b.add(new THREE.BoxGeometry(0.06, 0.5, 0.5), IRON, {
+          position: at(lx, 0.25, 0),
+          rotation: rot,
+        });
+        b.add(new THREE.BoxGeometry(0.06, 0.45, 0.06), IRON, {
+          position: at(lx, 0.72, -0.3),
+          rotation: rot,
+        });
+      }
     }
     // the lookout deck
     b.add(
@@ -219,7 +333,12 @@ function Undergrowth({ share }: { share: number }): JSX.Element {
   return (
     <>
       {byKind.map(([id, spots]) => (
-        <Scatter key={id} url={model(id)} spots={spots} />
+        <Scatter
+          key={id}
+          url={model(id)}
+          spots={spots}
+          smooth={/^(rock|bush)/.test(id)}
+        />
       ))}
     </>
   );
@@ -237,6 +356,10 @@ export function Forest({
   player: Player;
 }): JSX.Element {
   const tier = useQuality();
+  const calm = useReducedMotion();
+  useFrame(({ clock }) => {
+    if (!calm) time.value = clock.elapsedTime;
+  });
   const grounds = useGrounds();
   const share = tier === "low" ? LOW_TREE_SHARE : 1;
   return (
@@ -274,25 +397,18 @@ export function Forest({
         <Woods share={share} />
         <Undergrowth share={tier === "low" ? 0.6 : 1} />
         <Scatter
-          url="/models/street/bench.glb"
-          spots={BENCH_SPOTS.map((s) => ({ ...s, sx: 0.8, sy: 0.8, sz: 0.8 }))}
-          color="#b89870"
-        />
-        <Scatter
           url="/models/park/picnic-table.glb"
           spots={[{ ...PICNIC_SPOT, sx: 0.85, sy: 0.85, sz: 0.85 }]}
           color="#b89870"
         />
-        <Scatter
-          url="/models/park/duck.glb"
-          spots={DUCK_SPOTS.map((s) => ({
-            ...s,
-            y: 0.05,
-            sx: 1.8,
-            sy: 1.8,
-            sz: 1.8,
-          }))}
-        />
+        {(["rock-moss-1", "rock-moss-3", "rock-5"] as const).map((id) => (
+          <Scatter
+            key={id}
+            url={model(id)}
+            spots={CREEK_STONES.filter((r) => r.id === id)}
+            smooth
+          />
+        ))}
         <Scatter
           url="/models/zoo/fence_planks.glb"
           spots={LOOKOUT_RAIL.map((s) => ({ ...s, y: 0.1 }))}

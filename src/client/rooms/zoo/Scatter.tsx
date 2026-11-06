@@ -5,6 +5,7 @@
 import { useGLTF } from "@react-three/drei";
 import { useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";
+import { mergeVertices } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { Spot } from "../../../game/zoo.ts";
 import { disposeInstanced } from "../../city/dispose.ts";
 import { bakedGeometry } from "../../world/bakedGeometry.ts";
@@ -14,6 +15,7 @@ export function Scatter({
   spots,
   color,
   cutout,
+  smooth,
 }: {
   url: string;
   spots: readonly Spot[];
@@ -23,6 +25,9 @@ export function Scatter({
   /** Treats a material with a texture as leaves: cut out where the texture
    * is clear (alpha test, two-sided) instead of blended. */
   cutout?: boolean;
+  /** Welds shared vertices and recomputes normals, so a faceted low-poly
+   * rock or bush shades as a rounded form. */
+  smooth?: boolean;
 }): JSX.Element {
   const gltf = useGLTF(url);
   const meshes = useMemo(() => {
@@ -37,7 +42,13 @@ export function Scatter({
       if (!(o instanceof THREE.Mesh)) return;
       // bakedGeometry: the optimized GLBs store quantized integers, which a baked
       // transform would truncate or clamp (squashed trees, black normals)
-      const geometry = bakedGeometry(o);
+      let geometry = bakedGeometry(o);
+      if (smooth) {
+        geometry = geometry.clone();
+        geometry.deleteAttribute("normal");
+        geometry = mergeVertices(geometry, 1e-3);
+        geometry.computeVertexNormals();
+      }
       const source = Array.isArray(o.material) ? o.material[0] : o.material;
       const material = source?.clone();
       if (color && material instanceof THREE.MeshStandardMaterial) {
@@ -70,7 +81,7 @@ export function Scatter({
       out.push(inst);
     });
     return out;
-  }, [gltf, spots, color, cutout]);
+  }, [gltf, spots, color, cutout, smooth]);
   useEffect(() => () => disposeInstanced(meshes, true), [meshes]);
   return (
     <>
