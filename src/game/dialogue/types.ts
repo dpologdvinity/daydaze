@@ -30,6 +30,7 @@ export const ROLE_IDS = [
   "police",
   "taxi-driver",
   "hiker",
+  "gardener",
 ] as const;
 
 /** One of ROLE_IDS. */
