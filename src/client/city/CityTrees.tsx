@@ -65,7 +65,8 @@ function useLevel(lo: boolean) {
     () =>
       gltfs.map((g) =>
         partsOf(g.scene).map(({ geometry, material }) => {
-          const mesh = new THREE.InstancedMesh(geometry, material, CAPACITY);
+          const copy = material.clone();
+          const mesh = new THREE.InstancedMesh(geometry, copy, CAPACITY);
           mesh.count = 0;
           mesh.frustumCulled = false;
           return mesh;
@@ -73,8 +74,8 @@ function useLevel(lo: boolean) {
       ),
     [gltfs],
   );
-  // the copies go with the city (the materials are the cached GLB's own)
-  useEffect(() => () => disposeInstanced(levels.flat(), false), [levels]);
+  // The geometry and material copies go with the city.
+  useEffect(() => () => disposeInstanced(levels.flat(), true), [levels]);
   return levels;
 }
 
@@ -110,7 +111,7 @@ function place(
       }
 }
 
-export function CityTrees(): JSX.Element {
+export function CityTrees({ autumn }: { autumn: boolean }): JSX.Element {
   const low = useQuality() === "low";
   const far = useLevel(true);
   // the low tier draws every tree far off, so its near level is the cached
@@ -121,6 +122,17 @@ export function CityTrees(): JSX.Element {
     place({ near, far }, spots, at, low);
   }, [near, far, spots, at, low]);
   const all = useMemo(() => [...near.flat(), ...far.flat()], [near, far]);
+  useEffect(() => {
+    for (const mesh of all) {
+      const material = mesh.material;
+      if (
+        material instanceof THREE.MeshStandardMaterial &&
+        material.name.includes("Leaves")
+      ) {
+        material.color.set(autumn ? "#e77430" : "#ffffff");
+      }
+    }
+  }, [all, autumn]);
   return (
     <>
       {all.map((mesh) => (

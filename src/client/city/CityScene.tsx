@@ -1,4 +1,4 @@
-import { useFrame, type ThreeEvent } from "@react-three/fiber";
+import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { Environment } from "@react-three/drei";
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -37,6 +37,7 @@ import {
   writeKind,
 } from "./meshes.ts";
 import { useDaylight } from "./daylight.ts";
+import { useDressings } from "./season.ts";
 import { CityFurniture, cityFurniture } from "./CityFurniture.tsx";
 import { BoardwalkFerris } from "./BoardwalkFerris.tsx";
 import { CityPark } from "./CityPark.tsx";
@@ -79,6 +80,15 @@ export function CityScene({
   car: ParkedCar;
   onPark: (car: ParkedCar) => void;
 }) {
+  const activeDressings = useDressings();
+  const canvas = useThree((state) => state.gl.domElement);
+  const dressingNames = activeDressings.join(",");
+  useEffect(() => {
+    canvas.dataset.dressings = dressingNames;
+    return () => {
+      delete canvas.dataset.dressings;
+    };
+  }, [canvas, dressingNames]);
   const tier = useQuality();
   const reduced = useReducedMotion();
   // the key light is the World's; these are the city's real lights
@@ -250,8 +260,8 @@ export function CityScene({
       <GasStations player={player} />
       <Pedestrians player={player} />
       <Suspense fallback={null}>
-        <CityTrees />
-        <CityFurniture />
+        <CityTrees autumn={activeDressings.includes("autumn")} />
+        <CityFurniture summer={activeDressings.includes("summer")} />
         <CityPark />
         <BoardwalkFerris />
         <ParkWildlife player={player} />
