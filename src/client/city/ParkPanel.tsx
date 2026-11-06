@@ -11,7 +11,11 @@ import {
   buyProduce,
   marketPrice,
 } from "../../game/city/farmersMarket.ts";
-import { pickLine, type RecentLines } from "../../game/dialogue/pick.ts";
+import {
+  loadDialogue,
+  pickLine,
+  type RecentLines,
+} from "../../game/dialogue/pick.ts";
 import type { DialogueSituation } from "../../game/dialogue/types.ts";
 import { farmDesk } from "../rooms/farm/farmSession.ts";
 import { cityHour } from "./daylight.ts";
@@ -35,15 +39,21 @@ export function ParkPanel(): JSX.Element | null {
   const [line, setLine] = useState("");
   const recent = useRef<RecentLines>([]);
   const say = (situation: DialogueSituation) => {
-    const picked = pickLine({
-      role: "produce-vendor",
-      situation,
-      context: { neighborhood: "uptown", venue: "farmers-market" },
-      rng: Math.random,
-      recent: recent.current,
-    });
-    recent.current = picked.recent;
-    setLine(picked.text);
+    // the line banks load lazily; a failed load shows nothing and retries on the next line
+    loadDialogue().then(
+      () => {
+        const picked = pickLine({
+          role: "produce-vendor",
+          situation,
+          context: { neighborhood: "uptown", venue: "farmers-market" },
+          rng: Math.random,
+          recent: recent.current,
+        });
+        recent.current = picked.recent;
+        setLine(picked.text);
+      },
+      () => undefined,
+    );
   };
   const stallId = stall?.id ?? null;
   useEffect(() => {
