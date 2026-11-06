@@ -34,6 +34,8 @@ export type Pedestrian = {
   dog?: LandKind;
   /** 0..1: she stays out later than those with lower numbers (see pedestrianOut). */
   night: number;
+  /** A cyclist on the boardwalk's deck: drawn as a rider on a bicycle, not a doll. */
+  bike?: true;
 };
 
 export type PedestrianPose = { x: number; z: number; yaw: number };
@@ -104,6 +106,8 @@ export const PEDESTRIANS: readonly Pedestrian[] = CITY_SURFACES.filter(
       (inPark || s.kind === "boardwalk") &&
       !(inPark && k === 0) &&
       rand(i, 12) < 0.3;
+    // and now and then a cyclist rolling along the deck
+    const bikes = s.kind === "boardwalk" && !jogs && rand(i, 14) < 0.08;
     const gait = jogs ? "jog" : man ? "stride" : pick(NPC_GAITS, rand(i, 11));
     return {
       a,
@@ -111,9 +115,11 @@ export const PEDESTRIANS: readonly Pedestrian[] = CITY_SURFACES.filter(
       dog: inPark && k === 0 ? (si % 2 ? "husky" : "shibainu") : undefined,
       // her gait clip's own pace, give or take a little, so her legs keep
       // up with the ground at 1x (src/game/dance/stride.ts)
-      speed:
-        (naturalPace(gaitOf(gait).clip, man) ?? 1.3) *
-        (0.95 + rand(i, 2) * 0.1),
+      speed: bikes
+        ? 3.6 + rand(i, 2) * 1.2
+        : (naturalPace(gaitOf(gait).clip, man) ?? 1.3) *
+          (0.95 + rand(i, 2) * 0.1),
+      bike: bikes ? true : undefined,
       // on the deck the crowd is spread evenly along the whole strip
       start:
         s.kind === "boardwalk"
@@ -188,10 +194,13 @@ export function nearestPedestrians(
   count: number,
   radius: number,
   hour?: number,
+  /** Whether cyclists count: the dolls skip them, the far crowd draws them. */
+  bikes = false,
 ): number[] {
   const near: { i: number; d: number }[] = [];
   PEDESTRIANS.forEach((p, i) => {
     if (hour !== undefined && !pedestrianOut(p, hour)) return;
+    if (p.bike && !bikes) return;
     // cheap reject: her whole strip is out of range
     const cx = (p.a[0] + p.b[0]) / 2;
     const cz = (p.a[1] + p.b[1]) / 2;

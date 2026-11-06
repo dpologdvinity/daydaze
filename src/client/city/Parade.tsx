@@ -4,7 +4,8 @@
 // reduced motion freezes them.
 
 import { useFrame, useThree } from "@react-three/fiber";
-import { useRef } from "react";
+import { useGLTF } from "@react-three/drei";
+import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { floatX, FLOATS, PARADE_Z } from "../../game/city/parade.ts";
 import type { Look } from "../../game/look.ts";
@@ -48,31 +49,21 @@ const DANCERS: readonly Look[] = (
   shadow: "#ffd1f0",
 }));
 
-/** One float: a white deck with a rainbow skirt, a rainbow arch over it,
- * a neon sign and two dancers on top. */
+const TRUCK_URL = "/models/beach/parade-truck.glb";
+useGLTF.preload(TRUCK_URL);
+
+/** One float: a pickup truck (Quaternius, CC0) turned to roll east, a
+ * rainbow arch over its bed, a neon sign and two dancers on the bed. */
 function Float({ k }: { k: number }) {
+  const truck = useGLTF(TRUCK_URL).scene;
+  const mine = useMemo(() => truck.clone(true), [truck]);
   return (
     <>
-      <mesh position-y={0.55}>
-        <boxGeometry args={[6, 0.9, 3.2]} />
-        <meshStandardMaterial
-          color="#f4f4f8"
-          emissive="#ffd1f0"
-          emissiveIntensity={0.35}
-          roughness={0.5}
-        />
-      </mesh>
-      {[-1, 1].flatMap((side) =>
-        RAINBOW.map((c, i) => (
-          <mesh key={`${side}${c}`} position={[-2.5 + i, 0.3, side * 1.62]}>
-            <boxGeometry args={[1, 0.5, 0.04]} />
-            <meshBasicMaterial color={hdr(c, 1.3)} toneMapped={false} />
-          </mesh>
-        )),
-      )}
+      {/* the model's nose points +z; the parade rolls toward +x */}
+      <primitive object={mine} rotation-y={Math.PI / 2} />
       {RAINBOW.map((c, i) => (
-        <mesh key={c} position={[0, 1, 0]}>
-          <torusGeometry args={[2.6 - i * 0.18, 0.09, 6, 24, Math.PI]} />
+        <mesh key={c} position={[-1.5, 1.05, 0]} rotation-y={Math.PI / 2}>
+          <torusGeometry args={[1.35 - i * 0.12, 0.07, 6, 24, Math.PI]} />
           <meshBasicMaterial color={hdr(c, 1.5)} toneMapped={false} />
         </mesh>
       ))}
@@ -80,10 +71,10 @@ function Float({ k }: { k: number }) {
         text={SIGNS[k % SIGNS.length]}
         color={RAINBOW[(k * 2) % RAINBOW.length]}
         font={MARQUEE}
-        width={4}
+        width={2.6}
         k={3}
-        position={[0, 1.6, -1.65]}
-        rotation-y={Math.PI}
+        position={[-3.05, 1.9, 0]}
+        rotation-y={-Math.PI / 2}
       />
     </>
   );
@@ -137,10 +128,10 @@ export function Parade() {
               crews.current[k] = g;
             }}
           >
-            {[-1.4, 1.4].map((dx, i) => (
+            {[-2.3, -0.8].map((dx, i) => (
               <group
                 key={dx}
-                position={[dx, 1, 0.3]}
+                position={[dx, 1.05, i ? 0.35 : -0.35]}
                 rotation-y={i ? -0.3 : 0.3}
               >
                 <CrowdFigure

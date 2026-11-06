@@ -27,11 +27,16 @@ const url = (name: string) => `/models/speedway/people-${name}.glb`;
 for (const m of [...FAN_MODELS, CREW_MODEL]) useGLTF.preload(url(m));
 
 /** The mesh and material of one baked person. */
-export function usePerson(name: string): {
+export function usePerson(name: string) {
+  return usePersonAt(url(name));
+}
+
+/** The mesh and material of the baked person in the glTF at `path`. */
+export function usePersonAt(path: string): {
   geometry: THREE.BufferGeometry;
   material: THREE.Material;
 } | null {
-  const { scene } = useGLTF(url(name));
+  const { scene } = useGLTF(path);
   return useMemo(() => {
     let found: {
       geometry: THREE.BufferGeometry;

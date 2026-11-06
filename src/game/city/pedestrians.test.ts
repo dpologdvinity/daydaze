@@ -70,7 +70,7 @@ test("men walk the city too, in menswear with short cuts", () => {
 });
 
 test("every pedestrian walks at her gait clip's own pace, so it plays near 1x", () => {
-  for (const p of PEDESTRIANS) {
+  for (const p of PEDESTRIANS.filter((p) => !p.bike)) {
     const man = modelSuffix(p.look) === "-m";
     const pace = naturalPace(gaitOf(p.look.gait).clip, man);
     assert.ok(pace, `${p.look.gait} has a measured pace`);
@@ -125,4 +125,14 @@ test("the deck is a crowd by day, spread along it, and thins out at night", asyn
   assert.ok(deck.every((p) => pedestrianOut(p, 14)));
   const late = deck.filter((p) => pedestrianOut(p, 2)).length;
   assert.ok(late > 0 && late < deck.length / 2, `${late} out at 2 am`);
+});
+
+test("a few cyclists ride the deck, faster than walkers, and are left to the far crowd", () => {
+  const bikes = PEDESTRIANS.filter((p) => p.bike);
+  assert.ok(bikes.length >= 3 && bikes.length < 15, `${bikes.length} cyclists`);
+  assert.ok(bikes.every((p) => p.speed > 3 && p.a[1] > 276));
+  const around = nearestPedestrians([0, 283], 100, 500, 450, undefined, true);
+  assert.ok(around.some((i) => PEDESTRIANS[i].bike));
+  const dolls = nearestPedestrians([0, 283], 100, 500, 450);
+  assert.ok(dolls.every((i) => !PEDESTRIANS[i].bike));
 });

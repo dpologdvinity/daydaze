@@ -110,6 +110,15 @@ export const BOARDWALK_BLOCKERS: readonly (readonly Vec2[])[] = [
   box(FERRIS.x, FERRIS.z, 5, 1.5),
 ];
 
+/** What stands on the deck's sea side, in turn: carts, kiosks and stands. */
+const STALLS = [
+  "popcorn-cart",
+  "kiosk-market",
+  "hotdog-cart",
+  "kiosk-booth",
+  "kiosk-vendor",
+] as const;
+
 const spot = (
   kind: FurnitureSpot["kind"],
   x: number,
@@ -146,12 +155,10 @@ export function boardwalkFurniture(
     out.push(spot("trashcan", x + 24, SHOP_Z1 + 0.8, 0));
   }
   // food carts on the deck
-  for (let i = 0, x = -SHOP_EDGE + 40; x <= SHOP_EDGE - 40; x += 70, i++)
+  for (let i = 0, x = -SHOP_EDGE + 40; x <= SHOP_EDGE - 40; x += 56, i++)
     // on the sea side of the deck, clear of the lane down its middle
     if (!skip(x, DECK.z1 - 4))
-      out.push(
-        spot(i % 2 ? "hotdog-cart" : "popcorn-cart", x, DECK.z1 - 4, Math.PI),
-      );
+      out.push(spot(STALLS[i % STALLS.length], x, DECK.z1 - 4, Math.PI));
   // an ice cream cone on the roof of the ice cream shop
   for (const s of shops)
     if (s.sign.text.includes("ICE CREAM"))
