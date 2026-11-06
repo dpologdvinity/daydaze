@@ -18,6 +18,7 @@ import {
   RAINBOW_LIGHTS,
   WARM_LIGHTS,
   bats,
+  facadeCord,
   facadeLights,
   lanternStrings,
   pumpkins,
@@ -44,20 +45,31 @@ const s = new THREE.Vector3();
 const up = new THREE.Vector3(0, 1, 0);
 const tint = new THREE.Color();
 
-/** Every bulb as one unlit instanced mesh. */
-function Bulbs({ bulbs }: { bulbs: readonly Bulb[] }): JSX.Element {
+/** Bulb colors are pushed past 1 so they glow (the material skips tone mapping). */
+const GLOW = 1.6;
+
+/** Every bulb as one unlit instanced mesh: round bulbs, or (`dot`) a cord's cheap specks. */
+function Bulbs({
+  bulbs,
+  dot = false,
+}: {
+  bulbs: readonly Bulb[];
+  dot?: boolean;
+}): JSX.Element {
   const mesh = useMemo(() => {
-    const geometry = new THREE.OctahedronGeometry(0.5, 0);
+    const geometry = dot
+      ? new THREE.TetrahedronGeometry(0.5, 0)
+      : new THREE.IcosahedronGeometry(0.5, 0);
     const material = new THREE.MeshBasicMaterial({ toneMapped: false });
     const out = new THREE.InstancedMesh(geometry, material, bulbs.length);
     bulbs.forEach((b, i) => {
       m.compose(p.set(...b.at), q.identity(), s.setScalar(b.size));
       out.setMatrixAt(i, m);
-      out.setColorAt(i, tint.set(b.color));
+      out.setColorAt(i, tint.set(b.color).multiplyScalar(dot ? 1 : GLOW));
     });
     out.frustumCulled = false;
     return out;
-  }, [bulbs]);
+  }, [bulbs, dot]);
   useEffect(() => () => disposeInstanced([mesh], true), [mesh]);
   return <primitive object={mesh} />;
 }
@@ -140,6 +152,10 @@ export function SeasonalDressing({
     return out;
     // eslint-disable-next-line react-hooks/exhaustive-deps -- key stands for the flags
   }, [key]);
+  const cord = useMemo(
+    () => (winter || halloween || pride ? facadeCord() : []),
+    [winter, halloween, pride],
+  );
   const lanterns = useMemo(() => (lunar ? lanternStrings() : null), [lunar]);
   const pumpkinSpots = useMemo(
     () => (halloween ? pumpkins() : []),
@@ -149,12 +165,15 @@ export function SeasonalDressing({
   return (
     <>
       {bulbs.length > 0 && <Bulbs bulbs={bulbs} />}
+      {cord.length > 0 && <Bulbs bulbs={cord} dot />}
       {winter && <PlazaTree />}
-      {halloween && <Pieces model="pumpkin" pieces={pumpkinSpots} />}
+      {halloween && (
+        <Pieces model="pumpkin" pieces={pumpkinSpots} glow="#ff6a00" />
+      )}
       {halloween && <Pieces model="bat" pieces={batSpots} />}
       {lanterns && (
         <>
-          <Bulbs bulbs={lanterns.cord} />
+          <Bulbs bulbs={lanterns.cord} dot />
           <Pieces model="lantern" pieces={lanterns.lanterns} glow="#ff2a1a" />
         </>
       )}

@@ -5,6 +5,7 @@ import {
   RAINBOW_LIGHTS,
   WARM_LIGHTS,
   bats,
+  facadeCord,
   facadeLights,
   lanternStrings,
   pumpkins,
@@ -16,7 +17,7 @@ test("fairy lights hang just off the avenue facades, in the palette", () => {
   assert.ok(bulbs.length > 100);
   for (const b of bulbs) {
     assert.ok(Math.abs(Math.abs(b.at[2]) - 13.6) < 1e-9);
-    assert.ok(b.at[1] > 3 && b.at[1] <= 3.9);
+    assert.ok(b.at[1] > 3 && b.at[1] <= 3.8);
     assert.ok(WARM_LIGHTS.some((c) => c === b.color));
   }
   const rainbow = new Set(facadeLights(RAINBOW_LIGHTS).map((b) => b.color));
@@ -42,4 +43,11 @@ test("pumpkins sit in pairs on the stoops and bats hang over them", () => {
   assert.equal(bats().length, (pumpkins().length / 2) * 3);
   for (const p of pumpkins())
     assert.ok(Math.abs(Math.abs(p.at[2]) - 13.2) < 1e-9);
+});
+
+test("the cord is denser than the bulbs and never lower than the swag's sag", () => {
+  const cord = facadeCord();
+  assert.ok(cord.length > facadeLights(WARM_LIGHTS).length * 2);
+  for (const c of cord)
+    assert.ok(c.at[1] >= 3.9 - 0.7 - 1e-9 && c.at[1] <= 3.9);
 });

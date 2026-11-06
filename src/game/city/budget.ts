@@ -19,6 +19,15 @@ import {
   type GrowthKind,
 } from "./park.ts";
 import { elBoxes } from "./el.ts";
+import {
+  bats,
+  facadeCord,
+  facadeLights,
+  lanternStrings,
+  pumpkins,
+  treeLights,
+  WARM_LIGHTS,
+} from "./seasonSpots.ts";
 import { BAY_TRIANGLES, HOUSE_MODELS, type BayInstance } from "./nyc.ts";
 import { ALL_GROWTH } from "./growth.ts";
 import {
@@ -111,6 +120,75 @@ const GROWTH = ALL_GROWTH;
  * roofs) and three train cars of about 1,600 triangles each. */
 const EL_TRIANGLES = elBoxes([]).length * 12 + 3 * 1600;
 const EL_DRAW_CALLS = 4 + 3;
+
+/** The seasonal dressings' models (public/models/seasons/): shown only near
+ * the player (NEAR_LOW in SeasonalDressing.tsx), at most 160 of each. */
+export const SEASON_MODEL: Readonly<
+  Record<string, { tris: number; parts: number }>
+> = {
+  "seasons/tree": { tris: 3504, parts: 6 },
+  "seasons/pumpkin": { tris: 644, parts: 2 },
+  "seasons/bat": { tris: 1046, parts: 5 },
+  "seasons/lantern": { tris: 354, parts: 2 },
+};
+const SEASON_NEAR_LOW = 60;
+const SEASON_CAP = 160;
+/** An icosahedron bulb and a tetrahedron cord speck. */
+const BULB_TRIS = 20;
+const SPECK_TRIS = 4;
+
+/** The dearest season at `at` on the low tier: the avenue's light swags (bulbs
+ * and cord, always drawn) plus the Plaza tree, or the pumpkins and bats near
+ * her, or the lanterns near her. June's rainbow swags equal the winter ones
+ * minus the tree. Overlapping seasons never stack models of the same kind. */
+export function seasonalCost(at: Vec2): {
+  drawCalls: number;
+  triangles: number;
+} {
+  const near = (p: { at: readonly [number, number, number] }) =>
+    Math.hypot(p.at[0] - at[0], p.at[2] - at[1]) <= SEASON_NEAR_LOW;
+  const model = (name: string, count: number) => {
+    const m = SEASON_MODEL[name];
+    if (!m) throw new Error(`no cost for ${name}`);
+    return count === 0
+      ? { drawCalls: 0, triangles: 0 }
+      : { drawCalls: m.parts, triangles: m.tris * Math.min(count, SEASON_CAP) };
+  };
+  const swags = {
+    drawCalls: 2,
+    triangles:
+      facadeLights(WARM_LIGHTS).length * BULB_TRIS +
+      facadeCord().length * SPECK_TRIS,
+  };
+  const sum = (...parts: { drawCalls: number; triangles: number }[]) =>
+    parts.reduce(
+      (a, p) => ({
+        drawCalls: a.drawCalls + p.drawCalls,
+        triangles: a.triangles + p.triangles,
+      }),
+      { drawCalls: 0, triangles: 0 },
+    );
+  const winter = sum(swags, model("seasons/tree", 1), {
+    drawCalls: 0,
+    triangles: treeLights().length * BULB_TRIS,
+  });
+  const halloween = sum(
+    swags,
+    model("seasons/pumpkin", pumpkins().filter(near).length),
+    model("seasons/bat", bats().filter(near).length),
+  );
+  const lanterns = lanternStrings();
+  const lunar = sum(
+    {
+      drawCalls: 1,
+      triangles: lanterns.cord.length * SPECK_TRIS,
+    },
+    model("seasons/lantern", lanterns.lanterns.filter(near).length),
+  );
+  return [winter, halloween, lunar].reduce((a, b) =>
+    b.triangles > a.triangles ? b : a,
+  );
+}
 
 /** The widest view she can have of the ground, in radians: the camera sits
  * behind her and looks ahead, so about a third of the circle is on screen. */
@@ -210,6 +288,9 @@ export function lowTierCost(at: Vec2): {
     drawCalls += cost.parts;
     triangles += cost.tris * n;
   }
+  const season = seasonalCost(at);
+  drawCalls += season.drawCalls;
+  triangles += season.triangles;
   return { drawCalls, triangles, planTriangles, bays: plan.bays.length };
 }
 

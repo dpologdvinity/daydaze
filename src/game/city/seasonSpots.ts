@@ -28,13 +28,13 @@ const SWAG_OFF = 0.4;
 const SWAG_HEIGHT = 3.9;
 const SWAG_SAG = 0.7;
 const SWAG_SPAN = 6;
-const BULB_GAP = 1.5;
+const BULB_GAP = 1.2;
 
 export const WARM_LIGHTS = [
   "#ffd9a0",
   "#ffb347",
-  "#ff6b6b",
-  "#7bd88f",
+  "#ffe9c4",
+  "#ffc971",
 ] as const;
 export const RAINBOW_LIGHTS = [
   "#ff4d4d",
@@ -71,31 +71,58 @@ function avenueFronts(): Front[] {
   return out;
 }
 
-/** Swags of bulbs along Downtown's and Nightlife Row's facades, colors cycling through `palette`. */
-export function facadeLights(palette: readonly string[]): Bulb[] {
-  const bulbs: Bulb[] = [];
+/** A point on the facade swag between x0 and x1 (t from 0 to 1), sagging between anchors. */
+function swagAt(
+  x0: number,
+  x1: number,
+  side: number,
+  t: number,
+  spans: number,
+) {
+  const phase = (t * spans) % 1;
+  const sag = SWAG_SAG * 4 * phase * (1 - phase);
+  return [
+    x0 + t * (x1 - x0),
+    SWAG_HEIGHT - sag,
+    side * (FACADE_Z - SWAG_OFF),
+  ] as const;
+}
+
+/** Calls `emit` for every point (t in 0..1) of every facade swag, `perMeter` per meter. */
+function eachSwag(
+  perMeter: number,
+  emit: (at: readonly [number, number, number], n: number) => void,
+) {
   let n = 0;
   for (const { b, x0, x1, side } of avenueFronts()) {
     if (b.neighborhood !== "downtown" && b.neighborhood !== "nightlife-row")
       continue;
     const spans = Math.max(1, Math.round((x1 - x0) / SWAG_SPAN));
-    const steps = spans * (SWAG_SPAN / BULB_GAP);
-    for (let i = 0; i <= steps; i++) {
-      const t = i / steps;
-      const phase = (t * spans) % 1;
-      const sag = SWAG_SAG * 4 * phase * (1 - phase);
-      bulbs.push({
-        at: [
-          x0 + t * (x1 - x0),
-          SWAG_HEIGHT - sag,
-          side * (FACADE_Z - SWAG_OFF),
-        ],
-        size: 0.32,
-        color: palette[n++ % palette.length] ?? "#ffd9a0",
-      });
-    }
+    const steps = Math.round((x1 - x0) * perMeter);
+    for (let i = 0; i <= steps; i++)
+      emit(swagAt(x0, x1, side, i / steps, spans), n++);
   }
+}
+
+/** Swags of round bulbs along Downtown's and Nightlife Row's facades, colors cycling through `palette`. */
+export function facadeLights(palette: readonly string[]): Bulb[] {
+  const bulbs: Bulb[] = [];
+  eachSwag(1 / BULB_GAP, (at, n) =>
+    bulbs.push({
+      // the bulb hangs just under its cord
+      at: [at[0], at[1] - 0.1, at[2]],
+      size: 0.16,
+      color: palette[n % palette.length] ?? "#ffd9a0",
+    }),
+  );
   return bulbs;
+}
+
+/** The thin dark cord the bulbs hang from, as a dense line of tiny dots. */
+export function facadeCord(): Bulb[] {
+  const cord: Bulb[] = [];
+  eachSwag(3, (at) => cord.push({ at, size: 0.05, color: "#2a2018" }));
+  return cord;
 }
 
 /** The Plaza tree's string of lights, spiraling up its cone. */
@@ -113,7 +140,7 @@ export function treeLights(): Bulb[] {
         0.9 + t * (PLAZA_TREE_HEIGHT - 1.6),
         PLAZA_TREE[1] + Math.sin(a) * r,
       ],
-      size: 0.3,
+      size: 0.2,
       color: colors[i % colors.length] ?? "#fff0c8",
     });
   }
@@ -135,7 +162,7 @@ export function lanternStrings(): { lanterns: Piece[]; cord: Bulb[] } {
       const t = s / 24;
       const z = (t * 2 - 1) * (FACADE_Z - 0.5);
       const y = 7.4 - 1.6 * 4 * t * (1 - t);
-      cord.push({ at: [x, y, z], size: 0.1, color: "#5a1010" });
+      cord.push({ at: [x, y, z], size: 0.06, color: "#5a1010" });
       if (s % 5 === 2)
         lanterns.push({ at: [x, y - 0.8, z], yaw: (k + s) * 0.7, scale: 1 });
     }
