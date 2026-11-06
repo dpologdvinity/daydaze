@@ -5,6 +5,7 @@
 
 import { cleanSets, cleanVisited } from "./collections.ts";
 import { cleanFarm, createDefaultFarm, type FarmSave } from "./farm.ts";
+import { validateBouquet, type Bouquet } from "./florist.ts";
 import type { RoomId } from "./rooms.ts";
 import { isIntensity, type Intensity } from "./effects/buzz.ts";
 import {
@@ -82,6 +83,7 @@ export type SaveV1 = {
   pet: PetSave | null;
   /** Sunny Acres Farm plot state, harvested produce and animal interactions. */
   farm: FarmSave;
+  bouquet: Bouquet | null;
 };
 
 /** The localStorage key the save lives under. */
@@ -130,6 +132,7 @@ export function createDefaultSave(name: string): SaveV1 {
     sets: [],
     pet: null,
     farm: createDefaultFarm(),
+    bouquet: null,
   };
 }
 
@@ -158,6 +161,7 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
   const look = save.get("look");
   const swim = save.get("swim");
   const coins = save.get("coins");
+  const bouquet = save.get("bouquet");
   const wardrobe = cleanWardrobe(save.get("wardrobe"));
   const garage = cleanGarage(save.get("garage"));
   const quality = settings.get("quality");
@@ -210,6 +214,7 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
     sets: cleanSets(save.get("sets")),
     pet: validatePet(save.get("pet")),
     farm: cleanFarm(save.get("farm")),
+    bouquet: validateBouquet(bouquet) ? bouquet : null,
   };
 }
 

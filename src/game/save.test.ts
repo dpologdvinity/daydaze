@@ -54,6 +54,7 @@ test("createDefaultSave uses the default look and auto quality", () => {
     sets: [],
     pet: null,
     farm: createDefaultFarm(),
+    bouquet: null,
   });
 });
 
@@ -100,6 +101,7 @@ test("a save round-trips through serializeSave and loadSave", () => {
     sets: [],
     pet: { kind: "cat", name: "Mochi", adoptedAt: 5, fedAt: 9 },
     farm: createDefaultFarm(),
+    bouquet: null,
   };
   assert.deepEqual(loadSave(serializeSave(save), "Fallback"), save);
 });
@@ -169,6 +171,7 @@ test("a save from before the swimsuit slot still loads", () => {
     sets: [],
     pet: null,
     farm: createDefaultFarm(),
+    bouquet: null,
   });
 });
 
@@ -232,6 +235,7 @@ test("loadSave keeps a valid name when the look is bad", () => {
     sets: [],
     pet: null,
     farm: createDefaultFarm(),
+    bouquet: null,
   });
 });
 
@@ -269,6 +273,7 @@ test("loadSave keeps a valid look when the name is bad", () => {
     sets: [],
     pet: null,
     farm: createDefaultFarm(),
+    bouquet: null,
   });
 });
 
@@ -439,6 +444,7 @@ test("loadSave salvages valid fields from a wrong version", () => {
     sets: [],
     pet: null,
     farm: createDefaultFarm(),
+    bouquet: null,
   });
 });
 
