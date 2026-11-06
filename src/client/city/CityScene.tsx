@@ -43,6 +43,8 @@ import { CityFurniture, cityFurniture } from "./CityFurniture.tsx";
 import { BoardwalkFerris } from "./BoardwalkFerris.tsx";
 import { CityPark } from "./CityPark.tsx";
 import { ParkWildlife } from "./ParkWildlife.tsx";
+import { DogPark } from "./DogPark.tsx";
+import { FarmersMarket } from "./FarmersMarket.tsx";
 import { CityTrees, cityTrees } from "./CityTrees.tsx";
 import { NycFacades, cityBays } from "./NycFacades.tsx";
 import { CityHouses, cityHouses } from "./CityHouses.tsx";
@@ -267,6 +269,8 @@ export function CityScene({
         <SeasonalDressing active={activeDressings} />
         <BoardwalkFerris />
         <ParkWildlife player={player} />
+        <DogPark player={player} />
+        <FarmersMarket player={player} />
         <NycFacades />
         <CityHouses />
         <ElLineBoundary>

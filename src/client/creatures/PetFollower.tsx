@@ -5,8 +5,15 @@
 // The canvas carries `data-pet-dist` and `data-pet-clip` for the browser tests.
 
 import { useFrame, useThree } from "@react-three/fiber";
-import { useMemo, useRef, type JSX } from "react";
+import { useEffect, useMemo, useRef, type JSX } from "react";
 import { isBlocked, type WalkArea } from "../../game/area.ts";
+import {
+  DOG_Y,
+  inDogPark,
+  newDog,
+  stepDog,
+  type Dog,
+} from "../../game/city/dogPark.ts";
 import {
   followStep,
   placeBeside,
@@ -17,6 +24,7 @@ import {
 import type { RoomId } from "../../game/rooms.ts";
 import type { Vec2 } from "../../game/walk.ts";
 import type { Player } from "../world/PlayerController.tsx";
+import { parkDesk, parkWorld } from "../city/parkDesk.ts";
 import { Creature, type CreaturePose } from "./Creature.tsx";
 
 /** Where the pet's bed is in the apartment. */
@@ -56,11 +64,41 @@ export function PetFollower({
   // reused every frame: where you are, and the wall test
   const you = useRef({ x: 0, z: 0, yaw: 0 }).current;
   const blocked = useMemo(() => (at: Vec2) => isBlocked(area, at), [area]);
+  // the dog yard: off the leash the pet romps on the yard's own rules
+  const free = useRef<Dog | null>(null);
+  useEffect(() => {
+    parkDesk.set({ petName: pet.name });
+    return () =>
+      parkDesk.set({ petName: null, offLeash: false, inYard: false });
+  }, [pet.name]);
   const drive = (dt: number, pose: CreaturePose) => {
     you.x = player.pos.x;
     you.z = player.pos.z;
     you.yaw = player.yaw;
     const f = state.current;
+    const inYard = room === "city" && inDogPark(you.x, you.z, 0.3);
+    const desk = parkDesk.get();
+    if (inYard !== desk.inYard) parkDesk.set({ inYard });
+    if (desk.offLeash && !inYard) parkDesk.set({ offLeash: false });
+    if (inYard && desk.offLeash) {
+      const d = (free.current ??= newDog(pet.kind, f.x, f.z));
+      stepDog(d, Math.min(dt, 0.1), parkWorld, Math.random);
+      f.x = d.x;
+      f.z = d.z;
+      f.yaw = d.yaw;
+      pose.x = d.x;
+      pose.y = DOG_Y;
+      pose.z = d.z;
+      pose.yaw = d.yaw;
+      pose.clip = d.clip;
+      return;
+    }
+    if (free.current) {
+      // leashed up again: beside you if you have left the yard, else where it stands
+      free.current = null;
+      pose.y = 0;
+      if (!inYard) state.current = placeBeside(you);
+    }
     // the next state is written over the last one, in place
     if (room === "apartment") sleeping(f, you, PET_BED, f);
     else
