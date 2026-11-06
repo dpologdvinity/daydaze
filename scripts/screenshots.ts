@@ -630,6 +630,7 @@ const SHOTS: {
     ["beachside-motels", "-212,10,214,-130,6,194"],
     ["beachside-motels-east", "-60,9,214,40,6,194"],
     ["beachside-motels-far", "-60,30,260,-60,4,190"],
+    ["beachside-motel-sign", "-176,6,214,-186,5,200"],
   ].map(([name, cam]) => ({
     name: String(name),
     query: `room=city&view=room&time=15:00&at=-110,213&cam=${cam}`,

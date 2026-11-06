@@ -24,6 +24,7 @@ import {
   type BayInstance,
 } from "./nyc.ts";
 import {
+  dressBlade,
   dressBuilding,
   facingOf,
   frontOf,
@@ -794,6 +795,7 @@ export function planCity(
     // a near Suburbia lot is a real house; far ones stay boxes
     if (isHouse(b) && distanceToBox(from, box) < bayRange * 2) {
       houses.push(houseAt(b));
+      dressBlade(b, instances);
       continue;
     }
     // near New York blocks wear the kit's bays instead of box walls and
