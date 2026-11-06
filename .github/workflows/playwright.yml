@@ -1,8 +1,15 @@
 name: Tests
-# Runs only when started by hand (Actions tab, "Run workflow"), to save the
-# private repo's Actions minutes; checks run locally before every push.
+# The repo is public, so Actions minutes are free: run on pushes and pull
+# requests to main, and by hand. A newer run on the same ref cancels the old one.
 on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   verify:
     timeout-minutes: 20

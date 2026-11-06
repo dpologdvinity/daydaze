@@ -550,7 +550,7 @@ Unit-test any new `Look` field in `look.test.ts` (and `validateLook`'s
 
 ## Phase 7. Tests
 
-### Task 42: Browser suite in CI [OWNER-GATED: billing]
+### Task 42: Browser suite in CI [DONE: public repo, runs on push/PR to main]
 
 **Goal.** Run the sharded browser suite on every PR (extend `ci.yml` or make
 `playwright.yml` run on PRs).
