@@ -345,6 +345,7 @@ export function stepTraffic(
   dt: number,
   player: Vec2 | null,
   bus: Vec2 | null = null,
+  truck: Vec2 | null = null,
 ): void {
   t.time += dt;
   for (const car of t.cars) {
@@ -356,6 +357,7 @@ export function stepTraffic(
       lightRoom(t, car),
       playerRoom(car, player),
       playerRoom(car, bus) - 3,
+      playerRoom(car, truck) - 2,
     );
     // the speed from which the car can still stop within `room`
     const safe = room <= 0 ? 0 : Math.sqrt(2 * BRAKE * room * 0.8);

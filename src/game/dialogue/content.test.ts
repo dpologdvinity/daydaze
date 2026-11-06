@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { pickLine } from "./pick.ts";
 import { LINE_BANKS } from "./index.ts";
 import { pitCrewBank } from "./pit-crew.ts";
 import {
@@ -223,4 +224,22 @@ test("the bank meets the target size", () => {
 
 test("the pit crew has at least 10 lines for a finished race", () => {
   assert.ok((pitCrewBank["event-ride-ended"] ?? []).length >= 10);
+});
+
+test("street vendors have ten usable lines per situation without venue context", () => {
+  for (const situation of REQUIRED_SITUATIONS) {
+    const seen = new Set<string>();
+    for (let i = 0; i < 10; i++) {
+      seen.add(
+        pickLine({
+          role: "street-food-vendor",
+          situation,
+          bank: LINE_BANKS["street-food-vendor"],
+          rng: () => i / 10,
+          tier: "teen",
+        }).text,
+      );
+    }
+    assert.equal(seen.size, 10, situation);
+  }
 });

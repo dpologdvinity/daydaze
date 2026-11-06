@@ -14,6 +14,7 @@ import {
   type VehicleKind,
 } from "../../game/city/traffic.ts";
 import type { Player } from "../world/PlayerController.tsx";
+import { foodMotion } from "./foodVendors.ts";
 import { busMotion } from "./busRide.ts";
 import { driving } from "../world/driving.ts";
 import {
@@ -168,6 +169,23 @@ export function Traffic({ player }: { player: Player }) {
   const clock = useRef({ accumulator: 0 });
   const here = useRef<[number, number]>([0, 0]);
   const busPosition = useRef<[number, number]>([0, 0]);
+  const truckPosition = useRef<[number, number]>([0, 0]);
+  const busCollision = useMemo<[number, number][]>(
+    () => [
+      [0, 0],
+      [0, 0],
+      [0, 0],
+    ],
+    [],
+  );
+  const truckCollision = useMemo<[number, number][]>(
+    () => [
+      [0, 0],
+      [0, 0],
+      [0, 0],
+    ],
+    [],
+  );
   const phase = useRef("");
   const bulbs = useMemo(signalBulbs, []);
 
@@ -289,12 +307,15 @@ export function Traffic({ player }: { player: Player }) {
     const onFoot = player.seat === null;
     busPosition.current[0] = busMotion.pose.x;
     busPosition.current[1] = busMotion.pose.z;
+    truckPosition.current[0] = foodMotion.pose.x;
+    truckPosition.current[1] = foodMotion.pose.z;
     advance(clock.current, dt, () =>
       stepTraffic(
         traffic,
         1 / 50,
         onFoot ? here.current : null,
         busMotion.active ? busPosition.current : null,
+        foodMotion.origin !== null ? truckPosition.current : null,
       ),
     );
     const { body, cabin, shell, trim, chrome, dark, wheels, lamps, signals } =
@@ -367,17 +388,28 @@ export function Traffic({ player }: { player: Player }) {
       // Three collision points cover the bus's full length for your own car.
       const bus = busMotion.pose;
       const n = traffic.cars.length;
-      city.traffic.length = n + (busMotion.active ? 3 : 0);
+      const truckStart = n + (busMotion.active ? 3 : 0);
+      const truckActive = foodMotion.origin !== null;
+      city.traffic.length = truckStart + (truckActive ? 3 : 0);
+      if (truckActive) {
+        const truck = foodMotion.pose;
+        for (let k = 0; k < 3; k++) {
+          const offset = (k - 1) * 1.5;
+          const point = truckCollision[k];
+          point[0] = truck.x + Math.cos(truck.yaw) * offset;
+          point[1] = truck.z - Math.sin(truck.yaw) * offset;
+          city.traffic[truckStart + k] = point;
+        }
+      }
       if (busMotion.active)
         for (let k = 0; k < 3; k++) {
           const offset = (k - 1) * 3;
           const x = bus.x + Math.cos(bus.yaw) * offset;
           const z = bus.z - Math.sin(bus.yaw) * offset;
-          const point = city.traffic[n + k];
-          if (point) {
-            point[0] = x;
-            point[1] = z;
-          } else city.traffic[n + k] = [x, z];
+          const point = busCollision[k];
+          point[0] = x;
+          point[1] = z;
+          city.traffic[n + k] = point;
         }
     }
     body.count = cabin.count = carCount;
