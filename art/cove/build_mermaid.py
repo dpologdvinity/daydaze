@@ -50,7 +50,19 @@ for source, name in [('rig|idol', 'idle'), ('rig|sitting idol', 'sit'), ('rig|sw
 for action in list(bpy.data.actions):
     if action.name not in {'rig|idol', 'rig|sitting idol', 'rig|swim'}:
         bpy.data.actions.remove(action)
+# The Rigify rig has 956 bones, but the skin uses about 170. Only those stay deform
+# bones; the exporter drops the rest and bakes the clips onto the kept ones.
+weighted = set()
+groups = {g.index: g.name for g in mesh.vertex_groups}
+for vertex in mesh.data.vertices:
+    for g in vertex.groups:
+        if g.weight > 0 and g.group in groups:
+            weighted.add(groups[g.group])
+for bone in rig.data.bones:
+    bone.use_deform = bone.name in weighted
+print('DEFORM BONES', len(weighted))
 mesh.data.calc_loop_triangles()
 print('TRIANGLES', len(mesh.data.loop_triangles))
 assert 10000 <= len(mesh.data.loop_triangles) <= 15000
-bpy.ops.export_scene.gltf(filepath='/tmp/mermaid.glb', export_format='GLB', export_animation_mode='NLA_TRACKS')
+bpy.ops.export_scene.gltf(filepath='/tmp/mermaid.glb', export_format='GLB', export_animation_mode='NLA_TRACKS',
+                          export_def_bones=True, export_optimize_animation_size=True)
