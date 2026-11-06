@@ -9,6 +9,7 @@ import {
   type Cell,
 } from "./cells.ts";
 import { BUILDINGS, CITY_SPAWN } from "./layout.ts";
+import { isMotel } from "./nyc.ts";
 import {
   drawCallsOf,
   CORNICE_COLOR,
@@ -60,7 +61,9 @@ test("each building's walls take its style's material", () => {
   for (const kind of FACADE_KINDS)
     assert.equal(
       plan.instances[kind].length,
-      BUILDINGS.filter((b) => facadeOf(b.style) === kind).length,
+      BUILDINGS.filter(
+        (b) => (isMotel(b) ? "stucco" : facadeOf(b.style)) === kind,
+      ).length,
       kind,
     );
 });

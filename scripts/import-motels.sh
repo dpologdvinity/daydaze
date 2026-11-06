@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Builds Beachside's motels and cottages (public/models/beachside/) and
+# Builds Beachside's cottages (public/models/beachside/) and
 # Suburbia's extra homes (public/models/suburbia/house-q-*.glb) from
 # Quaternius's building packs (CC0, unpacked under $MOTELS_SRC, default
 # /tmp/daydaze-city/q): Blender joins and normalizes each building
-# (art/motels/build_motels.py) and thins it to 3000 triangles; gltf-transform compresses it.
+# (art/motels/build_motels.py) and keeps it under 5300 triangles; gltf-transform compresses it.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 blender --background --factory-startup --python art/motels/build_motels.py > /dev/null

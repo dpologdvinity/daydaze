@@ -1032,7 +1032,13 @@ const BEACH_FRONT: readonly {
 // cross streets (x = -64 and 64), the Splash Zone gate and the food stalls' strips (x -81 to
 // -74 and 74 to 81).
 const MOTEL_Z0 = SHORE_Z - 72;
-const MOTEL_Z1 = SHORE_Z - 52;
+/** The lots' front edge, on the lane's sidewalk. */
+export const MOTEL_Z1 = SHORE_Z - 52;
+/** A motel block's depth, its height (two floors and a parapet) and the room
+ * kept at one end for its stair, meters. */
+export const MOTEL_DEPTH = 7;
+export const MOTEL_HEIGHT = 7.2;
+export const MOTEL_STAIR = 4.2;
 const MOTEL_PASTELS = [
   "#ffd6e0",
   "#c1fba4",
@@ -1042,19 +1048,38 @@ const MOTEL_PASTELS = [
   "#bde0fe",
   "#ffdac1",
 ];
-const BEACH_BACK: readonly { x: number; w: number; h: number }[] = [
-  { x: -184, w: 18, h: 9 },
-  { x: -162, w: 20, h: 12 },
-  { x: -139, w: 18, h: 9 },
-  { x: -114, w: 22, h: 8 },
-  { x: -44, w: 20, h: 9 },
-  { x: -20, w: 18, h: 12 },
-  { x: 4, w: 22, h: 8 },
-  { x: 30, w: 20, h: 10 },
-  { x: 98, w: 22, h: 9 },
-  { x: 122, w: 18, h: 12 },
-  { x: 146, w: 20, h: 8 },
-  { x: 170, w: 18, h: 10 },
+/** The neon names over the motels' lots, in BEACH_BACK order. */
+export const MOTEL_NAMES: readonly string[] = [
+  "SEA BREEZE",
+  "CORAL COVE",
+  "SANDPIPER",
+  "SURF & STAY",
+  "LAGOON INN",
+  "PALM COURT",
+  "SEAGULL",
+  "DOLPHIN INN",
+  "TIDE POOL",
+  "SUNRISE",
+  "STARFISH",
+  "SHORE LEAVE",
+];
+/** The numbers on the motel doors, for the label atlas. */
+export const MOTEL_DOOR_NUMBERS = ["1", "2", "3", "4", "5", "6", "7", "8"];
+/** The motel signs' vacancy panels, for the label atlas. */
+export const MOTEL_PANEL_TEXTS = ["VACANCY", "NO VACANCY"] as const;
+const BEACH_BACK: readonly { x: number; w: number }[] = [
+  { x: -184, w: 18 },
+  { x: -162, w: 20 },
+  { x: -139, w: 18 },
+  { x: -114, w: 22 },
+  { x: -44, w: 20 },
+  { x: -20, w: 18 },
+  { x: 4, w: 22 },
+  { x: 30, w: 20 },
+  { x: 98, w: 22 },
+  { x: 122, w: 18 },
+  { x: 146, w: 20 },
+  { x: 170, w: 18 },
 ];
 
 // Little Manila, both sides of the avenue west of Downtown: bakeries,
@@ -1965,11 +1990,18 @@ const BEACH_BUILDINGS: readonly Building[] = [
     sign: b.sign,
     ...(b.door ? { door: b.door } : {}),
   })),
+  // each motel is a two-story strip at the back of its lot (a stair on one
+  // end), the court in front left for the pool and the sign (motel.ts)
   ...BEACH_BACK.map((b, i): Building => ({
     id: `motel-${i}`,
     neighborhood: "beachside",
-    footprint: rect(b.x - b.w / 2, MOTEL_Z0, b.x + b.w / 2, MOTEL_Z1),
-    height: b.h,
+    footprint: rect(
+      b.x - b.w / 2 + (i % 2 ? MOTEL_STAIR : 0),
+      MOTEL_Z0,
+      b.x + b.w / 2 - (i % 2 ? 0 : MOTEL_STAIR),
+      MOTEL_Z0 + MOTEL_DEPTH,
+    ),
+    height: MOTEL_HEIGHT,
     style: "deck",
     color: MOTEL_PASTELS[i % MOTEL_PASTELS.length],
   })),

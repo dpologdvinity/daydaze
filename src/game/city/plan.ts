@@ -2,6 +2,7 @@
 // InstancedMesh, so a plan is a handful of draw calls however many cells
 // are loaded. Pure: the client writes these instances into its meshes.
 import type { Vec2 } from "../walk.ts";
+import { motelBuilding } from "./motel.ts";
 import { cellAt, type Cell } from "./cells.ts";
 import {
   BUILDINGS,
@@ -22,9 +23,9 @@ import {
   type HouseSpot,
   WALL_INSET,
   type BayInstance,
+  isMotel,
 } from "./nyc.ts";
 import {
-  dressBlade,
   dressBuilding,
   facingOf,
   frontOf,
@@ -257,7 +258,7 @@ function overlap(a: Box, b: Box): Box | null {
   return box.x1 - box.x0 > 1e-6 && box.z1 - box.z0 > 1e-6 ? box : null;
 }
 
-function emptyInstances(): Record<Kind, Instance[]> {
+export function emptyInstances(): Record<Kind, Instance[]> {
   return {
     road: [],
     sidewalk: [],
@@ -795,7 +796,10 @@ export function planCity(
     // a near Suburbia lot is a real house; far ones stay boxes
     if (isHouse(b) && distanceToBox(from, box) < bayRange * 2) {
       houses.push(houseAt(b));
-      dressBlade(b, instances);
+      continue;
+    }
+    if (isMotel(b)) {
+      motelBuilding(b, instances);
       continue;
     }
     // near New York blocks wear the kit's bays instead of box walls and
