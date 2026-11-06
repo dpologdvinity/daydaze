@@ -1882,9 +1882,12 @@ test("Mermaid Cove: a Siren Song ends on a wrong note with a prize", async ({
   const errors = collectErrors(page);
   await page.goto(`${LOW}&room=mermaid-cove`);
   await expect(canvasOf(page)).toHaveAttribute("data-frames", "10");
+  // the singer swims her loop, then rises in the shallows to sing
+  await expect(canvasOf(page)).toHaveAttribute("data-singer", "swim");
   const panel = page.getByRole("region", { name: "Siren Song" });
   await panel.getByRole("button", { name: "Sing with the mermaids" }).click();
   await expect(panel.getByRole("status")).toHaveText(/Listen/);
+  await expect(canvasOf(page)).toHaveAttribute("data-singer", "idle");
   // sing the pink shell every turn: sooner or later it's the wrong note
   const pink = panel.getByRole("button", { name: "Pink shell" });
   await expect(async () => {

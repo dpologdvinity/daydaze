@@ -3,11 +3,18 @@ import { useFrame } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import type { Look } from "../../game/look.ts";
-import { LOG_SEATS, SAND, SHELL_SPOTS } from "../../game/mermaidCove.ts";
+import {
+  COVE_ROCKS,
+  LOG_SEATS,
+  SAND,
+  SHELL_SPOTS,
+  WATER_Y,
+} from "../../game/mermaidCove.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import { useReducedMotion } from "../motion.ts";
 import { leave, SHELL_COLORS, siren, tick } from "./cove/session.ts";
 import { Mermaid } from "./cove/Mermaid.tsx";
+import { usePart } from "./ocean/ReefProps.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { surface } from "../city/worldTexture.ts";
 
@@ -22,7 +29,28 @@ import { Sparkles } from "./shared/Sparkles.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
 
 const PINK = "#ff4fb3";
-const WATER_Y = -0.05;
+/** The lounging mermaids' tints, by rock. */
+const LOUNGE_TINTS = ["#ffd8e8", "#c2daff"];
+/** The reef kit's flat boulder, scaled long under a lounging mermaid: its
+ * top (0.41 of the unscaled height above center) sits LOUNGE_TOP up. */
+const LOUNGE_SCALE = [2, 2.2, 3.1] as const;
+const LOUNGE_LIFT = 0.2;
+const LOUNGE_TOP = LOUNGE_LIFT + 0.41 * LOUNGE_SCALE[1] - 0.03;
+
+/** A rock from the reef kit (Quaternius, CC0) in the cove's lavender stone:
+ * the long flat boulder a mermaid lounges on, or a rounder one `r` across. */
+function Boulder({ lounge, r }: { lounge: boolean; r: number }) {
+  const part = usePart(lounge ? "rock-flat" : "rock-moss");
+  if (!part) return null;
+  return (
+    <mesh
+      geometry={part.geometry}
+      material={COVE_ROCK}
+      position-y={lounge ? LOUNGE_LIFT : r * 0.25}
+      scale={lounge ? [...LOUNGE_SCALE] : [r, r * 0.9, r]}
+    />
+  );
+}
 
 // Marina's look is shared by her talking NPC.
 const MARINA_LOOK: Look = {
@@ -138,23 +166,17 @@ export function MermaidCove({ onPick }: { onPick: PickHandler }) {
         />
       </mesh>
       <PortalPads room={ROOMS["mermaid-cove"]} color={PINK} />
-      {/* rocks round the lagoon, and the sea cave's arch */}
-      {(
-        [
-          [-7, -3, 1.6],
-          [6.5, -5, 1.3],
-          [-2.5, -9, 1.1],
-          [9, -1.2, 0.9],
-        ] as const
-      ).map(([x, z, r]) => (
-        <mesh
-          key={`${x}${z}`}
-          position={[x, r * 0.3, z]}
-          scale={[r, r * 0.8, r]}
-        >
-          <dodecahedronGeometry args={[1, 0]} />
-          <primitive object={COVE_ROCK} attach="material" />
-        </mesh>
+      {/* rocks round the lagoon, mermaids lounging on the two long ones, and
+          the sea cave's arch */}
+      {COVE_ROCKS.map((rock, i) => (
+        <group key={i} position={[rock.x, 0, rock.z]} rotation-y={rock.yaw}>
+          <Boulder lounge={rock.lounge} r={rock.r} />
+          {rock.lounge && (
+            <group position-y={LOUNGE_TOP}>
+              <Mermaid tint={LOUNGE_TINTS[i] ?? "#ffffff"} />
+            </group>
+          )}
+        </group>
       ))}
       <mesh position={[0, 0, -16]} scale={[1.4, 1.2, 1]}>
         <torusGeometry args={[6, 1.6, 8, 24, Math.PI]} />
@@ -169,10 +191,8 @@ export function MermaidCove({ onPick }: { onPick: PickHandler }) {
           toneMapped={false}
         />
       </mesh>
-      <Mermaid x={-7} y={1.4} z={-1.9} yaw={3.6} tint="#ffd8e8" singer />
-      <Mermaid x={6.5} y={1.2} z={-3.9} yaw={2.6} tint="#c2daff" />
-      <Mermaid x={-3.2} y={-0.3} z={-2.4} yaw={3.5} tint="#bbfff0" swim />
-      <Mermaid x={1.4} y={-0.3} z={-5.2} yaw={2.6} tint="#f4ccff" swim />
+      <Mermaid loop={0} tint="#bbfff0" singer />
+      <Mermaid loop={1} tint="#f4ccff" />
       <Shells />
       <SongClock />
       {/* driftwood logs up the beach */}
