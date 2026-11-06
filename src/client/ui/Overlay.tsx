@@ -72,6 +72,9 @@ import type { CrimeSave } from "../../game/crime/record.ts";
 import type { Caught } from "./ShopliftPanel.tsx";
 import { FoodVendorPanel } from "../city/FoodVendorPanel.tsx";
 import { BusPanel } from "../city/BusPanel.tsx";
+import { TaxiPanel } from "../city/TaxiPanel.tsx";
+import { driverSays, taxiRide } from "../city/taxiStore.ts";
+import { fareFor, planRoute, routeLength } from "../../game/city/taxi.ts";
 import { FuelStop } from "../city/FuelStop.tsx";
 import { ParkPanel } from "../city/ParkPanel.tsx";
 import { VolleyStop } from "../city/VolleyStop.tsx";
@@ -835,6 +838,8 @@ export function Overlay({
   const neighborhood = useNeighborhood();
   const [phone, setPhone] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
+  // in a taxi the map picks the destination and prices each one
+  const taxi = taxiRide.use();
   // skates come off indoors, where rolling isn't allowed
   const { on: skating } = skates.use();
   useEffect(() => {
@@ -946,6 +951,22 @@ export function Overlay({
           challenges={challenges}
         />
       )}
+      {taxi.phase === "choosing" && room === "city" && (
+        <CityMap
+          fareTo={(spawn) =>
+            fareFor(routeLength(planRoute(taxi.from, spawn.position)))
+          }
+          onGo={(spawn) => {
+            const fare = fareFor(
+              routeLength(planRoute(taxi.from, spawn.position)),
+            );
+            if (onSpend(fare)) taxiRide.set({ fare, request: { go: spawn } });
+            else driverSays("action-leaving-without-paying");
+          }}
+          onClose={() => taxiRide.set({ request: "cancel" })}
+          challenges={challenges}
+        />
+      )}
       <div className="dock">
         {mood === "dance" && <DancePicker move={dance} onPick={setDance} />}
         {(mood === "pose" || mood === "sit") && (
@@ -957,6 +978,7 @@ export function Overlay({
         )}
         <div className="dock-actions" role="group" aria-label="Room actions">
           {room === "city" && <ElPanel />}
+          {room === "city" && <TaxiPanel />}
           {room === "city" && (
             <button
               type="button"

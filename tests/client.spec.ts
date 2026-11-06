@@ -3346,3 +3346,33 @@ test("ice-cream truck sells treats at its park stop and closes on departure", as
   await expect(cart).toContainText("91 coins");
   expect(errors).toEqual([]);
 });
+
+test("taxi: hail on a sidewalk, pick Beachside on the map, pay the fare and ride", async ({
+  page,
+}) => {
+  test.setTimeout(420_000);
+  const errors = collectErrors(page);
+  await seedSave(page, { coins: 100 });
+  await page.goto(`${LOW}&room=city&view=full&time=12:00&at=-24,11`);
+  const canvas = canvasOf(page);
+  await expect(canvas).toHaveAttribute("data-frames", "10", {
+    timeout: 300_000,
+  });
+  await page.getByRole("button", { name: "Hail a taxi" }).click();
+  await expect(canvas).toHaveAttribute("data-taxi", "choosing", {
+    timeout: 60_000,
+  });
+  const map = page.getByRole("dialog", { name: "City map" });
+  await expect(map).toBeVisible();
+  // the map prices every place
+  const beach = map.getByRole("button", { name: /^Beachside · \d+ coins$/ });
+  await beach.click();
+  await expect(canvas).toHaveAttribute("data-taxi", "riding");
+  await page.getByRole("button", { name: "Skip the ride" }).click();
+  await expect(canvas).toHaveAttribute("data-taxi", "idle");
+  await expect
+    .poll(async () => Number(await canvas.getAttribute("data-player-z")))
+    .toBeGreaterThan(250);
+  await expect(page.getByText("100 coins", { exact: true })).toHaveCount(0);
+  expect(errors).toEqual([]);
+});

@@ -49,11 +49,14 @@ export function CityMap({
   onGo,
   onClose,
   challenges,
+  fareTo,
 }: {
   onGo: (spawn: Spawn) => void;
   onClose: () => void;
   /** Today's challenges already reached. */
   challenges: ChallengeSave;
+  /** In a taxi: the coins a ride to `spawn` costs, shown on each place. */
+  fareTo?: (spawn: Spawn) => number;
 }) {
   const day = dayOf(Date.now());
   const done = challenges.day === day ? challenges.done : [];
@@ -106,6 +109,7 @@ export function CityMap({
               onClick={() => onGo(place.spawn)}
             >
               {place.label}
+              {fareTo && ` · ${fareTo(place.spawn)} coins`}
             </button>
           ))}
         </div>
@@ -126,6 +130,7 @@ export function CityMap({
                     <li key={v.label}>
                       <button type="button" onClick={() => onGo(v.spawn)}>
                         {v.label}
+                        {fareTo && ` · ${fareTo(v.spawn)} coins`}
                       </button>
                     </li>
                   ))}
