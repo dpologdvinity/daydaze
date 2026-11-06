@@ -959,6 +959,8 @@ export const CREDITS: readonly {
         license: "CC-BY 3.0",
         url: "https://poly.pizza/m/0aPpwgcBbk1",
         usedFor: "Dog park: the fetch ball.",
+      },
+      {
         title: "Cartoon Open Air Stage",
         author: "mednios",
         license: "CC-BY 4.0",

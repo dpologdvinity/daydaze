@@ -49,9 +49,10 @@ const REPICK = 0.75;
 
 const STAND = "/models/farm/market-stand.glb";
 const foodUrl = (p: Produce) => `/models/props/food-${p}.glb`;
-const PATHS = [STAND, ...PRODUCE.map(foodUrl)];
+/** The produce crate (Fruit Crate, public/models/park/produce-crate.glb) is the last model. */
+const CRATE = "/models/park/produce-crate.glb";
+const PATHS = [STAND, ...PRODUCE.map(foodUrl), CRATE];
 
-const WOOD = new THREE.Color("#a8743f");
 const GRAVEL = new THREE.Color("#9d9078");
 const BUNTING = [
   "#e8782a",
@@ -122,7 +123,7 @@ function shelfSpots(low: boolean): {
       const [cx, cz] = onStall(stall, 0, lz);
       crates.push({
         x: cx,
-        y: GROUND + SHELF_Y + 0.09,
+        y: GROUND + SHELF_Y,
         z: cz,
         yaw: stall.yaw,
         scale: 1,
@@ -152,7 +153,8 @@ function shelfSpots(low: boolean): {
         );
         list.push({
           x: wx,
-          y: GROUND + SHELF_Y + 0.18 + up * size,
+          // the produce sits down in the crate, its top peeking over the slats
+          y: GROUND + SHELF_Y + 0.12 + up * size,
           z: wz,
           yaw: hash(si, ci, k + 40) * Math.PI * 2,
         });
@@ -269,7 +271,6 @@ const m4 = new THREE.Matrix4();
 const q4 = new THREE.Quaternion();
 const p3 = new THREE.Vector3();
 const s3 = new THREE.Vector3();
-const up = new THREE.Vector3(0, 1, 0);
 
 function Market({ player }: { player: Player }): JSX.Element {
   const open = useMarketOpen();
@@ -301,19 +302,8 @@ function Market({ player }: { player: Player }): JSX.Element {
     if (!open) return { meshes: [] as THREE.InstancedMesh[], items: 0 };
     const meshes: THREE.InstancedMesh[] = [];
     const { crates, piles } = shelfSpots(low);
-    const box = new THREE.InstancedMesh(
-      new THREE.BoxGeometry(0.62, 0.18, 0.7),
-      new THREE.MeshStandardMaterial({ color: WOOD, roughness: 0.9 }),
-      crates.length,
-    );
-    box.material.userData.base = WOOD.clone();
-    crates.forEach((c, i) => {
-      q4.setFromAxisAngle(up, c.yaw);
-      m4.compose(p3.set(c.x, c.y, c.z), q4, s3.setScalar(1));
-      box.setMatrixAt(i, m4);
-    });
-    box.frustumCulled = false;
-    meshes.push(box);
+    const crate = gltfs[1 + PRODUCE.length]?.scene;
+    if (crate) meshes.push(...propParts(crate, crates));
     let items = 0;
     PRODUCE.forEach((kind, i) => {
       const spots = piles.get(kind);
