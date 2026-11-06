@@ -4,6 +4,7 @@ import { DEFAULT_LOOK, DEFAULT_SWIM, type Look } from "./look.ts";
 import { DEFAULT_BODY } from "./body.ts";
 import { STARTING_COINS } from "./wallet.ts";
 import { createDefaultFarm } from "./farm.ts";
+import { createDefaultGarden } from "./garden.ts";
 import {
   SAVE_KEY,
   createDefaultSave,
@@ -54,6 +55,7 @@ test("createDefaultSave uses the default look and auto quality", () => {
     sets: [],
     pet: null,
     farm: createDefaultFarm(),
+    garden: createDefaultGarden(),
   });
 });
 
@@ -100,6 +102,7 @@ test("a save round-trips through serializeSave and loadSave", () => {
     sets: [],
     pet: { kind: "cat", name: "Mochi", adoptedAt: 5, fedAt: 9 },
     farm: createDefaultFarm(),
+    garden: createDefaultGarden(),
   };
   assert.deepEqual(loadSave(serializeSave(save), "Fallback"), save);
 });
@@ -169,6 +172,7 @@ test("a save from before the swimsuit slot still loads", () => {
     sets: [],
     pet: null,
     farm: createDefaultFarm(),
+    garden: createDefaultGarden(),
   });
 });
 
@@ -232,6 +236,7 @@ test("loadSave keeps a valid name when the look is bad", () => {
     sets: [],
     pet: null,
     farm: createDefaultFarm(),
+    garden: createDefaultGarden(),
   });
 });
 
@@ -269,6 +274,7 @@ test("loadSave keeps a valid look when the name is bad", () => {
     sets: [],
     pet: null,
     farm: createDefaultFarm(),
+    garden: createDefaultGarden(),
   });
 });
 
@@ -439,6 +445,7 @@ test("loadSave salvages valid fields from a wrong version", () => {
     sets: [],
     pet: null,
     farm: createDefaultFarm(),
+    garden: createDefaultGarden(),
   });
 });
 
@@ -605,4 +612,21 @@ test("farm state round-trips through the save system", () => {
 
   const back = loadSave(serializeSave(save), "x");
   assert.deepEqual(back.farm, save.farm);
+});
+
+test("garden state round-trips through the save system", () => {
+  const save = createDefaultSave("Gardener Green");
+  save.garden.plots[0] = {
+    claimed: true,
+    crop: "tomato",
+    plantedAt: 1000,
+    wateredAt: 2000,
+    growthMs: 500,
+  };
+  save.garden.plots[1].claimed = true;
+  save.garden.produce.tomato = 8;
+  save.garden.produce.strawberry = 14;
+
+  const back = loadSave(serializeSave(save), "x");
+  assert.deepEqual(back.garden, save.garden);
 });

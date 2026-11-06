@@ -5,6 +5,7 @@
 
 import { cleanSets, cleanVisited } from "./collections.ts";
 import { cleanFarm, createDefaultFarm, type FarmSave } from "./farm.ts";
+import { cleanGarden, createDefaultGarden, type GardenSave } from "./garden.ts";
 import type { RoomId } from "./rooms.ts";
 import { isIntensity, type Intensity } from "./effects/buzz.ts";
 import {
@@ -82,6 +83,8 @@ export type SaveV1 = {
   pet: PetSave | null;
   /** Sunny Acres Farm plot state, harvested produce and animal interactions. */
   farm: FarmSave;
+  /** Suburbia Community Garden plot state and produce inventory. */
+  garden: GardenSave;
 };
 
 /** The localStorage key the save lives under. */
@@ -130,6 +133,7 @@ export function createDefaultSave(name: string): SaveV1 {
     sets: [],
     pet: null,
     farm: createDefaultFarm(),
+    garden: createDefaultGarden(),
   };
 }
 
@@ -210,6 +214,7 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
     sets: cleanSets(save.get("sets")),
     pet: validatePet(save.get("pet")),
     farm: cleanFarm(save.get("farm")),
+    garden: cleanGarden(save.get("garden")),
   };
 }
 
