@@ -52,7 +52,7 @@ const foodUrl = (p: Produce) => `/models/props/food-${p}.glb`;
 const PATHS = [STAND, ...PRODUCE.map(foodUrl)];
 
 const WOOD = new THREE.Color("#a8743f");
-const GRAVEL = new THREE.Color("#b9aa8c");
+const GRAVEL = new THREE.Color("#9d9078");
 const BUNTING = [
   "#e8782a",
   "#c8362f",
@@ -128,7 +128,7 @@ function shelfSpots(low: boolean): {
         scale: 1,
       });
       const size = PRODUCE_SIZE[kind];
-      const gap = Math.max(size * 1.15, 0.17);
+      const gap = Math.min(0.25, Math.max(size * 1.15, 0.17));
       // a bottom layer of 2 x 3 (2 x 2 on the low tier) and two on top
       const layer: [number, number][] = [];
       for (const gx of [-0.5, 0.5])

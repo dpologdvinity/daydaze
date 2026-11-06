@@ -118,7 +118,7 @@ for (const seed of [7, 21, 99]) {
 test("the fetcher brings the ball back to the bench-sitter's feet", () => {
   const world = newWorld();
   const roll = seededRng(3);
-  let last = world.fetches;
+  const last = world.fetches;
   for (let i = 0; i < 20 * 120 && world.fetches === last; i++)
     stepWorld(world, 1 / 20, roll);
   assert.equal(world.fetches, last + 1);

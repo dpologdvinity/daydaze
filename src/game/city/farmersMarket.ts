@@ -51,19 +51,19 @@ export const SHELF_HALF: Vec2 = [0.3 * STALL_SCALE, 0.52 * STALL_SCALE];
 
 /** The produce models (public/models/props/food-<name>.glb) and how big each is drawn (m). */
 export const PRODUCE_SIZE = {
-  Apple: 0.16,
-  Orange: 0.16,
-  Banana: 0.22,
-  Carrot: 0.26,
-  Turnip: 0.2,
-  Lettuce_Whole: 0.26,
-  Tomato: 0.15,
-  Pepper_Red: 0.17,
-  Eggplant: 0.24,
-  Pumpkin: 0.34,
-  Avocado: 0.14,
-  Broccoli: 0.22,
-  Bread: 0.3,
+  Apple: 0.22,
+  Orange: 0.22,
+  Banana: 0.28,
+  Carrot: 0.32,
+  Turnip: 0.28,
+  Lettuce_Whole: 0.3,
+  Tomato: 0.21,
+  Pepper_Red: 0.24,
+  Eggplant: 0.3,
+  Pumpkin: 0.38,
+  Avocado: 0.2,
+  Broccoli: 0.31,
+  Bread: 0.34,
 } as const;
 export type Produce = keyof typeof PRODUCE_SIZE;
 export const PRODUCE = Object.keys(PRODUCE_SIZE) as Produce[];
