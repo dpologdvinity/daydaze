@@ -418,6 +418,7 @@ for (const target of [
   "bookshop",
   "patisserie",
   "gallery",
+  "pottery",
   "surf-shack",
   "boardwalk-arcade",
   "drive-in",

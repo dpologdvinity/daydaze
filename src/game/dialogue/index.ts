@@ -2,6 +2,7 @@
 // a role means a new role file, its id in ROLE_IDS (types.ts) and an entry
 // here; the Record type makes a missing bank a type error.
 
+import { potterBank, potteryRegularBank } from "./potter.ts";
 import { bartenderBank } from "./bartender.ts";
 import { bouncerBank } from "./bouncer.ts";
 import { djBank } from "./dj.ts";
@@ -35,6 +36,8 @@ import type { DialogueRole, RoleBank } from "./types.ts";
  * its own bank.
  */
 export const LINE_BANKS: Record<DialogueRole, RoleBank> = {
+  potter: potterBank,
+  "pottery-regular": potteryRegularBank,
   bartender: bartenderBank,
   bouncer: bouncerBank,
   dj: djBank,

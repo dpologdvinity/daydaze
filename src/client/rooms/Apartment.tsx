@@ -1,10 +1,13 @@
+import { useThree } from "@react-three/fiber";
+import { pottery } from "./pottery/session.ts";
+import { PotMesh } from "./pottery/PotMesh.tsx";
 import { ROOMS } from "../../game/rooms.ts";
 import {
   FURNITURE_CATALOG,
   footprint,
   type Furniture,
 } from "../../game/home/decor.ts";
-import { Suspense, useMemo } from "react";
+import { Suspense, useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { Batch } from "./shared/batch.ts";
 import { plant, poster, stringLights } from "./shared/details.ts";
@@ -56,6 +59,7 @@ export function Apartment({
       <PortalPads room={ROOMS.apartment} color="#ffd166" />
       <Walls />
       <HungPainting />
+      <PotteryShelf />
       {home.furniture.map((item, index) => (
         <Piece key={`${item.id}-${index}`} item={item} />
       ))}
@@ -283,5 +287,35 @@ function Walls() {
         <boxGeometry args={[8, 3, 0.1]} />
       </mesh>
     </>
+  );
+}
+
+/** The latest fired ceramic has its own shelf beside the window. */
+function PotteryShelf() {
+  const { saved } = pottery.use();
+  const { gl } = useThree();
+  useEffect(() => {
+    if (saved) gl.domElement.dataset.potteryPiece = saved.target;
+    return () => {
+      delete gl.domElement.dataset.potteryPiece;
+    };
+  }, [saved, gl]);
+  if (!saved) return null;
+  return (
+    <group position={[0.3, 1.35, -2.65]} name="apartment-pottery">
+      <Suspense fallback={null}>
+        <Prop
+          model="wall-shelf"
+          dir="home"
+          width={1.2}
+          depth={0.5}
+          height={0.2}
+          position={[0, -0.1, 0]}
+        />
+      </Suspense>
+      <group scale={0.55}>
+        <PotMesh clay={saved.clay} color={saved.glaze} />
+      </group>
+    </group>
   );
 }

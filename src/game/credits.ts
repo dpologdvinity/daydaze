@@ -255,14 +255,29 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/ultimatehouseinterior.html",
         usedFor:
-          "Apartment furniture: sofas, beds, tables, kitchen, bath, plants and more, joined into one mesh each.",
+          "Apartment furniture: sofas, beds, tables, kitchen, bath, plants and more, joined into one mesh each; Clay Day stools, glaze table, drying shelves and plants.",
+      },
+      {
+        title: "Skutt Pottery Kiln",
+        author: "Rudy",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/skutt-pottery-kiln-79646682fe354aaabd00228b489017b4",
+        usedFor: "Clay Day kiln, decimated and recolored from the scan.",
+      },
+      {
+        title: "Pottery Wheel",
+        author: "Rudy",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/pottery-wheel-a1f36933a3144e6a80bb7f95c809ac1e",
+        usedFor: "Clay Day wheels, decimated and recolored from the scan.",
       },
       {
         title: "Furniture Pack (March 2019)",
         author: "Quaternius",
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/furniturepack.html",
-        usedFor: "Apartment furniture: armchair, vase and a few small pieces.",
+        usedFor:
+          "Apartment furniture: armchair, vase and a few small pieces; Clay Day drying ceramics.",
       },
       {
         title: "Furniture Pack (Oct 2017)",

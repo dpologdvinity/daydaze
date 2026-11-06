@@ -58,6 +58,7 @@ export const PRIZE_GAMES = [
   "karaoke",
   "haunted",
   "reef-dive",
+  "pottery",
 ] as const;
 export type PrizeGame = (typeof PRIZE_GAMES)[number];
 
@@ -79,6 +80,12 @@ const ORDINAL = ["1st", "2nd", "3rd"];
 const placed = (place: number) => `${ORDINAL[place - 1] ?? `${place}th`} place`;
 
 export const PRIZE_TABLES: Record<PrizeGame, Table> = {
+  pottery: {
+    label: "Clay Day",
+    room: "pottery",
+    grades: [95, 80, 60],
+    format: plain("/ 100"),
+  },
   speedway: {
     label: "Speedway race",
     room: "speedway",
