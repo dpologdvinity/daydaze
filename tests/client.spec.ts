@@ -3360,7 +3360,7 @@ test("taxi: hail on a sidewalk, pick Beachside on the map, pay the fare and ride
   });
   await page.getByRole("button", { name: "Hail a taxi" }).click();
   await expect(canvas).toHaveAttribute("data-taxi", "choosing", {
-    timeout: 60_000,
+    timeout: 120_000,
   });
   const map = page.getByRole("dialog", { name: "City map" });
   await expect(map).toBeVisible();

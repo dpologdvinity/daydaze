@@ -101,7 +101,7 @@ export function TaxiRide({ player }: { player: Player }) {
       } else {
         along.current = Math.min(
           length.current,
-          along.current + TAXI_SPEED * Math.min(delta, 0.1),
+          along.current + TAXI_SPEED * Math.min(delta, 1),
         );
         if (along.current >= length.current) {
           if (
@@ -139,7 +139,7 @@ export function TaxiRide({ player }: { player: Player }) {
       if (request === "skip") along.current = length.current;
       along.current = Math.min(
         length.current,
-        along.current + TAXI_SPEED * Math.min(delta, 0.1),
+        along.current + TAXI_SPEED * Math.min(delta, 1),
       );
       chatter.current -= delta;
       if (chatter.current <= 0) {
