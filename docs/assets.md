@@ -18,7 +18,7 @@ future imported packs belong here when they enter the game.
 
 | Title | Author | License | URL | Used for |
 | --- | --- | --- | --- | --- |
-| Ultimate Food Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/ultimatefood.html | Grocery stock, produce and restaurant dishes, Halloween pumpkins, converted and optimized. |
+| Ultimate Food Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/ultimatefood.html | Grocery stock, produce and restaurant dishes, Halloween pumpkins, converted and optimized; the farmers market's crates of produce. |
 | Christmas Tree | Alex Safayan | CC-BY 3.0 | https://poly.pizza/m/fO1vTvI0QIc | The Plaza's tree in the winter holidays (art/seasons/build_seasonal.py). |
 | red lantern | Sophie Kim | CC-BY 3.0 | https://poly.pizza/m/7PZhxLFiGc2 | Lanterns strung over Chinatown and Koreatown for Lunar New Year. |
 | Bat | Quaternius | CC0 1.0 | https://poly.pizza/m/hNO9XvjlKa | Paper bats over the avenue doors at Halloween. |
@@ -118,9 +118,14 @@ future imported packs belong here when they enter the game.
 | Turtle | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/fklSEvGm1Q8 | Reef dive: the sea turtle. |
 | Seagull and Flying seagull | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/0WRzrtCIIRp | Gulls perched on Seaside Swim's sand and wheeling overhead. |
 | Nature Crops Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/ultimatecrops.html | Crops at Sunny Acres Farm (carrots, tomatoes, corn, wheat growth stages). |
-| Farm Buildings Pack | Quaternius | CC0 1.0 | https://poly.pizza/bundle/Farm-Buildings-Bundle-ppbnhEfNEt | Barn, silo, wooden fences, hay bales, and market stand at Sunny Acres Farm. |
+| Farm Buildings Pack | Quaternius | CC0 1.0 | https://poly.pizza/bundle/Farm-Buildings-Bundle-ppbnhEfNEt | Barn, silo, wooden fences, hay bales, and market stand at Sunny Acres Farm; also the dog park's fence and the farmers market's stalls. |
 | Tractor | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/5TGoA5N14c5 | Farm tractor at Sunny Acres Farm. |
 | Scarecrow | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/7qFs_DjjuVp | Scarecrow watching over the crop field at Sunny Acres Farm. |
+| Tunnels | Kay Lousberg | CC0 1.0 | https://poly.pizza/m/E1Rrk1NKt0 | Dog park: the agility tunnel. |
+| Ramp | Quaternius | CC0 1.0 | https://poly.pizza/m/cS1JQReXZs | Dog park: the agility ramp. |
+| Seesaw | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/8Ha-8ms-TJb | Dog park: the agility seesaw. |
+| Doggy Water Bowl | Jarlan Perez | CC-BY 3.0 | https://poly.pizza/m/6oVp6iDhgSk | Dog park: the water bowl. |
+| Tennis ball | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/0aPpwgcBbk1 | Dog park: the fetch ball. |
 | Rock Large | Quaternius | CC0 1.0 | https://poly.pizza/m/54jZKTAt5p | Reef dive: flat boulders and arch lintels. |
 | Rock Large (pillar) | Quaternius | CC0 1.0 | https://poly.pizza/m/d2VWOdthtR | Reef dive: rock pillars and arch legs. |
 | Rock Medium | Quaternius | CC0 1.0 | https://poly.pizza/m/s1OJ3bBzqc | Reef dive: mossy boulders. |
