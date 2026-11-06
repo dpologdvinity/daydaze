@@ -11,6 +11,7 @@ import {
   lowTierCost,
   MODEL_COST,
   modelsInBudget,
+  SEASON_MODEL,
 } from "./budget.ts";
 import type { Vec2 } from "../walk.ts";
 
@@ -50,6 +51,11 @@ function glbCost(path: string): { tris: number; parts: number } {
 test("the budget's model costs match the shipped GLBs", () => {
   for (const path of modelsInBudget())
     assert.deepEqual(MODEL_COST[path], glbCost(path), path);
+});
+
+test("the seasonal models' costs match the shipped GLBs", () => {
+  for (const [path, cost] of Object.entries(SEASON_MODEL))
+    assert.deepEqual(cost, glbCost(path), path);
 });
 
 test("wherever she stands, the low tier's city (bays, trees, furniture, park) fits 250 draw calls and 300k triangles", () => {

@@ -138,7 +138,30 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/ultimatefood.html",
         usedFor:
-          "Grocery stock, produce and restaurant dishes, converted and optimized.",
+          "Grocery stock, produce and restaurant dishes, Halloween pumpkins, converted and optimized.",
+      },
+      {
+        title: "Christmas Tree",
+        author: "Alex Safayan",
+        license: "CC-BY 3.0",
+        url: "https://poly.pizza/m/fO1vTvI0QIc",
+        usedFor:
+          "The Plaza's tree in the winter holidays (art/seasons/build_seasonal.py).",
+      },
+      {
+        title: "red lantern",
+        author: "Sophie Kim",
+        license: "CC-BY 3.0",
+        url: "https://poly.pizza/m/7PZhxLFiGc2",
+        usedFor:
+          "Lanterns strung over Chinatown and Koreatown for Lunar New Year.",
+      },
+      {
+        title: "Bat",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/m/hNO9XvjlKa",
+        usedFor: "Paper bats over the avenue doors at Halloween.",
       },
       {
         title: "Junk Food Pack",

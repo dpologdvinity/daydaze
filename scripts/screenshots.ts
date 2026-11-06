@@ -436,6 +436,66 @@ const SHOTS: {
     query: "room=city&view=full&time=23:00",
     act: furnitureReady,
   },
+  // seasonal dressing (src/client/city/SeasonalDressing.tsx), previewed with ?date=
+  ...[
+    // fairy lights along Nightlife Row's south facades
+    [
+      "season-winter",
+      "2026-12-20",
+      "21:00",
+      "high",
+      "100,10",
+      "100,2.2,4,128,4,14",
+    ],
+    // the Plaza tree
+    [
+      "season-winter-tree",
+      "2026-12-20",
+      "21:00",
+      "high",
+      "24,36",
+      "28,2.5,44,12,4,29",
+    ],
+    // jack-o'-lanterns and bats at the Pulse door, seen along the facade
+    [
+      "season-halloween",
+      "2026-10-28",
+      "19:30",
+      "high",
+      "118,10",
+      "126,1.8,11.5,110,2.4,13.4",
+    ],
+    // lanterns over Chinatown's avenue, from above the traffic
+    [
+      "season-lunar",
+      "2027-02-10",
+      "20:00",
+      "high",
+      "226,4",
+      "214,6,-1,262,5,0",
+    ],
+    // the same winter and Halloween views on the low tier, for the budget
+    [
+      "season-winter-low",
+      "2026-12-20",
+      "21:00",
+      "low",
+      "100,10",
+      "100,2.2,4,128,4,14",
+    ],
+    [
+      "season-halloween-low",
+      "2026-10-28",
+      "19:30",
+      "low",
+      "118,10",
+      "126,1.8,11.5,110,2.4,13.4",
+    ],
+  ].map(([name, date, time, quality, at, cam]) => ({
+    name: String(name),
+    query: `room=city&quality=${quality}&date=${date}&time=${time}&at=${at}&cam=${cam}`,
+    act: furnitureReady,
+  })),
   // the avenue sidewalk with its street furniture (src/client/city/CityFurniture.tsx)
   {
     name: "city-sidewalk",

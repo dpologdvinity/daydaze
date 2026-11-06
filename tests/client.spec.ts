@@ -62,6 +62,18 @@ const roomTitle = (page: Page) => page.getByRole("heading", { level: 1 });
 const canvasOf = (page: Page) =>
   page.getByRole("img", { name: "3D room view" });
 
+test("seasonal dressing follows the preview date", async ({ page }) => {
+  test.setTimeout(330_000);
+  await page.goto(`${STILL}&room=city&date=2026-12-20`);
+  await expect(canvasOf(page)).toHaveAttribute(
+    "data-dressings",
+    "winter-holidays",
+    {
+      timeout: 150_000,
+    },
+  );
+});
+
 test("a new player starts in the city, on Downtown's square", async ({
   page,
 }) => {

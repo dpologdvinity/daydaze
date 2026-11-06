@@ -100,9 +100,17 @@ function place(
   spots: readonly FurnitureSpot[],
   at: readonly [number, number],
   low: boolean,
+  summer: boolean,
 ) {
   const counts = new Map<THREE.InstancedMesh, number>();
   for (const f of spots) {
+    if (
+      !summer &&
+      (f.kind === "umbrella-red" ||
+        f.kind === "umbrella-blue" ||
+        f.kind === "towel")
+    )
+      continue;
     if (!furnitureVisible(f.kind, Math.hypot(f.x - at[0], f.z - at[1]), low))
       continue;
     q.setFromAxisAngle(up, f.yaw);
@@ -127,7 +135,7 @@ function place(
   );
 }
 
-export function CityFurniture(): JSX.Element {
+export function CityFurniture({ summer }: { summer: boolean }): JSX.Element {
   const low = useQuality() === "low";
   const gltfs = useGLTF(FURNITURE_KINDS.map(url));
   const meshes = useMemo(() => {
@@ -147,11 +155,11 @@ export function CityFurniture(): JSX.Element {
   );
   const canvas = useThree((state) => state.gl.domElement);
   useEffect(() => {
-    const drawn = place(meshes, spots, at, low);
+    const drawn = place(meshes, spots, at, low, summer);
     // read by the screenshot script and tests: the models are in and placed
     if (DEBUG) canvas.dataset.furnitureKinds = JSON.stringify(drawn);
     if (spots.length > 0) canvas.dataset.furniture = "ready";
-  }, [meshes, spots, at, low, canvas]);
+  }, [meshes, spots, at, low, summer, canvas]);
   const all = useMemo(() => [...meshes.values()].flat(), [meshes]);
   useEffect(() => () => disposeInstanced(all, true), [all]);
   return (
