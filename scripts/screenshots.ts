@@ -585,6 +585,12 @@ const SHOTS: {
       await cityReady(page);
       await page.waitForFunction(
         () => document.querySelector("canvas")?.dataset.market === "closed",
+        null,
+        { timeout: 300_000 },
+      );
+    },
+  },
+  {
     // the park band on its shell's stage mid-tune (src/game/city/bandShell.ts)
     name: "band-shell",
     query:
