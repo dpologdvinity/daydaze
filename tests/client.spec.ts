@@ -3258,12 +3258,11 @@ test("ice-cream truck sells treats at its park stop and closes on departure", as
   test.setTimeout(420_000);
   const errors = collectErrors(page);
   await seedSave(page, { coins: 100 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
   const epoch = new Date("2026-01-01T12:00:00Z");
   await page.clock.install({ time: new Date(epoch.getTime() - 60_000) });
   await page.clock.pauseAt(epoch);
-  await page.goto(
-    `${LOW}&room=city&view=full&time=12:00&at=254,-264&cam=267,9,-249,253,1,-265`,
-  );
+  await page.goto(`${LOW}&room=city&view=full&time=12:00&at=254,-264`);
   const canvas = canvasOf(page);
   await expect
     .poll(
@@ -3289,6 +3288,15 @@ test("ice-cream truck sells treats at its park stop and closes on departure", as
     "Vanilla cone purchased",
   );
   await expect(truck).toContainText("95 coins");
+  // Use the player's ordinary orbit and wheel zoom, with the whole truck in view.
+  await page.mouse.move(850, 350);
+  await page.mouse.wheel(0, 1400);
+  await page.clock.runFor(200);
+  await page.mouse.down();
+  await page.mouse.move(850, 410, { steps: 12 });
+  await page.mouse.up();
+  // Stats refresh every 30 frames; read the settled view rather than the close-up.
+  await page.clock.runFor(800);
   await page.screenshot({ path: "docs/screenshots/street-food-park.png" });
   console.log(
     "street-food-park:",
