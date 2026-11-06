@@ -6,6 +6,8 @@ import { byTier } from "../age.ts";
 import type { WalkArea } from "../area.ts";
 import { FOOD_STOREFRONTS } from "../food/storefronts.ts";
 import { MARKET, MARKET_BLOCKERS } from "./nightMarket.ts";
+import { DOG_PARK_BLOCKERS } from "./dogPark.ts";
+import { MARKET_BLOCKERS as FARMERS_BLOCKERS } from "./farmersMarket.ts";
 import { GAS_BLOCKERS, GAS_SURFACES } from "./gasStations.ts";
 import type { RoomId, Spawn } from "../rooms.ts";
 import { LIFT, SKYLARK_DOOR } from "../rooftop.ts";
@@ -2415,6 +2417,8 @@ const CITY_BLOCKERS: readonly (readonly Vec2[])[] = [
   ),
   ...MARKET_BLOCKERS,
   ...PARK_BLOCKERS,
+  ...DOG_PARK_BLOCKERS,
+  ...FARMERS_BLOCKERS,
   ...BOARDWALK_BLOCKERS,
   // gas station mini-marts and pump islands
   ...GAS_BLOCKERS,

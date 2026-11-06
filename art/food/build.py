@@ -6,7 +6,7 @@ import sys
 
 root, output, *selected = sys.argv[sys.argv.index('--') + 1:]
 packs = {
-    'Ultimate Food Pack - Oct 2019': ['Apple', 'Apple_Green', 'Orange', 'Banana', 'Carrot', 'Tomato', 'Broccoli', 'Bread', 'PeanutButter', 'KetchupBottle', 'MustardBottle', 'ChocolateBar', 'Burger', 'Fries', 'Pizza_Slice', 'Hotdog', 'Pancakes_Stack', 'ChickenLeg', 'Fish', 'Plate', 'Steak', 'Egg_Fried'],
+    'Ultimate Food Pack - Oct 2019': ['Apple', 'Apple_Green', 'Orange', 'Banana', 'Carrot', 'Tomato', 'Broccoli', 'Bread', 'PeanutButter', 'KetchupBottle', 'MustardBottle', 'ChocolateBar', 'Burger', 'Fries', 'Pizza_Slice', 'Hotdog', 'Pancakes_Stack', 'ChickenLeg', 'Fish', 'Plate', 'Steak', 'Egg_Fried', 'Pumpkin', 'Lettuce_Whole', 'Eggplant', 'Pepper_Red', 'Turnip', 'Avocado'],
     'Junk Food Pack - Apr 2017': ['SodaCan', 'Donut'],
 }
 os.makedirs(output, exist_ok=True)

@@ -2917,3 +2917,56 @@ button:focus-visible {
 .bus-panel p {
   margin: 0.35rem 0;
 }
+
+/* the farmers market's stall card and the dog yard's leash button */
+.park-panel {
+  position: fixed;
+  bottom: 150px;
+  left: 50%;
+  z-index: 6;
+  width: min(420px, calc(100vw - 32px));
+  padding: 12px 16px;
+  transform: translateX(-50%);
+  border-radius: 14px;
+  background: rgb(20 10 40 / 0.78);
+  color: var(--champagne);
+  text-align: center;
+}
+
+.park-panel h3,
+.park-panel p {
+  margin: 0 0 6px;
+}
+
+.park-panel .park-note {
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.park-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.park-panel button {
+  padding: 10px 20px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffd27a, var(--amber) 55%, #c06f00);
+  color: #2a0b05;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.park-panel button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.park-leash {
+  bottom: 110px;
+  width: auto;
+}

@@ -138,7 +138,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/ultimatefood.html",
         usedFor:
-          "Grocery stock, produce and restaurant dishes, Halloween pumpkins, converted and optimized.",
+          "Grocery stock, produce and restaurant dishes, Halloween pumpkins, converted and optimized; the farmers market's crates of produce.",
       },
       {
         title: "Christmas Tree",
@@ -835,7 +835,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://poly.pizza/bundle/Farm-Buildings-Bundle-ppbnhEfNEt",
         usedFor:
-          "Barn, silo, wooden fences, hay bales, and market stand at Sunny Acres Farm.",
+          "Barn, silo, wooden fences, hay bales, and market stand at Sunny Acres Farm; also the dog park's fence and the farmers market's stalls.",
       },
       {
         title: "Tractor",
@@ -850,6 +850,41 @@ export const CREDITS: readonly {
         license: "CC-BY 3.0",
         url: "https://poly.pizza/m/7qFs_DjjuVp",
         usedFor: "Scarecrow watching over the crop field at Sunny Acres Farm.",
+      },
+      {
+        title: "Tunnels",
+        author: "Kay Lousberg",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/m/E1Rrk1NKt0",
+        usedFor: "Dog park: the agility tunnel.",
+      },
+      {
+        title: "Ramp",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/m/cS1JQReXZs",
+        usedFor: "Dog park: the agility ramp.",
+      },
+      {
+        title: "Seesaw",
+        author: "Poly by Google",
+        license: "CC-BY 3.0",
+        url: "https://poly.pizza/m/8Ha-8ms-TJb",
+        usedFor: "Dog park: the agility seesaw.",
+      },
+      {
+        title: "Doggy Water Bowl",
+        author: "Jarlan Perez",
+        license: "CC-BY 3.0",
+        url: "https://poly.pizza/m/6oVp6iDhgSk",
+        usedFor: "Dog park: the water bowl.",
+      },
+      {
+        title: "Tennis ball",
+        author: "Poly by Google",
+        license: "CC-BY 3.0",
+        url: "https://poly.pizza/m/0aPpwgcBbk1",
+        usedFor: "Dog park: the fetch ball.",
       },
       {
         title: "Mini Characters",

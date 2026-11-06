@@ -21,6 +21,11 @@ export const PATH_EW: ParkBox = { x0: 204, z0: -290, x1: 300, z1: -287 };
 /** The north-south path, down to Park Avenue's sidewalk. */
 export const PATH_NS: ParkBox = { x0: 252.5, z0: -316, x1: 255.5, z1: -266 };
 
+/** The fenced dog park, east of the north-south path (dogPark.ts fills it). */
+export const DOG_PARK: ParkBox = { x0: 257.5, x1: 272.5, z0: -313, z1: -294 };
+/** The farmers market's green, west of the north-south path (farmersMarket.ts). */
+export const MARKET_GREEN: ParkBox = { x0: 240, x1: 251.5, z0: -312, z1: -292 };
+
 /** Ground level of lawns and paths: things stand on top of this. */
 export const GROUND = 0.14;
 
@@ -105,6 +110,8 @@ export function parkTrees(): Vec2[] {
       const x = gx + (hash(gx, gz, 1) - 0.5) * 6;
       const z = gz + (hash(gx, gz, 2) - 0.5) * 6;
       if (hash(gx, gz, 3) < 0.2 || !onLawn(x, z, 2.5)) continue;
+      if (inBox(DOG_PARK, x, z, 2.5) || inBox(MARKET_GREEN, x, z, 2.5))
+        continue;
       // keep the bandstand's front and the fountain's plaza open
       if (Math.hypot(x - BANDSTAND.x, z - BANDSTAND.z) < 8) continue;
       if (Math.hypot(x - PARK_FOUNTAIN.x, z - PARK_FOUNTAIN.z) < 9) continue;
@@ -168,6 +175,9 @@ export function parkFurniture(): FurnitureSpot[] {
   out.push(spot("bench", POND.x - POND.r - 1.4, POND.z, Math.PI / 2));
   out.push(spot("bench", POND.x + POND.r + 1.4, POND.z, -Math.PI / 2));
   out.push(spot("bench", PATH_NS.x1 + 1.2, -276, -Math.PI / 2));
+  // inside the dog yard, along its west fence, facing the lawn (dogPark.ts)
+  out.push(spot("bench", DOG_PARK.x0 + 1.1, -296.5, Math.PI / 2));
+  out.push(spot("bench", DOG_PARK.x0 + 1.1, -310.5, Math.PI / 2));
   // ducks on the water
   for (let i = 0; i < 6; i++) {
     const a = hash(i, 11) * Math.PI * 2;
@@ -258,7 +268,7 @@ export function parkGrowth(): Growth[] {
         const z = gz + (hash(gx, gz, 31) - 0.5) * 0.9;
         if (!inBox(lawn, x, z, -0.2)) continue;
         // bare patches where people sit
-        if (blanketNear(x, z)) continue;
+        if (blanketNear(x, z) || inBox(MARKET_GREEN, x, z)) continue;
         add(hash(gx, gz, 32) < 0.35 ? "wispy" : "grass", x, z, 33);
       }
     }
@@ -278,7 +288,12 @@ export function parkGrowth(): Growth[] {
   }
   for (let x = PARK.x0 + 10; x < PARK.x1 - 6; x += 7) {
     const z = x % 14 < 7 ? PATH_EW.z1 + 2.6 : PATH_EW.z0 - 2.6;
-    if (hash(x, 60) < 0.55 && onLawn(x, z, 0.5)) add("flowers3", x, z, 61);
+    if (
+      hash(x, 60) < 0.55 &&
+      onLawn(x, z, 0.5) &&
+      !inBox(MARKET_GREEN, x, z, 0.5)
+    )
+      add("flowers3", x, z, 61);
   }
   // the pond's rim
   for (let i = 0; i < 22; i++) {
