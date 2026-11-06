@@ -436,6 +436,16 @@ const SHOTS: {
     query: "room=city&view=full&time=23:00",
     act: furnitureReady,
   },
+  // seasonal dressing (src/client/city/SeasonalDressing.tsx), previewed with ?date=
+  ...[
+    ["season-winter", "2026-12-20", "21:00", "70,-6"],
+    ["season-halloween", "2026-10-28", "19:30", "70,-6"],
+    ["season-lunar", "2027-02-10", "20:00", "230,-6"],
+  ].map(([name, date, time, at]) => ({
+    name: String(name),
+    query: `room=city&view=full&date=${date}&time=${time}&at=${at}&yaw=${Math.PI / 2}`,
+    act: furnitureReady,
+  })),
   // the avenue sidewalk with its street furniture (src/client/city/CityFurniture.tsx)
   {
     name: "city-sidewalk",
