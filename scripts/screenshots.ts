@@ -438,12 +438,17 @@ const SHOTS: {
   },
   // seasonal dressing (src/client/city/SeasonalDressing.tsx), previewed with ?date=
   ...[
-    ["season-winter", "2026-12-20", "21:00", "70,-6"],
-    ["season-halloween", "2026-10-28", "19:30", "70,-6"],
-    ["season-lunar", "2027-02-10", "20:00", "230,-6"],
-  ].map(([name, date, time, at]) => ({
+    // fairy lights along Nightlife Row's south facades
+    ["season-winter", "2026-12-20", "21:00", "100,10", "96,2.6,3,128,4,14"],
+    // the Plaza tree
+    ["season-winter-tree", "2026-12-20", "21:00", "24,36", "28,2.5,44,12,4,29"],
+    // pumpkins and bats over the Pulse and Sugar Rush doors
+    ["season-halloween", "2026-10-28", "19:30", "100,10", "100,2.2,5,118,3,13"],
+    // lanterns over Chinatown's avenue
+    ["season-lunar", "2027-02-10", "20:00", "226,4", "216,3,-1,258,6,0"],
+  ].map(([name, date, time, at, cam]) => ({
     name: String(name),
-    query: `room=city&view=full&date=${date}&time=${time}&at=${at}&yaw=${Math.PI / 2}`,
+    query: `room=city&quality=high&date=${date}&time=${time}&at=${at}&cam=${cam}`,
     act: furnitureReady,
   })),
   // the avenue sidewalk with its street furniture (src/client/city/CityFurniture.tsx)

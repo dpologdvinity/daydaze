@@ -90,7 +90,7 @@ export function facadeLights(palette: readonly string[]): Bulb[] {
           SWAG_HEIGHT - sag,
           side * (FACADE_Z - SWAG_OFF),
         ],
-        size: 0.22,
+        size: 0.32,
         color: palette[n++ % palette.length] ?? "#ffd9a0",
       });
     }
@@ -135,7 +135,7 @@ export function lanternStrings(): { lanterns: Piece[]; cord: Bulb[] } {
       const t = s / 24;
       const z = (t * 2 - 1) * (FACADE_Z - 0.5);
       const y = 7.4 - 1.6 * 4 * t * (1 - t);
-      cord.push({ at: [x, y, z], size: 0.08, color: "#5a1010" });
+      cord.push({ at: [x, y, z], size: 0.1, color: "#5a1010" });
       if (s % 5 === 2)
         lanterns.push({ at: [x, y - 0.8, z], yaw: (k + s) * 0.7, scale: 1 });
     }
