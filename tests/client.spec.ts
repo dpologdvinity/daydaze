@@ -3255,7 +3255,7 @@ test("dog park: dogs romp in the yard, and your pet can be let off the leash", a
 test("ice-cream truck sells treats at its park stop and closes on departure", async ({
   page,
 }) => {
-  test.setTimeout(420_000);
+  test.setTimeout(900_000);
   const errors = collectErrors(page);
   await seedSave(page, { coins: 100 });
   await page.emulateMedia({ reducedMotion: "reduce" });

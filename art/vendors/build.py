@@ -58,18 +58,47 @@ else:
         bpy.ops.mesh.separate(type='LOOSE')
         bpy.ops.object.mode_set(mode='OBJECT')
     objects=[o for o in bpy.context.scene.objects if o.type=='MESH']
+    # Rivets and crumbs under 6 cm are invisible at street distance; drop them.
+    for o in list(objects):
+        if max(o.dimensions) < .06: bpy.data.objects.remove(o, do_unlink=True)
+    objects=[o for o in bpy.context.scene.objects if o.type=='MESH']
     for o in objects:
         tris=sum(len(p.vertices)-2 for p in o.data.polygons)
-        if tris <= 80: continue
+        if tris <= 40: continue
         bpy.context.view_layer.objects.active=o
         mod=o.modifiers.new('Cart LOD', 'DECIMATE')
-        mod.ratio=max(80/tris, .16)
+        mod.ratio=max(40/tris, .06)
         bpy.ops.object.modifier_apply(modifier=mod.name)
 bpy.ops.object.select_all(action='DESELECT')
 for o in objects: o.select_set(True)
 bpy.context.view_layer.objects.active = objects[0]
 bpy.ops.object.join()
 o = bpy.context.object
+if kind == 'cart':
+    # Boardwalk carts are ~300 tris; keep this one under ~1,500 (street-food view budget).
+    tris = sum(len(p.vertices) - 2 for p in o.data.polygons)
+    top = max(v.co.z for v in o.data.vertices)
+    # Hard-edged imports arrive with split vertices, which stalls the collapse; weld them first.
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.remove_doubles(threshold=.003)
+    bpy.ops.object.mode_set(mode='OBJECT')
+    planar = o.modifiers.new('Cart planar', 'DECIMATE')
+    planar.decimate_type = 'DISSOLVE'
+    planar.angle_limit = .17
+    planar.delimit = {'MATERIAL'}
+    bpy.ops.object.modifier_apply(modifier=planar.name)
+    tris = sum(len(p.vertices) - 2 for p in o.data.polygons)
+    # Collapse stalls on thin supports, so repeat until the budget holds.
+    for _ in range(4):
+        if tris <= 1400: break
+        mod = o.modifiers.new('Cart budget', 'DECIMATE')
+        mod.ratio = max(1100 / tris, .5)
+        bpy.ops.object.modifier_apply(modifier=mod.name)
+        tris = sum(len(p.vertices) - 2 for p in o.data.polygons)
+    # Collapsing thin supports shortens the umbrella; scale back to the original height.
+    shrunk = max(v.co.z for v in o.data.vertices)
+    o.data.transform(Matrix.Scale(top / shrunk, 4))
 mat = bpy.data.materials.new('Pastel street food')
 mat.use_nodes = True
 bsdf = mat.node_tree.nodes.get('Principled BSDF')
