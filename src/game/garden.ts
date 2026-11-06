@@ -2,13 +2,10 @@
 // wilting and recovery over real days, crop harvesting into grocery inventory,
 // and neighbor gardener interactions.
 import type { Vec2 } from "./walk.ts";
+import type { Spot } from "./zoo.ts";
 
 export type GardenCropId =
-  | "tomato"
-  | "strawberry"
-  | "sunflower"
-  | "pepper"
-  | "herb";
+  "tomato" | "strawberry" | "sunflower" | "pepper" | "herb";
 
 export type GardenCropDef = {
   readonly id: GardenCropId;
@@ -400,6 +397,20 @@ export function harvestPlot(
   };
 }
 
+/** Fast-forwards garden plot growth by ms (used for testing and dev). */
+export function fastForwardGarden(garden: GardenSave, ms: number): GardenSave {
+  const nextPlots = garden.plots.map((p) => {
+    if (!p.crop) return { ...p };
+    return {
+      ...p,
+      growthMs: p.growthMs + ms,
+      plantedAt: p.plantedAt > 0 ? p.plantedAt - ms : 0,
+      wateredAt: p.wateredAt !== null ? p.wateredAt - ms : null,
+    };
+  });
+  return { ...garden, plots: nextPlots };
+}
+
 // -----------------------------------------------------------------------------
 // Layout & Geometry Constants
 // -----------------------------------------------------------------------------
@@ -457,7 +468,12 @@ export const FLOOR: readonly Vec2[] = box(
 
 export const BLOCKERS: readonly (readonly Vec2[])[] = [
   // Tool shed footprint
-  box(SHED_POS[0] - 2.5, SHED_POS[1] - 2.5, SHED_POS[0] + 2.5, SHED_POS[1] + 2.5),
+  box(
+    SHED_POS[0] - 2.5,
+    SHED_POS[1] - 2.5,
+    SHED_POS[0] + 2.5,
+    SHED_POS[1] + 2.5,
+  ),
   // Compost bays footprint
   box(
     COMPOST_POS[0] - 2.8,
@@ -477,3 +493,38 @@ export const BLOCKERS: readonly (readonly Vec2[])[] = [
     ),
   ),
 ];
+
+function fenceSpots(): Spot[] {
+  const panel = 3.2;
+  const k = 0.55;
+  const out: Spot[] = [];
+  const addLine = (ax: number, az: number, bx: number, bz: number) => {
+    const len = Math.hypot(bx - ax, bz - az);
+    const n = Math.max(1, Math.round(len / panel));
+    const yaw = Math.atan2(bx - ax, bz - az);
+    for (let i = 0; i < n; i++) {
+      const f = (i + 0.5) / n;
+      out.push({
+        x: ax + (bx - ax) * f,
+        y: 0,
+        z: az + (bz - az) * f,
+        yaw,
+        sx: k,
+        sy: k,
+        sz: k,
+      });
+    }
+  };
+  // North boundary
+  addLine(BOUNDS.x0, BOUNDS.z0, BOUNDS.x1, BOUNDS.z0);
+  // East boundary
+  addLine(BOUNDS.x1, BOUNDS.z0, BOUNDS.x1, BOUNDS.z1);
+  // West boundary
+  addLine(BOUNDS.x0, BOUNDS.z0, BOUNDS.x0, BOUNDS.z1);
+  // South boundary (leaving opening at gate: x in [-2, 2])
+  addLine(BOUNDS.x0, BOUNDS.z1, -2, BOUNDS.z1);
+  addLine(2, BOUNDS.z1, BOUNDS.x1, BOUNDS.z1);
+  return out;
+}
+
+export const GARDEN_FENCE_SPOTS: readonly Spot[] = fenceSpots();

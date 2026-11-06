@@ -937,6 +937,21 @@ export const CREDITS: readonly {
         usedFor: "Dog park: the fetch ball.",
       },
       {
+        title: "Storage Shed",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/m/JrFL3mLOKg",
+        usedFor: "Tool shed in the Suburbia community garden.",
+      },
+      {
+        title: "Watering Can",
+        author: "CreativeTrio",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/m/b2R90QehIt",
+        usedFor:
+          "Watering can prop and watering animation in the community garden.",
+      },
+      {
         title: "Mini Characters",
         author: "Kenney",
         license: "CC0 1.0",
