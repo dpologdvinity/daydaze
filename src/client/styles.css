@@ -2969,6 +2969,7 @@ button:focus-visible {
 .park-leash {
   bottom: 110px;
   width: auto;
+}
 
 /* Street counters stay legible over the city, with accessible menu controls. */
 .food-vendor-panel {

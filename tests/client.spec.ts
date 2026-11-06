@@ -3250,6 +3250,8 @@ test("dog park: dogs romp in the yard, and your pet can be let off the leash", a
   await expect(page.locator("canvas")).toHaveAttribute("data-pet-free", "0", {
     timeout: 30_000,
   });
+  expect(errors).toEqual([]);
+});
 
 // Walk-up purchasing must close exactly when the scheduled truck departs.
 test("ice-cream truck sells treats at its park stop and closes on departure", async ({
