@@ -13,6 +13,9 @@ import {
   GALLERY_Z,
   PIER,
   PROPS,
+  MOTEL_DOOR_NUMBERS,
+  MOTEL_NAMES,
+  MOTEL_PANEL_TEXTS,
   VOLLEYBALL,
   ROAD_EDGES,
   ROAD_NODES,
@@ -99,16 +102,6 @@ export const BLADE_SIGNS: Partial<
   "bus-shelter-block": { text: "24H DINER", color: "#ffd84f" },
   "arcade-square": { text: "UBE BAKERY", color: "#b06bff" },
   "karaoke-loft": { text: "KARAOKE BAR", color: "#4fe3ff" },
-  // Palm Court's motels (BEACH_BACK in layout.ts): every one has a vacancy sign
-  ...Object.fromEntries(
-    Array.from({ length: 12 }, (_, i) => [
-      `motel-${i}`,
-      {
-        text: "VACANCY",
-        color: ["#ff2f6a", "#4fe3ff", "#7dff6b"][i % 3] ?? "#ff2f6a",
-      },
-    ]),
-  ),
 };
 
 /** Flat-color ads on the faces of the towers. */
@@ -125,6 +118,9 @@ const TEXTS = [
   ...BUILDINGS.flatMap((b) => (b.sign ? [b.sign.text] : [])),
   ...Object.values(BLADE_SIGNS).map((s) => s?.text ?? ""),
   ...Object.values(ADS).map((a) => a?.text ?? ""),
+  ...MOTEL_NAMES,
+  ...MOTEL_PANEL_TEXTS,
+  ...MOTEL_DOOR_NUMBERS,
 ];
 export const LABELS: readonly string[] = [...new Set(TEXTS)];
 export const LABEL_COLUMNS = 6;
@@ -569,12 +565,6 @@ function sideDoor(b: Building, f: Front, out: Buckets, accent: string): void {
     rot: [-Math.PI / 2, 0, 0],
     color: accent,
   });
-}
-
-/** Just a building's blade sign: a house lot drawn as a model keeps its neon. */
-export function dressBlade(b: Building, out: Buckets): void {
-  const blades = BLADE_SIGNS[b.id];
-  if (blades) blade(out, frontOf(b), blades.text, blades.color);
 }
 
 /** Everything a building adds to its own frontage, after its body is drawn. */

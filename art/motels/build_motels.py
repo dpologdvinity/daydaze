@@ -1,5 +1,5 @@
 """Converts Quaternius's building packs (CC0) to one GLB per building for the
-Beachside motels and Suburbia's extra houses.
+Beachside cottages and Suburbia's extra houses.
 
 Sources, under $MOTELS_SRC (default /tmp/daydaze-city/q):
   Ultimate_Textured_Building_Pack__Dec_2019 (textured, pastel palettes),
@@ -44,16 +44,8 @@ def find(root, stem):
 # Beachside's (public/models/beachside/), `house-q-*` Suburbia's extra homes
 # (public/models/suburbia/).
 MODELS = {
-    "motel-long": (UT, "2Story_Wide_2Doors", UT_TEX, "Texture_Green"),
-    "motel-stairs": (UT, "2Story_Stairs", UT_TEX, "Texture_Light2"),
-    "motel-balcony": (UT, "2Story_Balcony", UT_TEX, "Texture_Yellow"),
-    "motel-tower": (UT, "3Story_Balcony", UT_TEX, "Texture_Blue"),
-    "motel-hotel": (UT, "4Story_Wide_2Doors", UT_TEX, "Texture_Light"),
-    "motel-flat": (AUG, "Flat", AUG_TEX, "HouseTexture3"),
-    "motel-flat2": (AUG, "Flat2", AUG_TEX, "HouseTexture4"),
     "cottage-gable": (UT, "1Story_GableRoof", UT_TEX, "Texture_Red"),
     "cottage-round": (UT, "1Story_RoundRoof", UT_TEX, "Texture_Blue"),
-    "cottage-two": (UT, "2Story_GableRoof", UT_TEX, "Texture_Green"),
     "cottage-wide": (AUG, "House5", AUG_TEX, "HouseTexture4"),
     "house-q-1": (AUG, "House", AUG_TEX, "HouseTexture1"),
     "house-q-2": (AUG, "House2", AUG_TEX, "HouseTexture2"),
@@ -146,7 +138,7 @@ def load(root, stem, reset=True):
     return ob
 
 
-MAX_TRIS = 3000  # a house is drawn at most this big (HOUSE_TRIANGLES in nyc.ts)
+MAX_TRIS = 5300  # a house is drawn at most this big (HOUSE_TRIANGLES in nyc.ts); the packs' own meshes are 3-5k, and collapsing them below that tears off shutters and window boxes
 
 
 def thin(ob):

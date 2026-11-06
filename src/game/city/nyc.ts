@@ -356,7 +356,7 @@ export function nycBays(b: Building): BayInstance[] {
 /** The house models, as paths under public/models/ (without .glb). Suburbia
  * draws Kenney's City Kit Suburban (CC0, one unit wide) and Quaternius's
  * Buildings packs (CC0, normalized so the longer side is one unit); Beachside's
- * motels and cottages are Quaternius's Ultimate Textured Building Pack. */
+ * cottages are Quaternius's Ultimate Textured Building Pack. */
 export const HOUSE_MODELS = [
   "suburbia/house-a",
   "suburbia/house-c",
@@ -372,16 +372,8 @@ export const HOUSE_MODELS = [
   "suburbia/house-q-4",
   "suburbia/house-q-side",
   "suburbia/house-q-columns",
-  "beachside/motel-long",
-  "beachside/motel-stairs",
-  "beachside/motel-balcony",
-  "beachside/motel-tower",
-  "beachside/motel-hotel",
-  "beachside/motel-flat",
-  "beachside/motel-flat2",
   "beachside/cottage-gable",
   "beachside/cottage-round",
-  "beachside/cottage-two",
   "beachside/cottage-wide",
 ] as const;
 /** The models Suburbia's lots pick from, and Beachside's. */
@@ -402,21 +394,13 @@ const HOUSE_UNITS: Partial<
   "suburbia/house-q-4": { w: 1, d: 0.664, h: 0.621 },
   "suburbia/house-q-side": { w: 1, d: 0.73, h: 0.795 },
   "suburbia/house-q-columns": { w: 0.867, d: 1, h: 1.112 },
-  "beachside/motel-long": { w: 1, d: 0.33, h: 0.402 },
-  "beachside/motel-stairs": { w: 0.852, d: 1, h: 1.084 },
-  "beachside/motel-balcony": { w: 0.852, d: 1, h: 1.163 },
-  "beachside/motel-tower": { w: 0.861, d: 1, h: 1.68 },
-  "beachside/motel-hotel": { w: 1, d: 0.395, h: 0.754 },
-  "beachside/motel-flat": { w: 1, d: 0.989, h: 1.461 },
-  "beachside/motel-flat2": { w: 1, d: 0.872, h: 1.46 },
   "beachside/cottage-gable": { w: 0.885, d: 1, h: 0.851 },
   "beachside/cottage-round": { w: 0.982, d: 1, h: 1.121 },
-  "beachside/cottage-two": { w: 0.907, d: 1, h: 1.316 },
   "beachside/cottage-wide": { w: 0.988, d: 1, h: 0.613 },
 };
 /** Triangles of the largest house model, for the budget. */
-export const HOUSE_TRIANGLES = 3000;
-/** The tallest a motel or cottage stands, meters. */
+export const HOUSE_TRIANGLES = 5300;
+/** The tallest a cottage stands, meters. */
 const BEACH_HOUSE_HEIGHT = 14;
 
 export type HouseSpot = {
@@ -436,7 +420,15 @@ export const isSuburbHouse = (b: Building): boolean =>
 /** A Beachside lot with no shop on it: the pastel houses on the beach front
  * and the motels one block back. */
 export const isBeachHouse = (b: Building): boolean =>
-  b.neighborhood === "beachside" && b.style === "deck" && !b.door && !b.sign;
+  b.neighborhood === "beachside" &&
+  b.style === "deck" &&
+  !b.door &&
+  !b.sign &&
+  !isMotel(b);
+
+/** A Palm Court motel (layout.ts's BEACH_BACK): a strip block with a court,
+ * drawn as boxes with its own dressing (motel.ts), never as a house model. */
+export const isMotel = (b: Building): boolean => b.id.startsWith("motel-");
 
 /** A lot that is drawn as a model when you are near, rather than a box. */
 export const isHouse = (b: Building): boolean =>

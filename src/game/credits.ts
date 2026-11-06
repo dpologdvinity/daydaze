@@ -384,7 +384,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/ultimatetexturedbuilding.html",
         usedFor:
-          "Beachside's motels and beach cottages on Palm Court, and a Suburbia house, thinned to 3000 triangles.",
+          "Beachside's beach cottages and two Suburbia houses (Palm Court's motels are built from boxes: no motel model exists), kept at the pack's own triangle count.",
       },
       {
         title: "Buildings Pack (Aug 2017)",
@@ -392,7 +392,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/buildings.html",
         usedFor:
-          "Beachside's flats and wide cottage, and four more Suburbia houses, thinned to 3000 triangles.",
+          "Beachside's wide cottage and four more Suburbia houses, kept at the pack's own triangle count.",
       },
       {
         title: "Train Pack",
