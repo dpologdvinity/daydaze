@@ -47,6 +47,7 @@ import { CityPark } from "./CityPark.tsx";
 import { ParkWildlife } from "./ParkWildlife.tsx";
 import { DogPark } from "./DogPark.tsx";
 import { FarmersMarket } from "./FarmersMarket.tsx";
+import { BandShell } from "./BandShell.tsx";
 import { CityTrees, cityTrees } from "./CityTrees.tsx";
 import { NycFacades, cityBays } from "./NycFacades.tsx";
 import { CityHouses, cityHouses } from "./CityHouses.tsx";
@@ -277,6 +278,7 @@ export function CityScene({
         <ParkWildlife player={player} />
         <DogPark player={player} />
         <FarmersMarket player={player} />
+        <BandShell player={player} />
         <NycFacades />
         <CityHouses />
         <ElLineBoundary>

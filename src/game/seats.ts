@@ -31,6 +31,7 @@ import { PARLOR, SALON } from "./salon.ts";
 import * as STADIUM from "./stadium.ts";
 import { BENCH_SEATS as LINKS_BENCH } from "./lagoonLinks.ts";
 import { FOUNTAIN, SQUARE_BENCHES } from "./city/layout.ts";
+import { BLANKET_SEATS } from "./city/bandShell.ts";
 import { BENCH_SEATS } from "./bowlingAlley.ts";
 import { BOOTH_SEATS, MIC } from "./karaoke.ts";
 import * as WAREHOUSE from "./warehouse.ts";
@@ -412,6 +413,11 @@ const squareSeats = SQUARE_BENCHES.flatMap(({ at: [x, z], yaw }, b) =>
   }),
 );
 
+// The park's band shell: a spot on each picnic blanket in front of the stage
+const parkSeats: Seat[] = BLANKET_SEATS.map((b) =>
+  seat(b.id, "city", b.at, 0.45, [b.at[0], b.at[1] + 5]),
+);
+
 // Lagoon Links: the bench on the concourse, facing the course
 const linksSeats = LINKS_BENCH.map((at, i) =>
   seat(`mini-golf-bench-${i}`, "mini-golf", at, 0.45, [at[0], 0], "front"),
@@ -555,6 +561,7 @@ export const SEATS: readonly Seat[] = [
   ...driveInSeats,
   ...cellarSeats,
   ...squareSeats,
+  ...parkSeats,
   ...linksSeats,
   ...sportsSeats,
   ...kamayanSeats,

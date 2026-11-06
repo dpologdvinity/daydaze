@@ -3550,6 +3550,48 @@ test("taxi: hail on a sidewalk, pick Beachside on the map, pay the fare and ride
     .poll(async () => Number(await canvas.getAttribute("data-player-z")))
     .toBeGreaterThan(250);
   await expect(page.getByText("100 coins", { exact: true })).toHaveCount(0);
+test("band shell: the park band plays mid-set, the bandleader chats and you can sit on a blanket", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  // 40 s into the 10:00 set, a few meters from the stage lawn
+  await page.goto("/?quality=low&room=city&band=40&at=231.5,-286");
+  const canvas = page.locator("canvas");
+  await expect(canvas).toHaveAttribute("data-band", "playing", {
+    timeout: 240_000,
+  });
+  await expect(canvas).toHaveAttribute("data-band-tune", "oh-susanna");
+  await expect(canvas).not.toHaveAttribute("data-band-dolls", "0");
+  const card = page.getByRole("region", { name: "Park band" });
+  await expect(card).toContainText("Now playing: Oh! Susanna", {
+    timeout: 60_000,
+  });
+  await expect(card).toContainText("next set at 10:30 AM");
+  await expect(card.locator(".band-line")).toContainText("Bandleader:");
+  await expect(card.locator(".band-line")).not.toContainText("...");
+  // a blanket seat on the lawn
+  await page.getByRole("button", { name: "Take a seat" }).click();
+  await expect(canvas).toHaveAttribute("data-seated", /^park-blanket-/, {
+    timeout: 60_000,
+  });
+  expect(errors).toEqual([]);
+});
+
+test("band shell: between sets the band is off and the card says when the next one is", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  // 15 minutes into the day's first half hour: the set is over
+  await page.goto("/?quality=low&room=city&band=900&at=231.5,-286");
+  await expect(page.locator("canvas")).toHaveAttribute("data-band", "off", {
+    timeout: 240_000,
+  });
+  await expect(page.getByRole("region", { name: "Park band" })).toContainText(
+    "Next set at 10:30 AM",
+    { timeout: 60_000 },
+  );
   expect(errors).toEqual([]);
 });
 
