@@ -248,3 +248,22 @@ Open branches (rebase onto main, `npm run verify`, the feature's Playwright test
 - `feat/forest`: forest trail area with Ultimate Nature pack, wildlife, birdsong.
 
 Lessons: subagent code reviews report to the lead; agents must check for conflict markers before `git add`; always use a unique Playwright PORT; keep lock holds under ~10 min; most owner Sketchfab downloads were NC (check licenses first); the shared agent brief is /tmp/daydaze-agent-rules.md.
+
+## Handoff 4 (2026-11-06, paused by the owner)
+
+Merged since Handoff 3: plus2, Orbit 9 (+ bartender aisle fix), the wonder43 flake sweep (3 green GitHub Actions runs). Wonder pass Tasks 36-41 and 43 are done; Task 42 (browser suite on push/PR) is committed on `feat/taxi`.
+
+Paused branches (each agent committed WIP; resume by giving each branch a fresh agent with its task, then rebase, verify, its Playwright test, screenshots, merge):
+- `feat/cove`: mermaids lounge/swim/sing fix committed; tests + screenshot pending.
+- `feat/home2` (TV picture, wall pieces, pink velvet; verify green) and `feat/motels` (pastel motels, VACANCY signs, Suburbia variety).
+- `fix/review-2`: static city merge (perf); checking the Beachside map test vs main.
+- `feat/forest`: Larkspur Forest Trail works (tests green) but sent back for polish: PBR ground/path textures, real water creek, outdoor bench, stray floating object, smooth shading, grass, haze, retake screenshots.
+- `feat/street`: boardwalk round 5 (real crowd, carts, cyclists).
+- `feat/park2`: dog park + weekend farmers market.
+- `feat/vendors`: ice-cream truck + food carts (spec /tmp/codex-vendors-2.md; fix the truck scale — camera was inside it).
+- `feat/seasons`: seasonal dressing on `?date=` (spec /tmp/codex-seasons-2.md).
+- `feat/taxi`: CI on push/PR (Task 42) + hail a taxi.
+- `feat/yacht`: Starlight yacht party at the Marina (Antigravity Sonnet hit quota; WIP 5a99dfad; spec /tmp/agy-yacht.md).
+- `feat/garden`: community garden in Suburbia (Antigravity Gemini, process frozen with SIGSTOP; PIDs in /tmp/agy-paused.pids; `kill -CONT` to resume or kill and restart from /tmp/agy-garden.md).
+
+Quotas: Codex resets ~5:57 AM 2026-11-06; Antigravity's Claude models ~4h50m after 03:00. Antigravity Gemini still had quota.
