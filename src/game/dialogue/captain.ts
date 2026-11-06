@@ -151,6 +151,34 @@ export const captainBank: RoleBank = {
       text: "Golden hour on the water. Genuinely can't be beat.",
       when: { venue: "yacht" },
     },
+    {
+      text: "That pink band on the horizon? That's the shadow of the earth. Only visible at sea.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Every evening cruise I think the sunset can't top the last one. Every time I'm wrong.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Colors go deeper once the sun touches the water. We timed this perfectly.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "The way the city reflects in the bay at dusk — worth the whole ticket right there.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Evening mist is rolling in off the bay. Makes the lights look softer. I love it.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Four hours out here and the sunset hits every single time. Never gets old.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "If you're taking photos, do it now — the light won't be this good again until tomorrow.",
+      when: { venue: "yacht" },
+    },
   ],
   "late-night": [
     {
@@ -159,6 +187,84 @@ export const captainBank: RoleBank = {
     },
     {
       text: "Stars are out. Dance floor's hopping. Perfect night at sea.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "After midnight the bay goes quiet except for us. I like it that way.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "The city never really sleeps, but from out here it at least slows down.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Every window in the skyline has a story. We've got a better view of all of them.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Music sounds different at sea past midnight. Bigger. More honest.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Half moon tonight. It's putting a stripe on the water all the way to the horizon.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "These late cruises are quieter, but the people who come are the ones who mean it.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "The bay is mine at this hour. I let the guests borrow it.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "I've sailed at every hour. This one is my favorite.",
+      when: { venue: "yacht" },
+    },
+  ],
+  goodbye: [
+    {
+      text: "Safe landing on the gangway. Hope you dance again soon.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Great having you aboard. See you next cruise.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Take care on the dock — it's slick when it's wet. Come back soon.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Pleasure having you on the Starlight. The bay misses you already.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Safe trip home, {name}. We loop again in fifteen minutes if you change your mind.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Disembarking already? Well, you know where to find us — right here on the water.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Fair winds and following seas. That's what we wish each other. Take that with you.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Good night! Tell your friends — the Starlight sails every evening.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Catch you on the next loop. The deck stays lively all night.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Mind the gangway step. Glad you came out tonight.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "I'll be steering the next lap if you want to come back. The bay is even better after midnight.",
       when: { venue: "yacht" },
     },
   ],

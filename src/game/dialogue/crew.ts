@@ -80,7 +80,7 @@ export const crewBank: RoleBank = {
       when: { venue: "yacht" },
     },
     {
-      text: "Bar's making the Starlight Spritz tonight. It's just sparkling citrus but it hits.",
+      text: "Bar's making the Starlight Fizz tonight. Just sparkling citrus and grapefruit, but it goes down easy.",
       when: { venue: "yacht" },
     },
     {
@@ -152,7 +152,7 @@ export const crewBank: RoleBank = {
       when: { venue: "yacht" },
     },
     {
-      text: "On it! Starlight Spritz for you: sparkling elderflower and grapefruit.",
+      text: "On it! Starlight Fizz for you: sparkling elderflower and grapefruit, no regrets.",
       when: { venue: "yacht" },
     },
     {
@@ -193,6 +193,136 @@ export const crewBank: RoleBank = {
     },
     {
       text: "Sure! Peach fizz with a lemon wheel. It photographs well too, just saying.",
+      when: { venue: "yacht" },
+    },
+  ],
+  tapped: [
+    {
+      text: "The string lights were my idea. I stretched them all by hand before we sailed.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "DJ Prism is on until we dock. Best playlist on any boat in the bay.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Life jackets are under the aft bench, just so you know. Not that we'll need them!",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "The hot tub holds six. Jump in if there's room — the water's perfect.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "City looks different from the water. Bigger and smaller at the same time.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "I've been on the Starlight crew three summers. Best job I've ever had.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "If the deck sways a little, that's the bay being playful. It's normal.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "The lounge chairs up front have the best view of the skyline. Grab one before they're gone.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "We pass the lighthouse at the north point in about ten minutes. Worth watching.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "The captain's been sailing this bay longer than I've been alive. We're in good hands.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Let me know if you need anything. That's literally my whole job right now.",
+      when: { venue: "yacht" },
+    },
+  ],
+  idle: [
+    {
+      text: "Keeping the deck clear so everyone can dance. That's the mission.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Salt air and bass drops. This is genuinely the best shift.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "I love the way the city looks from out here at night. All that light.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "The wake behind us is so clean tonight. Calm bay.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "If you see a star fall, don't look away. They go fast.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Mango mocktail is running out fast tonight. Second batch is almost ready.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "DJ Prism just dropped the best transition. Listen for the swell.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "I'm watching the railing lights pulse in time with the music. It's doing it on its own.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Wind picked up half a knot. The captain's happy — she likes a little push.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "The foredeck gets the best breeze. Great spot to cool down after dancing.",
+      when: { venue: "yacht" },
+    },
+  ],
+  goodbye: [
+    {
+      text: "Mind your step on the gangway! Come back any night.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Safe trip home! The Starlight sails again at sunset tomorrow.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Glad you came! The dance floor was better for it.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Take care! Grab a mint on the way out — they're by the gangway.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Thanks for coming! Tell a friend — the more the merrier out here.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Bye! The mango fizz will miss you most.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Safe landing on the dock! Hope to see you on the next cruise.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Good night! You were an excellent passenger — no complaints.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "Take care of yourself! The bay will be here when you're ready for another cruise.",
+      when: { venue: "yacht" },
+    },
+    {
+      text: "See you around! This boat's always got room for one more great dancer.",
       when: { venue: "yacht" },
     },
   ],
