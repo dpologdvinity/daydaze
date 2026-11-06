@@ -99,6 +99,16 @@ export const BLADE_SIGNS: Partial<
   "bus-shelter-block": { text: "24H DINER", color: "#ffd84f" },
   "arcade-square": { text: "UBE BAKERY", color: "#b06bff" },
   "karaoke-loft": { text: "KARAOKE BAR", color: "#4fe3ff" },
+  // Palm Court's motels (BEACH_BACK in layout.ts): every one has a vacancy sign
+  ...Object.fromEntries(
+    Array.from({ length: 12 }, (_, i) => [
+      `motel-${i}`,
+      {
+        text: "VACANCY",
+        color: ["#ff2f6a", "#4fe3ff", "#7dff6b"][i % 3] ?? "#ff2f6a",
+      },
+    ]),
+  ),
 };
 
 /** Flat-color ads on the faces of the towers. */
