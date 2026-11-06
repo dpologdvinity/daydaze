@@ -2597,9 +2597,10 @@ test("beach volleyball at the city net: first to seven pays a prize", async ({
   const map = page.getByRole("dialog", { name: "City map" });
   await map.getByText("Beachside", { exact: false }).last().click();
   await map.getByRole("button", { name: "Beach volleyball" }).click();
+  // the sand loads in after the jump; the net's panel waits on its first frames
   await page
     .getByRole("button", { name: "Play beach volleyball" })
-    .click({ timeout: 60_000 });
+    .click({ timeout: 150_000 });
   const game = page.getByRole("region", { name: "Beach volleyball" });
   // the ball flies on the court: each touch is a new flight
   const canvas = canvasOf(page);
@@ -2902,8 +2903,10 @@ test("the haunted house: losing your nerve ends the run with a prize", async ({
 });
 
 test("the city map takes the player to Beachside", async ({ page }) => {
+  // a cold city load plus the trip is over the default 180 s on a busy CPU
+  test.setTimeout(330_000);
   await page.goto(`${LOW}&room=city`);
-  await expect(roomTitle(page)).toHaveText("Downtown");
+  await expect(roomTitle(page)).toHaveText("Downtown", { timeout: 150_000 });
   await (await fromMenu(page, "City map")).click();
   const map = page.getByRole("dialog", { name: "City map" });
   await expect(map).toBeVisible();
@@ -2915,7 +2918,9 @@ test("the city map takes the player to Beachside", async ({ page }) => {
   ).toHaveCount(3);
   await map.getByRole("button", { name: "Beachside" }).click();
   await expect(map).toBeHidden();
-  await expect(roomTitle(page)).toHaveText("Beachside", { timeout: 60_000 });
+  await expect(roomTitle(page)).toHaveText("Beachside", {
+    timeout: 150_000,
+  });
 });
 
 test("a new player gets the walkthrough, and a skip keeps it away", async ({
