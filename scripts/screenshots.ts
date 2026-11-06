@@ -585,6 +585,14 @@ const SHOTS: {
       await cityReady(page);
       await page.waitForFunction(
         () => document.querySelector("canvas")?.dataset.market === "closed",
+    // the park band on its shell's stage mid-tune (src/game/city/bandShell.ts)
+    name: "band-shell",
+    query:
+      "room=city&view=room&time=11:00&band=40&at=230,-290&cam=232,4.5,-291,230,2.2,-272",
+    act: async (page) => {
+      await cityReady(page);
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.band === "playing",
         null,
         { timeout: 300_000 },
       );

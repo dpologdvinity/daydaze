@@ -77,6 +77,7 @@ import { driverSays, taxiRide } from "../city/taxiStore.ts";
 import { fareFor, planRoute, routeLength } from "../../game/city/taxi.ts";
 import { FuelStop } from "../city/FuelStop.tsx";
 import { ParkPanel } from "../city/ParkPanel.tsx";
+import { BandPanel } from "../city/BandPanel.tsx";
 import { VolleyStop } from "../city/VolleyStop.tsx";
 import { DealershipPanel } from "../city/DealershipPanel.tsx";
 import { RecordPlayer, RecordsPanel } from "../city/RecordsPanel.tsx";
@@ -927,6 +928,7 @@ export function Overlay({
       {room === "city" && <FuelStop coins={coins} onSpend={onSpend} />}
       {room === "city" && <VolleyStop />}
       {room === "city" && <ParkPanel />}
+      {room === "city" && <BandPanel />}
       {room === "city" && <BusPanel />}
       {room === "city" && <FoodVendorPanel coins={coins} onSpend={onSpend} />}
       {room === "vinyl-vault" && (

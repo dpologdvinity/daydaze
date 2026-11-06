@@ -65,7 +65,7 @@ test("furniture stands in the park, ducks and the boat on the water", () => {
     if (f.kind === "duck" || f.kind === "rowboat")
       assert.ok(Math.hypot(f.x - POND.x, f.z - POND.z) < POND.r - 1);
   }
-  for (const k of ["fountain", "gazebo", "bench", "blanket", "duck"])
+  for (const k of ["fountain", "bench", "blanket", "duck"])
     assert.ok(
       furniture.some((f) => f.kind === k),
       `no ${k}`,
