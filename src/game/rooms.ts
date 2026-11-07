@@ -118,6 +118,7 @@ import * as DRIVE from "./driveIn.ts";
 import * as CELLAR from "./wineBar.ts";
 import * as REWIND from "./videoStore.ts";
 import * as FARM from "./farm.ts";
+import * as YACHT from "./yacht.ts";
 import {
   BLOCKERS as ORBIT_BLOCKERS,
   EXIT as ORBIT_EXIT,
@@ -202,6 +203,7 @@ export type RoomId =
   | "video-store"
   | "farm"
   | "forest"
+  | "yacht"
   | "city";
 
 /** Where a player appears: a floor point and a yaw (0 faces +z). */
@@ -760,6 +762,27 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to the City",
         target: "city",
         targetSpawn: { position: FOREST.FOREST_GATE_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  yacht: {
+    id: "yacht",
+    name: "Starlight Yacht Party",
+    walkable: [
+      [-8, -8],
+      [8, -8],
+      [8, 7],
+      [-8, 7],
+    ] satisfies Vec2[],
+    spawn: { position: YACHT.YACHT_SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "yacht-to-marina",
+        position: YACHT.DISEMBARK_AT,
+        radius: 1.5,
+        label: "Back to Starboard Marina",
+        target: "marina",
+        targetSpawn: { position: [0, -1.8], yaw: 0 },
       },
     ],
   },
@@ -1397,6 +1420,14 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to Shore Boulevard",
         target: "city",
         targetSpawn: { position: MARINA.MARINA_DOOR.landing, yaw: 0 },
+      },
+      {
+        id: "marina-to-yacht",
+        position: YACHT.GANGWAY_AT,
+        radius: 2.2,
+        label: "Board the Starlight 🛳",
+        target: "yacht",
+        targetSpawn: { position: YACHT.YACHT_SPAWN, yaw: Math.PI },
       },
     ],
   },

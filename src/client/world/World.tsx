@@ -241,6 +241,9 @@ const Catwalk = lazy(() =>
 const Marina = lazy(() =>
   import("../rooms/Marina.tsx").then((m) => ({ default: m.Marina })),
 );
+const Yacht = lazy(() =>
+  import("../rooms/Yacht.tsx").then((m) => ({ default: m.Yacht })),
+);
 const DrivingRange = lazy(() =>
   import("../rooms/DrivingRange.tsx").then((m) => ({
     default: m.DrivingRange,
@@ -445,6 +448,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   gridiron: Gridiron,
   "driving-range": DrivingRange,
   marina: Marina,
+  yacht: Yacht,
   courtside: Courtside,
   catwalk: Catwalk,
   "mermaid-cove": MermaidCove,

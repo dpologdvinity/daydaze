@@ -1852,6 +1852,68 @@ test("the marina: cast, strike, and the catch is called", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("Starlight yacht: board at the marina, cruise, dance and return", async ({
+  page,
+}) => {
+  test.setTimeout(360_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=marina`);
+  await expect(roomTitle(page)).toHaveText("Starboard Marina", {
+    timeout: 150_000,
+  });
+  const view = canvasOf(page);
+  await expect(view).toHaveAttribute("data-frames", "10", { timeout: 120_000 });
+
+  // Walk forward down the dock to the gangway portal
+  await page.keyboard.down("KeyW");
+  await expect(roomTitle(page)).toHaveText("Starlight Yacht Party", {
+    timeout: 120_000,
+  });
+  await page.keyboard.up("KeyW");
+
+  // On the yacht: verify canvas settles and cruise status is tracked
+  await expect(view).toHaveAttribute("data-frames", "10", { timeout: 120_000 });
+  await expect(view).toHaveAttribute("data-yacht-cruise", /docked|cruising/, {
+    timeout: 60_000,
+  });
+
+  // Dance on the deck using the mood segmented control
+  await page.getByRole("radio", { name: "Dance" }).click();
+  await expect(view).toHaveAttribute("data-dance", "groove", {
+    timeout: 60_000,
+  });
+
+  // Pick another dance move from the dock picker
+  const moveBtn = page
+    .getByRole("button", { name: /Voguing|Shimmy|House|Body roll|Two-step/i })
+    .first();
+  if ((await moveBtn.count()) > 0) {
+    await moveBtn.click();
+    await expect(view).toHaveAttribute(
+      "data-dance",
+      /voguing|shimmy|house|body-roll|two-step/i,
+      { timeout: 60_000 },
+    );
+  }
+
+  // Grab a mocktail from the mocktail bar
+  const mocktailBtn = page.getByRole("button", {
+    name: /Have a mocktail|Have a drink/i,
+  });
+  if ((await mocktailBtn.count()) > 0) {
+    await mocktailBtn.click();
+  }
+
+  // Walk back aft to the stern gangway portal to return to the marina
+  await page.keyboard.down("KeyS");
+  await expect(roomTitle(page)).toHaveText("Starboard Marina", {
+    timeout: 120_000,
+  });
+  await page.keyboard.up("KeyS");
+
+  expect(errors).toEqual([]);
+});
+
 test("the Courtside Club: seven points end in a prize card", async ({
   page,
 }) => {

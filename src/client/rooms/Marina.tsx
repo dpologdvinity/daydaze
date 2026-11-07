@@ -458,6 +458,14 @@ export function Marina({
       <MarinaFish />
       <Pilings />
       <PortalPads room={ROOMS.marina} color={TEAL} />
+      <NeonText
+        text="STARLIGHT"
+        color={TEAL}
+        font={MARQUEE}
+        width={2.2}
+        k={2.4}
+        position={[0, 2.2, -4.8]}
+      />
       {YACHTS.map((y, i) => (
         <Yacht key={y.name} {...y} seed={i * 2.3} />
       ))}
