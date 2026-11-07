@@ -137,7 +137,6 @@ future imported packs belong here when they enter the game.
 | Saxophone | jeremy | CC-BY 3.0 | https://poly.pizza/m/6A2UAKdCNy7 | Park band's saxophone. |
 | Drum | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/c3RNKJflc4O | Park band's drum. |
 | Music stand | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/3zlFGH_TJ8h | Park band's music stands. |
-| Rock Large | Quaternius | CC0 1.0 | https://poly.pizza/m/54jZKTAt5p | Reef dive: flat boulders and arch lintels. |
 | Rock Large (pillar) | Quaternius | CC0 1.0 | https://poly.pizza/m/d2VWOdthtR | Reef dive: rock pillars and arch legs. |
 | Rock Medium | Quaternius | CC0 1.0 | https://poly.pizza/m/s1OJ3bBzqc | Reef dive: mossy boulders; Mermaid Cove's lagoon boulders. |
 | Mountain Group | Quaternius | CC0 1.0 | https://poly.pizza/m/a52gSEEq8X | Reef dive: rock spires. |
