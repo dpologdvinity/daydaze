@@ -24,7 +24,8 @@ import { driverSays, resetTaxiRide, taxiCab, taxiRide } from "./taxiStore.ts";
 const BOARD_RANGE = 24;
 /** The cab's traffic id: 1 mod 4 draws the taxi model (Traffic.tsx). */
 const CAB_ID = 401;
-/** Where in the cab she sits: meters behind its center, and how high. */
+/** Where in the cab she sits: meters behind its center. She sits low, so the
+ * roof hides all but her head and shoulders. */
 const BACK_SEAT = 0.9;
 
 export function TaxiRide({ player }: { player: Player }) {
@@ -159,7 +160,7 @@ export function TaxiRide({ player }: { player: Player }) {
         player.before.pos = carried;
         player.pos.set(x, 0, z);
         player.acc = 0;
-        seat.position.set(x, 0.55, z);
+        seat.position.set(x, 0.2, z);
         seat.yaw = pose.yaw + Math.PI / 2;
         eye.set(pose.x - dx * 11 - dz * 4, 5.5, pose.z - dz * 11 + dx * 4);
         aim.set(pose.x + dx * 3, 1.4, pose.z + dz * 3);
