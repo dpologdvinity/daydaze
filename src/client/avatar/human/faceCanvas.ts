@@ -170,7 +170,7 @@ function alphaMask(img: HTMLImageElement, ch: 0 | 1) {
 
 /** One channel of the baked mask as an alpha-only canvas, tinted. */
 function channel(img: HTMLImageElement, ch: 0 | 1, color: string) {
-  const { canvas, ctx } = makeCanvas(SIZE, SIZE, false);
+  const { canvas, ctx } = makeCanvas(SIZE, SIZE);
   ctx.drawImage(alphaMask(img, ch), 0, 0);
   // keep the mask's alpha, replace its white with the tint
   ctx.globalCompositeOperation = "source-in";
@@ -561,8 +561,7 @@ export async function paintFace(
   const img = await loadMask(look.body === "masculine" ? "-m" : "");
   const makeup = makeupOf(look);
   const skin = hexRgb(look.skin);
-  // painted once and uploaded, never read back: let the GPU rasterize it
-  const { canvas, ctx } = makeCanvas(SIZE, SIZE, false);
+  const { canvas, ctx } = makeCanvas(SIZE, SIZE);
   ctx.fillStyle = rgba(skin);
   ctx.fillRect(0, 0, SIZE, SIZE);
 
@@ -812,7 +811,7 @@ export function sharedLashes(): THREE.Texture {
 /** Sclera, iris and pupil for the eyeballs' front planar UV. */
 function paintIris(color: string) {
   const S = 256;
-  const { canvas, ctx } = makeCanvas(S, S, false);
+  const { canvas, ctx } = makeCanvas(S, S);
   ctx.fillStyle = "#f4ece8";
   ctx.fillRect(0, 0, S, S);
   const c = S / 2;
@@ -859,7 +858,7 @@ function paintIris(color: string) {
 function paintLashes() {
   const W = 512,
     H = 64;
-  const { canvas, ctx } = makeCanvas(W, H, false);
+  const { canvas, ctx } = makeCanvas(W, H);
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = "rgba(10,5,8,1)";
   let seed = 77;
