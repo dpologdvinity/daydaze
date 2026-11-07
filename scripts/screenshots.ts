@@ -273,8 +273,11 @@ const SHOTS: {
       await page
         .getByRole("button", { name: "Sing with the mermaids" })
         .click();
+      await expect(
+        page.getByRole("region", { name: "Siren Song" }).getByRole("status"),
+      ).toHaveText(/Listen/);
       await expect(canvas).toHaveAttribute("data-singer", "idle", {
-        timeout: 120_000,
+        timeout: 400_000,
       });
       // a few more frames, so she finishes rising
       await page.evaluate(
