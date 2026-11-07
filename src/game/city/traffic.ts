@@ -2,6 +2,7 @@ import type { Vec2 } from "../walk.ts";
 import { neighborhoodAt } from "./cells.ts";
 import { hash } from "./hash.ts";
 import { ROAD_EDGES, ROAD_NODES, type RoadEdge } from "./layout.ts";
+import { shortest, snapToRoad } from "./taxi.ts";
 
 /**
  * City traffic: cars drive one lane each way on every road edge, keep right,
@@ -112,6 +113,18 @@ function crossingHalfWidth(node: string, edge: number): number {
 /** Where a lane runs: an edge and which way along it (1 from -> to). */
 type Lane = { edge: number; way: 1 | -1 };
 
+/**
+ * A taxi's errand, for a cab that is one of the traffic cars: the junctions it
+ * still passes (the first is the end of its current lane), then the lane it
+ * stops on, `s` meters along it. Everything else (lights, following, the
+ * player) it does like any car.
+ */
+export type CabTrip = {
+  path: string[];
+  stop: { lane: Lane; s: number };
+  arrived: boolean;
+};
+
 export type VehicleKind = "car" | "jeepney";
 
 export type TrafficCar = {
@@ -126,6 +139,8 @@ export type TrafficCar = {
   id: number;
   /** Set while crossing a junction: the lane the car is turning into. */
   next: Lane | null;
+  /** Set on a taxi: where it is going and whether it has got there. */
+  trip?: CabTrip;
 };
 
 export type Traffic = { cars: TrafficCar[]; time: number };
@@ -217,6 +232,18 @@ export function createTraffic(count: number, seed = 1): Traffic {
 
 function chooseNext(car: TrafficCar): Lane {
   const node = endNode(car.lane);
+  const trip = car.trip;
+  if (trip) {
+    if (trip.path[0] === node) trip.path.shift();
+    const to = trip.path[0];
+    if (to === undefined) return trip.stop.lane;
+    const edge = (AT_NODE.get(node) ?? []).find((i) => {
+      const e = EDGES[i];
+      return (e.fromId === node ? e.toId : e.fromId) === to;
+    });
+    if (edge !== undefined)
+      return { edge, way: EDGES[edge].fromId === node ? 1 : -1 };
+  }
   const options = (AT_NODE.get(node) ?? []).filter((i) => i !== car.lane.edge);
   // dead end: turn around into the other lane of the same edge
   if (!options.length)
@@ -339,6 +366,20 @@ function playerRoom(car: TrafficCar, player: Vec2 | null): number {
   return along - VEHICLE_LENGTH[car.kind] / 2 - 1.5;
 }
 
+/** Meters left before a cab's stopping place, Infinity if it is not on its
+ * last lane yet. */
+function stopRoom(car: TrafficCar): number {
+  const trip = car.trip;
+  if (
+    !trip ||
+    trip.path.length > 0 ||
+    car.lane.edge !== trip.stop.lane.edge ||
+    car.lane.way !== trip.stop.lane.way
+  )
+    return Infinity;
+  return trip.stop.s - car.s;
+}
+
 /** Advances every car by dt seconds at simulation time t.time + dt. */
 export function stepTraffic(
   t: Traffic,
@@ -350,7 +391,9 @@ export function stepTraffic(
   t.time += dt;
   for (const car of t.cars) {
     const len = laneLength(car.lane);
-    if (!car.next && car.s > len - TURN - 20) car.next = chooseNext(car);
+    // a cab on its last lane stops short of the junction: no turn to pick
+    if (!car.next && car.s > len - TURN - 20 && stopRoom(car) === Infinity)
+      car.next = chooseNext(car);
     const limit = EDGES[car.lane.edge].speedLimit;
     const room = Math.min(
       headroom(t, car, 60),
@@ -358,6 +401,7 @@ export function stepTraffic(
       playerRoom(car, player),
       playerRoom(car, bus) - 3,
       playerRoom(car, truck) - 2,
+      stopRoom(car),
     );
     // the speed from which the car can still stop within `room`
     const safe = room <= 0 ? 0 : Math.sqrt(2 * BRAKE * room * 0.8);
@@ -367,6 +411,11 @@ export function stepTraffic(
         ? Math.min(target, car.speed + ACCEL * dt)
         : Math.max(target, car.speed - BRAKE * dt);
     car.s += car.speed * dt;
+    const trip = car.trip;
+    if (trip && !trip.arrived && stopRoom(car) < 0.5 && car.speed < 1.5) {
+      trip.arrived = true;
+      car.speed = 0;
+    }
     // past the junction curve: now on the next lane
     if (car.next && car.s >= len + TURN) {
       car.s = car.s - len;
@@ -374,4 +423,81 @@ export function stepTraffic(
       car.next = null;
     }
   }
+}
+
+// ------------------------------------------------------------------- taxis
+
+/** A taxi's body length, like a car's. */
+const edgeBetween = (a: string, b: string): number =>
+  EDGES.findIndex(
+    (e) => (e.fromId === a && e.toId === b) || (e.fromId === b && e.toId === a),
+  );
+
+/** Keep a stopping place clear of the junction curves at both ends. */
+const clampStop = (lane: Lane, s: number) =>
+  Math.max(TURN + 2, Math.min(laneLength(lane) - TURN - 3, s));
+
+/** Meters along `lane` of the point `p` on its edge's center line. */
+function sAlong(lane: Lane, p: Vec2): number {
+  const e = EDGES[lane.edge];
+  const start = lane.way === 1 ? e.from : e.to;
+  return Math.hypot(p[0] - start[0], p[1] - start[1]);
+}
+
+/**
+ * A taxi that pulls up beside `rider` at `curb` (a road center-line point):
+ * it comes along the lane on the rider's side of the road and stops at the
+ * curb. Push it onto `Traffic.cars`; `trip.arrived` turns true when it is there.
+ */
+export function cabAtCurb(id: number, curb: Vec2, rider: Vec2): TrafficCar {
+  const snap = snapToRoad(curb);
+  const edge = edgeBetween(snap.from, snap.to);
+  const e = EDGES[edge];
+  // keeping right, the lane whose right-hand side faces the rider
+  const way =
+    (rider[0] - curb[0]) * -e.dir[1] + (rider[1] - curb[1]) * e.dir[0] >= 0
+      ? 1
+      : -1;
+  const lane: Lane = { edge, way };
+  const s = clampStop(lane, sAlong(lane, curb));
+  return {
+    kind: "car",
+    lane,
+    s: Math.max(0, s - 50),
+    speed: 0,
+    color: "#ffd84f",
+    turns: 0,
+    id,
+    next: null,
+    trip: { path: [], stop: { lane, s }, arrived: false },
+  };
+}
+
+/**
+ * Sends a stopped cab to the road beside `dest`: through the junctions of the
+ * shortest way, then onto the dest edge's lane and a stop at its point.
+ */
+export function cabToward(car: TrafficCar, dest: Vec2): void {
+  const snap = snapToRoad(dest);
+  const edge = edgeBetween(snap.from, snap.to);
+  const first = endNode(car.lane);
+  let best: { ids: string[]; end: string } | null = null;
+  let bestCost = Infinity;
+  for (const end of [snap.from, snap.to]) {
+    const { ids, length } = shortest(first, end);
+    const at = nodeAt.get(end) ?? snap.point;
+    const cost =
+      length + Math.hypot(at[0] - snap.point[0], at[1] - snap.point[1]);
+    if (ids.length && cost < bestCost) {
+      bestCost = cost;
+      best = { ids, end };
+    }
+  }
+  if (!best) throw new Error("No road connects the cab to the destination");
+  const lane: Lane = { edge, way: EDGES[edge].fromId === best.end ? 1 : -1 };
+  car.trip = {
+    path: best.ids,
+    stop: { lane, s: clampStop(lane, sAlong(lane, snap.point)) },
+    arrived: false,
+  };
 }

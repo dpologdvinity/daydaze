@@ -30,10 +30,10 @@ for (const e of ROAD_EDGES) {
 
 const dist = (a: Vec2, b: Vec2) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 
-type Snap = { point: Vec2; from: string; to: string };
+export type Snap = { point: Vec2; from: string; to: string };
 
 /** The point on a road center line nearest `p`, and that edge's ends. */
-function snap(p: Vec2): Snap {
+export function snapToRoad(p: Vec2): Snap {
   let best: Snap | null = null;
   let bestD = Infinity;
   for (const e of ROAD_EDGES) {
@@ -60,7 +60,10 @@ function snap(p: Vec2): Snap {
 }
 
 /** Shortest node path from `a` to `b` (Dijkstra; the graph is tiny). */
-function shortest(a: string, b: string): { ids: string[]; length: number } {
+export function shortest(
+  a: string,
+  b: string,
+): { ids: string[]; length: number } {
   const best = new Map<string, number>([[a, 0]]);
   const prev = new Map<string, string>();
   const open = new Set([a]);
@@ -105,8 +108,8 @@ function shortest(a: string, b: string): { ids: string[]; length: number } {
  * beside `to`. Always at least one point.
  */
 export function planRoute(from: Vec2, to: Vec2): Vec2[] {
-  const a = snap(from);
-  const b = snap(to);
+  const a = snapToRoad(from);
+  const b = snapToRoad(to);
   if (a.from === b.from && a.to === b.to) return [a.point, b.point];
   let route: Vec2[] | null = null;
   let routeD = Infinity;
@@ -167,7 +170,7 @@ export function routePose(
 
 /** The road point beside `p` where a cab pulls up. */
 export function curbPoint(p: Vec2): Vec2 {
-  return snap(p).point;
+  return snapToRoad(p).point;
 }
 
 /**
@@ -175,7 +178,7 @@ export function curbPoint(p: Vec2): Vec2 {
  * road it stands on, ending at the curb point.
  */
 export function approachRoute(p: Vec2, run = 55): Vec2[] {
-  const s = snap(p);
+  const s = snapToRoad(p);
   const a = nodeAt.get(s.from);
   const b = nodeAt.get(s.to);
   if (!a || !b) return [s.point, s.point];

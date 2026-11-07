@@ -840,6 +840,8 @@ export function Overlay({
   const [mapOpen, setMapOpen] = useState(false);
   // in a taxi the map picks the destination and prices each one
   const taxi = taxiRide.use();
+  // sitting in the cab: no driving your own car or taking a seat
+  const inCab = taxi.phase === "choosing" || taxi.phase === "riding";
   // skates come off indoors, where rolling isn't allowed
   const { on: skating } = skates.use();
   useEffect(() => {
@@ -979,7 +981,7 @@ export function Overlay({
         <div className="dock-actions" role="group" aria-label="Room actions">
           {room === "city" && <ElPanel />}
           {room === "city" && <TaxiPanel />}
-          {room === "city" && (
+          {room === "city" && !inCab && (
             <button
               type="button"
               className="drink"
@@ -989,7 +991,7 @@ export function Overlay({
             </button>
           )}
           {room === "apartment" && <RecordPlayer records={records} />}
-          {(seatsIn(room).length > 0 || room === "apartment") && (
+          {!inCab && (seatsIn(room).length > 0 || room === "apartment") && (
             <button
               type="button"
               className="drink"

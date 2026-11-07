@@ -2,6 +2,7 @@
 // last line, and the requests the buttons and the map file. TaxiRide (in the
 // 3D scene) drives it; TaxiPanel (dock) and the Overlay's map read it.
 import type { Vec2 } from "../../game/walk.ts";
+import type { TrafficCar } from "../../game/city/traffic.ts";
 import type { Spawn } from "../../game/rooms.ts";
 import { loadDialogue, pickLine } from "../../game/dialogue/pick.ts";
 import type {
@@ -41,6 +42,9 @@ const IDLE: TaxiState = {
 };
 
 export const taxiRide = createStore<TaxiState>(IDLE);
+/** The cab on the street, a traffic car (Traffic.tsx adds it to the sim and
+ * draws it; TaxiRide steers it). Null when no taxi is out. */
+export const taxiCab: { car: TrafficCar | null } = { car: null };
 /** Back to nothing happening (the scene unmounted). */
 export const resetTaxiRide = () => taxiRide.set(IDLE);
 

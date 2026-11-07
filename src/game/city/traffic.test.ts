@@ -7,11 +7,14 @@ import {
   JEEPNEY_COLORS,
   SIGNAL_PHASES,
   VEHICLE_LENGTH,
+  cabAtCurb,
+  cabToward,
   carPose,
   createTraffic,
   signalAt,
   stepTraffic,
   type Traffic,
+  type TrafficCar,
 } from "./traffic.ts";
 import { pointInPolygon } from "../walk.ts";
 
@@ -155,4 +158,54 @@ test("traffic brakes for the ice-cream truck as well as the city bus", () => {
   carPose(car, pose);
   assert.ok(Math.hypot(pose.x - truck[0], pose.z - truck[1]) > 4);
   assert.ok(car.speed < 0.1);
+});
+
+// ------------------------------------------------------------------- taxi
+
+function drive(t: Traffic, cab: TrafficCar, seconds: number): number {
+  for (let i = 0; i < seconds * 50; i++) {
+    stepTraffic(t, 1 / 50, null);
+    if (cab.trip?.arrived) return i / 50;
+  }
+  return Infinity;
+}
+
+test("a cab rolls in and stops at the curb on the rider's side, in its lane", () => {
+  const t = createTraffic(0);
+  const rider: [number, number] = [-30, 12];
+  const cab = cabAtCurb(900, [-30, 0], rider);
+  t.cars.push(cab);
+  assert.ok(drive(t, cab, 30) < 30);
+  const p = { x: 0, z: 0, yaw: 0 };
+  carPose(cab, p);
+  // stopped, and on the rider's (south) side of the center line
+  assert.ok(Math.abs(p.x - -30) < 1.5, `x ${p.x}`);
+  assert.ok(p.z > 0 && p.z < 6, `z ${p.z}`);
+});
+
+test("the cab drives to a faraway place along the streets and stops there", () => {
+  const t = createTraffic(0);
+  const cab = cabAtCurb(901, [-30, 0], [-30, 12]);
+  t.cars.push(cab);
+  drive(t, cab, 30);
+  cabToward(cab, [8, 290]);
+  assert.equal(cab.trip?.arrived, false);
+  assert.ok(drive(t, cab, 400) < 400, "never arrived");
+  const p = { x: 0, z: 0, yaw: 0 };
+  carPose(cab, p);
+  assert.ok(Math.hypot(p.x - 8, p.z - 256) < 8, `${p.x},${p.z}`);
+});
+
+test("the cab waits at a red light like any car", () => {
+  const t = createTraffic(0);
+  const cab = cabAtCurb(902, [-30, 0], [-30, 12]);
+  t.cars.push(cab);
+  drive(t, cab, 30);
+  cabToward(cab, [250, -280]);
+  let waited = false;
+  for (let i = 0; i < 400 * 50 && !cab.trip?.arrived; i++) {
+    stepTraffic(t, 1 / 50, null);
+    if (cab.speed === 0 && !cab.trip?.arrived) waited = true;
+  }
+  assert.ok(waited, "never stopped for a light on a long cross-town trip");
 });

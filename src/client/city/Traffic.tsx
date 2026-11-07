@@ -16,6 +16,7 @@ import {
 import type { Player } from "../world/PlayerController.tsx";
 import { foodMotion } from "./foodVendors.ts";
 import { busMotion } from "./busRide.ts";
+import { taxiCab } from "./taxiStore.ts";
 import { driving } from "../world/driving.ts";
 import {
   useTransitModels,
@@ -300,6 +301,10 @@ export function Traffic({ player }: { player: Player }) {
   );
 
   useFrame((_, dt) => {
+    // the hailed taxi drives in the same lanes as everyone else
+    const cab = taxiCab.car;
+    if (traffic.cars.length > count) traffic.cars.length = count;
+    if (cab) traffic.cars.push(cab);
     // a rider on a seat (the El, a bus) is not in the road, whatever the
     // walker's ground position says
     here.current[0] = player.pos.x;
