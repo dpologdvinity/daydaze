@@ -132,6 +132,13 @@ future imported packs belong here when they enter the game.
 | Doggy Water Bowl | Jarlan Perez | CC-BY 3.0 | https://poly.pizza/m/6oVp6iDhgSk | Dog park: the water bowl. |
 | Tennis ball | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/0aPpwgcBbk1 | Dog park: the fetch ball. |
 | Rock Large | Quaternius | CC0 1.0 | https://poly.pizza/m/54jZKTAt5p | Reef dive: flat boulders and arch lintels; the rocks the Mermaid Cove mermaids lounge on. |
+| Storage Shed | Quaternius | CC0 1.0 | https://poly.pizza/m/JrFL3mLOKg | Tool shed in the Suburbia community garden. |
+| Watering Can | CreativeTrio | CC0 1.0 | https://poly.pizza/m/b2R90QehIt | Watering can prop and watering animation in the community garden. |
+| Picket Fence | Quaternius | CC0 1.0 | https://poly.pizza/m/U7g0Wxpt63 | The continuous picket fence around the community garden. |
+| Bench | Quaternius | CC0 1.0 | https://poly.pizza/m/jLxjFxFRpw | The community garden bench. |
+| Shovel | Quaternius | CC0 1.0 | https://poly.pizza/m/oNBQSf87ZJ | Tool rack by the community garden shed. |
+| Hand Rake | CreativeTrio | CC0 1.0 | https://poly.pizza/m/svzOLCZ74s | Tool rack by the community garden shed. |
+| Hedge | Quaternius | CC0 1.0 | https://poly.pizza/m/df8uCl1YpK | Hedges and climbing-rose backing at the community garden gate. |
 | Rock Large (pillar) | Quaternius | CC0 1.0 | https://poly.pizza/m/d2VWOdthtR | Reef dive: rock pillars and arch legs. |
 | Rock Medium | Quaternius | CC0 1.0 | https://poly.pizza/m/s1OJ3bBzqc | Reef dive: mossy boulders; Mermaid Cove's lagoon boulders. |
 | Mountain Group | Quaternius | CC0 1.0 | https://poly.pizza/m/a52gSEEq8X | Reef dive: rock spires. |

@@ -937,6 +937,57 @@ export const CREDITS: readonly {
         usedFor: "Dog park: the fetch ball.",
       },
       {
+        title: "Storage Shed",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/m/JrFL3mLOKg",
+        usedFor: "Tool shed in the Suburbia community garden.",
+      },
+      {
+        title: "Watering Can",
+        author: "CreativeTrio",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/m/b2R90QehIt",
+        usedFor:
+          "Watering can prop and watering animation in the community garden.",
+      },
+      {
+        title: "Picket Fence",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/m/U7g0Wxpt63",
+        usedFor: "The continuous picket fence around the community garden.",
+      },
+      {
+        title: "Bench",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/m/jLxjFxFRpw",
+        usedFor: "The community garden bench.",
+      },
+      {
+        title: "Shovel",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/m/oNBQSf87ZJ",
+        usedFor: "Tool rack by the community garden shed.",
+      },
+      {
+        title: "Hand Rake",
+        author: "CreativeTrio",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/m/svzOLCZ74s",
+        usedFor: "Tool rack by the community garden shed.",
+      },
+      {
+        title: "Hedge",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/m/df8uCl1YpK",
+        usedFor:
+          "Hedges and climbing-rose backing at the community garden gate.",
+      },
+      {
         title: "Mini Characters",
         author: "Kenney",
         license: "CC0 1.0",

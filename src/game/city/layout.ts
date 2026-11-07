@@ -66,6 +66,7 @@ import * as CELLAR from "../wineBar.ts";
 import * as REWIND from "../videoStore.ts";
 import * as FARM from "../farm.ts";
 import * as FOREST from "../forest.ts";
+import * as GARDEN from "../garden.ts";
 import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
 import * as RANGE from "../drivingRange.ts";
@@ -531,6 +532,22 @@ const SUBURB_FRONT: readonly {
     color: "#fffffc",
     style: "deck",
     house: true,
+  },
+  {
+    x: GARDEN.GARDEN_GATE_DOOR.position[0],
+    w: 4,
+    h: 8,
+    north: true,
+    color: "#52b788",
+    sign: { text: "COMMUNITY GARDEN", color: "#ffd166" },
+    style: "gate",
+    door: {
+      position: GARDEN.GARDEN_GATE_DOOR.position,
+      radius: 1.8,
+      label: "Into Community Garden",
+      target: "garden",
+      targetSpawn: { position: GARDEN.SPAWN, yaw: Math.PI },
+    },
   },
   {
     x: -270,

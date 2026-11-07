@@ -7,6 +7,7 @@ import { cleanPot, type FiredPot } from "./pottery.ts";
 import { cleanSets, cleanVisited } from "./collections.ts";
 import { cleanFarm, createDefaultFarm, type FarmSave } from "./farm.ts";
 import { validateBouquet, type Bouquet } from "./florist.ts";
+import { cleanGarden, createDefaultGarden, type GardenSave } from "./garden.ts";
 import type { RoomId } from "./rooms.ts";
 import { isIntensity, type Intensity } from "./effects/buzz.ts";
 import {
@@ -87,6 +88,8 @@ export type SaveV1 = {
   /** Latest fired Clay Day piece, displayed at home. */
   pottery: FiredPot | null;
   bouquet: Bouquet | null;
+  /** Suburbia Community Garden plot state and produce inventory. */
+  garden: GardenSave;
 };
 
 /** The localStorage key the save lives under. */
@@ -137,6 +140,7 @@ export function createDefaultSave(name: string): SaveV1 {
     farm: createDefaultFarm(),
     pottery: null,
     bouquet: null,
+    garden: createDefaultGarden(),
   };
 }
 
@@ -220,6 +224,7 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
     farm: cleanFarm(save.get("farm")),
     pottery: cleanPot(save.get("pottery")),
     bouquet: validateBouquet(bouquet) ? bouquet : null,
+    garden: cleanGarden(save.get("garden")),
   };
 }
 
