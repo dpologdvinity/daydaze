@@ -27,7 +27,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   profile:
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[profile]')
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[profile')
     timeout-minutes: 45
     runs-on: ubuntu-24.04
     steps:
@@ -46,9 +46,15 @@ jobs:
       - name: Profile
         run: |
           mkdir -p profile
+          # a push can narrow the areas with [profile:spawn,pulse] in its message
+          if [ -z "$AREAS" ]; then
+            AREAS=$(printf '%s' "$MESSAGE" | grep -oE '\[profile:[a-z,]+\]' | head -1 | tr -d '[]' | cut -d: -f2 | tr ',' ' ')
+          fi
+          AREAS=${AREAS:-spawn nightlife park beachside pulse}
           node --experimental-strip-types scripts/perf-profile.ts $AREAS | tee profile/summary.txt
         env:
-          AREAS: ${{ inputs.areas || 'spawn nightlife park beachside pulse' }}
+          AREAS: ${{ inputs.areas }}
+          MESSAGE: ${{ github.event.head_commit.message }}
           SAMPLE_MS: ${{ inputs.sample_ms || '8000' }}
           BASE_URL: http://127.0.0.1:4173
           PROFILE: profile/p

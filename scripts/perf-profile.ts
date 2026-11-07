@@ -91,7 +91,7 @@ for (const name of names) {
   await page.waitForFunction(
     () => Number(document.querySelector("canvas")?.dataset.frames ?? 0) >= 10,
     undefined,
-    { timeout: 900_000, polling: 100 },
+    { timeout: Number(process.env.FRAME_TIMEOUT ?? 300_000), polling: 100 },
   );
   const ten = Date.now() - t0;
   const metrics = async () =>
