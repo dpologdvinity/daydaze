@@ -1,7 +1,7 @@
 // Uptown's Park and Gardens: the lawn north of Park Avenue, laid out as a real
 // park. Two paved paths cross at a fountain; a pond with a rowboat and ducks
-// fills the north-west lawn; a bandstand (gazebo) faces picnic blankets on the
-// south-west lawn; benches, lamps, trees, hedges, flower beds and grass fill
+// fills the north-west lawn; a band shell (bandShell.ts) faces picnic blankets and
+// folding chairs on the south-west lawn; benches, lamps, trees, hedges, flower beds and grass fill
 // the rest. Pure and deterministic, like the rest of the city's layout:
 // layout.ts takes the lawns, paths, trees, lamps and blockers from here, the
 // street dressing takes the furniture, and CityPark.tsx draws the grass,
@@ -33,8 +33,14 @@ export const GROUND = 0.14;
 export const PARK_FOUNTAIN = { x: 254, z: -288.5, r: 3.2 } as const;
 /** The pond, with its rim of rocks at `r`. */
 export const POND = { x: 228, z: -304, r: 9 } as const;
-/** The bandstand on the south-west lawn. */
-export const BANDSTAND = { x: 228, z: -277, r: 3.4 } as const;
+/**
+ * The band shell on the south-west lawn, its back to Park Avenue: it is drawn
+ * 10 m wide, 5.5 m deep and 6.3 m high around this middle, and opens north
+ * (toward -z), onto the audience lawn.
+ */
+export const BAND_SHELL = { x: 230, z: -270.5, hw: 4.8, hd: 2.7 } as const;
+/** The lawn the audience sits on, in front of the shell. */
+export const AUDIENCE: ParkBox = { x0: 214, x1: 246, z0: -286, z1: -274 };
 
 const PAD = 1e-6;
 
@@ -99,7 +105,12 @@ const octagon = (cx: number, cz: number, r: number): Vec2[] =>
 export const PARK_BLOCKERS: readonly (readonly Vec2[])[] = [
   octagon(PARK_FOUNTAIN.x, PARK_FOUNTAIN.z, PARK_FOUNTAIN.r - 0.2),
   octagon(POND.x, POND.z, POND.r - 0.4),
-  octagon(BANDSTAND.x, BANDSTAND.z, BANDSTAND.r),
+  [
+    [BAND_SHELL.x - BAND_SHELL.hw, BAND_SHELL.z - BAND_SHELL.hd],
+    [BAND_SHELL.x + BAND_SHELL.hw, BAND_SHELL.z - BAND_SHELL.hd],
+    [BAND_SHELL.x + BAND_SHELL.hw, BAND_SHELL.z + BAND_SHELL.hd],
+    [BAND_SHELL.x - BAND_SHELL.hw, BAND_SHELL.z + BAND_SHELL.hd],
+  ],
 ];
 
 /** Street trees over the lawn: a jittered 9 m grid, thinned, clear of the paths. */
@@ -112,8 +123,8 @@ export function parkTrees(): Vec2[] {
       if (hash(gx, gz, 3) < 0.2 || !onLawn(x, z, 2.5)) continue;
       if (inBox(DOG_PARK, x, z, 2.5) || inBox(MARKET_GREEN, x, z, 2.5))
         continue;
-      // keep the bandstand's front and the fountain's plaza open
-      if (Math.hypot(x - BANDSTAND.x, z - BANDSTAND.z) < 8) continue;
+      // keep the band shell's lawn and the fountain's plaza open
+      if (inBox(AUDIENCE, x, z, 4) || inBox(SHELL_LAWN, x, z, 3)) continue;
       if (Math.hypot(x - PARK_FOUNTAIN.x, z - PARK_FOUNTAIN.z) < 9) continue;
       out.push([x, z]);
     }
@@ -140,12 +151,21 @@ export function parkLamps(): Vec2[] {
   ]);
 }
 
-/** The picnic blankets on the lawn. */
-const BLANKETS: readonly Vec2[] = [
-  [238, -275],
-  [236, -268.5],
-  [218, -273],
-  [221, -267.5],
+/** The lawn under and beside the shell itself. */
+const SHELL_LAWN: ParkBox = {
+  x0: BAND_SHELL.x - BAND_SHELL.hw,
+  x1: BAND_SHELL.x + BAND_SHELL.hw,
+  z0: BAND_SHELL.z - BAND_SHELL.hd,
+  z1: BAND_SHELL.z + BAND_SHELL.hd,
+};
+
+/** The picnic blankets: five in front of the band shell, two elsewhere. */
+export const BLANKETS: readonly Vec2[] = [
+  [221.5, -281],
+  [226.5, -283.5],
+  [231.5, -281],
+  [236.5, -283.5],
+  [241.5, -281],
   [268, -272],
   [284, -277],
 ];
@@ -159,11 +179,10 @@ const spot = (
   y: number = GROUND,
 ): FurnitureSpot => ({ kind, x, z, yaw, scale, y });
 
-/** The park's furniture: benches, tables, blankets, the fountain, bandstand, boat and ducks. */
+/** The park's furniture: benches, tables, blankets, the fountain, boat and ducks. */
 export function parkFurniture(): FurnitureSpot[] {
   const out: FurnitureSpot[] = [
     spot("fountain", PARK_FOUNTAIN.x, PARK_FOUNTAIN.z),
-    spot("gazebo", BANDSTAND.x, BANDSTAND.z),
     spot("rowboat", POND.x + 2.5, POND.z + 3, 0.7, 1.6, 0.1),
   ];
   // benches along the path, facing it, and round the pond, facing the water

@@ -142,6 +142,13 @@ future imported packs belong here when they enter the game.
 | Shovel | Quaternius | CC0 1.0 | https://poly.pizza/m/oNBQSf87ZJ | Tool rack by the community garden shed. |
 | Hand Rake | CreativeTrio | CC0 1.0 | https://poly.pizza/m/svzOLCZ74s | Tool rack by the community garden shed. |
 | Hedge | Quaternius | CC0 1.0 | https://poly.pizza/m/df8uCl1YpK | Hedges and climbing-rose backing at the community garden gate. |
+| Cartoon Open Air Stage | mednios | CC-BY 4.0 | https://sketchfab.com/3d-models/cartoon-open-air-stage-0fb769bb8c344f11b6dd2147d03c9a34 | Uptown park's band shell (art/park/build_bandshell.py). |
+| Fruit Crate | BlenderVoyage | CC0 1.0 | https://poly.pizza/m/aXulVWHOeV | Farmers market produce crates. |
+| Chair | Quaternius | CC0 1.0 | https://poly.pizza/m/iMNqRzPwwe | Folding chairs on the band shell's lawn. |
+| Trumpet | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/dKjB2Gm4-rj | Park band's trumpets. |
+| Saxophone | jeremy | CC-BY 3.0 | https://poly.pizza/m/6A2UAKdCNy7 | Park band's saxophone. |
+| Drum | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/c3RNKJflc4O | Park band's drum. |
+| Music stand | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/3zlFGH_TJ8h | Park band's music stands. |
 | Rock Large (pillar) | Quaternius | CC0 1.0 | https://poly.pizza/m/d2VWOdthtR | Reef dive: rock pillars and arch legs. |
 | Rock Medium | Quaternius | CC0 1.0 | https://poly.pizza/m/s1OJ3bBzqc | Reef dive: mossy boulders; Mermaid Cove's lagoon boulders. |
 | Mountain Group | Quaternius | CC0 1.0 | https://poly.pizza/m/a52gSEEq8X | Reef dive: rock spires. |

@@ -1034,6 +1034,37 @@ button:focus-visible {
   color: var(--champagne);
 }
 
+/* the park band's card: floats above the dock near the band shell */
+.band-card {
+  position: fixed;
+  bottom: 150px;
+  left: 50%;
+  z-index: 6;
+  width: min(420px, calc(100vw - 32px));
+  padding: 12px 16px;
+  transform: translateX(-50%);
+  border-radius: 14px;
+  background: rgb(20 10 40 / 0.78);
+  color: var(--champagne);
+  text-align: center;
+}
+
+.band-card h3,
+.band-card p {
+  margin: 0 0 6px;
+}
+
+.band-card button {
+  padding: 10px 20px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffd27a, var(--amber) 55%, #c06f00);
+  color: #2a0b05;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .race-hud .fuel {
   font-size: 14px;
   font-weight: 400;

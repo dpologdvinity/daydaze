@@ -594,6 +594,29 @@ const SHOTS: {
     },
   },
   {
+    // the park band on its shell's stage mid-tune (src/game/city/bandShell.ts)
+    name: "band-shell",
+    // live: the band's dolls stream in after the first ten frames
+    live: true,
+    query:
+      "room=city&view=room&time=11:00&band=40&at=222,-284&cam=230,7.5,-301,230,1.2,-276",
+    act: async (page) => {
+      await cityReady(page);
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.band === "playing",
+        null,
+        { timeout: 300_000 },
+      );
+      // the dolls' models stream in after the shell
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.bandDolls) > 0,
+        null,
+        { timeout: 300_000 },
+      );
+      await page.waitForTimeout(8_000);
+    },
+  },
+  {
     name: "city-park-pond",
     query: "room=city&view=full&time=14:00&at=233,-290",
     act: furnitureReady,

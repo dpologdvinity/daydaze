@@ -29,6 +29,7 @@ export const ROLE_IDS = [
   "pit-crew",
   "cotton-candy-vendor",
   "produce-vendor",
+  "bandleader",
   "guard",
   "police",
   "taxi-driver",
