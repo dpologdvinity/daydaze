@@ -65,3 +65,14 @@ test("tuck keys (skin sinking under clothes) lose their normals; others keep the
     assert.equal(p.targets?.[1]?.NORMAL, 1);
   }
 });
+
+test("hair also drops targets under 2.5 mm, face-feature keys and all target normals", () => {
+  const json = readGlb(glbWith([0.02, 0.001, 0.02])).json;
+  const mesh = json.meshes[0];
+  mesh.extras = { targetNames: ["face_round", "jaw", "blink"] };
+  const out = readGlb(pruneMorphs(writeGlb(json, new Uint8Array(4)), true).glb);
+  const kept = out.json.meshes[0];
+  assert.deepEqual(kept.extras?.targetNames, ["face_round"]);
+  for (const p of kept.primitives)
+    assert.equal(p.targets?.[0]?.NORMAL, undefined);
+});
