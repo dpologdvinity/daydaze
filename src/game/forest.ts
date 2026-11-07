@@ -266,10 +266,21 @@ export type Tree = Spot & { id: TreeId; rank: number };
 const inside = (r: Rect, x: number, z: number, pad: number) =>
   x > r.x0 - pad && x < r.x1 + pad && z > r.z0 - pad && z < r.z1 + pad;
 
+/** True within `pad` meters of the bridge deck (its approaches included). */
+export const nearBridge = (x: number, z: number, pad: number): boolean =>
+  Math.abs(x - BRIDGE.x) < BRIDGE.width / 2 + pad &&
+  Math.abs(z - creekZ(BRIDGE.x)) < BRIDGE.length / 2 + pad + 1;
+
+/** Meters a plant of each kind keeps from the path and bridge (tufts may edge
+ * the path; bushes, rocks, logs and stumps are bulky and must not crowd it). */
+export const PLANT_CLEARANCE = (id: PlantId): number =>
+  id === "grass" || id === "grass-short" || id === "flowers" ? 0.3 : 1.3;
+
 /** True where no tree may grow: the path, the creek's water, clearings, the
  * lookout, the trailhead, the benches and the picnic table. */
 function kept(x: number, z: number): boolean {
   if (distToPath(x, z) < PATH_WIDTH / 2 + 1.4) return true;
+  if (nearBridge(x, z, 1.6)) return true;
   if (distToCreek(x, z) < CREEK.halfWidth + 1.2) return true;
   if (Object.values(GLADES).some((g) => inside(g, x, z, 1.5))) return true;
   if (inside(LOOKOUT, x, z, 1.5)) return true;
@@ -389,7 +400,15 @@ export function undergrowth(count = 260): Plant[] {
     const pick = PLANT_BAG[Math.floor(hash(i, 13) * PLANT_BAG.length)];
     if (!pick) continue;
     const dPath = distToPath(x, z);
-    if (dPath < PATH_WIDTH / 2 + 0.3) continue;
+    if (dPath < PATH_WIDTH / 2 + PLANT_CLEARANCE(pick.id)) continue;
+    if (nearBridge(x, z, PLANT_CLEARANCE(pick.id))) continue;
+    // bulky plants stay off the creek's walkable banks (rocks are the bank's own dressing)
+    if (
+      PLANT_CLEARANCE(pick.id) > 1 &&
+      !pick.id.startsWith("rock") &&
+      distToCreek(x, z) < CREEK.halfWidth + 1
+    )
+      continue;
     if (distToCreek(x, z) < CREEK.halfWidth + 0.2) continue;
     if (inside(LOOKOUT, x, z, 0.5)) continue;
     if (BENCH_SPOTS.some((b) => Math.hypot(b.x - x, b.z - z) < 1.4)) continue;

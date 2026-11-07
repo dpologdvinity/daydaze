@@ -11,12 +11,15 @@ import {
   HIKERS,
   LOW_TREE_SHARE,
   PATH,
+  PATH_WIDTH,
   PLANTS_SPOTS,
   SPAWN,
   TREES,
   WILDLIFE,
   creekZ,
+  PLANT_CLEARANCE,
   distToCreek,
+  nearBridge,
   distToPath,
 } from "./forest.ts";
 import { loopAt } from "./zoo.ts";
@@ -92,4 +95,18 @@ test("creek stones sit on the banks, never on the bridge", () => {
 
 test("no tree stands in the lane the default camera looks up", () => {
   for (const t of TREES) assert.ok(!(Math.abs(t.x) < 3.5 && t.z > 2));
+});
+
+test("trees and plants keep clear of the path, the bridge and the creek banks", () => {
+  for (const t of TREES) {
+    assert.ok(distToPath(t.x, t.z) >= PATH_WIDTH / 2 + 1.4, `tree ${t.x}`);
+    assert.ok(!nearBridge(t.x, t.z, 1.6));
+  }
+  for (const p of PLANTS_SPOTS) {
+    const pad = PLANT_CLEARANCE(p.id);
+    assert.ok(distToPath(p.x, p.z) >= PATH_WIDTH / 2 + pad, `${p.id} path`);
+    assert.ok(!nearBridge(p.x, p.z, pad), `${p.id} bridge`);
+    if (pad > 1 && !p.id.startsWith("rock"))
+      assert.ok(distToCreek(p.x, p.z) >= CREEK.halfWidth + 1, `${p.id} creek`);
+  }
 });

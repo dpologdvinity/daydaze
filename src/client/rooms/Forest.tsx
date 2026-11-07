@@ -37,7 +37,7 @@ import type { Player } from "../world/PlayerController.tsx";
 import { useReducedMotion } from "../motion.ts";
 import { useQuality } from "../world/quality.ts";
 import { Batch } from "./shared/batch.ts";
-import { Floor, type PickHandler } from "./shared/Floor.tsx";
+import type { PickHandler } from "./shared/Floor.tsx";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { Hikers } from "./forest/Hikers.tsx";
@@ -133,6 +133,63 @@ const soft = (m: THREE.MeshStandardMaterial) => {
   c.polygonOffsetFactor = -1;
   return c;
 };
+/** The ground: the city's CC0 grass with its tiling breakup and weathering. */
+const GRASS = surface("leafy_grass", { scale: 0.25, color: "#6a9a4c" });
+
+/** Soft dark patches (leaf litter and shade under the trees) laid over the
+ * grass: one value-noise texture, stretched over the whole floor. */
+const LITTER = (() => {
+  const n = 128;
+  const c = document.createElement("canvas");
+  c.width = c.height = n;
+  const g = c.getContext("2d");
+  const cells = 12;
+  const grid = Array.from({ length: cells * cells }, (_, i) => {
+    const h = Math.sin(i * 127.1 + 311.7) * 43758.5453;
+    return h - Math.floor(h);
+  });
+  if (g) {
+    const img = g.createImageData(n, n);
+    for (let y = 0; y < n; y++)
+      for (let x = 0; x < n; x++) {
+        // bilinear value noise on a wrapping grid, two octaves
+        let v = 0;
+        for (const [o, w] of [
+          [1, 0.65],
+          [2, 0.35],
+        ] as const) {
+          const fx = ((x / n) * cells * o) % cells;
+          const fy = ((y / n) * cells * o) % cells;
+          const x0 = Math.floor(fx);
+          const y0 = Math.floor(fy);
+          const tx = fx - x0;
+          const ty = fy - y0;
+          const at = (i: number, j: number) =>
+            grid[(j % cells) * cells + (i % cells)] ?? 0;
+          const top = at(x0, y0) * (1 - tx) + at(x0 + 1, y0) * tx;
+          const bot = at(x0, y0 + 1) * (1 - tx) + at(x0 + 1, y0 + 1) * tx;
+          v += (top * (1 - ty) + bot * ty) * w;
+        }
+        const i = (y * n + x) * 4;
+        img.data[i] = 46;
+        img.data[i + 1] = 34;
+        img.data[i + 2] = 18;
+        img.data[i + 3] = Math.max(0, Math.min(1, (v - 0.35) * 2.2)) * 150;
+      }
+    g.putImageData(img, 0, 0);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(2, 2.5);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return new THREE.MeshBasicMaterial({
+    map: t,
+    transparent: true,
+    depthWrite: false,
+    fog: true,
+  });
+})();
+
 const DIRT = soft(surface("park_sand", { scale: 0.45, color: "#c9a574" }));
 const MUD = soft(surface("park_sand", { scale: 0.3, color: "#5f4630" }));
 const time = { value: 0 };
@@ -372,16 +429,28 @@ export function Forest({
         intensity={1.7}
         color="#fff1cf"
       />
-      <Floor
-        width={x1 - x0}
-        depth={z1 - z0}
-        center={[0, (z0 + z1) / 2]}
-        color="#5d8f45"
-        texture={{ id: "leafy_grass", scale: 0.25 }}
-        low={{ metalness: 0, roughness: 0.9 }}
-        mirror={0}
-        onPick={onPick}
-      />
+      <mesh
+        rotation-x={-Math.PI / 2}
+        position={[0, 0, (z0 + z1) / 2]}
+        onClick={(e) => {
+          // a drag is an orbit, not a walk order
+          if (e.delta > 6) return;
+          e.stopPropagation();
+          onPick([e.point.x, e.point.z]);
+        }}
+        name="floor"
+      >
+        <planeGeometry args={[x1 - x0, z1 - z0]} />
+        <primitive object={GRASS} attach="material" />
+      </mesh>
+      <mesh
+        rotation-x={-Math.PI / 2}
+        position={[0, 0.012, (z0 + z1) / 2]}
+        raycast={() => null}
+      >
+        <planeGeometry args={[x1 - x0, z1 - z0]} />
+        <primitive object={LITTER} attach="material" />
+      </mesh>
       <PortalPads room={ROOMS.forest} color="#b7e4c7" />
       <primitive object={grounds} />
       <NeonText
