@@ -54,6 +54,7 @@ import {
   VIEW_RADIUS,
 } from "./tuning.ts";
 import { BODY_KEYS, ROSTER_BODY } from "../driving/bodies.ts";
+import { PARKED_CARS, PARKED_RANGE } from "./dressing.ts";
 import {
   CAR_SLOT,
   TRAFFIC_COUNT,
@@ -254,6 +255,22 @@ export function trafficCost(at: Vec2): {
     triangles += dearest.tris;
   }
   return { drawCalls, triangles };
+}
+
+/**
+ * The kerb-parked cars within range of `at` on the low tier, each as its
+ * body's distance twin, one merged draw per body in range (their own meshes,
+ * apart from the traffic's). Exact: the spots are fixed.
+ */
+export function parkedCost(at: Vec2): { drawCalls: number; triangles: number } {
+  const bodies = new Set<string>();
+  let triangles = 0;
+  for (const car of PARKED_CARS) {
+    if (Math.hypot(car.x - at[0], car.z - at[1]) > PARKED_RANGE.low) continue;
+    bodies.add(car.body);
+    triangles += costOf(`cars/${car.body}-lo`).tris;
+  }
+  return { drawCalls: bodies.size, triangles };
 }
 
 function costOf(model: string): { tris: number; parts: number } {
@@ -557,6 +574,9 @@ export function lowTierCost(at: Vec2): {
   const traffic = trafficCost(at);
   drawCalls += traffic.drawCalls;
   triangles += traffic.triangles;
+  const kerb = parkedCost(at);
+  drawCalls += kerb.drawCalls;
+  triangles += kerb.triangles;
   return { drawCalls, triangles, planTriangles, bays: plan.bays.length };
 }
 
