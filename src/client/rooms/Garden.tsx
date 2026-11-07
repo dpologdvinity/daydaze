@@ -4,7 +4,7 @@
 // and neighbor gardener NPCs with handwritten lines.
 
 import { useGLTF } from "@react-three/drei";
-import { Suspense, useEffect, useMemo, useRef, type JSX } from "react";
+import { Suspense, useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";
 import {
   BOUNDS,
@@ -20,7 +20,6 @@ import {
 } from "../../game/garden.ts";
 import type { Look } from "../../game/look.ts";
 import { ROOMS } from "../../game/rooms.ts";
-import type { Player } from "../world/PlayerController.tsx";
 import { useGardenState } from "./garden/gardenSession.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { useGameClip } from "./shared/game3d/gameClip.ts";
@@ -303,13 +302,7 @@ function SurroundingTrees() {
  * The Suburbia Community Garden scene: 8 raised beds, crop growth stages,
  * tool shed, compost bins, watering can animation, and neighbor gardeners.
  */
-export function Garden({
-  onPick,
-  player,
-}: {
-  onPick: PickHandler;
-  player: Player;
-}): JSX.Element {
+export function Garden({ onPick }: { onPick: PickHandler }): JSX.Element {
   const { garden, wateringPlot } = useGardenState();
 
   // Pose doll into a reaching watering gesture while watering is active
