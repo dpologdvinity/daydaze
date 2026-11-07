@@ -779,10 +779,10 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
       {
         id: "yacht-to-marina",
         position: YACHT.DISEMBARK_AT,
-        radius: 1.0,
+        radius: 1.5,
         label: "Back to Starboard Marina",
         target: "marina",
-        targetSpawn: { position: MARINA.SPAWN, yaw: 0 },
+        targetSpawn: { position: [0, -1.8], yaw: 0 },
       },
     ],
   },
@@ -1424,7 +1424,7 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
       {
         id: "marina-to-yacht",
         position: YACHT.GANGWAY_AT,
-        radius: 1.0,
+        radius: 2.2,
         label: "Board the Starlight 🛳",
         target: "yacht",
         targetSpawn: { position: YACHT.YACHT_SPAWN, yaw: Math.PI },
