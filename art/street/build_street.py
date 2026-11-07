@@ -1,7 +1,7 @@
 """Street furniture for the city (see docs/assets.md for sources).
 
 Builds one GLB per kind in $OUT: Quaternius' Street Pack lamp and signs (CC0),
-Poly Haven's hydrant, trash can and bench (CC0), and Poly Pizza downloads
+Poly Haven's hydrant and trash can, Quaternius' bench (CC0), and Poly Pizza downloads
 (mailbox, parking meter, bike rack, bus shelter, palm, planter, traffic light),
 and the Sketchfab newspaper box (CC-BY),
 all cut down to a few hundred triangles. Each model
@@ -177,7 +177,6 @@ def street_set():
     imported(Q("Sign_NoParking"), height=2.4); export("sign-noparking")
     imported(PH("fire_hydrant"), height=0.8, tris=300); export("hydrant")
     imported(PH("metal_trash_can"), height=0.95, tris=250); export("trashcan")
-    imported(PH("painted_wooden_bench"), length=1.8); export("bench")
     # Poly Pizza downloads (see docs/assets.md)
     imported(PP("mailbox"), height=1.15, tris=240); export("mailbox")
     imported(PP("meter"), height=1.4, tris=400); export("meter")
@@ -190,6 +189,41 @@ def street_set():
 
 
 PK = lambda n: f"{SRC_PK}/{n}.glb"
+
+
+def split_ends(o):
+    """Gives the bench two materials, "slats" (the long boards) and "ends" (the legs
+    and arms, |x| > 0.74 m), and separates them into two meshes so the client can
+    texture each (CityFurniture BENCH_SURFACES). Colors are placeholders: the client
+    draws both from its tiling surfaces."""
+    base = o.data.materials[0]
+    ends = base.copy()
+    base.name, ends.name = "slats", "ends"
+    # distinct colors, or glTF-Transform's dedup folds the two materials into one
+    for m, rgb in ((base, (0.35, 0.22, 0.12)), (ends, (0.1, 0.1, 0.1))):
+        for n in m.node_tree.nodes:
+            if n.type == "BSDF_PRINCIPLED":
+                n.inputs["Base Color"].default_value = (*rgb, 1.0)
+    o.data.materials.append(ends)
+    for p in o.data.polygons:
+        p.material_index = 1 if abs(p.center.x) > 0.74 else 0
+    bpy.ops.object.select_all(action="DESELECT")
+    bpy.context.view_layer.objects.active = o
+    o.select_set(True)
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.separate(type="MATERIAL")
+    bpy.ops.object.mode_set(mode="OBJECT")
+
+
+def bench_set():
+    """Quaternius' rustic bench (CC0, Poly Pizza), 1.8 m long, seat at 0.46 m. Built
+    twice (the client textures them differently: green paint and iron, weathered
+    planks). The bench's back is at +z in the source; turn it to face +z like the
+    other kinds."""
+    for name in ("bench", "boardbench"):
+        o = imported(PP("bench-quaternius"), length=1.8, turn=math.pi)
+        split_ends(o)
+        export(name)
 
 
 def park_set():
@@ -232,6 +266,8 @@ if os.environ.get("SET") == "park":
     park_set()
 elif os.environ.get("SET") == "deck":
     deck_set()
+elif os.environ.get("SET") == "bench":
+    bench_set()
 elif os.environ.get("SET") == "beach":
     beach_set()
 else:

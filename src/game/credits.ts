@@ -604,11 +604,12 @@ export const CREDITS: readonly {
         usedFor: "Sidewalk bins, decimated to about 300 triangles.",
       },
       {
-        title: "Painted Wooden Bench",
-        author: "Poly Haven",
+        title: "Bench",
+        author: "Quaternius",
         license: "CC0 1.0",
-        url: "https://polyhaven.com/a/painted_wooden_bench",
-        usedFor: "Sidewalk benches.",
+        url: "https://poly.pizza/m/jLxjFxFRpw",
+        usedFor:
+          "Park-green benches on sidewalks and in the park, bleached gray on Beachside's deck.",
       },
       {
         title: "Mailbox",

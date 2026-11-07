@@ -603,6 +603,20 @@ const SHOTS: {
     act: furnitureReady,
   },
   {
+    // a deck bench from the front quarter: bleached planks, facing the sea
+    name: "bench-boardwalk",
+    query:
+      "room=city&view=room&time=15:00&at=-380,276&cam=-391,1.4,289.4,-394.5,0.7,288.7",
+    act: furnitureReady,
+  },
+  {
+    // a park bench from the front quarter: green slats on iron, facing the path
+    name: "bench-park",
+    query:
+      "room=city&view=room&time=14:00&at=235,-282&cam=225,1.9,-291.2,222,0.6,-285.8",
+    act: furnitureReady,
+  },
+  {
     // the boardwalk's fairground end: carousel and Ferris wheel
     name: "city-boardwalk-fair",
     query: "room=city&view=room&time=15:00&at=320,292&cam=290,3,289,338,12,301",
