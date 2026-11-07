@@ -46,7 +46,7 @@ future imported packs belong here when they enter the game.
 | Arcade Machine | J-Toastie | CC-BY 3.0 | https://poly.pizza/m/GLDkMhiynM | Player 2 cabinet bodies, with the original screen removed and materials baked to vertex colors. |
 | MakeHuman | MakeHuman Community | CC0 1.0 | https://github.com/makehumancommunity/makehuman | Avatar bodies, morph targets, hair and clothing, adapted for Daydaze. |
 | MPFB2 Mixamo-named rig | MakeHuman Community | CC0 1.0 | https://github.com/makehumancommunity/mpfb2 | The 52-bone skeleton and skin weights the doll is rigged with, fitted to the shaped body. |
-| Stylized Nature MegaKit | Quaternius | CC0 1.0 | https://quaternius.com/packs/stylizednaturemegakit.html | Street trees, bushes, grass, flowers, ferns and rocks; optimized with near and far models. |
+| Stylized Nature MegaKit | Quaternius | CC0 1.0 | https://quaternius.com/packs/stylizednaturemegakit.html | Street trees, bushes, grass, flowers, ferns and rocks; optimized with near and far models; Petal & Stem single-flower stems. |
 | Downtown City MegaKit | Quaternius | CC0 1.0 | https://quaternius.com/packs/downtowncitymegakit.html | New York walk-up, prewar and loft facades (storefronts, windows, cornices, doors, stoops) merged and thinned into storey-high bays for Downtown, Uptown and the Arts District; textures replaced by the city's own. |
 | Modular Fire Escape | Poly Haven | CC0 1.0 | https://polyhaven.com/a/modular_fire_escape | Fire escapes on New York walk-ups: the landing and railing, thinned and painted iron black. |
 | City Kit Suburban | Kenney | CC0 1.0 | https://kenney.nl/assets/city-kit-suburban | Suburbia's houses near the player, optimized with a small colormap. |

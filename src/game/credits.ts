@@ -392,7 +392,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/stylizednaturemegakit.html",
         usedFor:
-          "Street trees, bushes, grass, flowers, ferns and rocks; optimized with near and far models.",
+          "Street trees, bushes, grass, flowers, ferns and rocks; optimized with near and far models; Petal & Stem single-flower stems.",
       },
       {
         title: "Ultimate Animated Animals",
