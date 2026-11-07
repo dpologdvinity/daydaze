@@ -357,46 +357,48 @@ export function GardenPanel(): JSX.Element {
             })}
           </div>
 
-          {/* Fast forward controls for testing / debug */}
-          <div
-            style={{
-              marginTop: "8px",
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: "6px",
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => skipTime(60)}
-              aria-label="Fast-forward garden 1 minute"
+          {/* Fast-forward controls, for ?debug=1 only */}
+          {DEBUG && (
+            <div
               style={{
-                fontSize: "0.7rem",
-                padding: "2px 6px",
-                background: "rgba(255,255,255,0.08)",
-                color: "#888",
-                border: "1px solid #444",
-                borderRadius: "3px",
+                marginTop: "8px",
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "6px",
               }}
             >
-              +1 min
-            </button>
-            <button
-              type="button"
-              onClick={() => skipTime(3600)}
-              aria-label="Fast-forward garden 1 hour"
-              style={{
-                fontSize: "0.7rem",
-                padding: "2px 6px",
-                background: "rgba(255,255,255,0.08)",
-                color: "#888",
-                border: "1px solid #444",
-                borderRadius: "3px",
-              }}
-            >
-              +1 hour
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => skipTime(60)}
+                aria-label="Fast-forward garden 1 minute"
+                style={{
+                  fontSize: "0.7rem",
+                  padding: "2px 6px",
+                  background: "rgba(255,255,255,0.08)",
+                  color: "#888",
+                  border: "1px solid #444",
+                  borderRadius: "3px",
+                }}
+              >
+                +1 min
+              </button>
+              <button
+                type="button"
+                onClick={() => skipTime(3600)}
+                aria-label="Fast-forward garden 1 hour"
+                style={{
+                  fontSize: "0.7rem",
+                  padding: "2px 6px",
+                  background: "rgba(255,255,255,0.08)",
+                  color: "#888",
+                  border: "1px solid #444",
+                  borderRadius: "3px",
+                }}
+              >
+                +1 hour
+              </button>
+            </div>
+          )}
         </div>
       )}
 

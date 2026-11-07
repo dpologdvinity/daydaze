@@ -18,9 +18,6 @@ import {
   plantSeed,
   plotGrowth,
   waterPlot,
-  type GardenCropId,
-  type GardenPlotState,
-  type GardenSave,
 } from "./garden.ts";
 
 test("creates a fresh community garden with plot 0 claimed and 7 unclaimed plots", () => {

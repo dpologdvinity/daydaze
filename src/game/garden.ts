@@ -253,8 +253,8 @@ export function plotGrowth(plot: GardenPlotState, now: number): CropGrowth {
 
   const def = GARDEN_CROPS[plot.crop];
   let accrued = plot.growthMs;
-  let isDry = true;
-  let isWilted = false;
+  let isDry: boolean;
+  let isWilted: boolean;
 
   if (plot.wateredAt === null) {
     // Never watered since planting
