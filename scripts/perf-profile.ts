@@ -25,7 +25,7 @@ const browser = await chromium.launch({
     "--enable-unsafe-swiftshader",
   ],
 });
-type Win = { __long: number[]; __ft: number[] };
+type Win = { __long: number[]; __ft: number[]; __links: string[] };
 for (const name of names) {
   const query = AREAS[name];
   if (!query) continue;
@@ -41,6 +41,38 @@ for (const name of names) {
     const w = window as unknown as Win;
     w.__long = [];
     w.__ft = [];
+    w.__links = [];
+    // every shader program linked, named by its feature defines: a link in
+    // the sampling window is a compile stall the warm-up missed
+    const gl2 = WebGL2RenderingContext.prototype;
+    const sources = new WeakMap<WebGLShader, string>();
+    const shadersOf = new WeakMap<WebGLProgram, WebGLShader[]>();
+    const shaderSource = gl2.shaderSource;
+    gl2.shaderSource = function (shader, src) {
+      sources.set(shader, src);
+      shaderSource.call(this, shader, src);
+    };
+    const attachShader = gl2.attachShader;
+    gl2.attachShader = function (program, shader) {
+      const list = shadersOf.get(program) ?? [];
+      list.push(shader);
+      shadersOf.set(program, list);
+      attachShader.call(this, program, shader);
+    };
+    const linkProgram = gl2.linkProgram;
+    gl2.linkProgram = function (program) {
+      const vertex =
+        sources.get(shadersOf.get(program)?.[0] ?? (program as never)) ?? "";
+      const flags = [
+        ...vertex.matchAll(
+          /^#define (USE_\w+|SKINNING|NUM_\w+ \d+|MORPH\w+|DOUBLE_SIDED|FLAT_SHADED)/gm,
+        ),
+      ]
+        .map((m) => m[1])
+        .join(" ");
+      w.__links.push(flags.slice(0, 160));
+      linkProgram.call(this, program);
+    };
     new PerformanceObserver((l) => {
       for (const e of l.getEntries()) w.__long.push(e.duration);
     }).observe({ type: "longtask", buffered: true });
@@ -80,13 +112,15 @@ for (const name of names) {
       max: s[s.length - 1] ?? 0,
     };
   };
-  const phases = name === "pulse" ? ["stand"] : ["stand", "walk"];
+  const phases =
+    name === "pulse" ? ["arrive", "stand"] : ["arrive", "stand", "walk"];
   const rows: string[] = [];
   for (const phase of phases) {
     await page.evaluate(() => {
       const w = window as unknown as Win;
       w.__long = [];
       w.__ft = [];
+      w.__links = [];
     });
     if (phase === "walk") await page.keyboard.down("w");
     const a = await metrics();
@@ -108,7 +142,7 @@ for (const name of names) {
       );
     }
     if (phase === "walk") await page.keyboard.up("w");
-    const { long, ft, calls, tris } = await page.evaluate(() => {
+    const { long, ft, calls, tris, links } = await page.evaluate(() => {
       const w = window as unknown as Win;
       const c = document.querySelector("canvas")?.dataset;
       return {
@@ -116,6 +150,7 @@ for (const name of names) {
         ft: w.__ft,
         calls: c?.calls,
         tris: c?.triangles,
+        links: w.__links,
       };
     });
     const f = stats(ft);
@@ -125,8 +160,12 @@ for (const name of names) {
     const task = ((b.TaskDuration - a.TaskDuration) * 1000) / Math.max(1, f.n);
     const gc = (b.JSHeapUsedSize - a.JSHeapUsedSize) / 1e6;
     rows.push(
-      `  ${phase}: frames ${f.n} mean ${f.mean.toFixed(0)} p95 ${f.p95.toFixed(0)} max ${f.max.toFixed(0)} ms | script/frame ${script.toFixed(1)} ms task/frame ${task.toFixed(1)} ms | long ${l.n} sum ${long.reduce((x, y) => x + y, 0).toFixed(0)} ms | heap ${(b.JSHeapUsedSize / 1e6).toFixed(0)} MB (d ${gc.toFixed(1)}) | calls ${calls} tris ${tris}`,
+      `  ${phase}: frames ${f.n} mean ${f.mean.toFixed(0)} p95 ${f.p95.toFixed(0)} max ${f.max.toFixed(0)} ms | script/frame ${script.toFixed(1)} ms task/frame ${task.toFixed(1)} ms | long ${l.n} sum ${long.reduce((x, y) => x + y, 0).toFixed(0)} ms | heap ${(b.JSHeapUsedSize / 1e6).toFixed(0)} MB (d ${gc.toFixed(1)}) | calls ${calls} tris ${tris} | links ${links.length}`,
     );
+    const seen = new Map<string, number>();
+    for (const k of links) seen.set(k, (seen.get(k) ?? 0) + 1);
+    for (const [k, n] of [...seen].sort((x, y) => y[1] - x[1]).slice(0, 5))
+      rows.push(`      ${n}x ${k}`);
   }
   console.log(`${name}: ten-frames ${ten} ms`);
   for (const r of rows) console.log(r);
