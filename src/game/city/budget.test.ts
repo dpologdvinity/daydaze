@@ -144,6 +144,9 @@ test("the park's zoomed-out view prices its walkers, wildlife and dogs, and stil
   assert.ok(live.triangles > 0, "walkers and the crowd are priced");
   for (const kind of ["deer", "rabbit", "fox", "labrador", "husky", "shibainu"])
     assert.ok(priced.includes(`animals/${kind}`), `${kind} is priced`);
+  // the band shell stands 24 m away: its stage, chairs, instruments and band
+  for (const model of ["park/band-shell", "park/lawn-chair", "park/band-stand"])
+    assert.ok(priced.includes(model), `${model} is priced`);
   const cost = lowTierCost(at);
   assert.ok(
     cost.triangles >= cost.planTriangles + live.triangles,

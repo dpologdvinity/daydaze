@@ -21,6 +21,7 @@ import {
 } from "./park.ts";
 import { elBoxes } from "./el.ts";
 import { RESIDENTS, dogParkNear } from "./dogPark.ts";
+import { AUDIENCE_DRAWN, BAND, CHAIRS, shellNear } from "./bandShell.ts";
 import { PEDESTRIANS } from "./pedestrians.ts";
 import { WILDLIFE, wildlifeNear } from "./parkWildlife.ts";
 import { QUEUE_NEAR_LOW, QUEUE_PERSON_TRIS, QUEUE_SPOTS } from "./queues.ts";
@@ -100,6 +101,12 @@ export const MODEL_COST: Readonly<
   "park/gazebo": { tris: 358, parts: 1 },
   "park/rowboat": { tris: 350, parts: 1 },
   "park/duck": { tris: 250, parts: 7 },
+  "park/band-shell": { tris: 2208, parts: 1 },
+  "park/lawn-chair": { tris: 216, parts: 1 },
+  "park/band-trumpet": { tris: 1840, parts: 1 },
+  "park/band-sax": { tris: 894, parts: 2 },
+  "park/band-drum": { tris: 1964, parts: 2 },
+  "park/band-stand": { tris: 1046, parts: 2 },
   "animals/rabbit": { tris: 2483, parts: 1 },
   "animals/deer": { tris: 2098, parts: 1 },
   "animals/fox": { tris: 1848, parts: 1 },
@@ -146,7 +153,12 @@ export function modelsInBudget(): string[] {
     "doll/outfit-jeans",
     "doll/shoes-platforms",
     ...Array.from({ length: TREE_VARIANTS }, (_, i) => treeModel(i)),
-    ...Object.keys(MODEL_COST).filter((k) => k.startsWith("animals/")),
+    ...Object.keys(MODEL_COST).filter(
+      (k) =>
+        k.startsWith("animals/") ||
+        k.startsWith("park/band-") ||
+        k === "park/lawn-chair",
+    ),
     ...FURNITURE_KINDS.map(furnitureModel),
     ...Object.keys(GROWTH_MODELS)
       .filter((k): k is GrowthKind => k in GROWTH_MODELS)
@@ -230,10 +242,11 @@ export function seasonalCost(at: Vec2): {
   );
 }
 
-/** A walker's doll on the low tier: the far body (3,168), the dearest hair
- * (about 3,900), outfit (3,436) and shoes (3,064). Its eyes hide with the
- * far body (HumanDoll). About six draw calls a doll. */
-export const NPC_DOLL_TRIS = 13_600;
+/** A far NPC's doll on the low tier: the far body (3,168) in the dearest
+ * far twins of hair (2,844), outfit (837) and shoes (1,286), which any doll
+ * past 4.6 m wears. Its eyes hide with the far body (HumanDoll). About six
+ * draw calls a doll. */
+export const NPC_DOLL_TRIS = 8_300;
 const NPC_DOLL_CALLS = 6;
 /** A crowd figure: the dearest of Kenney's four walkers (street/walker-*). */
 export const CROWD_FIGURE_TRIS = 880;
@@ -281,14 +294,27 @@ export function liveCost(
     CROWD_CAP * 4,
     Math.max(0, Math.ceil(expected(CROWD_RADIUS.low) * CROWD_MARGIN) - dolls),
   );
+  // the band shell, while the park band is on (10:00 to 17:30): the stage,
+  // chairs and instruments, the whole band and a few of the audience as dolls
+  let bandDolls = 0;
+  if (shellNear(at[0], at[1])) {
+    add("park/band-shell");
+    for (const _ of CHAIRS) add("park/lawn-chair");
+    for (const m of BAND) {
+      if (m.instrument === "baton") continue;
+      add(`park/band-${m.instrument}`);
+      add("park/band-stand");
+    }
+    bandDolls = BAND.length + AUDIENCE_DRAWN.low;
+  }
   if (wildlifeNear(at[0], at[1]))
     for (const w of WILDLIFE) if (!w.highOnly) add(`animals/${w.kind}`);
   if (dogParkNear(at[0], at[1]))
     for (const r of RESIDENTS) add(`animals/${r.kind}`);
   return {
     // one instanced draw per look and stride in use
-    drawCalls: dolls * NPC_DOLL_CALLS + (crowd > 0 ? 8 : 0),
-    triangles: dolls * NPC_DOLL_TRIS + crowd * CROWD_FIGURE_TRIS,
+    drawCalls: (dolls + bandDolls) * NPC_DOLL_CALLS + (crowd > 0 ? 8 : 0),
+    triangles: (dolls + bandDolls) * NPC_DOLL_TRIS + crowd * CROWD_FIGURE_TRIS,
   };
 }
 

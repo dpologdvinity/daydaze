@@ -16,6 +16,7 @@ import type * as THREE from "three";
 import {
   BAND,
   BAND_Y,
+  AUDIENCE_DRAWN,
   FIRST_SET,
   CHAIRS,
   CROWD,
@@ -162,7 +163,7 @@ function Shell({ player }: { player: Player }): JSX.Element {
   const lastPick = useRef(-Infinity);
   const lastSound = useRef(0);
   // the whole band always, then the audience nearest to you
-  const DRAWN = BAND.length + (low ? 4 : 12);
+  const DRAWN = BAND.length + AUDIENCE_DRAWN[low ? "low" : "high"];
   const people = useMemo(
     () => [
       ...BAND.map((m) => ({ at: m.at })),
