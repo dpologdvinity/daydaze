@@ -99,3 +99,13 @@ SwiftShader its 22 px blur took 80 s.
 | park | 9.9 s / 413 ms / 2849 ms | 7.5 s / 141 ms / 662 ms |
 | beachside | 9.8 s / 144 ms / 892 ms | 7.4 s / 91 ms / 0 |
 | pulse | 9.2 s / 278 ms / 0 | 6.5 s / 198 ms / 0 |
+
+## Done 2026-11-07
+Walk speed (2.6 m/s, jog hand-over), 278 motion clips per doll in on-demand packs (walk styles, idles with NPC temperaments, sit transitions, 21 emotes, dance set 2, farm work), smoother play (late shader warm-up, shared cached faces, far dolls every third frame), better hair (22 styles, speckle fix, 13.7 MB). Real cars in progress.
+
+## Follow-ups
+- Walk styles are mostly invisible: at WALK_SPEED 2.6 every gait hands over to the run clip. Either per-style brisk walk/run clips or a slower walk (~2.0) with a wider walk-clip rate range.
+- Wire the baked but unused clips: start/stop/turn (`moves` pack), jump/land, carry/push/throw/climb/tree chop.
+- Men's suit: skin-colored chips poke through the jacket chest (docs/screenshots/hair-men-1.png) — outfit skin-clearance.
+- Park view is 282k tris on low with ~18k headroom: keep new park content priced in budget.ts.
+- Hair polish: dark/orange sparkle spots on men's back view; Quiff forehead highlight.
