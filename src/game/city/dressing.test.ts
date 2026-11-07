@@ -7,6 +7,7 @@ import {
   labelUv,
   LABELS,
   FURNITURE,
+  PARKED_CARS,
   STREET_DRESS,
   type Buckets,
 } from "./dressing.ts";
@@ -68,14 +69,17 @@ test("every sign, blade and ad stands on a frontage, never over a road", () => {
   }
 });
 
-test("parked cars stand in the road, at the kerbs", () => {
-  const cars = STREET_DRESS.filter((p) => p.kind === "car").map(
-    (p) => p.instance,
-  );
-  assert.ok(cars.length > 40, `${cars.length} cars`);
-  for (const c of cars) {
+test("parked cars stand in the road, at the kerbs, in a mix of bodies", () => {
+  assert.ok(PARKED_CARS.length > 20, `${PARKED_CARS.length} cars`);
+  for (const c of PARKED_CARS) {
     assert.ok(inRoad(c.x, c.z), `car at ${c.x},${c.z} is off the road`);
+    assert.ok(Number.isFinite(c.yaw));
   }
+  assert.ok(new Set(PARKED_CARS.map((c) => c.body)).size >= 4);
+  // never a bus or an ambulance at the kerb
+  assert.ok(
+    PARKED_CARS.every((c) => c.body !== "ambulance" && c.body !== "schoolbus"),
+  );
 });
 
 test("street furniture stands on the pavement, clear of the asphalt", () => {

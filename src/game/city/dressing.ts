@@ -24,6 +24,13 @@ import {
 } from "./layout.ts";
 import type { Instance, Kind } from "./plan.ts";
 import { hash, pick } from "./hash.ts";
+import { CAR_COLORS } from "./traffic.ts";
+import {
+  FIXED_PAINT,
+  TRAFFIC_MIX,
+  pickBody,
+  type BodyKey,
+} from "../driving/bodies.ts";
 import type { FurnitureKind, FurnitureSpot } from "./furniture.ts";
 import { parkFurniture } from "./park.ts";
 import { boardwalkFurniture } from "./boardwalk.ts";
@@ -71,16 +78,6 @@ const BULB_SIZE = 0.16;
 const CORD_COLOR = "#2a2230";
 /** Chinatown and Koreatown hang red and gold lights, not the party mix. */
 const LANTERN_COLORS = ["#ff4a3d", "#ffb347", "#ff4a3d", "#ffd84f"];
-const CAR_COLORS = [
-  "#ff4fb3",
-  "#4fe3ff",
-  "#f2eefc",
-  "#ffd84f",
-  "#7dff6b",
-  "#8a5cff",
-  "#2a2540",
-  "#ff8a3d",
-];
 const SHOPFRONT: ReadonlySet<BuildingStyle> = new Set<BuildingStyle>([
   "storefront",
   "club",
@@ -673,99 +670,61 @@ function garland(
   }
 }
 
-function car(
-  out: Placed[],
+/** A car parked at a kerb: where it stands, which way its nose points (yaw
+ * about y, 0 faces +x as the traffic's cars do), and what it wears. Drawn by
+ * src/client/city/ParkedCars.tsx from the downloaded car bodies. */
+export type ParkedSpot = {
+  x: number;
+  z: number;
+  yaw: number;
+  body: BodyKey;
+  color: string;
+};
+
+/** The parked cars wear the bodies of ordinary traffic, never a bus. */
+function parked(
+  out: ParkedSpot[],
   x: number,
   z: number,
   yaw: number,
   r: number,
 ): void {
-  const rot: [number, number, number] = [0, yaw, 0];
-  put(out, "car", {
+  const body = pickBody(TRAFFIC_MIX, hash(x, z, 41));
+  out.push({
     x,
-    y: 0.5,
     z,
-    sx: 4.2,
-    sy: 0.9,
-    sz: 1.9,
-    rot,
-    color: pick(CAR_COLORS, r),
+    // half of them face the other way, as a street of parked cars does
+    yaw: hash(x, z, 43) < 0.5 ? yaw : yaw + Math.PI,
+    body,
+    color: FIXED_PAINT[body] ?? pick(CAR_COLORS, r),
   });
-  put(out, "carGlass", {
-    x,
-    y: 1.3,
-    z,
-    sx: 2.3,
-    sy: 0.7,
-    sz: 1.75,
-    rot,
-    color: "#5a4aa8",
-  });
-  // a roof slab over the glass, so the cabin reads as a car and not a black box
-  put(out, "car", {
-    x,
-    y: 1.68,
-    z,
-    sx: 2.1,
-    sy: 0.1,
-    sz: 1.8,
-    rot,
-    color: pick(CAR_COLORS, r),
-  });
-  // four wheels, tyres turned across the car, and two headlights at the nose
-  const c = Math.cos(yaw);
-  const s = Math.sin(yaw);
-  const at = (lx: number, lz: number): [number, number] => [
-    x + lx * c + lz * s,
-    z - lx * s + lz * c,
-  ];
-  for (const lx of [-1.4, 1.4]) {
-    for (const lz of [-0.85, 0.85]) {
-      const [wx, wz] = at(lx, lz);
-      put(out, "pole", {
-        x: wx,
-        y: 0.35,
-        z: wz,
-        sx: 0.7,
-        sy: 0.3,
-        sz: 0.7,
-        rot: [Math.PI / 2, yaw, 0],
-        color: "#120c24",
-      });
-    }
-  }
-  for (const lz of [-0.6, 0.6]) {
-    const [hx, hz] = at(2.12, lz);
-    put(out, "bulb", {
-      x: hx,
-      y: 0.7,
-      z: hz,
-      sx: 0.2,
-      sy: 0.2,
-      sz: 0.2,
-      color: "#fff1dc",
-    });
-  }
 }
 
 /** Parked cars at the kerbs: a row along the avenue and along each cross street. */
-function parkedCars(out: Placed[]): void {
+function parkedCars(): ParkedSpot[] {
+  const out: ParkedSpot[] = [];
   for (let x = -186; x <= 186; x += 13) {
     if (nearCross(x, 9)) continue;
     for (const z of [-5.2, 5.2]) {
       if (hash(x, z) < 0.3) continue;
-      car(out, x, z, 0, hash(z, x));
+      parked(out, x, z, 0, hash(z, x));
     }
   }
   for (const cx of CROSS_X) {
     for (const x of [cx - 3.7, cx + 3.7]) {
       for (let z = -186; z <= 186; z += 13) {
         if (Math.abs(z) < 11 || hash(x, z) < 0.3) continue;
-        car(out, x, z, Math.PI / 2, hash(x, z));
+        parked(out, x, z, Math.PI / 2, hash(x, z));
       }
     }
   }
+  return out;
 }
+
+export const PARKED_CARS: readonly ParkedSpot[] = parkedCars();
+
+/** Parked cars draw out to this many meters, by quality tier. */
+export const PARKED_RANGE = { low: 70, high: 150 } as const;
 
 /** Puddles on the avenue lanes, lit faintly by the neon they lie under. */
 function puddles(out: Placed[]): void {
@@ -840,7 +799,6 @@ function strings(out: Placed[]): void {
 /** Everything on the streets and squares, placed once for the whole city. */
 function streetDress(): Placed[] {
   const out: Placed[] = [];
-  parkedCars(out);
   puddles(out);
   grates(out);
   strings(out);
