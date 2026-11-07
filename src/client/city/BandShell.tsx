@@ -232,6 +232,10 @@ function Shell({ player }: { player: Player }): JSX.Element {
               position={[m.at[0], BAND_Y + STAGE_Y, m.at[1]]}
               rotation-y={m.yaw}
             >
+              <mesh position={[0, 2.2, 0]}>
+                <boxGeometry args={[0.3, 0.3, 0.3]} />
+                <meshBasicMaterial color="red" />
+              </mesh>
               <Doll
                 look={m.look}
                 mood={now.playing ? "dance" : "idle"}

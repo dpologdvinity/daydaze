@@ -596,6 +596,8 @@ const SHOTS: {
   {
     // the park band on its shell's stage mid-tune (src/game/city/bandShell.ts)
     name: "band-shell",
+    // live: the band's dolls stream in after the first ten frames
+    live: true,
     query:
       "room=city&view=room&time=11:00&band=40&at=222,-284&cam=232,5,-289,230,2,-272",
     act: async (page) => {
@@ -607,11 +609,11 @@ const SHOTS: {
       );
       // the dolls' models stream in after the shell
       await page.waitForFunction(
-        () => Number(document.querySelector("canvas")?.dataset.frames) >= 6,
+        () => Number(document.querySelector("canvas")?.dataset.bandDolls) > 0,
         null,
         { timeout: 300_000 },
       );
-      await page.waitForTimeout(20_000);
+      await page.waitForTimeout(8_000);
     },
   },
   {
