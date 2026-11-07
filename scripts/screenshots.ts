@@ -846,6 +846,7 @@ for (const shot of SHOTS) {
   const still = shot.live ? "" : "&still=1";
   await page.goto(`${BASE}/?quality=low${still}&${shot.query}`, {
     timeout: 300_000,
+    timeout: 120_000,
   });
   if (shot.act) await shot.act(page);
   const canvas = page.getByRole("img", { name: "3D room view" });
