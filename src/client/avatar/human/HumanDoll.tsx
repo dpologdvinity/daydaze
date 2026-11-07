@@ -296,10 +296,14 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
       opacity: 0.12,
       depthWrite: false,
     });
+    // the eyeballs (eye + cornea, about 4k triangles a doll): hidden with the
+    // far body, where each is a pixel or two and the proxy has no sockets
+    const eyeballs: THREE.Mesh[] = [];
     scene.traverse((o) => {
       if (!(o instanceof THREE.Mesh)) return;
       o.frustumCulled = false;
       const name = o.material instanceof THREE.Material ? o.material.name : "";
+      if (name === "eye" || name === "cornea") eyeballs.push(o);
       o.material =
         name === "lashes"
           ? lashes
@@ -343,6 +347,7 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
     return {
       scene,
       near,
+      eyeballs,
       shinHide,
       far: lods[0] ?? null,
       bones,
@@ -899,6 +904,7 @@ export function HumanDoll({
       if (isFar !== body.far.visible) {
         body.far.visible = isFar;
         for (const m of body.near) m.visible = !isFar;
+        for (const m of body.eyeballs) m.visible = !isFar;
       }
       farParts.current = isFar;
     }

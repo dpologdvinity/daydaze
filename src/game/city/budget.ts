@@ -20,6 +20,9 @@ import {
   type GrowthKind,
 } from "./park.ts";
 import { elBoxes } from "./el.ts";
+import { RESIDENTS, dogParkNear } from "./dogPark.ts";
+import { PEDESTRIANS } from "./pedestrians.ts";
+import { WILDLIFE, wildlifeNear } from "./parkWildlife.ts";
 import { QUEUE_NEAR_LOW, QUEUE_PERSON_TRIS, QUEUE_SPOTS } from "./queues.ts";
 import {
   bats,
@@ -41,6 +44,10 @@ import {
 } from "./plan.ts";
 import {
   BAY_RANGE,
+  CROWD_CAP,
+  CROWD_RADIUS,
+  PEDESTRIAN_DOLLS,
+  PEDESTRIAN_DOLL_RADIUS,
   POINT_LIGHTS,
   TREE_LOW_FAR,
   VIEW_RADIUS,
@@ -93,6 +100,12 @@ export const MODEL_COST: Readonly<
   "park/gazebo": { tris: 358, parts: 1 },
   "park/rowboat": { tris: 350, parts: 1 },
   "park/duck": { tris: 250, parts: 7 },
+  "animals/rabbit": { tris: 2483, parts: 1 },
+  "animals/deer": { tris: 2098, parts: 1 },
+  "animals/fox": { tris: 1848, parts: 1 },
+  "animals/labrador": { tris: 2391, parts: 2 },
+  "animals/husky": { tris: 1920, parts: 1 },
+  "animals/shibainu": { tris: 1950, parts: 1 },
   "park/picnic-table": { tris: 449, parts: 3 },
   "park/basket": { tris: 200, parts: 1 },
   "park/blanket": { tris: 128, parts: 2 },
@@ -133,6 +146,7 @@ export function modelsInBudget(): string[] {
     "doll/outfit-jeans",
     "doll/shoes-platforms",
     ...Array.from({ length: TREE_VARIANTS }, (_, i) => treeModel(i)),
+    ...Object.keys(MODEL_COST).filter((k) => k.startsWith("animals/")),
     ...FURNITURE_KINDS.map(furnitureModel),
     ...Object.keys(GROWTH_MODELS)
       .filter((k): k is GrowthKind => k in GROWTH_MODELS)
@@ -214,6 +228,68 @@ export function seasonalCost(at: Vec2): {
   return [winter, halloween, lunar].reduce((a, b) =>
     b.triangles > a.triangles ? b : a,
   );
+}
+
+/** A walker's doll on the low tier: the far body (3,168), the dearest hair
+ * (about 3,900), outfit (3,436) and shoes (3,064). Its eyes hide with the
+ * far body (HumanDoll). About six draw calls a doll. */
+export const NPC_DOLL_TRIS = 13_600;
+const NPC_DOLL_CALLS = 6;
+/** A crowd figure: the dearest of Kenney's four walkers (street/walker-*). */
+export const CROWD_FIGURE_TRIS = 880;
+
+/** The share of a walker's strip within `radius` of `at`, sampled at nine
+ * points: she paces it end to end, so it is how long she spends in range. */
+function shareInRange(
+  p: (typeof PEDESTRIANS)[number],
+  at: Vec2,
+  radius: number,
+) {
+  let inside = 0;
+  for (let i = 0; i <= 8; i++) {
+    const x = p.a[0] + ((p.b[0] - p.a[0]) * i) / 8;
+    const z = p.a[1] + ((p.b[1] - p.a[1]) * i) / 8;
+    if (Math.hypot(x - at[0], z - at[1]) <= radius) inside++;
+  }
+  return inside / 9;
+}
+
+/** Margin over the walkers' expected count in range: they are spread along
+ * their strips, so a bound taken at the busiest instant would never be seen. */
+const CROWD_MARGIN = 1.35;
+
+/** The live people and animals around `at` on the low tier, priced for the
+ * worst hour: the nearest walkers as dolls (and their dogs), the crowd past
+ * them as instanced figures, the park's wandering wildlife and the dog yard's
+ * residents. Each animal calls `add` with its model; the rest is returned. */
+export function liveCost(
+  at: Vec2,
+  add: (model: string) => void,
+): { drawCalls: number; triangles: number } {
+  const walkers = PEDESTRIANS.filter((p) => !p.bike);
+  const expected = (radius: number) =>
+    walkers.reduce((n, p) => n + shareInRange(p, at, radius), 0);
+  const dolls = Math.min(
+    PEDESTRIAN_DOLLS.low,
+    Math.ceil(expected(PEDESTRIAN_DOLL_RADIUS.low) * CROWD_MARGIN),
+  );
+  // the dog walkers among them each bring a dog
+  for (const p of walkers.filter((w) => w.dog).slice(0, dolls))
+    if (p.dog && shareInRange(p, at, PEDESTRIAN_DOLL_RADIUS.low) > 0)
+      add(`animals/${p.dog}`);
+  const crowd = Math.min(
+    CROWD_CAP * 4,
+    Math.max(0, Math.ceil(expected(CROWD_RADIUS.low) * CROWD_MARGIN) - dolls),
+  );
+  if (wildlifeNear(at[0], at[1]))
+    for (const w of WILDLIFE) if (!w.highOnly) add(`animals/${w.kind}`);
+  if (dogParkNear(at[0], at[1]))
+    for (const r of RESIDENTS) add(`animals/${r.kind}`);
+  return {
+    // one instanced draw per look and stride in use
+    drawCalls: dolls * NPC_DOLL_CALLS + (crowd > 0 ? 8 : 0),
+    triangles: dolls * NPC_DOLL_TRIS + crowd * CROWD_FIGURE_TRIS,
+  };
 }
 
 /** The widest view she can have of the ground, in radians: the camera sits
@@ -347,6 +423,14 @@ export function lowTierCost(at: Vec2): {
   );
   drawCalls += new Set(queued.map((s) => s.look)).size;
   triangles += queued.length * QUEUE_PERSON_TRIS;
+  const live = liveCost(at, (model) => {
+    const cost = MODEL_COST[model];
+    if (!cost) throw new Error(`no cost for ${model}`);
+    drawCalls += cost.parts;
+    triangles += cost.tris;
+  });
+  drawCalls += live.drawCalls;
+  triangles += live.triangles;
   const season = seasonalCost(at);
   drawCalls += season.drawCalls;
   triangles += season.triangles;

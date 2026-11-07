@@ -240,6 +240,10 @@ function boundsOf(poly: readonly Vec2[]): Box {
 
 /** Back walls wear bays within this fraction of the bay range. */
 const BACK_RANGE = 0.6;
+/** Fire escapes, the dearest bay, show within this share of the bay range. */
+const ESCAPE_RANGE = 0.6;
+/** Window sills show on blocks within this multiple of the bay range. */
+const SILL_RANGE = 1.2;
 
 /** How far a point is from a box (0 inside it). */
 function distanceToBox(p: Vec2, b: Box): number {
@@ -567,15 +571,16 @@ function buildingInstances(
   out: Record<Kind, Instance[]>,
   lights: Light[],
   kit: boolean,
+  sills = true,
 ): void {
   const { yaw, front } = facingOf(b);
   if (yaw === 0) {
-    buildingInstancesFacing(b, out, lights, kit);
+    buildingInstancesFacing(b, out, lights, kit, sills);
     return;
   }
   const local = emptyInstances();
   const localLights: Light[] = [];
-  buildingInstancesFacing(b, local, localLights, kit);
+  buildingInstancesFacing(b, local, localLights, kit, sills);
   const cos = Math.cos(yaw);
   const sin = Math.sin(yaw);
   // three.js turns (x, z) about y as (x cos + z sin, -x sin + z cos)
@@ -602,6 +607,7 @@ function buildingInstancesFacing(
   out: Record<Kind, Instance[]>,
   lights: Light[],
   kit: boolean,
+  sills: boolean,
 ): void {
   const f = frontOf(b);
   const signColor = b.sign?.color;
@@ -696,7 +702,7 @@ function buildingInstancesFacing(
       color: b.sign.color,
     });
   }
-  dressBuilding(b, out, kit);
+  dressBuilding(b, out, kit, sills);
 }
 
 function propInstances(
@@ -811,11 +817,28 @@ export function planCity(
     const dressed =
       isNyc(b) && distanceToBox(from, box) < bayRange ? nycBays(b) : [];
     const kit = dressed.length > 0;
-    buildingInstances(b, instances, lights, kit);
-    // back walls dress only the nearest blocks, the street faces farther out
     const d = distanceToBox(from, box);
+    // window sills (a 10-triangle box under every 2-triangle window, 0.14 m
+    // tall) are a detail of walls within SILL_RANGE bay ranges
+    buildingInstances(
+      b,
+      instances,
+      lights,
+      kit,
+      bayRange === 0 || d < bayRange * SILL_RANGE,
+    );
+    // back walls dress only the nearest blocks, the street faces farther out
+    // fire escapes (366 triangles a storey) are add-ons to a wall bay, so each
+    // is judged by its own distance: a long block's far end is no nearer than
+    // any other far wall
     bays.push(
-      ...dressed.filter((bay) => !bay.back || d < bayRange * BACK_RANGE),
+      ...dressed.filter(
+        (bay) =>
+          (!bay.back || d < bayRange * BACK_RANGE) &&
+          (bay.kind !== "fireEscape" ||
+            Math.hypot(bay.x - from[0], bay.z - from[1]) <
+              bayRange * ESCAPE_RANGE),
+      ),
     );
   }
 
