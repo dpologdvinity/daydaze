@@ -18,6 +18,7 @@ future imported packs belong here when they enter the game.
 
 | Title | Author | License | URL | Used for |
 | --- | --- | --- | --- | --- |
+| Mermaid | charliecatling | CC-BY 4.0 | https://sketchfab.com/3d-models/none-30534d0eff154f73b5afc16f90b4eb4b | Mermaid Cove mermaids (lounging, swimming, singing), decimated, skeleton cut to its deform bones. |
 | Ultimate Food Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/ultimatefood.html | Grocery stock, produce and restaurant dishes, Halloween pumpkins, converted and optimized; the farmers market's crates of produce. |
 | Christmas Tree | Alex Safayan | CC-BY 3.0 | https://poly.pizza/m/fO1vTvI0QIc | The Plaza's tree in the winter holidays (art/seasons/build_seasonal.py). |
 | red lantern | Sophie Kim | CC-BY 3.0 | https://poly.pizza/m/7PZhxLFiGc2 | Lanterns strung over Chinatown and Koreatown for Lunar New Year. |
@@ -126,9 +127,9 @@ future imported packs belong here when they enter the game.
 | Seesaw | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/8Ha-8ms-TJb | Dog park: the agility seesaw. |
 | Doggy Water Bowl | Jarlan Perez | CC-BY 3.0 | https://poly.pizza/m/6oVp6iDhgSk | Dog park: the water bowl. |
 | Tennis ball | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/0aPpwgcBbk1 | Dog park: the fetch ball. |
-| Rock Large | Quaternius | CC0 1.0 | https://poly.pizza/m/54jZKTAt5p | Reef dive: flat boulders and arch lintels. |
+| Rock Large | Quaternius | CC0 1.0 | https://poly.pizza/m/54jZKTAt5p | Reef dive: flat boulders and arch lintels; the rocks the Mermaid Cove mermaids lounge on. |
 | Rock Large (pillar) | Quaternius | CC0 1.0 | https://poly.pizza/m/d2VWOdthtR | Reef dive: rock pillars and arch legs. |
-| Rock Medium | Quaternius | CC0 1.0 | https://poly.pizza/m/s1OJ3bBzqc | Reef dive: mossy boulders. |
+| Rock Medium | Quaternius | CC0 1.0 | https://poly.pizza/m/s1OJ3bBzqc | Reef dive: mossy boulders; Mermaid Cove's lagoon boulders. |
 | Mountain Group | Quaternius | CC0 1.0 | https://poly.pizza/m/a52gSEEq8X | Reef dive: rock spires. |
 | Coral | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/4KUXdtDdgHR | Reef dive: branching coral. |
 | Anemone | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/1FMGb52XdD- | Reef dive: sea fans. |

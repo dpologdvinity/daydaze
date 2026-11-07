@@ -1,14 +1,20 @@
 import { Stars } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import type { Look } from "../../game/look.ts";
-import { LOG_SEATS, SAND, SHELL_SPOTS } from "../../game/mermaidCove.ts";
+import {
+  COVE_ROCKS,
+  LOG_SEATS,
+  SAND,
+  SHELL_SPOTS,
+  WATER_Y,
+} from "../../game/mermaidCove.ts";
 import { ROOMS } from "../../game/rooms.ts";
-import { Doll } from "../avatar/Doll.tsx";
 import { useReducedMotion } from "../motion.ts";
 import { leave, SHELL_COLORS, siren, tick } from "./cove/session.ts";
-import { fluke, Tail } from "./cove/Tail.tsx";
+import { Mermaid } from "./cove/Mermaid.tsx";
+import { usePart } from "./ocean/ReefProps.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { surface } from "../city/worldTexture.ts";
 
@@ -23,181 +29,41 @@ import { Sparkles } from "./shared/Sparkles.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
 
 const PINK = "#ff4fb3";
-const WATER_Y = -0.05;
+/** The lounging mermaids' tints, by rock. */
+const LOUNGE_TINTS = ["#ffd8e8", "#c2daff"];
+/** The reef kit's flat boulder, scaled long under a lounging mermaid. Its
+ * domed top peaks 0.41 of the unscaled height above center; she sits 8 cm
+ * over the peak, so her tail lies along the dome instead of sinking in. */
+const LOUNGE_SCALE = [2, 2.2, 3.1] as const;
+const LOUNGE_LIFT = 0.2;
+const LOUNGE_TOP = LOUNGE_LIFT + 0.41 * LOUNGE_SCALE[1] + 0.08;
 
-/** The mermaids in the lagoon: where each swims, her look and her tail. */
-const MERMAIDS: readonly {
-  at: [number, number];
-  look: Look;
-  tail: string;
-  turn: number;
-}[] = [
-  {
-    at: [-3.2, -2.4],
-    turn: 0.4,
-    tail: "#3fe0d0",
-    look: {
-      skin: "#e6b48e",
-      hairStyle: "mermaid",
-      hairColor: "#ff4fb3",
-      lips: "lips-hot-pink-glam",
-      brows: "brows-feathered-honey",
-      outfit: "baby-tee-mini",
-      outfitColor: "#3fe0d0",
-      shadow: "#3fe0d0",
-    },
-  },
-  {
-    at: [3.4, -3.2],
-    turn: -0.5,
-    tail: "#9b5cff",
-    look: {
-      skin: "#633c29",
-      hairStyle: "long-curly",
-      hairColor: "#7b4dff",
-      lips: "lips-burgundy-cherry",
-      brows: "brows-sculpted-espresso",
-      outfit: "baby-tee-mini",
-      outfitColor: "#9b5cff",
-      shadow: "#d23cff",
-    },
-  },
-  {
-    at: [0.4, -6.4],
-    turn: 0,
-    tail: "#ffb02e",
-    look: {
-      skin: "#f3d4c4",
-      hairStyle: "long-straight",
-      hairColor: "#f1d78f",
-      lips: "lips-nude-pink-gloss",
-      brows: "brows-y2k-thin",
-      outfit: "baby-tee-mini",
-      outfitColor: "#ffb02e",
-      shadow: "#ffd1f0",
-    },
-  },
-];
-
-/** A mermaid waist-deep in the lagoon, swaying, her tail flicking up out of
- * the water behind her every few seconds. */
-function Mermaid({
-  at,
-  look,
-  tail,
-  turn,
-  seed,
-}: (typeof MERMAIDS)[number] & { seed: number }) {
-  const calm = useReducedMotion();
-  const body = useRef<THREE.Group>(null);
-  const fin = useRef<THREE.Group>(null);
-  const finShape = useMemo(fluke, []);
-  useEffect(() => () => finShape.dispose(), [finShape]);
-  useFrame(({ clock }) => {
-    const t = clock.elapsedTime + seed * 2.1;
-    if (body.current && !calm)
-      body.current.position.y = -0.95 + Math.sin(t * 1.3) * 0.06;
-    if (fin.current) {
-      // a flick out of the water every seven seconds
-      const k = calm ? 0 : Math.max(0, Math.sin(((t % 7) / 1.4) * Math.PI));
-      const up = t % 7 < 1.4 ? k : 0;
-      fin.current.position.y = WATER_Y - 0.4 + up * 0.75;
-      fin.current.rotation.x = -0.4 - up * 0.9;
-    }
-  });
+/** A rock from the reef kit (Quaternius, CC0) in the cove's lavender stone:
+ * the long flat boulder a mermaid lounges on, or a rounder one `r` across. */
+function Boulder({ lounge, r }: { lounge: boolean; r: number }) {
+  const part = usePart(lounge ? "rock-flat" : "rock-moss");
+  if (!part) return null;
   return (
-    <group position={[at[0], 0, at[1]]} rotation-y={turn}>
-      <group ref={body} position-y={-0.95}>
-        <Doll look={look} mood="dance" dance="body-roll" seed={seed} />
-      </group>
-      <group ref={fin} position={[0, WATER_Y - 0.4, -1.1]}>
-        <mesh geometry={finShape} rotation-x={-Math.PI / 2}>
-          <meshStandardMaterial
-            color={tail}
-            emissive={tail}
-            emissiveIntensity={0.5}
-            metalness={0.5}
-            roughness={0.3}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
-      </group>
-      {/* a ring of ripples round her waist */}
-      <mesh position-y={WATER_Y + 0.01} rotation-x={-Math.PI / 2}>
-        <ringGeometry args={[0.32, 0.4, 24]} />
-        <meshBasicMaterial color="#bff8ff" transparent opacity={0.35} />
-      </mesh>
-    </group>
+    <mesh
+      geometry={part.geometry}
+      material={COVE_ROCK}
+      position-y={lounge ? LOUNGE_LIFT : r * 0.25}
+      scale={lounge ? [...LOUNGE_SCALE] : [r, r * 0.9, r]}
+    />
   );
 }
 
-/** Mermaids perched on the lagoon's rocks, full tails draped down the rock
- * into the water: [rock x, z, size], her look, tail color and turn. */
-const PERCHED: readonly {
-  rock: readonly [number, number, number];
-  look: Look;
-  tail: string;
-  turn: number;
-}[] = [
-  {
-    rock: [-7, -3, 1.6],
-    turn: 0.5,
-    tail: "#ff4fb3",
-    look: {
-      skin: "#c48d68",
-      hairStyle: "mermaid",
-      hairColor: "#7ee8a2",
-      lips: "lips-90s-caramel-ombre",
-      brows: "brows-fox-snatched",
-      outfit: "baby-tee-mini",
-      outfitColor: "#ff2f9a",
-      shadow: "#ff2f9a",
-    },
-  },
-  {
-    rock: [6.5, -5, 1.3],
-    turn: -0.6,
-    tail: "#3a6bff",
-    look: {
-      skin: "#94603f",
-      hairStyle: "waves",
-      hairColor: "#c0c0c8",
-      lips: "lips-hot-pink-glam",
-      brows: "brows-sculpted-espresso",
-      outfit: "baby-tee-mini",
-      outfitColor: "#3fe0d0",
-      shadow: "#2e7dff",
-    },
-  },
-];
-
-/** A mermaid sitting on a rock's front edge, leaning back, her tail
- * hanging down the rock and her fluke over the water. */
-function PerchedMermaid({
-  rock: [x, z, r],
-  look,
-  tail,
-  turn,
-  seed,
-}: (typeof PERCHED)[number] & { seed: number }) {
-  return (
-    <group position={[x, 0, z]} rotation-y={turn}>
-      {/* seated on the rock's front edge, leaning back on her hands; the
-          sit pose's thighs rest this far above her root */}
-      <group position={[0, r * 1.05 - 0.5, r * 0.45]}>
-        {/* a shell-top bikini, and no shoes to poke out of the tail */}
-        <Doll
-          look={look}
-          swim={{ style: "bikini", color: look.outfitColor }}
-          mood="sit"
-          hold="sit-lean-back"
-          seed={seed}
-        />
-        <Tail color={tail} pose="seated" />
-      </group>
-    </group>
-  );
-}
+// Marina's look is shared by her talking NPC.
+const MARINA_LOOK: Look = {
+  skin: "#e6b48e",
+  hairStyle: "mermaid",
+  hairColor: "#ff4fb3",
+  lips: "lips-hot-pink-glam",
+  brows: "brows-feathered-honey",
+  outfit: "baby-tee-mini",
+  outfitColor: "#3fe0d0",
+  shadow: "#3fe0d0",
+};
 
 /** The four singing shells at the waterline, lighting up as they sing. */
 function Shells() {
@@ -301,23 +167,17 @@ export function MermaidCove({ onPick }: { onPick: PickHandler }) {
         />
       </mesh>
       <PortalPads room={ROOMS["mermaid-cove"]} color={PINK} />
-      {/* rocks round the lagoon, and the sea cave's arch */}
-      {(
-        [
-          [-7, -3, 1.6],
-          [6.5, -5, 1.3],
-          [-2.5, -9, 1.1],
-          [9, -1.2, 0.9],
-        ] as const
-      ).map(([x, z, r]) => (
-        <mesh
-          key={`${x}${z}`}
-          position={[x, r * 0.3, z]}
-          scale={[r, r * 0.8, r]}
-        >
-          <dodecahedronGeometry args={[1, 0]} />
-          <primitive object={COVE_ROCK} attach="material" />
-        </mesh>
+      {/* rocks round the lagoon, mermaids lounging on the two long ones, and
+          the sea cave's arch */}
+      {COVE_ROCKS.map((rock, i) => (
+        <group key={i} position={[rock.x, 0, rock.z]} rotation-y={rock.yaw}>
+          <Boulder lounge={rock.lounge} r={rock.r} />
+          {rock.lounge && (
+            <group position-y={LOUNGE_TOP}>
+              <Mermaid tint={LOUNGE_TINTS[i] ?? "#ffffff"} />
+            </group>
+          )}
+        </group>
       ))}
       <mesh position={[0, 0, -16]} scale={[1.4, 1.2, 1]}>
         <torusGeometry args={[6, 1.6, 8, 24, Math.PI]} />
@@ -332,12 +192,8 @@ export function MermaidCove({ onPick }: { onPick: PickHandler }) {
           toneMapped={false}
         />
       </mesh>
-      {MERMAIDS.map((m, i) => (
-        <Mermaid key={i} {...m} seed={271 + i} />
-      ))}
-      {PERCHED.map((m, i) => (
-        <PerchedMermaid key={i} {...m} seed={281 + i} />
-      ))}
+      <Mermaid loop={0} tint="#bbfff0" singer />
+      <Mermaid loop={1} tint="#f4ccff" />
       <Shells />
       <SongClock />
       {/* driftwood logs up the beach */}
@@ -372,7 +228,7 @@ export function MermaidCove({ onPick }: { onPick: PickHandler }) {
       <TalkingNpc
         name="Marina"
         role="regular"
-        look={MERMAIDS[0].look}
+        look={MARINA_LOOK}
         mood="idle"
         at={[SAND.x1 - 1.6, 0, 4.4]}
         rot={-Math.PI / 2}
