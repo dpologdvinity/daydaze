@@ -1,11 +1,12 @@
 // Screenshots one shot of the doll lineup page into docs/screenshots/doll-<shot>.png.
 //   BASE_URL=http://localhost:5201 node --experimental-strip-types scripts/lineup-shot.ts cropped [men=1]
-// Needs a dev server. The lineup renders on the CPU, so it waits for the
+// OUT=hair-women-1 names the file (docs/screenshots/<OUT>.png). Needs a dev server. The lineup renders on the CPU, so it waits for the
 // frame counter to go quiet before capturing.
 import { chromium } from "@playwright/test";
 
 const BASE = process.env.BASE_URL ?? "http://localhost:5195";
 const [shot = "lineup", ...extra] = process.argv.slice(2);
+const name = process.env.OUT ?? `doll-${shot}`;
 const browser = await chromium.launch({
   args: [
     "--use-gl=angle",
@@ -23,8 +24,8 @@ await page.locator("canvas").waitFor();
 // the models load lazily: give them time, then let the frame loop settle
 await page.waitForTimeout(60_000);
 await page.screenshot({
-  path: `docs/screenshots/doll-${shot}.png`,
+  path: `docs/screenshots/${name}.png`,
   timeout: 180_000,
 });
 await browser.close();
-console.log("wrote", `docs/screenshots/doll-${shot}.png`);
+console.log("wrote", `docs/screenshots/${name}.png`);
