@@ -229,10 +229,10 @@ function hairsLooks(): Look[] {
 const SHOTS = {
   hairs: {
     looks: hairsLooks(),
-    x: (i: number) => (i - (hairsLooks().length - 1) / 2) * 0.4,
+    x: (i: number) => (i - (hairsLooks().length - 1) / 2) * 0.36,
     cam: [0, 1.52, 2.4] as const,
-    target: [0, 1.46, 0] as const,
-    fov: 30,
+    target: [0, 1.4, 0] as const,
+    fov: 40,
   },
   men: {
     looks: MEN,
