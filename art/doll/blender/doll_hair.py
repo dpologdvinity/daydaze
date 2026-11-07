@@ -13,6 +13,7 @@ import numpy as np
 from mathutils import Euler, Vector
 from mathutils.kdtree import KDTree
 
+import pack_hair
 import proxies
 import strands
 
@@ -678,6 +679,12 @@ def build(ctx):
 
     out = []
     only = [n for n in os.environ.get("HAIR_ONLY", "").split(",") if n]
+    if only == ["packs"]:
+        # HAIR_ONLY=packs builds just the pack styles (PACK_ONLY=a,b narrows it)
+        out = pack_hair.build(ctx)
+        for ob in out:
+            shade_strands(ctx, ob)
+        return out
     if only:
         # HAIR_ONLY=hijab,turban builds just those sculpted parts (fast)
         solid = bpy.data.materials.new("hair_solid")
@@ -772,6 +779,7 @@ def build(ctx):
     edges = sleek
     edges.name = "Hair_edges"
     out.append(edges)
+    out += pack_hair.build(ctx)
     for ob in out:
         shade_strands(ctx, ob)
     return out
