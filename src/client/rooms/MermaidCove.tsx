@@ -1,26 +1,32 @@
 import { Stars } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useRef } from "react";
-import * as THREE from "three";
+import { useEffect } from "react";
 import type { Look } from "../../game/look.ts";
-import {
-  COVE_ROCKS,
-  LOG_SEATS,
-  SAND,
-  SHELL_SPOTS,
-  WATER_Y,
-} from "../../game/mermaidCove.ts";
+import { COVE_ROCKS, LOG_SEATS, SAND } from "../../game/mermaidCove.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import { useReducedMotion } from "../motion.ts";
-import { leave, SHELL_COLORS, siren, tick } from "./cove/session.ts";
+import { leave, tick } from "./cove/session.ts";
+import { Lagoon, type Waterline } from "./cove/Lagoon.tsx";
 import { Mermaid } from "./cove/Mermaid.tsx";
+import { Shells } from "./cove/Shells.tsx";
 import { usePart } from "./ocean/ReefProps.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { surface } from "../city/worldTexture.ts";
 
-// real rock round the lagoon, a darker sea cave, sun-bleached driftwood
-const COVE_ROCK = surface("rock_face", { scale: 0.8, color: "#8a80a8" });
-const CAVE_ROCK = surface("rock_face", { scale: 0.5, color: "#6a6088" });
+// real rock round the lagoon, a darker sea cave, sun-bleached driftwood; the
+// faint violet glow keeps the rocks' shapes from going black at night
+const COVE_ROCK = surface("rock_face", {
+  scale: 0.8,
+  color: "#c4b8e8",
+  emissive: "#1c1238",
+  emissiveIntensity: 1,
+});
+const CAVE_ROCK = surface("rock_face", {
+  scale: 0.5,
+  color: "#a496cc",
+  emissive: "#140c2c",
+  emissiveIntensity: 1,
+});
 const DRIFTWOOD = surface("palm_bark", { scale: 1.5, color: "#d8c0a0" });
 import { hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
@@ -29,6 +35,8 @@ import { Sparkles } from "./shared/Sparkles.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
 
 const PINK = "#ff4fb3";
+/** The moon, low over the sea cave. */
+const MOON = [8, 13, -45] as const;
 /** The lounging mermaids' tints, by rock. */
 const LOUNGE_TINTS = ["#ffd8e8", "#c2daff"];
 /** The reef kit's flat boulder, scaled long under a lounging mermaid. Its
@@ -37,6 +45,16 @@ const LOUNGE_TINTS = ["#ffd8e8", "#c2daff"];
 const LOUNGE_SCALE = [2, 2.2, 3.1] as const;
 const LOUNGE_LIFT = 0.2;
 const LOUNGE_TOP = LOUNGE_LIFT + 0.41 * LOUNGE_SCALE[1] + 0.08;
+
+/** Where each rock meets the water, for the lagoon's foam: the boulders'
+ * outlines a little inside their widest (the water cuts them below center). */
+const WATERLINES: readonly Waterline[] = COVE_ROCKS.map((rock) => ({
+  x: rock.x,
+  z: rock.z,
+  yaw: rock.yaw,
+  ax: rock.lounge ? 0.95 * LOUNGE_SCALE[0] : 0.85 * rock.r,
+  az: rock.lounge ? 0.95 * 0.956 * LOUNGE_SCALE[2] : 0.8 * rock.r,
+}));
 
 /** A rock from the reef kit (Quaternius, CC0) in the cove's lavender stone:
  * the long flat boulder a mermaid lounges on, or a rounder one `r` across. */
@@ -65,52 +83,6 @@ const MARINA_LOOK: Look = {
   shadow: "#3fe0d0",
 };
 
-/** The four singing shells at the waterline, lighting up as they sing. */
-function Shells() {
-  const calm = useReducedMotion();
-  const mats = useRef<(THREE.MeshBasicMaterial | null)[]>([]);
-  const groups = useRef<(THREE.Group | null)[]>([]);
-  useFrame(({ clock }) => {
-    const { lit } = siren.get();
-    SHELL_SPOTS.forEach((_, i) => {
-      const m = mats.current[i];
-      const g = groups.current[i];
-      const on = lit === i;
-      if (m) m.color.set(SHELL_COLORS[i]).multiplyScalar(on ? 3 : 0.9);
-      if (g)
-        g.scale.setScalar(
-          on
-            ? 1.25
-            : 1 + (calm ? 0 : Math.sin(clock.elapsedTime * 2 + i) * 0.03),
-        );
-    });
-  });
-  return (
-    <>
-      {SHELL_SPOTS.map(([x, z], i) => (
-        <group
-          key={i}
-          ref={(g) => {
-            groups.current[i] = g;
-          }}
-          position={[x, 0.05, z]}
-        >
-          <mesh scale={[0.5, 0.28, 0.42]} rotation-x={-0.2}>
-            <sphereGeometry args={[1, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2]} />
-            <meshBasicMaterial
-              ref={(m) => {
-                mats.current[i] = m;
-              }}
-              color={SHELL_COLORS[i]}
-              toneMapped={false}
-            />
-          </mesh>
-        </group>
-      ))}
-    </>
-  );
-}
-
 /** Ticks Siren Song's playback, and stops it when you leave the cove. */
 function SongClock() {
   useEffect(() => () => leave(), []);
@@ -138,7 +110,10 @@ export function MermaidCove({ onPick }: { onPick: PickHandler }) {
         fade
         speed={calm ? 0 : 0.3}
       />
-      <hemisphereLight args={["#b8a8ff", "#0b3a4a", 1]} />
+      <hemisphereLight args={["#b8a8ff", "#0b3a4a", 1.3]} />
+      {/* moonlight from the moon over the cave: it rims the rocks, the arch
+          and the mermaids, and lays a glittering path on the water */}
+      <directionalLight position={MOON} color="#a9c2ff" intensity={1.8} />
       <pointLight
         position={[0, 4, 3]}
         color="#bff8ff"
@@ -156,16 +131,7 @@ export function MermaidCove({ onPick }: { onPick: PickHandler }) {
       />
       {/* the lagoon, glowing faintly from below; opaque, so the swimming
           mermaids are seen from the waist up */}
-      <mesh position={[0, WATER_Y, SAND.z0 - 20]} rotation-x={-Math.PI / 2}>
-        <planeGeometry args={[60, 40]} />
-        <meshStandardMaterial
-          color="#0e5a6a"
-          emissive="#0b8a9a"
-          emissiveIntensity={0.35}
-          metalness={0.5}
-          roughness={0.2}
-        />
-      </mesh>
+      <Lagoon rocks={WATERLINES} />
       <PortalPads room={ROOMS["mermaid-cove"]} color={PINK} />
       {/* rocks round the lagoon, mermaids lounging on the two long ones, and
           the sea cave's arch */}
@@ -183,8 +149,8 @@ export function MermaidCove({ onPick }: { onPick: PickHandler }) {
         <torusGeometry args={[6, 1.6, 8, 24, Math.PI]} />
         <primitive object={CAVE_ROCK} attach="material" />
       </mesh>
-      {/* the moon, and its path on the water */}
-      <mesh position={[8, 13, -45]}>
+      {/* the moon; the water's ripples catch its light */}
+      <mesh position={MOON}>
         <circleGeometry args={[3, 32]} />
         <meshBasicMaterial
           color={hdr("#fff4dc", 1.4)}

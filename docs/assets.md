@@ -19,6 +19,9 @@ future imported packs belong here when they enter the game.
 | Title | Author | License | URL | Used for |
 | --- | --- | --- | --- | --- |
 | Mermaid | charliecatling | CC-BY 4.0 | https://sketchfab.com/3d-models/none-30534d0eff154f73b5afc16f90b4eb4b | Mermaid Cove mermaids (lounging, swimming, singing), decimated, skeleton cut to its deform bones. |
+| Seashell | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/5ovn4mnRejL | Mermaid Cove's scallop and conch singing shells (art/cove/build_shells.py). |
+| Clam | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/8675QcluLQX | Mermaid Cove's clam singing shell (art/cove/build_shells.py). |
+| seashell | Dario Demi (D911C) | CC-BY 3.0 | https://poly.pizza/m/2BU9U8dOkh- | Mermaid Cove's spiral singing shell (art/cove/build_shells.py). |
 | Ultimate Food Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/ultimatefood.html | Grocery stock, produce and restaurant dishes, Halloween pumpkins, converted and optimized; the farmers market's crates of produce. |
 | Christmas Tree | Alex Safayan | CC-BY 3.0 | https://poly.pizza/m/fO1vTvI0QIc | The Plaza's tree in the winter holidays (art/seasons/build_seasonal.py). |
 | red lantern | Sophie Kim | CC-BY 3.0 | https://poly.pizza/m/7PZhxLFiGc2 | Lanterns strung over Chinatown and Koreatown for Lunar New Year. |
