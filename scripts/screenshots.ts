@@ -1,6 +1,7 @@
 // Captures review screenshots of each room into docs/screenshots/.
 // Needs a dev server: `npm run dev -- --port 5195 --strictPort`, then
 // `node --experimental-strip-types scripts/screenshots.ts [name...]`.
+import { execFileSync } from "node:child_process";
 import { chromium, expect, type Page } from "@playwright/test";
 import {
   FURNITURE_CATALOG,
@@ -870,6 +871,21 @@ const SHOTS: {
 ];
 
 const only = process.argv.slice(2);
+// hair-<name> shots are the lineup page's (scripts/hair-shots.ts), which writes
+// docs/screenshots/hair-<name>.png like any other shot
+const hairShots = only.filter((n) => n.startsWith("hair-"));
+if (hairShots.length) {
+  execFileSync(
+    process.execPath,
+    [
+      "--experimental-strip-types",
+      "scripts/hair-shots.ts",
+      ...hairShots.map((n) => n.slice("hair-".length)),
+    ],
+    { stdio: "inherit" },
+  );
+  if (hairShots.length === only.length) process.exit(0);
+}
 const browser = await chromium.launch({
   args: [
     "--use-gl=angle",
