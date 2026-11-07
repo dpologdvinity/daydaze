@@ -15,12 +15,7 @@ import {
 
 // the pose for lying on a bed
 const LAY_HOLD = stillClipsOf("lay")[0]?.id ?? "built";
-import {
-  modelSuffix,
-  type Look,
-  type Mood,
-  type SwimLook,
-} from "../../game/look.ts";
+import { type Look, type Mood, type SwimLook } from "../../game/look.ts";
 import { moveAction, MOVE_CODES } from "../../game/input.ts";
 import type { Portal, Spawn } from "../../game/rooms.ts";
 import {
@@ -38,9 +33,7 @@ import {
   type Walker,
 } from "../../game/walker.ts";
 import { WALK_SPEED, type Vec2 } from "../../game/walk.ts";
-import { naturalPace } from "../../game/dance/clips.ts";
 import { gaitPace } from "../../game/dance/stride.ts";
-import { gaitOf } from "../../game/gaits.ts";
 import { paceIn, waterState, type WaterState } from "../../game/openWater.ts";
 import { afloat } from "../avatar/human/afloat.ts";
 import type { Water } from "./water.ts";
@@ -360,10 +353,8 @@ export function PlayerController({
       player.acc = 0;
       player.walk.target = null;
     } else {
-      // she walks at her gait's pace (a strut is slower than a stride)
-      pace.current = gaitPace(
-        naturalPace(gaitOf(look.gait).clip, modelSuffix(look) === "-m"),
-      );
+      // she walks at the brisk game pace; her clip hands over to the jog if it cannot keep up
+      pace.current = gaitPace();
       // simulate in fixed steps, however fast frames arrive
       player.acc = Math.min(player.acc + dt, MAX_CATCH_UP);
       while (player.acc >= SIM_STEP) {
@@ -435,10 +426,10 @@ export function PlayerController({
       // legs swing slow and long: pushes, not steps
       moving || player.seat?.stride
         ? skates.get().on
-          ? WALK_SPEED * 0.45
+          ? WALK_SPEED * 0.3
           : pace.current
         : 0,
-      10,
+      18,
       dt,
     );
     // a seated or sliding doll is drawn on the seat or the slide, feet and all

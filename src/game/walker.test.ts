@@ -87,3 +87,24 @@ test("a speed scale covers ground faster, as on skates", () => {
   }
   assert.ok(b.pos[1] > a.pos[1] * 1.6, `${b.pos[1]} vs ${a.pos[1]}`);
 });
+
+test("starts and turns are snappy: full pace at once, a quarter turn in under 0.3 s", () => {
+  const w = createWalker({ position: [0, 0], yaw: 0 });
+  stepWalker(w, plaza, [0, 1], SIM_STEP);
+  assert.ok(Math.abs(w.pos[1] - WALK_SPEED * SIM_STEP) < 1e-9);
+  const t = createWalker({ position: [0, 0], yaw: 0 });
+  const steps = Math.round(0.3 / SIM_STEP);
+  for (let i = 0; i < steps; i++) stepWalker(t, plaza, [1, 0], SIM_STEP);
+  assert.ok(Math.abs(t.yaw - Math.PI / 2) < 0.1, `yaw ${t.yaw}`);
+});
+
+test("a ten-meter walk takes under five seconds", () => {
+  const w = createWalker({ position: [-5, 0], yaw: Math.PI / 2 });
+  setTarget(w, plaza, [5, 0]);
+  let steps = 0;
+  while (w.target && steps < 1000) {
+    stepWalker(w, plaza, null, SIM_STEP);
+    steps++;
+  }
+  assert.ok(steps * SIM_STEP < 5, `${steps * SIM_STEP}s`);
+});
