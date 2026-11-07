@@ -43,6 +43,18 @@ the 3D cars — the cars are ugly; I gave you so many 3D things, look in
   logos/badges. Optimize (meshopt, webp), instanced per model for traffic,
   low-poly LODs for the low tier, keep paint colors, wraps, rims,
   underglow and tint working on the new bodies.
+- **Status (branch feat/real-cars):** traffic, the player's own car and the
+  dealership now wear Quaternius bodies from `public/models/cars/` (built by
+  `scripts/import-cars.sh` and `art/cars/import.py`; roster mapping, traffic
+  mix and fixed paints in `src/game/driving/bodies.ts`). Each GLB has meshes
+  named paint, glass, trim, tyre, rim and light; near about 3,000 triangles
+  (ambulance and school bus about 1,700), `-lo` twin about 600. Traffic is
+  one instanced draw per body and level of detail (`trafficBodies.ts`),
+  per-instance paint through a vertex-marked shader. The Sketchfab cars were
+  skipped (brands, NC licenses, size). Not done: spinning wheels (tyres are
+  merged into the body mesh), the parked cars along the kerbs (plan kinds
+  `car` and `carGlass`, still lofted: `carGeometry.ts`), Speedway karts and
+  stock cars (unchanged on purpose).
 
 ## 4. Better hair (started 2026-11-07, branch feat/hair)
 

@@ -10,7 +10,7 @@ curl -fLs https://static.poly.pizza/7a1ec2af-89e6-4785-976f-7c0991608a88.glb -o 
 Q="${Q:-/tmp/daydaze-city/q}"
 BLENDER="${BLENDER:-blender}"
 mkdir -p public/models/transit
-for kind in bus taxi sedan van stop; do
+for kind in bus van stop; do
   case "$kind" in
     bus) source="$Q/Public_Transport_Pack__Feb_2017/Public Transport Pack - Feb 2017/FBX/Bus.fbx" ;;
     taxi) source="$Q/Realistic_Car_Pack__Nov_2018/Realistic Car Pack - Nov 2018/FBX/Taxi.fbx" ;;
