@@ -161,7 +161,8 @@ function Shell({ player }: { player: Player }): JSX.Element {
   const [shown, setShown] = useState<readonly number[]>([]);
   const lastPick = useRef(-Infinity);
   const lastSound = useRef(0);
-  const DRAWN = low ? 5 : 10;
+  // the whole band always, then the audience nearest to you
+  const DRAWN = BAND.length + (low ? 4 : 12);
   const people = useMemo(
     () => [
       ...BAND.map((m) => ({ at: m.at })),
@@ -196,14 +197,18 @@ function Shell({ player }: { player: Player }): JSX.Element {
     )
       bandDesk.set({ near: card, hint, playing: current.playing });
     const next = onStage
-      ? people
-          .map((p, i) => ({
-            i,
-            d: Math.hypot(p.at[0] - player.pos.x, p.at[1] - player.pos.z),
-          }))
-          .sort((a, b) => a.d - b.d)
-          .slice(0, DRAWN)
-          .map((n) => n.i)
+      ? [
+          ...BAND.map((_, i) => i),
+          ...people
+            .map((p, i) => ({
+              i,
+              d: Math.hypot(p.at[0] - player.pos.x, p.at[1] - player.pos.z),
+            }))
+            .slice(BAND.length)
+            .sort((a, b) => a.d - b.d)
+            .slice(0, DRAWN - BAND.length)
+            .map((n) => n.i),
+        ]
       : [];
     if (next.length !== shown.length || next.some((i) => !shown.includes(i)))
       setShown(next);
@@ -232,10 +237,6 @@ function Shell({ player }: { player: Player }): JSX.Element {
               position={[m.at[0], BAND_Y + STAGE_Y, m.at[1]]}
               rotation-y={m.yaw}
             >
-              <mesh position={[0, 2.2, 0]}>
-                <boxGeometry args={[0.3, 0.3, 0.3]} />
-                <meshBasicMaterial color="red" />
-              </mesh>
               <Doll
                 look={m.look}
                 mood={now.playing ? "dance" : "idle"}
