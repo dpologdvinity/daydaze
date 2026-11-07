@@ -6,7 +6,10 @@ import {
   MIN_TEMPO,
   gaitPace,
   walkPhaseRate,
+  runRate,
   walkRate,
+  MAX_RUN_TEMPO,
+  needsRun,
 } from "./stride.ts";
 
 test("a walk clip plays at ground speed over its own pace, within the clamp", () => {
@@ -21,15 +24,24 @@ test("a walk clip plays at ground speed over its own pace, within the clamp", ()
   assert.equal(walkRate(Number.NaN, 1.2), 1);
 });
 
-test("a gait walks at its clip's own pace, never past the walk speed", () => {
-  // a slow strut at 0.86 m/s natural walks at 0.86 m/s: the clip plays at 1x
-  assert.equal(gaitPace(0.86), 0.86);
-  assert.equal(walkRate(gaitPace(0.86), 0.86), 1);
-  // a brisk clip is capped at the walk speed
-  assert.equal(gaitPace(1.6), WALK_SPEED);
-  // no clip measured: the walk speed
-  assert.equal(gaitPace(undefined), WALK_SPEED);
-  assert.equal(gaitPace(0), WALK_SPEED);
+test("every gait walks at the brisk walk speed", () => {
+  assert.equal(gaitPace(), WALK_SPEED);
+});
+
+test("a walk clip that cannot keep up hands over to the jog", () => {
+  // within the walk clip's tempo clamp: keep walking
+  assert.equal(needsRun(1.2, 1.0), false);
+  assert.equal(needsRun(1.25, 1.0), false);
+  // brisk game pace on a 1 m/s walk clip would play at 2.6x: run instead
+  assert.equal(needsRun(WALK_SPEED, 0.984), true);
+  // a clip with no measured pace never switches
+  assert.equal(needsRun(WALK_SPEED, 0), false);
+  // the jog (1.676 m/s) covers brisk pace at a sane rate, clamped when pushed
+  assert.ok(Math.abs(runRate(WALK_SPEED, 1.676) - WALK_SPEED / 1.676) < 1e-9);
+  assert.ok(runRate(WALK_SPEED, 1.676) <= MAX_RUN_TEMPO);
+  assert.equal(runRate(20, 1.676), MAX_RUN_TEMPO);
+  assert.equal(runRate(0.1, 1.676), MIN_TEMPO);
+  assert.equal(runRate(2, 0), 1);
 });
 
 test("the built walk's phase turns once per stride of ground covered", () => {

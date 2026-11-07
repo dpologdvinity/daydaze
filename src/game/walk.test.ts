@@ -37,8 +37,8 @@ function assertNear(actual: Vec2, expected: Vec2) {
 
 const nonFinite = [Number.NaN, Infinity, -Infinity];
 
-test("walking speed is a brisk 1.6 m/s", () => {
-  assert.equal(WALK_SPEED, 1.6);
+test("walking speed is a brisk 2.6 m/s (1.625x the old 1.6)", () => {
+  assert.equal(WALK_SPEED, 2.6);
 });
 
 test("pointInPolygon handles convex and concave polygons", () => {

@@ -9,7 +9,7 @@
 import type { CoupleRole } from "./couple.ts";
 import { MOCAP_CLIPS } from "./mocap.ts";
 import type { MocapClip } from "./mocapTypes.ts";
-import { walkRate } from "./stride.ts";
+import { RUN_CLIP, needsRun, runRate, walkRate } from "./stride.ts";
 import type { Mood } from "../look.ts";
 
 const BY_ID: ReadonlyMap<string, MocapClip> = new Map(
@@ -104,9 +104,17 @@ export function pickClip(s: DollState): Play | null {
   if (s.seated) return play(SEAT_CLIP);
   if (s.speed > MOVING) {
     const walk = clipOf(s.walk);
-    return walk?.kind === "walk"
-      ? play(walk.id, walkRate(s.speed, walk.speed ?? 0))
-      : null;
+    if (walk?.kind !== "walk") return null;
+    // a walk clip that can't keep up with the ground hands over to the jog
+    const jog = clipOf(RUN_CLIP);
+    if (jog?.speed && walk.id !== jog.id && needsRun(s.speed, walk.speed ?? 0))
+      return play(jog.id, runRate(s.speed, jog.speed));
+    return play(
+      walk.id,
+      walk.id === RUN_CLIP
+        ? runRate(s.speed, walk.speed ?? 0)
+        : walkRate(s.speed, walk.speed ?? 0),
+    );
   }
   const hold = clipOf(s.hold);
   switch (s.mood) {
