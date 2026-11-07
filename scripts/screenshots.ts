@@ -262,34 +262,6 @@ const SHOTS: {
     name: "mermaid-cove-rocks",
     query: "room=mermaid-cove&cam=-2,2.4,1.5,-6.5,1.1,-3.3",
   },
-  {
-    // Siren Song held on its first note: the singer risen in the shallows,
-    // her note's shell glowing on the sand
-    name: "mermaid-cove-song",
-    query: "room=mermaid-cove&siren=hold&cam=1.2,1.7,7.2,-0.6,0.5,1.4",
-    live: true,
-    act: async (page) => {
-      const start = page.getByRole("button", {
-        name: "Sing with the mermaids",
-      });
-      // the click can land before the room is wired up: retry until the
-      // song has started (the button goes away)
-      await expect(async () => {
-        if (await start.isVisible()) await start.click();
-        await expect(start).toBeHidden({ timeout: 2000 });
-      }).toPass({ timeout: 300_000 });
-      // a few more frames, so she finishes rising
-      await page.evaluate(
-        () =>
-          new Promise<void>((done) => {
-            let n = 0;
-            const step = () =>
-              ++n > 150 ? done() : requestAnimationFrame(step);
-            requestAnimationFrame(step);
-          }),
-      );
-    },
-  },
   { name: "open-water", query: "room=open-water" },
   { name: "open-water-whale", query: "room=open-water&cam=8,4,-40,8,-1,-64" },
   { name: "open-water-full", query: "room=open-water&view=full" },
