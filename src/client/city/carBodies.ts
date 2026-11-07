@@ -52,7 +52,10 @@ export function bodyGeometry(scene: THREE.Object3D): BodyGeometry {
     const bucket = bucketOf(o);
     if (!bucket) return;
     const g = bakedGeometry(o);
-    g.deleteAttribute("uv");
+    // only what the materials read, so every bucket merges with every other
+    for (const name of Object.keys(g.attributes))
+      if (name !== "position" && name !== "normal" && name !== "color")
+        g.deleteAttribute(name);
     floatColors(g);
     out[bucket] = g;
   });

@@ -162,6 +162,9 @@ def classify(wheel, name):
 for o in objects:
     wheel = "Wheel" in o.name
     old = [m.name if m else "" for m in o.data.materials]
+    # the FBX may carry its own color layers: ours must be the only one
+    while o.data.color_attributes:
+        o.data.color_attributes.remove(o.data.color_attributes[0])
     colors = o.data.color_attributes.new(name="Color", type="FLOAT_COLOR", domain="CORNER")
     chosen = []
     for p in o.data.polygons:
