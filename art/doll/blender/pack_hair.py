@@ -71,7 +71,8 @@ STYLES = {
 ACCESSORIES = ("HairTie", "HairBand", "Hairband", "HairBeads")
 
 # the hair sits a little outside the skull it was made for
-GROW = 1.035
+CROWN_LIFT = float(os.environ.get("HAIR_LIFT", "0.01"))
+GROW = float(os.environ.get("HAIR_GROW", "1.035"))
 
 
 def _image_of(mesh_ob):
@@ -183,7 +184,8 @@ def fit(ctx, co, scalp):
     centre_h = (lo + hi) / 2
     out = (co - centre_s) * k + centre_h
     # crowns meet: the scalp's top lands on the head's top
-    out[:, 2] += (hi[2] - centre_h[2]) - (shi[2] - centre_s[2]) * k[2]
+    # (a little above it: a cap flatter than the skull would let it through)
+    out[:, 2] += (hi[2] - centre_h[2]) - (shi[2] - centre_s[2]) * k[2] + CROWN_LIFT
     return out
 
 

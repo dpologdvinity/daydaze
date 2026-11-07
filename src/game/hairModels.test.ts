@@ -1,7 +1,7 @@
 // Every hair style in the closet has its 3D model: the feminine and masculine
 // builds, each with a low-poly twin. The two salon styles wear a neighbor's.
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 import { HAIR_STYLES } from "./look.ts";
 
@@ -32,4 +32,16 @@ test("the textured styles are in the closet", () => {
     "puffs",
   ])
     assert.ok(ids.includes(id), id);
+});
+
+test("every pack hair the Blender build makes is in the closet", () => {
+  const src = readFileSync("art/doll/blender/pack_hair.py", "utf8");
+  const block = src.slice(src.indexOf("STYLES = {"), src.indexOf("# pieces"));
+  const built = [...block.matchAll(/^ {4}"([a-z-]+)": \(/gm)].map((m) => m[1]);
+  assert.ok(built.length >= 20, `found ${built.length} pack styles`);
+  const ids = HAIR_STYLES.map((h) => h.id) as string[];
+  assert.deepEqual(
+    built.filter((id) => !ids.includes(id)),
+    [],
+  );
 });
