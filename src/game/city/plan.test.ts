@@ -47,10 +47,6 @@ test("the full city draws every building and every neon sign", () => {
     plan.instances.sign.length,
     BUILDINGS.filter((b) => b.sign).length,
   );
-  assert.equal(
-    plan.instances.queue.length,
-    BUILDINGS.filter((b) => b.queue).length * 3,
-  );
 });
 
 test("each building's walls take its style's material", () => {

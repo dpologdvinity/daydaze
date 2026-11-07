@@ -39,6 +39,7 @@ import {
 } from "./meshes.ts";
 import { useDaylight } from "./daylight.ts";
 import { useDressings } from "./season.ts";
+import { QueueCrowd } from "./QueueCrowd.tsx";
 import { SeasonalDressing } from "./SeasonalDressing.tsx";
 import { CityFurniture, cityFurniture } from "./CityFurniture.tsx";
 import { BoardwalkFerris } from "./BoardwalkFerris.tsx";
@@ -270,6 +271,7 @@ export function CityScene({
         <CityTrees autumn={activeDressings.includes("autumn")} />
         <CityFurniture summer={activeDressings.includes("summer")} />
         <CityPark />
+        <QueueCrowd />
         <SeasonalDressing active={activeDressings} />
         <BoardwalkFerris />
         <ParkWildlife player={player} />

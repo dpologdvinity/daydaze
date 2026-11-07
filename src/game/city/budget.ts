@@ -20,6 +20,7 @@ import {
   type GrowthKind,
 } from "./park.ts";
 import { elBoxes } from "./el.ts";
+import { QUEUE_NEAR_LOW, QUEUE_PERSON_TRIS, QUEUE_SPOTS } from "./queues.ts";
 import {
   bats,
   facadeCord,
@@ -339,6 +340,12 @@ export function lowTierCost(at: Vec2): {
     drawCalls += cost.parts;
     triangles += cost.tris * n;
   }
+  // the club queues: one draw call per look present, each person as dear as the dearest
+  const queued = QUEUE_SPOTS.filter(
+    (s) => Math.hypot(s.x - at[0], s.z - at[1]) <= QUEUE_NEAR_LOW,
+  );
+  drawCalls += new Set(queued.map((s) => s.look)).size;
+  triangles += queued.length * QUEUE_PERSON_TRIS;
   const season = seasonalCost(at);
   drawCalls += season.drawCalls;
   triangles += season.triangles;

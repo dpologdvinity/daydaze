@@ -85,7 +85,6 @@ const MARK = new THREE.PlaneGeometry(1, 1)
 const SPHERE = new THREE.SphereGeometry(0.5, 10, 8);
 // string-light bulbs and headlights: a low round blob (20 triangles), not a cube
 const BULB = new THREE.IcosahedronGeometry(0.5, 0);
-const CAPSULE = new THREE.CapsuleGeometry(0.5, 1, 2, 8);
 const PLANE = new THREE.PlaneGeometry(1, 1);
 const CIRCLE = new THREE.CircleGeometry(0.5, 12);
 const PUFF = new THREE.SphereGeometry(0.5, 6, 4);
@@ -189,7 +188,6 @@ const GEOMETRY: Record<Shared, THREE.BufferGeometry> = {
   awning: BOX,
   sign: BOX5,
   tube: BOX5,
-  queue: CAPSULE,
   pole: CYLINDER,
   lamp: SPHERE,
   palmTrunk: CYLINDER,
@@ -204,9 +202,6 @@ const GEOMETRY: Record<Shared, THREE.BufferGeometry> = {
   carGlass: CAR_CABIN,
   furniture: BOX,
   glass: BOX,
-  crowd: CAPSULE,
-  head: SPHERE,
-  hair: SPHERE,
   puddle: CIRCLE,
   steam: PUFF,
 };
@@ -286,9 +281,6 @@ const MATERIAL: Record<Exclude<Shared, FacadeKind>, THREE.Material> = {
     baked: true,
   }),
   tube: new THREE.MeshBasicMaterial({ toneMapped: false }),
-  queue: animate(new THREE.MeshStandardMaterial({ roughness: 0.6 }), {
-    bob: true,
-  }),
   pole: new THREE.MeshStandardMaterial({ roughness: 0.4, metalness: 0.6 }),
   lamp: new THREE.MeshBasicMaterial({ toneMapped: false }),
   palmTrunk: new THREE.MeshStandardMaterial({
@@ -333,15 +325,6 @@ const MATERIAL: Record<Exclude<Shared, FacadeKind>, THREE.Material> = {
     transparent: true,
     opacity: 0.4,
     depthWrite: false,
-  }),
-  crowd: animate(new THREE.MeshStandardMaterial({ roughness: 0.5 }), {
-    bob: true,
-  }),
-  head: animate(new THREE.MeshStandardMaterial({ roughness: 0.5 }), {
-    bob: true,
-  }),
-  hair: animate(new THREE.MeshStandardMaterial({ roughness: 0.4 }), {
-    bob: true,
   }),
   // neon spilling on the street: a soft additive pool that dimForDay fades
   // out by day (an opaque disk reads as a paint spot)
@@ -439,7 +422,6 @@ export function createKindMeshes(
     awning: make("awning"),
     sign: make("sign"),
     tube: make("tube"),
-    queue: make("queue"),
     pole: make("pole"),
     lamp: make("lamp"),
     palmTrunk: make("palmTrunk"),
@@ -455,9 +437,6 @@ export function createKindMeshes(
     carGlass: make("carGlass"),
     furniture: make("furniture"),
     glass: make("glass"),
-    crowd: make("crowd"),
-    head: make("head"),
-    hair: make("hair"),
     puddle: make("puddle"),
     steam: make("steam"),
   };

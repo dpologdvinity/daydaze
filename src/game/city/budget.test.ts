@@ -5,6 +5,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { CITY_SPAWN } from "./layout.ts";
+import { QUEUE_LOOKS, QUEUE_PERSON_TRIS } from "./queues.ts";
 import {
   BAYS_CAMERA,
   baysWanted,
@@ -56,6 +57,14 @@ test("the budget's model costs match the shipped GLBs", () => {
 test("the seasonal models' costs match the shipped GLBs", () => {
   for (const [path, cost] of Object.entries(SEASON_MODEL))
     assert.deepEqual(cost, glbCost(path), path);
+});
+
+test("the queue people are one part each and no dearer than the budget says", () => {
+  for (const look of QUEUE_LOOKS) {
+    const cost = glbCost(`speedway/people-${look}-idle`);
+    assert.equal(cost.parts, 1, look);
+    assert.ok(cost.tris <= QUEUE_PERSON_TRIS, `${look}: ${cost.tris}`);
+  }
 });
 
 test("wherever she stands, the low tier's city (bays, trees, furniture, park) fits 250 draw calls and 300k triangles", () => {

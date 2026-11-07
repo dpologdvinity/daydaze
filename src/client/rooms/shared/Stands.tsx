@@ -1,8 +1,13 @@
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useReducedMotion } from "../../motion.ts";
 import { surface } from "../../city/worldTexture.ts";
+import {
+  FAN_MODELS,
+  PERSON_SCALE,
+  usePerson,
+} from "../speedway/peopleModel.ts";
 
 // poured-concrete steps, painted
 const STEPS = surface("brushed_concrete", {
@@ -31,18 +36,6 @@ const WAVE_SECONDS = 7;
 const STEP_DEPTH = 0.9;
 const STEP_RISE = 0.5;
 const SEAT_GAP = 0.65;
-const COLORS = [
-  "#ff4fb3",
-  "#4fe3ff",
-  "#ffd84f",
-  "#7dff6b",
-  "#b06bff",
-  "#ff8a3d",
-  "#f4f0ff",
-  "#2e7dff",
-];
-const SKIN = ["#f3d4c4", "#e6b48e", "#c48d68", "#94603f", "#633c29"];
-
 type Fan = {
   x: number;
   y: number;
@@ -50,6 +43,12 @@ type Fan = {
   phase: number;
   /** Where round the ground she sits, 0..1. */
   turn: number;
+  /** Turned to face the field. */
+  yaw: number;
+  /** Which of the eight baked poses she is (look x standing or cheering). */
+  model: number;
+  /** A little taller or shorter than the next fan. */
+  size: number;
 };
 
 const scratch = {
@@ -57,8 +56,29 @@ const scratch = {
   q: new THREE.Quaternion(),
   p: new THREE.Vector3(),
   s: new THREE.Vector3(1, 1, 1),
-  c: new THREE.Color(),
+  up: new THREE.Vector3(0, 1, 0),
 };
+
+/** One baked fan pose as an instanced mesh, handed to Stands to place each frame. */
+function FanMesh({
+  name,
+  capacity,
+  mesh,
+}: {
+  name: string;
+  capacity: number;
+  mesh: (m: THREE.InstancedMesh | null) => void;
+}) {
+  const person = usePerson(name);
+  if (!person || capacity === 0) return null;
+  return (
+    <instancedMesh
+      ref={mesh}
+      args={[person.geometry, person.material, capacity]}
+      frustumCulled={false}
+    />
+  );
+}
 
 /**
  * Stands and the fans in them: the steps in one draw call, the fans' bodies
@@ -75,8 +95,7 @@ export function Stands({
   seed?: number;
 }) {
   const calm = useReducedMotion();
-  const bodies = useRef<THREE.InstancedMesh>(null);
-  const heads = useRef<THREE.InstancedMesh>(null);
+  const poses = useRef<(THREE.InstancedMesh | null)[]>([]);
   const { steps, fans } = useMemo(() => {
     let r = seed * 9301 + 49297;
     const rand = () => {
@@ -120,6 +139,10 @@ export function Stands({
             z: fz,
             phase: rand() * 6,
             turn: 0,
+            yaw: bank.yaw,
+            // four looks, about a quarter of them cheering
+            model: Math.floor(rand() * 4) * 2 + (rand() < 0.28 ? 1 : 0),
+            size: 0.88 + rand() * 0.12,
           });
         }
       }
@@ -132,42 +155,39 @@ export function Stands({
     return { steps, fans };
   }, [banks, fill, seed]);
 
-  const colorAll = (mesh: THREE.InstancedMesh | null, palette: string[]) => {
-    if (!mesh) return;
-    fans.forEach((_, i) =>
-      mesh.setColorAt(
-        i,
-        scratch.c.set(palette[(i * 7 + (i >> 3)) % palette.length]),
-      ),
-    );
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-  };
+  // how many fans of each pose there are, and each fan's slot in its pose's mesh
+  const { perPose, slots } = useMemo(() => {
+    const perPose = new Array<number>(FAN_MODELS.length).fill(0);
+    const slots = fans.map((f) => perPose[f.model]++);
+    return { perPose, slots };
+  }, [fans]);
 
   useFrame(({ clock }, dt) => {
     crowd.cheer = Math.max(0, crowd.cheer - dt * 0.35);
     const t = clock.elapsedTime;
-    const b = bodies.current;
-    const h = heads.current;
-    if (!b || !h) return;
-    const { m, q, p, s } = scratch;
+    const { m, q, p, s, up } = scratch;
     const jump = calm ? 0 : crowd.cheer;
     // a Mexican wave goes round every so often
     const front = ((t % WAVE_EVERY) / WAVE_SECONDS) * 1.3 - 0.15;
     for (let i = 0; i < fans.length; i++) {
       const f = fans[i];
+      const mesh = poses.current[f.model];
+      if (!mesh) continue;
       const bob = calm
         ? 0
         : Math.max(0, Math.sin(t * (2 + jump * 6) + f.phase)) *
           (0.03 + jump * 0.35);
       const d = (f.turn - front) * 10;
       const wave = calm || front > 1.2 ? 0 : Math.exp(-d * d) * 0.45;
-      p.set(f.x, f.y + 0.35 + bob + wave, f.z);
-      b.setMatrixAt(i, m.compose(p, q, s));
-      p.y += 0.42;
-      h.setMatrixAt(i, m.compose(p, q, s));
+      q.setFromAxisAngle(up, f.yaw);
+      p.set(f.x, f.y + bob + wave, f.z);
+      s.setScalar(PERSON_SCALE * 0.9 * f.size);
+      mesh.setMatrixAt(slots[i], m.compose(p, q, s));
     }
-    b.instanceMatrix.needsUpdate = true;
-    h.instanceMatrix.needsUpdate = true;
+    for (const mesh of poses.current) {
+      if (!mesh) continue;
+      mesh.instanceMatrix.needsUpdate = true;
+    }
   });
 
   return (
@@ -197,28 +217,17 @@ export function Stands({
         <boxGeometry />
         <primitive object={STEPS} attach="material" />
       </instancedMesh>
-      <instancedMesh
-        ref={(mesh) => {
-          bodies.current = mesh;
-          colorAll(mesh, COLORS);
-        }}
-        args={[undefined, undefined, fans.length]}
-        frustumCulled={false}
-      >
-        <capsuleGeometry args={[0.17, 0.36, 1, 5]} />
-        <meshStandardMaterial roughness={0.7} />
-      </instancedMesh>
-      <instancedMesh
-        ref={(mesh) => {
-          heads.current = mesh;
-          colorAll(mesh, SKIN);
-        }}
-        args={[undefined, undefined, fans.length]}
-        frustumCulled={false}
-      >
-        <sphereGeometry args={[0.12, 6, 4]} />
-        <meshStandardMaterial roughness={0.6} />
-      </instancedMesh>
+      {FAN_MODELS.map((name, i) => (
+        <Suspense key={name} fallback={null}>
+          <FanMesh
+            name={name}
+            capacity={perPose[i] ?? 0}
+            mesh={(m) => {
+              poses.current[i] = m;
+            }}
+          />
+        </Suspense>
+      ))}
     </>
   );
 }
