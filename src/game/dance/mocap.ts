@@ -1812,7 +1812,7 @@ export const MOCAP_CLIPS: readonly MocapClip[] = [
   {
     id: "hip-shimmy",
     kind: "dance",
-    label: "Shimmy",
+    label: "Hip-hop shimmy",
     source: "Mixamo Hip-Hop-Dancing_Hip-Hop-Dancing-Shimmy",
     period: 6.9667,
     pack: "dance2",
@@ -2044,7 +2044,7 @@ export const MOCAP_CLIPS: readonly MocapClip[] = [
   {
     id: "dance-ual",
     kind: "dance",
-    label: "Free dance",
+    label: "Freestyle",
     source: "UAL Dance_Loop",
     period: 1.0,
     pack: "dance2",

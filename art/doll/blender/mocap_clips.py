@@ -288,7 +288,7 @@ DANCE2 = {
     "ballet": ("dancing/Dancing_Ballet-Dance-Variation-One", "dance", "Ballet"),
     "ballet-2": ("dancing/Dancing_Ballet-Dance-Variation-Two", "dance", "Ballet, second"),
     "rainbow": ("dancing/Dancing_Female-African-Rainbow-Dance", "dance", "Rainbow"),
-    "hip-shimmy": ("dancing/Hip-Hop-Dancing_Hip-Hop-Dancing-Shimmy", "dance", "Shimmy"),
+    "hip-shimmy": ("dancing/Hip-Hop-Dancing_Hip-Hop-Dancing-Shimmy", "dance", "Hip-hop shimmy"),
     "quake": ("dancing/Hip-Hop-Dancing_Hip-Hop-Quake-Variation-1", "dance", "Quake"),
     "slide-step": ("dancing/Hip-Hop-Dancing_Female-Hip-Hop-'Slide-Step'-Dancing", "dance", "Slide step"),
     "rib-pops": ("dancing/Hip-Hop-Dancing_Female-Hip-Hop-'Rib-Pops'-Dancing", "dance", "Rib pops"),
@@ -317,7 +317,7 @@ DANCE2 = {
     "slide-hop": ("dancing/Slide-Hip-Hop-Dance_Slide-Hip-Hop-Dance-Variation-One", "dance", "Slide hop"),
     "booty-step": ("dancing/Booty-Hip-Hop-Dance_Booty-Step-Hip-Hop-Dance", "dance", "Booty step"),
     "arms-hop": ("dancing/Arms-Hip-Hop-Dance_Hip-Hop-Dancing-With-Arms", "dance", "Arms up"),
-    "dance-ual": ("ual1:Dance_Loop", "dance", "Free dance"),
+    "dance-ual": ("ual1:Dance_Loop", "dance", "Freestyle"),
 }
 
 # ----------------------------------------------------------------------- ual
