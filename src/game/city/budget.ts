@@ -53,6 +53,15 @@ import {
   TREE_LOW_FAR,
   VIEW_RADIUS,
 } from "./tuning.ts";
+import { BODY_KEYS, ROSTER_BODY } from "../driving/bodies.ts";
+import { PARKED_CARS, PARKED_RANGE } from "./dressing.ts";
+import {
+  CAR_SLOT,
+  TRAFFIC_COUNT,
+  TRAFFIC_SEED,
+  createTraffic,
+  laneMetersWithin,
+} from "./traffic.ts";
 import type { Vec2 } from "../walk.ts";
 
 /** Triangles and primitives (one instanced mesh each) per model, by its
@@ -130,6 +139,26 @@ export const MODEL_COST: Readonly<
   "beach/towel": { tris: 60, parts: 2 },
   "beach/umbrella-blue": { tris: 214, parts: 4 },
   "beach/umbrella-red": { tris: 214, parts: 4 },
+  // the downloaded car bodies (src/game/driving/bodies.ts): near for the
+  // player's own car, -lo for traffic on the low tier
+  "cars/sedan": { tris: 2954, parts: 6 },
+  "cars/hatch": { tris: 3124, parts: 6 },
+  "cars/suv": { tris: 3294, parts: 6 },
+  "cars/coupe": { tris: 3078, parts: 6 },
+  "cars/sports": { tris: 3148, parts: 6 },
+  "cars/cop": { tris: 3232, parts: 6 },
+  "cars/taxi": { tris: 3278, parts: 6 },
+  "cars/ambulance": { tris: 1646, parts: 5 },
+  "cars/schoolbus": { tris: 1782, parts: 5 },
+  "cars/sedan-lo": { tris: 834, parts: 5 },
+  "cars/hatch-lo": { tris: 832, parts: 5 },
+  "cars/suv-lo": { tris: 832, parts: 5 },
+  "cars/coupe-lo": { tris: 834, parts: 5 },
+  "cars/sports-lo": { tris: 834, parts: 5 },
+  "cars/cop-lo": { tris: 834, parts: 5 },
+  "cars/taxi-lo": { tris: 830, parts: 5 },
+  "cars/ambulance-lo": { tris: 833, parts: 5 },
+  "cars/schoolbus-lo": { tris: 833, parts: 5 },
 };
 
 /** The low tier's far-twin tree model for a variant (CityTrees). */
@@ -155,6 +184,7 @@ export function modelsInBudget(): string[] {
     ...Array.from({ length: TREE_VARIANTS }, (_, i) => treeModel(i)),
     ...Object.keys(MODEL_COST).filter(
       (k) =>
+        k.startsWith("cars/") ||
         k.startsWith("animals/") ||
         k.startsWith("park/band-") ||
         k === "park/lawn-chair",
@@ -167,6 +197,87 @@ export function modelsInBudget(): string[] {
 }
 
 const GROWTH = ALL_GROWTH;
+
+/** A procedural jeepney as Traffic draws it: shell 156, trim 60, chrome 380 and
+ * dark 36 triangles, plus four 12-sided wheels and four lamp boxes. Six draws. */
+const JEEPNEY_TRIS = 880;
+const JEEPNEY_DRAWS = 6;
+/** Draws for the player's own car on top of its model's parts: the underglow
+ * pool and the two headlight beams. */
+const OWN_CAR_EXTRAS = 3;
+
+/** Traffic.tsx draws vehicles out to this many meters on the low tier. */
+const LOW_TRAFFIC_RANGE = 80;
+/** Within this many meters of a road center she may be at the wheel. */
+const AT_THE_WHEEL = 6;
+/** Margin over the vehicles expected in range: they queue at lights and
+ * follow one another, so a bound taken at the busiest instant would never be
+ * seen (as CROWD_MARGIN does for the walkers). */
+const TRAFFIC_MARGIN = 2.5;
+/** Every lane the city has, in meters, for the share of it that is in range. */
+const CITY_LANE_METERS = laneMetersWithin([0, 0], 1e6);
+
+/**
+ * Traffic and the player's own car on the low tier, priced from where she
+ * stands. The low fleet is fixed (TRAFFIC_COUNT.low vehicles from
+ * TRAFFIC_SEED, plus a hailed taxi) and roams every lane evenly, so the
+ * vehicles in range number the fleet times the share of the city's lanes
+ * within 80 m (a park lawn's few; a crossing's more), with a margin and never
+ * more than fit bumper to bumper. The dearest vehicles are the ones priced,
+ * each as a jeepney or a body's distance twin (the low tier never draws the
+ * near models), with one merged draw per body model. On a road she may be at
+ * the wheel of the dearest road car: its near model (six draws: paint,
+ * glass, trim, tyres, rims, lamps) with underglow and beams.
+ */
+export function trafficCost(at: Vec2): {
+  drawCalls: number;
+  triangles: number;
+} {
+  const fleet = createTraffic(TRAFFIC_COUNT.low, TRAFFIC_SEED).cars.map((c) =>
+    c.body ? costOf(`cars/${c.body}-lo`).tris : JEEPNEY_TRIS,
+  );
+  fleet.push(costOf("cars/taxi-lo").tris);
+  fleet.sort((a, b) => b - a);
+  const lanes = laneMetersWithin(at, LOW_TRAFFIC_RANGE);
+  const expected = Math.ceil(
+    (fleet.length * lanes * TRAFFIC_MARGIN) / CITY_LANE_METERS,
+  );
+  const drawn = fleet.slice(0, Math.min(expected, Math.ceil(lanes / CAR_SLOT)));
+  let drawCalls =
+    drawn.length > 0
+      ? Math.min(drawn.length, BODY_KEYS.length) + JEEPNEY_DRAWS
+      : 0;
+  let triangles = drawn.reduce((n, t) => n + t, 0);
+  if (laneMetersWithin(at, AT_THE_WHEEL) > 0) {
+    const own = Object.values(ROSTER_BODY).map((k) => costOf(`cars/${k}`));
+    const dearest = own.reduce((a, b) => (b.tris > a.tris ? b : a));
+    drawCalls += dearest.parts + OWN_CAR_EXTRAS;
+    triangles += dearest.tris;
+  }
+  return { drawCalls, triangles };
+}
+
+/**
+ * The kerb-parked cars within range of `at` on the low tier, each as its
+ * body's distance twin, one merged draw per body in range (their own meshes,
+ * apart from the traffic's). Exact: the spots are fixed.
+ */
+export function parkedCost(at: Vec2): { drawCalls: number; triangles: number } {
+  const bodies = new Set<string>();
+  let triangles = 0;
+  for (const car of PARKED_CARS) {
+    if (Math.hypot(car.x - at[0], car.z - at[1]) > PARKED_RANGE.low) continue;
+    bodies.add(car.body);
+    triangles += costOf(`cars/${car.body}-lo`).tris;
+  }
+  return { drawCalls: bodies.size, triangles };
+}
+
+function costOf(model: string): { tris: number; parts: number } {
+  const cost = MODEL_COST[model];
+  if (!cost) throw new Error(`no cost for ${model}`);
+  return cost;
+}
 
 /** The El is always drawn: four merged box meshes (trestle, stone, rails,
  * roofs) and three train cars of about 1,600 triangles each. */
@@ -460,6 +571,12 @@ export function lowTierCost(at: Vec2): {
   const season = seasonalCost(at);
   drawCalls += season.drawCalls;
   triangles += season.triangles;
+  const traffic = trafficCost(at);
+  drawCalls += traffic.drawCalls;
+  triangles += traffic.triangles;
+  const kerb = parkedCost(at);
+  drawCalls += kerb.drawCalls;
+  triangles += kerb.triangles;
   return { drawCalls, triangles, planTriangles, bays: plan.bays.length };
 }
 

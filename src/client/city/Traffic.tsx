@@ -1,4 +1,4 @@
-// Moving lane traffic: procedural city cars and downloaded transport share one simulation.
+// Moving lane traffic: downloaded car bodies and procedural jeepneys share one simulation.
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -7,28 +7,22 @@ import { advance } from "../../game/driving/fixedStep.ts";
 import {
   carPose,
   createTraffic,
+  TRAFFIC_COUNT,
+  TRAFFIC_SEED,
   signalAt,
   signalledJunctions,
   stepTraffic,
   type Signal,
-  type VehicleKind,
 } from "../../game/city/traffic.ts";
 import type { Player } from "../world/PlayerController.tsx";
 import { foodMotion } from "./foodVendors.ts";
 import { busMotion } from "./busRide.ts";
 import { taxiCab } from "./taxiStore.ts";
 import { driving } from "../world/driving.ts";
-import {
-  useTransitModels,
-  resetTransit,
-  placeTransit,
-  updateTransit,
-  type TransitModel,
-} from "./transitModels.ts";
+import { FIXED_PAINT } from "../../game/driving/bodies.ts";
+import { NEAR_BODY, useTrafficBodies } from "./trafficBodies.ts";
 import { useQuality } from "../world/quality.ts";
 import {
-  CAR_BODY,
-  CAR_CABIN,
   JEEPNEY_CHROME,
   JEEPNEY_DARK,
   JEEPNEY_SHELL,
@@ -38,12 +32,11 @@ import {
 /**
  * Moving traffic and the junction lights. The cars come from the pure
  * simulation in src/game/city/traffic.ts at the fixed 50 Hz step; here they
- * are instanced meshes (car bodies and cabins; jeepney shells, trim, chrome
- * and interiors; everyone's wheels and lamps) and the signal bulbs, which
- * change color only when the phase does.
+ * are instanced meshes (the downloaded car, cop, taxi, ambulance and school
+ * bus bodies, one draw per body and level of detail: trafficBodies.ts; the
+ * procedural jeepneys' shells, trim, chrome, interiors, wheels and lamps)
+ * and the signal bulbs, which change color only when the phase does.
  */
-
-const DOWNLOADED: readonly TransitModel[] = ["taxi", "sedan", "van"];
 
 const WHEEL = new THREE.CylinderGeometry(0.36, 0.36, 0.26, 12).rotateX(
   Math.PI / 2,
@@ -51,35 +44,19 @@ const WHEEL = new THREE.CylinderGeometry(0.36, 0.36, 0.26, 12).rotateX(
 const LAMP = new THREE.BoxGeometry(0.12, 0.16, 0.34);
 const BULB = new THREE.CircleGeometry(SIGNAL.radius, 12);
 
-// vehicle-local offsets (nose at +x): wheels, then head and tail lamps
-const WHEELS: Record<VehicleKind, [number, number, number][]> = {
-  car: [
-    [1.35, 0.36, 0.86],
-    [1.35, 0.36, -0.86],
-    [-1.35, 0.36, 0.86],
-    [-1.35, 0.36, -0.86],
-  ],
-  jeepney: [
-    [1.95, 0.36, 0.9],
-    [1.95, 0.36, -0.9],
-    [-1.7, 0.36, 0.9],
-    [-1.7, 0.36, -0.9],
-  ],
-};
-const LAMPS: Record<VehicleKind, [number, number, number][]> = {
-  car: [
-    [2.1, 0.62, 0.62],
-    [2.1, 0.62, -0.62],
-    [-2.1, 0.7, 0.62],
-    [-2.1, 0.7, -0.62],
-  ],
-  jeepney: [
-    [2.78, 0.8, 0.72],
-    [2.78, 0.8, -0.72],
-    [-2.84, 0.8, 0.72],
-    [-2.84, 0.8, -0.72],
-  ],
-};
+// jeepney-local offsets (nose at +x): wheels, then head and tail lamps
+const JEEPNEY_WHEELS: [number, number, number][] = [
+  [1.95, 0.36, 0.9],
+  [1.95, 0.36, -0.9],
+  [-1.7, 0.36, 0.9],
+  [-1.7, 0.36, -0.9],
+];
+const JEEPNEY_LAMPS: [number, number, number][] = [
+  [2.78, 0.8, 0.72],
+  [2.78, 0.8, -0.72],
+  [-2.84, 0.8, 0.72],
+  [-2.84, 0.8, -0.72],
+];
 const LAMP_COLORS = ["#fff3dc", "#fff3dc", "#ff2040", "#ff2040"];
 const PER_VEHICLE = 4;
 /** Jeepney stripes: one of these per jeepney, never its own paint. */
@@ -164,9 +141,9 @@ function placePart(
 
 export function Traffic({ player }: { player: Player }) {
   const tier = useQuality();
-  const downloaded = useTransitModels(DOWNLOADED, 22);
-  const count = tier === "high" ? 22 : 12;
-  const traffic = useMemo(() => createTraffic(count, 11), [count]);
+  const count = TRAFFIC_COUNT[tier];
+  const bodies = useTrafficBodies(count);
+  const traffic = useMemo(() => createTraffic(count, TRAFFIC_SEED), [count]);
   const clock = useRef({ accumulator: 0 });
   const here = useRef<[number, number]>([0, 0]);
   const busPosition = useRef<[number, number]>([0, 0]);
@@ -190,37 +167,17 @@ export function Traffic({ player }: { player: Player }) {
   const phase = useRef("");
   const bulbs = useMemo(signalBulbs, []);
 
-  // Capacity stays fixed; each frame packs only the visible procedural vehicles.
+  // Capacity stays fixed; each frame packs only the visible jeepneys (cars
+  // and heavy vehicles are the downloaded bodies, drawn by useTrafficBodies).
   const slots = useMemo(
     () => ({
-      cars: traffic.cars.filter((car) => car.kind === "car").length,
       jeepneys: traffic.cars.filter((car) => car.kind === "jeepney").length,
     }),
     [traffic],
   );
 
   const meshes = useMemo(() => {
-    const cars = Math.max(1, slots.cars);
     const jeepneys = Math.max(1, slots.jeepneys);
-    const body = new THREE.InstancedMesh(
-      CAR_BODY,
-      new THREE.MeshStandardMaterial({
-        roughness: 0.3,
-        metalness: 0.35,
-        emissive: "#202030",
-        emissiveIntensity: 0.6,
-      }),
-      cars,
-    );
-    const cabin = new THREE.InstancedMesh(
-      CAR_CABIN,
-      new THREE.MeshStandardMaterial({
-        color: "#3a2f7a",
-        roughness: 0.08,
-        metalness: 0.7,
-      }),
-      cars,
-    );
     const shell = new THREE.InstancedMesh(
       JEEPNEY_SHELL,
       new THREE.MeshStandardMaterial({
@@ -260,35 +217,32 @@ export function Traffic({ player }: { player: Player }) {
       }),
       jeepneys,
     );
-    body.count = slots.cars;
-    cabin.count = slots.cars;
     for (const mesh of [shell, trim, chrome, dark]) mesh.count = slots.jeepneys;
     const wheels = new THREE.InstancedMesh(
       WHEEL,
       new THREE.MeshStandardMaterial({ color: "#120c18", roughness: 0.8 }),
-      count * PER_VEHICLE,
+      jeepneys * PER_VEHICLE,
     );
     const lamps = new THREE.InstancedMesh(
       LAMP,
       new THREE.MeshBasicMaterial({ toneMapped: false }),
-      count * PER_VEHICLE,
+      jeepneys * PER_VEHICLE,
     );
     const signals = new THREE.InstancedMesh(
       BULB,
       new THREE.MeshBasicMaterial({ toneMapped: false }),
       bulbs.length,
     );
-    traffic.cars.forEach((_, i) => {
+    for (let i = 0; i < jeepneys; i++)
       LAMP_COLORS.forEach((c, k) =>
         lamps.setColorAt(i * PER_VEHICLE + k, color.set(c).multiplyScalar(2)),
       );
-    });
     bulbs.forEach((b, i) => signals.setMatrixAt(i, b.matrix));
-    const all = { body, cabin, shell, trim, chrome, dark, wheels, lamps };
+    const all = { shell, trim, chrome, dark, wheels, lamps };
     for (const mesh of [...Object.values(all), signals])
       mesh.frustumCulled = false;
     return { ...all, signals };
-  }, [count, traffic, bulbs, slots]);
+  }, [bulbs, slots]);
 
   useEffect(
     () => () => {
@@ -323,13 +277,10 @@ export function Traffic({ player }: { player: Player }) {
         foodMotion.origin !== null ? truckPosition.current : null,
       ),
     );
-    const { body, cabin, shell, trim, chrome, dark, wheels, lamps, signals } =
-      meshes;
+    const { shell, trim, chrome, dark, wheels, lamps, signals } = meshes;
     const city = driving.session?.kind === "city" ? driving.session : null;
-    resetTransit(downloaded.all);
-    let carCount = 0,
-      jeepCount = 0,
-      partCount = 0;
+    bodies.reset();
+    let jeepCount = 0;
     for (let i = 0; i < traffic.cars.length; i++) {
       const car = traffic.cars[i];
       carPose(car, pose);
@@ -343,51 +294,41 @@ export function Traffic({ player }: { player: Player }) {
       }
       const distance = Math.hypot(pose.x - player.pos.x, pose.z - player.pos.z);
       if (distance > (tier === "low" ? 80 : 180)) continue;
-      const model = car.kind === "car" ? car.id % 4 : 0;
-      if (model > 0) {
-        placeTransit(
-          downloaded.models,
-          model - 1,
+      if (car.body) {
+        // a downloaded body: the taxi, cop car, ambulance and school bus wear
+        // their own paint, everyone else the car's
+        const paint = FIXED_PAINT[car.body] ?? car.color;
+        bodies.put(
+          car.body,
+          color.set(paint),
           pose.x,
           pose.z,
           pose.yaw,
-          distance,
-          tier === "low",
+          tier === "low" || distance > NEAR_BODY,
         );
         continue;
       }
-      const slot = car.kind === "car" ? carCount++ : jeepCount++;
-      if (car.kind === "car") body.setColorAt(slot, color.set(car.color));
-      else {
-        shell.setColorAt(slot, color.set(car.color));
-        const n = TRIM_COLORS.length;
-        let stripe = TRIM_COLORS[car.id % n];
-        if (stripe === car.color) stripe = TRIM_COLORS[(car.id + 1) % n];
-        trim.setColorAt(slot, color.set(stripe));
-      }
-      // the car's own matrix once; each part is a car-local offset on it
+      const slot = jeepCount++;
+      shell.setColorAt(slot, color.set(car.color));
+      const n = TRIM_COLORS.length;
+      let stripe = TRIM_COLORS[car.id % n];
+      if (stripe === car.color) stripe = TRIM_COLORS[(car.id + 1) % n];
+      trim.setColorAt(slot, color.set(stripe));
+      // the jeepney's own matrix once; its parts are modeled full size, and
+      // the wheels and lamps are offsets on it
       carMatrix.compose(
         pos.set(pose.x, 0, pose.z),
         quat.setFromAxisAngle(yAxis, pose.yaw),
         scl.set(1, 1, 1),
       );
-      if (car.kind === "car") {
-        placePart(body, slot, 0, 0.62, 0, 4.3, 0.95, 1.9);
-        placePart(cabin, slot, -0.25, 1.38, 0, 2.4, 0.62, 1.7);
-      } else {
-        // jeepney parts are modeled full size
-        for (const mesh of [shell, trim, chrome, dark])
-          mesh.setMatrixAt(slot, carMatrix);
-      }
-      const wheelAt = WHEELS[car.kind];
-      const lampAt = LAMPS[car.kind];
+      for (const mesh of [shell, trim, chrome, dark])
+        mesh.setMatrixAt(slot, carMatrix);
       for (let k = 0; k < PER_VEHICLE; k++) {
-        const [x, y, z] = wheelAt[k];
-        placePart(wheels, partCount * PER_VEHICLE + k, x, y, z, 1, 1, 1);
-        const [lx, ly, lz] = lampAt[k];
-        placePart(lamps, partCount * PER_VEHICLE + k, lx, ly, lz, 1, 1, 1);
+        const [x, y, z] = JEEPNEY_WHEELS[k];
+        placePart(wheels, slot * PER_VEHICLE + k, x, y, z, 1, 1, 1);
+        const [lx, ly, lz] = JEEPNEY_LAMPS[k];
+        placePart(lamps, slot * PER_VEHICLE + k, lx, ly, lz, 1, 1, 1);
       }
-      partCount++;
     }
     if (city) {
       // Three collision points cover the bus's full length for your own car.
@@ -417,23 +358,13 @@ export function Traffic({ player }: { player: Player }) {
           city.traffic[n + k] = point;
         }
     }
-    body.count = cabin.count = carCount;
     shell.count = trim.count = chrome.count = dark.count = jeepCount;
-    wheels.count = lamps.count = partCount * PER_VEHICLE;
-    for (const mesh of [
-      body,
-      cabin,
-      shell,
-      trim,
-      chrome,
-      dark,
-      wheels,
-      lamps,
-    ]) {
+    wheels.count = lamps.count = jeepCount * PER_VEHICLE;
+    bodies.flush();
+    for (const mesh of [shell, trim, chrome, dark, wheels, lamps]) {
       mesh.instanceMatrix.needsUpdate = true;
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     }
-    updateTransit(downloaded.all);
 
     // the bulbs only change with the light phase
     const ew = signalAt(traffic.time, "ew");
@@ -454,7 +385,7 @@ export function Traffic({ player }: { player: Player }) {
 
   return (
     <>
-      {downloaded.all.map((mesh) => (
+      {bodies.all.map((mesh) => (
         <primitive key={mesh.uuid} object={mesh} />
       ))}
       {Object.entries(meshes).map(([name, mesh]) => (

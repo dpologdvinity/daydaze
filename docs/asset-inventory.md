@@ -221,7 +221,7 @@ Clip ids in `mocap.ts` stay stable; add a pack name per clip.
 
 | Problem | File | Fix |
 | --- | --- | --- |
-| Procedural lofted traffic and road cars (12 roster shapes) | `src/client/city/carGeometry.ts`, `src/game/driving/carBody.ts`, `src/client/city/Traffic.tsx`, `src/client/rooms/speedway/CarMesh.tsx`, `carModels.ts` | Realistic Car Pack (cop, SUV, 2 sports cars, 2 normal cars, taxi) plus Public Transport (ambulance, school bus): meshopt, near and far LODs, paint, wrap, rim and tint on named material slots. Add Jaguar-style saloon and the future car if more variety is needed |
+| **Done in feat/real-cars (traffic, player cars, dealership); parked kerb cars still lofted.** Procedural lofted traffic and road cars (12 roster shapes) | `src/client/city/carGeometry.ts`, `src/game/driving/carBody.ts`, `src/client/city/Traffic.tsx`, `src/client/rooms/speedway/CarMesh.tsx`, `carModels.ts` | Realistic Car Pack (cop, SUV, 2 sports cars, 2 normal cars, taxi) plus Public Transport (ambulance, school bus): meshopt, near and far LODs, paint, wrap, rim and tint on named material slots. Add Jaguar-style saloon and the future car if more variety is needed |
 | Box loungers on the pool deck | `src/client/rooms/waterpark/Deck.tsx` (`loungerFrame`) | Beach diorama parts (CC-BY) or the already-shipped Orange Chaise Lounge (`public/models/beach/`) |
 | Box-built rooms: Haunted EscapeSet, Galleria, Violet Hour decor, Bowling, Rooftop Bar | `src/client/rooms/haunted/EscapeSet.tsx`, `Galleria.tsx`, `violethour/Decor.tsx`, `Bowling.tsx`, `RooftopBar.tsx` | House Interior Pack and Furniture packs |
 | Pill-shaped (capsule) opponents | `src/client/rooms/Paintball.tsx` | Universal Base Characters with UAL pistol clips, or the doll with Mixamo weapon clips |

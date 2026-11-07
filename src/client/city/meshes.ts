@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { CAR_BODY, CAR_CABIN } from "./carGeometry.ts";
 import { boxMapped, groundMaps, worldMapped } from "./worldTexture.ts";
 import {
   FACADE_KINDS,
@@ -54,8 +53,6 @@ const BAKED: ReadonlySet<Kind> = new Set<Baked>([
   "window",
   "panel",
   "bulb",
-  "car",
-  "carGlass",
   "furniture",
   "glass",
   "puddle",
@@ -198,8 +195,6 @@ const GEOMETRY: Record<Shared, THREE.BufferGeometry> = {
   panel: BOX5,
   arch: BOX,
   bulb: BULB,
-  car: CAR_BODY,
-  carGlass: CAR_CABIN,
   furniture: BOX,
   glass: BOX,
   puddle: CIRCLE,
@@ -313,13 +308,6 @@ const MATERIAL: Record<Exclude<Shared, FacadeKind>, THREE.Material> = {
     blink: true,
   }),
   bulb: new THREE.MeshBasicMaterial({ toneMapped: false }),
-  car: new THREE.MeshStandardMaterial({
-    roughness: 0.35,
-    metalness: 0.2,
-    emissive: "#202030",
-    emissiveIntensity: 0.6,
-  }),
-  carGlass: new THREE.MeshStandardMaterial({ roughness: 0.1, metalness: 0.6 }),
   furniture: new THREE.MeshStandardMaterial({ roughness: 0.6 }),
   glass: new THREE.MeshBasicMaterial({
     transparent: true,
@@ -433,8 +421,6 @@ export function createKindMeshes(
     panel: make("panel"),
     arch: make("arch"),
     bulb: make("bulb"),
-    car: make("car"),
-    carGlass: make("carGlass"),
     furniture: make("furniture"),
     glass: make("glass"),
     puddle: make("puddle"),
