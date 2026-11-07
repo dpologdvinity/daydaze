@@ -14,7 +14,7 @@ import {
   COUNTER_TOP,
   BOUQUET_SPOT,
 } from "../../game/floristShop.ts";
-import { STEMS, type Stem } from "../../game/florist.ts";
+import { STEMS } from "../../game/florist.ts";
 import type { Look } from "../../game/look.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import { surface } from "../city/worldTexture.ts";
