@@ -227,6 +227,9 @@ type DollProps = {
   seed?: number;
   /** The player's own doll: full detail at any distance on the low tier. */
   own?: boolean;
+  /** False where sitting down or standing up must not play a clip (a ride
+   * that carries her seated: the 3D doll's alone). */
+  joins?: boolean;
 } & Omit<ThreeElements["group"], "children">;
 
 /** The original toon doll, shown while the 3D doll's models load. */
@@ -238,6 +241,7 @@ export function ToonDoll({
   dance = "groove",
   couple,
   hold: _hold, // the 3D doll's alone
+  joins: _joins, // the 3D doll's alone
   buzzed = false,
   walk,
   seed = 0,

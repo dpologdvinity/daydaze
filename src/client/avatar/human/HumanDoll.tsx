@@ -166,6 +166,9 @@ type Props = {
   seed?: number;
   /** The player's own doll: full detail at any distance on the low tier. */
   own?: boolean;
+  /** False where sitting down or standing up must not play a clip (a ride
+   * that carries her seated). */
+  joins?: boolean;
 } & Omit<ThreeElements["group"], "children">;
 
 /** The part files a look wears, by kind. */
@@ -811,6 +814,7 @@ export function HumanDoll({
   walk,
   seed = 0,
   own = false,
+  joins = true,
   body: shape = DEFAULT_BODY,
   ...rest
 }: Props) {
@@ -971,9 +975,8 @@ export function HumanDoll({
         afloat: afloatNow,
       });
       if (a.posture !== posture) {
-        const joining = a.posture
-          ? pickTransition(a.posture, posture, seed)
-          : null;
+        const joining =
+          a.posture && joins ? pickTransition(a.posture, posture, seed) : null;
         a.posture = posture;
         a.since = now;
         a.trans = null;

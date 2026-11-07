@@ -502,6 +502,7 @@ export function PlayerController({
                   : "built"
           }
           buzzed
+          joins={!player.ride}
           walk={gait}
         />
         <Skates />
