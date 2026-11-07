@@ -269,23 +269,19 @@ const SHOTS: {
     query: "room=mermaid-cove&siren=hold&cam=2.6,1.9,6.4,-0.2,0.7,0.6",
     live: true,
     act: async (page) => {
-      const canvas = page.getByRole("img", { name: "3D room view" });
       await page
         .getByRole("button", { name: "Sing with the mermaids" })
         .click();
       await expect(
         page.getByRole("region", { name: "Siren Song" }).getByRole("status"),
       ).toHaveText(/Listen/);
-      await expect(canvas).toHaveAttribute("data-singer", "idle", {
-        timeout: 400_000,
-      });
       // a few more frames, so she finishes rising
       await page.evaluate(
         () =>
           new Promise<void>((done) => {
             let n = 0;
             const step = () =>
-              ++n > 40 ? done() : requestAnimationFrame(step);
+              ++n > 150 ? done() : requestAnimationFrame(step);
             requestAnimationFrame(step);
           }),
       );
