@@ -1,0 +1,37 @@
+name: Browser test
+# Run one or a few Playwright client tests on any branch, by hand:
+#   gh workflow run browser-test.yml --ref feat/x -f grep="taxi:"
+# Agents use this instead of the local browser lock, so several branches can
+# test at once on GitHub's runners (the repo is public: minutes are free).
+on:
+  workflow_dispatch:
+    inputs:
+      grep:
+        description: Playwright -g pattern (a test title fragment)
+        required: true
+        type: string
+concurrency:
+  group: browser-test-${{ github.ref }}-${{ inputs.grep }}
+  cancel-in-progress: true
+jobs:
+  browser:
+    timeout-minutes: 45
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # the pattern goes through an env var, never interpolated into the shell
+      - run: npx playwright test tests/client.spec.ts -g "$GREP" --reporter=line
+        env:
+          GREP: ${{ inputs.grep }}
+      - uses: actions/upload-artifact@v7
+        if: ${{ always() }}
+        with:
+          name: browser-test-results
+          path: test-results/
+          retention-days: 7
