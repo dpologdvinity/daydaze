@@ -931,29 +931,6 @@ for (const shot of SHOTS) {
   console.log(
     `${shot.name}: ${last} frames, ${calls} draw calls, ${triangles} triangles, ${((Date.now() - started) / 1000).toFixed(0)} s`,
   );
-  if (process.env.BREAKDOWN !== "0") {
-    // TEMP-PROFILE: visible meshes by triangles, grouped by name chain
-    const rows = await page.evaluate(`(() => {
-      const scene = window.__scene;
-      const out = [];
-      const v3 = new (window.__cam.position.constructor)();
-      scene.traverse((o) => {
-        if (!o.isMesh || !o.geometry) return;
-        let v = true; for (let p = o; p; p = p.parent) if (!p.visible) v = false;
-        if (!v) return;
-        const g = o.geometry;
-        const per = (g.index ? g.index.count : g.attributes.position.count) / 3;
-        let n = 1;
-        if (o.instancesCount !== undefined) n = o.instancesCount; else if (o.isInstancedMesh) n = o.count;
-        const chain = []; for (let p = o; p && chain.length < 7; p = p.parent) chain.push((p.name || p.type) + (p.userData && p.userData.tag ? "#" + p.userData.tag : ""));
-        o.getWorldPosition(v3);
-        out.push({ t: per * n, s: Math.round(per) + "x" + n + " at " + Math.round(v3.x) + "," + Math.round(v3.z) + " mat=" + (o.material.name || o.material.type) + " " + chain.join("<") });
-      });
-      out.sort((a, b) => b.t - a.t);
-      return out.slice(0, 45).map((e) => Math.round(e.t) + " " + e.s);
-    })()`);
-    console.log(`BREAKDOWN ${shot.name}\n${(rows as string[]).join("\n")}`);
-  }
   await page.close();
 }
 await browser.close();

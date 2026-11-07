@@ -75,7 +75,7 @@ future imported packs belong here when they enter the game.
 | African penguin (Spheniscus demersus) Low poly | Major | CC-BY 4.0 | https://sketchfab.com/3d-models/african-penguin-spheniscus-demersus-low-poly-9e59070815fe451d93398e2ebdb9bb92 | Zoo penguin pool, with idle, walk, sit and sleep clips. |
 | Flamingo | Хмара Сергей | CC-BY 3.0 | https://poly.pizza/m/5hUIvLVFqet | Zoo flamingo pond (static mesh, swayed by the client). |
 | Cat | Quaternius | CC0 1.0 | https://poly.pizza/m/qKICY6xla2 | Adoptable pet cat, with idle, walk, run and eat clips. |
-| Bunny | Quaternius | CC0 1.0 | https://poly.pizza/m/irZjWFARyl | Adoptable pet rabbit, with idle, walk and run clips. |
+| Bunny | Quaternius | CC0 1.0 | https://poly.pizza/m/irZjWFARyl | Adoptable pet rabbit, with idle, walk and run clips. Decimated to about 2.5k triangles for the low-tier budget (Blender or gltf-transform simplify), as the Labrador and Shiba Inu were. |
 | Nature Kit | Kenney | CC0 1.0 | https://kenney.nl/assets/nature-kit | Zoo fence panels and rocks; dirt crop rows at Sunny Acres Farm. |
 | Pig | Quaternius | CC0 1.0 | https://poly.pizza/bundle/Farm-Animal-Pack-1kUvRTPLzT | Sunny Acres Farm pigs, with an idle clip (swayed along when walking). |
 | Sheep | Quaternius | CC0 1.0 | https://poly.pizza/bundle/Farm-Animal-Pack-1kUvRTPLzT | Sunny Acres Farm sheep, with an idle clip (swayed along when walking). |
