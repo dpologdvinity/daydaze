@@ -131,7 +131,7 @@ test("a key's own values are reached exactly at its time", () => {
 
 test("danceMove finds a move by id and rejects unknown ids", () => {
   assert.equal(danceMove("slow-dance").id, "slow-dance");
-  assert.throws(() => danceMove("moonwalk" as never));
+  assert.throws(() => danceMove("not-a-dance" as never));
   assert.equal(isDanceMoveId("body-roll"), true);
   assert.equal(isDanceMoveId("__proto__"), false);
   assert.equal(isDanceMoveId(3), false);
@@ -212,6 +212,9 @@ test("game clips resolve, carry real keys and stay out of the Dance picker", () 
     "chop",
     "aim-pistol",
     "aim-rifle",
+    "farm-plant",
+    "farm-water",
+    "farm-harvest",
   ];
   assert.deepEqual([...GAME_CLIP_IDS].sort(), [...want].sort());
   const picker = new Set(PICKER_DANCE_MOVES.map((m) => m.id));

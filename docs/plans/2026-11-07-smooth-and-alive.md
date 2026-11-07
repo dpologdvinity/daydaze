@@ -33,6 +33,21 @@ the 3D cars — the cars are ugly; I gave you so many 3D things, look in
   Keep the file size in check (load clips per need, not all at once).
 - NPCs pick idles, gestures and dances so crowds have personality.
 
+Status (branch `feat/motion`, 2026-11-07): 278 clips are baked per sex in six
+packs (`art/doll/blender/mocap_clips.py`; `anims.glb` is the always-loaded core,
+`anims-<pack>.glb` load on demand): core (walk styles, a run, backwards walks,
+idles, jump, the original set), social (talking, greetings, yes/no, moods,
+cheering), seated (sit down, seated idles, talk, clap, cheer, typing), dance2
+(Thriller, YMCA, moonwalk, samba, swing...), ual (Quaternius' CC0 farm, carry,
+push, throw, climb, slide) and moves (start/stop/turn, baked but unwired).
+Wired: the player's idle rotation and each NPC's temperament
+(`game/dance/idlePlan.ts`), sit-down/stand-up joins (`transitions.ts`), the
+emote row in the Dance panel, talking gestures on tapped NPCs, farm clips in the
+garden and the farm (`rooms/shared/game3d/workClip.ts`), and the soccer-jog
+hand-over at the brisk walk speed (RUN_CLIP = "run", natural pace 2.3 m/s).
+Known gap: at WALK_SPEED 2.6 every gait hands over to the run, so the walk
+styles only show at slower speeds.
+
 ## 3. Real cars
 
 - Replace the lofted procedural traffic and player cars with downloaded

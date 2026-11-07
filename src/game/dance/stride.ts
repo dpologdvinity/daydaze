@@ -36,8 +36,11 @@ export const BUILT_STRIDE = 1.2;
 export const walkPhaseRate = (speed: number, stride: number): number =>
   stride > 0 ? (2 * Math.PI * speed) / stride : 0;
 
-/** The jog clip's id: what a walk hands over to when it cannot keep up. */
-export const RUN_CLIP = "jog";
+/** The run clip's id: what a walk hands over to when it cannot keep up. A
+ * soccer jog (Mixamo) whose natural pace, 2.3 m/s, is the closest of the
+ * baked runs to the brisk walk speed, so it plays near 1x with planted feet
+ * (the old "jog" clip, 1.7 m/s, had to be sped up 1.5x). */
+export const RUN_CLIP = "run";
 
 /** The fastest the jog plays against its own pace (a run stretches further
  * than a walk before it reads wrong). */
