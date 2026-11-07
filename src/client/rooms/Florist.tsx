@@ -188,7 +188,7 @@ export function Florist({ onPick }: { onPick: PickHandler }): JSX.Element {
   return (
     <>
       <color attach="background" args={["#2a2022"]} />
-      <hemisphereLight args={["#fff6ee", "#8a7a70", 2.2]} />
+      <hemisphereLight args={["#fff6ee", "#b09a8e", 3]} />
       <pointLight
         position={[0, 3, 0]}
         color="#fff0e0"
@@ -204,7 +204,7 @@ export function Florist({ onPick }: { onPick: PickHandler }): JSX.Element {
       <Floor
         width={W}
         depth={D}
-        color="#d8e6da"
+        color="#fff4ec"
         texture={{ id: "checkered_pavement_tiles", scale: 0.6 }}
         low={{ metalness: 0, roughness: 0.5 }}
         onPick={onPick}
