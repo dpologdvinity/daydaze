@@ -47,7 +47,7 @@ const browser = await chromium.launch({
 for (const { name, query } of SHOTS) {
   if (only.length && !only.includes(name)) continue;
   const page = await browser.newPage({
-    viewport: { width: 1280, height: 800 },
+    viewport: { width: 1100, height: 650 },
   });
   page.on("pageerror", (e) => console.error("page error:", e.message));
   await page.goto(
@@ -59,7 +59,7 @@ for (const { name, query } of SHOTS) {
   await page.waitForTimeout(45_000);
   await page.screenshot({
     path: `docs/screenshots/hair-${name}.png`,
-    timeout: 180_000,
+    timeout: 900_000,
   });
   console.log("wrote", name);
   await page.close();
