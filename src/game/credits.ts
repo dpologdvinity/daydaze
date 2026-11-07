@@ -984,7 +984,8 @@ export const CREDITS: readonly {
         author: "Quaternius",
         license: "CC0 1.0",
         url: "https://poly.pizza/m/df8uCl1YpK",
-        usedFor: "Hedges and climbing-rose backing at the community garden gate.",
+        usedFor:
+          "Hedges and climbing-rose backing at the community garden gate.",
       },
       {
         title: "Mini Characters",
