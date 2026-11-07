@@ -65,5 +65,6 @@ for glb in "$TMP"/*.glb; do
 done
 
 rm -rf "$TMP"
+python3 -I "$(dirname "$0")/fix-garden-crop-alpha.py"
 echo "=== Done importing garden models ==="
 ls -lh "$OUT"

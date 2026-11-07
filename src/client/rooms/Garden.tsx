@@ -9,7 +9,6 @@ import * as THREE from "three";
 import {
   BOUNDS,
   COMPOST_POS,
-  EXIT,
   RAISED_BEDS,
   SHED_POS,
   WATER_POS,
@@ -22,7 +21,6 @@ import { ROOMS } from "../../game/rooms.ts";
 import { useGardenState } from "./garden/gardenSession.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { useGameClip } from "./shared/game3d/gameClip.ts";
-import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
 import { GardenDressing } from "./garden/Dressing.tsx";
@@ -223,7 +221,7 @@ function WateringAction({ plotIndex }: { plotIndex: number | null }) {
       <ModelInstance
         path="/models/garden/watering-can.glb"
         rotation={[0.65, 0.2, 0.35]}
-        scale={0.85}
+        scale={2}
       />
       {/* Falling water droplets */}
       {[-0.2, 0, 0.2].map((ox, k) => (
@@ -264,7 +262,7 @@ function WaterStation() {
         path="/models/garden/watering-can.glb"
         position={[0.65, 0, 0.2]}
         rotation={[0, -0.4, 0]}
-        scale={0.7}
+        scale={1.6}
       />
     </group>
   );
@@ -333,15 +331,6 @@ export function Garden({ onPick }: { onPick: PickHandler }): JSX.Element {
       {/* Exit portal back to Suburbia street */}
       <PortalPads room={ROOMS.garden} color="#52b788" />
 
-      {/* Gate Marquee Sign */}
-      <NeonText
-        text="COMMUNITY GARDEN"
-        color="#52b788"
-        font={MARQUEE}
-        width={5.2}
-        position={[0, 3.8, EXIT[1] + 0.3]}
-      />
-
       {/* Paths, picket fence and rose arch, neighbors' beds, borders, greenhouse, bench */}
       <Suspense fallback={null}>
         <GardenDressing plots={garden.plots} />
@@ -363,7 +352,7 @@ export function Garden({ onPick }: { onPick: PickHandler }): JSX.Element {
           path="/models/garden/shed.glb"
           position={[SHED_POS[0], 0, SHED_POS[1]]}
           rotation={[0, Math.PI / 2, 0]}
-          scale={0.72}
+          scale={2.3}
         />
       </Suspense>
 
@@ -371,13 +360,13 @@ export function Garden({ onPick }: { onPick: PickHandler }): JSX.Element {
       <Suspense fallback={null}>
         <ModelInstance
           path="/models/garden/compost-bin.glb"
-          position={[COMPOST_POS[0] - 1.1, 0, COMPOST_POS[1]]}
-          scale={0.9}
+          position={[COMPOST_POS[0] - 1.4, 0, COMPOST_POS[1]]}
+          scale={6.5}
         />
         <ModelInstance
           path="/models/garden/compost-bin.glb"
-          position={[COMPOST_POS[0] + 1.1, 0, COMPOST_POS[1]]}
-          scale={0.9}
+          position={[COMPOST_POS[0] + 1.4, 0, COMPOST_POS[1]]}
+          scale={6.5}
         />
       </Suspense>
 

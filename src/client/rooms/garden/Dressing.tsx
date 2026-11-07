@@ -496,9 +496,9 @@ function Furniture(): JSX.Element {
         y: 0,
         z,
         yaw: i * 2,
-        sx: 0.7,
-        sy: 0.7,
-        sz: 0.7,
+        sx: 1.6,
+        sy: 1.6,
+        sz: 1.6,
       })),
     [],
   );
