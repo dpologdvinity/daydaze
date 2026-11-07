@@ -30,7 +30,7 @@ export function validateBouquet(value: unknown): value is Bouquet {
     Array.isArray(stems) &&
     stems.length >= 3 &&
     stems.length <= 12 &&
-    stems.every(isStem) &&
+    Array.from(stems).every(isStem) &&
     WRAPS.some((v) => v === fields.get("wrap")) &&
     RIBBONS.some((v) => v === fields.get("ribbon"))
   );
