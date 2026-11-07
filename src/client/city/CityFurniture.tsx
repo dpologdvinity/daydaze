@@ -22,6 +22,7 @@ import {
 import { createStore } from "../rooms/shared/store.ts";
 import { useQuality } from "../world/quality.ts";
 import { useDaylight } from "./daylight.ts";
+import { boxMapped, surface } from "./worldTexture.ts";
 import { bakedGeometry } from "../world/bakedGeometry.ts";
 import { disposeInstanced } from "./dispose.ts";
 
@@ -47,6 +48,8 @@ export function partsOf(
   scene: THREE.Object3D,
   tint: THREE.Color | null,
   capacity: number = CAPACITY,
+  /** Swaps a part's material for a tiling one, by the part's material name. */
+  retexture?: (name: string) => THREE.MeshStandardMaterial | undefined,
 ): THREE.InstancedMesh[] {
   scene.updateMatrixWorld(true);
   const parts: THREE.InstancedMesh[] = [];
@@ -56,7 +59,7 @@ export function partsOf(
     const found = Array.isArray(o.material) ? o.material[0] : o.material;
     if (!found) return;
     // own copy, so the daylight dimming below never touches a shared material
-    const material = found.clone();
+    const material = retexture?.(found.name) ?? found.clone();
     if (material instanceof THREE.MeshStandardMaterial) {
       if (tint) material.color.multiply(tint);
       material.userData.base = material.color.clone();
@@ -74,6 +77,25 @@ const q = new THREE.Quaternion();
 const p = new THREE.Vector3();
 const s = new THREE.Vector3();
 const up = new THREE.Vector3(0, 1, 0);
+
+/**
+ * The benches' two parts ("slats" and "ends", split in art/street/build_street.py)
+ * wear the city's tiling surfaces: park-green painted boards on dark iron, and
+ * bleached weathered planks on the deck. Each call builds its own materials
+ * (own onBeforeCompile and daylight color) over the shared photo maps.
+ */
+const BENCH_SURFACES: Partial<
+  Record<FurnitureKind, Record<string, Parameters<typeof surface>>>
+> = {
+  bench: {
+    slats: ["wood_plank_wall", { scale: 1.2, color: "#5f9a72" }],
+    ends: ["rusty_metal", { scale: 1.5, color: "#3c4240", metalness: 0.6 }],
+  },
+  boardbench: {
+    slats: ["oak_wood_planks", { scale: 1.2, color: "#d9d2c4" }],
+    ends: ["oak_wood_planks", { scale: 1.2, color: "#a39a8b" }],
+  },
+};
 
 /** The downloaded palm's olive leaves, pushed toward a fresh green. */
 const TINT: Partial<Record<FurnitureKind, THREE.Color>> = {
@@ -142,7 +164,24 @@ export function CityFurniture({ summer }: { summer: boolean }): JSX.Element {
     const byKind = new Map<FurnitureKind, THREE.InstancedMesh[]>();
     FURNITURE_KINDS.forEach((kind, i) => {
       const gltf = gltfs[i];
-      if (gltf) byKind.set(kind, partsOf(gltf.scene, TINT[kind] ?? null));
+      const bench = BENCH_SURFACES[kind];
+      if (gltf)
+        byKind.set(
+          kind,
+          partsOf(
+            gltf.scene,
+            TINT[kind] ?? null,
+            undefined,
+            bench &&
+              ((name) => {
+                const spec = bench[name];
+                return (
+                  spec &&
+                  boxMapped(surface(...spec).clone(), spec[1]?.scale ?? 1)
+                );
+              }),
+          ),
+        );
     });
     return byKind;
   }, [gltfs]);

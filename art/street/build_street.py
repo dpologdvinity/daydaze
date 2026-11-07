@@ -191,22 +191,38 @@ def street_set():
 PK = lambda n: f"{SRC_PK}/{n}.glb"
 
 
-def paint(o, rgb, rough=0.8):
-    """Recolors the (single) wood material: the Quaternius bench ships one flat brown."""
-    for m in o.data.materials:
+def split_ends(o):
+    """Gives the bench two materials, "slats" (the long boards) and "ends" (the legs
+    and arms, |x| > 0.74 m), and separates them into two meshes so the client can
+    texture each (CityFurniture BENCH_SURFACES). Colors are placeholders: the client
+    draws both from its tiling surfaces."""
+    base = o.data.materials[0]
+    ends = base.copy()
+    base.name, ends.name = "slats", "ends"
+    # distinct colors, or glTF-Transform's dedup folds the two materials into one
+    for m, rgb in ((base, (0.35, 0.22, 0.12)), (ends, (0.1, 0.1, 0.1))):
         for n in m.node_tree.nodes:
             if n.type == "BSDF_PRINCIPLED":
                 n.inputs["Base Color"].default_value = (*rgb, 1.0)
-                n.inputs["Roughness"].default_value = rough
+    o.data.materials.append(ends)
+    for p in o.data.polygons:
+        p.material_index = 1 if abs(p.center.x) > 0.74 else 0
+    bpy.ops.object.select_all(action="DESELECT")
+    bpy.context.view_layer.objects.active = o
+    o.select_set(True)
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.separate(type="MATERIAL")
+    bpy.ops.object.mode_set(mode="OBJECT")
 
 
 def bench_set():
-    """Quaternius' rustic bench (CC0, Poly Pizza), 1.8 m long, seat at 0.46 m: painted
-    park green for the city and the park, bleached gray for Beachside's deck. The
-    bench's back is at +z in the source; turn it to face +z like the other kinds."""
-    for name, rgb in (("bench", (0.1, 0.27, 0.17)), ("boardbench", (0.62, 0.56, 0.48))):
+    """Quaternius' rustic bench (CC0, Poly Pizza), 1.8 m long, seat at 0.46 m. Built
+    twice (the client textures them differently: green paint and iron, weathered
+    planks). The bench's back is at +z in the source; turn it to face +z like the
+    other kinds."""
+    for name in ("bench", "boardbench"):
         o = imported(PP("bench-quaternius"), length=1.8, turn=math.pi)
-        paint(o, rgb)
+        split_ends(o)
         export(name)
 
 
