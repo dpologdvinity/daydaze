@@ -64,10 +64,10 @@ const PATH_SECTION: Section = [
 ];
 /** Shallow edges are pale and see-through, the middle deep and darker. */
 const CREEK_SECTION: Section = [
-  [-1, 0.78, 0.92, 0.84, 0.25],
-  [-0.55, 0.42, 0.68, 0.78, 0.85],
-  [0.55, 0.42, 0.68, 0.78, 0.85],
-  [1, 0.78, 0.92, 0.84, 0.25],
+  [-1, 0.3, 0.5, 0.42, 0.3],
+  [-0.55, 0.1, 0.3, 0.38, 0.88],
+  [0.55, 0.1, 0.3, 0.38, 0.88],
+  [1, 0.3, 0.5, 0.42, 0.3],
 ];
 
 /** A flat ribbon along `line`, `width` wide, `y` above the ground, with UVs
@@ -107,7 +107,7 @@ function ribbon(
       for (let c = 0; c < cols - 1; c++) {
         const k = i * cols + c;
         const q = k - cols;
-        idx.push(q, k, q + 1, q + 1, k, k + 1);
+        idx.push(q, q + 1, k, q + 1, k + 1, k);
       }
     }
   });
@@ -146,7 +146,7 @@ const WATER = (() => {
     roughness: 0.12,
     metalness: 0.05,
     emissive: "#0b4660",
-    emissiveIntensity: 0.3,
+    emissiveIntensity: 0.12,
   });
   m.onBeforeCompile = (shader) => {
     shader.uniforms.uTime = time;
