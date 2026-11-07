@@ -134,7 +134,6 @@ future imported packs belong here when they enter the game.
 | Rock Large | Quaternius | CC0 1.0 | https://poly.pizza/m/54jZKTAt5p | Reef dive: flat boulders and arch lintels; the rocks the Mermaid Cove mermaids lounge on. |
 | Storage Shed | Quaternius | CC0 1.0 | https://poly.pizza/m/JrFL3mLOKg | Tool shed in the Suburbia community garden. |
 | Watering Can | CreativeTrio | CC0 1.0 | https://poly.pizza/m/b2R90QehIt | Watering can prop and watering animation in the community garden. |
-| Rock Large | Quaternius | CC0 1.0 | https://poly.pizza/m/54jZKTAt5p | Reef dive: flat boulders and arch lintels. |
 | Rock Large (pillar) | Quaternius | CC0 1.0 | https://poly.pizza/m/d2VWOdthtR | Reef dive: rock pillars and arch legs. |
 | Rock Medium | Quaternius | CC0 1.0 | https://poly.pizza/m/s1OJ3bBzqc | Reef dive: mossy boulders; Mermaid Cove's lagoon boulders. |
 | Mountain Group | Quaternius | CC0 1.0 | https://poly.pizza/m/a52gSEEq8X | Reef dive: rock spires. |
