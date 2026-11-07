@@ -30,6 +30,7 @@ import {
   updateTransit,
   type TransitModel,
 } from "./transitModels.ts";
+import { setData } from "../world/dataset.ts";
 
 const KINDS: readonly TransitModel[] = ["bus"];
 const STOP_URL = "/models/street/busstop.glb";
@@ -243,10 +244,11 @@ export function CityTransit({ player }: { player: Player }) {
       low,
     );
     updateTransit(all);
-    gl.domElement.dataset.busRide = riding.current ? "riding" : "on-foot";
-    gl.domElement.dataset.busStop = String(pose.stop);
-    gl.domElement.dataset.busX = pose.x.toFixed(2);
-    gl.domElement.dataset.busZ = pose.z.toFixed(2);
+    const dom = gl.domElement.dataset;
+    setData(dom, "busRide", riding.current ? "riding" : "on-foot");
+    setData(dom, "busStop", String(pose.stop));
+    setData(dom, "busX", pose.x.toFixed(2));
+    setData(dom, "busZ", pose.z.toFixed(2));
   });
   const stop = BUS_STOPS[shown.near];
   return (

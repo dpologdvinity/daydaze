@@ -10,6 +10,7 @@ import {
 } from "../../../game/look.ts";
 import { beardStrokes } from "../../../game/beard.ts";
 import { makeCanvas } from "../../canvas.ts";
+import { RefCache } from "./refCache.ts";
 
 /**
  * Paints the 3D doll's makeup. The face has a planar UV over the front of the
@@ -139,21 +140,43 @@ function loadMask(suffix: string) {
   return mask;
 }
 
+/** Per mask image and channel: that channel as white with the value in alpha.
+ * Read back once (the only getImageData of a face); every tint is then a
+ * GPU-side composite, not a 1 M-pixel JS loop per lip and cheek layer. */
+const alphaMasks = new WeakMap<
+  HTMLImageElement,
+  Map<number, HTMLCanvasElement>
+>();
+
+function alphaMask(img: HTMLImageElement, ch: 0 | 1) {
+  const perImage = alphaMasks.get(img) ?? new Map<number, HTMLCanvasElement>();
+  alphaMasks.set(img, perImage);
+  let mask = perImage.get(ch);
+  if (!mask) {
+    const { canvas, ctx } = makeCanvas(SIZE, SIZE);
+    ctx.drawImage(img, 0, 0, SIZE, SIZE);
+    const data = ctx.getImageData(0, 0, SIZE, SIZE);
+    const d = data.data;
+    for (let o = 0; o < d.length; o += 4) {
+      d[o + 3] = d[o + ch];
+      d[o] = d[o + 1] = d[o + 2] = 255;
+    }
+    ctx.putImageData(data, 0, 0);
+    mask = canvas;
+    perImage.set(ch, mask);
+  }
+  return mask;
+}
+
 /** One channel of the baked mask as an alpha-only canvas, tinted. */
 function channel(img: HTMLImageElement, ch: 0 | 1, color: string) {
   const { canvas, ctx } = makeCanvas(SIZE, SIZE);
-  ctx.drawImage(img, 0, 0, SIZE, SIZE);
-  const data = ctx.getImageData(0, 0, SIZE, SIZE);
-  const d = data.data;
+  ctx.drawImage(alphaMask(img, ch), 0, 0);
+  // keep the mask's alpha, replace its white with the tint
+  ctx.globalCompositeOperation = "source-in";
   const [r, g, b] = hexRgb(color);
-  for (let o = 0; o < d.length; o += 4) {
-    const a = d[o + ch];
-    d[o] = r;
-    d[o + 1] = g;
-    d[o + 2] = b;
-    d[o + 3] = a;
-  }
-  ctx.putImageData(data, 0, 0);
+  ctx.fillStyle = `rgb(${r},${g},${b})`;
+  ctx.fillRect(0, 0, SIZE, SIZE);
   return canvas;
 }
 
@@ -486,6 +509,38 @@ function paintBrow(
   ctx.restore();
 }
 
+/** The look parts a face is painted from, and the key two dolls share a face by. */
+type FaceLook = Parameters<typeof paintFace>[0];
+
+const faces = new RefCache<
+  Promise<THREE.Texture>,
+  { look: FaceLook; marks: Marks }
+>(
+  (_key, { look, marks }) => paintFace(look, marks),
+  (texture) => void texture.then((t) => t.dispose()),
+  // idle faces kept for a walker who returns (1024 px, ~5 MB each on the GPU)
+  16,
+);
+
+/**
+ * The painted face for this look, shared with every doll wearing the same one
+ * and kept a while after the last lets go (painting a face is the biggest
+ * main-thread job when a doll arrives). Call `releaseFace` with the returned
+ * key when done; never dispose the texture yourself.
+ */
+export function acquireFace(
+  look: FaceLook,
+  marks: Marks,
+  bodyKey: string,
+): { key: string; texture: Promise<THREE.Texture> } {
+  const key = `${bodyKey}|${JSON.stringify(look)}`;
+  return { key, texture: faces.acquire(key, { look, marks }) };
+}
+
+export function releaseFace(key: string): void {
+  faces.release(key);
+}
+
 /** The face texture: skin, contour, blush, shadow, liner, brows, lips, and
  * any beard. */
 export async function paintFace(
@@ -730,8 +785,31 @@ export async function paintFace(
   return tex;
 }
 
+const irises = new RefCache<THREE.Texture>(
+  (color) => paintIris(color),
+  (t) => t.dispose(),
+  6,
+);
+
+/** The iris texture for an eye color, shared; pair with `releaseIris`. */
+export function acquireIris(color: string): THREE.Texture {
+  return irises.acquire(color, undefined);
+}
+
+export function releaseIris(color: string): void {
+  irises.release(color);
+}
+
+let lashTexture: THREE.Texture | null = null;
+
+/** The one lash texture every doll shares (it never changes). */
+export function sharedLashes(): THREE.Texture {
+  lashTexture ??= paintLashes();
+  return lashTexture;
+}
+
 /** Sclera, iris and pupil for the eyeballs' front planar UV. */
-export function paintIris(color = "#6b3f22") {
+function paintIris(color: string) {
   const S = 256;
   const { canvas, ctx } = makeCanvas(S, S);
   ctx.fillStyle = "#f4ece8";
@@ -777,7 +855,7 @@ export function paintIris(color = "#6b3f22") {
 }
 
 /** Lash strands: roots at the bottom of the card, tips at the top. */
-export function paintLashes() {
+function paintLashes() {
   const W = 512,
     H = 64;
   const { canvas, ctx } = makeCanvas(W, H);

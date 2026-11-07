@@ -67,7 +67,14 @@ import {
 import { afloat, scuba } from "./afloat.ts";
 import { ScubaGear } from "./ScubaGear.tsx";
 
-import { paintFace, paintIris, paintLashes, readMarks } from "./faceCanvas.ts";
+import {
+  acquireFace,
+  acquireIris,
+  readMarks,
+  releaseFace,
+  releaseIris,
+  sharedLashes,
+} from "./faceCanvas.ts";
 import { Jewelry, readAnchors } from "./Jewelry.tsx";
 import { Glasses } from "./Glasses.tsx";
 import { HearingAids } from "./HearingAids.tsx";
@@ -259,6 +266,9 @@ function setMorph(meshes: THREE.Mesh[], name: string, value: number) {
   }
 }
 
+/** The iris painted before the look's own eye color is applied. */
+const DEFAULT_EYE = "#6b3f22";
+
 function useBody(look: Look, eyeColor: Face["eyeColor"]) {
   // women and men are separate dolls, each with its own skeleton
   const m = modelSuffix(look);
@@ -310,12 +320,13 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
     skin.customProgramCacheKey = () => "doll-skin-shin";
     const lashes = new THREE.MeshStandardMaterial({
       color: "#0d0609",
-      map: paintLashes(),
+      map: sharedLashes(),
       alphaTest: 0.4,
       side: THREE.DoubleSide,
     });
     const eye = new THREE.MeshStandardMaterial({
-      map: paintIris(),
+      // until the eye-color effect runs; the default stays cached
+      map: acquireIris(DEFAULT_EYE),
       roughness: 0.3,
     });
     const cornea = new THREE.MeshStandardMaterial({
@@ -398,10 +409,8 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
 
   useEffect(
     () => () => {
-      for (const m of body.materials) {
-        if (m instanceof THREE.MeshStandardMaterial) m.map?.dispose();
-        m.dispose();
-      }
+      // the textures belong to the face and iris caches (faceCanvas.ts)
+      for (const m of body.materials) m.dispose();
     },
     [body],
   );
@@ -432,8 +441,9 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
     skin.emissive.set(skinTone);
     if (!marks) return;
     let live = true;
-    let tex: THREE.Texture | null = null;
-    paintFace(
+    // dolls with the same look share one painted face, kept a while after
+    // the last lets go (faceCanvas.ts)
+    const face = acquireFace(
       {
         skin: skinTone,
         lips,
@@ -446,10 +456,11 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
         face: faceCode,
       },
       marks,
-    )
+      body.key,
+    );
+    face.texture
       .then((t) => {
-        if (!live) return t.dispose();
-        tex = t;
+        if (!live) return;
         skin.color.set("#ffffff");
         // a warm red glow through the skin's own colors: light scattering
         // under real skin, not a flat white sheen
@@ -463,7 +474,7 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
       .catch((e: unknown) => console.warn(e));
     return () => {
       live = false;
-      tex?.dispose();
+      releaseFace(face.key);
     };
   }, [
     body,
@@ -479,11 +490,10 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
     invalidate,
   ]);
   useEffect(() => {
-    const tex = paintIris(eyeColor);
-    body.eye.map?.dispose();
-    body.eye.map = tex;
+    body.eye.map = acquireIris(eyeColor);
     body.eye.needsUpdate = true;
     invalidate();
+    return () => releaseIris(eyeColor);
   }, [body, eyeColor, invalidate]);
   return body;
 }
@@ -911,6 +921,10 @@ export function HumanDoll({
   // read by each worn part, to swap in its low-poly twin
   // start far, so nobody fetches full parts before their first LOD check
   const farParts = useRef(true);
+  const lidShown = useRef(-1);
+  const lidMeshes = useRef<THREE.Mesh[] | null>(null);
+  // a far doll's skeleton updates every third frame (thinned): the time owed
+  const owed = useRef({ dt: 0, tick: 0 });
   const track = useMemo(() => {
     const make = (key: string) => (meshes: THREE.Mesh[] | null, up: number) => {
       if (meshes) worn.current.set(key, meshes);
@@ -960,7 +974,19 @@ export function HumanDoll({
     const seeded = mood === "sit" ? SIT_HOLDS : POSE_HOLDS;
     const hold = picked ?? seeded[seed % seeded.length];
     const a = anim.current;
-    if (a) {
+    // a far doll is a few pixels tall: pose its skeleton every third frame,
+    // with the time it owes, instead of every frame (mixer, built pose and
+    // fades are the doll's whole per-frame cost)
+    let animDt = dt;
+    if (!own && farParts.current) {
+      const o = owed.current;
+      o.dt += dt;
+      if (++o.tick % 3 === 0) {
+        animDt = o.dt;
+        o.dt = 0;
+      } else animDt = 0;
+    } else owed.current.dt = 0;
+    if (a && animDt > 0) {
       const clips = clipsFor(body.key);
       const now = state.clock.elapsedTime;
       // the catalog's walk speeds are the woman's stride; his carries farther
@@ -1042,9 +1068,9 @@ export function HumanDoll({
       const built = want && clip ? 0 : 1;
       a.built +=
         Math.sign(built - a.built) *
-        Math.min(dt / FADE, Math.abs(built - a.built));
+        Math.min(animDt / FADE, Math.abs(built - a.built));
       body.built.restore();
-      if (a.action) a.mixer.update(dt);
+      if (a.action) a.mixer.update(animDt);
       if (a.built > 0) {
         const move = mood === "dance" && !moving ? danceMove(dance) : null;
         const danced = !move
@@ -1098,7 +1124,14 @@ export function HumanDoll({
     const tm = state.clock.elapsedTime;
     const closed = tm > blinkAt.current && tm < blinkAt.current + 0.14;
     // open eyes rest with the upper lid a little lowered, not wide and staring
-    setMorph(wornList.current, "blink", closed ? 1 : REST_LID);
+    // only when it changes (or new meshes mount): a dictionary lookup per
+    // worn mesh per doll per frame adds up in a crowd
+    const lid = closed ? 1 : REST_LID;
+    if (lidShown.current !== lid || lidMeshes.current !== wornList.current) {
+      lidShown.current = lid;
+      lidMeshes.current = wornList.current;
+      setMorph(wornList.current, "blink", lid);
+    }
     // face and body shape change rarely: set them only when they, or the
     // worn meshes (parts mount later), change, never every frame
     if (

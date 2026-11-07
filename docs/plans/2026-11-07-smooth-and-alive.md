@@ -66,3 +66,36 @@ styles only show at slower speeds.
   Quaternius Universal Base Characters (licenses checked; NC/ND skipped),
   fitted to both heads, tintable, with LODs, added to the closet without
   breaking saved looks.
+
+### 1. Results (branch perf/smooth, measured on GitHub runners)
+
+Tooling: `scripts/perf-profile.ts` (areas spawn, nightlife, park, beachside,
+pulse; phases arrive / stand / walk; frame times, long tasks, late shader
+links, optional V8 CPU profiles), `scripts/cpuprofile-top.ts`, and
+`.github/workflows/profile.yml` (push a commit with `[profile]` or
+`[profile:spawn,pulse]` in its message to `perf/smooth`, or dispatch it; then
+`gh run download <id> -n profile`). SwiftShader numbers are relative only.
+
+What the CPU profiles showed: the per-frame JS was already small (traffic,
+walkers and the player loop allocate nothing and run at fixed rates). The
+stalls were (1) shader programs compiled and linked inside the first frame that
+drew streamed-in content (`getProgramInfoLog`, 0.5 to 2 s per 8 s window),
+(2) painting every arriving doll's 1024 px face on the main thread (three
+`getImageData` passes per face) and again each time a walker came back, and
+(3) per-frame skeleton work for dolls a few pixels tall.
+
+Fixes: `LateWarmup` (`src/client/world/compileGate.ts`) hands newly mounted
+content to `compileAsync`; faces and irises are shared and kept after the last
+holder lets go (`refCache.ts`, `faceCanvas.ts`), the lip and cheek masks are
+read back once and tinted by compositing; far dolls pose every third frame;
+the blink morph and `data-*` attributes are written only when they change.
+Do not move the face canvas to the GPU (`willReadFrequently: false`): under
+SwiftShader its 22 px blur took 80 s.
+
+| area (low tier) | before: ten frames / stand mean frame / stand long tasks | after |
+| --- | --- | --- |
+| spawn | 11.4 s / 419 ms / 750 ms | 9.6 s / 269 ms / 0 |
+| nightlife | 11.6 s / 210 ms / 1164 ms | 8.5 s / 226 ms / 0 |
+| park | 9.9 s / 413 ms / 2849 ms | 7.5 s / 141 ms / 662 ms |
+| beachside | 9.8 s / 144 ms / 892 ms | 7.4 s / 91 ms / 0 |
+| pulse | 9.2 s / 278 ms / 0 | 6.5 s / 198 ms / 0 |

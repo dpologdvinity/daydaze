@@ -1,5 +1,6 @@
 import { PerformanceMonitor } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import * as THREE from "three";
 import {
   lazy,
   Suspense,
@@ -51,6 +52,7 @@ import {
 import { QualityContext, type QualityTier } from "./quality.ts";
 import { Seats } from "./Seats.tsx";
 import { isSceneReady, setSceneReady } from "./ready.ts";
+import { CompileGate } from "./compileGate.ts";
 import { Photo } from "./Photo.tsx";
 import { OnlinePeers } from "../net/OnlinePeers.tsx";
 import { Confetti } from "./Confetti.tsx";
@@ -391,6 +393,45 @@ function Warmup() {
   return null;
 }
 
+/**
+ * The room's first warm-up (Warmup) covers what is mounted then. Content that
+ * streams in later (walkers, hair and outfits, trees and furniture of the next
+ * block, venue props) brings new shader variants that would otherwise compile
+ * and link inside the first frame that draws them: a stall of 50 to 500 ms.
+ * Once a second this counts the scene's drawable objects and, when there are
+ * more, hands the scene to `compileAsync`, so the driver links the new
+ * programs in parallel and the draw finds them ready (compileGate.ts).
+ */
+function LateWarmup() {
+  const gl = useThree((s) => s.gl);
+  const scene = useThree((s) => s.scene);
+  const camera = useThree((s) => s.camera);
+  const gate = useMemo(() => new CompileGate(2), []);
+  const lastCheck = useRef(0);
+  const count = useRef(0);
+  // allocated once; counts the drawable objects without a closure per check
+  const tally = useMemo(
+    () => (o: THREE.Object3D) => {
+      if (o instanceof THREE.Mesh || o instanceof THREE.Points) count.current++;
+    },
+    [],
+  );
+  useFrame(({ clock }) => {
+    if (!isSceneReady()) return;
+    const now = clock.elapsedTime;
+    if (now - lastCheck.current < 1) return;
+    lastCheck.current = now;
+    count.current = 0;
+    scene.traverse(tally);
+    if (!gate.check(count.current, now)) return;
+    gl.compileAsync(scene, camera).then(
+      () => gate.done(),
+      () => gate.done(),
+    );
+  });
+  return null;
+}
+
 // Exposes what the doll wears on the canvas, so tests can read it by role.
 function Wearing({ style }: { style: string }) {
   const gl = useThree((s) => s.gl);
@@ -694,6 +735,7 @@ export function World({
           <Confetti />
           {tier === "high" ? <Effects /> : <NeonClamp key={`clamp-${room}`} />}
           <Warmup key={`warm-${room}`} />
+          <LateWarmup key={`late-${room}`} />
         </Suspense>
       </QualityContext.Provider>
     </Canvas>

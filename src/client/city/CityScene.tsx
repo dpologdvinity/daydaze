@@ -193,8 +193,12 @@ export function CityScene({
     }
     // read by tests; World records the draw counts for every room
     const dom = gl.domElement.dataset;
-    dom.playerX = x.toFixed(2);
-    dom.playerZ = z.toFixed(2);
+    // an attribute write marks the canvas dirty for style work: skip it when
+    // she stands still
+    const px = x.toFixed(2);
+    const pz = z.toFixed(2);
+    if (dom.playerX !== px) dom.playerX = px;
+    if (dom.playerZ !== pz) dom.playerZ = pz;
     setNeighborhood(neighborhoodAt([x, z]));
     setInPark(inPark(x, z));
   });
