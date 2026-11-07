@@ -931,7 +931,7 @@ for (const shot of SHOTS) {
   console.log(
     `${shot.name}: ${last} frames, ${calls} draw calls, ${triangles} triangles, ${((Date.now() - started) / 1000).toFixed(0)} s`,
   );
-  if (process.env.BREAKDOWN) {
+  if (process.env.BREAKDOWN !== "0") {
     // TEMP-PROFILE: visible meshes by triangles, grouped by name chain
     const rows = await page.evaluate(`(() => {
       const scene = window.__scene; const cam = window.__cam;
