@@ -803,7 +803,9 @@ for (const shot of SHOTS) {
   const started = Date.now();
   await page.setViewportSize(shot.viewport ?? { width: 1280, height: 800 });
   const still = shot.live ? "" : "&still=1";
-  await page.goto(`${BASE}/?quality=low${still}&${shot.query}`);
+  await page.goto(`${BASE}/?quality=low${still}&${shot.query}`, {
+    timeout: 120_000,
+  });
   if (shot.act) await shot.act(page);
   const canvas = page.getByRole("img", { name: "3D room view" });
   await expect(canvas).toHaveAttribute("data-frames", /\d+/, {
