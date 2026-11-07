@@ -50,7 +50,7 @@ function pylon(out: Buckets, n: number, x: number, z: number): void {
   const hot = NEON[n % NEON.length] ?? "#ff4fb3";
   const vacancy = !noVacancy(n);
   const state = vacancy ? "VACANCY" : "NO VACANCY";
-  out.pole.push({ x, y: 4.2, z, sx: 0.4, sy: 8.4, sz: 0.4, color: WHITE });
+  out.ledge.push({ x, y: 4.2, z, sx: 0.4, sy: 8.4, sz: 0.4, color: WHITE });
   // the name board: dark backing, a neon tube frame and the lit name
   out.ledge.push({ x, y: 9.2, z, sx: 0.4, sy: 2.2, sz: 5.4, color: "#1c1230" });
   for (const dy of [-1.05, 1.05])
@@ -157,7 +157,7 @@ function pool(
   for (let i = 0; i <= 5; i++) {
     const x = cx - fx + (i * 2 * fx) / 5;
     for (const z of [cz - fz, cz + fz])
-      out.pole.push({
+      out.ledge.push({
         x,
         y: 0.7,
         z,
@@ -214,7 +214,7 @@ function pool(
   }
   // the umbrella: a pole and a flat-lit canopy
   const ux = cx + fx - 1.2;
-  out.pole.push({
+  out.ledge.push({
     x: ux,
     y: 1.2,
     z: cz - fz + 1.0,
@@ -265,7 +265,7 @@ function stair(out: Buckets, edge: number, dir: 1 | -1, zf: number): void {
 }
 
 /** One motel's strip: body, roof, doors, windows, walkway, stair and neon. */
-function strip(out: Buckets, b: Building, n: number): void {
+function strip(out: Buckets, b: Building, n: number, detailed: boolean): void {
   const xs = b.footprint.map(([x]) => x);
   const zs = b.footprint.map(([, z]) => z);
   const x0 = Math.min(...xs);
@@ -312,7 +312,7 @@ function strip(out: Buckets, b: Building, n: number): void {
     sz: 0.14,
     color: NEON[n % NEON.length] ?? "#ff4fb3",
   });
-  // the walkway on the second floor: slab, a roof over it, posts and rails
+  // the walkway on the second floor: slab, a roof over it, supports and rails
   out.ledge.push({
     x: cx,
     y: FLOOR - 0.125,
@@ -322,6 +322,8 @@ function strip(out: Buckets, b: Building, n: number): void {
     sz: WALK,
     color: "#f4f0ea",
   });
+  // from afar the rooms, rails and supports are a few pixels: stop at the body
+  if (!detailed) return;
   out.ledge.push({
     x: cx,
     y: h - 0.1,
@@ -336,7 +338,7 @@ function strip(out: Buckets, b: Building, n: number): void {
   for (let i = 0; i <= units; i++) {
     const x = x0 + 0.3 + i * uw;
     // a support under the walkway and one holding its roof, on the unit lines
-    out.pole.push({
+    out.ledge.push({
       x,
       y: FLOOR / 2,
       z: zf + WALK - 0.1,
@@ -345,7 +347,7 @@ function strip(out: Buckets, b: Building, n: number): void {
       sz: 0.2,
       color: WHITE,
     });
-    out.pole.push({
+    out.ledge.push({
       x,
       y: FLOOR + (h - FLOOR) / 2,
       z: zf + WALK - 0.1,
@@ -355,16 +357,6 @@ function strip(out: Buckets, b: Building, n: number): void {
       color: WHITE,
     });
   }
-  for (let x = x0 + 0.3; x <= x1 - 0.2; x += 1.4)
-    out.pole.push({
-      x,
-      y: FLOOR + 0.55,
-      z: zf + WALK - 0.1,
-      sx: 0.07,
-      sy: 1.1,
-      sz: 0.07,
-      color: WHITE,
-    });
   for (const y of [FLOOR + 0.55, FLOOR + 1.1])
     out.ledge.push({
       x: cx,
@@ -435,15 +427,24 @@ function strip(out: Buckets, b: Building, n: number): void {
   }
 }
 
-/** Everything a motel lot is: its strip, the pylon sign and, on pool lots, the pool. */
-export function motelBuilding(b: Building, out: Buckets): void {
+/** Everything a motel lot is: its strip, the pylon sign and, on pool lots, the
+ * pool. `detailed` is off for lots far from the player: just the body, roof,
+ * neon line and walkway slab. */
+export function motelBuilding(
+  b: Building,
+  out: Buckets,
+  detailed = true,
+): void {
   const n = numberOf(b);
   const xs = b.footprint.map(([x]) => x);
   const zs = b.footprint.map(([, z]) => z);
   const x0 = Math.min(...xs);
   const x1 = Math.max(...xs);
   const zf = Math.max(...zs);
-  strip(out, b, n);
+  strip(out, b, n, detailed);
+  if (!detailed) {
+    return;
+  }
   // odd lots keep their stair room on the west end, even on the east
   if (n % 2) stair(out, x0, -1, zf);
   else stair(out, x1, 1, zf);

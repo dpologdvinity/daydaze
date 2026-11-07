@@ -398,8 +398,14 @@ const HOUSE_UNITS: Partial<
   "beachside/cottage-round": { w: 0.982, d: 1, h: 1.121 },
   "beachside/cottage-wide": { w: 0.988, d: 1, h: 0.613 },
 };
-/** Triangles of the largest house model, for the budget. */
-export const HOUSE_TRIANGLES = 5300;
+/** Triangles of each house model (read from the shipped GLBs; plan.test.ts
+ * checks them), in HOUSE_MODELS order, for the budget. */
+export const HOUSE_MODEL_TRIANGLES = [
+  1158, 1172, 1702, 1049, 751, 785, 1178, 1284, 4278, 1712, 3646, 1674, 5126,
+  3429, 1628, 2363, 2458,
+] as const;
+/** Triangles of the largest house model. */
+export const HOUSE_TRIANGLES = Math.max(...HOUSE_MODEL_TRIANGLES);
 /** The tallest a cottage stands, meters. */
 const BEACH_HOUSE_HEIGHT = 14;
 
