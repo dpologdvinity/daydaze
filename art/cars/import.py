@@ -203,7 +203,7 @@ if detail == "lo":
     if "rim" in parts:
         bpy.data.objects.remove(parts["rim"])
         del parts["rim"]
-    # Triangle targets per bucket, about 500 for the whole car: the low tier
+    # Triangle targets per bucket, about 850 for the whole car: the low tier
     # draws this twin from every distance, and the budget (src/game/city/
     # budget.ts) prices a dozen of them.
     def count(name):
@@ -214,9 +214,9 @@ if detail == "lo":
     # (a cop car's black body is trim)
     body = max(1, count("paint") + count("trim"))
     targets = (
-        ("paint", max(40, 480 * count("paint") / body)),
-        ("trim", max(40, 480 * count("trim") / body)),
-        ("glass", 40),
+        ("paint", max(40, 700 * count("paint") / body)),
+        ("trim", max(40, 700 * count("trim") / body)),
+        ("glass", 64),
         ("tyre", 66),
         ("light", 24),
     )
