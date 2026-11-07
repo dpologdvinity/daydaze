@@ -68,18 +68,6 @@ const BULB_SIZE = 0.16;
 const CORD_COLOR = "#2a2230";
 /** Chinatown and Koreatown hang red and gold lights, not the party mix. */
 const LANTERN_COLORS = ["#ff4a3d", "#ffb347", "#ff4a3d", "#ffd84f"];
-const QUEUE_COLORS = ["#ff4fb3", "#4fe3ff", "#ffd84f"];
-const OUTFITS = [
-  "#ff4fb3",
-  "#4fe3ff",
-  "#b06bff",
-  "#ffd84f",
-  "#7dff6b",
-  "#ff8a3d",
-  "#f2eefc",
-];
-const SKIN = ["#f2c9a6", "#d89e76", "#9c6443", "#f7d8c4", "#7a4a31"];
-const HAIR = ["#1b0f2e", "#ff4fb3", "#ffd84f", "#8a5cff", "#f2e6ff", "#4fe3ff"];
 const CAR_COLORS = [
   "#ff4fb3",
   "#4fe3ff",
@@ -501,55 +489,6 @@ function vent(out: Buckets, x: number, y: number, z: number): void {
   }
 }
 
-/** One figure: a body, a head and a hair cap, all bobbing a little in place. */
-function figure(
-  out: Buckets,
-  body: "queue" | "crowd",
-  x: number,
-  z: number,
-  outfit: string,
-  hair: string,
-  skin: string,
-): void {
-  out[body].push({ x, y: 0.9, z, sx: 0.36, sy: 0.9, sz: 0.36, color: outfit });
-  out.head.push({ x, y: 2, z, sx: 0.44, sy: 0.44, sz: 0.44, color: skin });
-  out.hair.push({ x, y: 2.1, z, sx: 0.5, sy: 0.42, sz: 0.5, color: hair });
-}
-
-/** Queues on the forecourt: three dolls at the front, four behind, and two bouncers. */
-function queueLine(out: Buckets, f: Front): void {
-  for (let i = 0; i < 3; i++) {
-    const x = f.x0 + 4 + i * 5;
-    const z = f.faceZ + f.out1 * 1.5;
-    figure(
-      out,
-      "queue",
-      x,
-      z,
-      QUEUE_COLORS[i],
-      pick(HAIR, hash(x, 2)),
-      pick(SKIN, hash(x, 3)),
-    );
-  }
-  for (let i = 0; i < 4; i++) {
-    const x = f.x0 + 6.5 + i * 5;
-    const z = f.faceZ + f.out1 * 3.6;
-    figure(
-      out,
-      "crowd",
-      x,
-      z,
-      pick(OUTFITS, hash(x, z, 4)),
-      pick(HAIR, hash(x, 5)),
-      pick(SKIN, hash(x, 6)),
-    );
-  }
-  for (const x of [f.x0 + 1.2, f.x1 - 1.2]) {
-    const z = f.faceZ + f.out1 * 1.1;
-    figure(out, "crowd", x, z, "#120e1c", "#0a0a10", pick(SKIN, hash(x, 7)));
-  }
-}
-
 /** Gate arches: two tall neon posts, one each side of the door, under the sign beam. */
 function arch(out: Buckets, f: Front, color: string): void {
   out.arch.push({
@@ -646,7 +585,6 @@ export function dressBuilding(b: Building, out: Buckets, kit = false): void {
   if (SHOPFRONT.has(b.style) && b.style !== "gate") {
     vent(out, f.cx + (hash(f.cx, 8) - 0.5) * f.w * 0.4, f.h + 0.5, f.cz);
   }
-  if (b.queue) queueLine(out, f);
   if (b.sign) {
     const s = signSpec(b, f);
     panel(out, "sign", f, s.y, s.sx, s.sy, b.sign.color, b.sign.text);

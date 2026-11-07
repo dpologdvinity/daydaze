@@ -23,6 +23,15 @@ OUT = os.path.join(HERE, ".cache", "people")
 
 LOOKS = ["character-male-a", "character-female-c", "character-male-d", "character-female-a"]
 
+# More looks, standing idle only: the city's club queues (art/speedway is also
+# where the street's people are baked)
+QUEUE_LOOKS = [
+    "character-male-c",
+    "character-male-e",
+    "character-female-b",
+    "character-female-d",
+]
+
 # bone -> (x, y, z) Euler degrees in the bone's own frame
 POSES = {
     # arms down at the sides (the model rests in a T)
@@ -113,3 +122,5 @@ else:
         for pose in ("idle", "cheer"):
             bake(look, pose)
     bake("character-male-b", "crouch")
+    for look in QUEUE_LOOKS:
+        bake(look, "idle")
