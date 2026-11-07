@@ -24,13 +24,13 @@ import { driverSays, resetTaxiRide, taxiCab, taxiRide } from "./taxiStore.ts";
 const BOARD_RANGE = 24;
 /** The cab's traffic id: 1 mod 4 draws the taxi model (Traffic.tsx). */
 const CAB_ID = 401;
-/** Where in the cab she sits: meters behind its center. She sits low, so the
- * roof hides all but her head and shoulders. */
+/** Where in the cab she rides: meters behind its center. The seat is marked
+ * `inside`, so the doll and her name tag are hidden until she gets out. */
 const BACK_SEAT = 0.9;
 
 export function TaxiRide({ player }: { player: Player }) {
   const seat = useMemo(
-    () => ({ position: new THREE.Vector3(), yaw: 0, sit: true }),
+    () => ({ position: new THREE.Vector3(), yaw: 0, sit: true, inside: true }),
     [],
   );
   const eye = useMemo(() => new THREE.Vector3(), []);
