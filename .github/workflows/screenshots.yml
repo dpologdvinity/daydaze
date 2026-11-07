@@ -1,0 +1,43 @@
+name: Screenshots
+# Take screenshots (scripts/screenshots.ts shot names) on any branch, by hand:
+#   gh workflow run screenshots.yml --ref feat/x -f shots="yacht taxi-ride"
+#   gh run download <id> -n screenshots -D /tmp/shots-<id>
+# Then look at each PNG and copy the good ones into docs/screenshots/.
+on:
+  workflow_dispatch:
+    inputs:
+      shots:
+        description: Space-separated shot names from scripts/screenshots.ts
+        required: true
+        type: string
+concurrency:
+  group: screenshots-${{ github.ref }}-${{ inputs.shots }}
+  cancel-in-progress: true
+jobs:
+  shots:
+    timeout-minutes: 45
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # one shot per process (a fresh browser each), against a local dev server
+      - run: |
+          npx vite --port 5195 --strictPort > /tmp/vite.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:5195 && break; sleep 1; done
+          for s in $SHOTS; do
+            case "$s" in *[!a-z0-9-]*) echo "bad shot name: $s"; exit 1;; esac
+            node --experimental-strip-types scripts/screenshots.ts "$s"
+          done
+        env:
+          SHOTS: ${{ inputs.shots }}
+      - uses: actions/upload-artifact@v7
+        if: ${{ always() }}
+        with:
+          name: screenshots
+          path: docs/screenshots/*.png
+          retention-days: 7
