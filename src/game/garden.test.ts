@@ -4,6 +4,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  BLOCKERS,
+  BOUNDS,
+  GARDEN_FENCE_SPOTS,
+  GARDEN_PATHS,
+  GATE_HALF,
+  NEIGHBOR_BEDS,
+  SPAWN,
   GARDEN_CROPS,
   GARDEN_CROP_IDS,
   GARDEN_PLOT_COUNT,
@@ -231,4 +238,52 @@ test("fastForwardGarden advances planted crop growth timestamps", () => {
   const after = plotGrowth(advanced.plots[0], now);
   assert.equal(after.stage, 4);
   assert.equal(after.ready, true);
+});
+
+test("the picket fence closes the lot except for the gate gap", () => {
+  const south = GARDEN_FENCE_SPOTS.filter(
+    (f) => Math.abs(f.z - BOUNDS.z1) < 0.01,
+  );
+  assert.ok(south.length >= 2);
+  for (const f of south) assert.ok(Math.abs(f.x) > GATE_HALF);
+  // each side's panels are stretched to meet end to end: no panel is more than a third off its model length
+  for (const f of GARDEN_FENCE_SPOTS) assert.ok(f.sx > 0.67 && f.sx < 1.34);
+  // every panel stays inside the lot
+  for (const f of GARDEN_FENCE_SPOTS) {
+    assert.ok(f.x >= BOUNDS.x0 && f.x <= BOUNDS.x1);
+    assert.ok(f.z >= BOUNDS.z0 && f.z <= BOUNDS.z1);
+  }
+});
+
+test("neighbors grow crops in every bed but the first, at valid stages", () => {
+  assert.deepEqual(
+    NEIGHBOR_BEDS.map((n) => n.bed),
+    [1, 2, 3, 4, 5, 6, 7],
+  );
+  for (const n of NEIGHBOR_BEDS) {
+    assert.ok(isGardenCropId(n.crop));
+    assert.ok(n.stage >= 1 && n.stage <= 4);
+  }
+});
+
+test("paths and walkable dressing leave the gate and beds reachable", () => {
+  for (const p of GARDEN_PATHS) {
+    assert.ok(p.x0 < p.x1 && p.z0 < p.z1);
+    assert.ok(p.x0 >= BOUNDS.x0 && p.x1 <= BOUNDS.x1);
+    assert.ok(p.z0 >= BOUNDS.z0 && p.z1 <= BOUNDS.z1);
+  }
+  // the spawn at the gate stands on the main path
+  const main = GARDEN_PATHS[0];
+  assert.ok(SPAWN[0] >= main.x0 && SPAWN[0] <= main.x1);
+  // no blocker covers the spawn
+  for (const b of BLOCKERS) {
+    const xs = b.map((v) => v[0]);
+    const zs = b.map((v) => v[1]);
+    const inside =
+      SPAWN[0] > Math.min(...xs) &&
+      SPAWN[0] < Math.max(...xs) &&
+      SPAWN[1] > Math.min(...zs) &&
+      SPAWN[1] < Math.max(...zs);
+    assert.equal(inside, false);
+  }
 });

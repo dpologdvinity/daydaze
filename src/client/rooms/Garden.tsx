@@ -10,7 +10,6 @@ import {
   BOUNDS,
   COMPOST_POS,
   EXIT,
-  GARDEN_FENCE_SPOTS,
   RAISED_BEDS,
   SHED_POS,
   WATER_POS,
@@ -26,7 +25,7 @@ import { useGameClip } from "./shared/game3d/gameClip.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
-import { Scatter } from "./zoo/Scatter.tsx";
+import { GardenDressing } from "./garden/Dressing.tsx";
 
 const { x0, x1, z0, z1 } = BOUNDS;
 const W = x1 - x0;
@@ -343,8 +342,10 @@ export function Garden({ onPick }: { onPick: PickHandler }): JSX.Element {
         position={[0, 3.8, EXIT[1] + 0.3]}
       />
 
-      {/* Perimeter split-rail fencing */}
-      <Scatter url="/models/farm/fence.glb" spots={GARDEN_FENCE_SPOTS} />
+      {/* Paths, picket fence and rose arch, neighbors' beds, borders, greenhouse, bench */}
+      <Suspense fallback={null}>
+        <GardenDressing plots={garden.plots} />
+      </Suspense>
 
       {/* 8 Raised vegetable and flower beds */}
       <Suspense fallback={null}>

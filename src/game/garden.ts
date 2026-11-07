@@ -466,7 +466,7 @@ export const FLOOR: readonly Vec2[] = box(
   BOUNDS.z1,
 );
 
-export const BLOCKERS: readonly (readonly Vec2[])[] = [
+const BASE_BLOCKERS: readonly (readonly Vec2[])[] = [
   // Tool shed footprint
   box(
     SHED_POS[0] - 2.5,
@@ -494,14 +494,22 @@ export const BLOCKERS: readonly (readonly Vec2[])[] = [
   ),
 ];
 
+/** The picket fence model's panel length in meters (its GLB is 5.9 m wide, 1.16 m tall). */
+const PICKET_LENGTH = 5.9;
+/** Half the gate gap in the south fence: the arch posts stand at this x. */
+export const GATE_HALF = 2.6;
+
+/**
+ * A continuous picket fence round the lot. Each side is cut into whole panels
+ * stretched to meet end to end (the model's long axis is x, so the stretch is
+ * `sx`), with the south side open for the gate arch.
+ */
 function fenceSpots(): Spot[] {
-  const panel = 3.2;
-  const k = 0.55;
   const out: Spot[] = [];
   const addLine = (ax: number, az: number, bx: number, bz: number) => {
     const len = Math.hypot(bx - ax, bz - az);
-    const n = Math.max(1, Math.round(len / panel));
-    const yaw = Math.atan2(bx - ax, bz - az);
+    const n = Math.max(1, Math.round(len / PICKET_LENGTH));
+    const yaw = Math.atan2(-(bz - az), bx - ax);
     for (let i = 0; i < n; i++) {
       const f = (i + 0.5) / n;
       out.push({
@@ -509,22 +517,76 @@ function fenceSpots(): Spot[] {
         y: 0,
         z: az + (bz - az) * f,
         yaw,
-        sx: k,
-        sy: k,
-        sz: k,
+        sx: len / n / PICKET_LENGTH,
+        sy: 0.95,
+        sz: 1,
       });
     }
   };
-  // North boundary
   addLine(BOUNDS.x0, BOUNDS.z0, BOUNDS.x1, BOUNDS.z0);
-  // East boundary
   addLine(BOUNDS.x1, BOUNDS.z0, BOUNDS.x1, BOUNDS.z1);
-  // West boundary
   addLine(BOUNDS.x0, BOUNDS.z0, BOUNDS.x0, BOUNDS.z1);
-  // South boundary (leaving opening at gate: x in [-2, 2])
-  addLine(BOUNDS.x0, BOUNDS.z1, -2, BOUNDS.z1);
-  addLine(2, BOUNDS.z1, BOUNDS.x1, BOUNDS.z1);
+  addLine(BOUNDS.x0, BOUNDS.z1, -GATE_HALF, BOUNDS.z1);
+  addLine(GATE_HALF, BOUNDS.z1, BOUNDS.x1, BOUNDS.z1);
   return out;
 }
 
 export const GARDEN_FENCE_SPOTS: readonly Spot[] = fenceSpots();
+
+/** A flat brick path: x0..x1 by z0..z1 meters. */
+export type PathRect = { x0: number; x1: number; z0: number; z1: number };
+
+/** The main path from the gate north between the bed columns, and the cross path between the rows. */
+export const GARDEN_PATHS: readonly PathRect[] = [
+  { x0: -1.2, x1: 1.2, z0: -9.4, z1: BOUNDS.z1 },
+  { x0: -16.5, x1: 16.5, z0: -0.6, z1: 1.4 },
+];
+
+/** What the neighbors already grow in the beds you have not claimed yet (bed 0 starts yours). */
+export const NEIGHBOR_BEDS: readonly {
+  readonly bed: number;
+  readonly crop: GardenCropId;
+  readonly stage: 1 | 2 | 3 | 4;
+}[] = [
+  { bed: 1, crop: "tomato", stage: 4 },
+  { bed: 2, crop: "sunflower", stage: 4 },
+  { bed: 3, crop: "strawberry", stage: 3 },
+  { bed: 4, crop: "pepper", stage: 3 },
+  { bed: 5, crop: "herb", stage: 4 },
+  { bed: 6, crop: "tomato", stage: 2 },
+  { bed: 7, crop: "sunflower", stage: 2 },
+];
+
+/** Where the greenhouse, cold frames, bench, scarecrow and tool rack stand. */
+export const GREENHOUSE_POS: Vec2 = [-13, 10.5];
+export const COLD_FRAMES: readonly Vec2[] = [
+  [12.5, 9],
+  [12.5, 12],
+];
+export const BENCH_POS: Vec2 = [-6.5, 12.6];
+export const SCARECROW_POS: Vec2 = [14.6, 0.2];
+export const TOOL_RACK_POS: Vec2 = [-9.6, -10.5];
+
+/** The scene's footprints: the base lot, plus the greenhouse, cold frames, bench and tool rack. */
+export const BLOCKERS: readonly (readonly Vec2[])[] = [
+  ...BASE_BLOCKERS,
+  box(
+    GREENHOUSE_POS[0] - 2.2,
+    GREENHOUSE_POS[1] - 1.7,
+    GREENHOUSE_POS[0] + 2.2,
+    GREENHOUSE_POS[1] + 1.7,
+  ),
+  ...COLD_FRAMES.map(([x, z]) => box(x - 1.3, z - 0.7, x + 1.3, z + 0.7)),
+  box(
+    BENCH_POS[0] - 0.95,
+    BENCH_POS[1] - 0.4,
+    BENCH_POS[0] + 0.95,
+    BENCH_POS[1] + 0.4,
+  ),
+  box(
+    TOOL_RACK_POS[0] - 0.3,
+    TOOL_RACK_POS[1] - 1.2,
+    TOOL_RACK_POS[0] + 0.3,
+    TOOL_RACK_POS[1] + 1.2,
+  ),
+];
