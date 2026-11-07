@@ -813,6 +813,16 @@ const SHOTS: {
   { name: "speedway-grid", query: "room=speedway" },
   { name: "cars-lineup", query: "room=speedway&lineup=cars" },
   {
+    // the same cars with a wrap, gold rims, smoked windows and underglow
+    name: "cars-lineup-mods",
+    query:
+      "room=speedway&lineup=cars&wrap=stripes&rims=gold&tint=smoke&glow=pink",
+  },
+  {
+    name: "cars-lineup-two-tone",
+    query: "room=speedway&lineup=cars&wrap=two-tone&rims=pink",
+  },
+  {
     name: "speedway-racing",
     query: "room=speedway",
     live: true,
