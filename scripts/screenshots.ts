@@ -395,16 +395,6 @@ const SHOTS: {
     name: "transit-bus-stop",
     query: "room=city&view=full&time=12:00&at=-24,13",
   },
-  {
-    name: "taxi-ride",
-    query: "room=city&view=full&time=12:00&at=-24,11",
-    act: async (page) => {
-      await page.getByRole("button", { name: "Hail a taxi" }).click();
-      const map = page.getByRole("dialog", { name: "City map" });
-      await expect(map).toBeVisible({ timeout: 120_000 });
-      await map.getByRole("button", { name: /^Nightlife Row · / }).click();
-    },
-  },
   { name: "city-overview", query: "room=city" },
   // the city by day and at sunset (daylight.ts), pinned with ?time=
   {

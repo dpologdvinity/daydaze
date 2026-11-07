@@ -3368,6 +3368,10 @@ test("taxi: hail on a sidewalk, pick Beachside on the map, pay the fare and ride
   const beach = map.getByRole("button", { name: /^Beachside · \d+ coins$/ });
   await beach.click();
   await expect(canvas).toHaveAttribute("data-taxi", "riding");
+  // TAXI_SHOT=<path> saves the view from the back seat (the screenshot tool
+  // freezes frames, so it cannot show a ride)
+  if (process.env.TAXI_SHOT)
+    await page.screenshot({ path: process.env.TAXI_SHOT });
   await page.getByRole("button", { name: "Skip the ride" }).click();
   await expect(canvas).toHaveAttribute("data-taxi", "idle");
   await expect
