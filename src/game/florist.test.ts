@@ -1,9 +1,21 @@
 // Bouquet validation, pricing and color harmony.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { bouquetPrice, harmonyScore, validateBouquet } from "./florist.ts";
+import {
+  addStem,
+  bouquetPrice,
+  buyBouquet,
+  emptyBouquet,
+  harmonyLabel,
+  harmonyScore,
+  MAX_STEMS,
+  removeLastStem,
+  type Bouquet,
+  type Stem,
+  validateBouquet,
+} from "./florist.ts";
 
-const bouquet = {
+const bouquet: Bouquet = {
   stems: ["rose", "tulip", "daisy"],
   wrap: "kraft",
   ribbon: "pink",
@@ -48,4 +60,37 @@ test("saved bouquets survive reload while malformed bouquets are discarded", asy
   assert.deepEqual(loadSave(serializeSave(save), "Guest").bouquet, bouquet);
   const broken = { ...save, bouquet: { ...bouquet, stems: ["rose"] } };
   assert.equal(loadSave(JSON.stringify(broken), "Guest").bouquet, null);
+});
+
+test("building adds stems up to the cap and never mutates the old bouquet", () => {
+  const empty = emptyBouquet();
+  const one = addStem(empty, "rose");
+  assert.deepEqual(empty.stems, []);
+  assert.deepEqual(one.stems, ["rose"]);
+  let full = empty;
+  for (let i = 0; i < MAX_STEMS + 3; i++) full = addStem(full, "daisy");
+  assert.equal(full.stems.length, MAX_STEMS);
+  assert.deepEqual(removeLastStem(one).stems, []);
+  assert.deepEqual(removeLastStem(empty).stems, []);
+});
+
+test("buying needs a complete bouquet and enough coins", () => {
+  assert.equal(buyBouquet(100, emptyBouquet()), null);
+  assert.equal(buyBouquet(100, bouquet), 82);
+  assert.equal(buyBouquet(17, bouquet), null);
+  assert.equal(buyBouquet(18, bouquet), 0);
+});
+
+test("the harmony label climbs with variety", () => {
+  const stems = (list: Stem[]): Bouquet => ({ ...bouquet, stems: list });
+  assert.equal(harmonyLabel(emptyBouquet()), "Just getting started");
+  assert.equal(
+    harmonyLabel(stems(["rose", "rose", "rose"])),
+    "Just getting started",
+  );
+  assert.equal(harmonyLabel(stems(bouquet.stems)), "Sweet and simple");
+  assert.equal(
+    harmonyLabel(stems(["rose", "sunflower", "lily", "eucalyptus", "peony"])),
+    "A showstopper",
+  );
 });
