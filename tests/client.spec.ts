@@ -1719,6 +1719,25 @@ test("the Dance mood opens a move picker, and the picked move plays", async ({
   expect(errors).toEqual([]);
 });
 
+test("the Dance panel's emote row plays a social clip, and the doll loads its pack", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  const packs: string[] = [];
+  page.on("request", (r) => {
+    if (/\/models\/doll\/anims-social\.glb/.test(r.url())) packs.push(r.url());
+  });
+  await page.goto(VELVET);
+  const canvas = canvasOf(page);
+  await page.getByRole("radio", { name: "Dance", exact: true }).click();
+  const emotes = page.getByRole("radiogroup", { name: "Emote" });
+  await emotes.getByRole("radio", { name: "Hello" }).click();
+  await expect(canvas).toHaveAttribute("data-dance", "greet");
+  // the clip lives in the on-demand social pack: asking for it fetches it
+  await expect.poll(() => packs.length).toBeGreaterThan(0);
+  expect(errors).toEqual([]);
+});
+
 test("a drink in the Velvet Room raises the buzz and sways the view", async ({
   page,
 }) => {

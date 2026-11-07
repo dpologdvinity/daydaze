@@ -17,6 +17,7 @@ import {
 } from "../../../game/farm.ts";
 import { earn, spend } from "../../../game/wallet.ts";
 import { createStore } from "../shared/store.ts";
+import { doWork } from "../shared/game3d/workClip.ts";
 
 type FarmCoins = { farm: FarmSave; coins: number };
 
@@ -50,6 +51,7 @@ export function useFarmState() {
     const nextCoins = spend(coins, res.cost);
     if (nextCoins === null) return false; // not enough coins
     commit({ coins: nextCoins, farm: res.farm });
+    doWork("farm-plant");
     return true;
   };
 
@@ -57,6 +59,7 @@ export function useFarmState() {
     const nextFarm = waterPlot(farm, plotIndex, Date.now());
     if (!nextFarm) return false;
     commit({ coins, farm: nextFarm });
+    doWork("farm-water");
     return true;
   };
 
@@ -66,6 +69,7 @@ export function useFarmState() {
     const res = harvestPlot(farm, plotIndex, Date.now());
     if (!res) return null;
     commit({ coins, farm: res.farm });
+    doWork("farm-harvest");
     return { crop: res.crop, yieldCount: res.yieldCount };
   };
 

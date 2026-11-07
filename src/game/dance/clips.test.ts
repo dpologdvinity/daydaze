@@ -14,9 +14,12 @@ import {
   pickClip,
   type DollState,
 } from "./clips.ts";
+import { temperamentOf } from "./idlePlan.ts";
+import type { MocapPack } from "./mocapTypes.ts";
 import { MOCAP_CLIPS } from "./mocap.ts";
+import { MOCAP_PACKS } from "./mocapTypes.ts";
 import { DANCE_MOVE_IDS, GAME_CLIP_IDS, stillClipsOf } from "./moves.ts";
-import { MAX_RUN_TEMPO, MAX_TEMPO, MIN_TEMPO } from "./stride.ts";
+import { MAX_RUN_TEMPO, MAX_TEMPO, MIN_TEMPO, RUN_CLIP } from "./stride.ts";
 import { WALK_SPEED } from "../walk.ts";
 
 const base: DollState = {
@@ -36,10 +39,14 @@ test("the clip catalog is sound: unique ids, real loops, walk speeds", () => {
   for (const c of MOCAP_CLIPS) {
     const held = c.kind === "pose" || c.kind === "sit" || c.kind === "lay";
     if (held) assert.equal(c.period, 0, c.id);
+    // a one-shot may run longer than a loop (a whole sit-down, a long turn)
+    else if (c.kind === "trans")
+      assert.ok(c.period > 0.3 && c.period <= 12, `${c.id} length`);
     else assert.ok(c.period > 0.5 && c.period <= 8.1, `${c.id} loop`);
-    if (c.kind === "walk")
-      assert.ok(c.speed && c.speed > 0.5 && c.speed < 2.5, `${c.id} speed`);
+    if (c.kind === "walk" || c.kind === "back")
+      assert.ok(c.speed && c.speed > 0.2 && c.speed < 10, `${c.id} speed`);
     else assert.equal(c.speed, undefined, c.id);
+    assert.ok(MOCAP_PACKS.includes(c.pack), `${c.id} pack`);
   }
 });
 
@@ -84,28 +91,83 @@ test("a walker plays her gait's clip at a rate matched to the ground", () => {
 });
 
 test("brisk ground speed switches a walk to the jog clip, never an absurdly fast walk", () => {
-  const jog = clipOf("jog");
-  assert.ok(jog?.speed);
+  const run = clipOf(RUN_CLIP);
+  assert.ok(run?.speed);
   const brisk = pickClip({ ...base, speed: WALK_SPEED });
   assert.ok(brisk);
-  assert.equal(brisk.id, "jog");
+  assert.equal(brisk.id, RUN_CLIP);
   assert.ok(brisk.rate >= MIN_TEMPO && brisk.rate <= MAX_RUN_TEMPO);
-  assert.ok(Math.abs(brisk.rate - WALK_SPEED / jog.speed) < 1e-9);
+  assert.ok(Math.abs(brisk.rate - WALK_SPEED / run.speed) < 1e-9);
+  // the run's pace matches the brisk walk speed to within a fifth, so it
+  // plays close to its own tempo: no frantic sped-up jog
+  assert.ok(brisk.rate > 0.85 && brisk.rate < 1.2, `rate ${brisk.rate}`);
   // a slow walk (e.g. wading) keeps its own walk clip
   assert.equal(pickClip({ ...base, speed: 1 })?.id, "walk-easy");
   // the jog gait itself stays on the jog
   assert.equal(pickClip({ ...base, walk: "jog", speed: 1.7 })?.id, "jog");
 });
 
-test("idles: the player breathes, NPCs pick one by seed", () => {
-  assert.equal(pickClip(base)?.id, IDLE_CLIPS[0]);
+test("idles: the player breathes first, a crowd stands differently", () => {
+  assert.equal(pickClip({ ...base, own: true })?.id, "idle-breathing");
   assert.equal(idleFor(0), "idle-breathing");
-  const seen = new Set(
-    Array.from({ length: 12 }, (_, s) => pickClip({ ...base, seed: s })?.id),
-  );
-  assert.equal(seen.size, IDLE_CLIPS.length);
   assert.equal(idleFor(-1), IDLE_CLIPS[IDLE_CLIPS.length - 1]);
   assert.equal(idleFor(2.7), IDLE_CLIPS[2]);
+  // across seeds and slots a crowd uses many idles, all of them baked
+  const seen = new Set<string>();
+  for (let seed = 0; seed < 40; seed++)
+    for (let slot = 0; slot < 8; slot++) {
+      const id = pickClip({ ...base, seed, slot })?.id ?? "";
+      assert.equal(clipOf(id)?.kind, "idle", id);
+      seen.add(id);
+    }
+  assert.ok(seen.size >= 15, `${seen.size} idles in use`);
+  // the same doll in the same slot always stands the same way
+  assert.deepEqual(
+    pickClip({ ...base, seed: 9, slot: 3 }),
+    pickClip({ ...base, seed: 9, slot: 3 }),
+  );
+});
+
+test("a clip in a pack that has not loaded names the pack and falls back", () => {
+  const social = new Set<MocapPack>(["social"]);
+  const wave = (packs?: ReadonlySet<MocapPack>) =>
+    pickClip({ ...base, mood: "dance", dance: "greet", packs });
+  // until the social pack loads: the built pose, and a request for the pack
+  assert.deepEqual(wave(), { id: "", rate: 1, offset: 0, need: "social" });
+  assert.deepEqual(wave(social), { id: "greet", rate: 1, offset: 0 });
+  // dances of the second set are the same story
+  const move = pickClip({ ...base, mood: "dance", dance: "ymca" });
+  assert.equal(move?.need, "dance2");
+  // a chatty stranger gestures only once the social pack is in
+  const chatty = Array.from({ length: 200 }, (_, seed) => seed).find(
+    (seed) => temperamentOf(seed) === "chatty",
+  );
+  assert.ok(chatty !== undefined);
+  const ids = (packs?: ReadonlySet<MocapPack>) =>
+    new Set(
+      Array.from(
+        { length: 30 },
+        (_, slot) => pickClip({ ...base, seed: chatty, slot, packs })?.id,
+      ),
+    );
+  assert.ok([...ids()].every((id) => clipOf(id)?.pack === "core"));
+  assert.ok([...ids(social)].some((id) => clipOf(id)?.pack === "social"));
+});
+
+test("a seated doll with no held pose settles, then shifts, and falls back to the core sit", () => {
+  const sit = (slot: number, packs?: ReadonlySet<MocapPack>) =>
+    pickClip({ ...base, mood: "sit", own: true, slot, packs });
+  assert.equal(sit(0)?.id, SEAT_CLIP);
+  const seated = new Set<MocapPack>(["seated"]);
+  const used = new Set(
+    Array.from({ length: 40 }, (_, slot) => sit(slot, seated)?.id),
+  );
+  assert.ok(used.size >= 3, "variety");
+  for (const id of used) assert.equal(clipOf(id)?.kind, "seat", id);
+  // before the seated pack loads she sits in the core loop and asks for it
+  const early = Array.from({ length: 40 }, (_, slot) => sit(slot));
+  assert.ok(early.every((p) => p?.id === SEAT_CLIP || p?.id === ""));
+  assert.ok(early.some((p) => p?.need === "seated"));
 });
 
 test("held poses and seats", () => {

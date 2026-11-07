@@ -21,10 +21,15 @@ compensation:
      drift across the floor comes off (loops play in place, sway kept); a
      seat or a bed sets the height of a sit or a lie.
 
-Writes .cache/out/anims{-m}.glb (scripts/optimize-doll.sh compresses it into
-public/models/doll/) and mocap.ts (ids, kinds, labels, loop lengths and walk
-speeds). DOLL_SEX=male bakes the same clips onto the man's rig as
-anims-m.glb (run build_doll.py for him first).
+Writes .cache/out/anims{-m}.glb and one anims-<pack>{-m}.glb per pack
+(mocap_clips.py lists the clips by pack; scripts/optimize-doll.sh compresses
+them into public/models/doll/) and, from the woman's run, mocap.ts (ids,
+kinds, labels, packs, loop lengths and walk speeds). DOLL_SEX=male bakes the
+same clips onto the man's rig (run build_doll.py for him first).
+MOCAP_PACKS=core,seated bakes just those packs; `-- id id` bakes just those
+clips into anims-test.glb. Sources are Mixamo FBX files or, as "ual1:<action>",
+Quaternius' CC0 Universal Animation Library (UAL_DIR holds its unzipped
+folders ual1/ and ual2/; its UE bone names map onto Mixamo's by UE_NAMES).
 
 The Mixamo library (repo-root mixamo/, a symlink to the user's own copy,
 git-ignored): Adobe's terms allow the animations in a game, baked into its
@@ -63,115 +68,17 @@ FPS = 30
 SIT_DROP = -0.33
 SEAT_BELOW_HIPS = 0.1
 
-# clip id -> (path under mixamo/ without .fbx, kind, label). Ids are stable:
-# gaits.ts, pickers, NPCs and saved holds name them. Order matters within a
-# kind: the first lay clip is the player's lounge, NPCs pick seeded poses
-# and idles by index, and the first sit is the default seat.
-# Kinds: walk (a gait's loop), idle (standing, looped), dance, emote (looped
-# like a dance, NPCs and games only), pose / sit / lay (held: the middle
-# frame), seat (a looped sit) and swim (a looped stroke or tread in the sea:
-# the hips keep the take's own height, nothing is grounded).
-CLIPS = {
-    # walks only play when a gait names them (src/game/gaits.ts)
-    # Walks keep the trailing leg long: measured on the takes (knee flex at
-    # toe-off / at most, by scripts/mixamo-gait.mjs), these sit near a
-    # real walk's ~15 / ~65 degrees; bouncier takes read as jogging.
-    "walk-easy": ("walking/styled/Catwalk-Walk-Forward_Female-Walk-Forward", "walk", "Easy"),  # 15 / 60
-    "walk-relaxed": ("walking/Standard-Walk_Standard-Walk", "walk", "Relaxed"),  # 20 / 70
-    "walk-brisk": ("walking/styled/Strut-Walking_Male-Strut-Walk", "walk", "Brisk"),  # 23 / 76
-    "walk-catwalk": ("walking/styled/Catwalk-Walk-Forward-Crossed_Female-Walk-Forward-Legs-Crossing", "walk", "Catwalk"),  # 14 / 67
-    "walk-normal": ("walking/Walk_Female-Walk-2", "walk", "Normal"),  # 32 / 67
-    "walk-sexy": ("walking/styled/Walking_Female-Sexy-Walk", "walk", "Sexy"),  # 16 / 69
-    "walk-feminine": ("walking/styled/Walking-With-A-Swagger-2", "walk", "Feminine"),  # 15 / 75
-    "walk-casual": ("walking/styled/Catwalk-Walk-Forward-02_Male-Walk-Forward-02", "walk", "Casual"),  # 21 / 74
-    "walk-masc": ("walking/Walking_Male-Standard-Walk", "walk", "Easy stride"),  # 18 / 67
-    # a jog for the park's and the boardwalk's runners: 13 at toe-off, 96 at most
-    "jog": ("running/Jogging", "walk", "Jog"),
-    # standing idles: the player breathes, NPCs pick one by seed
-    "idle-breathing": ("idle/Breathing-Idle_Breathing-Idle", "idle", "Breathing"),
-    "idle-weight-shift": ("idle/Neutral-Idle_Neutral-Idle", "idle", "Weight shift"),
-    "idle-look-around": ("idle/Looking-Around_Idle-Stand-Looking-Around", "idle", "Looking around"),
-    "idle-bored": ("idle/Unarmed-Idle-01_Unarmed-Idle", "idle", "Bored"),
-    "idle-female": ("idle/Idle_Female-Idle", "idle", "Easy"),
-    "idle-happy": ("gestures/emotions/Happy-Idle_Happy-Idle-Variation-1", "idle", "Happy"),
-    "salsa": ("dancing/Salsa-Dancing_Salsa-Dancing-Side-To-Side", "dance", "Salsa"),
-    "salsa-turns": ("dancing/Salsa-Dancing_Salsa-Dancing-Double-Twirl", "dance", "Salsa turns"),
-    "lambada": ("dancing/Salsa-Dancing_Salsa-Dance-Variation-Five", "dance", "Lambada"),
-    "expressive": ("dancing/Jazz-Dancing_Female-Jazz-Dancing-'Around-The-World'-Loop", "dance", "Expressive"),
-    "belly-dance": ("dancing/Dancing_Belly-Dancing-Variation-Three", "dance", "Belly dance"),
-    "breakdance": ("dancing/Breakdance-Ending-1_Breakdance-Finishing-Combo-Var-1", "dance", "Breakdance"),
-    "afrobeat": ("dancing/Dancing_Female-African-Noodle-Dance", "dance", "Afrobeat"),
-    "body-wave": ("dancing/Hip-Hop-Dancing_Female-Hip-Hop-'Body-Wave'-Dancing", "dance", "Body wave"),
-    "salsa-solo": ("dancing/Salsa-Dancing_Female-Salsa-Dancing", "dance", "Salsa solo"),
-    "hip-hop": ("dancing/Hip-Hop-Dancing_Hip-Hop-Dancing-Bboy-Variation-One", "dance", "Hip-hop"),
-    "side-to-side": ("dancing/Hip-Hop-Dancing_Hip-Hop-Dancing-Side-To-Side", "dance", "Side to side"),
-    "samba": ("dancing/Samba-Dancing_Samba-Funky-Pocoto-Variation-1", "dance", "Samba"),
-    "house": ("dancing/House-Dancing_House-Dance-Variation-Two", "dance", "House"),
-    "shuffle": ("dancing/Shuffling_Doing-The-Shuffling-Dance", "dance", "Shuffle"),
-    "charleston": ("dancing/Swing-Dancing_Dance-Swing-Charleston", "dance", "Charleston"),
-    "belly-sway": ("dancing/Bellydancing_Bellydance-Variation-2", "dance", "Belly sway"),
-    "pagode": ("dancing/Samba-Dancing_Female-Samba-Pagode-Variation-Five-Loop", "dance", "Pagode samba"),
-    "rumba": ("dancing/Rumba-Dancing_Female-Rumba-Dancing-Loop", "dance", "Rumba"),
-    "arm-wave": ("dancing/Hip-Hop-Dancing_Female-Hip-Hop-'Arm-Wave'-Dancing", "dance", "Arm wave"),
-    "kick-step": ("dancing/Hip-Hop-Dancing_Female-Hip-Hop-'Kick-Step'-Dancing", "dance", "Kick step"),
-    "raise-the-roof": ("dancing/Hip-Hop-Dancing_Female-Hip-Hop-'Raise-The-Roof'-Dancing", "dance", "Raise the roof"),
-    "running-man": ("dancing/Hip-Hop-Dancing_Female-Hip-Hop-'Running-Man'-Dancing", "dance", "Running man"),
-    "jazz-square": ("dancing/Jazz-Dancing_Female-Jazz-Square-Dancing", "dance", "Jazz square"),
-    "robot": ("dancing/Robot-Hip-Hop-Dance_Robot-Hip-Hop-Dance-Variation-One", "dance", "Robot"),
-    "the-twist": ("dancing/Silly-Dancing_Silly-Dancing-The-Twist", "dance", "The twist"),
-    "macarena": ("dancing/Macarena-Dance_Dancing-The-Macarena", "dance", "Macarena"),
-    "northern-soul": ("dancing/Northern-Soul-Dance_Basic-Northern-Soul-Step", "dance", "Northern soul"),
-    "locking": ("dancing/Locking-Hip-Hop-Dance_Locking-Hip-Hop-Dance-Variation-Two", "dance", "Locking"),
-    "shy-sway": ("dancing/Hip-Hop-Dancing_Timid-Dancing", "dance", "Shy sway"),
-    # emotes: looped like dances, for NPCs only (kept out of the Dance picker)
-    "clap": ("gestures/clapping/Clapping_Clap-While-Standing", "emote", "Clapping"),
-    "cheer": ("gestures/cheering/Cheering_Male-Cheering-With-Two-Fists-Pump", "emote", "Cheering"),
-    "fist-pump": ("gestures/cheering/Fist-Pump_Pumping-A-Fist", "emote", "Fist pump"),
-    "wave": ("gestures/waving/Waving-Gesture_Aj-Waving-Gesture", "emote", "Waving"),
-    "chatting": ("talking/Talking_General-Conversation", "emote", "Chatting"),
-    "talk-question": ("talking/Talking_Asking-A-Question-With-One-Hand", "emote", "Asking"),
-    "laugh": ("talking/Talking_Talking-Finding-Something-Funny", "emote", "Laughing"),
-    "bartending": ("drinking/Bartending_Pouring-And-Serving-Drinks", "emote", "Bartending"),
-    # in the sea (Seaside Swim, the reef): played by the player's afloat doll
-    "swim-front": ("swimming/Swimming_Swimming-Underwater", "swim", "Swim"),
-    "swim-tread": ("swimming/Treading-Water_Floating", "swim", "Tread water"),
-    # game clips: the player's doll plays these during in-world games
-    "dig": ("sports/Receiver-Catch_Receiver-Catch-On-Boundary-Line", "emote", "Dig"),
-    "spike": ("sports/Goalie-Throw_Goalie-Overhand-Throw", "emote", "Spike"),
-    "sing": ("talking/Singing_Singing-While-Walking-On-Stage", "emote", "Singing"),
-    # held poses: the middle frame of the take
-    "pose-arms-down": ("idle/Female-Standing-Pose_Arms-Down", "pose", "Arms down"),
-    "pose-over-shoulder": ("idle/Female-Standing-Pose_Hands-On-Hips-Looking-Over-Shoulder", "pose", "Over the shoulder"),
-    "pose-arms-raised": ("idle/Female-Standing-Pose_Legs-Crossed-Arms-Raised", "pose", "Arms raised"),
-    "pose-wave": ("idle/Female-Standing-Pose_Right-Hand-On-Hip-Left-Arm-Raised-2", "pose", "Hand on hip"),
-    "pose-relaxed": ("idle/Idle_Female-Idle", "pose", "Relaxed"),
-    "pose-bashful": ("idle/Bashful_Being-Bashful-While-Standing", "pose", "Bashful"),
-    "pose-cocky": ("idle/Being-Cocky_Cocky-Lean-Back", "pose", "Cocky"),
-    "pose-lean-back": ("idle/Female-Standing-Pose_Leaning-Back-Left-Hand-On-Hip", "pose", "Lean back"),
-    "pose-legs-crossed": ("idle/Female-Standing-Pose_Legs-Crossed-Left-Hand-On-Hip", "pose", "Legs crossed"),
-    "pose-foot-up": ("idle/Female-Standing-Pose_Right-Foot-Raised", "pose", "Foot up"),
-    "pose-thinking": ("idle/Thinking_Thinking-While-Standing", "pose", "Thinking"),
-    "pose-phone": ("talking/Talking-On-Phone_Female-Standing-Talking-On-Phone", "pose", "On the phone"),
-    "pose-looking-away": ("idle/Female-Standing-Pose_Looking-Down-To-The-Right", "pose", "Looking away"),
-    "pose-waiting": ("idle/Male-Standing-Pose_Arms-Behind-Back", "pose", "Waiting"),
-    # the Lean mood: an elbow on the bar
-    "pose-lean": ("idle/Male-Standing-Pose_Left-Elbow-Resting-On-Object", "pose", "Leaning"),
-    # a seat's own loop: the default for anyone sitting without a held pose
-    "sit-idle": ("sitting/Sitting-Idle_Sitting-With-Breathing-Idle", "seat", "Sitting"),
-    "sit-lean-back": ("sitting/Female-Sitting-Pose_Arms-Supporting", "sit", "Lean back"),
-    "sit-elbows": ("sitting/Female-Sitting-Pose_Leaning-Forward-Elbows-On-Knees", "sit", "Elbows on knees"),
-    "sit-crossed": ("sitting/Female-Sitting-Pose_Legs-Crossed-Right-Arm-Over-Knee", "sit", "Legs crossed"),
-    "sit-chatting": ("talking/Sitting-Talking_Sitting-And-Talking-To-Another-Person", "sit", "Chatting"),
-    "sit-reclined": ("sitting/Female-Sitting-Pose_Legs-Crossed-Reclining", "sit", "Reclined"),
-    "sit-arms-crossed": ("sitting/Female-Sitting-Pose_Legs-Crossed-Arms-Crossed", "sit", "Arms crossed"),
-    "sit-hug-knee": ("sitting/Female-Sitting-Pose_Arms-Holding-Right-Knee", "sit", "Hugging a knee"),
-    "sit-at-table": ("sitting/Seated-Idle-With-Hands-On-A-Table", "sit", "At the table"),
-    "sit-upright": ("sitting/Sitting-Idle_Sitting-Still-In-A-Chair", "sit", "Upright"),
-    "sit-sipping": ("drinking/Sitting-Drinking_Having-A-Seat-And-Drinking-A-Canned-Beverage", "sit", "Sipping"),
-    "lay-arched": ("laying/Female-Laying-Pose_Back-Arched-Arms-Supporting", "lay", "Lounging"),
-    "lay-side": ("laying/Female-Laying-Pose_On-Right-Side-Right-Hand-Supporting-Head", "lay", "On my side"),
-    "lay-stomach": ("laying/Female-Laying-Pose_On-Stomach-Elbows-Supporting", "lay", "On my stomach"),
-}
+# The clip tables live in mocap_clips.py, by pack (core, social, seated, ...).
+# Kinds: walk (a gait's loop), back (a backwards walk), idle (standing,
+# looped), dance, emote (looped like a dance: NPCs, games and the emote menu),
+# pose / sit / lay (held: the middle frame), seat (a looped sit), swim (a
+# looped stroke or tread in the sea: the hips keep the take's own height,
+# nothing is grounded) and trans (a one-shot: sit down, stand up, a jump).
+sys.path.insert(0, HERE)
+import mocap_clips  # noqa: E402
+
+CLIPS = {cid: spec for pack in mocap_clips.PACK_ORDER for cid, spec in mocap_clips.PACKS[pack].items()}
+PACK_OF = {cid: pack for pack in mocap_clips.PACK_ORDER for cid in mocap_clips.PACKS[pack]}
 HELD = ("pose", "sit", "lay")
 # never: the game has no guns outside game zones and nothing gory
 BANNED = ("weapons/", "combat/", "death", "dying", "agony", "hit", "injur", "pain")
@@ -181,9 +88,30 @@ MAX_LOOP = 8.0
 MIN_LOOP = 3.0
 
 
+def _ue_names():
+    """Quaternius' UE-style rig (Universal Animation Library) -> Mixamo bone
+    names, so its clips retarget through the same code as Mixamo's."""
+    m = {"pelvis": "Hips", "spine_01": "Spine", "spine_02": "Spine1", "spine_03": "Spine2", "neck_01": "Neck"}
+    for side, S in (("l", "Left"), ("r", "Right")):
+        m.update({
+            f"clavicle_{side}": f"{S}Shoulder", f"upperarm_{side}": f"{S}Arm", f"lowerarm_{side}": f"{S}ForeArm",
+            f"hand_{side}": f"{S}Hand", f"thigh_{side}": f"{S}UpLeg", f"calf_{side}": f"{S}Leg",
+            f"foot_{side}": f"{S}Foot", f"ball_{side}": f"{S}ToeBase", f"ball_leaf_{side}": f"{S}Toe_End",
+        })
+        for finger, F in (("thumb", "Thumb"), ("index", "Index"), ("middle", "Middle"), ("ring", "Ring"), ("pinky", "Pinky")):
+            for i in (1, 2, 3):
+                m[f"{finger}_0{i}_{side}"] = f"{S}Hand{F}{i}"
+            m[f"{finger}_04_leaf_{side}"] = f"{S}Hand{F}4"
+    return m
+
+
+UE_NAMES = _ue_names()
+
+
 def short(name):
-    """mixamorig:Hips, mixamorig1:Hips -> Hips."""
-    return name.split(":")[-1]
+    """mixamorig:Hips, mixamorig1:Hips, pelvis -> Hips."""
+    bare = name.split(":")[-1]
+    return UE_NAMES.get(bare, bare)
 
 
 # where a bone points: at this child's joint when it has several
@@ -357,6 +285,48 @@ def walk_speed(src, f0, f1, k):
     return speeds[len(speeds) // 2] if speeds else 0.0
 
 
+UAL_DIR = os.environ.get("UAL_DIR", "/tmp")
+UAL_FILES = {
+    "ual1": "ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb",
+    "ual2": "ual2/Universal Animation Library 2[Standard]/Unreal-Godot/UAL2_Standard.glb",
+}
+# a UAL file is imported once per run; its actions are picked one at a time
+UAL_SOURCES = {}
+
+# transitions that end (or start) seated: their hips anchor on the seat's
+# height like a seat's loop, and their feet aren't grounded
+SEAT_TRANS = {"sit-down": -1, "sit-down-ual": -1, "stand-up-ual": 0, "type-start": 0, "type-stop": 0}
+
+
+def open_source(rel):
+    """The clip's armature, its action, and a cleanup to call when baked.
+    Mixamo clips are one FBX each; UAL clips are actions in one shared GLB."""
+    if ":" in rel and rel.split(":")[0] in UAL_FILES:
+        lib, name = rel.split(":")
+        if lib not in UAL_SOURCES:
+            before = set(bpy.data.objects)
+            bpy.ops.import_scene.gltf(filepath=os.path.join(UAL_DIR, UAL_FILES[lib]))
+            new = [o for o in bpy.data.objects if o not in before]
+            UAL_SOURCES[lib] = next(o for o in new if o.type == "ARMATURE")
+        src = UAL_SOURCES[lib]
+        act = next(a for a in bpy.data.actions if a.name == name)
+        src.animation_data_create()
+        src.animation_data.action = act
+        slots = getattr(act, "slots", None)
+        if slots and len(slots):
+            src.animation_data.action_slot = slots[0]
+        return src, act, lambda: None
+    src, imported = import_clip(os.path.join(MIXAMO, rel + ".fbx"))
+    act = src.animation_data.action
+
+    def cleanup():
+        for ob in imported:
+            bpy.data.objects.remove(ob)
+        bpy.data.actions.remove(act)
+
+    return src, act, cleanup
+
+
 def import_clip(path):
     before = set(bpy.data.objects)
     bpy.ops.import_scene.fbx(filepath=path)
@@ -365,10 +335,32 @@ def import_clip(path):
     return src, new
 
 
+# a looped clip whose last pose is farther than this (radians, mean over the
+# bones) from its first gets its last half second eased back to the first
+LOOP_GAP = 0.05
+LOOP_EASE = 12
+LOOPED = ("idle", "emote", "dance", "seat")
+
+
+def mean_gap(a, b):
+    """Mean angle between two poses' bone rotations, radians."""
+    return sum(a[k].rotation_difference(b[k]).angle for k in a) / max(1, len(a))
+
+
+def ease_loop(rots, pos):
+    """Eases the last LOOP_EASE frames toward frame 0, so a take that ends
+    in another pose than it starts (a wave, a nod) loops without a pop."""
+    n = len(rots)
+    span = min(LOOP_EASE, n // 3)
+    for i in range(n - span, n):
+        t = (i - (n - span) + 1) / span
+        w = t * t * (3 - 2 * t)  # smoothstep
+        rots[i] = {k: q.slerp(rots[0][k], w) for k, q in rots[i].items()}
+        pos[i] = pos[i].lerp(pos[0], w)
+
+
 def bake(rig, tgt_rest, cid, rel, kind):
-    path = os.path.join(MIXAMO, rel + ".fbx")
-    src, imported = import_clip(path)
-    act = src.animation_data.action
+    src, act, cleanup = open_source(rel)
     f0, f1 = (int(round(x)) for x in act.frame_range)
     src_rest = rest_of(src)
     off = offsets(rig, tgt_rest, src_rest)
@@ -390,12 +382,13 @@ def bake(rig, tgt_rest, cid, rel, kind):
     fix = {} if kind == "swim" else foot_fix(tgt_rest, heads)
     print(cid, "foot fix", {k: round(v) for k, v in fix.items()})
     n = len(frames)
-    if kind in ("dance", "emote", "idle", "swim") and n / FPS > MAX_LOOP:
+    if kind in ("dance", "emote", "idle", "swim", "seat") and n / FPS > MAX_LOOP:
         n = best_loop(rots, int(MIN_LOOP * FPS), int(MAX_LOOP * FPS)) + 1
         frames, rots, hips = frames[:n], rots[:n], hips[:n]
-    speed = walk_speed(src, f0, f1, k) if kind == "walk" else None
+    speed = walk_speed(src, f0, f1, k) if kind in ("walk", "back") else None
+    seat_anchor = SEAT_TRANS.get(cid)
     # hips: drift off, seats and beds set the height (step 3)
-    drift = (hips[-1] - hips[0]) if n > 1 and not held else Vector()
+    drift = (hips[-1] - hips[0]) if n > 1 and not held and seat_anchor is None else Vector()
     pos = []
     for i, h in enumerate(hips):
         p = h - drift * (i / max(1, n - 1))
@@ -404,7 +397,14 @@ def bake(rig, tgt_rest, cid, rel, kind):
             p = Vector((hip_t.x, hip_t.y, hip_t.z + SIT_DROP + (h.z - hips[0].z)))
         elif kind == "lay":
             p = Vector((hip_t.x, hip_t.y, hip_t.z + SIT_DROP - SEAT_BELOW_HIPS + h.z))
+        elif seat_anchor is not None:
+            # the seated end of the transition sits where a seat's loop does
+            a = hips[seat_anchor]
+            p = Vector((hip_t.x + h.x - a.x, hip_t.y + h.y - a.y, hip_t.z + SIT_DROP + (h.z - a.z)))
         pos.append(p)
+    if kind in LOOPED and n > 15 and mean_gap(rots[0], rots[-1]) > LOOP_GAP:
+        ease_loop(rots, pos)
+        print(cid, "loop eased")
     # keys: rotations per bone, the hips' location in its rest frame
     action = bpy.data.actions.new(cid)
     rig.animation_data_create()
@@ -424,7 +424,7 @@ def bake(rig, tgt_rest, cid, rel, kind):
             rows.setdefault(name, []).append(q)
     # on her feet: the lowest the feet reach over the clip meets the floor
     # (the takes' own rest hips differ, a pose file's most of all)
-    if kind not in ("sit", "seat", "lay", "swim"):
+    if kind not in ("sit", "seat", "lay", "swim") and seat_anchor is None:
         lift = -min(drops)
         print(cid, "grounded by", round(lift, 3))
         for p in pos:
@@ -452,47 +452,35 @@ def bake(rig, tgt_rest, cid, rel, kind):
             kp.interpolation = "LINEAR"
     action.use_fake_user = True
     rig.animation_data.action = None
-    for ob in imported:
-        bpy.data.objects.remove(ob)
-    bpy.data.actions.remove(act)
+    cleanup()
     period = round((n - 1) / FPS, 4) if not held else 0
     meta = {
         "id": cid,
         "kind": kind,
         "label": CLIP_LABEL[cid],
-        "source": "Mixamo " + os.path.basename(rel),
+        "source": ("UAL " if rel.startswith("ual") else "Mixamo ") + os.path.basename(rel).replace("ual1:", "").replace("ual2:", ""),
         "period": period,
+        "pack": PACK_OF[cid],
     }
+    if "menu" in CLIPS[cid][3:]:
+        meta["menu"] = True
     if speed is not None:
         meta["speed"] = round(speed, 3)
     print(cid, kind, "frames", n, "period", period, "speed", speed)
     return meta
 
 
-CLIP_LABEL = {cid: label for cid, (_, _, label) in CLIPS.items()}
+CLIP_LABEL = {cid: spec[2] for cid, spec in CLIPS.items()}
+META_DIR = os.path.join(HERE, ".cache", "out")
 
 
-def main():
-    only = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else []
-    bpy.ops.wm.open_mainfile(filepath=RIG_BLEND)
-    scene = bpy.context.scene
-    scene.render.fps = FPS
-    rig = bpy.data.objects["Rig"]
-    for pb in rig.pose.bones:
-        pb.rotation_mode = "QUATERNION"
-    tgt_rest = rest_of(rig)
-    metas = []
-    for cid, (rel, kind, _) in CLIPS.items():
-        if only and cid not in only:
-            continue
-        assert not any(w in rel.lower() for w in BANNED), rel
-        metas.append(bake(rig, tgt_rest, cid, rel, kind))
+def export(rig, path):
     for ob in list(bpy.data.objects):
         ob.select_set(ob is rig)
     bpy.context.view_layer.objects.active = rig
-    os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     bpy.ops.export_scene.gltf(
-        filepath=OUT,
+        filepath=path,
         use_selection=True,
         export_format="GLB",
         export_yup=True,
@@ -502,25 +490,82 @@ def main():
         export_skins=True,
         export_materials="NONE",
     )
+
+
+def drop_sources(baked):
+    """Removes everything but the baked actions (the UAL files' own actions
+    would otherwise export with them) and the imported UAL rigs; the next
+    pack imports them afresh."""
+    for a in list(bpy.data.actions):
+        if a.name not in baked:
+            bpy.data.actions.remove(a)
+    for src in UAL_SOURCES.values():
+        for ob in [src] + list(src.children_recursive):
+            bpy.data.objects.remove(ob)
+    UAL_SOURCES.clear()
+
+
+def main():
+    """`-- id id ...` bakes just those clips to anims-test.glb (no catalog);
+    otherwise every pack in MOCAP_PACKS (default all), one GLB each:
+    anims.glb for core, anims-<pack>.glb for the rest ("-m" after for the man)."""
+    only = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else []
+    packs = [x for x in os.environ.get("MOCAP_PACKS", ",".join(mocap_clips.PACK_ORDER)).split(",") if x]
+    bpy.ops.wm.open_mainfile(filepath=RIG_BLEND)
+    scene = bpy.context.scene
+    scene.render.fps = FPS
+    rig = bpy.data.objects["Rig"]
+    for pb in rig.pose.bones:
+        pb.rotation_mode = "QUATERNION"
+    tgt_rest = rest_of(rig)
+    if only:
+        todo = [("test", [c for c in CLIPS if c in only])]
+    else:
+        todo = [(pk, list(mocap_clips.PACKS[pk])) for pk in packs]
+    for pack, ids in todo:
+        metas = []
+        for cid in ids:
+            rel = CLIPS[cid][0]
+            assert not any(w in rel.lower() for w in BANNED), rel
+            metas.append(bake(rig, tgt_rest, cid, rel, CLIPS[cid][1]))
+        stem = "anims" if pack == "core" else f"anims-{pack}"
+        drop_sources({m["id"] for m in metas})
+        export(rig, os.path.join(HERE, ".cache", "out", f"{stem}{SUFFIX}.glb"))
+        for a in list(bpy.data.actions):
+            bpy.data.actions.remove(a)
+        if not only and SEX == "female":
+            with open(os.path.join(META_DIR, f"meta-{pack}.json"), "w") as f:
+                json.dump(metas, f)
     if not only and SEX == "female":
-        write_catalog(metas)
+        write_catalog()
 
 
-def write_catalog(metas):
+def write_catalog():
+    """Writes mocap.ts from the packs' meta files (every pack must have one:
+    bake them all on the woman at least once)."""
     head = (
-        "// Generated by art/doll/blender/mocap.py. Mixamo clips: retargeted from\n"
-        "// Adobe Mixamo animations onto the doll's own skeleton and baked into\n"
-        "// public/models/doll/anims*.glb, used in-game under Mixamo's terms.\n"
+        "// Generated by art/doll/blender/mocap.py. Clips retargeted onto the doll's\n"
+        "// own skeleton from Adobe Mixamo animations and Quaternius' Universal\n"
+        "// Animation Library (CC0), baked into public/models/doll/anims*.glb (one\n"
+        "// file per pack, loaded on demand) and used in-game under Mixamo's terms.\n"
         "// Do not edit by hand.\n"
     )
+    metas = []
+    for pack in mocap_clips.PACK_ORDER:
+        path = os.path.join(META_DIR, f"meta-{pack}.json")
+        if not os.path.exists(path):
+            print("no meta for", pack, "- catalog not written")
+            return
+        with open(path) as f:
+            metas += json.load(f)
     by = lambda *kinds: [m["id"] for m in metas if m["kind"] in kinds]
     with open(CATALOG, "w") as f:
         f.write(
             head + 'import type { MocapClip } from "./mocapTypes.ts";\n\n'
-            "// the keyframes are in the doll's animation file (see HumanDoll.tsx)\n"
+            "// the keyframes are in the doll's animation files (see anims.ts)\n"
             f"export const MOCAP_CLIPS: readonly MocapClip[] = {json.dumps(metas)};\n\n"
             f"export const MOCAP_DANCE_IDS = {json.dumps(by('dance'))} as const;\n\n"
-            "// looped like dances, for NPCs; not in the player's Dance picker\n"
+            "// looped like dances, for NPCs and the emote menu; not in the Dance picker\n"
             f"export const MOCAP_EMOTE_IDS = {json.dumps(by('emote'))} as const;\n"
         )
     print("wrote", CATALOG)

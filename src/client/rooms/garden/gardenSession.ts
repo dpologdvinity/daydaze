@@ -15,6 +15,7 @@ import {
 } from "../../../game/garden.ts";
 import { earn, spend } from "../../../game/wallet.ts";
 import { createStore } from "../shared/store.ts";
+import { doWork } from "../shared/game3d/workClip.ts";
 
 type GardenCoins = { garden: GardenSave; coins: number };
 
@@ -54,6 +55,7 @@ export function useGardenState() {
     const nextCoins = spend(coins, res.cost);
     if (nextCoins === null) return false; // not enough coins
     commit({ coins: nextCoins, garden: res.garden });
+    doWork("farm-plant");
     return true;
   };
 
@@ -62,6 +64,7 @@ export function useGardenState() {
     if (!nextGarden) return false;
     // Set wateringPlot to show watering animation
     gardenDesk.set({ wateringPlot: plotIndex });
+    doWork("farm-water");
     setTimeout(() => {
       if (gardenDesk.get().wateringPlot === plotIndex) {
         gardenDesk.set({ wateringPlot: null });
@@ -77,6 +80,7 @@ export function useGardenState() {
     const res = harvestPlot(garden, plotIndex, Date.now());
     if (!res) return null;
     commit({ coins: earn(coins, res.coins), garden: res.garden });
+    doWork("farm-harvest");
     return { crop: res.crop, yieldCount: res.yieldCount, coins: res.coins };
   };
 

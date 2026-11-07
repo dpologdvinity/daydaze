@@ -637,6 +637,9 @@ button:focus-visible {
 
 .dance-picker {
   max-width: min(420px, 100%);
+  /* the dance and emote rows run long: scroll them, not the page */
+  max-height: 38vh;
+  overflow-y: auto;
   padding: 8px;
   border-radius: 22px;
   background: rgb(32 6 34 / 0.82);

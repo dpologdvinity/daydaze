@@ -1,11 +1,16 @@
 import {
   PICKER_DANCE_MOVES,
+  PICKER_EMOTES,
   stillClipsOf,
   type DanceMoveId,
 } from "../../game/dance/moves.ts";
 import { Chips } from "./controls.tsx";
 
-/** The dance moves, shown while the Dance mood is on. Keyboard: Tab, then Space or Enter. */
+/**
+ * The dance moves, shown while the Dance mood is on, and a row of social
+ * emotes under them (wave, bow, nod, shrug...), which play the same way.
+ * Keyboard: Tab, then Space or Enter.
+ */
 export function DancePicker({
   move,
   onPick,
@@ -21,6 +26,14 @@ export function DancePicker({
         value={move}
         onPick={onPick}
       />
+      {PICKER_EMOTES.length > 0 && (
+        <Chips
+          label="Emote"
+          options={PICKER_EMOTES}
+          value={move}
+          onPick={onPick}
+        />
+      )}
     </div>
   );
 }

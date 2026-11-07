@@ -75,6 +75,7 @@ test("every shipped motion capture provider has a credit", () => {
   const titles: Record<string, string> = {
     CMU: "CMU motion capture",
     Mixamo: "Mixamo animations",
+    UAL: "Universal Animation Library 1 and 2 (Standard)",
   };
   const credited = CREDITS.flatMap((group) =>
     group.entries.map((entry) => entry.title),

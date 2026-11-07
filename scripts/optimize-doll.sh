@@ -20,10 +20,11 @@ for src in "$IN"/${ONLY:-*}.glb; do
   # ONLY='hair-(buzz|edges)' rebuilds just the parts whose names match
   if [ -n "${ONLY:-}" ] && ! echo "$name" | grep -Eq "^($ONLY)"; then continue; fi
   f="$LO/$name-pruned.glb"
-  # the baked clips (art/doll/blender/mocap.py): no meshes to prune; keys
+  # the baked clips (art/doll/blender/mocap.py; anims.glb and one anims-<pack>
+  # file per pack, each with a -m twin for the man): no meshes to prune; keys
   # that a straight line through their neighbors meets within ~0.2 degrees
   # go, then meshopt packs the rest
-  if [ "${name%-m}" = anims ]; then
+  if [[ "$name" == anims || "$name" == anims-* ]]; then
     npx -y @gltf-transform/cli@4.5.1 resample "$src" "$f" --tolerance 0.003
     npx -y @gltf-transform/cli@4.5.1 optimize "$f" "$OUT/$name.glb" "${OPTS[@]}" --meshopt-level high
     continue

@@ -20,7 +20,7 @@ import type { Look } from "../../game/look.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import { useGardenState } from "./garden/gardenSession.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
-import { useGameClip } from "./shared/game3d/gameClip.ts";
+import { useWorkClip } from "./shared/game3d/workClip.ts";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
 import { GardenDressing } from "./garden/Dressing.tsx";
@@ -302,8 +302,8 @@ function SurroundingTrees() {
 export function Garden({ onPick }: { onPick: PickHandler }): JSX.Element {
   const { garden, wateringPlot } = useGardenState();
 
-  // Pose doll into a reaching watering gesture while watering is active
-  useGameClip("garden-water", wateringPlot !== null ? "dig" : null);
+  // planting, watering and harvesting play the farm clips on her doll
+  useWorkClip("garden-work");
 
   return (
     <>

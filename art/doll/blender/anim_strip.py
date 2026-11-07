@@ -2,7 +2,7 @@
 a retarget by eye (Workbench, so it is quick).
 
     blender --background --factory-startup --python art/doll/blender/anim_strip.py -- \
-        walk-easy /tmp/strip [frames=4] [view=side] [sex=female] [show=Outfit_jeans]
+        walk-easy /tmp/strip [frames=4] [view=side] [sex=female] [pack=social] [show=Outfit_jeans]
 
 Writes /tmp/strip_0.png ... one per frame, evenly over the clip; montage
 them with ImageMagick. Reads .cache/out (the raw build), not public/.
@@ -47,7 +47,8 @@ for ob in bpy.data.objects:
         for kb in ob.data.shape_keys.key_blocks:
             kb.value = 1.0 if kb.name in shown else 0.0
 before = set(bpy.data.objects)
-bpy.ops.import_scene.gltf(filepath=os.path.join(OUT, f"anims{sfx}.glb"))
+pack = f"-{opts['pack']}" if opts.get("pack") else ""
+bpy.ops.import_scene.gltf(filepath=os.path.join(OUT, f"anims{pack}{sfx}.glb"))
 for o in set(bpy.data.objects) - before:
     bpy.data.objects.remove(o)
 act = next(a for a in bpy.data.actions if a.name.startswith(clip))

@@ -938,11 +938,15 @@ function capturedMove(c: MocapClip, id: DanceMoveId): DanceMove {
   return { id, label: c.label, period: c.period, keys: STILL, captured: true };
 }
 
-const CAPTURED: readonly DanceMove[] = MOCAP_CLIPS.flatMap((c) =>
-  (c.kind === "dance" || c.kind === "emote") && isMoveId(c.id)
-    ? [capturedMove(c, c.id)]
-    : [],
-);
+// in the order of DANCE_MOVE_IDS (every dance, then every emote), whatever
+// order the packs list their clips in
+const CAPTURED: readonly DanceMove[] = [
+  ...MOCAP_DANCE_IDS,
+  ...MOCAP_EMOTE_IDS,
+].flatMap((id) => {
+  const c = MOCAP_CLIPS.find((clip) => clip.id === id);
+  return c && isMoveId(c.id) ? [capturedMove(c, c.id)] : [];
+});
 
 function isMoveId(id: string): id is DanceMoveId {
   return DANCE_MOVE_IDS.some((m) => m === id);
@@ -979,6 +983,9 @@ export const GAME_CLIP_IDS = [
   "chop",
   "aim-pistol",
   "aim-rifle",
+  "farm-plant",
+  "farm-water",
+  "farm-harvest",
 ] as const satisfies readonly DanceMoveId[];
 
 /** One of the game clips. */
@@ -997,6 +1004,15 @@ const EMOTES: ReadonlySet<string> = new Set([
 /** The moves the player picks from: every dance, no NPC emotes or poses for two. */
 export const PICKER_DANCE_MOVES: readonly DanceMove[] = ALL_DANCE_MOVES.filter(
   (m) => !EMOTES.has(m.id),
+);
+
+/**
+ * The social emotes in the Dance panel's emote row (wave, bow, nod, shrug,
+ * cheer...): the motion-capture emotes flagged `menu` in the catalog. They
+ * play like a dance (the Dance mood, this move), looped.
+ */
+export const PICKER_EMOTES: readonly DanceMove[] = ALL_DANCE_MOVES.filter((m) =>
+  MOCAP_CLIPS.some((c) => c.id === m.id && c.kind === "emote" && c.menu),
 );
 
 const BY_ID = new Map<string, DanceMove>(ALL_DANCE_MOVES.map((m) => [m.id, m]));

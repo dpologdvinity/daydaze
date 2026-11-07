@@ -67,8 +67,10 @@ floors, looks, saves, chat effects) so both sides agree on the rules.
   over Main Avenue on the shared clock.
 - `avatar/` is the doll: `human/HumanDoll.tsx` loads the Blender-built GLB
   parts, paints the face and plays baked Mixamo clips on the full skeleton
-  with an AnimationMixer (`human/anims.ts`; `game/dance/clips.ts` picks the
-  clip). The hand-made 13-joint poses in `pose.ts` (built dances, poses for
+  with an AnimationMixer (`human/anims.ts` loads the core clip file and the
+  on-demand packs; `game/dance/clips.ts` picks the clip, `idlePlan.ts` gives
+  the player and each NPC their idle rhythm, `transitions.ts` joins sitting
+  and standing). The hand-made 13-joint poses in `pose.ts` (built dances, poses for
   two, the toon doll) reach the skeleton through `BuiltPose`.
 - `net/` wires the online session into React (see Online below).
 
@@ -163,7 +165,9 @@ The 3D doll is built in Blender from MakeHuman's CC0 assets
 `public/models/doll/`. Textures are CC0 PBR sets fetched by
 `scripts/fetch-textures.ts`. The doll's skeleton is Mixamo's 52 bones
 (MPFB2's CC0 rig); `art/doll/blender/mocap.py` retargets Mixamo clips onto
-it into `public/models/doll/anims.glb` and lists them in
+it (and Quaternius' CC0 Universal Animation Library) into
+`public/models/doll/anims.glb` plus one on-demand `anims-<pack>.glb` per pack
+(clip tables in `art/doll/blender/mocap_clips.py`) and lists them in
 `src/game/dance/mocap.ts`. Sources and licenses: `docs/assets.md`.
 
 The sea: `art/ocean/fetch_ocean.py` downloads the reef and sea-life models

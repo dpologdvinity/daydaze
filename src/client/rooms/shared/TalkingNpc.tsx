@@ -10,7 +10,7 @@ import { nightClock, prideClock } from "../../city/eventClocks.ts";
 import { Html } from "@react-three/drei";
 import type { ThreeEvent } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
-import type { DanceMoveId } from "../../../game/dance/moves.ts";
+import { isDanceMoveId, type DanceMoveId } from "../../../game/dance/moves.ts";
 import type { Look, Mood } from "../../../game/look.ts";
 import {
   loadDialogue,
@@ -22,6 +22,7 @@ import type {
   DialogueRole,
   DialogueSituation,
 } from "../../../game/dialogue/types.ts";
+import { talkClipFor } from "../../../game/dance/idlePlan.ts";
 import { Doll } from "../../avatar/Doll.tsx";
 import { CrowdFigure } from "./CrowdFigure.tsx";
 
@@ -67,6 +68,8 @@ export function TalkingNpc({
   onTap?: () => void;
 }) {
   const [line, setLine] = useState<string | null>(null);
+  // lines she has said, which moves her on to another way of talking
+  const [said, setSaid] = useState(0);
   // lines this NPC said lately, so taps rarely repeat
   const recent = useRef<RecentLines>([]);
   const timer = useRef(0);
@@ -81,6 +84,7 @@ export function TalkingNpc({
         recent: recent.current,
       });
       recent.current = picked.recent;
+      setSaid((n) => n + 1);
       setLine(picked.text);
       window.clearTimeout(timer.current);
       timer.current = window.setTimeout(() => setLine(null), BUBBLE_MS);
@@ -114,10 +118,18 @@ export function TalkingNpc({
     say(event && Math.random() < 0.7 ? event : situation);
     onTap?.();
   };
+  // a standing NPC gestures while her line is up (the social clip pack)
+  const speaking = line !== null && mood === "idle" && figure === "doll";
   return (
     <group position={[at[0], at[1], at[2]]} rotation-y={rot}>
       {figure === "doll" ? (
-        <Doll look={look} mood={mood} dance={dance} hold={hold} seed={seed} />
+        <Doll
+          look={look}
+          mood={speaking ? "dance" : mood}
+          dance={speaking ? isTalkClip(talkClipFor(seed, said)) : dance}
+          hold={hold}
+          seed={seed}
+        />
       ) : (
         <CrowdFigure
           look={look}
@@ -144,3 +156,8 @@ export function TalkingNpc({
 }
 
 const ignore = () => {};
+
+/** A talking clip id as the dance move the doll plays (undefined if unknown). */
+function isTalkClip(id: string): DanceMoveId | undefined {
+  return isDanceMoveId(id) ? id : undefined;
+}

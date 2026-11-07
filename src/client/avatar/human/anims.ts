@@ -9,6 +9,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
+import type { MocapPack } from "../../../game/dance/mocapTypes.ts";
 import type { Rig } from "../pose.ts";
 
 /** Bone names as three.js reads them from the doll's GLB (glTF node names
@@ -22,41 +23,67 @@ export const BONE = {
 } as const;
 
 // clips by id, per doll skeleton ("" the woman's, "-m" the man's: each is
-// baked on its own rig, since their bones rest on different axes)
-const baked = new Map<string, ReadonlyMap<string, THREE.AnimationClip>>();
+// baked on its own rig, since their bones rest on different axes). One map
+// per skeleton gathers the clips of every pack loaded so far.
+const baked = new Map<string, Map<string, THREE.AnimationClip>>();
 const loading = new Map<string, Promise<void>>();
+const loadedPacks = new Map<string, Set<MocapPack>>();
 
 // seconds before a failed clip file may be fetched again, doubling per miss
 const RETRY_FIRST = 15;
 const RETRY_MOST = 300;
 const retryIn = new Map<string, number>();
 
-/** Starts fetching a skeleton's clip file (once; `suffix` as modelSuffix);
- * resolves when it has loaded. A failed fetch is logged and retried after a
- * wait that doubles each time (so a crowd of dolls asks once, not once
- * each), and the dolls keep their built poses meanwhile. */
-export function loadAnims(suffix = ""): Promise<void> {
-  let p = loading.get(suffix);
+/** A pack's file for a skeleton: anims.glb for the core, else anims-<pack>.glb,
+ * each with the man's "-m" after it (art/doll/blender/mocap.py). */
+export const packFile = (suffix: string, pack: MocapPack): string =>
+  `/models/doll/anims${pack === "core" ? "" : `-${pack}`}${suffix}.glb`;
+
+/** Starts fetching one clip file of a skeleton (once; `suffix` as
+ * modelSuffix); resolves when it has loaded. A failed fetch is logged and
+ * retried after a wait that doubles each time (so a crowd of dolls asks
+ * once, not once each), and the dolls keep their built poses (or an idle)
+ * meanwhile. */
+export function loadPack(suffix: string, pack: MocapPack): Promise<void> {
+  const key = `${suffix}|${pack}`;
+  let p = loading.get(key);
   if (!p) {
     p = new GLTFLoader()
       .setMeshoptDecoder(MeshoptDecoder)
-      .loadAsync(`/models/doll/anims${suffix}.glb`)
+      .loadAsync(packFile(suffix, pack))
       .then((gltf) => {
-        baked.set(suffix, new Map(gltf.animations.map((c) => [c.name, c])));
-        retryIn.delete(suffix);
+        const clips =
+          baked.get(suffix) ?? new Map<string, THREE.AnimationClip>();
+        for (const c of gltf.animations) clips.set(c.name, c);
+        baked.set(suffix, clips);
+        const have = loadedPacks.get(suffix) ?? new Set<MocapPack>();
+        have.add(pack);
+        loadedPacks.set(suffix, have);
+        retryIn.delete(key);
       })
       .catch((e: unknown) => {
         console.warn(e);
-        const wait = retryIn.get(suffix) ?? RETRY_FIRST;
-        retryIn.set(suffix, Math.min(RETRY_MOST, wait * 2));
-        window.setTimeout(() => loading.delete(suffix), wait * 1000);
+        const wait = retryIn.get(key) ?? RETRY_FIRST;
+        retryIn.set(key, Math.min(RETRY_MOST, wait * 2));
+        window.setTimeout(() => loading.delete(key), wait * 1000);
       });
-    loading.set(suffix, p);
+    loading.set(key, p);
   }
   return p;
 }
 
-/** A skeleton's clips by id; null until its file loads. */
+/** Starts fetching a skeleton's core clip file (see loadPack). */
+export const loadAnims = (suffix = ""): Promise<void> =>
+  loadPack(suffix, "core");
+
+const NO_PACKS: ReadonlySet<MocapPack> = new Set();
+
+/** The packs of a skeleton loaded so far. */
+export const packsFor = (suffix: string): ReadonlySet<MocapPack> =>
+  loadedPacks.get(suffix) ?? NO_PACKS;
+
+/** A skeleton's clips by id (every pack loaded so far); null until its core
+ * file loads. */
 export const clipsFor = (
   suffix: string,
 ): ReadonlyMap<string, THREE.AnimationClip> | null => baked.get(suffix) ?? null;

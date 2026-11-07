@@ -8,7 +8,8 @@
 
 import type { CoupleRole } from "./couple.ts";
 import { MOCAP_CLIPS } from "./mocap.ts";
-import type { MocapClip } from "./mocapTypes.ts";
+import type { MocapClip, MocapPack } from "./mocapTypes.ts";
+import { idlePlan, seatPlan } from "./idlePlan.ts";
 import { RUN_CLIP, needsRun, runRate, walkRate } from "./stride.ts";
 import type { Mood } from "../look.ts";
 
@@ -61,8 +62,15 @@ export function idleFor(seed: number): string {
 
 /** What a doll is doing this frame, as pickClip needs it. */
 export type DollState = {
-  /** The clip file has loaded; until then everything is the built pose. */
+  /** The core clip file has loaded; until then everything is the built pose. */
   loaded: boolean;
+  /** The other clip files loaded so far (a clip in an unloaded pack plays
+   * its fallback, and the play names the pack it needs). */
+  packs?: ReadonlySet<MocapPack>;
+  /** The player's own doll: she breathes first and fidgets now and then. */
+  own?: boolean;
+  /** Which idle slot she is in (idlePlan.ts); 0 when standing has just begun. */
+  slot?: number;
   /** Ground speed, m/s; above a crawl she walks. */
   speed: number;
   /** Her gait's walk clip (gaits.ts). */
@@ -81,8 +89,15 @@ export type DollState = {
 };
 
 /** A clip to play: `rate` scales its speed; `offset` (seconds) shifts its
- * start, so a follow dances half a loop behind the lead. */
-export type Play = { id: string; rate: number; offset: number };
+ * start, so a follow dances half a loop behind the lead. `need` names a clip
+ * file the doll wants that has not loaded: then `id` is "" (the built pose),
+ * and the doll should start fetching the pack. */
+export type Play = {
+  id: string;
+  rate: number;
+  offset: number;
+  need?: MocapPack;
+};
 
 /** Below this ground speed (m/s) a doll stands. */
 export const MOVING = 0.05;
@@ -97,8 +112,20 @@ export const MOVING = 0.05;
  */
 export function pickClip(s: DollState): Play | null {
   if (!s.loaded) return null;
-  const play = (id: string, rate = 1, offset = 0): Play | null =>
-    clipOf(id) ? { id, rate, offset } : null;
+  // a clip in a pack that has not loaded plays `fallback` (a core clip) or,
+  // with none, the built pose; either way the play names the pack it needs
+  const play = (
+    id: string,
+    rate = 1,
+    offset = 0,
+    fallback = "",
+  ): Play | null => {
+    const clip = clipOf(id);
+    if (!clip) return null;
+    if (clip.pack === "core" || s.packs?.has(clip.pack))
+      return { id, rate, offset };
+    return { id: fallback, rate: 1, offset: 0, need: clip.pack };
+  };
   if (s.afloat) return play(s.speed > MOVING ? SWIM_CLIP : TREAD_CLIP);
   // a wheelchair user rolls along sitting: no stride, whatever her mood
   if (s.seated) return play(SEAT_CLIP);
@@ -121,7 +148,7 @@ export function pickClip(s: DollState): Play | null {
     case "sit":
       return hold && (hold.kind === "sit" || hold.kind === "lay")
         ? play(hold.id)
-        : play(SEAT_CLIP);
+        : play(seatPlan(s.seed, s.slot ?? 0, s.own === true), 1, 0, SEAT_CLIP);
     case "pose":
       return hold?.kind === "pose" ? play(hold.id) : null;
     case "lean":
@@ -133,6 +160,11 @@ export function pickClip(s: DollState): Play | null {
       return play(move.id, 1, s.couple === "follow" ? move.period / 2 : 0);
     }
     default:
-      return play(idleFor(s.seed));
+      return play(
+        idlePlan(s.seed, s.slot ?? 0, s.own === true, !!s.packs?.has("social")),
+        1,
+        0,
+        "idle-breathing",
+      );
   }
 }

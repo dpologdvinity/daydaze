@@ -253,7 +253,8 @@ the Ultimate Nature Pack) and compressed by `scripts/import-forest.sh` into
 
 | Title | Author | License | URL | Used for |
 | --- | --- | --- | --- | --- |
-| Mixamo animations | Adobe | Mixamo terms | https://www.mixamo.com/ | Retargeted character walks, idles, dances and gestures. |
+| Mixamo animations | Adobe | Mixamo terms | https://www.mixamo.com/ | Retargeted character walks, idles, dances, gestures, talking and sitting. |
+| Universal Animation Library 1 and 2 (Standard) | Quaternius | CC0 1.0 | https://quaternius.com/packs/universalanimationlibrary.html | Walk, jog and sprint loops, idles (phone, folded arms), sitting enter/exit, farm planting, watering and harvesting, tree chopping, carrying, pushing, throwing, climbing, sliding. Retargeted onto the doll's skeleton by `mocap.py` (a UE-to-Mixamo bone-name map). No credit required. |
 | CMU motion capture | CMU Graphics Lab | CMU terms: free to copy, modify and redistribute | http://mocap.cs.cmu.edu/ | Retargeted walks and dances, using BVH conversions from una-dinosauria/cmu-mocap. |
 
 
@@ -277,7 +278,7 @@ the Ultimate Nature Pack) and compressed by `scripts/import-forest.sh` into
 it and writes the GLB parts; `scripts/optimize-doll.sh` compresses them into
 `public/models/doll/`.
 
-Only the clips listed in `mocap.py`'s `CLIPS` ship, retargeted onto our own skeleton and baked into `public/models/doll/anims.glb` and `anims-m.glb` (keyframes only, no Mixamo character or mesh). Never commit the FBX files or a GLB that carries a Mixamo character.
+Only the clips listed in `art/doll/blender/mocap_clips.py` ship, retargeted onto our own skeleton and baked into `public/models/doll/anims.glb` (the always-loaded core) and one file per pack, `anims-social.glb`, `anims-seated.glb`, `anims-dance2.glb`, `anims-ual.glb` and `anims-moves.glb`, each with a `-m` twin for the man (keyframes only, no Mixamo character or mesh). The clip files load on demand (`src/client/avatar/human/anims.ts`). Never commit the FBX files or a GLB that carries a Mixamo character. The Universal Animation Library zips live in the private asset repo (`gh release download packs -R dpologdvinity/daydaze-assets -p 'Universal_Animation_Library*'`; unzip to `/tmp/ual1` and `/tmp/ual2`, or set `UAL_DIR`).
 
 ## Audio
 
