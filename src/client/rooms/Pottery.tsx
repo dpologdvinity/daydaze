@@ -14,9 +14,12 @@ import { NeonText, MARQUEE } from "./shared/Neon.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
 import { PotMesh } from "./pottery/PotMesh.tsx";
 import { pottery } from "./pottery/session.ts";
+import { DryingShelf, Kiln, Wheel } from "./pottery/PotteryProps.tsx";
 
 const WALL = surface("painted_plaster_wall", { scale: 0.7, color: "#edc5a1" });
 const CLAY = freshClay();
+/** Bisque tones for the unglazed ware drying on the shelves. */
+const DRYING = ["#c99b73", "#ad765c", "#d6b08c"] as const;
 const REGULARS = [-4, 3] as const;
 
 export function Pottery({
@@ -104,14 +107,7 @@ export function Pottery({
         <PropsReady />
         {[-4, 0, 3].map((x) => (
           <group key={x}>
-            <Prop
-              model="wheel"
-              dir="pottery"
-              width={1.55}
-              depth={1.55}
-              height={0.85}
-              position={[x, 0, -1.8]}
-            />
+            <Wheel position={[x, 0, -1.8]} />
             <Prop
               model="stool"
               dir="home"
@@ -124,36 +120,23 @@ export function Pottery({
         ))}
         {[-4.6, -2, 0.6].map((x) => (
           <group key={x}>
-            <Prop
-              model="drying-shelf"
-              dir="pottery"
-              width={2.2}
-              depth={0.6}
-              height={2.1}
-              position={[x, 0, -4.45]}
-            />
-            {[0.6, 1.2, 1.8].map((y, i) => (
-              <Prop
+            <DryingShelf position={[x, 0, -4.45]} />
+            {[0.58, 1.18, 1.78].map((y, i) => (
+              <group
                 key={y}
-                model="vase"
-                dir="home"
-                width={0.4}
-                depth={0.4}
-                height={0.44}
-                position={[x + (i % 2 ? 0.4 : -0.4), y, -4.3]}
-                tint={i + 1}
-              />
+                position={[x + (i % 2 ? 0.45 : -0.45), y, -4.3]}
+                scale={0.32}
+              >
+                <PotMesh
+                  clay={CLAY}
+                  color={DRYING[(i + x + 8) % 3]}
+                  spin={false}
+                />
+              </group>
             ))}
           </group>
         ))}
-        <Prop
-          model="kiln"
-          dir="pottery"
-          width={1.8}
-          depth={1.7}
-          height={1.8}
-          position={[4.8, 0, -4]}
-        />
+        <Kiln position={[4.8, 0, -4]} firing={state.phase === "firing"} />
         <Prop
           model="desk"
           dir="home"
@@ -164,16 +147,13 @@ export function Pottery({
           yaw={-Math.PI / 2}
         />
         {GLAZES.map((glaze, i) => (
-          <Prop
+          <group
             key={glaze.color}
-            model="vase"
-            dir="home"
-            width={0.18}
-            depth={0.18}
-            height={0.22}
             position={[4.8, 0.9, 0.45 + i * 0.28]}
-            tint={i}
-          />
+            scale={0.13}
+          >
+            <PotMesh clay={CLAY} color={glaze.color} />
+          </group>
         ))}
         <Prop
           model="plant-tall"
