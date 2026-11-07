@@ -272,8 +272,8 @@ const ROOM_SHOTS: Record<RoomId, { eye: THREE.Vector3; look: THREE.Vector3 }> =
     },
     // from aft over the deck towards the bow and city skyline
     yacht: {
-      eye: new THREE.Vector3(0, 7.5, 12),
-      look: new THREE.Vector3(0, 1.2, -3),
+      eye: new THREE.Vector3(0, 7.5, 13),
+      look: new THREE.Vector3(0, 1.4, -8),
     },
     // from by the door, over the spring floor to the judges
     gym: {

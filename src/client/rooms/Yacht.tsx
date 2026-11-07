@@ -8,7 +8,7 @@
 // skyline strip (1) + string-lights batch (1) + NPCs (3) = ~9 extra on this
 // scene on top of the room portal/HUD base. Well within the 250-call budget.
 
-import { Stars, useGLTF } from "@react-three/drei";
+import { Stars } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Suspense, useMemo, useRef } from "react";
 import type { JSX } from "react";
@@ -64,6 +64,20 @@ const BAR_TOP = new THREE.MeshStandardMaterial({
   metalness: 0.3,
   roughness: 0.3,
 });
+/** Hot tub water: a bright aqua glow. */
+const TUB_WATER = new THREE.MeshBasicMaterial({
+  color: hdr("#5fe8ff", 1.0),
+  toneMapped: false,
+});
+/** Port and starboard navigation lights. */
+const NAV_RED = new THREE.MeshBasicMaterial({
+  color: hdr("#ff2a2a", 1.6),
+  toneMapped: false,
+});
+const NAV_GREEN = new THREE.MeshBasicMaterial({
+  color: hdr("#2aff6a", 1.6),
+  toneMapped: false,
+});
 /** Stainless guard rails. */
 const RAIL = new THREE.MeshStandardMaterial({
   color: "#c8d0d8",
@@ -73,58 +87,173 @@ const RAIL = new THREE.MeshStandardMaterial({
 
 // ─── skyline backdrop ───────────────────────────────────────────────────────
 
+/** Skyline height scale: the camera frames only the lowest ~18 m of it. */
+const SKY_SCALE = 0.55;
+
 /**
- * City skyline silhouette strip behind the cruise. Generated procedurally (a
- * handful of boxes), placed far aft so it frames the dance floor view. Reuses
- * the approach from HotelRooftop's skylineGeometry.
+ * City skyline strip behind the bay: tall boxes, three rows deep, with a UV
+ * window grid so one lit-window texture covers every face. Merged to one mesh.
  */
 function skylineGeometry(): THREE.BufferGeometry {
   const pieces: THREE.BufferGeometry[] = [];
-  const buildings: readonly [number, number, number][] = [
-    [-42, 24, 2],
-    [-34, 18, 3],
-    [-26, 32, 2.5],
-    [-20, 14, 2],
-    [-13, 20, 2],
-    [-8, 10, 1.5],
-    [-2, 28, 3],
-    [5, 16, 2],
-    [12, 22, 2],
-    [18, 36, 2.5],
-    [25, 18, 2],
-    [32, 12, 2],
-    [38, 26, 3],
-    [44, 16, 2],
-  ];
-  for (const [x, h, w] of buildings) {
-    const g = new THREE.BoxGeometry(w, h, 1);
-    g.translate(x, h / 2, 0);
-    pieces.push(g);
-    // lit windows: bright squares scattered up each building face
-    const wins = new THREE.BoxGeometry(w * 0.9, h * 0.9, 0.5);
-    wins.translate(x, h / 2, 0.5);
-    pieces.push(wins);
+  // deterministic pseudo-random so the skyline never changes between visits
+  let seed = 7;
+  const rand = () => {
+    seed = (seed * 16807) % 2147483647;
+    return seed / 2147483647;
+  };
+  for (let row = 0; row < 3; row++) {
+    for (let x = -90; x <= 90; x += 5 + rand() * 4) {
+      const h = (12 + rand() * 34 - row * 4) * SKY_SCALE;
+      const w = 3 + rand() * 4;
+      const g = new THREE.BoxGeometry(w, h, 3);
+      g.translate(x, h / 2, row * -9);
+      pieces.push(g);
+    }
   }
-  return mergeGeometries(pieces);
+  const merged = mergeGeometries(pieces);
+  if (!merged) throw new Error("skyline: geometries differ in attributes");
+  return merged;
 }
+
+/** A tile of dark glass with scattered warm lit windows, for the skyline. */
+function windowTexture(): THREE.CanvasTexture | null {
+  const canvas = document.createElement("canvas");
+  canvas.width = 32;
+  canvas.height = 64;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+  ctx.fillStyle = "#0b1224";
+  ctx.fillRect(0, 0, 32, 64);
+  let seed = 11;
+  for (let y = 2; y < 62; y += 4) {
+    for (let x = 2; x < 30; x += 4) {
+      seed = (seed * 16807) % 2147483647;
+      if (seed % 100 < 38) {
+        ctx.fillStyle = seed % 7 === 0 ? "#9fe8ff" : "#ffd58a";
+        ctx.fillRect(x, y, 2, 2);
+      }
+    }
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.magFilter = THREE.NearestFilter;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+// ─── hull ───────────────────────────────────────────────────────────────────
+
+/** Half beam of the hull, m. The walkable teak (16 m wide) sits inside it. */
+const HALF_BEAM = 8.4;
+/** The hull's stern edge (z) and bow tip (z, toward -z). */
+const STERN_Z = 9;
+const BOW_Z = -27;
+/** Where the straight sides end and the bow starts to taper (z). */
+const BOW_START_Z = -10;
+
+/**
+ * The deck outline seen from above: a squared stern with chamfered corners,
+ * straight sides, and a bow that tapers to a point. Shape y is world -z (the
+ * geometry is turned flat after extruding). `inset` pulls the outline in.
+ */
+function hullOutline(inset: number): THREE.Vector2[] {
+  const w = HALF_BEAM - inset;
+  const sternY = -STERN_Z + inset;
+  const startY = -BOW_START_Z;
+  const tipY = -BOW_Z - inset * 2.2;
+  const right: THREE.Vector2[] = [
+    new THREE.Vector2(w - 0.9, sternY),
+    new THREE.Vector2(w, sternY + 0.8),
+    new THREE.Vector2(w, startY),
+  ];
+  const steps = 14;
+  for (let i = 1; i <= steps; i++) {
+    const t = i / steps;
+    right.push(
+      new THREE.Vector2(w * (1 - t ** 1.6), startY + (tipY - startY) * t),
+    );
+  }
+  // left side: the mirror image, walked back from the bow to the stern
+  const left = right
+    .slice(0, -1)
+    .reverse()
+    .map((p) => new THREE.Vector2(-p.x, p.y));
+  return [...right, ...left];
+}
+
+/** The hull outline pushed outward ~1 m: the foam ring around the waterline. */
+function hullOutlineWide(): THREE.Vector2[] {
+  return hullOutline(-1);
+}
+
+/** Extrudes an outline upward from y = 0 by `height`, lying flat. */
+function slab(
+  outline: THREE.Vector2[],
+  height: number,
+  hole?: THREE.Vector2[],
+): THREE.BufferGeometry {
+  const shape = new THREE.Shape(outline);
+  if (hole) shape.holes.push(new THREE.Path(hole));
+  const g = new THREE.ExtrudeGeometry(shape, {
+    depth: height,
+    bevelEnabled: false,
+  });
+  g.rotateX(-Math.PI / 2);
+  return g;
+}
+
+/** Hull-body paint: deep navy below the deck, white bulwark above. */
+const HULL_NAVY = new THREE.MeshStandardMaterial({
+  color: "#14224a",
+  roughness: 0.35,
+  metalness: 0.2,
+});
+const HULL_WHITE = new THREE.MeshStandardMaterial({
+  color: "#eef1f6",
+  roughness: 0.4,
+});
+/** Lit cabin windows. */
+const GLASS = new THREE.MeshBasicMaterial({
+  color: hdr("#58b4d8", 0.7),
+  toneMapped: false,
+});
 
 // ─── static scene geometry (batch) ─────────────────────────────────────────
 
 function buildDeck(): THREE.Group {
   const b = new Batch();
 
-  // hull sides: low boxes port and starboard
-  const hull = new THREE.BoxGeometry(1, 0.8, 18);
-  b.add(hull, NAVY, { position: [-8, 0.4, -1] });
-  b.add(hull, NAVY, { position: [8, 0.4, -1] });
-
-  // bow transom
-  const bow = new THREE.BoxGeometry(16, 0.8, 1);
-  b.add(bow, NAVY, { position: [0, 0.4, -9.5] });
+  // hull: navy body under the deck, foredeck teak, white bulwark ring
+  const body = slab(hullOutline(0), 1.5);
+  body.translate(0, -1.55, 0); // top sits under the teak so they never z-fight
+  b.add(body, HULL_NAVY);
+  b.add(slab(hullOutline(0.35), 0.01), TEAK, { position: [0, -0.012, 0] });
+  b.add(slab(hullOutline(0), 0.7, hullOutline(0.35)), HULL_WHITE);
 
   // stern step (gangway platform)
   const stern = new THREE.BoxGeometry(4, 0.3, 1.5);
   b.add(stern, TEAK, { position: [0, -0.15, 7.2] });
+
+  // forward cabin, flybridge deck above it, windows, mast and radar
+  const cabin = new THREE.BoxGeometry(6.4, 1.7, 3.6);
+  b.add(cabin, HULL_WHITE, { position: [0, 0.85, -13.0] });
+  const frontWindows = new THREE.BoxGeometry(5.6, 0.6, 0.06);
+  b.add(frontWindows, GLASS, { position: [0, 1.0, -11.17] });
+  const sideWindows = new THREE.BoxGeometry(0.06, 0.6, 2.6);
+  b.add(sideWindows, GLASS, { position: [-3.23, 1.0, -13.0] });
+  b.add(sideWindows, GLASS, { position: [3.23, 1.0, -13.0] });
+  const flybridge = new THREE.BoxGeometry(5.6, 0.15, 3.0);
+  b.add(flybridge, TEAK, { position: [0, 1.78, -13.0] });
+  const fbWall = new THREE.BoxGeometry(5.6, 0.7, 0.1);
+  b.add(fbWall, HULL_WHITE, { position: [0, 2.2, -11.6] });
+  const mast = new THREE.CylinderGeometry(0.06, 0.09, 2.6, 8);
+  b.add(mast, RAIL, { position: [0, 3.1, -14.0] });
+  const radar = new THREE.BoxGeometry(1.2, 0.1, 0.25);
+  b.add(radar, RAIL, { position: [0, 4.4, -14.0] });
+  // bow anchor light (red port, green starboard)
+  const navLight = new THREE.SphereGeometry(0.12, 8, 6);
+  b.add(navLight, NAV_RED, { position: [-2.7, 2.6, -11.6] });
+  b.add(navLight, NAV_GREEN, { position: [2.7, 2.6, -11.6] });
 
   // railing posts (port + starboard, bow + midship)
   const post = new THREE.CylinderGeometry(0.04, 0.04, 1.1, 6);
@@ -132,11 +261,6 @@ function buildDeck(): THREE.Group {
     b.add(post, RAIL, { position: [-7.5, 0.95, z] });
     b.add(post, RAIL, { position: [7.5, 0.95, z] });
   }
-  // bow rail posts
-  for (let x = -7; x <= 7; x += 2) {
-    b.add(post, RAIL, { position: [x, 0.95, -9] });
-  }
-
   // railing top rail (port + starboard)
   const longRail = new THREE.CylinderGeometry(0.025, 0.025, 15, 6);
   b.add(longRail, RAIL, {
@@ -148,18 +272,11 @@ function buildDeck(): THREE.Group {
     rotation: [Math.PI / 2, 0, 0],
   });
 
-  // bow rail top
-  const bowRail = new THREE.CylinderGeometry(0.025, 0.025, 15, 6);
-  b.add(bowRail, RAIL, {
-    position: [0, 1.5, -9],
-    rotation: [0, 0, Math.PI / 2],
-  });
-
-  // hot tub (starboard aft): a shallow box + tiled interior
-  const tubOuter = new THREE.BoxGeometry(3.4, 0.8, 2.6);
-  b.add(tubOuter, NAVY, { position: [5.2, 0.4, 4.6] });
-  const tubInner = new THREE.BoxGeometry(2.6, 0.5, 2.0);
-  b.add(tubInner, TUB_TILE, { position: [5.2, 0.55, 4.6] });
+  // hot tub (starboard aft): a round tiled tub brimming with glowing water
+  const tubRim = new THREE.CylinderGeometry(1.7, 1.7, 0.8, 28);
+  b.add(tubRim, TUB_TILE, { position: [5.2, 0.4, 4.6] });
+  const tubWater = new THREE.CylinderGeometry(1.4, 1.4, 0.02, 28);
+  b.add(tubWater, TUB_WATER, { position: [5.2, 0.8, 4.6] });
 
   // DJ booth riser (bow)
   const djRiser = new THREE.BoxGeometry(3.2, 0.3, 2.0);
@@ -178,18 +295,6 @@ function buildDeck(): THREE.Group {
   b.add(barBack, NAVY, { position: [-5.5, 0.55, 2.5] });
   const barTopG = new THREE.BoxGeometry(4.7, 0.08, 0.6);
   b.add(barTopG, BAR_TOP, { position: [-5.5, 1.14, 2.5] });
-
-  // lounge chairs (port mid)
-  const chairSeat = new THREE.BoxGeometry(0.7, 0.2, 1.4);
-  const chairBack = new THREE.BoxGeometry(0.7, 0.6, 0.15);
-  const chairMat = new THREE.MeshStandardMaterial({
-    color: "#e8d8c0",
-    roughness: 0.8,
-  });
-  for (let i = 0; i < 3; i++) {
-    b.add(chairSeat, chairMat, { position: [-6.0, 0.1, -3.5 + i * 2.0] });
-    b.add(chairBack, chairMat, { position: [-6.0, 0.5, -4.1 + i * 2.0] });
-  }
 
   return b.build();
 }
@@ -290,37 +395,112 @@ const YACHT_CONTEXT: DialogueContext = {
   neighborhood: "beachside",
 };
 
-// ─── Yacht model (the hull sitting in the water below the walkable deck) ────
-
-/** The yacht hull model from the marina. Rendered below the walkable teak. */
-function YachtHull(): JSX.Element {
-  const { scene } = useGLTF("/models/marina/yacht.glb");
-  const model = useMemo(() => scene.clone(), [scene]);
-  return (
-    <group position={[0, -0.9, 0]} scale={[1, 1, 1]}>
-      <primitive object={model} />
-    </group>
-  );
-}
-
 // ─── Skyline backdrop ────────────────────────────────────────────────────────
 
 function Skyline(): JSX.Element {
   const geo = useMemo(skylineGeometry, []);
+  const map = useMemo(windowTexture, []);
+  return (
+    <mesh geometry={geo} position={[0, -1, -95]}>
+      <meshBasicMaterial map={map} fog={false} toneMapped={false} />
+    </mesh>
+  );
+}
+
+// ─── Lounge seating ──────────────────────────────────────────────────────────
+
+/** Sofas from the Quaternius house pack (CC0) around the dance floor. */
+function Lounge(): JSX.Element {
   return (
     <>
-      {/* dark silhouette */}
-      <mesh geometry={geo} position={[0, -2, -80]}>
-        <meshBasicMaterial color="#0a1428" fog={false} />
-      </mesh>
-      {/* glowing window overlay (slightly forward) */}
-      <mesh geometry={geo} position={[0, -2, -79.5]}>
+      <Prop
+        model="sofa-small"
+        dir="home"
+        width={1.7}
+        depth={2.6}
+        height={1.1}
+        yaw={Math.PI / 2}
+        position={[-6.5, 0, -5.8]}
+      />
+      <Prop
+        model="sofa-small"
+        dir="home"
+        width={1.7}
+        depth={2.6}
+        height={1.1}
+        yaw={Math.PI / 2}
+        position={[-6.5, 0, -3.0]}
+      />
+      <Prop
+        model="sofa"
+        dir="home"
+        width={1.8}
+        depth={3.2}
+        height={1.1}
+        yaw={-Math.PI / 2}
+        position={[6.5, 0, -4.5]}
+      />
+      <Prop
+        model="coffee-table"
+        dir="home"
+        width={1.0}
+        depth={1.6}
+        height={0.5}
+        position={[-5.2, 0, -4.4]}
+      />
+    </>
+  );
+}
+
+// ─── Water and wake ──────────────────────────────────────────────────────────
+
+/** The hull's foam line on the water, pulsing softly; a moon path glitters. */
+function Wake({ calm }: { calm: boolean }): JSX.Element {
+  const foamMat = useRef<THREE.MeshBasicMaterial>(null);
+  const pathMat = useRef<THREE.MeshBasicMaterial>(null);
+  const foam = useMemo(() => {
+    const shape = new THREE.Shape(hullOutlineWide());
+    shape.holes.push(new THREE.Path(hullOutline(0.15)));
+    const g = new THREE.ShapeGeometry(shape);
+    g.rotateX(-Math.PI / 2);
+    return g;
+  }, []);
+  useFrame(({ clock }) => {
+    if (calm) return;
+    const t = clock.elapsedTime;
+    if (foamMat.current)
+      foamMat.current.opacity = 0.32 + Math.sin(t * 1.3) * 0.1;
+    if (pathMat.current)
+      pathMat.current.opacity = 0.16 + Math.sin(t * 2.1) * 0.05;
+  });
+  return (
+    <>
+      <mesh geometry={foam} position={[0, -0.6, 0]}>
         <meshBasicMaterial
-          color={hdr("#ffd080", 0.8)}
+          ref={foamMat}
+          color="#e8f6ff"
           transparent
-          opacity={0.35}
+          opacity={0.32}
+          depthWrite={false}
+        />
+      </mesh>
+      {/* the moon over the skyline, and its glitter path across the bay */}
+      <mesh position={[-24, 20, -120]}>
+        <circleGeometry args={[4.5, 32]} />
+        <meshBasicMaterial
+          color={hdr("#fff4dc", 1.4)}
           fog={false}
           toneMapped={false}
+        />
+      </mesh>
+      <mesh position={[-16, -0.6, -60]} rotation-x={-Math.PI / 2}>
+        <planeGeometry args={[4, 90]} />
+        <meshBasicMaterial
+          ref={pathMat}
+          color="#fff4dc"
+          transparent
+          opacity={0.16}
+          depthWrite={false}
         />
       </mesh>
     </>
@@ -530,6 +710,8 @@ export function Yacht({
         <Skyline />
       </group>
 
+      <Wake calm={calm} />
+
       {/* Water plane around the yacht */}
       <mesh
         rotation-x={-Math.PI / 2}
@@ -544,7 +726,7 @@ export function Yacht({
       >
         <planeGeometry args={[140, 140]} />
         <meshStandardMaterial
-          color="#0b2a4a"
+          color="#103a66"
           metalness={0.5}
           roughness={0.25}
           transparent
@@ -585,9 +767,9 @@ export function Yacht({
           />
         </Suspense>
 
-        {/* Yacht hull model (decorative, sits below the walkable floor) */}
+        {/* Sofas and a coffee table around the dance floor */}
         <Suspense fallback={null}>
-          <YachtHull />
+          <Lounge />
         </Suspense>
 
         {/* Mocktail bar sign */}
