@@ -2,6 +2,7 @@
 // pick a wrap and ribbon, then buy. Every control is a labeled button, so the
 // keyboard reaches all of it.
 import type { JSX } from "react";
+import "./florist.css";
 import {
   bouquetPrice,
   harmonyLabel,
@@ -45,7 +46,7 @@ export function BouquetPanel(): JSX.Element {
               ? `Pick ${MIN_STEMS} to ${MAX_STEMS} stems from the buckets.`
               : `${draft.stems.length} stems · ${price} coins · ${harmonyLabel(draft)}`}
       </p>
-      <div className="game-row" role="group" aria-label="Stems">
+      <div className="florist-stems" role="group" aria-label="Stems">
         {STEM_IDS.map((id) => (
           <button
             key={id}

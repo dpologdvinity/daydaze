@@ -1,0 +1,12 @@
+/* The stem picker is a two-column grid so eight labeled buttons stay legible
+   in the narrow game dock. */
+.florist-stems {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.florist-stems button {
+  border-radius: 12px;
+  padding: 6px 8px;
+  line-height: 1.2;
+}
