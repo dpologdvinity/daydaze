@@ -149,6 +149,30 @@ export const CREDITS: readonly {
           "Mermaid Cove mermaids (lounging, swimming, singing), decimated, skeleton cut to its deform bones.",
       },
       {
+        title: "Seashell",
+        author: "Poly by Google",
+        license: "CC-BY 3.0",
+        url: "https://poly.pizza/m/5ovn4mnRejL",
+        usedFor:
+          "Mermaid Cove's scallop and conch singing shells (art/cove/build_shells.py).",
+      },
+      {
+        title: "Clam",
+        author: "Poly by Google",
+        license: "CC-BY 3.0",
+        url: "https://poly.pizza/m/8675QcluLQX",
+        usedFor:
+          "Mermaid Cove's clam singing shell (art/cove/build_shells.py).",
+      },
+      {
+        title: "seashell",
+        author: "Dario Demi (D911C)",
+        license: "CC-BY 3.0",
+        url: "https://poly.pizza/m/2BU9U8dOkh-",
+        usedFor:
+          "Mermaid Cove's spiral singing shell (art/cove/build_shells.py).",
+      },
+      {
         title: "Ultimate Food Pack",
         author: "Quaternius",
         license: "CC0 1.0",
