@@ -80,6 +80,7 @@ const MUSIC: Partial<Record<RoomId, TrackId>> = {
   bookshop: "canopy-lofi",
   patisserie: "roller-disco",
   gallery: "canopy-lofi",
+  pottery: "canopy-lofi",
   "surf-shack": "sugar-rush-pop",
   "boardwalk-arcade": "player-two-chiptune",
   "drive-in": "roller-disco",

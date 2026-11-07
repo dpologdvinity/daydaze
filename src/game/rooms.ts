@@ -196,6 +196,7 @@ export type RoomId =
   | "bookshop"
   | "patisserie"
   | "gallery"
+  | "pottery"
   | "surf-shack"
   | "boardwalk-arcade"
   | "drive-in"
@@ -869,6 +870,35 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to Shore Boulevard",
         target: "city",
         targetSpawn: { position: SURF.SURF_DOOR.landing, yaw: 0 },
+      },
+    ],
+  },
+  pottery: {
+    id: "pottery",
+    name: "Clay Day",
+    walkable: [
+      [-6, -4.8],
+      [6, -4.8],
+      [6, 5],
+      [-6, 5],
+    ],
+    blockers: [
+      box(-4.8, -2.7, -3.2, -0.9),
+      box(2.2, -2.7, 3.8, -0.9),
+      box(-0.8, -2.7, 0.8, -0.9),
+      box(-5.9, -4.8, 1.8, -3.7),
+      box(3.8, -4.8, 5.8, -3),
+      box(4.25, 0.05, 5.35, 2.15),
+    ],
+    spawn: { position: [0, 3.4], yaw: Math.PI },
+    portals: [
+      {
+        id: "pottery-to-city",
+        position: [0, 4.6],
+        radius: 0.8,
+        label: "Out to Gallery Row",
+        target: "city",
+        targetSpawn: { position: [100, -262.5], yaw: Math.PI },
       },
     ],
   },

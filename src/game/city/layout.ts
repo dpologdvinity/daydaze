@@ -1374,8 +1374,15 @@ const ARTS_FRONT: readonly {
     h: 18,
     north: true,
     color: "#43aa8b",
-    sign: { text: "CLAY & KILN", color: "#ffd166" },
+    sign: { text: "CLAY DAY", color: "#ffd166" },
     style: "brick",
+    door: {
+      position: [100, -266.5],
+      radius: 1.5,
+      label: "Into Clay Day",
+      target: "pottery",
+      targetSpawn: { position: [0, 3.4], yaw: Math.PI },
+    },
   },
   {
     x: 150,

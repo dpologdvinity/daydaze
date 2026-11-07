@@ -74,6 +74,7 @@ test("every room is registered under its own id", () => {
     "patisserie",
     "piercing",
     "plaza",
+    "pottery",
     "pulse",
     "ramen-shop",
     "reef-dive",

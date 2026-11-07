@@ -6,6 +6,8 @@ import type { ContentTier } from "../age.ts";
 
 /** Every NPC role with a line bank; LINE_BANKS in index.ts must cover each. */
 export const ROLE_IDS = [
+  "potter",
+  "pottery-regular",
   "bartender",
   "bouncer",
   "dj",

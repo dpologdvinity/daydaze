@@ -90,3 +90,10 @@ test("bumper cars, the Midway booths and the arcade cabinets have prizes", () =>
   ] as const)
     assert.ok(PRIZE_GAMES.includes(game), game);
 });
+
+test("Clay Day uses the prize and personal-best tables", () => {
+  assert.ok(PRIZE_GAMES.includes("pottery"));
+  assert.equal(PRIZE_TABLES.pottery.room, "pottery");
+  assert.equal(gradeFor("pottery", 95), "S");
+  assert.equal(prizeFor("pottery", 80, 70).best, true);
+});

@@ -255,7 +255,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/ultimatehouseinterior.html",
         usedFor:
-          "Apartment furniture: sofas, beds, tables, kitchen, bath, plants and more, joined into one mesh each.",
+          "Apartment furniture: sofas, beds, tables, kitchen, bath, plants and more, joined into one mesh each; Clay Day stools, glaze table and plants.",
       },
       {
         title: "Furniture Pack (March 2019)",

@@ -3,6 +3,7 @@
 // stored JSON so a corrupt or older save never loses the rest. Also
 // display-name rules and random guest names.
 
+import { cleanPot, type FiredPot } from "./pottery.ts";
 import { cleanSets, cleanVisited } from "./collections.ts";
 import { cleanFarm, createDefaultFarm, type FarmSave } from "./farm.ts";
 import type { RoomId } from "./rooms.ts";
@@ -82,6 +83,8 @@ export type SaveV1 = {
   pet: PetSave | null;
   /** Sunny Acres Farm plot state, harvested produce and animal interactions. */
   farm: FarmSave;
+  /** Latest fired Clay Day piece, displayed at home. */
+  pottery: FiredPot | null;
 };
 
 /** The localStorage key the save lives under. */
@@ -130,6 +133,7 @@ export function createDefaultSave(name: string): SaveV1 {
     sets: [],
     pet: null,
     farm: createDefaultFarm(),
+    pottery: null,
   };
 }
 
@@ -210,6 +214,7 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
     sets: cleanSets(save.get("sets")),
     pet: validatePet(save.get("pet")),
     farm: cleanFarm(save.get("farm")),
+    pottery: cleanPot(save.get("pottery")),
   };
 }
 
