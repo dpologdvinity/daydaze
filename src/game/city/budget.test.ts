@@ -5,6 +5,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { CITY_SPAWN } from "./layout.ts";
+import { HOUSE_MODELS, HOUSE_MODEL_TRIANGLES } from "./nyc.ts";
 import { QUEUE_LOOKS, QUEUE_PERSON_TRIS } from "./queues.ts";
 import {
   BAYS_CAMERA,
@@ -52,6 +53,12 @@ function glbCost(path: string): { tris: number; parts: number } {
 test("the budget's model costs match the shipped GLBs", () => {
   for (const path of modelsInBudget())
     assert.deepEqual(MODEL_COST[path], glbCost(path), path);
+});
+
+test("each house model's triangle count matches the shipped GLB", () => {
+  HOUSE_MODELS.forEach((path, i) =>
+    assert.equal(HOUSE_MODEL_TRIANGLES[i], glbCost(path).tris, path),
+  );
 });
 
 test("the seasonal models' costs match the shipped GLBs", () => {
