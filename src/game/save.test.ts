@@ -195,7 +195,7 @@ test("loadSave keeps a valid name when the look is bad", () => {
   const raw = JSON.stringify({
     version: 1,
     name: "Kept Name",
-    look: { ...customLook, hairStyle: "mohawk" },
+    look: { ...customLook, hairStyle: "mullet" },
     settings: {
       quality: "high",
       muted: true,
