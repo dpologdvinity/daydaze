@@ -1672,7 +1672,16 @@ export const CREDITS: readonly {
         author: "Adobe",
         license: "Mixamo terms",
         url: "https://www.mixamo.com/",
-        usedFor: "Retargeted character walks, idles, dances and gestures.",
+        usedFor:
+          "Retargeted character walks, idles, dances, gestures, talking and sitting.",
+      },
+      {
+        title: "Universal Animation Library 1 and 2 (Standard)",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://quaternius.com/packs/universalanimationlibrary.html",
+        usedFor:
+          "Walk, jog and sprint loops, idles (phone, folded arms), sitting enter/exit, farm planting, watering and harvesting, tree chopping, carrying, pushing, throwing, climbing, sliding. Retargeted onto the doll's skeleton by `mocap.py` (a UE-to-Mixamo bone-name map). No credit required.",
       },
       {
         title: "CMU motion capture",
