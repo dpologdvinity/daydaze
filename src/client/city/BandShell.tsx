@@ -124,7 +124,8 @@ function Shell({ player }: { player: Player }): JSX.Element {
       if (scene && spots.length > 0) out.push(...propParts(scene, spots));
     };
     place(scenes.shell, [
-      { x: BAND_SHELL.x, y: BAND_Y, z: BAND_SHELL.z, yaw: 0, scale: 1 },
+      // the model opens toward +z; turned to open north onto the lawn
+      { x: BAND_SHELL.x, y: BAND_Y, z: BAND_SHELL.z, yaw: Math.PI, scale: 1 },
     ]);
     place(
       scenes.chair,
