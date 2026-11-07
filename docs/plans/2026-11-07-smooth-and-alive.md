@@ -43,3 +43,11 @@ the 3D cars — the cars are ugly; I gave you so many 3D things, look in
   logos/badges. Optimize (meshopt, webp), instanced per model for traffic,
   low-poly LODs for the low tier, keep paint colors, wraps, rims,
   underglow and tint working on the new bodies.
+
+## 4. Better hair (started 2026-11-07, branch feat/hair)
+
+- Fix the white speckles in dark hair (alpha card rendering) for every style.
+- New styles from the owner's 12 hair packs in ~/downloads/game/hair/ and
+  Quaternius Universal Base Characters (licenses checked; NC/ND skipped),
+  fitted to both heads, tintable, with LODs, added to the closet without
+  breaking saved looks.
