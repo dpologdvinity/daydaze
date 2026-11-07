@@ -82,9 +82,9 @@ export function bodyOfCar(id: string): BodyKey | null {
 /** Bodies whose paint is part of the vehicle (a taxi is yellow, a cop car
  * white), so traffic never recolors them. */
 export const FIXED_PAINT: Readonly<Partial<Record<BodyKey, string>>> = {
-  cop: "#f4f6ff",
+  cop: "#d9dce8",
   taxi: "#ffc61a",
-  ambulance: "#f4f6ff",
+  ambulance: "#d9dce8",
   schoolbus: "#f2b705",
 };
 
