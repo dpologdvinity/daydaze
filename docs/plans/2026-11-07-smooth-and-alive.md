@@ -48,7 +48,7 @@ the 3D cars — the cars are ugly; I gave you so many 3D things, look in
   `scripts/import-cars.sh` and `art/cars/import.py`; roster mapping, traffic
   mix and fixed paints in `src/game/driving/bodies.ts`). Each GLB has meshes
   named paint, glass, trim, tyre, rim and light; near about 3,000 triangles
-  (ambulance and school bus about 1,700), `-lo` twin about 600. Traffic is
+  (ambulance and school bus about 1,700), `-lo` twin about 850. Traffic is
   one instanced draw per body and level of detail (`trafficBodies.ts`),
   per-instance paint through a vertex-marked shader. The Sketchfab cars were
   skipped (brands, NC licenses, size). Not done: spinning wheels (tyres are
