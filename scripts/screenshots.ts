@@ -337,6 +337,7 @@ const SHOTS: {
   { name: "bookshop", query: "room=bookshop" },
   { name: "patisserie", query: "room=patisserie" },
   { name: "clay-day", query: "room=pottery" },
+  { name: "florist", query: "room=florist" },
   { name: "gallery", query: "room=gallery" },
   { name: "surf-shack", query: "room=surf-shack" },
   { name: "boardwalk-arcade", query: "room=boardwalk-arcade" },

@@ -142,6 +142,9 @@ const SurfShack = lazy(() =>
 const Gallery = lazy(() =>
   import("../rooms/Gallery.tsx").then((m) => ({ default: m.Gallery })),
 );
+const Florist = lazy(() =>
+  import("../rooms/Florist.tsx").then((m) => ({ default: m.Florist })),
+);
 const Patisserie = lazy(() =>
   import("../rooms/Patisserie.tsx").then((m) => ({ default: m.Patisserie })),
 );
@@ -478,6 +481,7 @@ const SCENES: Record<Exclude<RoomId, "city">, ComponentType<SceneProps>> = {
   "hotel-rooftop": HotelRooftop,
   bookshop: Bookshop,
   patisserie: Patisserie,
+  florist: Florist,
   gallery: Gallery,
   pottery: Pottery,
   "surf-shack": SurfShack,

@@ -1,0 +1,56 @@
+// Petal & Stem's florist: unhurried shop talk about stems, wrapping and
+// what a bouquet says. Handwritten; Willa never pushes a sale.
+import type { RoleBank } from "./types.ts";
+
+export const floristBank: RoleBank = {
+  "greeting-first": [
+    "Welcome in. Smell the lilies first, they say hello before I do.",
+    "Hi there. Pick any stems you like and I'll wrap them up for you.",
+    "First time in Petal & Stem? Start with whatever makes you smile.",
+    "Come on in. The tulips came in this morning, still cold from the cooler.",
+    "Hello! Buckets are along the walls, paper's on the counter.",
+    "Take your time. There's no wrong flower to start with.",
+    "Welcome. If you can't decide, close your eyes and sniff the peonies.",
+    "Hi, lovely. Looking for something special, or just something pretty?",
+    "Good to see you. Mind the water on the floor by the roses.",
+    "Hey there. Three stems makes a bouquet, but twelve makes a day.",
+  ],
+  idle: [
+    "These roses need their stems trimmed on a slant.",
+    "Fresh water in every bucket before lunch. Almost done.",
+    "A little eucalyptus makes everything look like it was planned.",
+    "I could wrap a bouquet in my sleep. Please don't test that.",
+    "The sunflowers keep turning toward the window. Can't blame them.",
+    "Someone left a daisy on the counter. I'm keeping it.",
+    "Baby's breath gets everywhere. I find it in my coat in July.",
+    "Kraft paper or cream? Honestly, both.",
+    "I love the quiet before the afternoon rush of birthdays.",
+    "Pink ribbon on a white bouquet never gets old.",
+  ],
+  goodbye: [
+    "Enjoy your flowers. Give them fresh water tonight.",
+    "Thanks for stopping in. Come back when the peonies peak.",
+    "Trim the stems when you get home and they'll last a week.",
+    "Take care, and say hi to that vase of yours.",
+    "Come see us again. We get new stems on Thursday.",
+    "That's a lovely bouquet. Whoever sees it is lucky.",
+    "Bye for now. Watch the doorframe with those long stems.",
+    "Have a bright day out there.",
+    "Don't forget to put them somewhere you'll see them.",
+    "See you soon. The tulips will have opened by then.",
+  ],
+  tapped: [
+    "Roses are for feeling bold. Daisies are for feeling easy.",
+    "Peonies only bloom for a few weeks. Worth the wait.",
+    "Pair something tall with something round and it always looks right.",
+    "Some people build a rainbow. Some go all one color. Both work.",
+    "A little green behind the blooms makes every color pop.",
+    "Lilies look dramatic, but they're the easiest to keep alive.",
+    "The wrap says as much as the flowers. Cream is soft, kraft is sweet.",
+    "Eight stems is the sweet spot for a hand-held bouquet.",
+    "Everyone picks differently. I can usually guess your mood from your buckets.",
+    "I started out sweeping this floor. Now look at me with ribbon.",
+    "If it's for you, you don't need an occasion.",
+    "Tulips keep growing in the vase. Give them room to lean.",
+  ],
+};

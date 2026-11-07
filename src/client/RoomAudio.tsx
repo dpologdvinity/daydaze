@@ -79,6 +79,7 @@ const MUSIC: Partial<Record<RoomId, TrackId>> = {
   "hotel-rooftop": "sugar-rush-pop",
   bookshop: "canopy-lofi",
   patisserie: "roller-disco",
+  florist: "canopy-lofi",
   gallery: "canopy-lofi",
   pottery: "canopy-lofi",
   "surf-shack": "sugar-rush-pop",

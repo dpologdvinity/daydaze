@@ -45,6 +45,7 @@ test("every room is registered under its own id", () => {
     "espresso-lab",
     "farm",
     "filipino-joint",
+    "florist",
     "forest",
     "galleria",
     "gallery",

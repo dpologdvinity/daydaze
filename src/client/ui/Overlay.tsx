@@ -185,6 +185,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "Gallery 44. Walk the show, sit on the bench, or paint at the easel: hang your piece and it stays on the open wall.",
   patisserie:
     "Sucre. Take a table under the chandelier, or build a macaron tower on the marble stand: drop each one dead over the last.",
+  florist:
+    "Petal & Stem. Pick stems from the buckets, choose a wrap and ribbon, and take a bouquet home for your apartment vase.",
   bookshop:
     "Dog-Ear Books. Browse the stacks, curl up in a wingback by the fire, and say hello to Marmalade asleep on the counter.",
   "hotel-rooftop":

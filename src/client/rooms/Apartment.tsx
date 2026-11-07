@@ -20,6 +20,8 @@ import { HdriLight } from "./shared/HdriLight.tsx";
 import type { HomeSave } from "../../game/home/home.ts";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
+import { BouquetModel } from "./florist/BouquetModel.tsx";
+import { floristDesk } from "./florist/session.ts";
 
 // Grid origin: the floor runs x -4..4 and z -3..3, one cell per meter.
 const ORIGIN = { x: -4, z: -3 };
@@ -60,6 +62,7 @@ export function Apartment({
       <Walls />
       <HungPainting />
       <PotteryShelf />
+      <BouquetVase />
       {home.furniture.map((item, index) => (
         <Piece key={`${item.id}-${index}`} item={item} />
       ))}
@@ -316,6 +319,27 @@ function PotteryShelf() {
       <group scale={0.55}>
         <PotMesh clay={saved.clay} color={saved.glaze} />
       </group>
+    </group>
+  );
+}
+
+/** The bouquet from Petal & Stem, in a glass vase on the window sill. */
+function BouquetVase() {
+  const { bouquet } = floristDesk.use();
+  const { gl } = useThree();
+  useEffect(() => {
+    if (bouquet)
+      gl.domElement.dataset.bouquetVase = String(bouquet.stems.length);
+    return () => {
+      delete gl.domElement.dataset.bouquetVase;
+    };
+  }, [bouquet, gl]);
+  if (!bouquet) return null;
+  return (
+    <group position={[-0.9, 1.14, -2.8]} scale={0.9} name="apartment-bouquet">
+      <Suspense fallback={null}>
+        <BouquetModel bouquet={bouquet} vase />
+      </Suspense>
     </group>
   );
 }

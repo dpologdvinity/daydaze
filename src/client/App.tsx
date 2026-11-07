@@ -85,6 +85,7 @@ import { postPrize, prizeDesk } from "./ui/prizeDesk.ts";
 import { petDesk } from "./rooms/zoo/petDesk.ts";
 import { pottery } from "./rooms/pottery/session.ts";
 import { farmDesk } from "./rooms/farm/farmSession.ts";
+import { floristDesk } from "./rooms/florist/session.ts";
 import { World } from "./world/World.tsx";
 
 const FADE_MS = 300;
@@ -299,6 +300,19 @@ export function App() {
     });
     return () => pottery.set({ commit: null });
   }, []);
+  // Petal & Stem's panel reads the saved bouquet and coins and writes them back
+  useEffect(
+    () => floristDesk.set({ bouquet: save.bouquet, coins: save.coins }),
+    [save.bouquet, save.coins],
+  );
+  useEffect(
+    () =>
+      floristDesk.set({
+        commit: (next) =>
+          setSave((s) => ({ ...s, bouquet: next.bouquet, coins: next.coins })),
+      }),
+    [],
+  );
   const setHome = (home: HomeSave) => setSave((s) => ({ ...s, home }));
   const setCar = (car: ParkedCar) => setSave((s) => ({ ...s, car }));
   const setJail = (jail: SaveV1["jail"]) => setSave((s) => ({ ...s, jail }));

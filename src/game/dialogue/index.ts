@@ -4,6 +4,7 @@
 
 import { potterBank, potteryRegularBank } from "./potter.ts";
 import { bartenderBank } from "./bartender.ts";
+import { floristBank } from "./florist.ts";
 import { bouncerBank } from "./bouncer.ts";
 import { djBank } from "./dj.ts";
 import { clubDancerBank } from "./club-dancer.ts";
@@ -38,6 +39,7 @@ import type { DialogueRole, RoleBank } from "./types.ts";
 export const LINE_BANKS: Record<DialogueRole, RoleBank> = {
   potter: potterBank,
   "pottery-regular": potteryRegularBank,
+  florist: floristBank,
   bartender: bartenderBank,
   bouncer: bouncerBank,
   dj: djBank,

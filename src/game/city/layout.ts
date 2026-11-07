@@ -57,6 +57,7 @@ import * as LAB from "../espressoLab.ts";
 import * as ROOF from "../hotelRooftop.ts";
 import * as BOOKS from "../bookshop.ts";
 import * as SUCRE from "../patisserie.ts";
+import * as PETAL from "../floristShop.ts";
 import * as G44 from "../gallery.ts";
 import * as SURF from "../surfShack.ts";
 import * as SKEE from "../boardwalkArcade.ts";
@@ -1653,7 +1654,25 @@ const UPTOWN_FRONT: readonly {
       },
     },
   },
-  { x: 290, w: 22, h: 20, north: false, color: "#9c6644", style: "brick" },
+  {
+    x: 290,
+    w: 22,
+    h: 20,
+    north: false,
+    color: "#9c6644",
+    sign: { text: "PETAL & STEM", color: "#ffb3d1" },
+    style: "brick",
+    venue: {
+      id: "florist",
+      door: {
+        position: PETAL.FLORIST_DOOR.position,
+        radius: 2,
+        label: "Into Petal & Stem",
+        target: "florist",
+        targetSpawn: { position: PETAL.SPAWN, yaw: Math.PI },
+      },
+    },
+  },
   {
     x: 351,
     w: 22,

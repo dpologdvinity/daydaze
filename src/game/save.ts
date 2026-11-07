@@ -6,6 +6,7 @@
 import { cleanPot, type FiredPot } from "./pottery.ts";
 import { cleanSets, cleanVisited } from "./collections.ts";
 import { cleanFarm, createDefaultFarm, type FarmSave } from "./farm.ts";
+import { validateBouquet, type Bouquet } from "./florist.ts";
 import type { RoomId } from "./rooms.ts";
 import { isIntensity, type Intensity } from "./effects/buzz.ts";
 import {
@@ -85,6 +86,7 @@ export type SaveV1 = {
   farm: FarmSave;
   /** Latest fired Clay Day piece, displayed at home. */
   pottery: FiredPot | null;
+  bouquet: Bouquet | null;
 };
 
 /** The localStorage key the save lives under. */
@@ -134,6 +136,7 @@ export function createDefaultSave(name: string): SaveV1 {
     pet: null,
     farm: createDefaultFarm(),
     pottery: null,
+    bouquet: null,
   };
 }
 
@@ -162,6 +165,7 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
   const look = save.get("look");
   const swim = save.get("swim");
   const coins = save.get("coins");
+  const bouquet = save.get("bouquet");
   const wardrobe = cleanWardrobe(save.get("wardrobe"));
   const garage = cleanGarage(save.get("garage"));
   const quality = settings.get("quality");
@@ -215,6 +219,7 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
     pet: validatePet(save.get("pet")),
     farm: cleanFarm(save.get("farm")),
     pottery: cleanPot(save.get("pottery")),
+    bouquet: validateBouquet(bouquet) ? bouquet : null,
   };
 }
 
