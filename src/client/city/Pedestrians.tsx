@@ -8,15 +8,19 @@ import {
   pedestrianAt,
   type PedestrianPose,
 } from "../../game/city/pedestrians.ts";
+import {
+  CROWD_CAP,
+  CROWD_RADIUS,
+  PEDESTRIAN_DOLLS,
+  PEDESTRIAN_DOLL_RADIUS,
+} from "../../game/city/tuning.ts";
+import { useQuality } from "../world/quality.ts";
 import { Doll } from "../avatar/Doll.tsx";
 import { Creature, type CreaturePose } from "../creatures/Creature.tsx";
 import type { Player } from "../world/PlayerController.tsx";
 import { cityHour } from "./daylight.ts";
 import { PERSON_SCALE, usePersonAt } from "../rooms/speedway/peopleModel.ts";
 
-/** At most this many walkers are drawn: each is a full doll. */
-const DRAWN = 4;
-const RADIUS = 55;
 /** Seconds between re-picking who is nearest. */
 const REPICK = 0.75;
 
@@ -52,10 +56,7 @@ function Walker({ index }: { index: number }) {
   );
 }
 
-/** Beyond the dolls: the rest of the crowd within this far, as small people. */
-const CROWD_RADIUS = 110;
 /** Per look and stride: 4 looks x 2 strides, each its own instanced mesh. */
-const CROWD_CAP = 24;
 const LOOKS = ["male-a", "female-c", "male-d", "female-a"] as const;
 const STRIDES = ["walk-a", "walk-b"] as const;
 const walkerUrl = (look: string, stride: string) =>
@@ -150,6 +151,8 @@ function CrowdFigures({
   player: Player;
   dolls: React.RefObject<readonly number[]>;
 }) {
+  const tier = useQuality();
+  const drawn = PEDESTRIAN_DOLLS[tier];
   const bikers = useRef<readonly number[]>([]);
   const meshes = useRef<(THREE.InstancedMesh | null)[]>([]);
   const picked = useRef<readonly number[]>([]);
@@ -170,8 +173,8 @@ function CrowdFigures({
       const all = nearestPedestrians(
         [player.pos.x, player.pos.z],
         t,
-        CROWD_CAP * LOOKS.length + DRAWN,
-        CROWD_RADIUS,
+        CROWD_CAP * LOOKS.length + drawn,
+        CROWD_RADIUS[tier],
         cityHour(),
         true,
       );
@@ -226,6 +229,9 @@ function CrowdFigures({
  * she comes back into range.
  */
 export function Pedestrians({ player }: { player: Player }) {
+  const tier = useQuality();
+  const drawn = PEDESTRIAN_DOLLS[tier];
+  const radius = PEDESTRIAN_DOLL_RADIUS[tier];
   const [shown, setShown] = useState<readonly number[]>([]);
   const last = useRef(-Infinity);
   const dolls = useRef<readonly number[]>([]);
@@ -237,8 +243,8 @@ export function Pedestrians({ player }: { player: Player }) {
     const next = nearestPedestrians(
       [player.pos.x, player.pos.z],
       t,
-      DRAWN,
-      RADIUS,
+      drawn,
+      radius,
       cityHour(),
     );
     // only re-render when the set changes, not when the order does

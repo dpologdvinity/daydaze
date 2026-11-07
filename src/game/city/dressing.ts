@@ -338,7 +338,7 @@ function blade(out: Buckets, f: Front, text: string, color: string): void {
  * Windows on all four faces, each with a sill under it. About half are lit,
  * warm, cool or pink; the rest are dark glass with the frame showing.
  */
-function windows(b: Building, f: Front, out: Buckets): void {
+function windows(b: Building, f: Front, out: Buckets, sills: boolean): void {
   if (b.style === "gate") return;
   for (let y = 5; y < f.h - 1.5; y += FLOOR) {
     for (const [z, dz, rot] of [
@@ -357,15 +357,16 @@ function windows(b: Building, f: Front, out: Buckets): void {
           rot: [0, rot, 0],
           color: lit ? pick(WINDOW_COLORS, hash(y, x, z, 3)) : UNLIT_WINDOW,
         });
-        out.ledge.push({
-          x,
-          y: y - 1.25,
-          z: z + dz * 0.25,
-          sx: 2.2,
-          sy: 0.14,
-          sz: 0.5,
-          color: SILL,
-        });
+        if (sills)
+          out.ledge.push({
+            x,
+            y: y - 1.25,
+            z: z + dz * 0.25,
+            sx: 2.2,
+            sy: 0.14,
+            sz: 0.5,
+            color: SILL,
+          });
       }
     }
     for (const [x, dx, rot] of [
@@ -384,15 +385,16 @@ function windows(b: Building, f: Front, out: Buckets): void {
           rot: [0, rot, 0],
           color: lit ? pick(WINDOW_COLORS, hash(y, z, x, 3)) : UNLIT_WINDOW,
         });
-        out.ledge.push({
-          x: x + dx * 0.25,
-          y: y - 1.25,
-          z,
-          sx: 0.5,
-          sy: 0.14,
-          sz: 2.2,
-          color: SILL,
-        });
+        if (sills)
+          out.ledge.push({
+            x: x + dx * 0.25,
+            y: y - 1.25,
+            z,
+            sx: 0.5,
+            sy: 0.14,
+            sz: 2.2,
+            color: SILL,
+          });
       }
     }
   }
@@ -568,7 +570,12 @@ function sideDoor(b: Building, f: Front, out: Buckets, accent: string): void {
 }
 
 /** Everything a building adds to its own frontage, after its body is drawn. */
-export function dressBuilding(b: Building, out: Buckets, kit = false): void {
+export function dressBuilding(
+  b: Building,
+  out: Buckets,
+  kit = false,
+  sills = true,
+): void {
   const f = frontOf(b);
   const accent = b.sign?.color ?? pick(PAINT, hash(f.cx, f.cz));
   if (SHOPFRONT.has(b.style)) {
@@ -585,7 +592,7 @@ export function dressBuilding(b: Building, out: Buckets, kit = false): void {
     });
   }
   // the kit's bays have their own windows and sills
-  if (!kit) windows(b, f, out);
+  if (!kit) windows(b, f, out, sills);
   awning(out, f, accent);
   if (b.id.startsWith("boardwalk-shop")) servingWindows(out, f, accent);
   if (SHOPFRONT.has(b.style) && b.style !== "gate") {

@@ -15,12 +15,12 @@ import * as THREE from "three";
 import {
   DOG_Y,
   GEAR,
+  dogParkNear,
   fenceSpots,
   stepWorld,
   type Dog,
   type GearKind,
 } from "../../game/city/dogPark.ts";
-import { DOG_PARK } from "../../game/city/park.ts";
 import { Creature, type CreaturePose } from "../creatures/Creature.tsx";
 import type { Player } from "../world/PlayerController.tsx";
 import { useQuality } from "../world/quality.ts";
@@ -29,9 +29,6 @@ import { useDaylight } from "./daylight.ts";
 import { disposeInstanced } from "./dispose.ts";
 import { propParts, type PropSpot } from "./instancedProps.ts";
 import { parkWorld } from "./parkDesk.ts";
-
-/** The yard exists within this many meters of its fence. */
-export const DOG_PARK_RANGE = 70;
 
 const URLS = {
   fence: "/models/farm/fence.glb",
@@ -43,13 +40,6 @@ const URLS = {
 } as const;
 const KEYS = Object.keys(URLS) as (keyof typeof URLS)[];
 const PATHS = KEYS.map((k) => URLS[k]);
-
-/** Whether (x, z) is close enough to the yard to draw it. */
-export const dogParkNear = (x: number, z: number): boolean =>
-  Math.hypot(
-    Math.max(DOG_PARK.x0 - x, 0, x - DOG_PARK.x1),
-    Math.max(DOG_PARK.z0 - z, 0, z - DOG_PARK.z1),
-  ) < DOG_PARK_RANGE;
 
 export function DogPark({ player }: { player: Player }): JSX.Element | null {
   const [near, setNear] = useState(false);
