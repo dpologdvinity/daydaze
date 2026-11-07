@@ -13,6 +13,11 @@ export type Phase = "off" | "listen" | "sing" | "over";
 /** The shells' colors, pink, blue, gold and violet. */
 export const SHELL_COLORS = ["#ff4fb3", "#4fe3ff", "#ffd84f", "#b48cff"];
 
+/** `?siren=hold` holds the mermaids' first note lit (for screenshots). */
+const HOLD =
+  typeof location !== "undefined" &&
+  new URLSearchParams(location.search).get("siren") === "hold";
+
 /** Milliseconds per note while the mermaids sing, and the pause first. */
 const NOTE_MS = 650;
 const LEAD_MS = 700;
@@ -66,12 +71,13 @@ export function tick(now: number) {
   }
   if (s.phase !== "listen" || now < s.since) return;
   const notes = current(s.song);
-  const k = Math.floor((now - s.since) / NOTE_MS);
+  const into = HOLD ? Math.min(now - s.since, NOTE_MS / 3) : now - s.since;
+  const k = Math.floor(into / NOTE_MS);
   if (k >= notes.length) {
     siren.set({ phase: "sing", lit: -1 });
     return;
   }
-  const on = (now - s.since) % NOTE_MS < NOTE_MS * 0.7;
+  const on = into % NOTE_MS < NOTE_MS * 0.7;
   const lit = on ? notes[k] : -1;
   if (lit !== s.lit) {
     if (lit >= 0) playShellNote(lit);
