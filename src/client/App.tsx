@@ -311,6 +311,9 @@ export function App() {
       floristDesk.set({
         commit: (next) =>
           setSave((s) => ({ ...s, bouquet: next.bouquet, coins: next.coins })),
+      }),
+    [],
+  );
   // Suburbia Community Garden panel reads the saved garden and coins and writes them back
   useEffect(
     () => gardenDesk.set({ garden: save.garden, coins: save.coins }),

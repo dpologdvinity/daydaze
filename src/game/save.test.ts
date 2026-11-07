@@ -655,6 +655,8 @@ test("Clay Day saves the latest validated piece without losing other progress", 
     null,
   );
   assert.equal(createDefaultSave("Guest").pottery, null);
+});
+
 test("garden state round-trips through the save system", () => {
   const save = createDefaultSave("Gardener Green");
   save.garden.plots[0] = {
