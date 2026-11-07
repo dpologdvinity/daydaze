@@ -9,7 +9,7 @@
 // scene on top of the room portal/HUD base. Well within the 250-call budget.
 
 import { Stars, useGLTF } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { Suspense, useMemo, useRef } from "react";
 import type { JSX } from "react";
 import * as THREE from "three";
@@ -18,7 +18,17 @@ import { byTier } from "../../game/age.ts";
 import type { DialogueContext } from "../../game/dialogue/types.ts";
 import type { Look } from "../../game/look.ts";
 import { ROOMS } from "../../game/rooms.ts";
-import { deckBob, deckRoll } from "../../game/yacht.ts";
+import {
+  deckBob,
+  deckRoll,
+  yachtStateAt,
+  type YachtState,
+} from "../../game/yacht.ts";
+import { CitySky } from "../city/CitySky.tsx";
+import { useDaylight } from "../city/daylight.ts";
+import { surface } from "../city/worldTexture.ts";
+import { useReducedMotion } from "../motion.ts";
+import type { Player } from "../world/PlayerController.tsx";
 import { CrowdFigure } from "./shared/CrowdFigure.tsx";
 import { Batch } from "./shared/batch.ts";
 import { stringLights } from "./shared/details.ts";
@@ -27,22 +37,17 @@ import { hdr } from "./shared/materials.ts";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { Prop } from "./shared/Prop.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
-import { surface } from "../city/worldTexture.ts";
-import { useReducedMotion } from "../motion.ts";
-import type { Player } from "../world/PlayerController.tsx";
 
 // ─── palette ────────────────────────────────────────────────────────────────
 
 /** Warm white teak decking. */
-const TEAK = surface("wood_veneer", { scale: 1.4, color: "#c8a068", roughness: 0.6 });
+const TEAK = surface("wood_veneer", {
+  scale: 1.4,
+  color: "#c8a068",
+  roughness: 0.6,
+});
 /** Dark navy hull-painted surfaces. */
 const NAVY = surface("wood_plank_wall", { scale: 1, color: "#1a2a5a" });
-/** Glossy white gel-coat for railings. */
-const WHITE_GLOSS = new THREE.MeshStandardMaterial({
-  color: "#f4f8ff",
-  metalness: 0.1,
-  roughness: 0.2,
-});
 /** Cobalt-blue tiles for the hot tub. */
 const TUB_TILE = surface("rounded_square_tiled_wall", {
   scale: 0.6,
@@ -95,7 +100,7 @@ function skylineGeometry(): THREE.BufferGeometry {
     const g = new THREE.BoxGeometry(w, h, 1);
     g.translate(x, h / 2, 0);
     pieces.push(g);
-    // lit windows: tiny bright squares scattered up each building face
+    // lit windows: bright squares scattered up each building face
     const wins = new THREE.BoxGeometry(w * 0.9, h * 0.9, 0.5);
     wins.translate(x, h / 2, 0.5);
     pieces.push(wins);
@@ -110,73 +115,69 @@ function buildDeck(): THREE.Group {
 
   // hull sides: low boxes port and starboard
   const hull = new THREE.BoxGeometry(1, 0.8, 18);
-  b.add(hull, NAVY, { x: -8, y: 0.4, z: -1 });
-  b.add(hull, NAVY, { x: 8, y: 0.4, z: -1 });
+  b.add(hull, NAVY, { position: [-8, 0.4, -1] });
+  b.add(hull, NAVY, { position: [8, 0.4, -1] });
 
   // bow transom
   const bow = new THREE.BoxGeometry(16, 0.8, 1);
-  b.add(bow, NAVY, { x: 0, y: 0.4, z: -9.5 });
+  b.add(bow, NAVY, { position: [0, 0.4, -9.5] });
 
   // stern step (gangway platform)
   const stern = new THREE.BoxGeometry(4, 0.3, 1.5);
-  b.add(stern, TEAK, { x: 0, y: -0.15, z: 7.2 });
+  b.add(stern, TEAK, { position: [0, -0.15, 7.2] });
 
   // railing posts (port + starboard, bow + midship)
   const post = new THREE.CylinderGeometry(0.04, 0.04, 1.1, 6);
   for (let z = -8; z <= 7; z += 2) {
-    b.add(post, RAIL, { x: -7.5, y: 0.95, z });
-    b.add(post, RAIL, { x: 7.5, y: 0.95, z });
+    b.add(post, RAIL, { position: [-7.5, 0.95, z] });
+    b.add(post, RAIL, { position: [7.5, 0.95, z] });
   }
   // bow rail posts
   for (let x = -7; x <= 7; x += 2) {
-    b.add(post, RAIL, { x, y: 0.95, z: -9 });
+    b.add(post, RAIL, { position: [x, 0.95, -9] });
   }
 
   // railing top rail (port + starboard)
   const longRail = new THREE.CylinderGeometry(0.025, 0.025, 15, 6);
-  longRail.applyMatrix4(new THREE.Matrix4().makeRotationZ(Math.PI / 2));
-  b.add(
-    new THREE.CylinderGeometry(0.025, 0.025, 15, 6),
-    RAIL,
-    { x: -7.5, y: 1.5, z: -1.5 },
-    new THREE.Euler(0, 0, Math.PI / 2),
-  );
-  b.add(
-    new THREE.CylinderGeometry(0.025, 0.025, 15, 6),
-    RAIL,
-    { x: 7.5, y: 1.5, z: -1.5 },
-    new THREE.Euler(0, 0, Math.PI / 2),
-  );
+  b.add(longRail, RAIL, {
+    position: [-7.5, 1.5, -0.5],
+    rotation: [Math.PI / 2, 0, 0],
+  });
+  b.add(longRail, RAIL, {
+    position: [7.5, 1.5, -0.5],
+    rotation: [Math.PI / 2, 0, 0],
+  });
+
   // bow rail top
-  const bowRail = new THREE.CylinderGeometry(0.025, 0.025, 14.5, 6);
-  bowRail.applyMatrix4(
-    new THREE.Matrix4().makeRotationX(Math.PI / 2),
-  );
-  b.add(bowRail, RAIL, { x: 0, y: 1.5, z: -9 });
+  const bowRail = new THREE.CylinderGeometry(0.025, 0.025, 15, 6);
+  b.add(bowRail, RAIL, {
+    position: [0, 1.5, -9],
+    rotation: [0, 0, Math.PI / 2],
+  });
 
   // hot tub (starboard aft): a shallow box + tiled interior
   const tubOuter = new THREE.BoxGeometry(3.4, 0.8, 2.6);
-  b.add(tubOuter, NAVY, { x: 5.2, y: 0.4, z: 4.6 });
+  b.add(tubOuter, NAVY, { position: [5.2, 0.4, 4.6] });
   const tubInner = new THREE.BoxGeometry(2.6, 0.5, 2.0);
-  b.add(tubInner, TUB_TILE, { x: 5.2, y: 0.55, z: 4.6 });
+  b.add(tubInner, TUB_TILE, { position: [5.2, 0.55, 4.6] });
 
-  // DJ booth riser (aft)
+  // DJ booth riser (bow)
   const djRiser = new THREE.BoxGeometry(3.2, 0.3, 2.0);
-  b.add(djRiser, TEAK, { x: 0, y: 0.15, z: -7.5 });
+  b.add(djRiser, TEAK, { position: [0, 0.15, -7.5] });
 
   // dance floor LED edge strip (emissive)
   const ledEdge = new THREE.BoxGeometry(8.5, 0.05, 0.08);
-  b.add(ledEdge, LED_AMBER, { x: 0, y: 0.025, z: -4.0 });
-  b.add(ledEdge, LED_AMBER, { x: 0, y: 0.025, z: 2.0 });
+  b.add(ledEdge, LED_AMBER, { position: [0, 0.025, -4.0] });
+  b.add(ledEdge, LED_AMBER, { position: [0, 0.025, 2.0] });
   const ledSide = new THREE.BoxGeometry(0.08, 0.05, 6.0);
-  b.add(ledSide, LED_AMBER, { x: -4.25, y: 0.025, z: -1.0 });
-  b.add(ledSide, LED_AMBER, { x: 4.25, y: 0.025, z: -1.0 });
+  b.add(ledSide, LED_AMBER, { position: [-4.25, 0.025, -1.0] });
+  b.add(ledSide, LED_AMBER, { position: [4.25, 0.025, -1.0] });
 
   // bar counter (port aft)
   const barBack = new THREE.BoxGeometry(4.5, 1.1, 0.5);
-  b.add(barBack, NAVY, { x: -5.5, y: 0.55, z: 2.5 });
+  b.add(barBack, NAVY, { position: [-5.5, 0.55, 2.5] });
   const barTopG = new THREE.BoxGeometry(4.7, 0.08, 0.6);
-  b.add(barTopG, BAR_TOP, { x: -5.5, y: 1.14, z: 2.5 });
+  b.add(barTopG, BAR_TOP, { position: [-5.5, 1.14, 2.5] });
 
   // lounge chairs (port mid)
   const chairSeat = new THREE.BoxGeometry(0.7, 0.2, 1.4);
@@ -186,8 +187,8 @@ function buildDeck(): THREE.Group {
     roughness: 0.8,
   });
   for (let i = 0; i < 3; i++) {
-    b.add(chairSeat, chairMat, { x: -6.0, y: 0.1, z: -3.5 + i * 2.0 });
-    b.add(chairBack, chairMat, { x: -6.0, y: 0.5, z: -4.1 + i * 2.0 });
+    b.add(chairSeat, chairMat, { position: [-6.0, 0.1, -3.5 + i * 2.0] });
+    b.add(chairBack, chairMat, { position: [-6.0, 0.5, -4.1 + i * 2.0] });
   }
 
   return b.build();
@@ -198,41 +199,41 @@ function buildDeck(): THREE.Group {
 function buildLights(): THREE.Group {
   const b = new Batch();
   // four lines of warm white bulbs port-to-starboard at different heights
-  stringLights(b, { x0: -7.3, x1: 7.3, z: -6.0, y: 3.2 }, 10, "#ffe8c0");
-  stringLights(b, { x0: -7.3, x1: 7.3, z: -1.5, y: 3.5 }, 10, "#ffe8c0");
-  stringLights(b, { x0: -7.3, x1: 7.3, z: 2.5, y: 3.2 }, 10, "#ffe8c0");
+  stringLights(b, [-7.3, 3.2, -6.0], [7.3, 3.2, -6.0], 10, "#ffe8c0");
+  stringLights(b, [-7.3, 3.5, -1.5], [7.3, 3.5, -1.5], 10, "#ffe8c0");
+  stringLights(b, [-7.3, 3.2, 2.5], [7.3, 3.2, 2.5], 10, "#ffe8c0");
   // aft anchor line, over the bar
-  stringLights(b, { x0: -7.3, x1: 0, z: 5.5, y: 2.8 }, 6, "#ffdb90");
+  stringLights(b, [-7.3, 2.8, 5.5], [0, 2.8, 5.5], 6, "#ffdb90");
   return b.build();
 }
 
 // ─── NPC looks ──────────────────────────────────────────────────────────────
 
 const CAPTAIN_LOOK: Look = {
-  skin: "#6b4030",
-  hairStyle: "short-taper",
-  hairColor: "#1c1010",
-  lips: "lips-nude-brown",
+  skin: "#94603f",
+  hairStyle: "crop",
+  hairColor: "#1b1014",
+  lips: "lips-90s-caramel-ombre",
   brows: "brows-sculpted-espresso",
-  outfit: "button-up",
-  outfitColor: "#2a3a6a",
-  shadow: "#a0b8ff",
+  outfit: "denim-shirt",
+  outfitColor: "#3a5a8a",
+  shadow: "#8a5a3c",
 };
 
 const CREW_LOOK: Look = {
-  skin: "#e0b898",
+  skin: "#e6b48e",
   hairStyle: "low-pony",
-  hairColor: "#c8782a",
-  lips: "lips-coral-satin",
+  hairColor: "#b77a3e",
+  lips: "lips-coral-pop",
   brows: "brows-feathered-honey",
   outfit: "blouse",
-  outfitColor: "#ffffff",
-  shadow: "#ffc080",
+  outfitColor: "#e8e2ff",
+  shadow: "#ffb02e",
 };
 
 const DJ_LOOK: Look = {
-  skin: "#3a2a1a",
-  hairStyle: "braids-high",
+  skin: "#633c29",
+  hairStyle: "braids",
   hairColor: "#1b1014",
   lips: "lips-hot-pink-glam",
   brows: "brows-y2k-thin",
@@ -243,17 +244,17 @@ const DJ_LOOK: Look = {
 
 const CROWD: readonly Look[] = [
   {
-    skin: "#f0d4c8",
+    skin: "#f3d4c4",
     hairStyle: "mermaid",
     hairColor: "#f1d78f",
-    outfit: "bikini",
+    outfit: "mini",
     outfitColor: "#ff2f9a",
     lips: "lips-hot-pink-glam",
     brows: "brows-y2k-thin",
     shadow: "#ffd1f0",
   },
   {
-    skin: "#a06840",
+    skin: "#94603f",
     hairStyle: "coils",
     hairColor: "#1b1014",
     outfit: "mini",
@@ -263,24 +264,24 @@ const CROWD: readonly Look[] = [
     shadow: "#3fe0d0",
   },
   {
-    skin: "#c88060",
+    skin: "#c48d68",
     hairStyle: "sleek-bob",
-    hairColor: "#a0580a",
+    hairColor: "#b77a3e",
     outfit: "shorts",
     outfitColor: "#ffb02e",
     lips: "lips-nude-pink-gloss",
     brows: "brows-feathered-honey",
-    shadow: "#ffb080",
+    shadow: "#ffb02e",
   },
   {
-    skin: "#f8e4d4",
+    skin: "#f3d4c4",
     hairStyle: "low-pony",
-    hairColor: "#1c1010",
+    hairColor: "#1b1014",
     outfit: "blouse",
-    outfitColor: "#c8a0ff",
-    lips: "lips-coral-satin",
+    outfitColor: "#9b5cff",
+    lips: "lips-coral-pop",
     brows: "brows-sculpted-espresso",
-    shadow: "#d0a0ff",
+    shadow: "#d23cff",
   },
 ];
 
@@ -365,7 +366,7 @@ function YachtNpcs(): JSX.Element {
         role="dj"
         look={DJ_LOOK}
         mood="dance"
-        dance="dj-scratch"
+        dance="raise-the-roof"
         at={[0, 0, -7.5]}
         rot={Math.PI}
         seed={303}
@@ -396,11 +397,7 @@ function YachtNpcs(): JSX.Element {
 
 // ─── Mocktail bar label ──────────────────────────────────────────────────────
 
-/** Small bar menu sign above the counter. Renders only as 3-D text geometry
- * (a flat box with painted text texture); no DOM, no Billboard. */
 function BarSign(): JSX.Element {
-  // Reuse the approach from NeonText: a plain MeshBasicMaterial with a canvas
-  // texture. No drei/Html dependency so it stays in the draw-call budget.
   const texture = useMemo(() => {
     const canvas = document.createElement("canvas");
     canvas.width = 256;
@@ -433,34 +430,77 @@ function BarSign(): JSX.Element {
 
 /**
  * Starlight Yacht Party: a motor yacht cruising a loop around Starboard Bay.
- * The deck bobs (deckBob) and rolls (deckRoll) gently; pure logic is in
+ * The deck bobs (deckBob) and rolls (deckRoll) gently; pure route logic is in
  * src/game/yacht.ts. Players walk the teak deck, dance, use the hot tub and
  * mocktail bar, and disembark through the gangway portal.
  *
  * Uses public/models/marina/yacht.glb (CC-BY 3.0, credited in docs/assets.md
- * and src/game/credits.ts). No new asset downloads needed; the hull appears
- * below deck level.
+ * and src/game/credits.ts).
  */
-export function Yacht({ onPick, player: _ }: { onPick: PickHandler; player: Player }): JSX.Element {
+export function Yacht({
+  onPick,
+  player: _,
+}: {
+  onPick: PickHandler;
+  player: Player;
+}): JSX.Element {
   const calm = useReducedMotion();
+  const daylight = useDaylight();
   const deck = useMemo(buildDeck, []);
   const lights = useMemo(buildLights, []);
   const deckRef = useRef<THREE.Group>(null);
+  const skylineRef = useRef<THREE.Group>(null);
   const startTime = useRef(Date.now() / 1000);
+  const gl = useThree((s) => s.gl);
+
+  const stateRef = useRef<YachtState>({
+    x: 0,
+    z: 0,
+    heading: 0,
+    atDock: true,
+    loopProgress: 0,
+    leg: 0,
+  });
+  const prevCruise = useRef("");
+  const prevLeg = useRef(-1);
 
   useFrame(() => {
-    if (calm || !deckRef.current) return;
     const t = Date.now() / 1000 - startTime.current;
-    deckRef.current.position.y = deckBob(t);
-    deckRef.current.rotation.z = deckRoll(t);
+    yachtStateAt(t, stateRef.current);
+    const cruise = stateRef.current;
+    const cruiseStatus = cruise.atDock ? "docked" : "cruising";
+
+    if (prevCruise.current !== cruiseStatus) {
+      prevCruise.current = cruiseStatus;
+      gl.domElement.dataset.yachtCruise = cruiseStatus;
+    }
+    if (prevLeg.current !== cruise.leg) {
+      prevLeg.current = cruise.leg;
+      gl.domElement.dataset.yachtLeg = String(cruise.leg);
+    }
+
+    if (skylineRef.current) {
+      // Perspective shifts as yacht circles the bay
+      skylineRef.current.position.x = -cruise.x * 0.35;
+      skylineRef.current.position.z = -cruise.z * 0.35;
+      skylineRef.current.rotation.y = -cruise.heading * 0.25;
+    }
+
+    if (!calm && deckRef.current) {
+      deckRef.current.position.y = deckBob(t);
+      deckRef.current.rotation.z = deckRoll(t);
+    }
   });
 
   return (
     <>
       <color attach="background" args={["#060a1c"]} />
-      <fog attach="fog" args={["#0a1430", 40, 130]} />
+      <fog attach="fog" args={["#0a1430", 40, 140]} />
 
-      {/* Lighting: hemisphere + warm point over dance floor + accent */}
+      {/* City sunset/night sky dome with clouds & horizon glow */}
+      <CitySky night={daylight.neon} />
+
+      {/* Lighting: hemisphere + warm point over dance floor + mocktail accent */}
       <hemisphereLight args={["#9fb8ff", "#0b2a4a", 0.85]} />
       <pointLight
         position={[0, 4.0, -1.5]}
@@ -475,7 +515,7 @@ export function Yacht({ onPick, player: _ }: { onPick: PickHandler; player: Play
         distance={12}
       />
 
-      {/* Star field */}
+      {/* Twinkling star field */}
       <Stars
         radius={90}
         depth={20}
@@ -485,10 +525,12 @@ export function Yacht({ onPick, player: _ }: { onPick: PickHandler; player: Play
         speed={calm ? 0 : 0.3}
       />
 
-      {/* City skyline silhouette behind the bow */}
-      <Skyline />
+      {/* City skyline silhouette in the distance behind the bay */}
+      <group ref={skylineRef}>
+        <Skyline />
+      </group>
 
-      {/* Water plane (non-walkable; tap goes to nearest deck point via onPick) */}
+      {/* Water plane around the yacht */}
       <mesh
         rotation-x={-Math.PI / 2}
         position={[0, -0.65, 0]}
@@ -500,18 +542,18 @@ export function Yacht({ onPick, player: _ }: { onPick: PickHandler; player: Play
         }}
         data-testid="water-plane"
       >
-        <planeGeometry args={[120, 120]} />
+        <planeGeometry args={[140, 140]} />
         <meshStandardMaterial
           color="#0b2a4a"
           metalness={0.5}
           roughness={0.25}
           transparent
-          opacity={0.68}
+          opacity={0.7}
           depthWrite={false}
         />
       </mesh>
 
-      {/* Bobbing deck group – everything visible on the yacht */}
+      {/* Bobbing deck group – everything on the yacht */}
       <group ref={deckRef} data-testid="yacht-deck">
         {/* Teak walking deck */}
         <Floor

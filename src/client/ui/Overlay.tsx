@@ -243,6 +243,8 @@ const ROOM_HINTS: Record<RoomId, string> = {
     "The Courtside Club. Play seven points against the club pro: swing as the ball reaches you, and a perfect swing deep in a rally is a winner.",
   marina:
     "Starboard Marina. Fish off the end of the long dock: cast out, then strike the moment the bobber dips. Coral pours at the yacht club.",
+  yacht:
+    "The Starlight. Dance under the string lights, chat with the captain, grab a mocktail from Mia, or relax in the hot tub as the yacht loops the bay.",
   gym: "Flip City Gymnastics. Start the floor routine and press as each ring closes to stick your tumbles for the judges.",
   skatepark:
     "Concrete Wave Skatepark. Drop in on the half-pipe and time your tricks at the lip, or put on skates and roll around.",
@@ -1013,7 +1015,8 @@ export function Overlay({
             room === "tiki-bar" ||
             room === "hotel-rooftop" ||
             room === "drive-in" ||
-            room === "wine-bar") && (
+            room === "wine-bar" ||
+            room === "yacht") && (
             <button
               type="button"
               className="drink"

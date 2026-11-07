@@ -254,6 +254,7 @@ const SHOTS: {
   { name: "gridiron", query: "room=gridiron" },
   { name: "driving-range", query: "room=driving-range" },
   { name: "marina", query: "room=marina" },
+  { name: "yacht", query: "room=yacht" },
   { name: "courtside", query: "room=courtside" },
   { name: "catwalk", query: "room=catwalk" },
   { name: "mermaid-cove", query: "room=mermaid-cove" },

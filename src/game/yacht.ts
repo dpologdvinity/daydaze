@@ -76,22 +76,31 @@ export interface YachtState {
  *
  * The ship loops continuously. During the first {@link BOARD_WINDOW_S} of each
  * loop it sits at the dock (atDock = true); after that it cruises the route.
+ * An optional `out` object can be provided to avoid allocations in animation loops.
  */
-export function yachtStateAt(tSec: number): YachtState {
+export function yachtStateAt(tSec: number, out?: YachtState): YachtState {
+  const result: YachtState = out ?? {
+    x: 0,
+    z: 0,
+    heading: 0,
+    atDock: true,
+    loopProgress: 0,
+    leg: 0,
+  };
+
   // Wrap into one loop period.
   const phase = ((tSec % LOOP_PERIOD_S) + LOOP_PERIOD_S) % LOOP_PERIOD_S;
 
   if (phase < BOARD_WINDOW_S) {
     const dock = ROUTE[0];
     const next = ROUTE[1];
-    return {
-      x: dock.x,
-      z: dock.z,
-      heading: Math.atan2(next.x - dock.x, next.z - dock.z),
-      atDock: true,
-      loopProgress: 0,
-      leg: 0,
-    };
+    result.x = dock.x;
+    result.z = dock.z;
+    result.heading = Math.atan2(next.x - dock.x, next.z - dock.z);
+    result.atDock = true;
+    result.loopProgress = 0;
+    result.leg = 0;
+    return result;
   }
 
   // Cruise phase: map elapsed cruise time to distance along route.
@@ -106,31 +115,26 @@ export function yachtStateAt(tSec: number): YachtState {
     const legDist = Math.hypot(b.x - a.x, b.z - a.z);
     if (remaining <= legDist || i === ROUTE.length - 1) {
       const t = legDist > 0 ? Math.min(remaining / legDist, 1) : 0;
-      const x = a.x + (b.x - a.x) * t;
-      const z = a.z + (b.z - a.z) * t;
-      const heading = Math.atan2(b.x - a.x, b.z - a.z);
-      return {
-        x,
-        z,
-        heading,
-        atDock: false,
-        loopProgress: phase / LOOP_PERIOD_S,
-        leg: i,
-      };
+      result.x = a.x + (b.x - a.x) * t;
+      result.z = a.z + (b.z - a.z) * t;
+      result.heading = Math.atan2(b.x - a.x, b.z - a.z);
+      result.atDock = false;
+      result.loopProgress = phase / LOOP_PERIOD_S;
+      result.leg = i;
+      return result;
     }
     remaining -= legDist;
   }
 
   // Fallback: return dock (should never be reached).
   const dock = ROUTE[0];
-  return {
-    x: dock.x,
-    z: dock.z,
-    heading: 0,
-    atDock: true,
-    loopProgress: 1,
-    leg: 0,
-  };
+  result.x = dock.x;
+  result.z = dock.z;
+  result.heading = 0;
+  result.atDock = true;
+  result.loopProgress = 1;
+  result.leg = 0;
+  return result;
 }
 
 /**
@@ -166,4 +170,4 @@ export const GANGWAY_AT: readonly [number, number] = [0, -4.8];
 export const YACHT_SPAWN: readonly [number, number] = [0, 2.0];
 
 /** Where the player stands to disembark (gangway exit on the yacht). */
-export const DISEMBARK_AT: readonly [number, number] = [0, -6.0];
+export const DISEMBARK_AT: readonly [number, number] = [0, 6.0];

@@ -83,7 +83,8 @@ test("loopProgress monotonically increases within one loop (excluding dock time)
   // Sample cruise phase only; last sample wraps, so stop before LOOP_PERIOD_S.
   let prev = -1;
   for (let i = 0; i <= 100; i++) {
-    const t = BOARD_WINDOW_S + (i / 101) * (LOOP_PERIOD_S - BOARD_WINDOW_S - 0.1);
+    const t =
+      BOARD_WINDOW_S + (i / 101) * (LOOP_PERIOD_S - BOARD_WINDOW_S - 0.1);
     const s = yachtStateAt(t);
     assert.ok(
       s.loopProgress >= prev - 1e-6,
@@ -115,7 +116,10 @@ test("heading is a finite number in -π..π at all points", () => {
     const t = (i / 50) * LOOP_PERIOD_S;
     const { heading } = yachtStateAt(t);
     assert.ok(isFinite(heading), `heading finite at t=${t}`);
-    assert.ok(heading >= -Math.PI && heading <= Math.PI, `heading in range at t=${t}`);
+    assert.ok(
+      heading >= -Math.PI && heading <= Math.PI,
+      `heading in range at t=${t}`,
+    );
   }
 });
 
@@ -154,4 +158,20 @@ test("GANGWAY_AT and YACHT_SPAWN are 2-element tuples", () => {
 
 test("CRUISE_SPEED is a positive number between 1 and 10 m/s", () => {
   assert.ok(CRUISE_SPEED > 1 && CRUISE_SPEED < 10);
+});
+
+test("yachtStateAt mutates and returns the optional out object without allocations", () => {
+  const target = {
+    x: 0,
+    z: 0,
+    heading: 0,
+    atDock: false,
+    loopProgress: 0,
+    leg: 0,
+  };
+  const returned = yachtStateAt(10, target);
+  assert.equal(returned, target);
+  assert.equal(target.atDock, true);
+  yachtStateAt(25, target);
+  assert.equal(target.atDock, false);
 });
