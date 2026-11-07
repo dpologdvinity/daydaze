@@ -799,6 +799,12 @@ const SHOTS: {
     },
   },
   {
+    // the west end of the avenue, the plan-heaviest spot on the low tier
+    name: "w144-wide",
+    query: "room=city&view=full&time=12:00&at=-144,0",
+    live: true,
+  },
+  {
     name: "city-mobile",
     query: "room=city&view=full",
     viewport: { width: 390, height: 844 },
@@ -925,6 +931,30 @@ for (const shot of SHOTS) {
   console.log(
     `${shot.name}: ${last} frames, ${calls} draw calls, ${triangles} triangles, ${((Date.now() - started) / 1000).toFixed(0)} s`,
   );
+  if (process.env.BREAKDOWN) {
+    // TEMP-PROFILE: visible meshes by triangles, grouped by name chain
+    const rows = await page.evaluate(`(() => {
+      const scene = window.__scene; const cam = window.__cam;
+      
+      const out = new Map();
+      scene.traverse((o) => {
+        if (!o.isMesh || !o.geometry) return;
+        let v = true; for (let p = o; p; p = p.parent) if (!p.visible) v = false;
+        if (!v) return;
+        const g = o.geometry;
+        const per = (g.index ? g.index.count : g.attributes.position.count) / 3;
+        let n = 1;
+        if (o.isInstancedMesh) n = o.instancesCount ?? o.count;
+        if (o.isInstancedMesh2 || o.LODinfo || o.instancesCount !== undefined) n = o.instancesCount ?? o.count;
+        const chain = []; for (let p = o; p && chain.length < 4; p = p.parent) chain.push(p.name || p.type);
+        const key = chain.join("<");
+        const e = out.get(key) ?? { tris: 0, meshes: 0 };
+        e.tris += per * n; e.meshes += 1; out.set(key, e);
+      });
+      return [...out].sort((a, b) => b[1].tris - a[1].tris).slice(0, 25).map(([k, e]) => Math.round(e.tris) + " " + e.meshes + "m " + k);
+    })()`);
+    console.log(`BREAKDOWN ${shot.name}\n${(rows as string[]).join("\n")}`);
+  }
   await page.close();
 }
 await browser.close();
