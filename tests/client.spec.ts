@@ -1369,7 +1369,7 @@ test("the closet's Build makes a man, with a beard, and it survives a reload", a
   await page.getByRole("tab", { name: "Hair" }).click();
   await page
     .getByRole("radiogroup", { name: "Hair style" })
-    .getByRole("radio", { name: "Crop" })
+    .getByRole("radio", { name: "Crop", exact: true })
     .click();
   const saved = await page.evaluate(() =>
     localStorage.getItem("daydaze-save-v1"),
