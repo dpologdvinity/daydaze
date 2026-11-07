@@ -198,37 +198,95 @@ for o in list(bpy.context.scene.objects):
     o.data.name = bucket
     parts[bucket] = o
 
+def tris_of(o):
+    return sum(len(p.vertices) - 2 for p in o.data.polygons)
+
+
+def split_by_material(obj):
+    """Separates `obj` into one object per bucket material, named after it."""
+    bpy.ops.object.select_all(action="DESELECT")
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
+    bpy.ops.mesh.separate(type="MATERIAL")
+    bpy.ops.object.mode_set(mode="OBJECT")
+    # free the names of the meshes joined away (they linger as orphans)
+    bpy.data.orphans_purge(do_recursive=True)
+    out = {}
+    for o in list(bpy.context.scene.objects):
+        if o.type != "MESH" or o in parts.values():
+            continue
+        if not o.data.polygons:
+            bpy.data.objects.remove(o)
+            continue
+        name = o.data.materials[o.data.polygons[0].material_index].name[3:].lower()
+        o.name = o.data.name = name
+        out[name] = o
+    return out
+
+
+def wheel_discs(tyre):
+    """Replaces the tyre mesh with one 10-sided disc per wheel. The four wheels
+    are the tyre vertices grouped by side (x) and end (y); each disc takes its
+    group's bounding box (the axle runs along x)."""
+    groups = {}
+    for v in tyre.data.vertices:
+        groups.setdefault((v.co.x > 0, v.co.y > 0), []).append(v.co.copy())
+    bpy.data.objects.remove(tyre)
+    discs = []
+    for pts in groups.values():
+        xs, ys, zs = ([q[i] for q in pts] for i in range(3))
+        centre = ((min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2, (min(zs) + max(zs)) / 2)
+        radius = max(max(ys) - min(ys), max(zs) - min(zs)) / 2
+        width = max(xs) - min(xs)
+        bpy.ops.mesh.primitive_cylinder_add(
+            vertices=10, radius=radius, depth=width, location=centre, rotation=(0, math.pi / 2, 0)
+        )
+        d = bpy.context.object
+        while d.data.uv_layers:
+            d.data.uv_layers.remove(d.data.uv_layers[0])
+        d.data.materials.append(bucket_mat["tyre"])
+        colors = d.data.color_attributes.new(name="Color", type="FLOAT_COLOR", domain="CORNER")
+        for c in colors.data:
+            c.color = TYRE
+        discs.append(d)
+    bpy.ops.object.select_all(action="DESELECT")
+    for d in discs:
+        d.select_set(True)
+    bpy.context.view_layer.objects.active = discs[0]
+    bpy.ops.object.join()
+    joined = bpy.context.object
+    bpy.data.orphans_purge(do_recursive=True)
+    joined.name = joined.data.name = "tyre"
+    return joined
+
+
 if detail == "lo":
-    # The distance twin: a thinned body, plain tyres, no separate hubs.
+    # The distance twin: the body thinned as one mesh (so paint, trim and
+    # glass cannot pull apart at the seams), plain discs for wheels, no hubs.
     if "rim" in parts:
         bpy.data.objects.remove(parts["rim"])
         del parts["rim"]
-    # Triangle targets per bucket, about 850 for the whole car: the low tier
-    # draws this twin from every distance, and the budget (src/game/city/
-    # budget.ts) prices a dozen of them.
-    def count(name):
-        o = parts.get(name)
-        return sum(len(p.vertices) - 2 for p in o.data.polygons) if o else 0
-
-    # the body is split between paint and trim by how much of it each holds
-    # (a cop car's black body is trim)
-    body = max(1, count("paint") + count("trim"))
-    targets = (
-        ("paint", max(40, 700 * count("paint") / body)),
-        ("trim", max(40, 700 * count("trim") / body)),
-        ("glass", 64),
-        ("tyre", 66),
-        ("light", 24),
-    )
-    for bucket, target in targets:
-        o = parts.get(bucket)
-        if not o:
-            continue
-        have = count(bucket)
-        mod = o.modifiers.new("lod", "DECIMATE")
-        mod.ratio = min(1.0, target / have)
-        bpy.context.view_layer.objects.active = o
-        bpy.ops.object.modifier_apply(modifier=mod.name)
+    tyre = wheel_discs(parts.pop("tyre"))
+    body_parts = [parts.pop(name) for name in ("paint", "trim", "glass", "light") if name in parts]
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in body_parts:
+        o.select_set(True)
+    bpy.context.view_layer.objects.active = body_parts[0]
+    bpy.ops.object.join()
+    body = bpy.context.object
+    # the joined mesh keeps the first part's name; free "paint" for the split
+    body.name = body.data.name = "lodbody"
+    # about 850 triangles for the whole car: the low tier draws this twin from
+    # every distance, and the budget (src/game/city/budget.ts) prices a dozen
+    mod = body.modifiers.new("lod", "DECIMATE")
+    mod.ratio = min(1.0, 690 / tris_of(body))
+    mod.use_symmetry = True
+    mod.symmetry_axis = "X"
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+    parts.update(split_by_material(body))
+    parts["tyre"] = tyre
 
 total = sum(len(o.data.polygons) for o in parts.values())
 tris = 0
