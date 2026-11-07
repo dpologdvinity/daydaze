@@ -4,6 +4,7 @@
 //    to join the stock-car oval race.
 
 import type { Group } from "three";
+import type { CarMods } from "../../../game/city/drive.ts";
 import { CARS } from "../../../game/driving/roster.ts";
 import { driving } from "../../world/driving.ts";
 import { CarMesh } from "./CarMesh.tsx";
@@ -20,10 +21,26 @@ const LINEUP_COLORS = [
   "#ff7a2e",
 ];
 
+/** Mods for the documentation lineup: `?wrap=stripes&rims=gold&tint=smoke&glow=pink`. */
+function lineupMods(params: URLSearchParams): CarMods {
+  const mods: CarMods = {};
+  const wrap = params.get("wrap");
+  const rims = params.get("rims");
+  const tint = params.get("tint");
+  const glow = params.get("glow");
+  if (wrap) mods.wrap = wrap;
+  if (rims) mods.rims = rims;
+  if (tint) mods.tint = tint;
+  if (glow) mods.glow = glow;
+  return mods;
+}
+
 export function CarLineup() {
-  const isDebug =
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).get("lineup") === "cars";
+  const params =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search)
+      : new URLSearchParams();
+  const isDebug = params.get("lineup") === "cars";
 
   if (isDebug) {
     return (
@@ -41,6 +58,7 @@ export function CarLineup() {
             <CarMesh
               spec={spec}
               color={LINEUP_COLORS[i % LINEUP_COLORS.length]}
+              mods={lineupMods(params)}
               ref={(g: Group | null) => {
                 if (g) g.visible = true;
               }}
