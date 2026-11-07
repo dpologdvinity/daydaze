@@ -1,3 +1,4 @@
+import { useGLTF } from "@react-three/drei";
 import { useEffect, useMemo, type Ref } from "react";
 import {
   AdditiveBlending,
@@ -19,6 +20,13 @@ import {
   type CarMods,
 } from "../../../game/city/drive.ts";
 import type { CarSpec } from "../../../game/driving/car.ts";
+import {
+  BODY_LENGTH,
+  bodyOfCar,
+  bodyUrl,
+  type BodyKey,
+} from "../../../game/driving/bodies.ts";
+import { bodyGeometry } from "../../city/carBodies.ts";
 import { canvasTex, hdr } from "../shared/materials.ts";
 import { carParts, GLASS, LIGHT, RIM, TRIM, TYRE } from "./carModels.ts";
 
@@ -142,31 +150,31 @@ function beam() {
   return beamMade;
 }
 
-/**
- * A low-poly car in its class's silhouette: painted shell, glass, trim, tyres,
- * rims and lamps. Nose points down +z, so yaw matches the physics. Starts hidden.
- * Each model is a handful of merged meshes, so a car costs about six draw calls.
- */
-export function CarMesh({
-  spec,
-  color,
-  mods,
-  beams = false,
-  ref,
-}: {
+/** Bumpers, grille and mirrors of a downloaded body: their colors are in the mesh. */
+const ROAD_TRIM = new MeshStandardMaterial({
+  vertexColors: true,
+  roughness: 0.55,
+  metalness: 0.2,
+});
+
+type CarProps = {
   spec: CarSpec;
   color: string;
   mods?: CarMods;
   /** Headlights on: beams on the road ahead. */
   beams?: boolean;
   ref?: Ref<Group>;
-}) {
-  const glow = glowMaterial(mods?.glow);
-  const parts = carParts(spec);
-  // Clearcoat lacquer on the paint, the only per-car material.
+};
+
+/**
+ * Clearcoat lacquer on the paint, the only per-car material. A downloaded body
+ * carries a grey shade per vertex (a second tone), so it asks for vertex colors.
+ */
+function usePaint(color: string, mods: CarMods | undefined, shaded: boolean) {
   const paint = useMemo(() => {
     const m = new MeshPhysicalMaterial({
       color,
+      vertexColors: shaded,
       roughness: 0.38,
       metalness: 0.15,
       clearcoat: 1,
@@ -174,20 +182,24 @@ export function CarMesh({
     });
     wrapPaint(m, mods?.wrap);
     return m;
-  }, [color, mods?.wrap]);
+  }, [color, mods?.wrap, shaded]);
   useEffect(() => () => paint.dispose(), [paint]);
+  return paint;
+}
+
+/** Underglow pool and headlight beams, the same on every body. */
+function Extras({
+  spec,
+  mods,
+  beams,
+}: {
+  spec: CarSpec;
+  mods?: CarMods;
+  beams: boolean;
+}) {
+  const glow = glowMaterial(mods?.glow);
   return (
-    <group ref={ref} visible={false}>
-      {parts.paint && <mesh geometry={parts.paint} material={paint} />}
-      {parts.glass && (
-        <mesh geometry={parts.glass} material={glassMaterial(mods?.tint)} />
-      )}
-      {parts.trim && <mesh geometry={parts.trim} material={TRIM} />}
-      {parts.tyre && <mesh geometry={parts.tyre} material={TYRE} />}
-      {parts.rim && (
-        <mesh geometry={parts.rim} material={rimMaterial(mods?.rims)} />
-      )}
-      {parts.light && <mesh geometry={parts.light} material={LIGHT} />}
+    <>
       {glow && (
         <mesh material={glow} position-y={0.12} rotation-x={-Math.PI / 2}>
           <planeGeometry args={[spec.width * 2.2, spec.length * 1.4]} />
@@ -204,6 +216,82 @@ export function CarMesh({
             rotation-x={-Math.PI / 2}
           />
         ))}
+    </>
+  );
+}
+
+/**
+ * A road car: a downloaded Quaternius body (public/models/cars/, see
+ * src/game/driving/bodies.ts) scaled to the spec's length, its paint,
+ * windows and rims taking the car's color, tint and rim style, and the wrap
+ * painted over the lacquer. Nose points down +z. Starts hidden.
+ */
+function BodyCar({
+  spec,
+  body,
+  color,
+  mods,
+  beams = false,
+  ref,
+}: CarProps & { body: BodyKey }) {
+  const gltf = useGLTF(bodyUrl(body));
+  const parts = bodyGeometry(gltf.scene);
+  const paint = usePaint(color, mods, true);
+  const scale = spec.length / BODY_LENGTH[body];
+  return (
+    <group ref={ref} visible={false}>
+      <group scale={scale}>
+        <mesh geometry={parts.paint} material={paint} />
+        {parts.glass && (
+          <mesh geometry={parts.glass} material={glassMaterial(mods?.tint)} />
+        )}
+        {parts.trim && <mesh geometry={parts.trim} material={ROAD_TRIM} />}
+        {parts.tyre && <mesh geometry={parts.tyre} material={TYRE} />}
+        {parts.rim && (
+          <mesh geometry={parts.rim} material={rimMaterial(mods?.rims)} />
+        )}
+        {parts.light && <mesh geometry={parts.light} material={LIGHT} />}
+      </group>
+      <Extras spec={spec} mods={mods} beams={beams} />
+    </group>
+  );
+}
+
+/**
+ * A car: road cars wear a downloaded body; karts, bumper cars and the stock
+ * car keep their procedural low-poly shells. Nose points down +z, so yaw
+ * matches the physics. Starts hidden.
+ */
+export function CarMesh(props: CarProps) {
+  const body = bodyOfCar(props.spec.id);
+  return body ? (
+    <BodyCar {...props} body={body} />
+  ) : (
+    <ProceduralCar {...props} />
+  );
+}
+
+/**
+ * A low-poly procedural car in its class's silhouette: painted shell, glass,
+ * trim, tyres, rims and lamps. Each model is a handful of merged meshes, so a
+ * car costs about six draw calls.
+ */
+function ProceduralCar({ spec, color, mods, beams = false, ref }: CarProps) {
+  const parts = carParts(spec);
+  const paint = usePaint(color, mods, false);
+  return (
+    <group ref={ref} visible={false}>
+      {parts.paint && <mesh geometry={parts.paint} material={paint} />}
+      {parts.glass && (
+        <mesh geometry={parts.glass} material={glassMaterial(mods?.tint)} />
+      )}
+      {parts.trim && <mesh geometry={parts.trim} material={TRIM} />}
+      {parts.tyre && <mesh geometry={parts.tyre} material={TYRE} />}
+      {parts.rim && (
+        <mesh geometry={parts.rim} material={rimMaterial(mods?.rims)} />
+      )}
+      {parts.light && <mesh geometry={parts.light} material={LIGHT} />}
+      <Extras spec={spec} mods={mods} beams={beams} />
     </group>
   );
 }

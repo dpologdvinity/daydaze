@@ -7,8 +7,9 @@ import { bakedGeometry } from "../world/bakedGeometry.ts";
 import { boxMapped } from "./worldTexture.ts";
 import { useDaylight } from "./daylight.ts";
 
-export type TransitModel = "taxi" | "sedan" | "van" | "bus" | "stop";
-const ALL: readonly TransitModel[] = ["taxi", "sedan", "van", "bus", "stop"];
+// Cars, taxis and vans in traffic are the car bodies now (trafficBodies.ts).
+export type TransitModel = "bus" | "stop";
+const ALL: readonly TransitModel[] = ["bus", "stop"];
 const URLS = ALL.flatMap((kind) =>
   [false, true].map((lo) => `/models/transit/${kind}${lo ? "-lo" : ""}.glb`),
 );

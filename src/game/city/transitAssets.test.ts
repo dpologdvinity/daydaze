@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 test("downloaded transit has one primitive per model and small distance LODs", () => {
-  for (const kind of ["taxi", "sedan", "van", "bus", "stop"]) {
+  for (const kind of ["van", "bus", "stop"]) {
     const triangles: number[] = [];
     for (const suffix of ["", "-lo"]) {
       const bytes = readFileSync(
