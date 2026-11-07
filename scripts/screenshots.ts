@@ -599,7 +599,7 @@ const SHOTS: {
     // live: the band's dolls stream in after the first ten frames
     live: true,
     query:
-      "room=city&view=room&time=11:00&band=40&at=222,-284&cam=232,5,-289,230,2,-272",
+      "room=city&view=room&time=11:00&band=40&at=222,-284&cam=230,7.5,-301,230,1.2,-276",
     act: async (page) => {
       await cityReady(page);
       await page.waitForFunction(
