@@ -118,7 +118,7 @@ export function Pottery({
             />
           </group>
         ))}
-        {[-4.6, -2, 0.6].map((x) => (
+        {[-4.6, -2, 0.6].map((x, s) => (
           <group key={x}>
             <DryingShelf position={[x, 0, -4.45]} />
             {[0.58, 1.18, 1.78].map((y, i) => (
@@ -127,11 +127,7 @@ export function Pottery({
                 position={[x + (i % 2 ? 0.45 : -0.45), y, -4.3]}
                 scale={0.32}
               >
-                <PotMesh
-                  clay={CLAY}
-                  color={DRYING[(i + x + 8) % 3]}
-                  spin={false}
-                />
+                <PotMesh clay={CLAY} color={DRYING[(i + s) % 3]} spin={false} />
               </group>
             ))}
           </group>
