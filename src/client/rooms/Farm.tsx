@@ -24,6 +24,7 @@ import { ROOMS } from "../../game/rooms.ts";
 import { WanderingCreature } from "../creatures/Wanderer.tsx";
 import type { Player } from "../world/PlayerController.tsx";
 import { useFarmState } from "./farm/farmSession.ts";
+import { useWorkClip } from "./shared/game3d/workClip.ts";
 import { Scatter } from "./zoo/Scatter.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
@@ -215,6 +216,8 @@ export function Farm({
   player: Player;
 }): JSX.Element {
   const { farm } = useFarmState();
+  // planting, watering and harvesting play the farm clips on her doll
+  useWorkClip("farm-work");
 
   return (
     <>

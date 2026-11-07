@@ -19,6 +19,7 @@ import {
   MOVING,
   clipOf,
   pickClip,
+  type Play,
 } from "../../../game/dance/clips.ts";
 import {
   modelSuffix,
@@ -49,7 +50,20 @@ import { pose, type Rig } from "../pose.ts";
 import { useQuality } from "../../world/quality.ts";
 import { NPC_GAITS, gaitOf } from "../../../game/gaits.ts";
 import { BUILT_STRIDE, walkPhaseRate } from "../../../game/dance/stride.ts";
-import { BONE, BuiltPose, clipsFor, loadAnims } from "./anims.ts";
+import {
+  BONE,
+  BuiltPose,
+  clipsFor,
+  loadAnims,
+  loadPack,
+  packsFor,
+} from "./anims.ts";
+import { idleSlot } from "../../../game/dance/idlePlan.ts";
+import {
+  pickTransition,
+  postureOf,
+  type Posture,
+} from "../../../game/dance/transitions.ts";
 import { afloat, scuba } from "./afloat.ts";
 import { ScubaGear } from "./ScubaGear.tsx";
 
@@ -76,6 +90,11 @@ const REST_LID = 0.12;
 // room shows, so they don't share the bandwidth it loads over; dolls wear
 // the built poses until then
 afterSceneReady(() => void loadAnims(""), 8000);
+// the social and seated clip packs (gestures, sitting down) are smaller and
+// wanted soon after, but not before the room is drawn: fetched a while later,
+// or at once when a doll asks for a clip in one (pickClip's `need`)
+afterSceneReady(() => void loadPack("", "social"), 25000);
+afterSceneReady(() => void loadPack("", "seated"), 35000);
 
 // seconds to crossfade between clips, and between clips and built poses
 const FADE = 0.3;
@@ -104,6 +123,14 @@ type Anim = {
   action: THREE.AnimationAction | null;
   playing: string;
   built: number;
+  /** What her body was doing last frame, and since when (clock seconds):
+   * the idle slots count from it, and a change picks a joining clip. */
+  posture: Posture | null;
+  since: number;
+  /** A one-shot joining two postures (sitting down), until it ends. */
+  trans: { id: string; until: number } | null;
+  /** The play handed to the picker's caller while a transition runs. */
+  transPlay: Play;
 };
 const JOINTS = [
   "body",
@@ -390,7 +417,10 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
   } = look;
   // the man's clip file loads only once a man is in the scene
   useEffect(() => {
-    if (body.key) afterSceneReady(() => void loadAnims(body.key), 8000);
+    if (!body.key) return;
+    afterSceneReady(() => void loadAnims(body.key), 8000);
+    afterSceneReady(() => void loadPack(body.key, "social"), 25000);
+    afterSceneReady(() => void loadPack(body.key, "seated"), 35000);
   }, [body.key]);
   useEffect(() => {
     const { marks, skin } = body;
@@ -823,7 +853,16 @@ export function HumanDoll({
   const anim = useRef<Anim | null>(null);
   useEffect(() => {
     const mixer = new THREE.AnimationMixer(body.scene);
-    anim.current = { mixer, action: null, playing: "", built: 1 };
+    anim.current = {
+      mixer,
+      action: null,
+      playing: "",
+      built: 1,
+      posture: null,
+      since: 0,
+      trans: null,
+      transPlay: { id: "", rate: 1, offset: 0 },
+    };
     return () => {
       mixer.stopAllAction();
       mixer.uncacheRoot(body.scene);
@@ -919,31 +958,73 @@ export function HumanDoll({
     const a = anim.current;
     if (a) {
       const clips = clipsFor(body.key);
-      const want = pickClip({
-        loaded: clips !== null,
-        // the catalog's walk speeds are the woman's stride; his carries farther
-        speed: body.key ? speed / MAN_STRIDE : speed,
-        walk: gait.clip,
+      const now = state.clock.elapsedTime;
+      // the catalog's walk speeds are the woman's stride; his carries farther
+      const pace = body.key ? speed / MAN_STRIDE : speed;
+      const afloatNow = own && afloat.on;
+      // sitting down or standing up plays a joining clip once, then the
+      // posture's own loop; walking away cancels it
+      const posture = postureOf({
+        speed: pace,
         mood,
-        hold,
-        dance,
-        couple,
-        seed,
-        afloat: own && afloat.on,
         seated: gait.seated,
+        afloat: afloatNow,
       });
-      const clip = want && clips?.get(want.id);
+      if (a.posture !== posture) {
+        const joining = a.posture
+          ? pickTransition(a.posture, posture, seed)
+          : null;
+        a.posture = posture;
+        a.since = now;
+        a.trans = null;
+        if (joining && clips) {
+          if (packsFor(body.key).has(joining.pack))
+            a.trans = { id: joining.id, until: now + joining.seconds };
+          else void loadPack(body.key, joining.pack);
+        }
+      }
+      if (a.trans && (now >= a.trans.until || posture === "move"))
+        a.trans = null;
+      let want: Play | null;
+      if (a.trans) {
+        a.transPlay.id = a.trans.id;
+        want = a.transPlay;
+      } else {
+        // the player's idles count from when she stopped; a stranger's from
+        // the clock, offset by her seed, so a crowd changes out of step
+        const slot = idleSlot(own ? now - a.since : t);
+        want = pickClip({
+          loaded: clips !== null,
+          packs: packsFor(body.key),
+          own,
+          slot,
+          speed: pace,
+          walk: gait.clip,
+          mood,
+          hold,
+          dance,
+          couple,
+          seed,
+          afloat: afloatNow,
+          seated: gait.seated,
+        });
+        if (want?.need) void loadPack(body.key, want.need);
+      }
+      const clip = want && want.id ? clips?.get(want.id) : undefined;
       if (want && clip) {
         if (a.playing !== want.id) {
           const next = a.mixer.clipAction(clip);
           next.reset();
+          const once = a.trans !== null;
+          next.setLoop(once ? THREE.LoopOnce : THREE.LoopRepeat, Infinity);
+          next.clampWhenFinished = once;
           // a pair dances in step on the shared clock (the follow half a loop
           // behind); everyone else starts their loop somewhere of their own
           const from =
             couple && clipOf(want.id)?.kind !== "walk"
               ? state.clock.elapsedTime
               : seed * 1.37;
-          next.time = (from + want.offset) % clip.duration;
+          next.time = once ? 0 : (from + want.offset) % clip.duration;
           next.play();
           if (a.action && a.action !== next)
             next.crossFadeFrom(a.action, FADE, false);
