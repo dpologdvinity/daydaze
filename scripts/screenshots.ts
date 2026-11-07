@@ -614,10 +614,12 @@ const SHOTS: {
     ["beachside-motels-east", "-60,9,214,40,6,194"],
     ["beachside-motels-far", "-60,30,260,-60,4,190"],
     ["beachside-motel-close", "-168,5,217,-184,3.5,194"],
-    ["beachside-motel-wide", "-150,14,240,-175,3,195"],
+    ["beachside-motel-wide", ""],
   ].map(([name, cam]) => ({
     name: String(name),
-    query: `room=city&view=room&time=15:00&at=-110,213&cam=${cam}`,
+    query: cam
+      ? `room=city&view=room&time=15:00&at=-110,213&cam=${cam}`
+      : "room=city&time=15:00&at=-182,214",
     live: true,
     act: async (page: Page) => {
       await page.locator("canvas").waitFor();
