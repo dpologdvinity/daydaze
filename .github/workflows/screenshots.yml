@@ -32,6 +32,7 @@ jobs:
           for s in $SHOTS; do
             case "$s" in *[!a-z0-9-]*) echo "bad shot name: $s"; exit 1;; esac
             node --experimental-strip-types scripts/screenshots.ts "$s"
+            mkdir -p shots-out && cp "docs/screenshots/$s.png" shots-out/
           done
         env:
           SHOTS: ${{ inputs.shots }}
@@ -39,5 +40,5 @@ jobs:
         if: ${{ always() }}
         with:
           name: screenshots
-          path: docs/screenshots/*.png
+          path: shots-out/*.png
           retention-days: 7
