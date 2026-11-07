@@ -776,6 +776,29 @@ const SHOTS: {
     },
   },
   {
+    // the park's street-food stop from the zoomed-out orbit camera: the view the
+    // low tier's triangle budget has to hold (src/game/city/budget.ts)
+    name: "park-wide",
+    query: "room=city&view=full&time=12:00&at=254,-264",
+    live: true,
+    act: async (page) => {
+      await furnitureReady(page);
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.streetFood === "ready",
+        null,
+        { timeout: 300_000 },
+      );
+      await page.mouse.move(850, 350);
+      await page.mouse.wheel(0, 1400);
+      await page.waitForFunction(
+        () =>
+          Number(document.querySelector("canvas")?.dataset.camDistance) > 20,
+        null,
+        { timeout: 120_000 },
+      );
+    },
+  },
+  {
     name: "city-mobile",
     query: "room=city&view=full",
     viewport: { width: 390, height: 844 },
