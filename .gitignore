@@ -38,3 +38,4 @@ coverage/
 art/ocean/.cache
 art/speedway/.cache/
 art/home/.cache/
+/.cache/
