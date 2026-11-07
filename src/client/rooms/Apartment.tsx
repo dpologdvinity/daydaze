@@ -7,7 +7,6 @@ import {
   footprint,
   type Furniture,
 } from "../../game/home/decor.ts";
-import { useThree } from "@react-three/fiber";
 import { Suspense, useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { Batch } from "./shared/batch.ts";
@@ -320,6 +319,10 @@ function PotteryShelf() {
       <group scale={0.55}>
         <PotMesh clay={saved.clay} color={saved.glaze} />
       </group>
+    </group>
+  );
+}
+
 /** The bouquet from Petal & Stem, in a glass vase on the window sill. */
 function BouquetVase() {
   const { bouquet } = floristDesk.use();
