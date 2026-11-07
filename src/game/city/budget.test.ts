@@ -15,7 +15,9 @@ import {
   MODEL_COST,
   modelsInBudget,
   SEASON_MODEL,
+  trafficCost,
 } from "./budget.ts";
+import { BODY_KEYS, ROSTER_BODY } from "../driving/bodies.ts";
 import type { Vec2 } from "../walk.ts";
 
 type Gltf = {
@@ -159,4 +161,27 @@ test("the park's zoomed-out view prices its walkers, wildlife and dogs, and stil
 test("the plan's densest street keeps headroom under the budget", () => {
   const cost = lowTierCost([-144, 0]);
   assert.ok(cost.triangles < 295_000, `${cost.triangles} triangles`);
+});
+
+test("traffic is priced from the shipped car bodies, more on a road than on a lawn", () => {
+  // every body (near for the player's car, -lo for traffic) is in the budget
+  for (const key of BODY_KEYS)
+    for (const path of [`cars/${key}`, `cars/${key}-lo`])
+      assert.ok(modelsInBudget().includes(path), path);
+  // a distance twin is under 1,500 triangles, a near model under 6,000
+  for (const key of BODY_KEYS) {
+    assert.ok(MODEL_COST[`cars/${key}-lo`]!.tris <= 1500, key);
+    assert.ok(MODEL_COST[`cars/${key}`]!.tris <= 6000, key);
+  }
+  const lawn: Vec2 = [254, -264];
+  const crossing: Vec2 = [-144, 0];
+  const onLawn = trafficCost(lawn);
+  const onRoad = trafficCost(crossing);
+  assert.ok(onRoad.triangles > onLawn.triangles);
+  // at the wheel: the dearest road car's near model is in the road price
+  const dearestOwn = Math.max(
+    ...Object.values(ROSTER_BODY).map((k) => MODEL_COST[`cars/${k}`]!.tris),
+  );
+  assert.ok(onRoad.triangles >= dearestOwn);
+  assert.ok(onLawn.triangles < dearestOwn);
 });

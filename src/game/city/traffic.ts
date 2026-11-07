@@ -3,6 +3,12 @@ import { neighborhoodAt } from "./cells.ts";
 import { hash } from "./hash.ts";
 import { ROAD_EDGES, ROAD_NODES, type RoadEdge } from "./layout.ts";
 import { shortest, snapToRoad } from "./taxi.ts";
+import {
+  HEAVY_MIX,
+  TRAFFIC_MIX,
+  pickBody,
+  type BodyKey,
+} from "../driving/bodies.ts";
 
 /**
  * City traffic: cars drive one lane each way on every road edge, keep right,
@@ -125,10 +131,14 @@ export type CabTrip = {
   arrived: boolean;
 };
 
-export type VehicleKind = "car" | "jeepney";
+/** A jeepney is drawn procedurally; cars and heavy vehicles (an ambulance,
+ * a school bus) wear a downloaded body (src/game/driving/bodies.ts). */
+export type VehicleKind = "car" | "jeepney" | "heavy";
 
 export type TrafficCar = {
   kind: VehicleKind;
+  /** The downloaded body this vehicle wears; a jeepney has none. */
+  body: BodyKey | null;
   lane: Lane;
   /** Meters traveled along the lane from its start node. */
   s: number;
@@ -145,15 +155,20 @@ export type TrafficCar = {
 
 export type Traffic = { cars: TrafficCar[]; time: number };
 
+/** Car paint: mostly real-world colors with a few of the city's neons. */
 export const CAR_COLORS = [
-  "#ff2f9a",
-  "#3fe0d0",
-  "#ffb02e",
-  "#9b5cff",
-  "#e8e2ff",
-  "#2a2440",
+  "#e9eaf0",
+  "#c4c7d0",
+  "#23252e",
+  "#8f1d2c",
+  "#25467a",
+  "#2f6b4f",
   "#ff6b3d",
-  "#7dff6b",
+  "#3fe0d0",
+  "#ff2f9a",
+  "#9b5cff",
+  "#ffb02e",
+  "#f4f1ff",
 ] as const;
 
 /** Bright jeepney paint: the stripes are drawn in a second color. */
@@ -169,9 +184,39 @@ export const JEEPNEY_COLORS = [
 export const VEHICLE_LENGTH: Record<VehicleKind, number> = {
   car: 4.2,
   jeepney: 5.6,
+  heavy: 7.2,
 };
 const JEEPNEY_SHARE = 0.2;
+/** Of the vehicles that are not jeepneys, the share that is heavy. */
+const HEAVY_SHARE = 0.08;
 const GAP = 2.5;
+
+/** How many vehicles the city runs on each quality tier, and the seed that
+ * lays them out (Traffic.tsx; src/game/city/budget.ts prices the low fleet). */
+export const TRAFFIC_COUNT = { low: 8, high: 22 } as const;
+export const TRAFFIC_SEED = 11;
+
+/** Meters of bumper-to-bumper road one car takes in its lane. */
+export const CAR_SLOT = VEHICLE_LENGTH.car + GAP;
+
+/**
+ * Meters of lane (both ways of every road) within `radius` of `at`, sampled
+ * every two meters along each road's center line: all the road traffic can
+ * stand on near a point, for pricing what could be in view.
+ */
+export function laneMetersWithin(at: Vec2, radius: number): number {
+  let near = 0;
+  for (const e of EDGES) {
+    const steps = Math.ceil(e.length / 2);
+    for (let i = 0; i < steps; i++) {
+      const t = (i + 0.5) / steps;
+      const x = e.from[0] + (e.to[0] - e.from[0]) * t;
+      const z = e.from[1] + (e.to[1] - e.from[1]) * t;
+      if (Math.hypot(x - at[0], z - at[1]) <= radius) near += e.length / steps;
+    }
+  }
+  return near * 2;
+}
 /** Junction radius: the curve between lanes starts this far from the node. */
 const TURN = 6;
 const ACCEL = 3;
@@ -203,21 +248,37 @@ export function createTraffic(count: number, seed = 1): Traffic {
   const starts: Record<VehicleKind, Lane[]> = {
     car: lanes.filter((l) => !inManila(l)),
     jeepney: lanes.filter(inManila),
+    heavy: lanes.filter((l) => !inManila(l)),
   };
-  const placed: Record<VehicleKind, number> = { car: 0, jeepney: 0 };
+  const placed: Record<VehicleKind, number> = { car: 0, jeepney: 0, heavy: 0 };
   for (let i = 0; i < count; i++) {
     const kind: VehicleKind =
-      hash(i, seed, 7) < JEEPNEY_SHARE ? "jeepney" : "car";
-    const own = starts[kind];
-    const n = placed[kind]++;
+      hash(i, seed, 7) < JEEPNEY_SHARE
+        ? "jeepney"
+        : hash(i, seed, 13) < HEAVY_SHARE
+          ? "heavy"
+          : "car";
+    // heavy vehicles take turns with the cars on the same lanes, so they
+    // never start on top of one another
+    const group: VehicleKind = kind === "heavy" ? "car" : kind;
+    const own = starts[group];
+    const n = placed[group]++;
     const lane = own[n % own.length];
     const round = Math.floor(n / own.length);
     const len = laneLength(lane);
     const s =
       TURN + 12 + ((round * 37 + hash(i, seed) * 20) % (len - 2 * TURN - 24));
     const paint = kind === "jeepney" ? JEEPNEY_COLORS : CAR_COLORS;
+    const body =
+      kind === "jeepney"
+        ? null
+        : pickBody(
+            kind === "heavy" ? HEAVY_MIX : TRAFFIC_MIX,
+            hash(seed, i, 29),
+          );
     cars.push({
       kind,
+      body,
       lane: { ...lane },
       s,
       speed: 0,
@@ -462,6 +523,7 @@ export function cabAtCurb(id: number, curb: Vec2, rider: Vec2): TrafficCar {
   const s = clampStop(lane, sAlong(lane, curb));
   return {
     kind: "car",
+    body: "taxi",
     lane,
     s: Math.max(0, s - 50),
     speed: 0,
