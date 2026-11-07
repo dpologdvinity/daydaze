@@ -353,41 +353,129 @@ export function nycBays(b: Building): BayInstance[] {
   return out;
 }
 
-/** Suburbia's houses are Kenney's City Kit Suburban models (CC0) instead of
- * boxes when you are near: which model, where, and which way it faces. */
-export const HOUSE_MODELS = ["a", "c", "e", "g", "h", "i", "j", "l"] as const;
-/** Triangles of the largest house model, for the budget. */
-export const HOUSE_TRIANGLES = 1800;
+/** The house models, as paths under public/models/ (without .glb). Suburbia
+ * draws Kenney's City Kit Suburban (CC0, one unit wide) and Quaternius's
+ * Buildings packs (CC0, normalized so the longer side is one unit); Beachside's
+ * cottages are Quaternius's Ultimate Textured Building Pack. */
+export const HOUSE_MODELS = [
+  "suburbia/house-a",
+  "suburbia/house-c",
+  "suburbia/house-e",
+  "suburbia/house-g",
+  "suburbia/house-h",
+  "suburbia/house-i",
+  "suburbia/house-j",
+  "suburbia/house-l",
+  "suburbia/house-q-1",
+  "suburbia/house-q-2",
+  "suburbia/house-q-3",
+  "suburbia/house-q-4",
+  "suburbia/house-q-side",
+  "suburbia/house-q-columns",
+  "beachside/cottage-gable",
+  "beachside/cottage-round",
+  "beachside/cottage-wide",
+] as const;
+/** The models Suburbia's lots pick from, and Beachside's. */
+const SUBURB_VARIANTS = HOUSE_MODELS.flatMap((m, i) =>
+  m.startsWith("suburbia/") ? [i] : [],
+);
+const BEACH_VARIANTS = HOUSE_MODELS.flatMap((m, i) =>
+  m.startsWith("beachside/") ? [i] : [],
+);
+/** Width, depth and height in model units of the models that are not
+ * Kenney's (those are about one unit wide and stand at a fixed scale). */
+const HOUSE_UNITS: Partial<
+  Record<(typeof HOUSE_MODELS)[number], { w: number; d: number; h: number }>
+> = {
+  "suburbia/house-q-1": { w: 0.712, d: 1, h: 0.825 },
+  "suburbia/house-q-2": { w: 0.87, d: 1, h: 0.931 },
+  "suburbia/house-q-3": { w: 0.875, d: 1, h: 1.384 },
+  "suburbia/house-q-4": { w: 1, d: 0.664, h: 0.621 },
+  "suburbia/house-q-side": { w: 1, d: 0.73, h: 0.795 },
+  "suburbia/house-q-columns": { w: 0.867, d: 1, h: 1.112 },
+  "beachside/cottage-gable": { w: 0.885, d: 1, h: 0.851 },
+  "beachside/cottage-round": { w: 0.982, d: 1, h: 1.121 },
+  "beachside/cottage-wide": { w: 0.988, d: 1, h: 0.613 },
+};
+/** Triangles of each house model (read from the shipped GLBs; plan.test.ts
+ * checks them), in HOUSE_MODELS order, for the budget. */
+export const HOUSE_MODEL_TRIANGLES = [
+  1158, 1172, 1702, 1049, 751, 785, 1178, 1284, 4278, 1712, 3646, 1674, 5126,
+  3429, 1628, 2363, 2458,
+] as const;
+/** Triangles of the largest house model. */
+export const HOUSE_TRIANGLES = Math.max(...HOUSE_MODEL_TRIANGLES);
+/** The tallest a cottage stands, meters. */
+const BEACH_HOUSE_HEIGHT = 14;
 
 export type HouseSpot = {
   x: number;
   z: number;
   yaw: number;
+  /** Index into HOUSE_MODELS. */
   variant: number;
   /** Meters per model unit; the kit's houses are about one unit wide. */
   scale: number;
 };
 
 /** A Suburbia house lot (the `deck` blocks, which carry no door or sign). */
-export const isHouse = (b: Building): boolean =>
+export const isSuburbHouse = (b: Building): boolean =>
   b.neighborhood === "suburbia" && b.style === "deck";
 
-/** The house for a lot: set back from the lawn edge, facing Maple Drive. */
+/** A Beachside lot with no shop on it: the pastel houses on the beach front
+ * and the motels one block back. */
+export const isBeachHouse = (b: Building): boolean =>
+  b.neighborhood === "beachside" &&
+  b.style === "deck" &&
+  !b.door &&
+  !b.sign &&
+  !isMotel(b);
+
+/** A Palm Court motel (layout.ts's BEACH_BACK): a strip block with a court,
+ * drawn as boxes with its own dressing (motel.ts), never as a house model. */
+export const isMotel = (b: Building): boolean => b.id.startsWith("motel-");
+
+/** A lot that is drawn as a model when you are near, rather than a box. */
+export const isHouse = (b: Building): boolean =>
+  isSuburbHouse(b) || isBeachHouse(b);
+
+/** The house for a lot: set back from the lawn edge, facing the street. */
 export function houseAt(b: Building): HouseSpot {
   const xs = b.footprint.map(([x]) => x);
   const zs = b.footprint.map(([, z]) => z);
   const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
   const cz = (Math.min(...zs) + Math.max(...zs)) / 2;
-  // north lots front the street on their +z side, south lots on their -z
-  const toStreet = cz < GALLERY_Z ? 1 : -1;
-  const front = toStreet > 0 ? Math.max(...zs) : Math.min(...zs);
   const h = (k: number) => hash(cx, cz, k);
-  const scale = 7.2 + h(2) * 1.6;
+  const beach = b.neighborhood === "beachside";
+  // Suburbia's north lots front the street on their +z side, south lots on
+  // their -z; Beachside's lots all face south, to the lane or the boulevard
+  const toStreet = beach || cz < GALLERY_Z ? 1 : -1;
+  const front = toStreet > 0 ? Math.max(...zs) : Math.min(...zs);
+  const pool = beach ? BEACH_VARIANTS : SUBURB_VARIANTS;
+  const variant = pool[Math.floor(h(1) * pool.length)] ?? 0;
+  const units = HOUSE_UNITS[HOUSE_MODELS[variant] ?? HOUSE_MODELS[0]];
+  const lotW = Math.max(...xs) - Math.min(...xs);
+  const lotD = Math.max(...zs) - Math.min(...zs);
+  // Kenney's houses are one unit wide at a fixed scale; the others are fitted
+  // to the lot (leaving a yard in front) and to a sensible height
+  let scale = 7.2 + h(2) * 1.6;
+  let depth = scale;
+  if (units) {
+    scale = beach
+      ? Math.min(
+          (lotW - 2) / units.w,
+          (lotD - 6) / units.d,
+          BEACH_HOUSE_HEIGHT / units.h,
+        )
+      : Math.min(scale, (lotW - 2) / units.w);
+    depth = scale * units.d;
+  }
   return {
     x: cx,
-    z: front - toStreet * (scale * 0.5 + 1.5),
+    z: front - toStreet * (depth * 0.5 + 1.5),
     yaw: toStreet > 0 ? 0 : Math.PI,
-    variant: Math.floor(h(1) * HOUSE_MODELS.length),
+    variant,
     scale,
   };
 }

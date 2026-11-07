@@ -2,14 +2,18 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { cellsWithin } from "./cells.ts";
 import { BUILDINGS, GALLERY_Z } from "./layout.ts";
-import { planCity, trianglesOf } from "./plan.ts";
+import { emptyInstances, planCity, trianglesOf } from "./plan.ts";
+import { hasPool, motelBuilding, noVacancy } from "./motel.ts";
 import {
   BAY_CAPACITY,
   BAY_KINDS,
   BAY_TRIANGLES,
   HOUSE_MODELS,
   houseAt,
+  isBeachHouse,
   isHouse,
+  isMotel,
+  isSuburbHouse,
   isNyc,
   nycBays,
 } from "./nyc.ts";
@@ -130,7 +134,7 @@ test("no view on the high tier holds more bays of one kind than its instanced me
 });
 
 test("a near Suburbia lot is a house facing the street; far ones stay boxes", () => {
-  const lots = BUILDINGS.filter(isHouse);
+  const lots = BUILDINGS.filter(isSuburbHouse);
   assert.ok(lots.length >= 6);
   for (const b of lots) {
     const spot = houseAt(b);
@@ -145,4 +149,32 @@ test("a near Suburbia lot is a house facing the street; far ones stay boxes", ()
   const far = planCity(cellsWithin([at.x, at.z], 160), 0, [at.x, at.z], 0);
   assert.ok(near.houses.length > 0);
   assert.equal(far.houses.length, 0);
+});
+
+test("Beachside's beach-front cottages: a lot's model fits it, faces south and stays under the height cap", () => {
+  const lots = BUILDINGS.filter(isBeachHouse);
+  assert.ok(lots.length >= 2, `${lots.length} lots`);
+  for (const b of lots) {
+    const spot = houseAt(b);
+    const { x0, x1, z0, z1 } = box(b);
+    assert.ok(HOUSE_MODELS[spot.variant]?.startsWith("beachside/"), b.id);
+    assert.ok(spot.x > x0 && spot.x < x1 && spot.z > z0 && spot.z < z1, b.id);
+    assert.ok(spot.scale > 0 && spot.scale <= x1 - x0, b.id);
+    assert.equal(Math.cos(spot.yaw) > 0, true, b.id);
+  }
+});
+
+test("Palm Court's motels are dressed strips with a sign and a court, never house models", () => {
+  const motels = BUILDINGS.filter(isMotel);
+  assert.equal(motels.length, 12);
+  for (const b of motels) assert.equal(isHouse(b), false, b.id);
+  const out = emptyInstances();
+  for (const b of motels) motelBuilding(b, out);
+  // doors, windows, a pylon's neon panels and the pools' water
+  assert.ok(out.window.length >= 12 * 6, `${out.window.length} windows`);
+  assert.ok(out.panel.length >= 12 * 2);
+  assert.equal(out.lane.length, motels.filter((_, n) => hasPool(n)).length);
+  assert.ok(
+    motels.some((_, n) => hasPool(n)) && motels.some((_, n) => noVacancy(n)),
+  );
 });

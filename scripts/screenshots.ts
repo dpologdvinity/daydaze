@@ -624,6 +624,30 @@ const SHOTS: {
     query: "room=city&view=room&time=15:00&at=320,292&cam=290,3,289,338,12,301",
     act: furnitureReady,
   },
+  ...[
+    // Palm Court: the lane one block back from the boardwalk, with the motels
+    // along its north side (the camera is pinned with ?cam=)
+    ["beachside-motels", "-212,10,214,-130,6,194"],
+    ["beachside-motels-east", "-60,9,214,40,6,194"],
+    ["beachside-motels-far", "-60,30,260,-60,4,190"],
+    ["beachside-motel-close", "-168,5,217,-184,3.5,194"],
+    ["beachside-motel-wide", "-120,12,236,-165,4,196"],
+  ].map(([name, cam]) => ({
+    name: String(name),
+    query: cam
+      ? `room=city&view=room&time=15:00&at=-110,213&cam=${cam}`
+      : "room=city&time=15:00&at=-182,214",
+    live: true,
+    act: async (page: Page) => {
+      await page.locator("canvas").waitFor();
+      await blocksReady(page);
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+    },
+  })),
   {
     // sunbathers' umbrellas, a lifeguard stand and the dune fence
     name: "city-beach",
@@ -820,7 +844,7 @@ for (const shot of SHOTS) {
   await page.setViewportSize(shot.viewport ?? { width: 1280, height: 800 });
   const still = shot.live ? "" : "&still=1";
   await page.goto(`${BASE}/?quality=low${still}&${shot.query}`, {
-    timeout: 150_000,
+    timeout: 300_000,
   });
   if (shot.act) await shot.act(page);
   const canvas = page.getByRole("img", { name: "3D room view" });

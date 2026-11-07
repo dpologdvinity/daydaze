@@ -9,6 +9,7 @@ import {
   type Cell,
 } from "./cells.ts";
 import { BUILDINGS, CITY_SPAWN } from "./layout.ts";
+import { isMotel } from "./nyc.ts";
 import {
   drawCallsOf,
   CORNICE_COLOR,
@@ -41,12 +42,15 @@ function insideCells(
 }
 
 test("the full city draws every building and every neon sign", () => {
+  // the motels (Palm Court, 184 m south of the origin) are past the view radius
   const plan = planCity(ALL_CELLS, 0, origin);
-  assert.equal(facades(plan), BUILDINGS.length);
+  assert.equal(facades(plan), BUILDINGS.filter((b) => !isMotel(b)).length);
   assert.equal(
     plan.instances.sign.length,
     BUILDINGS.filter((b) => b.sign).length,
   );
+  const court = planCity(ALL_CELLS, 0, [0, 250]);
+  assert.ok(facades(court) > facades(plan), "motels near Palm Court are drawn");
 });
 
 test("each building's walls take its style's material", () => {
@@ -60,7 +64,7 @@ test("each building's walls take its style's material", () => {
   for (const kind of FACADE_KINDS)
     assert.equal(
       plan.instances[kind].length,
-      BUILDINGS.filter((b) => facadeOf(b.style) === kind).length,
+      BUILDINGS.filter((b) => !isMotel(b) && facadeOf(b.style) === kind).length,
       kind,
     );
 });

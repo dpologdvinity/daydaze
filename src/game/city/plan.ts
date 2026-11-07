@@ -2,6 +2,8 @@
 // InstancedMesh, so a plan is a handful of draw calls however many cells
 // are loaded. Pure: the client writes these instances into its meshes.
 import type { Vec2 } from "../walk.ts";
+import { motelBuilding } from "./motel.ts";
+import { VIEW_RADIUS } from "./tuning.ts";
 import { cellAt, type Cell } from "./cells.ts";
 import {
   BUILDINGS,
@@ -16,12 +18,13 @@ import {
   isNyc,
   nycBays,
   BAY_TRIANGLES,
-  HOUSE_TRIANGLES,
+  HOUSE_MODEL_TRIANGLES,
   houseAt,
   isHouse,
   type HouseSpot,
   WALL_INSET,
   type BayInstance,
+  isMotel,
 } from "./nyc.ts";
 import {
   dressBuilding,
@@ -256,7 +259,7 @@ function overlap(a: Box, b: Box): Box | null {
   return box.x1 - box.x0 > 1e-6 && box.z1 - box.z0 > 1e-6 ? box : null;
 }
 
-function emptyInstances(): Record<Kind, Instance[]> {
+export function emptyInstances(): Record<Kind, Instance[]> {
   return {
     road: [],
     sidewalk: [],
@@ -796,6 +799,13 @@ export function planCity(
       houses.push(houseAt(b));
       continue;
     }
+    if (isMotel(b)) {
+      // motels past the view radius (a loaded cell can reach in by a corner)
+      // are left out, and far ones are bare bodies, as far houses are boxes
+      const away = distanceToBox(from, box);
+      if (away <= VIEW_RADIUS) motelBuilding(b, instances, away < bayRange * 2);
+      continue;
+    }
     // near New York blocks wear the kit's bays instead of box walls and
     // painted windows; the rest of the city keeps the cheap boxes
     const dressed =
@@ -850,7 +860,10 @@ export function trianglesOf(plan: CityPlan): number {
       0,
     ) +
     plan.bays.reduce((sum, bay) => sum + BAY_TRIANGLES[bay.kind], 0) +
-    plan.houses.length * HOUSE_TRIANGLES
+    plan.houses.reduce(
+      (sum, h) => sum + (HOUSE_MODEL_TRIANGLES[h.variant] ?? 0),
+      0,
+    )
   );
 }
 

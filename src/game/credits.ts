@@ -379,6 +379,22 @@ export const CREDITS: readonly {
           "Suburbia's houses near the player, optimized with a small colormap.",
       },
       {
+        title: "Ultimate Textured Building Pack",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://quaternius.com/packs/ultimatetexturedbuilding.html",
+        usedFor:
+          "Beachside's beach cottages and two Suburbia houses (Palm Court's motels are built from boxes: no motel model exists), kept at the pack's own triangle count.",
+      },
+      {
+        title: "Buildings Pack (Aug 2017)",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://quaternius.com/packs/buildings.html",
+        usedFor:
+          "Beachside's wide cottage and four more Suburbia houses, kept at the pack's own triangle count.",
+      },
+      {
         title: "Train Pack",
         author: "Quaternius",
         license: "CC0 1.0",

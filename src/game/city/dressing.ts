@@ -13,6 +13,9 @@ import {
   GALLERY_Z,
   PIER,
   PROPS,
+  MOTEL_DOOR_NUMBERS,
+  MOTEL_NAMES,
+  MOTEL_PANEL_TEXTS,
   VOLLEYBALL,
   ROAD_EDGES,
   ROAD_NODES,
@@ -115,6 +118,9 @@ const TEXTS = [
   ...BUILDINGS.flatMap((b) => (b.sign ? [b.sign.text] : [])),
   ...Object.values(BLADE_SIGNS).map((s) => s?.text ?? ""),
   ...Object.values(ADS).map((a) => a?.text ?? ""),
+  ...MOTEL_NAMES,
+  ...MOTEL_PANEL_TEXTS,
+  ...MOTEL_DOOR_NUMBERS,
 ];
 export const LABELS: readonly string[] = [...new Set(TEXTS)];
 export const LABEL_COLUMNS = 6;
