@@ -146,7 +146,7 @@ function pool(
   });
   out.lane.push({
     x: cx,
-    y: 0.3,
+    y: 0.36,
     z: cz,
     sx: w,
     sy: 0.02,
