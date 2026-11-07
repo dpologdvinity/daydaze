@@ -901,6 +901,55 @@ test("Sucre: a macaron tower goes up a layer or topples", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("Petal & Stem: build and buy a bouquet", async ({ page }) => {
+  test.setTimeout(360_000);
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&room=florist`, { timeout: 150_000 });
+  await expect(roomTitle(page)).toHaveText("Petal & Stem", {
+    timeout: 150_000,
+  });
+  const panel = page.getByRole("region", { name: "Bouquet builder" });
+  const buy = panel.getByRole("button", { name: /^(Buy bouquet|Add \d more)/ });
+  await expect(buy).toBeDisabled();
+  await panel
+    .getByRole("button", { name: "Rose · 7 coins" })
+    .click({ timeout: 150_000 });
+  await expect(canvasOf(page)).toHaveAttribute("data-bouquet-stems", "1");
+  await panel.getByRole("button", { name: "Tulip · 6 coins" }).click();
+  await expect(buy).toBeDisabled();
+  await panel.getByRole("button", { name: "Daisy · 5 coins" }).click();
+  await panel.getByRole("button", { name: "cream wrap" }).click();
+  await panel.getByRole("button", { name: "white ribbon" }).click();
+  await expect(panel.getByRole("status")).toContainText("3 stems · 18 coins");
+  await buy.click();
+  await expect(panel.getByRole("status")).toContainText(
+    "vase at your apartment",
+  );
+  await expect(page.getByText("82 coins", { exact: true })).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          JSON.parse(localStorage.getItem("daydaze-save-v1") ?? "{}").bouquet,
+      ),
+    )
+    .toEqual({
+      stems: ["rose", "tulip", "daisy"],
+      wrap: "cream",
+      ribbon: "white",
+    });
+  // the bouquet stands in a vase at home, and a reload never charges again
+  await page.goto(`${STILL}&room=apartment`, { timeout: 150_000 });
+  await expect(canvasOf(page)).toHaveAttribute("data-bouquet-vase", "3", {
+    timeout: 150_000,
+  });
+  const coins = await page.evaluate(
+    () => JSON.parse(localStorage.getItem("daydaze-save-v1") ?? "{}").coins,
+  );
+  expect(coins).toBe(82);
+  expect(errors).toEqual([]);
+});
+
 test("Dog-Ear Books: a seat by the fire", async ({ page }) => {
   test.setTimeout(330_000);
   const errors = collectErrors(page);
@@ -2347,6 +2396,7 @@ for (const room of [
   "hotel-rooftop",
   "bookshop",
   "patisserie",
+  "florist",
   "gallery",
   "surf-shack",
   "boardwalk-arcade",

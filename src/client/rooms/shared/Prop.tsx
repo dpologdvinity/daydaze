@@ -13,7 +13,7 @@ type Fit = { width: number; depth: number; height: number };
 /** The model's parts (one mesh per material), their geometry scaled together to
  * fit `width` by `depth` meters and no taller than `height`, centered, standing
  * on y = 0. */
-function useFittedParts(
+export function useFittedParts(
   model: string,
   { width, depth, height }: Fit,
   dir = "props",

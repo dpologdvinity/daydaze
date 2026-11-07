@@ -8,6 +8,7 @@ import type { ContentTier } from "../age.ts";
 export const ROLE_IDS = [
   "potter",
   "pottery-regular",
+  "florist",
   "bartender",
   "bouncer",
   "dj",
