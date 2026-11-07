@@ -70,6 +70,11 @@ STYLES = {
 # pieces that are coloured accessories, not hair
 ACCESSORIES = ("HairTie", "HairBand", "Hairband", "HairBeads")
 
+# triangle budget of a near-LOD style; the -lo twin is a fifth of it (about 1.6k)
+TRI_BUDGET = int(os.environ.get("HAIR_TRIS", "6500"))
+
+ALPHA_LEVELS = int(os.environ.get("HAIR_ALPHA_LEVELS", "15"))
+
 # the hair sits a little outside the skull it was made for
 CROWN_LIFT = float(os.environ.get("HAIR_LIFT", "0.01"))
 GROW = float(os.environ.get("HAIR_GROW", "1.035"))
@@ -131,6 +136,9 @@ def grey_atlas(px, name):
     transparent neighbour's stray colour (white, usually) would otherwise
     ring every card and glitter against dark hair."""
     rgb, a = px[..., :3], px[..., 3]
+    # 16 alpha levels: webp stores alpha losslessly, and fine strand edges at
+    # full depth are most of a hair file's download (alpha-to-coverage shows no difference)
+    a = np.round(a * ALPHA_LEVELS) / ALPHA_LEVELS
     lum = rgb @ np.array([0.2126, 0.7152, 0.0722], np.float32)
     solid = a > 0.5
     if solid.any():
@@ -208,9 +216,13 @@ def build_style(ctx, sid, pack, num, opts, mat_cache):
     uv_layer.data.foreach_set("uv", np.concatenate(uvs).ravel())
     for p in ob.data.polygons:
         p.use_smooth = True
-    if opts.get("ratio"):
+    # every style fits the triangle budget (download size, far fewer vertices to skin)
+    tris = sum(len(p.vertices) - 2 for p in ob.data.polygons)
+    ratio = opts.get("ratio") or min(1.0, TRI_BUDGET / tris)
+    print(f"hair {sid}: {tris} tris, ratio {ratio:.2f}")
+    if ratio < 1.0:
         mod = ob.modifiers.new("decimate", "DECIMATE")
-        mod.ratio = opts["ratio"]
+        mod.ratio = ratio
         bpy.context.view_layer.objects.active = ob
         bpy.ops.object.modifier_apply(modifier=mod.name)
         co = np.array([v.co[:] for v in ob.data.vertices])
