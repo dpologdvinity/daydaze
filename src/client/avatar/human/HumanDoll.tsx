@@ -595,6 +595,11 @@ function hairMaterial(
     roughness: map ? 0.7 : 0.55,
     side: THREE.DoubleSide,
     alphaTest: map && cutout ? (rich ? 0.3 : 0.4) : 0,
+    // Strand cards are a few texels wide, so their mips lose alpha unevenly
+    // and a hard cut-out flickers into white specks against dark hair.
+    // Alpha-to-coverage turns the (sharpened) alpha into MSAA coverage:
+    // soft, stable edges, no sorting and no second blended pass.
+    alphaToCoverage: Boolean(map && cutout),
   });
   // the shine bands run along strand cards; on the broad, smooth scalp cap
   // they would read as white streaks, so the cap stays matte
@@ -769,7 +774,20 @@ function buildPart(
         g.getAttribute("uv")
       ) {
         g.computeTangents();
-        g.setAttribute("hairTangent", g.getAttribute("tangent"));
+        const t = g.getAttribute("tangent");
+        // a card triangle with no UV area has no tangent: computeTangents
+        // leaves NaN or zero there, and the shine would flash white or black
+        // across it. Give those vertices a straight-down strand instead.
+        for (let i = 0; i < t.count; i++) {
+          const len = Math.hypot(t.getX(i), t.getY(i), t.getZ(i));
+          if (
+            !Number.isFinite(len) ||
+            len < 1e-6 ||
+            !Number.isFinite(t.getW(i))
+          )
+            t.setXYZW(i, 0, -1, 0, 1);
+        }
+        g.setAttribute("hairTangent", t);
         g.deleteAttribute("tangent");
       }
       const mat =
@@ -784,30 +802,6 @@ function buildPart(
       materials.push(mat);
       mesh.material = mat;
       group.add(mesh);
-      // strand cards draw twice: a solid core that writes depth, then the
-      // thin wisps at the card edges blended on top, so the hairline and ends
-      // read soft instead of cut out
-      if (rich && tint.kind === "hair" && old?.map && cutout) {
-        // the wisps pass is plain standard shading: thin edges show no
-        // highlight anyway, and blended overdraw is the costly part
-        const wisps = new THREE.MeshStandardMaterial({
-          map: old.map,
-          color: tint.color,
-          vertexColors: hasShade,
-          roughness: 0.5,
-          side: THREE.DoubleSide,
-          alphaTest: 0.12,
-          transparent: true,
-          depthWrite: false,
-        });
-        materials.push(wisps);
-        const soft = mesh.clone();
-        soft.bind(skeleton, src.bindMatrix);
-        soft.morphTargetInfluences?.fill(0);
-        soft.material = wisps;
-        soft.renderOrder = 1;
-        group.add(soft);
-      }
     }
     return { group, materials, lift };
   }
