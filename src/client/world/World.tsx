@@ -338,7 +338,8 @@ function FrameCount({ still }: { still: boolean }) {
   const invalidate = useThree((s) => s.invalidate);
   const count = useRef(0);
   const later = useRef(0);
-  useFrame(({ gl }) => {
+  useFrame(({ gl, scene, camera }) => {
+    Object.assign(window, { __scene: scene, __gl: gl, __cam: camera }); // TEMP-PROFILE
     if (count.current >= 10) {
       if (++later.current % 30 === 0) {
         gl.domElement.dataset.calls = String(gl.info.render.calls);
