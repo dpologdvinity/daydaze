@@ -844,7 +844,6 @@ for (const shot of SHOTS) {
   await page.setViewportSize(shot.viewport ?? { width: 1280, height: 800 });
   const still = shot.live ? "" : "&still=1";
   await page.goto(`${BASE}/?quality=low${still}&${shot.query}`, {
-    timeout: 150_000,
     timeout: 300_000,
   });
   if (shot.act) await shot.act(page);
