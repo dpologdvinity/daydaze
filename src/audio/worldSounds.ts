@@ -723,3 +723,58 @@ export function unlockAudio(): void {
     // no audio here
   }
 }
+
+/** A car door shutting: a dull low thunk with a short latch click after it. */
+export function playDoorThunk(): boolean {
+  const out = sfx();
+  if (!out) return false;
+  const { ctx, dest } = out;
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(120, now);
+  osc.frequency.exponentialRampToValueAtTime(48, now + 0.14);
+  gain.gain.setValueAtTime(0.4, now);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+  osc.connect(gain).connect(dest);
+  osc.start(now);
+  osc.stop(now + 0.22);
+  burst(ctx, dest, "lowpass", 700, 0.16, 0.08);
+  burst(ctx, dest, "bandpass", 2600, 0.05, 0.03);
+  return true;
+}
+
+/**
+ * A soft engine hum for a ride: two low saws a hair apart through a lowpass,
+ * faded in and out. Returns a function that fades it out and stops it (a
+ * no-op when there is no audio).
+ */
+export function startEngineHum(): () => void {
+  const out = sfx();
+  if (!out) return () => undefined;
+  const { ctx, dest } = out;
+  const now = ctx.currentTime;
+  const filter = ctx.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.setValueAtTime(260, now);
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.05, now + 0.6);
+  filter.connect(gain).connect(dest);
+  const oscs = [54, 55.5].map((hz) => {
+    const osc = ctx.createOscillator();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(hz, now);
+    osc.connect(filter);
+    osc.start(now);
+    return osc;
+  });
+  return () => {
+    const end = ctx.currentTime;
+    gain.gain.cancelScheduledValues(end);
+    gain.gain.setValueAtTime(Math.max(gain.gain.value, 0.0001), end);
+    gain.gain.exponentialRampToValueAtTime(0.0001, end + 0.4);
+    for (const osc of oscs) osc.stop(end + 0.45);
+  };
+}

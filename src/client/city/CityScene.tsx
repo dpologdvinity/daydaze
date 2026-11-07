@@ -51,6 +51,7 @@ import { NycFacades, cityBays } from "./NycFacades.tsx";
 import { CityHouses, cityHouses } from "./CityHouses.tsx";
 import { ElLine, ElLineBoundary } from "./ElLine.tsx";
 import { ElRide } from "./ElRide.tsx";
+import { TaxiRide } from "./TaxiRide.tsx";
 import { CITY_CLOCK } from "./shaders.ts";
 import { CityTransit } from "./CityTransit.tsx";
 import { Traffic } from "./Traffic.tsx";
@@ -259,6 +260,7 @@ export function CityScene({
       <Suspense fallback={null}>
         <CityTransit player={player} />
         <StreetFood player={player} />
+        <TaxiRide player={player} />
         <Traffic player={player} />
       </Suspense>
       <PlayerCar player={player} parked={car} onPark={onPark} />

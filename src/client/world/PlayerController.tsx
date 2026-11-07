@@ -84,6 +84,8 @@ export type Player = {
     flip?: number;
     /** Her legs keep walking while the seat carries her (a runway strut). */
     stride?: boolean;
+    /** Inside a closed vehicle (a taxi): out of sight, like her own car. */
+    inside?: boolean;
   } | null;
   /** Set while seated on a chair (not a ride): the doll sits until she moves. */
   sitting: boolean;
@@ -315,14 +317,14 @@ export function PlayerController({
     // the Speedway she stands at the pit wall
     const inCar =
       driving.session?.kind === "city" || driving.passenger !== null;
-    if (g.current) g.current.visible = !inCar;
+    const hidden = inCar || player.seat?.inside === true;
+    if (g.current) g.current.visible = !hidden;
+    if (hidden && tag.current && tagAt.current.shown) {
+      tagAt.current.shown = false;
+      tag.current.style.visibility = "hidden";
+    }
     // a driven car takes the keys; a passenger goes where the car goes
     if (driving.session || driving.passenger) {
-      const el = tag.current;
-      if (inCar && el && tagAt.current.shown) {
-        tagAt.current.shown = false;
-        el.style.visibility = "hidden";
-      }
       return;
     }
     const local = moveAction(held.current, stick);
@@ -462,7 +464,7 @@ export function PlayerController({
       head.project(state.camera);
       const px = ((head.x + 1) / 2) * state.size.width;
       const py = ((1 - head.y) / 2) * state.size.height;
-      const shown = head.z < 1;
+      const shown = head.z < 1 && player.seat?.inside !== true;
       // touch the DOM only when the tag moves, so a still frame costs no style work
       const last = tagAt.current;
       if (
