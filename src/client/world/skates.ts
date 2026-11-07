@@ -9,7 +9,7 @@ export const SKATE_ROOMS: ReadonlySet<RoomId> = new Set<RoomId>([
 ]);
 
 /** How much faster than walking she rolls on skates. */
-export const SKATE_SPEED = 1.8;
+export const SKATE_SPEED = 1.5;
 
 /** Whether the player has her roller skates on. */
 export const skates = createStore({ on: false });

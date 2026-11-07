@@ -52,9 +52,9 @@ export function stepWalker(
   if (!goal || walker.leaving) return { moved: false, portal: null };
 
   const diff = turnBetween(walker.yaw, yawTowards(from, goal));
-  walker.yaw += diff * Math.min(1, dt * 9);
+  walker.yaw += diff * Math.min(1, dt * 16);
   // pivot first on sharp turns, then stride
-  const step = WALK_SPEED * speedScale * dt * (Math.abs(diff) < 1.2 ? 1 : 0.3);
+  const step = WALK_SPEED * speedScale * dt * (Math.abs(diff) < 1.2 ? 1 : 0.5);
   const next = stepInArea(area, from, goal, step);
   const progress = Math.hypot(next[0] - from[0], next[1] - from[1]);
   const moved = progress > 1e-4;

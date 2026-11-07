@@ -16,7 +16,8 @@ import {
 } from "./clips.ts";
 import { MOCAP_CLIPS } from "./mocap.ts";
 import { DANCE_MOVE_IDS, GAME_CLIP_IDS, stillClipsOf } from "./moves.ts";
-import { MAX_TEMPO, MIN_TEMPO } from "./stride.ts";
+import { MAX_RUN_TEMPO, MAX_TEMPO, MIN_TEMPO } from "./stride.ts";
+import { WALK_SPEED } from "../walk.ts";
 
 const base: DollState = {
   loaded: true,
@@ -73,13 +74,27 @@ test("a walker plays her gait's clip at a rate matched to the ground", () => {
   assert.ok(easy?.speed);
   const at = (speed: number) => pickClip({ ...base, speed })?.rate ?? NaN;
   assert.ok(Math.abs(at(easy.speed) - 1) < 1e-9);
-  assert.equal(at(9), MAX_TEMPO);
+  assert.equal(at(easy.speed * MAX_TEMPO * 5), MAX_RUN_TEMPO);
   assert.equal(at(0.1), MIN_TEMPO);
   assert.equal(pickClip({ ...base, speed: 1 })?.id, "walk-easy");
   // walking wins over any mood
   assert.equal(pickClip({ ...base, speed: 1, mood: "sit" })?.id, "walk-easy");
   // a gait with no baked clip walks the built stride
   assert.equal(pickClip({ ...base, speed: 1, walk: undefined }), null);
+});
+
+test("brisk ground speed switches a walk to the jog clip, never an absurdly fast walk", () => {
+  const jog = clipOf("jog");
+  assert.ok(jog?.speed);
+  const brisk = pickClip({ ...base, speed: WALK_SPEED });
+  assert.ok(brisk);
+  assert.equal(brisk.id, "jog");
+  assert.ok(brisk.rate >= MIN_TEMPO && brisk.rate <= MAX_RUN_TEMPO);
+  assert.ok(Math.abs(brisk.rate - WALK_SPEED / jog.speed) < 1e-9);
+  // a slow walk (e.g. wading) keeps its own walk clip
+  assert.equal(pickClip({ ...base, speed: 1 })?.id, "walk-easy");
+  // the jog gait itself stays on the jog
+  assert.equal(pickClip({ ...base, walk: "jog", speed: 1.7 })?.id, "jog");
 });
 
 test("idles: the player breathes, NPCs pick one by seed", () => {

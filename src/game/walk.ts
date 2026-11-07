@@ -5,9 +5,11 @@
 /** A point or direction on the ground plane, [x, z] in meters. */
 export type Vec2 = readonly [x: number, z: number];
 
-/** Meters per second: a brisk walk. (2.2 m/s made the mocap walks play at
+/** Meters per second: a brisk game pace (was 1.6). A walk clip tops out near
+ * 1.9 m/s at its 1.25x tempo clamp, so at this pace the doll plays the jog
+ * clip instead (stride.ts needsRun). (2.2 m/s once made the mocap walks play at
  * twice their recorded tempo, a frantic shuffle.) */
-export const WALK_SPEED = 1.6;
+export const WALK_SPEED = 2.6;
 
 // Points this close to an edge count as on it, so clamped points test inside.
 const EDGE_EPSILON = 1e-9;
