@@ -35,7 +35,10 @@ const WAVE_SECONDS = 7;
 
 const STEP_DEPTH = 0.9;
 const STEP_RISE = 0.5;
-const SEAT_GAP = 0.65;
+/** A Kenney fan is about a meter across, so seats are wider apart than the old pills (and cost ~700 triangles each). */
+const SEAT_GAP = 1;
+/** Share of `fill` that really sit down, to stay inside the render budget. */
+const CROWD_THIN = 0.75;
 type Fan = {
   x: number;
   y: number;
@@ -130,7 +133,7 @@ export function Stands({
         });
         const seats = Math.floor(bank.length / SEAT_GAP);
         for (let k = 0; k < seats; k++) {
-          if (rand() > fill) continue;
+          if (rand() > fill * CROWD_THIN) continue;
           const along = (k - (seats - 1) / 2) * SEAT_GAP;
           const [fx, fz] = place(along, back);
           fans.push({
