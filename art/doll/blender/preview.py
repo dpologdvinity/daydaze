@@ -1,7 +1,7 @@
 """Dev-only: renders the built doll GLB in Blender for a quick look.
 
     blender --background --factory-startup --python art/doll/blender/preview.py -- face out.png
-Views: face, profile, body, eye.
+Views: face, profile, head, headback, head3q, body, back, side, eye.
 """
 
 import math
@@ -19,11 +19,12 @@ out = args[1] if len(args) > 1 else f"/tmp/doll-{view}.png"
 keys = dict(a.split("=") for a in args[2:])
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
-bpy.ops.import_scene.gltf(filepath=os.path.join(OUT, "body.glb"))
+sfx = "-m" if keys.get("sex") == "m" else ""  # sex=m: the man's files
+bpy.ops.import_scene.gltf(filepath=os.path.join(OUT, f"body{sfx}.glb"))
 # show=Hair_waves,Outfit_flares imports those parts (hair-waves.glb, ...)
 for part in filter(None, keys.get("show", "").split(",")):
     kind, name = part.split("_", 1)
-    bpy.ops.import_scene.gltf(filepath=os.path.join(OUT, f"{kind.lower()}-{name}.glb"))
+    bpy.ops.import_scene.gltf(filepath=os.path.join(OUT, f"{kind.lower()}-{name}{sfx}.glb"))
 for ob in bpy.data.objects:
     if ob.type == "MESH" and ob.data.shape_keys:
         for kb in ob.data.shape_keys.key_blocks:
@@ -36,6 +37,10 @@ for ob in bpy.data.objects:
 skin = {
     "skin": (0.78, 0.55, 0.42, 1),
     "lashes": (0.02, 0.01, 0.01, 1),
+    # whole head and shoulders, for judging hair from the front, back and side
+    "head": ((0, -1.5, 1.45), (0, 0, 1.4), 30),
+    "headback": ((0, 1.5, 1.45), (0, 0, 1.4), 30),
+    "head3q": ((-1.1, -1.1, 1.45), (0, 0, 1.4), 30),
     "eye": (0.25, 0.15, 0.08, 1),
 }
 for m in bpy.data.materials:
@@ -52,10 +57,11 @@ for m in bpy.data.materials:
 
 scene = bpy.context.scene
 scene.render.engine = "CYCLES"
-scene.cycles.samples = 24
+scene.cycles.samples = int(keys.get("samples", 24))
 scene.cycles.device = "CPU"
-scene.render.resolution_x = 640
-scene.render.resolution_y = 640 if view not in ("body", "back", "side") else 960
+res = int(keys.get("res", 640))
+scene.render.resolution_x = res
+scene.render.resolution_y = res if view not in ("body", "back", "side") else 960
 scene.render.filepath = out
 world = bpy.data.worlds.new("w")
 world.use_nodes = True
@@ -65,6 +71,10 @@ scene.world = world
 VIEWS = {
     "face": ((0, -0.75, 1.56), (0, 0, 1.55), 22),
     "profile": ((-0.75, 0, 1.56), (0, 0, 1.55), 22),
+    # whole head and shoulders, for judging hair from the front, back and side
+    "head": ((0, -1.5, 1.45), (0, 0, 1.4), 30),
+    "headback": ((0, 1.5, 1.45), (0, 0, 1.4), 30),
+    "head3q": ((-1.1, -1.1, 1.45), (0, 0, 1.4), 30),
     "eye": ((0.03, -0.3, 1.565), (0.03, 0, 1.56), 22),
     "body": ((0, -3.6, 1.0), (0, 0, 0.88), 30),
     "back": ((0, 3.6, 1.0), (0, 0, 0.88), 30),

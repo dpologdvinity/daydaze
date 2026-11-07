@@ -15,7 +15,7 @@ OPTS=(--compress meshopt --texture-compress webp --texture-size 1024
   --simplify false --join false --instance false --flatten false --palette false --prune-attributes false)
 LO="$(mktemp -d)"
 # ONLY="hair-locs*" rebuilds just the parts that match (default: every part)
-for src in "$IN"/${ONLY:-*}.glb; do
+for src in "$IN"/*.glb; do
   name="$(basename "$src" .glb)"
   # ONLY='hair-(buzz|edges)' rebuilds just the parts whose names match
   if [ -n "${ONLY:-}" ] && ! echo "$name" | grep -Eq "^($ONLY)"; then continue; fi
@@ -29,14 +29,28 @@ for src in "$IN"/${ONLY:-*}.glb; do
     npx -y @gltf-transform/cli@4.5.1 optimize "$f" "$OUT/$name.glb" "${OPTS[@]}" --meshopt-level high
     continue
   fi
-  node --experimental-strip-types "$(dirname "$0")/pruneMorphs.ts" "$src" "$f"
-  npx -y @gltf-transform/cli@4.5.1 optimize "$f" "$OUT/$name.glb" "${OPTS[@]}"
+  # hair also loses face-feature keys and target normals (pruneMorphs.ts)
+  flag=""
+  case "$name" in hair-*) flag="--hair" ;; esac
+  node --experimental-strip-types "$(dirname "$0")/pruneMorphs.ts" "$src" "$f" $flag
+  near_opts=("${OPTS[@]}")
+  npx -y @gltf-transform/cli@4.5.1 optimize "$f" "$OUT/$name.glb" "${near_opts[@]}"
   # worn parts get a low-poly twin for far-off dolls: the same vertices'
   # attributes (skin weights, shape keys) on about a fifth of the triangles
   case "$name" in
     hair-* | outfit-* | shoes-* | swim-*)
-      npx -y @gltf-transform/cli@4.5.1 simplify "$f" "$LO/$name.glb" --ratio 0.2 --error 0.02
-      npx -y @gltf-transform/cli@4.5.1 optimize "$LO/$name.glb" "$OUT/$name-lo.glb" "${OPTS[@]}"
+      # hair cards only reach a fifth of their triangles at a looser error
+      err=0.02
+      [ -n "$flag" ] && err=0.1
+      npx -y @gltf-transform/cli@4.5.1 simplify "$f" "$LO/$name.glb" --ratio 0.2 --error "$err"
+      lo_opts=("${OPTS[@]}")
+      # far hair: no head-shape keys, a 128 px atlas
+      if [ -n "$flag" ]; then
+        node --experimental-strip-types "$(dirname "$0")/pruneMorphs.ts" "$LO/$name.glb" "$LO/$name-bare.glb" --bare
+        mv "$LO/$name-bare.glb" "$LO/$name.glb"
+        lo_opts+=(--texture-size 128)
+      fi
+      npx -y @gltf-transform/cli@4.5.1 optimize "$LO/$name.glb" "$OUT/$name-lo.glb" "${lo_opts[@]}"
       ;;
   esac
 done

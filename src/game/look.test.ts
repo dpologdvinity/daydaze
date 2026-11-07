@@ -104,7 +104,7 @@ test("validateLook rejects missing, extra and off-catalog fields", () => {
   assert.equal(validateLook(missing), false);
   assert.equal(validateLook({ ...DEFAULT_LOOK, hat: "beret" }), false);
   assert.equal(validateLook({ ...DEFAULT_LOOK, skin: "#000000" }), false);
-  assert.equal(validateLook({ ...DEFAULT_LOOK, hairStyle: "mohawk" }), false);
+  assert.equal(validateLook({ ...DEFAULT_LOOK, hairStyle: "mullet" }), false);
   assert.equal(validateLook({ ...DEFAULT_LOOK, outfitColor: 7 }), false);
   // Mixing catalogs: a hair color is not an outfit color.
   assert.equal(

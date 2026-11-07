@@ -266,6 +266,30 @@ export const CREDITS: readonly {
           "Buzz cut, parted cut and their refits as the buzz, shaved-sides and slicked-edges hair, scaled to our head.",
       },
       {
+        title: "Hair Pack (part 1)",
+        author: "rendysix",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/none-41f1709e39e24a3fafdbcd2c2aac72a1",
+        usedFor:
+          "Hair-card styles quiff, side part, tousled, mop, pompadour, mohawk, spiky crop and layered waves, refitted to our heads, the atlas greyed so hair color tints it (art/doll/blender/pack_hair.py).",
+      },
+      {
+        title: "Hair Pack (part 2)",
+        author: "rendysix",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/none-06a783e91c194e12a296402453476824",
+        usedFor:
+          "Hair-card styles rapunzel, long waves, sleek side-swept, high ponytail, twin tails, lob, blunt bob, side-swept bob, side fringe, messy bun and messy shag, refitted to our heads (art/doll/blender/pack_hair.py).",
+      },
+      {
+        title: "Hair Pack (part 3)",
+        author: "rendysix",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/none-9dc99938fab341e29b34354004e230b6",
+        usedFor:
+          "Hair-card styles fishtail braid, crew cut and slick back, refitted to our heads (art/doll/blender/pack_hair.py).",
+      },
+      {
         title: "Realistic Car Pack",
         author: "Quaternius",
         license: "CC0 1.0",

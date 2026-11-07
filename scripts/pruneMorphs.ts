@@ -21,6 +21,17 @@ import { readFileSync, writeFileSync } from "node:fs";
 /** A target smaller than this (meters, on every axis) moves nothing visible. */
 const STILL = 1e-4;
 
+/**
+ * Hair is a stack of thin cards: the face-feature keys (eyes, nose, lips,
+ * blink, smile) move it by a few millimeters at most and a lid should not
+ * drag a fringe along, and targets under 2.5 mm are invisible on it. Hair also
+ * loses its target normals, which is most of what its sliders cost to download.
+ * Bare mode (the far-LOD twins of hair) drops every target: nobody sees a 5 mm
+ * head-shape shift on a doll that far away.
+ */
+const HAIR_STILL = 2.5e-3;
+const FEATURE_KEY = /^(eye|nose|lips|blink|smile|cheeks|jaw|plus)/;
+
 interface Accessor {
   min?: number[];
   max?: number[];
@@ -110,7 +121,11 @@ function reach(accessor: Accessor): number {
  * Removes every morph target that no primitive of its mesh moves, with its
  * weight and name. Orphaned accessors stay for optimize's prune to drop.
  */
-export function pruneMorphs(glb: Uint8Array): {
+export function pruneMorphs(
+  glb: Uint8Array,
+  hair = false,
+  bare = false,
+): {
   glb: Uint8Array;
   dropped: number;
 } {
@@ -124,16 +139,20 @@ export function pruneMorphs(glb: Uint8Array): {
         const position = p.targets?.[i]?.POSITION;
         const accessor =
           position === undefined ? undefined : json.accessors[position];
-        return accessor !== undefined && reach(accessor) >= STILL;
+        return (
+          accessor !== undefined &&
+          reach(accessor) >= (hair ? HAIR_STILL : STILL)
+        );
       });
-      if (moves) keep.push(i);
+      const feature = FEATURE_KEY.test(mesh.extras?.targetNames?.[i] ?? "");
+      if (moves && !(hair && feature) && !bare) keep.push(i);
     }
     const names = mesh.extras?.targetNames;
     for (const p of mesh.primitives)
       p.targets?.forEach((t, i) => {
-        if (names?.[i]?.startsWith("tuck_")) delete t.NORMAL;
+        if (hair || names?.[i]?.startsWith("tuck_")) delete t.NORMAL;
       });
-    if (keep.length === count) continue;
+    if (keep.length === count && !hair) continue;
     dropped += count - keep.length;
     for (const p of mesh.primitives) {
       const targets = keep
@@ -155,10 +174,14 @@ export function pruneMorphs(glb: Uint8Array): {
 }
 
 if (import.meta.main) {
-  const [input, output] = process.argv.slice(2);
+  const [input, output, flag] = process.argv.slice(2);
   if (!input || !output)
-    throw new Error("Usage: pruneMorphs.ts <in.glb> <out.glb>");
-  const { glb, dropped } = pruneMorphs(readFileSync(input));
+    throw new Error("Usage: pruneMorphs.ts <in.glb> <out.glb> [--hair|--bare]");
+  const { glb, dropped } = pruneMorphs(
+    readFileSync(input),
+    flag === "--hair" || flag === "--bare",
+    flag === "--bare",
+  );
   writeFileSync(output, glb);
   console.log(`${input}: dropped ${dropped} still morph targets`);
 }

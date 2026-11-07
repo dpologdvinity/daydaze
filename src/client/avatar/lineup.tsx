@@ -12,6 +12,7 @@ import {
   SKINS,
   decodeMakeup,
   DEFAULT_LOOK,
+  HAIR_COLORS,
   HAIR_STYLES,
   OUTFITS,
   BEARDS,
@@ -205,7 +206,34 @@ const MEN: Look[] = [
   },
 ];
 
+/**
+ * `?shot=hairs&styles=a,b,c&colors=1b1014,f1d78f&men=1`: one head-and-shoulders
+ * doll per style, wearing the matching color (the last one repeats), for
+ * judging hair. `?cam=0,1.52,-2.4` looks from behind.
+ */
+function hairsLooks(): Look[] {
+  const q = new URLSearchParams(location.search);
+  const colors = (q.get("colors") ?? "1b1014").split(",");
+  const base = q.get("men") === "1" ? MEN[0] : LINEUP[0];
+  return (q.get("styles") ?? "waves").split(",").map((id, i) => ({
+    ...base,
+    hairStyle: HAIR_STYLES.find((h) => h.id === id)?.id ?? "waves",
+    hairColor:
+      HAIR_COLORS.find(
+        (c) => c.id === `#${colors[Math.min(i, colors.length - 1)]}`,
+      )?.id ?? base.hairColor,
+    ...(q.get("men") === "1" ? { beard: "none" as const } : {}),
+  }));
+}
+
 const SHOTS = {
+  hairs: {
+    looks: hairsLooks(),
+    x: (i: number) => (i - (hairsLooks().length - 1) / 2) * 0.36,
+    cam: [0, 1.52, 2.4] as const,
+    target: [0, 1.4, 0] as const,
+    fov: 40,
+  },
   men: {
     looks: MEN,
     x: (i: number) => (i - 1) * 1.4,

@@ -63,6 +63,31 @@ export const HAIR_STYLES = [
   { id: "shaved-sides", label: "Shaved sides" },
   { id: "bald", label: "Bald" },
   { id: "edges", label: "Slicked edges" },
+  // hair-card styles refitted from the Hair Pack (credits.ts): long and
+  // mid-length, ponytails and a bun, bobs
+  { id: "rapunzel", label: "Rapunzel" },
+  { id: "long-waves", label: "Long waves" },
+  { id: "fishtail", label: "Fishtail braid" },
+  { id: "layered-long", label: "Layered waves" },
+  { id: "sleek-side", label: "Side-swept long" },
+  { id: "high-pony", label: "High ponytail" },
+  { id: "twin-tails", label: "Twin tails" },
+  { id: "lob", label: "Layered lob" },
+  { id: "blunt-bob", label: "Blunt bob" },
+  { id: "sidebob", label: "Side-swept bob" },
+  { id: "side-fringe", label: "Side fringe" },
+  { id: "messy-bun", label: "Messy bun" },
+  // and the short cuts and a mohawk
+  { id: "quiff", label: "Quiff" },
+  { id: "side-part", label: "Messy side part" },
+  { id: "tousled", label: "Tousled" },
+  { id: "messy-curls", label: "Messy shag" },
+  { id: "crew", label: "Crew cut" },
+  { id: "slick-back", label: "Slick back" },
+  { id: "mop", label: "Mop top" },
+  { id: "pompadour", label: "Pompadour" },
+  { id: "mohawk", label: "Mohawk" },
+  { id: "spiky-crop", label: "Spiky crop" },
 ] as const;
 
 /** Hair colors as hex ids; the Blowout Bar's are locked until bought. */
@@ -863,6 +888,14 @@ export const SHORT_CUTS: readonly HairStyle[] = [
   "coils",
   "buzz",
   "shaved-sides",
+  "quiff",
+  "side-part",
+  "tousled",
+  "messy-curls",
+  "crew",
+  "mop",
+  "pompadour",
+  "spiky-crop",
 ];
 
 /** Pronouns to pick from; a fixed list, so nothing else reaches others. */
