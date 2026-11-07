@@ -32,15 +32,15 @@ future imported packs belong here when they enter the game.
 | Sushi Restaurant Kit | Quaternius | CC0 1.0 | https://quaternius.com/packs/sushirestaurantkit.html | Sushi and ramen restaurant furnishings, kitchen equipment, dishes and food, converted and optimized. |
 | WheelChair | Loïc | CC-BY 4.0 | https://sketchfab.com/3d-models/wheelchair-f0ef4adc17ee4929b40e894c608061ea | The wheelchair a doll rolls in when her walk style is Wheelchair (fitted by art/doll/blender/wheelchair.py). |
 | leg prosthesis | victorghys | CC-BY 4.0 | https://sketchfab.com/3d-models/leg-prosthesis-59d7e2b28b8b45ec8b179fff0134ceec | The lower leg of a doll's prosthetic leg (cut and fitted by art/doll/blender/prosthesis.py). |
-| Public Transport Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/publictransport.html | City bus, merged, recolored and simplified for near and far rendering. |
-| Realistic Car Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/cars.html | Yellow taxis and sedans mixed into street traffic with near and far models. |
+| Public Transport Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/publictransport.html | City bus, merged, recolored and simplified for near and far rendering; the ambulance and school bus in street traffic and the dealership's Atlas Van (art/cars/import.py: paint, glass, trim, tyre, rim and lamp meshes, near and low-detail twins). |
+| Realistic Car Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/cars.html | The city's traffic and every road car you can drive or buy: sedan, hatchback, SUV, two sports cars, taxi and cop car, split into paint, glass, trim, tyre, rim and lamp meshes with near and low-detail twins (art/cars/import.py). |
 | Universal Base Characters | Quaternius | CC0 1.0 | https://quaternius.com/packs/universalbasecharacters.html | Buzz cut, parted cut and their refits as the buzz, shaved-sides and slicked-edges hair, scaled to our head. |
 | Ultimate House Interior Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/ultimatehouseinterior.html | Apartment furniture: sofas, beds, tables, kitchen, bath, plants and more, joined into one mesh each; Clay Day stools, glaze table and plants. |
 | Furniture Pack (March 2019) | Quaternius | CC0 1.0 | https://quaternius.com/packs/furniturepack.html | Apartment furniture: armchair, vase and a few small pieces. |
 | Furniture Pack (Oct 2017) | Quaternius | CC0 1.0 | https://quaternius.com/packs/furniturepack.html | Apartment furniture: bookcase and closet. |
 | Television Vintage | Kenney | CC0 1.0 | https://poly.pizza/m/aSmz6H8aeu | Apartment Retro TV. |
 | Television | Kenney | CC0 1.0 | https://poly.pizza/m/9trLeWoBek | Apartment flat-screen TV. |
-| Car Kit | Kenney | CC0 1.0 | https://kenney.nl/assets/car-kit | Delivery vans mixed into street traffic and the pastel ice-cream truck, merged and simplified. |
+| Car Kit | Kenney | CC0 1.0 | https://kenney.nl/assets/car-kit | The pastel ice-cream truck, merged and simplified. |
 | Coaster Kit | Kenney | CC0 1.0 | https://kenney.nl/assets/coaster-kit | Amusement Park coaster trains, log flume logs and midway stalls. |
 | Cabin cart for Ferris Wheel | Enkarra | CC-BY 4.0 | https://sketchfab.com/3d-models/cabin-cart-for-ferris-wheel-3fef7c11a7c447acb9e7a5ee98e654b8 | Amusement Park Ferris wheel gondolas. |
 | Carousel Horse | Ramón Ruiz | CC-BY 4.0 | https://sketchfab.com/3d-models/carousel-horse-7872323d00cf4654845c8f39d907e57d | Amusement Park carousel horses. |
