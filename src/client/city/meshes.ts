@@ -120,6 +120,22 @@ function windowTexture(): THREE.Texture {
   return texture;
 }
 
+/** A soft round glow, white in the middle fading to nothing at the edge. */
+function glowTexture(): THREE.Texture {
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = 64;
+  const g = canvas.getContext("2d");
+  if (!g) throw new Error("no 2d context for the glow texture");
+  const fade = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  fade.addColorStop(0, "#ffffff");
+  fade.addColorStop(1, "#000000");
+  g.fillStyle = fade;
+  g.fillRect(0, 0, 64, 64);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
 /**
  * A palm leaf on an alpha card: a rib up the middle with leaflets off it, and
  * nothing between them, so the sky shows through the frond.
@@ -327,9 +343,13 @@ const MATERIAL: Record<Exclude<Shared, FacadeKind>, THREE.Material> = {
   hair: animate(new THREE.MeshStandardMaterial({ roughness: 0.4 }), {
     bob: true,
   }),
+  // neon spilling on the street: a soft additive pool that dimForDay fades
+  // out by day (an opaque disk reads as a paint spot)
   puddle: new THREE.MeshBasicMaterial({
+    map: glowTexture(),
+    blending: THREE.AdditiveBlending,
     transparent: true,
-    opacity: 0.6,
+    opacity: 0,
     depthWrite: false,
     toneMapped: false,
   }),
@@ -544,6 +564,11 @@ export function dimForDay(meshes: KindMeshes, night: number): void {
   if (lane instanceof THREE.MeshBasicMaterial)
     lane.color.setRGB(...laneTint(night));
   BAY_NIGHT.value = night;
+  const pool = meshes.puddle.material;
+  if (pool instanceof THREE.MeshBasicMaterial) {
+    pool.opacity = 0.55 * night;
+    pool.visible = night > 0.02;
+  }
   for (const kind of NIGHT_LIT) {
     const m = meshes[kind].material;
     if (m instanceof THREE.MeshBasicMaterial)
