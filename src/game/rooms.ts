@@ -788,6 +788,9 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Back to Starboard Marina",
         target: "marina",
         targetSpawn: { position: [0, -1.8], yaw: 0 },
+      },
+    ],
+  },
   garden: {
     id: "garden",
     name: "Community Garden",
