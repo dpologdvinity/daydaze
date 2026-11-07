@@ -631,7 +631,7 @@ const SHOTS: {
     ["beachside-motels-east", "-60,9,214,40,6,194"],
     ["beachside-motels-far", "-60,30,260,-60,4,190"],
     ["beachside-motel-close", "-168,5,217,-184,3.5,194"],
-    ["beachside-motel-wide", ""],
+    ["beachside-motel-wide", "-120,12,236,-165,4,196"],
   ].map(([name, cam]) => ({
     name: String(name),
     query: cam
