@@ -39,6 +39,8 @@ PACKS = {
 # Style id -> (pack, armature number, options). Options:
 #   swing: offset from the head joint (Blender space) where the tail starts
 #          to sway on the pony bone
+#   solid_scalp: make the scalp cap's atlas texels opaque (its alpha fades out
+#          into bald patches on our heads)
 #   ratio: Decimate ratio for cards that are denser than they need to be
 STYLES = {
     # women's, longest first
@@ -59,7 +61,7 @@ STYLES = {
     "side-part": ("p1", 2, {}),
     "tousled": ("p1", 3, {}),
     "messy-curls": ("p2", 102, {}),
-    "crew": ("p3", 201, {}),
+    "crew": ("p3", 201, {"solid_scalp": True}),
     "slick-back": ("p3", 200, {}),
     "mop": ("p1", 5, {}),
     "pompadour": ("p1", 8, {}),
@@ -129,7 +131,35 @@ def _load_pack(key):
     return parts
 
 
-def grey_atlas(px, name):
+def scalp_mask(scalp_parts, h, w):
+    """Texels covered by the scalp cap's UV triangles, as a bool (h, w) mask.
+    Some packs fade the cap's alpha out toward the hairline in a way meant for
+    their own skin, which on our heads shows as bald patches."""
+    mask = np.zeros((h, w), bool)
+    for _, faces, uvs, _ in scalp_parts:
+        loop = 0
+        for f in faces:
+            # Blender pixel rows run bottom-up like v, as the atlas array does
+            pts = uvs[loop : loop + len(f)] * np.array([w, h])
+            loop += len(f)
+            for k in range(1, len(f) - 1):
+                tri = np.array([pts[0], pts[k], pts[k + 1]])
+                x0, y0 = np.floor(tri.min(0)).astype(int) - 1
+                x1, y1 = np.ceil(tri.max(0)).astype(int) + 1
+                x0, y0, x1, y1 = max(x0, 0), max(y0, 0), min(x1, w - 1), min(y1, h - 1)
+                gx, gy = np.meshgrid(np.arange(x0, x1 + 1) + 0.5, np.arange(y0, y1 + 1) + 0.5)
+                (ax, ay), (bx, by), (cx, cy) = tri
+                den = (by - cy) * (ax - cx) + (cx - bx) * (ay - cy)
+                if abs(den) < 1e-9:
+                    continue
+                l1 = ((by - cy) * (gx - cx) + (cx - bx) * (gy - cy)) / den
+                l2 = ((cy - ay) * (gx - cx) + (ax - cx) * (gy - cy)) / den
+                inside = (l1 >= -0.05) & (l2 >= -0.05) & (1 - l1 - l2 >= -0.05)
+                mask[y0 : y1 + 1, x0 : x1 + 1] |= inside
+    return mask
+
+
+def grey_atlas(px, name, solid_mask=None):
     """A strand atlas the client can tint: luminance only, brightened to a
     steady mean, with the colour of the transparent texels flooded in from
     the opaque ones. Filtering mixes a texel with its neighbours, so a
@@ -138,6 +168,8 @@ def grey_atlas(px, name):
     rgb, a = px[..., :3], px[..., 3]
     # 16 alpha levels: webp stores alpha losslessly, and fine strand edges at
     # full depth are most of a hair file's download (alpha-to-coverage shows no difference)
+    if solid_mask is not None:
+        a = np.where(solid_mask, 1.0, a)
     a = np.round(a * ALPHA_LEVELS) / ALPHA_LEVELS
     lum = rgb @ np.array([0.2126, 0.7152, 0.0722], np.float32)
     solid = a > 0.5
@@ -197,19 +229,52 @@ def fit(ctx, co, scalp):
     return out
 
 
+def clear_of_skin(ctx, co, clearance=0.002, reach=0.03):
+    """Pushes hair vertices that ended up inside the head back out. A cap cut
+    for another skull sinks into ours here and there, and the skin shows
+    through as bald patches. Each vertex within `reach` of the head's skin
+    keeps at least `clearance` meters of radial distance from the head's
+    center above the nearest skin vertex."""
+    lo, hi = head_box(ctx)
+    centre = (lo + hi) / 2
+    skin = np.unique(np.array([i for f in ctx.FACES["body"] for i in f if ctx.HEADW[i] > 0.5]))
+    pts = ctx.PB[skin]
+    tree = KDTree(len(pts))
+    for i, q in enumerate(pts):
+        tree.insert(q, i)
+    tree.balance()
+    out = co.copy()
+    pushed = 0
+    for n, v in enumerate(co):
+        _, i, d = tree.find(v)
+        if d > reach:
+            continue
+        rv = np.linalg.norm(v - centre)
+        rs = np.linalg.norm(pts[i] - centre)
+        if rv < rs + clearance:
+            out[n] = centre + (v - centre) * ((rs + clearance) / max(rv, 1e-6))
+            pushed += 1
+    print(f"  {pushed} of {len(co)} hair vertices were inside the skin")
+    return out
+
+
 def build_style(ctx, sid, pack, num, opts, mat_cache):
     parts = _load_pack(pack)[num]
     pieces = parts["hair"] + parts["scalp"]
     scalp = np.concatenate([p[0] for p in parts["scalp"]])
     img = next(p[3] for p in pieces if p[3] is not None)
-    mat = proxies.textured(f"hair_{sid}", grey_atlas(img, f"hair_{sid}"), alpha=True)
+    mask = None
+    if opts.get("solid_scalp"):
+        h, w = img.shape[:2]
+        mask = scalp_mask(parts["scalp"], h, w)
+    mat = proxies.textured(f"hair_{sid}", grey_atlas(img, f"hair_{sid}", mask), alpha=True)
     verts, faces, uvs, base = [], [], [], 0
     for co, fs, uv, _ in pieces:
         verts.append(co)
         faces += [[i + base for i in f] for f in fs]
         uvs.append(uv)
         base += len(co)
-    co = fit(ctx, np.concatenate(verts), scalp)
+    co = clear_of_skin(ctx, fit(ctx, np.concatenate(verts), scalp))
     ob = ctx.new_object(f"Hair_{sid}", co, faces)
     ob.data.materials.append(mat)
     uv_layer = ob.data.uv_layers.new(name="UVMap")
