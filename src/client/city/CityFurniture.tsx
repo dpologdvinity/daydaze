@@ -88,12 +88,12 @@ const BENCH_SURFACES: Partial<
   Record<FurnitureKind, Record<string, Parameters<typeof surface>>>
 > = {
   bench: {
-    slats: ["wood_plank_wall", { scale: 1.2, color: "#5f9a72" }],
-    ends: ["rusty_metal", { scale: 1.5, color: "#3c4240", metalness: 0.6 }],
+    slats: ["wood_floor_deck", { scale: 1.2, color: "#9af5b8" }],
+    ends: ["rusty_metal", { scale: 1.5, color: "#8a9490", metalness: 0.5 }],
   },
   boardbench: {
-    slats: ["oak_wood_planks", { scale: 1.2, color: "#d9d2c4" }],
-    ends: ["oak_wood_planks", { scale: 1.2, color: "#a39a8b" }],
+    slats: ["wood_floor_deck", { scale: 1.2, color: "#f4f0e6" }],
+    ends: ["wood_floor_deck", { scale: 1.2, color: "#c9c2b4" }],
   },
 };
 

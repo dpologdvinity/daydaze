@@ -606,14 +606,14 @@ const SHOTS: {
     // a deck bench from the front quarter: bleached planks, facing the sea
     name: "bench-boardwalk",
     query:
-      "room=city&view=room&time=15:00&at=-396,286&cam=-391.6,1.5,292.6,-394,0.5,288.8",
+      "room=city&view=room&time=15:00&at=-380,276&cam=-391,1.4,289.4,-394.5,0.7,288.7",
     act: furnitureReady,
   },
   {
     // a park bench from the front quarter: green slats on iron, facing the path
     name: "bench-park",
     query:
-      "room=city&view=room&time=14:00&at=219,-285&cam=224.4,1.5,-289.6,222,0.5,-285.8",
+      "room=city&view=room&time=14:00&at=235,-282&cam=225,1.9,-291.2,222,0.6,-285.8",
     act: furnitureReady,
   },
   {
