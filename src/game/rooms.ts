@@ -111,6 +111,7 @@ import * as LAB from "./espressoLab.ts";
 import * as ROOF from "./hotelRooftop.ts";
 import * as BOOKS from "./bookshop.ts";
 import * as SUCRE from "./patisserie.ts";
+import * as PETAL from "./floristShop.ts";
 import * as G44 from "./gallery.ts";
 import * as SURF from "./surfShack.ts";
 import * as BOARDWALK from "./boardwalkArcade.ts";
@@ -194,6 +195,7 @@ export type RoomId =
   | "hotel-rooftop"
   | "bookshop"
   | "patisserie"
+  | "florist"
   | "gallery"
   | "surf-shack"
   | "boardwalk-arcade"
@@ -880,6 +882,23 @@ export const ROOMS: Record<RoomId, RoomDefinition> = {
         label: "Out to Park Avenue",
         target: "city",
         targetSpawn: { position: SUCRE.PATISSERIE_DOOR.landing, yaw: Math.PI },
+      },
+    ],
+  },
+  florist: {
+    id: "florist",
+    name: "Petal & Stem",
+    walkable: PETAL.FLOOR,
+    blockers: PETAL.BLOCKERS,
+    spawn: { position: PETAL.SPAWN, yaw: Math.PI },
+    portals: [
+      {
+        id: "florist-to-city",
+        position: PETAL.EXIT,
+        radius: 0.8,
+        label: "Out to Park Avenue",
+        target: "city",
+        targetSpawn: { position: PETAL.FLORIST_DOOR.landing, yaw: Math.PI },
       },
     ],
   },

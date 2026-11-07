@@ -417,6 +417,7 @@ for (const target of [
   "hotel-rooftop",
   "bookshop",
   "patisserie",
+  "florist",
   "gallery",
   "surf-shack",
   "boardwalk-arcade",

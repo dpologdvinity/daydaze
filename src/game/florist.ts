@@ -100,3 +100,26 @@ export function buyBouquet(coins: number, bouquet: Bouquet): number | null {
   if (!validateBouquet(bouquet)) return null;
   return spend(coins, bouquetPrice(bouquet));
 }
+
+/** One stem's pose in a hand-tied bouquet: tilt radians about x and z, and a lift in meters. */
+export type StemPose = { tiltX: number; tiltZ: number; lift: number };
+
+/**
+ * Fans `count` stems out from the wrap on a golden-angle spiral: the first
+ * stands straight up and each later one leans further out and sits a little
+ * lower, so the heads form a dome. Pure and deterministic, so the counter and
+ * the vase at home draw the same bouquet.
+ */
+export function arrange(count: number): StemPose[] {
+  const poses: StemPose[] = [];
+  for (let i = 0; i < count; i++) {
+    const reach = 0.12 * Math.sqrt(i) * 2.2;
+    const angle = i * 2.399963;
+    poses.push({
+      tiltX: Math.sin(angle) * reach,
+      tiltZ: -Math.cos(angle) * reach,
+      lift: -0.05 * Math.sqrt(i),
+    });
+  }
+  return poses;
+}

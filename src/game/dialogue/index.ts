@@ -3,6 +3,7 @@
 // here; the Record type makes a missing bank a type error.
 
 import { bartenderBank } from "./bartender.ts";
+import { floristBank } from "./florist.ts";
 import { bouncerBank } from "./bouncer.ts";
 import { djBank } from "./dj.ts";
 import { clubDancerBank } from "./club-dancer.ts";
@@ -33,6 +34,7 @@ import type { DialogueRole, RoleBank } from "./types.ts";
  * its own bank.
  */
 export const LINE_BANKS: Record<DialogueRole, RoleBank> = {
+  florist: floristBank,
   bartender: bartenderBank,
   bouncer: bouncerBank,
   dj: djBank,

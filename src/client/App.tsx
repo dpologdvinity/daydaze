@@ -84,6 +84,7 @@ import { Onboarding } from "./ui/Onboarding.tsx";
 import { postPrize, prizeDesk } from "./ui/prizeDesk.ts";
 import { petDesk } from "./rooms/zoo/petDesk.ts";
 import { farmDesk } from "./rooms/farm/farmSession.ts";
+import { floristDesk } from "./rooms/florist/session.ts";
 import { World } from "./world/World.tsx";
 
 const FADE_MS = 300;
@@ -288,6 +289,19 @@ export function App() {
       farmDesk.set({
         commit: (next) =>
           setSave((s) => ({ ...s, farm: next.farm, coins: next.coins })),
+      }),
+    [],
+  );
+  // Petal & Stem's panel reads the saved bouquet and coins and writes them back
+  useEffect(
+    () => floristDesk.set({ bouquet: save.bouquet, coins: save.coins }),
+    [save.bouquet, save.coins],
+  );
+  useEffect(
+    () =>
+      floristDesk.set({
+        commit: (next) =>
+          setSave((s) => ({ ...s, bouquet: next.bouquet, coins: next.coins })),
       }),
     [],
   );

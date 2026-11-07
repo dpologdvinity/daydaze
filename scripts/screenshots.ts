@@ -335,6 +335,7 @@ const SHOTS: {
   { name: "hotel-rooftop", query: "room=hotel-rooftop" },
   { name: "bookshop", query: "room=bookshop" },
   { name: "patisserie", query: "room=patisserie" },
+  { name: "florist", query: "room=florist" },
   { name: "gallery", query: "room=gallery" },
   { name: "surf-shack", query: "room=surf-shack" },
   { name: "boardwalk-arcade", query: "room=boardwalk-arcade" },

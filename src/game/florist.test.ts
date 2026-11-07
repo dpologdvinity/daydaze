@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   addStem,
+  arrange,
   bouquetPrice,
   buyBouquet,
   emptyBouquet,
@@ -93,4 +94,17 @@ test("the harmony label climbs with variety", () => {
     harmonyLabel(stems(["rose", "sunflower", "lily", "eucalyptus", "peony"])),
     "A showstopper",
   );
+});
+
+test("arranging fans stems out in a dome without repeats", () => {
+  const poses = arrange(MAX_STEMS);
+  assert.equal(poses.length, MAX_STEMS);
+  assert.deepEqual(poses[0], { tiltX: 0, tiltZ: -0, lift: -0 });
+  const seen = new Set(
+    poses.map((p) => `${p.tiltX.toFixed(3)},${p.tiltZ.toFixed(3)}`),
+  );
+  assert.equal(seen.size, MAX_STEMS);
+  for (const p of poses) assert.ok(Math.hypot(p.tiltX, p.tiltZ) < 1);
+  assert.deepEqual(arrange(0), []);
+  assert.deepEqual(arrange(4), arrange(5).slice(0, 4));
 });
