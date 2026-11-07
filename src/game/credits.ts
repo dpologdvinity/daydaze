@@ -255,7 +255,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/publictransport.html",
         usedFor:
-          "City bus, merged, recolored and simplified for near and far rendering.",
+          "City bus, merged, recolored and simplified for near and far rendering; the ambulance and school bus in street traffic and the dealership's Atlas Van (art/cars/import.py: paint, glass, trim, tyre, rim and lamp meshes, near and low-detail twins).",
       },
       {
         title: "Universal Base Characters",
@@ -271,7 +271,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/cars.html",
         usedFor:
-          "Yellow taxis and sedans mixed into street traffic with near and far models.",
+          "The city's traffic and every road car you can drive or buy: sedan, hatchback, SUV, two sports cars, taxi and cop car, split into paint, glass, trim, tyre, rim and lamp meshes with near and low-detail twins (art/cars/import.py).",
       },
       {
         title: "Ultimate House Interior Pack",
@@ -314,8 +314,7 @@ export const CREDITS: readonly {
         author: "Kenney",
         license: "CC0 1.0",
         url: "https://kenney.nl/assets/car-kit",
-        usedFor:
-          "Delivery vans mixed into street traffic and the pastel ice-cream truck, merged and simplified.",
+        usedFor: "The pastel ice-cream truck, merged and simplified.",
       },
       {
         title: "Coaster Kit",
