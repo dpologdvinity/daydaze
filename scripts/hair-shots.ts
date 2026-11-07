@@ -37,31 +37,37 @@ const SHOTS: { name: string; query: string }[] = [
 ];
 
 const only = process.argv.slice(2);
-const browser = await chromium.launch({
-  args: [
-    "--use-gl=angle",
-    "--use-angle=swiftshader",
-    "--enable-unsafe-swiftshader",
-  ],
-});
 for (const { name, query } of SHOTS) {
   if (only.length && !only.includes(name)) continue;
-  const page = await browser.newPage({
-    viewport: { width: 1100, height: 650 },
+  // a fresh browser per shot: a second page in the same SwiftShader session
+  // can leave the capture waiting minutes on the first one's GPU queue
+  const browser = await chromium.launch({
+    args: [
+      "--use-gl=angle",
+      "--use-angle=swiftshader",
+      "--enable-unsafe-swiftshader",
+    ],
   });
-  page.on("pageerror", (e) => console.error("page error:", e.message));
-  await page.goto(
-    `${BASE}/src/client/avatar/lineup.html?human=1&shot=hairs&${query}`,
-    { timeout: 240_000 },
-  );
-  await page.locator("canvas").waitFor();
-  // the models load lazily: give them time, then let the frame loop settle
-  await page.waitForTimeout(45_000);
-  await page.screenshot({
-    path: `docs/screenshots/hair-${name}.png`,
-    timeout: 900_000,
-  });
-  console.log("wrote", name);
-  await page.close();
+  try {
+    const page = await browser.newPage({
+      viewport: { width: 1100, height: 650 },
+    });
+    page.on("pageerror", (e) => console.error("page error:", e.message));
+    await page.goto(
+      `${BASE}/src/client/avatar/lineup.html?human=1&shot=hairs&${query}`,
+      { timeout: 240_000 },
+    );
+    await page.locator("canvas").waitFor();
+    // the models load lazily: give them time, then let the frame loop settle
+    await page.waitForTimeout(45_000);
+    await page.screenshot({
+      path: `docs/screenshots/hair-${name}.png`,
+      timeout: 900_000,
+    });
+    console.log("wrote", name);
+  } catch (e) {
+    console.error("failed", name, e instanceof Error ? e.message : e);
+  } finally {
+    await browser.close();
+  }
 }
-await browser.close();
