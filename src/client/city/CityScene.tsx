@@ -56,6 +56,7 @@ import { ElRide } from "./ElRide.tsx";
 import { TaxiRide } from "./TaxiRide.tsx";
 import { CITY_CLOCK } from "./shaders.ts";
 import { CityTransit } from "./CityTransit.tsx";
+import { ParkedCars } from "./ParkedCars.tsx";
 import { Traffic } from "./Traffic.tsx";
 import { PlayerCar } from "./PlayerCar.tsx";
 import { GasStations } from "./GasStations.tsx";
@@ -264,6 +265,7 @@ export function CityScene({
         <StreetFood player={player} />
         <TaxiRide player={player} />
         <Traffic player={player} />
+        <ParkedCars player={player} />
       </Suspense>
       <PlayerCar player={player} parked={car} onPark={onPark} />
       <GasStations player={player} />

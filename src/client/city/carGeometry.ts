@@ -1,65 +1,10 @@
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import { loftBody } from "../../game/driving/carBody.ts";
 
 /**
- * Car shapes for the instanced city: unit-sized (-0.5..0.5 on every axis), so
- * instances scale them to a car's size, with the nose at +x. Lofted from side
- * profiles (src/game/driving/carBody.ts) at low resolution: rounded sides
- * that lean in toward the roof, a hundred cars still cheap to draw.
+ * The jeepney's procedural geometry for the instanced traffic (Traffic.tsx).
+ * Cars are the downloaded bodies now (src/game/driving/bodies.ts).
  */
-
-function loftProfile(
-  points: [number, number][],
-  shape: { sections: number; ring: number; tumble: number; taper: number },
-) {
-  const { positions, indices } = loftBody(points, {
-    length: 1,
-    width: 1,
-    round: 4,
-    ...shape,
-  });
-  const g = new THREE.BufferGeometry();
-  g.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
-  g.setIndex(Array.from(indices));
-  // the loft's nose is at +z; the city's cars point along +x
-  g.rotateY(Math.PI / 2);
-  // squash everything back into the unit cube
-  g.computeBoundingBox();
-  const box = g.boundingBox ?? new THREE.Box3();
-  const size = box.getSize(new THREE.Vector3());
-  const mid = box.getCenter(new THREE.Vector3());
-  g.translate(-mid.x, -mid.y, -mid.z);
-  g.scale(1 / size.x, 1 / size.y, 1 / size.z);
-  g.computeVertexNormals();
-  return g;
-}
-
-/** Lower body: bumpers, a sloped bonnet and boot. */
-export const CAR_BODY = loftProfile(
-  [
-    [-0.5, -0.5],
-    [0.5, -0.5],
-    [0.5, -0.05],
-    [0.42, 0.35],
-    [0.2, 0.5],
-    [-0.3, 0.5],
-    [-0.47, 0.3],
-    [-0.5, 0.0],
-  ],
-  { sections: 4, ring: 8, tumble: 0.12, taper: 0.2 },
-);
-
-/** Cabin glass: raked windscreen and rear window. */
-export const CAR_CABIN = loftProfile(
-  [
-    [-0.5, -0.5],
-    [0.5, -0.5],
-    [0.18, 0.5],
-    [-0.32, 0.5],
-  ],
-  { sections: 3, ring: 6, tumble: 0.3, taper: 0.25 },
-);
 
 // ---------------------------------------------------------------- jeepneys
 
