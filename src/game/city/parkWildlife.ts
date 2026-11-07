@@ -25,9 +25,23 @@ const WEST_LAWN: Rect = { x0: 205, x1: 217, z0: -312, z1: -292 };
 
 export const WILDLIFE: readonly Wildlife[] = [
   { kind: "deer", pen: EAST_LAWN, speed: 0.6, phase: 0, dir: 1 },
-  { kind: "deer", pen: EAST_LAWN, speed: 0.5, phase: 3.3, dir: -1 },
+  {
+    kind: "deer",
+    pen: EAST_LAWN,
+    speed: 0.5,
+    phase: 3.3,
+    dir: -1,
+    highOnly: true,
+  },
   { kind: "rabbit", pen: RABBIT_PEN, speed: 0.5, phase: 1, dir: 1 },
-  { kind: "rabbit", pen: RABBIT_PEN, speed: 0.4, phase: 4, dir: -1 },
+  {
+    kind: "rabbit",
+    pen: RABBIT_PEN,
+    speed: 0.4,
+    phase: 4,
+    dir: -1,
+    highOnly: true,
+  },
   { kind: "fox", pen: SW_LAWN, speed: 0.7, phase: 2, dir: 1 },
   {
     kind: "doe",

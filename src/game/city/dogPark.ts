@@ -207,6 +207,16 @@ export const newDog = (
   stuck: 0,
 });
 
+/** The yard exists within this many meters of its fence. */
+export const DOG_PARK_RANGE = 70;
+
+/** Whether (x, z) is close enough to the yard to draw it. */
+export const dogParkNear = (x: number, z: number): boolean =>
+  Math.hypot(
+    Math.max(DOG_PARK.x0 - x, 0, x - DOG_PARK.x1),
+    Math.max(DOG_PARK.z0 - z, 0, z - DOG_PARK.z1),
+  ) < DOG_PARK_RANGE;
+
 /** The dogs that live in the yard: a fetching labrador and three friends. */
 export const RESIDENTS: readonly {
   kind: LandKind;

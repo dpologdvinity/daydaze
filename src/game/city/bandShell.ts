@@ -255,6 +255,10 @@ export const CROWD: readonly CrowdMember[] = [
   })),
 ];
 
+/** How many of the audience are drawn beside the band, per tier (the band is
+ * always whole). Each is a doll, so the low tier keeps it small. */
+export const AUDIENCE_DRAWN = { low: 0, high: 12 } as const;
+
 /** Ground level of the lawn. */
 export const BAND_Y = GROUND;
 

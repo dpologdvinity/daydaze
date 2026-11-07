@@ -10,6 +10,7 @@ import { QUEUE_LOOKS, QUEUE_PERSON_TRIS } from "./queues.ts";
 import {
   BAYS_CAMERA,
   baysWanted,
+  liveCost,
   lowTierCost,
   MODEL_COST,
   modelsInBudget,
@@ -133,4 +134,29 @@ test("street-food downloads and nearby vendor costumes are included in the budge
     assert.ok(cost.triangles < 300_000, `${cost.triangles} at ${at}`);
     assert.ok(cost.drawCalls < 250);
   }
+});
+
+test("the park's zoomed-out view prices its walkers, wildlife and dogs, and still fits with headroom", () => {
+  // the street-food stop, where the camera pulled out sees the whole lawn
+  const at: Vec2 = [254, -264];
+  const priced: string[] = [];
+  const live = liveCost(at, (model) => priced.push(model));
+  assert.ok(live.triangles > 0, "walkers and the crowd are priced");
+  for (const kind of ["deer", "rabbit", "fox", "labrador", "husky", "shibainu"])
+    assert.ok(priced.includes(`animals/${kind}`), `${kind} is priced`);
+  // the band shell stands 24 m away: its stage, chairs, instruments and band
+  for (const model of ["park/band-shell", "park/lawn-chair", "park/band-stand"])
+    assert.ok(priced.includes(model), `${model} is priced`);
+  const cost = lowTierCost(at);
+  assert.ok(
+    cost.triangles >= cost.planTriangles + live.triangles,
+    "the total includes the live people and animals",
+  );
+  assert.ok(cost.triangles < 295_000, `${cost.triangles} triangles`);
+  assert.ok(cost.drawCalls < 250, `${cost.drawCalls} draw calls`);
+});
+
+test("the plan's densest street keeps headroom under the budget", () => {
+  const cost = lowTierCost([-144, 0]);
+  assert.ok(cost.triangles < 295_000, `${cost.triangles} triangles`);
 });

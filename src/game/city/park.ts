@@ -242,7 +242,7 @@ export const GROWTH_RANGE: Record<
   GrowthKind,
   readonly [low: number, high: number]
 > = {
-  grass: [20, 48],
+  grass: [14, 48],
   // the dearer tuft: high tier only
   wispy: [0, 48],
   fern: [40, 80],
@@ -253,7 +253,7 @@ export const GROWTH_RANGE: Record<
 };
 
 /** The most of one kind drawn at once, per tier (the low tier keeps it small). */
-export const GROWTH_CAP = { low: 420, high: 1400 } as const;
+export const GROWTH_CAP = { low: 320, high: 1400 } as const;
 
 /** A plant or rock on the lawn; CityPark draws these near the player. */
 export type Growth = {
