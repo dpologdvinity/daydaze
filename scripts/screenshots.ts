@@ -266,15 +266,18 @@ const SHOTS: {
     // Siren Song held on its first note: the singer risen in the shallows,
     // her note's shell glowing on the sand
     name: "mermaid-cove-song",
-    query: "room=mermaid-cove&siren=hold&cam=2.6,1.9,6.4,-0.2,0.7,0.6",
+    query: "room=mermaid-cove&siren=hold&cam=1.2,1.7,7.2,-0.6,0.5,1.4",
     live: true,
     act: async (page) => {
-      await page
-        .getByRole("button", { name: "Sing with the mermaids" })
-        .click();
-      await expect(
-        page.getByRole("region", { name: "Siren Song" }).getByRole("status"),
-      ).toHaveText(/Listen/);
+      const start = page.getByRole("button", {
+        name: "Sing with the mermaids",
+      });
+      // the click can land before the room is wired up: retry until the
+      // song has started (the button goes away)
+      await expect(async () => {
+        if (await start.isVisible()) await start.click();
+        await expect(start).toBeHidden({ timeout: 2000 });
+      }).toPass({ timeout: 300_000 });
       // a few more frames, so she finishes rising
       await page.evaluate(
         () =>
