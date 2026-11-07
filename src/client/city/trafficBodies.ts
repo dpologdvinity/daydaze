@@ -24,7 +24,7 @@ export const NEAR_BODY = 35;
 function trafficMaterial(lamp: { value: number }): THREE.MeshStandardMaterial {
   const m = new THREE.MeshStandardMaterial({
     vertexColors: true,
-    roughness: 0.42,
+    roughness: 0.55,
     metalness: 0.2,
     emissive: "#1a2030",
     emissiveIntensity: 0.5,

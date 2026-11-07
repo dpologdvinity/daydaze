@@ -157,8 +157,8 @@ export type Traffic = { cars: TrafficCar[]; time: number };
 
 /** Car paint: mostly real-world colors with a few of the city's neons. */
 export const CAR_COLORS = [
-  "#e9eaf0",
-  "#c4c7d0",
+  "#c8cbd4",
+  "#9ea3b0",
   "#23252e",
   "#8f1d2c",
   "#25467a",
@@ -168,7 +168,7 @@ export const CAR_COLORS = [
   "#ff2f9a",
   "#9b5cff",
   "#ffb02e",
-  "#f4f1ff",
+  "#d6d1e6",
 ] as const;
 
 /** Bright jeepney paint: the stripes are drawn in a second color. */
@@ -178,7 +178,7 @@ export const JEEPNEY_COLORS = [
   "#2f8aff",
   "#ff4fb3",
   "#3fe0d0",
-  "#f4f1ff",
+  "#d6d1e6",
 ] as const;
 
 export const VEHICLE_LENGTH: Record<VehicleKind, number> = {
