@@ -31,6 +31,7 @@ import {
   walkTo,
   type Player,
 } from "../world/PlayerController.tsx";
+import { setData } from "../world/dataset.ts";
 
 const FALLBACK = ROAD_CARS[0];
 
@@ -134,7 +135,7 @@ export function PlayerCar({
       if (near) getIn();
       else if (!player.walk.target) heading.current = false;
     }
-    canvas.dataset.cityCar = session.current ? "driving" : "parked";
+    setData(canvas.dataset, "cityCar", session.current ? "driving" : "parked");
     const s = session.current;
     if (!g) return;
     if (!s) {
