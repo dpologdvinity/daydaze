@@ -1,0 +1,66 @@
+name: Profile
+# Frame-time and CPU profile of the city areas and a busy room, by hand:
+#   gh workflow run profile.yml --ref perf/smooth -f areas="spawn park"
+#   gh run download <id> -n profile
+# Builds unminified (readable function names), serves the build with
+# `vite preview`, runs scripts/perf-profile.ts under SwiftShader (a relative
+# measure) and prints the top self-time functions of each CPU profile.
+on:
+  # a push to perf/smooth whose message contains [profile] also runs it (a new
+  # workflow cannot be dispatched by hand until it is on the default branch)
+  push:
+    branches: [perf/smooth]
+  workflow_dispatch:
+    inputs:
+      areas:
+        description: Areas (spawn nightlife park beachside pulse)
+        required: false
+        default: spawn nightlife park beachside pulse
+        type: string
+      sample_ms:
+        description: Sampling window per phase, in ms
+        required: false
+        default: "8000"
+        type: string
+concurrency:
+  group: profile-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  profile:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[profile]')
+    timeout-minutes: 45
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx vite build --minify false
+      - name: Serve the build
+        run: |
+          npx vite preview --port 4173 --host 127.0.0.1 > preview.log 2>&1 &
+          npx --yes wait-on@8 http://127.0.0.1:4173 --timeout 60000
+      - name: Profile
+        run: |
+          mkdir -p profile
+          node --experimental-strip-types scripts/perf-profile.ts $AREAS | tee profile/summary.txt
+        env:
+          AREAS: ${{ inputs.areas || 'spawn nightlife park beachside pulse' }}
+          SAMPLE_MS: ${{ inputs.sample_ms || '8000' }}
+          BASE_URL: http://127.0.0.1:4173
+          PROFILE: profile/p
+      - name: Top functions
+        run: |
+          for f in profile/*.cpuprofile; do
+            echo "== $f" | tee -a profile/top.txt
+            node --experimental-strip-types scripts/cpuprofile-top.ts "$f" 25 | tee -a profile/top.txt
+          done
+      - uses: actions/upload-artifact@v7
+        if: ${{ always() }}
+        with:
+          name: profile
+          path: profile/
+          retention-days: 7
