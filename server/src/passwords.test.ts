@@ -1,4 +1,4 @@
-import { test } from "node:test";
+import { mock, test } from "node:test";
 import assert from "node:assert/strict";
 import {
   checkLogin,
@@ -59,13 +59,20 @@ test("checking a login for an unknown user still runs the full hash", async () =
   assert.equal(await checkLogin("correct horse", stored), true);
   assert.equal(await checkLogin("wrong horse", stored), false);
   assert.equal(await checkLogin("correct horse", null), false);
-  // Timing: the missing-user path must not be the fast path.
-  const time = async (stored: string | null) => {
-    const start = performance.now();
-    await checkLogin("correct horse", stored);
-    return performance.now() - start;
+  // Work, not wall-clock: the missing-user path must run the same single
+  // full-cost derive as a known user (a timing assertion flakes under load).
+  const iterationsOf = async (stored: string | null) => {
+    const spy = mock.method(crypto.subtle, "deriveBits");
+    try {
+      await checkLogin("correct horse", stored);
+      return spy.mock.calls.map(({ arguments: [alg] }) =>
+        typeof alg === "object" && "iterations" in alg ? alg.iterations : -1,
+      );
+    } finally {
+      spy.mock.restore();
+    }
   };
-  const known = await time(stored);
-  const unknown = await time(null);
-  assert.ok(unknown > known * 0.3, `unknown ${unknown}ms vs known ${known}ms`);
+  const known = await iterationsOf(stored);
+  assert.equal(known.length, 1);
+  assert.deepEqual(await iterationsOf(null), known);
 });
