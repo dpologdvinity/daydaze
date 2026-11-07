@@ -3550,6 +3550,7 @@ test("taxi: hail on a sidewalk, pick Beachside on the map, pay the fare and ride
     .poll(async () => Number(await canvas.getAttribute("data-player-z")))
     .toBeGreaterThan(250);
   await expect(page.getByText("100 coins", { exact: true })).toHaveCount(0);
+  expect(errors).toEqual([]);
 });
 
 test("band shell: the park band plays mid-set, the bandleader chats and you can sit on a blanket", async ({
