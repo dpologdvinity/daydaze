@@ -5,6 +5,7 @@
 import { useGLTF } from "@react-three/drei";
 import { useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";
+import { mergeVertices } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { Spot } from "../../../game/zoo.ts";
 import { disposeInstanced } from "../../city/dispose.ts";
 import { bakedGeometry } from "../../world/bakedGeometry.ts";
@@ -13,12 +14,20 @@ export function Scatter({
   url,
   spots,
   color,
+  cutout,
+  smooth,
 }: {
   url: string;
   spots: readonly Spot[];
   /** Repaints every material this color (keeps each one's shading), so the
    * downloaded prop wears the zoo's palette. */
   color?: string;
+  /** Treats a material with a texture as leaves: cut out where the texture
+   * is clear (alpha test, two-sided) instead of blended. */
+  cutout?: boolean;
+  /** Welds shared vertices and recomputes normals, so a faceted low-poly
+   * rock or bush shades as a rounded form. */
+  smooth?: boolean;
 }): JSX.Element {
   const gltf = useGLTF(url);
   const meshes = useMemo(() => {
@@ -33,7 +42,13 @@ export function Scatter({
       if (!(o instanceof THREE.Mesh)) return;
       // bakedGeometry: the optimized GLBs store quantized integers, which a baked
       // transform would truncate or clamp (squashed trees, black normals)
-      const geometry = bakedGeometry(o);
+      let geometry = bakedGeometry(o);
+      if (smooth) {
+        geometry = geometry.clone();
+        geometry.deleteAttribute("normal");
+        geometry = mergeVertices(geometry, 1e-3);
+        geometry.computeVertexNormals();
+      }
       const source = Array.isArray(o.material) ? o.material[0] : o.material;
       const material = source?.clone();
       if (color && material instanceof THREE.MeshStandardMaterial) {
@@ -41,6 +56,16 @@ export function Scatter({
         // Kenney's rocks are fully metallic, which reads as black without an
         // environment map
         material.metalness = 0;
+      }
+      if (
+        cutout &&
+        material instanceof THREE.MeshStandardMaterial &&
+        material.map
+      ) {
+        material.alphaTest = 0.5;
+        material.transparent = false;
+        material.depthWrite = true;
+        material.side = THREE.DoubleSide;
       }
       const inst = new THREE.InstancedMesh(geometry, material, spots.length);
       spots.forEach((spot, i) => {
@@ -56,7 +81,7 @@ export function Scatter({
       out.push(inst);
     });
     return out;
-  }, [gltf, spots, color]);
+  }, [gltf, spots, color, cutout, smooth]);
   useEffect(() => () => disposeInstanced(meshes, true), [meshes]);
   return (
     <>

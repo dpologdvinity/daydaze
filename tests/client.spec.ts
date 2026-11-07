@@ -2293,6 +2293,7 @@ for (const room of [
   "open-water",
   "reef-dive",
   "farm",
+  "forest",
 ] as const) {
   test(`${room} renders within the low-tier draw call budget`, async ({
     page,
@@ -2309,6 +2310,14 @@ for (const room of [
     expect(Number(await canvas.getAttribute("data-calls"))).toBeLessThan(250);
   });
 }
+
+test("forest trail: the debug panel opens it", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto(`${VELVET}&debug=1`);
+  await page.getByRole("button", { name: "Go to the Forest Trail" }).click();
+  await expect(roomTitle(page)).toHaveText("Larkspur Forest Trail");
+  expect(errors).toEqual([]);
+});
 
 test("Pulse renders within the low-tier draw call budget", async ({ page }) => {
   test.setTimeout(300_000);

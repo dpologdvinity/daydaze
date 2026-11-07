@@ -64,6 +64,7 @@ import * as DRIVE from "../driveIn.ts";
 import * as CELLAR from "../wineBar.ts";
 import * as REWIND from "../videoStore.ts";
 import * as FARM from "../farm.ts";
+import * as FOREST from "../forest.ts";
 import { GREEN_HAZE_DOOR, SPAWN as GREEN_HAZE_SPAWN } from "../greenHaze.ts";
 import * as GRIDIRON from "../gridiron.ts";
 import * as RANGE from "../drivingRange.ts";
@@ -476,6 +477,22 @@ const SUBURB_FRONT: readonly {
       label: "Into Sunny Acres Farm",
       target: "farm",
       targetSpawn: { position: FARM.SPAWN, yaw: Math.PI },
+    },
+  },
+  {
+    x: FOREST.FOREST_GATE_DOOR.position[0],
+    w: 4,
+    h: 8,
+    north: true,
+    color: "#2d6a4f",
+    sign: { text: "FOREST TRAIL", color: "#b7e4c7" },
+    style: "gate",
+    door: {
+      position: FOREST.FOREST_GATE_DOOR.position,
+      radius: 1.8,
+      label: "Into the Larkspur Forest Trail",
+      target: "forest",
+      targetSpawn: { position: FOREST.SPAWN, yaw: Math.PI },
     },
   },
   {

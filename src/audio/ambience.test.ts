@@ -79,3 +79,11 @@ test("rooms preload only the one-shots they use", () => {
   assert.ok(soundsFor("zoo").includes("penguin"));
   assert.deepEqual(soundsFor("water-park"), ["splash"]);
 });
+
+test("the forest trail hears birdsong over the creek, day and night", () => {
+  for (const hour of [12, 23]) {
+    const levels = ambienceFor("forest", "downtown", hour);
+    assert.equal(levels.park, 0.35);
+    assert.equal(levels.creek, 0.3);
+  }
+});
