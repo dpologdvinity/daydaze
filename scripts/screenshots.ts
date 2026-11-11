@@ -758,6 +758,31 @@ const SHOTS: {
     query: "room=city&view=full&time=12:00&at=-36,9.5",
     act: furnitureReady,
   },
+  // the parked sports car and cop car from the road, by day and at night:
+  // wheels, glass and lamps of the downloaded bodies (trafficBodies.ts)
+  ...(
+    [
+      ["sports", 12, "-40,-1", "-34,1.6,0.2,-43,0.7,-5.2"],
+      ["cop", 12, "-27,-1", "-21,1.6,0.2,-30,0.7,-5.2"],
+      ["sports", 23, "-40,-1", "-34,1.6,0.2,-43,0.7,-5.2"],
+      ["cop", 23, "-27,-1", "-21,1.6,0.2,-30,0.7,-5.2"],
+    ] as const
+  ).map(([body, hour, at, cam]) => ({
+    name: `car-parked-${body}-${hour === 12 ? "day" : "night"}`,
+    query: `room=city&view=room&quality=low&time=${hour}:00&at=${at}&cam=${cam}`,
+    act: furnitureReady,
+  })),
+  // lane traffic at a busy crossing, by day and at night
+  ...(
+    [
+      ["day", 12],
+      ["night", 23],
+    ] as const
+  ).map(([label, hour]) => ({
+    name: `city-traffic-${label}`,
+    query: `room=city&view=room&quality=low&time=${hour}:00&at=-130,8&cam=-120,2.4,9,-165,1,0`,
+    act: furnitureReady,
+  })),
   {
     // a signal head at a crossing, its lit bulbs cycling (Traffic.tsx)
     name: "city-signal",
