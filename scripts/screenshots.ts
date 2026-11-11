@@ -2,6 +2,7 @@
 // Needs a dev server: `npm run dev -- --port 5195 --strictPort`, then
 // `node --experimental-strip-types scripts/screenshots.ts [name...]`.
 import { execFileSync } from "node:child_process";
+import { writeFileSync } from "node:fs";
 import { chromium, expect, type Page } from "@playwright/test";
 import { DEFAULT_LOOK } from "../src/game/look.ts";
 import {
@@ -146,8 +147,8 @@ function homeShot(name: string, furniture: readonly Furniture[], cam?: string) {
 /**
  * A frame strip of the player walking in a style on the full-body camera:
  * a click on the street beside her is a short trip, a held key a long one
- * (past a second she hurries). Saves a crop of her every 300 ms as
- * docs/screenshots/<name>-<n>.png, logging the pace (data-pace, m/s) and the
+ * (past a second she hurries). Saves the first rendered frames as
+ * docs/screenshots/<name>-<nn>.png, logging the pace (data-pace, m/s) and the
  * ground covered by each frame, so a stroll, the jog and planted feet can be
  * judged by eye.
  */
@@ -178,21 +179,33 @@ function walkStrip(
         null,
         { timeout: 300_000 },
       );
-      if (trip === "click") await page.mouse.click(800, 540);
+      // a CDP screencast delivers every frame the browser renders (a plain
+      // screenshot takes seconds on SwiftShader, too slow to see a stride)
+      const cdp = await page.context().newCDPSession(page);
+      const frames: Buffer[] = [];
+      cdp.on("Page.screencastFrame", (f) => {
+        if (frames.length < 24) frames.push(Buffer.from(f.data, "base64"));
+        void cdp.send("Page.screencastFrameAck", { sessionId: f.sessionId });
+      });
+      await cdp.send("Page.startScreencast", { format: "png" });
+      if (trip === "click") await page.mouse.click(960, 500);
       else await page.keyboard.down("d");
-      for (let n = 0; n < 8; n++) {
+      for (let n = 0; n < 6; n++) {
+        await page.waitForTimeout(1000);
         const at = await page.evaluate(() => {
           const d = document.querySelector("canvas")?.dataset;
           return `pace ${d?.pace} at ${d?.playerX},${d?.playerZ}`;
         });
-        console.log(`${name}-${n}: ${at}`);
-        await page.screenshot({
-          path: `docs/screenshots/${name}-${n}.png`,
-          clip: { x: 340, y: 100, width: 600, height: 600 },
-          timeout: 180_000,
-        });
-        await page.waitForTimeout(300);
+        console.log(`${name} ${n + 1}s: ${at}`);
       }
+      await cdp.send("Page.stopScreencast");
+      frames.forEach((png, n) =>
+        writeFileSync(
+          `docs/screenshots/${name}-${String(n).padStart(2, "0")}.png`,
+          png,
+        ),
+      );
+      console.log(`${name}: ${frames.length} screencast frames`);
     },
   };
 }
