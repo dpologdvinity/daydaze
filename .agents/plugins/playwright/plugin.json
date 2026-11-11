@@ -1,0 +1,5 @@
+{
+  "name": "playwright",
+  "version": "1.0.0",
+  "description": "Playwright browser automation MCP server for this workspace."
+}

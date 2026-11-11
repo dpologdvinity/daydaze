@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(codex exec --yolo:*)",
+      "Bash(codex exec --dangerously-bypass-approvals-and-sandbox:*)",
+      "Bash(node ~/.claude/plugins/cache/cc-gemini-plugin/*)",
+      "Bash(bash scripts/with-env.sh:*)"
+    ],
+    "deny": [
+      "Bash(npx wrangler deploy:*)",
+      "Bash(wrangler deploy:*)",
+      "Bash(npx wrangler r2:*)",
+      "Bash(git push --force:*)"
+    ]
+  },
+  "extraKnownMarketplaces": {
+    "cc-gemini-plugin": {
+      "source": { "source": "github", "repo": "thepushkarp/cc-gemini-plugin" }
+    },
+    "ponytail": {
+      "source": { "source": "github", "repo": "DietrichGebert/ponytail" }
+    }
+  },
+  "enabledPlugins": {
+    "typescript-lsp@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "cc-gemini-plugin@cc-gemini-plugin": true,
+    "ponytail@ponytail": true
+  }
+}

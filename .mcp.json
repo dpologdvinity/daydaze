@@ -1,0 +1,41 @@
+{
+  "mcpServers": {
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest",
+        "--browser-url=http://127.0.0.1:9222"
+      ],
+      "env": {}
+    },
+    "threejs-devtools-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "threejs-devtools-mcp",
+        "--scope",
+        "project"
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
+      ]
+    },
+    "meshy": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@meshy-ai/meshy-mcp-server"
+      ],
+      "env": {
+        "MESHY_API_KEY": "${MESHY_API_KEY:-}"
+      }
+    }
+  }
+}

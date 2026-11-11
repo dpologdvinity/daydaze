@@ -1,0 +1,17 @@
+[mcp_servers.chrome-devtools]
+command = "npx"
+args = ["-y", "chrome-devtools-mcp@latest", "--browser-url=http://127.0.0.1:9222"]
+
+[mcp_servers.threejs-devtools-mcp]
+command = "npx"
+args = ["threejs-devtools-mcp", "--scope", "project"]
+
+[plugins."ponytail@ponytail"]
+enabled = true
+
+[plugins."python-skills@claude-settings"]
+enabled = true
+
+[mcp_servers.playwright]
+command = "npx"
+args = ["-y", "@playwright/mcp@latest"]
