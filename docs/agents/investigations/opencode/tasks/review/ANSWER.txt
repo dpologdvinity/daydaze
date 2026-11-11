@@ -1,0 +1,1 @@
+Planted issues: (1) spend() lost the price<=0 guard -> negative price adds coins; NaN price returns true and sets NaN. (2) loadCoins: no validation: NaN for garbage, negative, huge, '12abc'->12; parseInt without radix.

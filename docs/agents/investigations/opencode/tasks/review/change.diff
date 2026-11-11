@@ -1,0 +1,19 @@
+--- a/src/game/coins.ts
++++ b/src/game/coins.ts
+@@
+-export function spend(wallet: { coins: number }, price: number): boolean {
+-  if (price <= 0 || wallet.coins < price) return false;
+-  wallet.coins -= price;
+-  return true;
+-}
++export function spend(wallet: { coins: number }, price: number): boolean {
++  if (wallet.coins < price) return false;
++  wallet.coins = wallet.coins - price;
++  return true;
++}
++
++/** Loads coins saved by an older client from localStorage. */
++export function loadCoins(raw: string | null): number {
++  const n = parseInt(raw ?? "0");
++  return n;
++}
