@@ -11,6 +11,7 @@ import * as THREE from "three";
 import { lampGain } from "../../game/city/daylight.ts";
 import { BODY_KEYS, bodyUrl, type BodyKey } from "../../game/driving/bodies.ts";
 import { BODY_WHEELS } from "../../game/driving/wheels.ts";
+import { createCarGlow } from "./carGlow.ts";
 import { setCarLampGlow } from "./carLamps.ts";
 import { bodyGeometry, mergedBody } from "./carBodies.ts";
 import { useDaylight } from "./daylight.ts";
@@ -86,7 +87,8 @@ export type TrafficBodies = {
   /**
    * Adds one vehicle; returns false if it did not fit (never drawn). `travel`
    * is the meters it has rolled (its wheels turn by it), `steer` the angle of
-   * its front wheels; a parked car passes neither.
+   * its front wheels, `lit` whether its lamps throw a night glow (carGlow.ts);
+   * a parked car passes none.
    */
   put: (
     body: BodyKey,
@@ -97,6 +99,7 @@ export type TrafficBodies = {
     far: boolean,
     travel?: number,
     steer?: number,
+    lit?: boolean,
   ) => boolean;
   /** Uploads the frame's matrices and colors, hides unused meshes. */
   flush: () => void;
@@ -146,16 +149,19 @@ export function useTrafficBodies(capacity: number): TrafficBodies {
       mesh.visible = false;
       return mesh;
     });
-    return { material, meshes, wheels };
+    return { material, meshes, wheels, glow: createCarGlow(capacity) };
   }, [gltfs, capacity, lamp]);
-  const all = useMemo(
+  // the meshes with a body's own material: counted, flushed and hidden together
+  const solid = useMemo(
     () => [...built.meshes.values(), ...built.wheels],
     [built],
   );
+  const all = useMemo(() => [...solid, ...built.glow.meshes], [solid, built]);
   useEffect(() => {
     lamp.value = lampGain(day.neon);
     setCarLampGlow(day.neon);
-  }, [lamp, day.neon]);
+    built.glow.night.value = day.neon;
+  }, [lamp, built, day.neon]);
   useEffect(
     () => () => {
       for (const mesh of all) {
@@ -163,6 +169,8 @@ export function useTrafficBodies(capacity: number): TrafficBodies {
         mesh.dispose();
       }
       built.material.dispose();
+      for (const mesh of built.glow.meshes)
+        [mesh.material].flat().forEach((m) => m.dispose());
     },
     [all, built],
   );
@@ -170,9 +178,10 @@ export function useTrafficBodies(capacity: number): TrafficBodies {
     () => ({
       all,
       reset() {
-        for (const mesh of all) mesh.count = 0;
+        for (const mesh of solid) mesh.count = 0;
+        built.glow.reset();
       },
-      put(body, color, x, z, yaw, far, travel = 0, steer = 0) {
+      put(body, color, x, z, yaw, far, travel = 0, steer = 0, lit = false) {
         const mesh = built.meshes.get(`${body}${far ? "-lo" : ""}`);
         const wheels = built.wheels[far ? 1 : 0];
         if (
@@ -196,16 +205,18 @@ export function useTrafficBodies(capacity: number): TrafficBodies {
           wheelMatrix(wheel, layout, i, travel, steer, size);
           wheels.setMatrixAt(wheels.count++, wheel.premultiply(matrix));
         }
+        if (lit) built.glow.add(body, matrix);
         return true;
       },
       flush() {
-        for (const mesh of all) {
+        built.glow.flush();
+        for (const mesh of solid) {
           mesh.visible = mesh.count > 0;
           mesh.instanceMatrix.needsUpdate = true;
           if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
         }
       },
     }),
-    [all, built, capacity],
+    [all, solid, built, capacity],
   );
 }

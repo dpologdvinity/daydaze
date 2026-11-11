@@ -338,6 +338,7 @@ export function Traffic({ player }: { player: Player }) {
           tier === "low" || distance > NEAR_BODY,
           travel,
           steer,
+          true,
         );
         continue;
       }

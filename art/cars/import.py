@@ -166,6 +166,10 @@ def classify(wheel, name):
     return "trim", BLACK
 
 
+# Where the head and tail lamps are, for the client's night glow: the points of
+# each lamp material's faces, by kind and side.
+lamp_points = {}
+
 for o in objects:
     wheel = "Wheel" in o.name
     old = [m.name if m else "" for m in o.data.materials]
@@ -177,6 +181,13 @@ for o in objects:
     for p in o.data.polygons:
         bucket, color = classify(wheel, old[p.material_index] if old else "")
         chosen.append(BUCKETS.index(bucket))
+        source = old[p.material_index] if old else ""
+        if source in ("Headlights", "TailLights", "Lights") and not wheel:
+            for v in p.vertices:
+                co = o.data.vertices[v].co
+                # the buses' plain "Lights" are told apart by which end they are on
+                kind = "tail" if source == "TailLights" or (source == "Lights" and co.y > 0) else "head"
+                lamp_points.setdefault((kind, co.x > 0), []).append(co.copy())
         for i in p.loop_indices:
             colors.data[i].color = color
     o.data.materials.clear()
@@ -184,6 +195,19 @@ for o in objects:
         o.data.materials.append(bucket_mat[name])
     for p, index in zip(o.data.polygons, chosen):
         p.material_index = index
+
+
+def lamp_spot(kind):
+    """A lamp pair's right-hand center in glTF axes (x right, y up, z to the nose)."""
+    pts = lamp_points[(kind, True)] + [Vector((-c.x, c.y, c.z)) for c in lamp_points[(kind, False)]]
+    # only the lamps at the car's end: the cop's red siren also uses TailLights
+    end = min(c.y for c in pts) if kind == "head" else max(c.y for c in pts)
+    pts = [c for c in pts if abs(c.y - end) < 0.5]
+    c = sum(pts, Vector()) / len(pts)
+    return [round(c.x, 3), round(c.z, 3), round(-c.y, 3)]
+
+
+print("CARLAMPS", key, dict(head=lamp_spot("head"), tail=lamp_spot("tail")))
 
 bpy.ops.object.select_all(action="DESELECT")
 for o in objects:

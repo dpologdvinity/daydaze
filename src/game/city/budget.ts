@@ -55,6 +55,7 @@ import {
 } from "./tuning.ts";
 import { BODY_KEYS, ROSTER_BODY } from "../driving/bodies.ts";
 import { PARKED_CARS, PARKED_RANGE } from "./dressing.ts";
+import { GLOW_DRAWS, GLOW_TRIS_PER_CAR } from "../driving/lamps.ts";
 import {
   CAR_SLOT,
   TRAFFIC_COUNT,
@@ -254,11 +255,16 @@ export function trafficCost(at: Vec2): {
   );
   const drawn = fleet.slice(0, Math.min(expected, Math.ceil(lanes / CAR_SLOT)));
   // one draw per body model, the jeepneys' six, and the cars' shared wheels
+  // plus the night glow of the lit cars (carGlow.ts), priced as if it were night
   let drawCalls =
     drawn.length > 0
-      ? Math.min(drawn.length, BODY_KEYS.length) + JEEPNEY_DRAWS + 1
+      ? Math.min(drawn.length, BODY_KEYS.length) +
+        JEEPNEY_DRAWS +
+        1 +
+        GLOW_DRAWS
       : 0;
-  let triangles = drawn.reduce((n, t) => n + t, 0);
+  let triangles =
+    drawn.reduce((n, t) => n + t, 0) + drawn.length * GLOW_TRIS_PER_CAR;
   if (laneMetersWithin(at, AT_THE_WHEEL) > 0) {
     const own = Object.values(ROSTER_BODY).map((k) => costOf(`cars/${k}`));
     const dearest = own.reduce((a, b) => (b.tris > a.tris ? b : a));
