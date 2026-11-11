@@ -162,6 +162,7 @@ function homeShot(name: string, furniture: readonly Furniture[], cam?: string) {
  * ground covered by each frame, so a stroll, the jog and planted feet can be
  * judged by eye.
  */
+const FRAMES = 48;
 function walkStrip(
   name: string,
   gait: string,
@@ -174,9 +175,18 @@ function walkStrip(
     /** Game time as a fraction of real time (?timescale), for short moves. */
     timescale?: number;
     men?: boolean;
+    /** Keep the first frames after the click, or (to catch an arrival) the
+     * last ones, once she has stood still for `seconds`. */
+    keep?: "first" | "last";
   } = {},
 ): (typeof SHOTS)[number] {
-  const { at = [960, 500], seconds = 6, timescale, men = false } = opts;
+  const {
+    at = [960, 500],
+    seconds = 6,
+    timescale,
+    men = false,
+    keep = "first",
+  } = opts;
   return {
     name,
     query: `room=city&view=full${timescale ? `&timescale=${timescale}` : ""}`,
@@ -211,19 +221,29 @@ function walkStrip(
       const cdp = await page.context().newCDPSession(page);
       const frames: Buffer[] = [];
       cdp.on("Page.screencastFrame", (f) => {
-        if (frames.length < 90) frames.push(Buffer.from(f.data, "base64"));
+        // the first frames, or a ring of the latest
+        if (keep === "last" && frames.length >= FRAMES) frames.shift();
+        if (keep === "last" || frames.length < FRAMES)
+          frames.push(Buffer.from(f.data, "base64"));
         void cdp.send("Page.screencastFrameAck", { sessionId: f.sessionId });
       });
       await cdp.send("Page.startScreencast", { format: "png" });
       if (trip === "click") await page.mouse.click(at[0], at[1]);
       else await page.keyboard.down("d");
-      for (let n = 0; n < seconds; n++) {
+      // "first" records for `seconds`; "last" until she has stood still for
+      // `seconds` (the first frames after a click are all she needs to set off)
+      let steady = 0;
+      let lastAt = "";
+      for (let n = 0; n < (keep === "last" ? 300 : seconds); n++) {
         await page.waitForTimeout(1000);
-        const at = await page.evaluate(() => {
+        const here = await page.evaluate(() => {
           const d = document.querySelector("canvas")?.dataset;
           return `pace ${d?.pace} at ${d?.playerX},${d?.playerZ}`;
         });
-        console.log(`${name} ${n + 1}s: ${at}`);
+        console.log(`${name} ${n + 1}s: ${here}`);
+        steady = here === lastAt ? steady + 1 : 0;
+        lastAt = here;
+        if (keep === "last" && steady >= seconds) break;
       }
       await cdp.send("Page.stopScreencast");
       frames.forEach((png, n) =>
@@ -252,17 +272,21 @@ const SHOTS: {
   walkStrip("walk-swagger-short", "swagger", "click"),
   // the set-off, arrival and turn clips (locomotion.ts), at a tenth of real
   // time so each half-second move spans several rendered frames
-  walkStrip("move-start", "natural", "click", { timescale: 0.1, seconds: 8 }),
-  walkStrip("move-stop", "natural", "click", { timescale: 0.1, seconds: 40 }),
+  walkStrip("move-start", "natural", "click", { timescale: 0.1, seconds: 30 }),
+  walkStrip("move-stop", "natural", "click", {
+    timescale: 0.1,
+    seconds: 12,
+    keep: "last",
+  }),
   walkStrip("move-turn", "natural", "click", {
     at: [700, 650],
     timescale: 0.1,
-    seconds: 10,
+    seconds: 30,
   }),
   walkStrip("move-start-man", "natural", "click", {
     men: true,
     timescale: 0.1,
-    seconds: 8,
+    seconds: 30,
   }),
   { name: "club-pulse", query: "room=pulse" },
   {
