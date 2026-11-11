@@ -122,7 +122,7 @@ export const ASIA_X = 320;
 const NORTH_EDGE = -320;
 export const GALLERY_Z = -256;
 /** Sidewalk width, outside the kerb. */
-const SIDEWALK = 4;
+export const SIDEWALK = 4;
 
 export const CITY_BOUNDS: readonly Vec2[] = [
   [WEST_EDGE, NORTH_EDGE],
