@@ -58,7 +58,8 @@ function trafficMaterial(lamp: { value: number }): THREE.MeshStandardMaterial {
       )
       .replace(
         "#include <emissivemap_fragment>",
-        "#include <emissivemap_fragment>\ntotalEmissiveRadiance += vColor.rgb * step( 1.5, vPart ) * uLamp;",
+        // the hue squared: at a high gain a plain hue washes pink, a squared one stays red
+        "#include <emissivemap_fragment>\ntotalEmissiveRadiance += vColor.rgb * vColor.rgb * step( 1.5, vPart ) * uLamp;",
       );
   };
   return m;
