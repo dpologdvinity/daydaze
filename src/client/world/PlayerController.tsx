@@ -38,6 +38,7 @@ import {
   type Walker,
 } from "../../game/walker.ts";
 import { WALK_SPEED, type Vec2 } from "../../game/walk.ts";
+import { TIME_SCALE } from "../timeScale.ts";
 import { naturalPace } from "../../game/dance/clips.ts";
 import { createPace, stepPace } from "../../game/dance/pace.ts";
 import { gaitOf } from "../../game/gaits.ts";
@@ -314,7 +315,8 @@ export function PlayerController({
 
   // leaving the room mid-dive must not leave the next one underwater
   useEffect(() => () => submergedView.set({ on: false }), []);
-  useFrame((state, dt) => {
+  useFrame((state, rawDt) => {
+    const dt = rawDt * TIME_SCALE;
     playerSpot.x = player.pos.x;
     playerSpot.z = player.pos.z;
     // in the city she's in the car (hers or a friend's), out of sight; at
@@ -461,6 +463,9 @@ export function PlayerController({
       18,
       dt,
     );
+    // facing and the hurry, for her set-off and turn clips (locomotion.ts)
+    gait.current.yaw = player.seat?.yaw ?? player.yaw;
+    gait.current.hurry = pace.current.hurry;
     // a seated or sliding doll is drawn on the seat or the slide, feet and all
     const drawnPos = player.seat?.position ?? player.pos;
     if (g.current) {

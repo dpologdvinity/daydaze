@@ -166,10 +166,20 @@ function walkStrip(
   name: string,
   gait: string,
   trip: "click" | "hold",
+  opts: {
+    /** Where the click lands (the street beside her by default). */
+    at?: readonly [number, number];
+    /** Seconds recorded after the click or key. */
+    seconds?: number;
+    /** Game time as a fraction of real time (?timescale), for short moves. */
+    timescale?: number;
+    men?: boolean;
+  } = {},
 ): (typeof SHOTS)[number] {
+  const { at = [960, 500], seconds = 6, timescale, men = false } = opts;
   return {
     name,
-    query: "room=city&view=full",
+    query: `room=city&view=full${timescale ? `&timescale=${timescale}` : ""}`,
     live: true,
     act: async (page) => {
       await page.evaluate(
@@ -181,7 +191,12 @@ function walkStrip(
             JSON.stringify({ ...save, look: { ...JSON.parse(look), gait: g } }),
           );
         },
-        [gait, JSON.stringify(DEFAULT_LOOK)],
+        [
+          gait,
+          JSON.stringify(
+            men ? { ...DEFAULT_LOOK, body: "masculine" } : DEFAULT_LOOK,
+          ),
+        ],
       );
       await page.reload();
       await page.waitForFunction(
@@ -189,18 +204,20 @@ function walkStrip(
         null,
         { timeout: 300_000 },
       );
+      // the set-off, arrival and turn clips load a while after the scene
+      if (timescale) await page.waitForTimeout(30_000);
       // a CDP screencast delivers every frame the browser renders (a plain
       // screenshot takes seconds on SwiftShader, too slow to see a stride)
       const cdp = await page.context().newCDPSession(page);
       const frames: Buffer[] = [];
       cdp.on("Page.screencastFrame", (f) => {
-        if (frames.length < 24) frames.push(Buffer.from(f.data, "base64"));
+        if (frames.length < 90) frames.push(Buffer.from(f.data, "base64"));
         void cdp.send("Page.screencastFrameAck", { sessionId: f.sessionId });
       });
       await cdp.send("Page.startScreencast", { format: "png" });
-      if (trip === "click") await page.mouse.click(960, 500);
+      if (trip === "click") await page.mouse.click(at[0], at[1]);
       else await page.keyboard.down("d");
-      for (let n = 0; n < 6; n++) {
+      for (let n = 0; n < seconds; n++) {
         await page.waitForTimeout(1000);
         const at = await page.evaluate(() => {
           const d = document.querySelector("canvas")?.dataset;
@@ -233,6 +250,20 @@ const SHOTS: {
   walkStrip("walk-feminine-short", "feminine", "click"),
   walkStrip("walk-feminine-long", "feminine", "hold"),
   walkStrip("walk-swagger-short", "swagger", "click"),
+  // the set-off, arrival and turn clips (locomotion.ts), at a tenth of real
+  // time so each half-second move spans several rendered frames
+  walkStrip("move-start", "natural", "click", { timescale: 0.1, seconds: 8 }),
+  walkStrip("move-stop", "natural", "click", { timescale: 0.1, seconds: 40 }),
+  walkStrip("move-turn", "natural", "click", {
+    at: [700, 650],
+    timescale: 0.1,
+    seconds: 10,
+  }),
+  walkStrip("move-start-man", "natural", "click", {
+    men: true,
+    timescale: 0.1,
+    seconds: 8,
+  }),
   { name: "club-pulse", query: "room=pulse" },
   {
     name: "apartment",

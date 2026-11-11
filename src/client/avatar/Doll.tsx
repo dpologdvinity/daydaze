@@ -206,7 +206,7 @@ function setLod(root: THREE.Object3D, far: boolean) {
  * Shared each frame by the walker: current speed in meters per second (0
  * standing).
  */
-export type WalkState = { speed: number };
+export type WalkState = { speed: number; yaw?: number; hurry?: boolean };
 
 type DollProps = {
   look: Look;

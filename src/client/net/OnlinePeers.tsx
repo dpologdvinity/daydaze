@@ -122,6 +122,7 @@ function PeerDoll({
     const prev = last.current;
     const moved = prev ? Math.hypot(at.x - prev.x, at.z - prev.z) : 0;
     walk.current.speed = dt > 0 ? Math.min(4, moved / dt) : 0;
+    walk.current.yaw = at.yaw;
     if (prev) {
       prev.x = at.x;
       prev.z = at.z;
