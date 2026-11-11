@@ -1,5 +1,7 @@
 # City street food
 
+> **Status: done** (merged 2026-11-06 as feat/vendors). Kept as a record of how the work was planned and executed.
+
 Use the existing bus's arc-length route implementation as a shared street loop,
 with rounded road junctions and pooled poses. Keep Line 1 behavior unchanged.
 A pastel downloaded van with a downloaded roof cone stops for 30 seconds at

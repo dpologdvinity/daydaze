@@ -247,7 +247,7 @@ Open branches (rebase onto main, `npm run verify`, the feature's Playwright test
 - `feat/wonder43`: flake sweep on GitHub Actions (5 runs of playwright.yml on the branch).
 - `feat/forest`: forest trail area with Ultimate Nature pack, wildlife, birdsong.
 
-Lessons: subagent code reviews report to the lead; agents must check for conflict markers before `git add`; always use a unique Playwright PORT; keep lock holds under ~10 min; most owner Sketchfab downloads were NC (check licenses first); the shared agent brief is /tmp/daydaze-agent-rules.md.
+Lessons: subagent code reviews report to the lead; agents must check for conflict markers before `git add`; always use a unique Playwright PORT; keep lock holds under ~10 min; most owner Sketchfab downloads were NC (check licenses first); the shared agent brief is `docs/agents/agent-rules.md`.
 
 ## Handoff 4 (2026-11-06, paused by the owner)
 

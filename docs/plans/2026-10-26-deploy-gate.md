@@ -1,5 +1,7 @@
 # Plan: the deploy gate (2026-10-26)
 
+> **Status: done** (all items shipped). Kept as a record of how the work was planned and executed.
+
 **Why:** the owner's play-test verdict on 2026-10-26: "this is not good
 enough to deploy yet." This plan fixes their list, item by item. It outranks
 the remaining wonder-pass tasks (36-41, 43), which resume after it.

@@ -1,5 +1,7 @@
 # Speedway and Driving Implementation Plan
 
+> **Status: done** (merged 2026-10-14). Kept as a record of how the work was planned and executed.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build a shared arcade car model, and the Speedway venue on top of it. The Speedway has a race track (solo time trial against bots) and a bumper car arena. Phase 3 of the open city later reuses the same car model for street driving.
