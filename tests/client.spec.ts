@@ -1636,13 +1636,14 @@ test("the player strolls in her walk style on a short trip and hurries when a ke
 }) => {
   test.setTimeout(330_000);
   const errors = collectErrors(page);
-  await page.goto(`${LOW}&room=city`);
+  // the full-body camera: a click on the street beside her is a few meters
+  await page.goto(`${LOW}&room=city&view=full`);
   const view = page.getByRole("img", { name: "3D room view" });
   await expect(view).toHaveAttribute("data-frames", "10", { timeout: 150_000 });
   await expect(view).toHaveAttribute("data-player-x", /-?\d/);
   const pace = async () => Number(await view.getAttribute("data-pace"));
   // a click a few meters off: a stroll, slower than the hurry (2.6 m/s)
-  await page.mouse.click(640, 520);
+  await page.mouse.click(800, 540);
   await expect.poll(pace).toBeGreaterThan(0);
   expect(await pace()).toBeLessThan(2.4);
   // a key held past a second: she hurries

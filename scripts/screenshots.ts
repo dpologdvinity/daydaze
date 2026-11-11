@@ -144,9 +144,9 @@ function homeShot(name: string, furniture: readonly Furniture[], cam?: string) {
 }
 
 /**
- * A frame strip of the player walking in a style: clicks the floor `ahead`
- * pixels above the middle of the view (a short trip near the player, a far
- * click a long one) and saves a crop of her every 300 ms as
+ * A frame strip of the player walking in a style on the full-body camera:
+ * a click on the street beside her is a short trip, a held key a long one
+ * (past a second she hurries). Saves a crop of her every 300 ms as
  * docs/screenshots/<name>-<n>.png, logging the pace (data-pace, m/s) and the
  * ground covered by each frame, so a stroll, the jog and planted feet can be
  * judged by eye.
@@ -154,7 +154,7 @@ function homeShot(name: string, furniture: readonly Furniture[], cam?: string) {
 function walkStrip(
   name: string,
   gait: string,
-  ahead: number,
+  trip: "click" | "hold",
 ): (typeof SHOTS)[number] {
   return {
     name,
@@ -178,7 +178,8 @@ function walkStrip(
         null,
         { timeout: 300_000 },
       );
-      await page.mouse.click(640, 400 - ahead);
+      if (trip === "click") await page.mouse.click(800, 540);
+      else await page.keyboard.down("d");
       for (let n = 0; n < 8; n++) {
         const at = await page.evaluate(() => {
           const d = document.querySelector("canvas")?.dataset;
@@ -206,9 +207,9 @@ const SHOTS: {
   /** Drives the scene before the capture, e.g. to start a race. */
   act?: (page: Page) => Promise<void>;
 }[] = [
-  walkStrip("walk-feminine-short", "feminine", 70),
-  walkStrip("walk-feminine-long", "feminine", 300),
-  walkStrip("walk-swagger-short", "swagger", 70),
+  walkStrip("walk-feminine-short", "feminine", "click"),
+  walkStrip("walk-feminine-long", "feminine", "hold"),
+  walkStrip("walk-swagger-short", "swagger", "click"),
   { name: "club-pulse", query: "room=pulse" },
   {
     name: "apartment",
