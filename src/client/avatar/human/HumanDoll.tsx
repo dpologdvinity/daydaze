@@ -157,7 +157,8 @@ type Anim = {
     /** Ends when she walks off (a jump in place). */
     stay?: boolean;
   } | null;
-  /** The jump count last seen (WalkState.jump). */
+  /** The jump count last seen (WalkState.jump); -1 before the first frame,
+   * so a doll that mounts after jumps began does not replay them. */
   jumped: number;
 };
 const JOINTS = [
@@ -902,7 +903,7 @@ export function HumanDoll({
       transPlay: { id: "", rate: 1, offset: 0 },
       loco: createLoco(),
       run: null,
-      jumped: walk?.current.jump ?? 0,
+      jumped: -1,
     };
     return () => {
       mixer.stopAllAction();
@@ -1065,7 +1066,8 @@ export function HumanDoll({
       }
       // a jump plays the whole clip, in place: walking off ends it
       const jumps = walk?.current.jump ?? 0;
-      if (jumps !== a.jumped) {
+      if (a.jumped < 0) a.jumped = jumps;
+      else if (jumps !== a.jumped) {
         a.jumped = jumps;
         const jump = clipOf("jump");
         if (jump && clips?.has("jump"))
