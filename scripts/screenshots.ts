@@ -360,13 +360,13 @@ async function tileFrames(
  * after the throttle goes down. Two sheets in docs/screenshots: sheet 00
  * (frames 50 ms apart while pulling away from rest, the car rolling only a few
  * centimeters a frame so the hub's spokes shift a few degrees each) and
- * sheet 01 (straight, then the wheel turned at speed, then turning
- * further), cropped round the car.
+ * sheet 01 (straight, then the wheel turned, then turned more), cropped round the car.
  */
 function wheelSheet(name: string): (typeof SHOTS)[number] {
-  const size = { width: 1600, height: 1000 };
-  // the chase camera keeps the car near the middle, low in the frame
-  const crop = { x: 400, y: 380, width: 800, height: 500 };
+  const size = { width: 2400, height: 1500 };
+  // the side view keeps the car in the middle of the frame, 10 m off at about
+  // 150 px a meter here, nose to the right: a strip along its wheels
+  const crop = { x: 840, y: 620, width: 720, height: 360 };
   return {
     name,
     query: "room=city&time=12:00&at=12,7",
@@ -381,6 +381,10 @@ function wheelSheet(name: string): (typeof SHOTS)[number] {
       await expect(canvas).toHaveAttribute("data-city-car", "driving", {
         timeout: 120_000,
       });
+      // the car's right-hand side, close enough to see the spokes; the camera
+      // eases round to it in real time before the clock is paused
+      await page.getByRole("button", { name: "Side view" }).click();
+      await page.waitForTimeout(8000);
       const shoot = async (ms: number) => {
         await page.clock.runFor(ms);
         // real time: lets the software renderer finish the stepped frames
@@ -394,13 +398,12 @@ function wheelSheet(name: string): (typeof SHOTS)[number] {
       const spin: Buffer[] = [];
       await page.keyboard.down("w");
       for (const ms of [150, 50, 50, 50]) spin.push(await shoot(ms));
-      const turn: Buffer[] = [];
-      // up to speed, then straight, then steering left
-      await page.clock.runFor(1500);
-      turn.push(await shoot(100));
+      // still rolling slowly (the steering angle the wheels show does not
+      // depend on speed): straight, then the wheel turned, then turned more
+      const turn: Buffer[] = [spin[3]];
       await page.keyboard.down("a");
-      turn.push(await shoot(250));
-      turn.push(await shoot(250));
+      turn.push(await shoot(300));
+      turn.push(await shoot(300));
       await page.keyboard.up("a");
       await page.keyboard.up("w");
       // the runner collects `<name>.png` and `<name>-NN.png`: the sheets are 00
