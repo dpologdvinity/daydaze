@@ -489,9 +489,9 @@ const SHOTS: {
   // street level by day and night, Shore Boulevard's with its SLOW word, and
   // the avenue from far down the road (low tier, the one with the budget)
   ...[
-    ["street-crossing", "12:00", "-80,9", "-98,4.5,17,-62,0,-2"],
-    ["street-crossing-night", "22:00", "-80,9", "-98,4.5,17,-62,0,-2"],
-    ["street-shore", "12:00", "70,238", "74,4.5,222,64,0,252"],
+    ["street-crossing", "12:00", "-80,9", "-96,4,4,-62,0,-1"],
+    ["street-crossing-night", "22:00", "-80,9", "-96,4,4,-62,0,-1"],
+    ["street-shore", "12:00", "70,238", "64,4,216,64,0,252"],
     ["street-far", "12:00", "-120,9", "-135,3.5,3,-30,1,0"],
   ].map(([name, time, at, cam]) => ({
     name: String(name),
