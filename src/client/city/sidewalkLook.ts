@@ -12,7 +12,7 @@ const SCALE = 0.2;
 /** Broad stains and patches, 0 to 1 (see worldMapped). */
 const WEAR = 0.3;
 /** Linear multiplier for the photo, per channel. */
-export const SIDEWALK_LIFT = [2.0, 2.15, 2.45] as const;
+export const SIDEWALK_LIFT = [1.75, 1.9, 2.15] as const;
 /** The night glow the sidewalks carry (dimmed by day, meshes.ts). */
 export const SIDEWALK_GLOW = 0.45;
 
