@@ -407,7 +407,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/downtowncitymegakit.html",
         usedFor:
-          "New York walk-up, prewar and loft facades (storefronts, windows, cornices, doors, stoops) merged and thinned into storey-high bays for Downtown, Uptown and the Arts District; textures replaced by the city's own.",
+          "New York walk-up, prewar and loft facades (storefronts, windows, cornices, doors, stoops) merged and thinned into storey-high bays for Downtown, Uptown and the Arts District; the street decals (crosswalks, STOP and SLOW words, double yellow lines on its weathered paint atlas), sidewalk corner blocks, manholes, storm drains and bollards merged into the city's street dressing; other textures replaced by the city's own.",
       },
       {
         title: "Modular Fire Escape",

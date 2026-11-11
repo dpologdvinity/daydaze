@@ -51,6 +51,7 @@ import { BandShell } from "./BandShell.tsx";
 import { CityTrees, cityTrees } from "./CityTrees.tsx";
 import { NycFacades, cityBays } from "./NycFacades.tsx";
 import { CityHouses, cityHouses } from "./CityHouses.tsx";
+import { StreetPieces, cityStreet } from "./StreetPieces.tsx";
 import { ElLine, ElLineBoundary } from "./ElLine.tsx";
 import { ElRide } from "./ElRide.tsx";
 import { TaxiRide } from "./TaxiRide.tsx";
@@ -181,6 +182,7 @@ export function CityScene({
       cityFurniture.set({ spots: plan.furniture, at });
       cityBays.set({ bays: plan.bays });
       cityHouses.set({ spots: plan.houses });
+      cityStreet.set({ pieces: plan.street });
       lights.current.forEach((light, i) => {
         if (!light) return;
         const sign = plan.lights[i];
@@ -287,6 +289,7 @@ export function CityScene({
         <BandShell player={player} />
         <NycFacades />
         <CityHouses />
+        <StreetPieces />
         <ElLineBoundary>
           <ElLine />
         </ElLineBoundary>

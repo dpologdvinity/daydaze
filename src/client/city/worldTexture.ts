@@ -58,12 +58,17 @@ export function worldMapped<M extends THREE.MeshStandardMaterial>(
   scale: number,
   /** Swap the axes, turning the texture a quarter (planks across, not along, x). */
   turn = false,
+  /** How far broad patches (5 and 22 m across) lighten and darken the color, 0 to 1:
+   * far off the photo's own detail blurs to one flat tone, and these keep a
+   * long road from reading as a plain stripe. */
+  macro = 0,
 ): M {
   const uv = turn ? "(vWorldXZ.yx * uWorldScale)" : "(vWorldXZ * uWorldScale)";
   const previous = material.onBeforeCompile;
   material.onBeforeCompile = (shader, renderer) => {
     previous.call(material, shader, renderer);
     shader.uniforms.uWorldScale = { value: scale };
+    shader.uniforms.uMacro = { value: macro };
     shader.vertexShader = shader.vertexShader
       .replace("void main() {", "varying vec2 vWorldXZ;\nvoid main() {")
       .replace(
@@ -80,13 +85,29 @@ export function worldMapped<M extends THREE.MeshStandardMaterial>(
     shader.fragmentShader = shader.fragmentShader
       .replace(
         "void main() {",
-        "uniform float uWorldScale;\nvarying vec2 vWorldXZ;\nvoid main() {",
+        `uniform float uWorldScale;\nuniform float uMacro;\nvarying vec2 vWorldXZ;\n${NOISE}\nvoid main() {`,
       )
       // onBeforeCompile sees the template, whose chunks are still
       // `#include` lines, so the three that sample the maps are expanded here
       .replace(
         "#include <map_fragment>",
-        THREE.ShaderChunk.map_fragment.replaceAll("vMapUv", uv),
+        [
+          THREE.ShaderChunk.map_fragment.replaceAll("vMapUv", uv),
+          "float groundMul = 1.0;",
+          "#ifdef USE_MAP",
+          // three scales (about 33, 11 and 4 m), so some variation survives at every distance
+          "float groundPatch = boxNoise(vWorldXZ * 0.03) * 0.45 + boxNoise(vWorldXZ * 0.09) * 0.35 + boxNoise(vWorldXZ * 0.27) * 0.2;",
+          "groundMul = mix(1.0 - uMacro, 1.0 + 0.5 * uMacro, groundPatch);",
+          "diffuseColor.rgb *= groundMul;",
+          // warm in some patches, cool in others, like repairs and weathering
+          "diffuseColor.rgb *= vec3(1.0 + 0.16 * (groundPatch - 0.5), 1.0, 1.0 - 0.16 * (groundPatch - 0.5));",
+          "#endif",
+        ].join("\n"),
+      )
+      // the night glow dims and brightens with the patches, or it washes them out
+      .replace(
+        "#include <emissivemap_fragment>",
+        "#include <emissivemap_fragment>\ntotalEmissiveRadiance *= groundMul;",
       )
       .replace(
         "#include <normal_fragment_maps>",
@@ -102,7 +123,7 @@ export function worldMapped<M extends THREE.MeshStandardMaterial>(
   };
   const key = material.customProgramCacheKey.bind(material);
   material.customProgramCacheKey = () =>
-    `${key()}|world${scale}${turn ? "t" : ""}`;
+    `${key()}|world${scale}${turn ? "t" : ""}m${macro}`;
   return material;
 }
 

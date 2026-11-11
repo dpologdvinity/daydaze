@@ -217,6 +217,10 @@ const MATERIAL: Record<Exclude<Shared, FacadeKind>, THREE.Material> = {
       emissiveIntensity: 0.5,
     }),
     0.25,
+    false,
+    // patched, worn and darkened by tires across its length, so a far road
+    // keeps some texture once the photo has blurred out
+    0.6,
   ),
   sidewalk: worldMapped(
     new THREE.MeshStandardMaterial({
@@ -226,6 +230,8 @@ const MATERIAL: Record<Exclude<Shared, FacadeKind>, THREE.Material> = {
       emissiveIntensity: 0.45,
     }),
     0.35,
+    false,
+    0.22,
   ),
   // sand, lawns and the boardwalk: CC0 scans by world position, tinted per
   // instance

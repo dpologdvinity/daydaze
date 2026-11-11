@@ -62,7 +62,13 @@ floors, looks, saves, chat effects) so both sides agree on the rules.
   ground floor, cornice, fire escapes) and `city/NycFacades.tsx` draws them
   from `public/models/nyc/bays.glb` (`scripts/import-nyc.sh`), one
   InstancedMesh2 per bay (culled per instance); farther blocks keep the cheap
-  box walls. The El (`game/city/el.ts` timetable, `city/ElLine.tsx` trestle,
+  box walls. Streets are dressed from the same kit
+  (`public/models/street/kit.glb`, `scripts/import-street.sh`):
+  `game/city/streetPieces.ts` cuts the sidewalks back from the cross streets
+  and places corner blocks, crosswalks, stop and slow words, double yellow
+  lines, manholes, drains and bollards, and `city/StreetPieces.tsx` merges
+  them into two meshes (paint on the kit's decal atlas, solids in concrete)
+  on every plan reload. The El (`game/city/el.ts` timetable, `city/ElLine.tsx` trestle,
   stations and train, `city/ElRide.tsx` + `ElPanel.tsx` fast travel) runs
   over Main Avenue on the shared clock.
 - `avatar/` is the doll: `human/HumanDoll.tsx` loads the Blender-built GLB

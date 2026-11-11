@@ -13,13 +13,14 @@ import {
 } from "../src/game/home/decor.ts";
 
 const BASE = process.env.BASE_URL ?? "http://localhost:5195";
-/** Waits for the street furniture models (CityFurniture sets data-furniture). */
+/** Waits for the street furniture models and street pieces (CityFurniture sets data-furniture, StreetPieces data-street). */
 const furnitureReady = async (page: Page) => {
   await page.waitForFunction(
     () => {
       const canvas = document.querySelector("canvas");
       return (
         canvas?.dataset.furniture === "ready" &&
+        canvas.dataset.street === "ready" &&
         Number(canvas.dataset.frames) >= 6
       );
     },
@@ -36,8 +37,17 @@ const cityReady = async (page: Page) => {
     { timeout: 300_000 },
   );
 };
+/** Waits for the street pieces: crosswalks, corners, manholes (StreetPieces sets data-street). */
+const streetReady = async (page: Page) => {
+  await page.waitForFunction(
+    () => document.querySelector("canvas")?.dataset.street === "ready",
+    null,
+    { timeout: 300_000 },
+  );
+};
 /** Waits for either the New York bays or Suburbia's houses (a shot may see only one). */
 const blocksReady = async (page: Page) => {
+  await streetReady(page);
   await page.waitForFunction(
     () => {
       const d = document.querySelector("canvas")?.dataset;
@@ -475,6 +485,21 @@ const SHOTS: {
     name: "transit-bus-stop",
     query: "room=city&view=full&time=12:00&at=-24,13",
   },
+  // street dressing (src/game/city/streetPieces.ts): the avenue's crossing at
+  // street level by day and night, Shore Boulevard's with its SLOW word, and
+  // the avenue from far down the road (low tier, the one with the budget)
+  ...[
+    ["street-crossing", "12:00", "-80,9", "-96,4,4,-62,0,-1"],
+    ["street-crossing-night", "22:00", "-80,9", "-96,4,4,-62,0,-1"],
+    ["street-shore", "12:00", "70,238", "64,4,216,64,0,252"],
+    ["street-far", "12:00", "-120,9", "-135,3.5,3,-30,1,0"],
+    ["street-aerial", "12:00", "-60,9", "-110,45,28,-30,0,-4"],
+    ["street-shore-far", "12:00", "-100,262", "-190,22,266,-40,0,256"],
+  ].map(([name, time, at, cam]) => ({
+    name: String(name),
+    query: `room=city&quality=low&time=${time}&at=${at}&cam=${cam}`,
+    act: furnitureReady,
+  })),
   { name: "city-overview", query: "room=city" },
   // the city by day and at sunset (daylight.ts), pinned with ?time=
   {

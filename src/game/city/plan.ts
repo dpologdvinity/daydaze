@@ -35,6 +35,14 @@ import {
   STREET_DRESS,
 } from "./dressing.ts";
 import { LAMP_RANGE, type FurnitureSpot } from "./furniture.ts";
+import {
+  STREET_DRAW_CALLS,
+  STREET_TRIANGLES,
+  WIDE_ROAD,
+  sidewalkPieces,
+  streetPieces,
+  type StreetPiece,
+} from "./streetPieces.ts";
 
 export const KINDS = [
   "road",
@@ -124,6 +132,8 @@ export type CityPlan = {
   bays: BayInstance[];
   /** Suburbia houses within reach of the player, drawn as models. */
   houses: HouseSpot[];
+  /** Crosswalks, corner blocks, center lines and street props (StreetPieces.tsx). */
+  street: StreetPiece[];
 };
 
 /** Triangles per instance of each kind's unit geometry, upper bounds. */
@@ -323,11 +333,16 @@ const ROAD_SURFACES = CITY_SURFACES.filter((s) => s.kind === "road").map((s) =>
   boundsOf(s.polygon),
 );
 
+/** Dashes stop this far from a crossing road's edge, clear of its crosswalk. */
+const CROSSING_GAP = 6.5;
+
 /** Dashes down the middle of each road, skipping the crossings. */
 function laneDashes(cells: readonly Cell[], out: Instance[]): void {
   const inCells = (x: number, z: number) =>
     cells.some((c) => cellAt([x, z]).key === c.key);
   for (const road of ROAD_SURFACES) {
+    // wide roads wear a double yellow line instead (streetPieces.ts)
+    if (Math.min(road.x1 - road.x0, road.z1 - road.z0) >= WIDE_ROAD) continue;
     const horizontal = road.x1 - road.x0 >= road.z1 - road.z0;
     const crossings = ROAD_SURFACES.filter(
       (other) => other.x1 - other.x0 >= other.z1 - other.z0 !== horizontal,
@@ -335,7 +350,9 @@ function laneDashes(cells: readonly Cell[], out: Instance[]): void {
     if (horizontal) {
       const z = (road.z0 + road.z1) / 2;
       for (let x = road.x0 + 3; x < road.x1 - 3; x += 6) {
-        const crossing = crossings.some((c) => x > c.x0 - 3 && x < c.x1 + 3);
+        const crossing = crossings.some(
+          (c) => x > c.x0 - CROSSING_GAP && x < c.x1 + CROSSING_GAP,
+        );
         if (!crossing && inCells(x, z)) {
           out.push({
             x,
@@ -351,7 +368,9 @@ function laneDashes(cells: readonly Cell[], out: Instance[]): void {
     } else {
       const x = (road.x0 + road.x1) / 2;
       for (let z = road.z0 + 3; z < road.z1 - 3; z += 6) {
-        const crossing = crossings.some((c) => z > c.z0 - 3 && z < c.z1 + 3);
+        const crossing = crossings.some(
+          (c) => z > c.z0 - CROSSING_GAP && z < c.z1 + CROSSING_GAP,
+        );
         if (!crossing && inCells(x, z)) {
           out.push({
             x,
@@ -368,21 +387,28 @@ function laneDashes(cells: readonly Cell[], out: Instance[]): void {
   }
 }
 
-const SIDEWALK_BOXES: readonly Box[] = CITY_SURFACES.filter(
-  (s) => s.kind !== "road",
-).map((s) => boundsOf(s.polygon));
-const PAVED_BOXES: readonly Box[] = CITY_SURFACES.filter(
-  (s) =>
-    s.kind !== "road" &&
-    s.kind !== "sand" &&
-    s.kind !== "lawn" &&
-    // planks have their own joints (the texture), not a pavement's seams
-    s.kind !== "boardwalk",
-).map((s) => boundsOf(s.polygon));
+// the sidewalks as drawn, cut back from the cross streets (streetPieces.ts)
+const CUT_SIDEWALKS: readonly Box[] = sidewalkPieces();
+const SIDEWALK_BOXES: readonly Box[] = [
+  ...CITY_SURFACES.filter(
+    (s) => s.kind !== "road" && s.kind !== "sidewalk",
+  ).map((s) => boundsOf(s.polygon)),
+  ...CUT_SIDEWALKS,
+];
+const PAVED_BOXES: readonly Box[] = [
+  ...CITY_SURFACES.filter(
+    (s) =>
+      s.kind !== "road" &&
+      s.kind !== "sidewalk" &&
+      s.kind !== "sand" &&
+      s.kind !== "lawn" &&
+      // planks have their own joints (the texture), not a pavement's seams
+      s.kind !== "boardwalk",
+  ).map((s) => boundsOf(s.polygon)),
+  ...CUT_SIDEWALKS,
+];
 const CURB_COLOR = "#aaa59c";
 const SEAM_COLOR = "#85807a";
-const ZEBRA_COLOR = "#ebe8df";
-const MANHOLE_COLOR = "#2a2a2f";
 const CURB_EPS = 1e-6;
 
 /** The shared edge of two boxes that touch along a line, or null. */
@@ -434,16 +460,14 @@ function pieces(
 }
 
 /**
- * Curbs, zebra crossings, manholes and sidewalk seams: the marks that make a
- * street read as a street rather than a flat stripe of color.
+ * Curbs and sidewalk seams, the marks that make a street read as a street
+ * rather than a flat stripe of color. (Crosswalks, manholes and the rest are
+ * the kit's models: streetPieces.ts.)
  */
 function streetMarks(
   cells: readonly Cell[],
   out: Record<Kind, Instance[]>,
 ): void {
-  const inCells = (x: number, z: number) =>
-    cells.some((c) => cellAt([x, z]).key === c.key);
-
   // a raised lip where each sidewalk meets the road beside it
   for (const side of SIDEWALK_BOXES) {
     for (const road of ROAD_SURFACES) {
@@ -465,80 +489,6 @@ function streetMarks(
               z1: edge.hi,
             };
       pieces(lip, cells, out.ledge, { y: 0.11, sy: 0.22, color: CURB_COLOR });
-    }
-  }
-
-  // zebra stripes on each road, at the two ends of every crossing
-  for (let i = 0; i < ROAD_SURFACES.length; i++) {
-    for (let j = i + 1; j < ROAD_SURFACES.length; j++) {
-      const a = ROAD_SURFACES[i];
-      const b = ROAD_SURFACES[j];
-      const I = overlap(a, b);
-      if (!I) continue;
-      for (const road of [a, b]) {
-        const vertical = road.z1 - road.z0 > road.x1 - road.x0;
-        const ends = vertical ? [I.z0 - 2, I.z1 + 2] : [I.x0 - 2, I.x1 + 2];
-        for (const end of ends) {
-          for (let k = -1.2; k <= 1.2; k += 0.8) {
-            const at = end + k;
-            if (vertical) {
-              const x = (road.x0 + road.x1) / 2;
-              if (!inCells(x, at)) continue;
-              out.lane.push({
-                x,
-                y: 0.045,
-                z: at,
-                sx: road.x1 - road.x0,
-                sy: 0.02,
-                sz: 0.4,
-                color: ZEBRA_COLOR,
-              });
-            } else {
-              const z = (road.z0 + road.z1) / 2;
-              if (!inCells(at, z)) continue;
-              out.lane.push({
-                x: at,
-                y: 0.045,
-                z,
-                sx: 0.4,
-                sy: 0.02,
-                sz: road.z1 - road.z0,
-                color: ZEBRA_COLOR,
-              });
-            }
-          }
-        }
-      }
-    }
-  }
-
-  // manholes every 30 m along each road, clear of the crossings and the dashes
-  for (const road of ROAD_SURFACES) {
-    const vertical = road.z1 - road.z0 > road.x1 - road.x0;
-    const from = vertical ? road.z0 : road.x0;
-    const to = vertical ? road.z1 : road.x1;
-    for (let at = from + 12; at < to - 6; at += 30) {
-      const x = vertical ? (road.x0 + road.x1) / 2 + 2.2 : at;
-      const z = vertical ? at : (road.z0 + road.z1) / 2 + 2.2;
-      const clear = ROAD_SURFACES.every(
-        (o) =>
-          o === road ||
-          x < o.x0 - 4 ||
-          x > o.x1 + 4 ||
-          z < o.z0 - 4 ||
-          z > o.z1 + 4,
-      );
-      if (clear && inCells(x, z)) {
-        out.lane.push({
-          x,
-          y: 0.05,
-          z,
-          sx: 1.1,
-          sy: 0.03,
-          sz: 1.1,
-          color: MANHOLE_COLOR,
-        });
-      }
     }
   }
 
@@ -767,9 +717,7 @@ export function planCity(
   const lights: Light[] = [];
   const inView = (box: Box) => cells.some((c) => overlap(box, c));
 
-  for (const surface of CITY_SURFACES) {
-    const box = boundsOf(surface.polygon);
-    const style = surfaceStyle(surface);
+  const surface = (box: Box, style: ReturnType<typeof surfaceStyle>) => {
     for (const cell of cells) {
       const piece = overlap(box, cell);
       if (!piece) continue;
@@ -783,7 +731,11 @@ export function planCity(
         color: style.color,
       });
     }
-  }
+  };
+  const SIDEWALK_STYLE = surfaceStyle({ kind: "sidewalk", polygon: [] });
+  for (const s of CITY_SURFACES)
+    if (s.kind !== "sidewalk") surface(boundsOf(s.polygon), surfaceStyle(s));
+  for (const box of CUT_SIDEWALKS) surface(box, SIDEWALK_STYLE);
 
   laneDashes(cells, instances.lane);
   streetMarks(cells, instances);
@@ -865,6 +817,7 @@ export function planCity(
     furniture,
     bays,
     houses,
+    street: streetPieces(cells),
   };
 }
 
@@ -879,14 +832,16 @@ export function trianglesOf(plan: CityPlan): number {
     plan.houses.reduce(
       (sum, h) => sum + (HOUSE_MODEL_TRIANGLES[h.variant] ?? 0),
       0,
-    )
+    ) +
+    plan.street.reduce((sum, p) => sum + STREET_TRIANGLES[p.kind], 0)
   );
 }
 
-/** One draw call per kind that has instances. */
+/** One draw call per kind that has instances, plus the street pieces' two. */
 export function drawCallsOf(plan: CityPlan): number {
   return (
     KINDS.filter((kind) => plan.instances[kind].length > 0).length +
+    (plan.street.length > 0 ? STREET_DRAW_CALLS : 0) +
     new Set(plan.bays.map((bay) => bay.kind)).size
   );
 }
