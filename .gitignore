@@ -3,7 +3,8 @@ dist
 *.tsbuildinfo
 .DS_Store
 .worktrees
-.env
+.env*
+!.env.example
 
 # Playwright
 /test-results/
@@ -40,3 +41,15 @@ art/speedway/.cache/
 art/home/.cache/
 /.cache/
 art/motels/.cache/
+
+# Per-machine and credential files (Claude Code settings.local.json, CLAUDE.local.md, ...)
+*.local.*
+*.local
+credentials*.json
+
+# Agent scratch output: subagent logs and screenshots, browser-MCP dumps, harness worktrees
+.superpowers/
+.playwright/
+.playwright-mcp/
+.claude/worktrees/
+.impeccable/hook.*.json
