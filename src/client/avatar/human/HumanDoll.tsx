@@ -1059,6 +1059,8 @@ export function HumanDoll({
           !joins ||
           (!moving && mood !== "idle"),
       });
+      // read by tests: the last set-off, arrival or turn on the player's doll
+      if (around && own) state.gl.domElement.dataset.loco = around.id;
       if (around && clips) {
         if (packsFor(body.key).has(around.pack))
           a.run = { ...around, until: now + around.seconds };

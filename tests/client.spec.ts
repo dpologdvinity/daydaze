@@ -1671,6 +1671,29 @@ test("Space jumps in the city, once a press, and walking off ends it", async ({
   expect(errors).toEqual([]);
 });
 
+test("she sets off, turns and arrives with their clips on a short trip", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=city&view=full`);
+  const view = page.getByRole("img", { name: "3D room view" });
+  await expect(view).toHaveAttribute("data-frames", "10", { timeout: 150_000 });
+  await expect(view).toHaveAttribute("data-player-x", /-?\d/);
+  // a click a few meters off, to her side: she turns or sets off...
+  await page.mouse.click(960, 500);
+  await expect(view).toHaveAttribute(
+    "data-loco",
+    /^(start-walk-f|turn-left|turn-right)$/,
+    { timeout: 60_000 },
+  );
+  // ...and stops with the arrival clip
+  await expect(view).toHaveAttribute("data-loco", "stop-walk-f", {
+    timeout: 120_000,
+  });
+  expect(errors).toEqual([]);
+});
+
 test("the El: ride from Downtown's stairs to Chinatown and step off at its stairs", async ({
   page,
 }) => {
