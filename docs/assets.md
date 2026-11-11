@@ -201,6 +201,7 @@ the Ultimate Nature Pack) and compressed by `scripts/import-forest.sh` into
 | Clay Roof Tiles | Amal Kumar | CC0 1.0 | https://polyhaven.com/a/clay_roof_tiles | Surface textures for the city, venues and furnishings. |
 | Coast Sand 01 | Rob Tuytel | CC0 1.0 | https://polyhaven.com/a/coast_sand_01 | Surface textures for the city, venues and furnishings. |
 | Cobblestone Floor 04 | Rob Tuytel | CC0 1.0 | https://polyhaven.com/a/cobblestone_floor_04 | Surface textures for the city, venues and furnishings. |
+| Concrete Pavement | Charlotte Baglioni | CC0 1.0 | https://polyhaven.com/a/concrete_pavement | The city's sidewalks and plaza paving, lifted to light warm concrete. |
 | Concrete Wall 008 | Dario Barresi, Charlotte Baglioni | CC0 1.0 | https://polyhaven.com/a/concrete_wall_008 | Surface textures for the city, venues and furnishings. |
 | Corrugated Iron | Jenelle van Heerden, Dimitrios Savva | CC0 1.0 | https://polyhaven.com/a/corrugated_iron | Surface textures for the city, venues and furnishings. |
 | Dark Wooden Planks | Amal Kumar | CC0 1.0 | https://polyhaven.com/a/dark_wooden_planks | Surface textures for the city, venues and furnishings. |

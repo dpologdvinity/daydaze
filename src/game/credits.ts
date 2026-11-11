@@ -1339,6 +1339,14 @@ export const CREDITS: readonly {
         usedFor: "Surface textures for the city, venues and furnishings.",
       },
       {
+        title: "Concrete Pavement",
+        author: "Charlotte Baglioni",
+        license: "CC0 1.0",
+        url: "https://polyhaven.com/a/concrete_pavement",
+        usedFor:
+          "The city's sidewalks and plaza paving, lifted to light warm concrete.",
+      },
+      {
         title: "Concrete Wall 008",
         author: "Dario Barresi, Charlotte Baglioni",
         license: "CC0 1.0",

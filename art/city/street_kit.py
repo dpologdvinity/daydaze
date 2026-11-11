@@ -14,7 +14,7 @@ Decals (flat quads textured from the kit's weathered paint atlas,
 T_Street_Decals, all on y = 0): `crosswalk`, `stop`, `slow`,
 `doubleYellow`. Text and arrows read for a driver heading -z.
 
-Solids (one flat vertex color each, no texture; the client draws them with
+Solids (one flat vertex color each (white for the corner), no texture; the client draws them with
 the sidewalk's concrete): `corner` (a sidewalk corner block, 4 m square with
 a rounded kerb at its -x, +z corner, base y = 0, top y = 0.14 like the
 city's sidewalks), `manhole`, `drain` (base y = 0) and `bollard` (base y = 0),
@@ -41,7 +41,8 @@ DECALS = {
     "doubleYellow": "Decal_DoubleYellow_Straight",
 }
 # our name -> (kit module, collapse ratio, linear color)
-CONCRETE = (0.37, 0.35, 0.31)
+# white: the client multiplies in the sidewalk concrete's own lift (sidewalkLook.ts)
+CONCRETE = (1.0, 1.0, 1.0)
 IRON = (0.035, 0.035, 0.04)
 SOLIDS = {
     "corner": ("Sidewalk_Corner_Round_3m", 0.55, CONCRETE),
