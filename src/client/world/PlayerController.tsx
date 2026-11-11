@@ -15,7 +15,12 @@ import {
 
 // the pose for lying on a bed
 const LAY_HOLD = stillClipsOf("lay")[0]?.id ?? "built";
-import { type Look, type Mood, type SwimLook } from "../../game/look.ts";
+import {
+  modelSuffix,
+  type Look,
+  type Mood,
+  type SwimLook,
+} from "../../game/look.ts";
 import { moveAction, MOVE_CODES } from "../../game/input.ts";
 import type { Portal, Spawn } from "../../game/rooms.ts";
 import {
@@ -33,7 +38,9 @@ import {
   type Walker,
 } from "../../game/walker.ts";
 import { WALK_SPEED, type Vec2 } from "../../game/walk.ts";
-import { gaitPace } from "../../game/dance/stride.ts";
+import { naturalPace } from "../../game/dance/clips.ts";
+import { createPace, stepPace } from "../../game/dance/pace.ts";
+import { gaitOf } from "../../game/gaits.ts";
 import { paceIn, waterState, type WaterState } from "../../game/openWater.ts";
 import { afloat } from "../avatar/human/afloat.ts";
 import type { Water } from "./water.ts";
@@ -282,8 +289,12 @@ export function PlayerController({
   const lift = paired?.role === "follow" ? liftOf(paired.e) : 0;
   const g = useRef<THREE.Group>(null);
   const gait = useRef<WalkState>({ speed: 0 });
-  // her walking speed, m/s, from her gait (gaitPace)
-  const pace = useRef(WALK_SPEED);
+  // her walking speed, m/s: a stroll at her style's pace, a hurry on long trips
+  const clipSpeed = naturalPace(
+    gaitOf(look.gait).clip,
+    modelSuffix(look) === "-m",
+  );
+  const pace = useRef(createPace(clipSpeed));
   const marker = useRef<THREE.Mesh>(null);
   const held = useHeldKeys();
   const calm = useReducedMotion();
@@ -353,8 +364,26 @@ export function PlayerController({
       player.acc = 0;
       player.walk.target = null;
     } else {
-      // she walks at the brisk game pace; her clip hands over to the jog if it cannot keep up
-      pace.current = gaitPace();
+      // short trips stroll in her walk style; long ones ramp up to the jog
+      const target = player.walk.target;
+      stepPace(
+        pace.current,
+        {
+          clipSpeed,
+          remaining: target
+            ? Math.hypot(
+                target[0] - player.walk.pos[0],
+                target[1] - player.walk.pos[1],
+              )
+            : null,
+          held: !!intent,
+        },
+        dt,
+      );
+      // read by tests and the walk screenshots
+      const shown = pace.current.pace.toFixed(1);
+      if (state.gl.domElement.dataset.pace !== shown)
+        state.gl.domElement.dataset.pace = shown;
       // simulate in fixed steps, however fast frames arrive
       player.acc = Math.min(player.acc + dt, MAX_CATCH_UP);
       while (player.acc >= SIM_STEP) {
@@ -366,7 +395,7 @@ export function PlayerController({
           area,
           intent,
           SIM_STEP,
-          (skates.get().on ? SKATE_SPEED : pace.current / WALK_SPEED) *
+          (skates.get().on ? SKATE_SPEED : pace.current.pace / WALK_SPEED) *
             paceIn(stateIn(water, player.walk.pos)),
         );
         moving = moving || step.moved;
@@ -427,7 +456,7 @@ export function PlayerController({
       moving || player.seat?.stride
         ? skates.get().on
           ? WALK_SPEED * 0.3
-          : pace.current
+          : pace.current.pace
         : 0,
       18,
       dt,

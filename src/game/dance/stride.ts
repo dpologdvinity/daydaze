@@ -4,10 +4,9 @@
 // the clip at ground speed over that speed plants each foot while the body
 // moves over it; any other rate skates or treadmills. A clip only stretches
 // so far before it reads wrong (a shuffle sped up, a slow-motion stride), so
-// the rate is clamped, and the player and the pedestrians walk at their
-// gait clip's own pace, so theirs plays at 1x. Pure.
-
-import { WALK_SPEED } from "../walk.ts";
+// the rate is clamped, and the pedestrians walk at their gait clip's own
+// pace, so theirs plays at 1x. The player strolls at her style's pace and hurries
+// on long trips (pace.ts). Pure.
 
 /** The slowest and fastest a walk clip plays against its own pace. */
 export const MIN_TEMPO = 0.8;
@@ -18,13 +17,6 @@ export const MAX_TEMPO = 1.25;
 export function walkRate(speed: number, clipSpeed: number): number {
   if (!(clipSpeed > 0) || !(speed > 0)) return 1;
   return Math.min(MAX_TEMPO, Math.max(MIN_TEMPO, speed / clipSpeed));
-}
-
-/** A gait's ground speed, m/s: the brisk walk speed for every gait. A clip
- * too slow to keep up with it is replaced by the jog (needsRun) rather than
- * played absurdly fast, so the feet stay planted. */
-export function gaitPace(): number {
-  return WALK_SPEED;
 }
 
 /** The built stride, meters a loop: the hand-made walk in pose.ts, worn

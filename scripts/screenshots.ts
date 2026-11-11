@@ -3,6 +3,7 @@
 // `node --experimental-strip-types scripts/screenshots.ts [name...]`.
 import { execFileSync } from "node:child_process";
 import { chromium, expect, type Page } from "@playwright/test";
+import { DEFAULT_LOOK } from "../src/game/look.ts";
 import {
   FURNITURE_CATALOG,
   FURNITURE_IDS,
@@ -142,6 +143,59 @@ function homeShot(name: string, furniture: readonly Furniture[], cam?: string) {
   };
 }
 
+/**
+ * A frame strip of the player walking in a style: clicks the floor `ahead`
+ * pixels above the middle of the view (a short trip near the player, a far
+ * click a long one) and saves a crop of her every 300 ms as
+ * docs/screenshots/<name>-<n>.png, logging the pace (data-pace, m/s) and the
+ * ground covered by each frame, so a stroll, the jog and planted feet can be
+ * judged by eye.
+ */
+function walkStrip(
+  name: string,
+  gait: string,
+  ahead: number,
+): (typeof SHOTS)[number] {
+  return {
+    name,
+    query: "room=city",
+    live: true,
+    act: async (page) => {
+      await page.evaluate(
+        ([g, look]) => {
+          const key = "daydaze-save-v1";
+          const save = JSON.parse(localStorage.getItem(key) ?? "{}");
+          localStorage.setItem(
+            key,
+            JSON.stringify({ ...save, look: { ...JSON.parse(look), gait: g } }),
+          );
+        },
+        [gait, JSON.stringify(DEFAULT_LOOK)],
+      );
+      await page.reload();
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      await page.mouse.click(640, 400 - ahead);
+      for (let n = 0; n < 8; n++) {
+        const at = await page.evaluate(() => {
+          const d = document.querySelector("canvas")?.dataset;
+          return `pace ${d?.pace} at ${d?.playerX},${d?.playerZ}`;
+        });
+        console.log(`${name}-${n}: ${at}`);
+        await page.screenshot({
+          path: `docs/screenshots/${name}-${n}.png`,
+          clip: { x: 440, y: 150, width: 400, height: 450 },
+          timeout: 180_000,
+        });
+        await page.waitForTimeout(300);
+      }
+    },
+  };
+}
+
 const SHOTS: {
   name: string;
   query: string;
@@ -152,6 +206,9 @@ const SHOTS: {
   /** Drives the scene before the capture, e.g. to start a race. */
   act?: (page: Page) => Promise<void>;
 }[] = [
+  walkStrip("walk-feminine-short", "feminine", 110),
+  walkStrip("walk-feminine-long", "feminine", 330),
+  walkStrip("walk-swagger-short", "swagger", 110),
   { name: "club-pulse", query: "room=pulse" },
   {
     name: "apartment",

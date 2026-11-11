@@ -1631,6 +1631,27 @@ test("the city loads, the player walks with the keys, and the scene renders", as
   expect(errors).toEqual([]);
 });
 
+test("the player strolls in her walk style on a short trip and hurries when a key is held", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=city`);
+  const view = page.getByRole("img", { name: "3D room view" });
+  await expect(view).toHaveAttribute("data-frames", "10", { timeout: 150_000 });
+  await expect(view).toHaveAttribute("data-player-x", /-?\d/);
+  const pace = async () => Number(await view.getAttribute("data-pace"));
+  // a click a few meters off: a stroll, slower than the hurry (2.6 m/s)
+  await page.mouse.click(640, 520);
+  await expect.poll(pace).toBeGreaterThan(0);
+  expect(await pace()).toBeLessThan(2.4);
+  // a key held past a second: she hurries
+  await page.keyboard.down("KeyD");
+  await expect.poll(pace, { timeout: 30_000 }).toBeGreaterThanOrEqual(2.6);
+  await page.keyboard.up("KeyD");
+  expect(errors).toEqual([]);
+});
+
 test("the El: ride from Downtown's stairs to Chinatown and step off at its stairs", async ({
   page,
 }) => {
