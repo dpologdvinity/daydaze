@@ -365,14 +365,29 @@ async function tileFrames(
 function wheelSheet(name: string): (typeof SHOTS)[number] {
   const size = { width: 2400, height: 1500 };
   // the side view keeps the car in the middle of the frame, 10 m off at about
-  // 150 px a meter here, nose to the right: a strip along its wheels
+  // 150 px a meter here, nose to the right (the car faces -x): a strip along its wheels
   const crop = { x: 840, y: 620, width: 720, height: 360 };
   return {
     name,
-    query: "room=city&time=12:00&at=12,7",
+    query: "room=city&time=12:00&at=-58,1.5",
     live: true,
     viewport: size,
     act: async (page) => {
+      // the car parked mid-avenue in the far lane facing -x, so its right side
+      // (where the side view stands) looks over open road, not a wall
+      await page.evaluate(() => {
+        const key = "daydaze-save-v1";
+        const save = JSON.parse(localStorage.getItem(key) ?? "{}");
+        const car = {
+          id: "quill-lite",
+          color: "#d8d8e4",
+          at: [-60, 3],
+          yaw: -Math.PI / 2,
+          fuel: 1,
+        };
+        localStorage.setItem(key, JSON.stringify({ ...save, car }));
+      });
+      await page.reload();
       const canvas = page.getByRole("img", { name: "3D room view" });
       await expect(canvas).toHaveAttribute("data-city-car", "parked", {
         timeout: 300_000,
