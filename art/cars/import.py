@@ -13,19 +13,26 @@ client can recolor the parts that matter without UVs or textures:
            second tone) that the client multiplies by the car's paint color
     glass  windows (the client tints them)
     trim   bumpers, grilles, mirrors, details
-    tyre   rubber
-    rim    hubs (the client swaps rim styles)
+    tyre   rubber (ONE wheel, centered on the origin, axle along x)
+    rim    hubs (ONE wheel, same frame; the client swaps rim styles)
     light  head, tail, siren and sign lamps; vertex color is the lamp hue
 
 Orientation and size: nose toward +Z, centered on X and Z, wheels on y = 0,
 scaled so the length is the model's `length` (meters). Wheels are found by
 their object names ("FrontWheels", "BackWheels"), which also tells us which end
 is the nose.
+
+The wheels are not part of the body: `tyre` and `rim` hold a single wheel (the
+front one on the +x side) around the origin, so the client can instance it four
+times and spin it by distance traveled. Where the four wheels sit is printed as
+a `CARWHEELS` line, which is pasted into BODY_WHEELS (src/game/driving/bodies.ts).
+The distance twin (`lo`) has a plain disc for `tyre` and no `rim`.
 """
 
 import math
 import sys
 
+import bmesh
 import bpy
 from mathutils import Matrix, Vector
 
@@ -184,6 +191,14 @@ for o in objects:
 bpy.context.view_layer.objects.active = objects[0]
 bpy.ops.object.join()
 car = bpy.context.object
+# Marks the window vertices, so the distance twin's decimation can protect them
+# (flat quads are the cheapest thing to collapse, and the windows are flat).
+glass_index = BUCKETS.index("glass")
+car.vertex_groups.new(name="glass").add(
+    sorted({v for p in car.data.polygons if p.material_index == glass_index for v in p.vertices}),
+    1.0,
+    "REPLACE",
+)
 bpy.ops.object.mode_set(mode="EDIT")
 bpy.ops.mesh.select_all(action="SELECT")
 bpy.ops.mesh.separate(type="MATERIAL")
@@ -229,49 +244,86 @@ def split_by_material(obj):
     return out
 
 
-def wheel_discs(tyre):
-    """Replaces the tyre mesh with one 10-sided disc per wheel. The four wheels
-    are the tyre vertices grouped by side (x) and end (y); each disc takes its
-    group's bounding box (the axle runs along x)."""
+def quadrant(co):
+    """Which wheel a point belongs to: (right of center, toward the tail)."""
+    return (co.x > 0, co.y > 0)
+
+
+def wheel_centres(tyre):
+    """The four wheels as {quadrant: (center, radius, width)}: the tyre vertices
+    grouped by side (x) and end (y), each group's bounding box (the axle runs
+    along x)."""
     groups = {}
     for v in tyre.data.vertices:
-        groups.setdefault((v.co.x > 0, v.co.y > 0), []).append(v.co.copy())
-    bpy.data.objects.remove(tyre)
-    discs = []
-    for pts in groups.values():
-        xs, ys, zs = ([q[i] for q in pts] for i in range(3))
-        centre = ((min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2, (min(zs) + max(zs)) / 2)
-        radius = max(max(ys) - min(ys), max(zs) - min(zs)) / 2
-        width = max(xs) - min(xs)
-        bpy.ops.mesh.primitive_cylinder_add(
-            vertices=10, radius=radius, depth=width, location=centre, rotation=(0, math.pi / 2, 0)
-        )
-        d = bpy.context.object
-        while d.data.uv_layers:
-            d.data.uv_layers.remove(d.data.uv_layers[0])
-        d.data.materials.append(bucket_mat["tyre"])
-        colors = d.data.color_attributes.new(name="Color", type="FLOAT_COLOR", domain="CORNER")
-        for c in colors.data:
-            c.color = TYRE
-        discs.append(d)
-    bpy.ops.object.select_all(action="DESELECT")
-    for d in discs:
-        d.select_set(True)
-    bpy.context.view_layer.objects.active = discs[0]
-    bpy.ops.object.join()
-    joined = bpy.context.object
-    bpy.data.orphans_purge(do_recursive=True)
-    joined.name = joined.data.name = "tyre"
-    return joined
+        groups.setdefault(quadrant(v.co), []).append(v.co.copy())
+    assert len(groups) == 4, "expected four wheels"
+    out = {}
+    for q, pts in groups.items():
+        xs, ys, zs = ([c[i] for c in pts] for i in range(3))
+        centre = Vector(((min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2, (min(zs) + max(zs)) / 2))
+        out[q] = (centre, max(max(ys) - min(ys), max(zs) - min(zs)) / 2, max(xs) - min(xs))
+    return out
 
+
+def lone_wheel(obj, q, centre):
+    """Keeps only the faces of wheel `q`, moved so the wheel's center is the origin."""
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    bmesh.ops.delete(
+        bm, geom=[f for f in bm.faces if quadrant(f.calc_center_median()) != q], context="FACES"
+    )
+    bmesh.ops.translate(bm, verts=bm.verts, vec=-centre)
+    bm.to_mesh(obj.data)
+    bm.free()
+
+
+def wheel_disc(radius, width):
+    """A plain 10-sided disc at the origin, axle along x: the distance twin's wheel."""
+    bpy.ops.mesh.primitive_cylinder_add(vertices=10, radius=radius, depth=width, rotation=(0, math.pi / 2, 0))
+    d = bpy.context.object
+    while d.data.uv_layers:
+        d.data.uv_layers.remove(d.data.uv_layers[0])
+    d.data.materials.append(bucket_mat["tyre"])
+    colors = d.data.color_attributes.new(name="Color", type="FLOAT_COLOR", domain="CORNER")
+    for c in colors.data:
+        c.color = TYRE
+    d.name = d.data.name = "tyre"
+    return d
+
+
+# The wheels leave the body: one wheel (front, +x side) at the origin for the
+# client to instance, and where the four sit, for BODY_WHEELS. glTF is x right,
+# y up, z toward the nose; Blender's y is -z and its z is up.
+centres = wheel_centres(parts["tyre"])
+proto = (True, False)
+proto_centre = centres[proto][0]
+front = [c for q, (c, _, _) in centres.items() if not q[1]]
+rear = [c for q, (c, _, _) in centres.items() if q[1]]
+radius, width = centres[proto][1], centres[proto][2]
+print(
+    "CARWHEELS",
+    key,
+    dict(
+        radius=round(radius, 3),
+        width=round(width, 3),
+        y=round(proto_centre.z, 3),
+        frontX=round(sum(abs(c.x) for c in front) / 2, 3),
+        rearX=round(sum(abs(c.x) for c in rear) / 2, 3),
+        frontZ=round(-sum(c.y for c in front) / 2, 3),
+        rearZ=round(-sum(c.y for c in rear) / 2, 3),
+    ),
+)
+for name in ("tyre", "rim"):  # the buses have no hubs
+    if name in parts:
+        lone_wheel(parts[name], proto, proto_centre)
 
 if detail == "lo":
     # The distance twin: the body thinned as one mesh (so paint, trim and
-    # glass cannot pull apart at the seams), plain discs for wheels, no hubs.
+    # glass cannot pull apart at the seams), a plain disc for the wheel, no hubs.
     if "rim" in parts:
-        bpy.data.objects.remove(parts["rim"])
-        del parts["rim"]
-    tyre = wheel_discs(parts.pop("tyre"))
+        bpy.data.objects.remove(parts.pop("rim"))
+    bpy.data.objects.remove(parts.pop("tyre"))
+    tyre = wheel_disc(radius, width)
     body_parts = [parts.pop(name) for name in ("paint", "trim", "glass", "light") if name in parts]
     bpy.ops.object.select_all(action="DESELECT")
     for o in body_parts:
@@ -281,12 +333,17 @@ if detail == "lo":
     body = bpy.context.object
     # the joined mesh keeps the first part's name; free "paint" for the split
     body.name = body.data.name = "lodbody"
-    # about 850 triangles for the whole car: the low tier draws this twin from
-    # every distance, and the budget (src/game/city/budget.ts) prices a dozen
+    # about 700 triangles for the body: the low tier draws this twin from
+    # every distance, and the budget (src/game/city/budget.ts) prices a dozen.
+    # The windows are held back from the decimation: left to it, the cheap
+    # flat quads of the glass collapse first and the glass goes thin.
     mod = body.modifiers.new("lod", "DECIMATE")
     mod.ratio = min(1.0, 690 / tris_of(body))
     mod.use_symmetry = True
     mod.symmetry_axis = "X"
+    mod.vertex_group = "glass"
+    mod.invert_vertex_group = True  # weight 1 here means "collapse freely"
+    mod.vertex_group_factor = 10.0
     bpy.ops.object.modifier_apply(modifier=mod.name)
     parts.update(split_by_material(body))
     parts["tyre"] = tyre

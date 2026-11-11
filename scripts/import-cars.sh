@@ -37,7 +37,7 @@ for entry in "${MODELS[@]}"; do
     suffix=""
     [[ "$detail" == lo ]] && suffix="-lo"
     "$BLENDER" --background --factory-startup --python art/cars/import.py -- \
-      "$source" "$WORK/$key$suffix.glb" "$key" "$detail" | grep CARTRIS
+      "$source" "$WORK/$key$suffix.glb" "$key" "$detail" | grep -E "CARTRIS|CARWHEELS"
     # Flags from CLAUDE.md: keep node names and attributes (the client finds
     # the paint, glass, trim, tyre, rim and light meshes by name).
     npx -y @gltf-transform/cli@4.5.1 optimize "$WORK/$key$suffix.glb" "$OUT/$key$suffix.glb" \
