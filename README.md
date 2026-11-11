@@ -42,6 +42,9 @@ All music and sound is synthesized in the browser. NPC lines are handwritten.
 - [CONTRIBUTING.md](CONTRIBUTING.md): local workflow, checks, commit and
   pull request conventions.
 - `docs/specs/`: design specs.
+- [docs/agents/](docs/agents/README.md): how the game is built with
+  parallel AI coding agents (workflow, agent brief, merge scripts, the
+  owner's rules and why).
 
 ## CI
 
