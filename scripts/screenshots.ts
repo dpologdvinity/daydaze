@@ -2,7 +2,9 @@
 // Needs a dev server: `npm run dev -- --port 5195 --strictPort`, then
 // `node --experimental-strip-types scripts/screenshots.ts [name...]`.
 import { execFileSync } from "node:child_process";
+import { writeFileSync } from "node:fs";
 import { chromium, expect, type Page } from "@playwright/test";
+import { DEFAULT_LOOK } from "../src/game/look.ts";
 import {
   FURNITURE_CATALOG,
   FURNITURE_IDS,
@@ -142,6 +144,72 @@ function homeShot(name: string, furniture: readonly Furniture[], cam?: string) {
   };
 }
 
+/**
+ * A frame strip of the player walking in a style on the full-body camera:
+ * a click on the street beside her is a short trip, a held key a long one
+ * (past a second she hurries). Saves the first rendered frames as
+ * docs/screenshots/<name>-<nn>.png, logging the pace (data-pace, m/s) and the
+ * ground covered by each frame, so a stroll, the jog and planted feet can be
+ * judged by eye.
+ */
+function walkStrip(
+  name: string,
+  gait: string,
+  trip: "click" | "hold",
+): (typeof SHOTS)[number] {
+  return {
+    name,
+    query: "room=city&view=full",
+    live: true,
+    act: async (page) => {
+      await page.evaluate(
+        ([g, look]) => {
+          const key = "daydaze-save-v1";
+          const save = JSON.parse(localStorage.getItem(key) ?? "{}");
+          localStorage.setItem(
+            key,
+            JSON.stringify({ ...save, look: { ...JSON.parse(look), gait: g } }),
+          );
+        },
+        [gait, JSON.stringify(DEFAULT_LOOK)],
+      );
+      await page.reload();
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      // a CDP screencast delivers every frame the browser renders (a plain
+      // screenshot takes seconds on SwiftShader, too slow to see a stride)
+      const cdp = await page.context().newCDPSession(page);
+      const frames: Buffer[] = [];
+      cdp.on("Page.screencastFrame", (f) => {
+        if (frames.length < 24) frames.push(Buffer.from(f.data, "base64"));
+        void cdp.send("Page.screencastFrameAck", { sessionId: f.sessionId });
+      });
+      await cdp.send("Page.startScreencast", { format: "png" });
+      if (trip === "click") await page.mouse.click(960, 500);
+      else await page.keyboard.down("d");
+      for (let n = 0; n < 6; n++) {
+        await page.waitForTimeout(1000);
+        const at = await page.evaluate(() => {
+          const d = document.querySelector("canvas")?.dataset;
+          return `pace ${d?.pace} at ${d?.playerX},${d?.playerZ}`;
+        });
+        console.log(`${name} ${n + 1}s: ${at}`);
+      }
+      await cdp.send("Page.stopScreencast");
+      frames.forEach((png, n) =>
+        writeFileSync(
+          `docs/screenshots/${name}-${String(n).padStart(2, "0")}.png`,
+          png,
+        ),
+      );
+      console.log(`${name}: ${frames.length} screencast frames`);
+    },
+  };
+}
+
 const SHOTS: {
   name: string;
   query: string;
@@ -152,6 +220,9 @@ const SHOTS: {
   /** Drives the scene before the capture, e.g. to start a race. */
   act?: (page: Page) => Promise<void>;
 }[] = [
+  walkStrip("walk-feminine-short", "feminine", "click"),
+  walkStrip("walk-feminine-long", "feminine", "hold"),
+  walkStrip("walk-swagger-short", "swagger", "click"),
   { name: "club-pulse", query: "room=pulse" },
   {
     name: "apartment",

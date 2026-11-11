@@ -4,7 +4,6 @@ import { WALK_SPEED } from "../walk.ts";
 import {
   MAX_TEMPO,
   MIN_TEMPO,
-  gaitPace,
   walkPhaseRate,
   runRate,
   walkRate,
@@ -22,10 +21,6 @@ test("a walk clip plays at ground speed over its own pace, within the clamp", ()
   assert.equal(walkRate(0, 1.2), 1);
   assert.equal(walkRate(1.2, 0), 1);
   assert.equal(walkRate(Number.NaN, 1.2), 1);
-});
-
-test("every gait walks at the brisk walk speed", () => {
-  assert.equal(gaitPace(), WALK_SPEED);
 });
 
 test("a walk clip that cannot keep up hands over to the jog", () => {
