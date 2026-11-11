@@ -1653,6 +1653,24 @@ test("the player strolls in her walk style on a short trip and hurries when a ke
   expect(errors).toEqual([]);
 });
 
+test("Space jumps in the city, once a press, and walking off ends it", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=city&view=full`);
+  const view = page.getByRole("img", { name: "3D room view" });
+  await expect(view).toHaveAttribute("data-frames", "10", { timeout: 150_000 });
+  await expect(view).toHaveAttribute("data-player-x", /-?\d/);
+  await expect(view).toHaveAttribute("data-jumps", "0");
+  await page.keyboard.press("Space");
+  await expect(view).toHaveAttribute("data-jumps", "1");
+  // a second press while still in the air does nothing
+  await page.keyboard.press("Space");
+  await expect(view).toHaveAttribute("data-jumps", "1");
+  expect(errors).toEqual([]);
+});
+
 test("the El: ride from Downtown's stairs to Chinatown and step off at its stairs", async ({
   page,
 }) => {

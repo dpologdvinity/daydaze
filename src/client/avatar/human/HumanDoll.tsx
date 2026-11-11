@@ -149,7 +149,16 @@ type Anim = {
   transPlay: Play;
   /** What she was seen doing around walking, and the clip it set off. */
   loco: Loco;
-  run: { id: string; until: number; rate: number; fade: number } | null;
+  run: {
+    id: string;
+    until: number;
+    rate: number;
+    fade: number;
+    /** Ends when she walks off (a jump in place). */
+    stay?: boolean;
+  } | null;
+  /** The jump count last seen (WalkState.jump). */
+  jumped: number;
 };
 const JOINTS = [
   "body",
@@ -170,7 +179,13 @@ const JOINTS = [
 /** How fast the doll is moving over the ground, m/s: the legs keep pace.
  * `yaw` (facing, radians) lets her turn on the spot, and `hurry` (the jog,
  * not a stroll) picks her set-off; both optional (locomotion.ts). */
-export type WalkState = { speed: number; yaw?: number; hurry?: boolean };
+export type WalkState = {
+  speed: number;
+  yaw?: number;
+  hurry?: boolean;
+  /** Counts jumps: each new count plays the jump clip. */
+  jump?: number;
+};
 
 type Props = {
   /** Closet body sliders, 0 to 100 each. */
@@ -887,6 +902,7 @@ export function HumanDoll({
       transPlay: { id: "", rate: 1, offset: 0 },
       loco: createLoco(),
       run: null,
+      jumped: walk?.current.jump ?? 0,
     };
     return () => {
       mixer.stopAllAction();
@@ -1047,6 +1063,21 @@ export function HumanDoll({
           a.run = { ...around, until: now + around.seconds };
         else void loadPack(body.key, around.pack);
       }
+      // a jump plays the whole clip, in place: walking off ends it
+      const jumps = walk?.current.jump ?? 0;
+      if (jumps !== a.jumped) {
+        a.jumped = jumps;
+        const jump = clipOf("jump");
+        if (jump && clips?.has("jump"))
+          a.run = {
+            id: "jump",
+            until: now + jump.period,
+            rate: 1,
+            fade: 0.15,
+            stay: true,
+          };
+      }
+      if (a.run?.stay && moving) a.run = null;
       // a clip's fade out is as short as its fade in
       let fade = FADE;
       let want: Play | null;

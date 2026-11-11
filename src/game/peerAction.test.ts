@@ -127,3 +127,24 @@ test("a 13+ client never shows a peer's buzz tag", () => {
   assert.equal(shownBuzz(2, "adult"), 2);
   assert.equal(shownBuzz(undefined, "adult"), undefined);
 });
+
+test("a jump goes out as one word, over any mood, and comes back as a jump", () => {
+  const a = encodeAction(
+    "dance",
+    "salsa",
+    undefined,
+    undefined,
+    0,
+    undefined,
+    false,
+    true,
+  );
+  assert.equal(a, "jump");
+  assert.deepEqual(decodeAction(a), { mood: "idle", jump: true });
+  // a buzz still rides along
+  assert.deepEqual(decodeAction("jump~2"), {
+    mood: "idle",
+    jump: true,
+    buzz: 2,
+  });
+});

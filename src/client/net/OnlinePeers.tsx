@@ -25,6 +25,7 @@ import {
   type Doing,
 } from "../../game/peerAction.ts";
 import { stillClipsOf } from "../../game/dance/moves.ts";
+import { jumping } from "../world/jump.ts";
 import { carById } from "../../game/driving/roster.ts";
 import type { OnlineSession } from "../../net/client/OnlineSession.ts";
 import { Doll, type WalkState } from "../avatar/Doll.tsx";
@@ -91,6 +92,9 @@ function PeerDoll({
     if (at.action !== was.action)
       heard.current = { action: at.action, next: decodeAction(at.action) };
     const { next } = heard.current;
+    // a peer's jump: the count steps once as they take off
+    if (next.jump && !was.next.jump)
+      walk.current.jump = (walk.current.jump ?? 0) + 1;
     // height comes only with each move: ease it, so rides don't step
     // a piggyback rider sits up on the lead's back
     const y =
@@ -364,6 +368,7 @@ export function OnlinePeers({
       buzzTier(getBuzz()),
       pair?.placed ? { emote: pair.e, role: pair.role } : undefined,
       driving.passenger !== null,
+      jumping(Date.now()),
     );
     if (
       !session ||

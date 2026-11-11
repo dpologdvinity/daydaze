@@ -166,7 +166,7 @@ const FRAMES = 48;
 function walkStrip(
   name: string,
   gait: string,
-  trip: "click" | "hold",
+  trip: "click" | "hold" | "jump",
   opts: {
     /** Where the click lands (the street beside her by default). */
     at?: readonly [number, number];
@@ -229,6 +229,7 @@ function walkStrip(
       });
       await cdp.send("Page.startScreencast", { format: "png" });
       if (trip === "click") await page.mouse.click(at[0], at[1]);
+      else if (trip === "jump") await page.keyboard.press("Space");
       else await page.keyboard.down("d");
       // "first" records for `seconds`; "last" until she has stood still for
       // `seconds` (the first frames after a click are all she needs to set off)
@@ -283,6 +284,7 @@ const SHOTS: {
     timescale: 0.1,
     seconds: 30,
   }),
+  walkStrip("move-jump", "natural", "jump", { timescale: 0.1, seconds: 30 }),
   walkStrip("move-start-man", "natural", "click", {
     men: true,
     timescale: 0.1,
