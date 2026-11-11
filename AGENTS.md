@@ -13,10 +13,10 @@ and open decisions.
 
 - What exists: the rooms in `src/game/rooms.ts`, the city in
   `src/game/city/layout.ts`, and `git log`.
-- What to build next: the Follow-ups in
-  `docs/plans/2026-11-07-smooth-and-alive.md`, then
-  `docs/plans/2026-10-24-wonder-pass.md` Tasks 36-41 and 43 (spec
-  `docs/specs/2026-10-24-wonder-pass.md`).
+- What to build next: `docs/plans/2026-11-11-handoff.md` (the current
+  handoff), which works through the Follow-ups in
+  `docs/plans/2026-11-07-smooth-and-alive.md` and the "Use next" list in
+  `docs/asset-inventory.md`.
 - `docs/plans/2026-10-23-next-steps.md` is the running log and gotchas list;
   `docs/plans/2026-10-14-master-roadmap.md` holds milestones M0-M11. Specs live
   in `docs/specs/`, plans in `docs/plans/`.
