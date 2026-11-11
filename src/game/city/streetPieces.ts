@@ -37,7 +37,7 @@ export const STREET_TRIANGLES: Readonly<Record<StreetKind, number>> = {
   corner: 97,
   manhole: 34,
   drain: 10,
-  bollard: 38,
+  bollard: 56,
 };
 
 /** Draw calls the street pieces cost: one merged mesh of paint, one of solids. */

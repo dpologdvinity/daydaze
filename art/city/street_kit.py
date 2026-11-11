@@ -47,7 +47,7 @@ SOLIDS = {
     "corner": ("Sidewalk_Corner_Round_3m", 0.55, CONCRETE),
     "manhole": ("Prop_ManholeCover", 0.3, IRON),
     "drain": ("Prop_Drain", 1.0, IRON),
-    "bollard": ("Prop_Bollard", 0.2, IRON),
+    "bollard": ("Prop_Bollard", 0.3, IRON),
 }
 SIDEWALK_TOP = 0.14
 CORNER_SIZE = 4.0
