@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "skills": {
+    "r3f-best-practices": {
+      "source": "emalorenzo/three-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/r3f-best-practices/SKILL.md",
+      "computedHash": "d15cf5c47c35125afb4bfb079c3da515a34152f9839985065270a85e6bf36fb5"
+    },
+    "three-best-practices": {
+      "source": "emalorenzo/three-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/three-best-practices/SKILL.md",
+      "computedHash": "d135429cf44ae2fe06e6403b0fb417eaeb8c328641308b1b615e85a130c73794"
+    },
+    "threejs-3d-generator": {
+      "source": "majidmanzarpour/threejs-game-skills",
+      "sourceType": "github",
+      "skillPath": "skills/threejs-3d-generator/SKILL.md",
+      "computedHash": "bb86884aa4edc44a91ddeed75a11d7123a40a12b295fe50c75299c944b688ce3"
+    },
+    "threejs-asset-pipeline": {
+      "source": "cloudai-x/threejs-skills",
+      "sourceType": "github",
+      "skillPath": "skills/threejs-asset-pipeline/SKILL.md",
+      "computedHash": "be5c2bbda841382229d99182f88e94eba8974474bd065b994e881bb9cc2058d8"
+    },
+    "threejs-audio-generator": {
+      "source": "majidmanzarpour/threejs-game-skills",
+      "sourceType": "github",
+      "skillPath": "skills/threejs-audio-generator/SKILL.md",
+      "computedHash": "9511b5e10bc232847c0ced8c63a97e3b31c466fef982e9bfddcd0db051b7aae8"
+    },
+    "threejs-shaders": {
+      "source": "cloudai-x/threejs-skills",
+      "sourceType": "github",
+      "skillPath": "skills/threejs-shaders/SKILL.md",
+      "computedHash": "af0a4cdfc80390b30a898bb5a3fe30e4f61b304776a9aebbdb7451b0fc1c2c0f"
+    }
+  }
+}
