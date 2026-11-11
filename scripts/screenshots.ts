@@ -302,6 +302,120 @@ function actionStrip(
   };
 }
 
+/**
+ * Tiles PNG frames into one sheet in the page (no image library needed): each
+ * frame cropped to `crop` (a rectangle of the full frame), `columns` to a row.
+ */
+async function tileFrames(
+  page: Page,
+  frames: Buffer[],
+  crop: { x: number; y: number; width: number; height: number },
+  columns: number,
+): Promise<Buffer> {
+  const data = await page.evaluate(
+    async ([urls, box, cols]) => {
+      const images = await Promise.all(
+        urls.map(
+          (url) =>
+            new Promise<HTMLImageElement>((resolve, reject) => {
+              const img = new Image();
+              img.onload = () => resolve(img);
+              img.onerror = reject;
+              img.src = url;
+            }),
+        ),
+      );
+      const rows = Math.ceil(images.length / cols);
+      const sheet = document.createElement("canvas");
+      sheet.width = box.width * cols;
+      sheet.height = box.height * rows;
+      const ctx = sheet.getContext("2d");
+      images.forEach((img, i) =>
+        ctx?.drawImage(
+          img,
+          box.x,
+          box.y,
+          box.width,
+          box.height,
+          (i % cols) * box.width,
+          Math.floor(i / cols) * box.height,
+          box.width,
+          box.height,
+        ),
+      );
+      return sheet.toDataURL("image/png");
+    },
+    [
+      frames.map((f) => `data:image/png;base64,${f.toString("base64")}`),
+      crop,
+      columns,
+    ] as const,
+  );
+  return Buffer.from(data.split(",")[1] ?? "", "base64");
+}
+
+/**
+ * Proof that the player's wheels turn and steer: the car is driven on a
+ * paused fake clock that is stepped by hand, so each frame is an exact time
+ * after the throttle goes down. Two sheets in docs/screenshots: `<name>-spin`
+ * (frames 50 ms apart while pulling away from rest, the car rolling only a few
+ * centimeters a frame so the hub's spokes shift a few degrees each) and
+ * `<name>-turn` (straight, then the wheel turned at speed, then turning
+ * further), cropped round the car.
+ */
+function wheelSheet(name: string): (typeof SHOTS)[number] {
+  const size = { width: 1600, height: 1000 };
+  // the chase camera keeps the car near the middle, low in the frame
+  const crop = { x: 400, y: 380, width: 800, height: 500 };
+  return {
+    name,
+    query: "room=city&time=12:00&at=12,7",
+    live: true,
+    viewport: size,
+    act: async (page) => {
+      const canvas = page.getByRole("img", { name: "3D room view" });
+      await expect(canvas).toHaveAttribute("data-city-car", "parked", {
+        timeout: 300_000,
+      });
+      await page.getByRole("button", { name: "Drive your car" }).click();
+      await expect(canvas).toHaveAttribute("data-city-car", "driving", {
+        timeout: 120_000,
+      });
+      const shoot = async (ms: number) => {
+        await page.clock.runFor(ms);
+        return page.screenshot({ timeout: 180_000 });
+      };
+      await page.clock.install();
+      await page.clock.pauseAt(Date.now() + 1000);
+      const spin: Buffer[] = [];
+      await page.keyboard.down("w");
+      for (const ms of [150, 50, 50, 50]) spin.push(await shoot(ms));
+      const turn: Buffer[] = [];
+      // up to speed, then straight, then steering left
+      await page.clock.runFor(1500);
+      turn.push(await shoot(100));
+      await page.keyboard.down("a");
+      turn.push(await shoot(250));
+      turn.push(await shoot(250));
+      await page.keyboard.up("a");
+      await page.keyboard.up("w");
+      for (const [label, frames] of [
+        ["spin", spin],
+        ["turn", turn],
+      ] as const) {
+        const sheet = await tileFrames(page, frames, crop, 2);
+        writeFileSync(`docs/screenshots/${name}-${label}.png`, sheet);
+        frames.forEach((png, n) =>
+          writeFileSync(`docs/screenshots/${name}-${label}-${n}.png`, png),
+        );
+      }
+      console.log(
+        `${name}: ${spin.length} spin frames, ${turn.length} turn frames`,
+      );
+    },
+  };
+}
+
 const SHOTS: {
   name: string;
   query: string;
@@ -312,6 +426,7 @@ const SHOTS: {
   /** Drives the scene before the capture, e.g. to start a race. */
   act?: (page: Page) => Promise<void>;
 }[] = [
+  wheelSheet("car-wheels"),
   walkStrip("walk-feminine-short", "feminine", "click"),
   walkStrip("walk-feminine-long", "feminine", "hold"),
   walkStrip("walk-swagger-short", "swagger", "click"),
