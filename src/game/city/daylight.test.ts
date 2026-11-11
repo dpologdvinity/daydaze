@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { daylightAt, hourOf, laneTint, parseTimeFlag } from "./daylight.ts";
+import {
+  daylightAt,
+  hourOf,
+  lampGain,
+  laneTint,
+  parseTimeFlag,
+} from "./daylight.ts";
 
 test("noon is full day: sun up, no neon, a blue sky", () => {
   const d = daylightAt(12);
@@ -53,4 +59,12 @@ test("street paint is untinted by day and dim violet at night", () => {
   const night = laneTint(daylightAt(23).neon);
   assert.ok(night[0] < 0.6 && night[2] > night[0], "dim and violet");
   assert.deepEqual(laneTint(5), laneTint(1));
+});
+
+test("car lamps are dull by day and well past the bloom threshold at night", () => {
+  assert.ok(lampGain(daylightAt(12).neon) < 1);
+  // even a red tail lamp (luminance about 0.2 of white) clears 1 at night
+  assert.ok(lampGain(daylightAt(23).neon) * 0.2 > 1);
+  assert.equal(lampGain(5), lampGain(1));
+  assert.equal(lampGain(-1), lampGain(0));
 });

@@ -159,3 +159,14 @@ export function parseTimeFlag(search: string): number | null {
 export function laneTint(neon: number): Rgb {
   return mixRgb([1, 1, 1], [0.5, 0.45, 0.72], Math.min(1, Math.max(0, neon)));
 }
+
+/**
+ * How hard a car's head and tail lamps shine: a dull glint by day, and by night
+ * far past 1 so the lamp's color clips to full and, on the high tier, the
+ * bloom pass (luminance threshold 1) flares it. A red lamp's luminance is a
+ * fifth of a white one's, so the night gain has to be this high for the tail
+ * lights to bloom at all. `neon` is Daylight.neon (0 day, 1 night).
+ */
+export function lampGain(neon: number): number {
+  return 0.5 + 7 * Math.min(1, Math.max(0, neon));
+}
