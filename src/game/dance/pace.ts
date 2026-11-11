@@ -10,8 +10,13 @@ import { MAX_TEMPO } from "./stride.ts";
 
 /** A stroll plays its clip a little fast (within the walk tempo clamp). */
 export const STROLL_TEMPO = 1.2;
-/** Meters from a clicked target past which she hurries; once hurrying, she
- * keeps on until SLOW_DISTANCE from it, so a trip does not flicker. */
+/** A click trip hurries when strolling it would take longer than this many
+ * seconds (so a slow style hurries sooner and no style feels slow), up to
+ * HURRY_DISTANCE meters; once hurrying she keeps on until about SLOW_SECONDS
+ * of stroll from the target (at most SLOW_DISTANCE meters), so a trip does
+ * not flicker. */
+export const HURRY_SECONDS = 3;
+export const SLOW_SECONDS = 1;
 export const HURRY_DISTANCE = 7;
 export const SLOW_DISTANCE = 2.5;
 /** Seconds of held keys or stick before she hurries. */
@@ -24,6 +29,16 @@ export const PACE_RAMP = 4;
 export function strollPace(clipSpeed: number | undefined): number {
   if (!(clipSpeed !== undefined && clipSpeed > 0)) return WALK_SPEED;
   return Math.min(WALK_SPEED, clipSpeed * Math.min(STROLL_TEMPO, MAX_TEMPO));
+}
+
+/** Meters left to a clicked target past which she starts to hurry. */
+export function hurryDistance(clipSpeed: number | undefined): number {
+  return Math.min(HURRY_DISTANCE, strollPace(clipSpeed) * HURRY_SECONDS);
+}
+
+/** Meters left under which a hurry settles back to a stroll. */
+export function slowDistance(clipSpeed: number | undefined): number {
+  return Math.min(SLOW_DISTANCE, strollPace(clipSpeed) * SLOW_SECONDS);
 }
 
 /** The player's pace over time. */
@@ -61,7 +76,11 @@ export function stepPace(
   const { remaining } = input;
   if (input.held) s.hurry = s.heldFor >= HURRY_AFTER;
   else if (remaining !== null && Number.isFinite(remaining))
-    s.hurry = remaining > (s.hurry ? SLOW_DISTANCE : HURRY_DISTANCE);
+    s.hurry =
+      remaining >
+      (s.hurry
+        ? slowDistance(input.clipSpeed)
+        : hurryDistance(input.clipSpeed));
   else s.hurry = false;
   const want = s.hurry ? WALK_SPEED : strollPace(input.clipSpeed);
   const move = PACE_RAMP * step;
