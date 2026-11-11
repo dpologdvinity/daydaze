@@ -20,11 +20,9 @@ import {
 import { createStore } from "../rooms/shared/store.ts";
 import { useDaylight } from "./daylight.ts";
 import { mergePieces, pieceModels } from "./streetMerge.ts";
-import { groundMaps, worldMapped } from "./worldTexture.ts";
+import { SIDEWALK_GLOW, sidewalkMaterial } from "./sidewalkLook.ts";
 
 const URL = "/models/street/kit.glb";
-/** The solids' night glow, as the sidewalk has it (meshes.ts). */
-const SOLID_GLOW = 0.45;
 
 /** The pieces in view; set by CityScene. */
 export const cityStreet = createStore({
@@ -69,19 +67,7 @@ export function StreetPieces(): JSX.Element {
   }, [gltf]);
 
   const solidMaterial = useMemo(
-    () =>
-      worldMapped(
-        new THREE.MeshStandardMaterial({
-          ...groundMaps("brushed_concrete"),
-          vertexColors: true,
-          roughness: 0.6,
-          emissive: "#2a1d52",
-          emissiveIntensity: SOLID_GLOW,
-        }),
-        0.35,
-        false,
-        0.22,
-      ),
+    () => sidewalkMaterial({ vertexColors: true }),
     [],
   );
 
@@ -89,7 +75,7 @@ export function StreetPieces(): JSX.Element {
   // with the neon like the sidewalks'
   useEffect(() => {
     paintMaterial.color.setRGB(...laneTint(day.neon));
-    solidMaterial.emissiveIntensity = SOLID_GLOW * (0.1 + 0.9 * day.neon);
+    solidMaterial.emissiveIntensity = SIDEWALK_GLOW * (0.1 + 0.9 * day.neon);
   }, [day, paintMaterial, solidMaterial]);
   useEffect(
     () => () => {

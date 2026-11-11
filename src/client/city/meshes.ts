@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { sidewalkMaterial } from "./sidewalkLook.ts";
 import { boxMapped, groundMaps, worldMapped } from "./worldTexture.ts";
 import {
   FACADE_KINDS,
@@ -222,17 +223,7 @@ const MATERIAL: Record<Exclude<Shared, FacadeKind>, THREE.Material> = {
     // keeps some texture once the photo has blurred out
     0.6,
   ),
-  sidewalk: worldMapped(
-    new THREE.MeshStandardMaterial({
-      ...groundMaps("brushed_concrete"),
-      roughness: 0.6,
-      emissive: "#2a1d52",
-      emissiveIntensity: 0.45,
-    }),
-    0.35,
-    false,
-    0.22,
-  ),
+  sidewalk: sidewalkMaterial(),
   // sand, lawns and the boardwalk: CC0 scans by world position, tinted per
   // instance
   ground: worldMapped(

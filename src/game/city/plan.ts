@@ -222,8 +222,10 @@ const DASH_COLOR = "#e6bf4a";
 const SURFACE_COLOR = {
   // real asphalt and concrete: the night's color comes from the lights
   road: "#4a4a52",
-  sidewalk: "#a39e96",
-  square: "#b3ab9e",
+  // the concrete texture and its lift carry the tone (sidewalkLook.ts), so
+  // the instance color only tints a little: the plaza a shade warmer
+  sidewalk: "#ffffff",
+  square: "#f5eee2",
   // Beachside at night: weathered planks, moonlit sand
   boardwalk: "#d6cbbb",
   sand: "#e6d3ab",
@@ -395,20 +397,7 @@ const SIDEWALK_BOXES: readonly Box[] = [
   ).map((s) => boundsOf(s.polygon)),
   ...CUT_SIDEWALKS,
 ];
-const PAVED_BOXES: readonly Box[] = [
-  ...CITY_SURFACES.filter(
-    (s) =>
-      s.kind !== "road" &&
-      s.kind !== "sidewalk" &&
-      s.kind !== "sand" &&
-      s.kind !== "lawn" &&
-      // planks have their own joints (the texture), not a pavement's seams
-      s.kind !== "boardwalk",
-  ).map((s) => boundsOf(s.polygon)),
-  ...CUT_SIDEWALKS,
-];
-const CURB_COLOR = "#aaa59c";
-const SEAM_COLOR = "#85807a";
+const CURB_COLOR = "#c8c3ba";
 const CURB_EPS = 1e-6;
 
 /** The shared edge of two boxes that touch along a line, or null. */
@@ -460,7 +449,7 @@ function pieces(
 }
 
 /**
- * Curbs and sidewalk seams, the marks that make a street read as a street
+ * Curbs, the marks that make a street read as a street
  * rather than a flat stripe of color. (Crosswalks, manholes and the rest are
  * the kit's models: streetPieces.ts.)
  */
@@ -489,19 +478,6 @@ function streetMarks(
               z1: edge.hi,
             };
       pieces(lip, cells, out.ledge, { y: 0.11, sy: 0.22, color: CURB_COLOR });
-    }
-  }
-
-  // paving joints across every sidewalk, every 2.5 m (sand has none)
-  for (const s of PAVED_BOXES) {
-    const along = s.x1 - s.x0 >= s.z1 - s.z0;
-    const from = along ? s.x0 : s.z0;
-    const to = along ? s.x1 : s.z1;
-    for (let at = from + 2.5; at < to; at += 2.5) {
-      const seam: Box = along
-        ? { x0: at - 0.04, x1: at + 0.04, z0: s.z0, z1: s.z1 }
-        : { x0: s.x0, x1: s.x1, z0: at - 0.04, z1: at + 0.04 };
-      pieces(seam, cells, out.lane, { y: 0.145, sy: 0.01, color: SEAM_COLOR });
     }
   }
 }

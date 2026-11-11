@@ -74,6 +74,8 @@ const SETS: readonly (readonly [string, Source, string?])[] = [
   ["clay_roof_tiles", "polyhaven"],
   ["palm_bark", "polyhaven"],
   ["red_sandstone_pavement", "polyhaven"],
+  // sidewalks
+  ["concrete_pavement", "polyhaven"],
 ];
 
 async function download(url: string, to: string) {
