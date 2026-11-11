@@ -207,6 +207,24 @@ const MEN: Look[] = [
 ];
 
 /**
+ * `?men=1&outfit=<id>` dresses the pose, sit and dance shots' dolls as men in
+ * one outfit (a suit by default), to check how cloth sits over the skin in
+ * motion.
+ */
+const suited = (look: Look): Look => {
+  const q = new URLSearchParams(location.search);
+  if (q.get("men") !== "1") return look;
+  return {
+    ...look,
+    body: "masculine",
+    lips: "lips-bare-balm",
+    beard: "none",
+    outfit: OUTFITS.find((o) => o.id === q.get("outfit"))?.id ?? "suit",
+    outfitColor: "#141018",
+  };
+};
+
+/**
  * `?shot=hairs&styles=a,b,c&colors=1b1014,f1d78f&men=1`: one head-and-shoulders
  * doll per style, wearing the matching color (the last one repeats), for
  * judging hair. `?cam=0,1.52,-2.4` looks from behind.
@@ -325,7 +343,7 @@ const SHOTS = {
   },
   // five dance moves side by side
   dance: {
-    looks: LINEUP.slice(0, 5),
+    looks: LINEUP.slice(0, 5).map(suited),
     x: (i: number) => (i - 2) * 1.0,
     cam: [0, 1.1, 7.2] as const,
     target: [0, 0.95, 0] as const,
@@ -353,14 +371,14 @@ const SHOTS = {
   },
   // every held motion-capture pose, front on
   pose: {
-    looks: HOLDS.pose.map((_, i) => LINEUP[i % LINEUP.length]),
+    looks: HOLDS.pose.map((_, i) => suited(LINEUP[i % LINEUP.length])),
     x: (i: number) => (i - (HOLDS.pose.length - 1) / 2) * 1.0,
     cam: [0, 1.0, 7.5] as const,
     target: [0, 0.9, 0] as const,
     fov: 36,
   },
   sit: {
-    looks: HOLDS.sit.map((_, i) => LINEUP[i % LINEUP.length]),
+    looks: HOLDS.sit.map((_, i) => suited(LINEUP[i % LINEUP.length])),
     x: (i: number) => (i - (HOLDS.sit.length - 1) / 2) * 1.1,
     cam: [2.5, 1.2, 5] as const,
     target: [0, 0.6, 0] as const,

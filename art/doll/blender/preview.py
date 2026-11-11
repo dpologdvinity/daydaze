@@ -1,7 +1,7 @@
 """Dev-only: renders the built doll GLB in Blender for a quick look.
 
     blender --background --factory-startup --python art/doll/blender/preview.py -- face out.png
-Views: face, profile, head, headback, head3q, body, back, side, eye.
+Views: face, profile, head, headback, head3q, chest, body, back, side, eye.
 """
 
 import math
@@ -75,6 +75,8 @@ VIEWS = {
     "head": ((0, -1.5, 1.45), (0, 0, 1.4), 30),
     "headback": ((0, 1.5, 1.45), (0, 0, 1.4), 30),
     "head3q": ((-1.1, -1.1, 1.45), (0, 0, 1.4), 30),
+    # the chest, for judging skin clearance under a jacket
+    "chest": ((0, -1.3, 1.3), (0, 0, 1.3), 30),
     "eye": ((0.03, -0.3, 1.565), (0.03, 0, 1.56), 22),
     "body": ((0, -3.6, 1.0), (0, 0, 0.88), 30),
     "back": ((0, 3.6, 1.0), (0, 0, 0.88), 30),

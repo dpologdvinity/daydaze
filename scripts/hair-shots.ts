@@ -1,15 +1,16 @@
-// Screenshots the lineup page's `hairs` shot for several style sets in one
-// browser session (one hold of the shared browser lock):
+// Screenshots lineup-page shots for several hair style sets and suit checks (a
+// fresh browser each, one hold of the shared browser lock):
 //   BASE_URL=http://localhost:5320 flock /tmp/daydaze-pw.lock \
 //     node --experimental-strip-types scripts/hair-shots.ts
-// Each shot is a row of heads, one style and color per doll, written to
-// docs/screenshots/hair-<name>.png; `back` looks from behind.
+// Each hair shot is a row of heads, one style and color per doll, written to
+// docs/screenshots/hair-<name>.png; `back` looks from behind. The suit-*
+// shots (`shot` set) write doll-<name>.png: menswear on the chest, in motion.
 import { chromium } from "@playwright/test";
 
 const BASE = process.env.BASE_URL ?? "http://localhost:5195";
 const COLORS = "1b1014,4a2a1c,b77a3e,f1d78f,ff4fb3,7b4dff";
 const BACK = "cam=0,1.52,-2.4";
-const SHOTS: { name: string; query: string }[] = [
+const SHOTS: { name: string; query: string; shot?: string }[] = [
   {
     name: "women-1",
     query: `styles=rapunzel,long-waves,fishtail,layered-long,sleek-side,high-pony&colors=${COLORS}`,
@@ -34,10 +35,25 @@ const SHOTS: { name: string; query: string }[] = [
     name: "men-2",
     query: `men=1&styles=mop,pompadour,mohawk,spiky-crop,crew,quiff&colors=1b1014,3a6bff,ff4fb3,4a2a1c,b77a3e,7b4dff`,
   },
+  // a man in the suit, up close and in motion: skin must not show through
+  {
+    name: "suit-chest",
+    shot: "hairs",
+    query: "men=1&styles=crew&cam=0,1.3,1.8",
+  },
+  { name: "suit-men", shot: "men", query: "cam=0,1.1,4.2" },
+  { name: "suit-pose", shot: "pose", query: "men=1&outfit=suit" },
+  { name: "suit-sit", shot: "sit", query: "men=1&outfit=suit" },
+  { name: "suit-dance", shot: "dance", query: "men=1&outfit=suit" },
+  {
+    name: "suit-women",
+    shot: "body",
+    query: "outfits=blouse,shorts,jeans",
+  },
 ];
 
 const only = process.argv.slice(2);
-for (const { name, query } of SHOTS) {
+for (const { name, query, shot = "hairs" } of SHOTS) {
   if (only.length && !only.includes(name)) continue;
   // a fresh browser per shot: a second page in the same SwiftShader session
   // can leave the capture waiting minutes on the first one's GPU queue
@@ -54,14 +70,14 @@ for (const { name, query } of SHOTS) {
     });
     page.on("pageerror", (e) => console.error("page error:", e.message));
     await page.goto(
-      `${BASE}/src/client/avatar/lineup.html?human=1&shot=hairs&${query}`,
+      `${BASE}/src/client/avatar/lineup.html?human=1&shot=${shot}&${query}`,
       { timeout: 240_000 },
     );
     await page.locator("canvas").waitFor();
     // the models load lazily: give them time, then let the frame loop settle
     await page.waitForTimeout(45_000);
     await page.screenshot({
-      path: `docs/screenshots/hair-${name}.png`,
+      path: `docs/screenshots/${name.startsWith("suit-") ? "doll" : "hair"}-${name}.png`,
       timeout: 900_000,
     });
     console.log("wrote", name);
