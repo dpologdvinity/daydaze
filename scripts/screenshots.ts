@@ -357,10 +357,10 @@ async function tileFrames(
 /**
  * Proof that the player's wheels turn and steer: the car is driven on a
  * paused fake clock that is stepped by hand, so each frame is an exact time
- * after the throttle goes down. Two sheets in docs/screenshots: `<name>-spin`
+ * after the throttle goes down. Two sheets in docs/screenshots: sheet 00
  * (frames 50 ms apart while pulling away from rest, the car rolling only a few
  * centimeters a frame so the hub's spokes shift a few degrees each) and
- * `<name>-turn` (straight, then the wheel turned at speed, then turning
+ * sheet 01 (straight, then the wheel turned at speed, then turning
  * further), cropped round the car.
  */
 function wheelSheet(name: string): (typeof SHOTS)[number] {
@@ -383,6 +383,8 @@ function wheelSheet(name: string): (typeof SHOTS)[number] {
       });
       const shoot = async (ms: number) => {
         await page.clock.runFor(ms);
+        // real time: lets the software renderer finish the stepped frames
+        await page.waitForTimeout(1500);
         return page.screenshot({ timeout: 180_000 });
       };
       await page.clock.install();
@@ -399,14 +401,19 @@ function wheelSheet(name: string): (typeof SHOTS)[number] {
       turn.push(await shoot(250));
       await page.keyboard.up("a");
       await page.keyboard.up("w");
-      for (const [label, frames] of [
-        ["spin", spin],
-        ["turn", turn],
+      // the runner collects `<name>.png` and `<name>-NN.png`: the sheets are 00
+      // (spin) and 01 (turn), the raw frames 10-19 (spin) and 20-29 (turn)
+      for (const [sheetNo, frames] of [
+        [0, spin],
+        [1, turn],
       ] as const) {
         const sheet = await tileFrames(page, frames, crop, 2);
-        writeFileSync(`docs/screenshots/${name}-${label}.png`, sheet);
+        writeFileSync(`docs/screenshots/${name}-0${sheetNo}.png`, sheet);
         frames.forEach((png, n) =>
-          writeFileSync(`docs/screenshots/${name}-${label}-${n}.png`, png),
+          writeFileSync(
+            `docs/screenshots/${name}-${10 * (sheetNo + 1) + n}.png`,
+            png,
+          ),
         );
       }
       console.log(

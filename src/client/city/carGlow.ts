@@ -9,15 +9,15 @@ import { BODY_LENGTH, type BodyKey } from "../../game/driving/bodies.ts";
 import { BODY_LAMPS, HALOS_PER_CAR } from "../../game/driving/lamps.ts";
 
 /** Halo sizes in meters across the quad (the falloff makes the lit disc about half). */
-const HEAD_HALO = 1.3;
-const TAIL_HALO = 0.9;
+const HEAD_HALO = 1.0;
+const TAIL_HALO = 0.7;
 /** A halo sits this far out from its lamp so the body does not slice it. */
 const OUT = 0.12;
 /** How much a halo grows per meter from the camera, so a lamp at 60 m is still a light. */
 const SWELL = 0.02;
 /** The headlight pool: meters wide, long, and above the road (so it clears the
  * lane paint, with a polygon offset on top for the rest). */
-const POOL_WIDTH = 3.4;
+const POOL_WIDTH = 3.6;
 const POOL_LENGTH = 9;
 const POOL_LIFT = 0.03;
 
@@ -48,7 +48,7 @@ void main() {
   vec2 p = vUv * 2.0 - 1.0;
   float a = max( 0.0, 1.0 - dot( p, p ) );
   a = a * a * a;
-  gl_FragColor = vec4( vTint * a * vFade * uNight * 1.6, 1.0 );
+  gl_FragColor = vec4( vTint * a * vFade * uNight * 1.1, 1.0 );
   #include <colorspace_fragment>
 }`;
 
@@ -66,7 +66,7 @@ varying vec2 vPool;
 void main() {
   float along = pow( max( 0.0, 1.0 - vPool.y ), 1.6 ) * smoothstep( 0.0, 0.08, vPool.y );
   float across = max( 0.0, 1.0 - vPool.x * vPool.x );
-  gl_FragColor = vec4( vec3( 1.0, 0.86, 0.58 ) * along * across * uNight * 0.5, 1.0 );
+  gl_FragColor = vec4( vec3( 1.0, 0.86, 0.58 ) * along * across * uNight * 0.8, 1.0 );
   #include <colorspace_fragment>
 }`;
 
