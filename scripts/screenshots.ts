@@ -776,14 +776,14 @@ const SHOTS: {
   // full-detail body: nose and rear, by day and at night
   ...(
     [
-      ["front", 12, "22,1.5,9.5,14,0.7,5.4"],
-      ["rear", 12, "5,1.4,9.5,14,0.7,5.4"],
-      ["front", 23, "22,1.5,9.5,14,0.7,5.4"],
-      ["rear", 23, "5,1.4,9.5,14,0.7,5.4"],
+      ["front", 12, "24,1.5,-0.5,14,0.7,5.4"],
+      ["rear", 12, "4,1.4,-0.5,14,0.7,5.4"],
+      ["front", 23, "24,1.5,-0.5,14,0.7,5.4"],
+      ["rear", 23, "4,1.4,-0.5,14,0.7,5.4"],
     ] as const
   ).map(([end, hour, cam]) => ({
     name: `car-own-${end}-${hour === 12 ? "day" : "night"}`,
-    query: `room=city&view=room&quality=high&time=${hour}:00&at=12,9&cam=${cam}`,
+    query: `room=city&view=room&quality=low&time=${hour}:00&at=10,7&cam=${cam}`,
     act: furnitureReady,
   })),
   // lane traffic at a busy crossing, by day and at night
