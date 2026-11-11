@@ -220,7 +220,7 @@ const MATERIAL: Record<Exclude<Shared, FacadeKind>, THREE.Material> = {
     false,
     // patched, worn and darkened by tires across its length, so a far road
     // keeps some texture once the photo has blurred out
-    0.45,
+    0.6,
   ),
   sidewalk: worldMapped(
     new THREE.MeshStandardMaterial({

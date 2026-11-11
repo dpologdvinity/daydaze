@@ -260,10 +260,11 @@ export function streetPieces(cells: readonly Cell[]): StreetPiece[] {
   for (const h of HORIZONTAL)
     for (const v of VERTICAL) {
       if (!overlap(h, v)) continue;
-      // across the avenue, in line with each cross-street sidewalk, when
-      // both of its ends have a block to land on
+      // across the avenue, in line with each cross-street sidewalk; at a T
+      // the stem's side has a block and the far side is the avenue's own
+      // sidewalk (Shore Boulevard's crossings lead on to the boardwalk)
       for (const sx of SIGNS)
-        if (has(v, h, sx, -1) && has(v, h, sx, 1))
+        if (has(v, h, sx, -1) || has(v, h, sx, 1))
           crosswalk(
             sx > 0 ? v.x1 + SIDEWALK / 2 : v.x0 - SIDEWALK / 2,
             centerZ(h),

@@ -136,10 +136,18 @@ test("Main Avenue and its cross street each get crosswalks at the four corners",
   );
 });
 
-test("a T has one crosswalk, across its stem", () => {
+test("a T has a crosswalk across its stem and one each side across the through road", () => {
   // Gallery Row's cross street branches south off the avenue at x -64
-  const stem = crosswalksNear(-64, -256, 12);
-  assert.equal(stem.length, 1);
+  const near = crosswalksNear(-64, -256, 12);
+  assert.equal(near.length, 3);
+  assert.equal(near.filter((c) => Math.abs(c.yaw) > 1e-6).length, 1);
+  assert.deepEqual(
+    near
+      .filter((c) => Math.abs(c.yaw) < 1e-6)
+      .map((c) => c.x)
+      .sort((a, b) => a - b),
+    [-71, -57],
+  );
 });
 
 test("a stop word waits before a cross street's crossing, a slow word before Shore Boulevard's", () => {
