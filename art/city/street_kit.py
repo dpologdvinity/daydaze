@@ -44,10 +44,10 @@ DECALS = {
 CONCRETE = (0.37, 0.35, 0.31)
 IRON = (0.035, 0.035, 0.04)
 SOLIDS = {
-    "corner": ("Sidewalk_Corner_Round_3m", 1.0, CONCRETE),
+    "corner": ("Sidewalk_Corner_Round_3m", 0.55, CONCRETE),
     "manhole": ("Prop_ManholeCover", 0.3, IRON),
     "drain": ("Prop_Drain", 1.0, IRON),
-    "bollard": ("Prop_Bollard", 0.3, IRON),
+    "bollard": ("Prop_Bollard", 0.2, IRON),
 }
 SIDEWALK_TOP = 0.14
 CORNER_SIZE = 4.0

@@ -493,6 +493,7 @@ const SHOTS: {
     ["street-crossing-night", "22:00", "-80,9", "-96,4,4,-62,0,-1"],
     ["street-shore", "12:00", "70,238", "64,4,216,64,0,252"],
     ["street-far", "12:00", "-120,9", "-135,3.5,3,-30,1,0"],
+    ["street-aerial", "12:00", "-60,9", "-110,45,28,-30,0,-4"],
   ].map(([name, time, at, cam]) => ({
     name: String(name),
     query: `room=city&quality=low&time=${time}&at=${at}&cam=${cam}`,

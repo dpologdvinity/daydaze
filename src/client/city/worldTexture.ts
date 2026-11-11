@@ -93,14 +93,21 @@ export function worldMapped<M extends THREE.MeshStandardMaterial>(
         "#include <map_fragment>",
         [
           THREE.ShaderChunk.map_fragment.replaceAll("vMapUv", uv),
+          "float groundMul = 1.0;",
           "#ifdef USE_MAP",
           // three scales (about 33, 11 and 4 m), so some variation survives at every distance
           "float groundPatch = boxNoise(vWorldXZ * 0.03) * 0.45 + boxNoise(vWorldXZ * 0.09) * 0.35 + boxNoise(vWorldXZ * 0.27) * 0.2;",
-          "diffuseColor.rgb *= mix(1.0 - uMacro, 1.0 + 0.5 * uMacro, groundPatch);",
+          "groundMul = mix(1.0 - uMacro, 1.0 + 0.5 * uMacro, groundPatch);",
+          "diffuseColor.rgb *= groundMul;",
           // warm in some patches, cool in others, like repairs and weathering
           "diffuseColor.rgb *= vec3(1.0 + 0.16 * (groundPatch - 0.5), 1.0, 1.0 - 0.16 * (groundPatch - 0.5));",
           "#endif",
         ].join("\n"),
+      )
+      // the night glow dims and brightens with the patches, or it washes them out
+      .replace(
+        "#include <emissivemap_fragment>",
+        "#include <emissivemap_fragment>\ntotalEmissiveRadiance *= groundMul;",
       )
       .replace(
         "#include <normal_fragment_maps>",
