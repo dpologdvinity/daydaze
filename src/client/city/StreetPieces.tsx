@@ -80,7 +80,7 @@ export function StreetPieces(): JSX.Element {
         }),
         0.35,
         false,
-        0.18,
+        0.22,
       ),
     [],
   );

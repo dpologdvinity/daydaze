@@ -6,6 +6,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { ALL_CELLS, cellsWithin } from "./cells.ts";
 import { SHORE_Z, SIDEWALK } from "./layout.ts";
+import { drawCallsOf, planCity, trianglesOf } from "./plan.ts";
 import {
   STREET_KINDS,
   STREET_TRIANGLES,
@@ -221,4 +222,17 @@ test("the costs match the shipped street kit", () => {
     const count = kit.accessors[indices]?.count ?? 0;
     assert.equal(count / 3, STREET_TRIANGLES[kind], kind);
   }
+});
+
+test("the plan carries the pieces and prices them: their triangles and two draw calls", () => {
+  const cells = cellsWithin([-64, 0], 60);
+  const plan = planCity(cells, 0, [-64, 0]);
+  assert.deepEqual(plan.street, streetPieces(cells));
+  const bare = { ...plan, street: [] };
+  const extra = plan.street.reduce((n, p) => n + STREET_TRIANGLES[p.kind], 0);
+  assert.ok(extra > 1000);
+  assert.equal(trianglesOf(plan) - trianglesOf(bare), extra);
+  assert.equal(drawCallsOf(plan) - drawCallsOf(bare), 2);
+  // wide roads wear the decal line, so the dashes are gone from them
+  assert.ok(plan.instances.lane.every((d) => !(d.sz === 0.25 && d.z === 0)));
 });
