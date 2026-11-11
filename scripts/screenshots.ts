@@ -387,8 +387,10 @@ function wheelSheet(name: string): (typeof SHOTS)[number] {
         await page.waitForTimeout(1500);
         return page.screenshot({ timeout: 180_000 });
       };
-      await page.clock.install();
-      await page.clock.pauseAt(Date.now() + 1000);
+      // the fake clock starts at 0 and jumps (firing each due timer once) to
+      // 30 s, where it waits for runFor: install to pause takes well under that
+      await page.clock.install({ time: 0 });
+      await page.clock.pauseAt(30_000);
       const spin: Buffer[] = [];
       await page.keyboard.down("w");
       for (const ms of [150, 50, 50, 50]) spin.push(await shoot(ms));
