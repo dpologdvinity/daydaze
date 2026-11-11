@@ -158,7 +158,7 @@ function walkStrip(
 ): (typeof SHOTS)[number] {
   return {
     name,
-    query: "room=city",
+    query: "room=city&view=full",
     live: true,
     act: async (page) => {
       await page.evaluate(
@@ -187,7 +187,7 @@ function walkStrip(
         console.log(`${name}-${n}: ${at}`);
         await page.screenshot({
           path: `docs/screenshots/${name}-${n}.png`,
-          clip: { x: 440, y: 150, width: 400, height: 450 },
+          clip: { x: 340, y: 100, width: 600, height: 600 },
           timeout: 180_000,
         });
         await page.waitForTimeout(300);
@@ -206,9 +206,9 @@ const SHOTS: {
   /** Drives the scene before the capture, e.g. to start a race. */
   act?: (page: Page) => Promise<void>;
 }[] = [
-  walkStrip("walk-feminine-short", "feminine", 110),
-  walkStrip("walk-feminine-long", "feminine", 330),
-  walkStrip("walk-swagger-short", "swagger", 110),
+  walkStrip("walk-feminine-short", "feminine", 70),
+  walkStrip("walk-feminine-long", "feminine", 300),
+  walkStrip("walk-swagger-short", "swagger", 70),
   { name: "club-pulse", query: "room=pulse" },
   {
     name: "apartment",
