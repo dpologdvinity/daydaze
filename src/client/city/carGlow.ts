@@ -9,14 +9,17 @@ import { BODY_LENGTH, type BodyKey } from "../../game/driving/bodies.ts";
 import { BODY_LAMPS, HALOS_PER_CAR } from "../../game/driving/lamps.ts";
 
 /** Halo sizes in meters across the quad (the falloff makes the lit disc about half). */
-const HEAD_HALO = 1.0;
-const TAIL_HALO = 0.7;
+const HEAD_HALO = 0.5;
+const TAIL_HALO = 0.38;
 /** A halo sits this far out from its lamp so the body does not slice it. */
 const OUT = 0.12;
-/** How much a halo grows per meter from the camera, so a lamp at 60 m is still a light. */
-const SWELL = 0.02;
+/** How much a halo grows per meter from the camera (up to MAX_SWELL times), so a lamp at 60 m is still a light. */
+const SWELL = 0.012;
 /** The headlight pool: meters wide, long, and above the road (so it clears the
  * lane paint, with a polygon offset on top for the rest). */
+const MAX_SWELL = 3;
+/** A halo is drawn this far (meters) toward the camera, so the lamp's own body never hides it. */
+const TOWARD_CAMERA = 0.15;
 const POOL_WIDTH = 3.6;
 const POOL_LENGTH = 9;
 const POOL_LIFT = 0.03;
@@ -32,7 +35,8 @@ void main() {
   vUv = uv;
   vec4 centre = modelViewMatrix * instanceMatrix * vec4( 0.0, 0.0, 0.0, 1.0 );
   float dist = -centre.z;
-  float size = length( instanceMatrix[ 0 ].xyz ) * ( 1.0 + ${SWELL} * dist );
+  float size = length( instanceMatrix[ 0 ].xyz ) * min( ${MAX_SWELL}.0, 1.0 + ${SWELL} * dist );
+  centre.z += ${TOWARD_CAMERA};
   centre.xy += position.xy * size;
   vTint = instanceColor;
   vFade = 1.0 - smoothstep( 90.0, 150.0, dist );
@@ -48,7 +52,7 @@ void main() {
   vec2 p = vUv * 2.0 - 1.0;
   float a = max( 0.0, 1.0 - dot( p, p ) );
   a = a * a * a;
-  gl_FragColor = vec4( vTint * a * vFade * uNight * 1.1, 1.0 );
+  gl_FragColor = vec4( vTint * a * vFade * uNight * 1.4, 1.0 );
   #include <colorspace_fragment>
 }`;
 
@@ -148,10 +152,10 @@ export function createCarGlow(capacity: number): CarGlow {
           spot.set(side * lamp[0], lamp[1], lamp[2] + out).applyMatrix4(car);
           halos.setMatrixAt(halos.count++, matrix.setPosition(spot));
         }
-      // the pool starts at the nose and runs ahead, in the car's own frame
+      // the pool starts just beyond the nose and runs ahead, in the car's own frame
       matrix
         .makeScale(POOL_WIDTH, 1, POOL_LENGTH)
-        .setPosition(0, POOL_LIFT, BODY_LENGTH[body] / 2 - 0.3);
+        .setPosition(0, POOL_LIFT, BODY_LENGTH[body] / 2 + 0.3);
       pools.setMatrixAt(pools.count++, matrix.premultiply(car));
       return true;
     },
