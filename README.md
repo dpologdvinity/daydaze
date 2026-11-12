@@ -74,7 +74,8 @@ npm run smoke:server      # the server end to end
 
 URL flags: `?quality=low|high` forces a quality tier, `?still=1` renders a
 few frames and stops (for screenshots), `?debug=1` shows room jump buttons,
-`?online=1` turns on online play.
+`?online=1` turns on online play, `?timescale=0.1` slows game time for frame
+strips.
 
 ### Online locally
 

@@ -64,7 +64,9 @@ Node.js 22.18 or newer (`.nvmrc` pins 24).
 Client URL flags: `?quality=low|high`, `?still=1` (render a few frames and
 stop, for screenshots), `?debug=1` (room jump buttons), `?time=HH:MM` (pin the
 hour), `?night=<club-night-id>`, `?online=1` (multiplayer), `?adult=1`
-(dev-only 18+ preview).
+(dev-only 18+ preview), `?timescale=0.1` (slow the player and every doll to a
+tenth, so a frame strip on the slow software renderer catches a half-second
+move; the `walkStrip` shots in `scripts/screenshots.ts` use it).
 
 ## Online
 
