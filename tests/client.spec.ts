@@ -1680,11 +1680,12 @@ test("she sets off, turns and arrives with their clips on a short trip", async (
   const view = page.getByRole("img", { name: "3D room view" });
   await expect(view).toHaveAttribute("data-frames", "10", { timeout: 150_000 });
   await expect(view).toHaveAttribute("data-player-x", /-?\d/);
-  // a click a few meters off, to her side: she turns or sets off...
+  // a click a few meters off, to her side: she turns or sets off (a slow
+  // software renderer's long frames can class the pivot as a turn back)...
   await page.mouse.click(960, 500);
   await expect(view).toHaveAttribute(
     "data-loco",
-    /^(start-walk-f|turn-left|turn-right)$/,
+    /^(start-walk-f|turn-left|turn-right|turn-180)$/,
     { timeout: 60_000 },
   );
   // ...and stops with the arrival clip
