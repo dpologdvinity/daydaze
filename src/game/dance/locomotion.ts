@@ -15,6 +15,10 @@ import type { MocapPack } from "./mocapTypes.ts";
 export const START_STILL = 0.3;
 /** Seconds she must have been walking before stopping plays a stop clip. */
 export const STOP_AFTER = 0.5;
+/** She is stopping once her speed falls below this fraction of the speed she
+ * was walking at: the arrival clip starts as the body brakes, not after it
+ * has stopped. */
+export const STOP_FRACTION = 0.25;
 /** Swing in yaw (radians, decaying over SWING_TAU seconds) that counts as a
  * sharp turn: a bit over 90 degrees. */
 export const TURN_SWING = 1.6;
@@ -61,10 +65,22 @@ export type Loco = {
   swing: number;
   yaw: number;
   cooldown: number;
+  /** The fastest she has gone this walk, m/s, and whether the arrival clip
+   * has played for it. */
+  peak: number;
+  braked: boolean;
 };
 
 export function createLoco(): Loco {
-  return { still: 0, walking: 0, swing: 0, yaw: Number.NaN, cooldown: 0 };
+  return {
+    still: 0,
+    walking: 0,
+    swing: 0,
+    yaw: Number.NaN,
+    cooldown: 0,
+    peak: 0,
+    braked: false,
+  };
 }
 
 const PACK: MocapPack = "moves";
@@ -112,13 +128,23 @@ export function stepLoco(l: Loco, s: LocoInput): LocoPlay | null {
     return null;
   l.cooldown = Math.max(0, l.cooldown - s.dt);
   const moving = s.speed > MOVING;
-  const before = { still: l.still, walking: l.walking };
+  const before = {
+    still: l.still,
+    walking: l.walking,
+    peak: l.peak,
+    braked: l.braked,
+  };
   if (moving) {
     l.walking += s.dt;
     l.still = 0;
+    l.peak = Math.max(l.peak, s.speed);
+    // she picked up speed again: the next brake plays the clip again
+    if (s.speed > l.peak * 0.6) l.braked = false;
   } else {
     l.still += s.dt;
     l.walking = 0;
+    l.peak = 0;
+    l.braked = false;
   }
   // the swing of her facing: a pivot or a turn back shows as a lot of yaw in
   // a few tenths of a second, a drift or a wide arc as little
@@ -145,8 +171,15 @@ export function stepLoco(l: Loco, s: LocoInput): LocoPlay | null {
   // set off after standing a while (a re-click on the move has no start)
   if (moving && before.walking === 0 && before.still >= START_STILL)
     return s.hurry ? START.sprint : s.man ? START.walk : START["walk-f"];
-  // arrived after a real walk
-  if (!moving && before.walking >= STOP_AFTER)
+  // arrived after a real walk: as she brakes (the speed falls fast; waiting
+  // for it to reach zero would play the clip over a body already still)
+  if (
+    !before.braked &&
+    before.walking >= STOP_AFTER &&
+    s.speed < before.peak * STOP_FRACTION
+  ) {
+    l.braked = true;
     return s.man ? STOP.man : STOP.woman;
+  }
   return null;
 }

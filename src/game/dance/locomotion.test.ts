@@ -87,6 +87,21 @@ test("arriving plays the stop clip once, after a real walk, not after a step", (
   assert.deepEqual(run(s, 1, {}), []);
 });
 
+test("the arrival clip starts as the body brakes, not once it has stopped", () => {
+  const l = createLoco();
+  run(l, 1, {});
+  run(l, 2, { speed: 1.2 });
+  // the doll's speed damps towards zero, fast (PlayerController)
+  const plays = run(l, 0.6, (t) => ({ speed: 1.2 * Math.exp(-18 * t) }));
+  assert.equal(plays.length, 1);
+  assert.equal(plays[0].id, "stop-walk-f");
+  // a dip while still walking (wading, a sharp turn) is not an arrival
+  const w = createLoco();
+  run(w, 1, {});
+  run(w, 2, { speed: 2.6 });
+  assert.deepEqual(run(w, 1, { speed: 1.2 }), []);
+});
+
 test("a sharp turn from standing plays turn-left or turn-right", () => {
   const left = createLoco();
   run(left, 1, {});

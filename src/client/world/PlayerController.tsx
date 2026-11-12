@@ -326,7 +326,8 @@ export function PlayerController({
         e.target instanceof HTMLButtonElement
       )
         return;
-      // not while seated, riding, afloat or already in the air
+      // not while walking, seated, riding, afloat or already in the air
+      if (walking.current || player.walk.target) return;
       if (player.seat || player.sitting || player.ride || afloat.on) return;
       if (jumping(performance.now())) return;
       e.preventDefault();

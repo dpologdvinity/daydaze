@@ -1017,7 +1017,8 @@ export function HumanDoll({
     } else owed.current.dt = 0;
     if (a && animDt > 0) {
       const clips = clipsFor(body.key);
-      const now = state.clock.elapsedTime;
+      // (game time, so ?timescale slows the clips' windows with the clips)
+      const now = state.clock.elapsedTime * TIME_SCALE;
       // the catalog's walk speeds are the woman's stride; his carries farther
       const pace = body.key ? speed / MAN_STRIDE : speed;
       const afloatNow = own && afloat.on;
