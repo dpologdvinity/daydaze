@@ -479,7 +479,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/texturedstylizedtrees.html",
         usedFor:
-          "Forest Trail textured trees, birches and pines with cutout leaves; the city's five street trees (Tree_1, 5, 6, 8, 10; `art/nature/build_trees.py`: leaf color bled into the transparent texels, crown-shaped leaf normals, near and far twins).",
+          "Forest Trail textured trees, birches and pines with cutout leaves; the city's five street trees (Tree_1, 5, 6, 8, 10) and two birches for Suburbia and the park (Birch_2, Birch_7; `art/nature/build_trees.py`: leaf color bled into the transparent texels, crown-shaped leaf normals, near and far twins).",
       },
       {
         title: "Ultimate Stylized Nature",
@@ -487,7 +487,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/ultimatestylizednature.html",
         usedFor:
-          "The city's two palms (PalmTree_1 and PalmTree_3, `art/nature/build_trees.py`) on Shore Boulevard and the beach.",
+          "The city's two palms (PalmTree_1 and PalmTree_3, `art/nature/build_trees.py`) on Shore Boulevard and the beach, and two maples (MapleTree_1 and MapleTree_2, gray leaf texture turned green) for Suburbia's lawns and the Uptown park.",
       },
       {
         title: "Animated Fish Pack",

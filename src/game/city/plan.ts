@@ -128,7 +128,19 @@ export type TreeSpot = {
 };
 
 /** How many tree models there are (public/models/nature/street-tree-*). */
-export const TREE_VARIANTS = 5;
+export const TREE_VARIANTS = 9;
+/** The first of the garden trees (two birches, two maples): the lawns of the
+ * Uptown park and Suburbia wear them among the street trees. */
+export const GARDEN_FIRST = 5;
+/** Share of a lawn's trees that are birches and maples. */
+const GARDEN_SHARE = 0.6;
+
+/** Whether (x, z) is on a lawn that gets birches and maples: Suburbia (west of
+ * x -192, as cells.ts cuts it) or the Uptown park (park.ts PARK, with a margin
+ * for the trees flanking its gate). */
+export function isGardenAt(x: number, z: number): boolean {
+  return x < -192 || (x > 198 && x < 306 && z > -322 && z < -260);
+}
 
 export type CityPlan = {
   instances: Record<Kind, Instance[]>;
@@ -693,7 +705,10 @@ function treeAt(x: number, z: number): TreeSpot {
   return {
     x,
     z,
-    variant: Math.floor(h(1) * TREE_VARIANTS),
+    variant:
+      isGardenAt(x, z) && h(4) < GARDEN_SHARE
+        ? GARDEN_FIRST + Math.floor(h(1) * (TREE_VARIANTS - GARDEN_FIRST))
+        : Math.floor(h(1) * GARDEN_FIRST),
     scale: 0.8 + h(2) * 0.4,
     yaw: h(3) * Math.PI * 2,
   };
