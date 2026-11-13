@@ -12,17 +12,17 @@ export type Tint = readonly [number, number, number];
 /** The greens: leaf green, yellow-green and blue-green. */
 const GREENS: readonly Tint[] = [
   [0.62, 0.92, 0.5],
-  [0.8, 0.95, 0.5],
+  [0.72, 0.94, 0.5],
   [0.55, 0.88, 0.62],
 ];
 /** Autumn's turned leaves: gold, orange, red. */
 const TURNED: readonly Tint[] = [
-  [1.7, 1.05, 0.45],
+  [1.55, 0.98, 0.5],
   [2.0, 0.72, 0.4],
   [1.8, 0.42, 0.4],
 ];
 /** Share of trees that have turned in autumn; the rest stay green. */
-export const TURNED_SHARE = 0.4;
+export const TURNED_SHARE = 0.25;
 
 /** The leaf tint of the tree at (x, z); `autumn` lets some turn. */
 export function leafTint(x: number, z: number, autumn: boolean): Tint {
