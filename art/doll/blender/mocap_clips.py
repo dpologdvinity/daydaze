@@ -384,7 +384,7 @@ MOVES = {
     "react-stumble": ("reactions/Jogging-Stumble_Brief-Stumble-While-Jogging", "trans", "Stumble"),
     "react-trip": ("reactions/Tripping_Tripping-Forward-While-Walking", "trans", "Trip"),
     "react-trip-fall": ("reactions/Tripping_Walk-To-Tripping-And-Falling", "trans", "Trip and fall"),
-    "react-get-up": ("standing-up/Standing-Up_Standing-Up-From-Lying-On-Stomach", "trans", "Get up"),
+    "react-get-up": ("standing-up/Standing-Up_Standing-Up-From-A-Soccer-Fall", "trans", "Get up"),
     "react-hard-landing": ("reactions/Hard-Landing_Mid-Air-Falling-To-A-Hard-Landing", "trans", "Hard landing"),
 }
 
