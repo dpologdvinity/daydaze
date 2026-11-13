@@ -21,15 +21,21 @@ import { taxiCab } from "./taxiStore.ts";
 import { driving } from "../world/driving.ts";
 import { setData } from "../world/dataset.ts";
 import { FIXED_PAINT } from "../../game/driving/bodies.ts";
-import { BODY_WHEELS, steerAngle } from "../../game/driving/wheels.ts";
+import {
+  BODY_WHEELS,
+  JEEPNEY_WHEELS,
+  steerAngle,
+} from "../../game/driving/wheels.ts";
 import { NEAR_BODY, useTrafficBodies } from "./trafficBodies.ts";
 import { useQuality } from "../world/quality.ts";
 import {
   JEEPNEY_CHROME,
+  JEEPNEY_WHEEL,
   JEEPNEY_DARK,
   JEEPNEY_SHELL,
   JEEPNEY_TRIM,
 } from "./carGeometry.ts";
+import { wheelMatrix } from "./wheelPlacement.ts";
 
 /**
  * Moving traffic and the junction lights. The cars come from the pure
@@ -40,19 +46,13 @@ import {
  * and the signal bulbs, which change color only when the phase does.
  */
 
-const WHEEL = new THREE.CylinderGeometry(0.36, 0.36, 0.26, 12).rotateX(
-  Math.PI / 2,
-);
+/** The jeepney's frame is a body's turned a quarter, nose on +x instead of +z. */
+const JEEPNEY_TURN = new THREE.Matrix4().makeRotationY(Math.PI / 2);
+const wheelPose = new THREE.Matrix4();
 const LAMP = new THREE.BoxGeometry(0.12, 0.16, 0.34);
 const BULB = new THREE.CircleGeometry(SIGNAL.radius, 12);
 
-// jeepney-local offsets (nose at +x): wheels, then head and tail lamps
-const JEEPNEY_WHEELS: [number, number, number][] = [
-  [1.95, 0.36, 0.9],
-  [1.95, 0.36, -0.9],
-  [-1.7, 0.36, 0.9],
-  [-1.7, 0.36, -0.9],
-];
+// jeepney-local offsets (nose at +x): head and tail lamps (its wheels: JEEPNEY_WHEELS)
 const JEEPNEY_LAMPS: [number, number, number][] = [
   [2.78, 0.8, 0.72],
   [2.78, 0.8, -0.72],
@@ -180,7 +180,7 @@ export function Traffic({ player }: { player: Player }) {
     [count],
   );
   // `?debug=1` publishes the cars near the player as data-traffic-probe
-  // ("x,z,yaw,speed" each, ";" between), for the screenshot script to find a
+  // ("x,z,yaw,speed,kind" each (c a body, j a jeepney), ";" between), for the screenshot script to find a
   // car to photograph; off by default, so the frame loop allocates nothing
   const canvas = useThree((s) => s.gl.domElement);
   const probing = useMemo(
@@ -242,8 +242,8 @@ export function Traffic({ player }: { player: Player }) {
     );
     for (const mesh of [shell, trim, chrome, dark]) mesh.count = slots.jeepneys;
     const wheels = new THREE.InstancedMesh(
-      WHEEL,
-      new THREE.MeshStandardMaterial({ color: "#120c18", roughness: 0.8 }),
+      JEEPNEY_WHEEL,
+      new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6 }),
       jeepneys * PER_VEHICLE,
     );
     const lamps = new THREE.InstancedMesh(
@@ -320,8 +320,8 @@ export function Traffic({ player }: { player: Player }) {
       // into range is not at a standstill with its wheels askew
       let travel = 0;
       let steer = 0;
-      if (car.body && i < rolled.travel.length) {
-        const wheels = BODY_WHEELS[car.body];
+      if (i < rolled.travel.length) {
+        const wheels = car.body ? BODY_WHEELS[car.body] : JEEPNEY_WHEELS;
         const ds = car.speed * dt;
         const dYaw = Number.isNaN(rolled.yaw[i]) ? 0 : pose.yaw - rolled.yaw[i];
         rolled.yaw[i] = pose.yaw;
@@ -335,7 +335,7 @@ export function Traffic({ player }: { player: Player }) {
       }
       const distance = Math.hypot(pose.x - player.pos.x, pose.z - player.pos.z);
       if (probing && distance < 60)
-        probe += `${pose.x.toFixed(1)},${pose.z.toFixed(1)},${pose.yaw.toFixed(2)},${car.speed.toFixed(1)};`;
+        probe += `${pose.x.toFixed(1)},${pose.z.toFixed(1)},${pose.yaw.toFixed(2)},${car.speed.toFixed(1)},${car.body ? "c" : "j"};`;
       if (distance > (tier === "low" ? 80 : 180)) continue;
       if (car.body) {
         // a downloaded body: the taxi, cop car, ambulance and school bus wear
@@ -370,8 +370,13 @@ export function Traffic({ player }: { player: Player }) {
       for (const mesh of [shell, trim, chrome, dark])
         mesh.setMatrixAt(slot, carMatrix);
       for (let k = 0; k < PER_VEHICLE; k++) {
-        const [x, y, z] = JEEPNEY_WHEELS[k];
-        placePart(wheels, slot * PER_VEHICLE + k, x, y, z, 1, 1, 1);
+        // the wheel at its axle, rolled and (at the front) steered, in a body's
+        // frame, then turned onto the jeepney and carried with it
+        wheelMatrix(wheelPose, JEEPNEY_WHEELS, k, travel, steer);
+        wheels.setMatrixAt(
+          slot * PER_VEHICLE + k,
+          wheelPose.premultiply(JEEPNEY_TURN).premultiply(carMatrix),
+        );
         const [lx, ly, lz] = JEEPNEY_LAMPS[k];
         placePart(lamps, slot * PER_VEHICLE + k, lx, ly, lz, 1, 1, 1);
       }

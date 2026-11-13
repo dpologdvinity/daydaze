@@ -148,3 +148,68 @@ export const JEEPNEY_DARK = merge([
   slab(-2.7, BODY_TOP, 0.45, 0.9, BODY_TOP + 0.3, 0.85),
   slab(-2.7, BODY_TOP, -0.85, 0.9, BODY_TOP + 0.3, -0.45),
 ]);
+
+/**
+ * A jeepney's wheel at the origin, its axle along x (wheelPlacement.ts turns it
+ * onto the car): a dark 12-sided tyre, a chrome rim a little wider than it, and
+ * five dark spokes and a hub cap on each face, so a rolling wheel is seen to
+ * roll. 132 triangles; vertex colors keep it one draw with the single wheel
+ * material.
+ */
+export const JEEPNEY_WHEEL = (() => {
+  const R = 0.36;
+  const W = 0.26;
+  const tint = (g: THREE.BufferGeometry, r: number, gr: number, b: number) => {
+    const flat = g.index ? g.toNonIndexed() : g;
+    const n = flat.getAttribute("position").count;
+    const rgb = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) rgb.set([r, gr, b], i * 3);
+    flat.setAttribute("color", new THREE.BufferAttribute(rgb, 3));
+    return flat;
+  };
+  const parts: THREE.BufferGeometry[] = [
+    tint(
+      new THREE.CylinderGeometry(R, R, W, 12).rotateZ(Math.PI / 2),
+      0.07,
+      0.05,
+      0.09,
+    ),
+    tint(
+      new THREE.CylinderGeometry(R * 0.62, R * 0.62, W + 0.02, 12).rotateZ(
+        Math.PI / 2,
+      ),
+      0.82,
+      0.84,
+      0.9,
+    ),
+  ];
+  for (const face of [-1, 1]) {
+    const x = face * (W / 2 + 0.012);
+    for (let i = 0; i < 5; i++)
+      parts.push(
+        tint(
+          // a spoke: a thin quad from the hub outward, turned about the axle
+          new THREE.PlaneGeometry(0.06, R * 0.5)
+            .rotateY((face * Math.PI) / 2)
+            .translate(x, R * 0.3, 0)
+            .applyMatrix4(
+              new THREE.Matrix4().makeRotationX((i / 5) * Math.PI * 2),
+            ),
+          0.1,
+          0.1,
+          0.14,
+        ),
+      );
+    parts.push(
+      tint(
+        new THREE.CircleGeometry(0.06, 8)
+          .rotateY((face * Math.PI) / 2)
+          .translate(x + face * 0.003, 0, 0),
+        0.95,
+        0.95,
+        1,
+      ),
+    );
+  }
+  return merge(parts);
+})();

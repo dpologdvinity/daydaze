@@ -85,6 +85,20 @@ export const BODY_WHEELS: Readonly<Record<BodyKey, WheelLayout>> = {
   },
 };
 
+/**
+ * The procedural jeepney's wheels in the same frame as a body's (x right, z
+ * toward the nose): it is modeled with its nose on +x and its axles on z, so the
+ * traffic turns this frame a quarter turn onto the jeepney (Traffic.tsx). The
+ * 4 m wheelbase steers its front pair like any car's.
+ */
+export const JEEPNEY_WHEELS: WheelLayout = {
+  radius: 0.36,
+  frontX: 0.9,
+  rearX: 0.9,
+  frontZ: 1.95,
+  rearZ: -1.7,
+};
+
 /** The front wheels never turn further than this, in radians (about 35 degrees). */
 export const MAX_STEER = 0.6;
 

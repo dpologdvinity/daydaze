@@ -157,6 +157,22 @@ export const CREDITS: readonly {
           "Snack vending machines on the avenue's sidewalks and in Skyline Supply, Player 2 and Boardwalk Arcade (art/vending/build_vending.py).",
       },
       {
+        title: "Jaguar/Daimler XJ X308 Pack",
+        author: "Fishboe",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/none-50f5cb8779f74b0790b68a709d97447b",
+        usedFor:
+          "The Dealership's saloon showpiece (the XJ Sport only): decimated, every badge, wordmark and logo removed, shown in-game as the made-up Aurelia Grand Saloon (art/showroom/build_showpieces.py).",
+      },
+      {
+        title: "Future Car",
+        author: "3DHaupt",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/none-hliAt7xc6YU2XjXh5G4lzmQwFmR",
+        usedFor:
+          "The Dealership's concept-car showpiece: decimated from 131k to 14k triangles, shown in-game as the made-up Comet Zero (art/showroom/build_showpieces.py).",
+      },
+      {
         title: "Mermaid",
         author: "charliecatling",
         license: "CC-BY 4.0",

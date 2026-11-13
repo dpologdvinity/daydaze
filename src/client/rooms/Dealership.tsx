@@ -2,11 +2,20 @@
 // roster on a spinning LED turntable, and Gia at the sales desk. Display
 // positions come from game/dealership.ts; buying happens in the UI panel.
 
+import { useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef, type JSX } from "react";
+import { Suspense, useEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";
 import type { Group } from "three";
-import { BOUNDS, DESK, DISPLAY, SALES, TABLE } from "../../game/dealership.ts";
+import {
+  BOUNDS,
+  DESK,
+  DISPLAY,
+  PLINTH,
+  SALES,
+  SHOWPIECES,
+  TABLE,
+} from "../../game/dealership.ts";
 import { carById } from "../../game/driving/roster.ts";
 import type { Look } from "../../game/look.ts";
 import { ROOMS } from "../../game/rooms.ts";
@@ -48,6 +57,27 @@ const TABLE_MAT = new THREE.MeshStandardMaterial({
   metalness: 0.6,
   roughness: 0.25,
 });
+const PLINTH_MAT = new THREE.MeshStandardMaterial({
+  color: "#f4f2f8",
+  metalness: 0.1,
+  roughness: 0.2,
+});
+/** The showpieces' paint, by the model's own material name: the concept car's
+ * pale shell goes lilac (the saloon's teal is baked in, art/showroom). */
+const PAINT: Record<string, string> = {
+  s_car: "#c4b2ff",
+};
+/** The spotlight's glow: a faint additive cone from the ceiling spot down to
+ * the plinth. A real light per showpiece would break the room's light budget. */
+const BEAM = new THREE.MeshBasicMaterial({
+  color: "#fff6e0",
+  transparent: true,
+  opacity: 0.07,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false,
+  side: THREE.DoubleSide,
+  toneMapped: false,
+});
 const SPOT = new THREE.MeshBasicMaterial({
   color: hdr("#ffffff", 2),
   toneMapped: false,
@@ -88,6 +118,25 @@ function useShowroom() {
         position: [at[0], 0.12, at[1]],
         rotation: [Math.PI / 2, 0, 0],
         scale: [TABLE[0] / TABLE[1], 1, 1],
+      });
+    }
+    // the showpieces' plinths: a marble step with a bright LED edge
+    for (const { at } of SHOWPIECES) {
+      b.add(
+        new THREE.CylinderGeometry(PLINTH[1], PLINTH[1], 0.2, 48),
+        PLINTH_MAT,
+        {
+          position: [at[0], 0.1, at[1]],
+          scale: [PLINTH[0] / PLINTH[1], 1, 1],
+        },
+      );
+      b.add(new THREE.TorusGeometry(PLINTH[1], 0.035, 6, 64), LED, {
+        position: [at[0], 0.2, at[1]],
+        rotation: [Math.PI / 2, 0, 0],
+        scale: [PLINTH[0] / PLINTH[1], 1, 1],
+      });
+      b.add(new THREE.CylinderGeometry(0.3, 0.36, 0.1, 16), SPOT, {
+        position: [at[0], H - 0.05, at[1]],
       });
     }
     // the sales desk, and ceiling spots over each car
@@ -142,6 +191,91 @@ function Cars() {
   );
 }
 
+/** One showpiece: the unbadged model on its plinth, swaying slowly under its spot. */
+function Showpiece({
+  id,
+  at,
+  index,
+}: {
+  id: "saloon" | "concept";
+  at: readonly [number, number];
+  index: number;
+}) {
+  const calm = useReducedMotion();
+  const { scene } = useGLTF(`/models/showroom/${id}.glb`);
+  // own material copies, the paint in the room's candy colors (a silver saloon
+  // and a pale concept car would vanish against the white showroom)
+  const car = useMemo(() => {
+    const copy = scene.clone(true);
+    copy.traverse((o) => {
+      if (!(o instanceof THREE.Mesh)) return;
+      o.material = [o.material].flat().map((m) => {
+        const own = m.clone();
+        const paint = PAINT[own.name];
+        if (paint && own instanceof THREE.MeshStandardMaterial)
+          own.color.set(paint);
+        return own;
+      });
+      if ((o.material as THREE.Material[]).length === 1)
+        o.material = (o.material as THREE.Material[])[0]!;
+    });
+    return copy;
+  }, [scene]);
+  useEffect(
+    () => () =>
+      car.traverse((o) => {
+        if (o instanceof THREE.Mesh)
+          [o.material].flat().forEach((m) => m.dispose());
+      }),
+    [car],
+  );
+  const turn = useRef<Group>(null);
+  useFrame(({ clock }) => {
+    if (!calm && turn.current)
+      turn.current.rotation.y =
+        Math.sin(clock.elapsedTime * 0.25 + index) * 0.35;
+  });
+  return (
+    <>
+      <group ref={turn} position={[at[0], 0.2, at[1]]}>
+        <primitive object={car} />
+      </group>
+      <mesh
+        position={[at[0], (H - 0.1) / 2 + 0.1, at[1]]}
+        material={BEAM}
+        raycast={() => null}
+      >
+        <cylinderGeometry args={[0.35, 2.3, H - 0.2, 24, 1, true]} />
+      </mesh>
+    </>
+  );
+}
+
+/** The showpieces and the placards naming them, hung on the side walls. */
+function Showpieces() {
+  return (
+    <>
+      <Suspense fallback={null}>
+        {SHOWPIECES.map(({ id, at }, i) => (
+          <Showpiece key={id} id={id} at={at} index={i} />
+        ))}
+      </Suspense>
+      {SHOWPIECES.map(({ id, name, at, side }) => (
+        <NeonText
+          key={id}
+          text={name}
+          color="#ffd84f"
+          font={MARQUEE}
+          width={3.4}
+          k={1.4}
+          position={[side < 0 ? x0 + 0.02 : x1 - 0.02, 3.4, at[1]]}
+          rotation-y={side < 0 ? Math.PI / 2 : -Math.PI / 2}
+        />
+      ))}
+    </>
+  );
+}
+
 /**
  * Daydaze Motors on Park Avenue: a white glass showroom, every road car
  * turning on an LED turntable under its own spotlight, and Gia at the sales
@@ -171,6 +305,7 @@ export function Dealership({ onPick }: { onPick: PickHandler }): JSX.Element {
       <PortalPads room={ROOMS.dealership} color="#4fe3ff" />
       <primitive object={showroom} />
       <Cars />
+      <Showpieces />
       <NeonText
         text="DAYDAZE MOTORS"
         color="#2e7dff"

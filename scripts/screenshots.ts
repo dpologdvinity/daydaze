@@ -656,6 +656,59 @@ function trafficClose(name: string, hour: number): (typeof SHOTS)[number] {
   };
 }
 
+/**
+ * A jeepney rolling past, four frames 60 ms apart (`<name>-00` to `-03`): the
+ * camera stands on the pavement looking across the near lane, the clock is
+ * paused and stepped (a small window, so it is quick) until the traffic probe
+ * (`?debug=1`, Traffic.tsx; its fifth field is `j` for a jeepney) shows one
+ * moving along the avenue right in front of it. Between frames the wheels have
+ * turned by the road rolled, so the spokes are at a new angle in each.
+ */
+function jeepneyRoll(name: string): (typeof SHOTS)[number] {
+  const camera = { x: -110, z: 12.5 };
+  const full = { width: 1280, height: 800 };
+  return {
+    name,
+    query: `room=city&view=room&quality=low&time=12:00&debug=1&at=${camera.x + 9},10&cam=${camera.x},1.5,${camera.z},${camera.x},0.8,3`,
+    live: true,
+    act: async (page) => {
+      const canvas = page.getByRole("img", { name: "3D room view" });
+      await furnitureReady(page);
+      await page.setViewportSize({ width: 480, height: 300 });
+      await page.clock.install({ time: 0 });
+      await page.clock.pauseAt(30_000);
+      let found = false;
+      for (let step = 0; step < 1500 && !found; step++) {
+        await page.clock.fastForward(100);
+        await page.waitForTimeout(40);
+        const probe = (await canvas.getAttribute("data-traffic-probe")) ?? "";
+        for (const entry of probe.split(";")) {
+          const [x, z, yaw, speed, kind] = entry.split(",");
+          if (kind !== "j" || !(Number(speed) > 2)) continue;
+          // in front of the camera, in the near lane, running along the avenue
+          if (Math.abs(Number(x) - camera.x) > 1.5) continue;
+          if (Number(z) < 0.5 || Number(z) > 6) continue;
+          if (Math.abs(Math.cos(Number(yaw))) < 0.95) continue;
+          console.log(`${name}: step ${step}, jeepney at ${x},${z} yaw ${yaw}`);
+          found = true;
+        }
+      }
+      if (!found) console.log(`${name}: no jeepney found, shooting anyway`);
+      await page.setViewportSize(full);
+      await page.clock.runFor(100);
+      await page.waitForTimeout(1500);
+      for (let n = 0; n < 4; n++) {
+        await page.clock.runFor(60);
+        await page.waitForTimeout(1200);
+        writeFileSync(
+          `docs/screenshots/${name}-0${n}.png`,
+          await page.screenshot({ timeout: 180_000 }),
+        );
+      }
+    },
+  };
+}
+
 const SHOTS: {
   name: string;
   query: string;
@@ -667,6 +720,7 @@ const SHOTS: {
   act?: (page: Page) => Promise<void>;
 }[] = [
   wheelSheet("car-wheels"),
+  jeepneyRoll("jeepney-wheels"),
   trafficClose("car-traffic-close-night", 23),
   walkStrip("walk-feminine-short", "feminine", "click"),
   walkStrip("walk-feminine-long", "feminine", "hold"),
@@ -941,6 +995,15 @@ const SHOTS: {
   { name: "forest-creek", query: "room=forest&cam=2,7,-4,1,0,-14" },
   { name: "forest-lookout", query: "room=forest&cam=7,3.4,-34,7,1.6,-46" },
   { name: "dealership", query: "room=dealership" },
+  // the two unbadged showpieces on their plinths, from the aisle
+  {
+    name: "dealership-saloon",
+    query: "room=dealership&cam=-9.2,2.6,7.6,-10.6,0.8,1.2",
+  },
+  {
+    name: "dealership-concept",
+    query: "room=dealership&cam=11.8,3.2,6.8,10.6,0.7,0",
+  },
   { name: "jazz-club", query: "room=jazz-club" },
   { name: "vinyl-vault", query: "room=vinyl-vault" },
   { name: "back-room", query: "room=back-room" },
