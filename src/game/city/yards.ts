@@ -528,7 +528,23 @@ function fillGarden(acc: Acc, y: Yard): void {
 function fillAlley(acc: Acc, y: Yard): void {
   slab(acc, "sidewalk", y, pick(ALLEY_PAINT, hash(y.x0, y.z0, 75)), 0.05, 0.1);
   const r = inset(y, 2.4);
-  const n = Math.min(6, 2 + Math.floor((w(y) * d(y)) / 500));
+  // a service lane of asphalt down the long side, with a dashed center line
+  const alongX = w(y) >= d(y);
+  const cx = (y.x0 + y.x1) / 2;
+  const cz = (y.z0 + y.z1) / 2;
+  const lane: Rect = alongX
+    ? { x0: y.x0, x1: y.x1, z0: cz - 2.8, z1: cz + 2.8 }
+    : { x0: cx - 2.8, x1: cx + 2.8, z0: y.z0, z1: y.z1 };
+  slab(acc, "road", lane, "#8a8a92", 0.04, 0.08);
+  for (
+    let u = (alongX ? y.x0 : y.z0) + 3;
+    u < (alongX ? y.x1 : y.z1) - 3;
+    u += 5
+  )
+    alongX
+      ? stripe(acc, u, cz, 2, 0.12, "#e8c14b")
+      : stripe(acc, cx, u, 0.12, 2, "#e8c14b");
+  const n = Math.min(8, 3 + Math.floor((w(y) * d(y)) / 350));
   for (let k = 0; k < n; k++) {
     const edge = Math.floor(hash(y.x0, k, 76) * 4);
     const t = hash(y.z0, k, 77);
@@ -553,14 +569,26 @@ function fillAlley(acc: Acc, y: Yard): void {
         hash(x, z, b) * 6.28,
       );
   }
-  for (let k = 0; k < 3; k++)
-    put(
-      acc,
-      "trashcan",
-      r.x0 + hash(y.x0, k, 81) * w(r),
-      r.z0 + hash(y.z0, k, 82) * d(r),
-      0,
-    );
+  // bins, a bike rack, planters and cones about the yard, off the lane
+  const offLane = (x: number, z: number) =>
+    alongX ? Math.abs(z - cz) > 3.6 : Math.abs(x - cx) > 3.6;
+  const scatter = (
+    kind: FurnitureSpot["kind"],
+    count: number,
+    seed: number,
+  ) => {
+    for (let k = 0, placed = 0; k < count * 4 && placed < count; k++) {
+      const x = r.x0 + hash(y.x0, k, seed) * w(r);
+      const z = r.z0 + hash(y.z0, k, seed + 1) * d(r);
+      if (!offLane(x, z)) continue;
+      put(acc, kind, x, z, hash(x, z, seed + 2) * 6.28);
+      placed++;
+    }
+  };
+  scatter("trashcan", 5, 81);
+  scatter("bikerack", 2, 92);
+  scatter("planter", 2, 94);
+  scatter("cone", 3, 96);
   fenceAround(acc, inset(y, 0.4), "fence-chain", 2);
 }
 
