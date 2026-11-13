@@ -841,7 +841,8 @@ const SHOTS: {
   ).map(([name, id]) =>
     actionStrip(
       name,
-      "room=city&view=full&quality=low&debug=1",
+      // a twentieth of speed: the software renderer draws a frame every few seconds
+      "room=city&view=full&quality=low&debug=1&timescale=0.05",
       async (page) => {
         await page.waitForTimeout(40_000);
       },
@@ -856,7 +857,7 @@ const SHOTS: {
           id,
         );
       },
-      45,
+      id === "hit-left" ? 45 : 120,
       60,
     ),
   ),

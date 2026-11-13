@@ -10,12 +10,15 @@ import {
   type Playing,
   type ReactionId,
 } from "../../game/reactions.ts";
+import { TIME_SCALE } from "../timeScale.ts";
 
 /** The play under way, if any. A plain module value, read each frame. */
 export const reaction: { playing: Playing | null } = { playing: null };
 
-/** The clock reactions run on: seconds, the same everywhere in the client. */
-export const reactionClock = (): number => performance.now() / 1000;
+/** The clock reactions run on: seconds, scaled like the dolls' (`?timescale`), so a
+ * fall's get-up follows the fall on the doll's own clock in a slowed frame strip. */
+export const reactionClock = (): number =>
+  (performance.now() / 1000) * TIME_SCALE;
 
 /** Starts a reaction unless one is playing; says whether it began. */
 export function react(id: ReactionId, now = reactionClock()): boolean {
