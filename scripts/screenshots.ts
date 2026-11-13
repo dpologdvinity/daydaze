@@ -317,6 +317,35 @@ function actionStrip(
   };
 }
 
+/** An actionStrip of a tag game's round: `start` is its panel's button. */
+function firefightStrip(
+  name: string,
+  query: string,
+  start: string,
+): (typeof SHOTS)[number] {
+  return actionStrip(
+    name,
+    query,
+    async (page) => {
+      await page
+        .getByRole("button", { name: start })
+        .click({ timeout: 150_000 });
+    },
+    async (page) => {
+      await page.evaluate(() => {
+        let n = 0;
+        window.setInterval(() => {
+          const rivals = document.querySelectorAll<HTMLButtonElement>(
+            '[aria-label="Fire at"] button',
+          );
+          rivals[n++ % rivals.length]?.click();
+        }, 330);
+      });
+    },
+    25,
+  );
+}
+
 /**
  * Tiles PNG frames into one sheet in the page (no image library needed): each
  * frame cropped to `crop` (a rectangle of the full frame), `columns` to a row.
@@ -587,6 +616,11 @@ const SHOTS: {
     },
     12,
   ),
+  // a firefight in each tag game: start the round, then tag a rival every
+  // third of a second from inside the page (a click takes whole frames on
+  // SwiftShader), so the strip holds the run, aim, shot, flinch and fall
+  firefightStrip("firefight-laser", "room=laser-tag&quality=low", "Suit up"),
+  firefightStrip("firefight-paint", "room=paintball&quality=low", "Gear up"),
   walkStrip("move-start-man", "natural", "click", {
     men: true,
     timescale: 0.1,

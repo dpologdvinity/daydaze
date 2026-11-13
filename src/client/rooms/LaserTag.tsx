@@ -8,18 +8,21 @@ import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import { Suspense, useEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";
-import { ARENA, COVER, rivalAt } from "../../game/laserTag.ts";
-import type { Look } from "../../game/look.ts";
+import { ARENA, COVER, DOWN_SECONDS, rivalAt } from "../../game/laserTag.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import { surface } from "../city/worldTexture.ts";
 import { bakedGeometry } from "../world/bakedGeometry.ts";
 import type { Player } from "../world/PlayerController.tsx";
 import { useReducedMotion } from "../motion.ts";
 import { Batch } from "./shared/batch.ts";
-import { CrowdFigure } from "./shared/CrowdFigure.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { canvasTex, hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
+import {
+  Opponent,
+  type OpponentLook,
+  type OpponentPose,
+} from "./shared/Opponent.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { PropSet } from "./shared/Prop.tsx";
 import { Sparkles } from "./shared/Sparkles.tsx";
@@ -34,23 +37,6 @@ const H = 4.4;
 const BEAM_SECONDS = 0.18;
 
 const WALL = surface("concrete_wall_008", { scale: 0.5, color: "#2a1a4a" });
-
-const RIVAL_BASE: Look = {
-  skin: "#e6b48e",
-  hairStyle: "ponytail",
-  hairColor: "#1b1014",
-  lips: "lips-hot-pink-glam",
-  brows: "brows-feathered-honey",
-  outfit: "jeans",
-  outfitColor: "#141018",
-  shadow: "#ff2f9a",
-};
-const RIVAL_LOOKS: readonly Look[] = [
-  RIVAL_BASE,
-  { ...RIVAL_BASE, skin: "#633c29", hairStyle: "afro", shadow: "#3fe0d0" },
-  { ...RIVAL_BASE, skin: "#f3d4c4", hairStyle: "bob", hairColor: "#f1d78f" },
-  { ...RIVAL_BASE, skin: "#94603f", hairStyle: "braids", shadow: "#3fe0d0" },
-];
 
 /** Black-light splatter for the walls. */
 function splatter() {
@@ -210,74 +196,139 @@ function CoverModels() {
   return <primitive object={mesh} />;
 }
 
-/** The four rivals, moving between cover and their peek spots, with a
- * tap target each and their vests glowing. */
-/** A tag game's rivals, moving between cover and their peek spots, each
- * with a tap target and a glowing vest. */
-export function Rivals({ game, seed = 401 }: { game: TagGame; seed?: number }) {
+/** Who each rival is, by her place in the game: both bodies, both skin tones. */
+const OPPONENT_LOOKS = [
+  { sex: "f", tone: "light" },
+  { sex: "m", tone: "dark" },
+  { sex: "f", tone: "dark" },
+  { sex: "m", tone: "light" },
+  { sex: "f", tone: "light" },
+] as const;
+/** How fast a rival runs between cover and her peek spot, meters a second. */
+const RUN_SPEED = 6;
+/** How fast she turns, per second (how much of the angle left each second). */
+const TURN = 12;
+
+/** What one rival has done, to tell shots and tags apart from one frame to
+ * the next: where she stands, and when she last fired. */
+type RivalTrack = {
+  ready: boolean;
+  x: number;
+  z: number;
+  yaw: number;
+  t: number;
+  window: number;
+  shotAt: number;
+};
+
+/** A tag game's rivals, each a Universal Base Character in her team's colors
+ * with a pistol, running between cover and her peek spot. The AI
+ * (laserTag.ts) says where she is, when she fires and when she goes down;
+ * game/opponents.ts turns that into a clip. A tap target rides along. */
+export function Rivals({
+  game,
+  glow = true,
+}: {
+  game: TagGame;
+  /** The vests and pistols light up (laser tag); paintball's stay plain. */
+  glow?: boolean;
+}) {
+  return (
+    <>
+      {game.field.rivals.map((_, i) => (
+        <Rival key={i} game={game} i={i} glow={glow} />
+      ))}
+    </>
+  );
+}
+
+function Rival({ game, i, glow }: { game: TagGame; i: number; glow: boolean }) {
   const { store: tag, you, fire, colors } = game;
-  const groups = useRef<(THREE.Group | null)[]>([]);
-  const vests = useRef<(THREE.MeshBasicMaterial | null)[]>([]);
-  useFrame((_, dt) => {
-    const { round, phase } = tag.get();
-    game.field.rivals.forEach((spot, i) => {
-      const g = groups.current[i];
-      if (!g) return;
-      const { at, open } =
-        phase === "playing"
-          ? rivalAt(round, i)
-          : { at: spot.hide, open: false };
-      const k = 1 - Math.exp(-dt * 10);
-      g.position.x += (at[0] - g.position.x) * k;
-      g.position.z += (at[1] - g.position.z) * k;
-      // facing the doorway end of the arena, where you start
-      g.rotation.y = Math.atan2(
-        you.at[0] - g.position.x,
-        you.at[1] - g.position.z,
-      );
-      const down = round.t < (round.downUntil[i] ?? 0);
-      const vest = vests.current[i];
-      if (vest)
-        vest.color
-          .set(colors[i] ?? "#ffffff")
-          .multiplyScalar(down ? 0.3 : open ? 3 : 1.6);
-    });
+  const spot = game.field.rivals[i];
+  const track = useRef<RivalTrack>({
+    ready: false,
+    x: 0,
+    z: 0,
+    yaw: 0,
+    t: 0,
+    window: -1,
+    shotAt: -Infinity,
   });
-  const tap = (i: number) => (e: ThreeEvent<MouseEvent>) => {
+  const look = useMemo<OpponentLook>(
+    () => ({
+      ...(OPPONENT_LOOKS[i % OPPONENT_LOOKS.length] ?? OPPONENT_LOOKS[0]),
+      team: colors[i] ?? "#ffffff",
+      glow,
+      gun: glow ? (colors[i] ?? "#ffffff") : "#ff8a3d",
+    }),
+    [i, colors, glow],
+  );
+  const drive = (dt: number, pose: OpponentPose) => {
+    if (!spot) return;
+    const { round, phase } = tag.get();
+    const k = track.current;
+    if (!k.ready) {
+      k.ready = true;
+      k.x = spot.hide[0];
+      k.z = spot.hide[1];
+    }
+    // a new round starts the clock over
+    if (round.t < k.t) {
+      k.window = -1;
+      k.shotAt = -Infinity;
+    }
+    k.t = round.t;
+    const playing = phase === "playing";
+    const downUntil = round.downUntil[i] ?? 0;
+    const down = playing && round.t < downUntil;
+    const target = playing ? rivalAt(round, i) : { at: spot.hide, open: false };
+    // her last shot at you: the pop-out she fired in changed
+    const window = round.fired[i] ?? -1;
+    if (window !== k.window) {
+      if (playing && window >= 0) k.shotAt = round.t;
+      k.window = window;
+    }
+    const dx = target.at[0] - k.x;
+    const dz = target.at[1] - k.z;
+    const dist = Math.hypot(dx, dz);
+    const moving = !down && dist > 0.05;
+    if (moving) {
+      const step = Math.min(dist, RUN_SPEED * dt);
+      k.x += (dx / dist) * step;
+      k.z += (dz / dist) * step;
+    }
+    // facing: where she runs, otherwise at you (a downed rival stays put)
+    if (!down) {
+      const want = moving
+        ? Math.atan2(dx, dz)
+        : Math.atan2(you.at[0] - k.x, you.at[1] - k.z);
+      const turn = Math.atan2(Math.sin(want - k.yaw), Math.cos(want - k.yaw));
+      k.yaw += turn * Math.min(1, dt * TURN);
+    }
+    pose.x = k.x;
+    pose.z = k.z;
+    pose.yaw = k.yaw;
+    const s = pose.sense;
+    s.playing = playing;
+    s.down = down;
+    s.sinceTag = down ? round.t - (downUntil - DOWN_SECONDS) : Infinity;
+    s.untilUp = down ? downUntil - round.t : 0;
+    s.moving = moving;
+    s.open = target.open;
+    s.sinceShot = playing ? round.t - k.shotAt : Infinity;
+    pose.glow = down ? 0.15 : target.open ? 1 : 0.5;
+  };
+  const tap = (e: ThreeEvent<MouseEvent>) => {
     if (e.delta > 6) return;
     e.stopPropagation();
     fire(i);
   };
   return (
-    <>
-      {game.field.rivals.map((spot, i) => (
-        <group
-          key={i}
-          ref={(g) => {
-            groups.current[i] = g;
-          }}
-          position={[spot.hide[0], 0, spot.hide[1]]}
-        >
-          <CrowdFigure
-            look={RIVAL_LOOKS[i % RIVAL_LOOKS.length] ?? RIVAL_BASE}
-            seed={seed + i}
-          />
-          {/* the sensor vest: chest and shoulder pads that light up */}
-          <mesh position={[0, 1.02, 0.02]}>
-            <boxGeometry args={[0.36, 0.3, 0.22]} />
-            <meshBasicMaterial
-              ref={(m) => {
-                vests.current[i] = m;
-              }}
-              toneMapped={false}
-            />
-          </mesh>
-          <mesh position-y={0.95} onClick={tap(i)} visible={false}>
-            <boxGeometry args={[0.8, 1.9, 0.8]} />
-          </mesh>
-        </group>
-      ))}
-    </>
+    <Opponent look={look} drive={drive}>
+      <mesh position-y={0.95} onClick={tap} visible={false}>
+        <boxGeometry args={[0.8, 1.9, 0.8]} />
+      </mesh>
+    </Opponent>
   );
 }
 
@@ -396,7 +447,9 @@ export function LaserTag({
           ]}
         />
       </Suspense>
-      <Rivals game={laserTag} />
+      <Suspense fallback={null}>
+        <Rivals game={laserTag} />
+      </Suspense>
       <Beams game={laserTag} player={player} />
       <NeonText
         text="PHOTON ZONE"

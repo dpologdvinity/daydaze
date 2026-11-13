@@ -3,7 +3,7 @@
 // session; the room ticks it each frame and leaves the game on unmount.
 
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, type JSX } from "react";
+import { Suspense, useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";
 import { BUNKERS, PAINT_ARENA } from "../../game/paintball.ts";
 import { ROOMS } from "../../game/rooms.ts";
@@ -175,7 +175,9 @@ export function Paintball({
       />
       <PortalPads room={ROOMS.paintball} color="#ff8a3d" />
       <primitive object={shell} />
-      <Rivals game={paintball} seed={431} />
+      <Suspense fallback={null}>
+        <Rivals game={paintball} glow={false} />
+      </Suspense>
       <Beams game={paintball} player={player} />
       <NeonText
         text="SPLAT CITY"
