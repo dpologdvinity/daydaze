@@ -26,6 +26,7 @@ import { useReducedMotion } from "../../motion.ts";
 import { openShop } from "../../ui/shopRequest.ts";
 import { CrowdFigure } from "../shared/CrowdFigure.tsx";
 import { TalkingNpc } from "../shared/TalkingNpc.tsx";
+import { VenueChats } from "../shared/VenueChats.tsx";
 
 const CONTEXT: DialogueContext = {
   venue: "galleria",
@@ -238,6 +239,7 @@ export function GalleriaNpcs(): JSX.Element {
           <CrowdFigure look={LOOKS[(i + 2) % LOOKS.length]} seed={195 + i} />
         </group>
       ))}
+      <VenueChats room="galleria" />
       {DINER_SEATS.map((seat, i) => {
         const { at, facing } = TABLE_SEATS[seat];
         return (

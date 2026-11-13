@@ -39,9 +39,9 @@ const SHOWCASE: Vec2 = [22, 7 + 4 * LANE];
 
 export const CHAT_GROUPS: readonly ChatGroup[] = (() => {
   const out: ChatGroup[] = [];
-  const add = (at: Vec2, i: number) => {
+  const add = (at: Vec2, i: number, pair = false) => {
     const seed = 1 + (mix(i, 5) % 100000);
-    const size = rand(i, 1) < 0.62 ? 2 : rand(i, 2) < 0.8 ? 3 : 4;
+    const size = pair || rand(i, 1) < 0.62 ? 2 : rand(i, 2) < 0.8 ? 3 : 4;
     const looks = Array.from(
       { length: size },
       (_, m) => PEDESTRIANS[mix(i, 40 + m) % PEDESTRIANS.length]?.look as Look,
@@ -54,7 +54,8 @@ export const CHAT_GROUPS: readonly ChatGroup[] = (() => {
       night: rand(i, 4),
     });
   };
-  add(SHOWCASE, 0);
+  // a pair, so the low tier's two dolls draw it
+  add(SHOWCASE, 0, true);
   CITY_SURFACES.filter((s) => s.kind === "sidewalk").forEach((s, si) => {
     // every second strip: a group on each is a lot of dolls to have in the city
     if (si % 2 !== 0) return;

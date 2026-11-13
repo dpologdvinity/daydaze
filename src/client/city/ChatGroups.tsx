@@ -23,7 +23,7 @@ export function ChatGroups({ player }: { player: Player }) {
   const tier = useQuality();
   const [shown, setShown] = useState<readonly number[]>([]);
   const last = useRef(-Infinity);
-  useFrame(({ clock }) => {
+  useFrame(({ clock, gl }) => {
     const t = clock.elapsedTime;
     if (t - last.current < REPICK) return;
     last.current = t;
@@ -37,6 +37,8 @@ export function ChatGroups({ player }: { player: Player }) {
     // re-render only when the set changes, not when the order does
     if (next.length !== shown.length || next.some((i) => !shown.includes(i)))
       setShown(next);
+    // read by tests: how many groups are standing about near her
+    gl.domElement.dataset.chatGroups = String(next.length);
   });
   return (
     <>
