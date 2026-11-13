@@ -84,5 +84,3 @@ export function CityHouses(): JSX.Element {
     </>
   );
 }
-
-useGLTF.preload(URLS);

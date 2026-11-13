@@ -11,7 +11,14 @@
 
 import { useGLTF } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState, type JSX } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type JSX,
+  Suspense,
+} from "react";
 import type * as THREE from "three";
 import {
   BAND,
@@ -39,6 +46,7 @@ import { bandDesk } from "./bandDesk.ts";
 import { useDaylight } from "./daylight.ts";
 import { disposeInstanced } from "./dispose.ts";
 import { propParts, type PropSpot } from "./instancedProps.ts";
+import { usePreloadNear } from "./preloadNear.ts";
 
 const URLS = {
   shell: "/models/park/band-shell.glb",
@@ -50,6 +58,9 @@ const URLS = {
 } as const;
 const KEYS = Object.keys(URLS) as (keyof typeof URLS)[];
 const PATHS = KEYS.map((k) => URLS[k]);
+/** Where the shell stands, and how far off its models start to fetch. */
+const SHELL_AT: readonly [number, number] = [BAND_SHELL.x, BAND_SHELL.z];
+const PRELOAD_RANGE = 260;
 
 /** The earshot at which the overlay's band card shows (m). */
 const CARD_RANGE = 28;
@@ -79,7 +90,13 @@ export function BandShell({ player }: { player: Player }): JSX.Element | null {
     const now = shellNear(player.pos.x, player.pos.z);
     if (now !== near) setNear(now);
   });
-  return near ? <Shell player={player} /> : null;
+  usePreloadNear(player, SHELL_AT, PRELOAD_RANGE, PATHS);
+  // its own Suspense, so the shell's models never hold the rest of the city
+  return near ? (
+    <Suspense fallback={null}>
+      <Shell player={player} />
+    </Suspense>
+  ) : null;
 }
 
 /** The instruments' spots: held in front of each musician, stands before them. */
@@ -271,5 +288,3 @@ function Shell({ player }: { player: Player }): JSX.Element {
     </>
   );
 }
-
-useGLTF.preload(PATHS);

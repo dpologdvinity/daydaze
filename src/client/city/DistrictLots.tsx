@@ -279,5 +279,3 @@ export function DistrictLots(): JSX.Element | null {
     </>
   );
 }
-
-useGLTF.preload(URL);
