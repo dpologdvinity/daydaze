@@ -1859,7 +1859,7 @@ test("walking the sidewalk, her foot catches: she trips, is held a moment, then 
   test.setTimeout(330_000);
   const errors = collectErrors(page);
   // ?trip=3: the first trip comes after three meters of sidewalk, not hundreds
-  await page.goto(`${LOW}&room=city&at=0,10.5&trip=3`);
+  await page.goto(`${LOW}&room=city&at=-6,7.6&trip=3`);
   const canvas = canvasOf(page);
   await expect(canvas).toHaveAttribute("data-frames", "10", {
     timeout: 240_000,
