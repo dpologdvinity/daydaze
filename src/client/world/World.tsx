@@ -352,7 +352,7 @@ function FrameCount({ still }: { still: boolean }) {
         gl.domElement.dataset.programs = String(gl.info.programs?.length ?? 0);
       }
       // `?programs=1`: list every linked program once, for scripts/perf-profile.ts
-      if (later.current === 60 && PROGRAMS_FLAG)
+      if (later.current % 15 === 0 && PROGRAMS_FLAG)
         console.log(
           `programs ${JSON.stringify(
             (gl.info.programs ?? []).map((p) => ({
