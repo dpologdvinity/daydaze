@@ -34,6 +34,9 @@ for (const name of names) {
   });
   const page = await ctx.newPage();
   await page.addInitScript(() => {
+    // the default resource timing buffer holds 250 entries, which capped the
+    // assets line at "250 requests" and hid everything after them
+    performance.setResourceTimingBufferSize(5000);
     localStorage.setItem(
       "daydaze-save-v1",
       JSON.stringify({ onboarded: true }),
