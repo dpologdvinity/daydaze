@@ -360,6 +360,8 @@ function seatStrip(
   name: string,
   seatId: string,
   what: "sit" | "stand" | "emote" | "type",
+  /** Which side of her the camera stands (1 or -1), clear of the neighbors. */
+  side: 1 | -1,
 ): (typeof SHOTS)[number] {
   // the apartment desk and chair, saved before the page loads
   const desk = [at("desk", 1, 0), at("office-chair", 1, 1)];
@@ -371,8 +373,21 @@ function seatStrip(
   // she faces the seat as she arrives
   const yaw = yawTowards(seat.approach, seat.at);
   const room = seatId === "home-chair-1" ? "apartment" : seat.room;
+  // a side-on camera a few meters out, pinned (?cam=) on the spot she sits
+  const mid = [
+    (seat.approach[0] + seat.at[0]) / 2,
+    (seat.approach[1] + seat.at[1]) / 2,
+  ];
+  const eye = [
+    mid[0] + Math.cos(seat.yaw) * 3.2 * side,
+    mid[1] - Math.sin(seat.yaw) * 3.2 * side,
+  ];
+  const cam = `${eye[0].toFixed(2)},1.3,${eye[1].toFixed(2)},${mid[0].toFixed(2)},0.8,${mid[1].toFixed(2)}`;
+  // dispatched, not clicked: the apartment's panel sits over the dock
   const takeSeat = async (page: Page) => {
-    await page.getByRole("button", { name: "Take a seat" }).click();
+    await page
+      .getByRole("button", { name: "Take a seat" })
+      .dispatchEvent("click");
   };
   const seated = async (page: Page) => {
     await takeSeat(page);
@@ -381,13 +396,16 @@ function seatStrip(
       null,
       { timeout: 300_000 },
     );
-    // the sit-down runs a second of game time, ten of real time
-    await page.waitForTimeout(25_000);
+    // the sit-down runs a second of game time, 33 of real time
+    await page.waitForTimeout(45_000);
   };
   return actionStrip(
     name,
-    `room=${room}&view=full&timescale=0.1&at=${seat.approach[0]},${seat.approach[1]}&yaw=${yaw}`,
+    // low quality and a small window: SwiftShader renders every few seconds, so
+    // game time runs at 3% for a frame to span a few hundredths of a second
+    `room=${room}&quality=low&timescale=0.03&cam=${cam}&at=${seat.approach[0]},${seat.approach[1]}&yaw=${yaw}`,
     async (page) => {
+      await page.setViewportSize({ width: 800, height: 500 });
       if (room === "apartment") {
         await page.evaluate((f) => {
           localStorage.setItem(
@@ -416,7 +434,7 @@ function seatStrip(
           .click();
       } else await takeSeat(page);
     },
-    what === "type" ? 40 : 20,
+    what === "type" ? 60 : 45,
   );
 }
 
@@ -700,13 +718,13 @@ const SHOTS: {
     timescale: 0.1,
     seconds: 30,
   }),
-  seatStrip("seat-bench-sit", "dome-bench-0", "sit"),
-  seatStrip("seat-bench-stand", "dome-bench-0", "stand"),
-  seatStrip("seat-stadium-sit", "stadium-dugout-1", "sit"),
-  seatStrip("seat-stadium-stand", "stadium-dugout-1", "stand"),
-  seatStrip("seat-stool-sit", "velvet-stool-0", "sit"),
-  seatStrip("seat-clap", "dome-bench-0", "emote"),
-  seatStrip("seat-typing", "home-chair-1", "type"),
+  seatStrip("seat-bench-sit", "dome-bench-0", "sit", -1),
+  seatStrip("seat-bench-stand", "dome-bench-0", "stand", -1),
+  seatStrip("seat-stadium-sit", "stadium-dugout-0", "sit", 1),
+  seatStrip("seat-stadium-stand", "stadium-dugout-0", "stand", 1),
+  seatStrip("seat-stool-sit", "velvet-stool-0", "sit", 1),
+  seatStrip("seat-clap", "dome-bench-0", "emote", -1),
+  seatStrip("seat-typing", "home-chair-1", "type", 1),
   { name: "club-pulse", query: "room=pulse" },
   {
     name: "apartment",
