@@ -403,7 +403,7 @@ export function Marina({
       <group rotation-y={Math.PI}>
         <Bottles rows={ROWS} seed={37} />
       </group>
-      <fog attach="fog" args={["#0a1430", 30, 150]} />
+      <fog attach="fog" args={["#0a1430", 30, 170]} />
       <Stars
         radius={90}
         depth={20}

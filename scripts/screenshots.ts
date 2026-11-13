@@ -696,7 +696,7 @@ const SHOTS: {
   {
     // out past the dock end: the liner on the horizon, the tall ships beside the course
     name: "marina-fleet",
-    query: "room=marina&view=room&cam=2,2.6,-9.5,-12,7,-110",
+    query: "room=marina&view=room&cam=4,3.2,-8,-14,5,-36",
     act: fleetReady,
   },
   { name: "yacht", query: "room=yacht" },

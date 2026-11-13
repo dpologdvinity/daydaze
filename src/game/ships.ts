@@ -108,7 +108,7 @@ export const CITY_FLEET: readonly ShipSpec[] = [
 ];
 
 /** Past Starboard Marina's yachts, around the jet-ski course (x -56 to 56, z
- * -76 to -28): a liner on the horizon at half scale, a sail ship and a Viking
+ * -76 to -28): a liner on the horizon at 0.42 scale, a sail ship and a Viking
  * boat to either side, a lifeboat tied off the cross dock's east end. */
 export const MARINA_FLEET: readonly ShipSpec[] = [
   {

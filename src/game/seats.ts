@@ -297,7 +297,7 @@ const rooftopSeats: Seat[] = [
     id: `roof-lounger-${i}`,
     room: "hotel-rooftop",
     at: [x, ROOF.LOUNGER_Z],
-    height: 0.42,
+    height: 0.34, // the sun bed's seat (0.26) plus its cushion
     yaw: 0,
     approach: [x + 0.75, ROOF.LOUNGER_Z],
     lie: true,
