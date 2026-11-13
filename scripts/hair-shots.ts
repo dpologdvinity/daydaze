@@ -35,6 +35,20 @@ const SHOTS: { name: string; query: string; shot?: string }[] = [
     name: "men-2",
     query: `men=1&styles=mop,pompadour,mohawk,spiky-crop,crew,quiff&colors=1b1014,3a6bff,ff4fb3,4a2a1c,b77a3e,7b4dff`,
   },
+  // close-ups of the speckle cases: men's and women's dark hair from behind,
+  // and the Quiff's forehead in several colors
+  {
+    name: "close-men-back",
+    query: `men=1&styles=crew,side-part,slick-back,messy-curls&colors=1b1014,4a2a1c,c0c0c8,1b1014&cam=0,1.62,-1.15`,
+  },
+  {
+    name: "close-women-back",
+    query: `styles=rapunzel,long-waves,layered-long&colors=1b1014,1b1014,4a2a1c&cam=0,1.5,-1.4`,
+  },
+  {
+    name: "close-quiff",
+    query: `men=1&styles=quiff,quiff,quiff,quiff&colors=1b1014,4a2a1c,b77a3e,c0c0c8&cam=0,1.62,1.3`,
+  },
   // a man in the suit, up close and in motion: skin must not show through
   {
     name: "suit-chest",
