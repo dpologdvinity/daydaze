@@ -857,7 +857,8 @@ const SHOTS: {
           id,
         );
       },
-      id === "hit-left" ? 45 : 120,
+      // the clip pack loads for a minute or so on the software renderer before she moves
+      150,
       60,
     ),
   ),
