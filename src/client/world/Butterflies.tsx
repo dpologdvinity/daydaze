@@ -120,8 +120,15 @@ export function Butterflies({
     },
     [mesh],
   );
-  useEffect(() => () => geometry.dispose(), [geometry]);
+  useEffect(
+    () => () => {
+      geometry.dispose();
+      material.dispose();
+    },
+    [geometry, material],
+  );
   useFrame(({ clock }) => {
+    if (!out) return;
     const t = clock.elapsedTime;
     time.value = t;
     let n = 0;

@@ -11,6 +11,7 @@ import {
   machineNear,
   type Machine,
 } from "../../game/vending.ts";
+import { driving } from "../world/driving.ts";
 import type { Player } from "../world/PlayerController.tsx";
 import { vendingNear } from "./vendingNear.ts";
 
@@ -38,7 +39,10 @@ export function VendingWatch({
   useFrame(() => {
     if (machines.length === 0) return;
     const near =
-      !player.seat && machineNear(machines, player.pos.x, player.pos.z);
+      !player.seat &&
+      !driving.session &&
+      !driving.passenger &&
+      machineNear(machines, player.pos.x, player.pos.z);
     if (near !== vendingNear.get().near) vendingNear.set({ near });
   });
   return null;
