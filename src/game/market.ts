@@ -3,6 +3,7 @@
 // checkout lanes with a cashier, and a security guard by the door. Buy a
 // snack or a water at the till; either takes the edge off a buzz. One
 // layout, shared by the room's floor and blockers (rooms.ts) and the scene.
+import { ROOM_MACHINES, machineBox } from "./vending.ts";
 import type { Vec2 } from "./walk.ts";
 
 function box(x0: number, z0: number, x1: number, z1: number): Vec2[] {
@@ -59,4 +60,5 @@ export const BLOCKERS: readonly (readonly Vec2[])[] = [
   box(FREEZERS.x0, FREEZERS.z0, FREEZERS.x1, FREEZERS.z1),
   box(PRODUCE.x0, PRODUCE.z0, PRODUCE.x1, PRODUCE.z1),
   ...CHECKOUTS.map((c) => box(c.x - 0.4, c.z0, c.x + 0.4, c.z1)),
+  ...ROOM_MACHINES.market.map(machineBox),
 ];

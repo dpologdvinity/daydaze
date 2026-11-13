@@ -3,6 +3,7 @@
 // minigames), pinball along the left, the bar on the right and an air
 // hockey table on the floor. One layout, shared by the room's floor and
 // blockers (rooms.ts), its seats, hotspots and the client's scene.
+import { ROOM_MACHINES, machineBox } from "./vending.ts";
 import type { Vec2 } from "./walk.ts";
 
 /** The walkable floor: the cabinets' fronts at the back, the door at the front. */
@@ -64,4 +65,5 @@ export const BLOCKERS: readonly (readonly Vec2[])[] = [
   box(BAR.front, BAR.z0, BAR.back, BAR.z1),
   box(PINBALL.x0, PINBALL.z0, PINBALL.x1, PINBALL.z1),
   box(HOCKEY[0] - 0.5, HOCKEY[1] - 1, HOCKEY[0] + 0.5, HOCKEY[1] + 1),
+  ...ROOM_MACHINES["arcade-bar"].map(machineBox),
 ];

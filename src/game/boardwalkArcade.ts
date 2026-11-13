@@ -3,6 +3,7 @@
 // skeeBall.ts), a claw machine, a row of pinball tables and the prize
 // counter by the door. One layout, shared by the room's floor and blockers
 // (rooms.ts) and the client's scene.
+import { ROOM_MACHINES, machineBox } from "./vending.ts";
 import type { Vec2 } from "./walk.ts";
 
 function box(x0: number, z0: number, x1: number, z1: number): Vec2[] {
@@ -49,4 +50,5 @@ export const BLOCKERS: readonly (readonly Vec2[])[] = [
   ...PINBALLS.map((x) => box(x - 0.45, PINBALL_Z.z0, x + 0.45, PINBALL_Z.z1)),
   box(COUNTER.x0, COUNTER.z0, COUNTER.x1, COUNTER.z1),
   box(SHELVES.x0, SHELVES.z0, SHELVES.x1, SHELVES.z1),
+  ...ROOM_MACHINES["boardwalk-arcade"].map(machineBox),
 ];
