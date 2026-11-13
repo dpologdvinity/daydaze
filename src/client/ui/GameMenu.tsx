@@ -5,9 +5,21 @@
 // the moment needs (a drink at the bar, a seat, a game). The sheet closes on
 // Escape, on the Close button, and after an item that opens something else.
 
-import { useEffect, useRef, useState, type JSX, type ReactNode } from "react";
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+  type JSX,
+  type ReactNode,
+} from "react";
 import { createStore } from "../rooms/shared/store.ts";
-import { CreditsPanel } from "./CreditsPanel.tsx";
+
+// the credits ledger is 50 KB of text nobody needs until they open it
+const CreditsPanel = lazy(() =>
+  import("./CreditsPanel.tsx").then((m) => ({ default: m.CreditsPanel })),
+);
 
 export const gameMenu = createStore({ open: false });
 
@@ -70,12 +82,14 @@ export function GameMenu({ children }: { children: ReactNode }): JSX.Element {
         </section>
       )}
       {creditsOpen && (
-        <CreditsPanel
-          onClose={() => {
-            setCreditsOpen(false);
-            toggle.current?.focus();
-          }}
-        />
+        <Suspense fallback={null}>
+          <CreditsPanel
+            onClose={() => {
+              setCreditsOpen(false);
+              toggle.current?.focus();
+            }}
+          />
+        </Suspense>
       )}
     </>
   );

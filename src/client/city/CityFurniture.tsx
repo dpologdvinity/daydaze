@@ -27,6 +27,7 @@ import { useDaylight } from "./daylight.ts";
 import { boxMapped, surface } from "./worldTexture.ts";
 import { bakedGeometry } from "../world/bakedGeometry.ts";
 import { disposeInstanced } from "./dispose.ts";
+import { whiteInstances } from "./instanceColor.ts";
 
 const MODELS = "/models/street";
 /** The most pieces of one kind in view at once. */
@@ -68,7 +69,9 @@ export function partsOf(
       if (tint) material.color.multiply(tint);
       material.userData.base = material.color.clone();
     }
-    const mesh = new THREE.InstancedMesh(geometry, material, capacity);
+    const mesh = whiteInstances(
+      new THREE.InstancedMesh(geometry, material, capacity),
+    );
     mesh.count = 0;
     mesh.frustumCulled = false;
     parts.push(mesh);
