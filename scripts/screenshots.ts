@@ -1295,15 +1295,15 @@ const SHOTS: {
       },
     })),
   ),
-  // a district shop board from the pavement in front of it (1.6 m up, 5.7 m
+  // a district shop board from the pavement in front of it (2.2 m up, 10 m
   // back, a step to the side), by day and by night: legible, sized, lit
   ...(
     [
-      ["manila", [-282.5, 8.3], [-280.8, 14]],
-      ["chinatown", [237.8, 8.3], [239.3, 14]],
-      ["koreatown", [400, 8.3], [401.4, 14]],
-      ["arts", [-24.5, -249.5], [-23, -244]],
-      ["uptown", [205.6, -249.5], [207.1, -244]],
+      ["manila", [-285.5, 4], [-280.8, 14]],
+      ["chinatown", [241.5, 4], [239.3, 14]],
+      ["koreatown", [404, 4], [401.4, 14]],
+      ["arts", [-27, -254], [-23, -244]],
+      ["uptown", [203, -254], [207.1, -244]],
     ] as const
   ).flatMap(([name, eye, sign]) =>
     (
@@ -1315,7 +1315,7 @@ const SHOTS: {
       name: `shop-${name}-${when}`,
       live: true,
       // the walker stands a few meters off the camera's line, out of frame
-      query: `room=city&view=room&quality=low&time=${time}&at=${eye[0] + 6},${eye[1]}&cam=${eye[0]},1.6,${eye[1]},${sign[0]},3,${sign[1]}`,
+      query: `room=city&view=room&quality=low&time=${time}&at=${eye[0] + 7},${eye[1]}&cam=${eye[0]},2.2,${eye[1]},${sign[0]},2.9,${sign[1]}`,
       act: async (page: Page) => {
         await blocksReady(page);
         await page.waitForFunction(
