@@ -246,3 +246,12 @@ test("a lot block drops the old balconies, fire escapes and rooftop AC: the lots
   // the tank and antenna stay, standing on the lot's own roof
   assert.ok(lotted.pole.some((i) => Math.abs(i.y - (f.h + 1.3)) < 0.01));
 });
+
+test("no shop name repeats along a block, and every district's pool covers its busiest block", () => {
+  for (const b of blocks) {
+    const names = lotRow(b).flatMap((l) => (l.sign ? [l.sign] : []));
+    assert.equal(new Set(names).size, names.length, `${b.id} repeats a name`);
+    const d = districtOf(b);
+    if (d) assert.ok(names.length <= DISTRICT_NAMES[d].length, b.id);
+  }
+});

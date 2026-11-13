@@ -403,6 +403,13 @@ function computeRow(b: Building): LotInstance[] {
   const pool = modelsFor(look, b.height);
   const out: LotInstance[] = [];
   let last = -1;
+  // the block's shop names, dealt from a shuffled deck so none repeats along
+  // the block (a district's blocks have at most 12 shops, its pool is bigger)
+  const deck = look.names
+    .map((name, k) => ({ name, key: hash(seed, k, 31) }))
+    .sort((a, b) => a.key - b.key)
+    .map((c) => c.name);
+  let named = 0;
   faces.forEach((face, fi) => {
     const r = (k: number) => hash(seed, fi, k);
     let along = 0;
@@ -427,7 +434,7 @@ function computeRow(b: Building): LotInstance[] {
         back: !face.street,
         sign:
           face.street && r(700 + i) < look.signChance
-            ? pick(look.names, r(800 + i))
+            ? deck[named++ % deck.length]
             : null,
       };
       // an El stair flight stands in front of the door: that shop is left
