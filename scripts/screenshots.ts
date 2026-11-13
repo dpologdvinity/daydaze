@@ -812,6 +812,22 @@ const SHOTS: {
     90,
     90,
   ),
+  // the same pair from above and farther back: what stands round them
+  actionStrip(
+    "chat-sidewalk-wide",
+    "room=city&quality=low&at=14,3&cam=22,4.5,1.5,22,0.8,10.4",
+    async (page) => {
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.chatGroups) >= 1,
+        null,
+        { timeout: 300_000 },
+      );
+      await page.waitForTimeout(40_000);
+    },
+    async () => {},
+    30,
+    20,
+  ),
   // the player's own emotes, full body: a whisper and a laugh
   ...(["Whisper", "Laughing"] as const).map((emote) =>
     actionStrip(
