@@ -10,7 +10,7 @@
 
 import { claimSeat, releaseSeat } from "../shared/game3d/seatClaim.ts";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { playCreak, playStinger } from "../../../audio/worldSounds.ts";
 import { roomSet, type RoomSet } from "../../../game/hauntedSets.ts";
@@ -19,6 +19,7 @@ import { useReducedMotion } from "../../motion.ts";
 import type { Player } from "../../world/PlayerController.tsx";
 import { useGameShot } from "../shared/game3d/useGameShot.ts";
 import { hdr } from "../shared/materials.ts";
+import { Prop as Model } from "../shared/Prop.tsx";
 import { escape, SCARE, THROUGH, WALK } from "./escapeSession.ts";
 
 /** The wall the doors are in, the doors' x, and where she stands. */
@@ -129,6 +130,32 @@ const SHEET_CHAIR: Vec3 = [-2.6, 0, 2.6];
 const ROCKER: Vec3 = [4.1, 0, 2.7];
 const PORTRAIT: Vec3 = [2, 2.45, WALL_Z + 0.03];
 const MUSIC_BOX: Vec3 = [-0.4, 0.72, 1.75];
+/** The House Interior Pack model standing in for a piece (public/models/home/),
+ * turned `yaw` so its long side runs along the wall. The crib, rocking horse,
+ * crates and clock have no match in the pack and stay boxes. */
+const MODELS: Partial<Record<Prop, { model: string; yaw?: number }>> = {
+  sofa: { model: "sofa-medium" },
+  table: { model: "table-small-2" },
+  shelf: { model: "bookshelf" },
+  shelf2: { model: "shelf-large" },
+  longtable: { model: "table" },
+  bed: { model: "bed-single", yaw: Math.PI / 2 },
+  wardrobe: { model: "closet" },
+  trunk: { model: "drawer-3" },
+  pews: { model: "sofa-small" },
+  altar: { model: "drawer-5" },
+  plants: { model: "plant-tall" },
+};
+/** Everything wears the same dust: warm grey, dim, so the colors read as old. */
+const DUST = "#8c8076";
+/** Each set's curtain tint: its drape color, lifted so the model's cloth reads. */
+const DRAPES = Object.fromEntries(
+  Object.entries(SETS).map(([k, v]) => [
+    k,
+    `#${new THREE.Color(v.drape).multiplyScalar(2.6).getHexString()}`,
+  ]),
+);
+
 /** Where a set's furniture stands, in view: [x, z] for its 1st..3rd piece. */
 const SLOTS: readonly [number, number][] = [
   [-3.2, 1.75],
@@ -230,12 +257,20 @@ function Dressing({ set }: { set: RoomSet }) {
         <meshStandardMaterial color={look.rug} roughness={0.95} />
       </mesh>
       {/* curtains in the set's color, flanking the doors */}
-      {[-2.75, 4.35].map((x) => (
-        <mesh key={x} position={[x, 1.35, WALL_Z + 0.08]}>
-          <boxGeometry args={[0.8, 2.7, 0.06]} />
-          <meshStandardMaterial color={look.drape} roughness={1} />
-        </mesh>
-      ))}
+      <Suspense fallback={null}>
+        {[-2.75, 4.35].map((x) => (
+          <Model
+            key={x}
+            model="curtains"
+            dir="home"
+            width={0.8}
+            depth={0.2}
+            height={2.7}
+            shade={DRAPES[set]}
+            position={[x, 0, WALL_Z + 0.12]}
+          />
+        ))}
+      </Suspense>
       {look.props.map((p, i) => {
         const [, , w0, h0, d0] = PLACES[p];
         const slot = SLOTS[i];
@@ -245,6 +280,22 @@ function Dressing({ set }: { set: RoomSet }) {
         const w = Math.min(w0, 1.1);
         const h = Math.min(h0, 1.8);
         const d = Math.min(d0, 0.6);
+        const piece = MODELS[p];
+        if (piece)
+          return (
+            <Suspense key={p} fallback={null}>
+              <Model
+                model={piece.model}
+                dir="home"
+                width={w}
+                depth={d}
+                height={h}
+                yaw={piece.yaw}
+                shade={DUST}
+                position={[x, 0, z]}
+              />
+            </Suspense>
+          );
         return (
           <mesh key={p} position={[x, h / 2, z]}>
             <boxGeometry args={[w, h, d]} />
@@ -363,10 +414,17 @@ function Scares() {
         </group>
       ))}
       {/* a chair under a dust sheet */}
-      <mesh position={[SHEET_CHAIR[0], 0.25, SHEET_CHAIR[2]]}>
-        <boxGeometry args={[0.5, 0.5, 0.5]} />
-        <meshStandardMaterial color="#3a2618" />
-      </mesh>
+      <Suspense fallback={null}>
+        <Model
+          model="chair-2"
+          dir="home"
+          width={0.5}
+          depth={0.5}
+          height={0.9}
+          shade={DUST}
+          position={[SHEET_CHAIR[0], 0, SHEET_CHAIR[2]]}
+        />
+      </Suspense>
       <mesh ref={sheet} position={[SHEET_CHAIR[0], 0.75, SHEET_CHAIR[2]]}>
         <boxGeometry args={[0.62, 0.55, 0.62]} />
         <meshStandardMaterial
@@ -378,14 +436,17 @@ function Scares() {
       </mesh>
       {/* a rocking chair, rockers and all */}
       <group ref={rocker} position={ROCKER}>
-        <mesh position-y={0.45}>
-          <boxGeometry args={[0.55, 0.06, 0.5]} />
-          <meshStandardMaterial color="#5a3a24" />
-        </mesh>
-        <mesh position={[0, 0.85, -0.22]}>
-          <boxGeometry args={[0.55, 0.8, 0.05]} />
-          <meshStandardMaterial color="#5a3a24" />
-        </mesh>
+        <Suspense fallback={null}>
+          <Model
+            model="chair-3"
+            dir="home"
+            width={0.55}
+            depth={0.55}
+            height={1.0}
+            shade={DUST}
+            position={[0, 0.1, 0]}
+          />
+        </Suspense>
         {[-0.25, 0.25].map((x) => (
           <mesh key={x} position={[x, 0.1, 0]} rotation-y={Math.PI / 2}>
             <torusGeometry args={[0.45, 0.025, 4, 16, Math.PI / 3]} />
@@ -415,10 +476,17 @@ function Scares() {
         ))}
       </group>
       {/* a music box on a little stand under the doll */}
-      <mesh position={[MUSIC_BOX[0], (MUSIC_BOX[1] - 0.02) / 2, MUSIC_BOX[2]]}>
-        <boxGeometry args={[0.5, MUSIC_BOX[1] - 0.02, 0.4]} />
-        <meshStandardMaterial color="#2a1a10" roughness={0.8} />
-      </mesh>
+      <Suspense fallback={null}>
+        <Model
+          model="nightstand-2"
+          dir="home"
+          width={0.7}
+          depth={0.7}
+          height={MUSIC_BOX[1] - 0.02}
+          shade={DUST}
+          position={[MUSIC_BOX[0], 0, MUSIC_BOX[2]]}
+        />
+      </Suspense>
       <group position={MUSIC_BOX}>
         <mesh position-y={0.06}>
           <boxGeometry args={[0.24, 0.12, 0.16]} />

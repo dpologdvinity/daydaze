@@ -6,9 +6,10 @@ import { DEFAULT_LOOK } from "../../game/look.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import type { DialogueContext } from "../../game/dialogue/types.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
+import { Prop } from "./shared/Prop.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 import * as THREE from "three";
 import { Batch } from "./shared/batch.ts";
 import { GLOSS, painted } from "./shared/details.ts";
@@ -21,15 +22,16 @@ const CONTEXT: DialogueContext = {
 
 const BARS = [-4.5, -3, -1.5, 0, 1.5, 3, 4.5] as const;
 
-// wool blankets, a scuffed desk, a blacktop yard, painted block
-const BLANKET = surface("carpet", { scale: 2, color: "#ffc0a8" });
-const DESK = surface("wood_veneer", { scale: 1.5, color: "#9a7a5a" });
+// a blacktop yard, painted block
 const COURT = surface("asphalt_02", { scale: 0.6, color: "#7ab07a" });
 const BLOCK = surface("concrete_wall_008", {
   scale: 0.5,
   color: "#b8bccc",
   roughness: 0.9,
 });
+
+/** The guard's desk: its top stands this high (the lamp sits on it). */
+const DESK_TOP = 0.95;
 
 /** The cell block's painted cinderblock walls, pillows on the bunks, a
  * ball on the court, a clock and a lamp on the guard's desk. */
@@ -58,7 +60,7 @@ function buildDressing() {
     painted(new THREE.CylinderGeometry(0.02, 0.08, 0.4, 8), "#2a2a34"),
     GLOSS,
     {
-      position: [4.3, 2, 1.6],
+      position: [4.3, DESK_TOP + 0.2, 1.6],
     },
   );
   return b.build();
@@ -102,15 +104,51 @@ export function Jail({ onPick }: { onPick: PickHandler }) {
         <boxGeometry args={[9.2, 0.08, 0.08]} />
         <meshStandardMaterial color="#9aa3b5" metalness={0.6} roughness={0.4} />
       </mesh>
-      <mesh position={[-2.2, 0.35, -3.1]} material={BLANKET}>
-        <boxGeometry args={[1.8, 0.7, 0.9]} />
-      </mesh>
-      <mesh position={[2.2, 0.35, -3.1]} material={BLANKET}>
-        <boxGeometry args={[1.8, 0.7, 0.9]} />
-      </mesh>
-      <mesh position={[4.6, 0.9, 1.6]} material={DESK}>
-        <boxGeometry args={[1.4, 1.8, 0.9]} />
-      </mesh>
+      {/* the cells' bunks, a steel toilet between them, the guard's desk and bin
+          (House Interior Pack, cooled to institutional grey-blue) */}
+      <Suspense fallback={null}>
+        {[-2.2, 2.2].map((x) => (
+          <Prop
+            key={x}
+            model="bed-bunk"
+            dir="home"
+            width={0.95}
+            depth={1.9}
+            height={1.9}
+            yaw={Math.PI / 2}
+            shade="#c4cce0"
+            position={[x, 0, -3.1]}
+          />
+        ))}
+        <Prop
+          model="toilet-2"
+          dir="home"
+          width={0.5}
+          depth={0.7}
+          height={0.8}
+          shade="#d8dce8"
+          position={[0, 0, -3.65]}
+        />
+        <Prop
+          model="desk"
+          dir="home"
+          width={1.4}
+          depth={0.9}
+          height={DESK_TOP}
+          yaw={-Math.PI / 2}
+          shade="#b8b4ac"
+          position={[4.6, 0, 1.6]}
+        />
+        <Prop
+          model="trash-large"
+          dir="home"
+          width={0.4}
+          depth={0.4}
+          height={0.6}
+          shade="#9aa0ae"
+          position={[5.45, 0, 2.5]}
+        />
+      </Suspense>
       {/* the yard: a painted court with a hoop at the far left */}
       <mesh
         position={[-3.6, 0.01, 2]}

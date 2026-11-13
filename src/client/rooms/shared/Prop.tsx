@@ -80,6 +80,31 @@ function showPicture(
   material.needsUpdate = true;
 }
 
+/** Clones of `parts` with every material's color multiplied by `shade`: a
+ * room's mood (dusty and dim, neon-tinted) over the model's own colors. The
+ * loaded materials are shared by every copy, so they are never edited. */
+function useShaded(
+  parts: ReturnType<typeof useFittedParts>,
+  shade: THREE.ColorRepresentation | undefined,
+) {
+  const shaded = useMemo(() => {
+    if (shade === undefined) return parts;
+    const k = new THREE.Color(shade);
+    return parts.map(({ geometry, material }) => {
+      const copy = material.clone();
+      if (copy instanceof THREE.MeshStandardMaterial) copy.color.multiply(k);
+      return { geometry, material: copy };
+    });
+  }, [parts, shade]);
+  useEffect(
+    () => () => {
+      if (shaded !== parts) for (const p of shaded) p.material.dispose();
+    },
+    [shaded, parts],
+  );
+  return shaded;
+}
+
 /** One prop, `yaw` turning it about its own center. */
 export function Prop({
   model,
@@ -89,19 +114,23 @@ export function Prop({
   yaw = 0,
   dir,
   tint = 0,
+  shade,
   screen,
   ...rest
 }: {
   model: string;
   yaw?: number;
   dir?: string;
+  /** A color every material is multiplied by (dust, dim, a neon wash). */
+  shade?: THREE.ColorRepresentation;
   /** A furniture look (game/home/palette.ts); 0 keeps the model's colors. */
   tint?: number;
   /** A picture for the model's "screen" material (a TV showing something). */
   screen?: THREE.Texture;
 } & Fit &
   Omit<ThreeElements["group"], "children">) {
-  const fitted = useFittedParts(model, { width, depth, height }, dir);
+  const fitted0 = useFittedParts(model, { width, depth, height }, dir);
+  const fitted = useShaded(fitted0, shade);
   const parts = useMemo(() => {
     if (tint === 0 && !screen) return fitted;
     // the loaded materials are shared by every copy: recolor clones
@@ -139,32 +168,52 @@ export function Prop({
   );
 }
 
-/** Many copies of one prop in a single draw call: `at` is [x, y, z, yaw]. */
+/** Many copies of one prop, one instanced draw per material: `at` is [x, y, z, yaw]. */
 export function PropSet({
   model,
   width,
   depth,
   height,
   at,
+  dir,
+  shade,
 }: {
   model: string;
   at: readonly (readonly [number, number, number, number])[];
+  dir?: string;
+  shade?: THREE.ColorRepresentation;
 } & Fit) {
-  const { geometry, material } = useFitted(model, { width, depth, height });
-  const ref = useRef<THREE.InstancedMesh>(null);
+  const parts = useShaded(
+    useFittedParts(model, { width, depth, height }, dir),
+    shade,
+  );
+  const refs = useRef<(THREE.InstancedMesh | null)[]>([]);
   useLayoutEffect(() => {
-    const mesh = ref.current;
-    if (!mesh) return;
     const m = new THREE.Matrix4();
     const q = new THREE.Quaternion();
     const up = new THREE.Vector3(0, 1, 0);
     const one = new THREE.Vector3(1, 1, 1);
-    at.forEach(([x, y, z, yaw], i) => {
-      q.setFromAxisAngle(up, yaw);
-      mesh.setMatrixAt(i, m.compose(new THREE.Vector3(x, y, z), q, one));
-    });
-    mesh.instanceMatrix.needsUpdate = true;
-    mesh.computeBoundingSphere();
-  }, [at]);
-  return <instancedMesh ref={ref} args={[geometry, material, at.length]} />;
+    for (const mesh of refs.current) {
+      if (!mesh) continue;
+      at.forEach(([x, y, z, yaw], i) => {
+        q.setFromAxisAngle(up, yaw);
+        mesh.setMatrixAt(i, m.compose(new THREE.Vector3(x, y, z), q, one));
+      });
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.computeBoundingSphere();
+    }
+  }, [at, parts]);
+  return (
+    <>
+      {parts.map((p, i) => (
+        <instancedMesh
+          key={i}
+          ref={(mesh) => {
+            refs.current[i] = mesh;
+          }}
+          args={[p.geometry, p.material, at.length]}
+        />
+      ))}
+    </>
+  );
 }

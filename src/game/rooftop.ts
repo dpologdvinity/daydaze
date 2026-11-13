@@ -26,6 +26,13 @@ export const SOFA = {
 };
 export const FIRE: Vec2 = [-6.6, -1.2];
 
+/** Two armchairs round the fire pit, turned (yaw about y, front +z) to face
+ * it; each is a 0.9 m square standing clear of the pit and the sofa. */
+export const LOUNGE_CHAIRS: readonly { at: Vec2; yaw: number }[] = [
+  { at: [-5.35, -1.2], yaw: -Math.PI / 2 },
+  { at: [-6.6, -2.75], yaw: 0 },
+];
+
 /** Standing tables on the east side, where regulars lean. */
 export const HIGH_TABLES: readonly Vec2[] = [
   [4.6, 2.8],
@@ -62,6 +69,9 @@ export const BLOCKERS: readonly (readonly Vec2[])[] = [
   // can be walked up to) and its fire pit
   box(-7.6, -0.1, -6.75, 3.1),
   box(FIRE[0] - 0.5, FIRE[1] - 0.5, FIRE[0] + 0.5, FIRE[1] + 0.5),
+  ...LOUNGE_CHAIRS.map(({ at: [x, z] }) =>
+    box(x - 0.45, z - 0.45, x + 0.45, z + 0.45),
+  ),
   ...HIGH_TABLES.map(([x, z]) => box(x - 0.35, z - 0.35, x + 0.35, z + 0.35)),
   box(DJ_BOOTH.x0, DJ_BOOTH.z0, DJ_BOOTH.x1, DJ_BOOTH.z1),
   box(KIOSK.x0, KIOSK.front, KIOSK.x1, DECK.z1 + 0.3),
