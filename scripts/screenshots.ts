@@ -2140,7 +2140,7 @@ const SHOTS: {
   {
     name: "hud-el",
     live: true,
-    query: "room=city&view=full&time=12:00&at=-262,10",
+    query: "room=city&view=full&time=12:00&at=28,9.5",
     act: async (page: Page) => {
       await expect(
         page.getByRole("button", { name: /^Ride the El to / }).first(),
@@ -2150,7 +2150,7 @@ const SHOTS: {
   {
     name: "hud-el-more",
     live: true,
-    query: "room=city&view=full&time=12:00&at=-262,10",
+    query: "room=city&view=full&time=12:00&at=28,9.5",
     act: async (page: Page) => {
       await expect(
         page.getByRole("button", { name: /^Ride the El to / }).first(),
@@ -2163,7 +2163,7 @@ const SHOTS: {
   {
     name: "hud-mobile",
     live: true,
-    query: "room=city&view=full&time=12:00&at=-262,10",
+    query: "room=city&view=full&time=12:00&at=28,9.5",
     viewport: { width: 390, height: 844 },
     touch: true,
     act: async (page: Page) => {
