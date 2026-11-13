@@ -59,6 +59,45 @@ export const LOT_SPECS: Readonly<
   s6: { w: 5.6, roof: 19.89, tris: 921, lo: 492 },
 };
 
+/**
+ * Where a lot's shop board hangs, in meters up the unstretched model: `lo` just
+ * over the door and ground-floor window heads, `hi` just under the first-floor
+ * windows (or balcony door). Measured from the shipped lots.glb's front plane
+ * (lotSigns.test.ts holds it to the file); the lot's height stretch `sy` scales
+ * both. A board sits flush in this band, centered on the shop front.
+ */
+export const SIGN_BAND: Readonly<Record<LotModel, { lo: number; hi: number }>> =
+  {
+    gable2: { lo: 2.6, hi: 4.05 },
+    round2: { lo: 2.5, hi: 3.6 },
+    s2: { lo: 3.05, hi: 4.05 },
+    s2bal: { lo: 3.05, hi: 3.8 },
+    s2col: { lo: 2.65, hi: 4.1 },
+    s2wide: { lo: 2.4, hi: 4.25 },
+    s3bal: { lo: 3.05, hi: 3.75 },
+    s3slim: { lo: 2.6, hi: 3.9 },
+    s4: { lo: 2.95, hi: 4.03 },
+    s4center: { lo: 2.95, hi: 4.03 },
+    s6: { lo: 3.05, hi: 4.33 },
+  };
+
+/** Clear room kept above and below a board inside its band, in meters. */
+const SIGN_MARGIN = 0.08;
+/** The tallest a shop board is, in meters. */
+const SIGN_HEIGHT = 0.85;
+
+/** A lot's shop board: its center height and height in world meters. */
+export function signBoard(
+  model: LotModel,
+  sy: number,
+): { y: number; h: number } {
+  const { lo, hi } = SIGN_BAND[model];
+  return {
+    y: ((lo + hi) / 2) * sy,
+    h: Math.min(SIGN_HEIGHT, (hi - lo) * sy - 2 * SIGN_MARGIN),
+  };
+}
+
 /** Lots farther than this from the player draw their far twin (LOT_SPECS lo),
  * a third to half the triangles. The plan decides when it is cut, not the
  * camera: the twins are separate meshes, filled per plan reload. */

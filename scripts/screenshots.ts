@@ -1303,11 +1303,11 @@ const SHOTS: {
   // back, a step to the side), by day and by night: legible, sized, lit
   ...(
     [
-      ["manila", [-285, 9.5], [-280.8, 14]],
-      ["chinatown", [241.5, 4], [239.3, 14]],
-      ["koreatown", [404, 4], [401.4, 14]],
-      ["arts", [-27, -254], [-23, -244]],
-      ["uptown", [203, -254], [207.1, -244]],
+      ["manila", [-281, -7], [-280.8, 14]],
+      ["chinatown", [240, -7], [239.3, 14]],
+      ["koreatown", [402, -7], [401.4, 14]],
+      ["arts", [-23, -262], [-23, -244]],
+      ["uptown", [207, -262], [207.1, -244]],
     ] as const
   ).flatMap(([name, eye, sign]) =>
     (
@@ -1319,7 +1319,7 @@ const SHOTS: {
       name: `shop-${name}-${when}`,
       live: true,
       // the walker stands a few meters off the camera's line, out of frame
-      query: `room=city&view=room&quality=low&time=${time}&at=${eye[0] + 7},${eye[1]}&cam=${eye[0]},2.2,${eye[1]},${sign[0]},2.9,${sign[1]}`,
+      query: `room=city&view=room&quality=low&time=${time}&at=${eye[0] + 7},${eye[1]}&cam=${eye[0]},1.9,${eye[1]},${sign[0]},2.6,${sign[1]}`,
       act: async (page: Page) => {
         await blocksReady(page);
         await page.waitForFunction(
