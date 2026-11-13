@@ -12,6 +12,7 @@ import {
 } from "./far.ts";
 import { BUILDINGS, isInfill } from "./layout.ts";
 import { planView } from "./budget.ts";
+import { isMotel } from "./nyc.ts";
 import { planCity } from "./plan.ts";
 
 test("a far box is the footprint and height, in a hex wall color", () => {
@@ -53,7 +54,8 @@ test("with no cells loaded the far city is every building the range and size all
           Math.max(...zs) > c.z0,
       );
     })
-      .filter((b) => !isInfill(b))
+      // (a motel past the view radius is left to the far city too)
+      .filter((b) => !isInfill(b) && !isMotel(b))
       .map((b) => farBoxOf(b)),
   );
   for (const f of near.far) assert.ok(!inCells.has(f));
