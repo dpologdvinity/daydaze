@@ -15,11 +15,11 @@ const TAIL_HALO = 0.38;
 const OUT = 0.12;
 /** How much a halo grows per meter from the camera (up to MAX_SWELL times), so a lamp at 60 m is still a light. */
 const SWELL = 0.012;
-/** The headlight pool: meters wide, long, and above the road (so it clears the
- * lane paint, with a polygon offset on top for the rest). */
 const MAX_SWELL = 3;
 /** A halo is drawn this far (meters) toward the camera, so the lamp's own body never hides it. */
 const TOWARD_CAMERA = 0.15;
+/** The headlight pool: meters wide, long, and above the road (so it clears the
+ * lane paint, with a polygon offset on top for the rest). */
 const POOL_WIDTH = 3.6;
 const POOL_LENGTH = 9;
 const POOL_LIFT = 0.03;
