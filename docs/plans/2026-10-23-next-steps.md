@@ -169,6 +169,13 @@ default (it is a URL flag today; the comment there says so).
   GLB loads after the 8th frame never draws, so shoot without `still`.
 - Python patch scripts: read before writing; a bad splice once truncated
   `layout.ts` and once mangled `RoomPanels.tsx`. Typecheck after each.
+- Blender's glTF export writes a blank PNG for an image made with
+  `bpy.data.images.new` and `pack()`: save it to disk and `images.load` it
+  (`art/marina/build_fleet.py`). Clearing a mesh's material slots resets every
+  face to slot 0, so set `material_index` after appending the new slots.
+- The optimized GLBs store UVs and vertex colors as normalized integers:
+  convert them to floats before merging them with built geometry
+  (`useBeachProps`), as positions and normals go through `bakedGeometry`.
 
 ## 4. The plan
 
