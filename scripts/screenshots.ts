@@ -1303,7 +1303,7 @@ const SHOTS: {
   // back, a step to the side), by day and by night: legible, sized, lit
   ...(
     [
-      ["manila", [-281, -7], [-280.8, 14]],
+      ["manila", [-265, -7], [-264.8, 14]],
       ["chinatown", [240, -7], [239.3, 14]],
       ["koreatown", [402, -7], [401.4, 14]],
       ["arts", [-23, -262], [-23, -244]],
