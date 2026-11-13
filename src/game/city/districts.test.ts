@@ -4,6 +4,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import { EL_STATIONS, stairsRect } from "./el.ts";
 import { BUILDINGS } from "./layout.ts";
 import { facesOf } from "./nyc.ts";
 import {
@@ -62,7 +63,18 @@ test("each block's lots add up to the length of its faces", () => {
   for (const b of blocks) {
     const faces = facesOf(b).reduce((n, f) => n + f.length, 0);
     const lots = lotRow(b).reduce((n, l) => n + LOT_SPECS[l.model].w * l.sx, 0);
-    assert.ok(Math.abs(faces - lots) < 1e-6, `${b.id}: ${faces} vs ${lots}`);
+    // a block an El stair flight stands in front of leaves those shops out
+    const xs = b.footprint.map(([x]) => x);
+    const south = Math.min(...b.footprint.map(([, z]) => z)) > 0;
+    const stairs =
+      south &&
+      EL_STATIONS.some((s) => {
+        const [x0, , x1] = stairsRect(s);
+        return x0 < Math.max(...xs) && x1 > Math.min(...xs);
+      });
+    if (stairs) assert.ok(lots <= faces + 1e-6, `${b.id}: ${faces} vs ${lots}`);
+    else
+      assert.ok(Math.abs(faces - lots) < 1e-6, `${b.id}: ${faces} vs ${lots}`);
   }
 });
 
