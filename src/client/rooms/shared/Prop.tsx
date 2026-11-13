@@ -86,16 +86,21 @@ function showPicture(
 function useShaded(
   parts: ReturnType<typeof useFittedParts>,
   shade: THREE.ColorRepresentation | undefined,
+  paint?: THREE.ColorRepresentation,
 ) {
   const shaded = useMemo(() => {
-    if (shade === undefined) return parts;
-    const k = new THREE.Color(shade);
+    if (shade === undefined && paint === undefined) return parts;
     return parts.map(({ geometry, material }) => {
       const copy = material.clone();
-      if (copy instanceof THREE.MeshStandardMaterial) copy.color.multiply(k);
+      if (copy instanceof THREE.MeshStandardMaterial) {
+        // paint replaces the color outright (a retro vinyl couch); shade
+        // only dims or tints what is there
+        if (paint !== undefined) copy.color.set(paint);
+        if (shade !== undefined) copy.color.multiply(new THREE.Color(shade));
+      }
       return { geometry, material: copy };
     });
-  }, [parts, shade]);
+  }, [parts, shade, paint]);
   useEffect(
     () => () => {
       if (shaded !== parts) for (const p of shaded) p.material.dispose();
@@ -115,6 +120,7 @@ export function Prop({
   dir,
   tint = 0,
   shade,
+  paint,
   screen,
   ...rest
 }: {
@@ -123,6 +129,8 @@ export function Prop({
   dir?: string;
   /** A color every material is multiplied by (dust, dim, a neon wash). */
   shade?: THREE.ColorRepresentation;
+  /** A color every material is set to, keeping its maps (before `shade`). */
+  paint?: THREE.ColorRepresentation;
   /** A furniture look (game/home/palette.ts); 0 keeps the model's colors. */
   tint?: number;
   /** A picture for the model's "screen" material (a TV showing something). */
@@ -130,7 +138,7 @@ export function Prop({
 } & Fit &
   Omit<ThreeElements["group"], "children">) {
   const fitted0 = useFittedParts(model, { width, depth, height }, dir);
-  const fitted = useShaded(fitted0, shade);
+  const fitted = useShaded(fitted0, shade, paint);
   const parts = useMemo(() => {
     if (tint === 0 && !screen) return fitted;
     // the loaded materials are shared by every copy: recolor clones
@@ -179,17 +187,20 @@ export function PropSet({
   at,
   dir,
   shade,
+  paint,
   allParts = false,
 }: {
   model: string;
   at: readonly (readonly [number, number, number, number])[];
   dir?: string;
   shade?: THREE.ColorRepresentation;
+  paint?: THREE.ColorRepresentation;
   allParts?: boolean;
 } & Fit) {
   const every = useShaded(
     useFittedParts(model, { width, depth, height }, dir),
     shade,
+    paint,
   );
   const parts = useMemo(
     () => (allParts ? every : every.slice(0, 1)),

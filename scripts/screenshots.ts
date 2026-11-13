@@ -860,7 +860,7 @@ const SHOTS: {
   // the escape's first room: the front hall dressed as a set, three doors ahead
   {
     name: "haunted-escape",
-    query: "room=haunted-house",
+    query: "room=haunted-house&cam=0.8,2.3,7.2,0.8,1,1.5",
     act: async (page) => {
       await page
         .getByRole("button", { name: "Step inside" })

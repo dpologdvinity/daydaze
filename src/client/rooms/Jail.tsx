@@ -33,18 +33,13 @@ const BLOCK = surface("concrete_wall_008", {
 /** The guard's desk: its top stands this high (the lamp sits on it). */
 const DESK_TOP = 0.95;
 
-/** The cell block's painted cinderblock walls, pillows on the bunks, a
+/** The cell block's painted cinderblock walls, a
  * ball on the court, a clock and a lamp on the guard's desk. */
 function buildDressing() {
   const b = new Batch();
   const box = new THREE.BoxGeometry(1, 1, 1);
   b.add(box, BLOCK, { position: [0, 1.6, -4], scale: [12, 3.2, 0.2] });
   b.add(box, BLOCK, { position: [6.1, 1.6, 0], scale: [0.2, 3.2, 8] });
-  for (const x of [-2.2, 2.2])
-    b.add(painted(box, "#f4f0ea"), GLOSS, {
-      position: [x - 0.6, 0.76, -3.1],
-      scale: [0.45, 0.12, 0.7],
-    });
   b.add(painted(new THREE.SphereGeometry(0.12, 10, 8), "#e2652a"), GLOSS, {
     position: [-3, 0.12, 2.6],
   });
@@ -127,7 +122,7 @@ export function Jail({ onPick }: { onPick: PickHandler }) {
           depth={0.7}
           height={0.8}
           shade="#d8dce8"
-          position={[0, 0, -3.65]}
+          position={[0.75, 0, -3.65]}
         />
         <Prop
           model="desk"

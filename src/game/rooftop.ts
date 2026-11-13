@@ -26,7 +26,7 @@ export const SOFA = {
 };
 export const FIRE: Vec2 = [-6.6, -1.2];
 
-/** Two armchairs round the fire pit, turned (yaw about y, front +z) to face
+/** Two cream loveseats round the fire pit, turned (yaw about y, front +z) to face
  * it; each is a 0.9 m square standing clear of the pit and the sofa. */
 export const LOUNGE_CHAIRS: readonly { at: Vec2; yaw: number }[] = [
   { at: [-5.35, -1.2], yaw: -Math.PI / 2 },

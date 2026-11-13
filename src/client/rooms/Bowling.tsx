@@ -595,7 +595,7 @@ function Concourse() {
             depth={0.8}
             height={0.85}
             yaw={Math.PI}
-            shade="#c58bff"
+            paint="#8a46e8"
             position={[x, 0, BENCH_Z]}
           />
         ))}
@@ -618,7 +618,7 @@ function Concourse() {
           width={0.4}
           depth={0.4}
           height={0.65}
-          shade="#9a7ad8"
+          paint="#7a5ad0"
           at={[
             [5.55, 0, 5.2, 0],
             [-5.5, 0, 3.9, 0],

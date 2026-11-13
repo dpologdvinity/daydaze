@@ -391,27 +391,17 @@ function Furniture() {
         yaw={Math.PI / 2}
         position={[SOFA.at[0], 0, SOFA.at[1]]}
       />
-      {/* a round rug under the lounge and two armchairs round the fire
-          (House Interior Pack, in champagne cream) */}
-      <Prop
-        model="rug-round"
-        dir="home"
-        width={3.6}
-        depth={3.6}
-        height={0.05}
-        shade="#e8d8c0"
-        position={[-5.9, 0.012, 0.1]}
-      />
+      {/* two cream loveseats round the fire (House Interior Pack) */}
       {LOUNGE_CHAIRS.map(({ at, yaw }) => (
         <Prop
           key={at.join()}
-          model="armchair"
+          model="sofa-small"
           dir="home"
-          width={0.9}
-          depth={0.9}
-          height={0.95}
+          width={1.0}
+          depth={0.85}
+          height={0.9}
           yaw={yaw}
-          shade="#f0e0c8"
+          paint="#f2e2c6"
           position={[at[0], 0, at[1]]}
         />
       ))}
