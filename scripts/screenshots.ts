@@ -769,6 +769,16 @@ const SHOTS: {
   },
   { name: "zoo-woods", query: "room=zoo&cam=0,7,2,0,1,-6.2" },
   { name: "forest", query: "room=forest" },
+  // the vending machines in Skyline Supply, Player 2 and the Boardwalk Arcade
+  { name: "vending-market", query: "room=market&cam=3.5,1.7,-2.8,8.6,1,-2.8" },
+  {
+    name: "vending-arcade-bar",
+    query: "room=arcade-bar&cam=-1,1.8,4.4,-5.6,1,4.4",
+  },
+  {
+    name: "vending-boardwalk-arcade",
+    query: "room=boardwalk-arcade&cam=-4,1.8,3.9,-8.6,1,3.9",
+  },
   // Larkspur's meadow glade and the garden's beds, with their butterflies
   {
     name: "butterflies-meadow",

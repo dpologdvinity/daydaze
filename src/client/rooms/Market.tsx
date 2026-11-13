@@ -30,6 +30,7 @@ import { canvasTex, hdr } from "./shared/materials.ts";
 import { PropSet } from "./shared/Prop.tsx";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
+import { VendingMachines } from "./shared/VendingMachines.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
 
 const { x0, x1, z0, z1 } = BOUNDS;
@@ -388,6 +389,9 @@ export function Market({ onPick }: { onPick: PickHandler }): JSX.Element {
         onPick={onPick}
       />
       <PortalPads room={ROOMS.market} color="#ff4fb3" />
+      <Suspense fallback={null}>
+        <VendingMachines room="market" />
+      </Suspense>
       <primitive object={shell} />
       <Goods />
       <NeonText

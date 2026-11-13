@@ -745,6 +745,38 @@ export function playDoorThunk(): boolean {
   return true;
 }
 
+/** A soda can dropping in a vending machine's tray: a hollow thunk, a rattle
+ * of tin and a short ring as it settles. */
+export function playCanDrop(): boolean {
+  const out = sfx();
+  if (!out) return false;
+  const { ctx, dest } = out;
+  const now = ctx.currentTime;
+  const thunk = ctx.createOscillator();
+  const gain = ctx.createGain();
+  thunk.type = "sine";
+  thunk.frequency.setValueAtTime(190, now);
+  thunk.frequency.exponentialRampToValueAtTime(70, now + 0.12);
+  gain.gain.setValueAtTime(0.3, now);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+  thunk.connect(gain).connect(dest);
+  thunk.start(now);
+  thunk.stop(now + 0.2);
+  burst(ctx, dest, "bandpass", 3200, 0.07, 0.05);
+  // the can settles: a little tin ring
+  const ring = ctx.createOscillator();
+  const ringGain = ctx.createGain();
+  ring.type = "triangle";
+  ring.frequency.setValueAtTime(1480, now + 0.12);
+  ringGain.gain.setValueAtTime(0.0001, now);
+  ringGain.gain.setValueAtTime(0.05, now + 0.12);
+  ringGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+  ring.connect(ringGain).connect(dest);
+  ring.start(now + 0.12);
+  ring.stop(now + 0.32);
+  return true;
+}
+
 /**
  * A soft engine hum for a ride: two low saws a hair apart through a lowpass,
  * faded in and out. Returns a function that fades it out and stops it (a
