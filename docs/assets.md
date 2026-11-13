@@ -123,6 +123,11 @@ future imported packs belong here when they enter the game.
 | Merry go 'round | sirkitree | CC-BY 3.0 | https://poly.pizza/m/8BliGG-e55g | The carousel on the boardwalk deck. |
 | Towel | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/19oMd_9kHDT | Beach towels on the sand. |
 | Sand castle | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/5iuHHfVoaza | Sand castles on the beach. |
+| Dumpster | Quaternius | CC0 1.0 | https://poly.pizza/m/PKsbolkZSr | The block yards' alley dumpsters (art/yards/build_yards.py). |
+| Metal Fence | Quaternius | CC0 1.0 | https://poly.pizza/m/qWKhREFj7H | The block yards' chain fences around alleys and courts, one 3 m panel instanced. |
+| Wood Fence 2 | CircuitZ | CC0 1.0 | https://poly.pizza/m/hRx8dQKVCA | The block yards' wood fences around gardens and Suburbia's backyards. |
+| Trash Bag | Quaternius | CC0 1.0 | https://poly.pizza/m/jYrMKg2Q7C | Trash bags beside the alley dumpsters, decimated. |
+| Basketball court | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/85FpUr2fHkH | The block yards' basketball courts (hoops and lines), texture shrunk. |
 | Coral Reef Set 1 | MiniPoly | CC0 1.0 | https://poly.pizza/m/74GL45Fvdh | Reef dive: coral heads, instanced; sets joined and compressed (art/ocean). |
 | Coral Reef Sets 2 to 6 | MiniPoly | CC-BY 3.0 | https://poly.pizza/bundle/Coral-Reef-Kit-ghN8EmbYa6 | Reef dive: coral, branching coral and anemones, instanced. |
 | Coral Grouper | Quaternius | CC0 1.0 | https://poly.pizza/m/Q2GNw9TRzF | Reef dive: the grouper, one vertex-colored skinned mesh. |

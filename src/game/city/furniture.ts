@@ -43,6 +43,11 @@ export const FURNITURE_KINDS = [
   "carousel",
   "towel",
   "sandcastle",
+  "dumpster",
+  "fence-chain",
+  "fence-wood",
+  "court",
+  "bag",
 ] as const;
 
 export type FurnitureKind = (typeof FURNITURE_KINDS)[number];
@@ -106,6 +111,12 @@ export const FURNITURE_RANGE: Record<
   carousel: [110, 180],
   towel: [30, 70],
   sandcastle: [30, 70],
+  // the block yards (yards.ts): small props, the fences vanish early
+  dumpster: [35, 80],
+  "fence-chain": [30, 70],
+  "fence-wood": [30, 70],
+  court: [60, 130],
+  bag: [22, 50],
   busstop: [60, 140],
   "sign-stop": [50, 110],
   "sign-noparking": [40, 90],
@@ -144,6 +155,11 @@ export const MODEL_DIR: Partial<Record<FurnitureKind, string>> = {
   lifeguard: "beach",
   chaise: "beach",
   rail: "beach",
+  dumpster: "yards",
+  "fence-chain": "yards",
+  "fence-wood": "yards",
+  court: "yards",
+  bag: "yards",
   "popcorn-cart": "beach",
   "hotdog-cart": "beach",
   "kiosk-market": "beach",

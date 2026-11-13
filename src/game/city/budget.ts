@@ -57,7 +57,7 @@ import {
   VIEW_RADIUS,
 } from "./tuning.ts";
 import { BODY_KEYS, ROSTER_BODY } from "../driving/bodies.ts";
-import { PARKED_CARS, PARKED_RANGE } from "./dressing.ts";
+import { PARKED_CARS, parkedRange } from "./dressing.ts";
 import { GLOW_DRAWS, GLOW_TRIS_PER_CAR } from "../driving/lamps.ts";
 import {
   CAR_SLOT,
@@ -110,6 +110,11 @@ export const MODEL_COST: Readonly<
   "street/meter": { tris: 164, parts: 3 },
   "street/bikerack": { tris: 800, parts: 1 },
   "street/planter": { tris: 622, parts: 3 },
+  "yards/dumpster": { tris: 302, parts: 3 },
+  "yards/fence-chain": { tris: 218, parts: 2 },
+  "yards/fence-wood": { tris: 248, parts: 1 },
+  "yards/bag": { tris: 187, parts: 1 },
+  "yards/court": { tris: 780, parts: 1 },
   "street/palm": { tris: 472, parts: 2 },
   "street/palm-2": { tris: 344, parts: 2 },
   "street/trafficlight": { tris: 956, parts: 1 },
@@ -304,7 +309,8 @@ export function parkedCost(at: Vec2): { drawCalls: number; triangles: number } {
   const bodies = new Set<string>();
   let triangles = 0;
   for (const car of PARKED_CARS) {
-    if (Math.hypot(car.x - at[0], car.z - at[1]) > PARKED_RANGE.low) continue;
+    if (Math.hypot(car.x - at[0], car.z - at[1]) > parkedRange(car, "low"))
+      continue;
     bodies.add(car.body);
     triangles += loCarTris(car.body);
   }

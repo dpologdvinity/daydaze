@@ -207,6 +207,15 @@ export function CityFurniture({ summer }: { summer: boolean }): JSX.Element {
               }),
           ),
         );
+      // the chain fence's mesh is a cutout texture: cut, never blend, so a
+      // row of panels never sorts wrongly against itself
+      if (kind === "fence-chain")
+        for (const mesh of byKind.get(kind) ?? [])
+          if (mesh.material instanceof THREE.MeshStandardMaterial) {
+            mesh.material.transparent = false;
+            mesh.material.alphaTest = 0.5;
+            mesh.material.side = THREE.DoubleSide;
+          }
       if (kind === "vending")
         for (const mesh of byKind.get(kind) ?? [])
           if (mesh.material instanceof THREE.MeshStandardMaterial)

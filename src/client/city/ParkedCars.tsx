@@ -5,7 +5,7 @@
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
-import { PARKED_CARS, PARKED_RANGE } from "../../game/city/dressing.ts";
+import { PARKED_CARS, parkedRange } from "../../game/city/dressing.ts";
 import type { Player } from "../world/PlayerController.tsx";
 import { useQuality } from "../world/quality.ts";
 import { NEAR_BODY, useTrafficBodies } from "./trafficBodies.ts";
@@ -31,10 +31,9 @@ export function ParkedCars({ player }: { player: Player }) {
     last.z = z;
     last.tier = tier;
     bodies.reset();
-    const range = PARKED_RANGE[tier];
     PARKED_CARS.forEach((car, i) => {
       const distance = Math.hypot(car.x - x, car.z - z);
-      if (distance > range) return;
+      if (distance > parkedRange(car, tier)) return;
       bodies.put(
         car.body,
         colors[i],
