@@ -5,6 +5,7 @@
 import { pointInPolygon, type Vec2 } from "../walk.ts";
 import {
   BUILDINGS,
+  isInfill,
   CITY_SURFACES,
   BONFIRES,
   BOARDWALK,
@@ -35,7 +36,7 @@ import type { FurnitureKind, FurnitureSpot } from "./furniture.ts";
 import { parkFurniture } from "./park.ts";
 import { boardwalkFurniture } from "./boardwalk.ts";
 import { detailBuilding } from "./detail.ts";
-import { YARD_CARS, YARD_FURNITURE, YARD_GROUND } from "./yards.ts";
+import { YARD_CARS, YARD_FURNITURE } from "./yards.ts";
 import { DISTRICT_NAMES } from "./districtNames.ts";
 import { LOT_SPECS, PALETTES, type LotInstance } from "./districts.ts";
 
@@ -629,6 +630,8 @@ export function dressBuilding(
   }
   // the kit's bays have their own windows and sills
   if (!kit) windows(b, f, out, sills);
+  // infill is scenery: windows and walls only, no awnings, vents, signs, tanks
+  if (isInfill(b)) return;
   awning(out, f, accent);
   if (b.id.startsWith("boardwalk-shop")) servingWindows(out, f, accent);
   if (SHOPFRONT.has(b.style) && b.style !== "gate") {
@@ -652,7 +655,9 @@ export function dressBuilding(
       ad.color,
       ad.text,
     );
-  detailBuilding(b, f, out, lots);
+  // the roof's small details are for blocks near enough to see them (the
+  // same range as the window sills)
+  detailBuilding(b, f, out, lots, sills);
   if (b.style === "gate") arch(out, f, b.sign?.color ?? accent);
   sideDoor(b, f, out, accent);
 }
@@ -785,7 +790,7 @@ export const PARKED_CARS: readonly ParkedSpot[] = [
 /** Parked cars draw out to this many meters, by quality tier. */
 export const PARKED_RANGE = { low: 70, high: 150 } as const;
 /** The lots' cars are scenery, so they draw nearer in. */
-export const LOT_RANGE = { low: 40, high: 110 } as const;
+export const LOT_RANGE = { low: 30, high: 110 } as const;
 
 /** How far off a parked car is drawn on a tier. */
 export const parkedRange = (car: ParkedSpot, tier: "low" | "high"): number =>
@@ -870,11 +875,7 @@ function streetDress(): Placed[] {
   return out;
 }
 
-/** The street dressing, and the block yards' ground slabs and stripes (yards.ts). */
-export const STREET_DRESS: readonly Placed[] = [
-  ...streetDress(),
-  ...YARD_GROUND,
-];
+export const STREET_DRESS: readonly Placed[] = streetDress();
 
 /** Where the bus shelters stand: the north avenue sidewalk, between lamps and palms. */
 const BUS_STOPS = [-112.5, 97.5];

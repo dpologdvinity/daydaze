@@ -1161,18 +1161,19 @@ const SHOTS: {
       );
     },
   })),
-  // the block yards (yards.ts): an alley, a parking lot and a basketball court
-  // seen from the cross street at x 64, by day and by night; low tier
+  // the infill and yards (infill.ts, yards.ts): a back alley between two rows
+  // seen from the cross street at x 64, the rows themselves from the avenue's
+  // cross street, a pocket lot and a lane; day and night, low tier. The blocks
+  // around the gaps have no bays or lots, so wait on the furniture
   ...[
-    ["yards-alley", "12:00", "64,-150", "56,2.6,-146,100,1.2,-160"],
-    ["yards-alley-night", "22:00", "64,-150", "56,2.6,-146,100,1.2,-160"],
-    ["yards-lot", "12:00", "64,-130", "58,3.2,-122,128,0.5,-134"],
-    ["yards-court", "12:00", "64,-185", "58,4,-176,98,0,-184"],
+    ["yards-alley", "12:00", "64,-173", "60,2.2,-173,110,2,-173"],
+    ["yards-alley-night", "22:00", "64,-173", "60,2.2,-173,110,2,-173"],
+    ["yards-rows", "12:00", "64,-100", "58,4,-96,100,6,-140"],
+    ["yards-rows-night", "22:00", "64,-100", "58,4,-96,100,6,-140"],
+    ["yards-lot", "12:00", "64,-185", "58,3.5,-183,140,1.5,-170"],
   ].map(([name, time, at, cam]) => ({
     name: String(name),
     query: `room=city&quality=low&time=${time}&at=${at}&cam=${cam}`,
-    // the blocks around these gaps have no New York bays or lots, so
-    // data-bays never reads ready: wait on the furniture and frames
     act: furnitureReady,
   })),
   { name: "city-overview", query: "room=city" },

@@ -40,6 +40,8 @@ import { BAY_TRIANGLES, HOUSE_MODELS, type BayInstance } from "./nyc.ts";
 import { LOT_SPECS, type PlacedLot } from "./districts.ts";
 import { ALL_GROWTH } from "./growth.ts";
 import {
+  GROUND_RANGE,
+  INFILL_RANGE,
   TREE_VARIANTS,
   drawCallsOf,
   planCity,
@@ -566,6 +568,8 @@ export function planView(
     POINT_LIGHTS[tier],
     at,
     bays ? BAY_RANGE[tier] : 0,
+    INFILL_RANGE[tier],
+    GROUND_RANGE[tier],
   );
 }
 

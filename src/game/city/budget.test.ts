@@ -185,3 +185,9 @@ test("traffic is priced from the shipped car bodies, more on a road than on a la
   assert.ok(onRoad.triangles >= dearestOwn);
   assert.ok(onLawn.triangles < dearestOwn);
 });
+
+test("the park gate, the dearest low-tier view, stays at or under 290k triangles with the infill and yards", () => {
+  const gate = lowTierCost([254, -270]);
+  assert.ok(gate.triangles <= 290_000, `${gate.triangles} triangles`);
+  assert.ok(gate.drawCalls <= 235, `${gate.drawCalls} draw calls`);
+});
