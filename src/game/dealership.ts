@@ -40,6 +40,25 @@ export const DISPLAY: readonly { id: string; at: Vec2 }[] = ROAD_CARS.filter(
 /** A turntable's half size: a long car fits on it. */
 export const TABLE: Vec2 = [1.3, 2.8];
 
+/** Two showpieces that are not for sale, each on its own plinth in a
+ * side corner, noses toward the aisle: a saloon on the left and a concept car
+ * on the right (public/models/showroom/, art/showroom/). They wear made-up
+ * names; the downloads' own names live in the credits. */
+export const SHOWPIECES: readonly {
+  id: "saloon" | "concept";
+  /** The name on the placard. */
+  name: string;
+  at: Vec2;
+  /** Which wall (side) the placard hangs on: -1 left, 1 right. */
+  side: -1 | 1;
+}[] = [
+  { id: "saloon", name: "AURELIA GRAND SALOON", at: [-10.6, 1.5], side: -1 },
+  { id: "concept", name: "COMET ZERO", at: [10.6, 0], side: 1 },
+];
+
+/** A showpiece plinth's half size (x, z): a 5 m car fits with a hand to spare. */
+export const PLINTH: Vec2 = [1.1, 2.7];
+
 export const DESK = { x0: 8.6, z0: 4.4, x1: 11.4, z1: 5.6 } as const;
 export const SALES: Vec2 = [10, 3.7];
 
@@ -53,6 +72,9 @@ export const FLOOR: readonly Vec2[] = box(
 export const BLOCKERS: readonly (readonly Vec2[])[] = [
   ...DISPLAY.map(({ at: [x, z] }) =>
     box(x - TABLE[0], z - TABLE[1], x + TABLE[0], z + TABLE[1]),
+  ),
+  ...SHOWPIECES.map(({ at: [x, z] }) =>
+    box(x - PLINTH[0], z - PLINTH[1], x + PLINTH[0], z + PLINTH[1]),
   ),
   box(DESK.x0, DESK.z0, DESK.x1, DESK.z1),
 ];
