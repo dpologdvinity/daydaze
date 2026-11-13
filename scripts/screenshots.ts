@@ -736,9 +736,9 @@ const SHOTS: {
   seatStrip("seat-clap", "dome-bench-0", "emote", -1),
   seatStrip("seat-stool-cellar", "cellar-stool-0", "sit", 1),
   seatStrip("seat-stool-skylark", "skylark-stool-0", "sit", 1),
-  seatStrip("seat-typing", "home-chair-1", "type", 1, {
-    dist: 3.6,
-    height: 1.5,
+  seatStrip("seat-typing", "home-chair-1", "type", -1, {
+    dist: 3.2,
+    height: 1.4,
   }),
   { name: "club-pulse", query: "room=pulse" },
   {
