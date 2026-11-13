@@ -353,7 +353,21 @@ function FrameCount({ still }: { still: boolean }) {
       // `?programs=1`: list every linked program once, for scripts/perf-profile.ts
       if (later.current === 60 && PROGRAMS_FLAG)
         console.log(
-          `programs ${JSON.stringify((gl.info.programs ?? []).map((p) => ({ name: p.name, key: p.cacheKey, uses: p.usedTimes })))}`,
+          `programs ${JSON.stringify(
+            (gl.info.programs ?? []).map((p) => ({
+              name: p.name,
+              key: p.cacheKey,
+              uses: p.usedTimes,
+              // the vertex stage's feature defines, to read what differs
+              defines: (gl.getContext().getShaderSource(p.vertexShader) ?? "")
+                .split("\n")
+                .filter((l) =>
+                  /^#define (USE_|NUM_|MORPH|SKINNING|DOUBLE|FLAT)/.test(l),
+                )
+                .map((l) => l.slice(8))
+                .join(" "),
+            })),
+          )}`,
         );
       return;
     }

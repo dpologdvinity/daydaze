@@ -104,7 +104,7 @@ for (const name of names) {
   const cdp = await ctx.newCDPSession(page);
   await cdp.send("Performance.enable");
   const t0 = Date.now();
-  page.on("console", (m) => {
+  page.on("console", async (m) => {
     // the client lists its linked programs when asked (`programs`, World.tsx)
     const t = m.text();
     if (!t.startsWith("programs ")) return;
@@ -112,11 +112,17 @@ for (const name of names) {
       name: string;
       key: string;
       uses: number;
+      defines: string;
     }[];
+    const dir = process.env.PROFILE?.split("/").slice(0, -1).join("/");
+    if (dir) {
+      const { writeFileSync } = await import("node:fs");
+      writeFileSync(`${dir}/programs-${name}.json`, JSON.stringify(list));
+    }
     console.log(`  program list (${list.length}):`);
     for (const p of list)
       console.log(
-        `      ${p.name} x${p.uses} keylen ${p.key.length} tail ${JSON.stringify(p.key.slice(-90))}`,
+        `      ${p.name || "-"} x${p.uses} | ${p.defines} | ${p.key.split(",").slice(-3).join(",").slice(-60)}`,
       );
   });
   await page.goto(`${BASE}/?quality=low&programs=1&${query}`);
