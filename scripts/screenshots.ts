@@ -1538,11 +1538,19 @@ const SHOTS: {
     // the weekend farmers market (src/game/city/farmersMarket.ts), forced open
     name: "market-bakehouse",
     query:
-      "room=city&view=room&time=11:00&market=1&at=249,-292&cam=246.9,2.1,-296.2,242.2,1.2,-296.4",
+      "room=city&view=room&quality=low&time=11:00&market=1&at=249,-292&cam=246.9,2.1,-296.2,242.2,1.2,-296.4",
     act: async (page) => {
-      await cityReady(page);
+      // the stall wares (data-market-items) and a few frames: the market opens
+      // once its models are in, which is all this shot needs of the city
       await page.waitForFunction(
-        () => document.querySelector("canvas")?.dataset.market === "open",
+        () => {
+          const c = document.querySelector("canvas");
+          return (
+            c?.dataset.market === "open" &&
+            Number(c.dataset.marketItems) > 0 &&
+            Number(c.dataset.frames) >= 6
+          );
+        },
         null,
         { timeout: 300_000 },
       );
