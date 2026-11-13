@@ -129,8 +129,9 @@ export const MODEL_COST: Readonly<
   "park/blanket": { tris: 128, parts: 2 },
   "beach/carousel": { tris: 806, parts: 5 },
   "beach/chaise": { tris: 300, parts: 2 },
-  // the offshore fleet's far twins (src/game/ships.ts), one part each
-  "ships/cruise": { tris: 744, parts: 1 },
+  // the offshore fleet's far twins (src/game/ships.ts): the liner is two parts
+  // (hull, windows)
+  "ships/cruise": { tris: 742, parts: 2 },
   "ships/sail-lo": { tris: 1072, parts: 1 },
   "ships/viking": { tris: 1638, parts: 1 },
   "beach/cone": { tris: 250, parts: 2 },

@@ -40,7 +40,7 @@ UMBRELLAS = [
     ("mint", "#7cf0c8", "#ff9a56"),
 ]
 UMBRELLA_POLE = "#ffffff"
-SUNBED_FRAME = "#ffffff"
+SUNBED_FRAME = "#7fd4e8"
 # the canopy's disc in the umbrella's texture: its center in UV space, where
 # the gores fan out around it (faces on it are canopy, the rest is pole)
 CANOPY_UV = Vector((0.317, 0.312))

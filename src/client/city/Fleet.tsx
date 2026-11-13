@@ -22,23 +22,26 @@ import { bakedGeometry } from "../world/bakedGeometry.ts";
 
 /** How much of its color a hull keeps at full night (as CityFurniture's 1 - 0.55 * night). */
 const NIGHT_DIM = 0.55;
+/** How bright the lit windows are at full night. */
+const NIGHT_GLOW = 1.6;
 
-type Hull = {
+/** One mesh of a ship: the cruise liner has two (hull, windows), the rest one. */
+type Part = {
   geometry: THREE.BufferGeometry;
   material: THREE.MeshStandardMaterial;
 };
 
-/** The model's one mesh, with a material of its own (the loader's is shared across rooms). */
-function hullOf(scene: THREE.Object3D): Hull | undefined {
-  let found: Hull | undefined;
+/** The model's meshes, each with a material of its own (the loader's is shared across rooms). */
+function partsOf(scene: THREE.Object3D): Part[] {
+  const parts: Part[] = [];
   scene.updateMatrixWorld(true);
   scene.traverse((o) => {
-    if (found || !(o instanceof THREE.Mesh)) return;
+    if (!(o instanceof THREE.Mesh)) return;
     const material = Array.isArray(o.material) ? o.material[0] : o.material;
     if (material instanceof THREE.MeshStandardMaterial)
-      found = { geometry: bakedGeometry(o), material: material.clone() };
+      parts.push({ geometry: bakedGeometry(o), material: material.clone() });
   });
-  return found;
+  return parts;
 }
 
 /**
@@ -64,29 +67,30 @@ export function Fleet({
   );
   const gltfs = useGLTF(models.map((m) => `/models/${m}.glb`));
   const hulls = useMemo(() => {
-    const out = new Map<string, Hull>();
+    const out = new Map<string, Part[]>();
     models.forEach((model, i) => {
       const scene = gltfs[i]?.scene;
-      const hull = scene && hullOf(scene);
-      if (hull) out.set(model, hull);
+      if (scene) out.set(model, partsOf(scene));
     });
     return out;
   }, [models, gltfs]);
   useEffect(
     () => () => {
-      for (const { geometry, material } of hulls.values()) {
-        geometry.dispose();
-        material.dispose();
-      }
+      for (const parts of hulls.values())
+        for (const { geometry, material } of parts) {
+          geometry.dispose();
+          material.dispose();
+        }
     },
     [hulls],
   );
-  // by night the hulls darken and the windows light up
+  // by night the hulls darken and the windows light up (a little over full: fog eats half of it at range)
   useEffect(() => {
-    for (const { material } of hulls.values()) {
-      material.color.setScalar(1 - NIGHT_DIM * night);
-      material.emissiveIntensity = night;
-    }
+    for (const parts of hulls.values())
+      for (const { material } of parts) {
+        material.color.setScalar(1 - NIGHT_DIM * night);
+        material.emissiveIntensity = night * NIGHT_GLOW;
+      }
   }, [hulls, night]);
   // browser tests and the screenshot script wait for the ships to be in
   const canvas = useThree((state) => state.gl.domElement);
@@ -110,9 +114,9 @@ export function Fleet({
   return (
     <>
       {fleet.map((ship, i) => {
-        const hull = hulls.get(shipModel(ship.kind, far));
+        const parts = hulls.get(shipModel(ship.kind, far));
         return (
-          hull && (
+          parts && (
             <group
               key={ship.name}
               ref={(g) => {
@@ -122,11 +126,14 @@ export function Fleet({
               scale={ship.scale}
               raycast={() => {}}
             >
-              <mesh
-                geometry={hull.geometry}
-                material={hull.material}
-                raycast={() => {}}
-              />
+              {parts.map(({ geometry, material }, k) => (
+                <mesh
+                  key={k}
+                  geometry={geometry}
+                  material={material}
+                  raycast={() => {}}
+                />
+              ))}
             </group>
           )
         );

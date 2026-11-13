@@ -3,10 +3,12 @@
 Each ship (cruise liner, sail ship, Viking boat, lifeboat) is joined into one
 mesh, scaled to its length in meters, turned bow toward +z and sunk to its
 waterline (y = 0), then recolored in the house palette: every face's UV points
-at one cell of a tiny palette strip, and a second strip of the same layout
-lights only the windows, so a ship is one mesh, one material, one draw call and
-glows at night with the material's emissive intensity. The sail ship also gets
-a decimated twin for the city's far horizon (`sail-lo`).
+at one cell of a tiny palette strip, so a ship is one mesh with one material
+and one draw call. The cruise liner's window bands keep their own UVs and a
+second material (the pack's Windows.png redrawn as navy panes in a cream wall,
+with an emission twin lighting only the panes), so it glows at night with the
+material's emissive intensity for two draw calls. The sail ship also gets a
+decimated twin for the city's far horizon (`sail-lo`).
 
     SRC=<Ships FBX dir> OUT=<dir> \\
     blender --background --factory-startup --python art/marina/build_fleet.py
@@ -27,24 +29,27 @@ OUT = os.environ["OUT"]
 os.makedirs(OUT, exist_ok=True)
 SCRATCH = tempfile.mkdtemp(prefix="fleet-")
 
-# Quaternius material name -> (house color, lit at night). Windows are the
-# cruise ship's "Texture" material.
+# Quaternius material name -> house color. The cruise liner's "Texture" material
+# (its window bands) is handled apart, below.
 PALETTE = {
-    "F2F2F2": ("#fff4ea", False),
-    "White": ("#fff4ea", False),
-    "Texture": ("#ffd98a", True),
-    "Red": ("#ff5a6a", False),
-    "DarkRed": ("#9a2f45", False),
-    "Black": ("#1b2a4a", False),
-    "Steel": ("#aab4c8", False),
-    "Wood": ("#8a5a3a", False),
-    "DarkWood": ("#5a3320", False),
-    "LightWood": ("#c28a52", False),
-    "Fabric": ("#fff1dc", False),
-    "Sail": ("#fff1dc", False),
-    "C5B99A": ("#f2e6c8", False),
+    "F2F2F2": "#fff4ea",
+    "White": "#fff4ea",
+    "Red": "#ff5a6a",
+    "DarkRed": "#9a2f45",
+    "Black": "#1b2a4a",
+    "Steel": "#aab4c8",
+    "Wood": "#8a5a3a",
+    "DarkWood": "#5a3320",
+    "LightWood": "#c28a52",
+    "Fabric": "#fff1dc",
+    "Sail": "#fff1dc",
+    "C5B99A": "#f2e6c8",
 }
 NAMES = list(PALETTE)
+WINDOWS = "Texture"
+WALL = "#fff4ea"
+PANE = "#2b4a7a"
+PANE_LIT = "#ffd98a"
 
 # file -> (FBX name, length in meters, how deep the hull sits as a share of its
 # height, turn it round (its bow is on Blender +y)?, decimate to this many faces)
@@ -80,21 +85,47 @@ def strip(name, colors):
     return img
 
 
-def lit_material(name):
-    """One material: palette as base color, the window strip as emission."""
-    base = [(linear(PALETTE[n][0])) for n in NAMES]
-    glow = [(linear(PALETTE[n][0]) if PALETTE[n][1] else [0, 0, 0]) for n in NAMES]
+def palette_material(name):
+    """One flat material: the palette strip as base color."""
     m = bpy.data.materials.new(name)
     m.use_nodes = True
     tree = m.node_tree
     bsdf = tree.nodes["Principled BSDF"]
     bsdf.inputs["Roughness"].default_value = 0.8
+    tex = tree.nodes.new("ShaderNodeTexImage")
+    tex.image = strip(name + "-palette", [linear(PALETTE[n]) for n in NAMES])
+    tex.interpolation = "Closest"
+    tex.extension = "EXTEND"
+    tree.links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
+    return m
+
+
+def windows_material(name):
+    """The window bands: panes in a wall by day, the panes alone lit at night."""
+    src = bpy.data.images.load(os.path.join(SRC, "..", "Blends", "Windows.png"))
+    w, h = src.size
+    px = list(src.pixels)
+    wall, pane, lit = linear(WALL), linear(PANE), linear(PANE_LIT)
+    base, glow = [], []
+    for i in range(0, len(px), 4):
+        is_pane = (px[i] + px[i + 1] + px[i + 2]) / 3 < 0.5
+        base += [*(pane if is_pane else wall), 1.0]
+        glow += [*(lit if is_pane else (0, 0, 0)), 1.0]
+    m = bpy.data.materials.new(name)
+    m.use_nodes = True
+    tree = m.node_tree
+    bsdf = tree.nodes["Principled BSDF"]
+    bsdf.inputs["Roughness"].default_value = 0.6
     bsdf.inputs["Emission Strength"].default_value = 1.0
-    for socket, colors, tag in (("Base Color", base, "palette"), ("Emission Color", glow, "glow")):
+    for socket, pixels, tag in (("Base Color", base, "walls"), ("Emission Color", glow, "panes")):
+        made = bpy.data.images.new(f"{name}-{tag}-src", width=w, height=h, alpha=False)
+        made.pixels = pixels
+        made.filepath_raw = os.path.join(SCRATCH, f"{name}-{tag}.png")
+        made.file_format = "PNG"
+        made.save()
         tex = tree.nodes.new("ShaderNodeTexImage")
-        tex.image = strip(f"{name}-{tag}", colors)
-        tex.interpolation = "Closest"
-        tex.extension = "EXTEND"
+        tex.image = bpy.data.images.load(made.filepath_raw)
+        tex.image.pack()
         tree.links.new(tex.outputs["Color"], bsdf.inputs[socket])
     return m
 
@@ -115,19 +146,29 @@ def build(file, spec):
     ship = bpy.context.view_layer.objects.active
     me = ship.data
 
-    # which palette cell every face belongs to, before the materials go
+    # which palette cell every face belongs to (None: a window band), before the materials go
     cell = []
     for poly in me.polygons:
         name = me.materials[poly.material_index].name
-        if name not in PALETTE:
+        if name == WINDOWS:
+            cell.append(None)
+        elif name in PALETTE:
+            cell.append(NAMES.index(name))
+        else:
             raise SystemExit(f"{fbx}: material {name!r} has no house color in PALETTE")
-        cell.append(NAMES.index(name))
     uv = me.uv_layers.active or me.uv_layers.new(name="UVMap")
     for poly, c in zip(me.polygons, cell):
+        if c is None:
+            continue
         for loop in poly.loop_indices:
             uv.data[loop].uv = ((c + 0.5) / len(NAMES), 0.5)
     me.materials.clear()
-    me.materials.append(lit_material("fleet-" + file))
+    me.materials.append(palette_material("fleet-" + file))
+    if any(c is None for c in cell):
+        me.materials.append(windows_material("fleet-" + file + "-windows"))
+    # (clearing the slots reset every face to slot 0)
+    for poly, c in zip(me.polygons, cell):
+        poly.material_index = 0 if c is not None else 1
 
     # length along y, bow toward +y, scaled to meters, waterline at z = 0, centered
     pts = [v.co for v in me.vertices]
