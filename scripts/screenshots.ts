@@ -1122,6 +1122,17 @@ const SHOTS: {
     query: "room=city&view=full&time=14:00&at=254,-280",
     act: cityReady,
   },
+  // a snack vending machine on the avenue's north pavement, by day and lit at night
+  {
+    name: "vending-street-day",
+    query: "room=city&view=room&time=13:00&at=12,4&cam=11,1.7,3.2,16,1.1,9.9",
+    act: furnitureReady,
+  },
+  {
+    name: "vending-street-night",
+    query: "room=city&view=room&time=22:00&at=12,4&cam=11,1.7,3.2,16,1.1,9.9",
+    act: furnitureReady,
+  },
   {
     // butterflies over the park's east lawn, close
     name: "butterflies-park",
