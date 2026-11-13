@@ -176,6 +176,11 @@ default (it is a URL flag today; the comment there says so).
 - The optimized GLBs store UVs and vertex colors as normalized integers:
   convert them to floats before merging them with built geometry
   (`useBeachProps`), as positions and normals go through `bakedGeometry`.
+- `InstancedMesh2` folds its instance color into `vColor` in `batching_vertex`,
+  which runs after `color_vertex`: a patched shader that reads the instance
+  color (the district lots' palette index) must read it after that chunk, or
+  it sees plain white. Its per-instance LOD levels draw nothing past the first
+  level, so far twins are separate meshes picked in the plan.
 
 ## 4. The plan
 
