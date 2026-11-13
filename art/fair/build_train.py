@@ -51,6 +51,53 @@ WHEELS = {"Black": "#1c0d2e", "Grey": "#ffb02e"}
 ROOF = 2.25
 
 
+def add_box(bm, layer, lo, hi, hex_color):
+    """A colored box from corner `lo` to corner `hi` (Blender axes, pack scale)."""
+    r, g, b = srgb(hex_color)
+    made = bmesh.ops.create_cube(bm, size=1.0)
+    for v in made["verts"]:
+        v.co.x = lo[0] if v.co.x < 0 else hi[0]
+        v.co.y = lo[1] if v.co.y < 0 else hi[1]
+        v.co.z = lo[2] if v.co.z < 0 else hi[2]
+    for f in {f for v in made["verts"] for f in v.link_faces}:
+        for loop in f.loops:
+            loop[layer] = (r, g, b, 1.0)
+
+
+def open_top(obj):
+    """Cuts the wagon off at ROOF, gives its walls a thickness (so they show from
+    inside), and furnishes it with a floor and a bench for the rider."""
+    mesh = obj.data
+    bm = bmesh.new()
+    bm.from_mesh(mesh)
+    bmesh.ops.bisect_plane(
+        bm,
+        geom=bm.verts[:] + bm.edges[:] + bm.faces[:],
+        plane_co=(0, 0, ROOF),
+        plane_no=(0, 0, 1),
+        clear_outer=True,
+    )
+    bm.to_mesh(mesh)
+    bm.free()
+    mod = obj.modifiers.new("walls", "SOLIDIFY")
+    mod.thickness = 0.09
+    mod.offset = -1
+    mod.use_rim = True
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+    bm = bmesh.new()
+    bm.from_mesh(mesh)
+    layer = bm.loops.layers.float_color["Col"]
+    # the inside of the body, between its walls, above its wheels
+    body = [v.co for v in bm.verts if 0.7 < v.co.z < 2.0]
+    lo_x, hi_x = min(v.x for v in body) + 0.15, max(v.x for v in body) - 0.15
+    lo_y, hi_y = min(v.y for v in body) + 0.15, max(v.y for v in body) - 0.15
+    add_box(bm, layer, (lo_x, lo_y, 0.5), (hi_x, hi_y, 0.62), "#ffe9b0")
+    mid = (lo_x + hi_x) / 2
+    add_box(bm, layer, (mid - 0.7, lo_y, 0.62), (mid + 0.7, hi_y, 0.98), "#ffffff")
+    bm.to_mesh(mesh)
+    bm.free()
+
+
 def build(part, source):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.fbx(filepath=os.path.join(TRAINS, source + ".fbx"))
@@ -78,12 +125,7 @@ def build(part, source):
     obj = bpy.context.view_layer.objects.active
     mesh = obj.data
     if part == "wagon":
-        bm = bmesh.new()
-        bm.from_mesh(mesh)
-        roof = [f for f in bm.faces if f.calc_center_median().z > ROOF]
-        bmesh.ops.delete(bm, geom=roof, context="FACES")
-        bm.to_mesh(mesh)
-        bm.free()
+        open_top(obj)
     # the pack's nose points to -x; the ride's cars run along +z (Blender -y)
     obj.rotation_euler = (0, 0, math.pi / 2)
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
@@ -91,7 +133,7 @@ def build(part, source):
     obj.location.y = -(max(ys) + min(ys)) / 2
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     mod = obj.modifiers.new("collapse", "DECIMATE")
-    mod.ratio = 0.35
+    mod.ratio = 0.35 if part != "wagon" else 0.6
     bpy.ops.object.modifier_apply(modifier=mod.name)
     attrs = mesh.color_attributes
     attrs.active_color = attrs["Col"]
