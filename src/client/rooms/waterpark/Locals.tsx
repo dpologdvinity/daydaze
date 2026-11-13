@@ -16,6 +16,7 @@ import {
 import type { DialogueRole } from "../../../game/dialogue/types.ts";
 import { POOL } from "../../../game/waterPark.ts";
 import { Doll } from "../../avatar/Doll.tsx";
+import { SUNBED } from "../shared/beachProps.ts";
 import { useReducedMotion } from "../../motion.ts";
 import { LIFEGUARD_SEAT } from "./Deck.tsx";
 
@@ -108,7 +109,7 @@ const LOCALS: readonly Local[] = [
     role: "swimmer",
   },
   {
-    // sunbathing at the foot of a lounger
+    // sitting up on a sun bed, her back against its raised end
     look: {
       skin: "#c48d68",
       hairStyle: "waves",
@@ -121,8 +122,8 @@ const LOCALS: readonly Local[] = [
     },
     swim: { style: "bikini", color: "#ff2f9a" },
     mood: "sit",
-    at: [0.2, 0.38 - SIT, 6.15],
-    rot: 0,
+    at: [0.2, SUNBED.seat - SIT, 5.78],
+    rot: Math.PI,
     role: "swimmer",
   },
   {
