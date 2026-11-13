@@ -10,6 +10,7 @@ import {
 } from "./cells.ts";
 import { BUILDINGS, CITY_SPAWN } from "./layout.ts";
 import { isMotel } from "./nyc.ts";
+import { BAY_RANGE } from "./tuning.ts";
 import {
   drawCallsOf,
   CORNICE_COLOR,
@@ -192,4 +193,43 @@ test("street trees come as spots for the tree models, not boxes and balls", () =
   assert.ok(plan.instances.treeTrunk.length === 0);
   // the same spot always grows the same tree
   assert.deepEqual(planCity(ALL_CELLS, 0, origin).trees, plan.trees);
+});
+
+test("the five districts wear district lots near the player, Downtown wears bays", () => {
+  // Little Manila, Chinatown, Koreatown, the Arts District and Uptown
+  for (const at of [
+    [-300, -8],
+    [262, -8],
+    [372, -8],
+    [-96, -256],
+    [264, -256],
+  ] satisfies Vec2[]) {
+    const plan = planCity(cellsWithin(at, VIEW_RADIUS), 2, at, BAY_RANGE.low);
+    assert.ok(plan.lots.length > 10, `lots at ${at}`);
+    // the shop boards ride on the plan's panels and labels
+    assert.ok(plan.lots.some((l) => l.sign !== null));
+    assert.ok(plan.lots.every((l) => !l.back || l.sign === null));
+  }
+  const downtown: Vec2 = [-30, -6];
+  const plan = planCity(
+    cellsWithin(downtown, VIEW_RADIUS),
+    2,
+    downtown,
+    BAY_RANGE.low,
+  );
+  assert.ok(plan.bays.length > 0, "Downtown keeps its bays");
+});
+
+test("a block wears lots or bays, never both; far blocks are plain boxes", () => {
+  const at: Vec2 = [-300, -8];
+  const near = planCity(cellsWithin(at, VIEW_RADIUS), 2, at, BAY_RANGE.low);
+  const none = planCity(cellsWithin(at, VIEW_RADIUS), 2, at, 0);
+  assert.equal(none.lots.length, 0);
+  assert.equal(none.bays.length, 0);
+  const reach = BAY_RANGE.low * 0.85;
+  for (const lot of near.lots)
+    assert.ok(
+      Math.hypot(lot.x - at[0], lot.z - at[1]) < reach + 40,
+      "lots stay within the lot range plus the block's own size",
+    );
 });

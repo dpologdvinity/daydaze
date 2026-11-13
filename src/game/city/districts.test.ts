@@ -9,6 +9,7 @@ import { facesOf } from "./nyc.ts";
 import {
   DISTRICT_NAMES,
   LOOKS,
+  LOT_CAPACITY,
   LOT_MODELS,
   LOT_SPECS,
   PALETTES,
@@ -21,6 +22,7 @@ import {
   type District,
 } from "./districts.ts";
 import { hash } from "./hash.ts";
+import { planView } from "./budget.ts";
 
 const blocks = BUILDINGS.filter((b) => isLotBlock(b) && lotRow(b).length > 0);
 const DISTRICTS = Object.keys(LOOKS) as District[];
@@ -197,4 +199,16 @@ test("the lot specs match the shipped lots.glb, each with its far twin", () => {
     assert.equal(twin ? spec.lo : spec.tris, Math.round(tris), node.name);
     if (twin) assert.ok(spec.lo < spec.tris, `${model}'s twin is lighter`);
   }
+});
+
+test("no model has more lots in any high-tier view than half its mesh holds", () => {
+  let most = 0;
+  for (let x = -432; x <= 432; x += 48)
+    for (let z = -320; z <= 368; z += 48) {
+      const counts = new Map<string, number>();
+      for (const lot of planView([x, z], "high").lots)
+        counts.set(lot.model, (counts.get(lot.model) ?? 0) + 1);
+      most = Math.max(most, ...counts.values());
+    }
+  assert.ok(most > 0 && most * 2 <= LOT_CAPACITY, `${most} of ${LOT_CAPACITY}`);
 });
