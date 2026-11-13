@@ -105,6 +105,12 @@ export function FarCity(): null | JSX.Element {
       windowed(new THREE.MeshLambertMaterial({ color: "#ffffff" })),
       FAR_CAPACITY,
     );
+    // the instance color exists from the first compile: made later (setColorAt)
+    // it would be a second shader program for the same material
+    mesh.instanceColor = new THREE.InstancedBufferAttribute(
+      new Float32Array(FAR_CAPACITY * 3).fill(1),
+      3,
+    );
     mesh.count = 0;
     mesh.frustumCulled = false;
     mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
