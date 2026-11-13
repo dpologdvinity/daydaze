@@ -701,7 +701,8 @@ export function CameraRig({
       f.t += dt;
       if (f.snap || f.t > 1.4) fly.current = null;
     }
-    if (zoom.current !== 1) {
+    const zoomed = zoom.current !== 1;
+    if (zoomed) {
       // a zoom takes over from a flight still under way; it glides over a
       // few frames (all at once with reduced motion)
       fly.current = null;
@@ -740,6 +741,16 @@ export function CameraRig({
         .toFixed(2);
     }
     c.update();
+    // for screenshots and tests: how high above her face the camera looks from
+    if (zoomed)
+      canvas.dataset.camElevation = (
+        (Math.atan2(
+          camera.position.y - (at.y + focusHeight(0)),
+          Math.hypot(camera.position.x - at.x, camera.position.z - at.z),
+        ) *
+          180) /
+        Math.PI
+      ).toFixed(1);
     // up close, indoors: out of the walls (an overview is far past them)
     if (walls.current?.room !== room)
       walls.current = { room, inside: roomInside(ROOMS[room].walkable) };

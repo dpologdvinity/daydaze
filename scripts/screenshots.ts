@@ -2217,6 +2217,12 @@ const SHOTS: {
         null,
         { timeout: 120_000 },
       );
+      console.log(
+        "zoom-room elevation (deg):",
+        await page.evaluate(
+          () => document.querySelector("canvas")?.dataset.camElevation,
+        ),
+      );
     },
   },
   {
