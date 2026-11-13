@@ -6,7 +6,7 @@
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useState, type JSX } from "react";
 import {
-  WILDLIFE,
+  wildlifeFor,
   WILDLIFE_Y,
   wildlifeNear,
 } from "../../game/city/parkWildlife.ts";
@@ -25,9 +25,7 @@ export function ParkWildlife({
     const now = wildlifeNear(player.pos.x, player.pos.z);
     if (now !== near) setNear(now);
   });
-  const shown = near
-    ? WILDLIFE.filter((w) => !(w.highOnly && tier === "low"))
-    : [];
+  const shown = near ? wildlifeFor(tier) : [];
   // how many animals are drawn, for the browser tests
   useEffect(() => {
     const dom = document.querySelector("canvas")?.dataset;

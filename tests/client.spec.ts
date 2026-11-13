@@ -338,6 +338,24 @@ test("Skyline Supply sells a snack and a water for coins", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("a vending machine in Skyline Supply sells a soda for coins", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  // standing in front of the machine on the east wall
+  await page.goto(`${STILL}&room=market&at=7,-2.8`);
+  await expect(roomTitle(page)).toHaveText("Skyline Supply", {
+    timeout: 150_000,
+  });
+  const panel = page.getByRole("region", { name: "Vending machine" });
+  await expect(panel).toBeVisible({ timeout: 60_000 });
+  await panel.getByRole("button", { name: /Mango Moon Soda/ }).click();
+  await expect(panel.getByRole("status")).toHaveText("Mango Moon Soda dropped");
+  // the room header and the panel both show the wallet
+  await expect(page.getByText("97 coins").first()).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test("Splat City: a paintball round marks a rival for points", async ({
   page,
 }) => {
@@ -3425,8 +3443,9 @@ test("the park's wildlife appears near the park, and the doe only on the high ti
 }) => {
   test.setTimeout(330_000);
   const errors = collectErrors(page);
+  // the low tier keeps one deer, one rabbit and the fox (wildlifeFor)
   await page.goto("/?quality=low&room=city&at=268,-279");
-  await expect(page.locator("canvas")).toHaveAttribute("data-wildlife", "5", {
+  await expect(page.locator("canvas")).toHaveAttribute("data-wildlife", "3", {
     timeout: 240_000,
   });
   await page.goto("/?quality=high&room=city&at=268,-279");

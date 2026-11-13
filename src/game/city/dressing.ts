@@ -868,6 +868,8 @@ function furnitureSpots(): FurnitureSpot[] {
     [8.5, "newsbox", 9.9, 0.4],
     [11, "trashcan", 9.7, 0.9],
     [13.5, "meter", 8.0, 0.5],
+    // clear of the trees 15 m either side of each lamp
+    [-13.2, "vending", 9.9, 0.3],
   ];
   for (const p of PROPS) {
     if (p.kind !== "lamp") continue;

@@ -51,6 +51,7 @@ import {
 } from "./PlayerController.tsx";
 import { QualityContext, type QualityTier } from "./quality.ts";
 import { Seats } from "./Seats.tsx";
+import { VendingWatch } from "../vending/VendingWatch.tsx";
 import { isSceneReady, setSceneReady } from "./ready.ts";
 import { CompileGate } from "./compileGate.ts";
 import { Photo } from "./Photo.tsx";
@@ -701,6 +702,7 @@ export function World({
             </Suspense>
           )}
           <Seats room={room} player={player} area={area} home={home} />
+          <VendingWatch room={room} player={player} />
           <PlayerController
             player={player}
             area={area}

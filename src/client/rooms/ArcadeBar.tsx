@@ -26,6 +26,7 @@ import { GamePad } from "./shared/GamePad.tsx";
 import { canvasTex, hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
+import { VendingMachines } from "./shared/VendingMachines.tsx";
 import { PropSet } from "./shared/Prop.tsx";
 import { BarStools } from "./shared/BarStools.tsx";
 import { Batch } from "./shared/batch.ts";
@@ -536,6 +537,9 @@ export function ArcadeBar({
         onPick={onPick}
       />
       <PortalPads room={ROOMS["arcade-bar"]} color={GREEN} />
+      <Suspense fallback={null}>
+        <VendingMachines room="arcade-bar" />
+      </Suspense>
       {hotspotsIn("arcade-bar").map((spot) => (
         <GamePad key={spot.id} spot={spot} onGame={onGame} />
       ))}

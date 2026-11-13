@@ -769,6 +769,22 @@ const SHOTS: {
   },
   { name: "zoo-woods", query: "room=zoo&cam=0,7,2,0,1,-6.2" },
   { name: "forest", query: "room=forest" },
+  // the vending machines in Skyline Supply, Player 2 and the Boardwalk Arcade
+  { name: "vending-market", query: "room=market&cam=6.4,1.6,-1.2,8.6,1,-2.8" },
+  {
+    name: "vending-arcade-bar",
+    query: "room=arcade-bar&cam=-1,1.8,4.4,-5.6,1,4.4",
+  },
+  {
+    name: "vending-boardwalk-arcade",
+    query: "room=boardwalk-arcade&cam=-6,1.8,5.2,-8.6,1,3.9",
+  },
+  // Larkspur's meadow glade and the garden's beds, with their butterflies
+  {
+    name: "butterflies-meadow",
+    query: "room=forest&cam=6,2.6,16,16,1,5",
+  },
+  { name: "butterflies-garden", query: "room=garden&cam=0,3,12,0,1,0" },
   { name: "forest-path", query: "room=forest&cam=2,3,2,-1,1.2,-10" },
   { name: "forest-top", query: "room=forest&cam=0,26,8,0,0,-4" },
   { name: "forest-creek", query: "room=forest&cam=2,7,-4,1,0,-14" },
@@ -1115,6 +1131,34 @@ const SHOTS: {
     name: "city-park",
     query: "room=city&view=full&time=14:00&at=254,-280",
     act: cityReady,
+  },
+  // a snack vending machine on the avenue's north pavement, by day and lit at night
+  {
+    name: "vending-street-day",
+    query:
+      "room=city&view=room&time=13:00&at=103,7&cam=103.8,1.5,7.4,106.8,1,9.9",
+    act: furnitureReady,
+  },
+  {
+    name: "vending-street-night",
+    query:
+      "room=city&view=room&time=22:00&at=103,7&cam=103.8,1.5,7.4,106.8,1,9.9",
+    act: furnitureReady,
+  },
+  {
+    // butterflies over the park's east lawn, close
+    name: "butterflies-park",
+    query:
+      "room=city&view=room&time=14:00&at=254,-280&cam=251,2,-285,268,1.3,-277",
+    act: async (page) => {
+      await cityReady(page);
+      // the flock is in: it exists only while a flock is near and it is day
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.butterflies) > 0,
+        undefined,
+        { timeout: 120_000 },
+      );
+    },
   },
   {
     // the park's entrance from Park Avenue, flanked by trees

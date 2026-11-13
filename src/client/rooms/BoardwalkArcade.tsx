@@ -4,7 +4,7 @@
 // Lane geometry comes from game/boardwalkArcade.ts.
 
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, type JSX } from "react";
+import { Suspense, useEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";
 import {
   ATTENDANT,
@@ -28,6 +28,7 @@ import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { canvasTex, hdr, neonMat } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
+import { VendingMachines } from "./shared/VendingMachines.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
 import { ROLL_TIME, skee, tick } from "./boardwalk/session.ts";
 
@@ -394,6 +395,9 @@ export function BoardwalkArcade({
       />
       <Floor width={W} depth={D} color="#ffffff" map={carpet} onPick={onPick} />
       <PortalPads room={ROOMS["boardwalk-arcade"]} color="#4fe3ff" />
+      <Suspense fallback={null}>
+        <VendingMachines room="boardwalk-arcade" />
+      </Suspense>
       <primitive object={room} />
       <group position={[LANES[1] ?? 0, 0, 0]}>
         <Ball />

@@ -141,6 +141,22 @@ export const CREDITS: readonly {
     title: "3D models",
     entries: [
       {
+        title: "Animated Flying Fluttering Butterfly Loop",
+        author: "LasquetiSpice",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/none-80f8d9a6dadc411e89ca366cb0cfb0d9",
+        usedFor:
+          "The park's, Larkspur Forest's and the garden's butterflies: frozen in the open-wing pose, decimated to 160 triangles, flapped in a shader (art/butterfly/build_butterfly.py).",
+      },
+      {
+        title: "90s Retro Vending Machine",
+        author: "MadeByYeshe",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/90s-retro-vending-machine-dfd9838c7475422099d8d435d08102fe",
+        usedFor:
+          "Snack vending machines on the avenue's sidewalks and in Skyline Supply, Player 2 and Boardwalk Arcade (art/vending/build_vending.py).",
+      },
+      {
         title: "Mermaid",
         author: "charliecatling",
         license: "CC-BY 4.0",

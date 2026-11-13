@@ -19,6 +19,8 @@ import {
   type FurnitureKind,
   type FurnitureSpot,
 } from "../../game/city/furniture.ts";
+import { machineColor } from "../../game/vending.ts";
+import { paintVending } from "../vending/vendingLook.ts";
 import { createStore } from "../rooms/shared/store.ts";
 import { useQuality } from "../world/quality.ts";
 import { useDaylight } from "./daylight.ts";
@@ -113,6 +115,29 @@ export function dimMeshes(meshes: readonly THREE.InstancedMesh[], k: number) {
   }
 }
 
+/** The vending machine's lit front: its stock glows softly at night. */
+export function glowVending(meshes: readonly THREE.InstancedMesh[], k: number) {
+  for (const mesh of meshes) {
+    const m = mesh.material;
+    if (
+      m instanceof THREE.MeshStandardMaterial &&
+      m.name === "Vending_Machine"
+    ) {
+      // the glTF's emission map is the stock window: it lights up at night
+      m.emissiveIntensity = 1.4 * k;
+    }
+  }
+}
+
+/** A vending machine's candy paint, one shared color per brand. */
+const PAINT = new Map<string, THREE.Color>();
+function paintOf(spot: FurnitureSpot): THREE.Color {
+  const hex = machineColor(spot);
+  let color = PAINT.get(hex);
+  if (!color) PAINT.set(hex, (color = new THREE.Color(hex)));
+  return color;
+}
+
 type Meshes = ReadonlyMap<FurnitureKind, THREE.InstancedMesh[]>;
 
 function place(
@@ -141,6 +166,7 @@ function place(
       const i = counts.get(mesh) ?? 0;
       if (i >= CAPACITY) continue;
       mesh.setMatrixAt(i, m);
+      if (f.kind === "vending") mesh.setColorAt(i, paintOf(f));
       counts.set(mesh, i + 1);
     }
   }
@@ -148,6 +174,7 @@ function place(
     for (const mesh of parts) {
       mesh.count = counts.get(mesh) ?? 0;
       mesh.instanceMatrix.needsUpdate = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     }
   // how many of each kind are drawn (the first part's count), for browser tests
   return Object.fromEntries(
@@ -180,16 +207,20 @@ export function CityFurniture({ summer }: { summer: boolean }): JSX.Element {
               }),
           ),
         );
+      if (kind === "vending")
+        for (const mesh of byKind.get(kind) ?? [])
+          if (mesh.material instanceof THREE.MeshStandardMaterial)
+            paintVending(mesh.material, null);
     });
     return byKind;
   }, [gltfs]);
   const { spots, at } = cityFurniture.use();
   // dim with the night like the rest of the city (dimForDay in meshes.ts)
   const { neon } = useDaylight();
-  useEffect(
-    () => dimMeshes([...meshes.values()].flat(), 1 - 0.55 * neon),
-    [meshes, neon],
-  );
+  useEffect(() => {
+    dimMeshes([...meshes.values()].flat(), 1 - 0.55 * neon);
+    glowVending(meshes.get("vending") ?? [], neon);
+  }, [meshes, neon]);
   const canvas = useThree((state) => state.gl.domElement);
   useEffect(() => {
     const drawn = place(meshes, spots, at, low, summer);
