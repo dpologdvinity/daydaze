@@ -155,6 +155,7 @@ test("each gate raises two tall arches either side of its door", () => {
 
 test("a district block wearing lots drops its own 10 m board and awning: the lots' shop boards name it", () => {
   const signed = BUILDINGS.filter((b) => isLotBlock(b) && b.sign);
+  let posters = 0;
   assert.ok(signed.length > 5, "district blocks carry their own boards");
   for (const b of signed) {
     const plain = emptyBuckets();
@@ -166,7 +167,15 @@ test("a district block wearing lots drops its own 10 m board and awning: the lot
     // nor does the block's one big striped awning cross the lots' doors
     assert.ok(plain.awning.length > 0, b.id);
     assert.equal(lotted.awning.length, 0, b.id);
+    // nor do pasted posters (a dark rectangle in a bright frame) or product
+    // shelves hang over the lots' own doors and windows
+    const poster = (i: Instance) => i.sx === 1.1 && i.sy === 1.5;
+    const shelf = (i: Instance) => i.sy === 0.12 && i.sz === 0.5;
+    posters += plain.glow.filter(poster).length;
+    assert.equal(lotted.glow.filter(poster).length, 0, b.id);
+    assert.equal(lotted.furniture.filter(shelf).length, 0, b.id);
   }
+  assert.ok(posters > 0, "the plain blocks do carry posters");
 });
 
 test("the blade signs and ads are dressed on their own buildings", () => {
