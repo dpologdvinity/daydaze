@@ -13,7 +13,7 @@ opt() { # in out texture-size
   "${GT[@]}" optimize "$1" "$2" --compress meshopt --texture-compress webp \
     --texture-size "$3" --simplify false --palette false
 }
-for i in 1 2 3 4 5; do
+for i in 1 2 3 4 5 6 7 8 9; do
   opt "$RAW/street-tree-$i.glb" "$ROOT/public/models/nature/street-tree-$i.glb" 512
   opt "$RAW/street-tree-$i-lo.glb" "$ROOT/public/models/nature/street-tree-$i-lo.glb" 256
 done

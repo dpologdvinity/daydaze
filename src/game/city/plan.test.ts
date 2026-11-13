@@ -19,7 +19,10 @@ import {
   facadeOf,
   wearsNeon,
   KINDS,
+  GARDEN_FIRST,
+  isGardenAt,
   planCity,
+  TREE_VARIANTS,
   trianglesOf,
   type CityPlan,
 } from "./plan.ts";
@@ -185,11 +188,23 @@ test("street trees come as spots for the tree models, not boxes and balls", () =
   assert.ok(props > 0);
   assert.ok(plan.trees.length > 50, `${plan.trees.length} trees`);
   for (const t of plan.trees) {
-    assert.ok(Number.isInteger(t.variant) && t.variant >= 0 && t.variant < 5);
+    assert.ok(
+      Number.isInteger(t.variant) &&
+        t.variant >= 0 &&
+        t.variant < TREE_VARIANTS,
+    );
     assert.ok(t.scale > 0.6 && t.scale < 1.4);
   }
   // every variant shows up, so streets aren't one tree cloned
-  assert.equal(new Set(plan.trees.map((t) => t.variant)).size, 5);
+  assert.equal(new Set(plan.trees.map((t) => t.variant)).size, TREE_VARIANTS);
+  // birches and maples grow on Suburbia's and the park's lawns, not on the avenues
+  const garden = (t: { variant: number }) => t.variant >= GARDEN_FIRST;
+  for (const t of plan.trees)
+    if (garden(t)) assert.ok(isGardenAt(t.x, t.z), `${t.x},${t.z}`);
+  const lawns = plan.trees.filter((t) => isGardenAt(t.x, t.z));
+  assert.ok(
+    lawns.length > 20 && lawns.filter(garden).length > lawns.length / 3,
+  );
   // the old sphere canopies are only the palms' coconuts now
   assert.ok(plan.instances.treeTrunk.length === 0);
   // the same spot always grows the same tree

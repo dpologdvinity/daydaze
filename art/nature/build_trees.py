@@ -19,7 +19,7 @@ What the script does to each model:
 - the far twin keeps one leaf card in KEEP (the survivors grown by GROW about
   their own centers, so the crown still reads full) and decimates the bark.
 
-    SRC_TST=<dir> SRC_USN=<dir> OUT=<dir> \\
+    [ONLY="street-tree-8 palm"] SRC_TST=<dir> SRC_USN=<dir> OUT=<dir> \\
     blender --background --factory-startup --python art/nature/build_trees.py
 
 then `bash scripts/import-trees.sh` optimizes the GLBs into public/models/nature/.
@@ -46,6 +46,12 @@ MODELS = [
     ("street-tree-4", "TST", "Tree_8", 0, True, 2, 1.3, 0.15),
     ("street-tree-5", "TST", "Tree_10", 0, True, 2, 1.3, 0.15),
     # the palms are street furniture (public/models/street/), drawn only near
+    # birches and maples for the Uptown park and Suburbia's lawns (plan.ts
+    # treeAt picks them there); the far twin carries them on the low tier
+    ("street-tree-6", "TSTB", "Birch_2", 0, True, 2, 1.3, 0.15),
+    ("street-tree-7", "TSTB", "Birch_7", 0, True, 2, 1.3, 0.15),
+    ("street-tree-8", "USNM", "MapleTree_1", 0, True, 4, 1.8, 0.04),
+    ("street-tree-9", "USNM", "MapleTree_2", 0, True, 5, 2.0, 0.04),
     ("palm", "USN", "PalmTree_1", 7.0, False, 1, 1.0, 1.0),
     ("palm-2", "USN", "PalmTree_3", 7.0, False, 1, 1.0, 1.0),
 ]
@@ -60,17 +66,34 @@ PACKS = {
         leaves="Textures/PalmTree_Leaves.png",
         bark="Textures/PalmTree_Trunk.png",
     ),
+    # the Textured Stylized Trees' birch (own leaf and bark textures)
+    "TSTB": dict(
+        src=SRC_TST,
+        leaves="Textures/Birch_Leaves_Green.png",
+        bark="Textures/Birch_Bark.png",
+    ),
+    # the Ultimate Stylized Nature maple: its leaf texture is autumn red, so the
+    # gray one is used, turned leaf green here (the client tints each tree)
+    "USNM": dict(
+        src=SRC_USN,
+        leaves="Textures/MapleTree_Leaves_BW.png",
+        bark="Textures/MapleTree_Bark.png",
+        leaf_color=(0.9, 1.2, 0.7),
+    ),
 }
 # how far the leaf normals lean up from "away from the crown's center"
 LEAN_UP = 0.35
 
 
-def bled(path, name):
-    """The image at `path` with every transparent texel's color taken from its
-    nearest opaque neighbors (dilated eight texels out)."""
+def bled(path, name, color=None):
+    """The image at `path` (multiplied by `color` if given) with every
+    transparent texel's color taken from its nearest opaque neighbors
+    (dilated eight texels out)."""
     img = bpy.data.images.load(path)
     w, h = img.size
     px = np.array(img.pixels[:], dtype=np.float32).reshape(h, w, 4)
+    if color:
+        px[..., :3] = np.clip(px[..., :3] * np.array(color, np.float32), 0, 1)
     known = px[..., 3] > 0.5
     for _ in range(8):
         total = np.zeros((h, w, 3), np.float32)
@@ -241,14 +264,19 @@ def build(out_name, pack, fbx, height, keep, grow, bark_ratio, lo, images):
 def textures(key):
     """A pack's leaf image (bled) and bark image."""
     cfg = PACKS[key]
-    leaves = bled(os.path.join(cfg["src"], cfg["leaves"]), key + "_leaves")
+    leaves = bled(
+        os.path.join(cfg["src"], cfg["leaves"]), key + "_leaves", cfg.get("leaf_color")
+    )
     bark = bpy.data.images.load(os.path.join(cfg["src"], cfg["bark"]))
     bark.name = key + "_bark"
     bark.pack()
     return leaves, bark
 
 
+ONLY = os.environ.get("ONLY", "").split()  # build just these names
 for name, pack, fbx, height, far, keep, grow, ratio in MODELS:
+    if ONLY and name not in ONLY:
+        continue
     for lo in (False, True) if far else (False,):
         # images and materials live in the file being built, so make them anew
         bpy.ops.wm.read_factory_settings(use_empty=True)
