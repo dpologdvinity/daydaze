@@ -600,6 +600,7 @@ function Concourse() {
           />
         ))}
         <PropSet
+          allParts
           model="plant-tall"
           dir="home"
           width={0.7}
@@ -611,6 +612,7 @@ function Concourse() {
           ]}
         />
         <PropSet
+          allParts
           model="trash-large"
           dir="home"
           width={0.4}

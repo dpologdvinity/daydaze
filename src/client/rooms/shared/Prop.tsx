@@ -168,7 +168,9 @@ export function Prop({
   );
 }
 
-/** Many copies of one prop, one instanced draw per material: `at` is [x, y, z, yaw]. */
+/** Many copies of one prop: `at` is [x, y, z, yaw]. One instanced draw per
+ * material when `allParts` (the House Interior models have several), else just
+ * the model's first part, as the single-mesh props always drew. */
 export function PropSet({
   model,
   width,
@@ -177,15 +179,21 @@ export function PropSet({
   at,
   dir,
   shade,
+  allParts = false,
 }: {
   model: string;
   at: readonly (readonly [number, number, number, number])[];
   dir?: string;
   shade?: THREE.ColorRepresentation;
+  allParts?: boolean;
 } & Fit) {
-  const parts = useShaded(
+  const every = useShaded(
     useFittedParts(model, { width, depth, height }, dir),
     shade,
+  );
+  const parts = useMemo(
+    () => (allParts ? every : every.slice(0, 1)),
+    [allParts, every],
   );
   const refs = useRef<(THREE.InstancedMesh | null)[]>([]);
   useLayoutEffect(() => {
