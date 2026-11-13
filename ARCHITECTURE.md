@@ -77,14 +77,19 @@ floors, looks, saves, chat effects) so both sides agree on the rules.
   and places corner blocks, crosswalks, stop and slow words, double yellow
   lines, manholes, drains and bollards, and `city/StreetPieces.tsx` merges
   them into two meshes (paint on the kit's decal atlas, solids in concrete)
-  on every plan reload. Block interiors are filled by `game/city/yards.ts`:
-  it finds the gaps (clear of every surface, building and solid, on a 2 m
-  grid), cuts them into yards and gives each a use by neighborhood (park,
-  parking lot with striped stalls and parked cars, basketball court, garden,
-  alley, backyard, sand); the ground slabs ride the street dressing, the
-  props (`public/models/yards/`: dumpsters, fences, bags, the court) are
-  furniture kinds, the cars join `PARKED_CARS` and the trees join the plan's
-  tree spots. Yards are scenery, not floor (walk rules are unchanged). The El (`game/city/el.ts` timetable, `city/ElLine.tsx` trestle,
+  on every plan reload. Block interiors are filled by an infill plan
+  (`game/city/infill.ts`, run at build time by `scripts/gen-infill.ts` into
+  `infill.generated.ts`; `infill.test.ts` fails when it is stale): it finds
+  the gaps (clear of every surface, building and solid, on a 2 m grid), cuts
+  the big ones into sub-blocks by 6 m service lanes, and builds each as two
+  rows of buildings back to back, facing the streets and lanes, with a narrow
+  back alley or a pocket yard between (`layout.ts` appends the buildings to
+  `BUILDINGS`, so walls, bays, lots and the budget treat them like the rest;
+  infill is dressed lightly and drawn out to `INFILL_RANGE`). Small gaps,
+  Suburbia and the beach keep one yard (backyard, lot, sand). `game/city/yards.ts`
+  lays out each yard (ground slabs and stripes, the props in
+  `public/models/yards/`, cars joining `PARKED_CARS`, trees joining the tree
+  spots). Yards are scenery, not floor (walk rules are unchanged). The El (`game/city/el.ts` timetable, `city/ElLine.tsx` trestle,
   stations and train, `city/ElRide.tsx` + `ElPanel.tsx` fast travel) runs
   over Main Avenue on the shared clock.
 - `avatar/` is the doll: `human/HumanDoll.tsx` loads the Blender-built GLB
