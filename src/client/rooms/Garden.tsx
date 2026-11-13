@@ -24,6 +24,8 @@ import { useWorkClip } from "./shared/game3d/workClip.ts";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
 import { GardenDressing } from "./garden/Dressing.tsx";
+import { Butterflies } from "../world/Butterflies.tsx";
+import { GARDEN_FLOCKS } from "../../game/butterflies.ts";
 
 const { x0, x1, z0, z1 } = BOUNDS;
 const W = x1 - x0;
@@ -334,6 +336,7 @@ export function Garden({ onPick }: { onPick: PickHandler }): JSX.Element {
       {/* Paths, picket fence and rose arch, neighbors' beds, borders, greenhouse, bench */}
       <Suspense fallback={null}>
         <GardenDressing plots={garden.plots} />
+        <Butterflies flocks={GARDEN_FLOCKS} seed={2} />
       </Suspense>
 
       {/* 8 Raised vegetable and flower beds */}

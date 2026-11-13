@@ -24,6 +24,7 @@ import { RESIDENTS, dogParkNear } from "./dogPark.ts";
 import { AUDIENCE_DRAWN, BAND, CHAIRS, shellNear } from "./bandShell.ts";
 import { PEDESTRIANS } from "./pedestrians.ts";
 import { WILDLIFE, wildlifeNear } from "./parkWildlife.ts";
+import { PARK_FLOCKS, flockNear } from "../butterflies.ts";
 import { QUEUE_NEAR_LOW, QUEUE_PERSON_TRIS, QUEUE_SPOTS } from "./queues.ts";
 import {
   bats,
@@ -118,6 +119,7 @@ export const MODEL_COST: Readonly<
   "park/gazebo": { tris: 358, parts: 1 },
   "park/rowboat": { tris: 350, parts: 1 },
   "park/duck": { tris: 250, parts: 7 },
+  "butterfly/butterfly": { tris: 160, parts: 1 },
   "park/band-shell": { tris: 2208, parts: 1 },
   "park/lawn-chair": { tris: 216, parts: 1 },
   "park/band-trumpet": { tris: 1840, parts: 1 },
@@ -203,6 +205,7 @@ export function modelsInBudget(): string[] {
         k.startsWith("park/band-") ||
         k === "park/lawn-chair",
     ),
+    "butterfly/butterfly",
     ...FURNITURE_KINDS.map(furnitureModel),
     ...CITY_FLEET.map((s) => shipModel(s.kind, true)),
     ...Object.keys(GROWTH_MODELS)
@@ -462,10 +465,21 @@ export function liveCost(
     for (const w of WILDLIFE) if (!w.highOnly) add(`animals/${w.kind}`);
   if (dogParkNear(at[0], at[1]))
     for (const r of RESIDENTS) add(`animals/${r.kind}`);
+  // the park's butterflies (by day): one instanced draw, each flock near her
+  let butterflies = 0;
+  for (const f of PARK_FLOCKS)
+    if (flockNear(f, at[0], at[1], "low")) butterflies += f.count.low;
+  const fly = costOf("butterfly/butterfly");
   return {
     // one instanced draw per look and stride in use
-    drawCalls: (dolls + bandDolls) * NPC_DOLL_CALLS + (crowd > 0 ? 8 : 0),
-    triangles: (dolls + bandDolls) * NPC_DOLL_TRIS + crowd * CROWD_FIGURE_TRIS,
+    drawCalls:
+      (dolls + bandDolls) * NPC_DOLL_CALLS +
+      (crowd > 0 ? 8 : 0) +
+      (butterflies > 0 ? fly.parts : 0),
+    triangles:
+      (dolls + bandDolls) * NPC_DOLL_TRIS +
+      crowd * CROWD_FIGURE_TRIS +
+      butterflies * fly.tris,
   };
 }
 

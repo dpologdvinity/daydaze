@@ -36,6 +36,8 @@ import { WanderingCreature } from "../creatures/Wanderer.tsx";
 import type { Player } from "../world/PlayerController.tsx";
 import { useReducedMotion } from "../motion.ts";
 import { useQuality } from "../world/quality.ts";
+import { Butterflies } from "../world/Butterflies.tsx";
+import { FOREST_FLOCKS } from "../../game/butterflies.ts";
 import { Batch } from "./shared/batch.ts";
 import type { PickHandler } from "./shared/Floor.tsx";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
@@ -463,6 +465,7 @@ export function Forest({
         rotation-y={Math.PI}
       />
       <Suspense fallback={null}>
+        <Butterflies flocks={FOREST_FLOCKS} seed={1} />
         <Woods share={share} />
         <Undergrowth share={tier === "low" ? 0.6 : 1} />
         <Scatter
