@@ -674,6 +674,10 @@ export function World({
       gl={{ antialias: true, powerPreference: "high-performance" }}
       camera={{ position: [6.4, 5.4, 10], fov: 38, near: 0.05, far: 600 }}
       onCreated={({ gl }) => {
+        // the error check reads every program's info log, which makes the
+        // driver finish linking on the spot and so defeats the parallel
+        // compile (Warmup); a failing shader still shows in development
+        if (import.meta.env.PROD) gl.debug.checkShaderErrors = false;
         gl.domElement.setAttribute("role", "img");
         gl.domElement.setAttribute("aria-label", "3D room view");
       }}
