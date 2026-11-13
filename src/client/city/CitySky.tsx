@@ -20,7 +20,21 @@ void main() {
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }`;
 
-const SKY_FRAGMENT = `
+/**
+ * The sky's color at the horizon in a direction: the horizon tint plus the
+ * city's glow, strongest on the north side. The dome paints it everywhere
+ * below the horizon, and the sea (Ocean.tsx) fades to the same color with
+ * distance, so sea and sky meet with no band between them.
+ */
+export const HORIZON_GLSL = `
+vec3 horizonColor(vec3 horizon, vec3 glowColor, float dirZ) {
+  float glow = 0.55 + 0.45 * smoothstep(-0.5, 0.5, -dirZ);
+  return horizon + glowColor * glow * 0.45;
+}`;
+
+const SKY_FRAGMENT =
+  HORIZON_GLSL +
+  `
 uniform vec3 uZenith;
 uniform vec3 uHorizon;
 uniform vec3 uGlow;
@@ -92,7 +106,8 @@ void main() {
   vec3 towerCol = mix(dayCol, nightCol, uNeon);
   col = mix(col, towerCol, edge);
 
-  if (up < 0.0) col = uHorizon;
+  // below the horizon: the horizon's own color, so the sea can fade into it
+  if (up < 0.0) col = horizonColor(uHorizon, uGlow, vDir.z / max(length(vDir.xz), 0.0001));
   gl_FragColor = vec4(col, 1.0);
   #include <colorspace_fragment>
 }`;
