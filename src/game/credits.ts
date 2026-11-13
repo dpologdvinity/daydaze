@@ -279,7 +279,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/universalbasecharacters.html",
         usedFor:
-          "Buzz cut, parted cut and their refits as the buzz, shaved-sides and slicked-edges hair, scaled to our head.",
+          "Buzz cut, parted cut and their refits as the buzz, shaved-sides and slicked-edges hair, scaled to our head. The Superhero woman and man, clothed with a jersey, pants, shoes and helmet cut from their own skin, are the Paintball and Laser Tag opponents (art/opponents/).",
       },
       {
         title: "Hair Pack (part 1)",
@@ -391,7 +391,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/scifiessentialskit.html",
         usedFor:
-          "Photon Zone cover and lockers in Photon Zone and Player 2, fitted to the existing arena footprints; Orbit 9's chairs, tables, shelves and mugs (art/scifi/orbit.sh).",
+          "Photon Zone cover and lockers in Photon Zone and Player 2, fitted to the existing arena footprints; Orbit 9's chairs, tables, shelves and mugs (art/scifi/orbit.sh); its pistol, cut down, in the Paintball and Laser Tag opponents' hands.",
       },
       {
         title: "Arcade Machine",
@@ -1759,7 +1759,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/universalanimationlibrary.html",
         usedFor:
-          "Walk, jog and sprint loops, idles (phone, folded arms), sitting enter/exit, farm planting, watering and harvesting, tree chopping, carrying, pushing, throwing, climbing, sliding. Retargeted onto the doll's skeleton by `mocap.py` (a UE-to-Mixamo bone-name map). No credit required.",
+          "Walk, jog and sprint loops, idles (phone, folded arms), sitting enter/exit, farm planting, watering and harvesting, tree chopping, carrying, pushing, throwing, climbing, sliding. Retargeted onto the doll's skeleton by `mocap.py` (a UE-to-Mixamo bone-name map). Its own skeleton is the Base Characters', so the opponents play the pistol aim, shot and reload, jog, crouch, hit and death clips as they are. No credit required.",
       },
       {
         title: "CMU motion capture",

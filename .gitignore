@@ -53,3 +53,4 @@ credentials*.json
 .playwright-mcp/
 .claude/worktrees/
 .impeccable/hook.*.json
+art/opponents/.cache/
