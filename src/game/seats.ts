@@ -590,6 +590,17 @@ const RAW_SEATS: readonly Seat[] = [
  * beside it, never behind (seatApproach.ts); a seat with neither keeps its
  * own. Beds are walked up to from the side already.
  */
+/** Whether the straight line between two floor points stays on open floor. */
+function walkClear(a: Vec2, b: Vec2, stand: (p: Vec2) => boolean): boolean {
+  const steps = Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 0.1);
+  for (let k = 1; k < steps; k++) {
+    const t = k / steps;
+    if (!stand([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]))
+      return false;
+  }
+  return true;
+}
+
 function withOpenApproach(
   seats: readonly Seat[],
   /** More floor she can't stand on: the apartment's furniture. */
@@ -602,14 +613,16 @@ function withOpenApproach(
     const others = seats
       .filter((o) => o !== s && o.room === s.room)
       .map((o) => o.at);
+    const stand = (p: Vec2): boolean =>
+      pointInPolygon(room.walkable, p) && !isBlocked(area, p) && !covered(p, s);
+    // the walker steers straight, so a spot is only any use if it is a clear
+    // walk from the seat's own approach (which every room's tests reach)
+    const clearFrom = s.approach;
     const approach = openApproach(
       s.at,
       s.yaw,
       others,
-      (p) =>
-        pointInPolygon(room.walkable, p) &&
-        !isBlocked(area, p) &&
-        !covered(p, s),
+      (p) => stand(p) && walkClear(clearFrom, p, stand),
     );
     return approach ? { ...s, approach } : s;
   });

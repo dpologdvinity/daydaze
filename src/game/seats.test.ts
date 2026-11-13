@@ -120,10 +120,17 @@ test("no seat is walked up to from behind it, or from inside another seat", () =
           `${s.id} approach stands in ${o.id}`,
         );
   }
-  // backless seats with no open floor round them: stools at the Velvet Room's
-  // bar (the floor ends at them), the hot tub, the Drive-In's picnic benches
+  // only backless seats keep a way in from behind, because no floor beside or
+  // in front of them is a clear walk: the Velvet Room's bar stools (the floor
+  // ends at them), the hot tub, and benches walked up to across their bays
   assert.deepEqual(
-    [...new Set(behind.map((id) => id.replace(/-\d.*$/, "")))],
-    ["velvet-stool", "roof-tub", "drive-in-bench"],
+    [...new Set(behind.map((id) => id.replace(/-\d.*$/, "")))].sort(),
+    [
+      "bowling-bench",
+      "drive-in-bench",
+      "driving-range-bench",
+      "roof-tub",
+      "velvet-stool",
+    ],
   );
 });
