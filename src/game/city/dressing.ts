@@ -637,7 +637,9 @@ export function dressBuilding(
   if (SHOPFRONT.has(b.style) && b.style !== "gate") {
     vent(out, f.cx + (hash(f.cx, 8) - 0.5) * f.w * 0.4, f.h + 0.5, f.cz);
   }
-  if (b.sign) {
+  // a district block wearing lots is named by their shop boards: its own
+  // board (up to 10 m wide, 2.2 m tall) would bury them and the upper windows
+  if (b.sign && !lots) {
     const s = signSpec(b, f);
     panel(out, "sign", f, s.y, s.sx, s.sy, b.sign.color, b.sign.text);
   }

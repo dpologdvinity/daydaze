@@ -12,6 +12,7 @@ import {
   type Buckets,
 } from "./dressing.ts";
 import { BUILDINGS, CITY_SURFACES, PROPS } from "./layout.ts";
+import { isLotBlock } from "./districts.ts";
 import { KINDS, type Instance, type Kind } from "./plan.ts";
 
 type Box = { x0: number; z0: number; x1: number; z1: number };
@@ -149,6 +150,19 @@ test("each gate raises two tall arches either side of its door", () => {
     const xs = posts.map((a) => a.x);
     assert.ok(Math.min(...xs) < door[0] && door[0] < Math.max(...xs), b.id);
     for (const a of posts) assert.ok(a.sy >= 16, `${b.id} arch is ${a.sy} m`);
+  }
+});
+
+test("a district block wearing lots drops its own 10 m board: the lots' shop boards name it", () => {
+  const signed = BUILDINGS.filter((b) => isLotBlock(b) && b.sign);
+  assert.ok(signed.length > 5, "district blocks carry their own boards");
+  for (const b of signed) {
+    const plain = emptyBuckets();
+    dressBuilding(b, plain, false, true, false);
+    const lotted = emptyBuckets();
+    dressBuilding(b, lotted, true, true, true);
+    assert.equal(plain.sign.length, 1, b.id);
+    assert.equal(lotted.sign.length, 0, b.id);
   }
 });
 
