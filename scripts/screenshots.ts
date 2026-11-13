@@ -58,13 +58,15 @@ const streetReady = async (page: Page) => {
     { timeout: 300_000 },
   );
 };
-/** Waits for either the New York bays or Suburbia's houses (a shot may see only one). */
+/** Waits for either the New York bays, the district lots or Suburbia's houses (a shot may see only one). */
 const blocksReady = async (page: Page) => {
   await streetReady(page);
   await page.waitForFunction(
     () => {
       const d = document.querySelector("canvas")?.dataset;
-      return d?.bays === "ready" || d?.houses === "ready";
+      return (
+        d?.bays === "ready" || d?.houses === "ready" || d?.lots === "ready"
+      );
     },
     null,
     { timeout: 300_000 },
@@ -915,6 +917,17 @@ const SHOTS: {
     ["nyc-manila", "12:00", "-262,-6", 0],
     ["nyc-chinatown", "12:00", "262,-6", 0],
     ["nyc-suburbia", "12:00", "-404,-236", 0],
+    // the district lots (src/game/city/districts.ts), each by day and by night
+    ["lots-manila-day", "12:00", "-300,-8", 0],
+    ["lots-manila-night", "22:00", "-300,-8", 0],
+    ["lots-chinatown-day", "12:00", "262,-8", 0],
+    ["lots-chinatown-night", "22:00", "262,-8", 0],
+    ["lots-koreatown-day", "12:00", "372,-8", 0],
+    ["lots-koreatown-night", "22:00", "372,-8", 0],
+    ["lots-arts-day", "12:00", "-96,-256", 0],
+    ["lots-arts-night", "22:00", "-96,-256", 0],
+    ["lots-uptown-day", "12:00", "264,-256", 0],
+    ["lots-uptown-night", "22:00", "264,-256", 0],
     ["el-station", "12:00", "10,12", 0],
     ["el-train", "12:00", "-6,14&elat=69", 0],
   ].map(([name, time, at, yaw]) => ({
@@ -934,6 +947,31 @@ const SHOTS: {
         await page.mouse.wheel(0, 100);
     },
   })),
+  // each district's facades from across the street, by day and by night
+  ...[
+    ["manila", "-300,-8", "-252,5,-12,-298,9,14"],
+    ["chinatown", "240,-8", "205,4,-12,244,10,14"],
+    ["koreatown", "372,-8", "330,4,-12,372,10,14"],
+    ["arts", "-96,-256", "-130,5,-262,-96,10,-244"],
+    ["uptown", "214,-256", "180,5,-262,214,10,-244"],
+  ].flatMap(([name, at, cam]) =>
+    [
+      ["day", "12:00"],
+      ["night", "22:00"],
+    ].map(([when, time]) => ({
+      name: `lotsw-${name}-${when}`,
+      live: true,
+      query: `room=city&quality=low&time=${time}&at=${at}&cam=${cam}`,
+      act: async (page: Page) => {
+        await blocksReady(page);
+        await page.waitForFunction(
+          () => document.querySelector("canvas")?.dataset.frames === "10",
+          null,
+          { timeout: 300_000 },
+        );
+      },
+    })),
+  ),
   { name: "city-sunset", query: "room=city&view=full&time=19:30" },
   {
     name: "city-night",

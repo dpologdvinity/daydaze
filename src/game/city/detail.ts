@@ -19,11 +19,19 @@ const PRODUCT = ["#ffd84f", "#ff4fb3", "#f2eefc", "#4fe3ff", "#7dff6b"];
 const POSTER = ["#ff4fb3", "#4fe3ff", "#ffd84f", "#b06bff", "#f2eefc"];
 const GRAFFITI = ["#ff4fb3", "#4fe3ff", "#7dff6b", "#ffd84f"];
 
-/** Rooftop kit, balconies, fire escapes and shopfront displays for one building. */
-export function detailBuilding(b: Building, f: Front, out: Buckets): void {
+/** Rooftop kit, balconies, fire escapes and shopfront displays for one building.
+ * A district lot (`lots`) has its own balconies, fire escapes and rooftop AC
+ * units and pipes, and a thin roof skin flush with its parapet, so only the
+ * water tank, antenna and the street-level dressing are added to it. */
+export function detailBuilding(
+  b: Building,
+  f: Front,
+  out: Buckets,
+  lots = false,
+): void {
   if (b.style === "gate") return;
   // the roof slab sits from f.h to f.h + 0.5, so kit stands on its top
-  const top = f.h + 0.5;
+  const top = lots ? f.h : f.h + 0.5;
   const depth = f.z1 - f.z0;
 
   out.pole.push({
@@ -35,7 +43,7 @@ export function detailBuilding(b: Building, f: Front, out: Buckets): void {
     sz: 2.2,
     color: TANK,
   });
-  for (let k = 0; k < 2; k++) {
+  for (let k = 0; k < 2 && !lots; k++) {
     if (hash(f.cx, k, 21) < 0.35) continue;
     out.furniture.push({
       x: f.x0 + f.w * (0.58 + 0.2 * k),
@@ -84,7 +92,7 @@ export function detailBuilding(b: Building, f: Front, out: Buckets): void {
 
   // balconies on the avenue face, a slab and a rail, under some windows
   let balconies = 0;
-  for (let y = 5; y < f.h - 3 && balconies < 6; y += FLOOR) {
+  for (let y = 5; y < f.h - 3 && balconies < 6 && !lots; y += FLOOR) {
     for (let x = f.x0 + 2; x < f.x1 - 2 && balconies < 6; x += 3.6) {
       if (hash(x, y, 23) > 0.12) continue;
       balconies++;
@@ -109,7 +117,7 @@ export function detailBuilding(b: Building, f: Front, out: Buckets): void {
     }
   }
 
-  if (b.style === "brick") {
+  if (b.style === "brick" && !lots) {
     // tenement fire escapes: a landing every two floors and a ladder up the side
     const x = f.x0 + 2.2;
     for (let y = 3.8; y < f.h - 2; y += FLOOR * 2) {

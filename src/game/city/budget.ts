@@ -36,6 +36,7 @@ import {
 } from "./seasonSpots.ts";
 import { CITY_FLEET, shipModel } from "../ships.ts";
 import { BAY_TRIANGLES, HOUSE_MODELS, type BayInstance } from "./nyc.ts";
+import { LOT_SPECS, type PlacedLot } from "./districts.ts";
 import { ALL_GROWTH } from "./growth.ts";
 import {
   TREE_VARIANTS,
@@ -476,13 +477,39 @@ export function worstViewBayTriangles(
   bays: readonly BayInstance[],
   at: Vec2,
 ): number {
+  return worstView(
+    bays.map((bay) => ({ x: bay.x, z: bay.z, cost: BAY_TRIANGLES[bay.kind] })),
+    at,
+  );
+}
+
+/** The same for the district lots (also culled one by one); the far ones
+ * draw their twin. */
+export function worstViewLotTriangles(
+  lots: readonly PlacedLot[],
+  at: Vec2,
+): number {
+  return worstView(
+    lots.map((lot) => ({
+      x: lot.x,
+      z: lot.z,
+      cost: lot.far ? LOT_SPECS[lot.model].lo : LOT_SPECS[lot.model].tris,
+    })),
+    at,
+  );
+}
+
+/** The most triangles of per-instance-culled `items` in any wedge of view. */
+function worstView(
+  items: readonly { x: number; z: number; cost: number }[],
+  at: Vec2,
+): number {
   const BINS = 36;
   const bins = new Array<number>(BINS).fill(0);
   let always = 0;
-  for (const bay of bays) {
-    const cost = BAY_TRIANGLES[bay.kind];
-    const dx = bay.x - at[0];
-    const dz = bay.z - at[1];
+  for (const { x, z, cost } of items) {
+    const dx = x - at[0];
+    const dz = z - at[1];
     if (Math.hypot(dx, dz) < ALWAYS_SEEN) always += cost;
     else {
       const angle = (Math.atan2(dz, dx) + 2 * Math.PI) % (2 * Math.PI);
@@ -522,6 +549,7 @@ export function lowTierCost(at: Vec2): {
   triangles: number;
   planTriangles: number;
   bays: number;
+  lots: number;
 } {
   const plan = planView(at, "low");
   // instances per model; a model with any costs one draw call per part
@@ -576,12 +604,18 @@ export function lowTierCost(at: Vec2): {
     drawCallsOf(plan) +
     Math.min(houseModels, HOUSE_MODELS.length) * 4;
   const allBays = plan.bays.reduce((n, b) => n + BAY_TRIANGLES[b.kind], 0);
+  const allLots = plan.lots.reduce(
+    (n, l) => n + (l.far ? LOT_SPECS[l.model].lo : LOT_SPECS[l.model].tris),
+    0,
+  );
   const planTriangles = trianglesOf(plan);
   // the bays are culled per instance: count only the worst view of them
   let triangles =
     planTriangles -
-    allBays +
+    allBays -
+    allLots +
     worstViewBayTriangles(plan.bays, at) +
+    worstViewLotTriangles(plan.lots, at) +
     EL_TRIANGLES;
   for (const [model, n] of counts) {
     const cost = MODEL_COST[model];
@@ -621,7 +655,13 @@ export function lowTierCost(at: Vec2): {
   const kerb = parkedCost(at);
   drawCalls += kerb.drawCalls;
   triangles += kerb.triangles;
-  return { drawCalls, triangles, planTriangles, bays: plan.bays.length };
+  return {
+    drawCalls,
+    triangles,
+    planTriangles,
+    bays: plan.bays.length,
+    lots: plan.lots.length,
+  };
 }
 
 /**

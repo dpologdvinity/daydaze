@@ -431,7 +431,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/ultimatetexturedbuilding.html",
         usedFor:
-          "Beachside's beach cottages and two Suburbia houses (Palm Court's motels are built from boxes: no motel model exists), kept at the pack's own triangle count.",
+          "Beachside's beach cottages and two Suburbia houses (Palm Court's motels are built from boxes: no motel model exists), kept at the pack's own triangle count. Also the lots of Little Manila, Chinatown, Koreatown, the Arts District and Uptown: eleven buildings thinned, recolored per district and tiled along the blocks.",
       },
       {
         title: "Buildings Pack (Aug 2017)",

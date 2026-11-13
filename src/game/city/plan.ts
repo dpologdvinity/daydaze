@@ -30,10 +30,19 @@ import {
   dressBuilding,
   facingOf,
   frontOf,
+  lotSign,
   signSpec,
   FURNITURE,
   STREET_DRESS,
 } from "./dressing.ts";
+import {
+  LOT_NEAR,
+  LOT_SPECS,
+  LOT_WALL_INSET,
+  isLotBlock,
+  lotRow,
+  type PlacedLot,
+} from "./districts.ts";
 import { LAMP_RANGE, type FurnitureSpot } from "./furniture.ts";
 import {
   STREET_DRAW_CALLS,
@@ -130,6 +139,9 @@ export type CityPlan = {
   furniture: FurnitureSpot[];
   /** New York bays for the buildings within `bayRange` of the player. */
   bays: BayInstance[];
+  /** District lots (Little Manila, Chinatown, Koreatown, Arts District,
+   * Uptown) for the blocks within `bayRange` of the player. */
+  lots: PlacedLot[];
   /** Suburbia houses within reach of the player, drawn as models. */
   houses: HouseSpot[];
   /** Crosswalks, corner blocks, center lines and street props (StreetPieces.tsx). */
@@ -245,6 +257,10 @@ function boundsOf(poly: readonly Vec2[]): Box {
   };
 }
 
+/** District lots (a few hundred triangles a meter of wall more than a bay)
+ * dress blocks within this share of the bay range; farther lot blocks stay
+ * boxes with painted windows. */
+const LOT_RANGE = 0.85;
 /** Back walls wear bays within this fraction of the bay range. */
 const BACK_RANGE = 0.6;
 /** Fire escapes, the dearest bay, show within this share of the bay range. */
@@ -491,15 +507,16 @@ function buildingInstances(
   lights: Light[],
   kit: boolean,
   sills = true,
+  lots = false,
 ): void {
   const { yaw, front } = facingOf(b);
   if (yaw === 0) {
-    buildingInstancesFacing(b, out, lights, kit, sills);
+    buildingInstancesFacing(b, out, lights, kit, sills, lots);
     return;
   }
   const local = emptyInstances();
   const localLights: Light[] = [];
-  buildingInstancesFacing(b, local, localLights, kit, sills);
+  buildingInstancesFacing(b, local, localLights, kit, sills, lots);
   const cos = Math.cos(yaw);
   const sin = Math.sin(yaw);
   // three.js turns (x, z) about y as (x cos + z sin, -x sin + z cos)
@@ -527,11 +544,12 @@ function buildingInstancesFacing(
   lights: Light[],
   kit: boolean,
   sills: boolean,
+  lots: boolean,
 ): void {
   const f = frontOf(b);
   const signColor = b.sign?.color;
   // behind the kit's bays the wall steps back, so their trim stands proud
-  const inset = kit ? 2 * WALL_INSET : 0;
+  const inset = lots ? 2 * LOT_WALL_INSET : kit ? 2 * WALL_INSET : 0;
 
   out[FACADE[b.style]].push({
     x: f.cx,
@@ -563,13 +581,15 @@ function buildingInstancesFacing(
       color: signColor ?? BAND_COLOR,
     });
   }
+  // lots keep their own parapets and rooftop AC units and pipes: the roof is
+  // a thin tar skin flush with the parapet top, not a slab that buries them
   out.roof.push({
     x: f.cx,
-    y: f.h + 0.25,
+    y: lots ? f.h - 0.04 : f.h + 0.25,
     z: f.cz,
-    sx: f.w + 0.4,
-    sy: 0.5,
-    sz: f.z1 - f.z0 + 0.4,
+    sx: lots ? f.w : f.w + 0.4,
+    sy: lots ? 0.08 : 0.5,
+    sz: lots ? f.z1 - f.z0 : f.z1 - f.z0 + 0.4,
     // tar and gravel
     color: "#4a4744",
   });
@@ -621,7 +641,7 @@ function buildingInstancesFacing(
       color: b.sign.color,
     });
   }
-  dressBuilding(b, out, kit, sills);
+  dressBuilding(b, out, kit, sills, lots);
 }
 
 function propInstances(
@@ -718,6 +738,7 @@ export function planCity(
   streetMarks(cells, instances);
 
   const bays: BayInstance[] = [];
+  const lots: PlacedLot[] = [];
   const houses: HouseSpot[] = [];
   for (const b of BUILDINGS) {
     const box = boundsOf(b.footprint);
@@ -736,10 +757,12 @@ export function planCity(
     }
     // near New York blocks wear the kit's bays instead of box walls and
     // painted windows; the rest of the city keeps the cheap boxes
-    const dressed =
-      isNyc(b) && distanceToBox(from, box) < bayRange ? nycBays(b) : [];
-    const kit = dressed.length > 0;
     const d = distanceToBox(from, box);
+    // the five districts wear finished buildings (districts.ts) instead
+    const lotBlock = isLotBlock(b);
+    const lotted = d < bayRange * LOT_RANGE && lotBlock ? lotRow(b) : [];
+    const dressed = !lotBlock && isNyc(b) && d < bayRange ? nycBays(b) : [];
+    const kit = dressed.length > 0 || lotted.length > 0;
     // window sills (a 10-triangle box under every 2-triangle window, 0.14 m
     // tall) are a detail of walls within SILL_RANGE bay ranges
     buildingInstances(
@@ -748,7 +771,16 @@ export function planCity(
       lights,
       kit,
       bayRange === 0 || d < bayRange * SILL_RANGE,
+      lotted.length > 0,
     );
+    for (const lot of lotted) {
+      if (lot.back && d >= bayRange * BACK_RANGE) continue;
+      lots.push({
+        ...lot,
+        far: Math.hypot(lot.x - from[0], lot.z - from[1]) >= LOT_NEAR,
+      });
+      lotSign(instances, lot);
+    }
     // back walls dress only the nearest blocks, the street faces farther out
     // fire escapes (366 triangles a storey) are add-ons to a wall bay, so each
     // is judged by its own distance: a long block's far end is no nearer than
@@ -793,6 +825,7 @@ export function planCity(
     trees,
     furniture,
     bays,
+    lots,
     houses,
     street: streetPieces(cells),
   };
@@ -806,6 +839,11 @@ export function trianglesOf(plan: CityPlan): number {
       0,
     ) +
     plan.bays.reduce((sum, bay) => sum + BAY_TRIANGLES[bay.kind], 0) +
+    plan.lots.reduce(
+      (sum, lot) =>
+        sum + (lot.far ? LOT_SPECS[lot.model].lo : LOT_SPECS[lot.model].tris),
+      0,
+    ) +
     plan.houses.reduce(
       (sum, h) => sum + (HOUSE_MODEL_TRIANGLES[h.variant] ?? 0),
       0,
@@ -819,6 +857,7 @@ export function drawCallsOf(plan: CityPlan): number {
   return (
     KINDS.filter((kind) => plan.instances[kind].length > 0).length +
     (plan.street.length > 0 ? STREET_DRAW_CALLS : 0) +
-    new Set(plan.bays.map((bay) => bay.kind)).size
+    new Set(plan.bays.map((bay) => bay.kind)).size +
+    new Set(plan.lots.map((lot) => `${lot.model}${lot.far}`)).size
   );
 }

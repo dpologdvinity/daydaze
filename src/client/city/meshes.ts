@@ -13,6 +13,7 @@ import { animate } from "./shaders.ts";
 import { bakeShapes } from "./bake.ts";
 import { laneTint } from "../../game/city/daylight.ts";
 import { BAY_NIGHT, bayMaterial } from "./NycFacades.tsx";
+import { LOT_NIGHT } from "./DistrictLots.tsx";
 
 // Kinds that glow: their colors run past 1.0 so bloom picks them up on high.
 const GLOW: ReadonlySet<Kind> = new Set<Kind>([
@@ -526,6 +527,7 @@ export function dimForDay(meshes: KindMeshes, night: number): void {
   if (lane instanceof THREE.MeshBasicMaterial)
     lane.color.setRGB(...laneTint(night));
   BAY_NIGHT.value = night;
+  LOT_NIGHT.value = night;
   const pool = meshes.puddle.material;
   if (pool instanceof THREE.MeshBasicMaterial) {
     pool.opacity = 0.55 * night;
