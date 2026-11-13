@@ -501,7 +501,8 @@ export const CREDITS: readonly {
         author: "Quaternius",
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/ships.html",
-        usedFor: "Marina sailboat, converted and optimized.",
+        usedFor:
+          "Marina sailboat, converted and optimized; the offshore fleet (cruise liner, sail ship, Viking boat, lifeboat) recolored to the house palette with lit windows, one draw call each (art/marina/build_fleet.py), at Starboard Marina and off Beachside.",
       },
       {
         title: "Yacht",

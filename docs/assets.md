@@ -162,7 +162,7 @@ future imported packs belong here when they enter the game.
 | Mini Characters | Kenney | CC0 1.0 | https://kenney.nl/assets/mini-characters | Instanced grandstand crowd and pit road pit crew for the Speedway oval; the boardwalk's far crowd (walking poses) and cyclists' riders. |
 | Racing Kit | Kenney | CC0 1.0 | https://kenney.nl/assets/racing-kit | Grandstand, pit garages, barriers, overhead flag gantry, and billboards for the Speedway oval. |
 | Realistic Car Pack | Quaternius | CC0 1.0 | https://quaternius.com/packs/realisticcarpack.html | NASCAR stock cars (models 1-4) with canvas liveries for the Speedway oval. |
-| Ships | Quaternius | CC0 1.0 | https://quaternius.com/packs/ships.html | Marina sailboat, converted and optimized. |
+| Ships | Quaternius | CC0 1.0 | https://quaternius.com/packs/ships.html | Marina sailboat, converted and optimized; the offshore fleet (cruise liner, sail ship, Viking boat, lifeboat) recolored to the house palette with lit windows, one draw call each (art/marina/build_fleet.py), at Starboard Marina and off Beachside. |
 | Yacht | Alex Safayan | CC BY 3.0 | https://poly.pizza/m/9znU2c-dTSR | Marina yachts, optimized. |
 | Crate | Quaternius | CC0 1.0 | https://poly.pizza/m/3OEFd1AWfa | Marina dock cargo, optimized. |
 | Barrel | Quaternius | CC0 1.0 | https://poly.pizza/m/zjCQP1TAci | Marina dock cargo, optimized. |
