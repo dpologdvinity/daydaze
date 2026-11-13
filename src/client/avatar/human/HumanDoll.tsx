@@ -583,14 +583,16 @@ function hairShine<M extends THREE.MeshStandardMaterial>(material: M): M {
           "  float shift = (strand - 0.5) * 0.35;",
           // straight locks sit near the highlight angle all along, so the
           // white lobe is kept faint and broken up strand by strand
-          "  float glint = 0.3 + 0.7 * fract(strand * 7.13);",
+          "  float glint = 0.5 + 0.5 * fract(strand * 7.13);",
+          // the white lobe is a sparkle against dark hair: dimmer on it
+          "  float dim = 0.4 + 0.6 * clamp(dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722)) * 4.0, 0.0, 1.0);",
           "  vec3 T1 = normalize(T + normal * (0.08 + shift));",
           "  vec3 T2 = normalize(T + normal * (-0.12 + shift));",
           "  for (int i = 0; i < NUM_DIR_LIGHTS; i++) {",
           "    vec3 L = directionalLights[i].direction;",
           "    vec3 H = normalize(L + V);",
           "    float lit = smoothstep(-0.25, 0.5, dot(normal, L));",
-          "    float a = hairLobe(T1, H, 90.0) * 0.22 * glint;",
+          "    float a = hairLobe(T1, H, 36.0) * 0.2 * glint * dim;",
           "    float b = hairLobe(T2, H, 22.0) * 0.35;",
           "    reflectedLight.directSpecular += directionalLights[i].color * lit *",
           "      (vec3(a) + b * diffuseColor.rgb * 1.6);",
@@ -614,6 +616,8 @@ function hairMaterial(
   rich: boolean,
   /** Cut out by its alpha: strand cards are; a textured scalp cap is not. */
   cutout: boolean,
+  /** Strand cards shine; a pack style's scalp cap (`*_cap`) stays matte. */
+  shine: boolean,
 ) {
   // hair over the back is seen edge-on: without anisotropic filtering the
   // blurred mip's alpha breaks into specks at the cut-out threshold
@@ -634,7 +638,7 @@ function hairMaterial(
   });
   // the shine bands run along strand cards; on the broad, smooth scalp cap
   // they would read as white streaks, so the cap stays matte
-  return map && cutout ? hairShine(material) : material;
+  return map && cutout && shine ? hairShine(material) : material;
 }
 
 type Tint = { color: string; kind: "hair" | "cloth" | "gloss" | "keep" };
@@ -790,6 +794,10 @@ function buildPart(
           ? src.material
           : null;
       const hasShade = Boolean(src.geometry.getAttribute("color"));
+      // a pack style's scalp cap is its own material (pack_hair.py): its
+      // polygons are big and its UVs arbitrary, so strand shine on it
+      // lights whole facets silver (the Quiff's forehead patch)
+      const strands = !old?.name.endsWith("_cap");
       // glTF marks cut-out parts as blend or mask; an opaque one keeps its fill
       const cutout = Boolean(old && (old.transparent || old.alphaTest > 0));
       // the hair shine runs across each strand: it needs the cards' real
@@ -798,6 +806,7 @@ function buildPart(
       const g = src.geometry;
       if (
         tint.kind === "hair" &&
+        strands &&
         old?.map &&
         !g.getAttribute("hairTangent") &&
         g.index &&
@@ -823,7 +832,14 @@ function buildPart(
       }
       const mat =
         tint.kind === "hair"
-          ? hairMaterial(tint.color, old?.map ?? null, hasShade, rich, cutout)
+          ? hairMaterial(
+              tint.color,
+              old?.map ?? null,
+              hasShade,
+              rich,
+              cutout,
+              strands,
+            )
           : new THREE.MeshStandardMaterial({
               map: old?.map ?? null,
               color: tint.kind === "keep" ? "#ffffff" : tint.color,

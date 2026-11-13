@@ -10,6 +10,7 @@ import os
 
 import bpy
 import numpy as np
+from mathutils.kdtree import KDTree
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ASSETS = os.path.join(HERE, ".cache", "mhassets")
@@ -96,11 +97,40 @@ def mix(clo, per_vertex):
     return np.einsum("nk,nk...->n...", clo["w"], per_vertex[clo["refs"]])
 
 
-def build(ctx, name, rel_path, mat):
+def snug_weights(ctx, verts, weights, reach):
+    """Bone weights that make cloth follow the skin under it.
+
+    A proxy's own weights blend three base vertices' weights, so in a pose
+    the cloth slides a centimeter or two off the skin it covers (a jacket
+    chest buckles over the pecs and the skin shows through). Within `reach`
+    metres of the skin a vertex takes the weights of the skin around its
+    nearest point (inverse distance over three vertices), fading back to its
+    own weights by `reach`, so loose hems and skirts keep theirs."""
+    skin = np.array(sorted({i for f in ctx.FACES["body"] for i in f}))
+    tree = KDTree(len(skin))
+    for i, p in enumerate(ctx.PB[skin]):
+        tree.insert(p, i)
+    tree.balance()
+    out = weights.copy()
+    for vi, p in enumerate(verts):
+        near = tree.find_n(p, 3)
+        d = near[0][2]
+        if d >= reach:
+            continue
+        inv = np.array([1 / max(n[2], 1e-4) for n in near])
+        skin_w = (inv[:, None] * ctx.W[skin[[n[1] for n in near]]]).sum(0) / inv.sum()
+        # all of the skin's weights within a third of the reach, none at it
+        t = min(1.0, (reach - d) / (reach * 2 / 3))
+        out[vi] = t * skin_w + (1 - t) * weights[vi]
+    return out
+
+
+def build(ctx, name, rel_path, mat, snug=0.0):
     """One proxy as a skinned, shape-keyed Blender object.
 
     ctx carries the doll's P, W, BONES, KEYS (MakeHuman space) and its
-    to_blender and new_object helpers.
+    to_blender and new_object helpers. `snug` (metres) makes cloth within
+    that reach of the skin follow it (snug_weights); 0 keeps the proxy's own.
     """
     clo = read_mhclo(os.path.join(ASSETS, rel_path))
     uvs, faces = read_obj(os.path.join(clo["dir"], clo["obj"]))
@@ -115,7 +145,10 @@ def build(ctx, name, rel_path, mat):
             li += 1
     for p in ob.data.polygons:
         p.use_smooth = True
-    attach(ctx, ob, mix(clo, ctx.W), {k: mix(clo, d) * (1.25 if k == "plus" else 1) for k, d in ctx.KEYS.items()})
+    weights = mix(clo, ctx.W)
+    if snug:
+        weights = snug_weights(ctx, verts, weights, snug)
+    attach(ctx, ob, weights, {k: mix(clo, d) * (1.25 if k == "plus" else 1) for k, d in ctx.KEYS.items()})
     ob["deleted"] = sorted(clo["deleted"])
     return ob
 

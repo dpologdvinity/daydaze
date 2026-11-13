@@ -1510,16 +1510,19 @@ const SHOTS: {
 ];
 
 const only = process.argv.slice(2);
-// hair-<name> shots are the lineup page's (scripts/hair-shots.ts), which writes
-// docs/screenshots/hair-<name>.png like any other shot
-const hairShots = only.filter((n) => n.startsWith("hair-"));
+// hair-<name> and doll-suit-<name> shots are the lineup page's
+// (scripts/hair-shots.ts), which writes docs/screenshots/<prefix>-<name>.png
+// like any other shot
+const prefixOf = (n: string) =>
+  n.startsWith("hair-") ? "hair-" : n.startsWith("doll-suit-") ? "doll-" : "";
+const hairShots = only.filter((n) => prefixOf(n));
 if (hairShots.length) {
   execFileSync(
     process.execPath,
     [
       "--experimental-strip-types",
       "scripts/hair-shots.ts",
-      ...hairShots.map((n) => n.slice("hair-".length)),
+      ...hairShots.map((n) => n.slice(prefixOf(n).length)),
     ],
     { stdio: "inherit" },
   );

@@ -31,6 +31,8 @@ import { Suspense } from "react";
 const human = new URLSearchParams(location.search).get("human") === "1";
 
 const shot = new URLSearchParams(location.search).get("shot") ?? "lineup";
+// shots whose dolls walk in place, side on
+const walksInPlace = ["walk", "limbswalk", "trackwalk"].includes(shot);
 // ?still=1 draws 8 frames on demand and stops: SwiftShader queues GPU work,
 // so a live loop leaves a capture minutes behind
 const still = new URLSearchParams(location.search).get("still") === "1";
@@ -207,6 +209,24 @@ const MEN: Look[] = [
 ];
 
 /**
+ * `?men=1&outfit=<id>` dresses the pose, sit and dance shots' dolls as men in
+ * one outfit (a suit by default), to check how cloth sits over the skin in
+ * motion.
+ */
+const suited = (look: Look): Look => {
+  const q = new URLSearchParams(location.search);
+  if (q.get("men") !== "1") return look;
+  return {
+    ...look,
+    body: "masculine",
+    lips: "lips-bare-balm",
+    beard: "none",
+    outfit: OUTFITS.find((o) => o.id === q.get("outfit"))?.id ?? "suit",
+    outfitColor: "#141018",
+  };
+};
+
+/**
  * `?shot=hairs&styles=a,b,c&colors=1b1014,f1d78f&men=1`: one head-and-shoulders
  * doll per style, wearing the matching color (the last one repeats), for
  * judging hair. `?cam=0,1.52,-2.4` looks from behind.
@@ -295,6 +315,19 @@ const SHOTS = {
     target: [0, 0.6, 0] as const,
     fov: 30,
   },
+  // women walking in place in the three trouser outfits, side on, to check the
+  // skin behind the knee and calf (`?cam=` looks from behind)
+  trackwalk: {
+    looks: [
+      { ...LINEUP[0], outfit: "tracksuit-y2k" },
+      { ...LINEUP[5], outfit: "flares" },
+      { ...LINEUP[2], outfit: "jeans" },
+    ] as Look[],
+    x: (i: number) => (i - 1) * 1.1,
+    cam: [0.6, 0.6, 3.2] as const,
+    target: [0, 0.5, 0] as const,
+    fov: 30,
+  },
   // wheelchair users, a woman, a man and a woman in a long skirt, from the front
   chair: {
     looks: [
@@ -325,7 +358,7 @@ const SHOTS = {
   },
   // five dance moves side by side
   dance: {
-    looks: LINEUP.slice(0, 5),
+    looks: LINEUP.slice(0, 5).map(suited),
     x: (i: number) => (i - 2) * 1.0,
     cam: [0, 1.1, 7.2] as const,
     target: [0, 0.95, 0] as const,
@@ -353,14 +386,14 @@ const SHOTS = {
   },
   // every held motion-capture pose, front on
   pose: {
-    looks: HOLDS.pose.map((_, i) => LINEUP[i % LINEUP.length]),
+    looks: HOLDS.pose.map((_, i) => suited(LINEUP[i % LINEUP.length])),
     x: (i: number) => (i - (HOLDS.pose.length - 1) / 2) * 1.0,
     cam: [0, 1.0, 7.5] as const,
     target: [0, 0.9, 0] as const,
     fov: 36,
   },
   sit: {
-    looks: HOLDS.sit.map((_, i) => LINEUP[i % LINEUP.length]),
+    looks: HOLDS.sit.map((_, i) => suited(LINEUP[i % LINEUP.length])),
     x: (i: number) => (i - (HOLDS.sit.length - 1) / 2) * 1.1,
     cam: [2.5, 1.2, 5] as const,
     target: [0, 0.6, 0] as const,
@@ -660,14 +693,8 @@ function Lab() {
                     : DANCES[i % DANCES.length]
                 }
                 seed={i}
-                walk={
-                  shot === "walk" || shot === "limbswalk"
-                    ? WALKING[i % WALKING.length]
-                    : undefined
-                }
-                rotation-y={
-                  shot === "walk" || shot === "limbswalk" ? Math.PI / 2 : 0
-                }
+                walk={walksInPlace ? WALKING[i % WALKING.length] : undefined}
+                rotation-y={walksInPlace ? Math.PI / 2 : 0}
               />
             </Suspense>
           ) : (

@@ -998,7 +998,11 @@ def main():
         to_blender=to_blender, new_object=new_object,
     )
     hair_only = bool(os.environ.get("HAIR_ONLY"))
-    parts = doll_hair.build(ctx) + ([] if hair_only else doll_outfits.build(ctx, body, BODY_SRC))
+    # OUTFIT_ONLY=1 rebuilds the body and outfits without the (slow) hair
+    outfit_only = bool(os.environ.get("OUTFIT_ONLY"))
+    parts = ([] if outfit_only else doll_hair.build(ctx)) + (
+        [] if hair_only else doll_outfits.build(ctx, body, BODY_SRC)
+    )
     for ob in parts:
         bind(ob, rig)
         # build-time bookkeeping; glTF would ship it as (large) node extras
