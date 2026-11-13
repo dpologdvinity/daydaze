@@ -192,6 +192,8 @@ the Ultimate Nature Pack) and compressed by `scripts/import-forest.sh` into
 | --- | --- | --- | --- | --- |
 | Anti Skid Tiles | Amal Kumar | CC0 1.0 | https://polyhaven.com/a/anti_skid_tiles | Surface textures for the city, venues and furnishings. |
 | Asphalt 02 | Rob Tuytel | CC0 1.0 | https://polyhaven.com/a/asphalt_02 | Surface textures for the city, venues and furnishings. |
+| Bitumen | Rob Tuytel | CC0 1.0 | https://polyhaven.com/a/bitumen | Tar-paper rooftops across the city (box-mapped). |
+| Tarred Gravel | Dimitrios Savva | CC0 1.0 | https://polyhaven.com/a/tarred_gravel | Gravel rooftops across the city (box-mapped). |
 | Bamboo Wall | Amal Kumar | CC0 1.0 | https://polyhaven.com/a/bamboo_wall | Surface textures for the city, venues and furnishings. |
 | Beige Wall 001 | Dimitrios Savva, Rico Cilliers | CC0 1.0 | https://polyhaven.com/a/beige_wall_001 | Surface textures for the city, venues and furnishings. |
 | Brick Wall 02 | Dimitrios Savva | CC0 1.0 | https://polyhaven.com/a/brick_wall_02 | Surface textures for the city, venues and furnishings. |

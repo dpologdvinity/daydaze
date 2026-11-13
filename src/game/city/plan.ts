@@ -3,6 +3,7 @@
 // are loaded. Pure: the client writes these instances into its meshes.
 import type { Vec2 } from "../walk.ts";
 import { motelBuilding } from "./motel.ts";
+import { roofLook } from "./roofs.ts";
 import { VIEW_RADIUS } from "./tuning.ts";
 import { cellAt, type Cell } from "./cells.ts";
 import {
@@ -67,6 +68,8 @@ export const KINDS = [
   "curtain",
   "band",
   "roof",
+  "roofGravel",
+  "roofSkin",
   "ledge",
   "glow",
   "awning",
@@ -175,6 +178,8 @@ export const TRIANGLES: Record<Kind, number> = {
   curtain: 10,
   band: 10,
   roof: 10,
+  roofGravel: 10,
+  roofSkin: 10,
   ledge: 10,
   glow: 10,
   awning: 12,
@@ -313,6 +318,8 @@ export function emptyInstances(): Record<Kind, Instance[]> {
     curtain: [],
     band: [],
     roof: [],
+    roofGravel: [],
+    roofSkin: [],
     ledge: [],
     glow: [],
     awning: [],
@@ -594,16 +601,17 @@ function buildingInstancesFacing(
     });
   }
   // lots keep their own parapets and rooftop AC units and pipes: the roof is
-  // a thin tar skin flush with the parapet top, not a slab that buries them
-  out.roof.push({
+  // a thin skin flush with the parapet top, not a slab that buries them. Each
+  // roof is tar paper, gravel or a membrane in its own color (roofs.ts)
+  const roof = roofLook(f.cx, f.cz);
+  out[roof.kind].push({
     x: f.cx,
     y: lots ? f.h - 0.04 : f.h + 0.25,
     z: f.cz,
     sx: lots ? f.w : f.w + 0.4,
     sy: lots ? 0.08 : 0.5,
     sz: lots ? f.z1 - f.z0 : f.z1 - f.z0 + 0.4,
-    // tar and gravel
-    color: "#4a4744",
+    color: roof.color,
   });
   // neon bands at every floor on nightlife buildings; on everything else a
   // stone belt course over the storefronts (lit by the sun and the street,

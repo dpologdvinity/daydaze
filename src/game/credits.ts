@@ -1281,6 +1281,20 @@ export const CREDITS: readonly {
         usedFor: "Surface textures for the city, venues and furnishings.",
       },
       {
+        title: "Bitumen",
+        author: "Rob Tuytel",
+        license: "CC0 1.0",
+        url: "https://polyhaven.com/a/bitumen",
+        usedFor: "Tar-paper rooftops across the city (box-mapped).",
+      },
+      {
+        title: "Tarred Gravel",
+        author: "Dimitrios Savva",
+        license: "CC0 1.0",
+        url: "https://polyhaven.com/a/tarred_gravel",
+        usedFor: "Gravel rooftops across the city (box-mapped).",
+      },
+      {
         title: "Bamboo Wall",
         author: "Amal Kumar",
         license: "CC0 1.0",
