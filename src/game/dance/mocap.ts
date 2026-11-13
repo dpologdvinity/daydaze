@@ -435,6 +435,7 @@ export const MOCAP_CLIPS: readonly MocapClip[] = [
     source: "Mixamo Talking_Talking-Finding-Something-Funny",
     period: 5.9333,
     pack: "core",
+    menu: true,
   },
   {
     id: "bartending",
