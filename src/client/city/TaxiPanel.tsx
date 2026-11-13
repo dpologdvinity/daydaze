@@ -2,6 +2,7 @@
 // driver's words and a way out (or to skip the ride) until the trip is over.
 
 import type { JSX } from "react";
+import { DockAction } from "../ui/ActionDock.tsx";
 import { taxiRide } from "./taxiStore.ts";
 
 export function TaxiPanel(): JSX.Element | null {
@@ -9,13 +10,12 @@ export function TaxiPanel(): JSX.Element | null {
   if (phase === "idle") {
     if (!canHail) return null;
     return (
-      <button
-        type="button"
-        className="drink"
+      <DockAction
+        id="taxi"
+        priority={1}
+        label="Hail a taxi"
         onClick={() => taxiRide.set({ request: "hail" })}
-      >
-        Hail a taxi
-      </button>
+      />
     );
   }
   return (
