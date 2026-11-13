@@ -956,6 +956,35 @@ const SHOTS: {
   { name: "open-water-full", query: "room=open-water&view=full" },
   { name: "reef-dive", query: "room=reef-dive" },
   {
+    // the reef's newer residents: cardinalfish and cowfish near the wreck
+    name: "reef-dive-schools",
+    query: "room=reef-dive&quality=low&cam=-2,1.6,-8,-9,1.4,-17",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      // the fish are skinned GLBs that stream in after the first frames
+      await page.waitForTimeout(4_000);
+    },
+  },
+  {
+    name: "reef-dive-wrasse",
+    query: "room=reef-dive&quality=low&cam=8,1.6,-12,19,1.8,-20",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      // the fish are skinned GLBs that stream in after the first frames
+      await page.waitForTimeout(4_000);
+    },
+  },
+  {
     name: "reef-dive-deep",
     query: "room=reef-dive&at=3,-14&yaw=3.14&view=full",
   },
@@ -1107,6 +1136,35 @@ const SHOTS: {
     viewport: { width: 390, height: 844 },
   },
   { name: "aquarium", query: "room=aquarium" },
+  {
+    // the reef wall's school, close to the right glass
+    name: "aquarium-reefwall",
+    query: "room=aquarium&quality=low&cam=1.5,1.8,0,7,1.8,0",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      // the fish are skinned GLBs that stream in after the first frames
+      await page.waitForTimeout(4_000);
+    },
+  },
+  {
+    name: "aquarium-reefwall-high",
+    query: "room=aquarium&quality=high&cam=1.5,1.8,0,7,1.8,0",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      // the fish are skinned GLBs that stream in after the first frames
+      await page.waitForTimeout(4_000);
+    },
+  },
   { name: "ice-rink", query: "room=ice-rink" },
   { name: "haunted-house", query: "room=haunted-house" },
   // the escape's first room: the front hall dressed as a set, three doors ahead
