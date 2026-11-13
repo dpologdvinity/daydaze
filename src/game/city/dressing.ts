@@ -38,7 +38,12 @@ import { boardwalkFurniture } from "./boardwalk.ts";
 import { detailBuilding } from "./detail.ts";
 import { YARD_CARS, YARD_FURNITURE } from "./yards.ts";
 import { DISTRICT_NAMES } from "./districtNames.ts";
-import { LOT_SPECS, PALETTES, type LotInstance } from "./districts.ts";
+import {
+  LOT_SPECS,
+  PALETTES,
+  signBoard,
+  type LotInstance,
+} from "./districts.ts";
 
 export { hash };
 
@@ -319,33 +324,33 @@ export function lotSign(out: Buckets, lot: LotInstance): void {
   if (!lot.sign) return;
   const w = LOT_SPECS[lot.model].w * lot.sx;
   const sx = Math.min(w * 0.8, 3.4);
+  const { y, h } = signBoard(lot.model, lot.sy);
+  // the name is 4:1: as wide as the board allows, no taller than it
+  const lw = Math.min(sx * 0.92, h * 0.8 * 4);
   const nx = Math.sin(lot.yaw);
   const nz = Math.cos(lot.yaw);
   out.panel.push({
     x: lot.x + nx * 0.16,
-    y: LOT_SIGN_Y,
+    y,
     z: lot.z + nz * 0.16,
     sx,
-    sy: 0.85,
+    sy: h,
     sz: 0.2,
     rot: [0, lot.yaw, 0],
     color: PALETTES[lot.palette].sign,
   });
   out.label.push({
     x: lot.x + nx * 0.27,
-    y: LOT_SIGN_Y,
+    y,
     z: lot.z + nz * 0.27,
-    sx: sx * 0.92,
-    sy: sx * 0.23,
+    sx: lw,
+    sy: lw / 4,
     sz: 1,
     rot: [0, lot.yaw, 0],
     color: LABEL_INK,
     uv: labelUv(lot.sign),
   });
 }
-
-/** Meters up where a lot's shop board hangs: over the door. */
-const LOT_SIGN_Y = 3.05;
 
 /** A blade sign: a panel that sticks out over the sidewalk, named on both sides. */
 function blade(out: Buckets, f: Front, text: string, color: string): void {
@@ -632,12 +637,16 @@ export function dressBuilding(
   if (!kit) windows(b, f, out, sills);
   // infill is scenery: windows and walls only, no awnings, vents, signs, tanks
   if (isInfill(b)) return;
-  awning(out, f, accent);
+  // one 9 m striped awning at the middle of the block would cut across the
+  // lots' own doors and shop boards (their models carry awnings)
+  if (!lots) awning(out, f, accent);
   if (b.id.startsWith("boardwalk-shop")) servingWindows(out, f, accent);
   if (SHOPFRONT.has(b.style) && b.style !== "gate") {
     vent(out, f.cx + (hash(f.cx, 8) - 0.5) * f.w * 0.4, f.h + 0.5, f.cz);
   }
-  if (b.sign) {
+  // a district block wearing lots is named by their shop boards: its own
+  // board (up to 10 m wide, 2.2 m tall) would bury them and the upper windows
+  if (b.sign && !lots) {
     const s = signSpec(b, f);
     panel(out, "sign", f, s.y, s.sx, s.sy, b.sign.color, b.sign.text);
   }

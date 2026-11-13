@@ -1050,6 +1050,10 @@ const SHOTS: {
   { name: "hotel-rooftop", query: "room=hotel-rooftop" },
   { name: "bookshop", query: "room=bookshop" },
   { name: "patisserie", query: "room=patisserie" },
+  {
+    name: "patisserie-case",
+    query: "room=patisserie&cam=-2,2.0,-0.6,-1,0.95,-4",
+  },
   { name: "clay-day", query: "room=pottery" },
   { name: "florist", query: "room=florist" },
   { name: "gallery", query: "room=gallery" },
@@ -1295,6 +1299,43 @@ const SHOTS: {
       },
     })),
   ),
+  // a district shop board from the pavement in front of it (2.2 m up, 10 m
+  // back, a step to the side), by day and by night: legible, sized, lit
+  ...(
+    [
+      ["manila", [-265, -7], [-264.8, 14]],
+      ["chinatown", [240, -7], [239.3, 14]],
+      ["koreatown", [402, -7], [401.4, 14]],
+      ["arts", [-23, -262], [-23, -244]],
+      ["uptown", [207, -262], [207.1, -244]],
+    ] as const
+  ).flatMap(([name, eye, sign]) =>
+    (
+      [
+        ["day", "12:00"],
+        ["night", "22:00"],
+      ] as const
+    ).map(([when, time]) => ({
+      name: `shop-${name}-${when}`,
+      live: true,
+      // the walker stands a few meters off the camera's line, out of frame
+      query: `room=city&view=room&quality=low&time=${time}&at=${eye[0] + 7},${eye[1]}&cam=${eye[0]},1.9,${eye[1]},${sign[0]},2.6,${sign[1]}`,
+      act: async (page: Page) => {
+        await streetReady(page);
+        // the lots themselves, not just the bays: without them a board hangs on bare brick
+        await page.waitForFunction(
+          () => document.querySelector("canvas")?.dataset.lots === "ready",
+          null,
+          { timeout: 300_000 },
+        );
+        await page.waitForFunction(
+          () => document.querySelector("canvas")?.dataset.frames === "10",
+          null,
+          { timeout: 300_000 },
+        );
+      },
+    })),
+  ),
   { name: "city-sunset", query: "room=city&view=full&time=19:30" },
   {
     name: "city-night",
@@ -1494,6 +1535,28 @@ const SHOTS: {
       await cityReady(page);
       await page.waitForFunction(
         () => document.querySelector("canvas")?.dataset.market === "open",
+        null,
+        { timeout: 300_000 },
+      );
+    },
+  },
+  {
+    // the weekend farmers market (src/game/city/farmersMarket.ts), forced open
+    name: "market-bakehouse",
+    query:
+      "room=city&view=room&quality=low&time=11:00&market=1&at=249,-292&cam=246.9,2.1,-296.2,242.2,1.2,-296.4",
+    act: async (page) => {
+      // the stall wares (data-market-items) and a few frames: the market opens
+      // once its models are in, which is all this shot needs of the city
+      await page.waitForFunction(
+        () => {
+          const c = document.querySelector("canvas");
+          return (
+            c?.dataset.market === "open" &&
+            Number(c.dataset.marketItems) > 0 &&
+            Number(c.dataset.frames) >= 6
+          );
+        },
         null,
         { timeout: 300_000 },
       );
@@ -1795,6 +1858,10 @@ const SHOTS: {
   { name: "point-and-eat-kitchen", query: "room=filipino-joint" },
   { name: "jade-whisk-boba-matcha", query: "room=boba-matcha" },
   { name: "purple-pandesal-ube", query: "room=ube-bakery" },
+  {
+    name: "ube-bakery-counter",
+    query: "room=ube-bakery&cam=0,2.1,3,0,1.1,-0.9",
+  },
   { name: "farm", query: "room=farm" },
   { name: "garden", query: "room=garden" },
   // close on the north pasture's fence rails and the plots

@@ -4,6 +4,7 @@
 
 import type { JSX } from "react";
 import { FOOD_VENUES } from "../../../game/food/venues.ts";
+import { Bakes, type Bake } from "../shared/Bakes.tsx";
 import type { PickHandler } from "../shared/Floor.tsx";
 import { FoodRoom, type FoodPalette } from "./FoodRoom.tsx";
 
@@ -20,6 +21,18 @@ const PALETTE: FoodPalette = {
   counter: "#6b3fa0",
   accent: "#b06bff",
 };
+
+/** Trays of the day's bakes along the counter top (y 1.17), the baker behind
+ * them: pandesal and rolls, crinkle cookies, donuts and croissants. */
+const COUNTER_BAKES: readonly Bake[] = (
+  ["buns", "rolls", "cookies", "donuts", "croissants", "buns", "rolls"] as const
+).map((model, i) => ({
+  model,
+  x: -2.7 + i * 0.9,
+  y: 1.17,
+  z: -0.85,
+  yaw: Math.PI / 2,
+}));
 
 /**
  * The ube bakery: a lilac room with a glass display case of pandesal and
@@ -49,6 +62,7 @@ export function UbeBakery({ onPick }: { onPick: PickHandler }): JSX.Element {
       }}
       onPick={onPick}
     >
+      <Bakes items={COUNTER_BAKES} />
       {[-2.6, -1.3, 0, 1.3, 2.6].map((x, i) => (
         <group key={x} position={[x, 2.2, -2.0]}>
           <mesh>

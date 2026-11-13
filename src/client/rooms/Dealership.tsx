@@ -4,7 +4,7 @@
 
 import { useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { Suspense, useEffect, useMemo, useRef, type JSX } from "react";
+import { Suspense, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";
 import type { Group } from "three";
 import {
@@ -62,11 +62,6 @@ const PLINTH_MAT = new THREE.MeshStandardMaterial({
   metalness: 0.1,
   roughness: 0.2,
 });
-/** The showpieces' paint, by the model's own material name: the concept car's
- * pale shell goes lilac (the saloon's teal is baked in, art/showroom). */
-const PAINT: Record<string, string> = {
-  s_car: "#c4b2ff",
-};
 /** The spotlight's glow: a faint additive cone from the ceiling spot down to
  * the plinth. A real light per showpiece would break the room's light budget. */
 const BEAM = new THREE.MeshBasicMaterial({
@@ -203,32 +198,7 @@ function Showpiece({
 }) {
   const calm = useReducedMotion();
   const { scene } = useGLTF(`/models/showroom/${id}.glb`);
-  // own material copies, the paint in the room's candy colors (a silver saloon
-  // and a pale concept car would vanish against the white showroom)
-  const car = useMemo(() => {
-    const copy = scene.clone(true);
-    copy.traverse((o) => {
-      if (!(o instanceof THREE.Mesh)) return;
-      o.material = [o.material].flat().map((m) => {
-        const own = m.clone();
-        const paint = PAINT[own.name];
-        if (paint && own instanceof THREE.MeshStandardMaterial)
-          own.color.set(paint);
-        return own;
-      });
-      if ((o.material as THREE.Material[]).length === 1)
-        o.material = (o.material as THREE.Material[])[0]!;
-    });
-    return copy;
-  }, [scene]);
-  useEffect(
-    () => () =>
-      car.traverse((o) => {
-        if (o instanceof THREE.Mesh)
-          [o.material].flat().forEach((m) => m.dispose());
-      }),
-    [car],
-  );
+  const car = useMemo(() => scene.clone(true), [scene]);
   const turn = useRef<Group>(null);
   useFrame(({ clock }) => {
     if (!calm && turn.current)

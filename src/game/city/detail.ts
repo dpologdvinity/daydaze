@@ -27,8 +27,9 @@ const GRAFFITI = ["#ff4fb3", "#4fe3ff", "#7dff6b", "#ffd84f"];
 
 /** Rooftop kit, balconies, fire escapes and shopfront displays for one building.
  * A district lot (`lots`) has its own balconies, fire escapes and rooftop AC
- * units and pipes, and a thin roof skin flush with its parapet, so only the
- * water tank, antenna and the street-level dressing are added to it. */
+ * units and pipes, windows and doors, and a thin roof skin flush with its
+ * parapet, so only the water tank, antenna and rooftop neon are added to it
+ * (no posters, glyph or shelves: they would sit over its openings). */
 export function detailBuilding(
   b: Building,
   f: Front,
@@ -165,6 +166,10 @@ export function detailBuilding(
     });
   }
 
+  // spray-paint tags, posters pasted on the wall, a neon heart and product shelves belong to the
+  // plain boxes: a district lot has its own windows and doors, and these would
+  // hang blank rectangles and yellow slabs and floating shelves over them
+  if (lots) return;
   if (b.style === "brick" || b.style === "warehouse") {
     // spray-paint tags low on the wall
     for (let k = 0; k < 3; k++) {

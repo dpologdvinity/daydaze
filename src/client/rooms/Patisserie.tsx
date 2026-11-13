@@ -11,6 +11,7 @@ import { BAKER, BOUNDS, CASE, STAND, TABLES } from "../../game/patisserie.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import { surface } from "../city/worldTexture.ts";
 import { Batch } from "./shared/batch.ts";
+import { Bakes, type Bake } from "./shared/Bakes.tsx";
 import { CrowdFigure } from "./shared/CrowdFigure.tsx";
 import { GLOSS, painted, plant, poster } from "./shared/details.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
@@ -102,15 +103,10 @@ function useRoom() {
     b.add(new THREE.BoxGeometry(cw, 0.55, 0.7), GLASS, {
       position: [0, 1.22, cz],
     });
-    const cake = new THREE.CylinderGeometry(0.13, 0.13, 0.14, 16);
-    const tart = new THREE.CylinderGeometry(0.1, 0.09, 0.05, 14);
     const mac = new THREE.SphereGeometry(0.05, 10, 6);
     for (let i = 0; i < 14; i++) {
       const x = CASE.x0 + 0.4 + i * 0.6;
       const c = MACARON_COLORS[i % MACARON_COLORS.length] ?? "#ffb3d9";
-      b.add(painted(i % 2 ? cake : tart, c), GLOSS, {
-        position: [x, i % 2 ? 1.02 : 0.98, cz],
-      });
       for (let k = 0; k < 3; k++)
         b.add(
           painted(mac, MACARON_COLORS[(i + k) % MACARON_COLORS.length] ?? c),
@@ -270,6 +266,25 @@ function Tower() {
   );
 }
 
+/** The pastry case's pies, tarts and cakes (Bakery pack), one on every
+ * 0.6 m of the marble top, in rotation so no two neighbors match. */
+const CASE_MODELS = [
+  "cake-strawberry",
+  "tart-fruit",
+  "pie-berry",
+  "tart-choc",
+  "pie-cream",
+  "pie-lattice",
+] as const;
+const CASE_BAKES: readonly Bake[] = Array.from({ length: 14 }, (_, i) => ({
+  model: CASE_MODELS[i % CASE_MODELS.length] ?? "pie-berry",
+  x: CASE.x0 + 0.4 + i * 0.6,
+  // on the marble top (0.92 and its 0.05 slab)
+  y: 0.945,
+  z: (CASE.z0 + CASE.z1) / 2,
+  yaw: i * 1.3,
+}));
+
 /**
  * Sucre on Park Avenue: a pink and mint salon de the, a long glass case of
  * cakes, tarts and macarons, marble tables under a crystal chandelier, and
@@ -303,6 +318,7 @@ export function Patisserie({ onPick }: { onPick: PickHandler }): JSX.Element {
       />
       <PortalPads room={ROOMS.patisserie} color="#ffc8dd" />
       <primitive object={room} />
+      <Bakes items={CASE_BAKES} />
       <Tower />
       <NeonText
         text="sucre"

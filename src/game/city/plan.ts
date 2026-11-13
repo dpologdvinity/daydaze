@@ -663,7 +663,7 @@ function buildingInstancesFacing(
       color: b.style === "storefront" ? "#f2b26b" : "#3a2452",
     });
 
-  if (b.sign) {
+  if (b.sign && !lots) {
     const s = signSpec(b, f);
     lights.push({
       x: f.cx,
