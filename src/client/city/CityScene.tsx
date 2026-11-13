@@ -67,6 +67,7 @@ import { CityTransit } from "./CityTransit.tsx";
 import { ParkedCars } from "./ParkedCars.tsx";
 import { Traffic } from "./Traffic.tsx";
 import { PlayerCar } from "./PlayerCar.tsx";
+import { AvenueWear } from "./AvenueWear.tsx";
 import { cityFar, FarCity } from "./FarCity.tsx";
 import { GasStations } from "./GasStations.tsx";
 import type { ParkedCar } from "../../game/city/drive.ts";
@@ -388,6 +389,7 @@ export function CityScene({
         </ElLineBoundary>
       </Suspense>
       <FarCity />
+      <AvenueWear />
       <ElRide player={player} />
       <NightMarket player={player} />
     </>

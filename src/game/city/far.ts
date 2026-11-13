@@ -46,16 +46,16 @@ export const FAR_ROAD_TRIANGLES = 2;
 /** The walls' look at a distance: what the photo textures and tints average to
  * (plan.ts BODY_COLOR over brick, stucco, concrete and siding). */
 const WALL: Record<BuildingStyle, string> = {
-  tower: "#6d739f",
-  glass: "#6c86b8",
-  billboard: "#7b6a9c",
-  storefront: "#a8705c",
-  deck: "#8a8798",
-  brick: "#a66a56",
-  club: "#8d6aa8",
-  warehouse: "#7e8088",
-  velvet: "#b0608e",
-  gate: "#7a6da0",
+  tower: "#5a6088",
+  glass: "#5a7098",
+  billboard: "#665a86",
+  storefront: "#8c6554",
+  deck: "#76748a",
+  brick: "#865a4a",
+  club: "#6e5690",
+  warehouse: "#6c6e76",
+  velvet: "#8c4c74",
+  gate: "#665c8a",
 };
 
 /** Each district's cast over its walls: [r, g, b] multipliers. */

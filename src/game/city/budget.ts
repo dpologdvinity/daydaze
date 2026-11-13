@@ -6,6 +6,7 @@
 // model cost below against the shipped file.
 
 import { FAR_ROADS, FAR_ROAD_TRIANGLES } from "./far.ts";
+import { avenueWear, WEAR_TRIANGLES } from "./wear.ts";
 import { FOOD_CARTS, FOOD_DRAW_RANGE, VENDOR_RANGE } from "./vendors.ts";
 import { cellsWithin } from "./cells.ts";
 import {
@@ -346,6 +347,9 @@ const EL_DRAW_CALLS = 4 + 3;
 /** The far city's roads (far.ts): one flat strip each, all in one draw. */
 const FAR_ROAD_TOTAL = FAR_ROADS.length * FAR_ROAD_TRIANGLES;
 const FAR_ROAD_DRAW_CALLS = 1;
+/** The avenue's wear marks and the El's shade band (wear.ts): one draw each, always drawn. */
+const WEAR_TOTAL = avenueWear().length * WEAR_TRIANGLES + 2;
+const WEAR_DRAW_CALLS = 2;
 
 /** The seasonal dressings' models (public/models/seasons/): shown only near
  * the player (NEAR_LOW in SeasonalDressing.tsx), at most 160 of each. */
@@ -661,6 +665,7 @@ export function lowTierCost(
   let drawCalls =
     EL_DRAW_CALLS +
     FAR_ROAD_DRAW_CALLS +
+    WEAR_DRAW_CALLS +
     drawCallsOf(plan) +
     Math.min(houseModels, HOUSE_MODELS.length) * 4;
   const allBays = plan.bays.reduce((n, b) => n + BAY_TRIANGLES[b.kind], 0);
@@ -677,13 +682,15 @@ export function lowTierCost(
     worstViewBayTriangles(plan.bays, at) +
     worstViewLotTriangles(plan.lots, at) +
     EL_TRIANGLES +
-    FAR_ROAD_TOTAL;
+    FAR_ROAD_TOTAL +
+    WEAR_TOTAL;
   const parts: Record<string, number> = {
     plan: planTriangles - allBays - allLots,
     bays: worstViewBayTriangles(plan.bays, at),
     lots: worstViewLotTriangles(plan.lots, at),
     el: EL_TRIANGLES,
     farRoads: FAR_ROAD_TOTAL,
+    wear: WEAR_TOTAL,
   };
   const tally = (key: string, tris: number) => {
     parts[key] = (parts[key] ?? 0) + tris;

@@ -7,7 +7,7 @@
 // texture), so a far block costs 12 triangles and shares the two draws.
 // Lambert, so the sun and sky tint it like the rest of the city, and fogged,
 // so it dissolves into the horizon.
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";
 import { FAR_CAPACITY, FAR_ROADS, type FarBox } from "../../game/city/far.ts";
 import { createStore } from "../rooms/shared/store.ts";
@@ -62,23 +62,30 @@ float farAlong = mix(vFarWorld.z, vFarWorld.x, step(0.5, abs(vFarNormal.z)));
 vec2 farGrid = vec2(farAlong / ${BAY.toFixed(1)}, vFarWorld.y / ${FLOOR.toFixed(1)});
 vec2 farCell = floor(farGrid);
 vec2 farIn = fract(farGrid);
-float farWin = step(0.2, farIn.x) * step(farIn.x, 0.8) * step(0.3, farIn.y) * step(farIn.y, 0.8);
+// window edges soften with the pixel footprint, and past one pixel a window
+// is its average (a flat 30% dark) instead of shimmering
+vec2 farPx = max(fwidth(farGrid), vec2(0.001));
+vec2 farLo = smoothstep(vec2(0.2, 0.3) - farPx, vec2(0.2, 0.3) + farPx, farIn);
+vec2 farHi = 1.0 - smoothstep(vec2(0.8, 0.8) - farPx, vec2(0.8, 0.8) + farPx, farIn);
+float farWin = farLo.x * farHi.x * farLo.y * farHi.y;
+float farSharp = 1.0 - smoothstep(0.2, 0.5, max(farPx.x, farPx.y));
+farWin = mix(0.3, farWin, farSharp);
 farWin *= (1.0 - farRoof) * step(1.0, vFarWorld.y);
 float farGlass = 0.5 + 0.5 * farHash(farCell.yx + vFarSeed * 91.0);
 diffuseColor.rgb = mix(diffuseColor.rgb, mix(vec3(0.09, 0.12, 0.2), vec3(0.3, 0.37, 0.5), farGlass), farWin * 0.85);
-diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 0.5 + vec3(0.03), farRoof);
-float farLit = farWin * step(0.58, farHash(farCell + vFarSeed * 37.0)) * uFarNight;`,
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.26, 0.26, 0.29), farRoof * 0.75);
+float farLit = farWin * farSharp * step(0.58, farHash(farCell + vFarSeed * 37.0)) * uFarNight;`,
       )
       .replace(
         "#include <emissivemap_fragment>",
         `#include <emissivemap_fragment>
-totalEmissiveRadiance += farLit * vec3(1.0, 0.78, 0.45) * 1.1 + diffuseColor.rgb * 0.14 * uFarNight;`,
+totalEmissiveRadiance += farLit * vec3(1.0, 0.74, 0.38) * 0.8 + diffuseColor.rgb * 0.14 * uFarNight;`,
       );
   };
   return material;
 }
 
-export function FarCity(): null | React.JSX.Element {
+export function FarCity(): null | JSX.Element {
   const { boxes } = cityFar.use();
   const buildings = useMemo(() => {
     const geometry = new THREE.BoxGeometry(1, 1, 1);
