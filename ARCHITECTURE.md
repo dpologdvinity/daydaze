@@ -104,6 +104,17 @@ floors, looks, saves, chat effects) so both sides agree on the rules.
 Quality tiers (`world/quality.ts`, `?quality=low|high`) keep the low tier
 under 250 draw calls, 300k triangles and 4 real lights.
 
+Loading: the city's first picture waits only on what is near. Region parts (the
+band shell, dog yard, market, Ferris wheel, district lots, Suburbia's houses)
+and each street-furniture kind sit in their own `Suspense` and fetch their
+models when the plan or the player first comes near (`city/preloadNear.ts`,
+`CityFurniture.tsx`), not at startup; panels with big static data (the credits
+ledger) and drei's `Environment` (a high-tier night) are lazy chunks. Shaders
+compile behind the loading veil (`Warmup`) and for late content (`LateWarmup`),
+and `checkShaderErrors` is off in production builds so the driver is not made
+to finish linking just to read an info log. `?programs=1` logs every linked
+program with its feature defines, for `scripts/perf-profile.ts`.
+
 ## Game logic (`src/game`)
 
 Pure, deterministic and seeded where randomness matters, so tests and every
@@ -230,6 +241,11 @@ update prompt (`src/client/ui/UpdatePrompt.tsx`), then deletes the old cache.
 - `npm run test:e2e:sw`: the service worker against a production build
   (`vite preview`): a second visit loads from its cache.
 - `npm run smoke:server`: the server end to end.
+- `profile.yml` (`gh workflow run profile.yml --ref <branch> -f areas="spawn park"`):
+  frame times, long tasks, shader links, first-load requests, bytes and JS
+  chunks per city area under SwiftShader (relative numbers; run each ref
+  several times, they vary by a few seconds). It runs per ref, so compare two
+  refs by pushing the same commit to two `ci/` names.
 - `npm run perf:budget`: after a build, fails when the initial JS (entry plus
   preloads, gzipped) passes 600 KB, and prints `dist/` by asset class; CI runs
   it after the build.
