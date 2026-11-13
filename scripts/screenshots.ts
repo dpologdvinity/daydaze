@@ -1321,7 +1321,13 @@ const SHOTS: {
       // the walker stands a few meters off the camera's line, out of frame
       query: `room=city&view=room&quality=low&time=${time}&at=${eye[0] + 7},${eye[1]}&cam=${eye[0]},1.9,${eye[1]},${sign[0]},2.6,${sign[1]}`,
       act: async (page: Page) => {
-        await blocksReady(page);
+        await streetReady(page);
+        // the lots themselves, not just the bays: without them a board hangs on bare brick
+        await page.waitForFunction(
+          () => document.querySelector("canvas")?.dataset.lots === "ready",
+          null,
+          { timeout: 300_000 },
+        );
         await page.waitForFunction(
           () => document.querySelector("canvas")?.dataset.frames === "10",
           null,
