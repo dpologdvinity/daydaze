@@ -871,7 +871,9 @@ const SHOTS: {
       );
       // the shot camera eases out to the hall: give it time to settle
       await page.waitForTimeout(10_000);
-    },  {
+    },
+  },
+  {
     name: "haunted-escape-wide",
     query: "room=haunted-house",
     viewport: { width: 2400, height: 800 },
