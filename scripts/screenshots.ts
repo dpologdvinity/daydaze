@@ -1171,15 +1171,9 @@ const SHOTS: {
   ].map(([name, time, at, cam]) => ({
     name: String(name),
     query: `room=city&quality=low&time=${time}&at=${at}&cam=${cam}`,
-    act: async (page: Page) => {
-      await page.locator("canvas").waitFor();
-      await blocksReady(page);
-      await page.waitForFunction(
-        () => Number(document.querySelector("canvas")?.dataset.frames) >= 6,
-        null,
-        { timeout: 300_000 },
-      );
-    },
+    // the blocks around these gaps have no New York bays or lots, so
+    // data-bays never reads ready: wait on the furniture and frames
+    act: furnitureReady,
   })),
   { name: "city-overview", query: "room=city" },
   // the city by day and at sunset (daylight.ts), pinned with ?time=
