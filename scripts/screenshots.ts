@@ -925,7 +925,9 @@ const SHOTS: {
   {
     name: "city-day-overview",
     query: "room=city&time=12:00",
-    act: cityReady,
+    // the overview draws no New York bays (baysWanted in budget.ts), so
+    // data-bays never reads "ready" there: wait on the furniture alone
+    act: furnitureReady,
   },
   // the New York blocks from the street (src/game/city/nyc.ts), by day and at night
   ...[
