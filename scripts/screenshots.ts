@@ -722,9 +722,9 @@ const SHOTS: {
   seatStrip("seat-bench-stand", "dome-bench-0", "stand", -1),
   seatStrip("seat-stadium-sit", "stadium-dugout-0", "sit", 1),
   seatStrip("seat-stadium-stand", "stadium-dugout-0", "stand", 1),
-  seatStrip("seat-stool-sit", "velvet-stool-0", "sit", 1),
+  seatStrip("seat-stool-sit", "velvet-stool-0", "sit", -1),
   seatStrip("seat-clap", "dome-bench-0", "emote", -1),
-  seatStrip("seat-typing", "home-chair-1", "type", 1),
+  seatStrip("seat-typing", "home-chair-1", "type", -1),
   { name: "club-pulse", query: "room=pulse" },
   {
     name: "apartment",
