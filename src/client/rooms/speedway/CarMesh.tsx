@@ -27,6 +27,8 @@ import {
   type BodyKey,
 } from "../../../game/driving/bodies.ts";
 import { bodyGeometry } from "../../city/carBodies.ts";
+import { CAR_LAMP } from "../../city/carLamps.ts";
+import { CarWheels } from "./CarWheels.tsx";
 import { canvasTex, hdr } from "../shared/materials.ts";
 import { carParts, GLASS, LIGHT, RIM, TRIM, TYRE } from "./carModels.ts";
 
@@ -224,7 +226,8 @@ function Extras({
  * A road car: a downloaded Quaternius body (public/models/cars/, see
  * src/game/driving/bodies.ts) scaled to the spec's length, its paint,
  * windows and rims taking the car's color, tint and rim style, and the wrap
- * painted over the lacquer. Nose points down +z. Starts hidden.
+ * painted over the lacquer. The wheels roll and steer (CarWheels), the lamps
+ * glow at night in the city (carLamps.ts). Nose points down +z. Starts hidden.
  */
 function BodyCar({
   spec,
@@ -246,11 +249,14 @@ function BodyCar({
           <mesh geometry={parts.glass} material={glassMaterial(mods?.tint)} />
         )}
         {parts.trim && <mesh geometry={parts.trim} material={ROAD_TRIM} />}
-        {parts.tyre && <mesh geometry={parts.tyre} material={TYRE} />}
-        {parts.rim && (
-          <mesh geometry={parts.rim} material={rimMaterial(mods?.rims)} />
-        )}
-        {parts.light && <mesh geometry={parts.light} material={LIGHT} />}
+        <CarWheels
+          body={body}
+          tyre={parts.tyre}
+          rim={parts.rim}
+          tyreMaterial={TYRE}
+          rimMaterial={rimMaterial(mods?.rims)}
+        />
+        {parts.light && <mesh geometry={parts.light} material={CAR_LAMP} />}
       </group>
       <Extras spec={spec} mods={mods} beams={beams} />
     </group>

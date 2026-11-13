@@ -66,8 +66,8 @@ styles only show at slower speeds.
   (ambulance and school bus about 1,700), `-lo` twin about 830 (the body thinned as one mesh, wheels as discs). Traffic is
   one instanced draw per body and level of detail (`trafficBodies.ts`),
   per-instance paint through a vertex-marked shader. The Sketchfab cars were
-  skipped (brands, NC licenses, size). Not done: spinning wheels (tyres are
-  merged into the body mesh), the parked cars along the kerbs (plan kinds
+  skipped (brands, NC licenses, size). Spinning wheels followed (the GLBs hold one lone wheel, see
+  `src/game/driving/wheels.ts`). Not done: the parked cars along the kerbs (plan kinds
   `car` and `carGlass`, still lofted: `carGeometry.ts`), Speedway karts and
   stock cars (unchanged on purpose).
 

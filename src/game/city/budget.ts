@@ -55,6 +55,7 @@ import {
 } from "./tuning.ts";
 import { BODY_KEYS, ROSTER_BODY } from "../driving/bodies.ts";
 import { PARKED_CARS, PARKED_RANGE } from "./dressing.ts";
+import { GLOW_DRAWS, GLOW_TRIS_PER_CAR } from "../driving/lamps.ts";
 import {
   CAR_SLOT,
   TRAFFIC_COUNT,
@@ -140,25 +141,26 @@ export const MODEL_COST: Readonly<
   "beach/umbrella-blue": { tris: 214, parts: 4 },
   "beach/umbrella-red": { tris: 214, parts: 4 },
   // the downloaded car bodies (src/game/driving/bodies.ts): near for the
-  // player's own car, -lo for traffic on the low tier
-  "cars/sedan": { tris: 2954, parts: 6 },
-  "cars/hatch": { tris: 3124, parts: 6 },
-  "cars/suv": { tris: 3294, parts: 6 },
-  "cars/coupe": { tris: 3078, parts: 6 },
-  "cars/sports": { tris: 3148, parts: 6 },
-  "cars/cop": { tris: 3232, parts: 6 },
-  "cars/taxi": { tris: 3278, parts: 6 },
-  "cars/ambulance": { tris: 1646, parts: 5 },
-  "cars/schoolbus": { tris: 1782, parts: 5 },
-  "cars/sedan-lo": { tris: 834, parts: 5 },
-  "cars/hatch-lo": { tris: 832, parts: 5 },
-  "cars/suv-lo": { tris: 832, parts: 5 },
-  "cars/coupe-lo": { tris: 834, parts: 5 },
-  "cars/sports-lo": { tris: 834, parts: 5 },
-  "cars/cop-lo": { tris: 834, parts: 5 },
-  "cars/taxi-lo": { tris: 830, parts: 5 },
-  "cars/ambulance-lo": { tris: 833, parts: 5 },
-  "cars/schoolbus-lo": { tris: 833, parts: 5 },
+  // player's own car, -lo for traffic on the low tier. Each file holds ONE
+  // wheel, drawn four times (WHEEL_TRIS adds the other three).
+  "cars/sedan": { tris: 1694, parts: 6 },
+  "cars/hatch": { tris: 1864, parts: 6 },
+  "cars/suv": { tris: 2034, parts: 6 },
+  "cars/coupe": { tris: 1818, parts: 6 },
+  "cars/sports": { tris: 1888, parts: 6 },
+  "cars/cop": { tris: 1972, parts: 6 },
+  "cars/taxi": { tris: 2018, parts: 6 },
+  "cars/ambulance": { tris: 1118, parts: 5 },
+  "cars/schoolbus": { tris: 1254, parts: 5 },
+  "cars/sedan-lo": { tris: 724, parts: 5 },
+  "cars/hatch-lo": { tris: 726, parts: 5 },
+  "cars/suv-lo": { tris: 724, parts: 5 },
+  "cars/coupe-lo": { tris: 726, parts: 5 },
+  "cars/sports-lo": { tris: 724, parts: 5 },
+  "cars/cop-lo": { tris: 724, parts: 5 },
+  "cars/taxi-lo": { tris: 722, parts: 5 },
+  "cars/ambulance-lo": { tris: 725, parts: 5 },
+  "cars/schoolbus-lo": { tris: 725, parts: 5 },
 };
 
 /** The low tier's far-twin tree model for a variant (CityTrees). */
@@ -198,6 +200,14 @@ export function modelsInBudget(): string[] {
 
 const GROWTH = ALL_GROWTH;
 
+/** What a car's wheels cost beyond the one wheel in its GLB: the file has one
+ * wheel at the origin and the client draws it at all four axles. A distance
+ * twin's wheel is a 10-sided disc (36 triangles); a near body's is its tyre and
+ * hub (420 for the dearest, the sedan's, which traffic and parked cars share).
+ * carBodies.test.ts holds both to the shipped files. */
+export const WHEEL_TRIS = { near: 420, lo: 36 } as const;
+const EXTRA_WHEELS = 3;
+
 /** A procedural jeepney as Traffic draws it: shell 156, trim 60, chrome 380 and
  * dark 36 triangles, plus four 12-sided wheels and four lamp boxes. Six draws. */
 const JEEPNEY_TRIS = 880;
@@ -227,32 +237,39 @@ const CITY_LANE_METERS = laneMetersWithin([0, 0], 1e6);
  * each as a jeepney or a body's distance twin (the low tier never draws the
  * near models), with one merged draw per body model. On a road she may be at
  * the wheel of the dearest road car: its near model (six draws: paint,
- * glass, trim, tyres, rims, lamps) with underglow and beams.
+ * glass, trim, tyres, rims, lamps; the wheels instanced four to a car) with
+ * underglow and beams.
  */
 export function trafficCost(at: Vec2): {
   drawCalls: number;
   triangles: number;
 } {
   const fleet = createTraffic(TRAFFIC_COUNT.low, TRAFFIC_SEED).cars.map((c) =>
-    c.body ? costOf(`cars/${c.body}-lo`).tris : JEEPNEY_TRIS,
+    c.body ? loCarTris(c.body) : JEEPNEY_TRIS,
   );
-  fleet.push(costOf("cars/taxi-lo").tris);
+  fleet.push(loCarTris("taxi"));
   fleet.sort((a, b) => b - a);
   const lanes = laneMetersWithin(at, LOW_TRAFFIC_RANGE);
   const expected = Math.ceil(
     (fleet.length * lanes * TRAFFIC_MARGIN) / CITY_LANE_METERS,
   );
   const drawn = fleet.slice(0, Math.min(expected, Math.ceil(lanes / CAR_SLOT)));
+  // one draw per body model, the jeepneys' six, and the cars' shared wheels
+  // plus the night glow of the lit cars (carGlow.ts), priced as if it were night
   let drawCalls =
     drawn.length > 0
-      ? Math.min(drawn.length, BODY_KEYS.length) + JEEPNEY_DRAWS
+      ? Math.min(drawn.length, BODY_KEYS.length) +
+        JEEPNEY_DRAWS +
+        1 +
+        GLOW_DRAWS
       : 0;
-  let triangles = drawn.reduce((n, t) => n + t, 0);
+  let triangles =
+    drawn.reduce((n, t) => n + t, 0) + drawn.length * GLOW_TRIS_PER_CAR;
   if (laneMetersWithin(at, AT_THE_WHEEL) > 0) {
     const own = Object.values(ROSTER_BODY).map((k) => costOf(`cars/${k}`));
     const dearest = own.reduce((a, b) => (b.tris > a.tris ? b : a));
     drawCalls += dearest.parts + OWN_CAR_EXTRAS;
-    triangles += dearest.tris;
+    triangles += dearest.tris + EXTRA_WHEELS * WHEEL_TRIS.near;
   }
   return { drawCalls, triangles };
 }
@@ -268,9 +285,15 @@ export function parkedCost(at: Vec2): { drawCalls: number; triangles: number } {
   for (const car of PARKED_CARS) {
     if (Math.hypot(car.x - at[0], car.z - at[1]) > PARKED_RANGE.low) continue;
     bodies.add(car.body);
-    triangles += costOf(`cars/${car.body}-lo`).tris;
+    triangles += loCarTris(car.body);
   }
-  return { drawCalls: bodies.size, triangles };
+  // plus the one draw of their wheels
+  return { drawCalls: bodies.size > 0 ? bodies.size + 1 : 0, triangles };
+}
+
+/** A body's distance twin as drawn: its file's wheel drawn four times. */
+function loCarTris(body: string): number {
+  return costOf(`cars/${body}-lo`).tris + EXTRA_WHEELS * WHEEL_TRIS.lo;
 }
 
 function costOf(model: string): { tris: number; parts: number } {

@@ -302,6 +302,213 @@ function actionStrip(
   };
 }
 
+/**
+ * Tiles PNG frames into one sheet in the page (no image library needed): each
+ * frame cropped to `crop` (a rectangle of the full frame), `columns` to a row.
+ */
+async function tileFrames(
+  page: Page,
+  frames: Buffer[],
+  crop: { x: number; y: number; width: number; height: number },
+  columns: number,
+): Promise<Buffer> {
+  const data = await page.evaluate(
+    async ([urls, box, cols]) => {
+      const images = await Promise.all(
+        urls.map(
+          (url) =>
+            new Promise<HTMLImageElement>((resolve, reject) => {
+              const img = new Image();
+              img.onload = () => resolve(img);
+              img.onerror = reject;
+              img.src = url;
+            }),
+        ),
+      );
+      const rows = Math.ceil(images.length / cols);
+      const sheet = document.createElement("canvas");
+      sheet.width = box.width * cols;
+      sheet.height = box.height * rows;
+      const ctx = sheet.getContext("2d");
+      images.forEach((img, i) =>
+        ctx?.drawImage(
+          img,
+          box.x,
+          box.y,
+          box.width,
+          box.height,
+          (i % cols) * box.width,
+          Math.floor(i / cols) * box.height,
+          box.width,
+          box.height,
+        ),
+      );
+      return sheet.toDataURL("image/png");
+    },
+    [
+      frames.map((f) => `data:image/png;base64,${f.toString("base64")}`),
+      crop,
+      columns,
+    ] as const,
+  );
+  return Buffer.from(data.split(",")[1] ?? "", "base64");
+}
+
+/**
+ * Proof that the player's wheels turn and steer: the car is driven on a
+ * paused fake clock that is stepped by hand, so each frame is an exact time
+ * after the throttle goes down. Two sheets in docs/screenshots: sheet 00
+ * (frames 50 ms apart while pulling away from rest, the car rolling only a few
+ * centimeters a frame so the hub's spokes shift a few degrees each) and
+ * sheet 01 (straight, then the wheel turned, then turned more), cropped round the car.
+ */
+function wheelSheet(name: string): (typeof SHOTS)[number] {
+  const size = { width: 2400, height: 1500 };
+  // the side view keeps the car in the middle of the frame, 10 m off at about
+  // 150 px a meter here, nose to the right (the car faces -x): a strip along its wheels
+  const crop = { x: 840, y: 620, width: 720, height: 360 };
+  return {
+    name,
+    query: "room=city&time=12:00&at=-58,1.5",
+    live: true,
+    viewport: size,
+    act: async (page) => {
+      // the car parked mid-avenue in the far lane facing -x, so its right side
+      // (where the side view stands) looks over open road, not a wall
+      await page.evaluate(() => {
+        const key = "daydaze-save-v1";
+        const save = JSON.parse(localStorage.getItem(key) ?? "{}");
+        const car = {
+          id: "quill-lite",
+          color: "#d8d8e4",
+          at: [-60, 3],
+          yaw: -Math.PI / 2,
+          fuel: 1,
+        };
+        localStorage.setItem(key, JSON.stringify({ ...save, car }));
+      });
+      await page.reload();
+      const canvas = page.getByRole("img", { name: "3D room view" });
+      await expect(canvas).toHaveAttribute("data-city-car", "parked", {
+        timeout: 300_000,
+      });
+      await page.getByRole("button", { name: "Drive your car" }).click();
+      await expect(canvas).toHaveAttribute("data-city-car", "driving", {
+        timeout: 120_000,
+      });
+      // the car's right-hand side, close enough to see the spokes; the camera
+      // eases round to it in real time before the clock is paused
+      await page.getByRole("button", { name: "Side view" }).click();
+      await page.waitForTimeout(8000);
+      const shoot = async (ms: number) => {
+        await page.clock.runFor(ms);
+        // real time: lets the software renderer finish the stepped frames
+        await page.waitForTimeout(1500);
+        return page.screenshot({ timeout: 180_000 });
+      };
+      // the fake clock starts at 0 and jumps (firing each due timer once) to
+      // 30 s, where it waits for runFor: install to pause takes well under that
+      await page.clock.install({ time: 0 });
+      await page.clock.pauseAt(30_000);
+      const spin: Buffer[] = [];
+      await page.keyboard.down("w");
+      for (const ms of [150, 50, 50, 50]) spin.push(await shoot(ms));
+      // still rolling slowly (the steering angle the wheels show does not
+      // depend on speed): straight, then the wheel turned, then turned more
+      const turn: Buffer[] = [spin[3]];
+      await page.keyboard.down("a");
+      turn.push(await shoot(300));
+      turn.push(await shoot(300));
+      await page.keyboard.up("a");
+      await page.keyboard.up("w");
+      // the runner collects `<name>.png` and `<name>-NN.png`: the sheets are 00
+      // (spin) and 01 (turn), the raw frames 10-19 (spin) and 20-29 (turn)
+      for (const [sheetNo, frames] of [
+        [0, spin],
+        [1, turn],
+      ] as const) {
+        const sheet = await tileFrames(page, frames, crop, 2);
+        writeFileSync(`docs/screenshots/${name}-0${sheetNo}.png`, sheet);
+        frames.forEach((png, n) =>
+          writeFileSync(
+            `docs/screenshots/${name}-${10 * (sheetNo + 1) + n}.png`,
+            png,
+          ),
+        );
+      }
+      console.log(
+        `${name}: ${spin.length} spin frames, ${turn.length} turn frames`,
+      );
+    },
+  };
+}
+
+/**
+ * A lane car caught close at night, by day or at night: the camera stands on
+ * the avenue's center line looking west, the clock is paused and stepped (a
+ * small window and 100 ms jumps, so it is quick) until the traffic probe
+ * (`?debug=1`, Traffic.tsx) shows a car in the open between 8 and 15 m away,
+ * then the window grows to full size and the frame is taken. `<name>-00` has
+ * a car coming toward the camera (headlights), `<name>-01` one going away
+ * (tail lamps).
+ */
+function trafficClose(name: string, hour: number): (typeof SHOTS)[number] {
+  const camera = { x: -110, z: 0.5 };
+  const full = { width: 1280, height: 800 };
+  return {
+    name,
+    query: `room=city&view=room&time=${hour}:00&debug=1&at=-110,8&cam=${camera.x},1.5,${camera.z},-150,1.2,${camera.z}`,
+    live: true,
+    act: async (page) => {
+      const canvas = page.getByRole("img", { name: "3D room view" });
+      await furnitureReady(page);
+      await page.setViewportSize({ width: 480, height: 300 });
+      await page.clock.install({ time: 0 });
+      await page.clock.pauseAt(30_000);
+      /** Steps until a car moving along the avenue is 8 to 15 m west of the camera. */
+      const find = async (toward: boolean) => {
+        for (let step = 0; step < 900; step++) {
+          await page.clock.fastForward(100);
+          await page.waitForTimeout(40);
+          const probe = (await canvas.getAttribute("data-traffic-probe")) ?? "";
+          for (const entry of probe.split(";")) {
+            const [x, z, yaw, speed] = entry.split(",").map(Number);
+            if (!(speed > 1)) continue;
+            const behind = camera.x - x;
+            // west of the camera, in its lanes, running along the avenue
+            if (behind < 8 || behind > 15 || Math.abs(z - camera.z) > 4)
+              continue;
+            const along = Math.cos(yaw);
+            if (Math.abs(along) < 0.95 || along > 0 !== toward) continue;
+            console.log(`${name}: step ${step}, car at ${x},${z} yaw ${yaw}`);
+            return;
+          }
+        }
+        console.log(`${name}: no car found, shooting anyway`);
+      };
+      for (const [n, toward] of [
+        [0, true],
+        [1, false],
+      ] as const) {
+        await find(toward);
+        await page.setViewportSize(full);
+        // the resize lands on a timer and the canvas repaints a frame later
+        await page.clock.runFor(100);
+        await page.waitForTimeout(1500);
+        await page.clock.runFor(100);
+        await page.waitForTimeout(2500);
+        writeFileSync(
+          `docs/screenshots/${name}-0${n}.png`,
+          await page.screenshot({ timeout: 180_000 }),
+        );
+        await page.setViewportSize({ width: 480, height: 300 });
+      }
+      await page.setViewportSize(full);
+      await page.clock.runFor(50);
+    },
+  };
+}
+
 const SHOTS: {
   name: string;
   query: string;
@@ -312,6 +519,8 @@ const SHOTS: {
   /** Drives the scene before the capture, e.g. to start a race. */
   act?: (page: Page) => Promise<void>;
 }[] = [
+  wheelSheet("car-wheels"),
+  trafficClose("car-traffic-close-night", 23),
   walkStrip("walk-feminine-short", "feminine", "click"),
   walkStrip("walk-feminine-long", "feminine", "hold"),
   walkStrip("walk-swagger-short", "swagger", "click"),
@@ -758,6 +967,45 @@ const SHOTS: {
     query: "room=city&view=full&time=12:00&at=-36,9.5",
     act: furnitureReady,
   },
+  // the parked sports car and cop car from the road, by day and at night:
+  // wheels, glass and lamps of the downloaded bodies (trafficBodies.ts)
+  ...(
+    [
+      ["sports", 12, "-40,-1", "-34,1.6,0.2,-43,0.7,-5.2"],
+      ["cop", 12, "-27,-1", "-21,1.6,0.2,-30,0.7,-5.2"],
+      ["sports", 23, "-40,-1", "-34,1.6,0.2,-43,0.7,-5.2"],
+      ["cop", 23, "-27,-1", "-21,1.6,0.2,-30,0.7,-5.2"],
+    ] as const
+  ).map(([body, hour, at, cam]) => ({
+    name: `car-parked-${body}-${hour === 12 ? "day" : "night"}`,
+    query: `room=city&view=room&quality=low&time=${hour}:00&at=${at}&cam=${cam}`,
+    act: furnitureReady,
+  })),
+  // your own car at its home kerb (src/game/city/drive.ts HOME_PARKING), the
+  // full-detail body: nose and rear, by day and at night
+  ...(
+    [
+      ["front", 12, "24,1.5,-0.5,14,0.7,5.4"],
+      ["rear", 12, "4,1.4,-0.5,14,0.7,5.4"],
+      ["front", 23, "24,1.5,-0.5,14,0.7,5.4"],
+      ["rear", 23, "4,1.4,-0.5,14,0.7,5.4"],
+    ] as const
+  ).map(([end, hour, cam]) => ({
+    name: `car-own-${end}-${hour === 12 ? "day" : "night"}`,
+    query: `room=city&view=room&quality=low&time=${hour}:00&at=10,7&cam=${cam}`,
+    act: furnitureReady,
+  })),
+  // lane traffic at a busy crossing, by day and at night
+  ...(
+    [
+      ["day", 12],
+      ["night", 23],
+    ] as const
+  ).map(([label, hour]) => ({
+    name: `city-traffic-${label}`,
+    query: `room=city&view=room&quality=low&time=${hour}:00&at=-130,8&cam=-120,2.4,9,-165,1,0`,
+    act: furnitureReady,
+  })),
   {
     // a signal head at a crossing, its lit bulbs cycling (Traffic.tsx)
     name: "city-signal",

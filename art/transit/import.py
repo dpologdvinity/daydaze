@@ -9,8 +9,8 @@ if source.endswith('.fbx'):
 else:
     bpy.ops.import_scene.gltf(filepath=source)
 objects = [o for o in bpy.context.scene.objects if o.type == 'MESH']
-# Blender Z is glTF Y. Taxi/sedan/van noses point toward Blender -Y.
-rotation = Matrix.Rotation(math.pi / 2 if kind in ('taxi', 'sedan', 'van') else math.pi if kind == 'bus' else 0, 4, 'Z')
+# Blender Z is glTF Y. The van's nose points toward Blender -Y.
+rotation = Matrix.Rotation(math.pi / 2 if kind == 'van' else math.pi if kind == 'bus' else 0, 4, 'Z')
 for o in objects:
     o.data.transform(rotation @ o.matrix_world)
     o.matrix_world = Matrix.Identity(4)
@@ -18,7 +18,7 @@ points = [v.co for o in objects for v in o.data.vertices]
 lo = Vector(tuple(min(v[i] for v in points) for i in range(3)))
 hi = Vector(tuple(max(v[i] for v in points) for i in range(3)))
 size = hi - lo
-scale = (8.8 / size.x if kind == 'bus' else 4.2 / size.x if kind in ('taxi', 'sedan') else 4.6 / size.x if kind == 'van' else 3.0 / size.z)
+scale = (8.8 / size.x if kind == 'bus' else 4.6 / size.x if kind == 'van' else 3.0 / size.z)
 center = Vector(((hi.x + lo.x) / 2, (hi.y + lo.y) / 2, lo.z))
 for o in objects:
     for v in o.data.vertices:
@@ -45,8 +45,6 @@ for o in objects:
                     pixel = 4 * (min(h-1, max(0, int(uv.y*h))) * w + min(w-1, max(0, int(uv.x*w))))
                     color = tuple(tex.pixels[pixel:pixel+4])
             colors.data[index].color = color
-            if kind == 'taxi' and mat and mat.name == 'Headlights':
-                assert o.data.vertices[o.data.loops[index].vertex_index].co.x > 0, 'Headlights must face +X'
     o.data.materials.clear()
 bpy.ops.object.select_all(action='DESELECT')
 for o in objects: o.select_set(True)

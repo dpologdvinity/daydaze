@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# CC0 Quaternius Public Transport / Realistic Cars, Kenney Car Kit; CC-BY Zsky stop.
+# CC0 Quaternius Public Transport (bus), Kenney Car Kit (van); CC-BY Zsky stop.
+# The road cars (taxi, sedan...) are scripts/import-cars.sh.
 # Owner packs under /tmp/daydaze-city/q; additional downloads remain data only.
 set -euo pipefail
 TRANSIT_TMP="$(mktemp -d)"
@@ -13,8 +14,6 @@ mkdir -p public/models/transit
 for kind in bus van stop; do
   case "$kind" in
     bus) source="$Q/Public_Transport_Pack__Feb_2017/Public Transport Pack - Feb 2017/FBX/Bus.fbx" ;;
-    taxi) source="$Q/Realistic_Car_Pack__Nov_2018/Realistic Car Pack - Nov 2018/FBX/Taxi.fbx" ;;
-    sedan) source="$Q/Realistic_Car_Pack__Nov_2018/Realistic Car Pack - Nov 2018/FBX/NormalCar1.fbx" ;;
     van) source="$TRANSIT_TMP/cars/Models/FBX format/van.fbx" ;;
     stop) source="$TRANSIT_TMP/stop.glb" ;;
   esac

@@ -1,5 +1,5 @@
 // Moving lane traffic: downloaded car bodies and procedural jeepneys share one simulation.
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { SIGNAL } from "../../game/city/furniture.ts";
@@ -19,7 +19,9 @@ import { foodMotion } from "./foodVendors.ts";
 import { busMotion } from "./busRide.ts";
 import { taxiCab } from "./taxiStore.ts";
 import { driving } from "../world/driving.ts";
+import { setData } from "../world/dataset.ts";
 import { FIXED_PAINT } from "../../game/driving/bodies.ts";
+import { BODY_WHEELS, steerAngle } from "../../game/driving/wheels.ts";
 import { NEAR_BODY, useTrafficBodies } from "./trafficBodies.ts";
 import { useQuality } from "../world/quality.ts";
 import {
@@ -114,6 +116,9 @@ const scl = new THREE.Vector3();
 const yAxis = new THREE.Vector3(0, 1, 0);
 const color = new THREE.Color();
 
+/** How fast the front wheels follow the steering the car's path asks for, per second. */
+const STEER_EASE = 12;
+
 const carMatrix = new THREE.Matrix4();
 const partMatrix = new THREE.Matrix4();
 const partPos = new THREE.Vector3();
@@ -162,6 +167,24 @@ export function Traffic({ player }: { player: Player }) {
       [0, 0],
       [0, 0],
     ],
+    [],
+  );
+  // what each car's wheels need: the road rolled, the last heading (NaN until
+  // seen) and the front wheels' eased steering; one slot per car plus the cab
+  const rolled = useMemo(
+    () => ({
+      travel: new Float64Array(count + 1),
+      yaw: new Float64Array(count + 1).fill(Number.NaN),
+      steer: new Float64Array(count + 1),
+    }),
+    [count],
+  );
+  // `?debug=1` publishes the cars near the player as data-traffic-probe
+  // ("x,z,yaw,speed" each, ";" between), for the screenshot script to find a
+  // car to photograph; off by default, so the frame loop allocates nothing
+  const canvas = useThree((s) => s.gl.domElement);
+  const probing = useMemo(
+    () => new URLSearchParams(location.search).has("debug"),
     [],
   );
   const phase = useRef("");
@@ -281,6 +304,7 @@ export function Traffic({ player }: { player: Player }) {
     const city = driving.session?.kind === "city" ? driving.session : null;
     bodies.reset();
     let jeepCount = 0;
+    let probe = "";
     for (let i = 0; i < traffic.cars.length; i++) {
       const car = traffic.cars[i];
       carPose(car, pose);
@@ -292,7 +316,26 @@ export function Traffic({ player }: { player: Player }) {
           c[1] = pose.z;
         } else city.traffic[i] = [pose.x, pose.z];
       }
+      // the wheels keep rolling and steering out of sight, so a car coming
+      // into range is not at a standstill with its wheels askew
+      let travel = 0;
+      let steer = 0;
+      if (car.body && i < rolled.travel.length) {
+        const wheels = BODY_WHEELS[car.body];
+        const ds = car.speed * dt;
+        const dYaw = Number.isNaN(rolled.yaw[i]) ? 0 : pose.yaw - rolled.yaw[i];
+        rolled.yaw[i] = pose.yaw;
+        rolled.travel[i] += ds;
+        rolled.steer[i] +=
+          (steerAngle(wheels.frontZ - wheels.rearZ, dYaw, ds) -
+            rolled.steer[i]) *
+          Math.min(1, dt * STEER_EASE);
+        travel = rolled.travel[i];
+        steer = rolled.steer[i];
+      }
       const distance = Math.hypot(pose.x - player.pos.x, pose.z - player.pos.z);
+      if (probing && distance < 60)
+        probe += `${pose.x.toFixed(1)},${pose.z.toFixed(1)},${pose.yaw.toFixed(2)},${car.speed.toFixed(1)};`;
       if (distance > (tier === "low" ? 80 : 180)) continue;
       if (car.body) {
         // a downloaded body: the taxi, cop car, ambulance and school bus wear
@@ -305,6 +348,9 @@ export function Traffic({ player }: { player: Player }) {
           pose.z,
           pose.yaw,
           tier === "low" || distance > NEAR_BODY,
+          travel,
+          steer,
+          true,
         );
         continue;
       }
@@ -361,6 +407,7 @@ export function Traffic({ player }: { player: Player }) {
     shell.count = trim.count = chrome.count = dark.count = jeepCount;
     wheels.count = lamps.count = jeepCount * PER_VEHICLE;
     bodies.flush();
+    if (probing) setData(canvas.dataset, "trafficProbe", probe);
     for (const mesh of [shell, trim, chrome, dark, wheels, lamps]) {
       mesh.instanceMatrix.needsUpdate = true;
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
