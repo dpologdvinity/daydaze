@@ -42,6 +42,8 @@ import { ALL_GROWTH } from "./growth.ts";
 import {
   GROUND_RANGE,
   INFILL_RANGE,
+  OVERVIEW_GROUND_RANGE,
+  OVERVIEW_INFILL_RANGE,
   TREE_VARIANTS,
   drawCallsOf,
   planCity,
@@ -568,21 +570,28 @@ export function planView(
     POINT_LIGHTS[tier],
     at,
     bays ? BAY_RANGE[tier] : 0,
-    INFILL_RANGE[tier],
-    GROUND_RANGE[tier],
+    // pulled out to the overview the bays are gone, and the infill and the
+    // yards' ground can reach farther (the park gate, already near the cap
+    // there, is what sets how far on the low tier)
+    bays ? INFILL_RANGE[tier] : OVERVIEW_INFILL_RANGE[tier],
+    bays ? GROUND_RANGE[tier] : OVERVIEW_GROUND_RANGE[tier],
   );
 }
 
 /** The low tier's draw calls and triangles at `at`, plus what the plan
  * alone costs and how many bays it wears. */
-export function lowTierCost(at: Vec2): {
+export function lowTierCost(
+  at: Vec2,
+  /** `false` prices the overview, where the plan drops the bays. */
+  bays = true,
+): {
   drawCalls: number;
   triangles: number;
   planTriangles: number;
   bays: number;
   lots: number;
 } {
-  const plan = planView(at, "low");
+  const plan = planView(at, "low", bays);
   // instances per model; a model with any costs one draw call per part
   const counts = new Map<string, number>();
   const add = (model: string) =>

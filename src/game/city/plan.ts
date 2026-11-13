@@ -168,6 +168,9 @@ export type CityPlan = {
 /** How far off the infill buildings draw, by tier: they fill the blocks, so the
  * low tier (with the budget) draws them nearer in. */
 export const INFILL_RANGE = { low: 60, high: 160 } as const;
+/** The same pulled out to the overview, where the bays are gone. */
+export const OVERVIEW_INFILL_RANGE = { low: 100, high: 160 } as const;
+export const OVERVIEW_GROUND_RANGE = { low: 110, high: 160 } as const;
 /** The yards' ground slabs, a touch farther: they are cheap and fill the view. */
 export const GROUND_RANGE = { low: 80, high: 160 } as const;
 
@@ -807,7 +810,8 @@ export function planCity(
       instances,
       lights,
       kit,
-      bayRange === 0 || d < bayRange * SILL_RANGE,
+      // (never on infill: scenery has painted windows and no sills)
+      !isInfill(b) && (bayRange === 0 || d < bayRange * SILL_RANGE),
       lotted.length > 0,
     );
     for (const lot of lotted) {
