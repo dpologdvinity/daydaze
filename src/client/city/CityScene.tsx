@@ -21,6 +21,7 @@ import { StreetFood } from "./StreetFood.tsx";
 import { CitySky } from "./CitySky.tsx";
 import { Fleet } from "./Fleet.tsx";
 import { Ocean } from "./Ocean.tsx";
+import { CITY_LAND, Outskirts } from "./Outskirts.tsx";
 import { Fireworks } from "./Fireworks.tsx";
 import { Parade } from "./Parade.tsx";
 import { BeachLife } from "./BeachLife.tsx";
@@ -29,7 +30,6 @@ import { SquareLife } from "./SquareLife.tsx";
 import { Parols } from "./Parols.tsx";
 import { Pedestrians } from "./Pedestrians.tsx";
 import { NightMarket } from "./NightMarket.tsx";
-import { WATER_Z } from "../../game/city/layout.ts";
 import { setInPark, setNeighborhood } from "./here.ts";
 import { inPark } from "../../game/city/park.ts";
 import { createLabelAtlas } from "./labelAtlas.ts";
@@ -254,16 +254,23 @@ export function CityScene({
       ))}
       <mesh
         rotation-x={-Math.PI / 2}
-        position={[0, -0.01, WATER_Z - 700]}
+        position={[
+          (CITY_LAND.x0 + CITY_LAND.x1) / 2,
+          -0.01,
+          (CITY_LAND.z0 + CITY_LAND.z1) / 2,
+        ]}
         onClick={click}
         name="city-ground"
       >
-        {/* land up to the waterline; the Ocean takes over past it. It runs
-            beyond the camera's far plane in every direction: a short plane
-            showed its dark far edge as a wall across the Uptown park's horizon */}
-        <planeGeometry args={[2400, 1400]} />
+        {/* the city's land up to the waterline; the Ocean takes over past it
+            and the Outskirts' grass around it (a dark plane that ran on to
+            the horizon showed as a wall across the Uptown park's skyline) */}
+        <planeGeometry
+          args={[CITY_LAND.x1 - CITY_LAND.x0, CITY_LAND.z1 - CITY_LAND.z0]}
+        />
         <meshStandardMaterial color="#3a3733" roughness={0.9} />
       </mesh>
+      <Outskirts />
       <Ocean />
       {/* the horizon's ships, far twins, riding the swell past the surf */}
       <Suspense fallback={null}>
