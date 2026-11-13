@@ -839,30 +839,36 @@ const SHOTS: {
       ["react-flinch-left", "hit-left"],
       ["react-fall", "trip-fall"],
     ] as const
-  ).map(([name, id]) =>
-    actionStrip(
+  ).map(([name, id]) => {
+    const play = (page: Page, r: string) =>
+      page.evaluate(
+        (r) =>
+          (
+            window as unknown as { daydazeReact: (id: string) => void }
+          ).daydazeReact(r),
+        r,
+      );
+    const fall = id === "trip-fall";
+    return actionStrip(
       name,
       // a twentieth of speed: the software renderer draws a frame every few seconds
       "room=city&view=full&quality=low&debug=1&timescale=0.05",
       async (page) => {
-        await page.waitForTimeout(40_000);
-      },
-      async (page) => {
         // the debug room list (the hook needs ?debug=1) would cover her
         await page.addStyleTag({ content: "nav.debug { display: none }" });
-        await page.evaluate(
-          (r) =>
-            (
-              window as unknown as { daydazeReact: (id: string) => void }
-            ).daydazeReact(r),
-          id,
-        );
+        await page.waitForTimeout(40_000);
+        // the moves pack loads on the first reaction, a minute or so on the software
+        // renderer: a flinch is over before it arrives, so a fall warms it up first
+        if (!fall) {
+          await play(page, "trip-fall");
+          await page.waitForTimeout(110_000);
+        }
       },
-      // the clip pack loads for a minute or so on the software renderer before she moves
-      150,
+      (page) => play(page, id).then(() => undefined),
+      fall ? 150 : 60,
       60,
-    ),
-  ),
+    );
+  }),
   // the player's own emotes, full body: a whisper and a laugh
   ...(["Whisper", "Laughing"] as const).map((emote) =>
     actionStrip(
