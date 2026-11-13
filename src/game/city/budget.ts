@@ -81,11 +81,11 @@ export const MODEL_COST: Readonly<
   "doll/hair-bob": { tris: 8572, parts: 2 },
   "doll/outfit-jeans": { tris: 4236, parts: 1 },
   "doll/shoes-platforms": { tris: 6436, parts: 1 },
-  "nature/commontree-1-lo": { tris: 643, parts: 2 },
-  "nature/commontree-2-lo": { tris: 517, parts: 2 },
-  "nature/commontree-3-lo": { tris: 600, parts: 1 },
-  "nature/commontree-4-lo": { tris: 473, parts: 2 },
-  "nature/commontree-5-lo": { tris: 434, parts: 1 },
+  "nature/street-tree-1-lo": { tris: 493, parts: 2 },
+  "nature/street-tree-2-lo": { tris: 509, parts: 2 },
+  "nature/street-tree-3-lo": { tris: 396, parts: 2 },
+  "nature/street-tree-4-lo": { tris: 525, parts: 2 },
+  "nature/street-tree-5-lo": { tris: 353, parts: 2 },
   "nature/grass-common-tall-lo": { tris: 118, parts: 1 },
   "nature/grass-wispy-short-lo": { tris: 210, parts: 1 },
   "nature/fern-1-lo": { tris: 96, parts: 1 },
@@ -103,7 +103,8 @@ export const MODEL_COST: Readonly<
   "street/meter": { tris: 164, parts: 3 },
   "street/bikerack": { tris: 800, parts: 1 },
   "street/planter": { tris: 622, parts: 3 },
-  "street/palm": { tris: 350, parts: 1 },
+  "street/palm": { tris: 472, parts: 2 },
+  "street/palm-2": { tris: 344, parts: 2 },
   "street/trafficlight": { tris: 956, parts: 1 },
   "street/busstop": { tris: 300, parts: 2 },
   "street/sign-stop": { tris: 300, parts: 3 },
@@ -170,7 +171,7 @@ export const MODEL_COST: Readonly<
 };
 
 /** The low tier's far-twin tree model for a variant (CityTrees). */
-const treeModel = (variant: number) => `nature/commontree-${variant + 1}-lo`;
+const treeModel = (variant: number) => `nature/street-tree-${variant + 1}-lo`;
 /** A furniture kind's model (CityFurniture's url). */
 const furnitureModel = (kind: FurnitureKind) =>
   `${MODEL_DIR[kind] ?? "street"}/${kind}`;

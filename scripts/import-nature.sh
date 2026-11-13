@@ -11,7 +11,7 @@ KIT="${KIT:-/tmp/daydaze-city/Stylized_Nature_MegaKit_Standard__zip/glTF}"
 OUT="$(dirname "$0")/../public/models/nature"
 mkdir -p "$OUT"
 GT=(npx -y @gltf-transform/cli@4.5.1)
-MODELS=(CommonTree_1 CommonTree_2 CommonTree_3 CommonTree_4 CommonTree_5
+MODELS=(CommonTree_1 CommonTree_2 CommonTree_4
   Bush_Common Bush_Common_Flowers Flower_3_Group Flower_4_Group
   Grass_Common_Tall Grass_Wispy_Short Fern_1 Rock_Medium_1)
 TMP="$(mktemp -d)"

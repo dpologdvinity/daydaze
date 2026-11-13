@@ -455,7 +455,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/stylizednaturemegakit.html",
         usedFor:
-          "Street trees, bushes, grass, flowers, ferns and rocks; optimized with near and far models; Petal & Stem single-flower stems.",
+          "Farm, Garden and Zoo trees, the city's bushes, grass, flowers, ferns and rocks; optimized with near and far models; Petal & Stem single-flower stems.",
       },
       {
         title: "Ultimate Animated Animals",
@@ -479,7 +479,15 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/texturedstylizedtrees.html",
         usedFor:
-          "Forest Trail textured trees, birches and pines with cutout leaves.",
+          "Forest Trail textured trees, birches and pines with cutout leaves; the city's five street trees (Tree_1, 5, 6, 8, 10; `art/nature/build_trees.py`: leaf color bled into the transparent texels, crown-shaped leaf normals, near and far twins).",
+      },
+      {
+        title: "Ultimate Stylized Nature",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://quaternius.com/packs/ultimatestylizednature.html",
+        usedFor:
+          "The city's two palms (PalmTree_1 and PalmTree_3, `art/nature/build_trees.py`) on Shore Boulevard and the beach.",
       },
       {
         title: "Animated Fish Pack",

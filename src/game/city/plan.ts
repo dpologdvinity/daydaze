@@ -118,7 +118,7 @@ export type TreeSpot = {
   yaw: number;
 };
 
-/** How many tree models there are (public/models/nature/commontree-*). */
+/** How many tree models there are (public/models/nature/street-tree-*). */
 export const TREE_VARIANTS = 5;
 
 export type CityPlan = {
@@ -649,7 +649,8 @@ function propInstances(
   } else if (propKind === "palm") {
     // the palm is a model (CityFurniture)
     spots.push({
-      kind: "palm",
+      // two palm models, so a row of palms isn't one palm cloned
+      kind: fract(x * 0.73 + z * 0.19) < 0.5 ? "palm" : "palm-2",
       x,
       z,
       yaw: yawAt(x, z),
