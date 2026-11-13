@@ -101,8 +101,17 @@ function lotMaterial(): THREE.MeshStandardMaterial {
         [
           "#include <color_vertex>",
           // the pack's swatch under this vertex (every face sits at a swatch
-          // center), then the UVs moved into this lot's palette block
+          // center)
           `vGlass = step(abs(floor(vMapUv.x * 4.0) + floor(vMapUv.y * 4.0) * 4.0 - ${glass}.0), 0.5);`,
+        ].join("\n"),
+      )
+      .replace(
+        "#include <batching_vertex>",
+        [
+          "#include <batching_vertex>",
+          // InstancedMesh2 multiplies the instance color into vColor here
+          // (after color_vertex, so not earlier): the UVs move into this lot's
+          // palette block
           `vMapUv.y = (vMapUv.y + floor(vColor.r * ${PALETTE_CODE}.0 + 0.5)) / ${PALETTES.length}.0;`,
         ].join("\n"),
       )
