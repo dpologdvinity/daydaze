@@ -104,7 +104,22 @@ for (const name of names) {
   const cdp = await ctx.newCDPSession(page);
   await cdp.send("Performance.enable");
   const t0 = Date.now();
-  await page.goto(`${BASE}/?quality=low&${query}`);
+  page.on("console", (m) => {
+    // the client lists its linked programs when asked (`programs`, World.tsx)
+    const t = m.text();
+    if (!t.startsWith("programs ")) return;
+    const list = JSON.parse(t.slice(9)) as {
+      name: string;
+      key: string;
+      uses: number;
+    }[];
+    console.log(`  program list (${list.length}):`);
+    for (const p of list)
+      console.log(
+        `      ${p.name} x${p.uses} keylen ${p.key.length} tail ${JSON.stringify(p.key.slice(-90))}`,
+      );
+  });
+  await page.goto(`${BASE}/?quality=low&programs=1&${query}`);
   await page.waitForFunction(
     () => Number(document.querySelector("canvas")?.dataset.frames ?? 0) >= 10,
     undefined,
