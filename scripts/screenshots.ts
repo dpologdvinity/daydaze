@@ -888,6 +888,58 @@ const SHOTS: {
       60,
     ),
   ),
+  // Pulse's floor and podiums at a twentieth of speed, once the dance packs have
+  // loaded (a minute or two on the software renderer): hip-hop's own moves
+  actionStrip(
+    "dance-pulse",
+    "room=pulse&quality=low&timescale=0.1",
+    async (page) => {
+      await page.waitForTimeout(150_000);
+    },
+    async () => {},
+    70,
+    40,
+  ),
+  // a goth night is Thriller night at the Velvet Room
+  actionStrip(
+    "dance-monster",
+    "room=velvet-room&quality=low&timescale=0.1&night=goth-night",
+    async (page) => {
+      await page.waitForTimeout(150_000);
+    },
+    async () => {},
+    70,
+    40,
+  ),
+  // two of the new player dances, picked by style then move, full body in the city
+  ...(
+    [
+      ["dance-headspin", "Breaking", "Head spin"],
+      ["dance-uprock", "Breaking", "Uprock"],
+    ] as const
+  ).map(([name, style, move]) =>
+    actionStrip(
+      name,
+      "room=city&view=full&quality=low&timescale=0.08",
+      async (page) => {
+        await page.waitForTimeout(40_000);
+        await page.getByRole("radio", { name: "Dance", exact: true }).click();
+        await page
+          .getByRole("radiogroup", { name: "Dance style" })
+          .getByRole("radio", { name: style })
+          .click();
+        await page
+          .getByRole("radiogroup", { name: "Dance move" })
+          .getByRole("radio", { name: move, exact: true })
+          .click();
+        // the packs load: wait for the move to play
+        await page.waitForTimeout(110_000);
+      },
+      async () => {},
+      60,
+      40,
+    ),
+  ),
   { name: "club-pulse", query: "room=pulse" },
   {
     name: "apartment",
