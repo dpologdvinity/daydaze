@@ -1135,12 +1135,14 @@ const SHOTS: {
   // a snack vending machine on the avenue's north pavement, by day and lit at night
   {
     name: "vending-street-day",
-    query: "room=city&view=room&time=13:00&at=12,7at=12,4&cam=11,1.7,3.2,16,1.1,9.9cam=12.8,1.5,7.4,16,1,9.9",
+    query:
+      "room=city&view=room&time=13:00&at=132,7&cam=132.8,1.5,7.4,136,1,9.9",
     act: furnitureReady,
   },
   {
     name: "vending-street-night",
-    query: "room=city&view=room&time=22:00&at=12,7at=12,4&cam=11,1.7,3.2,16,1.1,9.9cam=12.8,1.5,7.4,16,1,9.9",
+    query:
+      "room=city&view=room&time=22:00&at=132,7&cam=132.8,1.5,7.4,136,1,9.9",
     act: furnitureReady,
   },
   {
