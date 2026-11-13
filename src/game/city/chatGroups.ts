@@ -12,8 +12,9 @@ import { CHAT_RING } from "../chatSpots.ts";
 import { isBlocked } from "../area.ts";
 import { daylightAt } from "./daylight.ts";
 import { FURNITURE, PARKED_CARS } from "./dressing.ts";
-import { CITY_AREA, CITY_SURFACES, PROPS } from "./layout.ts";
+import { CITY_AREA, CITY_SURFACES, PROPS, ROAD_NODES } from "./layout.ts";
 import { YARD_TREES } from "./yards.ts";
+import { elBoxes } from "./el.ts";
 import { PEDESTRIANS } from "./pedestrians.ts";
 
 export type ChatGroup = {
@@ -49,6 +50,25 @@ const THINGS: readonly Vec2[] = [
   ]),
 ];
 
+/** The El's low boxes (its columns at the curbs, its platform and its stairs)
+ * as floor rectangles: the trestle's gaps are the cross streets (ElLine.tsx). */
+const EL_FOOTPRINTS = elBoxes([
+  ...new Set(
+    ROAD_NODES.filter((n) => Math.abs(n.position[1]) === 192).map(
+      (n) => n.position[0],
+    ),
+  ),
+])
+  .filter((b) => b.y - b.sy / 2 < 3)
+  .map((b) => [b.x - b.sx / 2, b.x + b.sx / 2, b.z - b.sz / 2, b.z + b.sz / 2]);
+
+/** How near (m) a point is to a rectangle on the floor (0 inside). */
+const nearRect = (p: Vec2, [x0, x1, z0, z1]: readonly number[]): number =>
+  Math.hypot(
+    Math.max(x0 - p[0], 0, p[0] - x1),
+    Math.max(z0 - p[1], 0, p[1] - z1),
+  );
+
 /** Whether a huddle of `size` fits at `at`: nothing stands within its reach
  * and a margin of its middle, and no wall or building is within its reach. */
 export function huddleFits(
@@ -57,6 +77,7 @@ export function huddleFits(
   things: readonly Vec2[] = THINGS,
 ): boolean {
   const reach = huddleReach(size);
+  if (EL_FOOTPRINTS.some((r) => nearRect(at, r) < reach + 0.3)) return false;
   if (
     things.some(
       (t) => Math.hypot(t[0] - at[0], t[1] - at[1]) < reach + HUDDLE_MARGIN,

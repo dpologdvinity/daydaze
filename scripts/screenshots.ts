@@ -6,6 +6,7 @@ import { writeFileSync } from "node:fs";
 import { chromium, expect, type Page } from "@playwright/test";
 import { DEFAULT_LOOK } from "../src/game/look.ts";
 import { SEATS, homeSeats } from "../src/game/seats.ts";
+import { CHAT_GROUPS } from "../src/game/city/chatGroups.ts";
 import { yawTowards } from "../src/game/walk.ts";
 import {
   FURNITURE_CATALOG,
@@ -709,6 +710,9 @@ function jeepneyRoll(name: string): (typeof SHOTS)[number] {
   };
 }
 
+/** The pair standing by the city's spawn, for the sidewalk conversation shots. */
+const CHAT = CHAT_GROUPS[0] ?? { at: [22, 10.4] as const };
+
 const SHOTS: {
   name: string;
   query: string;
@@ -798,7 +802,7 @@ const SHOTS: {
   // of frames from the street side, her out of the way across the road
   actionStrip(
     "chat-sidewalk",
-    "room=city&quality=low&at=14,3&cam=22,1.55,7.7,22,1.2,10.36",
+    `room=city&quality=low&at=14,3&cam=${CHAT.at[0]},1.55,${CHAT.at[1] - 2.66},${CHAT.at[0]},1.2,${CHAT.at[1]}`,
     async (page) => {
       await page.waitForFunction(
         () => Number(document.querySelector("canvas")?.dataset.chatGroups) >= 1,
@@ -815,7 +819,7 @@ const SHOTS: {
   // the same pair from above and farther back: what stands round them
   actionStrip(
     "chat-sidewalk-wide",
-    "room=city&quality=low&at=14,3&cam=22,4.5,1.5,22,0.8,10.4",
+    `room=city&quality=low&at=14,3&cam=${CHAT.at[0]},4.5,${CHAT.at[1] - 8.9},${CHAT.at[0]},0.8,${CHAT.at[1]}`,
     async (page) => {
       await page.waitForFunction(
         () => Number(document.querySelector("canvas")?.dataset.chatGroups) >= 1,

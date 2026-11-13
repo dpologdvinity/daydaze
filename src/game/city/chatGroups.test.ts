@@ -4,6 +4,7 @@ import { pointInPolygon } from "../walk.ts";
 import { isBlocked } from "../area.ts";
 import { FURNITURE, PARKED_CARS } from "./dressing.ts";
 import { YARD_TREES } from "./yards.ts";
+import { elBoxes } from "./el.ts";
 import { CHAT_RING } from "../chatSpots.ts";
 import {
   CHAT_GROUPS,
@@ -11,7 +12,13 @@ import {
   huddleReach,
   nearestChatGroups,
 } from "./chatGroups.ts";
-import { CITY_AREA, CITY_SPAWN, CITY_SURFACES, PROPS } from "./layout.ts";
+import {
+  CITY_AREA,
+  CITY_SPAWN,
+  CITY_SURFACES,
+  PROPS,
+  ROAD_NODES,
+} from "./layout.ts";
 
 const onSidewalk = (p: readonly [number, number]) =>
   CITY_SURFACES.some(
@@ -111,4 +118,25 @@ test("a huddle does not fit beside a lamp or inside a wall, and reaches farther 
   const wall = CITY_AREA.blockers[0]?.[0];
   assert.ok(wall);
   assert.equal(huddleFits([wall[0], wall[1]], 2, []), false);
+});
+
+test("no huddle stands in the El's stairs, platform or columns, or within an arm of them", () => {
+  const gaps = [
+    ...new Set(
+      ROAD_NODES.filter((n) => Math.abs(n.position[1]) === 192).map(
+        (n) => n.position[0],
+      ),
+    ),
+  ];
+  const low = elBoxes(gaps).filter((b) => b.y - b.sy / 2 < 3);
+  assert.ok(low.length > 20);
+  for (const g of CHAT_GROUPS)
+    for (const b of low) {
+      const dx = Math.max(Math.abs(g.at[0] - b.x) - b.sx / 2, 0);
+      const dz = Math.max(Math.abs(g.at[1] - b.z) - b.sz / 2, 0);
+      assert.ok(
+        Math.hypot(dx, dz) > huddleReach(g.looks.length as 2 | 3 | 4),
+        `${g.at} is by an El ${b.kind} at ${b.x},${b.z}`,
+      );
+    }
 });
