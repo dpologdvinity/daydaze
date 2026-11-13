@@ -269,7 +269,6 @@ const SLAB_H = 0.06;
 const SLAB_MAX = 48;
 
 const LOT_PAINT = ["#8c8c96", "#7f7f8a", "#94949c"];
-const COURT_PAINT = ["#4f7fa8", "#a8573f", "#4f8a5e", "#7a5aa8"];
 const ALLEY_PAINT = ["#7d7a74", "#6f6c68", "#8a867e"];
 const LAWN = ["#8fcf6a", "#7fc25f", "#9ad675"];
 const GARDEN_LAWN = "#6fae52";
@@ -492,7 +491,6 @@ function fillCourt(acc: Acc, y: Yard): void {
 function fillGarden(acc: Acc, y: Yard): void {
   slab(acc, "lawn", y, GARDEN_LAWN);
   const r = inset(y, 3);
-  let row = 0;
   for (let z = r.z0 + 1; z < r.z1 - 0.7; z += 3.4) {
     for (let x = r.x0 + 1.6; x < r.x1 - 1.6; x += 5) {
       // a gap down the middle is the path, and a few beds lie fallow
@@ -517,9 +515,7 @@ function fillGarden(acc: Acc, y: Yard): void {
         },
       });
     }
-    row++;
   }
-  void row;
   for (const [tx, tz] of [
     [y.x0 + 2, y.z0 + 2],
     [y.x1 - 2, y.z1 - 2],
