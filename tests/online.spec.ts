@@ -1,3 +1,4 @@
+import { dockAction } from "./dock.ts";
 import { expect, test, type Browser, type Page } from "@playwright/test";
 
 // Two players in one Plaza copy, each in their own browser context (their
@@ -286,7 +287,7 @@ test("friends party through doors, ride in a car and race at the Speedway", asyn
       { timeout: 240_000 },
     );
   await expect(tagOnA).toHaveCount(1, { timeout: 120_000 });
-  await a.getByRole("button", { name: "Drive your car" }).click();
+  await (await dockAction(a, "Drive your car")).click();
   await expect(a.locator("canvas")).toHaveAttribute(
     "data-city-car",
     "driving",

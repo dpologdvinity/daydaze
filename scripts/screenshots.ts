@@ -5,6 +5,7 @@ import { execFileSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { chromium, expect, type Page } from "@playwright/test";
 import { DEFAULT_LOOK } from "../src/game/look.ts";
+import { dockAction } from "../tests/dock.ts";
 import { SEATS, homeSeats } from "../src/game/seats.ts";
 import { CHAT_GROUPS } from "../src/game/city/chatGroups.ts";
 import { yawTowards } from "../src/game/walk.ts";
@@ -540,7 +541,7 @@ function wheelSheet(name: string): (typeof SHOTS)[number] {
       await expect(canvas).toHaveAttribute("data-city-car", "parked", {
         timeout: 300_000,
       });
-      await page.getByRole("button", { name: "Drive your car" }).click();
+      await (await dockAction(page, "Drive your car")).click();
       await expect(canvas).toHaveAttribute("data-city-car", "driving", {
         timeout: 120_000,
       });
