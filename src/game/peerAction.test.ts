@@ -198,3 +198,52 @@ test("a sitter's held clip rides along, when it fits and is a seated one", () =>
     assert.equal(d.seat?.hold, undefined, bad);
   }
 });
+
+test("a reaction travels as react:<id>, and only a real one is believed", () => {
+  assert.equal(
+    encodeAction(
+      "idle",
+      "salsa",
+      undefined,
+      undefined,
+      0,
+      undefined,
+      false,
+      false,
+      "hit-left",
+    ),
+    "react:hit-left",
+  );
+  assert.deepEqual(decodeAction("react:hit-left"), {
+    mood: "idle",
+    react: "hit-left",
+  });
+  assert.deepEqual(decodeAction("react:hard-landing"), {
+    mood: "idle",
+    react: "hard-landing",
+  });
+  // fits the 24 characters, even with a buzz tag
+  assert.ok(
+    encodeAction(
+      "idle",
+      "salsa",
+      undefined,
+      undefined,
+      3,
+      undefined,
+      false,
+      false,
+      "hard-landing",
+    ).length <= 24,
+  );
+  for (const bad of [
+    "react:",
+    "react:nonsense",
+    "react:thriller",
+    "react:HIT-LEFT",
+    "react:hit-left:x",
+    "react:__proto__",
+    "react:constructor",
+  ])
+    assert.deepEqual(decodeAction(bad), { mood: "idle" }, bad);
+});

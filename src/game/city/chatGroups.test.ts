@@ -1,8 +1,24 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { pointInPolygon } from "../walk.ts";
-import { CHAT_GROUPS, nearestChatGroups } from "./chatGroups.ts";
-import { CITY_SPAWN, CITY_SURFACES } from "./layout.ts";
+import { isBlocked } from "../area.ts";
+import { FURNITURE, PARKED_CARS } from "./dressing.ts";
+import { YARD_TREES } from "./yards.ts";
+import { elBoxes } from "./el.ts";
+import { CHAT_RING } from "../chatSpots.ts";
+import {
+  CHAT_GROUPS,
+  huddleFits,
+  huddleReach,
+  nearestChatGroups,
+} from "./chatGroups.ts";
+import {
+  CITY_AREA,
+  CITY_SPAWN,
+  CITY_SURFACES,
+  PROPS,
+  ROAD_NODES,
+} from "./layout.ts";
 
 const onSidewalk = (p: readonly [number, number]) =>
   CITY_SURFACES.some(
@@ -58,4 +74,69 @@ test("the nearest groups come first and never add up to more than the dolls allo
     nearestChatGroups(at, 200, 5, () => false),
     [],
   );
+});
+
+test("every huddle's people and their gesturing arms are clear of the street's furniture, props, trees and walls", () => {
+  const things = [
+    ...FURNITURE.map((f) => [f.x, f.z, f.kind] as const),
+    ...PROPS.map((p) => [p.position[0], p.position[1], p.kind] as const),
+    ...YARD_TREES.map(([x, z]) => [x, z, "tree"] as const),
+    ...PARKED_CARS.map((c) => [c.x, c.z, "parked car"] as const),
+  ];
+  for (const g of CHAT_GROUPS) {
+    const size = g.looks.length as 2 | 3 | 4;
+    const r = CHAT_RING[size];
+    // each person's spot, and an arm's length (0.9 m) round it
+    for (let m = 0; m < size; m++) {
+      const a = g.turn + (m / size) * Math.PI * 2;
+      const p = [g.at[0] + Math.sin(a) * r, g.at[1] + Math.cos(a) * r];
+      for (const reach of [0, 0.9]) {
+        for (let k = 0; k < (reach ? 8 : 1); k++) {
+          const b = (k / 8) * Math.PI * 2;
+          const q: [number, number] = [
+            p[0] + Math.sin(b) * reach,
+            p[1] + Math.cos(b) * reach,
+          ];
+          assert.equal(isBlocked(CITY_AREA, q), false, `${g.at} wall at ${q}`);
+        }
+      }
+      for (const [x, z, kind] of things)
+        assert.ok(
+          Math.hypot(x - p[0], z - p[1]) > 0.9 + 0.25,
+          `${g.at}: a ${kind} at ${x},${z} is within reach of person ${m}`,
+        );
+    }
+    assert.ok(huddleFits(g.at, size), `${g.at}`);
+  }
+});
+
+test("a huddle does not fit beside a lamp or inside a wall, and reaches farther for more people", () => {
+  assert.equal(huddleFits([0, 0], 2, [[0.5, 0.5]]), false);
+  assert.equal(huddleFits([0, 0], 2, [[5, 5]]), huddleFits([0, 0], 2, []));
+  assert.ok(huddleReach(4) > huddleReach(2));
+  // out in the sea, with nothing round, blockers don't matter; on a building they do
+  const wall = CITY_AREA.blockers[0]?.[0];
+  assert.ok(wall);
+  assert.equal(huddleFits([wall[0], wall[1]], 2, []), false);
+});
+
+test("no huddle stands in the El's stairs, platform or columns, or within an arm of them", () => {
+  const gaps = [
+    ...new Set(
+      ROAD_NODES.filter((n) => Math.abs(n.position[1]) === 192).map(
+        (n) => n.position[0],
+      ),
+    ),
+  ];
+  const low = elBoxes(gaps).filter((b) => b.y - b.sy / 2 < 3);
+  assert.ok(low.length > 20);
+  for (const g of CHAT_GROUPS)
+    for (const b of low) {
+      const dx = Math.max(Math.abs(g.at[0] - b.x) - b.sx / 2, 0);
+      const dz = Math.max(Math.abs(g.at[1] - b.z) - b.sz / 2, 0);
+      assert.ok(
+        Math.hypot(dx, dz) > huddleReach(g.looks.length as 2 | 3 | 4),
+        `${g.at} is by an El ${b.kind} at ${b.x},${b.z}`,
+      );
+    }
 });

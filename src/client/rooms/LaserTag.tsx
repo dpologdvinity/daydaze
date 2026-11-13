@@ -13,6 +13,8 @@ import { ROOMS } from "../../game/rooms.ts";
 import { surface } from "../city/worldTexture.ts";
 import { bakedGeometry } from "../world/bakedGeometry.ts";
 import type { Player } from "../world/PlayerController.tsx";
+import { react } from "../world/reaction.ts";
+import { hitDirection } from "../../game/reactions.ts";
 import { useReducedMotion } from "../motion.ts";
 import { Batch } from "./shared/batch.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
@@ -368,6 +370,14 @@ export function Beams({ game, player }: { game: TagGame; player: Player }) {
       hitAt.current = round.t;
       const who = round.fired.findIndex((w, i) => w !== lastFired.current[i]);
       if (who >= 0) hitBy.current = who;
+      // she flinches from the side the shot came from
+      react(
+        hitDirection(
+          player.yaw,
+          [player.pos.x, player.pos.z],
+          rivalAt(round, hitBy.current).at,
+        ),
+      );
     }
     lastHits.current = round.hits;
     lastFired.current = round.fired;

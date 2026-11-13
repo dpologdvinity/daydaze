@@ -4,6 +4,8 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import { CHAT_GROUPS, nearestChatGroups } from "./chatGroups.ts";
+import { CHAT_DOLLS, CHAT_RADIUS } from "./tuning.ts";
 import { CITY_SPAWN } from "./layout.ts";
 import { HOUSE_MODELS, HOUSE_MODEL_TRIANGLES } from "./nyc.ts";
 import { QUEUE_LOOKS, QUEUE_PERSON_TRIS } from "./queues.ts";
@@ -14,6 +16,7 @@ import {
   lowTierCost,
   MODEL_COST,
   modelsInBudget,
+  NPC_DOLL_TRIS,
   SEASON_MODEL,
   trafficCost,
 } from "./budget.ts";
@@ -214,4 +217,23 @@ test("the park gate, the dearest low-tier view, stays at or under 270k triangles
       const { triangles } = lowTierCost([x, z]);
       assert.ok(triangles <= 270_000, `${triangles} triangles at ${x},${z}`);
     }
+});
+
+test("the sidewalk chat dolls are priced at the spawn, and none stand near the dearest views", () => {
+  const people = nearestChatGroups(
+    CITY_SPAWN.position,
+    CHAT_RADIUS.low,
+    CHAT_DOLLS.low,
+  ).reduce((n, i) => n + (CHAT_GROUPS[i]?.looks.length ?? 0), 0);
+  assert.ok(people >= 2 && people <= CHAT_DOLLS.low);
+  const live = liveCost(CITY_SPAWN.position, () => {});
+  assert.ok(live.triangles >= people * NPC_DOLL_TRIS, `${live.triangles}`);
+  assert.ok(live.drawCalls >= people * 6);
+  // the park gate and the park itself (the worst low-tier views) have no chat
+  // dolls to add: the low tier draws groups only within CHAT_RADIUS.low and none are that near
+  for (const at of [
+    [254, -270],
+    [228, -292],
+  ] as const)
+    assert.deepEqual(nearestChatGroups(at, CHAT_RADIUS.low, 5), [], `${at}`);
 });

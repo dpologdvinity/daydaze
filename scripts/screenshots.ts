@@ -6,6 +6,7 @@ import { writeFileSync } from "node:fs";
 import { chromium, expect, type Page } from "@playwright/test";
 import { DEFAULT_LOOK } from "../src/game/look.ts";
 import { SEATS, homeSeats } from "../src/game/seats.ts";
+import { CHAT_GROUPS } from "../src/game/city/chatGroups.ts";
 import { yawTowards } from "../src/game/walk.ts";
 import {
   FURNITURE_CATALOG,
@@ -709,6 +710,9 @@ function jeepneyRoll(name: string): (typeof SHOTS)[number] {
   };
 }
 
+/** The pair standing by the city's spawn, for the sidewalk conversation shots. */
+const CHAT = CHAT_GROUPS[0] ?? { at: [22, 10.4] as const };
+
 const SHOTS: {
   name: string;
   query: string;
@@ -798,7 +802,7 @@ const SHOTS: {
   // of frames from the street side, her out of the way across the road
   actionStrip(
     "chat-sidewalk",
-    "room=city&quality=low&at=14,3&cam=22,1.55,7.7,22,1.2,10.36",
+    `room=city&quality=low&at=14,3&cam=${CHAT.at[0]},1.55,${CHAT.at[1] - 2.66},${CHAT.at[0]},1.2,${CHAT.at[1]}`,
     async (page) => {
       await page.waitForFunction(
         () => Number(document.querySelector("canvas")?.dataset.chatGroups) >= 1,
@@ -812,6 +816,59 @@ const SHOTS: {
     90,
     90,
   ),
+  // the same pair from above and farther back: what stands round them
+  actionStrip(
+    "chat-sidewalk-wide",
+    `room=city&quality=low&at=14,3&cam=${CHAT.at[0]},4.5,${CHAT.at[1] - 8.9},${CHAT.at[0]},0.8,${CHAT.at[1]}`,
+    async (page) => {
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.chatGroups) >= 1,
+        null,
+        { timeout: 300_000 },
+      );
+      await page.waitForTimeout(40_000);
+    },
+    async () => {},
+    30,
+    20,
+  ),
+  // a flinch from a tag and a fall with its get-up, full body on the street
+  ...(
+    [
+      ["react-flinch", "hit-front"],
+      ["react-flinch-left", "hit-left"],
+      ["react-fall", "trip-fall"],
+    ] as const
+  ).map(([name, id]) => {
+    const play = (page: Page, r: string) =>
+      page.evaluate(
+        (r) =>
+          (
+            window as unknown as { daydazeReact: (id: string) => void }
+          ).daydazeReact(r),
+        r,
+      );
+    const fall = id === "trip-fall";
+    return actionStrip(
+      name,
+      // a twentieth of speed: the software renderer draws a frame every few seconds
+      "room=city&view=full&quality=low&debug=1&timescale=0.05",
+      async (page) => {
+        // the debug room list (the hook needs ?debug=1) would cover her
+        await page.addStyleTag({ content: "nav.debug { display: none }" });
+        await page.waitForTimeout(40_000);
+        // the moves pack loads on the first reaction, a minute or so on the software
+        // renderer: a flinch is over before it arrives, so a fall warms it up first
+        if (!fall) {
+          await play(page, "trip-fall");
+          await page.waitForTimeout(110_000);
+        }
+      },
+      (page) => play(page, id).then(() => undefined),
+      fall ? 150 : 60,
+      60,
+    );
+  }),
   // the player's own emotes, full body: a whisper and a laugh
   ...(["Whisper", "Laughing"] as const).map((emote) =>
     actionStrip(

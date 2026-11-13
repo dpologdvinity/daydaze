@@ -82,6 +82,19 @@ PACK_OF = {cid: pack for pack in mocap_clips.PACK_ORDER for cid in mocap_clips.P
 HELD = ("pose", "sit", "lay")
 # never: the game has no guns outside game zones and nothing gory
 BANNED = ("weapons/", "combat/", "death", "dying", "agony", "hit", "injur", "pain")
+# the one exception: a flinch from a laser or paintball tag (reactions.ts); the
+# take is named for a "hit" but is a stagger, nothing injured
+FLINCHES = "reactions/Standing-React-Large-From-"
+
+
+def banned(rel):
+    """The banned words in a clip's path, minus the flinch takes' own name."""
+    low = rel.lower()
+    if rel.startswith(FLINCHES):
+        low = low.replace("hit-reaction", "")
+    return [w for w in BANNED if w in low]
+
+
 # a dance or emote longer than this loops a shorter section of itself,
 # where its end pose best meets its start (keeps the file small)
 MAX_LOOP = 8.0
@@ -526,7 +539,7 @@ def main():
         metas = []
         for cid in ids:
             rel = CLIPS[cid][0]
-            assert not any(w in rel.lower() for w in BANNED), rel
+            assert not banned(rel), rel
             metas.append(bake(rig, tgt_rest, cid, rel, CLIPS[cid][1]))
         stem = "anims" if pack == "core" else f"anims-{pack}"
         drop_sources({m["id"] for m in metas})

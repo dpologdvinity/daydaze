@@ -374,6 +374,18 @@ MOVES = {
     "turn-left": ("walking/turns/Catwalk-Twist-L-To-Walk-180_Female-Twist-Left-Idle-To-Walk-180-Turning-Left", "trans", "Turn left"),
     "turn-right": ("walking/turns/Catwalk-Twist-R-To-Walk-180_Female-Twist-Right-Idle-To-Walk-180-Turning-Right", "trans", "Turn right"),
     "turn-180": ("walking/turns/Walking-Turn-180_Turning-180-Degrees-While-Walking", "trans", "About face"),
+    # reactions (game/reactions.ts): a flinch from a laser or paintball tag
+    # from each side, a trip and a fall with its get-up on the sidewalk, a
+    # stumble while jogging, a hard landing off the skatepark's board
+    "react-hit-front": ("reactions/Standing-React-Large-From-Front_Large-Hit-Reaction-From-The-Front", "trans", "Flinch from the front"),
+    "react-hit-back": ("reactions/Standing-React-Large-From-Back_Large-Hit-Reaction-From-The-Back", "trans", "Flinch from behind"),
+    "react-hit-left": ("reactions/Standing-React-Large-From-Left_Hit-Reaction-From-The-Left-With-Bow", "trans", "Flinch from the left"),
+    "react-hit-right": ("reactions/Standing-React-Large-From-Right_Large-Hit-Reaction-From-The-Right", "trans", "Flinch from the right"),
+    "react-stumble": ("reactions/Jogging-Stumble_Brief-Stumble-While-Jogging", "trans", "Stumble"),
+    "react-trip": ("reactions/Tripping_Tripping-Forward-While-Walking", "trans", "Trip"),
+    "react-trip-fall": ("reactions/Tripping_Walk-To-Tripping-And-Falling", "trans", "Trip and fall"),
+    "react-get-up": ("standing-up/Standing-Up_Standing-Up-From-A-Soccer-Fall", "trans", "Get up"),
+    "react-hard-landing": ("reactions/Hard-Landing_Mid-Air-Falling-To-A-Hard-Landing", "trans", "Hard landing"),
 }
 
 PACKS = {
