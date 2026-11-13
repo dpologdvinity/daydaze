@@ -239,11 +239,16 @@ def locals_for(rig, tgt_rest, off, world_src, fix=None):
 FEET = ("LeftFoot", "LeftToeBase", "RightFoot", "RightToeBase")
 
 
-def foot_drop(rig, tgt_rest, world, hips):
+# clips turned upside down on the head: the floor is under the crown, not the feet
+HEAD_DOWN = ("headspin",)
+
+
+def foot_drop(rig, tgt_rest, world, hips, head_down=False):
     """How far the doll's lowest foot point (ankle, ball or toe tip) sits
     below its own rest height, with the hips at `hips` and the bones turned
     to `world` (forward kinematics from the rest offsets). Negative: sunk
-    into the floor; positive: every foot point lifted."""
+    into the floor; positive: every foot point lifted. `head_down` (a head
+    spin) measures the crown's height above the floor instead."""
     head = {}
     drop = float("inf")
     for b in rig.data.bones:
@@ -254,6 +259,12 @@ def foot_drop(rig, tgt_rest, world, hips):
         pn = short(b.parent.name)
         offset = tgt_rest[pn][0].inverted() @ (tgt_rest[name][1] - tgt_rest[pn][1])
         head[name] = head[pn] + world[pn] @ offset
+        if head_down:
+            if name == "Head":
+                tip = (b.tail_local - b.head_local)
+                tip_at = head[name] + world[name] @ (tgt_rest[name][0].inverted() @ tip)
+                drop = min(drop, tip_at.z)
+            continue
         if name in FEET:
             drop = min(drop, head[name].z - tgt_rest[name][1].z)
         if name.endswith("ToeBase"):
@@ -429,7 +440,7 @@ def bake(rig, tgt_rest, cid, rel, kind):
     drops = []
     for i in range(n):
         basis, world = locals_for(rig, tgt_rest, off, rots[i], fix)
-        drops.append(foot_drop(rig, tgt_rest, world, pos[i]))
+        drops.append(foot_drop(rig, tgt_rest, world, pos[i], cid in HEAD_DOWN))
         for name, q in basis.items():
             if name in prev and prev[name].dot(q) < 0:
                 q = -q  # same rotation, the side nearer the last key

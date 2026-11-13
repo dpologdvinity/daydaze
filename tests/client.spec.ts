@@ -1818,6 +1818,30 @@ test("the Dance mood opens a move picker, and the picked move plays", async ({
   expect(errors).toEqual([]);
 });
 
+test("the Dance picker groups its moves by style, and a Breaking move loads its pack", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  const packs: string[] = [];
+  page.on("request", (r) => {
+    if (/\/models\/doll\/anims-dance3\.glb/.test(r.url())) packs.push(r.url());
+  });
+  await page.goto(VELVET);
+  const canvas = canvasOf(page);
+  await page.getByRole("radio", { name: "Dance", exact: true }).click();
+  const styles = page.getByRole("radiogroup", { name: "Dance style" });
+  const moves = page.getByRole("radiogroup", { name: "Dance move" });
+  // it opens on the style of the move in play, not on every dance at once
+  await expect(styles.getByRole("radio", { name: "Club" })).toBeChecked();
+  await expect(moves.getByRole("radio", { name: "Head spin" })).toHaveCount(0);
+  await styles.getByRole("radio", { name: "Breaking" }).click();
+  await moves.getByRole("radio", { name: "Head spin", exact: true }).click();
+  await expect(canvas).toHaveAttribute("data-dance", "headspin");
+  // the clip lives in the on-demand dance3 pack: asking for it fetches it
+  await expect.poll(() => packs.length).toBeGreaterThan(0);
+  expect(errors).toEqual([]);
+});
+
 test("the Dance panel's emote row plays a social clip, and the doll loads its pack", async ({
   page,
 }) => {

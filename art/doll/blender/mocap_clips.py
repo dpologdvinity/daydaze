@@ -18,11 +18,12 @@ Packs are separate GLBs, loaded on demand (src/client/avatar/human/anims.ts):
   social  talking, greetings, yes/no, laughing, cheering, moods, shrugs
   seated  sitting down and standing up, seated idles, talk, clap, cheer, typing
   dance2  the second dance set
+  dance3  breaking: head spin, uprock, floor footwork, and a few more
   ual     farm work, carrying, pushing, throwing, climbing, sliding (CC0)
   moves   start, stop and turn transitions (not wired into play yet)
 """
 
-PACK_ORDER = ("core", "social", "seated", "dance2", "ual", "moves")
+PACK_ORDER = ("core", "social", "seated", "dance2", "dance3", "ual", "moves")
 
 # --------------------------------------------------------------------- core
 # The first block is the original set (untouched, in this order: the first
@@ -339,6 +340,27 @@ DANCE2 = {
     "dance-ual": ("ual1:Dance_Loop", "dance", "Freestyle"),
 }
 
+# --------------------------------------------------------------------- dance3
+# Breaking and a few short extras: the roller rink, Pulse's floor and the
+# skatepark's crews. Short takes only (the pack stays lean).
+DANCE3 = {
+    "headspin": ("dancing/Head-Spinning_Breakdance-Head-Spin", "dance", "Head spin"),
+    "bboy": ("dancing/Bboy-Hip-Hop-Move_Bboy-Hip-Hop-Variation-One", "dance", "B-boy"),
+    "bboy-2": ("dancing/Bboy-Hip-Hop-Move_Variation-Two", "dance", "B-boy, second"),
+    "uprock": ("dancing/Breakdance-Uprock_Breakdance-Uprock", "dance", "Uprock"),
+    "uprock-indian": ("dancing/Bboy-Uprock_Bboy-Uprock-Indian-Step", "dance", "Indian step"),
+    "uprock-brooklyn": ("dancing/Brooklyn-Uprock_Breakdance-Brooklyn-Style-Uprocking", "dance", "Brooklyn uprock"),
+    "uprock-var": ("dancing/Breakdance-Uprock-Var-1_Breakdance-Uprock-Var.-1", "dance", "Uprock, second"),
+    "uprock-footwork": ("dancing/Breakdance-Uprock-Var-2_Breakdance-Uprock-Footwork-Var.-2", "dance", "Uprock footwork"),
+    "footwork": ("dancing/Breakdance-Footwork-1_Breakdance-Ground-Footwork-Var-1-Loop", "dance", "Floor footwork"),
+    "footwork-2": ("dancing/Breakdance-Footwork-2_Breakdance-Ground-Footwork-Var-2", "dance", "Floor footwork, second"),
+    "footwork-3": ("dancing/Breakdance-Footwork-3_Breakdance-Ground-Footwork-Var-3", "dance", "Floor footwork, third"),
+    "soul-spin": ("dancing/Northern-Soul-Spin_Northern-Soul-Dance-Spin", "dance", "Soul spin"),
+    "twist-dance": ("dancing/Twist-Dance_Doing-The-Twist-Dance", "dance", "Twist dance"),
+    "running-man-2": ("dancing/Hip-Hop-Dancing_Hip-Hop-Runningman-Dance", "dance", "Running man, second"),
+    "wave-arms": ("dancing/Wave-Hip-Hop-Dance_Waving-The-Arms-Hip-Hop-Dance", "dance", "Arm waves"),
+}
+
 # ----------------------------------------------------------------------- ual
 # Quaternius, CC0. Played by the garden, the farm, the forest, the skatepark.
 UAL = {
@@ -393,6 +415,7 @@ PACKS = {
     "social": SOCIAL,
     "seated": SEATED,
     "dance2": DANCE2,
+    "dance3": DANCE3,
     "ual": UAL,
     "moves": MOVES,
 }

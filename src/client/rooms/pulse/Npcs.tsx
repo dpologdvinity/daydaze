@@ -156,6 +156,7 @@ export function PulseNpcs({ onDrink }: { onDrink?: () => void }): JSX.Element {
             name={dancer.name}
             role="club-dancer"
             figure="crowd"
+            floor="pulse"
             look={dancer.look}
             mood="dance"
             at={[p.x, PODIUM_TOP, p.z]}
@@ -210,7 +211,12 @@ export function PulseCrowd(): JSX.Element {
           position={[c.at[0], c.at[1], c.at[2]]}
           rotation-y={c.rot}
         >
-          <CrowdFigure look={c.look} dance={c.dance} seed={i + 1} />
+          <CrowdFigure
+            look={c.look}
+            dance={c.dance}
+            floor="pulse"
+            seed={i + 1}
+          />
         </group>
       ))}
     </>

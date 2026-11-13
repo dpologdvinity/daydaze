@@ -1350,6 +1350,12 @@ export function createJukeboxController(
 
 let sharedController: JukeboxController | null = null;
 
+/** The shared controller if something has made it, without waking audio: the
+ * dancers' beat clock reads it and must not start an AudioContext. */
+export function peekSharedJukeboxController(): JukeboxController | null {
+  return sharedController;
+}
+
 /**
  * Lazily creates one controller shared by AudioControls and JukeboxModal.
  * Routes through the shared AudioBus music destination so the global

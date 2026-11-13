@@ -51,6 +51,8 @@ import { pose, type Rig } from "../pose.ts";
 import { useQuality } from "../../world/quality.ts";
 import { NPC_GAITS, gaitOf } from "../../../game/gaits.ts";
 import { BUILT_STRIDE, walkPhaseRate } from "../../../game/dance/stride.ts";
+import { syncOffset } from "../../../game/dance/sync.ts";
+import { danceClock } from "../danceClock.ts";
 import {
   BONE,
   BuiltPose,
@@ -1179,7 +1181,15 @@ export function HumanDoll({
             couple && clipOf(want.id)?.kind !== "walk"
               ? state.clock.elapsedTime
               : seed * 1.37;
-          next.time = once ? 0 : (from + want.offset) % clip.duration;
+          // a solo dance takes its place from the shared clock (sync.ts): dolls on
+          // the same move are in step, beginning on the club's beat
+          const shared = !once && !couple && clipOf(want.id)?.kind === "dance";
+          const dc = shared ? danceClock() : null;
+          next.time = once
+            ? 0
+            : dc
+              ? syncOffset(dc.now, dc.tempo, clip.duration)
+              : (from + want.offset) % clip.duration;
           next.play();
           if (a.action && a.action !== next)
             next.crossFadeFrom(a.action, fade, false);

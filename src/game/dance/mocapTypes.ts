@@ -5,6 +5,7 @@ export const MOCAP_PACKS = [
   "social",
   "seated",
   "dance2",
+  "dance3",
   "ual",
   "moves",
 ] as const;

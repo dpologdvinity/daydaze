@@ -5,7 +5,7 @@
 
 import { eventSituation } from "../../../game/events.ts";
 import { PRIDE_CLUBS, prideNightOn } from "../../../game/prideNight.ts";
-import { isRoomId } from "../../../game/rooms.ts";
+import { isRoomId, type RoomId } from "../../../game/rooms.ts";
 import { nightClock, prideClock } from "../../city/eventClocks.ts";
 import { Html } from "@react-three/drei";
 import type { ThreeEvent } from "@react-three/fiber";
@@ -40,6 +40,7 @@ export function TalkingNpc({
   look,
   mood,
   dance,
+  floor,
   hold,
   at,
   rot,
@@ -56,6 +57,8 @@ export function TalkingNpc({
   mood: Mood;
   /** The move a dancing NPC loops (a dance or an emote such as "bartending"). */
   dance?: DanceMoveId;
+  /** The venue whose floor a dancing crowd figure follows when she has no `dance` of her own. */
+  floor?: RoomId;
   /** A held pose (STILL_CLIPS id) for the pose and sit moods. */
   hold?: string;
   at: readonly [number, number, number];
@@ -135,6 +138,7 @@ export function TalkingNpc({
           look={look}
           dance={mood === "dance"}
           move={dance}
+          floor={floor}
           seed={seed}
         />
       )}

@@ -296,7 +296,7 @@ the Ultimate Nature Pack) and compressed by `scripts/import-forest.sh` into
 it and writes the GLB parts; `scripts/optimize-doll.sh` compresses them into
 `public/models/doll/`.
 
-Only the clips listed in `art/doll/blender/mocap_clips.py` ship, retargeted onto our own skeleton and baked into `public/models/doll/anims.glb` (the always-loaded core) and one file per pack, `anims-social.glb`, `anims-seated.glb`, `anims-dance2.glb`, `anims-ual.glb` and `anims-moves.glb`, each with a `-m` twin for the man (keyframes only, no Mixamo character or mesh). The clip files load on demand (`src/client/avatar/human/anims.ts`). Never commit the FBX files or a GLB that carries a Mixamo character. The Universal Animation Library zips live in the private asset repo (`gh release download packs -R dpologdvinity/daydaze-assets -p 'Universal_Animation_Library*'`; unzip to `/tmp/ual1` and `/tmp/ual2`, or set `UAL_DIR`).
+Only the clips listed in `art/doll/blender/mocap_clips.py` ship, retargeted onto our own skeleton and baked into `public/models/doll/anims.glb` (the always-loaded core) and one file per pack, `anims-social.glb`, `anims-seated.glb`, `anims-dance2.glb`, `anims-dance3.glb`, `anims-ual.glb` and `anims-moves.glb`, each with a `-m` twin for the man (keyframes only, no Mixamo character or mesh). The clip files load on demand (`src/client/avatar/human/anims.ts`). Never commit the FBX files or a GLB that carries a Mixamo character. The Universal Animation Library zips live in the private asset repo (`gh release download packs -R dpologdvinity/daydaze-assets -p 'Universal_Animation_Library*'`; unzip to `/tmp/ual1` and `/tmp/ual2`, or set `UAL_DIR`).
 
 ## Audio
 
