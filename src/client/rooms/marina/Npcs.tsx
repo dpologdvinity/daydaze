@@ -9,6 +9,7 @@ import { BAR, BENCH_SEATS, DOCK, YACHTS } from "../../../game/marina.ts";
 import { drink } from "../../effects/drunk.ts";
 import { CrowdFigure } from "../shared/CrowdFigure.tsx";
 import { TalkingNpc } from "../shared/TalkingNpc.tsx";
+import { VenueChats } from "../shared/VenueChats.tsx";
 
 const CONTEXT: DialogueContext = {
   venue: "marina",
@@ -60,6 +61,7 @@ export function MarinaNpcs(): JSX.Element {
   const golden = YACHTS[1];
   return (
     <>
+      <VenueChats room="marina" />
       <TalkingNpc
         name="Coral"
         role="bartender"

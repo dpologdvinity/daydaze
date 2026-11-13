@@ -41,6 +41,7 @@ import {
 } from "../../game/dance/together.ts";
 import { pairUp, stopTogether } from "./together.ts";
 import { keepSeat } from "./ride.ts";
+import { seatedHold } from "../../game/dance/seatActions.ts";
 import { trackOrigin } from "../../game/speedway/layout.ts";
 
 /** Everyone else sees your race kart in the Speedway's own pink. */
@@ -139,6 +140,7 @@ function PeerDoll({
       (next.mood !== doing.mood ||
         next.dance !== doing.dance ||
         next.seat?.pose !== doing.seat?.pose ||
+        next.seat?.hold !== doing.seat?.hold ||
         next.car?.id !== doing.car?.id ||
         next.car?.color !== doing.car?.color ||
         next.car?.mods?.rims !== doing.car?.mods?.rims ||
@@ -179,7 +181,7 @@ function PeerDoll({
           look={peer.look}
           swim={swimwear ? decodeSwim(peer.look.swim) : null}
           mood={doing.mood}
-          hold={doing.seat?.pose === "lie" ? LAY_HOLD : undefined}
+          hold={doing.seat?.pose === "lie" ? LAY_HOLD : doing.seat?.hold}
           dance={doing.dance}
           couple={
             doing.pair && mirrored(doing.pair.emote)
@@ -237,11 +239,14 @@ export function OnlinePeers({
   player,
   mood,
   dance,
+  sitHold,
 }: {
   room: RoomId;
   player: Player;
   mood: Mood;
   dance: DanceMoveId;
+  /** The sit pose she picked ("built" for none). */
+  sitHold: string;
 }): JSX.Element | null {
   const session = onlineSession();
   const [peers, setPeers] = useState<Peer[]>([]);
@@ -337,6 +342,17 @@ export function OnlinePeers({
     const kart = racing?.race.cars[0];
     const track = racing && trackOrigin(racing.track.id);
     const seat = player.seat;
+    // what her hands do on a chair: the same pick her own doll makes
+    const heldWhileSitting = () => {
+      if (!player.sitting || seat?.lie || seat?.sit) return undefined;
+      const hold = seatedHold({
+        mood,
+        dance,
+        picked: sitHold,
+        seatHold: seat?.hold,
+      });
+      return hold === "built" ? undefined : hold;
+    };
     const at = seat?.position ?? player.pos;
     const x = city
       ? city.car.position[0]
@@ -362,6 +378,7 @@ export function OnlinePeers({
                   ? "rise"
                   : "stand",
             y: seat.position.y,
+            hold: heldWhileSitting(),
           }
         : undefined,
       city

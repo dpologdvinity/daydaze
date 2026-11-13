@@ -1821,6 +1821,38 @@ test("the Dance panel's emote row plays a social clip, and the doll loads its pa
   expect(errors).toEqual([]);
 });
 
+test("the emote row has Laughing, Whisper and Phone call, and a whisper plays its clip", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(VELVET);
+  const canvas = canvasOf(page);
+  await page.getByRole("radio", { name: "Dance", exact: true }).click();
+  const emotes = page.getByRole("radiogroup", { name: "Emote" });
+  for (const name of ["Laughing", "Phone call"])
+    await expect(emotes.getByRole("radio", { name })).toBeVisible();
+  await emotes.getByRole("radio", { name: "Whisper" }).click();
+  await expect(canvas).toHaveAttribute("data-dance", "talk-secret");
+  expect(errors).toEqual([]);
+});
+
+test("a pair stands talking on the sidewalk by the city's spawn", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=city`);
+  const canvas = canvasOf(page);
+  await expect(canvas).toHaveAttribute("data-frames", "10", {
+    timeout: 240_000,
+  });
+  // the groups nearest her are picked once a second
+  await expect(canvas).toHaveAttribute("data-chat-groups", /^[1-9]/, {
+    timeout: 60_000,
+  });
+  expect(errors).toEqual([]);
+});
+
 test("a drink in the Velvet Room raises the buzz and sways the view", async ({
   page,
 }) => {

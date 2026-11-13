@@ -794,6 +794,43 @@ const SHOTS: {
     dist: 3.2,
     height: 1.4,
   }),
+  // a pair talking on the sidewalk (game/city/chatGroups.ts), a few turns' worth
+  // of frames from the street side, her out of the way across the road
+  actionStrip(
+    "chat-sidewalk",
+    "room=city&quality=low&at=14,3&cam=22,1.55,7.7,22,1.2,10.36",
+    async (page) => {
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.chatGroups) >= 1,
+        null,
+        { timeout: 300_000 },
+      );
+      // the social clip pack loads a while after the scene
+      await page.waitForTimeout(40_000);
+    },
+    async () => {},
+    90,
+    90,
+  ),
+  // the player's own emotes, full body: a whisper and a laugh
+  ...(["Whisper", "Laughing"] as const).map((emote) =>
+    actionStrip(
+      `emote-${emote === "Whisper" ? "whisper" : "laugh"}`,
+      "room=city&view=full&quality=low",
+      async (page) => {
+        await page.waitForTimeout(40_000);
+      },
+      async (page) => {
+        await page.getByRole("radio", { name: "Dance", exact: true }).click();
+        await page
+          .getByRole("radiogroup", { name: "Emote" })
+          .getByRole("radio", { name: emote })
+          .click();
+      },
+      40,
+      60,
+    ),
+  ),
   { name: "club-pulse", query: "room=pulse" },
   {
     name: "apartment",

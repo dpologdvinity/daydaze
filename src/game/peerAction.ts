@@ -1,7 +1,8 @@
 // What a player is doing, in the 24 characters a move message's `action`
 // carries: their mood; for a dance, the move, so everyone sees the same
 // dance; on a seat or a ride, whether they sit, lie, stand or rise from a chair and the height
-// they're at ("sit@38", in centimeters), since moves carry only x and z;
+// they're at ("sit@38", in centimeters), since moves carry only x and z, and
+// for a sitter what her hands do ("sit@38:seat-clap");
 // behind the wheel, the paint, the rims, underglow, tint and wrap packed in two
 // base-36 characters, and the car ("c:ff4fb30kpebble"); after a few
 // drinks, how buzzed ("idle~2"); in an emote with someone, which and which
@@ -9,6 +10,7 @@
 // "jump" (a few seconds, so others see the hop too). A move id too
 // long to fit goes as a plain "dance".
 import { allows, type ContentTier } from "./age.ts";
+import { clipOf } from "./dance/clips.ts";
 import { isDanceMoveId, type DanceMoveId } from "./dance/moves.ts";
 import { RIMS, TINTS, UNDERGLOWS, WRAPS, type CarMods } from "./city/drive.ts";
 import { carById } from "./driving/roster.ts";
@@ -20,7 +22,13 @@ const isMood = (a: string): a is Mood => MOODS.some((m) => m.id === a);
 
 /** "rise": standing up from a chair, her root still easing off the seat, so
  * a watcher plays the stand-up clip instead of a walk. */
-export type Held = { pose: "sit" | "lie" | "stand" | "rise"; y: number };
+export type Held = {
+  pose: "sit" | "lie" | "stand" | "rise";
+  y: number;
+  /** What a sitter does with her hands: the clip she holds (a seated clap,
+   * typing, hands on the table, a sit pose she chose). Sitting only. */
+  hold?: string;
+};
 const CODE = { sit: "sit", lie: "lay", stand: "up", rise: "rise" } as const;
 
 export type Driven = { id: string; color: string; mods?: CarMods };
@@ -102,7 +110,10 @@ function describe(
   if (driven && driven.length <= limit) return driven;
   if (seat) {
     const cm = Math.max(-200, Math.min(2000, Math.round(seat.y * 100)));
-    return `${CODE[seat.pose]}@${cm}`;
+    const base = `${CODE[seat.pose]}@${cm}`;
+    // the held clip rides along when it fits
+    const held = seat.pose === "sit" && seat.hold ? `${base}:${seat.hold}` : "";
+    return held && held.length <= limit ? held : base;
   }
   const full = `dance:${dance}`;
   return mood === "dance" && full.length <= limit ? full : mood;
@@ -144,7 +155,9 @@ function decodeBody(action: string): Doing {
       ? { mood: "idle", car: { id: car[3], color: `#${car[1]}`, mods } }
       : { mood: "idle" };
   }
-  const held = /^(sit|lay|up|rise)@(-?\d{1,4})$/.exec(action);
+  const held = /^(sit|lay|up|rise)@(-?\d{1,4})(?::([a-z0-9-]{1,16}))?$/.exec(
+    action,
+  );
   if (held) {
     const pose =
       held[1] === "up"
@@ -155,9 +168,16 @@ function decodeBody(action: string): Doing {
             ? "lie"
             : "sit";
     const y = Number(held[2]) / 100;
+    // a held clip counts only for a sitter, and only a seated one: anything
+    // else a peer sends is ignored
+    const kind = clipOf(held[3])?.kind;
+    const hold =
+      pose === "sit" && (kind === "seat" || kind === "sit")
+        ? held[3]
+        : undefined;
     return {
       mood: pose === "stand" || pose === "rise" ? "idle" : "sit",
-      seat: { pose, y },
+      seat: hold ? { pose, y, hold } : { pose, y },
     };
   }
   if (action.startsWith("dance:")) {
