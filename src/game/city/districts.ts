@@ -134,7 +134,8 @@ const pal = (
 ): Palette => ({ wall, trim, base, door, roof, sign });
 
 /** A district's character: the models its lots pick from, the palettes, the
- * shop names, and how often a ground floor carries a painted board. */
+ * shop names, and how often a street lot carries a painted board (always: the
+ * lot models hang blank boards of their own, which would show bare). */
 export type Look = {
   models: readonly LotModel[];
   palettes: readonly Palette[];
@@ -165,7 +166,7 @@ export const LOOKS: Readonly<Record<District, Look>> = {
       pal("#f08c6c", "#fff0e0", "#b85a40", "#2a6f97", "#8a4a3a", "#ffe8d0"),
     ],
     names: DISTRICT_NAMES["little-manila"],
-    signChance: 0.7,
+    signChance: 1,
   },
   // lacquer red, jade and lantern gold, tall and narrow
   chinatown: {
@@ -179,7 +180,7 @@ export const LOOKS: Readonly<Record<District, Look>> = {
       pal("#7a3a5a", "#e8c060", "#4a2238", "#2f6a5a", "#3a3a44", "#f0c850"),
     ],
     names: DISTRICT_NAMES.chinatown,
-    signChance: 0.8,
+    signChance: 1,
   },
   // soft candy fronts, pink and mint, beauty shops and karaoke
   koreatown: {
@@ -193,7 +194,7 @@ export const LOOKS: Readonly<Record<District, Look>> = {
       pal("#59606b", "#f0a0b0", "#363c46", "#f0a0b0", "#363c46", "#ffc0d0"),
     ],
     names: DISTRICT_NAMES.koreatown,
-    signChance: 0.8,
+    signChance: 1,
   },
   // rust brick, charcoal, mustard and teal warehouses and studios
   "arts-district": {
@@ -207,7 +208,7 @@ export const LOOKS: Readonly<Record<District, Look>> = {
       pal("#a8a8a2", "#e8567a", "#6a6a66", "#2f8ab0", "#4a4a4a", "#ffc0d0"),
     ],
     names: DISTRICT_NAMES["arts-district"],
-    signChance: 0.6,
+    signChance: 1,
   },
   // limestone, slate and brownstone, formal and tall
   uptown: {
@@ -221,7 +222,7 @@ export const LOOKS: Readonly<Record<District, Look>> = {
       pal("#efe3c8", "#c9b79a", "#8f7e5e", "#6f2f3a", "#4a4a52", "#f8ecd0"),
     ],
     names: DISTRICT_NAMES.uptown,
-    signChance: 0.5,
+    signChance: 1,
   },
 };
 
