@@ -152,12 +152,16 @@ export function roomInside(
   };
 }
 
+/** How far above her eyes the portrait camera looks from (radians of
+ * elevation): a hair above eye level is the flattering angle. */
+export const PORTRAIT_ELEVATION = 0.1;
+
 /**
- * Swings `camera` about her face (a turn about the vertical, keeping its
- * height and its distance from her) by `amount` (0 to 1) of the way to the
- * front of her, which is where she faces (`yaw`: she faces (sin yaw, cos
- * yaw)). A portrait of her face is taken from the front, whichever way the
- * room's overview happened to look at her.
+ * Brings `camera` round to a portrait of her face by `amount` (0 to 1) of the
+ * way: a turn about her to the front of her, where she faces (`yaw`: she faces
+ * (sin yaw, cos yaw)), and down or up to PORTRAIT_ELEVATION, keeping its
+ * distance from her face. A portrait is taken from the front at eye level,
+ * whichever way and from however high the room's overview looked at her.
  */
 export function swingToFront(
   camera: Vec3,
@@ -166,12 +170,23 @@ export function swingToFront(
   amount: number,
 ): Vec3 {
   const dx = camera[0] - face[0];
+  const dy = camera[1] - face[1];
   const dz = camera[2] - face[2];
   const r = Math.hypot(dx, dz);
   // straight above her there is no side to swing from
   if (r < 1e-6) return camera;
+  const w = Math.min(1, Math.max(0, amount));
+  if (w === 0) return camera;
   const now = Math.atan2(dx, dz);
   const gap = Math.atan2(Math.sin(yaw - now), Math.cos(yaw - now));
-  const to = now + gap * Math.min(1, Math.max(0, amount));
-  return [face[0] + Math.sin(to) * r, camera[1], face[2] + Math.cos(to) * r];
+  const to = now + gap * w;
+  const d = Math.hypot(r, dy);
+  const rise = Math.atan2(dy, r);
+  const elevation = rise + (PORTRAIT_ELEVATION - rise) * w;
+  const flat = d * Math.cos(elevation);
+  return [
+    face[0] + Math.sin(to) * flat,
+    face[1] + d * Math.sin(elevation),
+    face[2] + Math.cos(to) * flat,
+  ];
 }

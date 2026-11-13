@@ -5,6 +5,7 @@ import {
   CHEST_HEIGHT,
   MIN_ZOOM,
   KEY_ZOOM_STEP,
+  PORTRAIT_ELEVATION,
   PORTRAIT_FOV,
   WIDE_FOV,
   focusHeight,
@@ -176,28 +177,26 @@ test("a room's inside is its floor plus a wall's depth", () => {
 
 const facing = (face: Vec3, cam: Vec3) =>
   Math.atan2(cam[0] - face[0], cam[2] - face[2]);
+const elevation = (face: Vec3, cam: Vec3) =>
+  Math.atan2(cam[1] - face[1], Math.hypot(cam[0] - face[0], cam[2] - face[2]));
 
-test("a portrait is taken from the front: the camera swings round to where she faces", () => {
+test("a portrait is taken from the front at eye level: the camera comes round to where she faces and down to her eyes", () => {
   const face: Vec3 = [2, 1.55, 3];
   const yaw = 0.9; // she faces (sin 0.9, cos 0.9)
-  const behind: Vec3 = [2 - Math.sin(yaw) * 1.5, 2, 3 - Math.cos(yaw) * 1.5];
-  const full = swingToFront(behind, face, yaw, 1);
+  // behind her and high above, as a room's overview sees her
+  const high: Vec3 = [2 - Math.sin(yaw) * 1.5, 3.5, 3 - Math.cos(yaw) * 1.5];
+  const full = swingToFront(high, face, yaw, 1);
   assert.ok(Math.abs(facing(face, full) - yaw) < 1e-9);
-  // nothing else about the camera changes
-  assert.equal(full[1], 2);
-  assert.ok(
-    Math.abs(
-      Math.hypot(full[0] - face[0], full[2] - face[2]) -
-        Math.hypot(behind[0] - face[0], behind[2] - face[2]),
-    ) < 1e-9,
-  );
-  assert.deepEqual(swingToFront(behind, face, yaw, 0), behind);
+  assert.ok(Math.abs(elevation(face, full) - PORTRAIT_ELEVATION) < 1e-9);
+  // the distance from her face is kept
+  assert.ok(Math.abs(dist(full, face) - dist(high, face)) < 1e-9);
+  assert.deepEqual(swingToFront(high, face, yaw, 0), high);
 });
 
 test("a partial swing turns part of the way, by the short way round", () => {
   const face: Vec3 = [0, 1.55, 0];
   // 170 degrees one way of the front, with the front at -170: 20 degrees apart
-  const cam: Vec3 = [Math.sin(2.97) * 2, 1.6, Math.cos(2.97) * 2];
+  const cam: Vec3 = [Math.sin(2.97) * 2, 1.55, Math.cos(2.97) * 2];
   const yaw = -2.97;
   const half = swingToFront(cam, face, yaw, 0.5);
   const turned = Math.abs(
@@ -210,11 +209,19 @@ test("a partial swing turns part of the way, by the short way round", () => {
     Math.abs(turned - (2 * Math.PI - 2 * 2.97) / 2) < 1e-6,
     `${turned}`,
   );
+  const lower = swingToFront([2, 3.5, 0], face, 0, 0.5);
+  assert.ok(elevation(face, lower) > PORTRAIT_ELEVATION);
+  assert.ok(elevation(face, lower) < elevation(face, [2, 3.5, 0]));
 });
 
-test("already in front, or straight above her, the camera stays", () => {
+test("already in front at eye level the camera stays; straight above her it is left alone", () => {
   const face: Vec3 = [0, 1.55, 0];
-  const front: Vec3 = [Math.sin(0.4) * 1.2, 1.6, Math.cos(0.4) * 1.2];
+  const r = 1.2 * Math.cos(PORTRAIT_ELEVATION);
+  const front: Vec3 = [
+    Math.sin(0.4) * r,
+    face[1] + 1.2 * Math.sin(PORTRAIT_ELEVATION),
+    Math.cos(0.4) * r,
+  ];
   const same = swingToFront(front, face, 0.4, 1);
   assert.ok(same.every((v, i) => Math.abs(v - front[i]!) < 1e-9));
   const above: Vec3 = [0, 5, 0];
