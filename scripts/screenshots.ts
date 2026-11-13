@@ -1245,10 +1245,24 @@ const SHOTS: {
     },
   },
   {
+    // the whole loop from above, a rider a few seconds into the lap
+    name: "kiddie-train-top",
+    query:
+      "room=amusement-park&quality=low&ride=kiddie-train&cam=40,14,-12,40,0,-23",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.rideState === "riding",
+        null,
+        { timeout: 300_000 },
+      );
+      await page.waitForTimeout(4_000);
+    },
+  },
+  {
     // a rider in the first wagon, a few seconds into the lap
     name: "kiddie-train-ride",
-    query:
-      "room=amusement-park&quality=low&ride=kiddie-train&cam=39,2.4,-23.5,36.5,0.7,-30.9",
+    query: "room=amusement-park&quality=low&ride=kiddie-train",
     live: true,
     act: async (page: Page) => {
       await page.waitForFunction(
