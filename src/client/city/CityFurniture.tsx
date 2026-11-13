@@ -123,7 +123,7 @@ export function glowVending(meshes: readonly THREE.InstancedMesh[], k: number) {
     ) {
       m.emissive.setScalar(1);
       m.emissiveMap = m.map;
-      m.emissiveIntensity = 0.7 * k;
+      m.emissiveIntensity = 0.3 * k;
     }
   }
 }

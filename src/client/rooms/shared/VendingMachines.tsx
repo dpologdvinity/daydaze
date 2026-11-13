@@ -24,7 +24,7 @@ export function VendingMachines({ room }: { room: VendingRoom }): JSX.Element {
           if (own.name === "Vending_Machine") {
             own.emissive.setScalar(1);
             own.emissiveMap = own.map;
-            own.emissiveIntensity = 0.5;
+            own.emissiveIntensity = 0.25;
           }
           o.material = own;
         });
