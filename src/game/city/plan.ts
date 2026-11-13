@@ -4,10 +4,12 @@
 import type { Vec2 } from "../walk.ts";
 import { motelBuilding } from "./motel.ts";
 import { roofLook } from "./roofs.ts";
+import { YARD_GROUND, YARD_TREES } from "./yards.ts";
 import { VIEW_RADIUS } from "./tuning.ts";
 import { cellAt, type Cell } from "./cells.ts";
 import {
   BUILDINGS,
+  isInfill,
   CITY_SURFACES,
   PROPS,
   type Building,
@@ -162,6 +164,15 @@ export type CityPlan = {
   /** Crosswalks, corner blocks, center lines and street props (StreetPieces.tsx). */
   street: StreetPiece[];
 };
+
+/** How far off the infill buildings draw, by tier: they fill the blocks, so the
+ * low tier (with the budget) draws them nearer in. */
+export const INFILL_RANGE = { low: 60, high: 160 } as const;
+/** The same pulled out to the overview, where the bays are gone. */
+export const OVERVIEW_INFILL_RANGE = { low: 100, high: 160 } as const;
+export const OVERVIEW_GROUND_RANGE = { low: 110, high: 160 } as const;
+/** The yards' ground slabs, a touch farther: they are cheap and fill the view. */
+export const GROUND_RANGE = { low: 80, high: 160 } as const;
 
 /** Triangles per instance of each kind's unit geometry, upper bounds. */
 export const TRIANGLES: Record<Kind, number> = {
@@ -732,6 +743,10 @@ export function planCity(
   lightCount: number,
   from: Vec2,
   bayRange = 0,
+  /** Infill buildings (layout.ts) draw only within this many meters of `from`. */
+  infillRange = Infinity,
+  /** The yards' ground (yards.ts) likewise. */
+  groundRange = Infinity,
 ): CityPlan {
   const instances = emptyInstances();
   const lights: Light[] = [];
@@ -766,6 +781,8 @@ export function planCity(
   for (const b of BUILDINGS) {
     const box = boundsOf(b.footprint);
     if (!inView(box)) continue;
+    // the infill is scenery that fills the blocks: drawn out to its own range
+    if (isInfill(b) && distanceToBox(from, box) > infillRange) continue;
     // a near Suburbia lot is a real house; far ones stay boxes
     if (isHouse(b) && distanceToBox(from, box) < bayRange * 2) {
       houses.push(houseAt(b));
@@ -793,7 +810,8 @@ export function planCity(
       instances,
       lights,
       kit,
-      bayRange === 0 || d < bayRange * SILL_RANGE,
+      // (never on infill: scenery has painted windows and no sills)
+      !isInfill(b) && (bayRange === 0 || d < bayRange * SILL_RANGE),
       lotted.length > 0,
     );
     for (const lot of lotted) {
@@ -823,11 +841,20 @@ export function planCity(
   for (const p of STREET_DRESS) {
     if (loaded.has(cellAt(p.at).key)) instances[p.kind].push(p.instance);
   }
+  // the yards' slabs, stripes and lanes, out to the same range as the infill
+  for (const p of YARD_GROUND)
+    if (
+      Math.hypot(p.at[0] - from[0], p.at[1] - from[1]) <= groundRange &&
+      loaded.has(cellAt(p.at).key)
+    )
+      instances[p.kind].push(p.instance);
 
   const trees: TreeSpot[] = [];
   const furniture: FurnitureSpot[] = [];
   for (const f of FURNITURE)
     if (loaded.has(cellAt([f.x, f.z]).key)) furniture.push(f);
+  for (const [x, z] of YARD_TREES)
+    if (loaded.has(cellAt([x, z]).key)) trees.push(treeAt(x, z));
   for (const prop of PROPS) {
     const [x, z] = prop.position;
     if (cells.some((c) => cellAt([x, z]).key === c.key)) {

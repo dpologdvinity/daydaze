@@ -1161,6 +1161,21 @@ const SHOTS: {
       );
     },
   })),
+  // the infill and yards (infill.ts, yards.ts): a back alley between two rows
+  // seen from the cross street at x 64, the rows themselves from the avenue's
+  // cross street, a pocket lot and a lane; day and night, low tier. The blocks
+  // around the gaps have no bays or lots, so wait on the furniture
+  ...[
+    ["yards-alley", "12:00", "64,-173", "60,2.2,-173,110,2,-173"],
+    ["yards-alley-night", "22:00", "64,-173", "60,2.2,-173,110,2,-173"],
+    ["yards-rows", "12:00", "64,-100", "58,4,-96,100,6,-140"],
+    ["yards-rows-night", "22:00", "64,-100", "58,4,-96,100,6,-140"],
+    ["yards-lot", "12:00", "64,-185", "58,3.5,-183,140,1.5,-170"],
+  ].map(([name, time, at, cam]) => ({
+    name: String(name),
+    query: `room=city&quality=low&time=${time}&at=${at}&cam=${cam}`,
+    act: furnitureReady,
+  })),
   { name: "city-overview", query: "room=city" },
   // the city by day and at sunset (daylight.ts), pinned with ?time=
   {

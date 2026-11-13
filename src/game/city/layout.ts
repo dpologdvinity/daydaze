@@ -35,6 +35,7 @@ import {
   parkLamps,
   parkTrees,
 } from "./park.ts";
+import { INFILL_BUILDINGS } from "./infill.generated.ts";
 import * as MARINA from "../marina.ts";
 import * as COURTSIDE from "../courtside.ts";
 import * as COVE from "../mermaidCove.ts";
@@ -2036,7 +2037,8 @@ const BEACH_BUILDINGS: readonly Building[] = [
   })),
 ];
 
-export const BUILDINGS: readonly Building[] = [
+/** The hand-placed buildings; BUILDINGS adds the generated infill (infill.ts). */
+export const BASE_BUILDINGS: readonly Building[] = [
   // Downtown, south of the avenue
   {
     id: "glass-tower",
@@ -2453,6 +2455,25 @@ export const BUILDINGS: readonly Building[] = [
   ...SUBURB_BUILDINGS,
 ];
 
+/** The infill buildings that fill the city's empty blocks (infill.generated.ts,
+ * planned by infill.ts), as rows of NYC-style lots. */
+const INFILL: readonly Building[] = INFILL_BUILDINGS.map(
+  ([id, neighborhood, x0, z0, x1, z1, height, style, front]): Building => ({
+    id,
+    neighborhood,
+    footprint: rect(x0, z0, x1, z1),
+    height,
+    style,
+    front,
+  }),
+);
+
+/** Whether a building is infill (generated), not hand-placed. */
+export const isInfill = (b: Building): boolean => b.id.startsWith("infill-");
+
+/** Every building: the hand-placed ones, then the infill. */
+export const BUILDINGS: readonly Building[] = [...BASE_BUILDINGS, ...INFILL];
+
 // Street props sit on the sidewalks; the avenue lamps and palms alternate,
 // and cross streets get trees every 60 m. Props block the walk like a post.
 function buildProps(): Prop[] {
@@ -2543,8 +2564,7 @@ const PROP_HALF = 0.25;
 
 /** Everything solid: building footprints, the prop posts, and the fires and
  * net out on the sand. */
-const CITY_BLOCKERS: readonly (readonly Vec2[])[] = [
-  ...BUILDINGS.map((b) => b.footprint),
+export const BASE_SOLIDS: readonly (readonly Vec2[])[] = [
   // the fountain's basin, as an octagon
   Array.from({ length: 8 }, (_, i): Vec2 => {
     const a = (i / 8) * Math.PI * 2;
@@ -2576,6 +2596,11 @@ const CITY_BLOCKERS: readonly (readonly Vec2[])[] = [
   ...BOARDWALK_BLOCKERS,
   // gas station mini-marts and pump islands
   ...GAS_BLOCKERS,
+];
+
+const CITY_BLOCKERS: readonly (readonly Vec2[])[] = [
+  ...BUILDINGS.map((b) => b.footprint),
+  ...BASE_SOLIDS,
 ];
 
 /** The walk rules for the whole city: surfaces, solid blockers and doors. */

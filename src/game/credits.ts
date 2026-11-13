@@ -1277,6 +1277,44 @@ export const CREDITS: readonly {
         url: "https://poly.pizza/m/5iuHHfVoaza",
         usedFor: "Sand castles on the beach.",
       },
+      {
+        title: "Dumpster",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/m/PKsbolkZSr",
+        usedFor: "The block yards' alley dumpsters (art/yards/build_yards.py).",
+      },
+      {
+        title: "Metal Fence",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/m/qWKhREFj7H",
+        usedFor:
+          "The block yards' chain fences around alleys and courts, one 3 m panel instanced.",
+      },
+      {
+        title: "Wood Fence 2",
+        author: "CircuitZ",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/m/hRx8dQKVCA",
+        usedFor:
+          "The block yards' wood fences around gardens and Suburbia's backyards.",
+      },
+      {
+        title: "Trash Bag",
+        author: "Quaternius",
+        license: "CC0 1.0",
+        url: "https://poly.pizza/m/jYrMKg2Q7C",
+        usedFor: "Trash bags beside the alley dumpsters, decimated.",
+      },
+      {
+        title: "Basketball court",
+        author: "Poly by Google",
+        license: "CC-BY 3.0",
+        url: "https://poly.pizza/m/85FpUr2fHkH",
+        usedFor:
+          "The block yards' basketball courts (hoops and lines), texture shrunk.",
+      },
     ],
   },
   {

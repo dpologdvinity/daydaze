@@ -34,6 +34,10 @@ export function detailBuilding(
   f: Front,
   out: Buckets,
   lots = false,
+  /** Whether the building is near enough for its small roof details (the
+   * antenna, vents, bulkhead, skylight, garden): far off they cost triangles
+   * and show as nothing. The parapet is always drawn. */
+  near = true,
 ): void {
   if (b.style === "gate") return;
   // the roof slab sits from f.h to f.h + 0.5, so kit stands on its top
@@ -49,7 +53,8 @@ export function detailBuilding(
     sz: 2.2,
     color: TANK,
   });
-  for (let k = 0; k < 2 && !lots; k++) {
+  // two AC units near the player, one farther off
+  for (let k = 0; k < (near ? 2 : 1) && !lots; k++) {
     if (hash(f.cx, k, 21) < 0.35) continue;
     out.furniture.push({
       x: f.x0 + f.w * (0.58 + 0.2 * k),
@@ -61,28 +66,30 @@ export function detailBuilding(
       color: pick(AC, hash(k, f.cz, 22)),
     });
   }
-  if (!lots) roofExtras(f, out, top, depth);
-  // an antenna with a red light blinking at the top
+  if (!lots) roofExtras(f, out, top, depth, near);
+  // an antenna with a red light blinking at the top, near the player only
   const ax = f.x1 - 1.2;
   const az = f.z0 + 1.2;
-  out.pole.push({
-    x: ax,
-    y: top + 2.2,
-    z: az,
-    sx: 0.12,
-    sy: 4.4,
-    sz: 0.12,
-    color: "#8a8aa8",
-  });
-  out.bulb.push({
-    x: ax,
-    y: top + 4.5,
-    z: az,
-    sx: 0.3,
-    sy: 0.3,
-    sz: 0.3,
-    color: "#ff3b4f",
-  });
+  if (near) {
+    out.pole.push({
+      x: ax,
+      y: top + 2.2,
+      z: az,
+      sx: 0.12,
+      sy: 4.4,
+      sz: 0.12,
+      color: "#8a8aa8",
+    });
+    out.bulb.push({
+      x: ax,
+      y: top + 4.5,
+      z: az,
+      sx: 0.3,
+      sy: 0.3,
+      sz: 0.3,
+      color: "#ff3b4f",
+    });
+  }
   // a rooftop neon bar on about a third of the buildings
   const sign = hash(f.cx, f.cz, 20);
   if (sign < 0.35) {
@@ -263,7 +270,13 @@ export function detailBuilding(
  * string lights. They stand on the roof slab, clear of the tank, AC units and
  * antenna that detailBuilding places.
  */
-function roofExtras(f: Front, out: Buckets, top: number, depth: number): void {
+function roofExtras(
+  f: Front,
+  out: Buckets,
+  top: number,
+  depth: number,
+  near: boolean,
+): void {
   const kit = roofKit(f.cx, f.cz);
   // a low parapet around the edge, so the roof is a flat floor and not a lid
   const coping = pick(COPING, hash(f.cx, f.cz, 47));
@@ -276,6 +289,8 @@ function roofExtras(f: Front, out: Buckets, top: number, depth: number): void {
   const z1 = f.cz + depth / 2 + 0.2;
   wall(f.cx, z0 + rim / 2, x1 - x0, rim);
   wall(f.cx, z1 - rim / 2, x1 - x0, rim);
+  // far off, the two long sides carry the look; the short ones are for near blocks
+  if (!near) return;
   wall(x0 + rim / 2, f.cz, rim, z1 - z0 - 2 * rim);
   wall(x1 - rim / 2, f.cz, rim, z1 - z0 - 2 * rim);
   if (kit.bulkhead)

@@ -70,7 +70,7 @@ export const LOT_NEAR = 30;
 export const LOT_WALL_INSET = 0.8;
 
 /** The most lots of one model in any view; sizes each model's InstancedMesh. */
-export const LOT_CAPACITY = 128;
+export const LOT_CAPACITY = 192;
 
 /** The pack's 16 palette swatches by role (row-major from the top left of
  * its 4 by 4 grid; art/city/district_blocks.py PREVIEW shows where each

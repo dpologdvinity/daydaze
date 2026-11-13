@@ -41,6 +41,7 @@ import {
   writeKind,
 } from "./meshes.ts";
 import { useDaylight } from "./daylight.ts";
+import { groundMaps, worldMapped } from "./worldTexture.ts";
 import { useDressings } from "./season.ts";
 import { QueueCrowd } from "./QueueCrowd.tsx";
 import { SeasonalDressing } from "./SeasonalDressing.tsx";
@@ -118,6 +119,22 @@ export function CityScene({
   const lightCount = tier === "high" ? POINT_LIGHTS.high : POINT_LIGHTS.low;
   const atlas = useMemo(() => createLabelAtlas(), []);
   const meshes = useMemo(() => createKindMeshes(CAPACITY, atlas), [atlas]);
+  // the ground between the surfaces: worn concrete, patchy at long range
+  const groundMaterial = useMemo(
+    () =>
+      worldMapped(
+        new THREE.MeshStandardMaterial({
+          ...groundMaps("concrete_pavement"),
+          color: "#8c8782",
+          roughness: 0.95,
+        }),
+        0.3,
+        false,
+        0.5,
+      ),
+    [],
+  );
+  useEffect(() => () => groundMaterial.dispose(), [groundMaterial]);
   useEffect(() => {
     return () => {
       disposeKindMeshes(meshes);
@@ -286,7 +303,7 @@ export function CityScene({
         <planeGeometry
           args={[CITY_LAND.x1 - CITY_LAND.x0, CITY_LAND.z1 - CITY_LAND.z0]}
         />
-        <meshStandardMaterial color="#3a3733" roughness={0.9} />
+        <primitive object={groundMaterial} attach="material" />
       </mesh>
       <Outskirts />
       <Ocean />

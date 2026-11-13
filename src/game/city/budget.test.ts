@@ -95,6 +95,24 @@ test("wherever she stands, the low tier's city (bays, trees, furniture, park) fi
   assert.ok(worst.tris < 300_000, `${worst.tris} triangles at ${worst.at}`);
 });
 
+test("pulled out to the overview, the low tier draws the infill and yards out to the whole view and still fits", () => {
+  let worst = { tris: 0, at: [0, 0] as Vec2 };
+  for (let x = -432; x <= 432; x += 48)
+    for (let z = -320; z <= 368; z += 48) {
+      const at: Vec2 = [x, z];
+      const cost = lowTierCost(at, false);
+      assert.ok(cost.drawCalls <= 250, `${cost.drawCalls} draw calls at ${at}`);
+      if (cost.triangles > worst.tris) worst = { tris: cost.triangles, at };
+    }
+  assert.ok(worst.tris < 300_000, `${worst.tris} triangles at ${worst.at}`);
+  // and the infill really shows out there: more of it than the near view has
+  const at = CITY_SPAWN.position;
+  assert.ok(
+    lowTierCost(at, false).planTriangles > 0 &&
+      lowTierCost(at, false).bays === 0,
+  );
+});
+
 test("the low tier's cost counts the bays it draws", () => {
   const at = CITY_SPAWN.position;
   const cost = lowTierCost(at);
@@ -184,4 +202,10 @@ test("traffic is priced from the shipped car bodies, more on a road than on a la
   );
   assert.ok(onRoad.triangles >= dearestOwn);
   assert.ok(onLawn.triangles < dearestOwn);
+});
+
+test("the park gate, the dearest low-tier view, stays at or under 290k triangles with the infill and yards", () => {
+  const gate = lowTierCost([254, -270]);
+  assert.ok(gate.triangles <= 290_000, `${gate.triangles} triangles`);
+  assert.ok(gate.drawCalls <= 235, `${gate.drawCalls} draw calls`);
 });
