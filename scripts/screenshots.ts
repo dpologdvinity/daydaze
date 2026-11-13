@@ -660,6 +660,7 @@ const SHOTS: {
       await expect(page.getByRole("timer")).toContainText("Time left");
     },
   },
+  { name: "jail-cells", query: "room=jail&cam=0,2.2,2.4,0,0.9,-3.2" },
   {
     name: "club-pulse-mobile",
     query: "room=pulse",
@@ -679,10 +680,12 @@ const SHOTS: {
   },
   { name: "velvet-room", query: "room=velvet-room" },
   { name: "rooftop-bar", query: "room=rooftop-bar" },
+  { name: "rooftop-lounge", query: "room=rooftop-bar&cam=-1,2.4,4.5,-7,0.8,1" },
   { name: "sugar-rush", query: "room=sugar-rush" },
   { name: "warehouse", query: "room=warehouse" },
   { name: "karaoke", query: "room=karaoke" },
   { name: "bowling", query: "room=bowling" },
+  { name: "bowling-concourse", query: "room=bowling&cam=0,2.4,9.8,0,0.6,5" },
   { name: "arcade-bar", query: "room=arcade-bar" },
   { name: "orbit", query: "room=orbit" },
   { name: "la-noche", query: "room=la-noche" },
@@ -854,6 +857,20 @@ const SHOTS: {
   { name: "aquarium", query: "room=aquarium" },
   { name: "ice-rink", query: "room=ice-rink" },
   { name: "haunted-house", query: "room=haunted-house" },
+  // the escape's first room: the front hall dressed as a set, three doors ahead
+  {
+    name: "haunted-escape",
+    query: "room=haunted-house",
+    act: async (page) => {
+      await page
+        .getByRole("button", { name: "Step inside" })
+        .click({ timeout: 150_000 });
+      await expect(page.locator("canvas")).toHaveAttribute(
+        "data-haunted-set",
+        /^[a-z]+$/,
+      );
+    },
+  },
   // your adopted pet beside you in the city, and asleep in its bed at home
   petShot("pet-city", "room=city&view=full&time=12:00", "husky", "Biscuit"),
   petShot("pet-home", "room=apartment", "shibainu", "Kiko"),
