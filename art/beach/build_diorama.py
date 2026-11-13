@@ -171,16 +171,58 @@ def build(piece, name, color_of_face=None, by_height=False, double=False):
     export(obj, name)
 
 
+def gores(me):
+    """Which of the canopy's eight gores each face is in, or None for the pole.
+
+    The canopy is a disc in the umbrella's texture (CANOPY_UV), so faces on it
+    are canopy. Its eight faces round the apex are the gores' roots (ordered by
+    their angle in UV space); every face further out takes the gore of the
+    neighbor one step nearer the apex, so a gore runs apex to rim however the
+    rings are cut.
+    """
+    uvs = me.uv_layers.active.data
+    canopy = {}
+    for poly in me.polygons:
+        uv = sum((uvs[l].uv for l in poly.loop_indices), Vector((0, 0))) / len(poly.loop_indices)
+        if (uv - CANOPY_UV).length <= CANOPY_RADIUS:
+            canopy[poly.index] = uv - CANOPY_UV
+    around = {}
+    for i in canopy:
+        for v in me.polygons[i].vertices:
+            around.setdefault(v, []).append(i)
+    apex = max(around, key=lambda v: len(around[v]))
+    label = {}
+    roots = sorted(around[apex], key=lambda i: math.atan2(canopy[i].y, canopy[i].x))
+    for k, i in enumerate(roots):
+        label[i] = k % 8
+    edge_faces = {}
+    for i in canopy:
+        poly = me.polygons[i]
+        for key in poly.edge_keys:
+            edge_faces.setdefault(key, []).append(i)
+    frontier = list(roots)
+    while frontier:
+        nxt = []
+        for i in frontier:
+            for key in me.polygons[i].edge_keys:
+                for j in edge_faces[key]:
+                    if j not in label:
+                        label[j] = label[i]
+                        nxt.append(j)
+        frontier = nxt
+    return {i: label.get(i) for i in canopy}
+
+
 def umbrella_color(a, b):
-    """Gore colors fan round the canopy disc in UV space; everything else is pole."""
+    """Gores alternate colors A, B round the canopy; everything else is pole."""
+    labels = {}
 
     def color(me, poly):
-        uvs = me.uv_layers.active.data
-        uv = sum((uvs[l].uv for l in poly.loop_indices), Vector((0, 0))) / len(poly.loop_indices)
-        d = uv - CANOPY_UV
-        if d.length > CANOPY_RADIUS:
+        if not labels:
+            labels.update(gores(me))
+        gore = labels.get(poly.index)
+        if gore is None:
             return linear(UMBRELLA_POLE)
-        gore = int(math.floor(math.atan2(d.y, d.x) / (math.pi / 4)))
         return linear(a if gore % 2 == 0 else b)
 
     return color
