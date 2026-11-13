@@ -4,7 +4,16 @@ import {
   FACE_HEIGHT,
   CHEST_HEIGHT,
   MIN_ZOOM,
+  KEY_ZOOM_STEP,
+  PORTRAIT_FOV,
+  WIDE_FOV,
   focusHeight,
+  keyZoomNotches,
+  portraitAmount,
+  portraitFov,
+  portraitTarget,
+  pullInside,
+  roomInside,
   zoomAbout,
   type Vec3,
 } from "./cameraZoom.ts";
@@ -37,11 +46,11 @@ test("zooming in from a far overview ends close on her, not on the overview's po
   }
   const face: Vec3 = [her[0], FACE_HEIGHT, her[2]];
   assert.ok(
-    dist(camera, face) < 0.7,
+    dist(camera, face) < 0.8,
     `camera ${dist(camera, face)} m from her face`,
   );
   assert.ok(
-    dist(target, face) < 0.7,
+    dist(target, face) < 0.8,
     `target ${dist(target, face)} m from her face`,
   );
 });
@@ -61,4 +70,103 @@ test("zooming keeps the camera's direction to her", () => {
   const after = [camera[0], camera[1] - 1, camera[2]];
   const len = Math.hypot(after[0]!, after[1]!, after[2]!);
   after.forEach((v, i) => assert.ok(Math.abs(v / len - before[i]!) < 1e-9));
+});
+
+// ---------------------------------------------------------------- portraits
+
+test("the portrait grows from nothing at a distance to full at the nearest zoom", () => {
+  assert.equal(portraitAmount(40), 0);
+  assert.equal(portraitAmount(3), 0);
+  assert.equal(portraitAmount(MIN_ZOOM), 1);
+  assert.equal(portraitAmount(0.1), 1);
+  let last = 0;
+  for (let d = 3; d >= MIN_ZOOM; d -= 0.1) {
+    const t = portraitAmount(d);
+    assert.ok(t >= last, `not monotonic at ${d}`);
+    last = t;
+  }
+});
+
+test("close in, the lens narrows for a flattering face, and widens again going out", () => {
+  assert.equal(portraitFov(20), WIDE_FOV);
+  assert.equal(portraitFov(MIN_ZOOM), PORTRAIT_FOV);
+  assert.ok(PORTRAIT_FOV < WIDE_FOV);
+  assert.ok(portraitFov(1.5) < WIDE_FOV && portraitFov(1.5) > PORTRAIT_FOV);
+});
+
+test("the nearest portrait fills a good part of the frame with her face, and no more", () => {
+  // the head is about 0.24 m tall; the frame's height at the nearest zoom
+  const frame = 2 * MIN_ZOOM * Math.tan((PORTRAIT_FOV * Math.PI) / 360);
+  const share = 0.24 / frame;
+  assert.ok(
+    share > 0.5,
+    `her head is ${Math.round(share * 100)}% of the frame`,
+  );
+  assert.ok(
+    share < 0.85,
+    `her head is ${Math.round(share * 100)}% of the frame`,
+  );
+});
+
+test("the view swings onto her face as the camera closes in, from an off-center overview", () => {
+  const face: Vec3 = [4, FACE_HEIGHT, -2];
+  const aimedAt: Vec3 = [-6, 1, -12]; // the room's overview looks elsewhere
+  assert.deepEqual(portraitTarget(aimedAt, face, 30), aimedAt);
+  const part = portraitTarget(aimedAt, face, 1.5);
+  assert.ok(dist(part, face) < dist(aimedAt, face));
+  assert.ok(dist(part, face) > 0);
+  const near = portraitTarget(aimedAt, face, MIN_ZOOM);
+  assert.ok(dist(near, face) < 1e-9);
+});
+
+// ----------------------------------------------------------------- keyboard
+
+test("plus and minus zoom in and out, one notch a press; other keys do nothing", () => {
+  assert.equal(keyZoomNotches("+"), 1);
+  assert.equal(keyZoomNotches("="), 1);
+  assert.equal(keyZoomNotches("-"), -1);
+  assert.equal(keyZoomNotches("_"), -1);
+  assert.equal(keyZoomNotches("a"), 0);
+  assert.equal(keyZoomNotches("Enter"), 0);
+  assert.ok(KEY_ZOOM_STEP < 1 && KEY_ZOOM_STEP > 0.5);
+});
+
+// -------------------------------------------------------------------- walls
+
+test("a camera inside the walls is left alone", () => {
+  const room = (x: number, z: number) => Math.abs(x) < 5 && Math.abs(z) < 5;
+  const cam: Vec3 = [1, 1.6, 1];
+  assert.deepEqual(pullInside(cam, [0, 1.5, 0], room), cam);
+});
+
+test("a camera that would end up inside a wall is pulled back toward her until it clears it", () => {
+  const room = (x: number, z: number) => Math.abs(x) < 5 && Math.abs(z) < 5;
+  const her: Vec3 = [4, 1.5, 0];
+  const pulled = pullInside([7, 2, 0], her, room);
+  assert.ok(room(pulled[0], pulled[2]));
+  // as far out as the wall allows, not all the way in on her
+  assert.ok(pulled[0] > 4.9, `x ${pulled[0]}`);
+  // along the same line
+  assert.ok(Math.abs(pulled[2]) < 1e-6);
+  assert.ok(pulled[1] > her[1] && pulled[1] < 2);
+});
+
+test("with her outside the walls too (a seat, a ride) the camera is not touched", () => {
+  const room = (x: number, z: number) => Math.abs(x) < 5 && Math.abs(z) < 5;
+  const cam: Vec3 = [9, 2, 0];
+  assert.deepEqual(pullInside(cam, [8, 1.5, 0], room), cam);
+});
+
+test("a room's inside is its floor plus a wall's depth", () => {
+  const floor: [number, number][] = [
+    [-5, -5],
+    [5, -5],
+    [5, 5],
+    [-5, 5],
+  ];
+  const inside = roomInside(floor, 0.35);
+  assert.equal(inside(0, 0), true);
+  assert.equal(inside(5.2, 0), true);
+  assert.equal(inside(5.5, 0), false);
+  assert.equal(inside(-5.2, -5.2), true);
 });

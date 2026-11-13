@@ -2134,6 +2134,110 @@ const SHOTS: {
     query: "room=city&view=full&time=12:00&at=-144,0",
     live: true,
   },
+  // the dock's contextual actions (ui/ActionDock.tsx) and the close zoom:
+  // before and after the HUD declutter, on the same shots
+  { name: "hud-city", query: "room=city&view=full&time=12:00", live: true },
+  {
+    name: "hud-el",
+    live: true,
+    query: "room=city&view=full&time=12:00&at=-262,10",
+    act: async (page: Page) => {
+      await expect(
+        page.getByRole("button", { name: /^Ride the El to / }).first(),
+      ).toBeVisible({ timeout: 300_000 });
+    },
+  },
+  {
+    name: "hud-el-more",
+    live: true,
+    query: "room=city&view=full&time=12:00&at=-262,10",
+    act: async (page: Page) => {
+      await expect(
+        page.getByRole("button", { name: /^Ride the El to / }).first(),
+      ).toBeVisible({ timeout: 300_000 });
+      const more = page.getByRole("button", { name: "More actions" });
+      // before the HUD declutter there is no menu to open
+      if (await more.count()) await more.click();
+    },
+  },
+  {
+    name: "hud-mobile",
+    live: true,
+    query: "room=city&view=full&time=12:00&at=-262,10",
+    viewport: { width: 390, height: 844 },
+    touch: true,
+    act: async (page: Page) => {
+      await expect(
+        page.getByRole("button", { name: /^Ride the El to / }).first(),
+      ).toBeVisible({ timeout: 300_000 });
+      const more = page.getByRole("button", { name: "More actions" });
+      if (await more.count()) await more.click();
+    },
+  },
+  { name: "hud-room", query: "room=lune&view=full", live: true },
+  {
+    name: "zoom-dressing",
+    query: "room=city&view=full",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      await page
+        .getByRole("button", { name: "Dressing room", exact: true })
+        .click();
+      // over the part of the picture the panel leaves free
+      await page.mouse.move(300, 400);
+      for (let i = 0; i < 12; i++) await page.mouse.wheel(0, -100);
+      await page.waitForFunction(
+        () =>
+          Number(document.querySelector("canvas")?.dataset.camDistance) < 1.1,
+        null,
+        { timeout: 120_000 },
+      );
+    },
+  },
+  {
+    name: "zoom-room",
+    query: "room=salon",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      await page.mouse.move(640, 400);
+      for (let i = 0; i < 60; i++) await page.mouse.wheel(0, -100);
+      await page.waitForFunction(
+        () =>
+          Number(document.querySelector("canvas")?.dataset.camDistance) < 1.1,
+        null,
+        { timeout: 120_000 },
+      );
+    },
+  },
+  {
+    name: "zoom-keys",
+    query: "room=lune&view=full",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      for (let i = 0; i < 9; i++) await page.keyboard.press("+");
+      await page.waitForFunction(
+        () =>
+          Number(document.querySelector("canvas")?.dataset.camDistance) < 1.1,
+        null,
+        { timeout: 120_000 },
+      );
+    },
+  },
   {
     name: "city-mobile",
     query: "room=city&view=full",

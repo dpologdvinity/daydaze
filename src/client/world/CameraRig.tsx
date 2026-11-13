@@ -4,12 +4,19 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import type { OrbitControls as OrbitImpl } from "three-stdlib";
 import {
+  KEY_ZOOM_STEP,
   MIN_ZOOM,
   ZOOM_STEP,
   focusHeight,
+  keyZoomNotches,
+  portraitFov,
+  portraitTarget,
+  pullInside,
+  roomInside,
   zoomAbout,
+  type Vec3,
 } from "../../game/cameraZoom.ts";
-import type { RoomId } from "../../game/rooms.ts";
+import { ROOMS, type RoomId } from "../../game/rooms.ts";
 import { useReducedMotion } from "../motion.ts";
 import { cameraHold } from "./cameraHold.ts";
 import { driving } from "./driving.ts";
@@ -502,11 +509,17 @@ const CLOSE: Record<"full" | "face", { off: THREE.Vector3; look: number }> = {
   face: { off: new THREE.Vector3(0.12, 1.6, 0.85), look: 1.53 },
 };
 
+/** Closer than this to her (meters), the camera keeps out of the room's walls. */
+const CLOSE_RANGE = 4;
+
 const Y = new THREE.Vector3(0, 1, 0);
 const moved = new THREE.Vector3();
 const goalPos = new THREE.Vector3();
 const goalTarget = new THREE.Vector3();
 const chest = new THREE.Vector3();
+// a fingerprint of where the camera and she were when the walls were last checked
+const wallKey = new THREE.Vector3();
+const wallSeen = new THREE.Vector3(NaN, NaN, NaN);
 
 /**
  * Orbit camera that follows the player without fighting the user's orbit,
@@ -546,6 +559,11 @@ export function CameraRig({
   const held = useRef(false);
   // wheel notches and pinches since the last frame, as one zoom factor
   const zoom = useRef(1);
+  // the room's walls for the close camera, built on first use
+  const walls = useRef<{
+    room: RoomId;
+    inside: (x: number, z: number) => boolean;
+  } | null>(null);
 
   // Wheel and pinch zoom on her (cameraZoom.ts), not on the orbit target,
   // which in a room's overview sits far from her: OrbitControls' own dolly
@@ -583,12 +601,27 @@ export function CameraRig({
       touches.delete(e.pointerId);
       spread = span();
     };
+    // + and - zoom from the keyboard, unless she is typing or a shortcut is held
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const notches = keyZoomNotches(e.key);
+      if (notches === 0) return;
+      const el = e.target;
+      if (
+        el instanceof HTMLElement &&
+        (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))
+      )
+        return;
+      zoom.current *= KEY_ZOOM_STEP ** notches;
+    };
+    window.addEventListener("keydown", onKey);
     canvas.addEventListener("wheel", onWheel, { passive: false });
     canvas.addEventListener("pointerdown", onDown);
     canvas.addEventListener("pointermove", onMove);
     canvas.addEventListener("pointerup", onUp);
     canvas.addEventListener("pointercancel", onUp);
     return () => {
+      window.removeEventListener("keydown", onKey);
       canvas.removeEventListener("wheel", onWheel);
       canvas.removeEventListener("pointerdown", onDown);
       canvas.removeEventListener("pointermove", onMove);
@@ -684,12 +717,49 @@ export function CameraRig({
         MAX_DISTANCE[room],
       );
       camera.position.fromArray(eye);
-      c.target.fromArray(target);
+      // the last stretch of a zoom centers her face, wherever the overview aimed
+      const face: Vec3 = [at.x, at.y + focusHeight(0), at.z];
+      c.target.fromArray(
+        portraitTarget(target, face, camera.position.distanceTo(chest)),
+      );
       canvas.dataset.camDistance = camera.position
         .distanceTo(chest.copy(at).setY(at.y + focusHeight(0)))
         .toFixed(2);
     }
     c.update();
+    // up close, indoors: out of the walls (an overview is far past them)
+    if (walls.current?.room !== room)
+      walls.current = { room, inside: roomInside(ROOMS[room].walkable) };
+    chest.copy(at).setY(at.y + 1);
+    const away = camera.position.distanceTo(chest);
+    // (only when the camera or she has moved: the check builds a few tuples)
+    wallKey.set(
+      camera.position.x,
+      camera.position.y + at.x * 7,
+      camera.position.z + at.z * 13,
+    );
+    if (
+      room !== "city" &&
+      away < CLOSE_RANGE &&
+      !wallKey.equals(wallSeen) &&
+      !walls.current.inside(camera.position.x, camera.position.z)
+    ) {
+      const pulled = pullInside(
+        camera.position.toArray(),
+        [at.x, at.y + 1.1, at.z],
+        walls.current.inside,
+      );
+      camera.position.fromArray(pulled);
+    }
+    wallSeen.copy(wallKey);
+    // a face wants a longer lens than the room does
+    if (camera instanceof THREE.PerspectiveCamera) {
+      const fov = portraitFov(away);
+      if (Math.abs(camera.fov - fov) > 0.05) {
+        camera.fov = fov;
+        camera.updateProjectionMatrix();
+      }
+    }
   });
 
   return (
