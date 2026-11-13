@@ -3443,8 +3443,9 @@ test("the park's wildlife appears near the park, and the doe only on the high ti
 }) => {
   test.setTimeout(330_000);
   const errors = collectErrors(page);
+  // the low tier keeps one deer, one rabbit and the fox (wildlifeFor)
   await page.goto("/?quality=low&room=city&at=268,-279");
-  await expect(page.locator("canvas")).toHaveAttribute("data-wildlife", "5", {
+  await expect(page.locator("canvas")).toHaveAttribute("data-wildlife", "3", {
     timeout: 240_000,
   });
   await page.goto("/?quality=high&room=city&at=268,-279");

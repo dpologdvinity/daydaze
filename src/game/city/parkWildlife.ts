@@ -53,6 +53,10 @@ export const WILDLIFE: readonly Wildlife[] = [
   },
 ];
 
+/** The animals drawn on `tier`: the low tier skips the high-only ones. */
+export const wildlifeFor = (tier: "low" | "high"): readonly Wildlife[] =>
+  tier === "low" ? WILDLIFE.filter((w) => !w.highOnly) : WILDLIFE;
+
 /** Where the lawn's ground is, for the animals' feet. */
 export const WILDLIFE_Y = GROUND;
 

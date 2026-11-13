@@ -23,7 +23,7 @@ import { elBoxes } from "./el.ts";
 import { RESIDENTS, dogParkNear } from "./dogPark.ts";
 import { AUDIENCE_DRAWN, BAND, CHAIRS, shellNear } from "./bandShell.ts";
 import { PEDESTRIANS } from "./pedestrians.ts";
-import { WILDLIFE, wildlifeNear } from "./parkWildlife.ts";
+import { wildlifeFor, wildlifeNear } from "./parkWildlife.ts";
 import { PARK_FLOCKS, flockNear } from "../butterflies.ts";
 import { QUEUE_NEAR_LOW, QUEUE_PERSON_TRIS, QUEUE_SPOTS } from "./queues.ts";
 import {
@@ -463,7 +463,7 @@ export function liveCost(
     bandDolls = BAND.length + AUDIENCE_DRAWN.low;
   }
   if (wildlifeNear(at[0], at[1]))
-    for (const w of WILDLIFE) if (!w.highOnly) add(`animals/${w.kind}`);
+    for (const w of wildlifeFor("low")) add(`animals/${w.kind}`);
   if (dogParkNear(at[0], at[1]))
     for (const r of RESIDENTS) add(`animals/${r.kind}`);
   // the park's butterflies (by day): one instanced draw, each flock near her

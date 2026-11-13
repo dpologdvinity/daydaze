@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
 import { PARK, PATH_EW, PATH_NS, POND } from "./park.ts";
-import { WILDLIFE, wildlifeNear } from "./parkWildlife.ts";
+import { WILDLIFE, wildlifeFor, wildlifeNear } from "./parkWildlife.ts";
 
 test("every park animal has a model and a pen on the lawn, off the paths and pond", () => {
   for (const w of WILDLIFE) {
@@ -22,4 +22,14 @@ test("every park animal has a model and a pen on the lawn, off the paths and pon
 test("wildlife exists only near the park", () => {
   assert.ok(wildlifeNear(250, -280));
   assert.ok(!wildlifeNear(0, 0));
+});
+
+test("the low tier draws a deer, a rabbit and a fox; the high tier all six, doe included", () => {
+  assert.deepEqual(
+    wildlifeFor("low").map((w) => w.kind),
+    ["deer", "rabbit", "fox"],
+  );
+  assert.equal(wildlifeFor("high").length, WILDLIFE.length);
+  assert.equal(WILDLIFE.length, 6);
+  assert.ok(wildlifeFor("high").some((w) => w.kind === "doe"));
 });
