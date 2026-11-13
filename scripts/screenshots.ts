@@ -258,6 +258,50 @@ function walkStrip(
   };
 }
 
+/**
+ * A frame strip of a room action (the ladder climb, the overhand throw): runs
+ * `setup` (open the game), then records a CDP screencast while `go` fires the
+ * move, saving docs/screenshots/<name>-<nn>.png.
+ */
+function actionStrip(
+  name: string,
+  query: string,
+  setup: (page: Page) => Promise<void>,
+  go: (page: Page) => Promise<void>,
+  seconds = 20,
+): (typeof SHOTS)[number] {
+  return {
+    name,
+    query,
+    live: true,
+    act: async (page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      await setup(page);
+      const cdp = await page.context().newCDPSession(page);
+      const frames: Buffer[] = [];
+      cdp.on("Page.screencastFrame", (f) => {
+        if (frames.length < FRAMES) frames.push(Buffer.from(f.data, "base64"));
+        void cdp.send("Page.screencastFrameAck", { sessionId: f.sessionId });
+      });
+      await cdp.send("Page.startScreencast", { format: "png" });
+      await go(page);
+      await page.waitForTimeout(seconds * 1000);
+      await cdp.send("Page.stopScreencast");
+      frames.forEach((png, n) =>
+        writeFileSync(
+          `docs/screenshots/${name}-${String(n).padStart(2, "0")}.png`,
+          png,
+        ),
+      );
+      console.log(`${name}: ${frames.length} screencast frames`);
+    },
+  };
+}
+
 const SHOTS: {
   name: string;
   query: string;
@@ -285,6 +329,40 @@ const SHOTS: {
     seconds: 30,
   }),
   walkStrip("move-jump", "natural", "jump", { timescale: 0.1, seconds: 30 }),
+  // the room actions: the ladder climb and the Hot Shots throw
+  actionStrip(
+    "move-climb",
+    "room=water-park",
+    async (page) => {
+      await page
+        .getByRole("button", { name: "Climb the tower" })
+        .click({ timeout: 150_000 });
+      const panel = page.getByRole("region", { name: "Cliff dive" });
+      await panel.getByRole("button", { name: /Pencil drop/ }).click();
+    },
+    async (page) => {
+      await page
+        .getByRole("region", { name: "Cliff dive" })
+        .getByRole("button", { name: "Dive!" })
+        .click();
+    },
+  ),
+  actionStrip(
+    "move-throw",
+    "room=dome",
+    async (page) => {
+      const panel = page.getByRole("region", { name: "Hot Shots" });
+      await panel.getByRole("button", { name: "Start the clock" }).click();
+      await panel.getByRole("button", { name: "Aim" }).click();
+    },
+    async (page) => {
+      await page
+        .getByRole("region", { name: "Hot Shots" })
+        .getByRole("button", { name: "Shoot!" })
+        .click();
+    },
+    12,
+  ),
   walkStrip("move-start-man", "natural", "click", {
     men: true,
     timescale: 0.1,

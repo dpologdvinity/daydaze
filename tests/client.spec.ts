@@ -1663,9 +1663,10 @@ test("Space jumps in the city, once a press, and walking off ends it", async ({
   await expect(view).toHaveAttribute("data-frames", "10", { timeout: 150_000 });
   await expect(view).toHaveAttribute("data-player-x", /-?\d/);
   await expect(view).toHaveAttribute("data-jumps", "0");
+  // a second press while still in the air does nothing; both presses land in
+  // the same instant, because a slow renderer can outlast the jump between
+  // frames and a late second press would be a legitimate new jump
   await page.keyboard.press("Space");
-  await expect(view).toHaveAttribute("data-jumps", "1");
-  // a second press while still in the air does nothing
   await page.keyboard.press("Space");
   await expect(view).toHaveAttribute("data-jumps", "1");
   expect(errors).toEqual([]);
