@@ -1032,6 +1032,47 @@ const SHOTS: {
   { name: "sugar-rush", query: "room=sugar-rush" },
   { name: "warehouse", query: "room=warehouse" },
   { name: "karaoke", query: "room=karaoke" },
+  {
+    // the songbook: a song from the blues shelf picked in the Loft's mic panel
+    name: "karaoke-songbook",
+    query: "room=karaoke&quality=low&time=23:30",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      await page.getByLabel("Song").selectOption("careless-love");
+    },
+  },
+  // a weekly night on in its venue (`?night=` sets the clock an hour into it):
+  // the light takes the night's color and its decor fills the air
+  ...(
+    [
+      ["uv-night", "mini-golf"],
+      ["mall-rave", "galleria"],
+      ["stargazing", "hotel-rooftop"],
+      ["fashion-show", "catwalk"],
+      ["haunted-late", "haunted-house"],
+      ["pajama-party", "skate-diner"],
+      ["night-market", "market"],
+      ["poetry-slam", "bookshop"],
+    ] as const
+  ).map(([night, room]) => ({
+    name: `night-${night}`,
+    query: `room=${room}&night=${night}&quality=low&time=23:30`,
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      // let the decor drift for a few frames
+      await page.waitForTimeout(3_000);
+    },
+  })),
   { name: "bowling", query: "room=bowling" },
   { name: "bowling-concourse", query: "room=bowling&cam=0,2.4,9.8,0,0.6,5" },
   { name: "arcade-bar", query: "room=arcade-bar" },

@@ -5,12 +5,14 @@ import {
   eventSituation,
   formatWait,
   eventTrack,
+  NIGHT_DECORS,
   nightOn,
   nightsAt,
   schedule,
 } from "./events.ts";
 import { djBank } from "./dialogue/dj.ts";
 import { regularBank } from "./dialogue/regular.ts";
+import { ROOMS } from "./rooms.ts";
 
 const at = (iso: string) => Date.parse(iso);
 const night = (id: string) => CLUB_NIGHTS.find((n) => n.id === id)!;
@@ -101,4 +103,66 @@ test("on every night, the regulars and the DJ have plenty to say about it", () =
         (bank[n.situation]?.length ?? 0) >= 10,
         `${n.id}: ${bank[n.situation]?.length ?? 0} lines`,
       );
+});
+
+test("thirty-five nights, spread over the week, each with its own situation and a known venue", () => {
+  assert.ok(CLUB_NIGHTS.length >= 33, `${CLUB_NIGHTS.length} nights`);
+  assert.equal(new Set(CLUB_NIGHTS.map((n) => n.id)).size, CLUB_NIGHTS.length);
+  assert.equal(
+    new Set(CLUB_NIGHTS.map((n) => n.situation)).size,
+    CLUB_NIGHTS.length,
+  );
+  assert.equal(
+    new Set(CLUB_NIGHTS.map((n) => n.label)).size,
+    CLUB_NIGHTS.length,
+  );
+  for (const n of CLUB_NIGHTS) {
+    assert.ok(n.clubs.length >= 1, n.id);
+    for (const c of n.clubs) assert.ok(ROOMS[c], `${n.id}: no room ${c}`);
+    assert.match(n.color, /^#[0-9a-f]{6}$/, n.id);
+    assert.equal(n.situation, `event-${n.id}`, n.id);
+  }
+  // every day of the week has four or more
+  for (let day = 0; day < 7; day++)
+    assert.ok(
+      CLUB_NIGHTS.filter((n) => n.days.includes(day)).length >= 4,
+      `day ${day}`,
+    );
+});
+
+test("the new nights change their rooms: decor, light and music", () => {
+  const added = CLUB_NIGHTS.slice(18);
+  assert.ok(added.length >= 15, `${added.length} new nights`);
+  const decors = new Set<string>();
+  for (const n of added) {
+    assert.ok(n.decor, `${n.id} has no decor`);
+    assert.ok((NIGHT_DECORS as readonly string[]).includes(n.decor));
+    decors.add(n.decor);
+  }
+  // not one look repeated for every night
+  assert.ok(decors.size >= 10, `${decors.size} decors`);
+  // and not every night plays the same record
+  assert.ok(new Set(added.map((n) => n.track)).size >= 5);
+});
+
+test("drag brunch is a daytime show: Sunday 16:00 to 20:00 UTC, over before the night's start", () => {
+  const brunch = night("drag-brunch");
+  assert.equal(nightOn(brunch, at("2026-10-25T15:59:00Z")), false);
+  assert.equal(nightOn(brunch, at("2026-10-25T16:00:00Z")), true);
+  assert.equal(nightOn(brunch, at("2026-10-25T19:59:00Z")), true);
+  assert.equal(nightOn(brunch, at("2026-10-25T20:00:00Z")), false);
+  assert.equal(nightOn(brunch, at("2026-10-26T01:00:00Z")), false);
+  // its countdown counts to 16:00, and to 20:00 once on
+  const before = schedule(at("2026-10-25T10:00:00Z")).find(
+    (r) => r.id === "drag-brunch",
+  )!;
+  assert.equal(before.inMs, 6 * 3_600_000);
+  const on = schedule(at("2026-10-25T17:00:00Z")).find(
+    (r) => r.id === "drag-brunch",
+  )!;
+  assert.equal(on.leftMs, 3 * 3_600_000);
+});
+
+test("the sapphic speed-friending is at the Violet Hour, the sapphic bar", () => {
+  assert.deepEqual(night("speed-friending").clubs, ["violet-hour"]);
 });

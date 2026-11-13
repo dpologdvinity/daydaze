@@ -37,6 +37,14 @@ const GENRE_NAMES: Record<Genre, string> = {
   world: "Around the world",
   holiday: "Holiday",
   party: "Party",
+  blues: "Blues",
+  "music-hall": "Music hall",
+  shanty: "Sea shanties",
+  lullaby: "Lullabies",
+  opera: "Opera and operetta",
+  school: "School and college",
+  patriotic: "Patriotic",
+  celtic: "Irish, Scottish and Welsh",
 };
 
 /** The songbook: every song, by genre. */

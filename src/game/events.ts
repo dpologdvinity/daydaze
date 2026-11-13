@@ -1,6 +1,8 @@
-// The weekly club nights: seventeen of them (Y2K, Latin, chiptune, disco,
-// house, rave, K-pop, drag, goth, speakeasy, luau and more), at set clubs on
-// set evenings, two or more every night of the week. Every player sees the
+// The weekly nights: thirty-five of them (Y2K, Latin, chiptune, disco, house,
+// rave, K-pop, drag, goth, speakeasy and luau, then mall raves, UV glow, skate
+// battles, a silent disco, drag brunch, speed-friending, talent shows,
+// stargazing and more), at set venues on set evenings (a few by day), every
+// night of the week. Every player sees the
 // same moment: the schedule runs on UTC, the evenings placed over American
 // nights (23:00 to 05:00 UTC). On its night a
 // club plays the night's music, glows its color and its people talk about
@@ -15,7 +17,7 @@ import type { RoomId } from "./rooms.ts";
 const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
 const WEEK = 7 * DAY;
-/** Every night starts at 23:00 UTC and runs six hours. */
+/** A night starts at 23:00 UTC and runs six hours, unless it says otherwise. */
 const START = 23 * HOUR;
 const LENGTH = 6 * HOUR;
 /** 1970-01-01, where epoch time starts, was a Thursday (UTC weekday 4). */
@@ -40,7 +42,24 @@ export type ClubNight = {
     | "ladies-night"
     | "house-night"
     | "luau-night"
-    | "cosmic-night";
+    | "cosmic-night"
+    | "mall-rave"
+    | "uv-night"
+    | "skate-off"
+    | "silent-disco"
+    | "drag-brunch"
+    | "speed-friending"
+    | "jpop-night"
+    | "salsa-lessons"
+    | "poetry-slam"
+    | "karaoke-battle"
+    | "talent-show"
+    | "stargazing"
+    | "haunted-late"
+    | "pajama-party"
+    | "fashion-show"
+    | "night-market"
+    | "bonfire-singalong";
   label: string;
   /** The clubs that host it. */
   clubs: readonly RoomId[];
@@ -52,7 +71,35 @@ export type ClubNight = {
   color: string;
   /** What the clubs' people talk about while it's on. */
   situation: DialogueSituation;
+  /** What it does to the room: the decor that fills the air, and the light
+   * the room's palette takes on (see src/client/rooms/NightDecor.tsx). A night
+   * without one only changes the music and the talk. */
+  decor?: NightDecor;
+  /** The hour (UTC) it starts, when not the usual 23:00, and how many hours it
+   * runs, when not six: a brunch is a daytime thing. */
+  startHour?: number;
+  hours?: number;
 };
+
+/** The kinds of decor a night can fill its room with. */
+export const NIGHT_DECORS = [
+  "glowsticks",
+  "uv",
+  "spotlights",
+  "halos",
+  "confetti",
+  "hearts",
+  "petals",
+  "streamers",
+  "fireflies",
+  "bunting",
+  "stars",
+  "fog",
+  "balloons",
+  "lanterns",
+  "embers",
+] as const;
+export type NightDecor = (typeof NIGHT_DECORS)[number];
 
 export const CLUB_NIGHTS: readonly ClubNight[] = [
   {
@@ -217,23 +264,202 @@ export const CLUB_NIGHTS: readonly ClubNight[] = [
     color: "#9b7bff",
     situation: "event-cosmic-night",
   },
+  {
+    id: "mall-rave",
+    label: "Mall rave",
+    clubs: ["galleria", "sugar-rush"],
+    days: [4],
+    track: "warehouse-acid",
+    color: "#5cff9a",
+    situation: "event-mall-rave",
+    decor: "glowsticks",
+  },
+  {
+    id: "uv-night",
+    label: "UV glow night",
+    clubs: ["mini-golf", "laser-tag"],
+    days: [2],
+    track: "player-two-chiptune",
+    color: "#c3ff3d",
+    situation: "event-uv-night",
+    decor: "uv",
+  },
+  {
+    id: "skate-off",
+    label: "Roller skate-off",
+    clubs: ["roller-rink", "skatepark"],
+    days: [3],
+    track: "roller-disco",
+    color: "#ffb347",
+    situation: "event-skate-off",
+    decor: "spotlights",
+  },
+  {
+    id: "silent-disco",
+    label: "Silent disco",
+    clubs: ["hotel-rooftop", "vinyl-vault"],
+    days: [5],
+    track: "canopy-lofi",
+    color: "#7affff",
+    situation: "event-silent-disco",
+    decor: "halos",
+  },
+  {
+    id: "drag-brunch",
+    label: "Drag brunch",
+    clubs: ["violet-hour", "bistro"],
+    days: [0],
+    startHour: 16,
+    hours: 4,
+    track: "sugar-rush-pop",
+    color: "#ff9ad5",
+    situation: "event-drag-brunch",
+    decor: "confetti",
+  },
+  {
+    id: "speed-friending",
+    label: "Sapphic speed-friending",
+    clubs: ["violet-hour"],
+    days: [2],
+    track: "canopy-lofi",
+    color: "#ff7fb8",
+    situation: "event-speed-friending",
+    decor: "hearts",
+  },
+  {
+    id: "jpop-night",
+    label: "J-pop idol night",
+    clubs: ["karaoke", "boba-matcha"],
+    days: [4],
+    track: "sugar-rush-pop",
+    color: "#ffb3e6",
+    situation: "event-jpop-night",
+    decor: "petals",
+  },
+  {
+    id: "salsa-lessons",
+    label: "Salsa lesson night",
+    clubs: ["la-noche", "pulse"],
+    days: [1],
+    track: "la-noche-salsa",
+    color: "#ff6b3d",
+    situation: "event-salsa-lessons",
+    decor: "streamers",
+  },
+  {
+    id: "poetry-slam",
+    label: "Poetry slam",
+    clubs: ["bookshop", "gallery", "espresso-lab"],
+    days: [5],
+    track: "canopy-lofi",
+    color: "#c9a3ff",
+    situation: "event-poetry-slam",
+    decor: "fireflies",
+  },
+  {
+    id: "karaoke-battle",
+    label: "Karaoke battle",
+    clubs: ["karaoke"],
+    days: [5],
+    track: "sugar-rush-pop",
+    color: "#ff4f5e",
+    situation: "event-karaoke-battle",
+    decor: "spotlights",
+  },
+  {
+    id: "talent-show",
+    label: "Boardwalk talent show",
+    clubs: ["boardwalk-arcade", "surf-shack"],
+    days: [6],
+    track: "carnival-calliope",
+    color: "#ffd84f",
+    situation: "event-talent-show",
+    decor: "bunting",
+  },
+  {
+    id: "stargazing",
+    label: "Rooftop stargazing",
+    clubs: ["hotel-rooftop", "rooftop-bar"],
+    days: [1],
+    track: "waterhole-twilight",
+    color: "#8fb8ff",
+    situation: "event-stargazing",
+    decor: "stars",
+  },
+  {
+    id: "haunted-late",
+    label: "Haunted house late night",
+    clubs: ["haunted-house"],
+    days: [5, 6],
+    track: "carnival-calliope",
+    color: "#7dff9a",
+    situation: "event-haunted-late",
+    decor: "fog",
+  },
+  {
+    id: "pajama-party",
+    label: "Pajama party",
+    clubs: ["skate-diner", "halo-halo-cafe"],
+    days: [0],
+    track: "canopy-lofi",
+    color: "#ffc2d9",
+    situation: "event-pajama-party",
+    decor: "balloons",
+  },
+  {
+    id: "fashion-show",
+    label: "Runway night",
+    clubs: ["catwalk", "galleria"],
+    days: [6],
+    track: "sugar-rush-pop",
+    color: "#ff5ca8",
+    situation: "event-fashion-show",
+    decor: "spotlights",
+  },
+  {
+    id: "night-market",
+    label: "Night market",
+    clubs: ["market", "garden"],
+    days: [5],
+    track: "waterhole-twilight",
+    color: "#ff9a3d",
+    situation: "event-night-market",
+    decor: "lanterns",
+  },
+  {
+    id: "bonfire-singalong",
+    label: "Beach bonfire singalong",
+    clubs: ["surf-shack", "mermaid-cove"],
+    days: [3],
+    track: "waterhole-twilight",
+    color: "#ff8a3d",
+    situation: "event-bonfire-singalong",
+    decor: "embers",
+  },
 ];
 
 /** Milliseconds since this week's Sunday 00:00 UTC. */
 const intoWeek = (ms: number) =>
   (((ms + EPOCH_WEEKDAY * DAY) % WEEK) + WEEK) % WEEK;
 
+/** When a night starts in its day, and how long it runs (ms). */
+const startOf = (night: ClubNight) =>
+  night.startHour === undefined ? START : night.startHour * HOUR;
+const lengthOf = (night: ClubNight) =>
+  night.hours === undefined ? LENGTH : night.hours * HOUR;
+
 /** Milliseconds since the night's latest start (each start is a week apart). */
 function sinceStart(night: ClubNight, ms: number): number {
   const t = intoWeek(ms);
+  const start = startOf(night);
   return Math.min(
-    ...night.days.map((d) => (((t - d * DAY - START) % WEEK) + WEEK) % WEEK),
+    ...night.days.map((d) => (((t - d * DAY - start) % WEEK) + WEEK) % WEEK),
   );
 }
 
 /** Whether the night is on at `ms` (epoch ms). */
 export const nightOn = (night: ClubNight, ms: number) =>
-  sinceStart(night, ms) < LENGTH;
+  sinceStart(night, ms) < lengthOf(night);
 
 /** The nights on in a room at `ms`. */
 export const nightsAt = (room: RoomId, ms: number) =>
@@ -256,14 +482,14 @@ export type ScheduleRow = {
 export function schedule(ms: number): ScheduleRow[] {
   return CLUB_NIGHTS.map((n) => {
     const since = sinceStart(n, ms);
-    const on = since < LENGTH;
+    const on = since < lengthOf(n);
     return {
       id: n.id,
       label: n.label,
       clubs: n.clubs,
       on,
       inMs: on ? 0 : nextStart(n, ms) - ms,
-      leftMs: on ? LENGTH - since : 0,
+      leftMs: on ? lengthOf(n) - since : 0,
     };
   }).sort((a, b) => a.inMs - b.inMs);
 }
@@ -272,7 +498,7 @@ export function schedule(ms: number): ScheduleRow[] {
 function nextStart(night: ClubNight, ms: number): number {
   const t = intoWeek(ms);
   const waits = night.days.map(
-    (d) => (((d * DAY + START - t) % WEEK) + WEEK) % WEEK || WEEK,
+    (d) => (((d * DAY + startOf(night) - t) % WEEK) + WEEK) % WEEK || WEEK,
   );
   return ms + Math.min(...waits);
 }

@@ -105,7 +105,8 @@ export function EventCalendar() {
   return (
     <section className="event-calendar" aria-label="Events">
       <h3>Events this week</h3>
-      <ul>
+      {/* thirty-odd nights: the list scrolls (and takes the keyboard) */}
+      <ul tabIndex={0} aria-label="Upcoming events">
         {rows.map((r) => (
           <li key={r.key} data-on={r.on}>
             <strong>{r.label}</strong> <small>{r.where}</small>

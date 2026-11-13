@@ -1,7 +1,10 @@
 // The Karaoke Loft's songbook: real songs, every one in the US public domain
-// (published before 1931, or traditional). Only the melody is used: the game
-// shows no lyrics and plays no recording; the backing is the game's own
-// procedural music. Pure data plus the parser that reads the note strings.
+// (published in 1929 or earlier, melody and words both, or traditional). Only
+// the melody is used: the game shows no lyrics and plays no recording; the
+// backing is the game's own procedural music. The core songs live here, the
+// rest in src/game/karaokeBook/ by family; every song names its composer and
+// the year it was published (for a traditional tune, a year by which it was
+// certainly in print). Pure data plus the parser that reads the note strings.
 //
 // Melodies are written as space-separated `<pitch>/<beats>` tokens, the
 // pitch in scientific notation (C4 = middle C, sharps `#`, flats `b`) or `r`
@@ -14,9 +17,15 @@
 // pitch, which the jukebox sings.
 //
 // No genre that only exists after 1930 can be here: there is no public-domain
-// pop, rock, hip-hop, R&B, K-pop, EDM or modern country to sing.
+// pop, rock, hip-hop, R&B, K-pop, EDM or modern country to sing. The nearest
+// the book has are the blues, early jazz and Tin Pan Alley of the 1910s and
+// 1920s, ragtime, music hall and the stage.
 
 import { LANES, LEAD_IN, type Note } from "./karaokeGame.ts";
+import { AMERICA } from "./karaokeBook/america.ts";
+import { CLASSIC } from "./karaokeBook/classic.ts";
+import { STAGE } from "./karaokeBook/stage.ts";
+import { WORLD } from "./karaokeBook/world.ts";
 
 export const GENRES = [
   "classical",
@@ -30,14 +39,27 @@ export const GENRES = [
   "world",
   "holiday",
   "party",
+  "blues",
+  "music-hall",
+  "shanty",
+  "lullaby",
+  "opera",
+  "school",
+  "patriotic",
+  "celtic",
 ] as const;
 export type Genre = (typeof GENRES)[number];
 
 export type KaraokeSong = {
   id: string;
   title: string;
-  /** Composer or source, and the year (or "trad."). */
+  /** Composer or source, and the year (or "trad."): what the picker shows. */
   credit: string;
+  /** Who wrote it ("Traditional" for a folk tune). */
+  composer: string;
+  /** The year it was published; for a traditional tune, a year by which it
+   * was certainly in print. Always 1929 or earlier. */
+  year: number;
   genre: Genre;
   /** Beats a minute: the beat is the unit the melody's lengths count in. */
   bpm: number;
@@ -51,11 +73,13 @@ export type KaraokeSong = {
   melody: string;
 };
 
-export const SONGS: readonly KaraokeSong[] = [
+const CORE: readonly KaraokeSong[] = [
   {
     id: "ode-to-joy",
     title: "Ode to Joy",
     credit: "Beethoven, 1824",
+    composer: "Ludwig van Beethoven",
+    year: 1824,
     genre: "classical",
     bpm: 108,
     melody:
@@ -66,6 +90,8 @@ export const SONGS: readonly KaraokeSong[] = [
     id: "fur-elise",
     title: "Für Elise",
     credit: "Beethoven, 1810",
+    composer: "Ludwig van Beethoven",
+    year: 1867,
     genre: "classical",
     bpm: 66,
     meter: 1.5,
@@ -80,6 +106,8 @@ export const SONGS: readonly KaraokeSong[] = [
     id: "habanera",
     title: "Habanera",
     credit: "Bizet, Carmen, 1875",
+    composer: "Georges Bizet",
+    year: 1875,
     genre: "classical",
     bpm: 72,
     meter: 2,
@@ -92,6 +120,8 @@ export const SONGS: readonly KaraokeSong[] = [
     id: "brahms-lullaby",
     title: "Lullaby (Wiegenlied)",
     credit: "Brahms, 1868",
+    composer: "Johannes Brahms",
+    year: 1868,
     genre: "classical",
     bpm: 84,
     meter: 3,
@@ -104,6 +134,8 @@ export const SONGS: readonly KaraokeSong[] = [
     id: "oh-susanna",
     title: "Oh! Susanna",
     credit: "Stephen Foster, 1848",
+    composer: "Stephen Foster",
+    year: 1848,
     genre: "country",
     bpm: 120,
     pickup: 1,
@@ -116,7 +148,9 @@ export const SONGS: readonly KaraokeSong[] = [
   {
     id: "clementine",
     title: "Oh My Darling, Clementine",
-    credit: "Traditional, 1884",
+    credit: "Percy Montrose, 1884",
+    composer: "Percy Montrose",
+    year: 1884,
     genre: "country",
     bpm: 132,
     meter: 3,
@@ -129,6 +163,8 @@ export const SONGS: readonly KaraokeSong[] = [
     id: "round-the-mountain",
     title: "She'll Be Coming 'Round the Mountain",
     credit: "Traditional",
+    composer: "Traditional",
+    year: 1899,
     genre: "country",
     bpm: 144,
     pickup: 1,
@@ -142,6 +178,8 @@ export const SONGS: readonly KaraokeSong[] = [
     id: "greensleeves",
     title: "Greensleeves",
     credit: "Traditional, 16th century",
+    composer: "Traditional",
+    year: 1580,
     genre: "folk",
     bpm: 168,
     meter: 6,
@@ -155,6 +193,8 @@ export const SONGS: readonly KaraokeSong[] = [
     id: "scarborough-fair",
     title: "Scarborough Fair",
     credit: "Traditional",
+    composer: "Traditional",
+    year: 1891,
     genre: "folk",
     bpm: 112,
     meter: 3,
@@ -166,6 +206,8 @@ export const SONGS: readonly KaraokeSong[] = [
     id: "my-bonnie",
     title: "My Bonnie Lies over the Ocean",
     credit: "Traditional",
+    composer: "Traditional",
+    year: 1881,
     genre: "folk",
     bpm: 126,
     meter: 3,
@@ -180,6 +222,8 @@ export const SONGS: readonly KaraokeSong[] = [
     id: "amazing-grace",
     title: "Amazing Grace",
     credit: "John Newton, 1779; tune New Britain, 1829",
+    composer: "John Newton and William Walker",
+    year: 1829,
     genre: "gospel",
     bpm: 84,
     meter: 3,
@@ -193,6 +237,8 @@ export const SONGS: readonly KaraokeSong[] = [
     id: "michael-row",
     title: "Michael, Row the Boat Ashore",
     credit: "Traditional spiritual",
+    composer: "Traditional spiritual",
+    year: 1867,
     genre: "gospel",
     bpm: 100,
     pickup: 1,
@@ -203,7 +249,9 @@ export const SONGS: readonly KaraokeSong[] = [
   {
     id: "saints",
     title: "When the Saints Go Marching In",
-    credit: "Traditional",
+    credit: "James Milton Black, 1896",
+    composer: "James Milton Black",
+    year: 1896,
     genre: "jazz",
     bpm: 152,
     pickup: 3,
@@ -215,6 +263,8 @@ export const SONGS: readonly KaraokeSong[] = [
     id: "the-entertainer",
     title: "The Entertainer",
     credit: "Scott Joplin, 1902",
+    composer: "Scott Joplin",
+    year: 1902,
     genre: "ragtime",
     bpm: 52,
     meter: 2,
@@ -230,6 +280,8 @@ export const SONGS: readonly KaraokeSong[] = [
     id: "daisy-bell",
     title: "Daisy Bell (Bicycle Built for Two)",
     credit: "Harry Dacre, 1892",
+    composer: "Harry Dacre",
+    year: 1892,
     genre: "tin-pan-alley",
     bpm: 168,
     meter: 3,
@@ -242,6 +294,8 @@ export const SONGS: readonly KaraokeSong[] = [
     id: "ball-game",
     title: "Take Me Out to the Ball Game",
     credit: "Albert Von Tilzer, 1908",
+    composer: "Albert Von Tilzer",
+    year: 1908,
     genre: "tin-pan-alley",
     bpm: 168,
     meter: 3,
@@ -253,6 +307,8 @@ export const SONGS: readonly KaraokeSong[] = [
     id: "la-cucaracha",
     title: "La Cucaracha",
     credit: "Traditional, Mexico",
+    composer: "Traditional",
+    year: 1915,
     genre: "latin",
     bpm: 168,
     pickup: 1.5,
@@ -266,6 +322,8 @@ export const SONGS: readonly KaraokeSong[] = [
     id: "sakura",
     title: "Sakura Sakura",
     credit: "Traditional, Japan",
+    composer: "Traditional",
+    year: 1888,
     genre: "world",
     bpm: 72,
     key: { tonic: 9, minor: true },
@@ -278,6 +336,8 @@ export const SONGS: readonly KaraokeSong[] = [
     id: "mo-li-hua",
     title: "Mo Li Hua (Jasmine Flower)",
     credit: "Traditional, China",
+    composer: "Traditional",
+    year: 1804,
     genre: "world",
     bpm: 72,
     melody:
@@ -290,6 +350,8 @@ export const SONGS: readonly KaraokeSong[] = [
     id: "jingle-bells",
     title: "Jingle Bells",
     credit: "James Lord Pierpont, 1857",
+    composer: "James Lord Pierpont",
+    year: 1857,
     genre: "holiday",
     bpm: 132,
     melody:
@@ -302,6 +364,8 @@ export const SONGS: readonly KaraokeSong[] = [
     id: "deck-the-halls",
     title: "Deck the Halls",
     credit: "Traditional, Wales",
+    composer: "Traditional",
+    year: 1784,
     genre: "holiday",
     bpm: 132,
     melody:
@@ -312,6 +376,8 @@ export const SONGS: readonly KaraokeSong[] = [
     id: "merry-christmas",
     title: "We Wish You a Merry Christmas",
     credit: "Traditional, England",
+    composer: "Traditional",
+    year: 1900,
     genre: "holiday",
     bpm: 144,
     meter: 3,
@@ -324,6 +390,8 @@ export const SONGS: readonly KaraokeSong[] = [
     id: "silent-night",
     title: "Silent Night",
     credit: "Franz Gruber, 1818",
+    composer: "Franz Xaver Gruber",
+    year: 1818,
     genre: "holiday",
     bpm: 150,
     meter: 6,
@@ -335,6 +403,8 @@ export const SONGS: readonly KaraokeSong[] = [
     id: "auld-lang-syne",
     title: "Auld Lang Syne",
     credit: "Robert Burns, 1788; traditional tune",
+    composer: "Robert Burns",
+    year: 1796,
     genre: "holiday",
     bpm: 92,
     pickup: 1,
@@ -346,6 +416,8 @@ export const SONGS: readonly KaraokeSong[] = [
     id: "happy-birthday",
     title: "Happy Birthday to You",
     credit: "Mildred and Patty Hill, 1893",
+    composer: "Mildred and Patty Hill",
+    year: 1893,
     genre: "party",
     bpm: 108,
     meter: 3,
@@ -354,6 +426,15 @@ export const SONGS: readonly KaraokeSong[] = [
       "G4/0.75 G4/0.25 A4/1 G4/1 C5/1 B4/2 G4/0.75 G4/0.25 A4/1 G4/1 D5/1 C5/2 " +
       "G4/0.75 G4/0.25 G5/1 E5/1 C5/1 B4/1 A4/2 F5/0.75 F5/0.25 E5/1 C5/1 D5/1 C5/2",
   },
+];
+
+/** The whole songbook, the core songs first. */
+export const SONGS: readonly KaraokeSong[] = [
+  ...CORE,
+  ...AMERICA,
+  ...STAGE,
+  ...WORLD,
+  ...CLASSIC,
 ];
 
 /** One sung note of a melody: its start (beats from the top) and pitch. */

@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { BUS_STOPS } from "../src/game/city/transit.ts";
+import { SONGS } from "../src/game/karaokeSongs.ts";
 
 // Every test forces the low tier: headless WebGL is SwiftShader on the CPU.
 // Most also use still=1 so the scene renders a few frames and then idles.
@@ -3145,9 +3146,11 @@ test("the Karaoke Loft: a song at the mic ends in a prize", async ({
 }) => {
   const errors = collectErrors(page);
   await page.goto(`${STILL}&room=karaoke`);
-  // the songbook: 25 public-domain songs; this one is short
+  // the songbook: every public-domain song is on the list; this one is short
   const book = page.getByLabel("Song");
-  await expect(book.getByRole("option")).toHaveCount(25, { timeout: 150_000 });
+  await expect(book.getByRole("option")).toHaveCount(SONGS.length, {
+    timeout: 150_000,
+  });
   await book.selectOption("happy-birthday");
   await page.getByRole("button", { name: "Sing a song" }).click();
   const panel = page.getByRole("region", { name: "Karaoke" });
