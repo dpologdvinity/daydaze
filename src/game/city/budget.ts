@@ -34,6 +34,7 @@ import {
   treeLights,
   WARM_LIGHTS,
 } from "./seasonSpots.ts";
+import { CITY_FLEET, shipModel } from "../ships.ts";
 import { BAY_TRIANGLES, HOUSE_MODELS, type BayInstance } from "./nyc.ts";
 import { ALL_GROWTH } from "./growth.ts";
 import {
@@ -128,6 +129,10 @@ export const MODEL_COST: Readonly<
   "park/blanket": { tris: 128, parts: 2 },
   "beach/carousel": { tris: 806, parts: 5 },
   "beach/chaise": { tris: 300, parts: 2 },
+  // the offshore fleet's far twins (src/game/ships.ts), one part each
+  "ships/cruise": { tris: 744, parts: 1 },
+  "ships/sail-lo": { tris: 1072, parts: 1 },
+  "ships/viking": { tris: 1638, parts: 1 },
   "beach/cone": { tris: 250, parts: 2 },
   "beach/hotdog-cart": { tris: 300, parts: 8 },
   "beach/lifeguard": { tris: 500, parts: 7 },
@@ -192,6 +197,7 @@ export function modelsInBudget(): string[] {
         k === "park/lawn-chair",
     ),
     ...FURNITURE_KINDS.map(furnitureModel),
+    ...CITY_FLEET.map((s) => shipModel(s.kind, true)),
     ...Object.keys(GROWTH_MODELS)
       .filter((k): k is GrowthKind => k in GROWTH_MODELS)
       .map(growthModel),
@@ -215,6 +221,10 @@ const JEEPNEY_DRAWS = 6;
 /** Draws for the player's own car on top of its model's parts: the underglow
  * pool and the two headlight beams. */
 const OWN_CAR_EXTRAS = 3;
+
+/** Meters from her within which the offshore fleet counts: the world camera's
+ * far plane is 600 and the camera trails her by a few more. */
+const SHIP_RANGE = 640;
 
 /** Traffic.tsx draws vehicles out to this many meters on the low tier. */
 const LOW_TRAFFIC_RANGE = 80;
@@ -576,6 +586,15 @@ export function lowTierCost(at: Vec2): {
     if (!cost) throw new Error(`no cost for ${model}`);
     drawCalls += cost.parts;
     triangles += cost.tris * n;
+  }
+  // the horizon's ships are separate meshes (they rock), so each one costs its
+  // model's parts; drawn out to the camera's far plane (600 m) however she is
+  // looking, buildings or no, so counted wherever they are in range
+  for (const ship of CITY_FLEET) {
+    if (away(ship.at[0], ship.at[1]) > SHIP_RANGE) continue;
+    const cost = costOf(shipModel(ship.kind, true));
+    drawCalls += cost.parts;
+    triangles += cost.tris;
   }
   // the club queues: one draw call per look present, each person as dear as the dearest
   const queued = QUEUE_SPOTS.filter(
