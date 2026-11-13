@@ -846,6 +846,8 @@ const SHOTS: {
         await page.waitForTimeout(40_000);
       },
       async (page) => {
+        // the debug room list (the hook needs ?debug=1) would cover her
+        await page.addStyleTag({ content: "nav.debug { display: none }" });
         await page.evaluate(
           (r) =>
             (
