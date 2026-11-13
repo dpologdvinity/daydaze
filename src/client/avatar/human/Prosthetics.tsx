@@ -101,5 +101,3 @@ export function Prosthetics({
   }, [worn, limbs, shinHide]);
   return null;
 }
-
-useGLTF.preload(URL);

@@ -25,6 +25,7 @@ import {
   modelSuffix,
   FACE_PRESETS,
   limbsOf,
+  LIMB_SPOTS,
   FIGURES,
   FACE_SLIDERS,
   faceOf,
@@ -1264,14 +1265,17 @@ export function HumanDoll({
         bones={body.bones}
         restInverse={body.restInverse}
       />
-      <Suspense fallback={null}>
-        <Prosthetics
-          limbs={limbsOf(look)}
-          bones={body.bones}
-          restInverse={body.restInverse}
-          shinHide={body.shinHide}
-        />
-      </Suspense>
+      {/* the pylon's file (356 KB) is fetched only for a doll that wears one */}
+      {LIMB_SPOTS.some((spot) => limbsOf(look)[spot.id] === "prosthetic") && (
+        <Suspense fallback={null}>
+          <Prosthetics
+            limbs={limbsOf(look)}
+            bones={body.bones}
+            restInverse={body.restInverse}
+            shinHide={body.shinHide}
+          />
+        </Suspense>
+      )}
       {gait.seated && (
         <Suspense fallback={null}>
           <Wheelchair walk={walk} />

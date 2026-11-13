@@ -108,6 +108,16 @@ for (const name of names) {
       n: list.length,
       total: list.reduce((n, e) => n + e.bytes, 0),
       top: list.slice(0, 8),
+      // bytes per folder (the two path segments before the file name)
+      folders: Object.entries(
+        list.reduce<Record<string, number>>((acc, e) => {
+          const k = e.name.split("/").slice(-3, -1).join("/");
+          acc[k] = (acc[k] ?? 0) + e.bytes;
+          return acc;
+        }, {}),
+      )
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 14),
     };
   });
   const metrics = async () =>
@@ -186,6 +196,9 @@ for (const name of names) {
   console.log(`${name}: ten-frames ${ten} ms`);
   console.log(
     `  assets: ${assets.n} requests, ${(assets.total / 1e6).toFixed(2)} MB; heaviest: ${assets.top.map((e) => `${e.name.split("/").slice(-2).join("/")} ${(e.bytes / 1e3).toFixed(0)}k`).join(", ")}`,
+  );
+  console.log(
+    `  folders: ${assets.folders.map(([k, v]) => `${k} ${(v / 1e3).toFixed(0)}k`).join(", ")}`,
   );
   for (const r of rows) console.log(r);
   await ctx.close();
