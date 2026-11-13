@@ -39,7 +39,11 @@ void main() {
   centre.z += ${TOWARD_CAMERA};
   centre.xy += position.xy * size;
   vTint = instanceColor;
-  vFade = 1.0 - smoothstep( 90.0, 150.0, dist );
+  // a lamp only shines out of the side it faces (the matrix's z axis points
+  // out of the lamp), so a head lamp is not lit through the car from behind
+  vec3 outward = normalize( mat3( modelViewMatrix ) * instanceMatrix[ 2 ].xyz );
+  float facing = dot( outward, normalize( -centre.xyz ) );
+  vFade = ( 1.0 - smoothstep( 90.0, 150.0, dist ) ) * smoothstep( -0.1, 0.45, facing );
   gl_Position = projectionMatrix * centre;
 }`;
 
@@ -109,6 +113,14 @@ export type CarGlow = {
 
 const spot = new THREE.Vector3();
 const matrix = new THREE.Matrix4();
+const headFacing = new THREE.Quaternion();
+const tailFacing = new THREE.Quaternion();
+const turnAround = new THREE.Quaternion().setFromAxisAngle(
+  new THREE.Vector3(0, 1, 0),
+  Math.PI,
+);
+const carScale = new THREE.Vector3();
+const scale = new THREE.Vector3();
 
 /** The glow for up to `capacity` cars. */
 export function createCarGlow(capacity: number): CarGlow {
@@ -143,14 +155,18 @@ export function createCarGlow(capacity: number): CarGlow {
     add(body, car) {
       if (pools.count >= capacity) return false;
       const { head, tail } = BODY_LAMPS[body];
-      for (const [lamp, size, out] of [
-        [head, HEAD_HALO, OUT],
-        [tail, TAIL_HALO, -OUT],
+      car.decompose(spot, headFacing, carScale);
+      tailFacing.copy(headFacing).multiply(turnAround);
+      for (const [lamp, size, out, quat] of [
+        [head, HEAD_HALO, OUT, headFacing],
+        [tail, TAIL_HALO, -OUT, tailFacing],
       ] as const)
         for (const side of [1, -1]) {
-          matrix.makeScale(size, size, size);
           spot.set(side * lamp[0], lamp[1], lamp[2] + out).applyMatrix4(car);
-          halos.setMatrixAt(halos.count++, matrix.setPosition(spot));
+          halos.setMatrixAt(
+            halos.count++,
+            matrix.compose(spot, quat, scale.setScalar(size)),
+          );
         }
       // the pool starts just beyond the nose and runs ahead, in the car's own frame
       matrix

@@ -492,7 +492,10 @@ function trafficClose(name: string, hour: number): (typeof SHOTS)[number] {
       ] as const) {
         await find(toward);
         await page.setViewportSize(full);
-        await page.clock.runFor(50);
+        // the resize lands on a timer and the canvas repaints a frame later
+        await page.clock.runFor(100);
+        await page.waitForTimeout(1500);
+        await page.clock.runFor(100);
         await page.waitForTimeout(2500);
         writeFileSync(
           `docs/screenshots/${name}-0${n}.png`,
