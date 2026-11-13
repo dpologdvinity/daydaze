@@ -43,6 +43,42 @@ export class Props {
     rot: V3 = [0, 0, 0],
     scale: V3 = [1, 1, 1],
   ): this {
+    const g = this.posed(geo, ["position", "normal"], at, rot, scale);
+    const c = new THREE.Color(color);
+    const colors = new Float32Array(g.attributes.position.count * 3);
+    for (let i = 0; i < colors.length; i += 3) colors.set([c.r, c.g, c.b], i);
+    g.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    this.parts.push(g);
+    return this;
+  }
+
+  /**
+   * Like `add`, for a model that carries its own vertex colors as a float
+   * vec3 (the beach props, see useBeachProps): they are kept instead of
+   * tinted. Throws if `geo` has none.
+   */
+  addPainted(
+    geo: THREE.BufferGeometry,
+    at: V3 = [0, 0, 0],
+    rot: V3 = [0, 0, 0],
+    scale: V3 = [1, 1, 1],
+  ): this {
+    if (!geo.getAttribute("color"))
+      throw new Error("addPainted: the model has no vertex colors");
+    this.parts.push(
+      this.posed(geo, ["position", "normal", "color"], at, rot, scale),
+    );
+    return this;
+  }
+
+  /** A de-indexed copy of `geo` with only the `keep` attributes, moved into this frame. */
+  private posed(
+    geo: THREE.BufferGeometry,
+    keep: readonly string[],
+    at: V3,
+    rot: V3,
+    scale: V3,
+  ): THREE.BufferGeometry {
     const local = new THREE.Matrix4().compose(
       new THREE.Vector3(...at),
       new THREE.Quaternion().setFromEuler(new THREE.Euler(...rot)),
@@ -50,15 +86,10 @@ export class Props {
     );
     const g = geo.index ? geo.toNonIndexed() : geo.clone();
     for (const name of Object.keys(g.attributes)) {
-      if (name !== "position" && name !== "normal") g.deleteAttribute(name);
+      if (!keep.includes(name)) g.deleteAttribute(name);
     }
     g.applyMatrix4(this.frame.clone().multiply(local));
-    const c = new THREE.Color(color);
-    const colors = new Float32Array(g.attributes.position.count * 3);
-    for (let i = 0; i < colors.length; i += 3) colors.set([c.r, c.g, c.b], i);
-    g.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-    this.parts.push(g);
-    return this;
+    return g;
   }
 
   /**

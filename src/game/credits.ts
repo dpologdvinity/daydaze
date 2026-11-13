@@ -501,7 +501,8 @@ export const CREDITS: readonly {
         author: "Quaternius",
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/ships.html",
-        usedFor: "Marina sailboat, converted and optimized.",
+        usedFor:
+          "Marina sailboat, converted and optimized; the offshore fleet (cruise liner, sail ship, Viking boat, lifeboat) recolored to the house palette with lit windows, one draw call each (art/marina/build_fleet.py), at Starboard Marina and off Beachside.",
       },
       {
         title: "Yacht",
@@ -1127,6 +1128,14 @@ export const CREDITS: readonly {
         license: "CC-BY 3.0",
         url: "https://poly.pizza/m/eTXK45QuLQT",
         usedFor: "Lifeguard stands on the beach, decimated.",
+      },
+      {
+        title: "Let's go to the beach! - Beach themed diorama",
+        author: "Jef Belmans",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/none-b8784396e5f6424e88b036949164a473",
+        usedFor:
+          "The Water Park deck's and the hotel rooftop's sun beds, beach umbrellas (recolored in three palettes) and the deck's towels, cut out and straightened (art/beach/build_diorama.py); textures dropped for vertex colors.",
       },
       {
         title: "Orange Chaise Lounge Chair",

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import * as THREE from "three";
 import { POOL } from "../../../game/waterPark.ts";
+import { BEACH_PROPS, SUNBED, useBeachProps } from "../shared/beachProps.ts";
 import { Floor, type PickHandler } from "../shared/Floor.tsx";
 import { canvasTex } from "../shared/materials.ts";
 import { Props } from "./build.ts";
@@ -95,13 +96,14 @@ const LOUNGERS: readonly {
   { at: [-8.4, 0, 6.0], rot: Math.PI + 0.25, towel: ["#ff9a56", "#fff1dc"] },
 ];
 
+/** The diorama umbrellas lean toward -z, over the loungers; each palette is its own model. */
 const UMBRELLAS: readonly {
   at: [number, number, number];
-  colors: readonly string[];
+  model: "umbrella-pink" | "umbrella-sky" | "umbrella-mint";
 }[] = [
-  { at: [-0.7, 0, 6.3], colors: ["#ff3f9e", "#ffffff"] },
-  { at: [3.2, 0, 6.2], colors: ["#3fc2ff", "#ffd23f"] },
-  { at: [-9.4, 0, 6.6], colors: ["#7cf0c8", "#ff9a56"] },
+  { at: [-0.7, 0, 6.3], model: "umbrella-pink" },
+  { at: [3.2, 0, 6.2], model: "umbrella-sky" },
+  { at: [-9.4, 0, 6.6], model: "umbrella-mint" },
 ];
 
 const CABANAS: readonly [number, number, number][] = [
@@ -133,33 +135,8 @@ export const LIFEGUARD_SEAT: [number, number, number] = [
   POOL.z0 - 0.95,
 ];
 
-function loungerFrame(p: Props) {
-  p.add(new THREE.BoxGeometry(0.7, 0.08, 1.4), "#ffffff", [0, 0.3, 0.15]);
-  p.add(
-    new THREE.BoxGeometry(0.7, 0.08, 0.8),
-    "#ffffff",
-    [0, 0.55, -0.7],
-    [-0.65, 0, 0],
-  );
-  for (const x of [-0.3, 0.3]) {
-    for (const z of [-0.45, 0.75]) {
-      p.add(new THREE.CylinderGeometry(0.03, 0.03, 0.28, 6), "#d9d9e0", [
-        x,
-        0.14,
-        z,
-      ]);
-    }
-  }
-}
-
-function umbrellaPole(p: Props) {
-  p.add(
-    new THREE.CylinderGeometry(0.035, 0.035, 2.4, 8),
-    "#ffffff",
-    [0, 1.2, 0],
-  );
-  p.add(new THREE.SphereGeometry(0.07, 10, 8), "#ffffff", [0, 2.62, 0]);
-}
+/** The sun bed is centered on its frame; the lounger spots keep the old box one's middle. */
+const LOUNGER_SHIFT = 0.15;
 
 function cabanaFrame(p: Props) {
   p.add(new THREE.BoxGeometry(3.2, 0.12, 2.6), "#fff1dc", [0, 0.06, 0]);
@@ -279,16 +256,34 @@ const TOWELS = LOUNGERS.map((l) => {
   tex.rotation = Math.PI / 2;
   return tex;
 });
-const CANOPIES = UMBRELLAS.map((u) => stripes(u.colors, 2));
+
+/** The diorama's draped towel, fitted to lie over the bed's cushion line (0.56 by 1.3 m). */
+function towelFitted(source: THREE.BufferGeometry) {
+  const g = source.clone();
+  g.computeBoundingBox();
+  const size = g.boundingBox?.getSize(new THREE.Vector3());
+  if (size && size.x > size.z) g.rotateY(Math.PI / 2);
+  g.computeBoundingBox();
+  const box = g.boundingBox;
+  if (!box) return g;
+  const c = box.getCenter(new THREE.Vector3());
+  g.translate(-c.x, -box.min.y, -c.z);
+  const fit = box.getSize(new THREE.Vector3());
+  return g.scale(0.56 / fit.x, 0.5, 1.3 / fit.z);
+}
 
 /** Every colored prop on the deck, merged into one mesh. */
-function buildProps() {
+function buildProps(
+  prop: (name: (typeof BEACH_PROPS)[number]) => THREE.BufferGeometry,
+) {
   const root = new Props();
   LOUNGERS.forEach((l) =>
-    loungerFrame(root.within(l.at[0], l.at[1], l.at[2], l.rot)),
+    root
+      .within(l.at[0], l.at[1], l.at[2], l.rot)
+      .addPainted(prop("sunbed"), [0, 0, LOUNGER_SHIFT]),
   );
   UMBRELLAS.forEach((u) =>
-    umbrellaPole(root.within(u.at[0], u.at[1], u.at[2])),
+    root.within(u.at[0], u.at[1], u.at[2]).addPainted(prop(u.model)),
   );
   CABANAS.forEach((c) => cabanaFrame(root.within(c[0], c[1], c[2])));
   snackFrame(root.within(SNACK[0], SNACK[1], SNACK[2], Math.PI / 2));
@@ -302,7 +297,9 @@ function buildProps() {
 
 /** The deck around the pool: tiles, loungers, shade, snacks and palms. */
 export function Deck({ onPick }: { onPick: PickHandler }) {
-  const props = useMemo(buildProps, []);
+  const prop = useBeachProps(BEACH_PROPS);
+  const props = useMemo(() => buildProps(prop), [prop]);
+  const towel = useMemo(() => towelFitted(prop("towel-draped")), [prop]);
   return (
     <>
       <Floor
@@ -322,17 +319,11 @@ export function Deck({ onPick }: { onPick: PickHandler }) {
       <mesh geometry={props} material={PROPS} />
       {LOUNGERS.map((l, i) => (
         <group key={i} position={l.at} rotation-y={l.rot}>
-          <mesh position={[0, 0.345, 0.2]} rotation-x={-Math.PI / 2}>
-            <planeGeometry args={[0.62, 1.3]} />
+          <mesh
+            geometry={towel}
+            position={[0, SUNBED.seat + 0.005, LOUNGER_SHIFT + 0.35]}
+          >
             <meshToonMaterial map={TOWELS[i]} />
-          </mesh>
-        </group>
-      ))}
-      {UMBRELLAS.map((u, i) => (
-        <group key={i} position={u.at}>
-          <mesh position-y={2.35}>
-            <coneGeometry args={[1.3, 0.5, 16, 1, true]} />
-            <meshToonMaterial map={CANOPIES[i]} side={THREE.DoubleSide} />
           </mesh>
         </group>
       ))}

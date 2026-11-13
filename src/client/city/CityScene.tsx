@@ -11,6 +11,7 @@ import {
 } from "../../game/city/tuning.ts";
 import { KINDS, planCity, type Kind } from "../../game/city/plan.ts";
 import { baysWanted, planView } from "../../game/city/budget.ts";
+import { CITY_FLEET } from "../../game/ships.ts";
 import type { Vec2 } from "../../game/walk.ts";
 import type { PickHandler } from "../rooms/shared/Floor.tsx";
 import { useReducedMotion } from "../motion.ts";
@@ -18,6 +19,7 @@ import type { Player } from "../world/PlayerController.tsx";
 import { useQuality } from "../world/quality.ts";
 import { StreetFood } from "./StreetFood.tsx";
 import { CitySky } from "./CitySky.tsx";
+import { Fleet } from "./Fleet.tsx";
 import { Ocean } from "./Ocean.tsx";
 import { Fireworks } from "./Fireworks.tsx";
 import { Parade } from "./Parade.tsx";
@@ -257,6 +259,10 @@ export function CityScene({
         <meshStandardMaterial color="#3a3733" roughness={0.9} />
       </mesh>
       <Ocean />
+      {/* the horizon's ships, far twins, riding the swell past the surf */}
+      <Suspense fallback={null}>
+        <Fleet fleet={CITY_FLEET} waterY={-0.05} night={day.neon} far />
+      </Suspense>
       <BeachLife />
       <VolleyCourt spot={BEACH_COURT} prize="volleyball" player={player} />
       <Fireworks />

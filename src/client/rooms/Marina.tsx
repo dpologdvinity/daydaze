@@ -1,6 +1,6 @@
 import { Stars, useGLTF } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { playClick } from "../../audio/worldSounds.ts";
 import {
@@ -13,6 +13,8 @@ import {
   YACHTS,
 } from "../../game/marina.ts";
 import { ROOMS } from "../../game/rooms.ts";
+import { MARINA_FLEET } from "../../game/ships.ts";
+import { Fleet } from "../city/Fleet.tsx";
 import { Creature } from "../creatures/Creature.tsx";
 import { SwimmingCreature } from "../creatures/Swimmer.tsx";
 import type { FishKind } from "../../game/creatures.ts";
@@ -401,7 +403,7 @@ export function Marina({
       <group rotation-y={Math.PI}>
         <Bottles rows={ROWS} seed={37} />
       </group>
-      <fog attach="fog" args={["#0a1430", 30, 120]} />
+      <fog attach="fog" args={["#0a1430", 30, 170]} />
       <Stars
         radius={90}
         depth={20}
@@ -469,6 +471,10 @@ export function Marina({
       {YACHTS.map((y, i) => (
         <Yacht key={y.name} {...y} seed={i * 2.3} />
       ))}
+      {/* the offshore fleet: a liner on the horizon, tall ships beside the jet-ski course */}
+      <Suspense fallback={null}>
+        <Fleet fleet={MARINA_FLEET} waterY={WATER_Y} night={1} />
+      </Suspense>
       {/* the moon low over the sea, and its path on the water */}
       <mesh position={[-20, 14, -90]}>
         <circleGeometry args={[4, 32]} />

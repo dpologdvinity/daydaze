@@ -28,6 +28,19 @@ const furnitureReady = async (page: Page) => {
     { timeout: 300_000 },
   );
 };
+/** Waits for the offshore fleet's models (Fleet sets data-fleet) and the first frames. */
+const fleetReady = async (page: Page) => {
+  await page.waitForFunction(
+    () => {
+      const canvas = document.querySelector("canvas");
+      return (
+        Number(canvas?.dataset.fleet) > 0 && Number(canvas?.dataset.frames) >= 6
+      );
+    },
+    null,
+    { timeout: 300_000 },
+  );
+};
 /** Waits for the New York bays and the furniture (NycFacades sets data-bays). */
 const cityReady = async (page: Page) => {
   await furnitureReady(page);
@@ -680,6 +693,12 @@ const SHOTS: {
   { name: "gridiron", query: "room=gridiron" },
   { name: "driving-range", query: "room=driving-range" },
   { name: "marina", query: "room=marina" },
+  {
+    // out past the dock end: the liner on the horizon, the tall ships beside the course
+    name: "marina-fleet",
+    query: "room=marina&view=room&cam=0,3.2,-8,0,5,-38",
+    act: fleetReady,
+  },
   { name: "yacht", query: "room=yacht" },
   { name: "courtside", query: "room=courtside" },
   { name: "catwalk", query: "room=catwalk" },
@@ -786,6 +805,11 @@ const SHOTS: {
   { name: "plaza-detail", query: "room=plaza&view=detail" },
   { name: "plaza", query: "room=plaza" },
   { name: "plaza-face", query: "room=plaza&view=face" },
+  {
+    // the sun beds, their towels and the umbrellas, from the pool's far side
+    name: "water-park-loungers",
+    query: "room=water-park&cam=-3,2.6,11.5,1,0.4,5.6",
+  },
   { name: "water-park-wide", query: "room=water-park" },
   { name: "water-park-swimsuit", query: "room=water-park&view=full" },
   {
@@ -1151,6 +1175,19 @@ const SHOTS: {
       );
     },
   })),
+  {
+    // from the sand out to sea: the liner, two sail ships and a Viking boat
+    name: "city-horizon-day",
+    query:
+      "room=city&view=room&time=15:00&at=-60,316&cam=-60,2.6,316,-150,24,585",
+    act: fleetReady,
+  },
+  {
+    name: "city-horizon-night",
+    query:
+      "room=city&view=room&time=22:00&at=-60,316&cam=-60,2.6,316,-150,24,585",
+    act: fleetReady,
+  },
   {
     // sunbathers' umbrellas, a lifeguard stand and the dune fence
     name: "city-beach",
