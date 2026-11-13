@@ -3148,7 +3148,9 @@ test("the Karaoke Loft: a song at the mic ends in a prize", async ({
   await page.goto(`${STILL}&room=karaoke`);
   // the songbook: every public-domain song is on the list; this one is short
   const book = page.getByLabel("Song");
-  await expect(book.getByRole("option")).toHaveCount(SONGS.length, { timeout: 150_000 });
+  await expect(book.getByRole("option")).toHaveCount(SONGS.length, {
+    timeout: 150_000,
+  });
   await book.selectOption("happy-birthday");
   await page.getByRole("button", { name: "Sing a song" }).click();
   const panel = page.getByRole("region", { name: "Karaoke" });
