@@ -229,7 +229,7 @@ const SURFACE_COLOR = {
   // Beachside at night: weathered planks, moonlit sand
   boardwalk: "#d6cbbb",
   sand: "#e6d3ab",
-  lawn: "#2e5e3a",
+  lawn: "#88c46a",
 };
 
 type Box = { x0: number; z0: number; x1: number; z1: number };
