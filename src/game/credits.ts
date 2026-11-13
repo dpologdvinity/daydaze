@@ -1129,6 +1129,14 @@ export const CREDITS: readonly {
         usedFor: "Lifeguard stands on the beach, decimated.",
       },
       {
+        title: "Let's go to the beach! - Beach themed diorama",
+        author: "Jef Belmans",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/none-b8784396e5f6424e88b036949164a473",
+        usedFor:
+          "The Water Park deck's and the hotel rooftop's sun beds, beach umbrellas (recolored in three palettes) and the deck's towels, cut out and straightened (art/beach/build_diorama.py); textures dropped for vertex colors.",
+      },
+      {
         title: "Orange Chaise Lounge Chair",
         author: "S. Paul Michael",
         license: "CC-BY 3.0",

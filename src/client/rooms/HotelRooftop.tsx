@@ -28,6 +28,7 @@ import { Doll } from "../avatar/Doll.tsx";
 import { surface } from "../city/worldTexture.ts";
 import { useReducedMotion } from "../motion.ts";
 import { BarStools } from "./shared/BarStools.tsx";
+import { BEACH_PROPS, SUNBED, useBeachProps } from "./shared/beachProps.ts";
 import { Batch } from "./shared/batch.ts";
 import { Bottles } from "./shared/Bottles.tsx";
 import { plant, stringLights } from "./shared/details.ts";
@@ -72,7 +73,11 @@ const STEEL = new THREE.MeshStandardMaterial({
   metalness: 0.5,
   roughness: 0.3,
 });
-const SHADE = ["#ff4fb3", "#ffffff"] as const;
+/** The umbrellas paint themselves: pink and white gores in the model's vertex colors. */
+const UMBRELLA = new THREE.MeshStandardMaterial({
+  vertexColors: true,
+  roughness: 0.85,
+});
 
 const BARTENDER_LOOK: Look = {
   skin: "#94603f",
@@ -187,6 +192,7 @@ function skylineGeometry() {
 }
 
 function useDeck() {
+  const prop = useBeachProps(BEACH_PROPS);
   return useMemo(() => {
     const b = new Batch();
     const pw = POOL.x1 - POOL.x0;
@@ -250,43 +256,25 @@ function useDeck() {
       position: [TUB[0], 0.62, TUB[1]],
       rotation: [Math.PI / 2, 0, 0],
     });
-    // loungers: a teak frame, a pink cushion, the back propped up poolside;
-    // an umbrella between each pair
+    // loungers: the diorama's teak sun bed under a pink cushion, the back
+    // propped up poolside; an umbrella over every pair
+    const bed = prop("sunbed").clone();
+    bed.deleteAttribute("color"); // the teak material paints it
     for (const x of LOUNGERS) {
-      b.add(new THREE.BoxGeometry(0.7, 0.24, LOUNGER_HALF * 2), TEAK, {
-        position: [x, 0.22, LOUNGER_Z],
-      });
+      b.add(bed, TEAK, { position: [x, 0, LOUNGER_Z] });
       b.add(new THREE.BoxGeometry(0.64, 0.06, LOUNGER_HALF * 1.3), CUSHION, {
-        position: [x, 0.37, LOUNGER_Z + LOUNGER_HALF * 0.33],
+        position: [x, SUNBED.seat + 0.03, LOUNGER_Z + LOUNGER_HALF * 0.29],
       });
-      b.add(new THREE.BoxGeometry(0.64, 0.06, 0.7), CUSHION, {
-        position: [x, 0.55, LOUNGER_Z - LOUNGER_HALF + 0.3],
-        rotation: [0.6, 0, 0],
+      b.add(new THREE.BoxGeometry(0.64, 0.06, 0.62), CUSHION, {
+        position: [x, SUNBED.seat + 0.19, LOUNGER_Z - LOUNGER_HALF + 0.3],
+        rotation: [0.62, 0, 0],
       });
     }
-    LOUNGERS.slice(0, -1).forEach((x, i) => {
-      const ux = x + 1.2;
-      b.add(new THREE.CylinderGeometry(0.03, 0.03, 2.4, 8), STEEL, {
-        position: [ux, 1.2, LOUNGER_Z],
-      });
-      for (let k = 0; k < 8; k++)
-        b.add(
-          new THREE.ConeGeometry(
-            1.1,
-            0.4,
-            3,
-            1,
-            true,
-            (k / 8) * Math.PI * 2,
-            Math.PI / 4,
-          ),
-          surface("fabric_pattern_05", {
-            scale: 2,
-            color: SHADE[(k + i) % 2] ?? "#ffffff",
-          }),
-          { position: [ux, 2.45, LOUNGER_Z] },
-        );
-    });
+    LOUNGERS.slice(0, -1).forEach((x) =>
+      b.add(prop("umbrella-pink"), UMBRELLA, {
+        position: [x + 1.2, 0, LOUNGER_Z],
+      }),
+    );
     // the pool bar: stucco front, teak top, a back bar of bottles
     const bd = BAR.z1 - BAR.z0;
     const bz = (BAR.z0 + BAR.z1) / 2;
@@ -347,7 +335,7 @@ function useDeck() {
     stringLights(b, [x0 + 0.2, 3, z1 - 0.4], [x0 + 0.2, 3, -2], 12, "#ffd27a");
     stringLights(b, [x1 - 0.2, 3, z1 - 0.4], [x1 - 0.2, 3, -2], 12, "#ffd27a");
     return b.build();
-  }, []);
+  }, [prop]);
 }
 
 /** The pool's water: caustics drifting across a bright tiled blue. */

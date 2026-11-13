@@ -105,6 +105,7 @@ future imported packs belong here when they enter the game.
 | Red/White Beach Umbrella | S. Paul Michael | CC-BY 3.0 | https://poly.pizza/m/2li3sdSkmCI | Beach umbrellas on Beachside's sand, decimated. |
 | Blue/White Beach Umbrella | S. Paul Michael | CC-BY 3.0 | https://poly.pizza/m/1BLLDjRdxoa | Beach umbrellas on Beachside's sand, decimated. |
 | Lifeguard Tower | Daniel Doran | CC-BY 3.0 | https://poly.pizza/m/eTXK45QuLQT | Lifeguard stands on the beach, decimated. |
+| Let's go to the beach! - Beach themed diorama | Jef Belmans | CC-BY 4.0 | https://sketchfab.com/3d-models/none-b8784396e5f6424e88b036949164a473 | The Water Park deck's and the hotel rooftop's sun beds, beach umbrellas (recolored in three palettes) and the deck's towels, cut out and straightened (art/beach/build_diorama.py); textures dropped for vertex colors. |
 | Orange Chaise Lounge Chair | S. Paul Michael | CC-BY 3.0 | https://poly.pizza/m/8ir-Gw1ZObm | Lounge chairs under the beach umbrellas. |
 | Fence | Quaternius | CC0 1.0 | https://poly.pizza/m/e02PFKKhbr | The boardwalk's rail and the dune fence. |
 | Popcorn Cart | Don Carson | CC-BY 3.0 | https://poly.pizza/m/1T9untmohmj | Food carts on the boardwalk deck. |
