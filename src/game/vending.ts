@@ -3,6 +3,7 @@
 // street's stand in the city plan as "vending" furniture) and when the player
 // is close enough to use one. Pure: the rooms read the machines' footprints for
 // their blockers, the client draws them and opens the panel.
+import { hash } from "./city/hash.ts";
 import { spend } from "./wallet.ts";
 import type { Vec2 } from "./walk.ts";
 
@@ -14,12 +15,17 @@ export const SIZE = { width: 1.19, depth: 0.76 } as const;
 /** How near (meters from its center) the player must be to use a machine. */
 export const REACH = 2.4;
 
-/** The soda: made-up brands, a few coins each. */
+/** The soda: made-up brands, a few coins each, and the candy color of the
+ * brand's machines (the cans on the shelves match: art/vending/build_vending.py). */
 export const DRINKS = [
-  { id: "peach-fizz", name: "Pip's Peach Fizz", price: 2 },
-  { id: "glow-berry", name: "Glow Berry Pop", price: 2 },
-  { id: "mango-moon", name: "Mango Moon Soda", price: 3 },
+  { id: "peach-fizz", name: "Pip's Peach Fizz", price: 2, color: "#ff7f66" },
+  { id: "glow-berry", name: "Glow Berry Pop", price: 2, color: "#9b5de5" },
+  { id: "mango-moon", name: "Mango Moon Soda", price: 3, color: "#ffc233" },
 ] as const;
+
+/** The candy color of the machine at (x, z): one brand's, the same every load. */
+export const machineColor = (m: Pick<Machine, "x" | "z">): string =>
+  DRINKS[Math.floor(hash(m.x, m.z, 7) * DRINKS.length) % DRINKS.length].color;
 
 /** The machines inside the venues, each against a wall facing into the room. */
 export const ROOM_MACHINES = {

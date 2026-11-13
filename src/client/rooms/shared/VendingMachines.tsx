@@ -5,7 +5,12 @@
 import { useGLTF } from "@react-three/drei";
 import { useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";
-import { ROOM_MACHINES, type VendingRoom } from "../../../game/vending.ts";
+import {
+  ROOM_MACHINES,
+  machineColor,
+  type VendingRoom,
+} from "../../../game/vending.ts";
+import { paintVending } from "../../vending/vendingLook.ts";
 
 const URL = "/models/street/vending.glb";
 
@@ -20,12 +25,9 @@ export function VendingMachines({ room }: { room: VendingRoom }): JSX.Element {
           const mat = Array.isArray(o.material) ? o.material[0] : o.material;
           if (!(mat instanceof THREE.MeshStandardMaterial)) return;
           const own = mat.clone();
-          // the stock behind the glass is lit from within
-          if (own.name === "Vending_Machine") {
-            own.emissive.setScalar(1);
-            own.emissiveMap = own.map;
-            own.emissiveIntensity = 0.25;
-          }
+          paintVending(own, new THREE.Color(machineColor(m)));
+          // the stock window is lit from within (the glTF's emission map)
+          if (own.name === "Vending_Machine") own.emissiveIntensity = 0.5;
           o.material = own;
         });
         return { m, copy };

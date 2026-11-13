@@ -10,6 +10,7 @@ import {
   ROOM_MACHINES,
   buyDrink,
   machineBox,
+  machineColor,
   machineNear,
 } from "./vending.ts";
 
@@ -79,4 +80,14 @@ test("the soda has made-up brands and costs a few coins", () => {
   assert.ok(DRINKS.length >= 3);
   for (const d of DRINKS) assert.ok(d.price >= 1 && d.price <= 5);
   assert.equal(new Set(DRINKS.map((d) => d.id)).size, DRINKS.length);
+});
+
+test("machine colors are brand colors, steady, and not all one", () => {
+  const colors = DRINKS.map((d) => d.color) as string[];
+  const spots = Array.from({ length: 40 }, (_, i) => ({ x: i * 13.7, z: 9.9 }));
+  for (const m of spots) {
+    assert.ok(colors.includes(machineColor(m)));
+    assert.equal(machineColor(m), machineColor({ ...m }));
+  }
+  assert.ok(new Set(spots.map(machineColor)).size > 1);
 });
