@@ -131,8 +131,8 @@ const ROCKER: Vec3 = [4.1, 0, 2.7];
 const PORTRAIT: Vec3 = [2, 2.45, WALL_Z + 0.03];
 const MUSIC_BOX: Vec3 = [-0.4, 0.72, 1.75];
 /** The House Interior Pack model standing in for a piece (public/models/home/),
- * turned `yaw` so its long side runs along the wall. The crib, rocking horse,
- * crates and clock have no match in the pack and stay boxes. */
+ * turned `yaw` so its long side runs along the wall. Only the clock has no
+ * match in the pack and stays a box. */
 const MODELS: Partial<Record<Prop, { model: string; yaw?: number }>> = {
   sofa: { model: "sofa-medium" },
   table: { model: "table-small-2" },
@@ -145,6 +145,10 @@ const MODELS: Partial<Record<Prop, { model: string; yaw?: number }>> = {
   pews: { model: "sofa-small" },
   altar: { model: "drawer-5" },
   plants: { model: "plant-tall" },
+  // stand-ins: the pack has no crib, rocking horse or crates
+  crib: { model: "bed-single", yaw: Math.PI / 2 },
+  horse: { model: "stool" },
+  crates: { model: "nightstand-2" },
 };
 /** Everything wears the same dust: warm grey, dim, so the colors read as old. */
 const DUST = "#8c8076";
