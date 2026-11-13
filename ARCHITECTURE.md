@@ -62,7 +62,16 @@ floors, looks, saves, chat effects) so both sides agree on the rules.
   ground floor, cornice, fire escapes) and `city/NycFacades.tsx` draws them
   from `public/models/nyc/bays.glb` (`scripts/import-nyc.sh`), one
   InstancedMesh2 per bay (culled per instance); farther blocks keep the cheap
-  box walls. Streets are dressed from the same kit
+  box walls. Little Manila, Chinatown, Koreatown, the Arts District and
+  Uptown wear finished buildings instead (Quaternius' Ultimate Textured
+  Building Pack, `public/models/districts/lots.glb`,
+  `art/city/district_blocks.py`, `scripts/import-districts.sh`):
+  `game/city/districts.ts` tiles each street face with lots (model, palette
+  and made-up shop name from the district's look, `districtNames.ts`),
+  `city/DistrictLots.tsx` draws them with one palette atlas (the pack paints
+  with a 16-swatch palette, so one model wears every district's colors),
+  lit windows by night and a far twin past 24 m; `budget.ts` prices them.
+  Streets are dressed from the same kit
   (`public/models/street/kit.glb`, `scripts/import-street.sh`):
   `game/city/streetPieces.ts` cuts the sidewalks back from the cross streets
   and places corner blocks, crosswalks, stop and slow words, double yellow
