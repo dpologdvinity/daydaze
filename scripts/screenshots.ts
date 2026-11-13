@@ -828,6 +828,32 @@ const SHOTS: {
     30,
     20,
   ),
+  // a flinch from a tag and a fall with its get-up, full body on the street
+  ...(
+    [
+      ["react-flinch", "hit-left"],
+      ["react-fall", "trip-fall"],
+    ] as const
+  ).map(([name, id]) =>
+    actionStrip(
+      name,
+      "room=city&view=full&quality=low&debug=1",
+      async (page) => {
+        await page.waitForTimeout(40_000);
+      },
+      async (page) => {
+        await page.evaluate(
+          (r) =>
+            (
+              window as unknown as { daydazeReact: (id: string) => void }
+            ).daydazeReact(r),
+          id,
+        );
+      },
+      45,
+      60,
+    ),
+  ),
   // the player's own emotes, full body: a whisper and a laugh
   ...(["Whisper", "Laughing"] as const).map((emote) =>
     actionStrip(

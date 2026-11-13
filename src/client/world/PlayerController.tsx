@@ -46,6 +46,8 @@ import {
   type SeatMove,
 } from "../../game/seatMove.ts";
 import { pickTransition } from "../../game/dance/transitions.ts";
+import { reactionClip, type ReactionId } from "../../game/reactions.ts";
+import { reactingNow } from "./reaction.ts";
 import { seatedHold } from "../../game/dance/seatActions.ts";
 import { endJump, jumping, startJump } from "./jump.ts";
 import { TIME_SCALE } from "../timeScale.ts";
@@ -326,6 +328,7 @@ export function PlayerController({
   const [riding, setRiding] = useState<Mood | "lay" | null>(null);
   const shownRide = useRef<Mood | "lay" | null>(null);
   const walking = useRef(false);
+  const reactShown = useRef<ReactionId | null>(null);
   const tagAt = useRef<{
     el: HTMLDivElement | null;
     shown: boolean;
@@ -418,6 +421,20 @@ export function PlayerController({
       shownRide.current = rideMood;
       setRiding(rideMood);
     }
+    // a reaction (a flinch from a tag, a trip) plays its clip on her doll and
+    // holds her where she stands until it is over
+    const reacting = reactingNow();
+    if (reacting !== reactShown.current) {
+      reactShown.current = reacting;
+      // read by tests: the reaction she is playing
+      if (reacting) state.gl.domElement.dataset.reaction = reacting;
+      else delete state.gl.domElement.dataset.reaction;
+      if (reacting)
+        gait.current.react = {
+          id: reactionClip(reacting),
+          n: (gait.current.react?.n ?? 0) + 1,
+        };
+    }
     let moving = false;
     if (rideMood) {
       // the slide drew the pose; the walker waits for the splash to end
@@ -426,6 +443,10 @@ export function PlayerController({
     } else if (player.seat) {
       // seated: the pose is the seat's, and the walker holds still
       player.acc = 0;
+    } else if (reacting) {
+      // knocked or tripped: she stays put, whatever keys are down
+      player.acc = 0;
+      player.walk.target = null;
     } else if (lift > 0) {
       // on someone's back: they do the walking (OnlinePeers keeps her there)
       player.acc = 0;

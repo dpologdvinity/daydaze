@@ -161,6 +161,8 @@ type Anim = {
   /** The jump count last seen (WalkState.jump); -1 before the first frame,
    * so a doll that mounts after jumps began does not replay them. */
   jumped: number;
+  /** The last reaction count seen (-1 before the first look). */
+  reacted: number;
 };
 const JOINTS = [
   "body",
@@ -187,6 +189,9 @@ export type WalkState = {
   hurry?: boolean;
   /** Counts jumps: each new count plays the jump clip. */
   jump?: number;
+  /** A reaction (a flinch, a trip): each new `n` plays the baked clip `id`
+   * once, where she stands (game/reactions.ts). */
+  react?: { id: string; n: number };
 };
 
 type Props = {
@@ -921,6 +926,7 @@ export function HumanDoll({
       loco: createLoco(),
       run: null,
       jumped: -1,
+      reacted: -1,
     };
     return () => {
       mixer.stopAllAction();
@@ -1102,6 +1108,23 @@ export function HumanDoll({
             fade: 0.15,
             stay: true,
           };
+      }
+      // a reaction (a flinch, a trip) plays its clip once, wherever she is
+      const react = walk?.current.react;
+      if (react) {
+        if (a.reacted < 0) a.reacted = react.n;
+        else if (react.n !== a.reacted) {
+          a.reacted = react.n;
+          const clip = clipOf(react.id);
+          if (clip && clips?.has(react.id))
+            a.run = {
+              id: react.id,
+              until: now + clip.period,
+              rate: 1,
+              fade: 0.12,
+            };
+          else if (clip) void loadPack(body.key, clip.pack);
+        }
       }
       if (a.run?.stay && moving) a.run = null;
       // a clip's fade out is as short as its fade in

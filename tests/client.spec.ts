@@ -1853,6 +1853,31 @@ test("a pair stands talking on the sidewalk by the city's spawn", async ({
   expect(errors).toEqual([]);
 });
 
+test("walking the sidewalk, her foot catches: she trips, is held a moment, then walks on", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  // ?trip=3: the first trip comes after three meters of sidewalk, not hundreds
+  await page.goto(`${LOW}&room=city&at=0,9&trip=3`);
+  const canvas = canvasOf(page);
+  await expect(canvas).toHaveAttribute("data-frames", "10", {
+    timeout: 240_000,
+  });
+  await page.keyboard.down("KeyD");
+  await expect(canvas).toHaveAttribute(
+    "data-reaction",
+    /^(trip|stumble|trip-fall)$/,
+    { timeout: 120_000 },
+  );
+  await page.keyboard.up("KeyD");
+  // the reaction is over and she is free again
+  await expect(canvas).not.toHaveAttribute("data-reaction", /.+/, {
+    timeout: 120_000,
+  });
+  expect(errors).toEqual([]);
+});
+
 test("a drink in the Velvet Room raises the buzz and sways the view", async ({
   page,
 }) => {

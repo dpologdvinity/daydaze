@@ -18,6 +18,7 @@ import { useReducedMotion } from "../motion.ts";
 import { cameraHold } from "../world/cameraHold.ts";
 import type { Player } from "../world/PlayerController.tsx";
 import { bail, runTime, skate, tick } from "./skatepark/session.ts";
+import { react } from "../world/reaction.ts";
 import { Doll } from "../avatar/Doll.tsx";
 import { CrowdFigure } from "./shared/CrowdFigure.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
@@ -330,6 +331,7 @@ function Ride({ player }: { player: Player }) {
   const calm = useReducedMotion();
   const camera = useThree((s) => s.camera);
   const board = useRef<THREE.Group>(null);
+  const lastTrick = useRef<unknown>(null);
   const eye = useMemo(() => new THREE.Vector3(), []);
   const look = useMemo(() => new THREE.Vector3(), []);
 
@@ -347,6 +349,11 @@ function Ride({ player }: { player: Player }) {
     tick(now);
     const s = skate.get();
     const riding = s.phase === "riding";
+    // a bailed trick: she lands hard on the board
+    if (s.run.last !== lastTrick.current) {
+      lastTrick.current = s.run.last;
+      if (s.run.last?.grade === "bail") react("hard-landing");
+    }
     cameraHold.by = s.phase !== "off" ? "skatepark" : null;
     const b = board.current;
     if (!riding) {

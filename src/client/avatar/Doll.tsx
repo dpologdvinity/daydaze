@@ -212,6 +212,9 @@ export type WalkState = {
   hurry?: boolean;
   /** Counts jumps: each new count plays the jump clip. */
   jump?: number;
+  /** A reaction (a flinch, a trip): each new `n` plays the baked clip `id`
+   * once, where she stands (game/reactions.ts). */
+  react?: { id: string; n: number };
 };
 
 type DollProps = {

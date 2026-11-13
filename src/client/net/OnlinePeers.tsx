@@ -42,6 +42,8 @@ import {
 import { pairUp, stopTogether } from "./together.ts";
 import { keepSeat } from "./ride.ts";
 import { seatedHold } from "../../game/dance/seatActions.ts";
+import { reactionClip } from "../../game/reactions.ts";
+import { reactingNow } from "../world/reaction.ts";
 import { trackOrigin } from "../../game/speedway/layout.ts";
 
 /** Everyone else sees your race kart in the Speedway's own pink. */
@@ -96,6 +98,12 @@ function PeerDoll({
     // a peer's jump: the count steps once as they take off
     if (next.jump && !was.next.jump)
       walk.current.jump = (walk.current.jump ?? 0) + 1;
+    // a peer's flinch or trip: each new reaction plays its clip once
+    if (next.react && next.react !== was.next.react)
+      walk.current.react = {
+        id: reactionClip(next.react),
+        n: (walk.current.react?.n ?? 0) + 1,
+      };
     // height comes only with each move: ease it, so rides don't step
     // a piggyback rider sits up on the lead's back
     const y =
@@ -390,6 +398,7 @@ export function OnlinePeers({
       pair?.placed ? { emote: pair.e, role: pair.role } : undefined,
       driving.passenger !== null,
       jumping(Date.now()),
+      reactingNow() ?? undefined,
     );
     if (
       !session ||
