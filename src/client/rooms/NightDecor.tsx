@@ -304,7 +304,7 @@ function Cloud({ look, box, low }: { look: Look; box: Box; low: boolean }) {
     () =>
       new THREE.PointsMaterial({
         map: shapeTexture(look.shape),
-        size: look.size,
+        size: look.size * 1.6,
         sizeAttenuation: true,
         vertexColors: true,
         transparent: true,
@@ -343,7 +343,7 @@ function Cloud({ look, box, low }: { look: Look; box: Box; low: boolean }) {
     pos.needsUpdate = true;
     // twinkle: the whole cloud's size breathes
     if (look.twinkle > 0)
-      material.size = look.size * (1 + look.twinkle * Math.sin(t * 3.1));
+      material.size = look.size * 1.6 * (1 + look.twinkle * Math.sin(t * 3.1));
   });
   return (
     <points geometry={geometry} material={material} frustumCulled={false} />
@@ -459,7 +459,7 @@ export function NightDecor({ room }: { room: RoomId }) {
   const kind = night.decor;
   return (
     <>
-      <hemisphereLight args={[night.color, "#000000", 0.5]} />
+      <hemisphereLight args={[night.color, "#000000", 0.85]} />
       {kind === "spotlights" ? (
         <Beams color={night.color} box={box} />
       ) : kind === "bunting" ? (

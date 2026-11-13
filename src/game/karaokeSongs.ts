@@ -148,7 +148,7 @@ const CORE: readonly KaraokeSong[] = [
   {
     id: "clementine",
     title: "Oh My Darling, Clementine",
-    credit: "Traditional, 1884",
+    credit: "Percy Montrose, 1884",
     composer: "Percy Montrose",
     year: 1884,
     genre: "country",
@@ -249,7 +249,7 @@ const CORE: readonly KaraokeSong[] = [
   {
     id: "saints",
     title: "When the Saints Go Marching In",
-    credit: "Traditional",
+    credit: "James Milton Black, 1896",
     composer: "James Milton Black",
     year: 1896,
     genre: "jazz",

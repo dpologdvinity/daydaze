@@ -44,9 +44,10 @@ test("the songbook is big and wide: 80+ songs in 15+ genres, each in the public 
     assert.ok(song.year <= 1929, `${song.id}: ${song.year} is too recent`);
     assert.ok(song.composer.trim().length > 1, `${song.id}: no composer`);
     assert.ok(song.credit.trim().length > 1, `${song.id}: no credit`);
-    // the picker's credit line names the year for a known author
-    if (song.composer !== "Traditional")
-      assert.ok(song.credit.includes(String(song.year)), `${song.id}: credit`);
+    // the picker's credit line gives a known author's year (when the tune was
+    // written, which may be before it was first published)
+    if (!song.composer.startsWith("Traditional"))
+      assert.match(song.credit, /\b1[5-9]\d\d\b/, `${song.id}: credit`);
     assert.ok(song.title.trim().length > 1, song.id);
   }
 });

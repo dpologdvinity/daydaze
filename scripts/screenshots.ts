@@ -1047,7 +1047,7 @@ const SHOTS: {
     ] as const
   ).map(([night, room]) => ({
     name: `night-${night}`,
-    query: `room=${room}&night=${night}&quality=low`,
+    query: `room=${room}&night=${night}&quality=low&time=23:30`,
     live: true,
     act: async (page: Page) => {
       await page.waitForFunction(
