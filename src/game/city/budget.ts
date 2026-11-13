@@ -23,6 +23,7 @@ import { elBoxes } from "./el.ts";
 import { RESIDENTS, dogParkNear } from "./dogPark.ts";
 import { AUDIENCE_DRAWN, BAND, CHAIRS, shellNear } from "./bandShell.ts";
 import { PEDESTRIANS } from "./pedestrians.ts";
+import { CHAT_GROUPS, nearestChatGroups } from "./chatGroups.ts";
 import { wildlifeFor, wildlifeNear } from "./parkWildlife.ts";
 import { PARK_FLOCKS, flockNear } from "../butterflies.ts";
 import { QUEUE_NEAR_LOW, QUEUE_PERSON_TRIS, QUEUE_SPOTS } from "./queues.ts";
@@ -53,6 +54,8 @@ import {
 import {
   BAY_RANGE,
   CROWD_CAP,
+  CHAT_DOLLS,
+  CHAT_RADIUS,
   CROWD_RADIUS,
   PEDESTRIAN_DOLLS,
   PEDESTRIAN_DOLL_RADIUS,
@@ -461,6 +464,10 @@ export function liveCost(
     CROWD_CAP * 4,
     Math.max(0, Math.ceil(expected(CROWD_RADIUS.low) * CROWD_MARGIN) - dolls),
   );
+  // the sidewalk conversations nearest her, as dolls (all out: the worst hour)
+  const chatDolls = nearestChatGroups(at, CHAT_RADIUS.low, CHAT_DOLLS.low)
+    .map((i) => CHAT_GROUPS[i]?.looks.length ?? 0)
+    .reduce((a, b) => a + b, 0);
   // the band shell, while the park band is on (10:00 to 17:30): the stage,
   // chairs and instruments, the whole band and a few of the audience as dolls
   let bandDolls = 0;
@@ -486,11 +493,11 @@ export function liveCost(
   return {
     // one instanced draw per look and stride in use
     drawCalls:
-      (dolls + bandDolls) * NPC_DOLL_CALLS +
+      (dolls + bandDolls + chatDolls) * NPC_DOLL_CALLS +
       (crowd > 0 ? 8 : 0) +
       (butterflies > 0 ? fly.parts : 0),
     triangles:
-      (dolls + bandDolls) * NPC_DOLL_TRIS +
+      (dolls + bandDolls + chatDolls) * NPC_DOLL_TRIS +
       crowd * CROWD_FIGURE_TRIS +
       butterflies * fly.tris,
   };
