@@ -364,6 +364,8 @@ function seatStrip(
   what: "sit" | "stand" | "emote" | "type",
   /** Which side of her the camera stands (1 or -1), clear of the neighbors. */
   side: 1 | -1,
+  /** How far out and how high the camera stands (a room with a panel in the way wants more). */
+  frame: { dist: number; height: number } = { dist: 3, height: 0.9 },
 ): (typeof SHOTS)[number] {
   // the apartment desk and chair, saved before the page loads
   const desk = [at("desk", 1, 0), at("office-chair", 1, 1)];
@@ -382,10 +384,10 @@ function seatStrip(
     (seat.approach[1] + seat.at[1]) / 2,
   ];
   const eye = [
-    mid[0] + Math.cos(seat.yaw) * 3 * side,
-    mid[1] - Math.sin(seat.yaw) * 3 * side,
+    mid[0] + Math.cos(seat.yaw) * frame.dist * side,
+    mid[1] - Math.sin(seat.yaw) * frame.dist * side,
   ];
-  const cam = `${eye[0].toFixed(2)},0.9,${eye[1].toFixed(2)},${mid[0].toFixed(2)},0.8,${mid[1].toFixed(2)}`;
+  const cam = `${eye[0].toFixed(2)},${frame.height},${eye[1].toFixed(2)},${mid[0].toFixed(2)},0.8,${mid[1].toFixed(2)}`;
   // dispatched, not clicked: the apartment's panel sits over the dock
   const takeSeat = async (page: Page) => {
     await page
@@ -732,13 +734,12 @@ const SHOTS: {
   seatStrip("seat-stadium-sit", "stadium-dugout-0", "sit", 1),
   seatStrip("seat-stadium-stand", "stadium-dugout-0", "stand", 1),
   seatStrip("seat-clap", "dome-bench-0", "emote", -1),
-  seatStrip("seat-stool-cellar", "cellar-stool-0", "sit", -1),
-  seatStrip("seat-stool-cellar-b", "cellar-stool-0", "sit", 1),
-  seatStrip("seat-stool-skylark", "skylark-stool-0", "sit", -1),
-  seatStrip("seat-stool-skylark-b", "skylark-stool-0", "sit", 1),
-  seatStrip("seat-stool-jazz", "jazz-stool-0", "sit", -1),
-  seatStrip("seat-stool-jazz-b", "jazz-stool-0", "sit", 1),
-  seatStrip("seat-typing", "home-chair-1", "type", -1),
+  seatStrip("seat-stool-cellar", "cellar-stool-0", "sit", 1),
+  seatStrip("seat-stool-skylark", "skylark-stool-0", "sit", 1),
+  seatStrip("seat-typing", "home-chair-1", "type", 1, {
+    dist: 3.6,
+    height: 1.5,
+  }),
   { name: "club-pulse", query: "room=pulse" },
   {
     name: "apartment",
