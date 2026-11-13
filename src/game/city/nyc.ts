@@ -143,7 +143,7 @@ const UPPER: Record<"storefront" | "brick" | "tower", readonly BayKind[]> = {
 };
 const CORNICES: readonly BayKind[] = ["corniceT", "corniceB", "corniceM"];
 
-type Face = {
+export type Face = {
   /** Outward normal: yaw 0 faces +z. */
   yaw: number;
   /** Where the face starts and which way it runs, in the world. */
@@ -167,7 +167,7 @@ const paved = (p: Vec2): boolean =>
 
 /** The four faces of a building's bounding box, each marked street or back
  * (a street face looks onto pavement, or has the door). Three.js turns yaw about y: +z at 0, +x at pi/2. */
-function facesOf(b: Building): Face[] {
+export function facesOf(b: Building): Face[] {
   const xs = b.footprint.map(([x]) => x);
   const zs = b.footprint.map(([, z]) => z);
   const x0 = Math.min(...xs);
