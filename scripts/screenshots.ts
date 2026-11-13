@@ -770,14 +770,14 @@ const SHOTS: {
   { name: "zoo-woods", query: "room=zoo&cam=0,7,2,0,1,-6.2" },
   { name: "forest", query: "room=forest" },
   // the vending machines in Skyline Supply, Player 2 and the Boardwalk Arcade
-  { name: "vending-market", query: "room=market&cam=3.5,1.7,-2.8,8.6,1,-2.8" },
+  { name: "vending-market", query: "room=market&cam=6.4,1.6,-1.2,8.6,1,-2.8" },
   {
     name: "vending-arcade-bar",
     query: "room=arcade-bar&cam=-1,1.8,4.4,-5.6,1,4.4",
   },
   {
     name: "vending-boardwalk-arcade",
-    query: "room=boardwalk-arcade&cam=-4,1.8,3.9,-8.6,1,3.9",
+    query: "room=boardwalk-arcade&cam=-6,1.8,5.2,-8.6,1,3.9",
   },
   // Larkspur's meadow glade and the garden's beds, with their butterflies
   {
@@ -1135,12 +1135,12 @@ const SHOTS: {
   // a snack vending machine on the avenue's north pavement, by day and lit at night
   {
     name: "vending-street-day",
-    query: "room=city&view=room&time=13:00&at=12,4&cam=11,1.7,3.2,16,1.1,9.9",
+    query: "room=city&view=room&time=13:00&at=12,7at=12,4&cam=11,1.7,3.2,16,1.1,9.9cam=12.8,1.5,7.4,16,1,9.9",
     act: furnitureReady,
   },
   {
     name: "vending-street-night",
-    query: "room=city&view=room&time=22:00&at=12,4&cam=11,1.7,3.2,16,1.1,9.9",
+    query: "room=city&view=room&time=22:00&at=12,7at=12,4&cam=11,1.7,3.2,16,1.1,9.9cam=12.8,1.5,7.4,16,1,9.9",
     act: furnitureReady,
   },
   {
