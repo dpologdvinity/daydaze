@@ -223,8 +223,12 @@ def tuck(ctx, body, body_src, garment, name):
         behind[i] = outside < 0
         if outside > -CLEAR:
             sink[i] = max(sink[i], min(outside + CLEAR, 0.03))
-    floor = min(v.co.z for v in garment.data.vertices)
-    move = -normals * sink[:, None] + leg_pull(ctx, body, co, behind, floor)
+    # shoes ride on the same body next to the trousers and their keys add up:
+    # a pull from the sole up would collapse the ankle the hem leaves bare
+    move = -normals * sink[:, None]
+    if not garment.name.startswith("Shoes"):
+        floor = min(v.co.z for v in garment.data.vertices)
+        move = move + leg_pull(ctx, body, co, behind, floor)
     sk = body.shape_key_add(name=f"tuck_{name}", from_mix=False)
     # on a GRID-metre grid: the key compresses far smaller, unseen
     sk.data.foreach_set("co", (co + np.round(move / GRID) * GRID).ravel())
