@@ -544,7 +544,7 @@ function fillAlley(acc: Acc, y: Yard): void {
     alongX
       ? stripe(acc, u, cz, 2, 0.12, "#e8c14b")
       : stripe(acc, cx, u, 0.12, 2, "#e8c14b");
-  const n = Math.min(8, 3 + Math.floor((w(y) * d(y)) / 350));
+  const n = Math.min(5, 2 + Math.floor((w(y) * d(y)) / 450));
   for (let k = 0; k < n; k++) {
     const edge = Math.floor(hash(y.x0, k, 76) * 4);
     const t = hash(y.z0, k, 77);
@@ -569,7 +569,7 @@ function fillAlley(acc: Acc, y: Yard): void {
         hash(x, z, b) * 6.28,
       );
   }
-  // bins, a bike rack, planters and cones about the yard, off the lane
+  // bins and cones about the yard, off the lane
   const offLane = (x: number, z: number) =>
     alongX ? Math.abs(z - cz) > 3.6 : Math.abs(x - cx) > 3.6;
   const scatter = (
@@ -585,10 +585,7 @@ function fillAlley(acc: Acc, y: Yard): void {
       placed++;
     }
   };
-  scatter("trashcan", 5, 81);
-  scatter("bikerack", 2, 92);
-  scatter("planter", 2, 94);
-  scatter("cone", 3, 96);
+  scatter("trashcan", 3, 81);
   fenceAround(acc, inset(y, 0.4), "fence-chain", 2);
 }
 
