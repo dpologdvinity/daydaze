@@ -208,4 +208,10 @@ test("the park gate, the dearest low-tier view, stays at or under 270k triangles
   const gate = lowTierCost([254, -270]);
   assert.ok(gate.triangles <= 270_000, `${gate.triangles} triangles`);
   assert.ok(gate.drawCalls <= 235, `${gate.drawCalls} draw calls`);
+  // and every spot around it, on a fine grid (the dearest is a step off the gate)
+  for (let x = 200; x <= 300; x += 8)
+    for (let z = -320; z <= -230; z += 8) {
+      const { triangles } = lowTierCost([x, z]);
+      assert.ok(triangles <= 270_000, `${triangles} triangles at ${x},${z}`);
+    }
 });
