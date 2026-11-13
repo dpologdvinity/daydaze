@@ -162,14 +162,34 @@ function homeShot(name: string, furniture: readonly Furniture[], cam?: string) {
  * ground covered by each frame, so a stroll, the jog and planted feet can be
  * judged by eye.
  */
+const FRAMES = 48;
 function walkStrip(
   name: string,
   gait: string,
-  trip: "click" | "hold",
+  trip: "click" | "hold" | "jump",
+  opts: {
+    /** Where the click lands (the street beside her by default). */
+    at?: readonly [number, number];
+    /** Seconds recorded after the click or key. */
+    seconds?: number;
+    /** Game time as a fraction of real time (?timescale), for short moves. */
+    timescale?: number;
+    men?: boolean;
+    /** Keep the first frames after the click, or (to catch an arrival) the
+     * last ones, once she has stood still for `seconds`. */
+    keep?: "first" | "last";
+  } = {},
 ): (typeof SHOTS)[number] {
+  const {
+    at = [960, 500],
+    seconds = 6,
+    timescale,
+    men = false,
+    keep = "first",
+  } = opts;
   return {
     name,
-    query: "room=city&view=full",
+    query: `room=city&view=full${timescale ? `&timescale=${timescale}` : ""}`,
     live: true,
     act: async (page) => {
       await page.evaluate(
@@ -181,7 +201,12 @@ function walkStrip(
             JSON.stringify({ ...save, look: { ...JSON.parse(look), gait: g } }),
           );
         },
-        [gait, JSON.stringify(DEFAULT_LOOK)],
+        [
+          gait,
+          JSON.stringify(
+            men ? { ...DEFAULT_LOOK, body: "masculine" } : DEFAULT_LOOK,
+          ),
+        ],
       );
       await page.reload();
       await page.waitForFunction(
@@ -189,25 +214,82 @@ function walkStrip(
         null,
         { timeout: 300_000 },
       );
+      // the set-off, arrival and turn clips load a while after the scene
+      if (timescale) await page.waitForTimeout(30_000);
       // a CDP screencast delivers every frame the browser renders (a plain
       // screenshot takes seconds on SwiftShader, too slow to see a stride)
       const cdp = await page.context().newCDPSession(page);
       const frames: Buffer[] = [];
       cdp.on("Page.screencastFrame", (f) => {
-        if (frames.length < 24) frames.push(Buffer.from(f.data, "base64"));
+        // the first frames, or a ring of the latest
+        if (keep === "last" && frames.length >= FRAMES) frames.shift();
+        if (keep === "last" || frames.length < FRAMES)
+          frames.push(Buffer.from(f.data, "base64"));
         void cdp.send("Page.screencastFrameAck", { sessionId: f.sessionId });
       });
       await cdp.send("Page.startScreencast", { format: "png" });
-      if (trip === "click") await page.mouse.click(960, 500);
+      if (trip === "click") await page.mouse.click(at[0], at[1]);
+      else if (trip === "jump") await page.keyboard.press("Space");
       else await page.keyboard.down("d");
-      for (let n = 0; n < 6; n++) {
+      // "first" records for `seconds`; "last" until she has stood still for
+      // `seconds` (the first frames after a click are all she needs to set off)
+      let steady = 0;
+      let lastAt = "";
+      for (let n = 0; n < (keep === "last" ? 300 : seconds); n++) {
         await page.waitForTimeout(1000);
-        const at = await page.evaluate(() => {
+        const here = await page.evaluate(() => {
           const d = document.querySelector("canvas")?.dataset;
           return `pace ${d?.pace} at ${d?.playerX},${d?.playerZ}`;
         });
-        console.log(`${name} ${n + 1}s: ${at}`);
+        console.log(`${name} ${n + 1}s: ${here}`);
+        steady = here === lastAt ? steady + 1 : 0;
+        lastAt = here;
+        if (keep === "last" && steady >= seconds) break;
       }
+      await cdp.send("Page.stopScreencast");
+      frames.forEach((png, n) =>
+        writeFileSync(
+          `docs/screenshots/${name}-${String(n).padStart(2, "0")}.png`,
+          png,
+        ),
+      );
+      console.log(`${name}: ${frames.length} screencast frames`);
+    },
+  };
+}
+
+/**
+ * A frame strip of a room action (the ladder climb, the overhand throw): runs
+ * `setup` (open the game), then records a CDP screencast while `go` fires the
+ * move, saving docs/screenshots/<name>-<nn>.png.
+ */
+function actionStrip(
+  name: string,
+  query: string,
+  setup: (page: Page) => Promise<void>,
+  go: (page: Page) => Promise<void>,
+  seconds = 20,
+): (typeof SHOTS)[number] {
+  return {
+    name,
+    query,
+    live: true,
+    act: async (page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      await setup(page);
+      const cdp = await page.context().newCDPSession(page);
+      const frames: Buffer[] = [];
+      cdp.on("Page.screencastFrame", (f) => {
+        if (frames.length < FRAMES) frames.push(Buffer.from(f.data, "base64"));
+        void cdp.send("Page.screencastFrameAck", { sessionId: f.sessionId });
+      });
+      await cdp.send("Page.startScreencast", { format: "png" });
+      await go(page);
+      await page.waitForTimeout(seconds * 1000);
       await cdp.send("Page.stopScreencast");
       frames.forEach((png, n) =>
         writeFileSync(
@@ -233,6 +315,59 @@ const SHOTS: {
   walkStrip("walk-feminine-short", "feminine", "click"),
   walkStrip("walk-feminine-long", "feminine", "hold"),
   walkStrip("walk-swagger-short", "swagger", "click"),
+  // the set-off, arrival and turn clips (locomotion.ts), at a tenth of real
+  // time so each half-second move spans several rendered frames
+  walkStrip("move-start", "natural", "click", { timescale: 0.1, seconds: 30 }),
+  walkStrip("move-stop", "natural", "click", {
+    timescale: 0.1,
+    seconds: 12,
+    keep: "last",
+  }),
+  walkStrip("move-turn", "natural", "click", {
+    at: [700, 650],
+    timescale: 0.1,
+    seconds: 30,
+  }),
+  walkStrip("move-jump", "natural", "jump", { timescale: 0.1, seconds: 30 }),
+  // the room actions: the ladder climb and the Hot Shots throw
+  actionStrip(
+    "move-climb",
+    "room=water-park",
+    async (page) => {
+      await page
+        .getByRole("button", { name: "Climb the tower" })
+        .click({ timeout: 150_000 });
+      const panel = page.getByRole("region", { name: "Cliff dive" });
+      await panel.getByRole("button", { name: /Pencil drop/ }).click();
+    },
+    async (page) => {
+      await page
+        .getByRole("region", { name: "Cliff dive" })
+        .getByRole("button", { name: "Dive!" })
+        .click();
+    },
+  ),
+  actionStrip(
+    "move-throw",
+    "room=dome",
+    async (page) => {
+      const panel = page.getByRole("region", { name: "Hot Shots" });
+      await panel.getByRole("button", { name: "Start the clock" }).click();
+      await panel.getByRole("button", { name: "Aim" }).click();
+    },
+    async (page) => {
+      await page
+        .getByRole("region", { name: "Hot Shots" })
+        .getByRole("button", { name: "Shoot!" })
+        .click();
+    },
+    12,
+  ),
+  walkStrip("move-start-man", "natural", "click", {
+    men: true,
+    timescale: 0.1,
+    seconds: 30,
+  }),
   { name: "club-pulse", query: "room=pulse" },
   {
     name: "apartment",

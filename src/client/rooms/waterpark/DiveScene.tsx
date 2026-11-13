@@ -19,7 +19,7 @@ import { Doll } from "../../avatar/Doll.tsx";
 import { useReducedMotion } from "../../motion.ts";
 import type { Player } from "../../world/PlayerController.tsx";
 import type { BurstHandle } from "../shared/game3d/Burst.tsx";
-import { useGameClip } from "../shared/game3d/gameClip.ts";
+import { gameClip, useGameClip } from "../shared/game3d/gameClip.ts";
 import { ScoreCard } from "../shared/game3d/ScoreCard.tsx";
 import { Splash } from "../shared/game3d/Splash.tsx";
 import { useGameShot } from "../shared/game3d/useGameShot.ts";
@@ -252,7 +252,13 @@ function useDiver(player: Player, splash: RefObject<BurstHandle | null>) {
     }
     if (leg.current === 1) {
       seat.stride = false;
-      if (stepToward(seat, LADDER_TOP, CLIMB * dt)) leg.current = 2;
+      // up the ladder hand over hand (the climb clip, until she tops out)
+      if (gameClip.get().by !== "cliff-dive")
+        gameClip.set({ move: "climb", by: "cliff-dive" });
+      if (stepToward(seat, LADDER_TOP, CLIMB * dt)) {
+        leg.current = 2;
+        gameClip.set({ move: null, by: null });
+      }
       return;
     }
     seat.stride = !stepToward(seat, EDGE, WALK * dt);

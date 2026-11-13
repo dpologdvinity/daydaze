@@ -1653,6 +1653,49 @@ test("the player strolls in her walk style on a short trip and hurries when a ke
   expect(errors).toEqual([]);
 });
 
+test("Space jumps in the city, once a press, and walking off ends it", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=city&view=full`);
+  const view = page.getByRole("img", { name: "3D room view" });
+  await expect(view).toHaveAttribute("data-frames", "10", { timeout: 150_000 });
+  await expect(view).toHaveAttribute("data-player-x", /-?\d/);
+  await expect(view).toHaveAttribute("data-jumps", "0");
+  // a second press while still in the air does nothing; both presses land in
+  // the same instant, because a slow renderer can outlast the jump between
+  // frames and a late second press would be a legitimate new jump
+  await page.keyboard.press("Space");
+  await page.keyboard.press("Space");
+  await expect(view).toHaveAttribute("data-jumps", "1");
+  expect(errors).toEqual([]);
+});
+
+test("she sets off, turns and arrives with their clips on a short trip", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=city&view=full`);
+  const view = page.getByRole("img", { name: "3D room view" });
+  await expect(view).toHaveAttribute("data-frames", "10", { timeout: 150_000 });
+  await expect(view).toHaveAttribute("data-player-x", /-?\d/);
+  // a click a few meters off, to her side: she turns or sets off (a slow
+  // software renderer's long frames can class the pivot as a turn back)...
+  await page.mouse.click(960, 500);
+  await expect(view).toHaveAttribute(
+    "data-loco",
+    /^(start-walk-f|turn-left|turn-right|turn-180)$/,
+    { timeout: 60_000 },
+  );
+  // ...and stops with the arrival clip
+  await expect(view).toHaveAttribute("data-loco", "stop-walk-f", {
+    timeout: 120_000,
+  });
+  expect(errors).toEqual([]);
+});
+
 test("the El: ride from Downtown's stairs to Chinatown and step off at its stairs", async ({
   page,
 }) => {

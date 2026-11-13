@@ -64,6 +64,12 @@ import {
   postureOf,
   type Posture,
 } from "../../../game/dance/transitions.ts";
+import { TIME_SCALE } from "../../timeScale.ts";
+import {
+  createLoco,
+  stepLoco,
+  type Loco,
+} from "../../../game/dance/locomotion.ts";
 import { afloat, scuba } from "./afloat.ts";
 import { ScubaGear } from "./ScubaGear.tsx";
 
@@ -102,6 +108,9 @@ afterSceneReady(() => void loadAnims(""), 8000);
 // or at once when a doll asks for a clip in one (pickClip's `need`)
 afterSceneReady(() => void loadPack("", "social"), 25000);
 afterSceneReady(() => void loadPack("", "seated"), 35000);
+// set-off, arrival and turn clips (locomotion.ts) are small and wanted by the
+// first walk
+afterSceneReady(() => void loadPack("", "moves"), 20000);
 
 // seconds to crossfade between clips, and between clips and built poses
 const FADE = 0.3;
@@ -138,6 +147,19 @@ type Anim = {
   trans: { id: string; until: number } | null;
   /** The play handed to the picker's caller while a transition runs. */
   transPlay: Play;
+  /** What she was seen doing around walking, and the clip it set off. */
+  loco: Loco;
+  run: {
+    id: string;
+    until: number;
+    rate: number;
+    fade: number;
+    /** Ends when she walks off (a jump in place). */
+    stay?: boolean;
+  } | null;
+  /** The jump count last seen (WalkState.jump); -1 before the first frame,
+   * so a doll that mounts after jumps began does not replay them. */
+  jumped: number;
 };
 const JOINTS = [
   "body",
@@ -155,8 +177,16 @@ const JOINTS = [
   "pony",
 ] as const;
 
-/** How fast the doll is moving over the ground, m/s: the legs keep pace. */
-export type WalkState = { speed: number };
+/** How fast the doll is moving over the ground, m/s: the legs keep pace.
+ * `yaw` (facing, radians) lets her turn on the spot, and `hurry` (the jog,
+ * not a stroll) picks her set-off; both optional (locomotion.ts). */
+export type WalkState = {
+  speed: number;
+  yaw?: number;
+  hurry?: boolean;
+  /** Counts jumps: each new count plays the jump clip. */
+  jump?: number;
+};
 
 type Props = {
   /** Closet body sliders, 0 to 100 each. */
@@ -433,6 +463,7 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
     afterSceneReady(() => void loadAnims(body.key), 8000);
     afterSceneReady(() => void loadPack(body.key, "social"), 25000);
     afterSceneReady(() => void loadPack(body.key, "seated"), 35000);
+    afterSceneReady(() => void loadPack(body.key, "moves"), 20000);
   }, [body.key]);
   useEffect(() => {
     const { marks, skin } = body;
@@ -870,6 +901,9 @@ export function HumanDoll({
       since: 0,
       trans: null,
       transPlay: { id: "", rate: 1, offset: 0 },
+      loco: createLoco(),
+      run: null,
+      jumped: -1,
     };
     return () => {
       mixer.stopAllAction();
@@ -939,7 +973,8 @@ export function HumanDoll({
     }
   }, [bodyMeshes, tucks]);
 
-  useFrame((state, dt) => {
+  useFrame((state, rawDt) => {
+    const dt = rawDt * TIME_SCALE;
     // never show the body before its outfit (or swimsuit) and hair have
     // loaded: a doll stays hidden while they're still downloading
     if (root.current)
@@ -982,7 +1017,8 @@ export function HumanDoll({
     } else owed.current.dt = 0;
     if (a && animDt > 0) {
       const clips = clipsFor(body.key);
-      const now = state.clock.elapsedTime;
+      // (game time, so ?timescale slows the clips' windows with the clips)
+      const now = state.clock.elapsedTime * TIME_SCALE;
       // the catalog's walk speeds are the woman's stride; his carries farther
       const pace = body.key ? speed / MAN_STRIDE : speed;
       const afloatNow = own && afloat.on;
@@ -1008,11 +1044,63 @@ export function HumanDoll({
       }
       if (a.trans && (now >= a.trans.until || posture === "move"))
         a.trans = null;
+      // setting off, arriving and turning play a short clip over the loop
+      const around = stepLoco(a.loco, {
+        dt: animDt,
+        speed: pace,
+        yaw: walk?.current.yaw,
+        hurry: walk?.current.hurry === true,
+        man: body.key !== "",
+        // not while a held mood (dancing, posing, a pair's placing) owns her
+        busy:
+          a.trans !== null ||
+          gait.seated ||
+          afloatNow ||
+          posture === "sit" ||
+          !joins ||
+          (!moving && mood !== "idle"),
+      });
+      // read by tests: the last set-off, arrival or turn on the player's doll
+      if (around && own) state.gl.domElement.dataset.loco = around.id;
+      if (around && clips) {
+        if (packsFor(body.key).has(around.pack))
+          a.run = { ...around, until: now + around.seconds };
+        else void loadPack(body.key, around.pack);
+      }
+      // a jump plays the whole clip, in place: walking off ends it
+      const jumps = walk?.current.jump ?? 0;
+      if (a.jumped < 0) a.jumped = jumps;
+      else if (jumps !== a.jumped) {
+        a.jumped = jumps;
+        const jump = clipOf("jump");
+        if (jump && clips?.has("jump"))
+          a.run = {
+            id: "jump",
+            until: now + jump.period,
+            rate: 1,
+            fade: 0.15,
+            stay: true,
+          };
+      }
+      if (a.run?.stay && moving) a.run = null;
+      // a clip's fade out is as short as its fade in
+      let fade = FADE;
       let want: Play | null;
       if (a.trans) {
+        a.run = null;
         a.transPlay.id = a.trans.id;
+        a.transPlay.rate = 1;
+        want = a.transPlay;
+      } else if (a.run && now < a.run.until) {
+        a.transPlay.id = a.run.id;
+        a.transPlay.rate = a.run.rate;
+        fade = a.run.fade;
         want = a.transPlay;
       } else {
+        if (a.run) {
+          fade = a.run.fade;
+          a.run = null;
+        }
         // the player's idles count from when she stopped; a stranger's from
         // the clock, offset by her seed, so a crowd changes out of step
         const slot = idleSlot(own ? now - a.since : t);
@@ -1038,7 +1126,7 @@ export function HumanDoll({
         if (a.playing !== want.id) {
           const next = a.mixer.clipAction(clip);
           next.reset();
-          const once = a.trans !== null;
+          const once = a.trans !== null || a.run !== null;
           next.setLoop(once ? THREE.LoopOnce : THREE.LoopRepeat, Infinity);
           next.clampWhenFinished = once;
           // a pair dances in step on the shared clock (the follow half a loop
@@ -1050,7 +1138,7 @@ export function HumanDoll({
           next.time = once ? 0 : (from + want.offset) % clip.duration;
           next.play();
           if (a.action && a.action !== next)
-            next.crossFadeFrom(a.action, FADE, false);
+            next.crossFadeFrom(a.action, fade, false);
           a.action = next;
           a.playing = want.id;
         }

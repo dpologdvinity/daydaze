@@ -23,6 +23,7 @@ import { useReducedMotion } from "../motion.ts";
 import { cameraHold } from "../world/cameraHold.ts";
 import { DomeNpcs } from "./dome/Npcs.tsx";
 import { aimAt, hoops, leave, tick, timeLeft } from "./dome/session.ts";
+import { useGameClip } from "./shared/game3d/gameClip.ts";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { Batch } from "./shared/batch.ts";
 import { GLOSS, painted, plant, poster } from "./shared/details.ts";
@@ -252,6 +253,9 @@ function Board() {
 /** The ball and the camera while a game is on. */
 function Play() {
   const calm = useReducedMotion();
+  // her shot: the overhand throw plays while the ball is in the air
+  const { phase } = hoops.use();
+  useGameClip("hot-shots", phase === "flying" ? "throw" : null);
   const camera = useThree((st) => st.camera);
   const ball = useRef<THREE.Mesh>(null);
   const heard = useRef<ShotResult | null>(null);

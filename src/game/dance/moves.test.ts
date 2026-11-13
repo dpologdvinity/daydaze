@@ -215,6 +215,8 @@ test("game clips resolve, carry real keys and stay out of the Dance picker", () 
     "farm-plant",
     "farm-water",
     "farm-harvest",
+    "climb",
+    "throw",
   ];
   assert.deepEqual([...GAME_CLIP_IDS].sort(), [...want].sort());
   const picker = new Set(PICKER_DANCE_MOVES.map((m) => m.id));
