@@ -17,6 +17,7 @@ import {
 import {
   CAROUSEL_AT,
   DROP_TOWER_AT,
+  KIDDIE,
   PIRATE_AT,
   SCRAMBLER_AT,
   STARSHIP_AT,
@@ -304,15 +305,18 @@ const PLAZA_FLOOR: readonly Vec2[] = [
 // Amusement Park: an 18 m x 15.5 m midway (x -9..9, z -8..7.5) opening at its
 // back onto the fairground among the rides, the water-ride lot on its left
 // (x -30..-17, the log flume), and through the carnival arch at z = -30 to the
-// back lot and the Starlight coaster. Each ride's footprint is a
-// blocker; boarding rings sit in front of them.
+// back lot and the Starlight coaster, and east past the Haunted House into
+// Kiddie Land (x 30..48, z -37..-8), where a toy train circles its oval. Each
+// ride's footprint is a blocker; boarding rings sit in front of them.
 const AMUSEMENT_PARK_FLOOR: readonly Vec2[] = [
   [-9, 7.5],
   [-9, -8],
   [-30, -8],
   [-30, -53],
   [30, -53],
-  [30, -8],
+  [30, -37],
+  [48, -37],
+  [48, -8],
   [9, -8],
   [9, 7.5],
 ];
@@ -322,6 +326,14 @@ function round(at: readonly [number, number], r: number): Vec2[] {
   return Array.from({ length: 8 }, (_, i): Vec2 => {
     const a = (i / 8) * Math.PI * 2;
     return [at[0] + r * Math.cos(a), at[1] + r * Math.sin(a)];
+  });
+}
+
+/** An ellipse as a sixteen-sided polygon, for oval footprints. */
+function oval(at: readonly [number, number], rx: number, rz: number): Vec2[] {
+  return Array.from({ length: 16 }, (_, i): Vec2 => {
+    const a = (i / 16) * Math.PI * 2;
+    return [at[0] + rx * Math.cos(a), at[1] + rz * Math.sin(a)];
   });
 }
 
@@ -365,6 +377,8 @@ const AMUSEMENT_PARK_BLOCKERS: readonly (readonly Vec2[])[] = [
   box(21, -21, 29, -11),
   // the Super Slide's lanes, tower and lift, further back in the east lot
   box(21.6, -51, 27.4, -37.4),
+  // the kiddie train's oval of track, a meter and a bit out from the rails
+  oval([KIDDIE.cx, KIDDIE.cz], KIDDIE.a + 1.2, KIDDIE.b + 1.2),
   // food carts at the midway's back corners
   box(-12.4, -10.3, -10.6, -8.7),
   box(10.6, -10.3, 12.4, -8.7),

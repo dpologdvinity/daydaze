@@ -1,4 +1,5 @@
 import { SealShow } from "./aquarium/SealShow.tsx";
+import { Caustics, HallLight, LightShafts } from "./aquarium/Glow.tsx";
 import { SwimmingCreature } from "../creatures/Swimmer.tsx";
 import type { CreaturePose } from "../creatures/Creature.tsx";
 import type { FishKind } from "../../game/creatures.ts";
@@ -101,6 +102,9 @@ const REEF_FISH: readonly FishKind[] = [
   "cute-betta",
   "cute-tetra",
 ];
+/** How much of its own color a fish in the lit tank adds as light, and its size there. */
+const TANK_GLOW = 0.55;
+const FISH_SCALE = 2;
 const FISH_HIGH = 22;
 const FISH_LOW = 6;
 /** The low tier's few fish are spread across the whole list, not its first six
@@ -121,6 +125,7 @@ function Swimmers() {
         <SwimmingCreature
           key={`shark${i}`}
           kind="shark"
+          glow={0.3}
           scale={1 + (i % 2) * 0.25}
           path={(t, pose) =>
             lap(pose, t * 0.22 + (i / sharks) * Math.PI * 2, i, zc)
@@ -130,6 +135,7 @@ function Swimmers() {
       {!low && (
         <SwimmingCreature
           kind="manta-ray"
+          glow={0.3}
           path={(t, pose) => lap(pose, t * 0.15 + 1, 3, zc, 1.1)}
         />
       )}
@@ -140,7 +146,8 @@ function Swimmers() {
             REEF_FISH[(i * (low ? LOW_STRIDE : 1)) % REEF_FISH.length] ??
             "fish1"
           }
-          scale={1.4}
+          scale={FISH_SCALE}
+          glow={TANK_GLOW}
           path={(t, pose) => reef(pose, t, i)}
         />
       ))}
@@ -229,14 +236,14 @@ export function Aquarium({ onPick }: { onPick: PickHandler }) {
   const len = TUNNEL.z1 - TUNNEL.z0;
   return (
     <>
-      <color attach="background" args={["#010614"]} />
-      <fog attach="fog" args={["#02132a", 8, 26]} />
-      <hemisphereLight args={["#4fb8ff", "#05101f", 0.9]} />
+      <color attach="background" args={["#030c20"]} />
+      <fog attach="fog" args={["#04223f", 12, 42]} />
+      <hemisphereLight args={["#6cc6ff", "#0a1d38", 1.5]} />
       <pointLight
         position={[0, 4, zc]}
         color="#3fc8ff"
-        intensity={6}
-        distance={14}
+        intensity={9}
+        distance={16}
       />
       <Floor
         width={16}
@@ -255,9 +262,9 @@ export function Aquarium({ onPick }: { onPick: PickHandler }) {
       <mesh position={[0, 3.05, zc]}>
         <boxGeometry args={[15.6, 5.9, len + 2]} />
         <meshBasicMaterial
-          color={hdr("#0a5e9e", 0.9)}
+          color={hdr("#1288d8", 1.05)}
           transparent
-          opacity={0.35}
+          opacity={0.34}
           side={THREE.BackSide}
           depthWrite={false}
         />
@@ -286,6 +293,9 @@ export function Aquarium({ onPick }: { onPick: PickHandler }) {
           depthWrite={false}
         />
       </mesh>
+      <Caustics zc={zc} depth={len + 2} />
+      <LightShafts zc={zc} />
+      <HallLight zc={zc} depth={len + 2} />
       <Swimmers />
       {/* the jellyfish bay, along the left wall */}
       <mesh position={[-7.6, 2, 0]}>
@@ -303,10 +313,10 @@ export function Aquarium({ onPick }: { onPick: PickHandler }) {
       {/* the reef wall, along the right */}
       <mesh position={[7.85, 2, 0]}>
         <boxGeometry args={[0.2, 4, 13.6]} />
-        <meshBasicMaterial color={hdr("#0b4f6c", 1)} />
+        <meshBasicMaterial color={hdr("#1180a8", 1.2)} />
       </mesh>
       <instancedMesh ref={coral} args={[coralShape, undefined, CORAL]}>
-        <meshStandardMaterial roughness={0.7} emissive="#331022" />
+        <meshStandardMaterial roughness={0.7} emissive="#5a2040" />
       </instancedMesh>
       <SealShow />
       {/* the touch pool by the door */}

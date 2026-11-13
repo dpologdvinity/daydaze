@@ -11,11 +11,14 @@ export function SwimmingCreature({
   kind,
   path,
   scale,
+  glow,
 }: {
   kind: FishKind | SeaKind;
   /** Fills in x, y, z and yaw for `t` seconds; no allocation. */
   path: (t: number, pose: CreaturePose) => void;
   scale?: number;
+  /** Self-light, for creatures in a lit tank (see Creature). */
+  glow?: number;
 }): JSX.Element {
   const calm = useReducedMotion();
   const clock = useRef(0);
@@ -23,6 +26,7 @@ export function SwimmingCreature({
     <Creature
       kind={kind}
       scale={scale}
+      glow={glow}
       drive={(dt, pose) => {
         clock.current += dt * (calm ? 0.3 : 1);
         path(clock.current, pose);

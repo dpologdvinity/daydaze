@@ -487,7 +487,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/trainpack.html",
         usedFor:
-          "The El's train cars (high-speed front and wagon), thinned and baked to vertex colors.",
+          "The El's train cars (high-speed front and wagon) and the Amusement Park's kiddie train (steam engine, tender and an open passenger wagon), thinned, recolored and baked to vertex colors.",
       },
       {
         title: "Stylized Nature MegaKit",

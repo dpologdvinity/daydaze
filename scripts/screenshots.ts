@@ -1230,6 +1230,50 @@ const SHOTS: {
     live: true,
   },
   {
+    // Kiddie Land from the east lot: the toy train on its oval, the station
+    name: "kiddie-land",
+    query: "room=amusement-park&quality=low&at=31,-14&cam=29,5.5,-9,40,0.6,-22",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      // the train circles on its own clock: let it get off the station
+      await page.waitForTimeout(5_000);
+    },
+  },
+  {
+    // the whole loop from above, a rider a few seconds into the lap
+    name: "kiddie-train-top",
+    query:
+      "room=amusement-park&quality=low&ride=kiddie-train&cam=40,14,-12,40,0,-23",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.rideState === "riding",
+        null,
+        { timeout: 300_000 },
+      );
+      await page.waitForTimeout(16_000);
+    },
+  },
+  {
+    // a rider in the first wagon, mid-lap (the slow software renderer draws a frame every few seconds)
+    name: "kiddie-train-ride",
+    query: "room=amusement-park&quality=low&ride=kiddie-train",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.rideState === "riding",
+        null,
+        { timeout: 300_000 },
+      );
+      await page.waitForTimeout(16_000);
+    },
+  },
+  {
     name: "amusement-park-mobile",
     query: "room=amusement-park",
     viewport: { width: 390, height: 844 },

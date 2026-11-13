@@ -596,6 +596,22 @@ test("the Scrambler, the Starship and the Super Slide take riders", async ({
   expect(errors).toEqual([]);
 });
 
+test("Kiddie Land: the toy train takes a rider once round its oval", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=amusement-park&ride=kiddie-train`);
+  // a lap is 28 s of scene time: wait on the rides finished, then on the step-off
+  await expect(canvasOf(page)).toHaveAttribute("data-ridden", "1", {
+    timeout: 240_000,
+  });
+  await expect(canvasOf(page)).toHaveAttribute("data-ride-state", "idle", {
+    timeout: 60_000,
+  });
+  expect(errors).toEqual([]);
+});
+
 test("Daydaze Motors sells a car into your garage", async ({ page }) => {
   const errors = collectErrors(page);
   await seedSave(page, { coins: 500 });

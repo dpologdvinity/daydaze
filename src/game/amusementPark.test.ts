@@ -12,6 +12,10 @@ import {
   CUP_RADIUS,
   RIDE_IDS,
   STARLIGHT_TRACK,
+  KIDDIE,
+  KIDDIE_CARS,
+  KIDDIE_SEAT_BACK,
+  KIDDIE_TRACK,
   SWING_AT,
   SWING_RADIUS,
   TEACUPS_AT,
@@ -35,8 +39,9 @@ import {
   type RideState,
   type Vec3,
 } from "./amusementPark.ts";
+import { areaOf, isBlocked } from "./area.ts";
 import { ROOMS } from "./rooms.ts";
-import { pointInPolygon } from "./walk.ts";
+import { pointInPolygon, type Vec2 } from "./walk.ts";
 
 function assertNear(actual: readonly number[], expected: readonly number[]) {
   assert.equal(actual.length, expected.length);
@@ -362,4 +367,67 @@ test("the Super Slide climbs the lift, then runs down its lane to the bottom", (
   assert.ok(top.y > 6);
   assert.ok(Math.abs(end.z - SUPER_SLIDE.bottomZ) < 0.01);
   assert.ok(end.y < 0.2);
+});
+
+test("the kiddie train's oval is a closed loop in Kiddie Land that starts at its station", () => {
+  const room = ROOMS["amusement-park"];
+  const first = KIDDIE_TRACK.samples[0];
+  // the station is the loop's west end, and the rider's first wagon starts there
+  assertNear(first, [KIDDIE.cx - KIDDIE.a, first[1], KIDDIE.cz]);
+  for (const [x, , z] of KIDDIE_TRACK.samples) {
+    assert.ok(
+      pointInPolygon(room.walkable, [x, z]),
+      `${x},${z} is off the floor`,
+    );
+    assert.ok(x > 30, `${x} is outside Kiddie Land`);
+  }
+  // a toy train: about a minute of walking round, and the whole train fits
+  // along a quarter of the loop so it never overlaps itself
+  assert.ok(KIDDIE_TRACK.length > 45 && KIDDIE_TRACK.length < 70);
+  assert.ok(KIDDIE_CARS[3] + 3 < KIDDIE_TRACK.length / 2);
+  const p = ridePose("kiddie-train", 0, false);
+  const q = ridePose("kiddie-train", rideSeconds("kiddie-train", false), false);
+  assert.ok(
+    Math.hypot(p.x - q.x, p.z - q.z) < 0.01,
+    "a lap ends where it began",
+  );
+  // she sits in the first wagon, behind the engine and the tender
+  assert.ok(
+    KIDDIE_SEAT_BACK > KIDDIE_CARS[1] && KIDDIE_SEAT_BACK < KIDDIE_CARS[3],
+  );
+});
+
+test("every ride's ring, Kiddie Land's included, can be walked to from the park's gate", () => {
+  const room = ROOMS["amusement-park"];
+  const area = areaOf(room);
+  const G = 0.25;
+  const free = (i: number, j: number) =>
+    pointInPolygon(room.walkable, [i * G, j * G]) &&
+    !isBlocked(area, [i * G, j * G]);
+  const cell = (p: Vec2): [number, number] => [
+    Math.round(p[0] / G),
+    Math.round(p[1] / G),
+  ];
+  // flood the open floor from the spawn on a quarter-meter grid
+  const seen = new Set<string>();
+  const queue = [cell(room.spawn.position)];
+  seen.add(queue[0].join());
+  for (let q = 0; q < queue.length; q++) {
+    const [i, j] = queue[q];
+    for (const [di, dj] of [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+    ]) {
+      const n: [number, number] = [i + di, j + dj];
+      if (seen.has(n.join()) || !free(...n)) continue;
+      seen.add(n.join());
+      queue.push(n);
+    }
+  }
+  for (const id of RIDE_IDS)
+    assert.ok(seen.has(cell(RIDES[id].spot).join()), `${id}'s ring is cut off`);
+  // and the train's own track is fenced off
+  assert.equal(isBlocked(area, [KIDDIE.cx, KIDDIE.cz]), true);
 });

@@ -18,6 +18,7 @@ export const RIDE_IDS = [
   "scrambler",
   "starship",
   "super-slide",
+  "kiddie-train",
 ] as const;
 export type RideId = (typeof RIDE_IDS)[number];
 
@@ -34,6 +35,21 @@ export const PIRATE_ARM = 5.4;
  * in the southwest corner by the flume's splash pool. */
 export const SCRAMBLER_AT: readonly [number, number] = [24, -28];
 export const STARSHIP_AT: readonly [number, number] = [-22.5, -48.5];
+
+/** Kiddie Land, the annex east of the fairground (x 30..48, z -37..-8): a
+ * toy train loops an oval of track centered at (cx, cz), `a` meters out east
+ * to west and `b` north to south, its station at the loop's west end. */
+export const KIDDIE = { cx: 40, cz: -22, a: 6.6, b: 10.5 } as const;
+/** Track height above the ground (the ties sit on it). */
+export const KIDDIE_RAIL = 0.1;
+/** The cars (engine, tender, two wagons) are the pack's models at this scale. */
+export const KIDDIE_SCALE = 0.6;
+/** Meters from the engine back to each car's middle along the track. */
+export const KIDDIE_CARS = [0, 4.25, 8.5, 13.65] as const;
+/** The rider sits in the first wagon: its middle is this far behind the engine. */
+export const KIDDIE_SEAT_BACK = KIDDIE_CARS[2];
+/** A rider's seat above the rails: the wagon's floor, then a bench. */
+export const KIDDIE_SEAT = 0.55;
 
 // Ride tuning. Calm (reduced motion) rides take longer, so the same motion reads
 // slower. `seated` rides sit the doll down (a horse, a cup, a chair, a
@@ -133,6 +149,13 @@ export const RIDES: Record<
     label: "Super Slide",
     spot: [SUPER_SLIDE.liftX, SUPER_SLIDE.bottomZ + 1.6],
     seconds: { normal: 14, calm: 22 },
+    seated: true,
+  },
+  // the kiddie train's first wagon, at its station in Kiddie Land
+  "kiddie-train": {
+    label: "Kiddie train",
+    spot: [KIDDIE.cx - KIDDIE.a - 2.4, KIDDIE.cz],
+    seconds: { normal: 28, calm: 42 },
     seated: true,
   },
   // the rotor pins her to the wall standing
@@ -263,6 +286,21 @@ export function buildTrack(controls: readonly Vec3[], steps = 16): Track {
 }
 
 export const COASTER_TRACK = buildTrack(COASTER_CONTROLS);
+
+// The kiddie train's oval, twelve points round, from the station at the west
+// end heading away from the midway.
+export const KIDDIE_CONTROLS: readonly Vec3[] = Array.from(
+  { length: 12 },
+  (_, k): Vec3 => {
+    const t = Math.PI + (k / 12) * Math.PI * 2;
+    return [
+      KIDDIE.cx + KIDDIE.a * Math.cos(t),
+      KIDDIE_RAIL,
+      KIDDIE.cz + KIDDIE.b * Math.sin(t),
+    ];
+  },
+);
+export const KIDDIE_TRACK = buildTrack(KIDDIE_CONTROLS, 12);
 
 // The Starlight: a hyper coaster in the back lot, through the carnival arch.
 // Out of the station along +x, up a 20 m lift, a steep first drop, a camelback
@@ -466,10 +504,15 @@ export function trackPose(
   return out;
 }
 
-export type TrackRide = "coaster" | "starlight" | "log-flume";
+export type TrackRide = "coaster" | "starlight" | "log-flume" | "kiddie-train";
 
 export function isTrackRide(ride: RideId): ride is TrackRide {
-  return ride === "coaster" || ride === "starlight" || ride === "log-flume";
+  return (
+    ride === "coaster" ||
+    ride === "starlight" ||
+    ride === "log-flume" ||
+    ride === "kiddie-train"
+  );
 }
 
 /** The track a coaster or the flume runs on. */
@@ -478,7 +521,9 @@ export function trackOf(ride: TrackRide): Track {
     ? COASTER_TRACK
     : ride === "starlight"
       ? STARLIGHT_TRACK
-      : FLUME_TRACK;
+      : ride === "kiddie-train"
+        ? KIDDIE_TRACK
+        : FLUME_TRACK;
 }
 
 /**
@@ -499,11 +544,19 @@ export function ridePose(
       return ferrisPose(FERRIS, progress, out);
     case "coaster":
     case "starlight":
-    case "log-flume": {
-      // seated in the lead car or log (the scene puts it there too)
+    case "log-flume":
+    case "kiddie-train": {
+      // seated in the lead car or log (the scene puts it there too), or in
+      // the toy train's first wagon, which the scene seats at this point
       const track = trackOf(ride);
       trackPose(track, progress * track.length, out);
-      out.y += (ride === "log-flume" ? LOG_SEAT : CAR_SEAT) - SIT_HIPS;
+      const seat =
+        ride === "log-flume"
+          ? LOG_SEAT
+          : ride === "kiddie-train"
+            ? KIDDIE_SEAT
+            : CAR_SEAT;
+      out.y += seat - SIT_HIPS;
       return out;
     }
     case "super-slide":

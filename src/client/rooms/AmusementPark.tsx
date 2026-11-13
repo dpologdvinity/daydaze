@@ -24,6 +24,7 @@ import { walkTo, type Player } from "../world/PlayerController.tsx";
 import { isSceneReady } from "../world/ready.ts";
 import { Bulbs } from "./amusementpark/Bulbs.tsx";
 import { Fairground } from "./amusementpark/Fairground.tsx";
+import { KiddieLand } from "./amusementpark/KiddieLand.tsx";
 import { Midway } from "./amusementpark/Midway.tsx";
 import { PARK_NPCS, ParkNpc } from "./amusementpark/Npcs.tsx";
 import { ENTRANCE_Z } from "./amusementpark/layout.ts";
@@ -226,6 +227,7 @@ export function AmusementPark({
     delete coasterRiders.coaster;
     delete coasterRiders.starlight;
     delete coasterRiders["log-flume"];
+    delete coasterRiders["kiddie-train"];
     if (phase.phase === "riding" && isTrackRide(phase.ride)) {
       coasterRiders[phase.ride] =
         rideProgress(now - phase.start, phase.seconds) *
@@ -295,10 +297,10 @@ export function AmusementPark({
       {/* the fairground beyond the rides' back fence */}
       <mesh
         rotation-x={-Math.PI / 2}
-        position={[0, -0.02, -30]}
+        position={[8, -0.02, -30]}
         material={BLACKTOP}
       >
-        <planeGeometry args={[70, 60]} />
+        <planeGeometry args={[110, 60]} />
       </mesh>
       <Beams beams={BEAMS} aim={[0, -12]} aimY={12} spread={[14, 4]} />
       <PortalPads room={ROOMS["amusement-park"]} color="#ffb02e" />
@@ -325,6 +327,7 @@ export function AmusementPark({
       <Scrambler />
       <Starship />
       <SuperSlide />
+      <KiddieLand />
       {RIDE_IDS.map((id, i) => (
         <Ring
           key={id}
