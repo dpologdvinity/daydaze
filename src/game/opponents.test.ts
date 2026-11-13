@@ -113,3 +113,21 @@ test("outside a round she idles", () => {
     "Idle_Loop",
   );
 });
+
+test("each plan has its own key, and the same state gives the same plan object", () => {
+  const plans = [
+    sense({}),
+    sense({ open: false }),
+    sense({ moving: true }),
+    sense({ moving: true, open: false }),
+    sense({ sinceShot: 0.1 }),
+    sense({ open: false, sinceShot: RELOAD_AFTER + 0.2 }),
+    sense({ down: true, sinceTag: 0.1, untilUp: 2 }),
+    sense({ down: true, sinceTag: 1, untilUp: 2 }),
+    sense({ down: true, sinceTag: 2.5, untilUp: getUpSeconds / 2 }),
+    sense({ playing: false }),
+  ].map(opponentClip);
+  assert.equal(new Set(plans.map((p) => p.key)).size, plans.length);
+  // nothing is allocated per call: the frame loop runs this for every rival
+  assert.equal(opponentClip(sense({})), opponentClip(sense({})));
+});

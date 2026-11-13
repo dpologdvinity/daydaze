@@ -179,7 +179,7 @@ export function Opponent({
 
   const group = useRef<THREE.Group>(null);
   const pose = useRef(newOpponentPose());
-  const state = useRef({ key: "", yaw: 0 });
+  const state = useRef({ key: "", clip: "" });
 
   useFrame((_, dt) => {
     const g = group.current;
@@ -189,11 +189,10 @@ export function Opponent({
     g.position.set(p.x, 0, p.z);
     g.rotation.y = p.yaw;
     const plan = opponentClip(p.sense);
-    const key = `${plan.clip}${plan.reverse ? "<" : ">"}`;
     const s = state.current;
-    if (key !== s.key) {
+    if (plan.key !== s.key) {
       const next = rig.actions.get(plan.clip);
-      const prev = rig.actions.get(s.key.slice(0, -1));
+      const prev = rig.actions.get(s.clip);
       if (next) {
         next.reset();
         next.setLoop(plan.loop ? THREE.LoopRepeat : THREE.LoopOnce, Infinity);
@@ -207,7 +206,8 @@ export function Opponent({
         // the first clip is in at full weight, so she never shows the bind pose
         else next.setEffectiveWeight(1);
       }
-      s.key = key;
+      s.key = plan.key;
+      s.clip = plan.clip;
     }
     rig.mixer.update(dt);
     // the vest glows with the rival's state; the pistol's muzzle with a shot

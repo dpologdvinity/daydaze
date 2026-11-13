@@ -50,40 +50,46 @@ export type OpponentSense = {
   sinceShot: number;
 };
 
-/** One clip to play: whether it loops, and whether it runs backward. */
+/** One clip to play: whether it loops, whether it runs backward, and a key
+ * that differs between any two plans, for telling when the clip changes. */
 export type ClipPlan = {
-  clip: OpponentClipId;
-  loop: boolean;
-  reverse: boolean;
+  readonly clip: OpponentClipId;
+  readonly loop: boolean;
+  readonly reverse: boolean;
+  readonly key: string;
 };
 
 const plan = (
   clip: OpponentClipId,
   loop = true,
   reverse = false,
-): ClipPlan => ({
-  clip,
-  loop,
-  reverse,
-});
+): ClipPlan => ({ clip, loop, reverse, key: `${clip}${reverse ? "<" : ">"}` });
+
+// made once: the map runs every frame for every rival and returns these
+const IDLE = plan("Idle_Loop");
+const FLINCH = plan("Hit_Chest", false);
+const DOWN = plan("Death01", false);
+const GET_UP = plan("Death01", false, true);
+const RUN = plan("Jog_Fwd_Loop");
+const CREEP = plan("Crouch_Fwd_Loop");
+const SHOOT = plan("Pistol_Shoot", false);
+const AIM = plan("Pistol_Aim_Neutral");
+const RELOAD = plan("Pistol_Reload", false);
+const CROUCH = plan("Crouch_Idle_Loop");
 
 /** The clip rival `s` should play: down beats moving beats firing beats
  * aiming or crouching. */
 export function opponentClip(s: OpponentSense): ClipPlan {
-  if (!s.playing) return plan("Idle_Loop");
+  if (!s.playing) return IDLE;
   if (s.down) {
-    if (s.sinceTag < HIT_SECONDS) return plan("Hit_Chest", false);
+    if (s.sinceTag < HIT_SECONDS) return FLINCH;
     // she gets up by the fall played backward
-    return plan("Death01", false, s.untilUp <= getUpSeconds);
+    return s.untilUp <= getUpSeconds ? GET_UP : DOWN;
   }
   // a rival heading for her peek spot runs; one heading home creeps low
-  if (s.moving) return plan(s.open ? "Jog_Fwd_Loop" : "Crouch_Fwd_Loop");
-  if (s.open) {
-    return s.sinceShot < SHOT_SECONDS
-      ? plan("Pistol_Shoot", false)
-      : plan("Pistol_Aim_Neutral");
-  }
+  if (s.moving) return s.open ? RUN : CREEP;
+  if (s.open) return s.sinceShot < SHOT_SECONDS ? SHOOT : AIM;
   return s.sinceShot > RELOAD_AFTER && s.sinceShot < RELOAD_AFTER + 1.3
-    ? plan("Pistol_Reload", false)
-    : plan("Crouch_Idle_Loop");
+    ? RELOAD
+    : CROUCH;
 }
