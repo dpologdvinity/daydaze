@@ -34,9 +34,9 @@ export const FAR_BOX_TRIANGLES = 10;
 export const FAR_RANGE = 560;
 
 /** A far box is skipped when its biggest side is under this share of its
- * distance (a 9 m house past 180 m is a speck): the small ones drop out
+ * distance (a 9 m house past 140 m is a speck): the small ones drop out
  * first as the range grows, the towers last. */
-export const FAR_MIN_SIZE = 0.05;
+export const FAR_MIN_SIZE = 0.065;
 
 /** Whether a far box `size` meters across (its longest side or height) is worth drawing `distance` meters off. */
 export const farWorthDrawing = (size: number, distance: number): boolean =>
