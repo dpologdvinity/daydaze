@@ -51,6 +51,8 @@ export const GESTURE_IDLES: readonly string[] = [
   "talk-two-hands",
   "nod-yes",
   "bashful",
+  "talk-general",
+  "head-sway",
 ];
 
 /** How an NPC stands about. */
@@ -179,6 +181,7 @@ export function seatPlan(seed: number, slot: number, own: boolean): string {
 /** What a standing NPC does with her hands while she speaks a line. */
 export const TALK_CLIPS: readonly string[] = [
   "chatting",
+  "talk-general",
   "talk-two-hands",
   "talk-ask",
   "talk-question",
