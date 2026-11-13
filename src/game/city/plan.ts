@@ -36,10 +36,11 @@ import {
   STREET_DRESS,
 } from "./dressing.ts";
 import {
+  LOT_NEAR,
   LOT_SPECS,
   isLotBlock,
   lotRow,
-  type LotInstance,
+  type PlacedLot,
 } from "./districts.ts";
 import { LAMP_RANGE, type FurnitureSpot } from "./furniture.ts";
 import {
@@ -139,7 +140,7 @@ export type CityPlan = {
   bays: BayInstance[];
   /** District lots (Little Manila, Chinatown, Koreatown, Arts District,
    * Uptown) for the blocks within `bayRange` of the player. */
-  lots: LotInstance[];
+  lots: PlacedLot[];
   /** Suburbia houses within reach of the player, drawn as models. */
   houses: HouseSpot[];
   /** Crosswalks, corner blocks, center lines and street props (StreetPieces.tsx). */
@@ -736,7 +737,7 @@ export function planCity(
   streetMarks(cells, instances);
 
   const bays: BayInstance[] = [];
-  const lots: LotInstance[] = [];
+  const lots: PlacedLot[] = [];
   const houses: HouseSpot[] = [];
   for (const b of BUILDINGS) {
     const box = boundsOf(b.footprint);
@@ -773,7 +774,10 @@ export function planCity(
     );
     for (const lot of lotted) {
       if (lot.back && d >= bayRange * BACK_RANGE) continue;
-      lots.push(lot);
+      lots.push({
+        ...lot,
+        far: Math.hypot(lot.x - from[0], lot.z - from[1]) >= LOT_NEAR,
+      });
       lotSign(instances, lot);
     }
     // back walls dress only the nearest blocks, the street faces farther out
@@ -834,7 +838,11 @@ export function trianglesOf(plan: CityPlan): number {
       0,
     ) +
     plan.bays.reduce((sum, bay) => sum + BAY_TRIANGLES[bay.kind], 0) +
-    plan.lots.reduce((sum, lot) => sum + LOT_SPECS[lot.model].tris, 0) +
+    plan.lots.reduce(
+      (sum, lot) =>
+        sum + (lot.far ? LOT_SPECS[lot.model].lo : LOT_SPECS[lot.model].tris),
+      0,
+    ) +
     plan.houses.reduce(
       (sum, h) => sum + (HOUSE_MODEL_TRIANGLES[h.variant] ?? 0),
       0,
@@ -849,6 +857,6 @@ export function drawCallsOf(plan: CityPlan): number {
     KINDS.filter((kind) => plan.instances[kind].length > 0).length +
     (plan.street.length > 0 ? STREET_DRAW_CALLS : 0) +
     new Set(plan.bays.map((bay) => bay.kind)).size +
-    new Set(plan.lots.map((lot) => lot.model)).size
+    new Set(plan.lots.map((lot) => `${lot.model}${lot.far}`)).size
   );
 }

@@ -11,6 +11,7 @@ import {
 import { BUILDINGS, CITY_SPAWN } from "./layout.ts";
 import { isMotel } from "./nyc.ts";
 import { BAY_RANGE } from "./tuning.ts";
+import { LOT_NEAR } from "./districts.ts";
 import {
   drawCallsOf,
   CORNICE_COLOR,
@@ -232,4 +233,12 @@ test("a block wears lots or bays, never both; far blocks are plain boxes", () =>
       Math.hypot(lot.x - at[0], lot.z - at[1]) < reach + 40,
       "lots stay within the lot range plus the block's own size",
     );
+});
+
+test("lots past LOT_NEAR from the player draw their far twin, nearer ones the full model", () => {
+  const at: Vec2 = [262, -8];
+  const plan = planCity(cellsWithin(at, VIEW_RADIUS), 2, at, BAY_RANGE.low);
+  assert.ok(plan.lots.some((l) => l.far) && plan.lots.some((l) => !l.far));
+  for (const lot of plan.lots)
+    assert.equal(lot.far, Math.hypot(lot.x - at[0], lot.z - at[1]) >= LOT_NEAR);
 });

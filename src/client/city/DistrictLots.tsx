@@ -3,7 +3,7 @@
 // art/city/district_blocks.py) standing along the blocks of Little Manila,
 // Chinatown, Koreatown, the Arts District and Uptown, at the spots the city
 // plan gives (src/game/city/districts.ts). One InstancedMesh2 per model with
-// a far twin past LOT_NEAR, all sharing one material.
+// a far twin (the plan marks which lots are far), all sharing one material.
 //
 // The pack paints with a 32 px palette (4 by 4 swatches: wall, trim, roof,
 // door, glass...), and every face of every model sits at the center of one
@@ -24,19 +24,18 @@ import { InstancedMesh2, patchShader } from "@three.ez/instanced-mesh";
 import {
   LOT_CAPACITY,
   LOT_MODELS,
-  LOT_NEAR,
   PALETTES,
   SWATCH,
   swatchColors,
-  type LotInstance,
   type LotModel,
+  type PlacedLot,
 } from "../../game/city/districts.ts";
 import { createStore } from "../rooms/shared/store.ts";
 
 const URL = "/models/districts/lots.glb";
 
 /** The lots near the player and where the plan was cut; set by CityScene. */
-export const cityLots = createStore({ lots: [] as readonly LotInstance[] });
+export const cityLots = createStore({ lots: [] as readonly PlacedLot[] });
 
 /** 0 by day, 1 at night: how brightly the panes glow (set by dimForDay). */
 export const LOT_NIGHT = { value: 1 };
@@ -201,18 +200,14 @@ function prepared(node: THREE.Mesh): THREE.BufferGeometry {
 const tint = new THREE.Color();
 const up = new THREE.Vector3(0, 1, 0);
 
-type LotMesh = { model: LotModel; mesh: InstancedMesh2 };
+type LotMesh = { model: LotModel; far: boolean; mesh: InstancedMesh2 };
 
 /** Writes every lot into its model's mesh. */
-function place(meshes: readonly LotMesh[], lots: readonly LotInstance[]) {
-  const byModel = new Map<LotModel, LotInstance[]>();
-  for (const lot of lots) {
-    const list = byModel.get(lot.model) ?? [];
-    list.push(lot);
-    byModel.set(lot.model, list);
-  }
-  for (const { model, mesh } of meshes) {
-    const list = (byModel.get(model) ?? []).slice(0, LOT_CAPACITY);
+function place(meshes: readonly LotMesh[], lots: readonly PlacedLot[]) {
+  for (const { model, far, mesh } of meshes) {
+    const list = lots
+      .filter((lot) => lot.model === model && lot.far === far)
+      .slice(0, LOT_CAPACITY);
     mesh.clearInstances();
     mesh.addInstances(list.length, (obj, i) => {
       const lot = list[i];
@@ -238,14 +233,17 @@ export function DistrictLots(): JSX.Element | null {
         throw new Error(`lots.glb has no ${name}`);
       return found;
     };
-    const built = LOT_MODELS.map((model) => {
-      const mesh = new InstancedMesh2(prepared(node(model)), lotMaterial(), {
-        capacity: LOT_CAPACITY,
-      });
-      // past LOT_NEAR from the camera each lot draws its far twin
-      mesh.addLOD(prepared(node(`${model}_lo`)), lotMaterial(), LOT_NEAR);
-      return { model, mesh };
-    });
+    const built = LOT_MODELS.flatMap((model) =>
+      [false, true].map((far) => ({
+        model,
+        far,
+        mesh: new InstancedMesh2(
+          prepared(node(far ? `${model}_lo` : model)),
+          lotMaterial(),
+          { capacity: LOT_CAPACITY },
+        ),
+      })),
+    );
     setMeshes(built);
     return () => {
       for (const { mesh } of built) {
@@ -266,8 +264,8 @@ export function DistrictLots(): JSX.Element | null {
   }, [meshes, lots, invalidate, canvas]);
   return (
     <>
-      {meshes.map(({ model, mesh }) => (
-        <primitive key={model} object={mesh} />
+      {meshes.map(({ model, far, mesh }) => (
+        <primitive key={`${model}${far}`} object={mesh} />
       ))}
     </>
   );

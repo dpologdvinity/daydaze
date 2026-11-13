@@ -59,9 +59,10 @@ export const LOT_SPECS: Readonly<
   s6: { w: 5.6, roof: 19.89, tris: 921, lo: 492 },
 };
 
-/** Lots farther than this from the camera draw their far twin (LOT_SPECS lo),
- * a third to half the triangles. */
-export const LOT_NEAR = 24;
+/** Lots farther than this from the player draw their far twin (LOT_SPECS lo),
+ * a third to half the triangles. The plan decides when it is cut, not the
+ * camera: the twins are separate meshes, filled per plan reload. */
+export const LOT_NEAR = 30;
 
 /** The most lots of one model in any view; sizes each model's InstancedMesh. */
 export const LOT_CAPACITY = 128;
@@ -378,3 +379,6 @@ export function lotRow(b: Building): LotInstance[] {
   });
   return out;
 }
+
+/** A lot as the plan hands it to the client: `far` picks the far twin. */
+export type PlacedLot = LotInstance & { far: boolean };

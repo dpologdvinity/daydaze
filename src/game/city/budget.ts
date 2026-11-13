@@ -36,7 +36,7 @@ import {
 } from "./seasonSpots.ts";
 import { CITY_FLEET, shipModel } from "../ships.ts";
 import { BAY_TRIANGLES, HOUSE_MODELS, type BayInstance } from "./nyc.ts";
-import { LOT_NEAR, LOT_SPECS, type LotInstance } from "./districts.ts";
+import { LOT_SPECS, type PlacedLot } from "./districts.ts";
 import { ALL_GROWTH } from "./growth.ts";
 import {
   TREE_VARIANTS,
@@ -483,24 +483,17 @@ export function worstViewBayTriangles(
   );
 }
 
-/** How far behind her the camera can sit: a lot this much farther than
- * LOT_NEAR from her can still be near the camera. */
-const CAMERA_TRAIL = 12;
-
-/** The same for the district lots (also culled one by one); those past the
- * camera's LOT_NEAR draw their far twin. */
+/** The same for the district lots (also culled one by one); the far ones
+ * draw their twin. */
 export function worstViewLotTriangles(
-  lots: readonly LotInstance[],
+  lots: readonly PlacedLot[],
   at: Vec2,
 ): number {
   return worstView(
     lots.map((lot) => ({
       x: lot.x,
       z: lot.z,
-      cost:
-        Math.hypot(lot.x - at[0], lot.z - at[1]) < LOT_NEAR + CAMERA_TRAIL
-          ? LOT_SPECS[lot.model].tris
-          : LOT_SPECS[lot.model].lo,
+      cost: lot.far ? LOT_SPECS[lot.model].lo : LOT_SPECS[lot.model].tris,
     })),
     at,
   );
@@ -611,7 +604,10 @@ export function lowTierCost(at: Vec2): {
     drawCallsOf(plan) +
     Math.min(houseModels, HOUSE_MODELS.length) * 4;
   const allBays = plan.bays.reduce((n, b) => n + BAY_TRIANGLES[b.kind], 0);
-  const allLots = plan.lots.reduce((n, l) => n + LOT_SPECS[l.model].tris, 0);
+  const allLots = plan.lots.reduce(
+    (n, l) => n + (l.far ? LOT_SPECS[l.model].lo : LOT_SPECS[l.model].tris),
+    0,
+  );
   const planTriangles = trianglesOf(plan);
   // the bays are culled per instance: count only the worst view of them
   let triangles =
