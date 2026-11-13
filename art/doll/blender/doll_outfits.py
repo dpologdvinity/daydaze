@@ -4,7 +4,7 @@ Names: Outfit_<id> (OUTFITS in src/game/look.ts), Swim_<id> (SWIMSUITS) and
 Shoes_<id>. Garments come from MakeHuman CC0 proxies or are cut from the base
 mesh's tights and skirt helpers, so all of them follow the body sliders. Each
 garment also adds a "tuck_<name>" shape key to the body that pulls the skin
-under it inwards, so skin never pokes through cloth.
+under it inwards, so skin never pokes through cloth, in a pose or not.
 """
 
 import bmesh
@@ -16,8 +16,11 @@ from mathutils.kdtree import KDTree
 
 import proxies
 
-TUCK = 0.006  # metres the skin under a garment sinks
-CLEAR = 0.004  # gap kept between sunk skin and the cloth
+TUCK = 0.03  # metres the skin a garment hides sinks, at most
+DEPTH = 0.45  # ...and never more than this share of the body's thickness there
+SNUG = 0.03  # metres within which proxy cloth takes the skin's bone weights
+GRID = 0.002  # metres: the precision a tuck key is stored at
+CLEAR = 0.008  # gap kept between sunk skin and the cloth
 
 
 def heights(ctx):
@@ -154,13 +157,24 @@ def arm_weight(ctx, f):
 
 
 def tuck(ctx, body, body_src, garment, name):
-    """A body shape key sinking the skin a garment covers: each covered
-    vertex sinks just far enough to sit CLEAR behind the cloth surface."""
+    """A body shape key sinking the skin a garment covers.
+
+    Skin the garment hides (MakeHuman's delete_verts) sinks well into the
+    body: the cloth's bone weights are a blend of its neighbors', so in a
+    pose it slides a centimeter or two off the skin beneath, and skin only
+    4 mm behind it shows through. Any other skin near the cloth sinks just
+    far enough to sit CLEAR behind its surface."""
     co = np.array([v.co[:] for v in body.data.vertices])
     normals = np.array([v.normal[:] for v in body.data.vertices])
     sink = np.zeros(len(co))
     if "deleted" in garment:
-        sink[np.isin(body_src, np.array(garment["deleted"], int))] = TUCK
+        hidden = np.where(np.isin(body_src, np.array(garment["deleted"], int)))[0]
+        inside = BVHTree.FromObject(body, bpy.context.evaluated_depsgraph_get())
+        for i in hidden:
+            # how thick the body is here: the ray from just under the skin
+            # to its far side (the sink stops short of the middle)
+            far, _n, _f, thick = inside.ray_cast(Vector(co[i] - normals[i] * 1e-3), Vector(-normals[i]))
+            sink[i] = TUCK if far is None else min(TUCK, DEPTH * thick)
     bvh = BVHTree.FromObject(garment, bpy.context.evaluated_depsgraph_get())
     for i, p in enumerate(co):
         loc, _n, _f, dist = bvh.find_nearest(Vector(p), 0.03)
@@ -170,7 +184,9 @@ def tuck(ctx, body, body_src, garment, name):
         if outside > -CLEAR:
             sink[i] = max(sink[i], min(outside + CLEAR, 0.03))
     sk = body.shape_key_add(name=f"tuck_{name}", from_mix=False)
-    sk.data.foreach_set("co", (co - normals * sink[:, None]).ravel())
+    # on a GRID-metre grid: the key compresses far smaller, unseen
+    delta = np.round(normals * sink[:, None] / GRID) * GRID
+    sk.data.foreach_set("co", (co - delta).ravel())
 
 
 def build(ctx, body, body_src):
@@ -189,6 +205,7 @@ def build(ctx, body, body_src):
         "Outfit_flares",
         "clothes/female_sportsuit01/female_sportsuit01.mhclo",
         proxies.textured("outfit_flares", img),
+        snug=SNUG,
     )
     flare(ctx, flares)
     out.append(flares)
@@ -212,7 +229,9 @@ def build(ctx, body, body_src):
     ):
         img = proxies.detail_texture(f"clothes/{suit}/{suit}_diffuse.png", 1024, blank=blank)
         out.append(
-            proxies.build(ctx, f"Outfit_{cut}", f"clothes/{suit}/{suit}.mhclo", proxies.textured(f"outfit_{cut}", img))
+            proxies.build(
+                ctx, f"Outfit_{cut}", f"clothes/{suit}/{suit}.mhclo", proxies.textured(f"outfit_{cut}", img), snug=SNUG
+            )
         )
 
     # slip mini: a strapless satin bodice on the tights helper, a fitted skirt

@@ -1,11 +1,11 @@
 """Dev-only: counts body vertices that poke through a garment in a baked clip.
 
     blender --background --factory-startup --python art/doll/blender/skin_check.py -- \
-        Outfit_suit [sex=male] [pack=social] [clips=idle,walk] [frames=6]
+        Outfit_suit [sex=male] [pack=social] [clips=idle,walk] [frames=6] [zmin=1.15] [zmax=1.45]
 
 Imports the raw build (.cache/out), wears the garment (its tuck key at 1) and,
 for frames spread over each clip, reports the body vertices the tuck sank that
-sit outside the cloth's surface (skin showing through). `clips` are action
+are newly without cloth ahead of them along their normal (skin showing through). `clips` are action
 name prefixes; with none given, every clip in the pack is checked.
 """
 
@@ -14,7 +14,6 @@ import sys
 
 import bpy
 import numpy as np
-from mathutils import Vector
 from mathutils.bvhtree import BVHTree
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -25,6 +24,7 @@ opts = dict(a.split("=") for a in args[1:])
 sfx = "-m" if opts.get("sex") == "male" else ""
 count = int(opts.get("frames", 6))
 pack = f"-{opts['pack']}" if opts.get("pack") else ""
+dump = opts.get("dump") == '1'  # list each poking vertex (rest, posed)
 wanted = [c for c in opts.get("clips", "").split(",") if c]
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -36,7 +36,7 @@ before = set(bpy.data.objects)
 bpy.ops.import_scene.gltf(filepath=os.path.join(OUT, f"{kind.lower()}-{name}{sfx}.glb"))
 garment = None
 for o in set(bpy.data.objects) - before:
-    if o.type == "MESH":
+    if o.type == "MESH" and o.name == part:  # not the importer's bone-shape icosphere
         for m in o.modifiers:
             if m.type == "ARMATURE":
                 m.object = rig
@@ -49,8 +49,9 @@ for ob in (body, garment):
         for kb in ob.data.shape_keys.key_blocks:
             kb.value = 1.0 if kb.name == f"tuck_{name}" else 0.0
 before = set(bpy.data.objects)
-# the baked clips ship only optimized (meshopt); Blender reads those
-bpy.ops.import_scene.gltf(filepath=os.path.join(HERE, "..", "..", "..", "public", "models", "doll", f"anims{pack}{sfx}.glb"))
+# the raw bake (mocap.py; `pack=test` is its `-- id id` run) has the clips on
+# an armature's bones; the shipped optimized ones animate bare nodes
+bpy.ops.import_scene.gltf(filepath=os.path.join(OUT, f"anims{pack}{sfx}.glb"))
 for o in set(bpy.data.objects) - before:
     bpy.data.objects.remove(o)
 rig.animation_data_create()
@@ -62,10 +63,43 @@ base, tuck = np.empty(n * 3), np.empty(n * 3)
 keys["Basis"].data.foreach_get("co", base)
 keys[f"tuck_{name}"].data.foreach_get("co", tuck)
 covered = np.where(np.abs(tuck - base).reshape(-1, 3).sum(1) > 1e-6)[0]
+# zmin=1.15 looks only at the torso above the waist (metres, Blender space)
+zmin = float(opts.get("zmin", -9))
+zmax = float(opts.get("zmax", 9))  # 1.45 leaves out the neck, which shows above a collar
+rest_z = base.reshape(-1, 3)[covered][:, 2]
+covered = covered[(rest_z > zmin) & (rest_z < zmax)]
 print(f"{part}: {len(covered)} of {n} body vertices covered")
 
-rest = np.array([v.co[:] for v in body.data.vertices])  # bind pose, tucked
+rest = base.reshape(-1, 3)  # bind pose, untucked
 sc = bpy.context.scene
+
+
+def poking():
+    """Covered vertices with no cloth ahead of them along their own normal
+    in the current pose, each with its distance outside the cloth."""
+    dg = bpy.context.evaluated_depsgraph_get()
+    bvh = BVHTree.FromObject(garment, dg)
+    ev = body.evaluated_get(dg)
+    me = ev.to_mesh()
+    out = {}
+    for v in covered:
+        # local space: a clip may move the rig object itself, and the cloth's BVH is local too
+        p = me.vertices[v].co
+        if bvh.ray_cast(p, me.vertex_normals[v].vector, 0.08)[0] is None:
+            loc, nor, _f, _d = bvh.find_nearest(p, 0.2)
+            out[int(v)] = (p - loc).dot(nor) if loc is not None else 0.0
+            if dump:
+                print("POKE", int(v), [round(float(c), 3) for c in rest[v]], "posed", [round(c, 3) for c in p])
+    ev.to_mesh_clear()
+    return out
+
+
+# skin the cloth never covers in the bind pose (a neck above a collar, an
+# armpit) isn't a pose's fault: only what a clip newly uncovers counts
+sc.frame_set(1)
+bind = set(poking())
+print(f"  bind pose: {len(bind)} vertices with no cloth over them")
+worst_depth = {}
 for act in sorted(bpy.data.actions, key=lambda a: a.name):
     if wanted and not any(act.name.startswith(w) for w in wanted):
         continue
@@ -76,18 +110,18 @@ for act in sorted(bpy.data.actions, key=lambda a: a.name):
     worst, worst_at, where = 0, 0, {}
     for i in range(count):
         sc.frame_set(int(f0 + (f1 - f0) * i / count))
-        dg = bpy.context.evaluated_depsgraph_get()
-        bvh = BVHTree.FromObject(garment, dg)
-        ev = body.evaluated_get(dg)
-        me = ev.to_mesh()
-        poked = 0
-        for v in covered:
-            p = ev.matrix_world @ me.vertices[v].co
-            loc, nor, _f, _d = bvh.find_nearest(p, 0.05)
-            if loc is not None and (p - loc).dot(nor) > 0.0005:
-                poked += 1
-                where[int(rest[v][2] * 10)] = where.get(int(rest[v][2] * 10), 0) + 1
-        ev.to_mesh_clear()
-        if poked > worst:
-            worst, worst_at = poked, i
-    print(f"  {act.name}: worst {worst} poking (frame {worst_at}/{count}), by height {dict(sorted(where.items()))}")
+        new = {v: d for v, d in poking().items() if v not in bind}
+        for v, d in new.items():
+            where[int(rest[v][2] * 10)] = where.get(int(rest[v][2] * 10), 0) + 1
+            worst_depth[v] = max(worst_depth.get(v, 0.0), d)
+        if len(new) > worst:
+            worst, worst_at = len(new), i
+    print(f"  {act.name}: worst {worst} newly poking (frame {worst_at}/{count}), by height {dict(sorted(where.items()))}")
+
+depths = np.array(list(worst_depth.values()))
+print(
+    f"{len(depths)} vertices poke in some pose; distance outside the cloth (mm) "
+    f"p50 {np.percentile(depths, 50) * 1000:.1f} max {depths.max() * 1000:.1f}"
+    if len(depths)
+    else "no vertex pokes in any pose"
+)

@@ -2,7 +2,7 @@
 a retarget by eye (Workbench, so it is quick).
 
     blender --background --factory-startup --python art/doll/blender/anim_strip.py -- \
-        walk-easy /tmp/strip [frames=4] [view=side] [sex=female] [pack=social] [show=Outfit_jeans] [chest=1]
+        walk-easy /tmp/strip [frames=4] [view=side] [focus=0.5] [sex=female] [pack=social] [show=Outfit_jeans] [chest=1]
 
 Writes /tmp/strip_0.png ... one per frame, evenly over the clip; montage
 them with ImageMagick. Reads .cache/out (the raw build), not public/.
@@ -79,7 +79,7 @@ if chest:
             o.color = (0.9, 0.6, 0.4, 1) if o.name.startswith("Body") else (0.35, 0.35, 0.4, 1)
 sc.camera = cam
 d = {"side": Vector((1, 0, 0)), "front": Vector((0, -1, 0)), "back": Vector((0, 1, 0)), "three": Vector((1, -1, 0)).normalized()}[view]
-cam.location = Vector((0, 0, 1.25 if chest else 0.95)) + d * 6
+cam.location = Vector((0, 0, float(opts.get("focus", 1.25 if chest else 0.95)))) + d * 6
 cam.rotation_euler = (-d).to_track_quat("-Z", "Y").to_euler()
 for i in range(count):
     f = f0 + (f1 - f0) * i / max(1, count)
