@@ -23,7 +23,7 @@ export type Flock = {
 export type Pose = { x: number; y: number; z: number; yaw: number };
 
 /** A butterfly's size: wingspan in meters. */
-export const WINGSPAN = 0.22;
+export const WINGSPAN = 0.3;
 /** How high above the ground a butterfly flies, lowest and highest. */
 export const FLIGHT = { min: 0.35, max: 2.2 } as const;
 /** How near (meters, from a flock's box) the player must be for the park's

@@ -1126,8 +1126,16 @@ const SHOTS: {
     // butterflies over the park's east lawn, close
     name: "butterflies-park",
     query:
-      "room=city&view=room&time=14:00&at=262,-270&cam=256,3,-265,266,1,-278",
-    act: cityReady,
+      "room=city&view=room&time=14:00&at=254,-280&cam=251,2,-285,268,1.3,-277",
+    act: async (page) => {
+      await cityReady(page);
+      // the flock is in: it exists only while a flock is near and it is day
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.butterflies) > 0,
+        undefined,
+        { timeout: 120_000 },
+      );
+    },
   },
   {
     // the park's entrance from Park Avenue, flanked by trees
