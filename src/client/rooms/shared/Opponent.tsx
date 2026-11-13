@@ -71,6 +71,11 @@ const FLASH = 0.09;
 /** The pack's shoes are black and its pants dark: only the jersey, helmet and
  * vest take the team color. */
 const VEST_DARK = 0.18;
+/** The laser tag readability boost: jersey brightness, its self-light (a share
+ * of the team color) and the skin's self-light. */
+const READABLE_BOOST = 1.5;
+const READABLE_GLOW = 0.22;
+const READABLE_SKIN = "#5a4036";
 
 function skinUrl(look: OpponentLook) {
   return `${DIR}/skin-${look.sex}-${look.tone}.jpg`;
@@ -101,11 +106,24 @@ function dress(root: THREE.Object3D, look: OpponentLook, skin: THREE.Texture) {
       case "Body":
         own.map = skin;
         own.roughness = 0.62;
+        // a black-lit arena: the skin gets a faint self-light of its own
+        // tone (the map), so a rival reads against the dark with no extra light
+        if (look.glow) {
+          own.emissive.set(READABLE_SKIN);
+          own.emissiveMap = skin;
+        }
         break;
       case "Cloth":
         own.vertexColors = true;
         own.color.set(look.team);
         own.roughness = 0.85;
+        // neon team colors: a brighter jersey that lights itself a little (the
+        // emissive is not scaled by the vertex colors, so the dark pants glow
+        // dimly too); plain cloth on the lit paintball field
+        if (look.glow) {
+          own.color.multiplyScalar(READABLE_BOOST);
+          own.emissive.set(look.team).multiplyScalar(READABLE_GLOW);
+        }
         parts.cloth = own;
         break;
       case "Vest":

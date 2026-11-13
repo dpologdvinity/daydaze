@@ -21,6 +21,8 @@ DEPTH = 0.45  # ...and never more than this share of the body's thickness there
 SNUG = 0.03  # metres within which proxy cloth takes the skin's bone weights
 GRID = 0.002  # metres: the precision a tuck key is stored at
 CLEAR = 0.008  # gap kept between sunk skin and the cloth
+LEG_PULL = 1.0  # share of the way covered leg skin is drawn in to its leg's axis: 1 collapses it onto the axis, so there is nothing to show through
+LEG_RAMP = 0.12  # metres up from a garment's lowest edge over which that pull fades in
 
 
 def heights(ctx):
@@ -156,6 +158,41 @@ def arm_weight(ctx, f):
     return sum(ctx.weight(g)[f] for g in i).max()
 
 
+def leg_pull(ctx, body, co, covered, floor):
+    """Vectors drawing covered leg skin in to the axis of its leg.
+
+    Sinking skin along its own normal does not clear the back of a bent knee:
+    the blended weights swing a normal-wise sink sideways there, and the skin
+    still shows through the crease. Skin collapsed onto the thigh-and-calf
+    axis stays inside the limb whatever the bend does: with nothing left to
+    poke out, the cloth hides it as if its faces were deleted. It fades in over
+    LEG_RAMP above the garment's lowest edge (`floor`), so a hem leaves no
+    step, and with the vertex's share of leg weight, so the hip is left alone.
+    The weights come from the body object's own groups, so the low-poly body
+    gets the same."""
+    names = {g.index: g.name for g in body.vertex_groups}
+    pull = np.zeros_like(co)
+    bones = ctx.rig.data.bones
+    for side in ("Left", "Right"):
+        legs = {f"mixamorig:{side}UpLeg", f"mixamorig:{side}Leg"}
+        w = np.array([sum(g.weight for g in v.groups if names[g.group] in legs) for v in body.data.vertices])
+        hip, knee, ankle = (np.array(bones[f"mixamorig:{side}{b}"].head_local) for b in ("UpLeg", "Leg", "Foot"))
+        use = covered & (w > 0.5)
+        if not use.any():
+            continue
+        # the nearer point of the thigh and the calf segment to each vertex
+        best = None
+        for a, b in ((hip, knee), (knee, ankle)):
+            axis = b - a
+            t = np.clip((co - a) @ axis / (axis @ axis), 0, 1)
+            pt = a + t[:, None] * axis
+            d = np.linalg.norm(co - pt, axis=1)
+            best = (pt, d) if best is None else (np.where((d < best[1])[:, None], pt, best[0]), np.minimum(d, best[1]))
+        ramp = np.clip((co[:, 2] - floor) / LEG_RAMP, 0, 1) * np.clip((w - 0.5) * 4, 0, 1)
+        pull[use] = ((best[0] - co) * (LEG_PULL * ramp)[:, None])[use]
+    return pull
+
+
 def tuck(ctx, body, body_src, garment, name):
     """A body shape key sinking the skin a garment covers.
 
@@ -163,7 +200,8 @@ def tuck(ctx, body, body_src, garment, name):
     body: the cloth's bone weights are a blend of its neighbors', so in a
     pose it slides a centimeter or two off the skin beneath, and skin only
     4 mm behind it shows through. Any other skin near the cloth sinks just
-    far enough to sit CLEAR behind its surface."""
+    far enough to sit CLEAR behind its surface. Leg skin under cloth is also
+    drawn in toward the leg's axis (leg_pull)."""
     co = np.array([v.co[:] for v in body.data.vertices])
     normals = np.array([v.normal[:] for v in body.data.vertices])
     sink = np.zeros(len(co))
@@ -176,17 +214,24 @@ def tuck(ctx, body, body_src, garment, name):
             far, _n, _f, thick = inside.ray_cast(Vector(co[i] - normals[i] * 1e-3), Vector(-normals[i]))
             sink[i] = TUCK if far is None else min(TUCK, DEPTH * thick)
     bvh = BVHTree.FromObject(garment, bpy.context.evaluated_depsgraph_get())
+    behind = np.zeros(len(co), bool)  # skin the cloth wraps
     for i, p in enumerate(co):
         loc, _n, _f, dist = bvh.find_nearest(Vector(p), 0.03)
         if loc is None:
             continue
         outside = float(np.dot(p - np.array(loc), normals[i]))
+        behind[i] = outside < 0
         if outside > -CLEAR:
             sink[i] = max(sink[i], min(outside + CLEAR, 0.03))
+    # shoes ride on the same body next to the trousers and their keys add up:
+    # a pull from the sole up would collapse the ankle the hem leaves bare
+    move = -normals * sink[:, None]
+    if not garment.name.startswith("Shoes"):
+        floor = min(v.co.z for v in garment.data.vertices)
+        move = move + leg_pull(ctx, body, co, behind, floor)
     sk = body.shape_key_add(name=f"tuck_{name}", from_mix=False)
     # on a GRID-metre grid: the key compresses far smaller, unseen
-    delta = np.round(normals * sink[:, None] / GRID) * GRID
-    sk.data.foreach_set("co", (co - delta).ravel())
+    sk.data.foreach_set("co", (co + np.round(move / GRID) * GRID).ravel())
 
 
 def build(ctx, body, body_src):
