@@ -262,9 +262,9 @@ export function Aquarium({ onPick }: { onPick: PickHandler }) {
       <mesh position={[0, 3.05, zc]}>
         <boxGeometry args={[15.6, 5.9, len + 2]} />
         <meshBasicMaterial
-          color={hdr("#1288d8", 1.3)}
+          color={hdr("#1288d8", 1.05)}
           transparent
-          opacity={0.42}
+          opacity={0.34}
           side={THREE.BackSide}
           depthWrite={false}
         />

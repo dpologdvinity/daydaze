@@ -168,7 +168,7 @@ export function HallLight({ zc, depth }: { zc: number; depth: number }) {
   const rim = useMemo(
     () =>
       new THREE.MeshBasicMaterial({
-        color: hdr("#58e6ff", 2.4),
+        color: hdr("#58e6ff", 1.7),
         toneMapped: false,
       }),
     [],
@@ -195,17 +195,17 @@ export function HallLight({ zc, depth }: { zc: number; depth: number }) {
       ))}
       {/* the lid's front and side edges */}
       <mesh position={[0, 5.98, front]} material={rim}>
-        <boxGeometry args={[15.8, 0.07, 0.07]} />
+        <boxGeometry args={[15.8, 0.05, 0.05]} />
       </mesh>
       {[-1, 1].map((s) => (
         <mesh key={s} position={[s * 7.85, 5.98, zc]} material={rim}>
-          <boxGeometry args={[0.07, 0.07, depth + 0.4]} />
+          <boxGeometry args={[0.05, 0.05, depth + 0.4]} />
         </mesh>
       ))}
       {/* the tunnel's mouths, rings of light over the aisle */}
       {[zc - depth / 2 + 1, zc + depth / 2 - 1].map((z, i) => (
         <mesh key={i} position={[0, 0, z]} rotation-z={0} material={rim}>
-          <torusGeometry args={[3.2, 0.05, 6, 32, Math.PI]} />
+          <torusGeometry args={[3.25, 0.03, 6, 48, Math.PI]} />
         </mesh>
       ))}
     </>
