@@ -1256,11 +1256,11 @@ const SHOTS: {
         null,
         { timeout: 300_000 },
       );
-      await page.waitForTimeout(4_000);
+      await page.waitForTimeout(16_000);
     },
   },
   {
-    // a rider in the first wagon, a few seconds into the lap
+    // a rider in the first wagon, mid-lap (the slow software renderer draws a frame every few seconds)
     name: "kiddie-train-ride",
     query: "room=amusement-park&quality=low&ride=kiddie-train",
     live: true,
@@ -1270,7 +1270,7 @@ const SHOTS: {
         null,
         { timeout: 300_000 },
       );
-      await page.waitForTimeout(5_000);
+      await page.waitForTimeout(16_000);
     },
   },
   {
