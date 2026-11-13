@@ -1032,6 +1032,20 @@ const SHOTS: {
   { name: "sugar-rush", query: "room=sugar-rush" },
   { name: "warehouse", query: "room=warehouse" },
   { name: "karaoke", query: "room=karaoke" },
+  {
+    // the songbook: a song from the blues shelf picked in the Loft's mic panel
+    name: "karaoke-songbook",
+    query: "room=karaoke&quality=low&time=23:30",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      await page.getByLabel("Song").selectOption("careless-love");
+    },
+  },
   // a weekly night on in its venue (`?night=` sets the clock an hour into it):
   // the light takes the night's color and its decor fills the air
   ...(

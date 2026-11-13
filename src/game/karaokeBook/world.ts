@@ -205,47 +205,6 @@ export const WORLD: readonly KaraokeSong[] = [
       "D5/2 C5/0.5 C5/0.5 E5/1 C5/4 G4/1 C4/0.5 A5/0.5 A5/0.5 E5/0.5 A4/2 G4/1 A4/1 " +
       "A4/1 G4/0.5",
   },
-  // source: trillian.mit.edu/~jc/music/abc/Argentina/tango/Choclo_Am/0000
-  {
-    id: "el-choclo",
-    title: "El Choclo",
-    credit: "Ángel Villoldo, 1903",
-    composer: "Ángel Villoldo",
-    year: 1903,
-    genre: "latin",
-    bpm: 66,
-    meter: 2,
-    pickup: 1.25,
-    key: { tonic: 9, minor: true },
-    melody:
-      "E4/0.25 E4/0.25 F4/0.25 F4/0.25 E4/0.25 E4/0.25 A4/0.25 A4/0.25 C5/0.25 " +
-      "C5/0.25 F5/0.25 F5/0.5 E5/0.5 r/0.25 E5/0.25 E5/0.25 A5/0.25 A5/0.25 E5/0.25 " +
-      "E5/0.25 C5/0.25 C5/0.25 D5/0.25 D5/0.25 C5/0.25 C5/0.5 B4/0.5 r/0.25 E4/0.25 " +
-      "E4/0.25 F4/0.25 F4/0.25 E4/0.25 E4/0.25 G#4/0.25 G#4/0.25 B4/0.25 B4/0.25 " +
-      "F5/0.25 F5/0.5 E5/0.5 r/0.25 E5/0.25 D#5/0.25 E5/0.25 B5/0.25 G#5/0.25 " +
-      "G#5/0.25 E5/0.25 E5/0.25 D5/0.25 D5/0.25 C5/0.25 B4/0.5 A4/0.5 r/0.25 E4/0.25 " +
-      "E4/0.25 F4/0.25 F4/0.25 E4/0.25 E4/0.25 A4/0.25 A4/0.25 C5/0.25 C5/0.25 " +
-      "F5/0.25 F5/0.5 E5/0.5 r/0.25 E5/0.25 E5/0.25 A5/0.25 A5/0.25 E5/0.25",
-  },
-  // source: trillian.mit.edu/~jc/music/abc/mirror/musicaviva.com/france/jalousie-est-cause/0000
-  {
-    id: "jalousie",
-    title: "Jalousie",
-    credit: "Jacob Gade, 1925",
-    composer: "Jacob Gade",
-    year: 1925,
-    genre: "latin",
-    bpm: 66,
-    meter: 2,
-    pickup: 1.5,
-    melody:
-      "F4/0.5 A#4/1 A#4/0.5 C5/1 C5/0.5 C#5/1 C5/1 C5/0.5 A#4/1 A#4/0.5 C5/1 C#5/0.5 " +
-      "C5/1.5 F4/0.5 A#4/1 A#4/0.5 C5/1 C5/0.5 C#5/1 C5/1 C5/0.5 A#4/1 A#4/0.5 C5/1 " +
-      "C#5/0.5 C5/1.5 C5/0.5 F5/1 D#5/0.5 C#5/1 C5/0.5 A#4/1 A#4/1 A#4/0.5 D#5/1 " +
-      "C#5/0.5 C5/1 A#4/0.5 F4/1.5 F4/0.5 A#4/1 A#4/0.5 C5/1 C#5/0.5 G#4/1 G#4/0.5 " +
-      "C#5/1 C5/1 A#4/0.5 A#4/1 A4/0.5 A#4/1.5 F4/0.5 A#4/1 A#4/0.5 C5/1 C#5/0.5 " +
-      "G#4/1 G#4/0.5 C#5/1 C5/1 A#4/0.5 A#4/1 A4/0.5 A#4/1.5",
-  },
   // source: ifdo.ca/~seymour/runabc/esac/dva0/0143
   {
     id: "paloma",
