@@ -108,6 +108,14 @@ const SPACING = 90;
 /** Strips shorter than this have none. */
 const MIN_STRIP = 60;
 
+/** The dearest low-tier views (the park gate and the park): no huddle within
+ * `DEAR_KEEP_OUT` meters, so the chat dolls never add to the worst view. */
+const DEAR_VIEWS: readonly Vec2[] = [
+  [254, -270],
+  [228, -292],
+];
+const DEAR_KEEP_OUT = 45;
+
 /** Where the walk begins in front of a newcomer: a group within sight of the city's spawn. */
 const SHOWCASE_AT: Vec2 = [22, 9];
 
@@ -166,7 +174,10 @@ export const CHAT_GROUPS: readonly ChatGroup[] = (() => {
         const inside = along
           ? at[0] > x0 + 2 && at[0] < x1 - 2
           : at[1] > z0 + 2 && at[1] < z1 - 2;
-        if (inside && huddleFits(at, size, near)) return at;
+        const dear = DEAR_VIEWS.some(
+          (v) => Math.hypot(v[0] - at[0], v[1] - at[1]) < DEAR_KEEP_OUT,
+        );
+        if (inside && !dear && huddleFits(at, size, near)) return at;
       }
     return null;
   };
