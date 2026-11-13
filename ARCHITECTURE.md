@@ -104,6 +104,17 @@ floors, looks, saves, chat effects) so both sides agree on the rules.
 Quality tiers (`world/quality.ts`, `?quality=low|high`) keep the low tier
 under 250 draw calls, 300k triangles and 4 real lights.
 
+The far city (`game/city/far.ts`, `client/city/FarCity.tsx`): every building
+the streamed plan does not draw (past the loaded cells, or infill past its
+range) is a `plan.far` box, drawn as one instanced mesh whose shader adds
+windows, a darker roof and lit windows at night from world position, with all
+roads as a second flat mesh. Boxes under 6.5% of their distance, and past the
+fog (560 m), are skipped; both draws are priced in `budget.ts` and the park
+grid test (at most 270k triangles) still holds. Main Avenue under the El wears
+(`game/city/wear.ts`, `client/city/AvenueWear.tsx`): tire tracks, oil, patches,
+drains and covers from one canvas atlas in one instanced mesh, plus a shade
+band with sun stripes through the deck's ties that follows the sun.
+
 Loading: the city's first picture waits only on what is near. Region parts (the
 band shell, dog yard, market, Ferris wheel, district lots, Suburbia's houses)
 and each street-furniture kind sit in their own `Suspense` and fetch their
