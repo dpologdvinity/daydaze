@@ -286,6 +286,8 @@ function actionStrip(
   setup: (page: Page) => Promise<void>,
   go: (page: Page) => Promise<void>,
   seconds = 20,
+  /** How many frames to keep (the first ones). */
+  keep = FRAMES,
 ): (typeof SHOTS)[number] {
   return {
     name,
@@ -301,7 +303,7 @@ function actionStrip(
       const cdp = await page.context().newCDPSession(page);
       const frames: Buffer[] = [];
       cdp.on("Page.screencastFrame", (f) => {
-        if (frames.length < FRAMES) frames.push(Buffer.from(f.data, "base64"));
+        if (frames.length < keep) frames.push(Buffer.from(f.data, "base64"));
         void cdp.send("Page.screencastFrameAck", { sessionId: f.sessionId });
       });
       await cdp.send("Page.startScreencast", { format: "png" });
@@ -405,7 +407,12 @@ function seatStrip(
     // game time runs at 3% for a frame to span a few hundredths of a second
     `room=${room}&quality=low&timescale=0.03&cam=${cam}&at=${seat.approach[0]},${seat.approach[1]}&yaw=${yaw}`,
     async (page) => {
-      await page.setViewportSize({ width: 800, height: 500 });
+      // the emote panel covers a small window's doll: a wide one clears it
+      await page.setViewportSize(
+        what === "emote"
+          ? { width: 1280, height: 720 }
+          : { width: 800, height: 500 },
+      );
       if (room === "apartment") {
         await page.evaluate((f) => {
           localStorage.setItem(
@@ -434,7 +441,8 @@ function seatStrip(
           .click();
       } else await takeSeat(page);
     },
-    what === "type" ? 60 : 45,
+    what === "type" ? 60 : what === "stand" ? 75 : 45,
+    90,
   );
 }
 
