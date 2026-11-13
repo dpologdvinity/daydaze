@@ -1,7 +1,7 @@
 """Dev-only: counts body vertices that poke through a garment in a baked clip.
 
     blender --background --factory-startup --python art/doll/blender/skin_check.py -- \
-        Outfit_suit [sex=male] [pack=social] [clips=idle,walk] [frames=6] [zmin=1.15] [zmax=1.45]
+        Outfit_suit [sex=male] [pack=social] [clips=idle,walk] [frames=6] [zmin=1.15] [zmax=1.45] [all=1] [faces=1]
 
 Imports the raw build (.cache/out), wears the garment (its tuck key at 1) and,
 for frames spread over each clip, reports the body vertices the tuck sank that
@@ -24,6 +24,7 @@ opts = dict(a.split("=") for a in args[1:])
 sfx = "-m" if opts.get("sex") == "male" else ""
 count = int(opts.get("frames", 6))
 pack = f"-{opts['pack']}" if opts.get("pack") else ""
+faces_too = opts.get("faces") == "1"  # also probe each covered triangle's middle
 dump = opts.get("dump") == '1'  # list each poking vertex (rest, posed)
 wanted = [c for c in opts.get("clips", "").split(",") if c]
 
@@ -63,6 +64,10 @@ base, tuck = np.empty(n * 3), np.empty(n * 3)
 keys["Basis"].data.foreach_get("co", base)
 keys[f"tuck_{name}"].data.foreach_get("co", tuck)
 covered = np.where(np.abs(tuck - base).reshape(-1, 3).sum(1) > 1e-6)[0]
+if opts.get("all") == "1":
+    # every body vertex, not just the ones the tuck sank: cloth the tuck left
+    # alone (a shell well clear of the skin) can still fold away from it
+    covered = np.arange(n)
 # zmin=1.15 looks only at the torso above the waist (metres, Blender space)
 zmin = float(opts.get("zmin", -9))
 zmax = float(opts.get("zmax", 9))  # 1.45 leaves out the neck, which shows above a collar
@@ -71,6 +76,7 @@ covered = covered[(rest_z > zmin) & (rest_z < zmax)]
 print(f"{part}: {len(covered)} of {n} body vertices covered")
 
 rest = base.reshape(-1, 3)  # bind pose, untucked
+covered_set = set(int(v) for v in covered)
 sc = bpy.context.scene
 
 
@@ -89,9 +95,25 @@ def poking():
             loc, nor, _f, _d = bvh.find_nearest(p, 0.2)
             out[int(v)] = (p - loc).dot(nor) if loc is not None else 0.0
             if dump:
-                print("POKE", int(v), [round(float(c), 3) for c in rest[v]], "posed", [round(c, 3) for c in p])
+                print("POKE", int(v), [round(float(c), 3) for c in rest[v]], "posed", [round(c, 3) for c in p], "sunk mm", round(float(np.linalg.norm((tuck - base).reshape(-1, 3)[v])) * 1000, 1))
+    if faces_too:
+        # a flat cloth triangle can cut a chord through a creased skin triangle
+        # (the back of a bent knee) with every vertex of both still in order
+        for poly in me.polygons:
+            if not all(int(v) in covered_set for v in poly.vertices):
+                continue
+            if bvh.ray_cast(poly.center, poly.normal, 0.08)[0] is None:
+                loc, nor, _f, _d = bvh.find_nearest(poly.center, 0.2)
+                out[n + poly.index] = (poly.center - loc).dot(nor) if loc is not None else 0.0
     ev.to_mesh_clear()
     return out
+
+
+def probe_z(key):
+    """Bind-pose height of a probe: a vertex, or a triangle (key >= n)."""
+    if key < n:
+        return rest[key][2]
+    return rest[list(body.data.polygons[key - n].vertices)][:, 2].mean()
 
 
 # skin the cloth never covers in the bind pose (a neck above a collar, an
@@ -112,11 +134,54 @@ for act in sorted(bpy.data.actions, key=lambda a: a.name):
         sc.frame_set(int(f0 + (f1 - f0) * i / count))
         new = {v: d for v, d in poking().items() if v not in bind}
         for v, d in new.items():
-            where[int(rest[v][2] * 10)] = where.get(int(rest[v][2] * 10), 0) + 1
+            where[int(probe_z(v) * 10)] = where.get(int(probe_z(v) * 10), 0) + 1
             worst_depth[v] = max(worst_depth.get(v, 0.0), d)
         if len(new) > worst:
             worst, worst_at = len(new), i
     print(f"  {act.name}: worst {worst} newly poking (frame {worst_at}/{count}), by height {dict(sorted(where.items()))}")
+
+def shoot(path, aim, eye):
+    """Workbench render, skin red over blue cloth, of the current frame."""
+    sc.render.engine = "BLENDER_WORKBENCH"
+    sc.display.shading.light = "STUDIO"
+    sc.display.shading.color_type = "OBJECT"
+    body.color, garment.color = (0.9, 0.2, 0.2, 1), (0.2, 0.4, 0.9, 1)
+    for o in (body, garment):
+        o.hide_render = False
+    for o in bpy.data.objects:
+        if o.type == "MESH" and o not in (body, garment):
+            o.hide_render = True
+    cam = bpy.data.objects.get("shotcam") or bpy.data.objects.new("shotcam", bpy.data.cameras.new("shotcam"))
+    if cam.name not in sc.collection.objects:
+        sc.collection.objects.link(cam)
+    cam.location = eye
+    d = np.array(aim) - np.array(eye)
+    cam.rotation_euler = __import__("mathutils").Vector(d).to_track_quat("-Z", "Y").to_euler()
+    cam.data.lens = 70
+    sc.camera = cam
+    sc.render.resolution_x = sc.render.resolution_y = 700
+    sc.render.filepath = path
+    bpy.ops.render.render(write_still=True)
+
+
+if opts.get("shot"):
+    # shot=<dir> shot_at=<clip>:<frame index>: renders the pose from behind
+    # (and from the side) around the knee, to look at what the numbers say
+    clip, idx = opts.get("shot_at", "walk-normal:5").split(":")
+    act = next(a for a in bpy.data.actions if a.name == clip)
+    rig.animation_data.action = act
+    if act.slots:
+        rig.animation_data.action_slot = act.slots[0]
+    f0, f1 = act.frame_range
+    sc.frame_set(int(f0 + (f1 - f0) * int(idx) / count))
+    h = float(opts.get("shot_z", 0.45))
+    for tag, eye in (
+        ("back", (0.0, 1.0, h)),
+        ("backleft", (0.7, 0.7, h)),
+        ("backright", (-0.7, 0.7, h)),
+        ("side", (1.0, 0.0, h)),
+    ):
+        shoot(os.path.join(opts["shot"], f"{part}-{clip}-{idx}-{tag}.png"), (0.0, 0.0, h), eye)
 
 depths = np.array(list(worst_depth.values()))
 print(
