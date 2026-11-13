@@ -153,7 +153,7 @@ test("each gate raises two tall arches either side of its door", () => {
   }
 });
 
-test("a district block wearing lots drops its own 10 m board: the lots' shop boards name it", () => {
+test("a district block wearing lots drops its own 10 m board and awning: the lots' shop boards name it", () => {
   const signed = BUILDINGS.filter((b) => isLotBlock(b) && b.sign);
   assert.ok(signed.length > 5, "district blocks carry their own boards");
   for (const b of signed) {
@@ -163,6 +163,9 @@ test("a district block wearing lots drops its own 10 m board: the lots' shop boa
     dressBuilding(b, lotted, true, true, true);
     assert.equal(plain.sign.length, 1, b.id);
     assert.equal(lotted.sign.length, 0, b.id);
+    // nor does the block's one big striped awning cross the lots' doors
+    assert.ok(plain.awning.length > 0, b.id);
+    assert.equal(lotted.awning.length, 0, b.id);
   }
 });
 

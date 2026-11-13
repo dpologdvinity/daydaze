@@ -632,7 +632,9 @@ export function dressBuilding(
   if (!kit) windows(b, f, out, sills);
   // infill is scenery: windows and walls only, no awnings, vents, signs, tanks
   if (isInfill(b)) return;
-  awning(out, f, accent);
+  // one 9 m striped awning at the middle of the block would cut across the
+  // lots' own doors and shop boards (their models carry awnings)
+  if (!lots) awning(out, f, accent);
   if (b.id.startsWith("boardwalk-shop")) servingWindows(out, f, accent);
   if (SHOPFRONT.has(b.style) && b.style !== "gate") {
     vent(out, f.cx + (hash(f.cx, 8) - 0.5) * f.w * 0.4, f.h + 0.5, f.cz);
