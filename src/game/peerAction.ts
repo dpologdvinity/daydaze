@@ -1,6 +1,6 @@
 // What a player is doing, in the 24 characters a move message's `action`
 // carries: their mood; for a dance, the move, so everyone sees the same
-// dance; on a seat or a ride, whether they sit, lie or stand and the height
+// dance; on a seat or a ride, whether they sit, lie, stand or rise from a chair and the height
 // they're at ("sit@38", in centimeters), since moves carry only x and z;
 // behind the wheel, the paint, the rims, underglow, tint and wrap packed in two
 // base-36 characters, and the car ("c:ff4fb30kpebble"); after a few
