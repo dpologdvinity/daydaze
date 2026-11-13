@@ -21,6 +21,7 @@ import {
 import { useReducedMotion } from "../../motion.ts";
 import { MARQUEE, Neon, NeonText } from "../shared/Neon.tsx";
 import { Bulbs } from "./Bulbs.tsx";
+import { KiddieInfield } from "./KiddieInfield.tsx";
 import { Boxes, Segments, type Box, type Segment } from "./Instanced.tsx";
 import { InstancedModel, type PlaceCopy } from "./InstancedModel.tsx";
 import { coasterRiders } from "./Rides.tsx";
@@ -174,6 +175,7 @@ export function KiddieLand() {
         <circleGeometry args={[1, 48]} />
         <meshStandardMaterial color="#1c5a52" roughness={0.95} />
       </mesh>
+      <KiddieInfield />
       {parts.rails.map((g, i) => (
         <mesh key={i} geometry={g} material={RAIL} />
       ))}

@@ -35,6 +35,7 @@ import { SLIDES } from "../../game/waterPark.ts";
 import { areaOf } from "../../game/area.ts";
 import { DrunkState } from "../effects/DrunkState.tsx";
 import type { MinigameId } from "../../game/hotspots.ts";
+import { NightDecor } from "../rooms/NightDecor.tsx";
 import type { PickHandler } from "../rooms/shared/Floor.tsx";
 import { CameraRig, type View } from "./CameraRig.tsx";
 import { NeonClamp } from "./NeonClamp.tsx";
@@ -707,6 +708,8 @@ export function World({
           color="#fff1f4"
           intensity={2.2}
         />
+        {/* a weekly night on here tints the light and fills the air */}
+        {room !== "city" && <NightDecor room={room} />}
         <Suspense fallback={null}>
           {room === "city" ? (
             <CityScene
