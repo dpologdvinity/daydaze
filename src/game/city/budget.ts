@@ -225,9 +225,11 @@ const GROWTH = ALL_GROWTH;
 export const WHEEL_TRIS = { near: 420, lo: 36 } as const;
 const EXTRA_WHEELS = 3;
 
+/** A rolling jeepney wheel (carGeometry.ts JEEPNEY_WHEEL): tyre, rim, spokes, hub caps. */
+export const JEEPNEY_WHEEL_TRIS = 132;
 /** A procedural jeepney as Traffic draws it: shell 156, trim 60, chrome 380 and
- * dark 36 triangles, plus four 12-sided wheels and four lamp boxes. Six draws. */
-const JEEPNEY_TRIS = 880;
+ * dark 36 triangles, plus four wheels and four 12-triangle lamp boxes. Six draws. */
+export const JEEPNEY_TRIS = 632 + 4 * JEEPNEY_WHEEL_TRIS + 4 * 12;
 const JEEPNEY_DRAWS = 6;
 /** Draws for the player's own car on top of its model's parts: the underglow
  * pool and the two headlight beams. */
