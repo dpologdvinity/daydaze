@@ -45,13 +45,15 @@ const streetReady = async (page: Page) => {
     { timeout: 300_000 },
   );
 };
-/** Waits for either the New York bays or Suburbia's houses (a shot may see only one). */
+/** Waits for either the New York bays, the district lots or Suburbia's houses (a shot may see only one). */
 const blocksReady = async (page: Page) => {
   await streetReady(page);
   await page.waitForFunction(
     () => {
       const d = document.querySelector("canvas")?.dataset;
-      return d?.bays === "ready" || d?.houses === "ready";
+      return (
+        d?.bays === "ready" || d?.houses === "ready" || d?.lots === "ready"
+      );
     },
     null,
     { timeout: 300_000 },
@@ -864,6 +866,17 @@ const SHOTS: {
     ["nyc-manila", "12:00", "-262,-6", 0],
     ["nyc-chinatown", "12:00", "262,-6", 0],
     ["nyc-suburbia", "12:00", "-404,-236", 0],
+    // the district lots (src/game/city/districts.ts), each by day and by night
+    ["lots-manila-day", "12:00", "-300,-8", 0],
+    ["lots-manila-night", "22:00", "-300,-8", 0],
+    ["lots-chinatown-day", "12:00", "262,-8", 0],
+    ["lots-chinatown-night", "22:00", "262,-8", 0],
+    ["lots-koreatown-day", "12:00", "372,-8", 0],
+    ["lots-koreatown-night", "22:00", "372,-8", 0],
+    ["lots-arts-day", "12:00", "-96,-256", 0],
+    ["lots-arts-night", "22:00", "-96,-256", 0],
+    ["lots-uptown-day", "12:00", "264,-256", 0],
+    ["lots-uptown-night", "22:00", "264,-256", 0],
     ["el-station", "12:00", "10,12", 0],
     ["el-train", "12:00", "-6,14&elat=69", 0],
   ].map(([name, time, at, yaw]) => ({
