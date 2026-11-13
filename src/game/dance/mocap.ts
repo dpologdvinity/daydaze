@@ -385,6 +385,7 @@ export const MOCAP_CLIPS: readonly MocapClip[] = [
     source: "Mixamo Clapping_Clap-While-Standing",
     period: 1.1667,
     pack: "core",
+    menu: true,
   },
   {
     id: "cheer",
@@ -393,6 +394,7 @@ export const MOCAP_CLIPS: readonly MocapClip[] = [
     source: "Mixamo Cheering_Male-Cheering-With-Two-Fists-Pump",
     period: 2.9,
     pack: "core",
+    menu: true,
   },
   {
     id: "fist-pump",

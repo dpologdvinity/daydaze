@@ -151,7 +151,12 @@ export function pickClip(s: DollState): Play | null {
         ? play(hold.id)
         : hold?.kind === "seat"
           ? play(hold.id, 1, 0, SEAT_CLIP)
-          : play(seatPlan(s.seed, s.slot ?? 0, s.own === true), 1, 0, SEAT_CLIP);
+          : play(
+              seatPlan(s.seed, s.slot ?? 0, s.own === true),
+              1,
+              0,
+              SEAT_CLIP,
+            );
     case "pose":
       return hold?.kind === "pose" ? play(hold.id) : null;
     case "lean":

@@ -82,7 +82,9 @@ test("an office chair by a desk faces it and types; a lone one just sits", () =>
   // the desk is the row above (smaller z): she faces -z, walked up to from behind
   assert.ok(Math.abs(Math.abs(at.yaw) - Math.PI) < 0.5);
   assert.ok(at.approach[1] > at.at[1]);
-  const [alone] = homeSeats([{ id: "office-chair", cell: [5, 4], rotation: 0 }]);
+  const [alone] = homeSeats([
+    { id: "office-chair", cell: [5, 4], rotation: 0 },
+  ]);
   assert.ok(alone);
   assert.equal(alone.hold, undefined);
 });

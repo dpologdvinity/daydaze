@@ -5,6 +5,8 @@ import { execFileSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { chromium, expect, type Page } from "@playwright/test";
 import { DEFAULT_LOOK } from "../src/game/look.ts";
+import { SEATS, homeSeats } from "../src/game/seats.ts";
+import { yawTowards } from "../src/game/walk.ts";
 import {
   FURNITURE_CATALOG,
   FURNITURE_IDS,
@@ -347,6 +349,78 @@ function firefightStrip(
 }
 
 /**
+ * A frame strip of sitting down, standing up or a seated action on a seat,
+ * on the full-body camera at a tenth of real time (?timescale), so each frame
+ * of the 1-second sit-down or stand-up is caught. She spawns on the seat's
+ * approach point, facing the seat. "sit" records the sit-down, "stand" the
+ * stand-up (she sits first, waits to settle, then a key press stands her),
+ * "emote" a seated clap, "type" typing at the apartment desk.
+ */
+function seatStrip(
+  name: string,
+  seatId: string,
+  what: "sit" | "stand" | "emote" | "type",
+): (typeof SHOTS)[number] {
+  // the apartment desk and chair, saved before the page loads
+  const desk = [at("desk", 1, 0), at("office-chair", 1, 1)];
+  const seat =
+    seatId === "home-chair-1"
+      ? homeSeats(desk).find((x) => x.hold === "seat-typing")
+      : SEATS.find((x) => x.id === seatId);
+  if (!seat) throw new Error(`no seat ${seatId}`);
+  // she faces the seat as she arrives
+  const yaw = yawTowards(seat.approach, seat.at);
+  const room = seatId === "home-chair-1" ? "apartment" : seat.room;
+  const takeSeat = async (page: Page) => {
+    await page.getByRole("button", { name: "Take a seat" }).click();
+  };
+  const seated = async (page: Page) => {
+    await takeSeat(page);
+    await page.waitForFunction(
+      () => document.querySelector("canvas")?.dataset.seated !== undefined,
+      null,
+      { timeout: 300_000 },
+    );
+    // the sit-down runs a second of game time, ten of real time
+    await page.waitForTimeout(25_000);
+  };
+  return actionStrip(
+    name,
+    `room=${room}&view=full&timescale=0.1&at=${seat.approach[0]},${seat.approach[1]}&yaw=${yaw}`,
+    async (page) => {
+      if (room === "apartment") {
+        await page.evaluate((f) => {
+          localStorage.setItem(
+            "daydaze-save-v1",
+            JSON.stringify({ home: { locked: true, furniture: f } }),
+          );
+        }, desk);
+        await page.reload();
+        await page.waitForFunction(
+          () => document.querySelector("canvas")?.dataset.frames === "10",
+          null,
+          { timeout: 300_000 },
+        );
+      }
+      // the seated clip pack loads a while after the scene
+      await page.waitForTimeout(40_000);
+      if (what === "stand" || what === "emote") await seated(page);
+    },
+    async (page) => {
+      if (what === "stand") await page.keyboard.down("d");
+      else if (what === "emote") {
+        await page.getByRole("radio", { name: "Dance", exact: true }).click();
+        await page
+          .getByRole("radiogroup", { name: "Emote" })
+          .getByRole("radio", { name: "Clapping" })
+          .click();
+      } else await takeSeat(page);
+    },
+    what === "type" ? 40 : 20,
+  );
+}
+
+/**
  * Tiles PNG frames into one sheet in the page (no image library needed): each
  * frame cropped to `crop` (a rectangle of the full frame), `columns` to a row.
  */
@@ -626,6 +700,13 @@ const SHOTS: {
     timescale: 0.1,
     seconds: 30,
   }),
+  seatStrip("seat-bench-sit", "dome-bench-0", "sit"),
+  seatStrip("seat-bench-stand", "dome-bench-0", "stand"),
+  seatStrip("seat-stadium-sit", "stadium-dugout-1", "sit"),
+  seatStrip("seat-stadium-stand", "stadium-dugout-1", "stand"),
+  seatStrip("seat-stool-sit", "velvet-stool-0", "sit"),
+  seatStrip("seat-clap", "dome-bench-0", "emote"),
+  seatStrip("seat-typing", "home-chair-1", "type"),
   { name: "club-pulse", query: "room=pulse" },
   {
     name: "apartment",

@@ -81,8 +81,8 @@ CORE_ORIGINAL = {
     "locking": ("dancing/Locking-Hip-Hop-Dance_Locking-Hip-Hop-Dance-Variation-Two", "dance", "Locking"),
     "shy-sway": ("dancing/Hip-Hop-Dancing_Timid-Dancing", "dance", "Shy sway"),
     # emotes: looped like dances, for NPCs only (kept out of the Dance picker)
-    "clap": ("gestures/clapping/Clapping_Clap-While-Standing", "emote", "Clapping"),
-    "cheer": ("gestures/cheering/Cheering_Male-Cheering-With-Two-Fists-Pump", "emote", "Cheering"),
+    "clap": ("gestures/clapping/Clapping_Clap-While-Standing", "emote", "Clapping", "menu"),
+    "cheer": ("gestures/cheering/Cheering_Male-Cheering-With-Two-Fists-Pump", "emote", "Cheering", "menu"),
     "fist-pump": ("gestures/cheering/Fist-Pump_Pumping-A-Fist", "emote", "Fist pump"),
     "wave": ("gestures/waving/Waving-Gesture_Aj-Waving-Gesture", "emote", "Waving"),
     "chatting": ("talking/Talking_General-Conversation", "emote", "Chatting"),
