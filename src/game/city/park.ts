@@ -251,7 +251,7 @@ export const GROWTH_RANGE: Record<
   GrowthKind,
   readonly [low: number, high: number]
 > = {
-  grass: [11, 48],
+  grass: [10, 48],
   // the dearer tuft: high tier only
   wispy: [0, 48],
   dune: [45, 90],

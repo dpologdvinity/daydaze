@@ -67,6 +67,7 @@ import { CityTransit } from "./CityTransit.tsx";
 import { ParkedCars } from "./ParkedCars.tsx";
 import { Traffic } from "./Traffic.tsx";
 import { PlayerCar } from "./PlayerCar.tsx";
+import { cityFar, FarCity } from "./FarCity.tsx";
 import { GasStations } from "./GasStations.tsx";
 import type { ParkedCar } from "../../game/city/drive.ts";
 
@@ -261,6 +262,7 @@ export function CityScene({
       cityLots.set({ lots: plan.lots });
       cityHouses.set({ spots: plan.houses });
       cityStreet.set({ pieces: plan.street });
+      cityFar.set({ boxes: plan.far });
       lights.current.forEach((light, i) => {
         if (!light) return;
         const sign = plan.lights[i];
@@ -385,6 +387,7 @@ export function CityScene({
           <ElLine />
         </ElLineBoundary>
       </Suspense>
+      <FarCity />
       <ElRide player={player} />
       <NightMarket player={player} />
     </>

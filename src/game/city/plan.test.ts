@@ -135,7 +135,8 @@ test("wherever she stands, the streamed city fits the low tier budget: under 250
     }
   }
   assert.ok(worst.tris < 300_000, `${worst.tris} triangles at ${worst.at}`);
-  assert.ok(drawCallsOf(planCity([], 2, origin)) === 0);
+  // with no cells there is only the far city's one draw (far.ts)
+  assert.ok(drawCallsOf(planCity([], 2, origin)) <= 1);
 });
 
 test("the streamed view stays inside the budget too", () => {

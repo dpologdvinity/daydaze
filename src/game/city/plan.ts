@@ -5,6 +5,12 @@ import type { Vec2 } from "../walk.ts";
 import { motelBuilding } from "./motel.ts";
 import { roofLook } from "./roofs.ts";
 import { YARD_GROUND, YARD_TREES } from "./yards.ts";
+import {
+  FAR_BOX_TRIANGLES,
+  farWorthDrawing,
+  farBoxOf,
+  type FarBox,
+} from "./far.ts";
 import { VIEW_RADIUS } from "./tuning.ts";
 import { cellAt, type Cell } from "./cells.ts";
 import {
@@ -163,6 +169,9 @@ export type CityPlan = {
   houses: HouseSpot[];
   /** Crosswalks, corner blocks, center lines and street props (StreetPieces.tsx). */
   street: StreetPiece[];
+  /** The buildings this plan does not draw (past the loaded cells, or infill
+   * past its range), as plain boxes: the far city (far.ts, FarCity.tsx). */
+  far: FarBox[];
 };
 
 /** How far off the infill buildings draw, by tier: they fill the blocks, so the
@@ -818,11 +827,23 @@ export function planCity(
   const bays: BayInstance[] = [];
   const lots: PlacedLot[] = [];
   const houses: HouseSpot[] = [];
+  const far: FarBox[] = [];
+  // a building the plan leaves out is a far box, unless it is lost in the fog
+  const farBox = (b: Building, box: Box) => {
+    const size = Math.max(box.x1 - box.x0, box.z1 - box.z0, b.height);
+    if (farWorthDrawing(size, distanceToBox(from, box))) far.push(farBoxOf(b));
+  };
   for (const b of BUILDINGS) {
     const box = boundsOf(b.footprint);
-    if (!inView(box)) continue;
+    if (!inView(box)) {
+      farBox(b, box);
+      continue;
+    }
     // the infill is scenery that fills the blocks: drawn out to its own range
-    if (isInfill(b) && distanceToBox(from, box) > infillRange) continue;
+    if (isInfill(b) && distanceToBox(from, box) > infillRange) {
+      farBox(b, box);
+      continue;
+    }
     // a near Suburbia lot is a real house; far ones stay boxes
     if (isHouse(b) && distanceToBox(from, box) < bayRange * 2) {
       houses.push(houseAt(b));
@@ -833,6 +854,7 @@ export function planCity(
       // are left out, and far ones are bare bodies, as far houses are boxes
       const away = distanceToBox(from, box);
       if (away <= VIEW_RADIUS) motelBuilding(b, instances, away < bayRange * 2);
+      else farBox(b, box);
       continue;
     }
     // near New York blocks wear the kit's bays instead of box walls and
@@ -918,6 +940,7 @@ export function planCity(
     lots,
     houses,
     street: streetPieces(cells),
+    far,
   };
 }
 
@@ -938,7 +961,8 @@ export function trianglesOf(plan: CityPlan): number {
       (sum, h) => sum + (HOUSE_MODEL_TRIANGLES[h.variant] ?? 0),
       0,
     ) +
-    plan.street.reduce((sum, p) => sum + STREET_TRIANGLES[p.kind], 0)
+    plan.street.reduce((sum, p) => sum + STREET_TRIANGLES[p.kind], 0) +
+    plan.far.length * FAR_BOX_TRIANGLES
   );
 }
 
@@ -948,6 +972,8 @@ export function drawCallsOf(plan: CityPlan): number {
     KINDS.filter((kind) => plan.instances[kind].length > 0).length +
     (plan.street.length > 0 ? STREET_DRAW_CALLS : 0) +
     new Set(plan.bays.map((bay) => bay.kind)).size +
-    new Set(plan.lots.map((lot) => `${lot.model}${lot.far}`)).size
+    new Set(plan.lots.map((lot) => `${lot.model}${lot.far}`)).size +
+    // the far city's buildings
+    (plan.far.length > 0 ? 1 : 0)
   );
 }
