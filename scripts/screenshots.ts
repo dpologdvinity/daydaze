@@ -657,7 +657,7 @@ function trafficClose(name: string, hour: number): (typeof SHOTS)[number] {
 }
 
 /**
- * A jeepney rolling past, four frames 100 ms apart (`<name>-00` to `-03`): the
+ * A jeepney rolling past, four frames 60 ms apart (`<name>-00` to `-03`): the
  * camera stands on the pavement looking across the near lane, the clock is
  * paused and stepped (a small window, so it is quick) until the traffic probe
  * (`?debug=1`, Traffic.tsx; its fifth field is `j` for a jeepney) shows one
@@ -665,11 +665,11 @@ function trafficClose(name: string, hour: number): (typeof SHOTS)[number] {
  * turned by the road rolled, so the spokes are at a new angle in each.
  */
 function jeepneyRoll(name: string): (typeof SHOTS)[number] {
-  const camera = { x: -110, z: 8.5 };
+  const camera = { x: -110, z: 12.5 };
   const full = { width: 1280, height: 800 };
   return {
     name,
-    query: `room=city&view=room&quality=low&time=12:00&debug=1&at=${camera.x},10&cam=${camera.x},1.3,${camera.z},${camera.x},0.7,3`,
+    query: `room=city&view=room&quality=low&time=12:00&debug=1&at=${camera.x},10&cam=${camera.x},1.5,${camera.z},${camera.x},0.8,3`,
     live: true,
     act: async (page) => {
       const canvas = page.getByRole("img", { name: "3D room view" });
@@ -698,7 +698,7 @@ function jeepneyRoll(name: string): (typeof SHOTS)[number] {
       await page.clock.runFor(100);
       await page.waitForTimeout(1500);
       for (let n = 0; n < 4; n++) {
-        await page.clock.runFor(100);
+        await page.clock.runFor(60);
         await page.waitForTimeout(1200);
         writeFileSync(
           `docs/screenshots/${name}-0${n}.png`,
@@ -998,11 +998,11 @@ const SHOTS: {
   // the two unbadged showpieces on their plinths, from the aisle
   {
     name: "dealership-saloon",
-    query: "room=dealership&cam=-5.5,2,6,-10.6,0.9,1.5",
+    query: "room=dealership&cam=-11.3,2.2,7.2,-10.6,0.8,1.5",
   },
   {
     name: "dealership-concept",
-    query: "room=dealership&cam=5.5,2,4,10.6,0.9,0",
+    query: "room=dealership&cam=11.7,2.4,3.9,10.6,0.7,-0.2",
   },
   { name: "jazz-club", query: "room=jazz-club" },
   { name: "vinyl-vault", query: "room=vinyl-vault" },

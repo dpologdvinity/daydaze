@@ -4,7 +4,7 @@
 
 import { useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { Suspense, useMemo, useRef, type JSX } from "react";
+import { Suspense, useEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";
 import type { Group } from "three";
 import {
@@ -62,6 +62,12 @@ const PLINTH_MAT = new THREE.MeshStandardMaterial({
   metalness: 0.1,
   roughness: 0.2,
 });
+/** The showpieces' paint, by the model's own material name: the saloon's silver
+ * becomes a deep teal, the concept car's pale shell lilac. */
+const PAINT: Record<string, string> = {
+  PaintSilver: "#16846c",
+  s_car: "#a98bff",
+};
 /** The spotlight's glow: a faint additive cone from the ceiling spot down to
  * the plinth. A real light per showpiece would break the room's light budget. */
 const BEAM = new THREE.MeshBasicMaterial({
@@ -198,7 +204,32 @@ function Showpiece({
 }) {
   const calm = useReducedMotion();
   const { scene } = useGLTF(`/models/showroom/${id}.glb`);
-  const car = useMemo(() => scene.clone(true), [scene]);
+  // own material copies, the paint in the room's candy colors (a silver saloon
+  // and a pale concept car would vanish against the white showroom)
+  const car = useMemo(() => {
+    const copy = scene.clone(true);
+    copy.traverse((o) => {
+      if (!(o instanceof THREE.Mesh)) return;
+      o.material = [o.material].flat().map((m) => {
+        const own = m.clone();
+        const paint = PAINT[own.name];
+        if (paint && own instanceof THREE.MeshStandardMaterial)
+          own.color.set(paint);
+        return own;
+      });
+      if ((o.material as THREE.Material[]).length === 1)
+        o.material = (o.material as THREE.Material[])[0]!;
+    });
+    return copy;
+  }, [scene]);
+  useEffect(
+    () => () =>
+      car.traverse((o) => {
+        if (o instanceof THREE.Mesh)
+          [o.material].flat().forEach((m) => m.dispose());
+      }),
+    [car],
+  );
   const turn = useRef<Group>(null);
   useFrame(({ clock }) => {
     if (!calm && turn.current)
