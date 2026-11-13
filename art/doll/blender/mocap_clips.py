@@ -18,7 +18,7 @@ Packs are separate GLBs, loaded on demand (src/client/avatar/human/anims.ts):
   social  talking, greetings, yes/no, laughing, cheering, moods, shrugs
   seated  sitting down and standing up, seated idles, talk, clap, cheer, typing
   dance2  the second dance set
-  dance3  breaking: head spin, uprock, footwork, handstand spin, and a few more
+  dance3  breaking: head spin, uprock, floor footwork, and a few more
   ual     farm work, carrying, pushing, throwing, climbing, sliding (CC0)
   moves   start, stop and turn transitions (not wired into play yet)
 """
@@ -355,7 +355,6 @@ DANCE3 = {
     "footwork": ("dancing/Breakdance-Footwork-1_Breakdance-Ground-Footwork-Var-1-Loop", "dance", "Floor footwork"),
     "footwork-2": ("dancing/Breakdance-Footwork-2_Breakdance-Ground-Footwork-Var-2", "dance", "Floor footwork, second"),
     "footwork-3": ("dancing/Breakdance-Footwork-3_Breakdance-Ground-Footwork-Var-3", "dance", "Floor footwork, third"),
-    "handstand-spin": ("dancing/Breakdance-1990_Breakdance-Single-Handstand-Spin", "dance", "Handstand spin"),
     "soul-spin": ("dancing/Northern-Soul-Spin_Northern-Soul-Dance-Spin", "dance", "Soul spin"),
     "twist-dance": ("dancing/Twist-Dance_Doing-The-Twist-Dance", "dance", "Twist dance"),
     "running-man-2": ("dancing/Hip-Hop-Dancing_Hip-Hop-Runningman-Dance", "dance", "Running man, second"),

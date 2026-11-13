@@ -74,6 +74,7 @@ function buildDressing() {
 import { canvasTex, hdr } from "./shared/materials.ts";
 import { NeonText, SCRIPT } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
+import { CrowdFigure } from "./shared/CrowdFigure.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
 
 const PINK = "#ff4fb3";
@@ -86,6 +87,13 @@ const CONTEXT: DialogueContext = {
   venue: "roller-rink",
   neighborhood: "beachside",
 };
+
+/** The dancers on the LED square: x, z, and the way each faces (round the center). */
+const DANCERS: readonly (readonly [number, number, number])[] = [
+  [RINK.x - 1.1, RINK.z + 0.2, Math.PI / 2],
+  [RINK.x + 1.1, RINK.z + 0.3, -Math.PI / 2],
+  [RINK.x, RINK.z - 0.9, 0],
+];
 
 const BEAMS: readonly Beam[] = [
   { position: [-7, 5.5, -6], color: PINK, phase: 0 },
@@ -393,6 +401,19 @@ export function RollerRink({ onPick }: { onPick: PickHandler }) {
         </mesh>
       ))}
       <Rental />
+      {/* three off the skates, dancing on the LED square to the night's style */}
+      {DANCERS.map((d, i) => (
+        <group key={i} position={[d[0], 0, d[1]]} rotation-y={d[2]}>
+          <CrowdFigure
+            look={
+              SKATER_LOOKS[(i + 1) % SKATER_LOOKS.length] ?? SKATER_LOOKS[0]
+            }
+            dance
+            floor="roller-rink"
+            seed={210 + i}
+          />
+        </group>
+      ))}
       {SKATER_LOOKS.map((look, i) => (
         <Skater
           key={i}

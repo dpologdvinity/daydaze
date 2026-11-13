@@ -24,6 +24,7 @@ import {
 import { ROOMS } from "../../game/rooms.ts";
 import { surface } from "../city/worldTexture.ts";
 import { Batch } from "./shared/batch.ts";
+import { cartGagOn } from "../../game/dance/venueDances.ts";
 import { CrowdFigure } from "./shared/CrowdFigure.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { canvasTex, hdr } from "./shared/materials.ts";
@@ -369,6 +370,8 @@ function Goods() {
  */
 export function Market({ onPick }: { onPick: PickHandler }): JSX.Element {
   const shell = useShell();
+  // decided once per visit, from the real hour
+  const gag = useMemo(() => cartGagOn(Date.now()), []);
   return (
     <>
       <color attach="background" args={["#e8e4f4"]} />
@@ -425,7 +428,12 @@ export function Market({ onPick }: { onPick: PickHandler }): JSX.Element {
       />
       {SHOPPERS.map((s, i) => (
         <group key={i} position={s.at} rotation-y={s.rot}>
-          <CrowdFigure look={s.look} seed={423 + i} />
+          <CrowdFigure
+            look={s.look}
+            // the first shopper's rare gag: the shopping cart dance down the aisle
+            move={i === 0 && gag ? "shopping-cart" : undefined}
+            seed={423 + i}
+          />
         </group>
       ))}
     </>

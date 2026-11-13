@@ -129,6 +129,7 @@ export function KaraokeNpcs({
           <CrowdFigure
             look={c.look}
             dance
+            floor="karaoke"
             move={cheering ? (i % 2 ? "cheer" : "fist-pump") : undefined}
             seed={104 + i}
           />
