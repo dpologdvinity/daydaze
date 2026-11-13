@@ -148,3 +148,14 @@ test("a jump goes out as one word, over any mood, and comes back as a jump", () 
     buzz: 2,
   });
 });
+
+test("standing up from a chair travels as its own pose, idle to a watcher", () => {
+  assert.equal(
+    encodeAction("idle", "salsa", { pose: "rise", y: 0.1 }),
+    "rise@10",
+  );
+  assert.deepEqual(decodeAction("rise@10"), {
+    mood: "idle",
+    seat: { pose: "rise", y: 0.1 },
+  });
+});

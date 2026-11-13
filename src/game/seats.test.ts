@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { isRoomId, ROOMS } from "./rooms.ts";
+import { clipOf } from "./dance/clips.ts";
 import { SEATS, homeSeats, seatsIn } from "./seats.ts";
 import { pointInPolygon } from "./walk.ts";
 import { DINER_SEATS as KAMAYAN_DINERS } from "./kamayanHall.ts";
@@ -68,5 +69,30 @@ test("every seat in every room is walked up to from open floor", () => {
     const area = areaOf(ROOMS[id]);
     for (const s of seatsIn(id))
       assert.equal(isBlocked(area, s.approach), false, `${s.id} approach`);
+  }
+});
+
+test("an office chair by a desk faces it and types; a lone one just sits", () => {
+  const [at] = homeSeats([
+    { id: "desk", cell: [2, 0], rotation: 0 },
+    { id: "office-chair", cell: [2, 1], rotation: 0 },
+  ]);
+  assert.ok(at);
+  assert.equal(at.hold, "seat-typing");
+  // the desk is the row above (smaller z): she faces -z, walked up to from behind
+  assert.ok(Math.abs(Math.abs(at.yaw) - Math.PI) < 0.5);
+  assert.ok(at.approach[1] > at.at[1]);
+  const [alone] = homeSeats([{ id: "office-chair", cell: [5, 4], rotation: 0 }]);
+  assert.ok(alone);
+  assert.equal(alone.hold, undefined);
+});
+
+test("every seat's own hold is a baked held pose or seated loop", () => {
+  const holds = SEATS.filter((s) => s.hold);
+  // the cafes' tables
+  assert.ok(holds.length >= 20);
+  for (const s of holds) {
+    const kind = clipOf(s.hold)?.kind;
+    assert.ok(kind === "sit" || kind === "seat", `${s.id}: ${s.hold}`);
   }
 });

@@ -146,9 +146,12 @@ export function pickClip(s: DollState): Play | null {
   const hold = clipOf(s.hold);
   switch (s.mood) {
     case "sit":
+      // a seat loop (typing, a seated clap) falls back to the plain sit while its pack loads
       return hold && (hold.kind === "sit" || hold.kind === "lay")
         ? play(hold.id)
-        : play(seatPlan(s.seed, s.slot ?? 0, s.own === true), 1, 0, SEAT_CLIP);
+        : hold?.kind === "seat"
+          ? play(hold.id, 1, 0, SEAT_CLIP)
+          : play(seatPlan(s.seed, s.slot ?? 0, s.own === true), 1, 0, SEAT_CLIP);
     case "pose":
       return hold?.kind === "pose" ? play(hold.id) : null;
     case "lean":

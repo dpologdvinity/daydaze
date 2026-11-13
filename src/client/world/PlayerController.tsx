@@ -38,6 +38,15 @@ import {
   type Walker,
 } from "../../game/walker.ts";
 import { WALK_SPEED, type Vec2 } from "../../game/walk.ts";
+import {
+  riseFrom,
+  seatPose,
+  stepSeatMove,
+  type RootPose,
+  type SeatMove,
+} from "../../game/seatMove.ts";
+import { pickTransition } from "../../game/dance/transitions.ts";
+import { seatedHold } from "../../game/dance/seatActions.ts";
 import { endJump, jumping, startJump } from "./jump.ts";
 import { TIME_SCALE } from "../timeScale.ts";
 import { naturalPace } from "../../game/dance/clips.ts";
@@ -88,9 +97,17 @@ export type Player = {
     stride?: boolean;
     /** Inside a closed vehicle (a taxi): out of sight, like her own car. */
     inside?: boolean;
+    /** The clip she holds seated here instead of her own pick (a cafe table's
+     * idle, typing at a desk): a chair seat's, see game/seats.ts. */
+    hold?: string;
   } | null;
   /** Set while seated on a chair (not a ride): the doll sits until she moves. */
   sitting: boolean;
+  /** A chair seat's sit-down or stand-up: eases her root between the spot
+   * she walked to and the seat (game/seatMove.ts). Kept, settled, while she
+   * sits, so standing up can run it back; null once she is on her feet. It
+   * names the seat it moves, so a ride that takes her seat over is left be. */
+  seatMove: { move: SeatMove; seat: NonNullable<Player["seat"]> } | null;
   /** A slide ride: `t` runs 0..1 down the slide, then `swim` counts seconds. */
   ride: { slide: Slide; length: number; t: number; swim: number } | null;
 };
@@ -106,6 +123,7 @@ export function createPlayer(spawn: Spawn): Player {
     acc: 0,
     seat: null,
     sitting: false,
+    seatMove: null,
     ride: null,
   };
 }
@@ -130,6 +148,10 @@ export function startRide(player: Player, slide: Slide, t = 0) {
 export function walkTo(player: Player, area: WalkArea, point: Vec2) {
   setTarget(player.walk, area, point);
 }
+
+// a chair's stand-up when the clip pack isn't known: about a second
+const RISE_FALLBACK = 1;
+const rootPose: RootPose = { x: 0, y: 0, z: 0, yaw: 0 };
 
 const SLIDE_SPEED = 6.5;
 const SWIM_SECONDS = 1.6;
@@ -359,11 +381,30 @@ export function PlayerController({
     }
     const local = moveAction(held.current, stick);
     const intent = local && worldDirection(local, state.camera);
-    // seated on a chair: a key press or a new walk target stands her up
+    // seated on a chair: a key press or a new walk target stands her up. The
+    // stand-up clip plays as her root eases back to the spot she sat from, and
+    // she walks off after; a chair with no move to run back just lets her go
     if (player.sitting && (intent || player.walk.target)) {
       player.sitting = false;
-      player.seat = null;
+      if (player.seatMove)
+        riseFrom(
+          player.seatMove.move,
+          pickTransition("sit", "stand", 0)?.seconds ?? RISE_FALLBACK,
+        );
+      else player.seat = null;
     }
+    // sitting down or standing up: draw her where the move has got to
+    const sm = player.seatMove;
+    if (sm && player.seat === sm.seat) {
+      const going = stepSeatMove(sm.move, dt);
+      const root = seatPose(sm.move, rootPose);
+      sm.seat.position.set(root.x, root.y, root.z);
+      sm.seat.yaw = root.yaw;
+      if (!going && sm.move.dir === -1) {
+        player.seat = null;
+        player.seatMove = null;
+      }
+    } else if (sm) player.seatMove = null;
     const rideMood =
       ride(player, area, dt, calm) ??
       (player.sitting
@@ -560,7 +601,12 @@ export function PlayerController({
             riding === "lay"
               ? LAY_HOLD
               : (riding ?? mood) === "sit"
-                ? holds.sit
+                ? seatedHold({
+                    mood,
+                    dance,
+                    picked: holds.sit,
+                    seatHold: player.seat?.hold,
+                  })
                 : (riding ?? mood) === "pose"
                   ? holds.pose
                   : "built"

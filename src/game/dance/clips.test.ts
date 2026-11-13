@@ -178,6 +178,13 @@ test("held poses and seats", () => {
   assert.equal(sit("lay-side"), "lay-side");
   // a standing pose is no seat
   assert.equal(sit("pose-cocky"), SEAT_CLIP);
+  // a seated loop (typing, a seated clap) plays once its pack is in, else the plain sit
+  assert.equal(sit("seat-typing"), SEAT_CLIP);
+  const seated = new Set<MocapPack>(["seated"]);
+  assert.equal(
+    pickClip({ ...base, mood: "sit", hold: "seat-typing", packs: seated })?.id,
+    "seat-typing",
+  );
   const pose = (hold?: string) => pickClip({ ...base, mood: "pose", hold });
   assert.equal(pose("pose-cocky")?.id, "pose-cocky");
   // the hand-made hip-pop stays built
