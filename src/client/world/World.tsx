@@ -665,7 +665,13 @@ export function World({
         )}
         <FrameCount still={still} />
         <Photo />
-        <OnlinePeers room={room} player={player} mood={mood} dance={dance} />
+        <OnlinePeers
+          room={room}
+          player={player}
+          mood={mood}
+          dance={dance}
+          sitHold={holds.sit}
+        />
         <DrunkState intensity={effects} />
         <Dancing mood={mood} move={dance} />
         <Wearing style={swimFor(def, swim)?.style ?? "outfit"} />

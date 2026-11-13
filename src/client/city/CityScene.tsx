@@ -30,6 +30,7 @@ import { BEACH_COURT, VolleyCourt } from "./VolleyCourt.tsx";
 import { SquareLife } from "./SquareLife.tsx";
 import { Parols } from "./Parols.tsx";
 import { Pedestrians } from "./Pedestrians.tsx";
+import { ChatGroups } from "./ChatGroups.tsx";
 import { NightMarket } from "./NightMarket.tsx";
 import { setInPark, setNeighborhood } from "./here.ts";
 import { inPark } from "../../game/city/park.ts";
@@ -330,6 +331,7 @@ export function CityScene({
       <PlayerCar player={player} parked={car} onPark={onPark} />
       <GasStations player={player} />
       <Pedestrians player={player} />
+      <ChatGroups player={player} />
       <Suspense fallback={null}>
         <CityTrees autumn={activeDressings.includes("autumn")} />
         <CityFurniture summer={activeDressings.includes("summer")} />

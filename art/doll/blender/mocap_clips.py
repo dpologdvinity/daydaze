@@ -87,7 +87,7 @@ CORE_ORIGINAL = {
     "wave": ("gestures/waving/Waving-Gesture_Aj-Waving-Gesture", "emote", "Waving"),
     "chatting": ("talking/Talking_General-Conversation", "emote", "Chatting"),
     "talk-question": ("talking/Talking_Asking-A-Question-With-One-Hand", "emote", "Asking"),
-    "laugh": ("talking/Talking_Talking-Finding-Something-Funny", "emote", "Laughing"),
+    "laugh": ("talking/Talking_Talking-Finding-Something-Funny", "emote", "Laughing", "menu"),
     "bartending": ("drinking/Bartending_Pouring-And-Serving-Drinks", "emote", "Bartending"),
     # in the sea (Seaside Swim, the reef): played by the player's afloat doll
     "swim-front": ("swimming/Swimming_Swimming-Underwater", "swim", "Swim"),
@@ -175,7 +175,7 @@ SOCIAL = {
     "talk-ask": ("talking/Talking_Asking-A-Question", "emote", "Asking"),
     "talk-argue": ("talking/Standing-Arguing_Standing-Arguing-With-Another-Person", "emote", "Arguing"),
     "talk-argue-2": ("talking/Standing-Arguing_Standing-And-Arguing-With-Another-Person", "emote", "Heated"),
-    "talk-secret": ("talking/Telling-A-Secret_Telling-A-Secret", "emote", "Telling a secret"),
+    "talk-secret": ("talking/Telling-A-Secret_Telling-A-Secret", "emote", "Whisper", "menu"),
     "talk-watercooler": ("talking/Talking-At-Watercooler_Having-A-Chat-At-The-Watercooler", "emote", "Water cooler chat"),
     "talk-phone": ("talking/Talking-On-A-Cell-Phone_Male-Standing-While-Talking-On-A-Cell-Phone", "emote", "On a call"),
     "talk-phone-pace": ("talking/Talking-Phone-Pacing_Male-Talking-On-The-Cell-Phone-While-Pacing-Back-And-Forth", "emote", "Pacing on a call"),
@@ -229,6 +229,25 @@ SOCIAL = {
     "rally": ("gestures/cheering/Rallying_Rallying-The-Crowd-To-Make-Them-Cheer", "emote", "Rally the crowd"),
     "victory": ("gestures/cheering/Victory_Celebrating-After-A-Win", "emote", "Victory", "menu"),
     "fist-pump-big": ("gestures/cheering/Fist-Pump_High-Enthusiasm-Fist-Pump", "emote", "Big fist pump"),
+    # conversation beats for groups of NPCs (game/dance/conversation.ts): a
+    # speaker's manners, a listener's nods and shakes, the heated end
+    "talk-general": ("talking/Talking_General-Conversation", "emote", "Chatting it up"),
+    "talk-whisper": ("talking/Telling-A-Secret_Telling-A-Secret-2", "emote", "Whispering"),
+    "talk-phone-f": ("talking/Talking-On-Phone_Female-Standing-Talking-On-Phone", "emote", "Phone call", "menu"),
+    "nod-agree": ("gestures/yes-no/Agreeing_Agreeing-Yes", "emote", "Agreeing"),
+    "nod-long": ("gestures/yes-no/Lengthy-Head-Nod_Nodding-Head-Yes", "emote", "Nodding along"),
+    "shake-annoyed": ("gestures/yes-no/Annoyed-Head-Shake_Shaking-Head-No-Annoyed", "emote", "Tsk, no"),
+    "head-sway": ("gestures/yes-no/Head-Gesture_Gesturing-Head-Side-To-Side", "emote", "So-so"),
+    "dismiss": ("gestures/greetings/Dismissing-Gesture_Dismissing-With-Hand-Forward", "emote", "Wave it off"),
+    "dismiss-back": ("gestures/greetings/Dismissing-Gesture_Dismissing-With-Back-Hand", "emote", "Brush off"),
+    "disappointed": ("gestures/pointing/Disappointed_Disappointed-Awe-Shucks", "emote", "Aw, shucks"),
+    "yell": ("gestures/emotions/Standing-Yell_Short-Yell-While-Standing", "emote", "Shouting"),
+    "angry-forward": ("gestures/emotions/Angry-Gesture_Angry-Forward-Gesture", "emote", "Furious"),
+    "point-angry": ("gestures/pointing/Angry-Point_Quickly-Pointing-Angrily-Forward", "emote", "Accusing"),
+    "hand-raise": ("gestures/Hand-Raising_Raising-A-Hand", "emote", "Hand up"),
+    "look-away": ("gestures/Look-Away-Gesture_Sarcastically-Looking-Away", "emote", "Eye roll"),
+    "pat-back": ("gestures/Patting_Patting-On-The-Back", "emote", "Pat on the back"),
+    "scheme": ("gestures/Plotting_Evil-Plotting", "emote", "Scheming"),
 }
 
 # -------------------------------------------------------------------- seated

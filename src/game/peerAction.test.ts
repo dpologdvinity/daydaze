@@ -159,3 +159,42 @@ test("standing up from a chair travels as its own pose, idle to a watcher", () =
     seat: { pose: "rise", y: 0.1 },
   });
 });
+
+test("a sitter's held clip rides along, when it fits and is a seated one", () => {
+  assert.equal(
+    encodeAction("idle", "salsa", { pose: "sit", y: 0.45, hold: "seat-clap" }),
+    "sit@45:seat-clap",
+  );
+  assert.deepEqual(decodeAction("sit@45:seat-clap"), {
+    mood: "sit",
+    seat: { pose: "sit", y: 0.45, hold: "seat-clap" },
+  });
+  // a table idle and a sit pose too
+  assert.equal(decodeAction("sit@45:sit-at-table").seat?.hold, "sit-at-table");
+  assert.equal(decodeAction("sit@45:sit-crossed").seat?.hold, "sit-crossed");
+  // too long for the 24 characters (the buzz tag takes two): the pose goes alone
+  assert.equal(
+    encodeAction(
+      "idle",
+      "salsa",
+      { pose: "sit", y: -2, hold: "seat-cheer-chat" },
+      undefined,
+      2,
+    ),
+    "sit@-200~2",
+  );
+  // nothing a peer sends can name a clip that is not a seated one
+  for (const bad of [
+    "sit@45:thriller",
+    "sit@45:walk-easy",
+    "sit@45:nonsense",
+    "sit@45:",
+    "sit@45:UPPER",
+    "sit@45:seat-clap:x",
+    "up@45:seat-clap",
+    "lay@45:seat-clap",
+  ]) {
+    const d = decodeAction(bad);
+    assert.equal(d.seat?.hold, undefined, bad);
+  }
+});
