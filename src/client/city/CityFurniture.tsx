@@ -6,14 +6,24 @@
 // per kind in public/models/street/, one instanced mesh per model part. Each
 // kind is drawn out to its own range (FURNITURE_RANGE), shorter on the low
 // tier, so the pieces cost almost nothing there. CityScene hands over the
-// spots on every plan reload (`cityFurniture`).
+// spots on every plan reload (`cityFurniture`). A kind's model is fetched when
+// the plan first has a spot of that kind (the beach's umbrellas and the park's
+// fountain stay unfetched until she is near), each in its own Suspense, so a
+// late model never hides the ones already drawn.
 
 import { useGLTF } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
-import { useEffect, useMemo, type JSX } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type JSX,
+} from "react";
 import * as THREE from "three";
 import {
-  FURNITURE_KINDS,
   MODEL_DIR,
   furnitureVisible,
   type FurnitureKind,
@@ -141,6 +151,12 @@ function paintOf(spot: FurnitureSpot): THREE.Color {
 }
 
 type Meshes = ReadonlyMap<FurnitureKind, THREE.InstancedMesh[]>;
+const NO_MESHES: Meshes = new Map();
+
+/** Beach gear is put away outside summer. */
+const inSeason = (kind: FurnitureKind, summer: boolean): boolean =>
+  summer ||
+  !(kind === "umbrella-red" || kind === "umbrella-blue" || kind === "towel");
 
 function place(
   meshes: Meshes,
@@ -152,13 +168,7 @@ function place(
 ) {
   const counts = new Map<THREE.InstancedMesh, number>();
   for (const f of spots) {
-    if (
-      !summer &&
-      (f.kind === "umbrella-red" ||
-        f.kind === "umbrella-blue" ||
-        f.kind === "towel")
-    )
-      continue;
+    if (!inSeason(f.kind, summer)) continue;
     if (
       !furnitureVisible(
         f.kind,
@@ -192,48 +202,89 @@ function place(
   );
 }
 
+/** One kind's instanced parts, with its look applied (bench boards, cut-out fence, candy paint). */
+function buildKind(
+  kind: FurnitureKind,
+  scene: THREE.Object3D,
+): THREE.InstancedMesh[] {
+  const bench = BENCH_SURFACES[kind];
+  const parts = partsOf(
+    scene,
+    TINT[kind] ?? null,
+    undefined,
+    bench &&
+      ((name) => {
+        const spec = bench[name];
+        return spec && boxMapped(surface(...spec).clone(), spec[1]?.scale ?? 1);
+      }),
+  );
+  // the chain fence's mesh is a cutout texture: cut, never blend, so a
+  // row of panels never sorts wrongly against itself
+  if (kind === "fence-chain")
+    for (const mesh of parts)
+      if (mesh.material instanceof THREE.MeshStandardMaterial) {
+        mesh.material.transparent = false;
+        mesh.material.alphaTest = 0.5;
+        mesh.material.side = THREE.DoubleSide;
+      }
+  if (kind === "vending")
+    for (const mesh of parts)
+      if (mesh.material instanceof THREE.MeshStandardMaterial)
+        paintVending(mesh.material, null);
+  return parts;
+}
+
+/**
+ * A kind's model, drawn from its parts: suspends while its file downloads (in
+ * its own boundary) and reports the parts to CityFurniture, which places them.
+ */
+function FurnitureModel({
+  kind,
+  report,
+}: {
+  kind: FurnitureKind;
+  report: (kind: FurnitureKind, parts: THREE.InstancedMesh[] | null) => void;
+}): JSX.Element {
+  const gltf = useGLTF(url(kind));
+  const parts = useMemo(() => buildKind(kind, gltf.scene), [kind, gltf]);
+  useEffect(() => {
+    report(kind, parts);
+    return () => {
+      report(kind, null);
+      disposeInstanced(parts, true);
+    };
+  }, [kind, parts, report]);
+  return (
+    <>
+      {parts.map((mesh) => (
+        <primitive key={mesh.uuid} object={mesh} />
+      ))}
+    </>
+  );
+}
+
 export function CityFurniture({ summer }: { summer: boolean }): JSX.Element {
   const low = useQuality() === "low";
-  const gltfs = useGLTF(FURNITURE_KINDS.map(url));
-  const meshes = useMemo(() => {
-    const byKind = new Map<FurnitureKind, THREE.InstancedMesh[]>();
-    FURNITURE_KINDS.forEach((kind, i) => {
-      const gltf = gltfs[i];
-      const bench = BENCH_SURFACES[kind];
-      if (gltf)
-        byKind.set(
-          kind,
-          partsOf(
-            gltf.scene,
-            TINT[kind] ?? null,
-            undefined,
-            bench &&
-              ((name) => {
-                const spec = bench[name];
-                return (
-                  spec &&
-                  boxMapped(surface(...spec).clone(), spec[1]?.scale ?? 1)
-                );
-              }),
-          ),
-        );
-      // the chain fence's mesh is a cutout texture: cut, never blend, so a
-      // row of panels never sorts wrongly against itself
-      if (kind === "fence-chain")
-        for (const mesh of byKind.get(kind) ?? [])
-          if (mesh.material instanceof THREE.MeshStandardMaterial) {
-            mesh.material.transparent = false;
-            mesh.material.alphaTest = 0.5;
-            mesh.material.side = THREE.DoubleSide;
-          }
-      if (kind === "vending")
-        for (const mesh of byKind.get(kind) ?? [])
-          if (mesh.material instanceof THREE.MeshStandardMaterial)
-            paintVending(mesh.material, null);
-    });
-    return byKind;
-  }, [gltfs]);
   const { spots, at, overview } = cityFurniture.use();
+  const [meshes, setMeshes] = useState<Meshes>(NO_MESHES);
+  const report = useCallback(
+    (kind: FurnitureKind, parts: THREE.InstancedMesh[] | null) =>
+      setMeshes((prev) => {
+        const next = new Map(prev);
+        if (parts) next.set(kind, parts);
+        else next.delete(kind);
+        return next;
+      }),
+    [],
+  );
+  // the kinds the plan has spots of now, and every kind it has had since
+  const wanted = useMemo(() => {
+    const kinds = new Set<FurnitureKind>();
+    for (const f of spots) if (inSeason(f.kind, summer)) kinds.add(f.kind);
+    return kinds;
+  }, [spots, summer]);
+  const seen = useRef(new Set<FurnitureKind>());
+  for (const kind of wanted) seen.current.add(kind);
   // dim with the night like the rest of the city (dimForDay in meshes.ts)
   const { neon } = useDaylight();
   useEffect(() => {
@@ -245,17 +296,16 @@ export function CityFurniture({ summer }: { summer: boolean }): JSX.Element {
     const drawn = place(meshes, spots, at, low, summer, overview);
     // read by the screenshot script and tests: the models are in and placed
     if (DEBUG) canvas.dataset.furnitureKinds = JSON.stringify(drawn);
-    if (spots.length > 0) canvas.dataset.furniture = "ready";
-  }, [meshes, spots, at, low, summer, overview, canvas]);
-  const all = useMemo(() => [...meshes.values()].flat(), [meshes]);
-  useEffect(() => () => disposeInstanced(all, true), [all]);
+    if (spots.length > 0 && [...wanted].every((kind) => meshes.has(kind)))
+      canvas.dataset.furniture = "ready";
+  }, [meshes, wanted, spots, at, low, summer, overview, canvas]);
   return (
     <>
-      {all.map((mesh) => (
-        <primitive key={mesh.uuid} object={mesh} />
+      {[...seen.current].map((kind) => (
+        <Suspense key={kind} fallback={null}>
+          <FurnitureModel kind={kind} report={report} />
+        </Suspense>
       ))}
     </>
   );
 }
-
-useGLTF.preload(FURNITURE_KINDS.map(url));

@@ -329,6 +329,8 @@ const UbeBakery = lazy(() =>
   })),
 );
 
+const PROGRAMS_FLAG = new URLSearchParams(location.search).has("programs");
+
 /**
  * Counts rendered frames into `canvas[data-frames]` (up to 10) so tests and
  * screenshots can wait for a real picture. In still mode it also asks for
@@ -346,7 +348,27 @@ function FrameCount({ still }: { still: boolean }) {
       if (++later.current % 30 === 0) {
         gl.domElement.dataset.calls = String(gl.info.render.calls);
         gl.domElement.dataset.triangles = String(gl.info.render.triangles);
+        gl.domElement.dataset.programs = String(gl.info.programs?.length ?? 0);
       }
+      // `?programs=1`: list every linked program once, for scripts/perf-profile.ts
+      if (later.current === 60 && PROGRAMS_FLAG)
+        console.log(
+          `programs ${JSON.stringify(
+            (gl.info.programs ?? []).map((p) => ({
+              name: p.name,
+              key: p.cacheKey,
+              uses: p.usedTimes,
+              // the vertex stage's feature defines, to read what differs
+              defines: (gl.getContext().getShaderSource(p.vertexShader) ?? "")
+                .split("\n")
+                .filter((l) =>
+                  /^#define (USE_|NUM_|MORPH|SKINNING|DOUBLE|FLAT)/.test(l),
+                )
+                .map((l) => l.slice(8))
+                .join(" "),
+            })),
+          )}`,
+        );
       return;
     }
     // frames under the loading veil (scene hidden, compiling) do not count
@@ -652,6 +674,10 @@ export function World({
       gl={{ antialias: true, powerPreference: "high-performance" }}
       camera={{ position: [6.4, 5.4, 10], fov: 38, near: 0.05, far: 600 }}
       onCreated={({ gl }) => {
+        // the error check reads every program's info log, which makes the
+        // driver finish linking on the spot and so defeats the parallel
+        // compile (Warmup); a failing shader still shows in development
+        if (import.meta.env.PROD) gl.debug.checkShaderErrors = false;
         gl.domElement.setAttribute("role", "img");
         gl.domElement.setAttribute("aria-label", "3D room view");
       }}

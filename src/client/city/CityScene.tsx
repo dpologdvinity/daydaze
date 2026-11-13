@@ -1,6 +1,5 @@
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { Environment } from "@react-three/drei";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { ALL_CELLS, neighborhoodAt } from "../../game/city/cells.ts";
 import {
@@ -70,6 +69,8 @@ import { Traffic } from "./Traffic.tsx";
 import { PlayerCar } from "./PlayerCar.tsx";
 import { GasStations } from "./GasStations.tsx";
 import type { ParkedCar } from "../../game/city/drive.ts";
+
+const CityHdri = lazy(() => import("./CityHdri.tsx"));
 
 /**
  * The district lots and Suburbia's houses: each mounts, and fetches its models
@@ -304,10 +305,7 @@ export function CityScene({
       {/* high tier at night: a real night street lights skin, cars and glass */}
       {tier === "high" && day.neon > 0.5 && (
         <Suspense fallback={null}>
-          <Environment
-            files="/hdri/cobblestone_street_night.hdr"
-            environmentIntensity={0.5}
-          />
+          <CityHdri />
         </Suspense>
       )}
       <CitySky night={day.neon} />
