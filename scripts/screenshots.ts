@@ -769,6 +769,12 @@ const SHOTS: {
   },
   { name: "zoo-woods", query: "room=zoo&cam=0,7,2,0,1,-6.2" },
   { name: "forest", query: "room=forest" },
+  // Larkspur's meadow glade and the garden's beds, with their butterflies
+  {
+    name: "butterflies-meadow",
+    query: "room=forest&cam=6,2.6,16,16,1,5",
+  },
+  { name: "butterflies-garden", query: "room=garden&cam=0,3,12,0,1,0" },
   { name: "forest-path", query: "room=forest&cam=2,3,2,-1,1.2,-10" },
   { name: "forest-top", query: "room=forest&cam=0,26,8,0,0,-4" },
   { name: "forest-creek", query: "room=forest&cam=2,7,-4,1,0,-14" },
@@ -1114,6 +1120,13 @@ const SHOTS: {
     // paths, pond, bandstand and picnics
     name: "city-park",
     query: "room=city&view=full&time=14:00&at=254,-280",
+    act: cityReady,
+  },
+  {
+    // butterflies over the park's east lawn, close
+    name: "butterflies-park",
+    query:
+      "room=city&view=room&time=14:00&at=262,-270&cam=256,3,-265,266,1,-278",
     act: cityReady,
   },
   {
