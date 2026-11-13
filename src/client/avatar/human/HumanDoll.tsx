@@ -144,7 +144,7 @@ type Anim = {
   posture: Posture | null;
   since: number;
   /** A one-shot joining two postures (sitting down), until it ends. */
-  trans: { id: string; until: number } | null;
+  trans: { id: string; until: number; rate: number } | null;
   /** The play handed to the picker's caller while a transition runs. */
   transPlay: Play;
   /** What she was seen doing around walking, and the clip it set off. */
@@ -1054,7 +1054,11 @@ export function HumanDoll({
         a.trans = null;
         if (joining && clips) {
           if (packsFor(body.key).has(joining.pack))
-            a.trans = { id: joining.id, until: now + joining.seconds };
+            a.trans = {
+              id: joining.id,
+              until: now + joining.seconds,
+              rate: joining.rate,
+            };
           else void loadPack(body.key, joining.pack);
         }
       }
@@ -1105,7 +1109,7 @@ export function HumanDoll({
       if (a.trans) {
         a.run = null;
         a.transPlay.id = a.trans.id;
-        a.transPlay.rate = 1;
+        a.transPlay.rate = a.trans.rate;
         want = a.transPlay;
       } else if (a.run && now < a.run.until) {
         a.transPlay.id = a.run.id;

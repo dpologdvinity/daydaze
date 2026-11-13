@@ -18,8 +18,9 @@ export const SPOT: Vec2 = goalToRoom([0, SPOT_Z]);
 export const PITCH = { x0: -12, x1: 12, z0: -7.6, z1: 9 } as const;
 /** The dugout's bench along the west touchline, facing the pitch. */
 export const DUGOUT_X = -11.6;
+/** The seats sit on the bench plank, which Stadium.tsx hangs 0.35 m behind DUGOUT_X. */
 export const DUGOUT_SEATS: readonly Vec2[] = [-1, 0, 1].map((z): Vec2 => [
-  DUGOUT_X,
+  DUGOUT_X - 0.35,
   z,
 ]);
 
@@ -55,5 +56,5 @@ export const BLOCKERS: readonly (readonly Vec2[])[] = [
     GOAL[0] + POST_X + 0.2,
     GOAL[1] + 0.2,
   ),
-  box(DUGOUT_X - 0.6, -1.6, DUGOUT_X - 0.15, 1.6),
+  box(DUGOUT_X - 0.6, -1.6, DUGOUT_X - 0.35, 1.6),
 ];

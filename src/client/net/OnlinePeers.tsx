@@ -125,7 +125,9 @@ function PeerDoll({
     }
     const prev = last.current;
     const moved = prev ? Math.hypot(at.x - prev.x, at.z - prev.z) : 0;
-    walk.current.speed = dt > 0 ? Math.min(4, moved / dt) : 0;
+    // easing onto or off a chair is not walking: the sit and stand-up clips play
+    const eased = next.seat?.pose === "sit" || next.seat?.pose === "rise";
+    walk.current.speed = dt > 0 && !eased ? Math.min(4, moved / dt) : 0;
     walk.current.yaw = at.yaw;
     if (prev) {
       prev.x = at.x;
@@ -356,7 +358,9 @@ export function OnlinePeers({
               ? "lie"
               : player.sitting || seat.sit
                 ? "sit"
-                : "stand",
+                : player.seatMove?.seat === seat
+                  ? "rise"
+                  : "stand",
             y: seat.position.y,
           }
         : undefined,

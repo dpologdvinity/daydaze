@@ -11,8 +11,9 @@ export function fieldToRoom([x, z]: Vec2): Vec2 {
 export const FIELD = { x0: -10, x1: 10, z0: -8.6, z1: 9 } as const;
 /** The bench along the east sideline, facing the field. */
 export const BENCH_X = 9.4;
+/** The seats sit on the bench plank, which Gridiron.tsx hangs 0.35 m out from BENCH_X. */
 export const BENCH_SEATS: readonly Vec2[] = [0, 1, 2, 3].map((i): Vec2 => [
-  BENCH_X,
+  BENCH_X + 0.35,
   -1 + i,
 ]);
 export const EXIT: Vec2 = [0, 8.6];
@@ -38,5 +39,5 @@ export const FLOOR: readonly Vec2[] = box(
   FIELD.z1,
 );
 export const BLOCKERS: readonly (readonly Vec2[])[] = [
-  box(BENCH_X + 0.15, -1.6, FIELD.x1, 2.6),
+  box(BENCH_X + 0.35, -1.6, FIELD.x1, 2.6),
 ];

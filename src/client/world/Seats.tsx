@@ -6,6 +6,12 @@ import { homeSeats, seatsIn, type Seat } from "../../game/seats.ts";
 import type { HomeSave } from "../../game/home/home.ts";
 import type { WalkArea } from "../../game/area.ts";
 import { walkTo, type Player } from "./PlayerController.tsx";
+import { startSit, seatPose, type RootPose } from "../../game/seatMove.ts";
+import { pickTransition } from "../../game/dance/transitions.ts";
+
+const rootPose: RootPose = { x: 0, y: 0, z: 0, yaw: 0 };
+// a sit-down's length when its clip isn't known
+const FALLBACK_SECONDS = 1;
 
 // the sit pose puts the underside of the thighs this far above the feet
 const THIGH_HEIGHT = 0.48;
@@ -51,14 +57,14 @@ export function Seats({
           Math.hypot(b.approach[0] - px, b.approach[1] - pz),
       )[0];
       if (nearest) {
-        player.seat = null;
-        player.sitting = false;
+        // from another chair, PlayerController stands her up on the way
         pending.current = nearest;
         walkTo(player, area, nearest.approach);
       }
     }
     const seat = pending.current;
-    if (!seat) return;
+    // still on the last chair: she stands first (PlayerController), then walks
+    if (!seat || player.sitting) return;
     // a different tap or a key took the player elsewhere: give up on the seat
     const t = player.walk.target;
     if (
@@ -73,27 +79,37 @@ export function Seats({
     if (Math.hypot(x - seat.approach[0], z - seat.approach[1]) > 0.25) return;
     pending.current = null;
     player.walk.target = null;
-    player.seat = {
+    // she turns her back to the seat and lowers onto it as the sit-down clip
+    // plays (PlayerController steps the move); she'd pop there otherwise
+    const down = pickTransition("stand", "sit", 0);
+    const move = startSit({
+      // where she actually stopped, within a step of the approach point
+      approach: [x, z],
+      at: seat.at,
       // lying, she rests on the mattress; sitting, on her thighs
-      position: new THREE.Vector3(
-        seat.at[0],
-        seat.height - (seat.lie ? 0 : THIGH_HEIGHT),
-        seat.at[1],
-      ),
+      rootY: seat.height - (seat.lie ? 0 : THIGH_HEIGHT),
       yaw: seat.yaw,
+      fromYaw: player.walk.yaw,
+      reach: seat.lie ? 0 : (down?.reach ?? 0),
+      seconds: down?.seconds ?? FALLBACK_SECONDS,
+    });
+    const start = seatPose(move, rootPose);
+    player.seat = {
+      position: new THREE.Vector3(start.x, start.y, start.z),
+      yaw: start.yaw,
       lie: seat.lie,
+      hold: seat.hold,
     };
+    player.seatMove = { move, seat: player.seat };
     player.sitting = true;
-    player.walk.yaw = seat.yaw;
     // read by tests
     gl.domElement.dataset.seated = seat.id;
   });
 
   const sit = (seat: Seat) => (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
-    if (player.seat && !player.sitting) return;
-    player.seat = null;
-    player.sitting = false;
+    // a game's seat holds her; a chair she is standing up from does not
+    if (player.seat && !player.sitting && !player.seatMove) return;
     pending.current = seat;
     walkTo(player, area, seat.approach);
   };

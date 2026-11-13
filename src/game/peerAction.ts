@@ -1,6 +1,6 @@
 // What a player is doing, in the 24 characters a move message's `action`
 // carries: their mood; for a dance, the move, so everyone sees the same
-// dance; on a seat or a ride, whether they sit, lie or stand and the height
+// dance; on a seat or a ride, whether they sit, lie, stand or rise from a chair and the height
 // they're at ("sit@38", in centimeters), since moves carry only x and z;
 // behind the wheel, the paint, the rims, underglow, tint and wrap packed in two
 // base-36 characters, and the car ("c:ff4fb30kpebble"); after a few
@@ -18,8 +18,10 @@ import { isTogetherId, roleMove, type Pair } from "./dance/together.ts";
 const LIMIT = 24;
 const isMood = (a: string): a is Mood => MOODS.some((m) => m.id === a);
 
-export type Held = { pose: "sit" | "lie" | "stand"; y: number };
-const CODE = { sit: "sit", lie: "lay", stand: "up" } as const;
+/** "rise": standing up from a chair, her root still easing off the seat, so
+ * a watcher plays the stand-up clip instead of a walk. */
+export type Held = { pose: "sit" | "lie" | "stand" | "rise"; y: number };
+const CODE = { sit: "sit", lie: "lay", stand: "up", rise: "rise" } as const;
 
 export type Driven = { id: string; color: string; mods?: CarMods };
 
@@ -142,11 +144,21 @@ function decodeBody(action: string): Doing {
       ? { mood: "idle", car: { id: car[3], color: `#${car[1]}`, mods } }
       : { mood: "idle" };
   }
-  const held = /^(sit|lay|up)@(-?\d{1,4})$/.exec(action);
+  const held = /^(sit|lay|up|rise)@(-?\d{1,4})$/.exec(action);
   if (held) {
-    const pose = held[1] === "up" ? "stand" : held[1] === "lay" ? "lie" : "sit";
+    const pose =
+      held[1] === "up"
+        ? "stand"
+        : held[1] === "rise"
+          ? "rise"
+          : held[1] === "lay"
+            ? "lie"
+            : "sit";
     const y = Number(held[2]) / 100;
-    return { mood: pose === "stand" ? "idle" : "sit", seat: { pose, y } };
+    return {
+      mood: pose === "stand" || pose === "rise" ? "idle" : "sit",
+      seat: { pose, y },
+    };
   }
   if (action.startsWith("dance:")) {
     const move = action.slice(6);

@@ -5,6 +5,8 @@ import { execFileSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { chromium, expect, type Page } from "@playwright/test";
 import { DEFAULT_LOOK } from "../src/game/look.ts";
+import { SEATS, homeSeats } from "../src/game/seats.ts";
+import { yawTowards } from "../src/game/walk.ts";
 import {
   FURNITURE_CATALOG,
   FURNITURE_IDS,
@@ -284,6 +286,8 @@ function actionStrip(
   setup: (page: Page) => Promise<void>,
   go: (page: Page) => Promise<void>,
   seconds = 20,
+  /** How many frames to keep (the first ones). */
+  keep = FRAMES,
 ): (typeof SHOTS)[number] {
   return {
     name,
@@ -299,7 +303,7 @@ function actionStrip(
       const cdp = await page.context().newCDPSession(page);
       const frames: Buffer[] = [];
       cdp.on("Page.screencastFrame", (f) => {
-        if (frames.length < FRAMES) frames.push(Buffer.from(f.data, "base64"));
+        if (frames.length < keep) frames.push(Buffer.from(f.data, "base64"));
         void cdp.send("Page.screencastFrameAck", { sessionId: f.sessionId });
       });
       await cdp.send("Page.startScreencast", { format: "png" });
@@ -343,6 +347,105 @@ function firefightStrip(
       });
     },
     25,
+  );
+}
+
+/**
+ * A frame strip of sitting down, standing up or a seated action on a seat,
+ * on the full-body camera at a tenth of real time (?timescale), so each frame
+ * of the 1-second sit-down or stand-up is caught. She spawns on the seat's
+ * approach point, facing the seat. "sit" records the sit-down, "stand" the
+ * stand-up (she sits first, waits to settle, then a key press stands her),
+ * "emote" a seated clap, "type" typing at the apartment desk.
+ */
+function seatStrip(
+  name: string,
+  seatId: string,
+  what: "sit" | "stand" | "emote" | "type",
+  /** Which side of her the camera stands (1 or -1), clear of the neighbors. */
+  side: 1 | -1,
+  /** How far out and how high the camera stands (a room with a panel in the way wants more). */
+  frame: { dist: number; height: number } = { dist: 3, height: 0.9 },
+): (typeof SHOTS)[number] {
+  // the apartment desk and chair, saved before the page loads
+  const desk = [at("desk", 1, 0), at("office-chair", 1, 1)];
+  const seat =
+    seatId === "home-chair-1"
+      ? homeSeats(desk).find((x) => x.hold === "seat-typing")
+      : SEATS.find((x) => x.id === seatId);
+  if (!seat) throw new Error(`no seat ${seatId}`);
+  // she faces the seat as she arrives
+  const yaw = yawTowards(seat.approach, seat.at);
+  const room = seatId === "home-chair-1" ? "apartment" : seat.room;
+  // a side-on camera three meters out at about her hip height, pinned (?cam=)
+  // on the spot she sits, so the bench or chair under her is in the frame
+  const mid = [
+    (seat.approach[0] + seat.at[0]) / 2,
+    (seat.approach[1] + seat.at[1]) / 2,
+  ];
+  const eye = [
+    mid[0] + Math.cos(seat.yaw) * frame.dist * side,
+    mid[1] - Math.sin(seat.yaw) * frame.dist * side,
+  ];
+  const cam = `${eye[0].toFixed(2)},${frame.height},${eye[1].toFixed(2)},${mid[0].toFixed(2)},0.8,${mid[1].toFixed(2)}`;
+  // dispatched, not clicked: the apartment's panel sits over the dock
+  const takeSeat = async (page: Page) => {
+    await page
+      .getByRole("button", { name: "Take a seat" })
+      .dispatchEvent("click");
+  };
+  const seated = async (page: Page) => {
+    await takeSeat(page);
+    await page.waitForFunction(
+      () => document.querySelector("canvas")?.dataset.seated !== undefined,
+      null,
+      { timeout: 300_000 },
+    );
+    // the sit-down runs a second of game time, 33 of real time
+    await page.waitForTimeout(45_000);
+  };
+  return actionStrip(
+    name,
+    // low quality and a small window: SwiftShader renders every few seconds, so
+    // game time runs at 3% for a frame to span a few hundredths of a second
+    `room=${room}&quality=low&timescale=0.03&cam=${cam}&at=${seat.approach[0]},${seat.approach[1]}&yaw=${yaw}`,
+    async (page) => {
+      // the emote panel covers a small window's doll: a wide one clears it
+      await page.setViewportSize(
+        what === "emote"
+          ? { width: 1280, height: 720 }
+          : { width: 800, height: 500 },
+      );
+      if (room === "apartment") {
+        await page.evaluate((f) => {
+          localStorage.setItem(
+            "daydaze-save-v1",
+            JSON.stringify({ home: { locked: true, furniture: f } }),
+          );
+        }, desk);
+        await page.reload();
+        await page.waitForFunction(
+          () => document.querySelector("canvas")?.dataset.frames === "10",
+          null,
+          { timeout: 300_000 },
+        );
+      }
+      // the seated clip pack loads a while after the scene
+      await page.waitForTimeout(40_000);
+      if (what === "stand" || what === "emote") await seated(page);
+    },
+    async (page) => {
+      if (what === "stand") await page.keyboard.down("d");
+      else if (what === "emote") {
+        await page.getByRole("radio", { name: "Dance", exact: true }).click();
+        await page
+          .getByRole("radiogroup", { name: "Emote" })
+          .getByRole("radio", { name: "Clapping" })
+          .click();
+      } else await takeSeat(page);
+    },
+    what === "type" ? 60 : what === "stand" ? 75 : 45,
+    90,
   );
 }
 
@@ -625,6 +728,17 @@ const SHOTS: {
     men: true,
     timescale: 0.1,
     seconds: 30,
+  }),
+  seatStrip("seat-bench-sit", "dome-bench-0", "sit", -1),
+  seatStrip("seat-bench-stand", "dome-bench-0", "stand", -1),
+  seatStrip("seat-stadium-sit", "stadium-dugout-0", "sit", 1),
+  seatStrip("seat-stadium-stand", "stadium-dugout-0", "stand", 1),
+  seatStrip("seat-clap", "dome-bench-0", "emote", -1),
+  seatStrip("seat-stool-cellar", "cellar-stool-0", "sit", 1),
+  seatStrip("seat-stool-skylark", "skylark-stool-0", "sit", 1),
+  seatStrip("seat-typing", "home-chair-1", "type", -1, {
+    dist: 3.2,
+    height: 1.4,
   }),
   { name: "club-pulse", query: "room=pulse" },
   {

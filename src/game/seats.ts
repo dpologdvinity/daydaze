@@ -1,5 +1,5 @@
 import type { RoomId } from "./rooms.ts";
-import { footprint, type Furniture } from "./home/decor.ts";
+import { footprint, FURNITURE_CATALOG, type Furniture } from "./home/decor.ts";
 import { SOFA, STOOL_XS, STOOL_Z } from "./rooftop.ts";
 import { CHAIR_X, CHAIR_ZS, STOOL_X, STOOL_ZS } from "./sugarRush.ts";
 import * as ARCADE from "./arcadeBar.ts";
@@ -36,7 +36,10 @@ import { BENCH_SEATS } from "./bowlingAlley.ts";
 import { BOOTH_SEATS, MIC } from "./karaoke.ts";
 import * as WAREHOUSE from "./warehouse.ts";
 import * as ORBIT from "./orbit.ts";
-import { yawTowards, type Vec2 } from "./walk.ts";
+import { yawTowards, pointInPolygon, type Vec2 } from "./walk.ts";
+import { areaOf, isBlocked } from "./area.ts";
+import { ROOMS } from "./rooms.ts";
+import { openApproach } from "./seatApproach.ts";
 
 /**
  * Chairs, stools and sofas a player can sit on. Tapping one walks the player
@@ -52,7 +55,17 @@ export type Seat = {
   approach: Vec2;
   /** A bed: she lies back on it instead of sitting. */
   lie?: true;
+  /** The clip she holds seated here instead of her own pick: hands on the
+   * table at a cafe, typing at a desk. */
+  hold?: string;
 };
+
+/** Hands on the table, at a cafe (Mixamo Seated-Idle-With-Hands-On-A-Table). */
+const TABLE_IDLE = "sit-at-table";
+/** Typing at a desk (Mixamo Typing_Sitting-At-A-Computer-And-Typing). */
+const DESK_IDLE = "seat-typing";
+const atTable = (seats: readonly Seat[]): Seat[] =>
+  seats.map((s) => ({ ...s, hold: TABLE_IDLE }));
 
 /** A seat at `at` facing `facing`. `from` is the open side you walk up from:
  * behind a stool at a bar or table, in front of a sofa against a wall. */
@@ -537,8 +550,8 @@ const moreSportsSeats = [
   ),
 ];
 
-export const SEATS: readonly Seat[] = [
-  ...foodSeats,
+const RAW_SEATS: readonly Seat[] = [
+  ...atTable(foodSeats),
   ...velvetStools,
   ...pulseBanquettes,
   ...skylarkSeats,
@@ -552,10 +565,10 @@ export const SEATS: readonly Seat[] = [
   ...jazzSeats,
   ...backRoomSeats,
   ...tikiSeats,
-  ...labSeats,
+  ...atTable(labSeats),
   ...rooftopSeats,
   ...bookshopSeats,
-  ...sucreSeats,
+  ...atTable(sucreSeats),
   ...gallerySeats,
   ...surfSeats,
   ...driveInSeats,
@@ -565,12 +578,57 @@ export const SEATS: readonly Seat[] = [
   ...linksSeats,
   ...sportsSeats,
   ...kamayanSeats,
-  ...luneSeats,
+  ...atTable(luneSeats),
   ...galleriaSeats,
   ...rinkSeats,
   ...skateparkSeats,
   ...moreSportsSeats,
 ];
+
+/**
+ * Moves each seat's approach point to open floor in front of the seat or
+ * beside it, never behind (seatApproach.ts); a seat with neither keeps its
+ * own. Beds are walked up to from the side already.
+ */
+/** Whether the straight line between two floor points stays on open floor. */
+function walkClear(a: Vec2, b: Vec2, stand: (p: Vec2) => boolean): boolean {
+  const steps = Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 0.1);
+  for (let k = 1; k < steps; k++) {
+    const t = k / steps;
+    if (!stand([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]))
+      return false;
+  }
+  return true;
+}
+
+function withOpenApproach(
+  seats: readonly Seat[],
+  /** More floor she can't stand on: the apartment's furniture. */
+  covered: (p: Vec2, seat: Seat) => boolean = () => false,
+): Seat[] {
+  return seats.map((s) => {
+    if (s.lie) return s;
+    const room = ROOMS[s.room];
+    const area = areaOf(room);
+    const others = seats
+      .filter((o) => o !== s && o.room === s.room)
+      .map((o) => o.at);
+    const stand = (p: Vec2): boolean =>
+      pointInPolygon(room.walkable, p) && !isBlocked(area, p) && !covered(p, s);
+    // the walker steers straight, so a spot is only any use if it is a clear
+    // walk from the seat's own approach (which every room's tests reach)
+    const clearFrom = s.approach;
+    const approach = openApproach(
+      s.at,
+      s.yaw,
+      others,
+      (p) => stand(p) && walkClear(clearFrom, p, stand),
+    );
+    return approach ? { ...s, approach } : s;
+  });
+}
+
+export const SEATS: readonly Seat[] = withOpenApproach(RAW_SEATS);
 
 export function seatsIn(room: RoomId): readonly Seat[] {
   return SEATS.filter((s) => s.room === room);
@@ -590,13 +648,50 @@ const FACINGS: readonly Vec2[] = [
   [-1, 0],
 ];
 
+/** The floor point at the middle of a placed piece. */
+function centerOf(item: Furniture): Vec2 {
+  const size = footprint(item.id, item.rotation);
+  return [
+    HOME_ORIGIN[0] + item.cell[0] + size.w / 2,
+    HOME_ORIGIN[1] + item.cell[1] + size.d / 2,
+  ];
+}
+
+/** How far (m) she stays from another piece of furniture when walking up to a seat. */
+const PIECE_MARGIN = 0.3;
+
+/** An office chair within this many meters of a desk's middle is pulled up to it. */
+const DESK_REACH = 1.6;
+
 export function homeSeats(furniture: readonly Furniture[]): Seat[] {
   const out: Seat[] = [];
+  const desks = furniture.filter((f) => f.id === "desk").map(centerOf);
   furniture.forEach((item, n) => {
+    if (item.id === "office-chair") {
+      // she sits facing the nearest desk and types; with none near, the way
+      // the chair was turned
+      const c = centerOf(item);
+      const desk = desks
+        .filter((d) => Math.hypot(d[0] - c[0], d[1] - c[1]) <= DESK_REACH)
+        .sort(
+          (a, b) =>
+            Math.hypot(a[0] - c[0], a[1] - c[1]) -
+            Math.hypot(b[0] - c[0], b[1] - c[1]),
+        )[0];
+      const face = FACINGS[item.rotation];
+      const chair = seat(
+        `home-chair-${n}`,
+        "apartment",
+        c,
+        0.5,
+        desk ?? [c[0] + face[0], c[1] + face[1]],
+      );
+      out.push(desk ? { ...chair, hold: DESK_IDLE } : chair);
+      return;
+    }
     if (item.id !== "sofa" && item.id !== "bed") return;
     const size = footprint(item.id, item.rotation);
-    const cx = HOME_ORIGIN[0] + item.cell[0] + size.w / 2;
-    const cz = HOME_ORIGIN[1] + item.cell[1] + size.d / 2;
+    const [cx, cz] = centerOf(item);
     const facing = FACINGS[item.rotation];
     const along: Vec2 = [facing[1], -facing[0]];
     if (item.id === "bed") {
@@ -629,5 +724,32 @@ export function homeSeats(furniture: readonly Furniture[]): Seat[] {
       );
     }
   });
-  return out;
+  // she can't stand within a step of another piece (a desk in front of its chair)
+  const rects = furniture
+    .map((f, n) => ({ f, n }))
+    .filter(
+      ({ f }) =>
+        !FURNITURE_CATALOG[f.id].wall && FURNITURE_CATALOG[f.id].height >= 0.3,
+    )
+    .map(({ f, n }) => {
+      const size = footprint(f.id, f.rotation);
+      const [cx, cz] = centerOf(f);
+      return {
+        n,
+        cx,
+        cz,
+        hw: size.w / 2 + PIECE_MARGIN,
+        hd: size.d / 2 + PIECE_MARGIN,
+      };
+    });
+  return withOpenApproach(out, (p, s) => {
+    // a seat's own piece is no obstacle (ids end `-<piece>` or `-<piece>-l`)
+    const own = Number(/^home-[a-z]+-(\d+)/.exec(s.id)?.[1]);
+    return rects.some(
+      (r) =>
+        r.n !== own &&
+        Math.abs(p[0] - r.cx) < r.hw &&
+        Math.abs(p[1] - r.cz) < r.hd,
+    );
+  });
 }
