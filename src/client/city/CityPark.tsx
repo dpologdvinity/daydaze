@@ -37,6 +37,7 @@ const url = (kind: GrowthKind) => `/models/nature/${GROWTH_MODELS[kind]}.glb`;
 const SCALE: Record<GrowthKind, number> = {
   grass: 0.3,
   wispy: 0.4,
+  dune: 0.55,
   fern: 0.5,
   bush: 0.55,
   flowers3: 0.4,

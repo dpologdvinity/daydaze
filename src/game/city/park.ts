@@ -224,12 +224,21 @@ export function parkFurniture(): FurnitureSpot[] {
 }
 
 export type GrowthKind =
-  "grass" | "wispy" | "fern" | "bush" | "flowers3" | "flowers4" | "rock";
+  | "grass"
+  | "wispy"
+  | "dune"
+  | "fern"
+  | "bush"
+  | "flowers3"
+  | "flowers4"
+  | "rock";
 
 /** The model (public/models/nature/<name>.glb) each kind is drawn with. */
 export const GROWTH_MODELS: Record<GrowthKind, string> = {
   grass: "grass-common-tall-lo",
   wispy: "grass-wispy-short-lo",
+  // the tall tuft again, drawn bigger and farther along the dunes
+  dune: "grass-common-tall-lo",
   fern: "fern-1-lo",
   bush: "bush-common-lo",
   flowers3: "flower-3-group-lo",
@@ -245,6 +254,7 @@ export const GROWTH_RANGE: Record<
   grass: [14, 48],
   // the dearer tuft: high tier only
   wispy: [0, 48],
+  dune: [45, 90],
   fern: [40, 80],
   bush: [60, 110],
   flowers3: [45, 90],
