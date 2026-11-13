@@ -16,7 +16,7 @@ export const SIM_HZ = 50;
 /** New York bays are drawn on buildings this near the player, per tier. */
 export const BAY_RANGE = { low: 50, high: 90 } as const;
 /** On the low tier, street trees past this many meters are left out. */
-export const TREE_LOW_FAR = 70;
+export const TREE_LOW_FAR = 50;
 /** At most this many walkers are drawn as dolls (Pedestrians.tsx), per tier;
  * the low tier leaves the rest to the instanced crowd, a doll being 13k
  * triangles to a crowd figure's 880. */

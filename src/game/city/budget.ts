@@ -606,7 +606,11 @@ export function lowTierCost(
     if (away(cart.at[0], cart.at[1]) <= FOOD_DRAW_RANGE) add("vendors/cart");
   // Vendors stand at least 16 m apart. At most one can wear a full costume
   // within HumanDoll's 4.6 m low-tier LOD range; neighbors wear low twins.
-  if (FOOD_CARTS.some((cart) => away(cart.at[0], cart.at[1]) < VENDOR_RANGE)) {
+  // Pulled out to the overview the camera is far from every doll: all wear low twins.
+  const fullVendor =
+    bays &&
+    FOOD_CARTS.some((cart) => away(cart.at[0], cart.at[1]) < VENDOR_RANGE);
+  if (fullVendor) {
     for (const model of [
       "doll/body",
       "doll/hair-bob",
@@ -618,7 +622,7 @@ export function lowTierCost(
   const nearbyVendors = FOOD_CARTS.filter(
     (cart) => away(cart.at[0], cart.at[1]) < VENDOR_RANGE,
   ).length;
-  for (let i = 1; i < nearbyVendors; i++) {
+  for (let i = fullVendor ? 1 : 0; i < nearbyVendors; i++) {
     for (const model of [
       "doll/body-lo",
       "doll/hair-bob-lo",
@@ -630,10 +634,11 @@ export function lowTierCost(
   for (const t of plan.trees)
     if (away(t.x, t.z) <= TREE_LOW_FAR) add(treeModel(t.variant));
   for (const f of plan.furniture)
-    if (furnitureVisible(f.kind, away(f.x, f.z), true))
+    if (furnitureVisible(f.kind, away(f.x, f.z), true, !bays))
       add(furnitureModel(f.kind));
   const grown = new Map<GrowthKind, number>();
-  for (const g of GROWTH) {
+  // pulled out to the overview, the undergrowth near her is not drawn
+  for (const g of bays ? GROWTH : []) {
     const n = grown.get(g.kind) ?? 0;
     if (away(g.x, g.z) > GROWTH_RANGE[g.kind][0] || n >= GROWTH_CAP.low)
       continue;
@@ -675,9 +680,7 @@ export function lowTierCost(
     drawCalls += cost.parts;
     triangles += cost.tris * n;
     tally(
-      model.startsWith("nature/street-tree")
-        ? "trees"
-        : (model.split("/")[0] ?? model),
+      model.startsWith("nature/street-tree") ? "trees" : model,
       cost.tris * n,
     );
   }
@@ -703,7 +706,7 @@ export function lowTierCost(
     if (!cost) throw new Error(`no cost for ${model}`);
     drawCalls += cost.parts;
     triangles += cost.tris;
-    tally("live-models", cost.tris);
+    tally(`live:${model}`, cost.tris);
   });
   drawCalls += live.drawCalls;
   triangles += live.triangles;

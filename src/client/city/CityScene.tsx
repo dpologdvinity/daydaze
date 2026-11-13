@@ -220,7 +220,7 @@ export function CityScene({
       for (const kind of KINDS)
         writeKind(meshes[kind], kind, plan.instances[kind]);
       cityTrees.set({ spots: plan.trees, at });
-      cityFurniture.set({ spots: plan.furniture, at });
+      cityFurniture.set({ spots: plan.furniture, at, overview: !bays });
       cityBays.set({ bays: plan.bays });
       cityLots.set({ lots: plan.lots });
       cityHouses.set({ spots: plan.houses });

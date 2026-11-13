@@ -101,7 +101,7 @@ export function signBoard(
 /** Lots farther than this from the player draw their far twin (LOT_SPECS lo),
  * a third to half the triangles. The plan decides when it is cut, not the
  * camera: the twins are separate meshes, filled per plan reload. */
-export const LOT_NEAR = 30;
+export const LOT_NEAR = 24;
 
 /** The box behind a block's lots stands this far in from its footprint: the
  * pack sets its upper storeys back by up to half a meter (and the walls sit
