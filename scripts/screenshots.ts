@@ -1336,6 +1336,27 @@ const SHOTS: {
       },
     })),
   ),
+  // Little Manila's El stairs from the sidewalk, looking west along the shop
+  // row: the flight must leave the shop doors in view
+  {
+    name: "el-manila-stairs",
+    live: true,
+    query:
+      "room=city&view=room&quality=low&time=12:00&at=-262,10&cam=-268,2.2,11,-300,4,7.6",
+    act: async (page: Page) => {
+      await streetReady(page);
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.lots === "ready",
+        null,
+        { timeout: 300_000 },
+      );
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+    },
+  },
   { name: "city-sunset", query: "room=city&view=full&time=19:30" },
   {
     name: "city-night",
