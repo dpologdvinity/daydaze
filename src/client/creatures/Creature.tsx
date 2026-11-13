@@ -19,6 +19,7 @@ import {
   type CreatureKind,
 } from "../../game/creatures.ts";
 import { clipToPlay } from "../../game/creature.ts";
+import { lit } from "./glow.ts";
 import { useReducedMotion } from "../motion.ts";
 import { useQuality } from "../world/quality.ts";
 
@@ -62,12 +63,15 @@ export function Creature({
   kind,
   drive,
   scale = 1,
+  glow = 0,
 }: {
   kind: CreatureKind;
   /** Called every frame (dt seconds) to fill in `pose`; no allocation. */
   drive: (dt: number, pose: CreaturePose) => void;
   /** Multiplies the kind's usual size. */
   scale?: number;
+  /** How much of its own color it adds as emitted light (a fish in a lit tank). */
+  glow?: number;
 }): JSX.Element {
   const calm = useReducedMotion();
   const tier = useQuality();
@@ -77,6 +81,11 @@ export function Creature({
     root.traverse((o) => {
       // skinned bounds come from the bind pose; the walk leaves them
       o.frustumCulled = false;
+      if (glow > 0 && o instanceof THREE.Mesh) {
+        o.material = Array.isArray(o.material)
+          ? o.material.map((m: THREE.Material) => lit(m, glow))
+          : lit(o.material, glow);
+      }
     });
     const mixer = new THREE.AnimationMixer(root);
     const actions = new Map<string, THREE.AnimationAction>();
@@ -100,7 +109,7 @@ export function Creature({
     const { k, shift } = fit(root, LENGTH[kind]);
     mixer.stopAllAction();
     return { root, k, shift, mixer, actions };
-  }, [gltf, kind]);
+  }, [gltf, kind, glow]);
   useEffect(
     () => () => {
       rig.mixer.stopAllAction();
