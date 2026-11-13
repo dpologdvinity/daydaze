@@ -181,19 +181,20 @@ const isGltf = (v: unknown): v is Gltf =>
   "accessors" in v &&
   Array.isArray(v.accessors);
 
-test("the lot specs match the shipped lots.glb", () => {
+test("the lot specs match the shipped lots.glb, each with its far twin", () => {
   const gltf = lotsGlb();
-  assert.deepEqual(
-    gltf.nodes.map((n) => n.name).sort(),
-    [...LOT_MODELS].sort(),
-  );
+  const expected = LOT_MODELS.flatMap((m) => [m, `${m}_lo`]);
+  assert.deepEqual(gltf.nodes.map((n) => n.name).sort(), expected.sort());
   for (const node of gltf.nodes) {
-    const model = LOT_MODELS.find((m) => m === node.name);
+    const twin = node.name.endsWith("_lo");
+    const model = LOT_MODELS.find((m) => m === node.name.replace("_lo", ""));
     assert.ok(model, node.name);
     const tris = gltf.meshes[node.mesh].primitives.reduce(
       (n, p) => n + gltf.accessors[p.indices].count / 3,
       0,
     );
-    assert.equal(LOT_SPECS[model].tris, Math.round(tris), model);
+    const spec = LOT_SPECS[model];
+    assert.equal(twin ? spec.lo : spec.tris, Math.round(tris), node.name);
+    if (twin) assert.ok(spec.lo < spec.tris, `${model}'s twin is lighter`);
   }
 });

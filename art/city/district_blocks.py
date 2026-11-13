@@ -37,6 +37,8 @@ PREVIEW = os.environ.get("PREVIEW")
 #: quoin and brick blocks); under SMALL_BELOW they are collapsed to `ratio`
 DROP_BELOW = float(os.environ.get("DROP_BELOW", "0.26"))
 SMALL_BELOW = float(os.environ.get("SMALL_BELOW", "0.6"))
+#: share of a wall-sized part's faces the collapse keeps
+WALL_KEEP = float(os.environ.get("WALL_KEEP", "0.7"))
 #: meters per model unit: a standard 2 storey building (2.16 units) is 5.6 m wide
 METERS = 5.6 / 2.16
 #: meters behind the front wall that the lots keep; a roof band this tall stays whole
@@ -94,13 +96,14 @@ def load(stem):
     return obj
 
 
-def thin(obj, ratio):
+def thin(obj, ratio, wall=None, drop=None):
     """Weld, then thin each loose part on its own: the pack builds a facade
     out of 150 to 250 small closed shells (stone blocks, sills, bricks, window
     frames), and collapsing the whole mesh at once tears them into shards.
     Parts too small to see from the street are dropped, window-sized ones are
     collapsed to a few faces, walls and roof only lightly. `ratio` is how much
-    of a window-sized part is kept."""
+    of a window-sized part is kept, `wall` (default WALL_KEEP) how much of a
+    wall-sized one."""
     bpy.context.view_layer.objects.active = obj
     bpy.ops.object.mode_set(mode="EDIT")
     bpy.ops.mesh.select_all(action="SELECT")
@@ -113,7 +116,7 @@ def thin(obj, ratio):
     for part in parts:
         t = tris(part)
         size = max(part.dimensions)  # model units
-        if size < DROP_BELOW:
+        if size < (drop or DROP_BELOW):
             bpy.data.objects.remove(part, do_unlink=True)
             continue
         zmax = max(v.co.z for v in part.data.vertices)
@@ -124,7 +127,7 @@ def thin(obj, ratio):
                 bpy.data.objects.remove(part, do_unlink=True)
                 continue
         if t > 14:
-            want = ratio if size < SMALL_BELOW else 0.7
+            want = ratio if size < SMALL_BELOW else (wall or WALL_KEEP)
             mod = part.modifiers.new("collapse", "DECIMATE")
             mod.ratio = max(want, 12.0 / t)
             bpy.context.view_layer.objects.active = part
@@ -268,30 +271,42 @@ def render_lineup(objs):
     bpy.ops.render.render(write_still=True)
 
 
+#: the far twin of each lot (name_lo): window-sized parts collapsed to a few
+#: faces and walls to a third, for the band past LOT_NEAR in districts.ts
+LOW_RATIO = 0.3
+LOW_WALL = 0.3
+LOW_DROP = float(os.environ.get("LOW_DROP", "0.42"))
+
+
+def build(name, stem, ratio, wall, mat, objs, drop=None):
+    obj = load(stem)
+    before = tris(obj)
+    obj = thin(obj, ratio, wall, drop)
+    place(obj)
+    cut_hidden(obj)
+    snap_uvs(obj)
+    obj.data.materials.clear()
+    obj.data.materials.append(mat)
+    obj.name = obj.data.name = name
+    dims = obj.dimensions
+    # the roofline at the front wall: the parapet, below the AC units and
+    # chimneys that stand deeper on the roof
+    roof = max(v.co.z for v in obj.data.vertices if v.co.y < ROOF_DEPTH)
+    print(
+        f"SPEC {name} w={dims.x:.2f} h={dims.z:.2f} roof={roof:.2f}"
+        f" tris={tris(obj)} (from {before})"
+    )
+    objs.append(obj)
+
+
 def main():
     clear()
     objs = []
     dbg = debug_palette() if PREVIEW else None
     mat = material("palette", dbg)
     for name, (stem, ratio) in MODELS.items():
-        obj = load(stem)
-        before = tris(obj)
-        obj = thin(obj, ratio)
-        place(obj)
-        cut_hidden(obj)
-        snap_uvs(obj)
-        obj.data.materials.clear()
-        obj.data.materials.append(mat)
-        obj.name = obj.data.name = name
-        dims = obj.dimensions
-        # the roofline at the front wall: the parapet, below the AC units and
-        # chimneys that stand deeper on the roof
-        roof = max(v.co.z for v in obj.data.vertices if v.co.y < ROOF_DEPTH)
-        print(
-            f"SPEC {name} w={dims.x:.2f} h={dims.z:.2f} roof={roof:.2f}"
-            f" tris={tris(obj)} (from {before})"
-        )
-        objs.append(obj)
+        build(name, stem, ratio, None, mat, objs)
+        build(name + "_lo", stem, ratio * LOW_RATIO, LOW_WALL, mat, objs, LOW_DROP)
     if PREVIEW:
         render_lineup(objs)
         return

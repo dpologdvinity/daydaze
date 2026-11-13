@@ -40,23 +40,28 @@ export type LotModel = (typeof LOT_MODELS)[number];
 
 /** Each model as built (art/city/district_blocks.py prints them): width in
  * meters, `roof` the parapet height at the front wall (the AC units and
- * chimneys stand above it), `tris` its triangles. districts.test.ts checks
- * the triangles against the shipped GLB. */
+ * chimneys stand above it), `tris` its triangles and `lo` the triangles of
+ * its far twin (node name_lo). districts.test.ts checks them against the
+ * shipped GLB. */
 export const LOT_SPECS: Readonly<
-  Record<LotModel, { w: number; roof: number; tris: number }>
+  Record<LotModel, { w: number; roof: number; tris: number; lo: number }>
 > = {
-  gable2: { w: 5.6, roof: 8.07, tris: 399 },
-  round2: { w: 5.47, roof: 7.52, tris: 278 },
-  s2: { w: 5.6, roof: 6.77, tris: 549 },
-  s2bal: { w: 5.6, roof: 7.32, tris: 699 },
-  s2col: { w: 5.6, roof: 7.02, tris: 663 },
-  s2wide: { w: 9.92, roof: 6.72, tris: 1131 },
-  s3bal: { w: 5.6, roof: 10.58, tris: 1247 },
-  s3slim: { w: 2.89, roof: 10.02, tris: 533 },
-  s4: { w: 6.28, roof: 12.86, tris: 1244 },
-  s4center: { w: 6.28, roof: 12.86, tris: 1206 },
-  s6: { w: 5.6, roof: 19.89, tris: 921 },
+  gable2: { w: 5.6, roof: 8.07, tris: 399, lo: 193 },
+  round2: { w: 5.47, roof: 7.52, tris: 278, lo: 105 },
+  s2: { w: 5.6, roof: 6.77, tris: 549, lo: 194 },
+  s2bal: { w: 5.6, roof: 7.32, tris: 699, lo: 350 },
+  s2col: { w: 5.6, roof: 7.02, tris: 663, lo: 319 },
+  s2wide: { w: 9.92, roof: 6.72, tris: 1131, lo: 506 },
+  s3bal: { w: 5.6, roof: 10.58, tris: 1247, lo: 602 },
+  s3slim: { w: 2.89, roof: 10.02, tris: 533, lo: 231 },
+  s4: { w: 6.28, roof: 12.86, tris: 1244, lo: 526 },
+  s4center: { w: 6.28, roof: 12.86, tris: 1206, lo: 495 },
+  s6: { w: 5.6, roof: 19.89, tris: 921, lo: 492 },
 };
+
+/** Lots farther than this from the camera draw their far twin (LOT_SPECS lo),
+ * a third to half the triangles. */
+export const LOT_NEAR = 24;
 
 /** The most lots of one model in any view; sizes each model's InstancedMesh. */
 export const LOT_CAPACITY = 256;
@@ -87,7 +92,7 @@ export type Palette = {
   base: string;
   door: string;
   roof: string;
-  /** The painted shop board over the door. */
+  /** The painted shop board over the door (light: the ink on it is dark). */
   sign: string;
 };
 
@@ -146,12 +151,12 @@ export const LOOKS: Readonly<Record<District, Look>> = {
       "s6",
     ],
     palettes: [
-      pal("#9fd3b8", "#fff6e0", "#5f9c88", "#2f6fb0", "#b4553a", "#2f6fb0"),
-      pal("#f2c25e", "#fff4d6", "#c79a3a", "#1f7a5c", "#b4553a", "#c2492f"),
-      pal("#f0a4b0", "#fff0ee", "#c4707e", "#2b8a9e", "#8a4a3a", "#2b8a9e"),
-      pal("#97c8e6", "#fffaf0", "#5f8fb0", "#d9533f", "#b4553a", "#d9533f"),
-      pal("#c9aee0", "#fff7ff", "#8e6fb0", "#e8a33a", "#7a4a5a", "#7a4fa0"),
-      pal("#f08c6c", "#fff0e0", "#b85a40", "#2a6f97", "#8a4a3a", "#2a6f97"),
+      pal("#9fd3b8", "#fff6e0", "#5f9c88", "#2f6fb0", "#b4553a", "#ffe9a8"),
+      pal("#f2c25e", "#fff4d6", "#c79a3a", "#1f7a5c", "#b4553a", "#fff0c8"),
+      pal("#f0a4b0", "#fff0ee", "#c4707e", "#2b8a9e", "#8a4a3a", "#ffe0e6"),
+      pal("#97c8e6", "#fffaf0", "#5f8fb0", "#d9533f", "#b4553a", "#e6f4ff"),
+      pal("#c9aee0", "#fff7ff", "#8e6fb0", "#e8a33a", "#7a4a5a", "#f0e6ff"),
+      pal("#f08c6c", "#fff0e0", "#b85a40", "#2a6f97", "#8a4a3a", "#ffe8d0"),
     ],
     names: DISTRICT_NAMES["little-manila"],
     signChance: 0.7,
@@ -160,12 +165,12 @@ export const LOOKS: Readonly<Record<District, Look>> = {
   chinatown: {
     models: ["s3bal", "s3slim", "s4", "s4center", "s6", "s2wide", "s2bal"],
     palettes: [
-      pal("#b83a30", "#e8c060", "#7a2a24", "#2f6a5a", "#3a4a44", "#e8c060"),
-      pal("#4f9078", "#f0d890", "#2f5f4e", "#a8322a", "#3a4a44", "#a8322a"),
-      pal("#d6a845", "#fff0c8", "#8f6a28", "#a8322a", "#4a3a2a", "#a8322a"),
-      pal("#2f6e72", "#e8c97a", "#1f4a4e", "#b83a30", "#3a4a44", "#e8c97a"),
-      pal("#e8d8b2", "#b83a30", "#a08a60", "#2f6a5a", "#4a3a2a", "#b83a30"),
-      pal("#7a3a5a", "#e8c060", "#4a2238", "#2f6a5a", "#3a3a44", "#e8c060"),
+      pal("#b83a30", "#e8c060", "#7a2a24", "#2f6a5a", "#3a4a44", "#f0c850"),
+      pal("#4f9078", "#f0d890", "#2f5f4e", "#a8322a", "#3a4a44", "#f4e4a0"),
+      pal("#d6a845", "#fff0c8", "#8f6a28", "#a8322a", "#4a3a2a", "#fff0c8"),
+      pal("#2f6e72", "#e8c97a", "#1f4a4e", "#b83a30", "#3a4a44", "#f0d890"),
+      pal("#e8d8b2", "#b83a30", "#a08a60", "#2f6a5a", "#4a3a2a", "#f4d8a0"),
+      pal("#7a3a5a", "#e8c060", "#4a2238", "#2f6a5a", "#3a3a44", "#f0c850"),
     ],
     names: DISTRICT_NAMES.chinatown,
     signChance: 0.8,
@@ -174,12 +179,12 @@ export const LOOKS: Readonly<Record<District, Look>> = {
   koreatown: {
     models: ["s4", "s4center", "s3slim", "s6", "s3bal", "s2wide", "s2"],
     palettes: [
-      pal("#f1d9d6", "#ffffff", "#b7898a", "#4a6fa5", "#6a6a74", "#e86a8a"),
-      pal("#bfe0d2", "#ffffff", "#6f9f8f", "#e86a8a", "#6a6a74", "#3a8a7a"),
-      pal("#7aa6d6", "#f4f8ff", "#4a76a6", "#f3d27a", "#5a6a7a", "#2f5f9a"),
-      pal("#f3e2a0", "#fffbe8", "#c9b060", "#4a6fa5", "#7a6a50", "#c98a2a"),
-      pal("#cdbfe6", "#ffffff", "#8e7fb0", "#f0a0b0", "#6a6a74", "#7a5fb0"),
-      pal("#59606b", "#f0a0b0", "#363c46", "#f0a0b0", "#363c46", "#f0a0b0"),
+      pal("#f1d9d6", "#ffffff", "#b7898a", "#4a6fa5", "#6a6a74", "#ffd0dc"),
+      pal("#bfe0d2", "#ffffff", "#6f9f8f", "#e86a8a", "#6a6a74", "#d0f4e6"),
+      pal("#7aa6d6", "#f4f8ff", "#4a76a6", "#f3d27a", "#5a6a7a", "#d8ecff"),
+      pal("#f3e2a0", "#fffbe8", "#c9b060", "#4a6fa5", "#7a6a50", "#fff0b0"),
+      pal("#cdbfe6", "#ffffff", "#8e7fb0", "#f0a0b0", "#6a6a74", "#eadcff"),
+      pal("#59606b", "#f0a0b0", "#363c46", "#f0a0b0", "#363c46", "#ffc0d0"),
     ],
     names: DISTRICT_NAMES.koreatown,
     signChance: 0.8,
@@ -188,12 +193,12 @@ export const LOOKS: Readonly<Record<District, Look>> = {
   "arts-district": {
     models: ["s2wide", "round2", "s4", "s3slim", "s2", "s6", "gable2"],
     palettes: [
-      pal("#a2543a", "#e8e0d0", "#4a403a", "#3fb0a8", "#3a3a3a", "#3fb0a8"),
-      pal("#4a4f58", "#f2c230", "#2f3238", "#e8567a", "#2a2a2e", "#f2c230"),
-      pal("#d0a02c", "#2f3238", "#6a5320", "#2f3238", "#3a3a3a", "#2f3238"),
-      pal("#2f8a8a", "#f4ecd8", "#1f5a5a", "#f08a3a", "#3a3a3a", "#f08a3a"),
-      pal("#6a3f6e", "#f4d03f", "#3f2a45", "#5ad0b0", "#2a2a2e", "#f4d03f"),
-      pal("#a8a8a2", "#e8567a", "#6a6a66", "#2f8ab0", "#4a4a4a", "#e8567a"),
+      pal("#a2543a", "#e8e0d0", "#4a403a", "#3fb0a8", "#3a3a3a", "#e0f4f0"),
+      pal("#4a4f58", "#f2c230", "#2f3238", "#e8567a", "#2a2a2e", "#ffe27a"),
+      pal("#d0a02c", "#2f3238", "#6a5320", "#2f3238", "#3a3a3a", "#ffe27a"),
+      pal("#2f8a8a", "#f4ecd8", "#1f5a5a", "#f08a3a", "#3a3a3a", "#ffd9a8"),
+      pal("#6a3f6e", "#f4d03f", "#3f2a45", "#5ad0b0", "#2a2a2e", "#ffe27a"),
+      pal("#a8a8a2", "#e8567a", "#6a6a66", "#2f8ab0", "#4a4a4a", "#ffc0d0"),
     ],
     names: DISTRICT_NAMES["arts-district"],
     signChance: 0.6,
@@ -202,12 +207,12 @@ export const LOOKS: Readonly<Record<District, Look>> = {
   uptown: {
     models: ["s4", "s4center", "s6", "s2col", "s2bal", "s2wide"],
     palettes: [
-      pal("#e3d7bd", "#fffaf0", "#a39478", "#27415f", "#4a4a52", "#27415f"),
-      pal("#6f7f95", "#e8e0d0", "#3f4a5a", "#8a2f3a", "#363c46", "#e8e0d0"),
-      pal("#a9b99a", "#f6f1e2", "#6a7a5a", "#2f3f5f", "#4a5048", "#2f3f5f"),
-      pal("#8a5f4a", "#e8dcc4", "#5a3a2c", "#1f3a2f", "#3a2f2a", "#e8dcc4"),
-      pal("#35506f", "#e8dcc4", "#22344a", "#b08a3a", "#2a3444", "#b08a3a"),
-      pal("#efe3c8", "#c9b79a", "#8f7e5e", "#6f2f3a", "#4a4a52", "#6f2f3a"),
+      pal("#e3d7bd", "#fffaf0", "#a39478", "#27415f", "#4a4a52", "#f8f0dc"),
+      pal("#6f7f95", "#e8e0d0", "#3f4a5a", "#8a2f3a", "#363c46", "#f4ecd8"),
+      pal("#a9b99a", "#f6f1e2", "#6a7a5a", "#2f3f5f", "#4a5048", "#f0f4e0"),
+      pal("#8a5f4a", "#e8dcc4", "#5a3a2c", "#1f3a2f", "#3a2f2a", "#f4e8d0"),
+      pal("#35506f", "#e8dcc4", "#22344a", "#b08a3a", "#2a3444", "#f0e0b0"),
+      pal("#efe3c8", "#c9b79a", "#8f7e5e", "#6f2f3a", "#4a4a52", "#f8ecd0"),
     ],
     names: DISTRICT_NAMES.uptown,
     signChance: 0.5,

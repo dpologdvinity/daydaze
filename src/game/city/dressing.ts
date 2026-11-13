@@ -35,6 +35,8 @@ import type { FurnitureKind, FurnitureSpot } from "./furniture.ts";
 import { parkFurniture } from "./park.ts";
 import { boardwalkFurniture } from "./boardwalk.ts";
 import { detailBuilding } from "./detail.ts";
+import { DISTRICT_NAMES } from "./districtNames.ts";
+import { LOT_SPECS, PALETTES, type LotInstance } from "./districts.ts";
 
 export { hash };
 
@@ -59,7 +61,7 @@ export type Front = {
 /** Gate arches stand this tall; their beam hangs just under the top. */
 export const ARCH_TOP = 17;
 
-const LABEL_INK = "#1a0b2e";
+export const LABEL_INK = "#1a0b2e";
 const NEON = ["#ff4fb3", "#4fe3ff", "#ffd84f", "#7dff6b", "#b06bff", "#ff8a3d"];
 const PAINT = [...NEON, "#f2eefc", "#22203a", "#8a5cff"];
 const WINDOW_COLORS = [
@@ -118,6 +120,7 @@ const TEXTS = [
   ...MOTEL_NAMES,
   ...MOTEL_PANEL_TEXTS,
   ...MOTEL_DOOR_NUMBERS,
+  ...Object.values(DISTRICT_NAMES).flat(),
 ];
 export const LABELS: readonly string[] = [...new Set(TEXTS)];
 export const LABEL_COLUMNS = 6;
@@ -307,6 +310,40 @@ function panel(
     uv: labelUv(text),
   });
 }
+
+/** The painted shop board over a district lot's door, named in the district's
+ * own language (a panel and its label, on the lot's front plane). */
+export function lotSign(out: Buckets, lot: LotInstance): void {
+  if (!lot.sign) return;
+  const w = LOT_SPECS[lot.model].w * lot.sx;
+  const sx = Math.min(w * 0.8, 3.4);
+  const nx = Math.sin(lot.yaw);
+  const nz = Math.cos(lot.yaw);
+  out.panel.push({
+    x: lot.x + nx * 0.16,
+    y: LOT_SIGN_Y,
+    z: lot.z + nz * 0.16,
+    sx,
+    sy: 0.85,
+    sz: 0.2,
+    rot: [0, lot.yaw, 0],
+    color: PALETTES[lot.palette].sign,
+  });
+  out.label.push({
+    x: lot.x + nx * 0.27,
+    y: LOT_SIGN_Y,
+    z: lot.z + nz * 0.27,
+    sx: sx * 0.92,
+    sy: sx * 0.23,
+    sz: 1,
+    rot: [0, lot.yaw, 0],
+    color: LABEL_INK,
+    uv: labelUv(lot.sign),
+  });
+}
+
+/** Meters up where a lot's shop board hangs: over the door. */
+const LOT_SIGN_Y = 3.05;
 
 /** A blade sign: a panel that sticks out over the sidewalk, named on both sides. */
 function blade(out: Buckets, f: Front, text: string, color: string): void {
