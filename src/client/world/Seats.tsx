@@ -57,14 +57,14 @@ export function Seats({
           Math.hypot(b.approach[0] - px, b.approach[1] - pz),
       )[0];
       if (nearest) {
-        player.seat = null;
-        player.sitting = false;
+        // from another chair, PlayerController stands her up on the way
         pending.current = nearest;
         walkTo(player, area, nearest.approach);
       }
     }
     const seat = pending.current;
-    if (!seat) return;
+    // still on the last chair: she stands first (PlayerController), then walks
+    if (!seat || player.sitting) return;
     // a different tap or a key took the player elsewhere: give up on the seat
     const t = player.walk.target;
     if (
@@ -108,9 +108,8 @@ export function Seats({
 
   const sit = (seat: Seat) => (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
-    if (player.seat && !player.sitting) return;
-    player.seat = null;
-    player.sitting = false;
+    // a game's seat holds her; a chair she is standing up from does not
+    if (player.seat && !player.sitting && !player.seatMove) return;
     pending.current = seat;
     walkTo(player, area, seat.approach);
   };
