@@ -11,7 +11,7 @@ import {
   STREET_DRESS,
   type Buckets,
 } from "./dressing.ts";
-import { BUILDINGS, CITY_SURFACES } from "./layout.ts";
+import { BUILDINGS, CITY_SURFACES, PROPS } from "./layout.ts";
 import { KINDS, type Instance, type Kind } from "./plan.ts";
 
 type Box = { x0: number; z0: number; x1: number; z1: number };
@@ -88,6 +88,17 @@ test("street furniture stands on the pavement, clear of the asphalt", () => {
   for (const p of items) {
     assert.ok(!inRoad(p.at[0], p.at[1]), `${p.kind} at ${p.at} is on the road`);
   }
+});
+
+test("a vending machine never stands in a tree's trunk or a lamp's pole", () => {
+  const machines = FURNITURE.filter((f) => f.kind === "vending");
+  assert.ok(machines.length >= 10);
+  for (const m of machines)
+    for (const p of PROPS)
+      assert.ok(
+        Math.hypot(p.position[0] - m.x, p.position[1] - m.z) > 1.7,
+        `${p.kind} at ${p.position} by the machine at ${m.x}, ${m.z}`,
+      );
 });
 
 test("every sign name has its own rectangle on the label atlas", () => {
