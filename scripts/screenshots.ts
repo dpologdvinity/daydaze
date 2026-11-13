@@ -1230,6 +1230,36 @@ const SHOTS: {
     live: true,
   },
   {
+    // Kiddie Land from the east lot: the toy train on its oval, the station
+    name: "kiddie-land",
+    query: "room=amusement-park&quality=low&at=31,-14&cam=29,5.5,-9,40,0.6,-22",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      // the train circles on its own clock: let it get off the station
+      await page.waitForTimeout(5_000);
+    },
+  },
+  {
+    // a rider in the first wagon, a few seconds into the lap
+    name: "kiddie-train-ride",
+    query:
+      "room=amusement-park&quality=low&ride=kiddie-train&cam=33,3.6,-9.5,38.5,1,-16",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.rideState === "riding",
+        null,
+        { timeout: 300_000 },
+      );
+      await page.waitForTimeout(5_000);
+    },
+  },
+  {
     name: "amusement-park-mobile",
     query: "room=amusement-park",
     viewport: { width: 390, height: 844 },
