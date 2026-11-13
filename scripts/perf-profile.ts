@@ -25,7 +25,12 @@ const browser = await chromium.launch({
     "--enable-unsafe-swiftshader",
   ],
 });
-type Win = { __long: number[]; __ft: number[]; __links: string[] };
+type Win = {
+  __long: number[];
+  __ft: number[];
+  __links: string[];
+  __all: { flags: string; src: string }[];
+};
 for (const name of names) {
   const query = AREAS[name];
   if (!query) continue;
@@ -45,6 +50,7 @@ for (const name of names) {
     w.__long = [];
     w.__ft = [];
     w.__links = [];
+    w.__all = [];
     // every shader program linked, named by its feature defines: a link in
     // the sampling window is a compile stall the warm-up missed
     const gl2 = WebGL2RenderingContext.prototype;
@@ -74,6 +80,14 @@ for (const name of names) {
         .map((m) => m[1])
         .join(" ");
       w.__links.push(flags.slice(0, 160));
+      // the whole session, with the full source text of both stages, so
+      // programs that differ only in patched code or constants can be told
+      // from ones that differ in defines
+      const shaders = shadersOf.get(program) ?? [];
+      w.__all.push({
+        flags: flags.slice(0, 160),
+        src: shaders.map((x) => sources.get(x) ?? "").join("\n//--\n"),
+      });
       linkProgram.call(this, program);
     };
     new PerformanceObserver((l) => {
@@ -111,6 +125,7 @@ for (const name of names) {
       n: list.length,
       total: list.reduce((n, e) => n + e.bytes, 0),
       top: list.slice(0, 8),
+      js: list.filter((e) => e.name.endsWith(".js") && e.bytes > 15_000),
       // bytes per folder (the two path segments before the file name)
       folders: Object.entries(
         list.reduce<Record<string, number>>((acc, e) => {
@@ -201,9 +216,31 @@ for (const name of names) {
     `  assets: ${assets.n} requests, ${(assets.total / 1e6).toFixed(2)} MB; heaviest: ${assets.top.map((e) => `${e.name.split("/").slice(-2).join("/")} ${(e.bytes / 1e3).toFixed(0)}k`).join(", ")}`,
   );
   console.log(
+    `  js: ${assets.js.length} chunks, ${(assets.js.reduce((n, e) => n + e.bytes, 0) / 1e3).toFixed(0)}k: ${assets.js.map((e) => `${e.name.split("/").pop()} ${(e.bytes / 1e3).toFixed(0)}k`).join(", ")}`,
+  );
+  console.log(
     `  folders: ${assets.folders.map(([k, v]) => `${k} ${(v / 1e3).toFixed(0)}k`).join(", ")}`,
   );
   for (const r of rows) console.log(r);
+  const all = await page.evaluate(() => {
+    const w = window as unknown as Win;
+    return w.__all;
+  });
+  const flagGroups = new Map<string, Set<string>>();
+  for (const l of all) {
+    const set = flagGroups.get(l.flags) ?? new Set<string>();
+    set.add(l.src);
+    flagGroups.set(l.flags, set);
+  }
+  const counts = new Map<string, number>();
+  for (const l of all) counts.set(l.flags, (counts.get(l.flags) ?? 0) + 1);
+  console.log(
+    `  programs: ${all.length} links in the session, ${flagGroups.size} distinct define sets, ${new Set(all.map((l) => l.src)).size} distinct sources`,
+  );
+  for (const [k, n] of [...counts].sort((x, y) => y[1] - x[1]).slice(0, 14))
+    console.log(
+      `      ${n}x (${flagGroups.get(k)?.size} sources) ${k || "(no defines)"}`,
+    );
   await ctx.close();
 }
 await browser.close();
