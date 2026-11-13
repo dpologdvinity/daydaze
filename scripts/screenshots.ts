@@ -1535,6 +1535,20 @@ const SHOTS: {
     },
   },
   {
+    // the weekend farmers market (src/game/city/farmersMarket.ts), forced open
+    name: "market-bakehouse",
+    query:
+      "room=city&view=room&time=11:00&market=1&at=249,-292&cam=246.9,2.1,-296.2,242.2,1.2,-296.4",
+    act: async (page) => {
+      await cityReady(page);
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.market === "open",
+        null,
+        { timeout: 300_000 },
+      );
+    },
+  },
+  {
     // the same stalls on a weekday: closed, bare and unmanned
     name: "farmers-market-closed",
     query:
