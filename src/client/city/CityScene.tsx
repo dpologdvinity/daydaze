@@ -135,7 +135,9 @@ export function CityScene({
       fog.current.color.setRGB(...day.fog);
       // clear days see far; night closes in
       fog.current.near = 120 + 120 * day.sun;
-      fog.current.far = 420 + 320 * day.sun;
+      // the fog is thick by the camera's far plane (600 in World.tsx), so
+      // the city's edge dissolves into the horizon instead of ending in a cut
+      fog.current.far = Math.min(420 + 320 * day.sun, 590);
     }
     if (sun.current) {
       const [dx, dy, dz] = day.sunDirection;
@@ -252,12 +254,14 @@ export function CityScene({
       ))}
       <mesh
         rotation-x={-Math.PI / 2}
-        position={[0, -0.01, WATER_Z - 450]}
+        position={[0, -0.01, WATER_Z - 700]}
         onClick={click}
         name="city-ground"
       >
-        {/* land up to the waterline; the Ocean takes over past it */}
-        <planeGeometry args={[1000, 900]} />
+        {/* land up to the waterline; the Ocean takes over past it. It runs
+            beyond the camera's far plane in every direction: a short plane
+            showed its dark far edge as a wall across the Uptown park's horizon */}
+        <planeGeometry args={[2400, 1400]} />
         <meshStandardMaterial color="#3a3733" roughness={0.9} />
       </mesh>
       <Ocean />
