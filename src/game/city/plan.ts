@@ -4,6 +4,7 @@
 import type { Vec2 } from "../walk.ts";
 import { motelBuilding } from "./motel.ts";
 import { roofLook } from "./roofs.ts";
+import { YARD_TREES } from "./yards.ts";
 import { VIEW_RADIUS } from "./tuning.ts";
 import { cellAt, type Cell } from "./cells.ts";
 import {
@@ -828,6 +829,8 @@ export function planCity(
   const furniture: FurnitureSpot[] = [];
   for (const f of FURNITURE)
     if (loaded.has(cellAt([f.x, f.z]).key)) furniture.push(f);
+  for (const [x, z] of YARD_TREES)
+    if (loaded.has(cellAt([x, z]).key)) trees.push(treeAt(x, z));
   for (const prop of PROPS) {
     const [x, z] = prop.position;
     if (cells.some((c) => cellAt([x, z]).key === c.key)) {

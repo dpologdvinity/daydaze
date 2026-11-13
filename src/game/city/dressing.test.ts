@@ -72,7 +72,9 @@ test("every sign, blade and ad stands on a frontage, never over a road", () => {
 test("parked cars stand in the road, at the kerbs, in a mix of bodies", () => {
   assert.ok(PARKED_CARS.length > 20, `${PARKED_CARS.length} cars`);
   for (const c of PARKED_CARS) {
-    assert.ok(inRoad(c.x, c.z), `car at ${c.x},${c.z} is off the road`);
+    // the yards' lots (yards.test.ts) are off the road by design
+    if (!c.lot)
+      assert.ok(inRoad(c.x, c.z), `car at ${c.x},${c.z} is off the road`);
     assert.ok(Number.isFinite(c.yaw));
   }
   assert.ok(new Set(PARKED_CARS.map((c) => c.body)).size >= 4);

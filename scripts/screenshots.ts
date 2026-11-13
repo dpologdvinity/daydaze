@@ -1161,6 +1161,26 @@ const SHOTS: {
       );
     },
   })),
+  // the block yards (yards.ts): an alley, a parking lot and a basketball court
+  // seen from the cross street at x 64, by day and by night; low tier
+  ...[
+    ["yards-alley", "12:00", "64,-150", "56,2.6,-146,100,1.2,-160"],
+    ["yards-alley-night", "22:00", "64,-150", "56,2.6,-146,100,1.2,-160"],
+    ["yards-lot", "12:00", "64,-130", "58,3.2,-122,128,0.5,-134"],
+    ["yards-court", "12:00", "64,-185", "58,4,-176,98,0,-184"],
+  ].map(([name, time, at, cam]) => ({
+    name: String(name),
+    query: `room=city&quality=low&time=${time}&at=${at}&cam=${cam}`,
+    act: async (page: Page) => {
+      await page.locator("canvas").waitFor();
+      await blocksReady(page);
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.frames) >= 6,
+        null,
+        { timeout: 300_000 },
+      );
+    },
+  })),
   { name: "city-overview", query: "room=city" },
   // the city by day and at sunset (daylight.ts), pinned with ?time=
   {
