@@ -1541,6 +1541,8 @@ const SHOTS: {
     ["under-el-day", "12:00", "60,3", "36,2.4,4.5,110,0.8,0"],
     ["under-el-night", "22:00", "60,3", "36,2.4,4.5,110,0.8,0"],
     ["under-el-down", "12:00", "60,3", "62,14,6,62,0,-1"],
+    ["under-el-wear", "12:00", "140,3", "128,6,2.5,150,0,0.5"],
+    ["under-el-wear-night", "22:00", "140,3", "128,6,2.5,150,0,0.5"],
   ].map(([name, time, at, cam]) => ({
     name: String(name),
     query: `room=city&quality=low&time=${time}&at=${at}&cam=${cam}`,

@@ -54,7 +54,7 @@ function drawAtlas(): HTMLCanvasElement {
       const strength = Math.min(1, along) * (0.45 + 0.55 * rand());
       for (let y = 0; y < TILE; y += 2) {
         const across = Math.exp(-(((y - TILE / 2) / 46) ** 2));
-        g.fillStyle = `rgba(8,8,12,${(0.5 * across * strength).toFixed(3)})`;
+        g.fillStyle = `rgba(8,8,12,${(0.7 * across * strength).toFixed(3)})`;
         g.fillRect(ox + x, oy + y, 4, 2);
       }
     }
@@ -67,8 +67,8 @@ function drawAtlas(): HTMLCanvasElement {
       const cy = oy + TILE / 2 + (rand() - 0.5) * 80;
       const r = 30 + rand() * 50;
       const blot = g.createRadialGradient(cx, cy, 0, cx, cy, r);
-      blot.addColorStop(0, "rgba(5,6,10,0.7)");
-      blot.addColorStop(0.7, "rgba(8,9,14,0.45)");
+      blot.addColorStop(0, "rgba(5,6,10,0.85)");
+      blot.addColorStop(0.7, "rgba(8,9,14,0.6)");
       blot.addColorStop(1, "rgba(8,9,14,0)");
       g.fillStyle = blot;
       g.fillRect(cx - r, cy - r, r * 2, r * 2);
@@ -82,7 +82,7 @@ function drawAtlas(): HTMLCanvasElement {
   // patch: freshly laid, darker asphalt with a hairline seam all round and a crack
   {
     const [ox, oy] = at("patch");
-    g.fillStyle = "rgba(14,14,18,0.42)";
+    g.fillStyle = "rgba(14,14,18,0.55)";
     g.fillRect(ox + 8, oy + 20, TILE - 16, TILE - 40);
     for (let i = 0; i < 400; i++) {
       g.fillStyle = `rgba(0,0,0,${(0.05 + 0.1 * rand()).toFixed(2)})`;
