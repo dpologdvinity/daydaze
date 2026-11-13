@@ -947,6 +947,30 @@ const SHOTS: {
         await page.mouse.wheel(0, 100);
     },
   })),
+  // each district's facades from across the street, by day and by night
+  ...[
+    ["manila", "-300,-8", "-300,7,-26,-300,8,14"],
+    ["chinatown", "240,-8", "240,7,-26,240,8,14"],
+    ["koreatown", "372,-8", "372,7,-26,372,8,14"],
+    ["arts", "-96,-256", "-96,7,-264,-96,8,-244"],
+    ["uptown", "214,-256", "214,7,-264,214,8,-244"],
+  ].flatMap(([name, at, cam]) =>
+    [
+      ["day", "12:00"],
+      ["night", "22:00"],
+    ].map(([when, time]) => ({
+      name: `lotsw-${name}-${when}`,
+      query: `room=city&quality=low&time=${time}&at=${at}&cam=${cam}`,
+      act: async (page: Page) => {
+        await blocksReady(page);
+        await page.waitForFunction(
+          () => document.querySelector("canvas")?.dataset.frames === "10",
+          null,
+          { timeout: 300_000 },
+        );
+      },
+    })),
+  ),
   { name: "city-sunset", query: "room=city&view=full&time=19:30" },
   {
     name: "city-night",
