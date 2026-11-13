@@ -253,7 +253,7 @@ Clip ids in `mocap.ts` stay stable; add a pack name per clip.
 19. **House Interior Pack remainder** -> DONE (2026-11-13): the Haunted escape hall (furniture, curtains, scare chairs, music-box stand, the lobby sideboard), Jail (bunks, desk, toilet, bin), Glow Bowl (couches, plants, bins) and the Skylark (fire-pit loveseats) wear pack models. Still boxes: the haunted clock (no match in the pack; the crib, rocking horse and crates wear stand-ins), Bowling counter and ball racks, the Skylark bar, kiosk and high tables.
 20. **Dragon (LasquetiSpice, CC-BY, 3 loops) or Tarisland dragon** -> Halloween and Haunted House scene, or a festival float -> ask the owner first (Western dragon vs Lunar New Year).
 21. **Hair packs** -> owned by the `hair` agent; Vincent Freelance and rendysix packs need heavy decimation; zHairezt ponytails are the only bone-rigged hair.
-22. **Dealership showroom cars: Future Car (3DHaupt) and Jaguar XJ saloon** -> `Dealership.tsx` -> unbadged showpieces; strip any logos, keep original names.
+22. **Dealership showroom cars: Future Car (3DHaupt) and Jaguar XJ saloon** -> DONE (2026-11-13): two unbadged showpieces on plinths in Daydaze Motors, shown as the made-up Aurelia Grand Saloon (the XJ Sport, 8.6k triangles, every badge material replaced by chrome and the JAGUAR plates painted out of its Details texture) and Comet Zero (the Future Car, 14.5k triangles). `art/showroom/build_showpieces.py`, `public/models/showroom/`.
 23. **Cute Fish Pack leftover species** -> Aquarium and Reef Dive -> more variety.
 24. **Sci-Fi Essentials guns** -> Photon Zone and Paintball marker props, game zones only.
 
