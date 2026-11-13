@@ -1,7 +1,7 @@
 """Dev-only: counts body vertices that poke through a garment in a baked clip.
 
     blender --background --factory-startup --python art/doll/blender/skin_check.py -- \
-        Outfit_suit [sex=male] [pack=social] [clips=idle,walk] [frames=6] [zmin=1.15] [zmax=1.45] [all=1] [faces=1]
+        Outfit_suit [sex=male] [pack=social] [clips=idle,walk] [frames=6] [zmin=1.15] [zmax=1.45] [all=1] [faces=1] [lod=1] [pixels=1 pixels_z=0.5]
 
 Imports the raw build (.cache/out), wears the garment (its tuck key at 1) and,
 for frames spread over each clip, reports the body vertices the tuck sank that
@@ -22,6 +22,10 @@ args = sys.argv[sys.argv.index("--") + 1 :]
 part = args[0]
 opts = dict(a.split("=") for a in args[1:])
 sfx = "-m" if opts.get("sex") == "male" else ""
+# lod=1 checks the far-LOD twins (body-lo and <garment>-lo): they only exist
+# optimized, so point DOLL_DIR at public/models/doll and ANIM_DIR at the raw clips
+lo = "-lo" if opts.get("lod") == "1" else ""
+ANIMS = os.environ.get("ANIM_DIR") or OUT
 count = int(opts.get("frames", 6))
 pack = f"-{opts['pack']}" if opts.get("pack") else ""
 faces_too = opts.get("faces") == "1"  # also probe each covered triangle's middle
@@ -29,12 +33,12 @@ dump = opts.get("dump") == '1'  # list each poking vertex (rest, posed)
 wanted = [c for c in opts.get("clips", "").split(",") if c]
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
-bpy.ops.import_scene.gltf(filepath=os.path.join(OUT, f"body{sfx}.glb"))
+bpy.ops.import_scene.gltf(filepath=os.path.join(OUT, f"body{sfx}{lo}.glb"))
 rig = next(o for o in bpy.data.objects if o.type == "ARMATURE")
 body = next(o for o in bpy.data.objects if o.type == "MESH" and o.data.shape_keys and "tuck_" + part.split("_", 1)[1] in o.data.shape_keys.key_blocks)
 kind, name = part.split("_", 1)
 before = set(bpy.data.objects)
-bpy.ops.import_scene.gltf(filepath=os.path.join(OUT, f"{kind.lower()}-{name}{sfx}.glb"))
+bpy.ops.import_scene.gltf(filepath=os.path.join(OUT, f"{kind.lower()}-{name}{sfx}{lo}.glb"))
 garment = None
 for o in set(bpy.data.objects) - before:
     if o.type == "MESH" and o.name == part:  # not the importer's bone-shape icosphere
@@ -52,7 +56,7 @@ for ob in (body, garment):
 before = set(bpy.data.objects)
 # the raw bake (mocap.py; `pack=test` is its `-- id id` run) has the clips on
 # an armature's bones; the shipped optimized ones animate bare nodes
-bpy.ops.import_scene.gltf(filepath=os.path.join(OUT, f"anims{pack}{sfx}.glb"))
+bpy.ops.import_scene.gltf(filepath=os.path.join(ANIMS, f"anims{pack}{sfx}.glb"))
 for o in set(bpy.data.objects) - before:
     bpy.data.objects.remove(o)
 rig.animation_data_create()
@@ -116,12 +120,59 @@ def probe_z(key):
     return rest[list(body.data.polygons[key - n].vertices)][:, 2].mean()
 
 
+
+
+def setup_render():
+    """Workbench, skin red over blue cloth, only the body and the garment."""
+    sc.render.engine = "BLENDER_WORKBENCH"
+    sc.display.shading.light = "STUDIO"
+    sc.display.shading.color_type = "OBJECT"
+    body.color, garment.color = (0.9, 0.2, 0.2, 1), (0.2, 0.4, 0.9, 1)
+    for o in (body, garment):
+        o.hide_render = False
+    for o in bpy.data.objects:
+        if o.type == "MESH" and o not in (body, garment):
+            o.hide_render = True
+
+
+def seen(height):
+    """Skin pixels showing in the current pose, summed over five views of the
+    legs (behind, behind each side, each side) in a 360 px orthographic frame
+    one metre across, centered `height` metres up. Only the legs' band is
+    judged (a quarter to three quarters of a metre either side of `height`), so shoes, a swinging hand and the hip do not count."""
+    from mathutils import Vector
+
+    setup_render()
+    cam = bpy.data.objects.get("pixcam") or bpy.data.objects.new("pixcam", bpy.data.cameras.new("pixcam"))
+    if cam.name not in sc.collection.objects:
+        sc.collection.objects.link(cam)
+    cam.data.type = "ORTHO"
+    cam.data.ortho_scale = 1.0
+    sc.camera = cam
+    sc.render.resolution_x = sc.render.resolution_y = 360
+    sc.render.film_transparent = True
+    total = 0
+    for dx, dy in ((0, 1), (0.7, 0.7), (-0.7, 0.7), (1, 0), (-1, 0)):
+        cam.location = (dx * 3, dy * 3, height)
+        cam.rotation_euler = Vector((-dx, -dy, 0)).to_track_quat("-Z", "Y").to_euler()
+        sc.render.filepath = os.path.join(bpy.app.tempdir, "seen.png")
+        bpy.ops.render.render(write_still=True)
+        img = bpy.data.images.load(sc.render.filepath, check_existing=False)
+        # rows 90 to 270 of 360, bottom up: 0.25 to 0.75 m about the center
+        px = np.array(img.pixels[:]).reshape(360, 360, 4)[90:270].reshape(-1, 4)
+        bpy.data.images.remove(img)
+        # skin is red over blue cloth; the studio light shades both, so compare channels
+        total += int(((px[:, 3] > 0.5) & (px[:, 0] > px[:, 2] * 1.6) & (px[:, 0] > 0.15)).sum())
+    return total
+
+
 # skin the cloth never covers in the bind pose (a neck above a collar, an
 # armpit) isn't a pose's fault: only what a clip newly uncovers counts
 sc.frame_set(1)
 bind = set(poking())
 print(f"  bind pose: {len(bind)} vertices with no cloth over them")
 worst_depth = {}
+shown = {}
 for act in sorted(bpy.data.actions, key=lambda a: a.name):
     if wanted and not any(act.name.startswith(w) for w in wanted):
         continue
@@ -138,19 +189,15 @@ for act in sorted(bpy.data.actions, key=lambda a: a.name):
             worst_depth[v] = max(worst_depth.get(v, 0.0), d)
         if len(new) > worst:
             worst, worst_at = len(new), i
-    print(f"  {act.name}: worst {worst} newly poking (frame {worst_at}/{count}), by height {dict(sorted(where.items()))}")
+        if opts.get("pixels") == "1":
+            px = seen(float(opts.get("pixels_z", 0.5)))
+            # the pixels at the first frame stand for the bare skin of the pose
+            shown[act.name] = max(shown.get(act.name, 0), px)
+    print(f"  {act.name}: worst {worst} newly poking (frame {worst_at}/{count}), by height {dict(sorted(where.items()))}" + (f", skin pixels seen {shown[act.name]}" if shown else ""))
 
 def shoot(path, aim, eye):
     """Workbench render, skin red over blue cloth, of the current frame."""
-    sc.render.engine = "BLENDER_WORKBENCH"
-    sc.display.shading.light = "STUDIO"
-    sc.display.shading.color_type = "OBJECT"
-    body.color, garment.color = (0.9, 0.2, 0.2, 1), (0.2, 0.4, 0.9, 1)
-    for o in (body, garment):
-        o.hide_render = False
-    for o in bpy.data.objects:
-        if o.type == "MESH" and o not in (body, garment):
-            o.hide_render = True
+    setup_render()
     cam = bpy.data.objects.get("shotcam") or bpy.data.objects.new("shotcam", bpy.data.cameras.new("shotcam"))
     if cam.name not in sc.collection.objects:
         sc.collection.objects.link(cam)
@@ -183,6 +230,8 @@ if opts.get("shot"):
     ):
         shoot(os.path.join(opts["shot"], f"{part}-{clip}-{idx}-{tag}.png"), (0.0, 0.0, h), eye)
 
+if shown:
+    print(f"SKIN PIXELS worst over clips {max(shown.values())}, mean of clips {sum(shown.values()) / len(shown):.0f}")
 depths = np.array(list(worst_depth.values()))
 print(
     f"{len(depths)} vertices poke in some pose; distance outside the cloth (mm) "

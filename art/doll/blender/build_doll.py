@@ -995,7 +995,7 @@ def main():
     ctx = SimpleNamespace(
         P=P, PB=PB, W=W, BONES=BONES, KEYS=KEYS, FACES=FACES, JB=JB,
         HEAD=HEAD, HEADW=weight("head"), GROUPS=GROUPS, weight=weight,
-        to_blender=to_blender, new_object=new_object,
+        to_blender=to_blender, new_object=new_object, rig=rig,
     )
     hair_only = bool(os.environ.get("HAIR_ONLY"))
     # OUTFIT_ONLY=1 rebuilds the body and outfits without the (slow) hair
