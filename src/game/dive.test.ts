@@ -1,5 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
+import { LENGTH, type CreatureKind } from "./creatures.ts";
 import { pointInPolygon } from "./walk.ts";
 import {
   AIR_SECONDS,
@@ -180,4 +182,11 @@ test("rented gear is worn in the sea rooms only, and never without the rental", 
   assert.equal(wearsGear("city", true), false);
   assert.equal(wearsGear("jail", true), false);
   assert.equal(wearsGear("open-water", false), false);
+});
+
+test("every species the reef shows has its model and a length", () => {
+  for (const { id } of SPECIES) {
+    assert.ok(existsSync(`public/models/animals/${id}.glb`), id);
+    assert.ok(LENGTH[id satisfies CreatureKind] > 0, id);
+  }
 });

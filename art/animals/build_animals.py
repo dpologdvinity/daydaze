@@ -30,7 +30,10 @@ for n in ["Alpaca", "Horse", "Donkey", "Cow", "Deer", "Fox", "Wolf", "Husky", "S
 for n in ["Dolphin", "Fish1", "Fish2", "Fish3", "Manta ray", "Shark", "Whale"]:
     SOURCES[n.lower().replace(" ", "-")] = f"{FISH}/{n}.fbx"
 for n in ["Clownfish", "BlueTang", "YellowTang", "Goldfish", "Puffer", "Koi",
-          "ButterflyFish", "Lionfish", "MandarinFish", "ZebraClownFish"]:
+          "ButterflyFish", "Lionfish", "MandarinFish", "ZebraClownFish",
+          # the second batch: the Aquarium's reef wall and the Reef Dive's logbook
+          "RoyalGramma", "ParrotFish", "CardinalFish", "MoorishIdol", "Cowfish",
+          "Humphead", "Betta", "Tetra"]:
     SOURCES["cute-" + n.lower()] = f"{CUTE}/{n}.fbx"
 
 # Zoo species downloaded from poly.pizza (see docs/assets.md): the zebra is
@@ -155,7 +158,11 @@ def keep_clips(arm, bones_only=False):
         parts = act.name.split("|")
         # FBX takes are named "Node|Take|" (empty last part)
         # glTF clips are plain names; FBX takes are "Node|Take|Layer"
-        key = (parts[1] if len(parts) >= 3 else parts[-1]).split(".")[0]
+        # (the Cute Fish Pack's takes are "Fish_Armature|Fish_Armature|Swimming_Normal":
+        # the clip is the last part there, the Node|Take| form's is the middle)
+        names = [parts[1]] if len(parts) >= 3 else []
+        names.append(parts[-1])
+        key = next((n.split(".")[0] for n in names if n.split(".")[0] in CLIPS), "")
         if key in CLIPS and CLIPS[key] not in kept:
             act.name = CLIPS[key]
             act.use_fake_user = True

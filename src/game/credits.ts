@@ -542,7 +542,8 @@ export const CREDITS: readonly {
         author: "Quaternius",
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/cutefish.html",
-        usedFor: "Aquarium reef fish and marina fishing.",
+        usedFor:
+          "Aquarium reef fish, the Reef Dive logbook's reef fish and marina fishing.",
       },
       {
         title: "Ships",

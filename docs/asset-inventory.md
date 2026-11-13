@@ -50,7 +50,7 @@ low-poly (hundreds to a few thousand triangles per model).
 | Pack (zip) | What is in it | Used now | Where it should go | P |
 | --- | --- | --- | --- | --- |
 | Animated Fish Pack (7 FBX/OBJ/blend: dolphin, whale, shark, manta, 3 fish; rigged, animated) | marine animals | Yes: aquarium, marina, ocean | Done | skip |
-| Cute Fish Pack Feb 2020 (52 fish, FBX/OBJ/blend) | reef fish, flat colors | 9 species (`cute-*.glb`) | The other ~43 species: Aquarium tanks and Reef Dive schools, for variety | low |
+| Cute Fish Pack Feb 2020 (52 fish, FBX/OBJ/blend) | reef fish, flat colors | 18 species (`cute-*.glb`): the first 10, plus royal gramma, parrotfish, cardinalfish, Moorish idol, cowfish, humphead wrasse (Aquarium and Reef Dive) and betta, tetra (Aquarium) | The other ~34 (tuna, swordfish, sunfish, anglerfish, snapper, flatfish...) if a deep-sea tank ever needs them | low |
 | Buildings Pack Jan 2019 (9: Building 1 to 4, House 1 and 2) | Cartoon houses and small blocks | No | Looks like toy blocks (see the preview); fights "too much like Lego". Skip, or Suburbia filler far from the player | skip |
 | Buildings Pack Aug 2017 (10: Bank, Flat, Flat2, Hospital, House 1 to 5, Shop; two identical zips) | Same cartoon style | No | Hospital and Bank as distant Uptown skyline fillers only; the game has no hospital, bank or pharmacy | low |
 | Downtown City MegaKit Standard (153 glTF, 306 FBX, PBR textures, 224 MB) | Brick, metal and trim facade modules, windows, doors, cornices, slate roofs, stoops, street, sidewalk and curb pieces, road decals, props (bollard, drain, manhole, planter, AC unit) | Partly: facade bays merged into `public/models/nyc/bays.glb` (`art/city/nyc_bays.py`); street pieces (crosswalk, stop, slow and double-yellow decals with the kit's paint atlas, `Sidewalk_Corner_Round_3m`, manhole, drain, bollard) merged into `public/models/street/kit.glb` (`art/city/street_kit.py`, `src/client/city/StreetPieces.tsx`) | Unused: `Street_*` (2 and 4 lane, intersections, curves: the city's own road boxes stay), `Decal_*` arrows, bike lane and curve stripes, other `Sidewalk_*` pieces, `Prop_Planter*`, `Prop_ACUnit`, `Roof_Slate*`, `Building_Large_2`/`Medium_2`/`Small_1` | high |
@@ -254,7 +254,7 @@ Clip ids in `mocap.ts` stay stable; add a pack name per clip.
 20. **Dragon (LasquetiSpice, CC-BY, 3 loops) or Tarisland dragon** -> Halloween and Haunted House scene, or a festival float -> ask the owner first (Western dragon vs Lunar New Year).
 21. **Hair packs** -> owned by the `hair` agent; Vincent Freelance and rendysix packs need heavy decimation; zHairezt ponytails are the only bone-rigged hair.
 22. **Dealership showroom cars: Future Car (3DHaupt) and Jaguar XJ saloon** -> DONE (2026-11-13): two unbadged showpieces on plinths in Daydaze Motors, shown as the made-up Aurelia Grand Saloon (the XJ Sport, 8.6k triangles, every badge material replaced by chrome and the JAGUAR plates painted out of its Details texture) and Comet Zero (the Future Car, 14.5k triangles). `art/showroom/build_showpieces.py`, `public/models/showroom/`.
-23. **Cute Fish Pack leftover species** -> Aquarium and Reef Dive -> more variety.
+23. **Cute Fish Pack leftover species** -> DONE (2026-11-13): eight more species (royal gramma, parrotfish, cardinalfish, Moorish idol, cowfish, humphead wrasse in the Reef Dive logbook and the Aquarium; betta and tetra in the Aquarium), 30 KB each, built by `art/animals/build_animals.py`.
 24. **Sci-Fi Essentials guns** -> Photon Zone and Paintball marker props, game zones only.
 
 ## 8. Counts for the lead

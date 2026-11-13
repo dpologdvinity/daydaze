@@ -48,7 +48,15 @@ export type FishKind =
   | "cute-butterflyfish"
   | "cute-lionfish"
   | "cute-mandarinfish"
-  | "cute-zebraclownfish";
+  | "cute-zebraclownfish"
+  | "cute-royalgramma"
+  | "cute-parrotfish"
+  | "cute-cardinalfish"
+  | "cute-moorishidol"
+  | "cute-cowfish"
+  | "cute-humphead"
+  | "cute-betta"
+  | "cute-tetra";
 
 /** Sea life from Poly Pizza (CC0): the grouper swims, the turtle glides on
  * its one pose, the crab walks the sand. */
@@ -114,6 +122,14 @@ export const LENGTH: Record<CreatureKind, number> = {
   "cute-lionfish": 0.5,
   "cute-mandarinfish": 0.4,
   "cute-zebraclownfish": 0.4,
+  "cute-royalgramma": 0.35,
+  "cute-parrotfish": 0.6,
+  "cute-cardinalfish": 0.3,
+  "cute-moorishidol": 0.4,
+  "cute-cowfish": 0.4,
+  "cute-humphead": 0.9,
+  "cute-betta": 0.35,
+  "cute-tetra": 0.25,
   grouper: 1.4,
   turtle: 1.1,
   crab: 0.55,
