@@ -5,9 +5,11 @@
 import type { RoleBank } from "./types.ts";
 import { orbitDj } from "./orbit.ts";
 import { djNightLines } from "./eventNights.ts";
+import { djNightLines2 } from "./eventNights2.ts";
 
 export const djBank: RoleBank = {
   ...djNightLines,
+  ...djNightLines2,
   "greeting-first": [
     "Hey! Welcome to the booth, what's your song?",
     "New face in the crowd, let's get you dancing.",
