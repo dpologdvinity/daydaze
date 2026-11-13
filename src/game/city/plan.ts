@@ -38,6 +38,7 @@ import {
 import {
   LOT_NEAR,
   LOT_SPECS,
+  LOT_WALL_INSET,
   isLotBlock,
   lotRow,
   type PlacedLot,
@@ -548,7 +549,7 @@ function buildingInstancesFacing(
   const f = frontOf(b);
   const signColor = b.sign?.color;
   // behind the kit's bays the wall steps back, so their trim stands proud
-  const inset = kit ? 2 * WALL_INSET : 0;
+  const inset = lots ? 2 * LOT_WALL_INSET : kit ? 2 * WALL_INSET : 0;
 
   out[FACADE[b.style]].push({
     x: f.cx,

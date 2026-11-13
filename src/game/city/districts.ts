@@ -64,6 +64,11 @@ export const LOT_SPECS: Readonly<
  * camera: the twins are separate meshes, filled per plan reload. */
 export const LOT_NEAR = 30;
 
+/** The box behind a block's lots stands this far in from its footprint: the
+ * pack sets its upper storeys back by up to half a meter (and the walls sit
+ * 0.2 m in), and a box any nearer would hide them. */
+export const LOT_WALL_INSET = 0.8;
+
 /** The most lots of one model in any view; sizes each model's InstancedMesh. */
 export const LOT_CAPACITY = 128;
 

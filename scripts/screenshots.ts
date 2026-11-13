@@ -949,17 +949,18 @@ const SHOTS: {
   })),
   // each district's facades from across the street, by day and by night
   ...[
-    ["manila", "-300,-8", "-300,7,-26,-300,8,14"],
-    ["chinatown", "240,-8", "240,7,-26,240,8,14"],
-    ["koreatown", "372,-8", "372,7,-26,372,8,14"],
-    ["arts", "-96,-256", "-96,7,-264,-96,8,-244"],
-    ["uptown", "214,-256", "214,7,-264,214,8,-244"],
+    ["manila", "-300,-8", "-345,4,-12,-304,10,14"],
+    ["chinatown", "240,-8", "205,4,-12,244,10,14"],
+    ["koreatown", "372,-8", "330,4,-12,372,10,14"],
+    ["arts", "-96,-256", "-130,5,-262,-96,10,-244"],
+    ["uptown", "214,-256", "180,5,-262,214,10,-244"],
   ].flatMap(([name, at, cam]) =>
     [
       ["day", "12:00"],
       ["night", "22:00"],
     ].map(([when, time]) => ({
       name: `lotsw-${name}-${when}`,
+      live: true,
       query: `room=city&quality=low&time=${time}&at=${at}&cam=${cam}`,
       act: async (page: Page) => {
         await blocksReady(page);
