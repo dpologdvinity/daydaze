@@ -929,6 +929,11 @@ const SHOTS: {
     // data-bays never reads "ready" there: wait on the furniture alone
     act: furnitureReady,
   },
+  {
+    name: "city-night-overview",
+    query: "room=city&time=22:00",
+    act: furnitureReady,
+  },
   // the New York blocks from the street (src/game/city/nyc.ts), by day and at night
   ...[
     ["nyc-street", "12:00", "-30,-6", 0],
