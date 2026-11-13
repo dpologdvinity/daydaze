@@ -1530,6 +1530,22 @@ const SHOTS: {
     query: "room=city&time=22:00",
     act: furnitureReady,
   },
+  // the far city (feat/far-city): elevated views over the blocks past the
+  // near load, and the avenue under the El
+  ...[
+    ["far-el-day", "12:00", "8,12", "-8,12,6,150,3,-6"],
+    ["far-el-night", "22:00", "8,12", "-8,12,6,150,3,-6"],
+    ["far-ferris-day", "14:00", "338,290", "338,32,296,230,0,170"],
+    ["far-ferris-night", "22:00", "338,290", "338,32,296,230,0,170"],
+    ["far-roof-day", "12:00", "0,0", "0,46,10,110,0,-130"],
+    ["under-el-day", "12:00", "60,3", "36,2.4,4.5,110,0.8,0"],
+    ["under-el-night", "22:00", "60,3", "36,2.4,4.5,110,0.8,0"],
+    ["under-el-down", "12:00", "60,3", "62,14,6,62,0,-1"],
+  ].map(([name, time, at, cam]) => ({
+    name: String(name),
+    query: `room=city&quality=low&time=${time}&at=${at}&cam=${cam}`,
+    act: furnitureReady,
+  })),
   // the New York blocks from the street (src/game/city/nyc.ts), by day and at night
   ...[
     ["nyc-street", "12:00", "-30,-6", 0],
