@@ -31,6 +31,8 @@ import { Suspense } from "react";
 const human = new URLSearchParams(location.search).get("human") === "1";
 
 const shot = new URLSearchParams(location.search).get("shot") ?? "lineup";
+// shots whose dolls walk in place, side on
+const walksInPlace = ["walk", "limbswalk", "trackwalk"].includes(shot);
 // ?still=1 draws 8 frames on demand and stops: SwiftShader queues GPU work,
 // so a live loop leaves a capture minutes behind
 const still = new URLSearchParams(location.search).get("still") === "1";
@@ -311,6 +313,19 @@ const SHOTS = {
     x: (i: number) => (i - 1) * 1.1,
     cam: [0.6, 0.8, 4.2] as const,
     target: [0, 0.6, 0] as const,
+    fov: 30,
+  },
+  // women walking in place in the three trouser outfits, side on, to check the
+  // skin behind the knee and calf (`?cam=` looks from behind)
+  trackwalk: {
+    looks: [
+      { ...LINEUP[0], outfit: "tracksuit-y2k" },
+      { ...LINEUP[5], outfit: "flares" },
+      { ...LINEUP[2], outfit: "jeans" },
+    ] as Look[],
+    x: (i: number) => (i - 1) * 1.1,
+    cam: [0.6, 0.6, 3.2] as const,
+    target: [0, 0.5, 0] as const,
     fov: 30,
   },
   // wheelchair users, a woman, a man and a woman in a long skirt, from the front
@@ -678,14 +693,8 @@ function Lab() {
                     : DANCES[i % DANCES.length]
                 }
                 seed={i}
-                walk={
-                  shot === "walk" || shot === "limbswalk"
-                    ? WALKING[i % WALKING.length]
-                    : undefined
-                }
-                rotation-y={
-                  shot === "walk" || shot === "limbswalk" ? Math.PI / 2 : 0
-                }
+                walk={walksInPlace ? WALKING[i % WALKING.length] : undefined}
+                rotation-y={walksInPlace ? Math.PI / 2 : 0}
               />
             </Suspense>
           ) : (

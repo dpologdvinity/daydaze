@@ -59,6 +59,9 @@ const SHOTS: { name: string; query: string; shot?: string }[] = [
   { name: "suit-pose", shot: "pose", query: "men=1&outfit=suit" },
   { name: "suit-sit", shot: "sit", query: "men=1&outfit=suit" },
   { name: "suit-dance", shot: "dance", query: "men=1&outfit=suit" },
+  // women walking in the trouser outfits, side on and from behind the knee
+  { name: "suit-track-side", shot: "trackwalk", query: "cam=0.6,0.6,3.2" },
+  { name: "suit-track-back", shot: "trackwalk", query: "cam=-2.2,0.6,2.2" },
   {
     name: "suit-women",
     shot: "body",
