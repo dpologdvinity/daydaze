@@ -641,7 +641,7 @@ function buildingInstancesFacing(
       color: b.sign.color,
     });
   }
-  dressBuilding(b, out, kit, sills);
+  dressBuilding(b, out, kit, sills, lots);
 }
 
 function propInstances(

@@ -212,3 +212,25 @@ test("no model has more lots in any high-tier view than half its mesh holds", ()
     }
   assert.ok(most > 0 && most * 2 <= LOT_CAPACITY, `${most} of ${LOT_CAPACITY}`);
 });
+
+test("a lot block drops the old balconies, fire escapes and rooftop AC: the lots carry their own", async () => {
+  const { dressBuilding, frontOf } = await import("./dressing.ts");
+  const { emptyInstances } = await import("./plan.ts");
+  const { isLotBlock } = await import("./districts.ts");
+  const b = BUILDINGS.find((x) => isLotBlock(x) && x.style === "brick");
+  assert.ok(b, "a brick district block exists");
+  const plain = emptyInstances();
+  const lotted = emptyInstances();
+  dressBuilding(b, plain, true, true, false);
+  dressBuilding(b, lotted, true, true, true);
+  const f = frontOf(b);
+  // no balcony slab, fire escape landing or ladder, no rooftop AC box
+  assert.ok(lotted.ledge.length < plain.ledge.length);
+  assert.ok(lotted.pole.length < plain.pole.length);
+  assert.ok(
+    lotted.furniture.every((i) => i.y < f.h),
+    "no AC on the roof",
+  );
+  // the tank and antenna stay, standing on the lot's own roof
+  assert.ok(lotted.pole.some((i) => Math.abs(i.y - (f.h + 1.3)) < 0.01));
+});

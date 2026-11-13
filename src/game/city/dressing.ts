@@ -609,6 +609,7 @@ export function dressBuilding(
   out: Buckets,
   kit = false,
   sills = true,
+  lots = false,
 ): void {
   const f = frontOf(b);
   const accent = b.sign?.color ?? pick(PAINT, hash(f.cx, f.cz));
@@ -650,7 +651,7 @@ export function dressBuilding(
       ad.color,
       ad.text,
     );
-  detailBuilding(b, f, out);
+  detailBuilding(b, f, out, lots);
   if (b.style === "gate") arch(out, f, b.sign?.color ?? accent);
   sideDoor(b, f, out, accent);
 }
