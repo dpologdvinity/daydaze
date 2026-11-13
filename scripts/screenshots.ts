@@ -669,7 +669,7 @@ function jeepneyRoll(name: string): (typeof SHOTS)[number] {
   const full = { width: 1280, height: 800 };
   return {
     name,
-    query: `room=city&view=room&quality=low&time=12:00&debug=1&at=${camera.x},10&cam=${camera.x},1.5,${camera.z},${camera.x},0.8,3`,
+    query: `room=city&view=room&quality=low&time=12:00&debug=1&at=${camera.x + 9},10&cam=${camera.x},1.5,${camera.z},${camera.x},0.8,3`,
     live: true,
     act: async (page) => {
       const canvas = page.getByRole("img", { name: "3D room view" });
@@ -998,11 +998,11 @@ const SHOTS: {
   // the two unbadged showpieces on their plinths, from the aisle
   {
     name: "dealership-saloon",
-    query: "room=dealership&cam=-11.3,2.2,7.2,-10.6,0.8,1.5",
+    query: "room=dealership&cam=-9.2,2.6,7.6,-10.6,0.8,1.2",
   },
   {
     name: "dealership-concept",
-    query: "room=dealership&cam=11.7,2.4,3.9,10.6,0.7,-0.2",
+    query: "room=dealership&cam=11.8,3.2,6.8,10.6,0.7,0",
   },
   { name: "jazz-club", query: "room=jazz-club" },
   { name: "vinyl-vault", query: "room=vinyl-vault" },

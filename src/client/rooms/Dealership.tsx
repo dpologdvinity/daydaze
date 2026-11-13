@@ -62,11 +62,10 @@ const PLINTH_MAT = new THREE.MeshStandardMaterial({
   metalness: 0.1,
   roughness: 0.2,
 });
-/** The showpieces' paint, by the model's own material name: the saloon's silver
- * becomes a deep teal, the concept car's pale shell lilac. */
+/** The showpieces' paint, by the model's own material name: the concept car's
+ * pale shell goes lilac (the saloon's teal is baked in, art/showroom). */
 const PAINT: Record<string, string> = {
-  PaintSilver: "#16846c",
-  s_car: "#a98bff",
+  s_car: "#c4b2ff",
 };
 /** The spotlight's glow: a faint additive cone from the ceiling spot down to
  * the plinth. A real light per showpiece would break the room's light budget. */

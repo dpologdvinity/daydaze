@@ -59,6 +59,22 @@ if CAR == "saloon":
     img.update()
     img.pack()
 
+if CAR == "saloon":
+    # a deep teal body in place of the pack's silver, so it reads against the
+    # white showroom (set here, as the glTF optimizer would merge a plain silver
+    # with the chrome)
+    paint = bpy.data.materials["PaintSilver"]
+    # the pack's paint is a node group: replace it with a plain glossy principled
+    paint.use_nodes = True
+    tree = paint.node_tree
+    tree.nodes.clear()
+    bsdf = tree.nodes.new("ShaderNodeBsdfPrincipled")
+    out = tree.nodes.new("ShaderNodeOutputMaterial")
+    tree.links.new(bsdf.outputs["BSDF"], out.inputs["Surface"])
+    bsdf.inputs["Base Color"].default_value = (0.012, 0.22, 0.16, 1.0)
+    bsdf.inputs["Metallic"].default_value = 0.55
+    bsdf.inputs["Roughness"].default_value = 0.22
+
 parts = [o for o in bpy.data.objects if o.type == "MESH"]
 for o in parts:
     mw = o.matrix_world.copy()
