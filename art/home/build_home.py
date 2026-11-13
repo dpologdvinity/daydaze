@@ -78,7 +78,6 @@ MODELS = {
     # the venues' dressing (Haunted escape hall, Jail, Bowling, Rooftop Bar)
     "sofa-medium": "uh:Couch_Medium1",
     "sofa-medium-2": "uh:Couch_Medium2",
-    "chair-1": "uh:Chair_1",
     "chair-2": "uh:Chair_2",
     "chair-3": "uh:Chair_3",
     "bed-bunk": "uh:Bed_Bunk",
@@ -86,14 +85,10 @@ MODELS = {
     "drawer-5": "uh:Drawer_5",
     "drawer-3": "uh:Drawer_3",
     "curtains": "uh:Curtains_Double",
-    "plant-7": "uh:Houseplant_7",
     "toilet-2": "uh:Bathroom_Toilet2",
     "trash-large": "uh:Trashcan_Large",
-    "cabinet-2": "uh:Kitchen_Cabinet2",
-    "light-floor-2": "uh:Light_Floor2",
     "shelf-large": "uh:Shelf_Large",
     "table-small-2": "uh:Table_RoundSmall2",
-    "chandelier": "uh:Light_Chandelier",
 }
 
 
