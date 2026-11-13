@@ -7,6 +7,7 @@ import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { hash } from "../../game/city/dressing.ts";
+import { SHORE_Z } from "../../game/city/layout.ts";
 import { CITY_CLOCK } from "./shaders.ts";
 
 const RADIUS = 440;
@@ -26,6 +27,8 @@ uniform vec3 uGlow;
 uniform float uNeon;
 uniform float uTime;
 uniform float uMotion;
+uniform float uCamZ;
+uniform float uShoreZ;
 varying vec3 vDir;
 
 float hash21(vec2 p) {
@@ -74,6 +77,9 @@ void main() {
   float column = floor((angle + 3.14159) / 6.28318 * 90.0);
   float tower = 0.02 + 0.12 * hash21(vec2(column, 3.0)) * hash21(vec2(column, 7.0)) + 0.05 * hash21(vec2(column, 11.0));
   float edge = smoothstep(tower + 0.004, tower, up);
+  // no towers over the sea: from the shore south, the view out to the water
+  // ends in open horizon (the city is behind, not across the waves)
+  edge *= 1.0 - smoothstep(0.02, 0.2, vDir.z) * smoothstep(uShoreZ - 120.0, uShoreZ - 20.0, uCamZ);
   vec2 cell = vec2(angle * 140.0, up * 420.0);
   float lit = step(0.72, hash21(floor(cell))) * step(fract(cell.x), 0.55) * step(fract(cell.y), 0.5);
   vec3 nightCol = vec3(0.07, 0.04, 0.15) + uGlow * lit * 0.8;
@@ -114,6 +120,7 @@ void main() {
  * the horizon. It follows the camera, so it never runs out at the edge of view.
  */
 export function CitySky({ night }: { night: number }) {
+  const uCamZ = useMemo(() => ({ value: 0 }), []);
   const root = useMemo(() => {
     const dome = new THREE.Mesh(
       new THREE.SphereGeometry(RADIUS, 24, 16),
@@ -125,6 +132,8 @@ export function CitySky({ night }: { night: number }) {
           ...SKY_UNIFORMS,
           uTime: CITY_CLOCK.uTime,
           uMotion: CITY_CLOCK.uMotion,
+          uCamZ,
+          uShoreZ: { value: SHORE_Z },
         },
         side: THREE.BackSide,
         depthWrite: false,
@@ -174,10 +183,11 @@ export function CitySky({ night }: { night: number }) {
     const group = new THREE.Group();
     group.add(dome, stars);
     return group;
-  }, []);
+  }, [uCamZ]);
 
   useFrame(({ camera }) => {
     root.position.copy(camera.position);
+    uCamZ.value = camera.position.z;
   });
   // the stars come out as the day goes
   useEffect(() => {
