@@ -949,7 +949,7 @@ const SHOTS: {
   })),
   // each district's facades from across the street, by day and by night
   ...[
-    ["manila", "-300,-8", "-345,4,-12,-304,10,14"],
+    ["manila", "-300,-8", "-252,5,-12,-298,9,14"],
     ["chinatown", "240,-8", "205,4,-12,244,10,14"],
     ["koreatown", "372,-8", "330,4,-12,372,10,14"],
     ["arts", "-96,-256", "-130,5,-262,-96,10,-244"],
