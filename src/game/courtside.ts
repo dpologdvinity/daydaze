@@ -13,8 +13,9 @@ export const PRO: Vec2 = [0, -COURT.baseline - 0.6];
 export const FLOOR_BOUNDS = { x0: -9, x1: 9, z0: -15, z1: 16.5 } as const;
 /** Courtside benches along the east side, facing the court. */
 export const BENCH_X = 7.8;
-export const BENCH_SEATS: readonly Vec2[] = [4, 5, 7, 8].map((z): Vec2 => [
-  BENCH_X,
+/** On the two teak planks (Courtside.tsx: 0.15 m out from BENCH_X, at z 5.5 and 7.5, 1.8 m long). */
+export const BENCH_SEATS: readonly Vec2[] = [5, 6, 7, 8].map((z): Vec2 => [
+  BENCH_X + 0.15,
   z,
 ]);
 

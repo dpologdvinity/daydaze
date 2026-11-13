@@ -1,5 +1,5 @@
 import type { RoomId } from "./rooms.ts";
-import { footprint, type Furniture } from "./home/decor.ts";
+import { footprint, FURNITURE_CATALOG, type Furniture } from "./home/decor.ts";
 import { SOFA, STOOL_XS, STOOL_Z } from "./rooftop.ts";
 import { CHAIR_X, CHAIR_ZS, STOOL_X, STOOL_ZS } from "./sugarRush.ts";
 import * as ARCADE from "./arcadeBar.ts";
@@ -36,7 +36,10 @@ import { BENCH_SEATS } from "./bowlingAlley.ts";
 import { BOOTH_SEATS, MIC } from "./karaoke.ts";
 import * as WAREHOUSE from "./warehouse.ts";
 import * as ORBIT from "./orbit.ts";
-import { yawTowards, type Vec2 } from "./walk.ts";
+import { yawTowards, pointInPolygon, type Vec2 } from "./walk.ts";
+import { areaOf, isBlocked } from "./area.ts";
+import { ROOMS } from "./rooms.ts";
+import { openApproach } from "./seatApproach.ts";
 
 /**
  * Chairs, stools and sofas a player can sit on. Tapping one walks the player
@@ -547,7 +550,7 @@ const moreSportsSeats = [
   ),
 ];
 
-export const SEATS: readonly Seat[] = [
+const RAW_SEATS: readonly Seat[] = [
   ...atTable(foodSeats),
   ...velvetStools,
   ...pulseBanquettes,
@@ -582,6 +585,38 @@ export const SEATS: readonly Seat[] = [
   ...moreSportsSeats,
 ];
 
+/**
+ * Moves each seat's approach point to open floor in front of the seat or
+ * beside it, never behind (seatApproach.ts); a seat with neither keeps its
+ * own. Beds are walked up to from the side already.
+ */
+function withOpenApproach(
+  seats: readonly Seat[],
+  /** More floor she can't stand on: the apartment's furniture. */
+  covered: (p: Vec2, seat: Seat) => boolean = () => false,
+): Seat[] {
+  return seats.map((s) => {
+    if (s.lie) return s;
+    const room = ROOMS[s.room];
+    const area = areaOf(room);
+    const others = seats
+      .filter((o) => o !== s && o.room === s.room)
+      .map((o) => o.at);
+    const approach = openApproach(
+      s.at,
+      s.yaw,
+      others,
+      (p) =>
+        pointInPolygon(room.walkable, p) &&
+        !isBlocked(area, p) &&
+        !covered(p, s),
+    );
+    return approach ? { ...s, approach } : s;
+  });
+}
+
+export const SEATS: readonly Seat[] = withOpenApproach(RAW_SEATS);
+
 export function seatsIn(room: RoomId): readonly Seat[] {
   return SEATS.filter((s) => s.room === room);
 }
@@ -608,6 +643,9 @@ function centerOf(item: Furniture): Vec2 {
     HOME_ORIGIN[1] + item.cell[1] + size.d / 2,
   ];
 }
+
+/** How far (m) she stays from another piece of furniture when walking up to a seat. */
+const PIECE_MARGIN = 0.3;
 
 /** An office chair within this many meters of a desk's middle is pulled up to it. */
 const DESK_REACH = 1.6;
@@ -673,5 +711,32 @@ export function homeSeats(furniture: readonly Furniture[]): Seat[] {
       );
     }
   });
-  return out;
+  // she can't stand within a step of another piece (a desk in front of its chair)
+  const rects = furniture
+    .map((f, n) => ({ f, n }))
+    .filter(
+      ({ f }) =>
+        !FURNITURE_CATALOG[f.id].wall && FURNITURE_CATALOG[f.id].height >= 0.3,
+    )
+    .map(({ f, n }) => {
+      const size = footprint(f.id, f.rotation);
+      const [cx, cz] = centerOf(f);
+      return {
+        n,
+        cx,
+        cz,
+        hw: size.w / 2 + PIECE_MARGIN,
+        hd: size.d / 2 + PIECE_MARGIN,
+      };
+    });
+  return withOpenApproach(out, (p, s) => {
+    // a seat's own piece is no obstacle (ids end `-<piece>` or `-<piece>-l`)
+    const own = Number(/^home-[a-z]+-(\d+)/.exec(s.id)?.[1]);
+    return rects.some(
+      (r) =>
+        r.n !== own &&
+        Math.abs(p[0] - r.cx) < r.hw &&
+        Math.abs(p[1] - r.cz) < r.hd,
+    );
+  });
 }

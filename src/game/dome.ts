@@ -15,8 +15,9 @@ export function courtToRoom([x, z]: Vec2): Vec2 {
 export const COURT = { x0: -7.5, x1: 7.5, z0: -6.4, z1: 8.8 } as const;
 /** Courtside benches along the east sideline, facing the floor. */
 export const BENCH_X = 7.1;
+/** The seats sit on the bench plank, which Dome.tsx hangs 0.3 m out from BENCH_X. */
 export const BENCH_SEATS: readonly Vec2[] = [2.6, 3.4, 4.2, 5].map(
-  (z): Vec2 => [BENCH_X, z],
+  (z): Vec2 => [BENCH_X + 0.3, z],
 );
 
 export const EXIT: Vec2 = [0, 8.5];
