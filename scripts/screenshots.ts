@@ -835,7 +835,8 @@ const SHOTS: {
   // a flinch from a tag and a fall with its get-up, full body on the street
   ...(
     [
-      ["react-flinch", "hit-left"],
+      ["react-flinch", "hit-front"],
+      ["react-flinch-left", "hit-left"],
       ["react-fall", "trip-fall"],
     ] as const
   ).map(([name, id]) =>
