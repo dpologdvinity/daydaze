@@ -1136,13 +1136,13 @@ const SHOTS: {
   {
     name: "vending-street-day",
     query:
-      "room=city&view=room&time=13:00&at=109,7&cam=109.2,1.5,6.6,106.8,1,9.9",
+      "room=city&view=room&time=13:00&at=103,7&cam=103.8,1.5,7.4,106.8,1,9.9",
     act: furnitureReady,
   },
   {
     name: "vending-street-night",
     query:
-      "room=city&view=room&time=22:00&at=109,7&cam=109.2,1.5,6.6,106.8,1,9.9",
+      "room=city&view=room&time=22:00&at=103,7&cam=103.8,1.5,7.4,106.8,1,9.9",
     act: furnitureReady,
   },
   {
