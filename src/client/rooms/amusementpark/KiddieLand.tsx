@@ -16,9 +16,11 @@ import {
   KIDDIE_TRACK,
   newPose,
   trackPose,
+  type Vec3,
 } from "../../../game/amusementPark.ts";
 import { useReducedMotion } from "../../motion.ts";
 import { MARQUEE, Neon, NeonText } from "../shared/Neon.tsx";
+import { Bulbs } from "./Bulbs.tsx";
 import { Boxes, Segments, type Box, type Segment } from "./Instanced.tsx";
 import { InstancedModel, type PlaceCopy } from "./InstancedModel.tsx";
 import { coasterRiders } from "./Rides.tsx";
@@ -43,6 +45,19 @@ const quaternion = new THREE.Quaternion();
 const euler = new THREE.Euler();
 const scale = new THREE.Vector3(KIDDIE_SCALE, KIDDIE_SCALE, KIDDIE_SCALE);
 const matrix = new THREE.Matrix4();
+
+/** A bulb on every post of the fence, at the top of each. */
+const FENCE_BULBS: readonly Vec3[] = Array.from(
+  { length: 40 },
+  (_, i): Vec3 => {
+    const t = (i / 40) * Math.PI * 2;
+    return [
+      KIDDIE.cx + (KIDDIE.a + 1.2) * Math.cos(t),
+      0.98,
+      KIDDIE.cz + (KIDDIE.b + 1.2) * Math.sin(t),
+    ];
+  },
+);
 
 /** Cars run `meters` per second round the loop: a lap in `seconds`. */
 const SECONDS = { normal: 28, calm: 42 };
@@ -164,6 +179,7 @@ export function KiddieLand() {
       ))}
       <Boxes items={parts.ties} />
       <Segments items={parts.posts} />
+      <Bulbs points={FENCE_BULBS} radius={0.07} detail={[6, 4]} />
       <Neon points={parts.fence} color="#ff6ac8" k={3} radius={0.03} closed />
       {/* the station: a low platform and a striped roof on four posts */}
       <mesh position={[platformX, 0.12, KIDDIE.cz]}>

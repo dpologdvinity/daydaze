@@ -1248,7 +1248,7 @@ const SHOTS: {
     // a rider in the first wagon, a few seconds into the lap
     name: "kiddie-train-ride",
     query:
-      "room=amusement-park&quality=low&ride=kiddie-train&cam=33,3.6,-9.5,38.5,1,-16",
+      "room=amusement-park&quality=low&ride=kiddie-train&cam=39,2.4,-23.5,36.5,0.7,-30.9",
     live: true,
     act: async (page: Page) => {
       await page.waitForFunction(
