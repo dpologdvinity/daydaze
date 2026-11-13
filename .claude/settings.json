@@ -13,18 +13,25 @@
       "Bash(git push --force:*)"
     ]
   },
-  "extraKnownMarketplaces": {
-    "cc-gemini-plugin": {
-      "source": { "source": "github", "repo": "thepushkarp/cc-gemini-plugin" }
-    },
-    "ponytail": {
-      "source": { "source": "github", "repo": "DietrichGebert/ponytail" }
-    }
-  },
   "enabledPlugins": {
     "typescript-lsp@claude-plugins-official": true,
     "commit-commands@claude-plugins-official": true,
     "cc-gemini-plugin@cc-gemini-plugin": true,
-    "ponytail@ponytail": true
+    "ponytail@ponytail": true,
+    "pyright-lsp@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "cc-gemini-plugin": {
+      "source": {
+        "source": "github",
+        "repo": "thepushkarp/cc-gemini-plugin"
+      }
+    },
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
+      }
+    }
   }
 }
