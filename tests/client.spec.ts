@@ -1719,8 +1719,8 @@ test("the El: ride from Downtown's stairs to Chinatown and step off at its stair
 }) => {
   test.setTimeout(330_000);
   const errors = collectErrors(page);
-  // the timetable at twenty times speed, standing at Downtown's stairs
-  await page.goto(`${LOW}&room=city&at=22,9.5&elspeed=20`);
+  // the timetable at twenty times speed, standing at the foot of Downtown's stairs
+  await page.goto(`${LOW}&room=city&at=28,9.5&elspeed=20`);
   const view = page.getByRole("img", { name: "3D room view" });
   await expect(view).toHaveAttribute("data-frames", "10", { timeout: 150_000 });
   await page
