@@ -985,6 +985,48 @@ const SHOTS: {
     },
   },
   {
+    name: "reef-dive-cardinal",
+    query: "room=reef-dive&quality=low&cam=-8,1.6,-14.2,-8,1.3,-17",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      // the fish are skinned GLBs that stream in after the first frames
+      await page.waitForTimeout(4_000);
+    },
+  },
+  {
+    name: "reef-dive-parrot",
+    query: "room=reef-dive&quality=low&cam=15.2,1.9,-10,18,1.8,-10",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      // the fish are skinned GLBs that stream in after the first frames
+      await page.waitForTimeout(4_000);
+    },
+  },
+  {
+    name: "reef-dive-gramma",
+    query: "room=reef-dive&quality=low&cam=-15.3,1.6,-6,-18,1.3,-6",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      // the fish are skinned GLBs that stream in after the first frames
+      await page.waitForTimeout(4_000);
+    },
+  },
+  {
     name: "reef-dive-deep",
     query: "room=reef-dive&at=3,-14&yaw=3.14&view=full",
   },
@@ -1139,7 +1181,7 @@ const SHOTS: {
   {
     // the reef wall's school, close to the right glass
     name: "aquarium-reefwall",
-    query: "room=aquarium&quality=low&cam=1.5,1.8,0,7,1.8,0",
+    query: "room=aquarium&quality=low&cam=0,1.9,-6.5,7,1.8,0",
     live: true,
     act: async (page: Page) => {
       await page.waitForFunction(
@@ -1152,8 +1194,8 @@ const SHOTS: {
     },
   },
   {
-    name: "aquarium-reefwall-high",
-    query: "room=aquarium&quality=high&cam=1.5,1.8,0,7,1.8,0",
+    name: "aquarium-reefwall-b",
+    query: "room=aquarium&quality=high&cam=3,2.2,5.5,7,1.8,-2",
     live: true,
     act: async (page: Page) => {
       await page.waitForFunction(
