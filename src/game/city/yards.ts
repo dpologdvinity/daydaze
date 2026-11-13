@@ -540,10 +540,10 @@ function fillAlley(acc: Acc, y: Yard): void {
     let u = (alongX ? y.x0 : y.z0) + 3;
     u < (alongX ? y.x1 : y.z1) - 3;
     u += 5
-  )
-    alongX
-      ? stripe(acc, u, cz, 2, 0.12, "#e8c14b")
-      : stripe(acc, cx, u, 0.12, 2, "#e8c14b");
+  ) {
+    if (alongX) stripe(acc, u, cz, 2, 0.12, "#e8c14b");
+    else stripe(acc, cx, u, 0.12, 2, "#e8c14b");
+  }
   const n = Math.min(5, 2 + Math.floor((w(y) * d(y)) / 450));
   for (let k = 0; k < n; k++) {
     const edge = Math.floor(hash(y.x0, k, 76) * 4);
