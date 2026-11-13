@@ -157,17 +157,20 @@ export function createCarGlow(capacity: number): CarGlow {
       const { head, tail } = BODY_LAMPS[body];
       car.decompose(spot, headFacing, carScale);
       tailFacing.copy(headFacing).multiply(turnAround);
-      for (const [lamp, size, out, quat] of [
-        [head, HEAD_HALO, OUT, headFacing],
-        [tail, TAIL_HALO, -OUT, tailFacing],
-      ] as const)
-        for (const side of [1, -1]) {
-          spot.set(side * lamp[0], lamp[1], lamp[2] + out).applyMatrix4(car);
-          halos.setMatrixAt(
-            halos.count++,
-            matrix.compose(spot, quat, scale.setScalar(size)),
-          );
-        }
+      // no loops over fresh arrays: nothing is allocated in the frame loop
+      for (let i = 0; i < HALOS_PER_CAR; i++) {
+        const isHead = i < 2;
+        const lamp = isHead ? head : tail;
+        const out = isHead ? OUT : -OUT;
+        spot.set((i % 2 ? -1 : 1) * lamp[0], lamp[1], lamp[2] + out);
+        spot.applyMatrix4(car);
+        matrix.compose(
+          spot,
+          isHead ? headFacing : tailFacing,
+          scale.setScalar(isHead ? HEAD_HALO : TAIL_HALO),
+        );
+        halos.setMatrixAt(halos.count++, matrix);
+      }
       // the pool starts just beyond the nose and runs ahead, in the car's own frame
       matrix
         .makeScale(POOL_WIDTH, 1, POOL_LENGTH)
