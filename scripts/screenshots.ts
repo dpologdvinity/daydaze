@@ -871,6 +871,20 @@ const SHOTS: {
       );
       // the shot camera eases out to the hall: give it time to settle
       await page.waitForTimeout(10_000);
+    },  {
+    name: "haunted-escape-wide",
+    query: "room=haunted-house",
+    viewport: { width: 2400, height: 800 },
+    act: async (page) => {
+      await page
+        .getByRole("button", { name: "Step inside" })
+        .click({ timeout: 150_000 });
+      await expect(page.locator("canvas")).toHaveAttribute(
+        "data-haunted-set",
+        /^[a-z]+$/,
+      );
+      // the shot camera eases out to the hall: give it time to settle
+      await page.waitForTimeout(10_000);
     },
   },
   // your adopted pet beside you in the city, and asleep in its bed at home
