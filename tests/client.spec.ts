@@ -338,6 +338,23 @@ test("Skyline Supply sells a snack and a water for coins", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("a vending machine in Skyline Supply sells a soda for coins", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  // standing in front of the machine on the east wall
+  await page.goto(`${STILL}&room=market&at=7,-2.8`);
+  await expect(roomTitle(page)).toHaveText("Skyline Supply", {
+    timeout: 150_000,
+  });
+  const panel = page.getByRole("region", { name: "Vending machine" });
+  await expect(panel).toBeVisible({ timeout: 60_000 });
+  await panel.getByRole("button", { name: /Mango Moon Soda/ }).click();
+  await expect(panel.getByRole("status")).toHaveText("Mango Moon Soda dropped");
+  await expect(page.getByText("97 coins")).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test("Splat City: a paintball round marks a rival for points", async ({
   page,
 }) => {
