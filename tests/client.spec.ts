@@ -351,7 +351,8 @@ test("a vending machine in Skyline Supply sells a soda for coins", async ({
   await expect(panel).toBeVisible({ timeout: 60_000 });
   await panel.getByRole("button", { name: /Mango Moon Soda/ }).click();
   await expect(panel.getByRole("status")).toHaveText("Mango Moon Soda dropped");
-  await expect(page.getByText("97 coins")).toBeVisible();
+  // the room header and the panel both show the wallet
+  await expect(page.getByText("97 coins").first()).toBeVisible();
   expect(errors).toEqual([]);
 });
 
