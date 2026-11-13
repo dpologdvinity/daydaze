@@ -166,6 +166,10 @@ export function detailBuilding(
     });
   }
 
+  // spray-paint tags, posters pasted on the wall, a neon heart and product shelves belong to the
+  // plain boxes: a district lot has its own windows and doors, and these would
+  // hang blank rectangles and yellow slabs and floating shelves over them
+  if (lots) return;
   if (b.style === "brick" || b.style === "warehouse") {
     // spray-paint tags low on the wall
     for (let k = 0; k < 3; k++) {
@@ -182,10 +186,6 @@ export function detailBuilding(
     }
   }
 
-  // posters pasted on the wall, a neon heart and product shelves belong to the
-  // plain boxes: a district lot has its own windows and doors, and these would
-  // hang blank rectangles and floating shelves over them
-  if (lots) return;
   // posters pasted on the wall and a neon glyph, a heart in tube, by the door
   if (["brick", "warehouse", "storefront", "club"].includes(b.style)) {
     for (let k = 0; k < 2; k++) {
