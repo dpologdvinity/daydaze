@@ -114,9 +114,9 @@ export const MARINA_FLEET: readonly ShipSpec[] = [
   {
     kind: "cruise",
     name: "Aurora Belle",
-    at: [-20, -105],
+    at: [35, -125],
     yaw: Math.PI / 2,
-    scale: 0.5,
+    scale: 0.42,
   },
   { kind: "sail", name: "Morning Glory", at: [-78, -62], yaw: 0.5, scale: 1 },
   { kind: "viking", name: "Saltwind", at: [72, -58], yaw: -1, scale: 1 },
