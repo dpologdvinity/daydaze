@@ -614,6 +614,8 @@ function hairMaterial(
   rich: boolean,
   /** Cut out by its alpha: strand cards are; a textured scalp cap is not. */
   cutout: boolean,
+  /** Strand cards shine; a pack style's scalp cap (`*_cap`) stays matte. */
+  shine: boolean,
 ) {
   // hair over the back is seen edge-on: without anisotropic filtering the
   // blurred mip's alpha breaks into specks at the cut-out threshold
@@ -634,7 +636,7 @@ function hairMaterial(
   });
   // the shine bands run along strand cards; on the broad, smooth scalp cap
   // they would read as white streaks, so the cap stays matte
-  return map && cutout ? hairShine(material) : material;
+  return map && cutout && shine ? hairShine(material) : material;
 }
 
 type Tint = { color: string; kind: "hair" | "cloth" | "gloss" | "keep" };
@@ -790,6 +792,10 @@ function buildPart(
           ? src.material
           : null;
       const hasShade = Boolean(src.geometry.getAttribute("color"));
+      // a pack style's scalp cap is its own material (pack_hair.py): its
+      // polygons are big and its UVs arbitrary, so strand shine on it
+      // lights whole facets silver (the Quiff's forehead patch)
+      const strands = !old?.name.endsWith("_cap");
       // glTF marks cut-out parts as blend or mask; an opaque one keeps its fill
       const cutout = Boolean(old && (old.transparent || old.alphaTest > 0));
       // the hair shine runs across each strand: it needs the cards' real
@@ -798,6 +804,7 @@ function buildPart(
       const g = src.geometry;
       if (
         tint.kind === "hair" &&
+        strands &&
         old?.map &&
         !g.getAttribute("hairTangent") &&
         g.index &&
@@ -823,7 +830,14 @@ function buildPart(
       }
       const mat =
         tint.kind === "hair"
-          ? hairMaterial(tint.color, old?.map ?? null, hasShade, rich, cutout)
+          ? hairMaterial(
+              tint.color,
+              old?.map ?? null,
+              hasShade,
+              rich,
+              cutout,
+              strands,
+            )
           : new THREE.MeshStandardMaterial({
               map: old?.map ?? null,
               color: tint.kind === "keep" ? "#ffffff" : tint.color,

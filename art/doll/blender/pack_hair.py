@@ -267,7 +267,11 @@ def build_style(ctx, sid, pack, num, opts, mat_cache):
     if opts.get("solid_scalp"):
         h, w = img.shape[:2]
         mask = scalp_mask(parts["scalp"], h, w)
-    mat = proxies.textured(f"hair_{sid}", grey_atlas(img, f"hair_{sid}", mask), alpha=True)
+    atlas = grey_atlas(img, f"hair_{sid}", mask)
+    mat = proxies.textured(f"hair_{sid}", atlas, alpha=True)
+    # the cap is its own material: the client gives strand cards their shine
+    # but not the cap, whose big polygons would light up as silver facets
+    cap_mat = proxies.textured(f"hair_{sid}_cap", atlas, alpha=True)
     verts, faces, uvs, base = [], [], [], 0
     for co, fs, uv, _ in pieces:
         verts.append(co)
@@ -277,6 +281,10 @@ def build_style(ctx, sid, pack, num, opts, mat_cache):
     co = clear_of_skin(ctx, fit(ctx, np.concatenate(verts), scalp))
     ob = ctx.new_object(f"Hair_{sid}", co, faces)
     ob.data.materials.append(mat)
+    ob.data.materials.append(cap_mat)
+    # pieces are cards first, then the cap, and faces keep that order
+    for poly in ob.data.polygons[sum(len(piece[1]) for piece in parts["hair"]) :]:
+        poly.material_index = 1
     uv_layer = ob.data.uv_layers.new(name="UVMap")
     uv_layer.data.foreach_set("uv", np.concatenate(uvs).ravel())
     for p in ob.data.polygons:
