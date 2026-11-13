@@ -1,7 +1,7 @@
 """Dev-only: renders a built opponent in a Universal Animation Library clip.
 
     UAL_GLB=<UAL1_Standard.glb> blender --background --factory-startup \
-      --python art/opponents/preview.py -- opponent-f [clip:frame ...] [dir=out]
+      --python art/opponents/preview.py -- opponent-f [clip:frame ...] [dir=out] [focus=x,y,z,distance]
 
 Imports art/opponents/.cache/out/<name>.glb (or OPP_DIR/<name>.glb), plays each
 `clip:frame` on its rig and writes workbench renders (front, side, back) of the
@@ -73,9 +73,16 @@ for shot in shots:
     if act.slots:
         rig.animation_data.action_slot = act.slots[0]
     sc.frame_set(int(frame))
-    for tag, eye in (("front", (0, -4.2, 1.0)), ("side", (4.2, 0, 1.0)), ("back", (0, 4.2, 1.0))):
+    # focus=x,y,z,distance looks at a point from that far instead of the whole figure
+    fx, fy, fz, fd = (float(v) for v in opts["focus"].split(",")) if "focus" in opts else (0, 0, 0.9, 4.2)
+    aim = Vector((fx, fy, fz))
+    for tag, eye in (
+        ("front", (fx, fy - fd, fz)),
+        ("side", (fx + fd, fy, fz)),
+        ("back", (fx, fy + fd, fz)),
+    ):
         cam.location = eye
-        d = Vector((0, 0, 0.9)) - Vector(eye)
+        d = aim - Vector(eye)
         cam.rotation_euler = d.to_track_quat("-Z", "Y").to_euler()
         sc.render.filepath = os.path.join(out, f"{name}-{clip}-{frame}-{tag}.png")
         bpy.ops.render.render(write_still=True)

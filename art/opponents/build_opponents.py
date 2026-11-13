@@ -3,7 +3,8 @@ Characters (CC0, see docs/assets.md): the Superhero woman and man, a 65-bone
 rig shared with the Universal Animation Library, so the library's clips play on
 them as they are.
 
-    UBC_DIR=<unzipped Universal Base Characters> \
+    UBC_DIR=<the folder the pack's zip was unzipped into> \
+    KIT_DIR=<Sci-Fi Essentials Kit, unzipped (glTF/Gun_Pistol.gltf)> \
       blender --background --factory-startup --python art/opponents/build_opponents.py
 
 The pack's bodies are bare (painted underwear), so each gets clothes cut from
@@ -13,12 +14,15 @@ their normals and left skinned to the same bones, so they follow the body in
 any clip. Per sex this writes art/opponents/.cache/out/opponent-<f|m>.glb with
 four meshes on one rig:
 
-  Body   the decimated skin, with the pack's skin texture (light and dark
-         variants: the client swaps the map)
+  Body   the decimated skin, untextured: the pack's light and dark skin
+         textures are written beside it as 512 px JPEGs (skin-<f|m>-<tone>.jpg)
+         for the client to put on it
   Eyes   the pack's eyes (own texture)
   Cloth  jersey, pants, shoes and helmet in one mesh; a white-to-grey vertex
          color says which is which, and the client tints it per team
   Vest   a chest and back plate over the jersey, its own mesh so it can glow
+  Gun    Quaternius' Sci-Fi Essentials pistol (CC0), cut down and skinned whole
+         to the right hand, so it goes where the hand goes in any clip
 
 The brows and hair are left out (the helmet covers the head). The pack's UVs
 past the first layer are dropped. scripts/optimize-opponents.sh compresses the
@@ -35,12 +39,31 @@ from mathutils import Vector
 HERE = os.path.dirname(os.path.abspath(__file__))
 UBC = os.environ.get("UBC_DIR", "/tmp/ubc")
 OUT = os.path.join(HERE, ".cache", "out")
-GLTF = "Universal Base Characters[Standard]/Base Characters/Godot - UE"
+PACK = "Universal Base Characters[Standard]"
+GLTF = f"{PACK}/Base Characters/Godot - UE"
 # the share of the pack's triangles the near body keeps
 KEEP = 0.42
 
 # vertex color value per cloth piece (the client multiplies the team color by it)
 JERSEY, PANTS, SHOES, HELMET, VISOR = 1.0, 0.32, 0.1, 0.9, 0.03
+
+
+TEXTURES = os.path.join(UBC, PACK, "Base Characters", "Textures")
+SKINS = {
+    "Female": {"light": "T_Superhero_Female_Light_BaseColor.png", "dark": "T_Superhero_Female_Dark_BaseColor.png"},
+    "Male": {"light": "T_Superhero_Male_Ligh.png", "dark": "T_Superhero_Male_Dark.png"},
+}
+
+
+def skins(sex):
+    """The two skin textures as 512 px JPEGs next to the GLB."""
+    os.makedirs(OUT, exist_ok=True)
+    for tone, file in SKINS[sex].items():
+        img = bpy.data.images.load(os.path.join(TEXTURES, file))
+        img.scale(512, 512)
+        img.file_format = "JPEG"
+        img.filepath_raw = os.path.join(OUT, f"skin-{'m' if sex == 'Male' else 'f'}-{tone}.jpg")
+        img.save()
 
 
 def clear():
@@ -70,7 +93,54 @@ def load(sex):
     for ob in (body, eyes):
         while len(ob.data.uv_layers) > 1:
             ob.data.uv_layers.remove(ob.data.uv_layers[-1])
+        # the pack's own vertex colors (it ships four sets) are not used
+        while ob.data.color_attributes:
+            ob.data.color_attributes.remove(ob.data.color_attributes[0])
     return rig, body, eyes
+
+
+KIT = os.path.join(os.environ.get("KIT_DIR", "/tmp/kit"), "glTF")
+# the pistol's length in metres, and how it sits in the hand: its center's
+# offset from the hand bone's head in the T-pose (x runs along the bone, away
+# from the body), and a turn about z in degrees
+GUN_LENGTH = 0.21
+GUN_AT = Vector((-0.05, -0.012, -0.012))
+GUN_TURN = 0.0
+
+
+def gun(rig):
+    """The pistol, skinned wholly to hand_r."""
+    before = set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=os.environ.get("GUN_GLTF", os.path.join(KIT, "Gun_Pistol.gltf")))
+    new = set(bpy.data.objects) - before
+    ob = next(o for o in new if o.type == "MESH")
+    for o in new - {ob}:
+        bpy.data.objects.remove(o)
+    ob.parent = None
+    ob.name = "Gun"
+    bpy.context.view_layer.objects.active = ob
+    ob.select_set(True)
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    mod = ob.modifiers.new("Decimate", "DECIMATE")
+    mod.ratio = 0.25
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+    co = np.array([v.co[:] for v in ob.data.vertices])
+    k = GUN_LENGTH / (co[:, 0].max() - co[:, 0].min())
+    centre = (co.max(0) + co.min(0)) / 2
+    head = rig.data.bones["hand_r"].head_local
+    from math import radians
+
+    from mathutils import Matrix
+
+    turn = Matrix.Rotation(radians(GUN_TURN), 3, "Z")
+    for v in ob.data.vertices:
+        v.co = turn @ ((v.co - Vector(centre)) * k) + head + GUN_AT
+    g = ob.vertex_groups.new(name="hand_r")
+    g.add([v.index for v in ob.data.vertices], 1.0, "REPLACE")
+    ob.parent = rig
+    arm = ob.modifiers.new("Armature", "ARMATURE")
+    arm.object = rig
+    return ob
 
 
 def decimate(body, keep):
@@ -238,7 +308,13 @@ def main():
         vmat.use_nodes = True
         vest.data.materials.append(vmat)
         body.name, eyes.name = "Body", "Eyes"
-        export(sex, rig, [body, eyes, cloth, vest])
+        # plain skin material: the pack's textures (normal, roughness, 2k color) stay out
+        skin = bpy.data.materials.new("skin")
+        skin.use_nodes = True
+        body.data.materials.clear()
+        body.data.materials.append(skin)
+        skins(sex)
+        export(sex, rig, [body, eyes, cloth, vest, gun(rig)])
 
 
 main()
