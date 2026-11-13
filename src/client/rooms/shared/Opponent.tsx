@@ -204,7 +204,8 @@ export function Opponent({
         if (plan.reverse) next.time = length;
         next.play();
         if (prev && prev !== next) prev.crossFadeTo(next, FADE, false);
-        else next.fadeIn(FADE);
+        // the first clip is in at full weight, so she never shows the bind pose
+        else next.setEffectiveWeight(1);
       }
       s.key = key;
     }

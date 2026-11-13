@@ -194,6 +194,18 @@ def shell(body, name, pick, push, color, clamp=None):
     return ob
 
 
+def hide(body, tests):
+    """Deletes the body's faces whose center any of `tests` accepts."""
+    bm = bmesh.new()
+    bm.from_mesh(body.data)
+    bm.faces.ensure_lookup_table()
+    gone = [f for f in bm.faces if any(t(f.calc_center_median()) for t in tests)]
+    bmesh.ops.delete(bm, geom=gone, context="FACES")
+    bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context="VERTS")
+    bm.to_mesh(body.data)
+    bm.free()
+
+
 def build(sex):
     rig, body, eyes = load(sex)
     top = max(v.co.z for v in body.data.vertices)
@@ -251,6 +263,19 @@ def build(sex):
         1.0,
         clamp=lambda p: Vector((max(-0.17, min(0.17, p.x)), p.y, max(chest0 - 0.06, min(neck - 0.04, p.z)))),
     )
+    # no skin under the cloth: it can't poke through in a bend, and the body
+    # sheds those triangles. Each test sits a little inside the cloth's edge, so
+    # a ring of skin stays under every hem
+    hide(
+        body,
+        [
+            lambda c: c.z > hem + 0.02 and c.z < neck - 0.01 and abs(c.x) < sleeve - 0.02,
+            lambda c: c.z > ankle + 0.04 and c.z < waist + 0.02,
+            lambda c: c.z < ankle + 0.01,
+            lambda c: c.z > top - 0.1 and c.y > -0.3,
+        ],
+    )
+    print(sex, "body", len(body.data.polygons), "faces once the cloth hides some")
     return rig, body, eyes, [(jersey, JERSEY), (pants, PANTS), (shoes, SHOES), (helmet, HELMET)], vest
 
 
