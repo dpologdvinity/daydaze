@@ -113,6 +113,21 @@ export function dimMeshes(meshes: readonly THREE.InstancedMesh[], k: number) {
   }
 }
 
+/** The vending machine's lit front: its stock glows softly at night. */
+export function glowVending(meshes: readonly THREE.InstancedMesh[], k: number) {
+  for (const mesh of meshes) {
+    const m = mesh.material;
+    if (
+      m instanceof THREE.MeshStandardMaterial &&
+      m.name === "Vending_Machine"
+    ) {
+      m.emissive.setScalar(1);
+      m.emissiveMap = m.map;
+      m.emissiveIntensity = 0.7 * k;
+    }
+  }
+}
+
 type Meshes = ReadonlyMap<FurnitureKind, THREE.InstancedMesh[]>;
 
 function place(
@@ -186,10 +201,10 @@ export function CityFurniture({ summer }: { summer: boolean }): JSX.Element {
   const { spots, at } = cityFurniture.use();
   // dim with the night like the rest of the city (dimForDay in meshes.ts)
   const { neon } = useDaylight();
-  useEffect(
-    () => dimMeshes([...meshes.values()].flat(), 1 - 0.55 * neon),
-    [meshes, neon],
-  );
+  useEffect(() => {
+    dimMeshes([...meshes.values()].flat(), 1 - 0.55 * neon);
+    glowVending(meshes.get("vending") ?? [], neon);
+  }, [meshes, neon]);
   const canvas = useThree((state) => state.gl.domElement);
   useEffect(() => {
     const drawn = place(meshes, spots, at, low, summer);

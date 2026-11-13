@@ -106,6 +106,7 @@ export const MODEL_COST: Readonly<
   "street/boardbench": { tris: 350, parts: 2 },
   "street/mailbox": { tris: 240, parts: 1 },
   "street/newsbox": { tris: 700, parts: 2 },
+  "street/vending": { tris: 262, parts: 3 },
   "street/meter": { tris: 164, parts: 3 },
   "street/bikerack": { tris: 800, parts: 1 },
   "street/planter": { tris: 622, parts: 3 },

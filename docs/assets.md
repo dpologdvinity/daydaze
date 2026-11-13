@@ -18,6 +18,8 @@ future imported packs belong here when they enter the game.
 
 | Title | Author | License | URL | Used for |
 | --- | --- | --- | --- | --- |
+| Animated Flying Fluttering Butterfly Loop | LasquetiSpice | CC-BY 4.0 | https://sketchfab.com/3d-models/none-80f8d9a6dadc411e89ca366cb0cfb0d9 | The park's, Larkspur Forest's and the garden's butterflies: frozen in the open-wing pose, decimated to 160 triangles, flapped in a shader (art/butterfly/build_butterfly.py). |
+| 90s Retro Vending Machine | MadeByYeshe | CC-BY 4.0 | https://sketchfab.com/3d-models/90s-retro-vending-machine-dfd9838c7475422099d8d435d08102fe | Snack vending machines on the avenue's sidewalks and in Skyline Supply, Player 2 and Boardwalk Arcade (art/vending/build_vending.py). |
 | Mermaid | charliecatling | CC-BY 4.0 | https://sketchfab.com/3d-models/none-30534d0eff154f73b5afc16f90b4eb4b | Mermaid Cove mermaids (lounging, swimming, singing), decimated, skeleton cut to its deform bones. |
 | Seashell | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/5ovn4mnRejL | Mermaid Cove's scallop and conch singing shells (art/cove/build_shells.py). |
 | Clam | Poly by Google | CC-BY 3.0 | https://poly.pizza/m/8675QcluLQX | Mermaid Cove's clam singing shell (art/cove/build_shells.py). |
