@@ -6,7 +6,6 @@ import * as THREE from "three";
 import { bakedGeometry } from "../world/bakedGeometry.ts";
 import { boxMapped } from "./worldTexture.ts";
 import { useDaylight } from "./daylight.ts";
-import { whiteInstances } from "./instanceColor.ts";
 
 // Cars, taxis and vans in traffic are the car bodies now (trafficBodies.ts).
 export type TransitModel = "bus" | "stop";
@@ -49,9 +48,7 @@ export function useTransitModels(
             0.5,
             { weather: true },
           );
-          const mesh = whiteInstances(
-            new THREE.InstancedMesh(geometry, mat, capacity),
-          );
+          const mesh = new THREE.InstancedMesh(geometry, mat, capacity);
           mesh.frustumCulled = false;
           mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
           mesh.count = 0;

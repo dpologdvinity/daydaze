@@ -12,7 +12,6 @@ import { useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";
 import { HOUSE_MODELS, type HouseSpot } from "../../game/city/nyc.ts";
 import { createStore } from "../rooms/shared/store.ts";
-import { whiteInstances } from "./instanceColor.ts";
 
 const URLS = HOUSE_MODELS.map((m) => `/models/${m}.glb`);
 /** The most houses of one model in view. */
@@ -40,9 +39,7 @@ export function CityHouses(): JSX.Element {
           const material = Array.isArray(o.material)
             ? o.material[0]
             : o.material;
-          const mesh = whiteInstances(
-            new THREE.InstancedMesh(geometry, material, CAPACITY),
-          );
+          const mesh = new THREE.InstancedMesh(geometry, material, CAPACITY);
           mesh.count = 0;
           mesh.frustumCulled = false;
           parts.push(mesh);

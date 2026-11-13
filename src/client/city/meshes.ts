@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { whiteInstances } from "./instanceColor.ts";
 import { sidewalkMaterial } from "./sidewalkLook.ts";
 import { boxMapped, groundMaps, worldMapped } from "./worldTexture.ts";
 import {
@@ -364,9 +363,7 @@ function instanced(
   material: THREE.Material,
   capacity: number,
 ): THREE.InstancedMesh {
-  const mesh = whiteInstances(
-    new THREE.InstancedMesh(geometry, material, capacity),
-  );
+  const mesh = new THREE.InstancedMesh(geometry, material, capacity);
   mesh.count = 0;
   mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
   return mesh;
