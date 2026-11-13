@@ -51,7 +51,9 @@ const STAND = "/models/farm/market-stand.glb";
 const foodUrl = (p: Produce) => `/models/props/food-${p}.glb`;
 /** The produce crate (Fruit Crate, public/models/park/produce-crate.glb) is the last model. */
 const CRATE = "/models/park/produce-crate.glb";
-const PATHS = [STAND, ...PRODUCE.map(foodUrl), CRATE];
+/** The bakehouse's loaf tray (Bakery pack, Pasha, CC-BY): the last model. */
+const LOAVES = "/models/bakery/baguettes.glb";
+const PATHS = [STAND, ...PRODUCE.map(foodUrl), CRATE, LOAVES];
 
 const GRAVEL = new THREE.Color("#9d9078");
 const BUNTING = [
@@ -110,9 +112,12 @@ function onStall(
 /** The crates on every shelf, and the produce piled in them, by kind. */
 function shelfSpots(low: boolean): {
   crates: PropSpot[];
+  /** Trays of baguettes standing in the bakehouse's crates in place of produce. */
+  loaves: PropSpot[];
   piles: Map<Produce, { x: number; y: number; z: number; yaw: number }[]>;
 } {
   const crates: PropSpot[] = [];
+  const loaves: PropSpot[] = [];
   const piles = new Map<
     Produce,
     { x: number; y: number; z: number; yaw: number }[]
@@ -128,6 +133,17 @@ function shelfSpots(low: boolean): {
         yaw: stall.yaw,
         scale: 1,
       });
+      if (kind === "Bread") {
+        // a tray of baguettes, turned along the shelf, in place of a pile
+        loaves.push({
+          x: cx,
+          y: GROUND + SHELF_Y + 0.1,
+          z: cz,
+          yaw: stall.yaw + Math.PI / 2,
+          scale: 0.8,
+        });
+        return;
+      }
       const size = PRODUCE_SIZE[kind];
       const gap = Math.min(0.25, Math.max(size * 1.15, 0.17));
       // a bottom layer of 2 x 3 (2 x 2 on the low tier) and two on top
@@ -162,7 +178,7 @@ function shelfSpots(low: boolean): {
       piles.set(kind, list);
     });
   });
-  return { crates, piles };
+  return { crates, loaves, piles };
 }
 
 const STRING_Y = 2.45;
@@ -301,10 +317,15 @@ function Market({ player }: { player: Player }): JSX.Element {
   const wares = useMemo(() => {
     if (!open) return { meshes: [] as THREE.InstancedMesh[], items: 0 };
     const meshes: THREE.InstancedMesh[] = [];
-    const { crates, piles } = shelfSpots(low);
+    let items = 0;
+    const { crates, loaves, piles } = shelfSpots(low);
     const crate = gltfs[1 + PRODUCE.length]?.scene;
     if (crate) meshes.push(...propParts(crate, crates));
-    let items = 0;
+    const tray = gltfs[2 + PRODUCE.length]?.scene;
+    if (tray) {
+      meshes.push(...propParts(tray, loaves));
+      items += loaves.length;
+    }
     PRODUCE.forEach((kind, i) => {
       const spots = piles.get(kind);
       const scene = gltfs[1 + i]?.scene;

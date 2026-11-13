@@ -1050,6 +1050,10 @@ const SHOTS: {
   { name: "hotel-rooftop", query: "room=hotel-rooftop" },
   { name: "bookshop", query: "room=bookshop" },
   { name: "patisserie", query: "room=patisserie" },
+  {
+    name: "patisserie-case",
+    query: "room=patisserie&cam=-2,2.0,-0.6,-1,0.95,-4",
+  },
   { name: "clay-day", query: "room=pottery" },
   { name: "florist", query: "room=florist" },
   { name: "gallery", query: "room=gallery" },
@@ -1826,6 +1830,10 @@ const SHOTS: {
   { name: "point-and-eat-kitchen", query: "room=filipino-joint" },
   { name: "jade-whisk-boba-matcha", query: "room=boba-matcha" },
   { name: "purple-pandesal-ube", query: "room=ube-bakery" },
+  {
+    name: "ube-bakery-counter",
+    query: "room=ube-bakery&cam=0,2.1,3,0,1.1,-0.9",
+  },
   { name: "farm", query: "room=farm" },
   { name: "garden", query: "room=garden" },
   // close on the north pasture's fence rails and the plots

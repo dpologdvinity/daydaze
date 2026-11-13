@@ -173,6 +173,14 @@ export const CREDITS: readonly {
           "The Dealership's concept-car showpiece: decimated from 131k to 14k triangles, shown in-game as the made-up Comet Zero (art/showroom/build_showpieces.py).",
       },
       {
+        title: "Bread pack",
+        author: "Pasha",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/none-ab223d14e487441aa0cff5f5eae63ee8",
+        usedFor:
+          "Trays of rolls, cookies, donuts and croissants on Purple Pandesal's counter, pies, tarts and cakes in Sucre's pastry case and a baguette tray at Daisy's Bakehouse in the Farmers Market: twelve items cut from the 297k-triangle pack and decimated (art/bread/build_bread.py).",
+      },
+      {
         title: "Mermaid",
         author: "charliecatling",
         license: "CC-BY 4.0",
