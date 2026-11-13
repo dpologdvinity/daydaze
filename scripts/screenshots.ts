@@ -956,6 +956,77 @@ const SHOTS: {
   { name: "open-water-full", query: "room=open-water&view=full" },
   { name: "reef-dive", query: "room=reef-dive" },
   {
+    // the reef's newer residents: cardinalfish and cowfish near the wreck
+    name: "reef-dive-schools",
+    query: "room=reef-dive&quality=low&cam=-2,1.6,-8,-9,1.4,-17",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      // the fish are skinned GLBs that stream in after the first frames
+      await page.waitForTimeout(4_000);
+    },
+  },
+  {
+    name: "reef-dive-wrasse",
+    query: "room=reef-dive&quality=low&cam=8,1.6,-12,19,1.8,-20",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      // the fish are skinned GLBs that stream in after the first frames
+      await page.waitForTimeout(4_000);
+    },
+  },
+  {
+    name: "reef-dive-cardinal",
+    query: "room=reef-dive&quality=low&cam=-8,1.6,-14.2,-8,1.3,-17",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      // the fish are skinned GLBs that stream in after the first frames
+      await page.waitForTimeout(4_000);
+    },
+  },
+  {
+    name: "reef-dive-parrot",
+    query: "room=reef-dive&quality=low&cam=15.2,1.9,-10,18,1.8,-10",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      // the fish are skinned GLBs that stream in after the first frames
+      await page.waitForTimeout(4_000);
+    },
+  },
+  {
+    name: "reef-dive-gramma",
+    query: "room=reef-dive&quality=low&cam=-15.3,1.6,-6,-18,1.3,-6",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      // the fish are skinned GLBs that stream in after the first frames
+      await page.waitForTimeout(4_000);
+    },
+  },
+  {
     name: "reef-dive-deep",
     query: "room=reef-dive&at=3,-14&yaw=3.14&view=full",
   },
@@ -1107,6 +1178,35 @@ const SHOTS: {
     viewport: { width: 390, height: 844 },
   },
   { name: "aquarium", query: "room=aquarium" },
+  {
+    // the reef wall's school, close to the right glass
+    name: "aquarium-reefwall",
+    query: "room=aquarium&quality=low&cam=0,1.9,-6.5,7,1.8,0",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      // the fish are skinned GLBs that stream in after the first frames
+      await page.waitForTimeout(4_000);
+    },
+  },
+  {
+    name: "aquarium-reefwall-b",
+    query: "room=aquarium&quality=high&cam=3,2.2,5.5,7,1.8,-2",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      // the fish are skinned GLBs that stream in after the first frames
+      await page.waitForTimeout(4_000);
+    },
+  },
   { name: "ice-rink", query: "room=ice-rink" },
   { name: "haunted-house", query: "room=haunted-house" },
   // the escape's first room: the front hall dressed as a set, three doors ahead
@@ -1336,6 +1436,27 @@ const SHOTS: {
       },
     })),
   ),
+  // Little Manila's El stairs from the sidewalk, looking west along the shop
+  // row: the flight must leave the shop doors in view
+  {
+    name: "el-manila-stairs",
+    live: true,
+    query:
+      "room=city&view=room&quality=low&time=12:00&at=-262,10&cam=-268,2.2,11,-300,4,7.6",
+    act: async (page: Page) => {
+      await streetReady(page);
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.lots === "ready",
+        null,
+        { timeout: 300_000 },
+      );
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+    },
+  },
   { name: "city-sunset", query: "room=city&view=full&time=19:30" },
   {
     name: "city-night",

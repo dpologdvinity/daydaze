@@ -12,12 +12,15 @@ export type ElStation = {
   name: string;
   /** Where the platform's middle is along the avenue. */
   x: number;
+  /** Where the stairs' top landing stands, meters east of `x`: chosen so the
+   * flight clears every shop door and every cross street's mouth. */
+  stairs: number;
 };
 
 export const EL_STATIONS: readonly ElStation[] = [
-  { id: "manila", name: "Little Manila", x: -300 },
-  { id: "downtown", name: "Downtown", x: 0 },
-  { id: "chinatown", name: "Chinatown and Koreatown", x: 300 },
+  { id: "manila", name: "Little Manila", x: -300, stairs: -12 },
+  { id: "downtown", name: "Downtown", x: 0, stairs: 8 },
+  { id: "chinatown", name: "Chinatown and Koreatown", x: 300, stairs: -8 },
 ];
 
 /** The track runs down the middle of Main Avenue (z = 0). */
@@ -39,8 +42,15 @@ export const EL_PLATFORM = 44;
 export const STAIRS_RUN = 18;
 /** Steps in a flight: EL_DECK_Y over this is one riser. */
 const STEPS = 18;
-/** Where a flight of stairs stands along the avenue, from a station's x. */
-const STAIRS_SPAN: readonly [number, number] = [6, STAIRS_RUN + 10];
+/** The top landing is this wide along the avenue. */
+const LANDING = 2.6;
+
+/** The avenue's x range a station's landing and flight cover, from the
+ * landing's near edge to the bottom step. */
+export const stairsSpan = (s: ElStation): readonly [number, number] => [
+  s.x + s.stairs - LANDING / 2,
+  s.x + s.stairs + STAIRS_RUN,
+];
 
 type Leg =
   | {
@@ -228,9 +238,10 @@ export function trestleColumns(
     const gap = gaps.find((g) => Math.abs(x - g) < clear);
     const at = gap === undefined ? x : gap + Math.sign(x - gap || 1) * clear;
     // none stands in a station's stairs (the curb pair would pierce them)
-    const inStairs = EL_STATIONS.some(
-      (s) => at > s.x + STAIRS_SPAN[0] && at < s.x + STAIRS_SPAN[1],
-    );
+    const inStairs = EL_STATIONS.some((s) => {
+      const [x0, x1] = stairsSpan(s);
+      return at > x0 - 2 && at < x1 + 2;
+    });
     if (!inStairs && !out.some((o) => Math.abs(o - at) < 2)) out.push(at);
   }
   return out.map((x) => Math.round(x * 10) / 10).sort((a, b) => a - b);
@@ -250,10 +261,17 @@ export type ElBox = {
   sz: number;
 };
 
+/** The ground a station's landing, flight and handrail cover: x0, z0, x1, z1.
+ * The flight stands at the curb, along the avenue, on its south side. */
+export function stairsRect(s: ElStation): [number, number, number, number] {
+  const [x0, x1] = stairsSpan(s);
+  return [x0, 6.3, x1, 8.9];
+}
+
 /** Where she steps on and off: the foot of a station's stairs, on the avenue's
- * south sidewalk, east of the platform. */
+ * south sidewalk, just past the bottom step. */
 export const stairsFoot = (station: ElStation): [number, number] => [
-  station.x + STAIRS_RUN + 4,
+  stairsSpan(station)[1] + 2,
   8.4,
 ];
 /** Every box of the line: the trestle over the avenue, then each station's
@@ -358,13 +376,13 @@ export function elBoxes(gaps: readonly number[]): ElBox[] {
       sz: 0.08,
     });
     // the walkway from the stairs to the platform, then the stairs down
-    const top = x + 8;
+    const top = x + s.stairs;
     out.push({
       kind: "stone",
       x: top,
       y: y - 0.05,
       z: 6.6,
-      sx: 2.6,
+      sx: LANDING,
       sy: 0.3,
       sz: 3.0,
     });

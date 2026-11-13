@@ -15,6 +15,7 @@
 // client swaps palettes per lot (src/client/city/DistrictLots.tsx) and one
 // model wears every district's colors.
 
+import { EL_STATIONS, stairsRect } from "./el.ts";
 import { hash, pick } from "./hash.ts";
 import { ASIA_X, type Building } from "./layout.ts";
 import { DISTRICT_NAMES, type District } from "./districtNames.ts";
@@ -402,6 +403,13 @@ function computeRow(b: Building): LotInstance[] {
   const pool = modelsFor(look, b.height);
   const out: LotInstance[] = [];
   let last = -1;
+  // the block's shop names, dealt from a shuffled deck so none repeats along
+  // the block (a district's blocks have at most 12 shops, its pool is bigger)
+  const deck = look.names
+    .map((name, k) => ({ name, key: hash(seed, k, 31) }))
+    .sort((a, b) => a.key - b.key)
+    .map((c) => c.name);
+  let named = 0;
   faces.forEach((face, fi) => {
     const r = (k: number) => hash(seed, fi, k);
     let along = 0;
@@ -415,7 +423,7 @@ function computeRow(b: Building): LotInstance[] {
         p = (p + 1 + Math.floor(r(600 + i) * 4)) % look.palettes.length;
       last = p;
       const lift = face.yaw % Math.PI === 0 ? 0 : CORNER_LIFT;
-      out.push({
+      const lot: LotInstance = {
         model,
         x: face.ox + face.dx * at + face.nx * lift,
         z: face.oz + face.dz * at + face.nz * lift,
@@ -426,13 +434,36 @@ function computeRow(b: Building): LotInstance[] {
         back: !face.street,
         sign:
           face.street && r(700 + i) < look.signChance
-            ? pick(look.names, r(800 + i))
+            ? deck[named++ % deck.length]
             : null,
-      });
+      };
+      // an El stair flight stands in front of the door: that shop is left
+      // out, the block's plain wall shows behind the stairs
+      if (!EL_STATIONS.some((s) => overlaps(doorZone(lot), stairsRect(s))))
+        out.push(lot);
     });
   });
   return out;
 }
+
+/** The ground in front of a lot's door, x0, z0, x1, z1: the lot's width and
+ * the 8 m out from its front (lots face (sin yaw, cos yaw); yaws are
+ * quarter turns). */
+export function doorZone(l: LotInstance): [number, number, number, number] {
+  const w = LOT_SPECS[l.model].w * l.sx;
+  const fx = Math.round(Math.sin(l.yaw));
+  const fz = Math.round(Math.cos(l.yaw));
+  const x0 = l.x + Math.min(0, fx * 8) - (fx === 0 ? w / 2 : 0);
+  const x1 = l.x + Math.max(0, fx * 8) + (fx === 0 ? w / 2 : 0);
+  const z0 = l.z + Math.min(0, fz * 8) - (fz === 0 ? w / 2 : 0);
+  const z1 = l.z + Math.max(0, fz * 8) + (fz === 0 ? w / 2 : 0);
+  return [x0, z0, x1, z1];
+}
+
+const overlaps = (
+  a: readonly [number, number, number, number],
+  b: readonly [number, number, number, number],
+): boolean => a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
 
 /** A lot as the plan hands it to the client: `far` picks the far twin. */
 export type PlacedLot = LotInstance & { far: boolean };

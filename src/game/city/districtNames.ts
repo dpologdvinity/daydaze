@@ -22,6 +22,10 @@ export const DISTRICT_NAMES: Readonly<Record<District, readonly string[]>> = {
     "LUTO NI NANAY",
     "HALO-HALO SA KANTO",
     "PALENGKE MINI",
+    "SARI-SARI NI ATE LENI",
+    "SINIGANG NI LOLA",
+    "GUPITAN NI KUYA BOY",
+    "BULAKLAKAN NI AMOR",
   ],
   chinatown: [
     "FU LOK MEI HERBS",
@@ -36,6 +40,10 @@ export const DISTRICT_NAMES: Readonly<Record<District, readonly string[]>> = {
     "SAN YUEN LANTERNS",
     "MOON GATE TEAHOUSE",
     "DOUBLE HAPPINESS GIFTS",
+    "BAMBOO GARDEN CONGEE",
+    "EIGHT TREASURES TEA",
+    "OLD CANAL DUMPLINGS",
+    "LONG LIFE HERBALIST",
   ],
   koreatown: [
     "NAMSAN BBQ HOUSE",
@@ -50,6 +58,10 @@ export const DISTRICT_NAMES: Readonly<Record<District, readonly string[]>> = {
     "BOMNAL BEAUTY",
     "HANOK TEA ROOM",
     "SUNRISE PC BANG",
+    "HONGDAE VINYL",
+    "KIMCHI KITCHEN",
+    "NARAE COFFEE",
+    "NAEUL FLOWERS",
   ],
   "arts-district": [
     "RUST AND RESIN STUDIO",
@@ -64,6 +76,10 @@ export const DISTRICT_NAMES: Readonly<Record<District, readonly string[]>> = {
     "THE PAPER MOTH",
     "SALVAGE SOUND LAB",
     "GLUE AND GLITTER",
+    "PIGMENT AND PRESS",
+    "THE LOOSE THREAD",
+    "BLUE HOUR GALLERY",
+    "THE PIGEON LOFT",
   ],
   uptown: [
     "MAISON DE LA ROSE",
@@ -78,5 +94,9 @@ export const DISTRICT_NAMES: Readonly<Record<District, readonly string[]>> = {
     "WREN AND WILLOW BOOKS",
     "FAIRFAX TAILORS",
     "THE MARBLE STAIR",
+    "THE LINDEN ROOM",
+    "CORNWELL PIANOS",
+    "ROSEWOOD APOTHECARY",
+    "CAMELLIA TEA SALON",
   ],
 };

@@ -92,9 +92,20 @@ const REEF_FISH: readonly FishKind[] = [
   "fish3",
   "cute-lionfish",
   "cute-puffer",
+  "cute-royalgramma",
+  "cute-parrotfish",
+  "cute-cardinalfish",
+  "cute-moorishidol",
+  "cute-cowfish",
+  "cute-humphead",
+  "cute-betta",
+  "cute-tetra",
 ];
-const FISH_HIGH = 16;
+const FISH_HIGH = 22;
 const FISH_LOW = 6;
+/** The low tier's few fish are spread across the whole list, not its first six
+ * (4 shares no factor with the list's length, so none repeats). */
+const LOW_STRIDE = 4;
 
 /** Sharks lap the tank over the tunnel; the mantas glide above them; a school
  * of reef fish loops along the reef wall. Each is its own skinned mesh, so the
@@ -125,7 +136,10 @@ function Swimmers() {
       {Array.from({ length: fish }, (_, i) => (
         <SwimmingCreature
           key={`fish${i}`}
-          kind={REEF_FISH[i % REEF_FISH.length] ?? "fish1"}
+          kind={
+            REEF_FISH[(i * (low ? LOW_STRIDE : 1)) % REEF_FISH.length] ??
+            "fish1"
+          }
           scale={1.4}
           path={(t, pose) => reef(pose, t, i)}
         />
