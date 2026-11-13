@@ -16,10 +16,17 @@ test("posture: moving beats mood, sitting needs the Sit mood or a wheelchair", (
 
 test("sitting down and standing up each have a baked one-shot", () => {
   const down = pickTransition("stand", "sit", 0);
-  assert.equal(down?.id, "sit-down");
+  assert.equal(down?.id, "sit-down-ual");
   assert.equal(clipOf(down?.id)?.kind, "trans");
   assert.equal(down?.pack, "seated");
   assert.ok((down?.seconds ?? 0) > 0.5);
+  // short enough for a game: about a second, whatever the take's own length
+  for (const s of [0, 1]) {
+    const t = pickTransition("stand", "sit", s);
+    assert.ok((t?.seconds ?? 99) <= 1.5, String(t?.id));
+    assert.ok((t?.rate ?? 0) >= 1 && (t?.rate ?? 9) <= 1.6);
+    assert.ok((t?.reach ?? 0) > 0, "every seated clip has a measured reach");
+  }
   // a row of people doesn't all sit down the same way
   const downs = new Set(
     Array.from({ length: 6 }, (_, s) => pickTransition("stand", "sit", s)?.id),
