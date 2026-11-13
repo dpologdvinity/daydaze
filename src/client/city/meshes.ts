@@ -182,6 +182,8 @@ const GEOMETRY: Record<Shared, THREE.BufferGeometry> = {
   curtain: BOX5,
   band: BOX5,
   roof: BOX5,
+  roofGravel: BOX5,
+  roofSkin: BOX5,
   ledge: BOX5,
   glow: BOX5,
   awning: BOX,
@@ -258,12 +260,29 @@ const MATERIAL: Record<Exclude<Shared, FacadeKind>, THREE.Material> = {
   ),
   lane: new THREE.MeshBasicMaterial({ toneMapped: false }),
   band: new THREE.MeshBasicMaterial({ toneMapped: false }),
+  // three kinds of flat roof, each a CC0 Poly Haven set box-mapped by world
+  // position (so a roof's size never stretches it): tar paper, tarred gravel
+  // and a smooth membrane. The plan picks one and a color per building.
   roof: boxMapped(
     new THREE.MeshStandardMaterial({
-      ...groundMaps("concrete_wall_008"),
-      roughness: 0.8,
+      ...groundMaps("bitumen"),
+      roughness: 0.9,
     }),
-    0.25,
+    0.3,
+  ),
+  roofGravel: boxMapped(
+    new THREE.MeshStandardMaterial({
+      ...groundMaps("tarred_gravel"),
+      roughness: 0.95,
+    }),
+    0.5,
+  ),
+  roofSkin: boxMapped(
+    new THREE.MeshStandardMaterial({
+      ...groundMaps("white_plaster_02"),
+      roughness: 0.6,
+    }),
+    0.2,
   ),
   ledge: new THREE.MeshStandardMaterial({ roughness: 0.55, metalness: 0.1 }),
   glow: new THREE.MeshBasicMaterial({ toneMapped: false }),
@@ -403,6 +422,8 @@ export function createKindMeshes(
     curtain: make("curtain"),
     band: make("band"),
     roof: make("roof"),
+    roofGravel: make("roofGravel"),
+    roofSkin: make("roofSkin"),
     ledge: make("ledge"),
     glow: make("glow"),
     awning: make("awning"),

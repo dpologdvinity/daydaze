@@ -11,6 +11,7 @@ import {
 } from "../../game/city/tuning.ts";
 import { KINDS, planCity, type Kind } from "../../game/city/plan.ts";
 import { baysWanted, planView } from "../../game/city/budget.ts";
+import { nearPlaneFor, NEAR_MIN } from "../../game/city/nearPlane.ts";
 import { CITY_FLEET } from "../../game/ships.ts";
 import type { Vec2 } from "../../game/walk.ts";
 import type { PickHandler } from "../rooms/shared/Floor.tsx";
@@ -95,6 +96,15 @@ export function CityScene({
 }) {
   const activeDressings = useDressings();
   const canvas = useThree((state) => state.gl.domElement);
+  const camera = useThree((state) => state.camera);
+  // the other rooms keep the world camera's close near plane
+  useEffect(
+    () => () => {
+      camera.near = NEAR_MIN;
+      camera.updateProjectionMatrix();
+    },
+    [camera],
+  );
   const dressingNames = activeDressings.join(",");
   useEffect(() => {
     canvas.dataset.dressings = dressingNames;
@@ -171,6 +181,13 @@ export function CityScene({
       camera.position.z - z,
     );
     const bays = !NO_BAYS && baysWanted(away, wearsBays.current);
+    // pulled out, the near plane follows, so the depth buffer can tell the
+    // asphalt from the ground under it (nearPlane.ts)
+    const near = nearPlaneFor(away);
+    if (near !== camera.near) {
+      camera.near = near;
+      camera.updateProjectionMatrix();
+    }
     if (
       !last ||
       bays !== wearsBays.current ||

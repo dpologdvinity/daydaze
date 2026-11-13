@@ -4,6 +4,7 @@
 // the rest of the dressing, and types only from its neighbours so the module
 // loads on its own.
 import { hash, pick } from "./hash.ts";
+import { roofKit } from "./roofs.ts";
 import type { Building } from "./layout.ts";
 import type { Buckets, Front } from "./dressing.ts";
 
@@ -14,6 +15,11 @@ const TRIM = "#2a2050";
 const IRON = "#1c1438";
 const TANK = "#6b4a2b";
 const AC = ["#9aa3c4", "#7d86ab", "#b9bfd6"];
+/** Parapet coping: cream stone, sandstone, brownstone. */
+const COPING = ["#d8cfbf", "#b9a89a", "#8a7a6e"];
+const BULKHEAD = "#bdb2a2";
+const VENT = "#a8a8b4";
+const STRING_LIGHT = "#ffe9b0";
 const NEON = ["#ff4fb3", "#4fe3ff", "#ffd84f", "#7dff6b", "#b06bff", "#ff8a3d"];
 const PRODUCT = ["#ffd84f", "#ff4fb3", "#f2eefc", "#4fe3ff", "#7dff6b"];
 const POSTER = ["#ff4fb3", "#4fe3ff", "#ffd84f", "#b06bff", "#f2eefc"];
@@ -55,6 +61,7 @@ export function detailBuilding(
       color: pick(AC, hash(k, f.cz, 22)),
     });
   }
+  if (!lots) roofExtras(f, out, top, depth);
   // an antenna with a red light blinking at the top
   const ax = f.x1 - 1.2;
   const az = f.z0 + 1.2;
@@ -247,5 +254,94 @@ export function detailBuilding(
         });
       }
     }
+  }
+}
+
+/**
+ * The roof's own kit (roofs.ts decides which): a parapet along the edge, a
+ * stair bulkhead, plumbing vents, a skylight, and now and then a garden under
+ * string lights. They stand on the roof slab, clear of the tank, AC units and
+ * antenna that detailBuilding places.
+ */
+function roofExtras(f: Front, out: Buckets, top: number, depth: number): void {
+  const kit = roofKit(f.cx, f.cz);
+  // a low parapet around the edge, so the roof is a flat floor and not a lid
+  const coping = pick(COPING, hash(f.cx, f.cz, 47));
+  const rim = 0.3;
+  const wall = (x: number, z: number, sx: number, sz: number) =>
+    out.ledge.push({ x, y: top + 0.35, z, sx, sy: 0.7, sz, color: coping });
+  const x0 = f.cx - f.w / 2 - 0.2;
+  const x1 = f.cx + f.w / 2 + 0.2;
+  const z0 = f.cz - depth / 2 - 0.2;
+  const z1 = f.cz + depth / 2 + 0.2;
+  wall(f.cx, z0 + rim / 2, x1 - x0, rim);
+  wall(f.cx, z1 - rim / 2, x1 - x0, rim);
+  wall(x0 + rim / 2, f.cz, rim, z1 - z0 - 2 * rim);
+  wall(x1 - rim / 2, f.cz, rim, z1 - z0 - 2 * rim);
+  if (kit.bulkhead)
+    out.ledge.push({
+      x: f.x0 + 2,
+      y: top + 1.2,
+      z: f.z1 - 2,
+      sx: 2.2,
+      sy: 2.4,
+      sz: 2.2,
+      color: BULKHEAD,
+    });
+  for (let k = 0; k < kit.vents; k++)
+    out.pole.push({
+      x: f.x0 + f.w * (0.4 + 0.1 * k),
+      y: top + 0.55,
+      z: f.cz + depth * 0.3,
+      sx: 0.32,
+      sy: 1.1,
+      sz: 0.32,
+      color: VENT,
+    });
+  if (kit.skylight)
+    out.glass.push({
+      x: f.x0 + f.w * 0.72,
+      y: top + 0.25,
+      z: f.cz + depth * 0.05,
+      sx: 2.4,
+      sy: 0.5,
+      sz: 1.6,
+      color: "#9fd4e8",
+    });
+  if (kit.garden) {
+    const gw = Math.min(f.w * 0.4, 7);
+    const gd = Math.min(depth * 0.35, 6);
+    const gx = f.x0 + f.w * 0.68;
+    const gz = f.cz + depth * 0.2;
+    out.lawn.push({
+      x: gx,
+      y: top + 0.1,
+      z: gz,
+      sx: gw,
+      sy: 0.2,
+      sz: gd,
+      color: "#8fcf6a",
+    });
+    // string lights over it on two thin posts
+    for (const sign of [-1, 1])
+      out.pole.push({
+        x: gx + (sign * gw) / 2,
+        y: top + 1.3,
+        z: gz,
+        sx: 0.1,
+        sy: 2.4,
+        sz: 0.1,
+        color: VENT,
+      });
+    for (let k = 0; k < 6; k++)
+      out.bulb.push({
+        x: gx - gw / 2 + (gw * (k + 0.5)) / 6,
+        y: top + 2.4,
+        z: gz,
+        sx: 0.22,
+        sy: 0.22,
+        sz: 0.22,
+        color: STRING_LIGHT,
+      });
   }
 }
