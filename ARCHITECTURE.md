@@ -77,7 +77,14 @@ floors, looks, saves, chat effects) so both sides agree on the rules.
   and places corner blocks, crosswalks, stop and slow words, double yellow
   lines, manholes, drains and bollards, and `city/StreetPieces.tsx` merges
   them into two meshes (paint on the kit's decal atlas, solids in concrete)
-  on every plan reload. The El (`game/city/el.ts` timetable, `city/ElLine.tsx` trestle,
+  on every plan reload. Block interiors are filled by `game/city/yards.ts`:
+  it finds the gaps (clear of every surface, building and solid, on a 2 m
+  grid), cuts them into yards and gives each a use by neighborhood (park,
+  parking lot with striped stalls and parked cars, basketball court, garden,
+  alley, backyard, sand); the ground slabs ride the street dressing, the
+  props (`public/models/yards/`: dumpsters, fences, bags, the court) are
+  furniture kinds, the cars join `PARKED_CARS` and the trees join the plan's
+  tree spots. Yards are scenery, not floor (walk rules are unchanged). The El (`game/city/el.ts` timetable, `city/ElLine.tsx` trestle,
   stations and train, `city/ElRide.tsx` + `ElPanel.tsx` fast travel) runs
   over Main Avenue on the shared clock.
 - `avatar/` is the doll: `human/HumanDoll.tsx` loads the Blender-built GLB
