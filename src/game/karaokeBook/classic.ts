@@ -25,7 +25,7 @@ export const CLASSIC: readonly KaraokeSong[] = [
       "B4/1.5 A4/0.5 G4/1 F#4/1 G4/1.5 F#4/0.5 E4/1 G4/1 A4/1.5 G4/0.5 F#4/1 D4/1 " +
       "E4/2 F#4/1.5 F#4/0.5 G4/3",
   },
-  // source: gitlab.com/chrisspen/abc-music/abc-music-master.zip/abc-music-master/guitar/clair-de-lune-c-2/0000
+  // source: anamnese.online.fr/site2/abc/gallia_ps/0011
   {
     id: "au-clair-lune",
     title: "Au Clair de la Lune",
@@ -34,14 +34,10 @@ export const CLASSIC: readonly KaraokeSong[] = [
     year: 1780,
     genre: "lullaby",
     bpm: 84,
-    meter: 4.5,
-    key: { tonic: 0, minor: false },
     melody:
-      "G4/0.5 G5/0.5 G5/1.5 E5/1.5 E5/0.5 D5/0.5 E5/0.5 D5/2.5 D5/0.5 C5/0.5 D5/0.5 " +
-      "C5/0.5 E5/0.5 E5/0.5 C5/0.5 C5/0.5 B4/0.5 C5/0.5 B4/2.5 r/0.5 A4/0.5 B4/0.5 " +
-      "A4/0.5 C5/0.5 A4/0.5 G4/0.5 A4/0.5 G4/0.5 G4/0.5 F4/0.5 G4/0.5 F4/1.5 E4/1.5 " +
-      "r/0.5 E4/0.5 F4/0.5 E4/0.5 A4/0.5 E4/0.5 D4/0.5 E4/0.5 D4/0.5 D4/0.5 C4/0.5 " +
-      "D4/0.5 C4/1.5 B3/1.5",
+      "C4/1 C4/1 C4/1 D4/1 E4/2 D4/2 C4/1 E4/1 D4/1 D4/1 C4/4 C4/1 C4/1 C4/1 D4/1 " +
+      "E4/2 D4/2 C4/1 E4/1 D4/1 D4/1 C4/4 D4/1 D4/1 D4/1 D4/1 A3/2 A3/2 D4/1 C4/1 " +
+      "B3/1 A3/1 G3/4 C4/1 C4/1 C4/1 D4/1 E4/2 D4/2 C4/1 E4/1 D4/1 D4/1 C4/4",
   },
   // source: trillian.mit.edu/~jc/music/book/EverydaySongBook/009_Rock-a-bye_Baby/0000
   {

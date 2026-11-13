@@ -9,22 +9,6 @@
 import type { KaraokeSong } from "../karaokeSongs.ts";
 
 export const STAGE: readonly KaraokeSong[] = [
-  // source: tunearch.org/wiki/Bells_of_St._Louis_(2)_(The).no-ext/0001
-  {
-    id: "st-louis-blues",
-    title: "St. Louis Blues",
-    credit: "W. C. Handy, 1914",
-    composer: "W. C. Handy",
-    year: 1914,
-    genre: "blues",
-    bpm: 96,
-    melody:
-      "D3/1.5 E3/0.5 F#3/1.5 A3/0.5 D4/0.5 E4/0.5 F#4/0.5 E4/0.5 D4/0.5 B3/0.5 " +
-      "B3/0.5 A3/0.5 B3/1 D4/0.5 B3/1 D4/0.5 A3/0.5 B3/0.5 D4/0.5 F#4/0.5 A4/0.5 " +
-      "F#4/0.5 E4/1 D4/0.5 B3/0.5 A3/0.5 D3/0.5 D3/1 F#3/0.5 D3/0.5 F#3/0.5 A3/0.5 " +
-      "D4/0.5 E4/0.5 F#4/0.5 E4/0.5 D4/0.5 B3/0.5 B3/0.5 A3/0.5 B3/1 A3/0.5 D4/0.5 " +
-      "B3/0.5 D4/0.5 A3/0.5 C#4/0.5 D4/0.5 C#4/0.5 D4/0.5 A3/0.5 F#3/0.5 D3/0.5 D3/1",
-  },
   // source: tunearch.org/wiki/Ain%27t_that_Trouble_in_Mind.no-ext/0001
   {
     id: "trouble-in-mind",
