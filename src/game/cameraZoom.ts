@@ -151,3 +151,27 @@ export function roomInside(
     return Math.hypot(edge[0] - x, edge[1] - z) <= margin;
   };
 }
+
+/**
+ * Swings `camera` about her face (a turn about the vertical, keeping its
+ * height and its distance from her) by `amount` (0 to 1) of the way to the
+ * front of her, which is where she faces (`yaw`: she faces (sin yaw, cos
+ * yaw)). A portrait of her face is taken from the front, whichever way the
+ * room's overview happened to look at her.
+ */
+export function swingToFront(
+  camera: Vec3,
+  face: Vec3,
+  yaw: number,
+  amount: number,
+): Vec3 {
+  const dx = camera[0] - face[0];
+  const dz = camera[2] - face[2];
+  const r = Math.hypot(dx, dz);
+  // straight above her there is no side to swing from
+  if (r < 1e-6) return camera;
+  const now = Math.atan2(dx, dz);
+  const gap = Math.atan2(Math.sin(yaw - now), Math.cos(yaw - now));
+  const to = now + gap * Math.min(1, Math.max(0, amount));
+  return [face[0] + Math.sin(to) * r, camera[1], face[2] + Math.cos(to) * r];
+}

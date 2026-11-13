@@ -12,7 +12,9 @@ import {
   portraitFov,
   portraitTarget,
   pullInside,
+  portraitAmount,
   roomInside,
+  swingToFront,
   zoomAbout,
   type Vec3,
 } from "../../game/cameraZoom.ts";
@@ -722,6 +724,17 @@ export function CameraRig({
       c.target.fromArray(
         portraitTarget(target, face, camera.position.distanceTo(chest)),
       );
+      // zooming in on her face brings the camera round to her front
+      if (k < 1) {
+        camera.position.fromArray(
+          swingToFront(
+            camera.position.toArray(),
+            face,
+            player.seat?.yaw ?? player.yaw,
+            (1 - k) * 4 * portraitAmount(camera.position.distanceTo(chest)),
+          ),
+        );
+      }
       canvas.dataset.camDistance = camera.position
         .distanceTo(chest.copy(at).setY(at.y + focusHeight(0)))
         .toFixed(2);

@@ -14,6 +14,7 @@ import {
   portraitTarget,
   pullInside,
   roomInside,
+  swingToFront,
   zoomAbout,
   type Vec3,
 } from "./cameraZoom.ts";
@@ -169,4 +170,53 @@ test("a room's inside is its floor plus a wall's depth", () => {
   assert.equal(inside(5.2, 0), true);
   assert.equal(inside(5.5, 0), false);
   assert.equal(inside(-5.2, -5.2), true);
+});
+
+// ------------------------------------------------------------- the front view
+
+const facing = (face: Vec3, cam: Vec3) =>
+  Math.atan2(cam[0] - face[0], cam[2] - face[2]);
+
+test("a portrait is taken from the front: the camera swings round to where she faces", () => {
+  const face: Vec3 = [2, 1.55, 3];
+  const yaw = 0.9; // she faces (sin 0.9, cos 0.9)
+  const behind: Vec3 = [2 - Math.sin(yaw) * 1.5, 2, 3 - Math.cos(yaw) * 1.5];
+  const full = swingToFront(behind, face, yaw, 1);
+  assert.ok(Math.abs(facing(face, full) - yaw) < 1e-9);
+  // nothing else about the camera changes
+  assert.equal(full[1], 2);
+  assert.ok(
+    Math.abs(
+      Math.hypot(full[0] - face[0], full[2] - face[2]) -
+        Math.hypot(behind[0] - face[0], behind[2] - face[2]),
+    ) < 1e-9,
+  );
+  assert.deepEqual(swingToFront(behind, face, yaw, 0), behind);
+});
+
+test("a partial swing turns part of the way, by the short way round", () => {
+  const face: Vec3 = [0, 1.55, 0];
+  // 170 degrees one way of the front, with the front at -170: 20 degrees apart
+  const cam: Vec3 = [Math.sin(2.97) * 2, 1.6, Math.cos(2.97) * 2];
+  const yaw = -2.97;
+  const half = swingToFront(cam, face, yaw, 0.5);
+  const turned = Math.abs(
+    Math.atan2(
+      Math.sin(facing(face, half) - 2.97),
+      Math.cos(facing(face, half) - 2.97),
+    ),
+  );
+  assert.ok(
+    Math.abs(turned - (2 * Math.PI - 2 * 2.97) / 2) < 1e-6,
+    `${turned}`,
+  );
+});
+
+test("already in front, or straight above her, the camera stays", () => {
+  const face: Vec3 = [0, 1.55, 0];
+  const front: Vec3 = [Math.sin(0.4) * 1.2, 1.6, Math.cos(0.4) * 1.2];
+  const same = swingToFront(front, face, 0.4, 1);
+  assert.ok(same.every((v, i) => Math.abs(v - front[i]!) < 1e-9));
+  const above: Vec3 = [0, 5, 0];
+  assert.deepEqual(swingToFront(above, face, 1, 1), above);
 });
