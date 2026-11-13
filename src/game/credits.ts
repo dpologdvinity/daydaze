@@ -319,7 +319,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://quaternius.com/packs/ultimatehouseinterior.html",
         usedFor:
-          "Apartment furniture: sofas, beds, tables, kitchen, bath, plants and more, joined into one mesh each; Clay Day stools, glaze table and plants.",
+          "Apartment furniture: sofas, beds, tables, kitchen, bath, plants and more, joined into one mesh each; Clay Day stools, glaze table and plants; the Haunted House escape hall's furniture and curtains, the Jail's bunks, desk and toilet, Glow Bowl's lounge couches, plants and bins, and the Skylark's fire-pit loveseats.",
       },
       {
         title: "Furniture Pack (March 2019)",

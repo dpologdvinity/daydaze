@@ -75,6 +75,20 @@ MODELS = {
     "trash": "uh:Trashcan_Small1",
     "wall-mirror": "uh:Bathroom_Mirror2",
     "wall-shelf": "uh:Shelf_Small1",
+    # the venues' dressing (Haunted escape hall, Jail, Bowling, Rooftop Bar)
+    "sofa-medium": "uh:Couch_Medium1",
+    "sofa-medium-2": "uh:Couch_Medium2",
+    "chair-2": "uh:Chair_2",
+    "chair-3": "uh:Chair_3",
+    "bed-bunk": "uh:Bed_Bunk",
+    "nightstand-2": "uh:NightStand_2",
+    "drawer-5": "uh:Drawer_5",
+    "drawer-3": "uh:Drawer_3",
+    "curtains": "uh:Curtains_Double",
+    "toilet-2": "uh:Bathroom_Toilet2",
+    "trash-large": "uh:Trashcan_Large",
+    "shelf-large": "uh:Shelf_Large",
+    "table-small-2": "uh:Table_RoundSmall2",
 }
 
 
@@ -103,7 +117,11 @@ def glow_screen(ob):
 
 
 os.makedirs(OUT, exist_ok=True)
+# ONLY="a,b" converts just those catalog ids
+ONLY = set(filter(None, os.environ.get("ONLY", "").split(",")))
 for name, ref in MODELS.items():
+    if ONLY and name not in ONLY:
+        continue
     kind, stem = ref.split(":")
     bpy.ops.wm.read_factory_settings(use_empty=True)
     if kind == "uh":

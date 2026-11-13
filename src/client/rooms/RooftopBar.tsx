@@ -10,6 +10,7 @@ import {
   FIRE,
   HIGH_TABLES,
   KIOSK,
+  LOUNGE_CHAIRS,
   SOFA,
   STOOL_XS,
   STOOL_Z,
@@ -390,6 +391,20 @@ function Furniture() {
         yaw={Math.PI / 2}
         position={[SOFA.at[0], 0, SOFA.at[1]]}
       />
+      {/* two cream loveseats round the fire (House Interior Pack) */}
+      {LOUNGE_CHAIRS.map(({ at, yaw }) => (
+        <Prop
+          key={at.join()}
+          model="sofa-small"
+          dir="home"
+          width={1.0}
+          depth={0.85}
+          height={0.9}
+          yaw={yaw}
+          paint="#f2e2c6"
+          position={[at[0], 0, at[1]]}
+        />
+      ))}
       <Prop
         model="dj-booth"
         width={DJ_BOOTH.x1 - DJ_BOOTH.x0}

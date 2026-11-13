@@ -4,7 +4,7 @@
 // objects keep useFrame allocation-free.
 
 import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import {
   BALL_RADIUS,
@@ -44,9 +44,10 @@ import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { canvasTex, hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
+import { Prop, PropSet } from "./shared/Prop.tsx";
 import { Sparkles } from "./shared/Sparkles.tsx";
 import { Batch } from "./shared/batch.ts";
-import { GLOSS, painted, plant, poster, shelf } from "./shared/details.ts";
+import { GLOSS, painted, poster, shelf } from "./shared/details.ts";
 import { surface } from "../city/worldTexture.ts";
 
 const WALL_X = 6;
@@ -100,11 +101,6 @@ const WALL = surface("concrete_wall_008", {
   color: "#5a4088",
   roughness: 0.9,
 });
-const VINYL = surface("leather_white", {
-  scale: 2.5,
-  color: "#9b4dff",
-  roughness: 0.4,
-});
 const LAMINATE = surface("wood_veneer", {
   scale: 1.5,
   color: "#5a3a6a",
@@ -117,8 +113,9 @@ const RETURN = surface("plastic", {
 });
 const BALL_COLORS = [PINK, CYAN, LIME, "#ffb02e", "#9b5cff", "#ff2f4f"];
 
-/** A ball rack by the benches, shoe cubbies behind the counter, league
- * posters and plants. */
+/** A ball rack by the benches, shoe cubbies behind the counter and league
+ * posters. (The plants, lounge couches and bins are House Interior Pack
+ * models: Concourse.) */
 function buildDressing() {
   const b = new Batch();
   const box = new THREE.BoxGeometry(1, 1, 1);
@@ -172,8 +169,6 @@ function buildDressing() {
     ),
   );
   poster(b, { x: WALL_X - 0.12, y: 2.2, z: 4, ry: -Math.PI / 2 }, 4, 0.7, 0.95);
-  plant(b, { x: -5.4, z: 9.6 }, 1.2);
-  plant(b, { x: 5.4, z: 3 }, 1.2);
   return b.build();
 }
 
@@ -588,11 +583,48 @@ function PlayLane({ geometry }: { geometry: THREE.BufferGeometry }) {
 function Concourse() {
   return (
     <>
-      {BENCH_XS.map((x) => (
-        <mesh key={x} position={[x, 0.22, BENCH_Z]} material={VINYL}>
-          <boxGeometry args={[1.8, 0.44, 0.42]} />
-        </mesh>
-      ))}
+      {/* the lounge couches facing the lanes, in retro purple vinyl, with
+          plants and bins in the corners (House Interior Pack) */}
+      <Suspense fallback={null}>
+        {BENCH_XS.map((x) => (
+          <Prop
+            key={x}
+            model="sofa-medium-2"
+            dir="home"
+            width={1.8}
+            depth={0.8}
+            height={0.85}
+            yaw={Math.PI}
+            paint="#8a46e8"
+            position={[x, 0, BENCH_Z]}
+          />
+        ))}
+        <PropSet
+          allParts
+          model="plant-tall"
+          dir="home"
+          width={0.7}
+          depth={0.7}
+          height={1.4}
+          at={[
+            [-5.4, 0, 9.6, 0],
+            [5.4, 0, 3, 2],
+          ]}
+        />
+        <PropSet
+          allParts
+          model="trash-large"
+          dir="home"
+          width={0.4}
+          depth={0.4}
+          height={0.65}
+          paint="#7a5ad0"
+          at={[
+            [5.55, 0, 5.2, 0],
+            [-5.5, 0, 3.9, 0],
+          ]}
+        />
+      </Suspense>
       {/* the shoe counter, its cubbies glowing behind it */}
       <mesh
         position={[

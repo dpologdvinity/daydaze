@@ -1,5 +1,5 @@
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { HAUNTED_WALLS, ROOMS } from "../../game/rooms.ts";
 import { useReducedMotion } from "../motion.ts";
@@ -12,8 +12,8 @@ const WALLPAPER = surface("quatrefoil_jacquard_fabric", {
   color: "#7a5a8a",
   roughness: 0.95,
 });
-const OAK = surface("wood_veneer", { scale: 1.5, color: "#7a5a40" });
 import { PortalPads } from "./shared/PortalPads.tsx";
+import { Prop } from "./shared/Prop.tsx";
 import { EscapeSet } from "./haunted/EscapeSet.tsx";
 import type { Player } from "../world/PlayerController.tsx";
 import { hdr } from "./shared/materials.ts";
@@ -162,9 +162,18 @@ export function HauntedHouse({
         </group>
       ))}
       {/* candles on a table by the door */}
-      <mesh position={[-4.5, 0.4, 3.6]} material={OAK}>
-        <boxGeometry args={[1.2, 0.8, 0.6]} />
-      </mesh>
+      {/* a dusty sideboard (House Interior Pack) 0.8 m high, the candles on top */}
+      <Suspense fallback={null}>
+        <Prop
+          model="drawer-5"
+          dir="home"
+          width={1.7}
+          depth={0.7}
+          height={0.8}
+          shade="#8c8076"
+          position={[-4.5, 0, 3.6]}
+        />
+      </Suspense>
       {[-0.3, 0, 0.3].map((dx) => (
         <mesh key={dx} position={[-4.5 + dx, 0.95, 3.6]}>
           <cylinderGeometry args={[0.04, 0.04, 0.3 - Math.abs(dx) * 0.3, 8]} />
