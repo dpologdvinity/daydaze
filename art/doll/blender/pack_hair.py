@@ -25,6 +25,8 @@ import os
 
 import bpy
 import numpy as np
+from mathutils import Vector
+from mathutils.bvhtree import BVHTree
 from mathutils.kdtree import KDTree
 
 import proxies
@@ -258,6 +260,57 @@ def clear_of_skin(ctx, co, clearance=0.002, reach=0.03):
     return out
 
 
+# where a cap triangle is probed for skin poking through (barycentric): its
+# middle, the middle of each edge, and a point near each corner
+PROBES = np.array(
+    [[1 / 3, 1 / 3, 1 / 3], [0.5, 0.5, 0], [0, 0.5, 0.5], [0.5, 0, 0.5], [0.8, 0.1, 0.1], [0.1, 0.8, 0.1], [0.1, 0.1, 0.8]]
+)
+
+
+def lift_cap(ctx, ob, clearance=0.003, rounds=30):
+    """Lifts the scalp cap's vertices until its surface clears the skin.
+
+    The cap is decimated with the cards, down to a few hundred big triangles,
+    and a flat triangle spanning a curved skull cuts a chord through it: the
+    skin shows through the middle of the triangle (orange and dark spots on
+    the back and crown) though every vertex sits outside the head. Probes
+    each cap triangle's surface and pushes its vertices radially out from the
+    head's center by what the worst probe lacks, until none does."""
+    me = ob.data
+    me.calc_loop_triangles()
+    tris = np.array([t.vertices[:] for t in me.loop_triangles if me.polygons[t.polygon_index].material_index == 1])
+    if not len(tris):
+        return
+    head = {i for i in np.nonzero(ctx.HEADW > 0.5)[0]}
+    faces = [tuple(int(i) for i in f) for f in ctx.FACES["body"] if all(i in head for i in f)]
+    bvh = BVHTree.FromPolygons([tuple(p) for p in ctx.PB], faces)
+    lo, hi = head_box(ctx)
+    centre = (lo + hi) / 2
+    co = np.array([v.co[:] for v in me.vertices])
+    first = last = 0
+    for rnd in range(rounds):
+        push = np.zeros(len(co))
+        for tri in tris:
+            for p in PROBES @ co[tri]:
+                hit = bvh.find_nearest(Vector(p), 0.05)
+                if hit[0] is None:
+                    continue
+                gap = (Vector(p) - hit[0]).dot(hit[1])
+                # at most 2 cm a round: a crease (ear, eye socket) can flip the sign
+                need = min(clearance - gap, 0.02)
+                if need > 0:
+                    push[tri] = np.maximum(push[tri], need)
+        last = int((push > 0).sum())
+        first = first or last
+        if not last:
+            break
+        out = co - centre
+        co = co + out / np.linalg.norm(out, axis=1, keepdims=True) * push[:, None]
+    me.vertices.foreach_set("co", co.ravel())
+    me.update()
+    print(f"  cap lift: {first} cap vertices touched skin, {last} after {rnd + 1} rounds")
+
+
 def build_style(ctx, sid, pack, num, opts, mat_cache):
     parts = _load_pack(pack)[num]
     pieces = parts["hair"] + parts["scalp"]
@@ -272,6 +325,9 @@ def build_style(ctx, sid, pack, num, opts, mat_cache):
     # the cap is its own material: the client gives strand cards their shine
     # but not the cap, whose big polygons would light up as silver facets
     cap_mat = proxies.textured(f"hair_{sid}_cap", atlas, alpha=True)
+    # fully rough, unlike the cards: otherwise the two materials are identical
+    # and optimize-doll.sh's dedup merges them, losing the cap's name
+    cap_mat.node_tree.nodes["Principled BSDF"].inputs["Roughness"].default_value = 1.0
     verts, faces, uvs, base = [], [], [], 0
     for co, fs, uv, _ in pieces:
         verts.append(co)
@@ -298,7 +354,8 @@ def build_style(ctx, sid, pack, num, opts, mat_cache):
         mod.ratio = ratio
         bpy.context.view_layer.objects.active = ob
         bpy.ops.object.modifier_apply(modifier=mod.name)
-        co = np.array([v.co[:] for v in ob.data.vertices])
+    lift_cap(ctx, ob)
+    co = np.array([v.co[:] for v in ob.data.vertices])
     skin = np.unique(np.array([i for f in ctx.FACES["body"] for i in f if ctx.HEADW[i] > 0.5]))
     tree = KDTree(len(skin))
     for i, p in enumerate(ctx.PB[skin]):
