@@ -21,7 +21,7 @@ DEPTH = 0.45  # ...and never more than this share of the body's thickness there
 SNUG = 0.03  # metres within which proxy cloth takes the skin's bone weights
 GRID = 0.002  # metres: the precision a tuck key is stored at
 CLEAR = 0.008  # gap kept between sunk skin and the cloth
-LEG_PULL = 0.4  # share of a covered leg's radius its skin is drawn in toward the leg's axis
+LEG_PULL = 1.0  # share of the way covered leg skin is drawn in to its leg's axis: 1 collapses it onto the axis, so there is nothing to show through
 LEG_RAMP = 0.12  # metres up from a garment's lowest edge over which that pull fades in
 
 
@@ -159,12 +159,13 @@ def arm_weight(ctx, f):
 
 
 def leg_pull(ctx, body, co, covered, floor):
-    """Vectors drawing covered leg skin in toward the axis of its leg.
+    """Vectors drawing covered leg skin in to the axis of its leg.
 
     Sinking skin along its own normal does not clear the back of a bent knee:
     the blended weights swing a normal-wise sink sideways there, and the skin
-    still shows through the crease. Skin pulled toward the thigh-and-calf
-    axis stays inside the limb whatever the bend does. It fades in over
+    still shows through the crease. Skin collapsed onto the thigh-and-calf
+    axis stays inside the limb whatever the bend does: with nothing left to
+    poke out, the cloth hides it as if its faces were deleted. It fades in over
     LEG_RAMP above the garment's lowest edge (`floor`), so a hem leaves no
     step, and with the vertex's share of leg weight, so the hip is left alone.
     The weights come from the body object's own groups, so the low-poly body

@@ -1,7 +1,7 @@
 """Dev-only: counts body vertices that poke through a garment in a baked clip.
 
     blender --background --factory-startup --python art/doll/blender/skin_check.py -- \
-        Outfit_suit [sex=male] [pack=social] [clips=idle,walk] [frames=6] [zmin=1.15] [zmax=1.45] [all=1] [faces=1] [lod=1] [pixels=1 pixels_z=0.5]
+        Outfit_suit [sex=male] [pack=social] [clips=idle,walk] [frames=6] [zmin=1.15] [zmax=1.45] [all=1] [faces=1] [lod=1] [pixels=1 pixels_z=0.5 pixels_dump=<dir>]
 
 Imports the raw build (.cache/out), wears the garment (its tuck key at 1) and,
 for frames spread over each clip, reports the body vertices the tuck sank that
@@ -122,17 +122,52 @@ def probe_z(key):
 
 
 
+def legs_only():
+    """A render copy of the body that is only its legs: the faces any of whose
+    vertices has under half its weight on the thighs and calves go, so hands,
+    feet, hips and head cannot count as skin showing through cloth, and so do
+    those within 6 cm of the garment's lowest edge, where bare skin is meant
+    to show (an ankle under a flared hem)."""
+    import bmesh
+
+    copy = body.copy()
+    copy.data = body.data.copy()
+    sc.collection.objects.link(copy)
+    names = {g.index: g.name for g in copy.vertex_groups}
+    leg = {n for n in names.values() if n.endswith(("UpLeg", "Leg"))}
+    bm = bmesh.new()
+    bm.from_mesh(copy.data)
+    deform = bm.verts.layers.deform.active
+    floor = min(v.co.z for v in garment.data.vertices) + 0.06
+    gone = [
+        f
+        for f in bm.faces
+        if any(
+            sum(w for gi, w in v[deform].items() if names[gi] in leg) < 0.5 or v.co.z < floor
+            for v in f.verts
+        )
+    ]
+    bmesh.ops.delete(bm, geom=gone, context="FACES")
+    bm.to_mesh(copy.data)
+    bm.free()
+    return copy
+
+
+looked = {}  # clip -> (most skin pixels in one view,)
+clip_now = [""]  # the clip being looked at
+legs = legs_only() if opts.get("pixels") == "1" else None
+
+
 def setup_render():
     """Workbench, skin red over blue cloth, only the body and the garment."""
     sc.render.engine = "BLENDER_WORKBENCH"
     sc.display.shading.light = "STUDIO"
     sc.display.shading.color_type = "OBJECT"
-    body.color, garment.color = (0.9, 0.2, 0.2, 1), (0.2, 0.4, 0.9, 1)
-    for o in (body, garment):
-        o.hide_render = False
+    shown_body = legs or body
+    shown_body.color, garment.color = (0.9, 0.2, 0.2, 1), (0.2, 0.4, 0.9, 1)
     for o in bpy.data.objects:
-        if o.type == "MESH" and o not in (body, garment):
-            o.hide_render = True
+        if o.type == "MESH":
+            o.hide_render = o not in (shown_body, garment)
 
 
 def seen(height):
@@ -162,7 +197,15 @@ def seen(height):
         px = np.array(img.pixels[:]).reshape(360, 360, 4)[90:270].reshape(-1, 4)
         bpy.data.images.remove(img)
         # skin is red over blue cloth; the studio light shades both, so compare channels
-        total += int(((px[:, 3] > 0.5) & (px[:, 0] > px[:, 2] * 1.6) & (px[:, 0] > 0.15)).sum())
+        n = int(((px[:, 3] > 0.5) & (px[:, 0] > px[:, 2] * 1.6) & (px[:, 0] > 0.15)).sum())
+        total += n
+        # pixels_dump=<dir> keeps the view with the most skin of each clip
+        if opts.get("pixels_dump") and n > looked.get(clip_now[0], (0,))[0]:
+            import shutil
+
+            os.makedirs(opts["pixels_dump"], exist_ok=True)
+            shutil.copy(sc.render.filepath, os.path.join(opts["pixels_dump"], f"{clip_now[0]}.png"))
+            looked[clip_now[0]] = (n,)
     return total
 
 
@@ -180,6 +223,7 @@ for act in sorted(bpy.data.actions, key=lambda a: a.name):
     if act.slots:
         rig.animation_data.action_slot = act.slots[0]
     f0, f1 = act.frame_range
+    clip_now[0] = act.name
     worst, worst_at, where = 0, 0, {}
     for i in range(count):
         sc.frame_set(int(f0 + (f1 - f0) * i / count))
