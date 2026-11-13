@@ -19,8 +19,11 @@ export function usePreloadNear(
 ): void {
   const done = useRef(false);
   const since = useRef(0);
-  useFrame((_, dt) => {
+  useFrame(({ gl }, dt) => {
     if (done.current) return;
+    // not before the first picture: its own files come first (the counter
+    // is World's FrameCount, which stops at 10, after the loading veil)
+    if (gl.domElement.dataset.frames !== "10") return;
     since.current += dt;
     if (since.current < EVERY) return;
     since.current = 0;
