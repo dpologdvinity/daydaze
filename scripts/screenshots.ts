@@ -883,7 +883,17 @@ const SHOTS: {
   ].map(([name, time, at, cam]) => ({
     name: String(name),
     query: `room=city&quality=low&time=${time}&at=${at}&cam=${cam}`,
-    act: furnitureReady,
+    // Maple Drive and the dunes have no furniture (data-furniture), so wait
+    // on the blocks instead
+    act: async (page: Page) => {
+      await page.locator("canvas").waitFor();
+      await blocksReady(page);
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.frames) >= 6,
+        null,
+        { timeout: 300_000 },
+      );
+    },
   })),
   { name: "city-overview", query: "room=city" },
   // the city by day and at sunset (daylight.ts), pinned with ?time=

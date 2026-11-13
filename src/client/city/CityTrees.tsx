@@ -22,6 +22,8 @@ import { leafTint } from "../../game/city/treeLook.ts";
 import { createStore } from "../rooms/shared/store.ts";
 import { useQuality } from "../world/quality.ts";
 import { bakedGeometry } from "../world/bakedGeometry.ts";
+import { dimMeshes } from "./CityFurniture.tsx";
+import { useDaylight } from "./daylight.ts";
 import { disposeInstanced } from "./dispose.ts";
 
 const MODELS = "/models/nature";
@@ -104,11 +106,11 @@ function useLevel(lo: boolean) {
       gltfs.map((g) =>
         partsOf(g.scene).map(({ geometry, material }) => {
           const leaves = isLeaves(material);
-          const mesh = new THREE.InstancedMesh(
-            geometry,
-            leaves ? leafMaterial(material) : material.clone(),
-            CAPACITY,
-          );
+          const own = leaves ? leafMaterial(material) : material.clone();
+          // the color the night dims from (dimMeshes)
+          if (own instanceof THREE.MeshStandardMaterial)
+            own.userData.base = own.color.clone();
+          const mesh = new THREE.InstancedMesh(geometry, own, CAPACITY);
           mesh.count = 0;
           mesh.frustumCulled = false;
           // the leaves carry a color per tree; allocated now so the program
@@ -171,6 +173,9 @@ export function CityTrees({ autumn }: { autumn: boolean }): JSX.Element {
     place({ near, far }, spots, at, low, autumn);
   }, [near, far, spots, at, low, autumn]);
   const all = useMemo(() => [...near.flat(), ...far.flat()], [near, far]);
+  // dim with the night like the rest of the city (dimForDay in meshes.ts)
+  const { neon } = useDaylight();
+  useEffect(() => dimMeshes(all, 1 - 0.55 * neon), [all, neon]);
   return (
     <>
       {all.map((mesh) => (

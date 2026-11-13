@@ -11,9 +11,9 @@ export type Tint = readonly [number, number, number];
 
 /** The greens: leaf green, yellow-green and blue-green. */
 const GREENS: readonly Tint[] = [
-  [0.85, 1.0, 0.8],
-  [1.0, 1.0, 0.82],
-  [0.78, 0.95, 0.9],
+  [0.62, 0.92, 0.5],
+  [0.8, 0.95, 0.5],
+  [0.55, 0.88, 0.62],
 ];
 /** Autumn's turned leaves: gold, orange, red. */
 const TURNED: readonly Tint[] = [
