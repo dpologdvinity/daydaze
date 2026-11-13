@@ -92,3 +92,10 @@ test("park butterflies exist only near a flock, nearer on the low tier, and by d
   );
   assert.ok(isOut(1) && !isOut(0));
 });
+
+test("distance to a box is zero inside it and straight-line outside", () => {
+  const box = { x0: 0, x1: 4, z0: 0, z1: 2 };
+  assert.equal(distanceTo(box, 2, 1), 0);
+  assert.equal(distanceTo(box, 7, 1), 3);
+  assert.equal(distanceTo(box, 7, 6), 5);
+});
