@@ -868,6 +868,33 @@ const SHOTS: {
     query: `room=city&quality=low&time=${time}&at=${at}&cam=${cam}`,
     act: furnitureReady,
   })),
+  // the nature pass (CityTrees, CityPark, the palms): street trees down the
+  // avenue, the Uptown park's lawn, Maple Drive's lawns, Shore Boulevard's
+  // palms and the dune grass, by day and night; all low tier (the one with the budget)
+  ...[
+    ["nature-avenue", "12:00", "-60,11", "-78,2.6,12,-10,4,9"],
+    ["nature-avenue-night", "22:00", "-60,11", "-78,2.6,12,-10,4,9"],
+    ["nature-park-lawn", "14:00", "228,-282", "216,2.2,-270,244,3,-300"],
+    ["nature-park-lawn-night", "22:00", "228,-282", "216,2.2,-270,244,3,-300"],
+    ["nature-suburbia", "12:00", "-400,-240", "-420,2.4,-244,-370,3.5,-262"],
+    ["nature-shore", "12:00", "-100,262", "-130,2.6,262,-40,5,262"],
+    ["nature-shore-night", "22:00", "-100,262", "-130,2.6,262,-40,5,262"],
+    ["nature-dunes", "15:00", "-100,300", "-70,1.8,301,-150,1.2,295"],
+  ].map(([name, time, at, cam]) => ({
+    name: String(name),
+    query: `room=city&quality=low&time=${time}&at=${at}&cam=${cam}`,
+    // Maple Drive and the dunes have no furniture (data-furniture), so wait
+    // on the blocks instead
+    act: async (page: Page) => {
+      await page.locator("canvas").waitFor();
+      await blocksReady(page);
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.frames) >= 6,
+        null,
+        { timeout: 300_000 },
+      );
+    },
+  })),
   { name: "city-overview", query: "room=city" },
   // the city by day and at sunset (daylight.ts), pinned with ?time=
   {

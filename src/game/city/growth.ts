@@ -67,13 +67,22 @@ export function treePitGrowth(): Growth[] {
   return out;
 }
 
-/** Dune grass in a band along the beach, just seaward of the deck. */
+/** Dune grass in a band along the beach, just seaward of the deck: clumps of
+ * three tall tufts (drawn on the low tier too, out to a long way). */
 export function duneGrowth(): Growth[] {
   const out: Growth[] = [];
   for (let x = WEST_EDGE + 4; x < EAST_EDGE - 4; x += 2.4) {
     if (Math.abs(x - 24) < 6 || hash(x, 100) < 0.3) continue;
-    const z = DECK.z1 + 1.2 + hash(x, 101) * 4.5;
-    out.push(grow(hash(x, 102) < 0.25 ? "grass" : "wispy", x, z, 103, 1.2));
+    const z = DECK.z1 + 1.4 + hash(x, 101) * 4.2;
+    for (let k = 0; k < 3; k++)
+      out.push(
+        grow(
+          "dune",
+          x + (hash(x, 104 + k) - 0.5) * 1.1,
+          z + (hash(x, 107 + k) - 0.5) * 0.9,
+          103 + k,
+        ),
+      );
   }
   return out;
 }

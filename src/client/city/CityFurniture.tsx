@@ -97,9 +97,7 @@ const BENCH_SURFACES: Partial<
   },
 };
 
-/** The downloaded palm's olive leaves, pushed toward a fresh green. */
 const TINT: Partial<Record<FurnitureKind, THREE.Color>> = {
-  palm: new THREE.Color(0.7, 1.45, 0.75),
   // the fountain's grey stone, warmed to sandstone
   fountain: new THREE.Color(1.1, 0.95, 0.76),
 };
