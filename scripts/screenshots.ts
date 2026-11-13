@@ -860,7 +860,7 @@ const SHOTS: {
   // the escape's first room: the front hall dressed as a set, three doors ahead
   {
     name: "haunted-escape",
-    query: "room=haunted-house&cam=0.8,2.3,7.2,0.8,1,1.5",
+    query: "room=haunted-house",
     act: async (page) => {
       await page
         .getByRole("button", { name: "Step inside" })
@@ -869,6 +869,8 @@ const SHOTS: {
         "data-haunted-set",
         /^[a-z]+$/,
       );
+      // the shot camera eases out to the hall: give it time to settle
+      await page.waitForTimeout(10_000);
     },
   },
   // your adopted pet beside you in the city, and asleep in its bed at home
