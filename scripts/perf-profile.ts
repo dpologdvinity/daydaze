@@ -94,6 +94,22 @@ for (const name of names) {
     { timeout: Number(process.env.FRAME_TIMEOUT ?? 300_000), polling: 100 },
   );
   const ten = Date.now() - t0;
+  // what the first ten frames needed over the network: requests, bytes and the
+  // heaviest files (transferSize is 0 for cached files, so decodedBodySize too)
+  const assets = await page.evaluate(() => {
+    const list = performance
+      .getEntriesByType("resource")
+      .map((e) => ({
+        name: new URL(e.name).pathname,
+        bytes: (e as PerformanceResourceTiming).encodedBodySize,
+      }))
+      .sort((a, b) => b.bytes - a.bytes);
+    return {
+      n: list.length,
+      total: list.reduce((n, e) => n + e.bytes, 0),
+      top: list.slice(0, 8),
+    };
+  });
   const metrics = async () =>
     Object.fromEntries(
       (await cdp.send("Performance.getMetrics")).metrics.map((x) => [
@@ -168,6 +184,9 @@ for (const name of names) {
       rows.push(`      ${n}x ${k}`);
   }
   console.log(`${name}: ten-frames ${ten} ms`);
+  console.log(
+    `  assets: ${assets.n} requests, ${(assets.total / 1e6).toFixed(2)} MB; heaviest: ${assets.top.map((e) => `${e.name.split("/").slice(-2).join("/")} ${(e.bytes / 1e3).toFixed(0)}k`).join(", ")}`,
+  );
   for (const r of rows) console.log(r);
   await ctx.close();
 }

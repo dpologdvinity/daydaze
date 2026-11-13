@@ -379,7 +379,16 @@ export function tileFace(
 /** The lots that dress one block: every face tiled, each lot as tall as the
  * block's roof. A block with no street to face (inside a lot) keeps its plain
  * walls, as with the New York bays. */
+const rowCache = new WeakMap<Building, LotInstance[]>();
+
+/** The lots of a block, remembered (the plan reloads often, the lots never change). Callers only read them. */
 export function lotRow(b: Building): LotInstance[] {
+  let row = rowCache.get(b);
+  if (!row) rowCache.set(b, (row = computeRow(b)));
+  return row;
+}
+
+function computeRow(b: Building): LotInstance[] {
   const district = districtOf(b);
   if (!district) return [];
   const faces = facesOf(b);

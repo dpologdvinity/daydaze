@@ -590,6 +590,9 @@ export function lowTierCost(
   planTriangles: number;
   bays: number;
   lots: number;
+  /** Triangles by part (plan boxes, bays, lots, models by folder, ships,
+   * queues, live, seasons, traffic, kerb cars, the El), to see what to trim. */
+  parts: Record<string, number>;
 } {
   const plan = planView(at, "low", bays);
   // instances per model; a model with any costs one draw call per part
@@ -657,11 +660,26 @@ export function lowTierCost(
     worstViewBayTriangles(plan.bays, at) +
     worstViewLotTriangles(plan.lots, at) +
     EL_TRIANGLES;
+  const parts: Record<string, number> = {
+    plan: planTriangles - allBays - allLots,
+    bays: worstViewBayTriangles(plan.bays, at),
+    lots: worstViewLotTriangles(plan.lots, at),
+    el: EL_TRIANGLES,
+  };
+  const tally = (key: string, tris: number) => {
+    parts[key] = (parts[key] ?? 0) + tris;
+  };
   for (const [model, n] of counts) {
     const cost = MODEL_COST[model];
     if (!cost) throw new Error(`no cost for ${model}`);
     drawCalls += cost.parts;
     triangles += cost.tris * n;
+    tally(
+      model.startsWith("nature/street-tree")
+        ? "trees"
+        : (model.split("/")[0] ?? model),
+      cost.tris * n,
+    );
   }
   // the horizon's ships are separate meshes (they rock), so each one costs its
   // model's parts; drawn out to the camera's far plane (600 m) however she is
@@ -671,6 +689,7 @@ export function lowTierCost(
     const cost = costOf(shipModel(ship.kind, true));
     drawCalls += cost.parts;
     triangles += cost.tris;
+    tally("ships", cost.tris);
   }
   // the club queues: one draw call per look present, each person as dear as the dearest
   const queued = QUEUE_SPOTS.filter(
@@ -678,29 +697,36 @@ export function lowTierCost(
   );
   drawCalls += new Set(queued.map((s) => s.look)).size;
   triangles += queued.length * QUEUE_PERSON_TRIS;
+  tally("queues", queued.length * QUEUE_PERSON_TRIS);
   const live = liveCost(at, (model) => {
     const cost = MODEL_COST[model];
     if (!cost) throw new Error(`no cost for ${model}`);
     drawCalls += cost.parts;
     triangles += cost.tris;
+    tally("live-models", cost.tris);
   });
   drawCalls += live.drawCalls;
   triangles += live.triangles;
+  tally("live", live.triangles);
   const season = seasonalCost(at);
   drawCalls += season.drawCalls;
   triangles += season.triangles;
+  tally("season", season.triangles);
   const traffic = trafficCost(at);
   drawCalls += traffic.drawCalls;
   triangles += traffic.triangles;
+  tally("traffic", traffic.triangles);
   const kerb = parkedCost(at);
   drawCalls += kerb.drawCalls;
   triangles += kerb.triangles;
+  tally("kerb", kerb.triangles);
   return {
     drawCalls,
     triangles,
     planTriangles,
     bays: plan.bays.length,
     lots: plan.lots.length,
+    parts,
   };
 }
 
