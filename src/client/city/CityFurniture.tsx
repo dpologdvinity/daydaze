@@ -43,6 +43,8 @@ const url = (kind: FurnitureKind) => {
 export const cityFurniture = createStore({
   spots: [] as readonly FurnitureSpot[],
   at: [0, 0] as readonly [number, number],
+  /** The camera is pulled out to the overview: small props near her are not drawn. */
+  overview: false,
 });
 
 /** A model's meshes, each with its node transform baked into the geometry. */
@@ -146,6 +148,7 @@ function place(
   at: readonly [number, number],
   low: boolean,
   summer: boolean,
+  overview: boolean,
 ) {
   const counts = new Map<THREE.InstancedMesh, number>();
   for (const f of spots) {
@@ -156,7 +159,14 @@ function place(
         f.kind === "towel")
     )
       continue;
-    if (!furnitureVisible(f.kind, Math.hypot(f.x - at[0], f.z - at[1]), low))
+    if (
+      !furnitureVisible(
+        f.kind,
+        Math.hypot(f.x - at[0], f.z - at[1]),
+        low,
+        overview,
+      )
+    )
       continue;
     q.setFromAxisAngle(up, f.yaw);
     p.set(f.x, f.y ?? 0, f.z);
@@ -223,7 +233,7 @@ export function CityFurniture({ summer }: { summer: boolean }): JSX.Element {
     });
     return byKind;
   }, [gltfs]);
-  const { spots, at } = cityFurniture.use();
+  const { spots, at, overview } = cityFurniture.use();
   // dim with the night like the rest of the city (dimForDay in meshes.ts)
   const { neon } = useDaylight();
   useEffect(() => {
@@ -232,11 +242,11 @@ export function CityFurniture({ summer }: { summer: boolean }): JSX.Element {
   }, [meshes, neon]);
   const canvas = useThree((state) => state.gl.domElement);
   useEffect(() => {
-    const drawn = place(meshes, spots, at, low, summer);
+    const drawn = place(meshes, spots, at, low, summer, overview);
     // read by the screenshot script and tests: the models are in and placed
     if (DEBUG) canvas.dataset.furnitureKinds = JSON.stringify(drawn);
     if (spots.length > 0) canvas.dataset.furniture = "ready";
-  }, [meshes, spots, at, low, summer, canvas]);
+  }, [meshes, spots, at, low, summer, overview, canvas]);
   const all = useMemo(() => [...meshes.values()].flat(), [meshes]);
   useEffect(() => () => disposeInstanced(all, true), [all]);
   return (

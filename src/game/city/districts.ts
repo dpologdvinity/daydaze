@@ -101,7 +101,7 @@ export function signBoard(
 /** Lots farther than this from the player draw their far twin (LOT_SPECS lo),
  * a third to half the triangles. The plan decides when it is cut, not the
  * camera: the twins are separate meshes, filled per plan reload. */
-export const LOT_NEAR = 30;
+export const LOT_NEAR = 24;
 
 /** The box behind a block's lots stands this far in from its footprint: the
  * pack sets its upper storeys back by up to half a meter (and the walls sit
@@ -379,7 +379,16 @@ export function tileFace(
 /** The lots that dress one block: every face tiled, each lot as tall as the
  * block's roof. A block with no street to face (inside a lot) keeps its plain
  * walls, as with the New York bays. */
+const rowCache = new WeakMap<Building, LotInstance[]>();
+
+/** The lots of a block, remembered (the plan reloads often, the lots never change). Callers only read them. */
 export function lotRow(b: Building): LotInstance[] {
+  let row = rowCache.get(b);
+  if (!row) rowCache.set(b, (row = computeRow(b)));
+  return row;
+}
+
+function computeRow(b: Building): LotInstance[] {
   const district = districtOf(b);
   if (!district) return [];
   const faces = facesOf(b);

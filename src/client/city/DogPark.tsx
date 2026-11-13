@@ -10,7 +10,14 @@
 
 import { useGLTF } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState, type JSX } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type JSX,
+  Suspense,
+} from "react";
 import * as THREE from "three";
 import {
   DOG_Y,
@@ -29,6 +36,8 @@ import { useDaylight } from "./daylight.ts";
 import { disposeInstanced } from "./dispose.ts";
 import { propParts, type PropSpot } from "./instancedProps.ts";
 import { parkWorld } from "./parkDesk.ts";
+import { DOG_PARK } from "../../game/city/park.ts";
+import { usePreloadNear } from "./preloadNear.ts";
 
 const URLS = {
   fence: "/models/farm/fence.glb",
@@ -40,6 +49,12 @@ const URLS = {
 } as const;
 const KEYS = Object.keys(URLS) as (keyof typeof URLS)[];
 const PATHS = KEYS.map((k) => URLS[k]);
+/** The yard's middle, and how far off its models start to fetch. */
+const DOG_PARK_AT: readonly [number, number] = [
+  (DOG_PARK.x0 + DOG_PARK.x1) / 2,
+  (DOG_PARK.z0 + DOG_PARK.z1) / 2,
+];
+const PRELOAD_RANGE = 260;
 
 export function DogPark({ player }: { player: Player }): JSX.Element | null {
   const [near, setNear] = useState(false);
@@ -47,7 +62,12 @@ export function DogPark({ player }: { player: Player }): JSX.Element | null {
     const now = dogParkNear(player.pos.x, player.pos.z);
     if (now !== near) setNear(now);
   });
-  return near ? <Yard /> : null;
+  usePreloadNear(player, DOG_PARK_AT, PRELOAD_RANGE, PATHS);
+  return near ? (
+    <Suspense fallback={null}>
+      <Yard />
+    </Suspense>
+  ) : null;
 }
 
 function Yard(): JSX.Element {
@@ -146,5 +166,3 @@ function ParkDog({ dog }: { dog: Dog }): JSX.Element {
   };
   return <Creature kind={dog.kind} drive={drive} />;
 }
-
-useGLTF.preload(PATHS);

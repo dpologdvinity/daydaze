@@ -494,22 +494,16 @@ function pieces(
   }
 }
 
-/**
- * Curbs, the marks that make a street read as a street
- * rather than a flat stripe of color. (Crosswalks, manholes and the rest are
- * the kit's models: streetPieces.ts.)
- */
-function streetMarks(
-  cells: readonly Cell[],
-  out: Record<Kind, Instance[]>,
-): void {
-  // a raised lip where each sidewalk meets the road beside it
+/** A raised lip where each sidewalk meets the road beside it: the static pairs
+ * of boxes are found once, not on every plan reload. */
+const CURB_LIPS: readonly Box[] = (() => {
+  const half = 0.12;
+  const lips: Box[] = [];
   for (const side of SIDEWALK_BOXES) {
     for (const road of ROAD_SURFACES) {
       const edge = touching(side, road);
       if (!edge) continue;
-      const half = 0.12;
-      const lip: Box =
+      lips.push(
         edge.axis === "z"
           ? {
               x0: edge.lo,
@@ -522,16 +516,30 @@ function streetMarks(
               x1: edge.line + half,
               z0: edge.lo,
               z1: edge.hi,
-            };
-      pieces(lip, cells, out.ledge, { y: 0.11, sy: 0.22, color: CURB_COLOR });
+            },
+      );
     }
   }
+  return lips;
+})();
+
+/**
+ * Curbs, the marks that make a street read as a street
+ * rather than a flat stripe of color. (Crosswalks, manholes and the rest are
+ * the kit's models: streetPieces.ts.)
+ */
+function streetMarks(
+  cells: readonly Cell[],
+  out: Record<Kind, Instance[]>,
+): void {
+  for (const lip of CURB_LIPS)
+    pieces(lip, cells, out.ledge, { y: 0.11, sy: 0.22, color: CURB_COLOR });
 }
 
 /** Every instance a building contributes; its light, when it has a sign.
  * A building facing east or west is dressed as if it faced +z, then turned
  * into place about its center. */
-function buildingInstances(
+function buildingInstancesFresh(
   b: Building,
   out: Record<Kind, Instance[]>,
   lights: Light[],
@@ -565,6 +573,38 @@ function buildingInstances(
     const [x, z] = turn(light.x, light.z);
     lights.push({ ...light, x, z });
   }
+}
+
+/** What a building dresses to for one combination of bays, sills and lots
+ * (kept: the dressing is static, so a plan reload reuses the very same
+ * instance objects and allocates nothing for the buildings it already knew). */
+const dressed = new Map<
+  string,
+  { instances: Record<Kind, Instance[]>; lights: Light[] }
+>();
+
+/** `buildingInstancesFresh`, remembered per building and flags. The instances
+ * are shared between plans, so nothing may change them afterwards. */
+function buildingInstances(
+  b: Building,
+  out: Record<Kind, Instance[]>,
+  lights: Light[],
+  kit: boolean,
+  sills = true,
+  lots = false,
+): void {
+  const key = `${b.id}|${kit ? 1 : 0}${sills ? 1 : 0}${lots ? 1 : 0}`;
+  let hit = dressed.get(key);
+  if (!hit) {
+    hit = { instances: emptyInstances(), lights: [] };
+    buildingInstancesFresh(b, hit.instances, hit.lights, kit, sills, lots);
+    dressed.set(key, hit);
+  }
+  for (const kind of KINDS) {
+    const list = hit.instances[kind];
+    for (let i = 0; i < list.length; i++) out[kind].push(list[i] as Instance);
+  }
+  for (const light of hit.lights) lights.push(light);
 }
 
 /** A building's instances in its facing's frame (see facingOf). */

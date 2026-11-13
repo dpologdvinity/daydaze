@@ -4,7 +4,7 @@
 // DRAWN meters; it faces the sea along the boardwalk.
 
 import { useAnimations, useGLTF } from "@react-three/drei";
-import { useEffect, type JSX } from "react";
+import { Suspense, useEffect, type JSX } from "react";
 import { FERRIS } from "../../game/city/boardwalk.ts";
 import { useReducedMotion } from "../motion.ts";
 import { cityFurniture } from "./CityFurniture.tsx";
@@ -44,7 +44,10 @@ function Wheel(): JSX.Element {
 export function BoardwalkFerris(): JSX.Element | null {
   const { at } = cityFurniture.use();
   const near = Math.hypot(at[0] - FERRIS.x, at[1] - FERRIS.z) < DRAWN;
-  return near ? <Wheel /> : null;
+  // its own Suspense: the wheel's file never holds the rest of the city
+  return near ? (
+    <Suspense fallback={null}>
+      <Wheel />
+    </Suspense>
+  ) : null;
 }
-
-useGLTF.preload(URL);

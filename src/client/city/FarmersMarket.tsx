@@ -12,7 +12,14 @@
 
 import { useGLTF } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState, type JSX } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type JSX,
+  Suspense,
+} from "react";
 import * as THREE from "three";
 import { hash } from "../../game/city/hash.ts";
 import {
@@ -39,6 +46,7 @@ import { cityHour, useDaylight } from "./daylight.ts";
 import { disposeInstanced } from "./dispose.ts";
 import { fitOf, propParts, type PropSpot } from "./instancedProps.ts";
 import { parkDesk } from "./parkDesk.ts";
+import { usePreloadNear } from "./preloadNear.ts";
 
 /** The market is drawn within this many meters of its green. */
 const RANGE = 70;
@@ -54,6 +62,12 @@ const CRATE = "/models/park/produce-crate.glb";
 /** The bakehouse's loaf tray (Bakery pack, Pasha, CC-BY): the last model. */
 const LOAVES = "/models/bakery/baguettes.glb";
 const PATHS = [STAND, ...PRODUCE.map(foodUrl), CRATE, LOAVES];
+/** The green's middle, and how far off its models start to fetch. */
+const MARKET_AT: readonly [number, number] = [
+  (MARKET_GREEN.x0 + MARKET_GREEN.x1) / 2,
+  (MARKET_GREEN.z0 + MARKET_GREEN.z1) / 2,
+];
+const PRELOAD_RANGE = 260;
 
 const GRAVEL = new THREE.Color("#9d9078");
 const BUNTING = [
@@ -95,7 +109,12 @@ export function FarmersMarket({
     const now = nearGreen(player.pos.x, player.pos.z);
     if (now !== near) setNear(now);
   });
-  return near ? <Market player={player} /> : null;
+  usePreloadNear(player, MARKET_AT, PRELOAD_RANGE, PATHS);
+  return near ? (
+    <Suspense fallback={null}>
+      <Market player={player} />
+    </Suspense>
+  ) : null;
 }
 
 /** Local (lx, lz) on a stall's shelf as a world position. */
@@ -506,5 +525,3 @@ function Market({ player }: { player: Player }): JSX.Element {
     </>
   );
 }
-
-useGLTF.preload(PATHS);

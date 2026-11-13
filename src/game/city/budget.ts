@@ -590,6 +590,9 @@ export function lowTierCost(
   planTriangles: number;
   bays: number;
   lots: number;
+  /** Triangles by part (plan boxes, bays, lots, models by folder, ships,
+   * queues, live, seasons, traffic, kerb cars, the El), to see what to trim. */
+  parts: Record<string, number>;
 } {
   const plan = planView(at, "low", bays);
   // instances per model; a model with any costs one draw call per part
@@ -603,7 +606,11 @@ export function lowTierCost(
     if (away(cart.at[0], cart.at[1]) <= FOOD_DRAW_RANGE) add("vendors/cart");
   // Vendors stand at least 16 m apart. At most one can wear a full costume
   // within HumanDoll's 4.6 m low-tier LOD range; neighbors wear low twins.
-  if (FOOD_CARTS.some((cart) => away(cart.at[0], cart.at[1]) < VENDOR_RANGE)) {
+  // Pulled out to the overview the camera is far from every doll: all wear low twins.
+  const fullVendor =
+    bays &&
+    FOOD_CARTS.some((cart) => away(cart.at[0], cart.at[1]) < VENDOR_RANGE);
+  if (fullVendor) {
     for (const model of [
       "doll/body",
       "doll/hair-bob",
@@ -615,7 +622,7 @@ export function lowTierCost(
   const nearbyVendors = FOOD_CARTS.filter(
     (cart) => away(cart.at[0], cart.at[1]) < VENDOR_RANGE,
   ).length;
-  for (let i = 1; i < nearbyVendors; i++) {
+  for (let i = fullVendor ? 1 : 0; i < nearbyVendors; i++) {
     for (const model of [
       "doll/body-lo",
       "doll/hair-bob-lo",
@@ -627,10 +634,11 @@ export function lowTierCost(
   for (const t of plan.trees)
     if (away(t.x, t.z) <= TREE_LOW_FAR) add(treeModel(t.variant));
   for (const f of plan.furniture)
-    if (furnitureVisible(f.kind, away(f.x, f.z), true))
+    if (furnitureVisible(f.kind, away(f.x, f.z), true, !bays))
       add(furnitureModel(f.kind));
   const grown = new Map<GrowthKind, number>();
-  for (const g of GROWTH) {
+  // pulled out to the overview, the undergrowth near her is not drawn
+  for (const g of bays ? GROWTH : []) {
     const n = grown.get(g.kind) ?? 0;
     if (away(g.x, g.z) > GROWTH_RANGE[g.kind][0] || n >= GROWTH_CAP.low)
       continue;
@@ -657,11 +665,24 @@ export function lowTierCost(
     worstViewBayTriangles(plan.bays, at) +
     worstViewLotTriangles(plan.lots, at) +
     EL_TRIANGLES;
+  const parts: Record<string, number> = {
+    plan: planTriangles - allBays - allLots,
+    bays: worstViewBayTriangles(plan.bays, at),
+    lots: worstViewLotTriangles(plan.lots, at),
+    el: EL_TRIANGLES,
+  };
+  const tally = (key: string, tris: number) => {
+    parts[key] = (parts[key] ?? 0) + tris;
+  };
   for (const [model, n] of counts) {
     const cost = MODEL_COST[model];
     if (!cost) throw new Error(`no cost for ${model}`);
     drawCalls += cost.parts;
     triangles += cost.tris * n;
+    tally(
+      model.startsWith("nature/street-tree") ? "trees" : model,
+      cost.tris * n,
+    );
   }
   // the horizon's ships are separate meshes (they rock), so each one costs its
   // model's parts; drawn out to the camera's far plane (600 m) however she is
@@ -671,6 +692,7 @@ export function lowTierCost(
     const cost = costOf(shipModel(ship.kind, true));
     drawCalls += cost.parts;
     triangles += cost.tris;
+    tally("ships", cost.tris);
   }
   // the club queues: one draw call per look present, each person as dear as the dearest
   const queued = QUEUE_SPOTS.filter(
@@ -678,29 +700,36 @@ export function lowTierCost(
   );
   drawCalls += new Set(queued.map((s) => s.look)).size;
   triangles += queued.length * QUEUE_PERSON_TRIS;
+  tally("queues", queued.length * QUEUE_PERSON_TRIS);
   const live = liveCost(at, (model) => {
     const cost = MODEL_COST[model];
     if (!cost) throw new Error(`no cost for ${model}`);
     drawCalls += cost.parts;
     triangles += cost.tris;
+    tally(`live:${model}`, cost.tris);
   });
   drawCalls += live.drawCalls;
   triangles += live.triangles;
+  tally("live", live.triangles);
   const season = seasonalCost(at);
   drawCalls += season.drawCalls;
   triangles += season.triangles;
+  tally("season", season.triangles);
   const traffic = trafficCost(at);
   drawCalls += traffic.drawCalls;
   triangles += traffic.triangles;
+  tally("traffic", traffic.triangles);
   const kerb = parkedCost(at);
   drawCalls += kerb.drawCalls;
   triangles += kerb.triangles;
+  tally("kerb", kerb.triangles);
   return {
     drawCalls,
     triangles,
     planTriangles,
     bays: plan.bays.length,
     lots: plan.lots.length,
+    parts,
   };
 }
 

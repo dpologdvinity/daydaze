@@ -76,11 +76,11 @@ export const FURNITURE_RANGE: Record<
   readonly [low: number, high: number]
 > = {
   // the plan culls the lamp's night glow at the same distance (plan.ts)
-  lamp: [LAMP_RANGE, LAMP_RANGE],
+  lamp: [60, LAMP_RANGE],
   hydrant: [25, 70],
   trashcan: [25, 70],
-  bench: [60, 90],
-  boardbench: [60, 90],
+  bench: [34, 90],
+  boardbench: [34, 90],
   mailbox: [30, 80],
   newsbox: [30, 80],
   vending: [30, 80],
@@ -122,12 +122,19 @@ export const FURNITURE_RANGE: Record<
   "sign-noparking": [40, 90],
 };
 
+/** Pulled out to the overview the camera is 120 m or more from her, so the
+ * props near her are a few pixels: they draw to this share of their range. */
+export const OVERVIEW_RANGE_SCALE = 0.35;
+
 /** Whether a spot at `distance` meters from the player is drawn. */
 export const furnitureVisible = (
   kind: FurnitureKind,
   distance: number,
   low: boolean,
-): boolean => distance <= FURNITURE_RANGE[kind][low ? 0 : 1];
+  overview = false,
+): boolean =>
+  distance <=
+  FURNITURE_RANGE[kind][low ? 0 : 1] * (overview ? OVERVIEW_RANGE_SCALE : 1);
 
 /**
  * Where the signal lenses sit on the traffic light model (art/street/build_street.py

@@ -167,7 +167,16 @@ const paved = (p: Vec2): boolean =>
 
 /** The four faces of a building's bounding box, each marked street or back
  * (a street face looks onto pavement, or has the door). Three.js turns yaw about y: +z at 0, +x at pi/2. */
+const faceCache = new WeakMap<Building, Face[]>();
+
+/** `facesOf`, remembered: the layout is static and a plan reload asks again for every building in view. */
 export function facesOf(b: Building): Face[] {
+  let faces = faceCache.get(b);
+  if (!faces) faceCache.set(b, (faces = computeFaces(b)));
+  return faces;
+}
+
+function computeFaces(b: Building): Face[] {
   const xs = b.footprint.map(([x]) => x);
   const zs = b.footprint.map(([, z]) => z);
   const x0 = Math.min(...xs);
@@ -248,7 +257,16 @@ export function facesOf(b: Building): Face[] {
 /** The bays that dress one building: ground floor, window storeys, cornice,
  * corner posts and fire escapes. `floors` fits the height; `sy` stretches
  * each storey to land exactly on it. */
+const baysCache = new WeakMap<Building, BayInstance[]>();
+
+/** The bays of a building, remembered (the plan reloads often, the bays never change). Callers only read them. */
 export function nycBays(b: Building): BayInstance[] {
+  let bays = baysCache.get(b);
+  if (!bays) baysCache.set(b, (bays = computeBays(b)));
+  return bays;
+}
+
+function computeBays(b: Building): BayInstance[] {
   const out: BayInstance[] = [];
   const faces = facesOf(b);
   // a block with no street to face (inside a lot) keeps its plain walls

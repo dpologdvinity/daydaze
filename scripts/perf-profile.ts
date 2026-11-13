@@ -34,6 +34,9 @@ for (const name of names) {
   });
   const page = await ctx.newPage();
   await page.addInitScript(() => {
+    // the default resource timing buffer holds 250 entries, which capped the
+    // assets line at "250 requests" and hid everything after them
+    performance.setResourceTimingBufferSize(5000);
     localStorage.setItem(
       "daydaze-save-v1",
       JSON.stringify({ onboarded: true }),
@@ -94,6 +97,32 @@ for (const name of names) {
     { timeout: Number(process.env.FRAME_TIMEOUT ?? 300_000), polling: 100 },
   );
   const ten = Date.now() - t0;
+  // what the first ten frames needed over the network: requests, bytes and the
+  // heaviest files (transferSize is 0 for cached files, so decodedBodySize too)
+  const assets = await page.evaluate(() => {
+    const list = performance
+      .getEntriesByType("resource")
+      .map((e) => ({
+        name: new URL(e.name).pathname,
+        bytes: (e as PerformanceResourceTiming).encodedBodySize,
+      }))
+      .sort((a, b) => b.bytes - a.bytes);
+    return {
+      n: list.length,
+      total: list.reduce((n, e) => n + e.bytes, 0),
+      top: list.slice(0, 8),
+      // bytes per folder (the two path segments before the file name)
+      folders: Object.entries(
+        list.reduce<Record<string, number>>((acc, e) => {
+          const k = e.name.split("/").slice(-3, -1).join("/");
+          acc[k] = (acc[k] ?? 0) + e.bytes;
+          return acc;
+        }, {}),
+      )
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 14),
+    };
+  });
   const metrics = async () =>
     Object.fromEntries(
       (await cdp.send("Performance.getMetrics")).metrics.map((x) => [
@@ -168,6 +197,12 @@ for (const name of names) {
       rows.push(`      ${n}x ${k}`);
   }
   console.log(`${name}: ten-frames ${ten} ms`);
+  console.log(
+    `  assets: ${assets.n} requests, ${(assets.total / 1e6).toFixed(2)} MB; heaviest: ${assets.top.map((e) => `${e.name.split("/").slice(-2).join("/")} ${(e.bytes / 1e3).toFixed(0)}k`).join(", ")}`,
+  );
+  console.log(
+    `  folders: ${assets.folders.map(([k, v]) => `${k} ${(v / 1e3).toFixed(0)}k`).join(", ")}`,
+  );
   for (const r of rows) console.log(r);
   await ctx.close();
 }

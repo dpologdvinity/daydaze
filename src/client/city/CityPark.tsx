@@ -72,9 +72,11 @@ function place(
   growth: readonly Growth[],
   at: readonly [number, number],
   low: boolean,
+  overview: boolean,
 ) {
   const counts = new Map<GrowthKind, number>();
-  for (const g of nearby(growth, at, low)) {
+  // pulled out to the overview the tufts near her are a few pixels: none drawn
+  for (const g of overview ? [] : nearby(growth, at, low)) {
     const n = counts.get(g.kind) ?? 0;
     if (n >= GROWTH_CAP[low ? "low" : "high"]) continue;
     q.setFromAxisAngle(up, g.yaw);
@@ -104,10 +106,10 @@ export function CityPark(): JSX.Element {
     });
     return byKind;
   }, [gltfs]);
-  const { at } = cityFurniture.use();
+  const { at, overview } = cityFurniture.use();
   useEffect(() => {
-    place(meshes, GROWTH, at, low);
-  }, [meshes, at, low]);
+    place(meshes, GROWTH, at, low, overview);
+  }, [meshes, at, low, overview]);
   const { neon } = useDaylight();
   const all = useMemo(() => [...meshes.values()].flat(), [meshes]);
   useEffect(() => () => disposeInstanced(all, true), [all]);
