@@ -3963,3 +3963,16 @@ test.describe("Clay Day studio", () => {
     expect(errors).toEqual([]);
   });
 });
+
+test("a part of the game that fails to load offers a reload, not a blank page", async ({
+  page,
+}) => {
+  // a deploy deleted the chunk this tab points at, and the one reload in
+  // main.tsx has been spent
+  await page.route("**/src/client/city/CityScene.tsx*", (route) =>
+    route.abort(),
+  );
+  await page.goto(`${LOW}&room=city`);
+  await expect(page.getByRole("alert")).toContainText("didn't load");
+  await expect(page.getByRole("button", { name: "Reload" })).toBeVisible();
+});
