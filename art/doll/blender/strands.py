@@ -226,6 +226,12 @@ def build(
     scalp_f = [f for f in ctx.FACES["body"] if ctx.HEADW[f].min() > 0.98]
     skull = BVHTree.FromPolygons([tuple(p) for p in ctx.PB], [list(f) for f in scalp_f])
 
+    def forehead(p):
+        """1 for a point over the forehead (within about 35 degrees of
+        straight ahead), easing to 0 by 50 degrees, at the temples."""
+        a = np.arctan2(abs(p[0] - head[0]), head[1] - p[1])
+        return float(np.clip((0.87 - a) / 0.26, 0, 1))
+
     def on_skull(p, off):
         loc, nrm = skull.find_nearest(Vector(p))[:2]
         return np.array(loc) + np.array(nrm) * off
@@ -279,8 +285,9 @@ def build(
         back = np.clip((root[1] - head[1]) / 0.06, 0, 1)
         # over the forehead "back" points into the head, which leaves only
         # sideways and down across the face: there it is combed up and back
-        # over the head, away from the face, instead
-        front = np.clip((head[1] - root[1]) / 0.05, 0, 1)
+        # over the head, away from the face, instead. The temples keep the
+        # usual comb, so their locks fall beside the face and frame it.
+        front = forehead(root)
         comb = np.array([side * 0.75 * (1 - back) * (1 - 0.6 * front), 0.55, -0.35 - 0.6 * back + 1.2 * front])
         comb = comb - normal * np.dot(comb, normal)
         comb /= np.linalg.norm(comb) + 1e-9
@@ -418,7 +425,7 @@ def build(
             # over the face the cap's feathered edge is the hairline: locks
             # start behind it, so their fading roots lie on hair, not as a
             # sawtooth against the forehead
-            if tie_at is None and root[1] < head[1] - 0.02:
+            if tie_at is None and forehead(root) > 0.5:
                 from doll_hair import hairline
 
                 if root[2] < hairline(ctx, root[0], root[1]) + 0.02:
