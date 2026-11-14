@@ -284,6 +284,99 @@ export function signSpec(
   return { y: 4.4, sx: Math.min(f.w * 0.8, 10), sy: 2.2 };
 }
 
+/** How far out from its wall a board's pool of light lies on the pavement. */
+const SPILL_OUT = 2.3;
+/** A board hung higher than this (its lower edge) throws no pool: the light
+ * would die before it reached the ground. */
+const SPILL_REACH = 6;
+/** Just above a sidewalk's top (0.14 m), so the pool is not buried in it. */
+const SPILL_Y = 0.17;
+
+/** The color of the light a pale board throws: its hue, pulled to a lit,
+ * saturated tone (a cream board glows gold, a pale blue one sky blue), so the
+ * pool reads as colored light rather than a gray patch. */
+export function glowOf(hex: string): string {
+  const n = parseInt(hex.slice(1), 16);
+  const r = ((n >> 16) & 255) / 255;
+  const g = ((n >> 8) & 255) / 255;
+  const b = (n & 255) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const d = max - min;
+  let h = 0;
+  if (d > 0) {
+    if (max === r) h = ((g - b) / d + 6) % 6;
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+  }
+  // HSL with s = 0.85 and l = 0.55 back to RGB
+  const c = (1 - Math.abs(2 * 0.55 - 1)) * 0.85;
+  const x = c * (1 - Math.abs((h % 2) - 1));
+  const m = 0.55 - c / 2;
+  const [cr, cg, cb] = [
+    [c, x, 0],
+    [x, c, 0],
+    [0, c, x],
+    [0, x, c],
+    [x, 0, c],
+    [c, 0, x],
+  ][Math.floor(h) % 6];
+  const hexOf = (v: number) =>
+    Math.round((v + m) * 255)
+      .toString(16)
+      .padStart(2, "0");
+  return `#${hexOf(cr)}${hexOf(cg)}${hexOf(cb)}`;
+}
+
+/**
+ * The soft colored light a lit board throws at night, faked: a glow disc
+ * flat on the pavement in front of it and one on the wall below it, both on
+ * the puddle kind (one draw call, additive, faded out by day with the neon in
+ * dimForDay). `at` is the board's middle on its wall, `yaw` turns the wall's
+ * +z front to face out, `y` and `h` are the board's center and height and `w`
+ * its width. A `wall` of false (a gate has no wall behind its sign) skips the
+ * wash.
+ */
+function signSpill(
+  out: Buckets,
+  at: Vec2,
+  yaw: number,
+  y: number,
+  w: number,
+  h: number,
+  color: string,
+  wall = true,
+): void {
+  const nx = Math.sin(yaw);
+  const nz = Math.cos(yaw);
+  const base = y - h / 2;
+  if (wall)
+    out.puddle.push({
+      x: at[0] + nx * 0.1,
+      y: base - 0.9,
+      z: at[1] + nz * 0.1,
+      sx: w * 1.7,
+      sy: 3,
+      sz: 1,
+      rot: [0, yaw, 0],
+      color,
+    });
+  if (base > SPILL_REACH) return;
+  // the disc lies flat, so its two sizes follow the wall: along it, and out
+  const along = Math.max(w * 1.5, 3);
+  const across = Math.abs(nx) > 0.5;
+  out.puddle.push({
+    x: at[0] + nx * SPILL_OUT,
+    y: SPILL_Y,
+    z: at[1] + nz * SPILL_OUT,
+    sx: across ? 3.6 : along,
+    sy: across ? along : 3.6,
+    sz: 1,
+    rot: [-Math.PI / 2, 0, 0],
+    color,
+  });
+}
+
 /** A panel on a face, with its name printed on the front at 4:1 or wider. */
 function panel(
   out: Buckets,
@@ -294,7 +387,19 @@ function panel(
   sy: number,
   color: string,
   text: string,
+  wall = true,
 ): void {
+  if (kind === "sign")
+    signSpill(
+      out,
+      [f.cx, f.faceZ],
+      f.out1 > 0 ? 0 : Math.PI,
+      y,
+      sx,
+      sy,
+      color,
+      wall,
+    );
   out[kind].push({
     x: f.cx,
     y,
@@ -329,6 +434,8 @@ export function lotSign(out: Buckets, lot: LotInstance): void {
   const lw = Math.min(sx * 0.92, h * 0.8 * 4);
   const nx = Math.sin(lot.yaw);
   const nz = Math.cos(lot.yaw);
+  const color = PALETTES[lot.palette].sign;
+  signSpill(out, [lot.x, lot.z], lot.yaw, y, sx, h, glowOf(color));
   out.panel.push({
     x: lot.x + nx * 0.16,
     y,
@@ -337,7 +444,7 @@ export function lotSign(out: Buckets, lot: LotInstance): void {
     sy: h,
     sz: 0.2,
     rot: [0, lot.yaw, 0],
-    color: PALETTES[lot.palette].sign,
+    color,
   });
   out.label.push({
     x: lot.x + nx * 0.27,
@@ -648,7 +755,17 @@ export function dressBuilding(
   // board (up to 10 m wide, 2.2 m tall) would bury them and the upper windows
   if (b.sign && !lots) {
     const s = signSpec(b, f);
-    panel(out, "sign", f, s.y, s.sx, s.sy, b.sign.color, b.sign.text);
+    panel(
+      out,
+      "sign",
+      f,
+      s.y,
+      s.sx,
+      s.sy,
+      b.sign.color,
+      b.sign.text,
+      b.style !== "gate",
+    );
   }
   const blades = BLADE_SIGNS[b.id];
   if (blades) blade(out, f, blades.text, blades.color);

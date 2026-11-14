@@ -1141,8 +1141,10 @@ const MANILA_FRONT: readonly {
     style: "storefront",
   },
   {
-    x: -350,
-    w: 22,
+    // grown 12 m (3 m west, 9 m east) to take the two shops the El's stairs
+    // displaced from the block across the cross street (districts.ts)
+    x: -347,
+    w: 34,
     h: 13,
     north: false,
     color: "#c39bd3",

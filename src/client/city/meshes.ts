@@ -85,7 +85,6 @@ const SPHERE = new THREE.SphereGeometry(0.5, 10, 8);
 // string-light bulbs and headlights: a low round blob (20 triangles), not a cube
 const BULB = new THREE.IcosahedronGeometry(0.5, 0);
 const PLANE = new THREE.PlaneGeometry(1, 1);
-const CIRCLE = new THREE.CircleGeometry(0.5, 12);
 const PUFF = new THREE.SphereGeometry(0.5, 6, 4);
 // tree crowns: a couple of hundred in view, so a lighter sphere than SPHERE
 const CANOPY = new THREE.SphereGeometry(0.5, 8, 6);
@@ -201,7 +200,7 @@ const GEOMETRY: Record<Shared, THREE.BufferGeometry> = {
   bulb: BULB,
   furniture: BOX,
   glass: BOX,
-  puddle: CIRCLE,
+  puddle: PLANE,
   steam: PUFF,
 };
 
@@ -331,8 +330,10 @@ const MATERIAL: Record<Exclude<Shared, FacadeKind>, THREE.Material> = {
     opacity: 0.4,
     depthWrite: false,
   }),
-  // neon spilling on the street: a soft additive pool that dimForDay fades
-  // out by day (an opaque disk reads as a paint spot)
+  // neon spilling on the street and down shop walls (dressing.ts signSpill): a
+  // soft additive pool on a plain quad (the glow texture fades to black at its
+  // edge, so a disc costs two triangles) that dimForDay fades out by day (an
+  // opaque disk reads as a paint spot)
   puddle: new THREE.MeshBasicMaterial({
     map: glowTexture(),
     blending: THREE.AdditiveBlending,

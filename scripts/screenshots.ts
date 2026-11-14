@@ -1670,6 +1670,34 @@ const SHOTS: {
       );
     },
   },
+  // the light lit shop boards spill on the wall below and the pavement in
+  // front at night (dressing.ts signSpill), low tier: Little Manila's row, the
+  // two shops that stand again west of its El stairs, and Downtown's avenue
+  ...[
+    ["spill-manila-night", "-262,10", "-268,2.2,11,-300,4,7.6"],
+    ["spill-manila-west-night", "-326,10", "-318,2.2,10,-352,4,14"],
+    ["spill-downtown-night", "50,-10", "54,2.6,-11,28,3.2,-17"],
+    ["spill-manila-day", "-262,10", "-268,2.2,11,-300,4,7.6", "12:00"],
+  ].map(([name, at, cam, time = "22:00"]) => ({
+    name: String(name),
+    live: true,
+    query: `room=city&view=room&quality=low&time=${time}&at=${at}&cam=${cam}`,
+    act: async (page: Page) => {
+      await streetReady(page);
+      // Downtown has no district lots to wait for
+      if (String(name).includes("manila"))
+        await page.waitForFunction(
+          () => document.querySelector("canvas")?.dataset.lots === "ready",
+          null,
+          { timeout: 300_000 },
+        );
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+    },
+  })),
   { name: "city-sunset", query: "room=city&view=full&time=19:30" },
   {
     name: "city-night",

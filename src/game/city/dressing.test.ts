@@ -6,13 +6,15 @@ import {
   dressBuilding,
   labelUv,
   LABELS,
+  glowOf,
+  lotSign,
   FURNITURE,
   PARKED_CARS,
   STREET_DRESS,
   type Buckets,
 } from "./dressing.ts";
 import { BUILDINGS, CITY_SURFACES, PROPS } from "./layout.ts";
-import { isLotBlock } from "./districts.ts";
+import { isLotBlock, lotRow } from "./districts.ts";
 import { KINDS, type Instance, type Kind } from "./plan.ts";
 
 type Box = { x0: number; z0: number; x1: number; z1: number };
@@ -221,4 +223,87 @@ test("string lights are small round bulbs on a thin cord, not big cubes", () => 
     assert.ok(p.instance.sz > 0.5 && p.instance.sz < 6, "cord segment length");
     assert.ok(p.instance.y > 4, "cord hangs over the street");
   }
+});
+
+/** The puddle-kind instances standing flat on the ground, and those upright on a wall. */
+const flat = (i: Instance) => i.rot?.[0] === -Math.PI / 2;
+
+test("a lot's shop board spills its color onto the wall below and the pavement in front", () => {
+  const block = BUILDINGS.find(
+    (b) => isLotBlock(b) && lotRow(b).some((l) => l.sign),
+  );
+  assert.ok(block);
+  const lot = lotRow(block).find((l) => l.sign);
+  assert.ok(lot);
+  const out = emptyBuckets();
+  lotSign(out, lot);
+  const board = out.panel[0];
+  assert.ok(board?.color);
+  assert.equal(out.puddle.length, 2);
+  const pool = out.puddle.find(flat);
+  const wash = out.puddle.find((i) => !flat(i));
+  assert.ok(pool && wash);
+  // both are the board's hue, lit up (glowOf)
+  assert.equal(pool.color, glowOf(board.color));
+  assert.equal(wash.color, glowOf(board.color));
+  // out along the lot's front: the wash close to the wall, the pool a few
+  // meters out, on the pavement (its top is 0.14 m up), never past the door zone
+  const nx = Math.sin(lot.yaw);
+  const nz = Math.cos(lot.yaw);
+  const out_ = (i: Instance) => (i.x - lot.x) * nx + (i.z - lot.z) * nz;
+  assert.ok(out_(wash) > 0 && out_(wash) < 0.5, `wash ${out_(wash)} m out`);
+  assert.ok(out_(pool) > 1 && out_(pool) < 4, `pool ${out_(pool)} m out`);
+  assert.ok(pool.y > 0.14 && pool.y < 0.3, `pool at ${pool.y} m`);
+  // the wash hangs under the board's middle and faces out like the board
+  assert.ok(wash.y < board.y, "wash is centered under the board");
+  assert.equal(wash.rot?.[1], lot.yaw);
+  // soft: wider than the board, not tall enough to wash the whole front
+  assert.ok(wash.sx > board.sx && wash.sy < 4.5);
+});
+
+test("a shop with no board spills nothing, and a building's neon sign spills too", () => {
+  const block = BUILDINGS.find(
+    (b) => isLotBlock(b) && lotRow(b).some((l) => !l.sign),
+  );
+  assert.ok(block);
+  const bare = lotRow(block).find((l) => !l.sign);
+  assert.ok(bare);
+  const out = emptyBuckets();
+  lotSign(out, bare);
+  assert.equal(out.puddle.length, 0);
+  // a signed non-storefront building (its own warm puddle is not in this color)
+  const b = BUILDINGS.find(
+    (x) => x.sign && x.style === "club" && !isLotBlock(x),
+  );
+  assert.ok(b?.sign);
+  const dressedB = emptyBuckets();
+  dressBuilding(b, dressedB);
+  const tinted = dressedB.puddle.filter((i) => i.color === b.sign?.color);
+  assert.ok(tinted.some(flat), `${b.id} pools on the pavement`);
+  assert.ok(
+    tinted.some((i) => !flat(i)),
+    `${b.id} washes its wall`,
+  );
+});
+
+test("a pale board's glow keeps its hue and is saturated, never white or gray", () => {
+  const channels = (hex: string) => {
+    const n = parseInt(hex.slice(1), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  };
+  // cream, pale blue, pale pink, pale mint, white-ish lilac
+  for (const board of ["#ffe9a8", "#e6f4ff", "#ffd0dc", "#d0f4e6", "#f0e6ff"]) {
+    const [r, g, b] = channels(glowOf(board));
+    assert.ok(
+      Math.max(r, g, b) - Math.min(r, g, b) >= 100,
+      `${board} washed out`,
+    );
+  }
+  // the dominant channel of a cream board stays red, of a pale blue one blue
+  const [r, , b] = channels(glowOf("#ffe9a8"));
+  assert.ok(r > b);
+  const [r2, , b2] = channels(glowOf("#e6f4ff"));
+  assert.ok(b2 > r2);
+  // an achromatic board has no hue to keep: it still returns a valid color
+  assert.match(glowOf("#ffffff"), /^#[0-9a-f]{6}$/);
 });
