@@ -241,7 +241,7 @@ export function Cannons({ hall, low }: { hall: Hall; low: boolean }) {
     () =>
       new THREE.PointsMaterial({
         map: shapeTexture("square"),
-        size: 0.3 + hall.ceiling * 0.04,
+        size: 0.2 + hall.ceiling * 0.03,
         sizeAttenuation: true,
         vertexColors: true,
         transparent: true,
