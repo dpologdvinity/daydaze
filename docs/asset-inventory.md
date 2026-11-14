@@ -256,6 +256,59 @@ Clip ids in `mocap.ts` stay stable; add a pack name per clip.
 22. **Dealership showroom cars: Future Car (3DHaupt) and Jaguar XJ saloon** -> DONE (2026-11-13): two unbadged showpieces on plinths in Daydaze Motors, shown as the made-up Aurelia Grand Saloon (the XJ Sport, 8.6k triangles, every badge material replaced by chrome and the JAGUAR plates painted out of its Details texture) and Comet Zero (the Future Car, 14.5k triangles). `art/showroom/build_showpieces.py`, `public/models/showroom/`.
 23. **Cute Fish Pack leftover species** -> DONE (2026-11-13): eight more species (royal gramma, parrotfish, cardinalfish, Moorish idol, cowfish, humphead wrasse in the Reef Dive logbook and the Aquarium; betta and tetra in the Aquarium), 30 KB each, built by `art/animals/build_animals.py`.
 24. **Sci-Fi Essentials guns** -> Photon Zone and Paintball marker props, game zones only.
+25. **Meshy-generated Daydaze models (`public/models/meshy/{fiesta,culture,brand,mango}`)** -> a Filipino fiesta night (a new entry in `src/game/events.ts`), Little Manila's streets, the Fairground gate and a gift shop. Generated for Daydaze (credited in `docs/assets.md`); each is one mesh at about 3k to 8k triangles, meshopt and WebP, normalized so its largest side is 1, with no fixed scale or facing: fit it with `Prop`/`PropSet` (`dir="meshy/<folder>"`). Already placed: the `food/` dishes (all but `karinderya` and `lechonan`), the `museum/` pieces, `mango-crate` (Skyline Supply's produce stand), `mango-float`, `mango-shake` and `green-mango` (Halo-Halo Haus; they are dishes in `src/game/food/dishes.ts`). The rest are unplaced:
+
+| Model | What it is | Suggested place |
+| --- | --- | --- |
+| `fiesta/masskara-blue`, `-gold`, `-pink` | MassKara festival masks | Fiesta night: wall displays and prop masks for the crowd; the museum |
+| `fiesta/parol-giant` | Capiz star lantern, tall | Fiesta night over the avenue; Little Manila's plaza |
+| `fiesta/belen` | Nativity scene | Little Manila's plaza in December; Noche Buena nights |
+| `fiesta/lantern-stall` | A parol seller's stall | Fiesta night market along Little Manila's avenue |
+| `fiesta/lechon-float` | Parade float with a party pig | Fiesta night parade; the Kamayan Hall entrance |
+| `fiesta/sinulog-altar` | Sinulog festival altar | Fiesta night plaza; the museum |
+| `fiesta/pahiyas-window` | Pahiyas festival house window | Little Manila's house fronts on fiesta night |
+| `fiesta/panagbenga-float` | Flower butterfly float | Fiesta night parade; the park's flower beds |
+| `fiesta/santacruzan-arch` | Flower arch | Fiesta night: a gate on the avenue or the park path |
+| `fiesta/ati-drum` | Ati-Atihan drum | Fiesta night band corner; the museum |
+| `fiesta/banderitas` | Flag bunting | Strung across Little Manila's streets and Kamayan Hall |
+| `culture/kalesa` | Horse-drawn carriage | Little Manila street prop; a ride for the museum plaza |
+| `culture/tricycle` | Motorcycle sidecar taxi | Little Manila street traffic and curb props (instance it) |
+| `culture/salakot` | Wide farmer's hat | Museum case; a hat for dolls in the closet |
+| `culture/bayong` | Woven shopping bag | Skyline Supply and Little Manila market props |
+| `culture/sungka` | Mancala board | Museum case; a game table at Kamayan Hall |
+| `culture/kulintang` | Row of gongs | Museum; fiesta night stage |
+| `culture/tinikling` | Bamboo dance poles | Museum; a dance spot on the fiesta plaza |
+| `culture/carabao-statue` | Carabao statue | Little Manila's plaza or a park lawn |
+| `culture/sorbetes-cart` | Sorbetes ice-cream cart | Little Manila sidewalk vendor; fiesta night market |
+| `culture/fishball-cart` | Street fishball cart | Little Manila sidewalk vendor (`game/city/vendors.ts`); fiesta night market |
+| `culture/taho-pails` | Taho vendor's pair of pails | Little Manila morning sidewalk vendor; Halo-Halo Haus window |
+| `culture/bangka` | Outrigger boat | Beachside, Starboard Marina, Mermaid Cove |
+| `culture/sampaguita` | Sampaguita flower garland | Jeepney and museum displays; shop doors on fiesta night |
+| `fiesta/pabitin` | Pabitin: a hanging frame of treats and toys | Fiesta night party corner; birthday and holiday nights |
+| `culture/welcome-arch` | "MALIGAYANG PAGDATING" road arch | Little Manila's entrance on the avenue; the fiesta plaza |
+| `culture/baroque-church` | Paoay-style baroque church | Little Manila's plaza backdrop; fiesta night and Noche Buena |
+| `culture/bahay-na-bato` | Heritage stone-and-timber house | Little Manila's street fronts; a museum exhibit or backdrop |
+| `culture/walis` | Walis tingting and tambo brooms | Kamayan Hall's kitchen, a home decor piece, museum |
+| `culture/kalan` | Clay stove | Kamayan Hall's kitchen next to the stoves; museum |
+| `food/lechonan` | Whole pig on a spit over a coal trough | The carving station (replaces the procedural pig), fiesta night parade |
+| `brand/dd-balloon` | Daydaze balloon (re-rolled; the lettering reads DAYDAZE) | Party decor, the Fairground gate, the gift shop |
+| `mango/mango-tree` | Fruiting mango tree | Little Manila plaza, Sunny Acres Farm, the park |
+| `mango/dried-mango` | "DAYDAZE DRIED MANGOES" pouch | Gift shop and Skyline Supply shelves |
+| `culture/abaca-hammock` | Hammock | Beachside, the Skylark, a home decor piece |
+| `culture/palayok` | Clay pot | Kamayan Hall's kitchen; Little Manila market stalls |
+| `food/karinderya` | Glass-front karinderya counter of six pots | Kain Tayo's counter or a new Little Manila karinderya |
+| `brand/dd-arch` | The carnival gate | Fairground entrance |
+| `brand/dd-marquee` | DAYDAZE in bulb letters | Fairground entrance, over `dd-arch` |
+| `brand/dd-trophy` | Daydaze trophy | Contest and game prizes; the gift shop |
+| `brand/dd-snow-globe` | Snow globe (weak: the dome is opaque) | Gift shop shelf, small and far from the camera |
+| `brand/dd-mug` | Daydaze mug | Gift shop; cafe tables |
+| `brand/dd-tote` | Daydaze tote bag | Gift shop; a closet accessory |
+| `brand/dd-keychain` | Daydaze keychain | Gift shop rack |
+| `brand/dd-pin-board` | Pin board | Gift shop wall; an apartment wall piece |
+| `mango/mango` | One carabao mango | Market and produce stands; Halo-Halo Haus |
+| `mango/mango-hedgehog` | Mango cut into a cube hedgehog | Halo-Halo Haus, food stalls |
+| `mango/mango-branch` | A branch hung with mangos | Little Manila plaza trees; Sunny Acres Farm |
+| `mango/mango-plush` | Mango plush toy | Gift shop; claw machines at the arcades |
 
 ## 8. Counts for the lead
 

@@ -16,15 +16,19 @@ import {
   TABLE,
   VIDEOKE,
 } from "../../game/kamayanHall.ts";
+import { meshyDir } from "../../game/meshyModels.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import { useReducedMotion } from "../motion.ts";
 import { KamayanNpcs } from "./kamayan/Npcs.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
-import { canvasTex, hdr } from "./shared/materials.ts";
+import { GOLD, canvasTex, hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { Batch } from "./shared/batch.ts";
 import { bunting, plant, poster } from "./shared/details.ts";
+import { Dishes, type DishAt } from "./shared/Dishes.tsx";
+import { AssetBoundary } from "./shared/AssetBoundary.tsx";
+import { ImagePiece } from "./shared/ImagePiece.tsx";
 import { PropSet } from "./shared/Prop.tsx";
 import { groundMaps, surface } from "../city/worldTexture.ts";
 
@@ -208,9 +212,65 @@ function Parols() {
   );
 }
 
-/** The boodle fight: a low table under banana leaves, rice mounded down the
- * middle and the feast round it, the lechon at the head. */
+/** The dishes the boodle table cycles through. */
+const FEAST = [
+  "lechon-kawali",
+  "inasal",
+  "lumpia",
+  "sisig",
+  "adobo",
+  "palabok",
+] as const;
+
+/** One Meshy boodle table (public/models/meshy/food/boodle.glb) is 2.3 times
+ * as long as it is wide: scaled to the 1.2 m table it is 2.8 m, so three of
+ * them, the middle one turned round, make the whole 8.5 m feast. */
+const BOODLE_LEN = 2.83;
+const BOODLE_AT: readonly (readonly [number, number, number, number])[] = [
+  [-BOODLE_LEN, 0, TABLE.z, 0],
+  [0, 0, TABLE.z, Math.PI],
+  [BOODLE_LEN, 0, TABLE.z, 0],
+];
+
+/** The boodle fight: the Meshy feast table, and the benches down both sides.
+ * The plain table (below) stands in while the model loads. */
 function BoodleTable() {
+  const len = TABLE.x1 - TABLE.x0;
+  return (
+    <group>
+      <AssetBoundary fallback={<PlainBoodle />}>
+        <Suspense fallback={<PlainBoodle />}>
+          <PropSet
+            model="boodle"
+            dir={meshyDir("boodle")}
+            width={BOODLE_LEN}
+            depth={TABLE.half * 2 + 0.05}
+            height={0.8}
+            at={BOODLE_AT}
+          />
+        </Suspense>
+      </AssetBoundary>
+      {/* the benches down both sides */}
+      {[-1, 1].map((side) => (
+        <mesh
+          key={side}
+          position={[
+            (TABLE.x0 + TABLE.x1) / 2,
+            0.22,
+            TABLE.z + side * (TABLE.half + 0.45),
+          ]}
+          material={BENCH}
+        >
+          <boxGeometry args={[len, 0.44, 0.36]} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+/** A low table under banana leaves, rice mounded down the middle and dishes
+ * round it, the lechon at the head. */
+function PlainBoodle() {
   const len = TABLE.x1 - TABLE.x0;
   // rice in a ridge down the leaves; dishes either side of it
   const rice = useMemo(() => {
@@ -219,10 +279,18 @@ function BoodleTable() {
       out.push([x, TABLE.z]);
     return out;
   }, []);
-  const dishes = useMemo(() => {
-    const out: (readonly [number, number, number, number])[] = [];
+  // the feast either side of the rice, a dish in turn from the Meshy set
+  const feast = useMemo(() => {
+    const out: DishAt[] = [];
+    let n = 0;
     for (let x = TABLE.x0 + 0.4; x < TABLE.x1 - 1.5; x += 0.42)
-      for (const side of [-1, 1]) out.push([x, 0.73, TABLE.z + side * 0.3, 0]);
+      for (const side of [-1, 1])
+        out.push({
+          dish: FEAST[n++ % FEAST.length] ?? "adobo",
+          x,
+          y: 0.73,
+          z: TABLE.z + side * 0.3,
+        });
     return out;
   }, []);
   return (
@@ -258,37 +326,19 @@ function BoodleTable() {
         <sphereGeometry args={[0.12, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2]} />
         <meshStandardMaterial color="#f8f4ec" roughness={0.9} />
       </instancedMesh>
-      <Suspense fallback={null}>
-        <PropSet
-          model="food-ChickenLeg"
-          width={0.18}
-          depth={0.18}
-          height={0.09}
-          at={dishes.filter((_, i) => i % 2 === 0)}
-        />
-        <PropSet
-          model="food-Fish"
-          width={0.2}
-          depth={0.16}
-          height={0.09}
-          at={dishes.filter((_, i) => i % 2 === 1)}
-        />
-      </Suspense>
-      <Lechon position={[TABLE.x1 - 0.75, 0.73, TABLE.z]} />
-      {/* the benches down both sides */}
-      {[-1, 1].map((side) => (
-        <mesh
-          key={side}
-          position={[
-            (TABLE.x0 + TABLE.x1) / 2,
-            0.22,
-            TABLE.z + side * (TABLE.half + 0.45),
-          ]}
-          material={BENCH}
-        >
-          <boxGeometry args={[len, 0.44, 0.36]} />
-        </mesh>
-      ))}
+      <Dishes items={feast} />
+      <Dishes
+        items={[
+          {
+            dish: "lechon",
+            x: TABLE.x1 - 0.75,
+            y: 0.73,
+            z: TABLE.z,
+            yaw: Math.PI / 2,
+          },
+        ]}
+        fallback={<Lechon position={[TABLE.x1 - 0.75, 0.73, TABLE.z]} />}
+      />
     </group>
   );
 }
@@ -400,6 +450,19 @@ function Shell() {
           {woven}
         </mesh>
       ))}
+      {/* the boodle night poster on the east wall, above the sofa corner */}
+      <AssetBoundary>
+        <Suspense fallback={null}>
+          <ImagePiece
+            art="dd-boodle-night"
+            at={[FLOOR_BOUNDS.x1 - 0.04, 2.4, 1.7]}
+            ry={-Math.PI / 2}
+            maxW={1.1}
+            maxH={1.5}
+            frame={GOLD}
+          />
+        </Suspense>
+      </AssetBoundary>
       {/* capiz-shell windows down the north wall, lit from outside */}
       {[-4.5, -1.5, 1.5, 4.5].map((x) => (
         <mesh key={x} position={[x, 2, FLOOR_BOUNDS.z0 + 0.02]}>

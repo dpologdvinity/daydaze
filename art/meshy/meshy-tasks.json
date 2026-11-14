@@ -1,0 +1,2309 @@
+{
+  "bahay-kubo": {
+    "group": "museum",
+    "image": {
+      "task": "01a1d8f9-092b-74ae-b3c3-50cad7fd204e",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino bahay kubo, a small nipa hut on bamboo stilts with a steep thatched nipa palm roof, woven bamboo sawali walls, a small window with a wooden shutter propped open, a short bamboo ladder to the door. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fa-b69a-77d5-9b14-fd74cbc62b8b",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 8000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "jeepney": {
+    "group": "museum",
+    "image": {
+      "task": "01a1d8f9-09aa-7228-9e6b-e409e027af65",
+      "ai_model": "nano-banana-2",
+      "prompt": "A classic Filipino jeepney, long chrome-trimmed body painted in bright red, yellow and teal stripes and flowers, two chrome horse statues on the hood, many little side mirrors and antennas, an open back entrance, a made-up route sign on the roof reading \"DAYDAZE - LITTLE MANILA\". Stylized semi-realistic game vehicle, bright saturated colors, clean shapes, three-quarter front view, centered, single object, plain white background."
+    },
+    "model": {
+      "task": "01a1d8fa-ba53-72f5-9270-c8b865c2a1e0",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 8000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "capiz-window": {
+    "group": "museum",
+    "image": {
+      "task": "01a1d8f9-0a24-716d-bbc1-beceb0f24a72",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino capiz shell window panel: a tall dark hardwood sliding window frame with a grid of small square translucent pearly capiz shell panes, standing upright on a small wooden base. Stylized semi-realistic game prop, clean shapes, front three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fa-be18-73b4-9cf6-840a2fa05885",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "banig": {
+    "group": "museum",
+    "image": {
+      "task": "01a1d8f9-0aa2-748c-8950-58a09e58123e",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino banig, a handwoven colorful pandan sleeping mat with bright magenta, green, yellow and purple geometric diamond patterns, displayed hanging on an upright wooden museum display frame. Stylized semi-realistic game prop, bright saturated colors, clean shapes, front three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fa-c162-7014-a298-9bcae104056a",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "sari-sari": {
+    "group": "museum",
+    "image": {
+      "task": "01a1d8f9-0b2b-710d-ac0a-8681a9d735cb",
+      "ai_model": "nano-banana-2",
+      "prompt": "A small Filipino sari-sari store booth: a painted wooden front with a wide window covered in wire mesh, a little counter ledge, rows of jars of candy, strings of hanging snack sachets, a corrugated metal awning, a hand-painted sign reading \"ALING ROSA SARI-SARI\". No real brands. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background."
+    },
+    "model": {
+      "task": "01a1d8fa-c4ee-72f4-ba70-3144e16d51d3",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 8000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "adobo": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8f9-4a42-77ad-af12-22051dd76f7d",
+      "ai_model": "nano-banana-2",
+      "prompt": "Filipino chicken adobo: glossy dark soy-vinegar braised chicken pieces with bay leaves and whole peppercorns, next to a mound of white rice, on a round white enamel plate with a blue rim. Stylized semi-realistic game food prop, bright appetizing colors, clean shapes, three-quarter top view, centered, single dish, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fa-c8e4-77c6-8056-6088002e0034",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "sinigang": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8f9-4ab0-7409-b0ac-1fdae10cf89d",
+      "ai_model": "nano-banana-2",
+      "prompt": "Filipino sinigang na baboy in a metal cooking pot: sour tamarind soup with pork ribs, kangkong water spinach, long green beans, tomato wedges, white radish and a long green chili floating on top. Stylized semi-realistic game food prop, bright appetizing colors, clean shapes, three-quarter top view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fa-cbd6-71d7-b76a-157f52326946",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "palabok": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8f9-4b26-7107-9be9-d7e1d859f4e4",
+      "ai_model": "nano-banana-2",
+      "prompt": "Filipino pancit palabok on a round platter: rice noodles covered in bright orange shrimp sauce, topped with shrimp, sliced hard-boiled eggs, crushed chicharron, green onions and calamansi halves. Stylized semi-realistic game food prop, bright appetizing colors, clean shapes, three-quarter top view, centered, single dish, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fa-cf9d-75b3-8b9a-e53185f54aca",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "lumpia": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8f9-4b9e-7313-86d9-f09932189d0e",
+      "ai_model": "nano-banana-2",
+      "prompt": "Filipino lumpia shanghai: a pile of thin, golden, crispy fried spring rolls on an oval plate with a small bowl of red sweet chili dipping sauce. Stylized semi-realistic game food prop, bright appetizing colors, clean shapes, three-quarter top view, centered, single dish, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fa-d303-7387-8653-b7502ab0b78f",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "kare-kare": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8f9-4c1c-7627-80b8-f9b9d3d521db",
+      "ai_model": "nano-banana-2",
+      "prompt": "Filipino kare-kare served in a round brown clay palayok pot: oxtail in thick orange peanut sauce with bok choy, eggplant slices and long beans, a small dish of bagoong shrimp paste beside it. Stylized semi-realistic game food prop, bright appetizing colors, clean shapes, three-quarter top view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fa-d5f7-72db-b34d-08b6ba1640ad",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "sisig": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8f9-4c96-764d-869e-ad0c7cead24e",
+      "ai_model": "nano-banana-2",
+      "prompt": "Filipino pork sisig on a black cast-iron sizzling plate set in a wooden board: chopped crispy pork with red onions, green chilies, a raw egg yolk in the middle and calamansi halves. Stylized semi-realistic game food prop, bright appetizing colors, clean shapes, three-quarter top view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fa-d9ac-72a9-9f4f-efbfce247ee0",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "lechon-kawali": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8f9-4d02-7271-abf5-46c4b98f6acc",
+      "ai_model": "nano-banana-2",
+      "prompt": "Filipino lechon kawali on a wooden board: chunks of pork belly with blistered golden crackling skin, a small bowl of brown liver sauce and a sprig of herbs. Stylized semi-realistic game food prop, bright appetizing colors, clean shapes, three-quarter top view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fa-dcee-720d-84f9-26e096cc4425",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "lechon": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8f9-4d6f-7120-80cf-5837d06c131f",
+      "ai_model": "nano-banana-2",
+      "prompt": "A whole Filipino fiesta lechon roast pig, glossy crisp red-brown skin, on a long bamboo spit, resting on a bed of banana leaves on a long wooden tray, an apple in its mouth. Stylized cute semi-realistic game food prop, bright appetizing colors, clean shapes, three-quarter side view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fa-e062-7714-98be-4da8e510b538",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 4000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "boodle": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8fc-9b07-75db-afd9-922d66cd7539",
+      "ai_model": "nano-banana-2",
+      "prompt": "A boodle fight feast on a long low wooden table covered in green banana leaves, the whole table visible: a long line of white rice down the middle, grilled pork skewers, fried fish, red shrimp, grilled chicken, sliced salted eggs, tomatoes, mango halves and grilled eggplant along both sides. No people, no hands. Stylized semi-realistic game prop, bright appetizing colors, clean shapes, three-quarter view, centered, single object fully in frame, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d902-abcd-75ba-a3b6-5decb53b8113",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 8000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "inasal": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8fb-46b2-75d6-a2a1-4c4f85573d0a",
+      "ai_model": "nano-banana-2",
+      "prompt": "Filipino chicken inasal: three bamboo skewers of grilled chicken with orange annatto glaze and char marks, on a banana leaf on a plate with a cup of garlic rice and a small bowl of soy-calamansi dip. Stylized semi-realistic game food prop, bright appetizing colors, clean shapes, three-quarter top view, centered, single dish, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fc-9b82-776d-a7b3-57b259a028e9",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "isaw-grill": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8fb-472b-75ab-8b4c-5a3477d3fa37",
+      "ai_model": "nano-banana-2",
+      "prompt": "A small Filipino street-food charcoal grill with glowing coals, bamboo sticks of isaw, pork barbecue and betamax lined up on the grate, a little bottle of spicy vinegar beside it. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fc-9eeb-7045-9e00-c114ae486ac8",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "tapsilog": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8fb-47a0-71c5-92c4-da077f43d00d",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino tapsilog breakfast plate: thin slices of glazed beef tapa, a dome of garlic fried rice and a sunny-side-up fried egg, with sliced tomatoes, on a round white plate. Stylized semi-realistic game food prop, bright appetizing colors, clean shapes, three-quarter top view, centered, single dish, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fc-a2ee-7643-a3dd-ee00c00d20ab",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "halo-halo": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8fb-4821-7452-ac30-68022bf0bd1d",
+      "ai_model": "nano-banana-2",
+      "prompt": "A tall glass of Filipino halo-halo: layers of colorful sweet beans, red gulaman jelly, nata de coco and shaved ice with evaporated milk, topped with a scoop of purple ube ice cream, a slice of leche flan and pinipig, with a long spoon. Stylized semi-realistic game food prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fc-a66c-7120-9964-eef1d4ac8a84",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "leche-flan": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8fb-4894-70e1-9996-0de0d5c5899e",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino leche flan: a glossy golden-yellow oval custard with dark amber caramel sauce dripping down its sides, on an oval silver llanera-shaped plate. Stylized semi-realistic game food prop, bright appetizing colors, clean shapes, three-quarter top view, centered, single dish, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fc-a9b2-70ec-aab6-07086442b3a1",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "ube-halaya": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8fb-4901-7397-bf4e-15fe6fa980f7",
+      "ai_model": "nano-banana-2",
+      "prompt": "Filipino ube halaya: a smooth bright purple yam jam in a fluted round tin mold, the top swirled and sprinkled with toasted latik coconut curds, on a small plate. Stylized semi-realistic game food prop, bright saturated colors, clean shapes, three-quarter top view, centered, single dish, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fc-ac8c-7651-a2ec-0a7c05a7be15",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "buko-pandan": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8fb-498b-772b-9448-e231542b360b",
+      "ai_model": "nano-banana-2",
+      "prompt": "Filipino buko pandan dessert in a clear glass bowl: pale green pandan jelly cubes and young coconut strips in sweet cream, a pandan leaf on top. Stylized semi-realistic game food prop, bright fresh colors, clean shapes, three-quarter top view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fc-af8a-717e-826c-4bfe0d58a74c",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "turon": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8fb-85a8-77b0-af31-9e354a6c685d",
+      "ai_model": "nano-banana-2",
+      "prompt": "Filipino turon: four crispy golden fried banana spring rolls glazed with shiny caramelized brown sugar, one cut open to show banana and jackfruit inside, on a small plate. Stylized semi-realistic game food prop, bright appetizing colors, clean shapes, three-quarter top view, centered, single dish, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fc-e58c-7640-a949-e28ff93271ff",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "banana-cue": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8fb-8626-77a9-81c2-8300fbeeb3d4",
+      "ai_model": "nano-banana-2",
+      "prompt": "Filipino banana cue: three whole fried saba bananas coated in glossy caramelized brown sugar, skewered on one bamboo stick, standing upright in a small wooden holder. Stylized semi-realistic game food prop, bright appetizing colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fc-e851-743b-bcf1-6b7db917e7f7",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "puto-kutsinta": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8fb-86a2-74ae-a5c0-74885880f1ad",
+      "ai_model": "nano-banana-2",
+      "prompt": "A round woven bamboo bilao tray lined with a banana leaf, filled with Filipino rice cakes: white puto with cheese on top and brown kutsinta topped with grated coconut, arranged in rings. Stylized semi-realistic game food prop, bright appetizing colors, clean shapes, three-quarter top view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fc-eb4e-7012-b209-70725f91a425",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "taho": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8fb-8704-71a4-b9fb-34f5e121eba6",
+      "ai_model": "nano-banana-2",
+      "prompt": "A clear plastic cup of Filipino taho: soft silken tofu layered with dark brown arnibal syrup and small clear sago pearls, a little spoon in it. Stylized semi-realistic game food prop, bright appetizing colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fc-ee8e-73e3-aad8-947d7a06023f",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "ensaymada": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8fb-8776-7695-b0e6-c13dc34830c9",
+      "ai_model": "nano-banana-2",
+      "prompt": "Two Filipino ensaymada: soft coiled golden brioche buns topped with buttercream, white sugar and grated cheese, on a small round plate. Stylized semi-realistic game food prop, bright appetizing colors, clean shapes, three-quarter top view, centered, single dish, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fc-f1ac-77dd-b5e5-f709673820b9",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "pandesal": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8fb-87dc-7412-adb8-b4ed8c1e08f3",
+      "ai_model": "nano-banana-2",
+      "prompt": "A brown paper bag of Filipino pandesal: soft round bread rolls dusted with breadcrumbs spilling out of the open bag, two rolls beside it. Stylized semi-realistic game food prop, warm appetizing colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fc-f494-7419-b76d-4f0d61eb77cc",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "bibingka": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8fb-8842-718d-b08e-093706dc0719",
+      "ai_model": "nano-banana-2",
+      "prompt": "Filipino bibingka: a round golden rice cake with charred spots, topped with a slice of salted red egg and white kesong puti cheese, baked on a banana leaf in a small clay pan. Stylized semi-realistic game food prop, bright appetizing colors, clean shapes, three-quarter top view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fc-f7e5-73b3-96b5-f1253c8d823d",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "puto-bumbong": {
+    "group": "food",
+    "image": {
+      "task": "01a1d8fb-88a3-7454-97f3-b5b4ff02c5ad",
+      "ai_model": "nano-banana-2",
+      "prompt": "Filipino puto bumbong: three long bright purple sticky rice logs on a green banana leaf, topped with melted margarine, brown muscovado sugar and grated coconut, on a plate. Stylized semi-realistic game food prop, bright saturated colors, clean shapes, three-quarter top view, centered, single dish, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d8fc-fb2c-77f3-a0f5-99d4b14074db",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "sap-boardwalk": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fd-ba08-72e0-9958-3ba236187703",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Oil painting with visible brushstrokes: two young women holding hands as they walk along a wooden seaside boardwalk at golden hour, one with curly dark hair and a yellow sundress, one with a short bob and denim jacket, laughing; a lit ferris wheel and boardwalk arcades behind them, warm peach and lilac sky. Romantic, sweet, wholesome. Gallery artwork, full frame, no border, no text."
+    }
+  },
+  "sap-slow-dance": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fd-ba75-7480-8fd7-9488c0516469",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Gouache painting: two women slow dancing close together on a dance floor under pink and electric blue nightclub lights, one resting her head on the other's shoulder, eyes closed, soft haze and glitter in the air. Romantic, tender, wholesome. Gallery artwork, full frame, no border, no text."
+    }
+  },
+  "sap-picnic": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fd-bada-76ac-8dda-ff9717c3019d",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Impressionist oil painting in the style of Renoir: two young women having a picnic on a red gingham blanket in a sunny city park, one resting her head on the other's shoulder, a basket of strawberries and lemonade, dappled light through trees. Romantic, sweet, wholesome. Gallery artwork, full frame, no border, no text."
+    }
+  },
+  "sap-pride": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fd-bb3a-71fb-9f37-b3541f80aeba",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Risograph print with two-color grain and slight misregistration in pink and teal: at a Pride parade, a young woman kisses her girlfriend on the cheek, both with rainbow face paint, confetti and rainbow and lesbian pride flags (orange, white and pink stripes) all around. Joyful, wholesome. Gallery art print, full frame, no border, no text."
+    }
+  },
+  "sap-rainy-window": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fd-bba3-75a3-b8cd-f39cc5b74704",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Moody painterly portrait: a young woman in an oversized sweater sits by a rain-streaked window at night with city lights blurred outside, smiling softly at a handwritten love letter; a framed photo of her and her girlfriend on the windowsill next to a mug of tea. Warm lamp light against cool blue rain. Gallery artwork, full frame, no border, no readable text."
+    }
+  },
+  "sap-marina": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fd-bc08-70b0-9c55-0ad5ee60e100",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Luminous oil painting: two young women sitting at the end of a wooden dock at a marina at sunset, feet dangling over the water, sharing one pair of wired earbuds, shoulders touching; sailboats, gulls and a huge orange and magenta sunset reflected in the water. Romantic, peaceful. Gallery artwork, full frame, no border, no text."
+    }
+  },
+  "sap-nouveau": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fd-bc75-73ba-ac32-c2721a31f5bf",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Art nouveau poster in the style of Alphonse Mucha: two women in flowing gowns, faces close together, their long hair entwined with lilies, roses and ribbons, framed by an ornate circular halo with a crescent moon and stars, muted gold, sage and rose palette. Romantic, elegant, wholesome. Full frame decorative artwork, no text."
+    }
+  },
+  "sap-pop-art": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fd-bcee-731f-ade5-10cee6d410d4",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Pop art comic panel in the style of Roy Lichtenstein with Ben-Day dots and bold black outlines: a blushing young woman with a red bow looks at another young woman with a blonde ponytail; a speech bubble reads \"I THINK I LIKE YOU\". Bright primary colors, wholesome. Full frame artwork."
+    }
+  },
+  "sap-diner": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fd-bd54-7716-b62f-4423b528b6ff",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Retro 1950s illustration, Saturday Evening Post style: two young women on a first date in a chrome and red diner booth, sharing one strawberry milkshake with two straws, smiling shyly at each other, a jukebox glowing behind them. Sweet, wholesome. Gallery artwork, full frame, no border, no text."
+    }
+  },
+  "sap-ferris-wheel": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fd-bdbf-757d-8bfc-3bd2189c83ed",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Dreamy anime-inspired painting: two young women in a ferris wheel gondola at the top at night, foreheads gently touching, the glittering city and a seaside carnival far below, pink and violet neon light, stars. Romantic, tender, wholesome. Gallery artwork, full frame, no border, no text."
+    }
+  },
+  "sap-roller-rink": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fd-be2b-7497-b642-0fe7b77dcdd9",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "1980s airbrush illustration: two young women roller skating hand in hand around a neon roller rink, leg warmers and side ponytails, a mirror ball scattering light, pink, purple and teal neon. Fun, joyful, wholesome. Gallery artwork, full frame, no border, no text."
+    }
+  },
+  "sap-bookshop": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fd-bea5-7055-8421-e3341dac326f",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Cozy storybook illustration in soft colored pencil and watercolor: in a cluttered old bookshop with a cat asleep on a stack of books, two young women reach for the same book on a high shelf and their hands touch; they look at each other and blush. Warm amber light. Sweet, wholesome. Gallery artwork, full frame, no border, no readable text."
+    }
+  },
+  "sap-bonfire": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-3316-75b2-9fd9-f315211d8f03",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Warm painterly illustration: two young women wrapped together in one striped blanket beside a crackling beach bonfire at night, toasting marshmallows, the Milky Way and the dark ocean behind them, firelight on their faces. Romantic, cozy, wholesome. Gallery artwork, full frame, no border, no text."
+    }
+  },
+  "sap-ice-rink": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-337c-7681-8ef9-9771b1f20ce8",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Loose watercolor painting: on an outdoor ice rink under string lights and snowfall, one young woman teaches her wobbly girlfriend to skate, holding both her hands, both laughing, red scarves and mittens. Sweet, joyful, wholesome. Gallery artwork, full frame, no border, no text."
+    }
+  },
+  "sap-karaoke": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-33e9-70aa-9c7b-a0d4bbf1dca5",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Bold vector poster illustration: two young women singing a duet into one microphone on a small karaoke stage, glitter jackets, a disco ball, magenta and cyan neon, joyful and theatrical, music notes and hearts floating. Wholesome. Full frame artwork, no readable text."
+    }
+  },
+  "sap-wedding": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-3446-727c-86d4-f693dec62292",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Romantic oil painting: a garden wedding of two brides under an arch of white roses and wisteria, one in a lace gown, one in a cream suit, holding hands and exchanging rings, petals in the air, friends blurred in the background. Joyful, tender, wholesome. Gallery artwork, full frame, no border, no text."
+    }
+  },
+  "sap-umbrella": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-34bc-70a5-9213-5b4cecc52711",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Japanese ukiyo-e woodblock print style, modern city: two young women share one bright yellow umbrella walking down a rainy street lined with glowing shop signs, rain drawn as fine lines, flat colors, indigo and saffron palette. Romantic, wholesome. Full frame artwork, no readable text."
+    }
+  },
+  "sap-arcade": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-3524-778e-84f8-961cb3dcf67d",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Detailed 16-bit pixel art: in a neon boardwalk arcade, a girl proudly hands her girlfriend a pink plush she just won from a claw machine, little pixel hearts above them, glowing arcade cabinets around. Cute, wholesome. Full frame artwork, no readable text."
+    }
+  },
+  "sap-stained-glass": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-3585-7103-8042-27ab24346950",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Stained glass window artwork with thick black leading: two women facing each other holding hands, one crowned with a golden sun, one crowned with a silver crescent moon, surrounded by stars, roses and waves in jewel tones of ruby, sapphire and amber. Romantic, wholesome. Full frame artwork, no text."
+    }
+  },
+  "sap-mermaids": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-35ea-746d-a0ea-9d989888be6e",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Ethereal fantasy painting: two mermaids holding hands as they swim up toward a full moon shining through the surface of a dark turquoise sea, one with a coral pink tail, one with a violet tail, glowing jellyfish and bubbles around them. Romantic, magical, modest and wholesome, seashell tops. Gallery artwork, full frame, no border, no text."
+    }
+  },
+  "sap-flash-game": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-365e-7601-b6f5-ba6d25eb2d9d",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Cute 2000s Flash web game art style with thick outlines and bright flat colors: two chibi avatar girls with big eyes sit on a park bench sharing an ice cream, a pink heart speech bubble floating above them, puffy clouds, a sunny pastel town behind them. Wholesome, nostalgic. Full frame artwork, no text."
+    }
+  },
+  "sap-polaroids": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-36c3-7171-b75f-c4bf366bdc7d",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "A collage of instant photos pinned on a corkboard with washi tape, telling a year of two young women in love: at a beach, a photo booth strip making silly faces, a rooftop at night, a birthday cake, cuddling a puppy, a snowy street; doodled hearts and pressed flowers between them. Warm film colors, wholesome. Full frame artwork, no readable text."
+    }
+  },
+  "sap-cafe": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-3720-7109-9829-0b423d436285",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Painting in the style of Edward Hopper: a quiet corner cafe at dusk seen through a big window, one young woman sketching her girlfriend in a notebook while the girlfriend smiles over a cup of coffee, warm interior light against the blue street. Tender, romantic, wholesome. Gallery artwork, full frame, no border, no readable text."
+    }
+  },
+  "sap-sunflowers": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-3789-71a5-8ed7-b931eee6c545",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Post-impressionist painting in the style of Van Gogh with swirling thick brushstrokes: two young women with flower crowns standing in a vast sunflower field under a swirling blue summer sky, one tucking a sunflower behind the other's ear. Romantic, joyful, wholesome. Gallery artwork, full frame, no border, no text."
+    }
+  },
+  "ph-rice-terraces": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-a531-701d-88f6-5005a71ab64f",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Lush oil painting of the Banaue rice terraces in the Philippine Cordillera at sunrise: emerald stepped terraces curving down the mountain, mist in the valley, a few small native Ifugao huts with steep thatched roofs, golden light. Gallery artwork, full frame, no border, no text."
+    }
+  },
+  "ph-fiesta-street": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-a5b5-7776-b285-47d9400b9d95",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Joyful gouache painting of a Philippine town fiesta street: colorful triangular banderitas flags strung between old wooden houses with capiz windows, a brass band marching, kids running, food stalls with lechon and balloons, bright midday sun. Gallery artwork, full frame, no border, no readable text."
+    }
+  },
+  "ph-jeepney-dusk": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-a625-73fe-96e6-cf436c58ce83",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Cinematic painting of a brightly painted Filipino jeepney with chrome horses on the hood driving down a busy Manila street at dusk, headlights glowing, passengers inside, a sky of orange and violet, street vendors and power lines. Nostalgic, warm. Gallery artwork, full frame, no border, no readable text."
+    }
+  },
+  "ph-nipa-sea": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-a689-710f-9069-04c47243b64d",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Tranquil watercolor of a bahay kubo nipa hut on stilts by a turquoise sea in the Philippines, coconut palms leaning over white sand, a small outrigger bangka boat pulled up on the beach, fluffy clouds. Gallery artwork, full frame, no border, no text."
+    }
+  },
+  "ph-carabao": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-a6fc-773d-aa2c-a8063f6514b9",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Painting in the style of Fernando Amorsolo, the Filipino master of light: a farmer in a salakot hat leads a carabao water buffalo through a golden rice paddy at sunset, women harvesting rice in the background, glowing backlight. Gallery artwork, full frame, no border, no text."
+    }
+  },
+  "ph-parol-night": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-a773-735d-95f1-56da34f1c667",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Magical night painting of a Filipino barrio at Christmas: dozens of glowing parol star lanterns in red, gold and blue hanging from wooden houses, families walking to midnight Simbang Gabi, a bibingka vendor with a smoking clay oven, stars overhead. Warm and nostalgic. Gallery artwork, full frame, no border, no readable text."
+    }
+  },
+  "ph-sinulog": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-a7e9-73e0-ab6c-6f42c4e4040a",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Dynamic expressionist painting of Sinulog festival street dancers in Cebu: dancers in vivid red, yellow and gold feathered costumes mid-step, drums, confetti and colorful streamers, motion and energy. Gallery artwork, full frame, no border, no text."
+    }
+  },
+  "ph-pahiyas": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-a855-734f-8c17-8ab0b2fcf3e5",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Folk art painting of the Pahiyas festival in Lucban: house facades completely decorated with colorful kiping leaf-shaped rice wafers in pink, yellow and green, hanging vegetables, fruits and rice stalks, bright blue sky. Naive art style, vivid. Gallery artwork, full frame, no border, no text."
+    }
+  },
+  "ph-mango-orchard": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-a8cc-72b8-93b1-912f69c6678e",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Sunny impressionist painting of a Philippine mango orchard in harvest season: rows of big leafy mango trees heavy with golden carabao mangoes, workers on bamboo ladders, woven baskets full of fruit, warm dappled light. Gallery artwork, full frame, no border, no text."
+    }
+  },
+  "ph-manila-bay": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-a93f-7372-a8cc-9385d7d92ce9",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Glowing oil painting of the famous Manila Bay sunset: a blazing orange and pink sky over the calm bay, silhouettes of fishing boats and couples sitting on the seawall, palm trees along the promenade. Gallery artwork, full frame, no border, no text."
+    }
+  },
+  "ph-lola-kitchen": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-a9c0-7207-b293-565501765ba9",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Warm, nostalgic painting of a Filipino lola grandmother cooking in a homey kitchen: a steaming pot of sinigang on the stove, a rice cooker, garlic and calamansi on the counter, a granddaughter peeking in, afternoon light through a capiz window. Gallery artwork, full frame, no border, no readable text."
+    }
+  },
+  "ph-noche-buena": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8fe-aa36-74a6-b3d0-9cf98e5b0a9e",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Festive painting of a Filipino family Noche Buena dinner on Christmas Eve: a long table with ham, queso de bola, pancit, lumpia and leche flan, a parol star glowing in the window, three generations laughing together, warm golden light. Gallery artwork, full frame, no border, no readable text."
+    }
+  },
+  "dd-travel": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8ff-200e-76df-9492-31d23a540cdb",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Vintage-style travel poster: \"DAYDAZE\" in big bubbly chrome Y2K letters across the top, below it a dreamy seaside city at sunset with a boardwalk, ferris wheel, pastel skyscrapers, palm trees and a marina, small subtitle \"WISH YOU WERE HERE\". Pink, peach, lilac and teal palette, screen-print texture. Full frame poster artwork."
+    }
+  },
+  "dd-pulse": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8ff-2077-7037-ad60-6796fce5daef",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Nightclub event poster: \"PULSE\" in glowing neon tube letters, \"DAYDAZE CITY - FRIDAY NIGHT\" underneath, a crowd of dancing silhouettes with raised hands, laser beams, a mirror ball, electric blue and hot pink on black, Y2K rave flyer style. Full frame poster artwork."
+    }
+  },
+  "dd-carnival": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8ff-20ed-77c2-a26c-19269d294529",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Retro circus-style carnival poster: \"DAYDAZE CARNIVAL\" in ornate red and gold marquee lettering with light bulbs, a ferris wheel, carousel horses, cotton candy and a striped big top, stars and confetti, \"RIDES - GAMES - PRIZES\" banner. Vintage lithograph texture. Full frame poster artwork."
+    }
+  },
+  "dd-boardwalk": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8ff-2148-733b-b9a8-e4e4e8ad4cb4",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "1960s-style summer surf poster: \"SUMMER ON THE BOARDWALK\" and \"DAYDAZE\" in groovy hand-lettered type, a boardwalk with a pier, beach umbrellas, a lifeguard tower, gulls and a big smiling sun, turquoise, coral and sand colors, halftone texture. Full frame poster artwork."
+    }
+  },
+  "dd-night-market": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8ff-21b0-75c9-a69b-39b66e8295a4",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Night market poster: \"LITTLE MANILA NIGHT MARKET\" and \"DAYDAZE\" in bold festive lettering, glowing parol star lanterns and banderitas flags over food stalls with grilled skewers, halo-halo and lumpia, a jeepney parked at the side, warm gold, magenta and deep blue palette, risograph texture. Full frame poster artwork."
+    }
+  },
+  "dd-roller": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8ff-221c-7506-9a90-ee12201c10ee",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "1980s roller disco poster: \"ROLLER NIGHT\" in chunky chrome script with sparkles, \"DAYDAZE ROLLER RINK\" below, a pair of pink roller skates with rainbow wheels flying over a neon grid floor, a disco ball, purple and teal airbrush gradients. Full frame poster artwork."
+    }
+  },
+  "dd-skyline": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8ff-228d-72ef-b415-0fedfc567de6",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Art deco poster of a dreamy city skyline at twilight: \"DAYDAZE\" in elegant gold deco letters at the top, pastel pink and lavender skyscrapers with glowing windows, an elevated train crossing a bridge, searchlights, a crescent moon, geometric sunburst rays. Full frame poster artwork."
+    }
+  },
+  "dd-mermaid-cove": {
+    "group": "art",
+    "image": {
+      "task": "01a1d8ff-22fb-7586-946b-915e4c844451",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Whimsical underwater poster: \"MERMAID COVE\" in shimmering pearly letters, \"DAYDAZE\" small below, a hidden turquoise lagoon with mermaids lounging on rocks, glowing shells, coral and tropical fish, sunbeams through the water, iridescent pastel palette, Y2K sparkle. Full frame poster artwork."
+    }
+  },
+  "logo-bubble": {
+    "group": "brand",
+    "image": {
+      "task": "01a1d8ff-236b-7257-9f0f-dad8217f0151",
+      "ai_model": "nano-banana-pro",
+      "prompt": "Game logo: the word \"Daydaze\" in big, puffy, glossy bubble letters with a pink-to-peach gradient, a thick white outline and a purple drop shadow, a small sparkle and a tiny sun peeking behind the first letter, playful 2000s web game logo style, centered on a plain white background."
+    }
+  },
+  "logo-neon": {
+    "group": "brand",
+    "image": {
+      "task": "01a1d8ff-23e0-71b7-b2a4-a4b14c8acc0d",
+      "ai_model": "nano-banana-pro",
+      "prompt": "Neon sign logo: the word \"daydaze\" in flowing cursive pink neon tube lettering with a small glowing blue crescent moon and star, mounted on a dark brick wall, soft glow, centered."
+    }
+  },
+  "logo-badge": {
+    "group": "brand",
+    "image": {
+      "task": "01a1d8ff-2459-757a-9f10-6d3fce943263",
+      "ai_model": "nano-banana-pro",
+      "prompt": "Round badge emblem logo: a circular badge with \"DAYDAZE\" curved along the top and \"EST. 2026\" along the bottom, in the middle a sunset over the ocean with a ferris wheel silhouette and a palm tree, retro pastel colors, clean vector, centered on a plain white background."
+    }
+  },
+  "logo-icon": {
+    "group": "brand",
+    "image": {
+      "task": "01a1d8ff-24c0-71be-9969-acf1fc8d1095",
+      "ai_model": "nano-banana-pro",
+      "prompt": "App icon: a rounded square with a dreamy pink, peach and lilac gradient sky, a smiling sleepy crescent moon and a sun overlapping, a big lowercase letter \"d\" in white bubble style in front, glossy 2000s style, centered on a plain white background."
+    }
+  },
+  "mango": {
+    "group": "mango",
+    "image": {
+      "task": "01a1d8ff-c837-7038-ae64-4a23b184912d",
+      "ai_model": "nano-banana-2",
+      "prompt": "A single ripe Philippine carabao mango, golden yellow with a slight blush, smooth and plump with a short stem and one green leaf. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d902-afc6-7553-8c8f-e88ee57dbb52",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 2000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "mango-hedgehog": {
+    "group": "mango",
+    "image": {
+      "task": "01a1d8ff-c8bb-777e-a306-9df2b547c4e0",
+      "ai_model": "nano-banana-2",
+      "prompt": "A mango half cut hedgehog style: the golden flesh scored into a grid of cubes and pushed outward so the cubes pop up, skin side down. Stylized semi-realistic game food prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d902-b2d1-743f-83b1-17d7e32adacb",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "mango-crate": {
+    "group": "mango",
+    "image": {
+      "task": "01a1d8ff-c927-7725-8de1-b2c50ccf0bc9",
+      "ai_model": "nano-banana-2",
+      "prompt": "A wooden slatted market crate overflowing with ripe yellow carabao mangoes, a few green ones, a handwritten cardboard price tag tucked in front, as sold at a Philippine palengke. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background."
+    },
+    "model": {
+      "task": "01a1d902-b680-7394-83a5-5dd385cc6c47",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "mango-float": {
+    "group": "mango",
+    "image": {
+      "task": "01a1d8ff-c994-738d-9f7a-b8deb1b1ad55",
+      "ai_model": "nano-banana-2",
+      "prompt": "A square slice of Filipino mango float icebox cake on a small plate: layers of graham crackers, whipped cream and fresh mango slices, topped with mango slices and graham crumbs. Stylized semi-realistic game food prop, bright appetizing colors, clean shapes, three-quarter view, centered, single dish, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d902-ba14-719f-98b7-1f7095496fd4",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "mango-shake": {
+    "group": "mango",
+    "image": {
+      "task": "01a1d8ff-c9fd-7116-a9c0-e485bf5dc8b8",
+      "ai_model": "nano-banana-2",
+      "prompt": "A tall glass of thick golden mango shake with a striped paper straw and a mango slice on the rim. Stylized semi-realistic game drink prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d902-be80-75c6-a578-3bbdd28d887e",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "mango-branch": {
+    "group": "mango",
+    "image": {
+      "task": "01a1d8ff-ca68-718b-adb2-ac051504cf1a",
+      "ai_model": "nano-banana-2",
+      "prompt": "A leafy mango tree branch with long dark green leaves and a cluster of four hanging ripe yellow-orange mangoes. Stylized semi-realistic game prop, bright saturated colors, clean shapes, side view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d902-c19c-7773-a8b2-da9e4b2ab824",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "mango-plush": {
+    "group": "mango",
+    "image": {
+      "task": "01a1d8ff-cad1-749b-a9d0-1f77f5da961e",
+      "ai_model": "nano-banana-2",
+      "prompt": "A cute plush toy shaped like a mango with a happy kawaii face, rosy cheeks, tiny stubby arms, a green leaf on its head and a little pink heart tag stitched on the side. Soft fabric texture. Stylized game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d902-c4f2-73b8-b1c1-727e074f937d",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "sinulog-altar": {
+    "group": "fiesta",
+    "image": {
+      "task": "01a1d8ff-cb3e-7558-a4b5-721ed1218dc6",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino Sinulog festival street altar on a small wheeled float: tiered red and gold platform covered in flowers, candles and ribbons, a small gold crowned figurine in a red cape on top seen from a distance, gold arches. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d902-c7ca-763d-b0ff-d12b594cd413",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 8000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "pahiyas-window": {
+    "group": "fiesta",
+    "image": {
+      "task": "01a1d8ff-cbb6-7015-bf07-ade21574d54e",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Pahiyas festival window: a wooden house window frame completely decorated with colorful leaf-shaped kiping rice wafers in pink, yellow, green and orange arranged like a chandelier, plus hanging ears of corn, red chilies and rice stalks. Stylized semi-realistic game prop, bright saturated colors, clean shapes, front three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d902-cb85-72c7-aa01-0919ce52af78",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 8000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "masskara-gold": {
+    "group": "fiesta",
+    "image": {
+      "task": "01a1d8ff-cc32-75f6-8d19-6346096667a8",
+      "ai_model": "nano-banana-2",
+      "prompt": "A MassKara festival smiling mask from Bacolod: a big glossy golden face mask with a huge joyful smile, rhinestones, sequins, swirls, and a crown of gold and pink feathers. Stylized semi-realistic game prop, bright saturated colors, clean shapes, front view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d902-cf68-7747-9fb6-65000f7160f2",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "masskara-pink": {
+    "group": "fiesta",
+    "image": {
+      "task": "01a1d8ff-cc97-7363-99a0-2f60f5854f96",
+      "ai_model": "nano-banana-2",
+      "prompt": "A MassKara festival smiling mask: a big glossy hot pink face mask with a huge joyful smile, silver rhinestones, purple swirls, and a crown of magenta and white feathers. Stylized semi-realistic game prop, bright saturated colors, clean shapes, front view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d902-d462-706c-8be2-60a4ebb8dfd6",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "masskara-blue": {
+    "group": "fiesta",
+    "image": {
+      "task": "01a1d8ff-cd0f-7506-85be-aab082a7354f",
+      "ai_model": "nano-banana-2",
+      "prompt": "A MassKara festival smiling mask: a big glossy turquoise and royal blue face mask with a huge joyful smile, gold rhinestones and sequin swirls, and a crown of blue, green and gold feathers. Stylized semi-realistic game prop, bright saturated colors, clean shapes, front view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d902-d8a9-77cc-b5a1-a641e9e81bd6",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "panagbenga-float": {
+    "group": "fiesta",
+    "image": {
+      "task": "01a1d900-395c-73c1-b3b5-cb7c1a06a763",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Panagbenga flower festival float from Baguio: a small parade float shaped like a giant butterfly covered entirely in real flowers, roses, sunflowers, chrysanthemums and orchids in red, yellow, white and pink, on a low wheeled base. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d903-58bf-72ec-b01e-f2fb1049e404",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 8000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "santacruzan-arch": {
+    "group": "fiesta",
+    "image": {
+      "task": "01a1d900-39d1-745a-a643-a2ab0979b986",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Santacruzan procession arch: a freestanding bamboo arch on two poles completely covered with white and pink flowers, sampaguita garlands and green leaves, small lights woven in. Stylized semi-realistic game prop, bright saturated colors, clean shapes, front three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d903-5cbe-724f-abe9-f583341ba70e",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 8000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "ati-drum": {
+    "group": "fiesta",
+    "image": {
+      "task": "01a1d900-3a39-76a1-8a87-af773a3ccb68",
+      "ai_model": "nano-banana-2",
+      "prompt": "An Ati-Atihan festival drum: a tall wooden tribal drum with a goatskin top tied with rope, painted with bold red, yellow and black zigzags, decorated with colorful feathers and shells. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d903-6202-7412-a8db-407b248e6792",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "banderitas": {
+    "group": "fiesta",
+    "image": {
+      "task": "01a1d900-3aa2-7582-b472-e009ce3027bf",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino fiesta banderitas bunting: a short string of small triangular paper flags in bright red, yellow, blue, green and pink, hanging in a gentle curve between two short bamboo poles. Stylized semi-realistic game prop, bright saturated colors, clean shapes, front view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d903-6603-759a-a3a4-a90daf6c6f9e",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 2000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "parol-giant": {
+    "group": "fiesta",
+    "image": {
+      "task": "01a1d900-3b09-7733-a139-a26d88be0f45",
+      "ai_model": "nano-banana-2",
+      "prompt": "A large Filipino parol Christmas lantern: a five-pointed star made of translucent capiz shell panels in red, gold, green and blue in a circular ring frame, with two long tassel tails hanging from the bottom points. Stylized semi-realistic game prop, bright saturated colors, clean shapes, front view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d903-6904-7095-8400-918117e35f51",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "belen": {
+    "group": "fiesta",
+    "image": {
+      "task": "01a1d900-3b6d-7790-893e-2468bb73083c",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino Christmas belen nativity scene diorama seen from a distance: a small nipa-roofed bamboo stable with simple stylized figurines, a donkey and a carabao, a manger with straw, a glowing parol star on the roof. Simple faceless folk-art figurines. Stylized game prop, bright warm colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d903-6cc7-779c-ae5e-a8108ef52fe4",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 8000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "lantern-stall": {
+    "group": "fiesta",
+    "image": {
+      "task": "01a1d900-3be2-740d-8ec6-e7bb84f65478",
+      "ai_model": "nano-banana-2",
+      "prompt": "A roadside Filipino Christmas lantern stall: a small bamboo stand with a slanted roof, hung with a dozen colorful parol star lanterns of different sizes and colors, some made of capiz, some of paper. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d903-70a8-7042-b900-5fe871095768",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 8000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "lechon-float": {
+    "group": "fiesta",
+    "image": {
+      "task": "01a1d900-3c5b-70be-b9d1-597d6afeb8f0",
+      "ai_model": "nano-banana-2",
+      "prompt": "A fiesta parade float carrying a giant cartoon roast lechon pig with sunglasses and a party hat, on a flower-decorated wheeled platform with banderitas flags and balloons, festive and funny. Stylized game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d903-746d-77da-baaf-f839339c3999",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 8000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "kalesa": {
+    "group": "culture",
+    "image": {
+      "task": "01a1d900-3cee-75eb-b434-e8a02c9f2299",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino kalesa: a two-wheeled horse-drawn carriage with large red spoked wheels, a curved black canopy roof with brass lamps, wooden bench seat, with a brown horse in harness. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter side view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d903-78d1-7263-8284-f96655078510",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 8000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "tricycle": {
+    "group": "culture",
+    "image": {
+      "task": "01a1d900-3d62-7488-b38a-c2966fc18e71",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino tricycle: a motorcycle with a colorful covered sidecar cab painted in bright blue and yellow with chrome trim, a little fringed curtain, a made-up route name \"BRGY. DAYDAZE\" painted on the side. Stylized semi-realistic game vehicle, bright saturated colors, clean shapes, three-quarter front view, centered, single object, plain white background."
+    },
+    "model": {
+      "task": "01a1d903-7c63-7510-b1c1-f107f2e80e53",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 8000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "salakot": {
+    "group": "culture",
+    "image": {
+      "task": "01a1d900-3de6-77d3-a0e3-9d708cdc948b",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino salakot: a wide conical woven rattan and bamboo farmer's hat with a pointed top finial and a chin strap. Stylized semi-realistic game prop, warm natural colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d903-7fdf-700e-9ddd-2a30f5c3f2c9",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 2000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "bayong": {
+    "group": "culture",
+    "image": {
+      "task": "01a1d900-3e54-7468-8c8f-2aed8bb73974",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino bayong: a woven buri palm market tote bag with colorful pink, green and purple stripes and two sturdy handles, with leeks and a bunch of bananas peeking out. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d903-8324-703b-b277-ebab2dc6d123",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "sungka": {
+    "group": "culture",
+    "image": {
+      "task": "01a1d900-69b4-71d0-8a69-5f49ee6a483a",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino sungka board game: a long carved wooden boat-shaped board with two rows of seven round cups and a large store cup at each end, filled with small cowrie shells. Stylized semi-realistic game prop, warm natural colors, clean shapes, three-quarter top view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d903-8666-749a-80ef-6a0b65f32c2a",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "kulintang": {
+    "group": "culture",
+    "image": {
+      "task": "01a1d900-6a19-76a0-81c2-fa3b60d5a3c9",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Maranao kulintang instrument: a row of eight small bronze knobbed gongs resting on a long carved and painted wooden frame with okir scroll patterns in red, yellow and green, two wooden beaters on top. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d903-8967-7176-969b-239be025343f",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "tinikling": {
+    "group": "culture",
+    "image": {
+      "task": "01a1d900-6a82-77ca-bc12-9ac30ae7d762",
+      "ai_model": "nano-banana-2",
+      "prompt": "A tinikling dance set: two long parallel bamboo poles lying across two short wooden blocks on the ground, ready for the Filipino bamboo dance. Stylized semi-realistic game prop, warm natural colors, clean shapes, three-quarter top view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d903-f347-77f2-935f-7bbd55d45fdb",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 1500,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "carabao-statue": {
+    "group": "culture",
+    "image": {
+      "task": "01a1d900-6ae5-7748-92d5-be6af45cd54b",
+      "ai_model": "nano-banana-2",
+      "prompt": "A bronze statue of a Philippine carabao water buffalo with big curved horns, standing proudly on a square stone plinth, polished bronze with green patina. Stylized semi-realistic game prop, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d903-f64f-778d-b7c7-581df9c506b0",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "abaca-hammock": {
+    "group": "culture",
+    "image": {
+      "task": "01a1d900-6b42-7161-9e76-d918490473c7",
+      "ai_model": "nano-banana-2",
+      "prompt": "A woven abaca rope hammock in natural cream with colorful red and blue woven stripes, strung between a freestanding curved bamboo stand. Stylized semi-realistic game prop, warm natural colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d903-f986-7002-9297-aa0ff8cd3b6f",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "palayok": {
+    "group": "culture",
+    "image": {
+      "task": "01a1d900-6baf-7341-bcee-60a2bf6bbcfb",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino palayok: a round unglazed terracotta clay cooking pot with a wide mouth, a matching clay lid, and a simple incised band around the shoulder, sitting on a woven rattan ring. Stylized semi-realistic game prop, warm earthy colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d903-fd2a-7266-b65f-21ab52a9b1b4",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 2000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "dd-trophy": {
+    "group": "brand",
+    "image": {
+      "task": "01a1d900-c59f-704c-bca5-a4508b9f2998",
+      "ai_model": "nano-banana-2",
+      "prompt": "A shiny gold trophy cup with two big curved handles on a tiered pink marble base, a small gold star on top, the word \"DAYDAZE\" engraved on a plaque on the base. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background."
+    },
+    "model": {
+      "task": "01a1d904-02b5-71f2-9801-4da823b63ffe",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "dd-snow-globe": {
+    "group": "brand",
+    "image": {
+      "task": "01a1d900-c639-7792-9ae8-575cdc72934b",
+      "ai_model": "nano-banana-2",
+      "prompt": "A souvenir snow globe: a glass dome on a pink base with \"DAYDAZE\" in gold letters on the base, inside a tiny pastel seaside city with a ferris wheel, a boardwalk and palm trees, glitter floating. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background."
+    },
+    "model": {
+      "task": "01a1d904-05c5-75fe-86fc-3350d9d6ead2",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "dd-mug": {
+    "group": "brand",
+    "image": {
+      "task": "01a1d900-c6a0-74c2-8c62-fa0b10239c73",
+      "ai_model": "nano-banana-2",
+      "prompt": "A chunky ceramic souvenir coffee mug in pastel pink with a sunset and palm tree print and the word \"Daydaze\" in bubbly retro script. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background."
+    },
+    "model": {
+      "task": "01a1d904-090c-72d5-a09b-da0bf4791adc",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 2000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "dd-tote": {
+    "group": "brand",
+    "image": {
+      "task": "01a1d900-c703-7042-9a16-8955723402e7",
+      "ai_model": "nano-banana-2",
+      "prompt": "A canvas tote bag standing upright with a cute screen print of a smiling mango with sunglasses and the word \"DAYDAZE\" in bubble letters, lavender handles. Stylized semi-realistic game prop, bright saturated colors, clean shapes, front three-quarter view, centered, single object, plain white background."
+    },
+    "model": {
+      "task": "01a1d904-0c1b-75bb-859f-a91d6420ab33",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 2000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "dd-marquee": {
+    "group": "brand",
+    "image": {
+      "task": "01a1d902-ab39-7361-aae0-b8de997eaaa8",
+      "ai_model": "nano-banana-2",
+      "prompt": "Seven giant freestanding carnival marquee letters in one row spelling exactly D-A-Y-D-A-Z-E: tall red and pink metal letters with rows of round glowing light bulbs on their faces, standing on the ground side by side in a single line. Stylized semi-realistic game prop, bright saturated colors, clean shapes, front three-quarter view, centered, single object, plain white background."
+    },
+    "model": {
+      "task": "01a1d904-6574-7047-b707-9967302dce45",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 6000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "dd-keychain": {
+    "group": "brand",
+    "image": {
+      "task": "01a1d900-c7c8-753b-8ce2-e30a96afa884",
+      "ai_model": "nano-banana-2",
+      "prompt": "A cute enamel keychain shaped like a smiling crescent moon with a sun, pastel pink and gold, the word \"daydaze\" on it, on a silver key ring with a little star charm. Stylized game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background."
+    },
+    "model": {
+      "task": "01a1d904-0f44-708d-9966-bd619cf10af8",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 2000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "dd-pin-board": {
+    "group": "brand",
+    "image": {
+      "task": "01a1d900-c83a-7225-ad23-1cc1de4adc9d",
+      "ai_model": "nano-banana-2",
+      "prompt": "A cork pin board on a small easel covered with colorful enamel pins: a mango, a jeepney, a ferris wheel, a roller skate, a parol star, a rainbow heart, a palm tree, a disco ball, a \"DAYDAZE\" wordmark pin in the center. Stylized semi-realistic game prop, bright saturated colors, clean shapes, front three-quarter view, centered, single object, plain white background."
+    },
+    "model": {
+      "task": "01a1d904-12ad-7219-b6d4-ff70052c0f25",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "dd-arch": {
+    "group": "brand",
+    "image": {
+      "task": "01a1d900-c89e-70ae-8f16-376180064ee1",
+      "ai_model": "nano-banana-2",
+      "prompt": "A grand carnival entrance arch gate: two striped red and white towers with pointed tops and pennant flags, joined by a curved arch sign reading \"DAYDAZE\" in big gold letters lined with glowing light bulbs, stars on top. Stylized semi-realistic game prop, bright saturated colors, clean shapes, front three-quarter view, centered, single object, plain white background."
+    },
+    "model": {
+      "task": "01a1d904-165d-702f-9767-59290c22ea0c",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 8000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "sorbetes-cart": {
+    "group": "culture",
+    "image": {
+      "task": "01a1d908-b8c8-7291-b155-939a8845cef3",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino sorbetes ice cream cart: a small wooden pushcart painted in bright red, yellow, blue and green with folk patterns, three round metal lidded canisters on top, two bicycle wheels and a little bell, a stack of cones on the side. No brands. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d90a-3465-766e-8a2c-6b87d7cbb8f5",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 6000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "fishball-cart": {
+    "group": "culture",
+    "image": {
+      "task": "01a1d908-b943-709f-85f6-55378a4a37ba",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino street food fishball cart: a small metal pushcart with a wok of bubbling oil, skewers of fishballs and orange kwek-kwek quail eggs, jars of brown sweet sauce and spicy vinegar, a striped umbrella on a pole. No brands. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d90a-37e3-7185-b62c-318651ef80da",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 6000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "taho-pails": {
+    "group": "culture",
+    "image": {
+      "task": "01a1d908-b9d2-70d6-8c11-ced175c0fbd6",
+      "ai_model": "nano-banana-2",
+      "prompt": "A magtataho's taho vendor set: two shiny aluminum buckets with lids hanging from either end of a long bamboo shoulder pole, a ladle and a stack of clear plastic cups on one lid. Stylized semi-realistic game prop, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d90a-3b6f-7514-b70e-7b8c9851bb49",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 2000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "bangka": {
+    "group": "culture",
+    "image": {
+      "task": "01a1d908-ba58-70dc-aec3-21da43f30c3c",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino bangka outrigger boat: a slim wooden canoe hull painted white with bright blue and red trim, bamboo outrigger floats on both sides attached with curved bamboo arms, a small paddle inside. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d90a-3e46-7178-87ae-939a4cb90ed2",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 5000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "karinderya": {
+    "group": "food",
+    "image": {
+      "task": "01a1d908-baeb-70d1-9641-804927bc60d7",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino karinderya food display counter: a glass-front wooden counter with a row of six steel pots with lids tilted open showing adobo, menudo, pinakbet, dinengdeng, sinigang and fried fish, a rice pot and ladles. Stylized semi-realistic game prop, bright appetizing colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d90a-418d-758c-a26f-e8bbf68f91c1",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 6000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "capiz-chandelier": {
+    "group": "culture",
+    "image": {
+      "task": "01a1d908-bb6c-73e2-9adc-c14ae56c79be",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino capiz shell chandelier: tiers of hundreds of small round translucent pearly capiz shell discs hanging on strings from a round frame, forming a cascading drum shape, softly glowing. Stylized semi-realistic game prop, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    }
+  },
+  "bulalo": {
+    "group": "food",
+    "image": {
+      "task": "01a1d908-bdc1-7304-89a9-80d0f0d82d4e",
+      "ai_model": "nano-banana-2",
+      "prompt": "A bowl of Filipino bulalo: clear beef bone marrow soup with a big beef shank bone, corn on the cob pieces, cabbage and bok choy, in a large ceramic bowl. Stylized semi-realistic game food prop, bright appetizing colors, clean shapes, three-quarter top view, centered, single dish, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d90a-44f0-7455-85c7-02a4df97adb3",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "arroz-caldo": {
+    "group": "food",
+    "image": {
+      "task": "01a1d908-be9c-74d6-9936-4459a1b4b689",
+      "ai_model": "nano-banana-2",
+      "prompt": "A bowl of Filipino arroz caldo: creamy yellow ginger rice porridge with chicken, topped with crispy fried garlic, sliced green onions, a halved boiled egg and a calamansi on the side. Stylized semi-realistic game food prop, bright appetizing colors, clean shapes, three-quarter top view, centered, single dish, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d90a-4855-7470-866b-5118b63f1fd1",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "pinakbet": {
+    "group": "food",
+    "image": {
+      "task": "01a1d908-bf2e-72c0-8190-5ce04cd52fca",
+      "ai_model": "nano-banana-2",
+      "prompt": "A bowl of Filipino pinakbet: stir-fried vegetables with bitter melon, squash, okra, eggplant, long beans and tomato with small pieces of crispy pork, in a round clay bowl. Stylized semi-realistic game food prop, bright appetizing colors, clean shapes, three-quarter top view, centered, single dish, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d90a-4b87-7675-a5ab-955e1a94cb3c",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "champorado": {
+    "group": "food",
+    "image": {
+      "task": "01a1d908-bfc2-74d1-a60a-b7afdf64d79f",
+      "ai_model": "nano-banana-2",
+      "prompt": "A bowl of Filipino champorado: thick dark chocolate rice porridge with a swirl of white evaporated milk on top, a dried salted fish tuyo on a small plate beside it, a spoon. Stylized semi-realistic game food prop, bright appetizing colors, clean shapes, three-quarter top view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d90a-4ec0-720a-93e3-4b6950cbad24",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "mais-con-yelo": {
+    "group": "food",
+    "image": {
+      "task": "01a1d908-c046-7475-9069-1de82ac6f2de",
+      "ai_model": "nano-banana-2",
+      "prompt": "A tall glass of Filipino mais con yelo: shaved ice with sweet yellow corn kernels, milk and crunchy pinipig rice flakes on top, a long spoon. Stylized semi-realistic game food prop, bright appetizing colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d90a-5204-710f-8083-130b55635fa4",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "sampaguita": {
+    "group": "culture",
+    "image": {
+      "task": "01a1d908-c0be-770c-8ce5-94ba49bdd97a",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino sampaguita garland vendor's bundle: several white jasmine flower leis strung on thread with small green leaves, hanging from a short bamboo stick. Stylized semi-realistic game prop, fresh colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d90a-550e-77d5-bd01-d4385c3ceeaa",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 2000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "sap-moving-in": {
+    "group": "art",
+    "image": {
+      "task": "01a1d912-1595-766a-96f9-63ab0b477942",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Warm gouache illustration: two young women on moving-in day in their first apartment together, sitting on the floor among cardboard boxes eating takeout noodles, a potted plant and a record player, fairy lights half-hung, golden evening light through a big window. Sweet, cozy, wholesome. Gallery artwork, full frame edge to edge, flat scan, no frame, no wall, no border, no text."
+    }
+  },
+  "sap-kitchen-dance": {
+    "group": "art",
+    "image": {
+      "task": "01a1d912-162d-7487-b63c-bc53e2db8526",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Joyful painterly illustration: two young women dancing barefoot in a small sunny kitchen while cooking pancakes, one twirling the other, flour on their cheeks, a radio playing, plants on the windowsill. Romantic, playful, wholesome. Gallery artwork, full frame edge to edge, flat scan, no frame, no wall, no border, no text."
+    }
+  },
+  "sap-rooftop-stars": {
+    "group": "art",
+    "image": {
+      "task": "01a1d912-16b4-76cd-87ea-dc5fe63fba04",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Dreamy night painting: two young women lying on a blanket on a city rooftop stargazing, pointing at a shooting star, holding hands between them, string lights, water tower silhouettes and a deep indigo sky full of stars. Romantic, wholesome. Gallery artwork, full frame edge to edge, flat scan, no frame, no wall, no border, no text."
+    }
+  },
+  "sap-prom": {
+    "group": "art",
+    "image": {
+      "task": "01a1d912-173d-779a-8c9b-4b676439f96a",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Glowing 2000s teen-movie style illustration: two young women at their high school prom, one in a lilac gown and one in a sparkly tuxedo, posing under a balloon arch with a corsage, glitter in the air, pink and gold light. Joyful, sweet, wholesome. Gallery artwork, full frame edge to edge, flat scan, no frame, no wall, no border, no text."
+    }
+  },
+  "sap-lighthouse": {
+    "group": "art",
+    "image": {
+      "task": "01a1d912-17e7-70ab-9193-2213b8f2a63c",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Seaside watercolor: two young women having a picnic on the grass beside a red and white striped lighthouse on a cliff, wind in their hair, a kite in the sky, waves and gulls below. Romantic, breezy, wholesome. Gallery artwork, full frame edge to edge, flat scan, no frame, no wall, no border, no text."
+    }
+  },
+  "sap-debut": {
+    "group": "art",
+    "image": {
+      "task": "01a1d912-187a-7042-9bb9-b837b93b636f",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Bold modern illustration in the style of a Filipino komiks cover: two young Filipina women in a sweet-sixteen debut celebration, one in a modern terno with butterfly sleeves, dancing together under parol lanterns, confetti, warm magenta and gold. Joyful, romantic, wholesome. Full frame edge to edge, flat scan, no frame, no wall, no border, no text."
+    }
+  },
+  "ph-chocolate-hills": {
+    "group": "art",
+    "image": {
+      "task": "01a1d912-5ddf-77d3-a4ff-74d7434c616b",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Luminous oil painting of the Chocolate Hills of Bohol in the Philippines at golden hour: hundreds of rounded grassy hills turned chocolate brown, palm trees between them, soft mist, a warm sky. Gallery artwork, full frame edge to edge, flat scan, no frame, no wall, no border, no text."
+    }
+  },
+  "ph-vigan": {
+    "group": "art",
+    "image": {
+      "task": "01a1d912-5e60-7066-a02b-8faa02f1162a",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Nostalgic painting of Calle Crisologo in Vigan, Philippines at dusk: a cobblestone street lined with Spanish-era bahay na bato houses with capiz windows, a kalesa horse carriage, warm lamps glowing. Gallery artwork, full frame edge to edge, flat scan, no frame, no wall, no border, no readable text."
+    }
+  },
+  "ph-island-sunset": {
+    "group": "art",
+    "image": {
+      "task": "01a1d912-5edd-7433-a2c5-1842c0aca14e",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Vivid painting of a Philippine island beach at sunset: powdery white sand, turquoise water, colorful paraw sailboats with striped sails on the water, palm trees, a pink and orange sky. Gallery artwork, full frame edge to edge, flat scan, no frame, no wall, no border, no text."
+    }
+  },
+  "ph-mayon": {
+    "group": "art",
+    "image": {
+      "task": "01a1d912-5f6a-77ab-90d2-9801dde7b9af",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Majestic oil painting of Mayon Volcano in the Philippines with its perfect cone, rice fields and a carabao in the foreground, wisps of cloud at the summit, clear morning light. Gallery artwork, full frame edge to edge, flat scan, no frame, no wall, no border, no text."
+    }
+  },
+  "ph-pabitin": {
+    "group": "art",
+    "image": {
+      "task": "01a1d912-600e-77cd-83b7-074d4370f302",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Lively painting of a Filipino fiesta game of pabitin: a bamboo lattice hung with candies, small toys and snacks raised above a crowd of excited children jumping to grab them, banderitas flags overhead, sunny afternoon. Gallery artwork, full frame edge to edge, flat scan, no frame, no wall, no border, no text."
+    }
+  },
+  "ph-tinikling": {
+    "group": "art",
+    "image": {
+      "task": "01a1d912-608b-73a8-b217-96747e618af0",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Graceful painting of Filipino tinikling dancers: a young woman in a pink balintawak dress and a young man in a barong leap between two clapping bamboo poles held by kneeling musicians, motion blur, warm stage light. Gallery artwork, full frame edge to edge, flat scan, no frame, no wall, no border, no text."
+    }
+  },
+  "lechonan": {
+    "group": "food",
+    "image": {
+      "task": "01a1d912-c7e8-72ac-b859-101d611ab917",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino lechonan roasting pit: a whole glossy red-brown pig on a long bamboo spit resting on two forked metal stands over a long bed of glowing charcoal in a low stone trough, a hand crank on one end. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d917-68d4-7669-af8a-61388cbe5e48",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 5000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "pabitin": {
+    "group": "fiesta",
+    "image": {
+      "task": "01a1d912-c8cf-7033-b850-a416a41a7d80",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino fiesta pabitin: a square bamboo lattice grid hanging from ropes, dangling dozens of colorful wrapped candies, small toys, lollipops and snack packs on strings. No brands. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d917-6d92-705b-89bb-62f9e0333d4c",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 6000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "welcome-arch": {
+    "group": "culture",
+    "image": {
+      "task": "01a1d912-c968-772c-8cfd-492a425bc51c",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino welcome arch over a road: two thick concrete pillars joined by a decorative top arch painted in bright yellow, blue and red with sun and star motifs, a big sign across the top reading \"MALIGAYANG PAGDATING\". Stylized semi-realistic game prop, bright saturated colors, clean shapes, front three-quarter view, centered, single object, plain white background."
+    },
+    "model": {
+      "task": "01a1d917-736d-7039-864b-98aed4d995c0",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 6000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "baroque-church": {
+    "group": "culture",
+    "image": {
+      "task": "01a1d912-ca05-712e-ae07-858c69af3cc1",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Spanish-colonial Filipino baroque stone church facade like Paoay church: massive coral-stone walls with huge stepped buttresses, a carved pediment, a separate bell tower, weathered ochre stone with moss. Stylized semi-realistic game building, warm colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d917-7810-77a0-9595-fe0fb133139d",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 8000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "bahay-na-bato": {
+    "group": "culture",
+    "image": {
+      "task": "01a1d912-ca7f-77fe-a614-7a72e2372dc2",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino bahay na bato house: a two-story heritage house with a stone ground floor and an overhanging dark hardwood upper floor with sliding capiz shell windows and ventanillas, a red clay tile hip roof. Stylized semi-realistic game building, warm colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d917-7d91-7146-9b6f-4b10ca565791",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 8000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "mango-tree": {
+    "group": "mango",
+    "image": {
+      "task": "01a1d912-cb36-7009-b333-3607c4d7ea8b",
+      "ai_model": "nano-banana-2",
+      "prompt": "A whole leafy Philippine mango tree: a broad rounded canopy of glossy dark green leaves heavy with hanging golden yellow mangoes, a thick brown trunk with a woven bamboo bench around its base. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d917-81b8-7568-b20a-cd042068c709",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 6000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "green-mango": {
+    "group": "mango",
+    "image": {
+      "task": "01a1d912-cbaf-77de-8526-7f3dd2033b27",
+      "ai_model": "nano-banana-2",
+      "prompt": "A plate of sliced green unripe mango wedges with a small bowl of pinkish bagoong shrimp paste for dipping, a Filipino snack. Stylized semi-realistic game food prop, bright fresh colors, clean shapes, three-quarter top view, centered, single dish, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d917-8657-706a-bed3-1d6b71b3c05d",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "dried-mango": {
+    "group": "mango",
+    "image": {
+      "task": "01a1d912-cc3c-75d7-89e0-efbd6744c3d5",
+      "ai_model": "nano-banana-2",
+      "prompt": "A resealable snack pouch of dried mango slices, glossy orange-yellow pouch with a clear window showing the slices, a cute smiling mango mascot and the word \"DAYDAZE DRIED MANGOES\" printed on it, standing upright. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background."
+    },
+    "model": {
+      "task": "01a1d917-89d4-755d-a280-b67990c2bdc3",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 1500,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "sipa": {
+    "group": "culture",
+    "image": {
+      "task": "01a1d912-ccc7-73ba-92b8-0f503cf48015",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino sipa: a small woven rattan ball, open hexagonal weave, natural tan color. Stylized semi-realistic game prop, warm natural colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    }
+  },
+  "walis": {
+    "group": "culture",
+    "image": {
+      "task": "01a1d912-cd4b-75f2-b32b-627e07a261ee",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino walis tingting broom: a thick bundle of thin stiff coconut-leaf midribs tied together tightly with colorful plastic string at the top, leaning upright, next to a soft walis tambo grass broom. Stylized semi-realistic game prop, warm natural colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d917-8d86-73d2-bbd8-29c3239db472",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 2000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "kalan": {
+    "group": "culture",
+    "image": {
+      "task": "01a1d912-cdcb-72ff-9e4f-21081b5d6221",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Filipino palayok clay stove kalan with a pot of steaming rice on top and burning wood sticks inside its front opening, on a low concrete slab. Stylized semi-realistic game prop, warm earthy colors, clean shapes, three-quarter view, centered, single object, plain white background, no text."
+    },
+    "model": {
+      "task": "01a1d917-9147-7081-add8-a4db818ba287",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2",
+      "target_polycount": 3000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "dd-balloon": {
+    "group": "brand",
+    "image": {
+      "task": "01a1d912-ce46-73f8-82ec-43d7b68916d4",
+      "ai_model": "nano-banana-2",
+      "prompt": "A Daydaze hot air balloon: a big round balloon with pink, peach and lavender stripes and the word \"DAYDAZE\" in white bubble letters around it, a woven wicker basket hanging below with little pennant flags. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background."
+    },
+    "model": {
+      "task": "01a1d91e-0f53-729a-8517-485cc7b2399c",
+      "model_type": "smart-topology",
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 6000,
+      "texture_model": "meshy-n1",
+      "target_formats": [
+        "glb"
+      ]
+    }
+  },
+  "dd-fiesta": {
+    "group": "art",
+    "image": {
+      "task": "01a1d919-2071-75f5-8234-febdaa364f97",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Festival poster: \"LITTLE MANILA FIESTA\" and \"DAYDAZE\" in bold hand-painted lettering, MassKara smiling masks, parol stars, banderitas, a lechon on a bamboo spit and a brass band, hot pink, gold, turquoise and red, folk-art pattern border, screen-print texture. The poster design fills the entire image edge to edge, straight-on flat scan."
+    }
+  },
+  "dd-halo-halo-haus": {
+    "group": "art",
+    "image": {
+      "task": "01a1d919-20f1-7716-8e1e-65e88dcb94cb",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Cafe menu poster for \"HALO-HALO HAUS\" in cheerful retro lettering, a giant illustrated halo-halo glass with ube ice cream and leche flan on top, smaller drawings of turon, leche flan, buko pandan and a mango shake around it, pastel purple, mango yellow and mint, \"DAYDAZE\" small at the bottom. The poster design fills the entire image edge to edge, straight-on flat scan."
+    }
+  },
+  "dd-boodle-night": {
+    "group": "art",
+    "image": {
+      "task": "01a1d919-2167-74e0-b7ec-a03dfebe9f7d",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Event poster: \"BOODLE NIGHT\" and \"KAMAYAN HALL - DAYDAZE\" in warm woodcut lettering, a long banana-leaf table seen from above piled with rice, grilled fish, shrimp, pork skewers, salted eggs and mango, many hands reaching in to eat kamayan style, earthy green, brown and sunset orange. The poster design fills the entire image edge to edge, straight-on flat scan."
+    }
+  },
+  "dd-speedway": {
+    "group": "art",
+    "image": {
+      "task": "01a1d919-21de-71bc-87d4-b51ef51622fb",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Retro racing poster: \"DAYDAZE SPEEDWAY\" and \"SATURDAY NIGHT STOCK CARS\" in bold italic 1970s lettering, colorful stock cars banking around an oval track under floodlights, a cheering grandstand, checkered flag, orange, teal and cream, halftone texture. No real brands. The poster design fills the entire image edge to edge, straight-on flat scan."
+    }
+  },
+  "sap-jazz-duet": {
+    "group": "art",
+    "image": {
+      "task": "01a1d919-225f-72a6-82e4-be9bbc227876",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Art deco painting: two women in 1920s flapper dresses and pearls singing a duet at a smoky jazz club microphone, gazing at each other, a piano and trumpet player behind, gold and emerald geometric deco patterns, romantic and elegant, wholesome. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself."
+    }
+  },
+  "sap-night-market": {
+    "group": "art",
+    "image": {
+      "task": "01a1d919-22e7-7262-b29c-14710d354f0e",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Warm night-market painting: two young Filipina women on a date at a busy night market sharing one halo-halo with two spoons, string lights, parol lanterns and food stalls glowing behind them, one laughing, the other watching her fondly. Romantic, wholesome. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself."
+    }
+  },
+  "sap-ballet": {
+    "group": "art",
+    "image": {
+      "task": "01a1d919-234b-73e6-afcc-4a863fefed7b",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Soft pastel ballet painting in the style of Degas: two ballerinas in pale pink tutus practicing a duet in a sunlit rehearsal studio, one lifting the other's hand, mirrors and a barre behind them, tender and graceful, wholesome. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself."
+    }
+  },
+  "sap-bus-stop": {
+    "group": "art",
+    "image": {
+      "task": "01a1d919-23c1-7798-87a7-a725ad31d687",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Cozy rainy-evening illustration: two young women sheltering at a glowing city bus stop in the rain, one draping her jacket over the other's shoulders, reflections of neon signs on the wet street, a bus approaching with warm headlights. Romantic, wholesome. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself."
+    }
+  },
+  "ph-intramuros": {
+    "group": "art",
+    "image": {
+      "task": "01a1d919-2434-7527-8737-955c3906dffe",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Oil painting of the old stone walls of Intramuros in Manila at sunset: moss-covered Spanish ramparts, a kalesa passing under an arched gate, acacia trees, golden light on weathered stone. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself, no text."
+    }
+  },
+  "ph-sari-sari": {
+    "group": "art",
+    "image": {
+      "task": "01a1d919-249e-7455-8f61-fd13fd5bdc5a",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Nostalgic painting of a neighborhood sari-sari store at dusk in the Philippines: a small wooden store window hung with snack sachets, kids buying ice candy, a tricycle parked outside, a dog asleep on the step, warm light from a single bulb. No brands. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself, no readable text."
+    }
+  },
+  "ph-fishing-village": {
+    "group": "art",
+    "image": {
+      "task": "01a1d919-2514-76fd-84ec-9c52d2f18512",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Bright watercolor of a Philippine fishing village at dawn: colorful bangka outrigger boats pulled up on the sand, stilt houses over the water, fishermen hauling nets, a pink and gold sunrise over calm sea. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself, no text."
+    }
+  },
+  "ph-jeepney-ride": {
+    "group": "art",
+    "image": {
+      "task": "01a1d919-258b-76eb-b5a0-e6f54f6401f4",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Lively painting of the inside of a Filipino jeepney: passengers on two facing benches passing coins forward to the driver, colorful decals and a small rosary on the mirror, sunlight through the open sides, a busy street outside. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself, no readable text."
+    }
+  },
+  "sap-autumn-bench": {
+    "group": "art",
+    "image": {
+      "task": "01a1d91f-94c5-70f5-9055-15ea408d5daa",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Tender oil painting: two elderly women, a lesbian couple in their seventies, both grandmothers with long silver hair in buns, wearing cardigans and long skirts, sitting close on a park bench in autumn holding hands, golden leaves falling, a thermos of tea between them. Loving, wholesome. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself, no frame, no text."
+    }
+  },
+  "sap-aquarium": {
+    "group": "art",
+    "image": {
+      "task": "01a1d91e-13ce-7023-b6f3-7f3d2181353c",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Glowing blue painting: two young women holding hands as they walk through an aquarium tunnel, sharks, rays and schools of fish swimming overhead, rippling light on their faces, one pointing up in wonder. Romantic, wholesome. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself, no text."
+    }
+  },
+  "sap-mistletoe": {
+    "group": "art",
+    "image": {
+      "task": "01a1d91e-14b1-7745-8bd9-1433037c8567",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Cheerful gouache illustration: at a cozy holiday party with fairy lights and a decorated tree, a young woman shyly kisses her girlfriend on the cheek under a sprig of mistletoe while friends cheer, sweaters, mugs of cocoa. Romantic, wholesome. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself, no text."
+    }
+  },
+  "sap-art-class": {
+    "group": "art",
+    "image": {
+      "task": "01a1d91e-15c8-70ab-a68a-a78007d58811",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Playful painterly illustration: two young women at an art class sitting at easels facing each other, each painting a portrait of the other and peeking over their canvases with shy smiles, paint smudges, sunlight in a loft studio. Romantic, wholesome. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself, no text."
+    }
+  },
+  "sap-water-park": {
+    "group": "art",
+    "image": {
+      "task": "01a1d91e-1a6c-7756-b240-2e2eb14235c8",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Vibrant summer poster-style painting: two young women in a big inflatable donut floating together in a sparkling water park pool, laughing and holding hands, a giant slide and palm trees behind, bright turquoise and coral. Joyful, wholesome. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself, no text."
+    }
+  }
+}

@@ -1,5 +1,6 @@
 // Skyline Supply grocery scene: shelving aisles, freezer wall, produce and
-// checkouts, stocked with instanced Quaternius food props.
+// checkouts, stocked with instanced Quaternius food props and three Meshy
+// crates of carabao mangos on the produce stand.
 
 import {
   Suspense,
@@ -21,6 +22,7 @@ import {
   PRODUCE,
   SHELF_DEPTH,
 } from "../../game/market.ts";
+import { meshyDir } from "../../game/meshyModels.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import { surface } from "../city/worldTexture.ts";
 import { Batch } from "./shared/batch.ts";
@@ -28,6 +30,7 @@ import { cartGagOn } from "../../game/dance/venueDances.ts";
 import { CrowdFigure } from "./shared/CrowdFigure.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { canvasTex, hdr } from "./shared/materials.ts";
+import { AssetBoundary } from "./shared/AssetBoundary.tsx";
 import { PropSet } from "./shared/Prop.tsx";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
@@ -332,6 +335,14 @@ function Boxes() {
   return <instancedMesh ref={ref} args={[geometry, material, count]} />;
 }
 
+// carabao mango crates along the front edge of the produce stand (top y 0.7),
+// clear of the bins' stock behind them
+const MANGO_CRATES: readonly (readonly [number, number, number, number])[] = [
+  [PRODUCE.x0 + 0.75, 0.7, PRODUCE.z1 - 0.25, 0.1],
+  [(PRODUCE.x0 + PRODUCE.x1) / 2, 0.7, PRODUCE.z1 - 0.25, -0.05],
+  [PRODUCE.x1 - 0.75, 0.7, PRODUCE.z1 - 0.25, 0.08],
+];
+
 function Goods() {
   return (
     <>
@@ -357,6 +368,16 @@ function Goods() {
             at={produceStock[i]}
           />
         ))}
+        <AssetBoundary>
+          <PropSet
+            model="mango-crate"
+            dir={meshyDir("mango-crate")}
+            width={0.55}
+            depth={0.45}
+            height={0.4}
+            at={MANGO_CRATES}
+          />
+        </AssetBoundary>
       </Suspense>
     </>
   );

@@ -1,11 +1,15 @@
 // Halo-Halo Haus, Little Manila's dessert cafe: the shared FoodRoom in lilac
-// with layered halo-halo glasses on the counter and capiz-shell lamps above.
-// Throws on render if the "halo-halo-haus" venue is missing from FOOD_VENUES.
+// with Meshy desserts on the counter (layered halo-halo glasses stand in while
+// they load) and capiz-shell lamps above. Throws on render if the
+// "halo-halo-haus" venue is missing from FOOD_VENUES.
 
-import type { JSX } from "react";
+import { Suspense, type JSX } from "react";
 import { FOOD_VENUES } from "../../../game/food/venues.ts";
 import type { PickHandler } from "../shared/Floor.tsx";
-import { hdr } from "../shared/materials.ts";
+import { GOLD, hdr } from "../shared/materials.ts";
+import { AssetBoundary } from "../shared/AssetBoundary.tsx";
+import { Dishes, type DishAt } from "../shared/Dishes.tsx";
+import { ImagePiece } from "../shared/ImagePiece.tsx";
 import { FoodRoom, type FoodPalette } from "./FoodRoom.tsx";
 
 const VENUE = FOOD_VENUES.find((v) => v.id === "halo-halo-haus");
@@ -25,10 +29,49 @@ const PALETTE: FoodPalette = {
  * ice, then ube and leche flan on top. */
 const LAYERS = ["#8a3a2a", "#3fd06a", "#f4f4f8", "#9b5cff", "#ffd166"];
 
+/** The desserts along the counter top (y 1.17), the server behind them; the
+ * tall glasses stand past the glass case (x > -0.5), under its top. */
+const COUNTER: readonly DishAt[] = (
+  [
+    "leche-flan",
+    "mango-float",
+    "buko-pandan",
+    "halo-halo",
+    "mais-con-yelo",
+    "turon",
+    "mango-shake",
+    "ube-halaya",
+  ] as const
+).map((dish, i) => ({ dish, x: -2.45 + i * 0.7, y: 1.17, z: -0.85 }));
+
+/** Counter dishes are drawn larger than the tables' so they read from the
+ * default camera. */
+const COUNTER_SCALE = 1.7;
+
+/** Layered halo-halo glasses: the placeholder while the dessert models load. */
+function Glasses(): JSX.Element {
+  return (
+    <>
+      {[-2.4, -1.2, 0, 1.2, 2.4].map((x) => (
+        <group key={x} position={[x, 1.17, -0.85]}>
+          {LAYERS.map((c, i) => (
+            <mesh key={c} position-y={0.04 + i * 0.07}>
+              <cylinderGeometry
+                args={[0.1 + i * 0.006, 0.09 + i * 0.006, 0.07, 14]}
+              />
+              <meshStandardMaterial color={c} roughness={0.5} />
+            </mesh>
+          ))}
+        </group>
+      ))}
+    </>
+  );
+}
+
 /**
  * Halo-Halo Haus, Little Manila's dessert cafe: lilac walls, capiz-shell
- * lamps and a row of halo-halo glasses on the counter, layered from beans to
- * ube. Tap the server for a dessert.
+ * lamps and a counter of halo-halo, leche flan, mango float and shake and more. Tap the
+ * server for a dessert.
  */
 export function HaloHaloCafe({ onPick }: { onPick: PickHandler }): JSX.Element {
   if (!VENUE) throw new Error("Halo-Halo Haus is missing from the venues");
@@ -53,18 +96,20 @@ export function HaloHaloCafe({ onPick }: { onPick: PickHandler }): JSX.Element {
       }}
       onPick={onPick}
     >
-      {[-2.4, -1.2, 0, 1.2, 2.4].map((x) => (
-        <group key={x} position={[x, 1.17, -0.85]}>
-          {LAYERS.map((c, i) => (
-            <mesh key={c} position-y={0.04 + i * 0.07}>
-              <cylinderGeometry
-                args={[0.1 + i * 0.006, 0.09 + i * 0.006, 0.07, 14]}
-              />
-              <meshStandardMaterial color={c} roughness={0.5} />
-            </mesh>
-          ))}
-        </group>
-      ))}
+      <Dishes items={COUNTER} scale={COUNTER_SCALE} fallback={<Glasses />} />
+      {/* the house poster on the right wall, past the counter's end */}
+      <AssetBoundary>
+        <Suspense fallback={null}>
+          <ImagePiece
+            art="dd-halo-halo-haus"
+            at={[4.06, 2.25, -0.1]}
+            ry={-Math.PI / 2}
+            maxW={0.9}
+            maxH={1.2}
+            frame={GOLD}
+          />
+        </Suspense>
+      </AssetBoundary>
       {/* capiz-shell lamps over the counter */}
       {[-2, 0, 2].map((x) => (
         <mesh key={x} position={[x, 2.9, -0.4]}>

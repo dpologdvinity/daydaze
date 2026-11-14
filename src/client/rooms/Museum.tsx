@@ -1,10 +1,11 @@
-// Museo ng Little Manila scene: eight exhibits on plinths, each built from
-// simple shapes. Tapping a plaque starts the guided view (./museum/tour.ts):
+// Museo ng Little Manila scene: eight exhibits on plinths. The bahay kubo,
+// jeepney, banig and sari-sari store are Meshy models (the old simple shapes
+// stand in while they load); the rest are built from simple shapes. Tapping a plaque starts the guided view (./museum/tour.ts):
 // the Guide moves the player to the viewpoint and takes the camera through
 // cameraHold while an exhibit is in focus.
 
 import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, type JSX } from "react";
+import { Suspense, useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";
 import type { Look } from "../../game/look.ts";
 import {
@@ -13,6 +14,7 @@ import {
   viewpoint,
   type ExhibitKind,
 } from "../../game/museum.ts";
+import { meshyDir, type MeshyProp } from "../../game/meshyModels.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import {
   JEEPNEY_CHROME,
@@ -35,6 +37,8 @@ import { surface } from "../city/worldTexture.ts";
 import { canvasTex, hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
+import { AssetBoundary } from "./shared/AssetBoundary.tsx";
+import { Prop } from "./shared/Prop.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
 
 const GOLD = "#ffd166";
@@ -201,8 +205,38 @@ const TERNO: Look = {
   outfitColor: "#ff2f9a",
 };
 
-/** The piece on an exhibit's plinth, built from simple shapes. */
+/** The Meshy models (public/models/meshy/museum/) that replace a simple shape,
+ * each fitted to fill about 90% of the 1.3 m plinth top (1.17 m): the fit box
+ * in meters. */
+const MODELS: Partial<
+  Record<
+    ExhibitKind,
+    { model: MeshyProp; width: number; depth: number; height: number }
+  >
+> = {
+  "bahay-kubo": { model: "bahay-kubo", width: 1.17, depth: 1.17, height: 1.8 },
+  // long axis along the plinth's front, side-on to the viewer
+  jeepney: { model: "jeepney", width: 1.17, depth: 1.17, height: 1.4 },
+  banig: { model: "banig", width: 1.17, depth: 0.6, height: 2 },
+  "sari-sari": { model: "sari-sari", width: 1.2, depth: 1.2, height: 1.3 },
+};
+
+/** The piece on an exhibit's plinth: its Meshy model where there is one, with
+ * the simple-shape piece standing in while it loads. */
 function Piece({ kind }: { kind: ExhibitKind }) {
+  const fit = MODELS[kind];
+  if (!fit) return <ShapePiece kind={kind} />;
+  return (
+    <AssetBoundary fallback={<ShapePiece kind={kind} />}>
+      <Suspense fallback={<ShapePiece kind={kind} />}>
+        <Prop dir={meshyDir(fit.model)} position-y={0.8} {...fit} />
+      </Suspense>
+    </AssetBoundary>
+  );
+}
+
+/** A piece on an exhibit's plinth, built from simple shapes. */
+function ShapePiece({ kind }: { kind: ExhibitKind }) {
   const banig = useMemo(banigTexture, []);
   const islands = useMemo(islandsTexture, []);
   const script = useMemo(scriptTexture, []);

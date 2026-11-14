@@ -5,8 +5,10 @@ import { ROOMS } from "../../game/rooms.ts";
 import {
   FURNITURE_CATALOG,
   footprint,
+  printArtwork,
   type Furniture,
 } from "../../game/home/decor.ts";
+import { artworkUrl, fitInside, type ArtworkId } from "../../game/artworks.ts";
 import { Suspense, useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { Batch } from "./shared/batch.ts";
@@ -14,6 +16,8 @@ import { plant, poster, stringLights } from "./shared/details.ts";
 import { GOLD, canvasTex } from "./shared/materials.ts";
 import { usePaintingTexture } from "./gallery/painting.ts";
 import { surface } from "../city/worldTexture.ts";
+import { AssetBoundary } from "./shared/AssetBoundary.tsx";
+import { textureAspect, useArtTexture } from "./shared/artTexture.ts";
 import { Prop } from "./shared/Prop.tsx";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { HdriLight } from "./shared/HdriLight.tsx";
@@ -129,6 +133,36 @@ function tvShow(): THREE.Texture {
   return tvPicture;
 }
 
+/** A painting print in a gold frame: the largest of its own aspect inside
+ * `maxW` by `maxH`, centered on (x, y) of the back wall. Suspends on the image. */
+function ArtPrint({
+  art,
+  x,
+  y,
+  maxW,
+  maxH,
+}: {
+  art: ArtworkId;
+  x: number;
+  y: number;
+  maxW: number;
+  maxH: number;
+}) {
+  const tex = useArtTexture(artworkUrl(art));
+  const { w, h } = fitInside(textureAspect(tex), maxW, maxH);
+  return (
+    <group position={[x, y, -2.93]}>
+      <mesh material={GOLD} scale={[w + 0.06, h + 0.06, 0.03]}>
+        <boxGeometry />
+      </mesh>
+      <mesh position-z={0.017}>
+        <planeGeometry args={[w, h]} />
+        <meshStandardMaterial map={tex} roughness={0.8} />
+      </mesh>
+    </group>
+  );
+}
+
 /** The neon sign's tubes, by look. */
 const NEON = ["#ff2f9a", "#3fe0d0", "#ffb02e", "#9b5cff"] as const;
 /** String-light bulb colors, by look. */
@@ -169,6 +203,23 @@ function WallPiece({ item }: { item: Furniture }) {
         width={1.8}
         position={[x, height, -2.9]}
       />
+    );
+  }
+  const art = printArtwork(variant);
+  if (art && (item.id === "wall-art" || item.id === "wall-art-wide")) {
+    // the drawn poster stands in while the painting loads
+    return (
+      <AssetBoundary fallback={drawn && <primitive object={drawn} />}>
+        <Suspense fallback={drawn && <primitive object={drawn} />}>
+          <ArtPrint
+            art={art}
+            x={x}
+            y={height}
+            maxW={item.id === "wall-art" ? 0.8 : 1.7}
+            maxH={item.id === "wall-art" ? 0.9 : 1.3}
+          />
+        </Suspense>
+      </AssetBoundary>
     );
   }
   if (drawn) return <primitive object={drawn} />;

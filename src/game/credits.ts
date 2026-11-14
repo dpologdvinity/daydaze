@@ -141,6 +141,14 @@ export const CREDITS: readonly {
     title: "3D models",
     entries: [
       {
+        title: "Meshy-generated models and art",
+        author: "Meshy",
+        license: "Per Meshy terms for paid plans",
+        url: "https://www.meshy.ai/terms-of-use",
+        usedFor:
+          "Generated for Daydaze: Filipino food, museum pieces, mangos, festival props, merch, paintings and posters.",
+      },
+      {
         title: "Animated Flying Fluttering Butterfly Loop",
         author: "LasquetiSpice",
         license: "CC-BY 4.0",

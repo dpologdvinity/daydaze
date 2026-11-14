@@ -1,9 +1,10 @@
 // Gallery 44 on Gallery Row: the white-cube shell, six framed pieces drawn into
-// one canvas atlas texture, plinth sculptures, the curator and a visitor, and
-// the open wall where the player's own painting hangs.
+// one canvas atlas texture, nine painted images hung between them, plinth
+// sculptures, the curator and a visitor, and the open wall where the player's
+// own painting hangs.
 
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, type JSX } from "react";
+import { Suspense, useEffect, useMemo, useRef, type JSX } from "react";
 import * as THREE from "three";
 import {
   BENCH,
@@ -12,6 +13,7 @@ import {
   OPEN_WALL,
   PLINTHS,
 } from "../../game/gallery.ts";
+import { ARTWORKS, type ArtworkId } from "../../game/artworks.ts";
 import type { Look } from "../../game/look.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import { surface } from "../city/worldTexture.ts";
@@ -24,6 +26,8 @@ import { canvasTex, hdr } from "./shared/materials.ts";
 import { NeonText, SCRIPT } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
+import { AssetBoundary } from "./shared/AssetBoundary.tsx";
+import { ImagePiece } from "./shared/ImagePiece.tsx";
 import { usePaintingTexture } from "./gallery/painting.ts";
 
 const { x0, x1, z0, z1 } = BOUNDS;
@@ -212,11 +216,87 @@ const PIECES: readonly Piece[] = [
   },
 ];
 
-const PX = 128;
+/** A painted image hung in a slot of the walls the drawn pieces leave free: the
+ * picture is the largest of its own aspect that fits `w` by `h`. */
+type Hung = {
+  art: ArtworkId;
+  at: [number, number, number];
+  ry: number;
+  w: number;
+  h: number;
+};
 
-/** Every piece and its wall label, drawn into one atlas: a row per piece. */
+// back wall, then the right wall (turned -90 degrees), then the left (+90); the
+// slots sit in the gaps between the drawn pieces, the open wall and the corners
+const HUNG: readonly Hung[] = [
+  { art: "sap-slow-dance", at: [-7.5, 2.4, z0 + 0.04], ry: 0, w: 2, h: 2.4 },
+  { art: "ph-parol-night", at: [3.15, 2.4, z0 + 0.04], ry: 0, w: 1.7, h: 2.4 },
+  { art: "ph-sinulog", at: [7.7, 2.4, z0 + 0.04], ry: 0, w: 1.8, h: 2.4 },
+  {
+    art: "sap-rainy-window",
+    at: [x1 - 0.04, 2.4, -5.8],
+    ry: -Math.PI / 2,
+    w: 1.5,
+    h: 2.2,
+  },
+  {
+    art: "sap-bonfire",
+    at: [x1 - 0.04, 2.4, -0.95],
+    ry: -Math.PI / 2,
+    w: 1.6,
+    h: 1.4,
+  },
+  {
+    art: "ph-lola-kitchen",
+    at: [x1 - 0.04, 2.4, 3.4],
+    ry: -Math.PI / 2,
+    w: 1.8,
+    h: 2.2,
+  },
+  {
+    art: "sap-mermaids",
+    at: [x0 + 0.04, 2.4, -5.8],
+    ry: Math.PI / 2,
+    w: 1.5,
+    h: 2.2,
+  },
+  {
+    art: "ph-jeepney-dusk",
+    at: [x0 + 0.04, 2.4, -1.05],
+    ry: Math.PI / 2,
+    w: 1.6,
+    h: 1.4,
+  },
+  {
+    art: "sap-stained-glass",
+    at: [x0 + 0.04, 2.4, 4.9],
+    ry: Math.PI / 2,
+    w: 1.6,
+    h: 2.2,
+  },
+];
+
+/** Height of every hung painting's label: one line round the room. */
+const LABEL_Y = 0.95;
+
+const PX = 128;
+/** Atlas rows: the drawn pieces, then the hung images (label only). */
+const ROWS = PIECES.length + HUNG.length;
+
+/** Every drawn piece and every wall label in one atlas: a row per piece, the
+ * art in the first cell (drawn pieces only) and the label in the second. */
 function atlasTex() {
-  return canvasTex(PX * 2, PX * PIECES.length, (ctx) => {
+  return canvasTex(PX * 2, PX * ROWS, (ctx) => {
+    const label = (i: number, title: string, artist: string) => {
+      // white card, title in italics, the artist
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(PX, i * PX, PX, PX);
+      ctx.fillStyle = "#141018";
+      ctx.font = "italic bold 14px Georgia, serif";
+      ctx.fillText(title, PX + 8, i * PX + 50, PX - 16);
+      ctx.font = "12px sans-serif";
+      ctx.fillText(artist, PX + 8, i * PX + 72, PX - 16);
+    };
     PIECES.forEach((p, i) => {
       ctx.save();
       ctx.translate(0, i * PX);
@@ -225,15 +305,11 @@ function atlasTex() {
       ctx.clip();
       p.draw(ctx, PX, PX);
       ctx.restore();
-      // the label beside it: white card, title in italics, the artist
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(PX, i * PX, PX, PX);
-      ctx.fillStyle = "#141018";
-      ctx.font = "italic bold 14px Georgia, serif";
-      ctx.fillText(p.title, PX + 8, i * PX + 50, PX - 16);
-      ctx.font = "12px sans-serif";
-      ctx.fillText(p.artist, PX + 8, i * PX + 72, PX - 16);
+      label(i, p.title, p.artist);
     });
+    HUNG.forEach((p, i) =>
+      label(PIECES.length + i, ARTWORKS[p.art].title, "Daydaze Collection"),
+    );
   });
 }
 
@@ -242,11 +318,7 @@ function cell(w: number, h: number, col: number, row: number) {
   const g = new THREE.PlaneGeometry(w, h);
   const uv = g.attributes.uv;
   for (let k = 0; k < uv.count; k++)
-    uv.setXY(
-      k,
-      (col + uv.getX(k)) / 2,
-      1 - (row + 1 - uv.getY(k)) / PIECES.length,
-    );
+    uv.setXY(k, (col + uv.getX(k)) / 2, 1 - (row + 1 - uv.getY(k)) / ROWS);
   return g;
 }
 
@@ -294,6 +366,38 @@ function useRoom(atlas: THREE.Texture) {
       put(new THREE.BoxGeometry(p.w + 0.1, p.h + 0.1, 0.05), FRAME, [0, 0, 0]);
       put(cell(p.w, p.h, 0, i), ART, [0, 0, 0.03]);
       put(cell(0.32, 0.32, 1, i), ART, [p.w / 2 + 0.35, -p.h / 2 + 0.4, 0.01]);
+      put(new THREE.CylinderGeometry(0.05, 0.07, 0.16, 10), TRACK, [
+        0,
+        H - 0.5 - p.at[1],
+        1.5,
+      ]);
+      put(new THREE.CircleGeometry(0.05, 10), SPOT, [
+        0,
+        H - 0.59 - p.at[1],
+        1.5,
+      ]);
+    });
+    // the hung paintings: their spots and labels (the frame and picture wait on
+    // the image, see ImagePiece)
+    HUNG.forEach((p, i) => {
+      const frame = new THREE.Object3D();
+      frame.position.set(...p.at);
+      frame.rotation.y = p.ry;
+      frame.updateMatrix();
+      const put = (
+        g: THREE.BufferGeometry,
+        m: THREE.Material,
+        local: [number, number, number],
+      ) => {
+        g.translate(...local);
+        g.applyMatrix4(frame.matrix);
+        b.add(g, m);
+      };
+      put(cell(0.32, 0.32, 1, PIECES.length + i), ART, [
+        0,
+        LABEL_Y - p.at[1],
+        0.01,
+      ]);
       put(new THREE.CylinderGeometry(0.05, 0.07, 0.16, 10), TRACK, [
         0,
         H - 0.5 - p.at[1],
@@ -410,8 +514,8 @@ const VISITOR: Look = {
 };
 
 /**
- * Gallery 44 on Gallery Row: a white cube under track lights, six pieces on
- * the walls with their labels, a knot and a stack of spheres on plinths, an
+ * Gallery 44 on Gallery Row: a white cube under track lights, six drawn pieces
+ * and nine paintings on the walls with their labels, a knot and a stack of spheres on plinths, an
  * oak bench down the middle and an easel by the open wall, where the
  * player's own painting hangs.
  */
@@ -452,6 +556,20 @@ export function Gallery({ onPick }: { onPick: PickHandler }): JSX.Element {
       />
       <PortalPads room={ROOMS.gallery} color="#141018" />
       <primitive object={room} />
+      {HUNG.map((p) => (
+        <AssetBoundary key={p.art}>
+          <Suspense fallback={null}>
+            <ImagePiece
+              art={p.art}
+              at={p.at}
+              ry={p.ry}
+              maxW={p.w}
+              maxH={p.h}
+              frame={FRAME}
+            />
+          </Suspense>
+        </AssetBoundary>
+      ))}
       <OpenWall />
       <NeonText
         text="gallery 44"

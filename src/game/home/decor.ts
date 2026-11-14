@@ -1,6 +1,8 @@
 // Apartment decorating: a starter catalog placed on a grid of 1 m cells.
 // Pure data and rules; the room renders whatever these functions return.
 
+import { ARTWORKS, type ArtGroup, type ArtworkId } from "../artworks.ts";
+
 export const HOME_GRID = { columns: 8, rows: 6 } as const;
 
 /** Back-wall columns the window (and its curtains) covers: nothing hangs there. */
@@ -26,14 +28,126 @@ export type FurnitureGroup = (typeof FURNITURE_GROUPS)[number];
 /** Looks a fabric or wood piece can wear (variant 0 keeps the model's own). */
 export const TINT_NAMES = ["Natural", "Pink velvet", "Cream", "Teal"] as const;
 const NEON_NAMES = ["Pink", "Teal", "Amber", "Violet"] as const;
-const PRINT_NAMES = [
-  "Sunset",
-  "Palm",
-  "Heart",
-  "Stars",
-  "Moon",
-  "Wave",
-] as const;
+// Prints: the first six looks are drawn in code (the shared poster atlas); the
+// rest are paintings (src/game/artworks.ts). Saved homes store the index, so
+// new paintings only ever go on the end of PRINT_ARTWORKS.
+const DRAWN_PRINTS = ["Sunset", "Palm", "Heart", "Stars", "Moon", "Wave"];
+const PRINT_ARTWORKS = [
+  "sap-cafe",
+  "sap-sunflowers",
+  "sap-umbrella",
+  "sap-pride",
+  "sap-polaroids",
+  "sap-ferris-wheel",
+  "ph-rice-terraces",
+  "ph-pahiyas",
+  "ph-mango-orchard",
+  "dd-boardwalk",
+  "dd-mermaid-cove",
+  "dd-skyline",
+  "dd-night-market",
+  "sap-slow-dance",
+  "sap-rainy-window",
+  "sap-bonfire",
+  "sap-mermaids",
+  "sap-stained-glass",
+  "ph-parol-night",
+  "ph-sinulog",
+  "ph-lola-kitchen",
+  "ph-jeepney-dusk",
+  "sap-arcade",
+  "sap-boardwalk",
+  "sap-bookshop",
+  "sap-diner",
+  "sap-flash-game",
+  "sap-ice-rink",
+  "sap-karaoke",
+  "sap-marina",
+  "sap-nouveau",
+  "sap-picnic",
+  "sap-pop-art",
+  "sap-roller-rink",
+  "sap-wedding",
+  "ph-carabao",
+  "ph-fiesta-street",
+  "ph-manila-bay",
+  "ph-nipa-sea",
+  "ph-noche-buena",
+  "dd-carnival",
+  "dd-pulse",
+  "dd-roller",
+  "dd-travel",
+  "sap-moving-in",
+  "sap-kitchen-dance",
+  "sap-rooftop-stars",
+  "sap-prom",
+  "sap-lighthouse",
+  "sap-debut",
+  "ph-chocolate-hills",
+  "ph-vigan",
+  "ph-island-sunset",
+  "ph-mayon",
+  "ph-pabitin",
+  "ph-tinikling",
+  "dd-fiesta",
+  "dd-halo-halo-haus",
+  "dd-boodle-night",
+  "dd-speedway",
+  "sap-jazz-duet",
+  "sap-night-market",
+  "sap-ballet",
+  "sap-bus-stop",
+  "ph-intramuros",
+  "ph-sari-sari",
+  "ph-fishing-village",
+  "ph-jeepney-ride",
+  "sap-aquarium",
+  "sap-mistletoe",
+  "sap-art-class",
+  "sap-water-park",
+  "sap-autumn-bench",
+] as const satisfies readonly ArtworkId[];
+const PRINT_NAMES: readonly string[] = [
+  ...DRAWN_PRINTS,
+  ...PRINT_ARTWORKS.map((id) => ARTWORKS[id].title),
+];
+
+/** The looks the decorating panel lists together: `label` is null for the ones
+ * shown plainly (a piece's own looks, a print's six drawn ones). */
+export type LookGroup = { label: string | null; indexes: readonly number[] };
+
+const GROUP_LABELS: Record<ArtGroup, string> = {
+  sapphic: "Sapphic",
+  filipino: "Filipino",
+  daydaze: "Daydaze",
+};
+
+/** `id`'s looks as the panel groups them; the indexes are the saved variant
+ * indexes, unchanged. Prints list their painting looks by kind of painting. */
+export function lookGroups(id: FurnitureId): LookGroup[] {
+  const count = FURNITURE_CATALOG[id].variants.length;
+  const all = Array.from({ length: count }, (_, i) => i);
+  if (FURNITURE_CATALOG[id].variants !== PRINT_NAMES)
+    return [{ label: null, indexes: all }];
+  const groups: LookGroup[] = [
+    { label: null, indexes: all.slice(0, DRAWN_PRINTS.length) },
+  ];
+  for (const group of Object.keys(GROUP_LABELS) as ArtGroup[]) {
+    const indexes = all.filter((i) => {
+      const art = printArtwork(i);
+      return art !== null && ARTWORKS[art].group === group;
+    });
+    if (indexes.length > 0)
+      groups.push({ label: GROUP_LABELS[group], indexes });
+  }
+  return groups;
+}
+
+/** The painting a print's look shows, or null for the six drawn looks and any
+ * index out of range. */
+export function printArtwork(variant: number): ArtworkId | null {
+  return PRINT_ARTWORKS[variant - DRAWN_PRINTS.length] ?? null;
+}
 
 export type FurniturePiece = {
   name: string;
