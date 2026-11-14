@@ -45,6 +45,10 @@ const COUNTER: readonly DishAt[] = (
   ] as const
 ).map((dish, i) => ({ dish, x: -2.8 + i * 0.8, y: 1.17, z: -0.85 }));
 
+/** Counter dishes are drawn larger than the tables' so they read from the
+ * default camera. */
+const COUNTER_SCALE = 1.7;
+
 /**
  * The turo-turo: a point-and-eat Filipino kitchen. Parol star lanterns, pandan
  * banners, steam trays along the wall and a cashier behind the counter.
@@ -77,7 +81,7 @@ export function FilipinoJoint({
       }}
       onPick={onPick}
     >
-      <Dishes items={COUNTER} />
+      <Dishes items={COUNTER} scale={COUNTER_SCALE} />
       {COLORS.map((color, i) => (
         <mesh key={color} position={[-3.4 + i * 1.36, 3.1, 0.6]}>
           <boxGeometry args={[0.9, 0.12, 0.05]} />
