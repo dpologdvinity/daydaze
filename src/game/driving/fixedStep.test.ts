@@ -13,6 +13,13 @@ test("advance runs one step per whole tick and returns the leftover fraction", (
   assert.ok(Math.abs(alpha - 0.5) < 1e-9);
 });
 
+test("a slow device's quarter-second frame runs all its ticks: no slow motion", () => {
+  const clock = { accumulator: 0 };
+  let ticks = 0;
+  advance(clock, 0.25, () => ticks++);
+  assert.equal(ticks, Math.floor(0.25 * TICK_HZ));
+});
+
 test("a huge frame gap runs at most MAX_TICKS_PER_FRAME steps and drops the rest", () => {
   const clock = { accumulator: 0 };
   let ticks = 0;
