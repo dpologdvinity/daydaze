@@ -1,6 +1,8 @@
 // Apartment decorating: a starter catalog placed on a grid of 1 m cells.
 // Pure data and rules; the room renders whatever these functions return.
 
+import { ARTWORKS, type ArtworkId } from "../artworks.ts";
+
 export const HOME_GRID = { columns: 8, rows: 6 } as const;
 
 /** Back-wall columns the window (and its curtains) covers: nothing hangs there. */
@@ -26,14 +28,35 @@ export type FurnitureGroup = (typeof FURNITURE_GROUPS)[number];
 /** Looks a fabric or wood piece can wear (variant 0 keeps the model's own). */
 export const TINT_NAMES = ["Natural", "Pink velvet", "Cream", "Teal"] as const;
 const NEON_NAMES = ["Pink", "Teal", "Amber", "Violet"] as const;
-const PRINT_NAMES = [
-  "Sunset",
-  "Palm",
-  "Heart",
-  "Stars",
-  "Moon",
-  "Wave",
-] as const;
+// Prints: the first six looks are drawn in code (the shared poster atlas); the
+// rest are paintings (src/game/artworks.ts). Saved homes store the index, so
+// new paintings only ever go on the end of PRINT_ARTWORKS.
+const DRAWN_PRINTS = ["Sunset", "Palm", "Heart", "Stars", "Moon", "Wave"];
+const PRINT_ARTWORKS = [
+  "sap-cafe",
+  "sap-sunflowers",
+  "sap-umbrella",
+  "sap-pride",
+  "sap-polaroids",
+  "sap-ferris-wheel",
+  "ph-rice-terraces",
+  "ph-pahiyas",
+  "ph-mango-orchard",
+  "dd-boardwalk",
+  "dd-mermaid-cove",
+  "dd-skyline",
+  "dd-night-market",
+] as const satisfies readonly ArtworkId[];
+const PRINT_NAMES: readonly string[] = [
+  ...DRAWN_PRINTS,
+  ...PRINT_ARTWORKS.map((id) => ARTWORKS[id].title),
+];
+
+/** The painting a print's look shows, or null for the six drawn looks and any
+ * index out of range. */
+export function printArtwork(variant: number): ArtworkId | null {
+  return PRINT_ARTWORKS[variant - DRAWN_PRINTS.length] ?? null;
+}
 
 export type FurniturePiece = {
   name: string;
