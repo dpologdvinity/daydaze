@@ -26,18 +26,16 @@ CAP_TEX = None
 ATLAS = "hair-pack-part-2/textures/hair109Diffuse_21.png"
 STRIPS = ((0.014, 0.243), (0.26, 0.488))
 V_ROOT, V_TIP = 0.975, 0.02
-# a strip's root end is loose wisps, made to hide under other locks: on a
-# card's root they stuck up off the crown as spikes, so cards start below them
-SKIP = 0.12
 # its outer edges are single strands: alone at mid range they read stringy
 INSET = 0.12
 
 
 def lock_v(t, span=1.0):
     """The strip's v at `t` (0 root to 1 tip) along a card that wears
-    `span` of the strip below its root wisps (short hair stops before the
-    strip's wispy tips, or a pixie is all fuzz)."""
-    return V_ROOT - (V_ROOT - V_TIP) * (SKIP + (1 - SKIP) * span * t)
+    `span` of the strip from its root (its wisps start the lock softly on
+    the hair under it; short hair stops before the wispy tips, or a pixie is
+    all fuzz)."""
+    return V_ROOT - (V_ROOT - V_TIP) * span * t
 
 
 def lock_u(rng, span=1.0):
@@ -207,7 +205,7 @@ def build(
             p = off_body(p, 0.02 + layer)
         return p
 
-    verts, faces, uvs, root_src, shade, hue, alpha = [], [], [], [], [], [], []
+    verts, faces, uvs, root_src, shade, hue = [], [], [], [], [], []
     # which atlas strip each card wears, apart from the layout's draws
     looks = np.random.default_rng(seed + 101)
     gravity = np.array([0, 0, -1.0])
@@ -263,7 +261,10 @@ def build(
             return tied(root, normal, lift, L, phase)
 
         def layer_at(t):
-            return (0.003 + lift * 0.014) * volume + 0.004 * t
+            # rising to its layer over the first segments: straight up off
+            # the scalp, a lock's root stood up as a tuft
+            rise = np.clip(t * segments / 2, 0.25, 1)
+            return ((0.003 + lift * 0.014) * volume + 0.004 * t) * rise
 
         def hug(p, t):
             """Over the top of the head a lock lies on it, its layer's depth
@@ -341,9 +342,6 @@ def build(
             uvs.extend([(s0, v), (s1, v)])
             shade.extend([dark, dark])
             hue.extend([warm, warm])
-            # a lock grows out of the cap: its root end fades in (vertex
-            # alpha) instead of starting at a hard edge along the hairline
-            alpha.extend([0.0, 0.0] if k == 0 else [1.0, 1.0])
         for k in range(segments):
             a = base + 2 * k
             faces.append((a, a + 1, a + 3, a + 2))
@@ -380,7 +378,6 @@ def build(
                 # in the shadow of the cards over it: depth, not the surface
                 shade.append(0.55)
                 hue.append(0.0)
-                alpha.append(1.0)
             if i:
                 prev = base - (segments + 1)
                 for k in range(segments):
@@ -418,6 +415,14 @@ def build(
             # read as flat slabs across the forehead
             if lift == 0.0 and tie_at is None and root[1] < head[1] - 0.01:
                 continue
+            # over the face the cap's feathered edge is the hairline: locks
+            # start behind it, so their fading roots lie on hair, not as a
+            # sawtooth against the forehead
+            if tie_at is None and root[1] < head[1] - 0.02:
+                from doll_hair import hairline
+
+                if root[2] < hairline(ctx, root[0], root[1]) + 0.02:
+                    continue
             g = guide(root, normal, lift, L, phase)
             # each lock catches the light its own way, so locks read apart
             lock = rng.uniform(0.84, 1.1)
@@ -437,7 +442,6 @@ def build(
     ob.data.materials.append(mat)
     ob["layer_shade"] = list(map(float, shade))
     ob["layer_hue"] = list(map(float, hue))
-    ob["layer_alpha"] = list(map(float, alpha))
     uv = ob.data.uv_layers.new(name="UVMap").data
     for poly in ob.data.polygons:
         poly.use_smooth = True

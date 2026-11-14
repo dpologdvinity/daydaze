@@ -632,8 +632,8 @@ def shade_strands(ctx, ob):
     own shadow and reads darker and denser; lengths and tips catch the light.
     The client multiplies these into the hair color. Each strand card is a
     little warmer or cooler (`layer_hue`), so a head of hair is many tones,
-    not one flat dye. Alpha is `layer_alpha` where set (each lock's root
-    fading in, the cap's feathered hairline), else 1."""
+    not one flat dye. Alpha is `layer_alpha` where set (the cap's feathered
+    hairline), else 1."""
     scalp = ctx.PB[[i for f in ctx.FACES["body"] for i in f if ctx.HEADW[i] > 0.98]]
     tree = KDTree(len(scalp))
     for i, p in enumerate(scalp):
@@ -718,8 +718,8 @@ def strand_style(ctx, name, strand_mat, cap_mat, **style):
     strands.comb_cap(ctx, cap, style.get("tie"))
     fade = feather_cap(ctx, cap)
     cards = strands.build(ctx, name, strand_mat, **style)
-    # joining appends the cap's vertices after the cards'
-    fade = list(cards["layer_alpha"]) + fade
+    # joining appends the cap's vertices after the cards' (all there)
+    fade = [1.0] * len(cards.data.vertices) + fade
     out = doll_outfits.join(cards, cap)
     out["layer_alpha"] = fade
     return out
@@ -748,13 +748,12 @@ def pigtails(ctx, strand_mat, cap_mat):
     # strands' layer shading runs on in the same order; the cap goes last
     shade = list(halves[0]["layer_shade"]) + list(halves[1]["layer_shade"])
     hue = list(halves[0]["layer_hue"]) + list(halves[1]["layer_hue"])
-    fade = list(halves[0]["layer_alpha"]) + list(halves[1]["layer_alpha"])
     out = doll_outfits.join(halves[0], halves[1])
     out["layer_shade"] = shade
     out["layer_hue"] = hue
     cap = scalp_hair(ctx, "Hair_pigtails_cap", cap_mat, lambda bm, ctx: None, rise=cap_reach(ctx))
     strands.comb_cap(ctx, cap)
-    fade += feather_cap(ctx, cap)
+    fade = [1.0] * len(out.data.vertices) + feather_cap(ctx, cap)
     out = doll_outfits.join(out, cap)
     out["layer_alpha"] = fade
     out.name = "Hair_pigtails"
