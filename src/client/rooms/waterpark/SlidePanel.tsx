@@ -4,7 +4,7 @@
 
 import { useEffect, type JSX } from "react";
 import { BENDS, finishTenths } from "../../../game/speedSlide.ts";
-import { useNow, usePressKeys } from "../shared/useNow.ts";
+import { useNow, useEndOnUnmount, usePressKeys } from "../shared/useNow.ts";
 import { leave, press, rivalNow, slide, start, tick } from "./slideSession.ts";
 
 const CALL = {
@@ -19,7 +19,7 @@ const secs = (tenths: number) => `${(tenths / 10).toFixed(1)} s`;
 /** The twin speed slides: tuck at each bend to beat the rival down. */
 export function SlidePanel(): JSX.Element {
   // switching to another game (or leaving the room) ends this one
-  useEffect(() => () => leave(), []);
+  useEndOnUnmount(leave);
   const s = slide.use();
   const now = useNow(s.phase === "sliding");
   useEffect(() => tick(now), [now]);

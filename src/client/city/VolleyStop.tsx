@@ -7,7 +7,11 @@ import { useEffect, useState, type JSX } from "react";
 import { VOLLEYBALL } from "../../game/city/layout.ts";
 import type { PrizeGame } from "../../game/prizes.ts";
 import { TO_WIN } from "../../game/volleyball.ts";
-import { useNow, usePressKeys } from "../rooms/shared/useNow.ts";
+import {
+  useNow,
+  useEndOnUnmount,
+  usePressKeys,
+} from "../rooms/shared/useNow.ts";
 import { driving } from "../world/driving.ts";
 import { playerSpot } from "../world/playerSpot.ts";
 import { leave, press, start, tick, volley } from "./volleySession.ts";
@@ -49,7 +53,7 @@ export function VolleyGame({
   prize: PrizeGame;
 }): JSX.Element {
   // switching to another game (or leaving the room) ends this one
-  useEffect(() => () => leave(), []);
+  useEndOnUnmount(leave);
   const s = volley.use();
   const playing = s.phase !== "off";
   const now = useNow(playing && s.phase !== "over");
