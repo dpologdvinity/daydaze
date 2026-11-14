@@ -2143,10 +2143,10 @@
       "prompt": "A Daydaze hot air balloon: a big round balloon with pink, peach and lavender stripes and the word \"DAYDAZE\" in white bubble letters around it, a woven wicker basket hanging below with little pennant flags. Stylized semi-realistic game prop, bright saturated colors, clean shapes, three-quarter view, centered, single object, plain white background."
     },
     "model": {
-      "task": "01a1d917-9548-76f7-b8ac-678f0b9d5b80",
+      "task": "01a1d91e-0f53-729a-8517-485cc7b2399c",
       "model_type": "smart-topology",
-      "ai_model": "meshy-t2",
-      "target_polycount": 4000,
+      "ai_model": "meshy-t2.5",
+      "target_polycount": 6000,
       "texture_model": "meshy-n1",
       "target_formats": [
         "glb"
@@ -2259,6 +2259,51 @@
       "ai_model": "nano-banana-pro",
       "aspect_ratio": "4:3",
       "prompt": "Lively painting of the inside of a Filipino jeepney: passengers on two facing benches passing coins forward to the driver, colorful decals and a small rosary on the mirror, sunlight through the open sides, a busy street outside. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself, no readable text."
+    }
+  },
+  "sap-autumn-bench": {
+    "group": "art",
+    "image": {
+      "task": "01a1d91f-94c5-70f5-9055-15ea408d5daa",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Tender oil painting: two elderly women, a lesbian couple in their seventies, both grandmothers with long silver hair in buns, wearing cardigans and long skirts, sitting close on a park bench in autumn holding hands, golden leaves falling, a thermos of tea between them. Loving, wholesome. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself, no frame, no text."
+    }
+  },
+  "sap-aquarium": {
+    "group": "art",
+    "image": {
+      "task": "01a1d91e-13ce-7023-b6f3-7f3d2181353c",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Glowing blue painting: two young women holding hands as they walk through an aquarium tunnel, sharks, rays and schools of fish swimming overhead, rippling light on their faces, one pointing up in wonder. Romantic, wholesome. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself, no text."
+    }
+  },
+  "sap-mistletoe": {
+    "group": "art",
+    "image": {
+      "task": "01a1d91e-14b1-7745-8bd9-1433037c8567",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Cheerful gouache illustration: at a cozy holiday party with fairy lights and a decorated tree, a young woman shyly kisses her girlfriend on the cheek under a sprig of mistletoe while friends cheer, sweaters, mugs of cocoa. Romantic, wholesome. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself, no text."
+    }
+  },
+  "sap-art-class": {
+    "group": "art",
+    "image": {
+      "task": "01a1d91e-15c8-70ab-a68a-a78007d58811",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Playful painterly illustration: two young women at an art class sitting at easels facing each other, each painting a portrait of the other and peeking over their canvases with shy smiles, paint smudges, sunlight in a loft studio. Romantic, wholesome. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself, no text."
+    }
+  },
+  "sap-water-park": {
+    "group": "art",
+    "image": {
+      "task": "01a1d91e-1a6c-7756-b240-2e2eb14235c8",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Vibrant summer poster-style painting: two young women in a big inflatable donut floating together in a sparkling water park pool, laughing and holding hands, a giant slide and palm trees behind, bright turquoise and coral. Joyful, wholesome. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself, no text."
     }
   }
 }
