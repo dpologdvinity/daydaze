@@ -506,8 +506,8 @@ function sAlong(lane: Lane, p: Vec2): number {
 }
 
 /** Meters up the lane a hailed cab starts (never inside the junction curve):
- * close enough to arrive in seconds,
- * even on a slow device, yet seen rolling in. */
+ * close enough to arrive in seconds, even on a slow device, yet seen rolling
+ * in. */
 const CAB_RUN_IN = 25;
 
 /**
