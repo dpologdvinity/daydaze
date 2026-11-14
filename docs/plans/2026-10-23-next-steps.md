@@ -197,6 +197,11 @@ default (it is a URL flag today; the comment there says so).
   color (the district lots' palette index) must read it after that chunk, or
   it sees plain white. Its per-instance LOD levels draw nothing past the first
   level, so far twins are separate meshes picked in the plan.
+- The strand-card hair styles wear the Hair Pack's atlas, so building them
+  needs the packs unzipped (`HAIR_PACKS`, default `/tmp/hair`; release
+  `hair`). `HAIR_ONLY=strands` rebuilds just those 17 styles. Their cap
+  material must stay named `hair_cap`: the client blends it by that name
+  (`featherCap` in `HumanDoll.tsx`) to fade the hairline.
 
 ## 4. The plan
 
