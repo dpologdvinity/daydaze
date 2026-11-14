@@ -1676,7 +1676,7 @@ const SHOTS: {
   ...[
     ["spill-manila-night", "-262,10", "-268,2.2,11,-300,4,7.6"],
     ["spill-manila-west-night", "-326,10", "-318,2.2,10,-352,4,14"],
-    ["spill-downtown-night", "20,10", "12,2.4,10,36,3.5,-16"],
+    ["spill-downtown-night", "50,-10", "54,2.6,-11,28,3.2,-17"],
     ["spill-manila-day", "-262,10", "-268,2.2,11,-300,4,7.6", "12:00"],
   ].map(([name, at, cam, time = "22:00"]) => ({
     name: String(name),
