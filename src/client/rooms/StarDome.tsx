@@ -40,14 +40,14 @@ function starMaterial(px: number, twinkle: boolean): THREE.ShaderMaterial {
         float tw = 1.0 + uTwinkle * 0.4 * sin(uTime * rate + aPhase * 40.0);
         vColor = aColor * tw;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = aSize * uPx;
+        gl_PointSize = aSize * uPx * 2.2;
       }`,
     fragmentShader: `
       varying vec3 vColor;
       void main() {
         float d = length(gl_PointCoord - 0.5) * 2.0;
         float a = smoothstep(1.0, 0.0, d);
-        gl_FragColor = vec4(vColor, pow(a, 1.5));
+        gl_FragColor = vec4(vColor, a);
       }`,
     transparent: true,
     depthWrite: false,
@@ -59,7 +59,7 @@ function starMaterial(px: number, twinkle: boolean): THREE.ShaderMaterial {
 function starColor(warmth: number, bright: number, out: THREE.Color) {
   if (warmth < 0.5) out.copy(COOL).lerp(WHITE, warmth * 2);
   else out.copy(WHITE).lerp(WARM, (warmth - 0.5) * 2);
-  return out.multiplyScalar(bright * 1.6);
+  return out.multiplyScalar(bright * 2.4);
 }
 
 function attribute(array: Float32Array, size: number) {

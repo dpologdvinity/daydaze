@@ -76,7 +76,7 @@ export function NightGrade({ look }: { look: NightLook }) {
         state.shadedSeen.add(m);
         state.shaded.push({ material: m, base: m.color.clone() });
         // the sky dome itself goes nearly black; scenery and the sun, not
-        const k = m.side === THREE.BackSide ? look.shade * 0.2 : look.shade;
+        const k = m.side === THREE.BackSide ? look.shade * 0.3 : look.shade;
         m.color.multiplyScalar(k).multiply(COOL);
       }
     };

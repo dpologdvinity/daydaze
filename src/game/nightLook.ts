@@ -47,7 +47,7 @@ export const NIGHT_LOOKS: Partial<Record<NightId, NightLook>> = {
     key: 0.1,
     tint: 0.4,
     tintColor: "#4f6bff",
-    shade: 0.18,
+    shade: 0.12,
     backdrop: "#04081f",
   },
   // a real blacklight room: dark, deep violet, everything else glows by itself
