@@ -5,6 +5,7 @@
 // restores the old view on close.
 
 import { activeTier, allows, byTier } from "../../game/age.ts";
+import { ActionDock, DockAction } from "./ActionDock.tsx";
 import { ClubNightTicker } from "./EventCalendar.tsx";
 import { InviteButton } from "../net/InviteButton.tsx";
 import {
@@ -1047,136 +1048,136 @@ export function Overlay({
           />
         )}
         <div className="dock-actions" role="group" aria-label="Room actions">
-          {room === "city" && (
-            <Suspense fallback={null}>
-              <ElPanel />
-            </Suspense>
-          )}
-          {room === "city" && <TaxiPanel />}
-          {room === "city" && !inCab && (
-            <button
-              type="button"
-              className="drink"
-              onClick={() => (driving.request = "city-drive")}
-            >
-              Drive your car
-            </button>
-          )}
-          {room === "apartment" && (
-            <Suspense fallback={null}>
-              <RecordPlayer records={records} />
-            </Suspense>
-          )}
-          {!inCab && (seatsIn(room).length > 0 || room === "apartment") && (
-            <button
-              type="button"
-              className="drink"
-              onClick={() => (seatRequest.nearest = true)}
-            >
-              Take a seat
-            </button>
-          )}
-          {room === "water-park" && (
-            <button type="button" className="ride" onClick={onRide}>
-              <RideIcon />
-              Ride a slide
-            </button>
-          )}
-          {(room === "velvet-room" ||
-            room === "back-room" ||
-            room === "tiki-bar" ||
-            room === "hotel-rooftop" ||
-            room === "drive-in" ||
-            room === "wine-bar" ||
-            room === "yacht") && (
-            <button
-              type="button"
-              className="drink"
-              onClick={() => drink("cocktail")}
-            >
-              <CocktailIcon />
-              {byTier("Have a drink", "Have a mocktail")}
-            </button>
-          )}
-          {room === "market" && (
-            <>
+          <ActionDock>
+            {room === "city" && (
+              <Suspense fallback={null}>
+                <ElPanel />
+              </Suspense>
+            )}
+            {room === "city" && <TaxiPanel />}
+            {room === "city" && !inCab && (
+              <DockAction
+                id="drive"
+                priority={2}
+                label="Drive your car"
+                onClick={() => (driving.request = "city-drive")}
+              />
+            )}
+            {room === "apartment" && (
+              <Suspense fallback={null}>
+                <RecordPlayer records={records} />
+              </Suspense>
+            )}
+            {!inCab && (seatsIn(room).length > 0 || room === "apartment") && (
+              <DockAction
+                id="seat"
+                priority={3}
+                label="Take a seat"
+                onClick={() => (seatRequest.nearest = true)}
+              />
+            )}
+            {room === "water-park" && (
+              <button type="button" className="ride" onClick={onRide}>
+                <RideIcon />
+                Ride a slide
+              </button>
+            )}
+            {(room === "velvet-room" ||
+              room === "back-room" ||
+              room === "tiki-bar" ||
+              room === "hotel-rooftop" ||
+              room === "drive-in" ||
+              room === "wine-bar" ||
+              room === "yacht") && (
               <button
                 type="button"
                 className="drink"
-                onClick={() => {
-                  if (onSpend(PRICES.snack)) relieve("food");
-                }}
+                onClick={() => drink("cocktail")}
               >
-                Buy a snack ({PRICES.snack} coins)
+                <CocktailIcon />
+                {byTier("Have a drink", "Have a mocktail")}
               </button>
+            )}
+            {room === "market" && (
+              <>
+                <button
+                  type="button"
+                  className="drink"
+                  onClick={() => {
+                    if (onSpend(PRICES.snack)) relieve("food");
+                  }}
+                >
+                  Buy a snack ({PRICES.snack} coins)
+                </button>
+                <button
+                  type="button"
+                  className="drink"
+                  onClick={() => {
+                    if (onSpend(PRICES.water)) relieve("drink");
+                  }}
+                >
+                  Buy a water ({PRICES.water} coins)
+                </button>
+              </>
+            )}
+            {room === "green-haze" && (
+              <>
+                <button
+                  type="button"
+                  className="drink"
+                  onClick={() => takeHit("joint")}
+                >
+                  Light a joint
+                </button>
+                <button
+                  type="button"
+                  className="drink"
+                  onClick={() => takeHit("edible")}
+                >
+                  Eat an edible
+                </button>
+                <button type="button" className="drink" onClick={sipTea}>
+                  Sip shroom tea
+                </button>
+              </>
+            )}
+            <VenueGames room={room} onPlay={onPlayGame} />
+            {room === "thrift-temple" && (
               <button
                 type="button"
                 className="drink"
-                onClick={() => {
-                  if (onSpend(PRICES.water)) relieve("drink");
-                }}
+                onClick={() => openShop("thrift", "Thrift Temple")}
               >
-                Buy a water ({PRICES.water} coins)
+                Shop at Thrift Temple
               </button>
-            </>
-          )}
-          {room === "green-haze" && (
-            <>
+            )}
+            {room === "salon" && (
               <button
                 type="button"
                 className="drink"
-                onClick={() => takeHit("joint")}
+                onClick={() => openShop("salon", "The Blowout Bar")}
               >
-                Light a joint
+                Shop at the Blowout Bar
               </button>
-              <button
-                type="button"
-                className="drink"
-                onClick={() => takeHit("edible")}
-              >
-                Eat an edible
-              </button>
-              <button type="button" className="drink" onClick={sipTea}>
-                Sip shroom tea
-              </button>
-            </>
-          )}
-          <VenueGames room={room} onPlay={onPlayGame} />
-          {room === "thrift-temple" && (
-            <button
-              type="button"
-              className="drink"
-              onClick={() => openShop("thrift", "Thrift Temple")}
-            >
-              Shop at Thrift Temple
-            </button>
-          )}
-          {room === "salon" && (
-            <button
-              type="button"
-              className="drink"
-              onClick={() => openShop("salon", "The Blowout Bar")}
-            >
-              Shop at the Blowout Bar
-            </button>
-          )}
-          {room === "galleria" && (
-            <nav className="venue-games" aria-label="Shops in this mall">
-              {GALLERIA_STORES.map((store) =>
-                store.shop ? (
-                  <button
-                    key={store.id}
-                    type="button"
-                    onClick={() =>
-                      store.shop && openShop(store.shop, store.name)
-                    }
-                  >
-                    Shop at {store.name}
-                  </button>
-                ) : null,
-              )}
-            </nav>
-          )}
+            )}
+            {room === "galleria" && (
+              <nav className="venue-games" aria-label="Shops in this mall">
+                {GALLERIA_STORES.map((store) =>
+                  store.shop ? (
+                    <button
+                      key={store.id}
+                      type="button"
+                      onClick={() =>
+                        store.shop && openShop(store.shop, store.name)
+                      }
+                    >
+                      Shop at {store.name}
+                    </button>
+                  ) : null,
+                )}
+              </nav>
+            )}
+          </ActionDock>
         </div>
         <div className="dock-modes">
           <Segmented

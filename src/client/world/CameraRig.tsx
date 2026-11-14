@@ -4,12 +4,22 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import type { OrbitControls as OrbitImpl } from "three-stdlib";
 import {
+  KEY_ZOOM_STEP,
   MIN_ZOOM,
   ZOOM_STEP,
+  faceHeightOf,
   focusHeight,
+  keyZoomNotches,
+  portraitFov,
+  portraitTarget,
+  pullInside,
+  portraitAmount,
+  roomInside,
+  swingToFront,
   zoomAbout,
+  type Vec3,
 } from "../../game/cameraZoom.ts";
-import type { RoomId } from "../../game/rooms.ts";
+import { ROOMS, type RoomId } from "../../game/rooms.ts";
 import { useReducedMotion } from "../motion.ts";
 import { cameraHold } from "./cameraHold.ts";
 import { driving } from "./driving.ts";
@@ -502,11 +512,19 @@ const CLOSE: Record<"full" | "face", { off: THREE.Vector3; look: number }> = {
   face: { off: new THREE.Vector3(0.12, 1.6, 0.85), look: 1.53 },
 };
 
+/** Closer than this to her (meters), the camera keeps out of the room's walls. */
+const CLOSE_RANGE = 4;
+/** How long after a zoom in the camera keeps coming round to her front. */
+const SETTLE_SECONDS = 0.8;
+
 const Y = new THREE.Vector3(0, 1, 0);
 const moved = new THREE.Vector3();
 const goalPos = new THREE.Vector3();
 const goalTarget = new THREE.Vector3();
 const chest = new THREE.Vector3();
+// a fingerprint of where the camera and she were when the walls were last checked
+const wallKey = new THREE.Vector3();
+const wallSeen = new THREE.Vector3(NaN, NaN, NaN);
 
 /**
  * Orbit camera that follows the player without fighting the user's orbit,
@@ -530,10 +548,13 @@ export function CameraRig({
   player,
   view,
   room,
+  body = "feminine",
 }: {
   player: Player;
   view: View;
   room: RoomId;
+  /** Her build: the portrait aims at where her eyes are. */
+  body?: "feminine" | "masculine";
 }) {
   const controls = useRef<OrbitImpl>(null);
   const camera = useThree((s) => s.camera);
@@ -546,6 +567,13 @@ export function CameraRig({
   const held = useRef(false);
   // wheel notches and pinches since the last frame, as one zoom factor
   const zoom = useRef(1);
+  // seconds left in which a zoom's swing round to her front keeps settling
+  const settle = useRef(0);
+  // the room's walls for the close camera, built on first use
+  const walls = useRef<{
+    room: RoomId;
+    inside: (x: number, z: number) => boolean;
+  } | null>(null);
 
   // Wheel and pinch zoom on her (cameraZoom.ts), not on the orbit target,
   // which in a room's overview sits far from her: OrbitControls' own dolly
@@ -583,12 +611,27 @@ export function CameraRig({
       touches.delete(e.pointerId);
       spread = span();
     };
+    // + and - zoom from the keyboard, unless she is typing or a shortcut is held
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const notches = keyZoomNotches(e.key);
+      if (notches === 0) return;
+      const el = e.target;
+      if (
+        el instanceof HTMLElement &&
+        (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))
+      )
+        return;
+      zoom.current *= KEY_ZOOM_STEP ** notches;
+    };
+    window.addEventListener("keydown", onKey);
     canvas.addEventListener("wheel", onWheel, { passive: false });
     canvas.addEventListener("pointerdown", onDown);
     canvas.addEventListener("pointermove", onMove);
     canvas.addEventListener("pointerup", onUp);
     canvas.addEventListener("pointercancel", onUp);
     return () => {
+      window.removeEventListener("keydown", onKey);
       canvas.removeEventListener("wheel", onWheel);
       canvas.removeEventListener("pointerdown", onDown);
       canvas.removeEventListener("pointermove", onMove);
@@ -666,7 +709,10 @@ export function CameraRig({
       f.t += dt;
       if (f.snap || f.t > 1.4) fly.current = null;
     }
-    if (zoom.current !== 1) {
+    // where her eyes are, for the portrait to aim at (seated, she is lower)
+    const eyes = faceHeightOf(body, Boolean(player.seat?.sit));
+    const zoomed = zoom.current !== 1;
+    if (zoomed) {
       // a zoom takes over from a flight still under way; it glides over a
       // few frames (all at once with reduced motion)
       fly.current = null;
@@ -678,18 +724,112 @@ export function CameraRig({
       const { camera: eye, target } = zoomAbout(
         camera.position.toArray(),
         c.target.toArray(),
-        [at.x, at.y + focusHeight(d * k), at.z],
+        [at.x, at.y + focusHeight(d * k, eyes), at.z],
         k,
         MIN_ZOOM,
         MAX_DISTANCE[room],
       );
       camera.position.fromArray(eye);
-      c.target.fromArray(target);
+      // the last stretch of a zoom centers her face, wherever the overview aimed
+      const face: Vec3 = [at.x, at.y + eyes, at.z];
+      c.target.fromArray(
+        portraitTarget(target, face, camera.position.distanceTo(chest)),
+      );
+      // zooming in on her face brings the camera round to her front
+      if (k < 1) settle.current = SETTLE_SECONDS;
+      if (k < 1) {
+        camera.position.fromArray(
+          swingToFront(
+            camera.position.toArray(),
+            face,
+            player.seat?.yaw ?? player.yaw,
+            (1 - k) * 4 * portraitAmount(camera.position.distanceTo(chest)),
+          ),
+        );
+      }
       canvas.dataset.camDistance = camera.position
-        .distanceTo(chest.copy(at).setY(at.y + focusHeight(0)))
+        .distanceTo(chest.copy(at).setY(at.y + eyes))
         .toFixed(2);
     }
+    if (!zoomed && settle.current > 0) {
+      // after the zoom: the swing finishes, even if the view was still flying
+      // (the dressing room opens its own shot as she zooms)
+      settle.current -= dt;
+      chest.copy(at).setY(at.y + 1);
+      const t = portraitAmount(camera.position.distanceTo(chest));
+      if (t > 0) {
+        camera.position.fromArray(
+          swingToFront(
+            camera.position.toArray(),
+            [at.x, at.y + eyes, at.z],
+            player.seat?.yaw ?? player.yaw,
+            Math.min(1, dt * 8) * t,
+          ),
+        );
+      }
+    }
     c.update();
+    // for screenshots and tests: how high above her face the camera looks from
+    const reading = zoomed || settle.current > 0;
+    if (reading)
+      canvas.dataset.camElevation = (
+        (Math.atan2(
+          camera.position.y - (at.y + eyes),
+          Math.hypot(camera.position.x - at.x, camera.position.z - at.z),
+        ) *
+          180) /
+        Math.PI
+      ).toFixed(1);
+    if (reading)
+      canvas.dataset.camFront = (
+        (Math.abs(
+          Math.atan2(
+            Math.sin(
+              Math.atan2(camera.position.x - at.x, camera.position.z - at.z) -
+                (player.seat?.yaw ?? player.yaw),
+            ),
+            Math.cos(
+              Math.atan2(camera.position.x - at.x, camera.position.z - at.z) -
+                (player.seat?.yaw ?? player.yaw),
+            ),
+          ),
+        ) *
+          180) /
+        Math.PI
+      ).toFixed(0);
+    // up close, indoors: out of the walls (an overview is far past them)
+    if (walls.current?.room !== room)
+      walls.current = { room, inside: roomInside(ROOMS[room].walkable) };
+    chest.copy(at).setY(at.y + 1);
+    const away = camera.position.distanceTo(chest);
+    // (only when the camera or she has moved: the check builds a few tuples)
+    wallKey.set(
+      camera.position.x,
+      camera.position.y + at.x * 7,
+      camera.position.z + at.z * 13,
+    );
+    if (
+      room !== "city" &&
+      away < CLOSE_RANGE &&
+      !wallKey.equals(wallSeen) &&
+      !walls.current.inside(camera.position.x, camera.position.z)
+    ) {
+      const pulled = pullInside(
+        camera.position.toArray(),
+        [at.x, at.y + 1.1, at.z],
+        walls.current.inside,
+      );
+      camera.position.fromArray(pulled);
+    }
+    wallSeen.copy(wallKey);
+    // a face wants a longer lens than the room does
+    if (camera instanceof THREE.PerspectiveCamera) {
+      const fov = portraitFov(away);
+      if (Math.abs(camera.fov - fov) > 0.05) {
+        camera.fov = fov;
+        camera.updateProjectionMatrix();
+      }
+    }
   });
 
   return (

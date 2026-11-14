@@ -464,6 +464,8 @@ button:focus-visible {
   align-items: flex-start;
   gap: 10px;
   pointer-events: none;
+  /* over the touch stick, so the More menu is never half under it */
+  z-index: 6;
 }
 
 .dock-modes {
@@ -3036,4 +3038,65 @@ button:focus-visible {
     700 14px system-ui,
     sans-serif;
   pointer-events: none;
+}
+
+/* the dock's contextual actions: one pill, and the rest behind "More" */
+.dock-more {
+  position: relative;
+}
+
+.dock-more-toggle {
+  background: rgb(255 255 255 / 0.1);
+  color: var(--champagne);
+  box-shadow: 0 0 0 1px rgb(255 207 106 / 0.55);
+}
+
+.dock-more-toggle[aria-expanded="true"] {
+  background: rgb(255 207 106 / 0.22);
+}
+
+.dock-more-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--amber);
+  color: #2a0b05;
+  font-size: 12px;
+}
+
+.dock-more-list {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 10px);
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: max-content;
+  padding: 6px;
+  border-radius: 22px;
+  background: rgb(32 6 34 / 0.94);
+  backdrop-filter: blur(8px);
+  box-shadow:
+    0 0 0 1px rgb(255 207 106 / 0.5),
+    0 0 24px rgb(255 47 154 / 0.3);
+}
+
+.dock-more-list[hidden] {
+  display: none;
+}
+
+.dock-more-list button {
+  justify-content: flex-start;
+  white-space: nowrap;
+}
+
+/* a finger needs more than 38px */
+@media (pointer: coarse) {
+  .dock-actions button {
+    min-height: 44px;
+  }
 }

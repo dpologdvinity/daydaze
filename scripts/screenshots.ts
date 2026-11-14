@@ -5,6 +5,7 @@ import { execFileSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { chromium, expect, type Page } from "@playwright/test";
 import { DEFAULT_LOOK } from "../src/game/look.ts";
+import { dockAction } from "../tests/dock.ts";
 import { SEATS, homeSeats } from "../src/game/seats.ts";
 import { CHAT_GROUPS } from "../src/game/city/chatGroups.ts";
 import { yawTowards } from "../src/game/walk.ts";
@@ -540,7 +541,7 @@ function wheelSheet(name: string): (typeof SHOTS)[number] {
       await expect(canvas).toHaveAttribute("data-city-car", "parked", {
         timeout: 300_000,
       });
-      await page.getByRole("button", { name: "Drive your car" }).click();
+      await (await dockAction(page, "Drive your car")).click();
       await expect(canvas).toHaveAttribute("data-city-car", "driving", {
         timeout: 120_000,
       });
@@ -2132,6 +2133,138 @@ const SHOTS: {
     name: "w144-wide",
     query: "room=city&view=full&time=12:00&at=-144,0",
     live: true,
+  },
+  // the dock's contextual actions (ui/ActionDock.tsx) and the close zoom:
+  // before and after the HUD declutter, on the same shots
+  { name: "hud-city", query: "room=city&view=full&time=12:00", live: true },
+  {
+    name: "hud-el",
+    live: true,
+    query: "room=city&view=full&time=12:00&at=28,9.5",
+    act: async (page: Page) => {
+      await expect(
+        page.getByRole("button", { name: /^Ride the El to / }).first(),
+      ).toBeVisible({ timeout: 300_000 });
+    },
+  },
+  {
+    name: "hud-el-more",
+    live: true,
+    query: "room=city&view=full&time=12:00&at=28,9.5",
+    act: async (page: Page) => {
+      await expect(
+        page.getByRole("button", { name: /^Ride the El to / }).first(),
+      ).toBeVisible({ timeout: 300_000 });
+      const more = page.getByRole("button", { name: "More actions" });
+      // before the HUD declutter there is no menu to open
+      if (await more.count()) await more.click();
+    },
+  },
+  {
+    name: "hud-mobile",
+    live: true,
+    query: "room=city&view=full&time=12:00&at=28,9.5",
+    viewport: { width: 390, height: 844 },
+    touch: true,
+    act: async (page: Page) => {
+      await expect(
+        page.getByRole("button", { name: /^Ride the El to / }).first(),
+      ).toBeVisible({ timeout: 300_000 });
+      const more = page.getByRole("button", { name: "More actions" });
+      if (await more.count()) await more.click();
+    },
+  },
+  { name: "hud-room", query: "room=lune&view=full", live: true },
+  {
+    name: "zoom-dressing",
+    query: "room=city&view=full",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      await page
+        .getByRole("button", { name: "Dressing room", exact: true })
+        .click();
+      // over the part of the picture the panel leaves free
+      await page.mouse.move(300, 400);
+      for (let i = 0; i < 12; i++) await page.mouse.wheel(0, -100);
+      await page.waitForFunction(
+        () =>
+          Number(document.querySelector("canvas")?.dataset.camDistance) < 1.1,
+        null,
+        { timeout: 120_000 },
+      );
+      console.log(
+        "zoom-dressing elevation, degrees off her front:",
+        await page.evaluate(() => {
+          const d = document.querySelector("canvas")?.dataset;
+          return `${d?.camElevation}, ${d?.camFront}`;
+        }),
+      );
+      // the glide and the swing settle after the zoom itself
+      await page
+        .waitForFunction(
+          () => Number(document.querySelector("canvas")?.dataset.camFront) < 15,
+          null,
+          { timeout: 20_000 },
+        )
+        .catch(() => console.log("zoom-dressing: the camera is not in front"));
+      console.log(
+        "zoom-dressing after:",
+        await page.evaluate(() => {
+          const d = document.querySelector("canvas")?.dataset;
+          return `${d?.camElevation}, ${d?.camFront}`;
+        }),
+      );
+    },
+  },
+  {
+    name: "zoom-room",
+    query: "room=salon",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      await page.mouse.move(640, 400);
+      for (let i = 0; i < 60; i++) await page.mouse.wheel(0, -100);
+      await page.waitForFunction(
+        () =>
+          Number(document.querySelector("canvas")?.dataset.camDistance) < 1.1,
+        null,
+        { timeout: 120_000 },
+      );
+      console.log(
+        "zoom-room elevation (deg):",
+        await page.evaluate(
+          () => document.querySelector("canvas")?.dataset.camElevation,
+        ),
+      );
+    },
+  },
+  {
+    name: "zoom-keys",
+    query: "room=lune&view=full",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      for (let i = 0; i < 9; i++) await page.keyboard.press("+");
+      await page.waitForFunction(
+        () =>
+          Number(document.querySelector("canvas")?.dataset.camDistance) < 1.1,
+        null,
+        { timeout: 120_000 },
+      );
+    },
   },
   {
     name: "city-mobile",

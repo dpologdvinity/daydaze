@@ -2,6 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { BUS_STOPS } from "../src/game/city/transit.ts";
 import { SONGS } from "../src/game/karaokeSongs.ts";
+import { dockAction } from "./dock.ts";
 
 // Every test forces the low tier: headless WebGL is SwiftShader on the CPU.
 // Most also use still=1 so the scene renders a few frames and then idles.
@@ -91,13 +92,82 @@ test("the city screen keeps only the essentials; the rest is in the menu", async
   test.setTimeout(330_000);
   await page.goto(`${STILL}&room=city`);
   await expect(roomTitle(page)).toHaveText("Downtown", { timeout: 150_000 });
-  // Dressing room, Drive your car, Take a seat, Say, Menu
+  // Dressing room, Drive your car, More actions (Take a seat), Say, Menu
   await expect(page.getByRole("button")).toHaveCount(5);
   const menu = page.getByRole("dialog", { name: "Menu" });
   await (await fromMenu(page, "Sound on")).click();
   await expect(menu.getByRole("button", { name: "Sound off" })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(menu).toHaveCount(0);
+});
+
+test("the city dock shows one action and the rest under More actions, by keyboard too", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  await page.goto(`${STILL}&room=city`);
+  await expect(roomTitle(page)).toHaveText("Downtown", { timeout: 150_000 });
+  const drive = page.getByRole("button", { name: "Drive your car" });
+  const seat = page.getByRole("button", { name: "Take a seat" });
+  const more = page.getByRole("button", { name: "More actions", exact: true });
+  await expect(drive).toBeVisible();
+  // the rest waits behind the toggle, out of sight and out of the tab order
+  await expect(more).toHaveAttribute("aria-expanded", "false");
+  await expect(seat).toHaveCount(0);
+  await more.focus();
+  await page.keyboard.press("Enter");
+  await expect(more).toHaveAttribute("aria-expanded", "true");
+  await expect(seat).toBeVisible();
+  // Tab goes from the toggle into the list; Escape closes it and gives focus back
+  await page.keyboard.press("Tab");
+  await expect(seat).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(more).toHaveAttribute("aria-expanded", "false");
+  await expect(more).toBeFocused();
+  await expect(seat).toHaveCount(0);
+});
+
+test("the plus and minus keys and the wheel zoom from the wide view in to her face and back", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  await page.goto(`${LOW}&room=lune&view=full`);
+  const canvas = canvasOf(page);
+  await expect(canvas).toHaveAttribute("data-frames", "10", {
+    timeout: 150_000,
+  });
+  const distance = async () =>
+    Number(await canvas.getAttribute("data-cam-distance"));
+  // + closes in, one press at a time, until her face fills the picture
+  for (let i = 0; i < 12; i++) await page.keyboard.press("+");
+  await expect.poll(distance, { timeout: 60_000 }).toBeLessThan(1);
+  await expect.poll(distance).toBeGreaterThan(0.5);
+  // it comes round to her front at about eye level for the portrait
+  await expect
+    .poll(async () => Number(await canvas.getAttribute("data-cam-front")), {
+      timeout: 30_000,
+    })
+    .toBeLessThan(20);
+  expect(Number(await canvas.getAttribute("data-cam-elevation"))).toBeLessThan(
+    15,
+  );
+  // typing a plus into the chat bar does not zoom
+  const before = await distance();
+  await page.getByPlaceholder("Say something").click();
+  await page.keyboard.type("1+1");
+  expect(await distance()).toBe(before);
+  // the wheel and - pull back out
+  await page.locator("canvas").hover();
+  await page.mouse.wheel(0, 1500);
+  await expect.poll(distance, { timeout: 60_000 }).toBeGreaterThan(before + 1);
+  const wide = await distance();
+  // out of the chat bar, whose typing the zoom keys leave alone
+  await page.evaluate(() => {
+    if (document.activeElement instanceof HTMLElement)
+      document.activeElement.blur();
+  });
+  for (let i = 0; i < 4; i++) await page.keyboard.press("-");
+  await expect.poll(distance, { timeout: 60_000 }).toBeGreaterThan(wide + 0.5);
 });
 
 // Credits must remain readable and keyboard-accessible from the menu.
@@ -193,7 +263,7 @@ test("the player drives their car down the avenue and parks it", async ({
   await page.getByLabel("Underglow").selectOption("pink");
   await page.getByLabel("Wrap").selectOption("stripes");
   await page.getByRole("button", { name: "Close menu" }).click();
-  await page.getByRole("button", { name: "Drive your car" }).click();
+  await (await dockAction(page, "Drive your car")).click();
   // she walks over from the square and gets in
   await expect(canvas).toHaveAttribute("data-city-car", "driving", {
     timeout: 120_000,
@@ -251,7 +321,7 @@ test("a car low on gas fills up at a pump for coins", async ({ page }) => {
   await expect(canvas).toHaveAttribute("data-city-car", "parked", {
     timeout: 180_000,
   });
-  await page.getByRole("button", { name: "Drive your car" }).click();
+  await (await dockAction(page, "Drive your car")).click();
   await expect(canvas).toHaveAttribute("data-city-car", "driving", {
     timeout: 120_000,
   });
@@ -1743,9 +1813,9 @@ test("the El: ride from Downtown's stairs to Chinatown and step off at its stair
   await page.goto(`${LOW}&room=city&at=28,9.5&elspeed=20`);
   const view = page.getByRole("img", { name: "3D room view" });
   await expect(view).toHaveAttribute("data-frames", "10", { timeout: 150_000 });
-  await page
-    .getByRole("button", { name: "Ride the El to Chinatown and Koreatown" })
-    .click();
+  await (
+    await dockAction(page, "Ride the El to Chinatown and Koreatown")
+  ).click();
   // ("Riding to ..." shows only while the train runs, at twenty times speed:
   // a slow runner can miss it, so the player's position is the proof)
   // the train carries her east; she steps off at Chinatown's stairs
@@ -1754,9 +1824,7 @@ test("the El: ride from Downtown's stairs to Chinatown and step off at its stair
       timeout: 120_000,
     })
     .toBeGreaterThan(300);
-  await expect(
-    page.getByRole("button", { name: "Ride the El to Downtown" }),
-  ).toBeVisible({ timeout: 60_000 });
+  await dockAction(page, "Ride the El to Downtown", 60_000);
   expect(errors).toEqual([]);
 });
 
@@ -3740,7 +3808,7 @@ test("taxi: hail on a sidewalk, pick Beachside on the map, pay the fare and ride
   await expect(canvas).toHaveAttribute("data-frames", "10", {
     timeout: 300_000,
   });
-  await page.getByRole("button", { name: "Hail a taxi" }).click();
+  await (await dockAction(page, "Hail a taxi")).click();
   await expect(canvas).toHaveAttribute("data-taxi", "choosing", {
     timeout: 120_000,
   });
@@ -3784,7 +3852,7 @@ test("band shell: the park band plays mid-set, the bandleader chats and you can 
   await expect(card.locator(".band-line")).toContainText("Bandleader:");
   await expect(card.locator(".band-line")).not.toContainText("...");
   // a blanket seat on the lawn
-  await page.getByRole("button", { name: "Take a seat" }).click();
+  await (await dockAction(page, "Take a seat")).click();
   await expect(canvas).toHaveAttribute("data-seated", /^park-blanket-/, {
     timeout: 60_000,
   });

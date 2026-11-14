@@ -1,7 +1,8 @@
-// The El's buttons in the dock: near a station's stairs, a trip to each of the
-// other stations; while waiting or riding, where you are headed and a way out.
+// The El in the dock: near a station's stairs, a trip to each of the
+// other stations (dock actions: one pill, the rest under More); while waiting or riding, where you are headed and a way out.
 
 import { useEffect, useState, type JSX } from "react";
+import { DockAction } from "../ui/ActionDock.tsx";
 import { EL_STATIONS } from "../../game/city/el.ts";
 import { elClock } from "./elLayout.ts";
 import { elRide } from "./elStore.ts";
@@ -40,18 +41,19 @@ export function ElPanel(): JSX.Element | null {
     );
   }
   if (!near) return null;
+  // beside the stairs the El outranks the dock's other actions: the first
+  // other station is the pill, the rest wait in "More actions"
   return (
-    <div className="dock-actions" role="group" aria-label="The El">
-      {EL_STATIONS.filter((s) => s.id !== near.id).map((s) => (
-        <button
+    <>
+      {EL_STATIONS.filter((s) => s.id !== near.id).map((s, i) => (
+        <DockAction
           key={s.id}
-          type="button"
-          className="drink"
+          id={`el-${s.id}`}
+          priority={i * 0.01}
+          label={`Ride the El to ${s.name}`}
           onClick={() => elRide.set({ request: { to: s.id } })}
-        >
-          Ride the El to {s.name}
-        </button>
+        />
       ))}
-    </div>
+    </>
   );
 }
