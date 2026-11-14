@@ -1,10 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { ARTWORKS } from "../artworks.ts";
 import {
   FURNITURE_CATALOG,
   FURNITURE_IDS,
   HOME_GRID,
   moveFurniture,
+  printArtwork,
   pieceAt,
   placeFurniture,
   removeFurniture,
@@ -199,5 +201,36 @@ test("looks: set, clear and validate a variant", () => {
   assert.deepEqual(
     loaded.map((f) => f.variant),
     [2, undefined, undefined],
+  );
+});
+
+test("prints keep their six saved looks and add the paintings after them", () => {
+  const names = FURNITURE_CATALOG["wall-art"].variants;
+  // saved homes store the index: these six must stay where they were
+  assert.deepEqual(names.slice(0, 6), [
+    "Sunset",
+    "Palm",
+    "Heart",
+    "Stars",
+    "Moon",
+    "Wave",
+  ]);
+  assert.deepEqual(FURNITURE_CATALOG["wall-art-wide"].variants, names);
+  for (let v = 0; v < 6; v++) assert.equal(printArtwork(v), null);
+  for (let v = 6; v < names.length; v++) {
+    const art = printArtwork(v);
+    assert.ok(art, `variant ${v}`);
+    assert.equal(names[v], ARTWORKS[art].title);
+  }
+  assert.equal(printArtwork(names.length), null);
+  assert.equal(printArtwork(-1), null);
+  // an old save's variant 5 loads as before; a painting variant loads now
+  const saved = [
+    { id: "wall-art", cell: [4, 0], rotation: 0, variant: 5 },
+    { id: "wall-art-wide", cell: [6, 0], rotation: 0, variant: 6 },
+  ];
+  assert.deepEqual(
+    validateFurniture(saved).map((f) => f.variant),
+    [5, 6],
   );
 });
