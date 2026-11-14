@@ -646,6 +646,9 @@ function hairShine<M extends THREE.MeshStandardMaterial>(material: M): M {
  */
 function featherCap<M extends THREE.MeshStandardMaterial>(material: M): M {
   material.transparent = true;
+  // a blended double-sided material draws twice (back faces, then front):
+  // one pass keeps the cap at one draw call, like the opaque caps
+  material.forceSinglePass = true;
   material.onBeforeCompile = (shader) => {
     shader.fragmentShader = shader.fragmentShader.replace(
       "#include <alphatest_fragment>",
@@ -666,7 +669,7 @@ function hairMaterial(
   map: THREE.Texture | null,
   shaded: boolean,
   rich: boolean,
-  /** Cut out by its alpha: strand cards are; a textured scalp cap is not. */
+  /** Cut out by its alpha: strand cards are; an opaque scalp cap is not. */
   cutout: boolean,
   /** Strand cards shine; a pack style's scalp cap (`*_cap`) stays matte. */
   shine: boolean,
