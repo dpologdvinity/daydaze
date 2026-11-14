@@ -292,6 +292,42 @@ const SPILL_REACH = 6;
 /** Just above a sidewalk's top (0.14 m), so the pool is not buried in it. */
 const SPILL_Y = 0.17;
 
+/** The color of the light a pale board throws: its hue, pulled to a lit,
+ * saturated tone (a cream board glows gold, a pale blue one sky blue), so the
+ * pool reads as colored light rather than a gray patch. */
+export function glowOf(hex: string): string {
+  const n = parseInt(hex.slice(1), 16);
+  const r = ((n >> 16) & 255) / 255;
+  const g = ((n >> 8) & 255) / 255;
+  const b = (n & 255) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const d = max - min;
+  let h = 0;
+  if (d > 0) {
+    if (max === r) h = ((g - b) / d + 6) % 6;
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+  }
+  // HSL with s = 0.85 and l = 0.55 back to RGB
+  const c = (1 - Math.abs(2 * 0.55 - 1)) * 0.85;
+  const x = c * (1 - Math.abs((h % 2) - 1));
+  const m = 0.55 - c / 2;
+  const [cr, cg, cb] = [
+    [c, x, 0],
+    [x, c, 0],
+    [0, c, x],
+    [0, x, c],
+    [x, 0, c],
+    [c, 0, x],
+  ][Math.floor(h) % 6];
+  const hexOf = (v: number) =>
+    Math.round((v + m) * 255)
+      .toString(16)
+      .padStart(2, "0");
+  return `#${hexOf(cr)}${hexOf(cg)}${hexOf(cb)}`;
+}
+
 /**
  * The soft colored light a lit board throws at night, faked: a glow disc
  * flat on the pavement in front of it and one on the wall below it, both on
@@ -399,7 +435,7 @@ export function lotSign(out: Buckets, lot: LotInstance): void {
   const nx = Math.sin(lot.yaw);
   const nz = Math.cos(lot.yaw);
   const color = PALETTES[lot.palette].sign;
-  signSpill(out, [lot.x, lot.z], lot.yaw, y, sx, h, color);
+  signSpill(out, [lot.x, lot.z], lot.yaw, y, sx, h, glowOf(color));
   out.panel.push({
     x: lot.x + nx * 0.16,
     y,

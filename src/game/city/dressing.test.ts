@@ -6,6 +6,7 @@ import {
   dressBuilding,
   labelUv,
   LABELS,
+  glowOf,
   lotSign,
   FURNITURE,
   PARKED_CARS,
@@ -242,9 +243,9 @@ test("a lot's shop board spills its color onto the wall below and the pavement i
   const pool = out.puddle.find(flat);
   const wash = out.puddle.find((i) => !flat(i));
   assert.ok(pool && wash);
-  // both are in the board's color
-  assert.equal(pool.color, board.color);
-  assert.equal(wash.color, board.color);
+  // both are the board's hue, lit up (glowOf)
+  assert.equal(pool.color, glowOf(board.color));
+  assert.equal(wash.color, glowOf(board.color));
   // out along the lot's front: the wash close to the wall, the pool a few
   // meters out, on the pavement (its top is 0.14 m up), never past the door zone
   const nx = Math.sin(lot.yaw);
@@ -283,4 +284,26 @@ test("a shop with no board spills nothing, and a building's neon sign spills too
     tinted.some((i) => !flat(i)),
     `${b.id} washes its wall`,
   );
+});
+
+test("a pale board's glow keeps its hue and is saturated, never white or gray", () => {
+  const channels = (hex: string) => {
+    const n = parseInt(hex.slice(1), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  };
+  // cream, pale blue, pale pink, pale mint, white-ish lilac
+  for (const board of ["#ffe9a8", "#e6f4ff", "#ffd0dc", "#d0f4e6", "#f0e6ff"]) {
+    const [r, g, b] = channels(glowOf(board));
+    assert.ok(
+      Math.max(r, g, b) - Math.min(r, g, b) >= 100,
+      `${board} washed out`,
+    );
+  }
+  // the dominant channel of a cream board stays red, of a pale blue one blue
+  const [r, , b] = channels(glowOf("#ffe9a8"));
+  assert.ok(r > b);
+  const [r2, , b2] = channels(glowOf("#e6f4ff"));
+  assert.ok(b2 > r2);
+  // an achromatic board has no hue to keep: it still returns a valid color
+  assert.match(glowOf("#ffffff"), /^#[0-9a-f]{6}$/);
 });

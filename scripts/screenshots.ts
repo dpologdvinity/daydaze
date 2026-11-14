@@ -1684,11 +1684,13 @@ const SHOTS: {
     query: `room=city&view=room&quality=low&time=${time}&at=${at}&cam=${cam}`,
     act: async (page: Page) => {
       await streetReady(page);
-      await page.waitForFunction(
-        () => document.querySelector("canvas")?.dataset.lots === "ready",
-        null,
-        { timeout: 300_000 },
-      );
+      // Downtown has no district lots to wait for
+      if (String(name).includes("manila"))
+        await page.waitForFunction(
+          () => document.querySelector("canvas")?.dataset.lots === "ready",
+          null,
+          { timeout: 300_000 },
+        );
       await page.waitForFunction(
         () => document.querySelector("canvas")?.dataset.frames === "10",
         null,
