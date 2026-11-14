@@ -282,6 +282,14 @@ const SHOTS = {
     target: [0, 1.42, 0] as const,
     fov: 22,
   },
+  // the same portrait, sitting (her first seated hold)
+  facesit: {
+    looks: [{ ...LINEUP[0], hairStyle: hairParam(), ...makeupParam() }],
+    x: () => 0,
+    cam: [0, 1.15, 0.95] as const,
+    target: [0, 1.07, 0] as const,
+    fov: 22,
+  },
   // the closet's eye tile (public/closet/eye-*.webp): the eyes, close up,
   // on a clear background (`?clear=1`)
   eyetile: {
@@ -676,7 +684,7 @@ function Lab() {
                 mood={
                   shot === "dance" || shot === "piggyback"
                     ? "dance"
-                    : shot === "sit" || shot === "lay"
+                    : shot === "sit" || shot === "lay" || shot === "facesit"
                       ? "sit"
                       : shot === "pose"
                         ? "pose"
@@ -685,7 +693,9 @@ function Lab() {
                 hold={
                   shot === "pose" || shot === "sit" || shot === "lay"
                     ? HOLDS[shot][i]
-                    : "none"
+                    : shot === "facesit"
+                      ? HOLDS.sit[0]
+                      : "none"
                 }
                 dance={
                   shot === "piggyback"
@@ -695,7 +705,7 @@ function Lab() {
                 seed={i}
                 // the face shot is a portrait of your own doll: she looks
                 // into the camera, as in the game's close zoom
-                own={shot === "face"}
+                own={shot === "face" || shot === "facesit"}
                 walk={walksInPlace ? WALKING[i % WALKING.length] : undefined}
                 rotation-y={walksInPlace ? Math.PI / 2 : 0}
               />

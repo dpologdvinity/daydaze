@@ -2368,13 +2368,13 @@ const SHOTS: {
 ];
 
 const only = process.argv.slice(2);
-// hair-<name>, doll-suit-<name> and doll-face shots are the lineup page's
+// hair-<name>, doll-suit-<name> and doll-face* shots are the lineup page's
 // (scripts/hair-shots.ts), which writes docs/screenshots/<prefix>-<name>.png
 // like any other shot
 const prefixOf = (n: string) =>
   n.startsWith("hair-")
     ? "hair-"
-    : n.startsWith("doll-suit-") || n === "doll-face"
+    : n.startsWith("doll-suit-") || n.startsWith("doll-face")
       ? "doll-"
       : "";
 const hairShots = only.filter((n) => prefixOf(n));
