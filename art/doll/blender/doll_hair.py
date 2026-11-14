@@ -75,20 +75,22 @@ def scalp_hair(ctx, name, mat, extra, rise=0.0):
     """A slicked scalp shell (head skin above the brow line and behind the
     hairline, pushed out a few millimetres) plus whatever `extra(bm, ctx)`
     adds to the bmesh. Added verts ride the nearest scalp vertex. `rise`
-    lifts the hairline, for a cap whose edge hides under strand roots."""
+    lifts the hairline, for a cap whose edge hides under strand roots (in
+    meters, or a function of x and y giving them)."""
     eye_z = ctx.JB["lEye"][2]
+    lift = rise if callable(rise) else (lambda x, y: rise)
     faces = []
     for f in ctx.FACES["body"]:
         pts = ctx.PB[f]
         if ctx.HEADW[f].min() < 0.98:
             continue
         # any face reaching above the hairline; its low corners clamp to it
-        if (pts[:, 2] > hairline(ctx, pts[:, 0], pts[:, 1]) + rise).any():
+        if (pts[:, 2] > hairline(ctx, pts[:, 0], pts[:, 1]) + lift(pts[:, 0], pts[:, 1])).any():
             faces.append(f)
     used = sorted({i for f in faces for i in f})
     remap = {o: n for n, o in enumerate(used)}
     verts = ctx.to_blender(ctx.P[used])
-    verts[:, 2] = np.maximum(verts[:, 2], hairline(ctx, verts[:, 0], verts[:, 1]) + rise)
+    verts[:, 2] = np.maximum(verts[:, 2], hairline(ctx, verts[:, 0], verts[:, 1]) + lift(verts[:, 0], verts[:, 1]))
     ob = ctx.new_object(name, verts, [[remap[i] for i in f] for f in faces])
     ob.data.update()
     nrm = np.array([v.normal[:] for v in ob.data.vertices])
@@ -657,15 +659,29 @@ def shade_strands(ctx, ob):
         attr.data[v.index].color = (g * (1 + 0.06 * h), g, g * (1 - 0.08 * h), a)
 
 
-# the strand styles' cap reaches this far below the hairline (meters), and
-# its vertex alpha fades in over FEATHER from there
-REACH = 0.02
+# the strand styles' cap reaches this far below the hairline (meters) over
+# the forehead, temples and sides, and its vertex alpha fades in over
+# FEATHER from there; behind the ears, under the hair, it stops just above
+# the hairline as before (no hidden triangles)
+REACH = 0.014
 FEATHER = 0.04
 
 
+def _facing(ctx, x, y):
+    """1 over the face and temples, 0 round the back of the head."""
+    head = ctx.JB["head"]
+    f = (1 - np.cos(np.arctan2(x - head[0], y - head[1]))) / 2
+    return np.clip((f - 0.15) / 0.2, 0, 1)
+
+
+def cap_reach(ctx):
+    """scalp_hair's `rise` for a feathered cap (see REACH)."""
+    return lambda x, y: 0.008 - (0.008 + REACH) * _facing(ctx, x, y)
+
+
 def feather_cap(ctx, cap):
-    """Vertex alpha for a scalp cap built `REACH` below the hairline: nothing
-    at its edge, all there `FEATHER` higher up. The cap's strand image
+    """Vertex alpha for a scalp cap built with cap_reach: nothing at its edge
+    over the face, all there `FEATHER` higher up. The cap's strand image
     breaks the fade up hair by hair (strands.cap_texture), so the hairline
     is soft and natural, not the cut edge of a wig."""
     co = np.array([v.co[:] for v in cap.data.vertices])
@@ -674,9 +690,12 @@ def feather_cap(ctx, cap):
     head = ctx.JB["head"]
     th = np.arctan2(co[:, 0] - head[0], co[:, 1] - head[1])
     wander = 0.004 + 0.0025 * np.sin(5 * th + 1) + 0.0015 * np.sin(13 * th + 4)
-    line = hairline(ctx, co[:, 0], co[:, 1]) + wander
-    k = np.clip((co[:, 2] - (line - REACH)) / FEATHER, 0, 1)
-    return list(map(float, k * k * (3 - 2 * k)))
+    edge = hairline(ctx, co[:, 0], co[:, 1]) + cap_reach(ctx)(co[:, 0], co[:, 1])
+    k = np.clip((co[:, 2] - edge - wander) / FEATHER, 0, 1)
+    k = k * k * (3 - 2 * k)
+    # round the back the cap ends under the hair, whole
+    w = _facing(ctx, co[:, 0], co[:, 1])
+    return list(map(float, w * k + (1 - w)))
 
 
 def strand_style(ctx, name, strand_mat, cap_mat, **style):
@@ -685,7 +704,7 @@ def strand_style(ctx, name, strand_mat, cap_mat, **style):
     reads as hair. The cap fades into the skin along the hairline."""
     import doll_outfits
 
-    cap = scalp_hair(ctx, name + "_cap", cap_mat, lambda bm, ctx: None, rise=-REACH)
+    cap = scalp_hair(ctx, name + "_cap", cap_mat, lambda bm, ctx: None, rise=cap_reach(ctx))
     strands.comb_cap(ctx, cap, style.get("tie"))
     fade = feather_cap(ctx, cap)
     cards = strands.build(ctx, name, strand_mat, **style)
@@ -722,7 +741,7 @@ def pigtails(ctx, strand_mat, cap_mat):
     out = doll_outfits.join(halves[0], halves[1])
     out["layer_shade"] = shade
     out["layer_hue"] = hue
-    cap = scalp_hair(ctx, "Hair_pigtails_cap", cap_mat, lambda bm, ctx: None, rise=-REACH)
+    cap = scalp_hair(ctx, "Hair_pigtails_cap", cap_mat, lambda bm, ctx: None, rise=cap_reach(ctx))
     strands.comb_cap(ctx, cap)
     fade = [1.0] * len(out.data.vertices) + feather_cap(ctx, cap)
     out = doll_outfits.join(out, cap)
