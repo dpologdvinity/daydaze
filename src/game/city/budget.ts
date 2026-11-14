@@ -83,13 +83,13 @@ export const MODEL_COST: Readonly<
   Record<string, { tris: number; parts: number }>
 > = {
   "doll/body-lo": { tris: 3168, parts: 1 },
-  "doll/hair-bob-lo": { tris: 1394, parts: 2 },
+  "doll/hair-bob-lo": { tris: 1434, parts: 2 },
   "doll/outfit-jeans-lo": { tris: 847, parts: 1 },
   "doll/shoes-platforms-lo": { tris: 1286, parts: 1 },
   "vendors/truck": { tris: 3360, parts: 1 },
   "vendors/cart": { tris: 1054, parts: 1 },
   "doll/body": { tris: 31056, parts: 4 },
-  "doll/hair-bob": { tris: 6972, parts: 2 },
+  "doll/hair-bob": { tris: 7172, parts: 2 },
   "doll/outfit-jeans": { tris: 4236, parts: 1 },
   "doll/shoes-platforms": { tris: 6436, parts: 1 },
   "nature/street-tree-1-lo": { tris: 493, parts: 2 },
