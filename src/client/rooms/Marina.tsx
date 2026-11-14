@@ -347,18 +347,22 @@ function Fishing({ player }: { player: Player }) {
   });
   return (
     <>
+      {/* its own boundary: a species not caught yet loads its model, and
+          that must not suspend (blank) the whole room meanwhile */}
       {state.phase === "result" && state.last?.outcome === "landed" && (
-        <Creature
-          kind={CATCH_MODELS[state.last.species] ?? "fish1"}
-          scale={2}
-          drive={(_dt, p) => {
-            p.x = FISH_SPOT[0] + 0.8;
-            p.y = 1.3;
-            p.z = FISH_SPOT[1] - 2;
-            p.yaw = Math.PI / 2;
-            p.clip = "swim";
-          }}
-        />
+        <Suspense fallback={null}>
+          <Creature
+            kind={CATCH_MODELS[state.last.species] ?? "fish1"}
+            scale={2}
+            drive={(_dt, p) => {
+              p.x = FISH_SPOT[0] + 0.8;
+              p.y = 1.3;
+              p.z = FISH_SPOT[1] - 2;
+              p.yaw = Math.PI / 2;
+              p.clip = "swim";
+            }}
+          />
+        </Suspense>
       )}
       <mesh
         position={[
