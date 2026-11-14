@@ -1882,7 +1882,8 @@ test("a pair stands talking on the sidewalk by the city's spawn", async ({
 }) => {
   test.setTimeout(330_000);
   const errors = collectErrors(page);
-  await page.goto(`${LOW}&room=city`);
+  // pinned to midday: by night the pair has gone home (chatGroupOut)
+  await page.goto(`${LOW}&room=city&time=12:00`);
   const canvas = canvasOf(page);
   await expect(canvas).toHaveAttribute("data-frames", "10", {
     timeout: 240_000,
