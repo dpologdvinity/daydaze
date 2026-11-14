@@ -40,7 +40,7 @@ function starMaterial(px: number, twinkle: boolean): THREE.ShaderMaterial {
         float tw = 1.0 + uTwinkle * 0.4 * sin(uTime * rate + aPhase * 40.0);
         vColor = aColor * tw;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = aSize * uPx * 2.2;
+        gl_PointSize = aSize * uPx * 2.8;
       }`,
     fragmentShader: `
       varying vec3 vColor;
@@ -71,7 +71,7 @@ export function StarDome({ low }: { low: boolean }) {
   const calm = useReducedMotion();
   const px = useThree((s) => s.gl.getPixelRatio());
   const sky = useMemo(() => {
-    const f = starField(low ? 650 : 1000, low ? 250 : 450);
+    const f = starField(low ? 1800 : 3000, low ? 800 : 1500);
     const g = new THREE.BufferGeometry();
     const pos = new Float32Array(f.count * 3);
     const col = new Float32Array(f.count * 3);
