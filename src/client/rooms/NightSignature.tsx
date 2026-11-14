@@ -56,7 +56,7 @@ export function NightGrade({ look }: { look: NightLook }) {
       squashed: [] as { mesh: THREE.Object3D; scale: number; y: number }[],
       backdrop: new THREE.Color(),
       saved: null as null | {
-        background: THREE.Color;
+        background: THREE.Color | null;
         bg: number;
         fog: THREE.Fog | THREE.FogExp2 | null;
         fogHex: number;
@@ -132,7 +132,8 @@ export function NightGrade({ look }: { look: NightLook }) {
       seen.clear();
       const s = state.saved;
       if (s) {
-        if (scene.background === s.background) s.background.setHex(s.bg);
+        if (s.background && scene.background === s.background)
+          s.background.setHex(s.bg);
         if (s.fog && scene.fog === s.fog) s.fog.color.setHex(s.fogHex);
         state.saved = null;
       }
@@ -142,17 +143,25 @@ export function NightGrade({ look }: { look: NightLook }) {
   useFrame(() => {
     if (state.frame++ % SWEEP_EVERY !== 0) return;
     scene.traverse(visit);
-    if (look.backdrop && scene.background instanceof THREE.Color) {
-      if (!state.saved || state.saved.background !== scene.background)
+    if (look.backdrop) {
+      const bg =
+        scene.background instanceof THREE.Color ? scene.background : null;
+      const fog = scene.fog;
+      // a room may have a sky color, a fog, or both (the hotel's is fog only)
+      if (
+        !state.saved ||
+        state.saved.background !== bg ||
+        state.saved.fog !== fog
+      )
         state.saved = {
-          background: scene.background,
-          bg: scene.background.getHex(),
-          fog: scene.fog,
-          fogHex: scene.fog?.color.getHex() ?? 0,
+          background: bg,
+          bg: bg?.getHex() ?? 0,
+          fog,
+          fogHex: fog?.color.getHex() ?? 0,
         };
       state.backdrop.set(look.backdrop);
-      scene.background.copy(state.backdrop);
-      if (scene.fog) scene.fog.color.copy(state.backdrop);
+      bg?.copy(state.backdrop);
+      fog?.color.copy(state.backdrop);
     }
   });
   return null;
