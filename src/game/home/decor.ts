@@ -106,6 +106,11 @@ const PRINT_ARTWORKS = [
   "sap-art-class",
   "sap-water-park",
   "sap-autumn-bench",
+  "sap-santacruzan",
+  "sap-mango-picnic",
+  "ph-merienda",
+  "dd-mango-season",
+  "sap-pier-fireworks",
 ] as const satisfies readonly ArtworkId[];
 const PRINT_NAMES: readonly string[] = [
   ...DRAWN_PRINTS,
