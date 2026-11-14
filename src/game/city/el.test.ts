@@ -11,6 +11,7 @@ import {
   elStopsFrom,
   elTrainAt,
   hasArrived,
+  hasBoarded,
   nearestStation,
   planTrip,
   stairsFoot,
@@ -141,6 +142,16 @@ test("a rider steps off at the stop, or after its dwell if the tab skipped it", 
   const late = trip.arrive + EL_DWELL + 5;
   assert.notEqual(train(late).at?.id, chinatown.id);
   assert.equal(hasArrived(trip, train(late), late), true);
+});
+
+test("a rider waiting on the platform boards even if a slow frame skipped the dwell", () => {
+  const trip = planTrip(downtown, chinatown, 0);
+  assert.equal(hasBoarded(trip, trip.board - 1), false);
+  assert.equal(hasBoarded(trip, trip.board), true);
+  // the train has already pulled out by the next frame: she is on it anyway
+  const late = trip.leave + 5;
+  assert.notEqual(elTrainAt(late).at?.id, downtown.id);
+  assert.equal(hasBoarded(trip, late), true);
 });
 
 test("leaving mid-ride drops her at the nearest station", () => {
