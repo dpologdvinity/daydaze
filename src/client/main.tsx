@@ -6,6 +6,7 @@ import { setConsoleFunction } from "three";
 import { loadDialogue } from "../game/dialogue/pick.ts";
 import { afterSceneReady } from "./world/ready.ts";
 import { App } from "./App.tsx";
+import { ReloadBoundary } from "./ui/ReloadBoundary.tsx";
 import { registerServiceWorker } from "./serviceWorker.ts";
 import "./styles.css";
 
@@ -58,6 +59,8 @@ const root = document.getElementById("root");
 if (!root) throw new Error("index.html is missing #root.");
 createRoot(root).render(
   <StrictMode>
-    <App />
+    <ReloadBoundary>
+      <App />
+    </ReloadBoundary>
   </StrictMode>,
 );
