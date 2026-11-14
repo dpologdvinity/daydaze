@@ -3,11 +3,12 @@
 // they load) and capiz-shell lamps above. Throws on render if the
 // "halo-halo-haus" venue is missing from FOOD_VENUES.
 
-import type { JSX } from "react";
+import { Suspense, type JSX } from "react";
 import { FOOD_VENUES } from "../../../game/food/venues.ts";
 import type { PickHandler } from "../shared/Floor.tsx";
-import { hdr } from "../shared/materials.ts";
+import { GOLD, hdr } from "../shared/materials.ts";
 import { Dishes, type DishAt } from "../shared/Dishes.tsx";
+import { ImagePiece } from "../shared/ImagePiece.tsx";
 import { FoodRoom, type FoodPalette } from "./FoodRoom.tsx";
 
 const VENUE = FOOD_VENUES.find((v) => v.id === "halo-halo-haus");
@@ -95,6 +96,17 @@ export function HaloHaloCafe({ onPick }: { onPick: PickHandler }): JSX.Element {
       onPick={onPick}
     >
       <Dishes items={COUNTER} scale={COUNTER_SCALE} fallback={<Glasses />} />
+      {/* the house poster on the right wall, past the counter's end */}
+      <Suspense fallback={null}>
+        <ImagePiece
+          art="dd-halo-halo-haus"
+          at={[4.06, 2.25, -0.1]}
+          ry={-Math.PI / 2}
+          maxW={0.9}
+          maxH={1.2}
+          frame={GOLD}
+        />
+      </Suspense>
       {/* capiz-shell lamps over the counter */}
       {[-2, 0, 2].map((x) => (
         <mesh key={x} position={[x, 2.9, -0.4]}>

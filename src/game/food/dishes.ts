@@ -46,6 +46,7 @@ export const DISHES = {
   pinakbet: { width: 0.3, height: 0.1 },
   champorado: { width: 0.26, height: 0.12 },
   "mais-con-yelo": { width: 0.2, height: 0.26 },
+  "green-mango": { width: 0.24, height: 0.12, folder: "mango" },
   "mango-float": { width: 0.26, height: 0.12, folder: "mango" },
   "mango-shake": { width: 0.2, height: 0.28, folder: "mango" },
 } as const satisfies Record<string, Dish>;
