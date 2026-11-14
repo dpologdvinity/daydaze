@@ -372,6 +372,12 @@ const CEILINGS: Partial<Record<RoomId, number>> = {
 /** How far out the star dome sits, where a room's own sky is nearer than 380. */
 const STAR_RADIUS: Partial<Record<RoomId, number>> = { "rooftop-bar": 150 };
 
+/**
+ * How low the stars may come, where a room's ground stops short of the
+ * horizon (the hotel's street disc ends about ten degrees below it).
+ */
+const STAR_FLOOR: Partial<Record<RoomId, number>> = { "hotel-rooftop": -0.17 };
+
 /** The decor of the night on in a room, and the tint it gives the light. */
 export function NightDecor({ room }: { room: RoomId }) {
   const night = useNight(room);
@@ -402,7 +408,11 @@ export function NightDecor({ room }: { room: RoomId }) {
       ) : kind === "bunting" ? (
         <Bunting box={box} />
       ) : kind === "stars" ? (
-        <StarDome low={low} radius={STAR_RADIUS[room]} />
+        <StarDome
+          low={low}
+          radius={STAR_RADIUS[room]}
+          floor={STAR_FLOOR[room]}
+        />
       ) : (
         <Cloud look={LOOKS[kind]} box={box} low={low} />
       )}
