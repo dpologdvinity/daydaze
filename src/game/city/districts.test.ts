@@ -78,6 +78,25 @@ test("each block's lots add up to the length of its faces", () => {
   }
 });
 
+test("Little Manila keeps the avenue frontage the El's stairs once took", () => {
+  // the avenue's shopfronts (street faces on z = +-14) summed 274 m before the
+  // Manila stairs left two shops out (a 5.7 m and a 6.3 m); they stand again
+  // on free frontage, so the total never falls below that
+  const BEFORE_STAIRS = 274;
+  let front = 0;
+  for (const b of blocks) {
+    if (districtOf(b) !== "little-manila") continue;
+    for (const l of lotRow(b))
+      if (
+        !l.back &&
+        Math.abs(Math.abs(l.z) - 14) < 0.1 &&
+        l.yaw % Math.PI === 0
+      )
+        front += LOT_SPECS[l.model].w * l.sx;
+  }
+  assert.ok(front >= BEFORE_STAIRS - 1e-6, `${front} m of avenue shopfronts`);
+});
+
 test("lots meet the block's roofline without stretching out of shape", () => {
   for (const b of blocks)
     for (const l of lotRow(b)) {
