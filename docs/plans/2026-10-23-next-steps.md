@@ -171,6 +171,10 @@ default (it is a URL flag today; the comment there says so).
   up gets its own `<Suspense fallback={null}>`: otherwise it suspends the
   whole room (World's boundary) and, in dev, StrictMode re-runs every effect
   in it when it reappears (cleanups that end a game fire).
+- A panel or scene that ends its game when it goes away uses
+  `useEndOnUnmount(leave)` (`rooms/shared/useNow.ts`), not
+  `useEffect(() => () => leave(), [])`: dev StrictMode's unmount-remount of a
+  freshly mounted panel otherwise ends the game a fast click just started.
 - `npm run verify` checks the initial JS budget (600 KB gzipped). Keep new
   panels, games and data behind `lazy()`/`import()`; check what's in the
   first load with a sourcemapped `vite build` before guessing.
