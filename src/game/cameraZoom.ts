@@ -3,10 +3,10 @@
 // step closes in on her from wherever the camera is: from a room's overview,
 // whose orbit target sits far from her, as much as from a close-up. Far out
 // the point is her chest; close in it rises to her face, so the closest zoom
-// is a portrait. Close in, the view also swings onto her face and the lens
-// narrows (a long lens flatters a face; a wide one at 0.7 m stretches the nose),
-// and a camera that would end up inside a room's wall is pulled back. Pure:
-// positions are plain [x, y, z] tuples.
+// is a portrait, and she looks up into it. Close in, the view also swings
+// onto her face and the lens narrows (a long lens flatters a face; a wide one
+// at 0.7 m stretches the nose), and a camera that would end up inside a
+// room's wall is pulled back. Pure: positions are plain [x, y, z] tuples.
 
 import { nearestPointOnPolygon, pointInPolygon, type Vec2 } from "./walk.ts";
 
@@ -16,8 +16,9 @@ export type Vec3 = readonly [number, number, number];
 export const CHEST_HEIGHT = 1.1;
 export const FACE_HEIGHT = 1.55;
 /** Nearest the camera comes to her: her face fills the screen. At the
- * portrait lens that frames about 0.35 m: her head, hair just in. */
-export const MIN_ZOOM = 0.75;
+ * portrait lens that frames about 0.39 m: her whole head, chin to the top of
+ * her hair, with a little room round it. */
+export const MIN_ZOOM = 0.85;
 /** The world camera's lens (vertical, degrees), and the portrait lens it
  * narrows to at the nearest zoom. */
 export const WIDE_FOV = 38;
@@ -41,13 +42,34 @@ export function focusHeight(distance: number, face = FACE_HEIGHT): number {
   return CHEST_HEIGHT + (face - CHEST_HEIGHT) * portraitAmount(distance);
 }
 
-/** Her eye line (meters above her feet): the woman is 1.66 m tall and the man
- * 1.78 m, and a seated doll's head is about 0.42 m lower. */
+/** The middle of her head, just above her eye line (meters above her feet),
+ * where the portrait aims so it holds the whole head: the woman is 1.66 m
+ * tall and the man 1.78 m, and a seated doll's head is about 0.42 m lower. */
 export function faceHeightOf(
   body: "feminine" | "masculine",
   seated: boolean,
 ): number {
-  return (body === "masculine" ? 1.6 : 1.48) - (seated ? 0.42 : 0);
+  return (body === "masculine" ? 1.65 : 1.52) - (seated ? 0.42 : 0);
+}
+
+/** The most her head turns (radians) to look into a portrait's camera. */
+export const GAZE_MAX = 0.6;
+/** The camera this far round from her front (radians) or more is behind her:
+ * she does not twist to it. The turn fades out over the last GAZE_FADE. */
+const GAZE_FIELD = 1.9;
+const GAZE_FADE = 0.6;
+
+/**
+ * How far (radians) her head turns to look into the camera: `off` is the
+ * angle between where her head points and the camera, `side` the camera's
+ * angle round from her body's front, `amount` how much of a portrait the view
+ * is (portraitAmount). An idle clip may have her look down or away just as
+ * the portrait is taken; she looks up into it instead.
+ */
+export function gazeTurn(off: number, side: number, amount: number): number {
+  const facing = Math.min(1, Math.max(0, (GAZE_FIELD - side) / GAZE_FADE));
+  const w = Math.min(1, Math.max(0, amount)) * facing;
+  return Math.min(off, GAZE_MAX) * w;
 }
 
 /** The lens (vertical fov, degrees) at `distance` meters from her. */

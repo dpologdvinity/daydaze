@@ -8,8 +8,10 @@ import {
   PORTRAIT_ELEVATION,
   PORTRAIT_FOV,
   WIDE_FOV,
+  GAZE_MAX,
   faceHeightOf,
   focusHeight,
+  gazeTurn,
   keyZoomNotches,
   portraitAmount,
   portraitFov,
@@ -49,7 +51,7 @@ test("zooming in from a far overview ends close on her, not on the overview's po
   }
   const face: Vec3 = [her[0], FACE_HEIGHT, her[2]];
   assert.ok(
-    dist(camera, face) < 0.8,
+    dist(camera, face) < MIN_ZOOM + 0.05,
     `camera ${dist(camera, face)} m from her face`,
   );
   assert.ok(
@@ -236,4 +238,31 @@ test("the portrait aims at this doll's eyes: the man's are higher, a seated doll
   );
   assert.equal(focusHeight(MIN_ZOOM, 1.3), 1.3);
   assert.equal(focusHeight(40, 1.3), CHEST_HEIGHT);
+});
+
+test("the nearest portrait frames her whole head, chin to the top of her hair", () => {
+  // the woman's chin is at about 1.37 m, her hair's top about 1.67 m
+  const aim = faceHeightOf("feminine", false);
+  const half = MIN_ZOOM * Math.tan((PORTRAIT_FOV * Math.PI) / 360);
+  assert.ok(aim + half > 1.67 + 0.02, `the frame's top is ${aim + half}`);
+  assert.ok(aim - half < 1.37 - 0.02, `the frame's bottom is ${aim - half}`);
+});
+
+test("in a portrait she looks into the camera; out of one, or with it behind her, she does not", () => {
+  // a small look away is made up in full, a big one only so far
+  assert.equal(gazeTurn(0.2, 0.3, 1), 0.2);
+  assert.equal(gazeTurn(1.2, 0.3, 1), GAZE_MAX);
+  // half a portrait, half the turn
+  assert.equal(gazeTurn(0.2, 0.3, 0.5), 0.1);
+  // no portrait, no turn
+  assert.equal(gazeTurn(0.4, 0.3, 0), 0);
+  // the camera behind her: she does not twist round to it
+  assert.equal(gazeTurn(0.4, Math.PI, 1), 0);
+  // and the turn fades out as the camera goes round her side, never snaps
+  let last = gazeTurn(0.4, 0, 1);
+  for (let side = 0; side <= Math.PI; side += 0.05) {
+    const turn = gazeTurn(0.4, side, 1);
+    assert.ok(turn <= last + 1e-9 && last - turn < 0.1, `at ${side}`);
+    last = turn;
+  }
 });

@@ -693,6 +693,9 @@ function Lab() {
                     : DANCES[i % DANCES.length]
                 }
                 seed={i}
+                // the face shot is a portrait of your own doll: she looks
+                // into the camera, as in the game's close zoom
+                own={shot === "face"}
                 walk={walksInPlace ? WALKING[i % WALKING.length] : undefined}
                 rotation-y={walksInPlace ? Math.PI / 2 : 0}
               />
