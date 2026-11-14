@@ -2305,5 +2305,50 @@
       "aspect_ratio": "3:4",
       "prompt": "Vibrant summer poster-style painting: two young women in a big inflatable donut floating together in a sparkling water park pool, laughing and holding hands, a giant slide and palm trees behind, bright turquoise and coral. Joyful, wholesome. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself, no text."
     }
+  },
+  "sap-santacruzan": {
+    "group": "art",
+    "image": {
+      "task": "01a1d949-80b3-702a-b2b8-97362b140492",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Joyful painting: two young Filipina women in a Santacruzan procession at dusk, one a sagala in a white gown with a flower crown, the other carrying the bamboo flower arch over her, glancing at each other and smiling, candles and banderitas, warm gold light. Romantic, wholesome. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself, no frame, no text."
+    }
+  },
+  "sap-mango-picnic": {
+    "group": "art",
+    "image": {
+      "task": "01a1d949-812f-72ef-96b8-321e161959a0",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Cozy painting: two young women on a picnic blanket under a big mango tree in a Philippine backyard, sharing slices of ripe mango, one feeding the other a piece, a bayong basket and a bottle of calamansi juice beside them, dappled afternoon light. Romantic, wholesome. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself, no frame, no text."
+    }
+  },
+  "ph-merienda": {
+    "group": "art",
+    "image": {
+      "task": "01a1d949-81ad-72f9-a5d0-8cd8c300b2d5",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "4:3",
+      "prompt": "Nostalgic painting of a Filipino family's Sunday merienda: a lola serving turon and bibingka on a capiz-window porch, grandchildren with glasses of sago't gulaman, a rocking chair and potted plants, golden late-afternoon light. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself, no frame, no text."
+    }
+  },
+  "dd-mango-season": {
+    "group": "art",
+    "image": {
+      "task": "01a1d949-8213-7285-b99e-7485344ef784",
+      "ai_model": "nano-banana-pro",
+      "aspect_ratio": "3:4",
+      "prompt": "Pop poster: \"DAYDAZE\" in big glossy bubble letters, under it \"MANGO SEASON\" in juicy hand lettering, a giant smiling cartoon mango in sunglasses lounging on a pool float, mango slices, palm leaves and sparkles, mango yellow, pink and teal. The poster design fills the entire image edge to edge, straight-on flat scan."
+    }
+  },
+  "sap-pier-fireworks": {
+    "group": "art",
+    "image": {
+      "task": "01a1d949-828a-72eb-9a44-359488de8ed6",
+      "ai_model": "nano-banana-2-1",
+      "aspect_ratio": "3:4",
+      "prompt": "Soft watercolor painting: two young women sitting on the edge of a pier at night, wrapped in one blanket, watching fireworks burst over the ocean, one with her head on the other's shoulder. Romantic, wholesome. The painting fills the entire image edge to edge, straight-on flat scan of the artwork itself, no frame, no text."
+    }
   }
 }

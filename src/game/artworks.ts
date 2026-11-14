@@ -46,6 +46,9 @@ export const ARTWORKS = {
   "sap-art-class": { title: "Art Class", group: "sapphic" },
   "sap-water-park": { title: "Water Park Float", group: "sapphic" },
   "sap-autumn-bench": { title: "Autumn Bench", group: "sapphic" },
+  "sap-santacruzan": { title: "Santacruzan", group: "sapphic" },
+  "sap-mango-picnic": { title: "Mango Picnic", group: "sapphic" },
+  "sap-pier-fireworks": { title: "Fireworks off the Pier", group: "sapphic" },
   // Filipino
   "ph-parol-night": { title: "Parol Night", group: "filipino" },
   "ph-sinulog": { title: "Sinulog", group: "filipino" },
@@ -58,6 +61,7 @@ export const ARTWORKS = {
   "ph-fiesta-street": { title: "Fiesta Street", group: "filipino" },
   "ph-manila-bay": { title: "Manila Bay", group: "filipino" },
   "ph-nipa-sea": { title: "Nipa Hut by the Sea", group: "filipino" },
+  "ph-merienda": { title: "Sunday Merienda", group: "filipino" },
   "ph-noche-buena": { title: "Noche Buena", group: "filipino" },
   "ph-chocolate-hills": { title: "Chocolate Hills", group: "filipino" },
   "ph-vigan": { title: "Vigan", group: "filipino" },
@@ -82,6 +86,7 @@ export const ARTWORKS = {
   "dd-halo-halo-haus": { title: "Halo-Halo Haus Poster", group: "daydaze" },
   "dd-boodle-night": { title: "Boodle Night Poster", group: "daydaze" },
   "dd-speedway": { title: "Speedway Poster", group: "daydaze" },
+  "dd-mango-season": { title: "Mango Season Poster", group: "daydaze" },
 } as const satisfies Record<string, { title: string; group: ArtGroup }>;
 
 export type ArtworkId = keyof typeof ARTWORKS;
