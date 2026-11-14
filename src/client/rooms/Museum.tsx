@@ -204,23 +204,18 @@ const TERNO: Look = {
 };
 
 /** The Meshy models (public/models/meshy/museum/) that replace a simple shape,
- * each fitted to the plinth top: the fit box in meters, and a turn to show it
- * at an angle. */
+ * each fitted to fill about 90% of the 1.3 m plinth top (1.17 m): the fit box
+ * in meters. */
 const MODELS: Partial<
   Record<
     ExhibitKind,
-    {
-      model: string;
-      width: number;
-      depth: number;
-      height: number;
-      yaw?: number;
-    }
+    { model: string; width: number; depth: number; height: number }
   >
 > = {
-  "bahay-kubo": { model: "bahay-kubo", width: 1.2, depth: 1.2, height: 1.5 },
-  jeepney: { model: "jeepney", width: 1.25, depth: 1, height: 1, yaw: 0.5 },
-  banig: { model: "banig", width: 1.1, depth: 0.5, height: 1.6 },
+  "bahay-kubo": { model: "bahay-kubo", width: 1.17, depth: 1.17, height: 1.8 },
+  // long axis along the plinth's front, side-on to the viewer
+  jeepney: { model: "jeepney", width: 1.17, depth: 1.17, height: 1.4 },
+  banig: { model: "banig", width: 1.17, depth: 0.6, height: 2 },
   "sari-sari": { model: "sari-sari", width: 1.2, depth: 1.2, height: 1.3 },
 };
 
