@@ -1074,6 +1074,31 @@ const SHOTS: {
       await page.waitForTimeout(3_000);
     },
   })),
+  // the same nights from further back: the whole hall, and the whole course
+  ...(
+    [
+      ["mall-rave", "galleria", "-10,7,9.4,3,0.5,-2"],
+      ["mall-rave", "sugar-rush", ""],
+      ["uv-night", "laser-tag", ""],
+      ["uv-night", "mini-golf", "0,6,12,0,0,0"],
+      // looking up past the towers at the stargazing sky
+      ["stargazing", "hotel-rooftop", "2,1.8,8,-6,34,-70"],
+      // and across the open side of the deck, horizon and all
+      ["stargazing", "hotel-rooftop", "0,2,0,3,12,40"],
+    ] as const
+  ).map(([night, room, cam]) => ({
+    name: `night-${night}-${room}${cam === "0,2,0,3,12,40" ? "-open" : ""}`,
+    query: `room=${room}&night=${night}&quality=low&time=23:30${cam ? `&cam=${cam}` : ""}`,
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      await page.waitForTimeout(4_000);
+    },
+  })),
   { name: "bowling", query: "room=bowling" },
   { name: "bowling-concourse", query: "room=bowling&cam=0,2.4,9.8,0,0.6,5" },
   { name: "arcade-bar", query: "room=arcade-bar" },

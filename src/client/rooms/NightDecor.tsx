@@ -16,12 +16,14 @@ import {
   type NightDecor as Decor,
 } from "../../game/events.ts";
 import { ROOMS, type RoomId } from "../../game/rooms.ts";
+import { NIGHT_LOOKS } from "../../game/nightLook.ts";
 import { nightClock } from "../city/eventClocks.ts";
 import { useReducedMotion } from "../motion.ts";
 import { useQuality } from "../world/quality.ts";
 import { hdr } from "./shared/materials.ts";
-
-type Shape = "dot" | "square" | "heart" | "star" | "petal" | "bar" | "ring";
+import { StarDome } from "./StarDome.tsx";
+import { Cannons, Lasers, NightGrade, type Hall } from "./NightSignature.tsx";
+import { rand, shapeTexture, type Shape } from "./shared/nightSprites.ts";
 
 /** How one kind of decor looks and moves. Speeds are meters a second, `y` is
  * the band it lives in as fractions of the room's air above the floor. */
@@ -43,7 +45,10 @@ type Look = {
 };
 
 const NEON = ["#ff4fd8", "#4fe3ff", "#c3ff3d", "#ffd84f", "#9b5cff"];
-const LOOKS: Record<Exclude<Decor, "spotlights" | "bunting">, Look> = {
+const LOOKS: Record<
+  Exclude<Decor, "spotlights" | "bunting" | "stars">,
+  Look
+> = {
   glowsticks: {
     shape: "bar",
     colors: NEON,
@@ -140,18 +145,6 @@ const LOOKS: Record<Exclude<Decor, "spotlights" | "bunting">, Look> = {
     opacity: 1,
     twinkle: 0.7,
   },
-  stars: {
-    shape: "star",
-    colors: ["#ffffff", "#bcd2ff", "#fff1c9"],
-    count: 110,
-    size: 0.3,
-    vy: 0,
-    drift: 0,
-    y: [0.55, 1],
-    glow: 2.4,
-    opacity: 1,
-    twinkle: 0.6,
-  },
   fog: {
     shape: "dot",
     colors: ["#9dffb8", "#cbffe0"],
@@ -201,68 +194,6 @@ const LOOKS: Record<Exclude<Decor, "spotlights" | "bunting">, Look> = {
     twinkle: 0.5,
   },
 };
-
-const shapeTextures = new Map<Shape, THREE.CanvasTexture>();
-
-/** A sprite's white-on-clear picture, drawn once per shape. */
-function shapeTexture(shape: Shape): THREE.CanvasTexture {
-  const cached = shapeTextures.get(shape);
-  if (cached) return cached;
-  const S = 64;
-  const canvas = document.createElement("canvas");
-  canvas.width = canvas.height = S;
-  const ctx = canvas.getContext("2d");
-  if (ctx) {
-    ctx.fillStyle = ctx.strokeStyle = "#ffffff";
-    ctx.translate(S / 2, S / 2);
-    if (shape === "dot") {
-      const g = ctx.createRadialGradient(0, 0, 2, 0, 0, S / 2);
-      g.addColorStop(0, "#ffffff");
-      g.addColorStop(0.45, "rgba(255,255,255,0.75)");
-      g.addColorStop(1, "rgba(255,255,255,0)");
-      ctx.fillStyle = g;
-      ctx.fillRect(-S / 2, -S / 2, S, S);
-    } else if (shape === "square") {
-      ctx.fillRect(-20, -14, 40, 28);
-    } else if (shape === "bar") {
-      ctx.fillRect(-4, -28, 8, 56);
-    } else if (shape === "ring") {
-      ctx.lineWidth = 6;
-      ctx.beginPath();
-      ctx.arc(0, 0, 22, 0, Math.PI * 2);
-      ctx.stroke();
-    } else if (shape === "petal") {
-      ctx.beginPath();
-      ctx.ellipse(0, 0, 11, 22, 0.6, 0, Math.PI * 2);
-      ctx.fill();
-    } else if (shape === "heart") {
-      ctx.beginPath();
-      ctx.moveTo(0, 22);
-      ctx.bezierCurveTo(-34, -2, -18, -26, 0, -10);
-      ctx.bezierCurveTo(18, -26, 34, -2, 0, 22);
-      ctx.fill();
-    } else {
-      ctx.beginPath();
-      for (let i = 0; i < 10; i++) {
-        const r = i % 2 === 0 ? 26 : 10;
-        const a = (i / 10) * Math.PI * 2 - Math.PI / 2;
-        ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
-      }
-      ctx.closePath();
-      ctx.fill();
-    }
-  }
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  shapeTextures.set(shape, tex);
-  return tex;
-}
-
-/** A fixed pseudo-random 0..1 per index and slot. */
-function rand(i: number, k: number): number {
-  const x = Math.sin(i * 127.1 + k * 311.7) * 43758.5453;
-  return x - Math.floor(x);
-}
 
 type Box = { x0: number; x1: number; z0: number; z1: number; air: number };
 
@@ -450,20 +381,43 @@ function useNight(room: RoomId): ClubNight | null {
   return night;
 }
 
+/** How high each room's ceiling is, for the effects that hang from it. */
+const CEILINGS: Partial<Record<RoomId, number>> = {
+  galleria: 9,
+  "sugar-rush": 4.2,
+};
+
 /** The decor of the night on in a room, and the tint it gives the light. */
 export function NightDecor({ room }: { room: RoomId }) {
   const night = useNight(room);
   const low = useQuality() === "low";
   const box = useMemo(() => boxOf(room), [room]);
+  const hall = useMemo<Hall>(
+    () => ({ ...box, ceiling: CEILINGS[room] ?? box.air }),
+    [box, room],
+  );
   if (!night?.decor) return null;
   const kind = night.decor;
+  const look = NIGHT_LOOKS[night.id];
   return (
     <>
-      <hemisphereLight args={[night.color, "#000000", 0.85]} />
+      <hemisphereLight
+        args={[look?.tintColor ?? night.color, "#000000", look?.tint ?? 0.85]}
+        userData={{ nightKeep: true }}
+      />
+      {look && <NightGrade look={look} />}
+      {look?.signature === "lasers" && (
+        <>
+          <Lasers hall={hall} />
+          <Cannons hall={hall} low={low} />
+        </>
+      )}
       {kind === "spotlights" ? (
         <Beams color={night.color} box={box} />
       ) : kind === "bunting" ? (
         <Bunting box={box} />
+      ) : kind === "stars" ? (
+        <StarDome low={low} />
       ) : (
         <Cloud look={LOOKS[kind]} box={box} low={low} />
       )}

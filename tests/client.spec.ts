@@ -3467,6 +3467,25 @@ test("the city map lists the week's events, and a club glows on its night", asyn
   await expect(page.locator(".night-glow")).toHaveCount(1);
 });
 
+test("event nights with a signature look render clean: lasers, blacklight, indigo sky", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  for (const [night, room] of [
+    ["mall-rave", "galleria"],
+    ["uv-night", "mini-golf"],
+    ["stargazing", "hotel-rooftop"],
+  ]) {
+    await page.goto(`${LOW}&room=${room}&night=${night}&time=23:30`);
+    await expect(page.locator("canvas")).toHaveAttribute("data-frames", "10", {
+      timeout: 150_000,
+    });
+    await expect(page.locator(".venue-event[data-night]")).toHaveCount(1);
+  }
+  expect(errors).toEqual([]);
+});
+
 test("collections: the album counts places, a full set pays, stickers show grades", async ({
   page,
 }) => {
