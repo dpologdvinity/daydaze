@@ -19,9 +19,13 @@ export type DishAt = {
 /** Every dish in `items`, grouped by kind into instanced sets. */
 export function Dishes({
   items,
+  scale = 1,
   fallback = null,
 }: {
   items: readonly DishAt[];
+  /** Multiplies every dish's fit box (counter dishes read small from the
+   * camera, table settings don't). */
+  scale?: number;
   fallback?: ReactNode;
 }): JSX.Element {
   const groups = useMemo(() => {
@@ -42,9 +46,9 @@ export function Dishes({
             key={id}
             model={id}
             dir={`meshy/${folder}`}
-            width={width}
-            depth={width}
-            height={height}
+            width={width * scale}
+            depth={width * scale}
+            height={height * scale}
             at={at}
           />
         );

@@ -27,19 +27,24 @@ const PALETTE: FoodPalette = {
  * ice, then ube and leche flan on top. */
 const LAYERS = ["#8a3a2a", "#3fd06a", "#f4f4f8", "#9b5cff", "#ffd166"];
 
-/** The desserts along the counter top (y 1.17), the server behind them. */
+/** The desserts along the counter top (y 1.17), the server behind them; the
+ * tall glasses stand past the glass case (x > -0.5), under its top. */
 const COUNTER: readonly DishAt[] = (
   [
-    "halo-halo",
-    "mais-con-yelo",
     "leche-flan",
     "mango-float",
     "buko-pandan",
+    "halo-halo",
+    "mais-con-yelo",
     "turon",
     "mango-shake",
     "ube-halaya",
   ] as const
 ).map((dish, i) => ({ dish, x: -2.45 + i * 0.7, y: 1.17, z: -0.85 }));
+
+/** Counter dishes are drawn larger than the tables' so they read from the
+ * default camera. */
+const COUNTER_SCALE = 1.7;
 
 /** Layered halo-halo glasses: the placeholder while the dessert models load. */
 function Glasses(): JSX.Element {
@@ -89,7 +94,7 @@ export function HaloHaloCafe({ onPick }: { onPick: PickHandler }): JSX.Element {
       }}
       onPick={onPick}
     >
-      <Dishes items={COUNTER} fallback={<Glasses />} />
+      <Dishes items={COUNTER} scale={COUNTER_SCALE} fallback={<Glasses />} />
       {/* capiz-shell lamps over the counter */}
       {[-2, 0, 2].map((x) => (
         <mesh key={x} position={[x, 2.9, -0.4]}>
