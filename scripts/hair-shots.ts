@@ -35,6 +35,11 @@ const SHOTS: { name: string; query: string; shot?: string }[] = [
     name: "men-2",
     query: `men=1&styles=mop,pompadour,mohawk,spiky-crop,crew,quiff&colors=1b1014,3a6bff,ff4fb3,4a2a1c,b77a3e,7b4dff`,
   },
+  // the strand-card styles (art/doll/blender/strands.py), long to short
+  {
+    name: "strands-1",
+    query: `styles=waves,long-curly,mid-wavy,bob,pixie,ponytail&colors=f1d78f,4a2a1c,1b1014,b77a3e,ff4fb3,7b4dff`,
+  },
   // close-ups of the speckle cases: men's and women's dark hair from behind,
   // and the Quiff's forehead in several colors
   {
