@@ -514,6 +514,8 @@ const CLOSE: Record<"full" | "face", { off: THREE.Vector3; look: number }> = {
 
 /** Closer than this to her (meters), the camera keeps out of the room's walls. */
 const CLOSE_RANGE = 4;
+/** How long after a zoom in the camera keeps coming round to her front. */
+const SETTLE_SECONDS = 0.8;
 
 const Y = new THREE.Vector3(0, 1, 0);
 const moved = new THREE.Vector3();
@@ -565,6 +567,8 @@ export function CameraRig({
   const held = useRef(false);
   // wheel notches and pinches since the last frame, as one zoom factor
   const zoom = useRef(1);
+  // seconds left in which a zoom's swing round to her front keeps settling
+  const settle = useRef(0);
   // the room's walls for the close camera, built on first use
   const walls = useRef<{
     room: RoomId;
@@ -732,6 +736,7 @@ export function CameraRig({
         portraitTarget(target, face, camera.position.distanceTo(chest)),
       );
       // zooming in on her face brings the camera round to her front
+      if (k < 1) settle.current = SETTLE_SECONDS;
       if (k < 1) {
         camera.position.fromArray(
           swingToFront(
@@ -746,9 +751,27 @@ export function CameraRig({
         .distanceTo(chest.copy(at).setY(at.y + eyes))
         .toFixed(2);
     }
+    if (!zoomed && settle.current > 0) {
+      // after the zoom: the swing finishes, even if the view was still flying
+      // (the dressing room opens its own shot as she zooms)
+      settle.current -= dt;
+      chest.copy(at).setY(at.y + 1);
+      const t = portraitAmount(camera.position.distanceTo(chest));
+      if (t > 0) {
+        camera.position.fromArray(
+          swingToFront(
+            camera.position.toArray(),
+            [at.x, at.y + eyes, at.z],
+            player.seat?.yaw ?? player.yaw,
+            Math.min(1, dt * 8) * t,
+          ),
+        );
+      }
+    }
     c.update();
     // for screenshots and tests: how high above her face the camera looks from
-    if (zoomed)
+    const reading = zoomed || settle.current > 0;
+    if (reading)
       canvas.dataset.camElevation = (
         (Math.atan2(
           camera.position.y - (at.y + eyes),
@@ -757,6 +780,23 @@ export function CameraRig({
           180) /
         Math.PI
       ).toFixed(1);
+    if (reading)
+      canvas.dataset.camFront = (
+        (Math.abs(
+          Math.atan2(
+            Math.sin(
+              Math.atan2(camera.position.x - at.x, camera.position.z - at.z) -
+                (player.seat?.yaw ?? player.yaw),
+            ),
+            Math.cos(
+              Math.atan2(camera.position.x - at.x, camera.position.z - at.z) -
+                (player.seat?.yaw ?? player.yaw),
+            ),
+          ),
+        ) *
+          180) /
+        Math.PI
+      ).toFixed(0);
     // up close, indoors: out of the walls (an overview is far past them)
     if (walls.current?.room !== room)
       walls.current = { room, inside: roomInside(ROOMS[room].walkable) };

@@ -2197,6 +2197,28 @@ const SHOTS: {
         null,
         { timeout: 120_000 },
       );
+      console.log(
+        "zoom-dressing elevation, degrees off her front:",
+        await page.evaluate(() => {
+          const d = document.querySelector("canvas")?.dataset;
+          return `${d?.camElevation}, ${d?.camFront}`;
+        }),
+      );
+      // the glide and the swing settle after the zoom itself
+      await page
+        .waitForFunction(
+          () => Number(document.querySelector("canvas")?.dataset.camFront) < 15,
+          null,
+          { timeout: 20_000 },
+        )
+        .catch(() => console.log("zoom-dressing: the camera is not in front"));
+      console.log(
+        "zoom-dressing after:",
+        await page.evaluate(() => {
+          const d = document.querySelector("canvas")?.dataset;
+          return `${d?.camElevation}, ${d?.camFront}`;
+        }),
+      );
     },
   },
   {
