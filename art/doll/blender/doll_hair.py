@@ -681,13 +681,14 @@ def cap_reach(ctx):
 
 def front_line(ctx, x, y):
     """Where the hair visibly starts over the face: the hairline's curve,
-    dipping a few millimeters to a soft peak mid-forehead and rising round
-    the temple corners, with a slight wander, as a real one does."""
+    dipping a few millimeters to a soft peak mid-forehead and arching down
+    round the temples toward the ears (no square corners), with a slight
+    wander, as a real one does."""
     head = ctx.JB["head"]
     th = np.arctan2(x - head[0], y - head[1])
     # 0 straight ahead, pi straight back
     off = np.pi - np.abs(th)
-    shape = -0.006 * np.exp(-((off / 0.13) ** 2)) + 0.008 * np.exp(-(((off - 0.7) / 0.25) ** 2))
+    shape = -0.005 * np.exp(-((off / 0.12) ** 2)) - 0.012 * np.clip(off / 0.9, 0, 1) ** 2
     wander = 0.0015 * np.sin(5 * th + 1) + 0.001 * np.sin(13 * th + 4)
     return hairline(ctx, x, y) + shape + wander
 
