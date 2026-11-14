@@ -14,7 +14,10 @@ import {
 import type { Vec2 } from "../walk.ts";
 import { tuneById, type Tune } from "./bandTunes.ts";
 import { hash, pick } from "./hash.ts";
-import { AUDIENCE, BAND_SHELL, BLANKETS, GROUND } from "./park.ts";
+import { STAGE_BLANKETS } from "./blankets.ts";
+import { AUDIENCE, BAND_SHELL, GROUND } from "./park.ts";
+
+export { BLANKET_SEATS, STAGE_BLANKETS, type BlanketSeat } from "./blankets.ts";
 
 /** Sets start every half hour from 10:00 until 17:30, on the player's clock. */
 export const FIRST_SET = 10 * 3600;
@@ -212,12 +215,6 @@ export const CHAIRS: readonly { at: Vec2; yaw: number }[] = [
   })),
 );
 
-/** Blankets in front of the stage (the park's others are elsewhere). */
-export const STAGE_BLANKETS: readonly Vec2[] = BLANKETS.filter(
-  ([x, z]) =>
-    x > AUDIENCE.x0 && x < AUDIENCE.x1 && z > AUDIENCE.z0 && z < AUDIENCE.z1,
-);
-
 export type CrowdMember = {
   at: Vec2;
   yaw: number;
@@ -261,18 +258,6 @@ export const AUDIENCE_DRAWN = { low: 0, high: 12 } as const;
 
 /** Ground level of the lawn. */
 export const BAND_Y = GROUND;
-
-/** A seat on a blanket: you sit on the grass, facing the stage. */
-export type BlanketSeat = { id: string; at: Vec2 };
-
-/** Seats are free spots on the blankets the crowd leaves, one per blanket
- * beside the two seated there (the middle). */
-export const BLANKET_SEATS: readonly BlanketSeat[] = STAGE_BLANKETS.map(
-  ([x, z], i) => ({
-    id: `park-blanket-${i}`,
-    at: [x, z + 0.1] as Vec2,
-  }),
-);
 
 /** The music is heard up to this far from the shell (m), full within FULL. */
 export const HEARD = 60;

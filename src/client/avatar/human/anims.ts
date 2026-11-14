@@ -7,8 +7,9 @@
 // AnimationMixer per doll.
 
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
+// three-stdlib's loader, the one drei's useGLTF already ships with the doll,
+// not a second copy from three/examples
+import { GLTFLoader, MeshoptDecoder } from "three-stdlib";
 import type { MocapPack } from "../../../game/dance/mocapTypes.ts";
 import type { Rig } from "../pose.ts";
 
@@ -49,7 +50,7 @@ export function loadPack(suffix: string, pack: MocapPack): Promise<void> {
   let p = loading.get(key);
   if (!p) {
     p = new GLTFLoader()
-      .setMeshoptDecoder(MeshoptDecoder)
+      .setMeshoptDecoder(MeshoptDecoder())
       .loadAsync(packFile(suffix, pack))
       .then((gltf) => {
         const clips =

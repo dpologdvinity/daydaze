@@ -1,5 +1,5 @@
 name: Verify
-# npm run verify (lint, tests, typecheck, format, build) on GitHub's runners
+# npm run verify (lint, tests, typecheck, format, build, perf budget) on GitHub's runners
 # for every pushed work branch, so agents don't load the owner's machine.
 # The land script pushes a rebased branch to ci/** and waits for this.
 on:

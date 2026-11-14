@@ -31,7 +31,7 @@ import { PARLOR, SALON } from "./salon.ts";
 import * as STADIUM from "./stadium.ts";
 import { BENCH_SEATS as LINKS_BENCH } from "./lagoonLinks.ts";
 import { FOUNTAIN, SQUARE_BENCHES } from "./city/layout.ts";
-import { BLANKET_SEATS } from "./city/bandShell.ts";
+import { BLANKET_SEATS } from "./city/blankets.ts";
 import { BENCH_SEATS } from "./bowlingAlley.ts";
 import { BOOTH_SEATS, MIC } from "./karaoke.ts";
 import * as WAREHOUSE from "./warehouse.ts";

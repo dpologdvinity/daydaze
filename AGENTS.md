@@ -53,7 +53,7 @@ Node.js 22.18 or newer (`.nvmrc` pins 24).
 | `npm run lint` | ESLint |
 | `npm run typecheck` | Strict `tsc`, plus the Worker (regenerates `server/worker-configuration.d.ts`) |
 | `npm run format` / `format:check` | Prettier |
-| `npm run verify` | lint, test, typecheck, format check, build: the merge gate |
+| `npm run verify` | lint, test, typecheck, format check, build, perf budget: the merge gate |
 | `npm run test:e2e:client` | Playwright client tests (`tests/client.spec.ts`) |
 | `npm run test:e2e` / `test:e2e:sw` | Playwright minigames / service-worker configs |
 | `npm run test:e2e:online` | Two browser players against a local Worker (~7 min) |

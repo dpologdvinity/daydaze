@@ -10,7 +10,6 @@ import { askToCook } from "./cookOff.ts";
 import { inviteToParty } from "./party.ts";
 import { offerRide } from "./ride.ts";
 import { askToRace } from "./raceFriend.ts";
-import { askToDuet } from "./karaokeDuet.ts";
 import { friends, friendship, refreshFriends } from "./friends.ts";
 import { onlineSession } from "./online.ts";
 import { mute, peerCard } from "./peerCard.ts";
@@ -115,7 +114,9 @@ export function PeerCard(): JSX.Element | null {
         <button
           type="button"
           onClick={() => {
-            askToDuet(open.id, open.name);
+            // loaded on demand: it carries the karaoke songbook
+            const { id, name } = open;
+            void import("./karaokeDuet.ts").then((m) => m.askToDuet(id, name));
             close();
           }}
         >

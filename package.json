@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile .cache/tsc.tsbuildinfo && npm run typecheck:server",
     "format": "prettier --write .",
     "format:check": "prettier --check . --cache --cache-location .cache/prettier",
-    "verify": "npm run lint && npm test && npm run typecheck && npm run format:check && npm run build",
+    "verify": "npm run lint && npm test && npm run typecheck && npm run format:check && npm run build && npm run perf:budget",
     "typecheck:server": "wrangler types --config server/wrangler.jsonc server/worker-configuration.d.ts > /dev/null && tsc --noEmit -p server --incremental --tsBuildInfoFile .cache/tsc-server.tsbuildinfo",
     "dev:server": "vite build && wrangler dev --config server/wrangler.jsonc",
     "smoke:server": "node server/scripts/smoke.mjs",
