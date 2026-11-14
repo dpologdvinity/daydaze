@@ -553,7 +553,7 @@ export function CameraRig({
   player: Player;
   view: View;
   room: RoomId;
-  /** Her build: the portrait aims at where her eyes are. */
+  /** Her build: the portrait aims at the middle of her head. */
   body?: "feminine" | "masculine";
 }) {
   const controls = useRef<OrbitImpl>(null);
@@ -709,7 +709,7 @@ export function CameraRig({
       f.t += dt;
       if (f.snap || f.t > 1.4) fly.current = null;
     }
-    // where her eyes are, for the portrait to aim at (seated, she is lower)
+    // the middle of her head, for the portrait to aim at (seated, she is lower)
     const eyes = faceHeightOf(body, Boolean(player.seat?.sit));
     const zoomed = zoom.current !== 1;
     if (zoomed) {

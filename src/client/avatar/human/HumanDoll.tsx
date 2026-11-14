@@ -62,6 +62,7 @@ import {
   packsFor,
 } from "./anims.ts";
 import { idleSlot } from "../../../game/dance/idlePlan.ts";
+import { gazeTurn, portraitAmount } from "../../../game/cameraZoom.ts";
 import {
   pickTransition,
   postureOf,
@@ -134,6 +135,14 @@ const worldPos = new THREE.Vector3();
 // per-frame scratch for the ponytail and the drunk sway
 const sway = new THREE.Euler();
 const turn = new THREE.Quaternion();
+// per-frame scratch for her look into a portrait's camera
+const headAt = new THREE.Vector3();
+const headDir = new THREE.Vector3();
+const toCamera = new THREE.Vector3();
+const front = new THREE.Vector3();
+const headQ = new THREE.Quaternion();
+const parentQ = new THREE.Quaternion();
+const gazeQ = new THREE.Quaternion();
 
 /** A doll's clip player: its mixer, the clip playing, and how far the
  * built pose is faded in over it (0..1). */
@@ -322,12 +331,20 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
     // the built-pose driver reads the bones' rest, so it is made first
     const built = new BuiltPose(bones, scene);
     const pony = bones.get(BONE.pony) ?? null;
+    const head = bones.get(BONE.head) ?? null;
     // model space to each bone's rest frame, for jewelry hung on bones;
     // the fresh clone is unparented, so its world space is model space
     scene.updateMatrixWorld(true);
     const restInverse = new Map<string, THREE.Matrix4>();
     for (const [name, bone] of bones)
       restInverse.set(name, bone.matrixWorld.clone().invert());
+    // where her head points, in the head bone's own frame: at rest she
+    // faces +z (each skeleton's bones rest on different axes)
+    const headFront = new THREE.Vector3(0, 0, 1);
+    if (head)
+      headFront.applyQuaternion(
+        head.getWorldQuaternion(new THREE.Quaternion()).invert(),
+      );
     let meta: unknown = null;
     scene.traverse((o) => {
       if (typeof o.userData.doll === "string") meta = o.userData.doll;
@@ -436,6 +453,8 @@ function useBody(look: Look, eyeColor: Face["eyeColor"]) {
       hips: bones.get(BONE.hips) ?? null,
       pony,
       ponyRest: pony?.quaternion.clone() ?? new THREE.Quaternion(),
+      head,
+      headFront,
       marks: readMarks(meta),
       anchors: readAnchors(meta),
       restInverse,
@@ -582,16 +601,20 @@ function hairShine<M extends THREE.MeshStandardMaterial>(material: M): M {
           "{",
           "  vec3 V = normalize(vViewPosition);",
           "  vec3 T = normalize(vHairDir);",
-          // each strand's highlight sits a little higher or lower
+          // the strand texture's own fibers (pale hairs, darker gaps) break
+          // the bands up hair by hair and set each one's highlight a little
+          // higher or lower; its mips blend them into a soft sheen far off.
+          // (A hash per texture column did this in blocks a few texels
+          // wide: smeared gray bars across a close-up.)
           "  #ifdef USE_MAP",
-          "  float strand = fract(sin(floor(vMapUv.x * 40.0) * 12.9898) * 43758.5453);",
+          "  float fiber = smoothstep(0.45, 0.95, texture2D(map, vMapUv).g);",
           "  #else",
-          "  float strand = 0.5;",
+          "  float fiber = 0.5;",
           "  #endif",
-          "  float shift = (strand - 0.5) * 0.35;",
+          "  float shift = (fiber - 0.5) * 0.35;",
           // straight locks sit near the highlight angle all along, so the
-          // white lobe is kept faint and broken up strand by strand
-          "  float glint = 0.5 + 0.5 * fract(strand * 7.13);",
+          // white lobe is kept faint and only on the fibers
+          "  float glint = fiber;",
           // the white lobe is a sparkle against dark hair: dimmer on it
           "  float dim = 0.4 + 0.6 * clamp(dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722)) * 4.0, 0.0, 1.0);",
           "  vec3 T1 = normalize(T + normal * (0.08 + shift));",
@@ -601,7 +624,7 @@ function hairShine<M extends THREE.MeshStandardMaterial>(material: M): M {
           "    vec3 H = normalize(L + V);",
           "    float lit = smoothstep(-0.25, 0.5, dot(normal, L));",
           "    float a = hairLobe(T1, H, 36.0) * 0.2 * glint * dim;",
-          "    float b = hairLobe(T2, H, 22.0) * 0.35;",
+          "    float b = hairLobe(T2, H, 22.0) * 0.35 * (0.4 + 0.6 * fiber);",
           "    reflectedLight.directSpecular += directionalLights[i].color * lit *",
           "      (vec3(a) + b * diffuseColor.rgb * 1.6);",
           "  }",
@@ -974,6 +997,8 @@ export function HumanDoll({
   // read by each worn part, to swap in its low-poly twin
   // start far, so nobody fetches full parts before their first LOD check
   const farParts = useRef(true);
+  // her head's pose before she looked into the camera, put back each frame
+  const gaze = useMemo(() => ({ kept: new THREE.Quaternion(), on: false }), []);
   const lidShown = useRef(-1);
   const lidMeshes = useRef<THREE.Mesh[] | null>(null);
   // a far doll's skeleton updates every third frame (thinned): the time owed
@@ -1205,6 +1230,10 @@ export function HumanDoll({
       a.built +=
         Math.sign(built - a.built) *
         Math.min(animDt / FADE, Math.abs(built - a.built));
+      // the mixer writes a bone only when its value changes: the look into
+      // the camera comes off first, so it never piles up under a held pose
+      if (gaze.on && body.head) body.head.quaternion.copy(gaze.kept);
+      gaze.on = false;
       body.built.restore();
       if (a.action) a.mixer.update(animDt);
       if (a.built > 0) {
@@ -1240,6 +1269,35 @@ export function HumanDoll({
         body.pony.quaternion
           .copy(body.ponyRest)
           .multiply(turn.setFromEuler(sway));
+      }
+      // her own doll, up close: she looks into the camera (cameraZoom.ts),
+      // whatever way the clip has her head
+      const head = body.head;
+      if (own && head?.parent && root.current) {
+        const parent = head.parent;
+        head.getWorldPosition(headAt);
+        head.getWorldQuaternion(headQ);
+        headDir.copy(body.headFront).applyQuaternion(headQ);
+        toCamera.subVectors(state.camera.position, headAt);
+        const near = portraitAmount(toCamera.length());
+        toCamera.normalize();
+        front.setFromMatrixColumn(root.current.matrixWorld, 2).setY(0);
+        const side = Math.abs(
+          Math.atan2(toCamera.x, toCamera.z) - Math.atan2(front.x, front.z),
+        );
+        const off = headDir.angleTo(toCamera);
+        const by = gazeTurn(off, Math.min(side, Math.PI * 2 - side), near);
+        if (by > 1e-3) {
+          gaze.kept.copy(head.quaternion);
+          gaze.on = true;
+          // the turn in the world, carried into the head's parent's frame
+          gazeQ.setFromUnitVectors(headDir, toCamera);
+          gazeQ.slerp(turn.identity(), 1 - by / off);
+          parent.getWorldQuaternion(parentQ);
+          head.quaternion.premultiply(parentQ);
+          head.quaternion.premultiply(gazeQ);
+          head.quaternion.premultiply(parentQ.invert());
+        }
       }
       // the mixer writes a bone only when its value changes, so nothing is
       // added onto bones here (a held pose would drift): the drink's sway

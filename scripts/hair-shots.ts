@@ -62,6 +62,8 @@ const SHOTS: { name: string; query: string; shot?: string }[] = [
   // women walking in the trouser outfits, side on and from behind the knee
   { name: "suit-track-side", shot: "trackwalk", query: "cam=0.6,0.6,3.2" },
   { name: "suit-track-back", shot: "trackwalk", query: "cam=-2.2,0.6,2.2" },
+  // the face shot's doll up close (docs/screenshots/doll-face.png)
+  { name: "face", shot: "face", query: "" },
   {
     name: "suit-women",
     shot: "body",
@@ -94,7 +96,7 @@ for (const { name, query, shot = "hairs" } of SHOTS) {
     // the models load lazily: give them time, then let the frame loop settle
     await page.waitForTimeout(45_000);
     await page.screenshot({
-      path: `docs/screenshots/${name.startsWith("suit-") ? "doll" : "hair"}-${name}.png`,
+      path: `docs/screenshots/${name.startsWith("suit-") || name === "face" ? "doll" : "hair"}-${name}.png`,
       timeout: 900_000,
     });
     console.log("wrote", name);
