@@ -26,6 +26,7 @@ import { canvasTex, hdr } from "./shared/materials.ts";
 import { NeonText, SCRIPT } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
+import { AssetBoundary } from "./shared/AssetBoundary.tsx";
 import { ImagePiece } from "./shared/ImagePiece.tsx";
 import { usePaintingTexture } from "./gallery/painting.ts";
 
@@ -556,16 +557,18 @@ export function Gallery({ onPick }: { onPick: PickHandler }): JSX.Element {
       <PortalPads room={ROOMS.gallery} color="#141018" />
       <primitive object={room} />
       {HUNG.map((p) => (
-        <Suspense key={p.art} fallback={null}>
-          <ImagePiece
-            art={p.art}
-            at={p.at}
-            ry={p.ry}
-            maxW={p.w}
-            maxH={p.h}
-            frame={FRAME}
-          />
-        </Suspense>
+        <AssetBoundary key={p.art}>
+          <Suspense fallback={null}>
+            <ImagePiece
+              art={p.art}
+              at={p.at}
+              ry={p.ry}
+              maxW={p.w}
+              maxH={p.h}
+              frame={FRAME}
+            />
+          </Suspense>
+        </AssetBoundary>
       ))}
       <OpenWall />
       <NeonText

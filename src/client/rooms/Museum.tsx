@@ -36,6 +36,7 @@ import { surface } from "../city/worldTexture.ts";
 import { canvasTex, hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
+import { AssetBoundary } from "./shared/AssetBoundary.tsx";
 import { Prop } from "./shared/Prop.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
 
@@ -225,9 +226,11 @@ function Piece({ kind }: { kind: ExhibitKind }) {
   const fit = MODELS[kind];
   if (!fit) return <ShapePiece kind={kind} />;
   return (
-    <Suspense fallback={<ShapePiece kind={kind} />}>
-      <Prop dir="meshy/museum" position-y={0.8} {...fit} />
-    </Suspense>
+    <AssetBoundary fallback={<ShapePiece kind={kind} />}>
+      <Suspense fallback={<ShapePiece kind={kind} />}>
+        <Prop dir="meshy/museum" position-y={0.8} {...fit} />
+      </Suspense>
+    </AssetBoundary>
   );
 }
 
