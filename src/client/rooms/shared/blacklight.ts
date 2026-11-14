@@ -2,8 +2,8 @@
 // in the fragment shader, saturated colors (hair, paint, felt, neon trim) and
 // whites (shirts, teeth, chalk) glow on their own, scaled by one shared uniform
 // the night turns up and down. The surface's own light stays as it is, so the
-// room can go dark around it. Patched before a material first compiles, the
-// patch costs no recompile; on one already compiled it needs `needsUpdate`.
+// room can go dark around it. A material patched after it first compiled
+// is flagged for a fresh program.
 
 import * as THREE from "three";
 
@@ -60,6 +60,7 @@ export function patchBlacklight(m: THREE.Material): void {
     shader.fragmentShader = injectBlacklight(shader.fragmentShader);
   };
   m.customProgramCacheKey = () => `${key}|uv`;
-  // a material that has already been drawn needs a fresh program
-  if (m.version > 0) m.needsUpdate = true;
+  // one that has already been drawn needs a fresh program (there is no telling
+  // from the outside, and a recompile before first use costs nothing extra)
+  m.needsUpdate = true;
 }

@@ -1077,7 +1077,7 @@ const SHOTS: {
   // the same nights from further back: the whole hall, and the whole course
   ...(
     [
-      ["mall-rave", "galleria", "0,5.5,9.5,0,2.5,-3"],
+      ["mall-rave", "galleria", "-10,7,9.4,3,0.5,-2"],
       ["mall-rave", "sugar-rush", ""],
       ["uv-night", "laser-tag", ""],
       ["uv-night", "mini-golf", "0,6,12,0,0,0"],

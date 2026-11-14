@@ -241,7 +241,7 @@ export function Cannons({ hall, low }: { hall: Hall; low: boolean }) {
     () =>
       new THREE.PointsMaterial({
         map: shapeTexture("square"),
-        size: 0.42,
+        size: 0.3 + hall.ceiling * 0.04,
         sizeAttenuation: true,
         vertexColors: true,
         transparent: true,
@@ -249,7 +249,7 @@ export function Cannons({ hall, low }: { hall: Hall; low: boolean }) {
         blending: THREE.AdditiveBlending,
         toneMapped: false,
       }),
-    [],
+    [hall.ceiling],
   );
   // each cannon stands at a corner, a little in from the walls
   const spots = useMemo(

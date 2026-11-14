@@ -39,7 +39,7 @@ export const NIGHT_LOOKS: Partial<Record<NightId, NightLook>> = {
   "uv-night": {
     lights: 0.1,
     key: 0.15,
-    tint: 1,
+    tint: 1.6,
     tintColor: "#6a1bff",
     signature: "blacklight",
     backdrop: "#08001c",
