@@ -18,10 +18,11 @@ export type NightLook = {
   /** The fill light's color, when not the night's own glow color. */
   tintColor?: string;
   /**
+   * Without one the look is only the dimming and the backdrop.
    * `lasers`: a canopy of colored beams and confetti cannons.
    * `blacklight`: saturated and white surfaces fluoresce on their own.
    */
-  signature: "lasers" | "blacklight";
+  signature?: "lasers" | "blacklight";
   /** The sky and fog the room goes to, when it has them. */
   backdrop?: string;
 };
@@ -34,6 +35,14 @@ export const NIGHT_LOOKS: Partial<Record<NightId, NightLook>> = {
     tint: 0.5,
     tintColor: "#8a3dff",
     signature: "lasers",
+  },
+  // the rooftop goes to a deep indigo night so the stars are the show
+  stargazing: {
+    lights: 0.3,
+    key: 0.35,
+    tint: 0.6,
+    tintColor: "#4f6bff",
+    backdrop: "#04081f",
   },
   // a real blacklight room: dark, deep violet, everything else glows by itself
   "uv-night": {

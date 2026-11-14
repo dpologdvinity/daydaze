@@ -52,7 +52,7 @@ export function NightGrade({ look }: { look: NightLook }) {
       saved: null as null | {
         background: THREE.Color;
         bg: number;
-        fog: THREE.Fog | null;
+        fog: THREE.Fog | THREE.FogExp2 | null;
         fogHex: number;
       },
     }),
@@ -104,7 +104,7 @@ export function NightGrade({ look }: { look: NightLook }) {
         state.saved = {
           background: scene.background,
           bg: scene.background.getHex(),
-          fog: scene.fog instanceof THREE.Fog ? scene.fog : null,
+          fog: scene.fog,
           fogHex: scene.fog?.color.getHex() ?? 0,
         };
       state.backdrop.set(look.backdrop);
