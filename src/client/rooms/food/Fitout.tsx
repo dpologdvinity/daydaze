@@ -271,7 +271,7 @@ export function Fitout({ palette }: { palette: FoodPalette }) {
       <primitive object={built.group} />
       <PlatedFood
         model={TABLE_FOOD[palette.room] ?? "junk-Donut"}
-        at={TABLES.map(([x, z]) => [x - 0.27, 0.805, z + 0.2, 0] as const)}
+        at={TABLE_PLACES}
       />
       <Suspense fallback={null}>
         <PropSet
@@ -303,6 +303,12 @@ export function Fitout({ palette }: { palette: FoodPalette }) {
     </>
   );
 }
+
+/** A place at each table, left of center (a stable array: PlatedFood and the
+ * instanced sets under it lay out once). */
+const TABLE_PLACES = TABLES.map(
+  ([x, z]) => [x - 0.27, 0.805, z + 0.2, 0] as const,
+);
 
 /** What each room sets on its tables (a list: one per table in turn); rooms
  * not here set a donut. The Filipino rooms use the Meshy dishes. */

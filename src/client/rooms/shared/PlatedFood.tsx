@@ -1,9 +1,9 @@
 // Instanced place settings: a Quaternius food on the Quaternius plate, or a
 // Meshy Filipino dish (game/food/dishes.ts), which brings its own plate, bowl
 // or tray and gets the shared plate only if its entry asks for one.
-import { Suspense } from "react";
+import { Suspense, useMemo } from "react";
 import { DISHES, isDishId, type Dish } from "../../../game/food/dishes.ts";
-import { Dishes } from "./Dishes.tsx";
+import { Dishes, type DishAt } from "./Dishes.tsx";
 import { PropSet } from "./Prop.tsx";
 
 type Place = readonly [number, number, number, number];
@@ -25,12 +25,26 @@ export function PlatedFood({
   at: readonly Place[];
   model: string | readonly string[];
 }) {
-  const models = typeof model === "string" ? [model] : model;
-  const settings = models.map((m, k) => ({
-    model: m,
-    at: at.filter((_, i) => i % models.length === k),
-  }));
-  const plates = settings.filter((s) => plated(s.model)).flatMap((s) => s.at);
+  // built once per `at` and `model`, so the instanced sets below keep their
+  // arrays (and don't redo their layout) across re-renders
+  const { plates, settings } = useMemo(() => {
+    const models = typeof model === "string" ? [model] : model;
+    const each = models.map((id, k) => {
+      // a food on a plate stands 2 cm up on it
+      const lift = plated(id) ? 0.02 : 0;
+      const places = at
+        .filter((_, i) => i % models.length === k)
+        .map(([x, y, z, yaw]) => [x, y + lift, z, yaw] as const);
+      const items: DishAt[] = isDishId(id)
+        ? places.map(([x, y, z, yaw]) => ({ dish: id, x, y, z, yaw }))
+        : [];
+      return { id, places, items, plated: plated(id) };
+    });
+    return {
+      plates: each.filter((e) => e.plated).flatMap((e) => e.places),
+      settings: each,
+    };
+  }, [at, model]);
   return (
     <Suspense fallback={null}>
       {plates.length > 0 && (
@@ -42,26 +56,10 @@ export function PlatedFood({
           at={plates}
         />
       )}
-      {settings.map(({ model: id, at: here }) => {
-        // a food on a plate stands 2 cm up on it
-        const lift = plated(id) ? 0.02 : 0;
-        const places = here.map(
-          ([x, y, z, yaw]) => [x, y + lift, z, yaw] as const,
-        );
-        if (isDishId(id))
-          return (
-            <Dishes
-              key={id}
-              items={places.map(([x, y, z, yaw]) => ({
-                dish: id,
-                x,
-                y,
-                z,
-                yaw,
-              }))}
-            />
-          );
-        return (
+      {settings.map(({ id, places, items }) =>
+        isDishId(id) ? (
+          <Dishes key={id} items={items} />
+        ) : (
           <PropSet
             key={id}
             model={id}
@@ -70,8 +68,8 @@ export function PlatedFood({
             height={0.1}
             at={places}
           />
-        );
-      })}
+        ),
+      )}
     </Suspense>
   );
 }
