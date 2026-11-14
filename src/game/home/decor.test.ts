@@ -5,6 +5,7 @@ import {
   FURNITURE_CATALOG,
   FURNITURE_IDS,
   HOME_GRID,
+  lookGroups,
   moveFurniture,
   printArtwork,
   pieceAt,
@@ -233,4 +234,32 @@ test("prints keep their six saved looks and add the paintings after them", () =>
     validateFurniture(saved).map((f) => f.variant),
     [5, 6],
   );
+});
+
+test("look groups cover every look once, drawn looks first and ungrouped", () => {
+  for (const id of FURNITURE_IDS) {
+    const groups = lookGroups(id);
+    const all = groups.flatMap((g) => [...g.indexes]);
+    assert.deepEqual(
+      [...all].sort((a, b) => a - b),
+      FURNITURE_CATALOG[id].variants.map((_, i) => i),
+      id,
+    );
+    assert.equal(groups[0]?.label, null, `${id} starts ungrouped`);
+  }
+  // prints split into the six drawn looks and one group per painting kind
+  const prints = lookGroups("wall-art");
+  assert.deepEqual(
+    prints.map((g) => g.label),
+    [null, "Sapphic", "Filipino", "Daydaze"],
+  );
+  assert.deepEqual(prints[0]?.indexes, [0, 1, 2, 3, 4, 5]);
+  for (const g of prints.slice(1))
+    for (const i of g.indexes) {
+      const art = printArtwork(i);
+      assert.ok(art);
+      assert.equal(ARTWORKS[art].group, g.label?.toLowerCase());
+    }
+  // a piece with a handful of looks stays one plain list
+  assert.equal(lookGroups("sofa").length, 1);
 });
