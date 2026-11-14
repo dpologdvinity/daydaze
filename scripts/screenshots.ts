@@ -1081,6 +1081,8 @@ const SHOTS: {
       ["mall-rave", "sugar-rush", ""],
       ["uv-night", "laser-tag", ""],
       ["uv-night", "mini-golf", "0,6,12,0,0,0"],
+      // looking up past the towers at the stargazing sky
+      ["stargazing", "hotel-rooftop", "2,1.8,8,-6,34,-70"],
     ] as const
   ).map(([night, room, cam]) => ({
     name: `night-${night}-${room}`,
