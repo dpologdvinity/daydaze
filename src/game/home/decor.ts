@@ -77,6 +77,18 @@ const PRINT_ARTWORKS = [
   "dd-pulse",
   "dd-roller",
   "dd-travel",
+  "sap-moving-in",
+  "sap-kitchen-dance",
+  "sap-rooftop-stars",
+  "sap-prom",
+  "sap-lighthouse",
+  "sap-debut",
+  "ph-chocolate-hills",
+  "ph-vigan",
+  "ph-island-sunset",
+  "ph-mayon",
+  "ph-pabitin",
+  "ph-tinikling",
 ] as const satisfies readonly ArtworkId[];
 const PRINT_NAMES: readonly string[] = [
   ...DRAWN_PRINTS,
