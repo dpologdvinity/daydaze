@@ -22,6 +22,7 @@ import {
   PRODUCE,
   SHELF_DEPTH,
 } from "../../game/market.ts";
+import { meshyDir } from "../../game/meshyModels.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import { surface } from "../city/worldTexture.ts";
 import { Batch } from "./shared/batch.ts";
@@ -370,7 +371,7 @@ function Goods() {
         <AssetBoundary>
           <PropSet
             model="mango-crate"
-            dir="meshy/mango"
+            dir={meshyDir("mango-crate")}
             width={0.55}
             depth={0.45}
             height={0.4}

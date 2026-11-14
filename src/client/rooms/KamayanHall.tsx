@@ -16,6 +16,7 @@ import {
   TABLE,
   VIDEOKE,
 } from "../../game/kamayanHall.ts";
+import { meshyDir } from "../../game/meshyModels.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import { useReducedMotion } from "../motion.ts";
 import { KamayanNpcs } from "./kamayan/Npcs.tsx";
@@ -241,7 +242,7 @@ function BoodleTable() {
         <Suspense fallback={<PlainBoodle />}>
           <PropSet
             model="boodle"
-            dir="meshy/food"
+            dir={meshyDir("boodle")}
             width={BOODLE_LEN}
             depth={TABLE.half * 2 + 0.05}
             height={0.8}
