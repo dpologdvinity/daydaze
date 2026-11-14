@@ -53,6 +53,7 @@ export function NightGrade({ look }: { look: NightLook }) {
       seen: new Set<THREE.Light>(),
       shaded: [] as { material: THREE.MeshBasicMaterial; base: THREE.Color }[],
       shadedSeen: new Set<THREE.Material>(),
+      squashed: [] as { mesh: THREE.Object3D; scale: number; y: number }[],
       backdrop: new THREE.Color(),
       saved: null as null | {
         background: THREE.Color;
@@ -89,7 +90,20 @@ export function NightGrade({ look }: { look: NightLook }) {
         const entry = { light: o, base: o.intensity, set: o.intensity * k };
         o.intensity = entry.set;
         state.dimmed.push(entry);
-      } else if (o instanceof THREE.Mesh) {
+        return;
+      }
+      if (
+        look.skyline !== undefined &&
+        typeof o.userData.skyline === "number" &&
+        !state.squashed.some((q) => q.mesh === o)
+      ) {
+        // squash toward the street it stands on, so the towers drop out of the sky
+        state.squashed.push({ mesh: o, scale: o.scale.y, y: o.position.y });
+        o.scale.y *= look.skyline;
+        o.position.y =
+          o.userData.skyline * (1 - look.skyline) + o.position.y * look.skyline;
+      }
+      if (o instanceof THREE.Mesh) {
         if (Array.isArray(o.material)) o.material.forEach(touch);
         else touch(o.material);
       }
@@ -102,6 +116,11 @@ export function NightGrade({ look }: { look: NightLook }) {
     const seen = state.seen;
     const shaded = state.shaded;
     return () => {
+      for (const q of state.squashed) {
+        q.mesh.scale.y = q.scale;
+        q.mesh.position.y = q.y;
+      }
+      state.squashed.length = 0;
       for (const s of shaded) s.material.color.copy(s.base);
       shaded.length = 0;
       state.shadedSeen.clear();

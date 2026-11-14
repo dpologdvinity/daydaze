@@ -403,7 +403,8 @@ export function HotelRooftop({ onPick }: { onPick: PickHandler }): JSX.Element {
         <meshBasicMaterial map={SKY} side={THREE.BackSide} fog={false} />
       </mesh>
       <fog attach="fog" args={["#ffd8c8", 110, 320]} />
-      <mesh geometry={skyline}>
+      {/* userData.skyline: the street's y, for a night that sinks the towers */}
+      <mesh geometry={skyline} userData={{ skyline: STREET_Y }}>
         <meshBasicMaterial map={windows} color="#e8eef8" />
       </mesh>
       <mesh rotation-x={-Math.PI / 2} position-y={STREET_Y}>

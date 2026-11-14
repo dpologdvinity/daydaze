@@ -4,6 +4,7 @@
 // client (src/client/rooms/NightDecor.tsx) draws it.
 
 import type { ClubNight } from "./events.ts";
+import type { RoomId } from "./rooms.ts";
 
 type NightId = ClubNight["id"];
 
@@ -28,6 +29,11 @@ export type NightLook = {
    * sky is a picture (a sunset skyline) that no light dims; it also goes cool.
    */
   shade?: number;
+  /**
+   * Height scale for a room's skyline (a mesh tagged `userData.skyline` with
+   * the street's y), so towers that fill the view drop below the deck.
+   */
+  skyline?: number;
   /** The sky and fog the room goes to, when it has them. */
   backdrop?: string;
 };
@@ -48,6 +54,7 @@ export const NIGHT_LOOKS: Partial<Record<NightId, NightLook>> = {
     tint: 0.4,
     tintColor: "#4f6bff",
     shade: 0.12,
+    skyline: 0.3,
     backdrop: "#04081f",
   },
   // a real blacklight room: dark, deep violet, everything else glows by itself
@@ -118,4 +125,28 @@ export function confettiAt(
   out[1] = Math.max(0.05, up - fall);
   out[2] =
     Math.sin(heading) * reach * spread + Math.cos(age * 1.9 + a * 9) * 0.3;
+}
+
+type Vec3 = readonly [number, number, number];
+
+/** A pinned overview camera: where it stands and what it looks at. */
+export type NightShot = { eye: Vec3; look: Vec3 };
+
+/**
+ * The overview camera a night swaps in for a room's usual one, where the usual
+ * one can't show what the night is about: stargazing from the rooftops looks
+ * out across the deck to the horizon, not down at the loungers.
+ */
+const NIGHT_VIEWS: Partial<
+  Record<NightId, Partial<Record<RoomId, NightShot>>>
+> = {
+  stargazing: {
+    "hotel-rooftop": { eye: [1.5, 6.5, 11], look: [0, 3.4, -4] },
+    "rooftop-bar": { eye: [4, 8, 13.5], look: [-2, 4.6, -3] },
+  },
+};
+
+/** The camera `night` gives `room`, or undefined to keep the room's own. */
+export function nightView(night: NightId, room: RoomId): NightShot | undefined {
+  return NIGHT_VIEWS[night]?.[room];
 }

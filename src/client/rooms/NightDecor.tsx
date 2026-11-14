@@ -8,19 +8,15 @@
 // each half minute, so a night starting while you are in the room shows up.
 
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import {
-  nightsAt,
-  type ClubNight,
-  type NightDecor as Decor,
-} from "../../game/events.ts";
+import { type NightDecor as Decor } from "../../game/events.ts";
 import { ROOMS, type RoomId } from "../../game/rooms.ts";
 import { NIGHT_LOOKS } from "../../game/nightLook.ts";
-import { nightClock } from "../city/eventClocks.ts";
 import { useReducedMotion } from "../motion.ts";
 import { useQuality } from "../world/quality.ts";
 import { hdr } from "./shared/materials.ts";
+import { useNight } from "./useNight.ts";
 import { StarDome } from "./StarDome.tsx";
 import { Cannons, Lasers, NightGrade, type Hall } from "./NightSignature.tsx";
 import { rand, shapeTexture, type Shape } from "./shared/nightSprites.ts";
@@ -367,25 +363,14 @@ function Bunting({ box }: { box: Box }) {
   );
 }
 
-/** The night on in `room` right now, or null; re-checked every half minute. */
-function useNight(room: RoomId): ClubNight | null {
-  const [night, setNight] = useState<ClubNight | null>(
-    () => nightsAt(room, nightClock())[0] ?? null,
-  );
-  useEffect(() => {
-    const check = () => setNight(nightsAt(room, nightClock())[0] ?? null);
-    check();
-    const id = window.setInterval(check, 30_000);
-    return () => window.clearInterval(id);
-  }, [room]);
-  return night;
-}
-
 /** How high each room's ceiling is, for the effects that hang from it. */
 const CEILINGS: Partial<Record<RoomId, number>> = {
   galleria: 9,
   "sugar-rush": 4.2,
 };
+
+/** How far out the star dome sits, where a room's own sky is nearer than 380. */
+const STAR_RADIUS: Partial<Record<RoomId, number>> = { "rooftop-bar": 150 };
 
 /** The decor of the night on in a room, and the tint it gives the light. */
 export function NightDecor({ room }: { room: RoomId }) {
@@ -417,7 +402,7 @@ export function NightDecor({ room }: { room: RoomId }) {
       ) : kind === "bunting" ? (
         <Bunting box={box} />
       ) : kind === "stars" ? (
-        <StarDome low={low} />
+        <StarDome low={low} radius={STAR_RADIUS[room]} />
       ) : (
         <Cloud look={LOOKS[kind]} box={box} low={low} />
       )}
