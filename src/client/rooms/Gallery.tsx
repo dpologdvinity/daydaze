@@ -26,7 +26,7 @@ import { canvasTex, hdr } from "./shared/materials.ts";
 import { NeonText, SCRIPT } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
-import { ImagePiece } from "./gallery/ImagePiece.tsx";
+import { ImagePiece } from "./shared/ImagePiece.tsx";
 import { usePaintingTexture } from "./gallery/painting.ts";
 
 const { x0, x1, z0, z1 } = BOUNDS;

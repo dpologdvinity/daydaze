@@ -1,5 +1,5 @@
-// A painting on Gallery 44's wall: an image piece fitted to its slot by the
-// loaded image's own aspect, in the room's black frame. Suspends while the WebP
+// A painting on a wall (Gallery 44, the food rooms): an image piece fitted to
+// its slot by the loaded image's own aspect, in the frame the room passes. Suspends while the WebP
 // loads, so wrap it in Suspense (the wall stays bare until then).
 
 import type { JSX } from "react";
@@ -9,7 +9,7 @@ import {
   fitInside,
   type ArtworkId,
 } from "../../../game/artworks.ts";
-import { textureAspect, useArtTexture } from "../shared/artTexture.ts";
+import { textureAspect, useArtTexture } from "./artTexture.ts";
 
 const BOX = new THREE.BoxGeometry(1, 1, 1);
 
