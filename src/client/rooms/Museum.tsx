@@ -14,6 +14,7 @@ import {
   viewpoint,
   type ExhibitKind,
 } from "../../game/museum.ts";
+import { meshyDir, type MeshyProp } from "../../game/meshyModels.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import {
   JEEPNEY_CHROME,
@@ -210,7 +211,7 @@ const TERNO: Look = {
 const MODELS: Partial<
   Record<
     ExhibitKind,
-    { model: string; width: number; depth: number; height: number }
+    { model: MeshyProp; width: number; depth: number; height: number }
   >
 > = {
   "bahay-kubo": { model: "bahay-kubo", width: 1.17, depth: 1.17, height: 1.8 },
@@ -228,7 +229,7 @@ function Piece({ kind }: { kind: ExhibitKind }) {
   return (
     <AssetBoundary fallback={<ShapePiece kind={kind} />}>
       <Suspense fallback={<ShapePiece kind={kind} />}>
-        <Prop dir="meshy/museum" position-y={0.8} {...fit} />
+        <Prop dir={meshyDir(fit.model)} position-y={0.8} {...fit} />
       </Suspense>
     </AssetBoundary>
   );
