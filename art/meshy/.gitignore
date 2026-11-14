@@ -1,3 +1,5 @@
 raw/
 design/
 art/
+# per-batch task logs; meshy-tasks.json is the record
+log*.tsv
