@@ -23,6 +23,11 @@ export type NightLook = {
    * `blacklight`: saturated and white surfaces fluoresce on their own.
    */
   signature?: "lasers" | "blacklight";
+  /**
+   * Scale on unlit, fog-free sky art and flat unlit scenery, for rooms whose
+   * sky is a picture (a sunset skyline) that no light dims; it also goes cool.
+   */
+  shade?: number;
   /** The sky and fog the room goes to, when it has them. */
   backdrop?: string;
 };
@@ -42,6 +47,7 @@ export const NIGHT_LOOKS: Partial<Record<NightId, NightLook>> = {
     key: 0.35,
     tint: 0.6,
     tintColor: "#4f6bff",
+    shade: 0.18,
     backdrop: "#04081f",
   },
   // a real blacklight room: dark, deep violet, everything else glows by itself

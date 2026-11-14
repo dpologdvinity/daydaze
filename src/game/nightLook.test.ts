@@ -75,3 +75,9 @@ test("confetti shoots up, slows, flutters down and is gone by landing", () => {
   confettiAt(CANNON_PERIOD, 0.5, 0.5, 9, out);
   assert.ok(out[1] < -50);
 });
+
+test("stargazing darkens a picture sky that no light can reach", () => {
+  const look = NIGHT_LOOKS.stargazing;
+  assert.ok(look && look.shade !== undefined && look.shade < 0.5);
+  assert.ok(look.backdrop);
+});

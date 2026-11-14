@@ -31,6 +31,9 @@ export type Hall = {
 /** A light the grade has dimmed: what the room set, and what we set. */
 type Dimmed = { light: THREE.Light; base: number; set: number };
 
+/** A cold blue the shaded sky and scenery are multiplied by. */
+const COOL = new THREE.Color(0.6, 0.72, 1);
+
 /** Frames between sweeps for lights and materials the room has added. */
 const SWEEP_EVERY = 15;
 
@@ -48,6 +51,8 @@ export function NightGrade({ look }: { look: NightLook }) {
       frame: 0,
       dimmed: [] as Dimmed[],
       seen: new Set<THREE.Light>(),
+      shaded: [] as { material: THREE.MeshBasicMaterial; base: THREE.Color }[],
+      shadedSeen: new Set<THREE.Material>(),
       backdrop: new THREE.Color(),
       saved: null as null | {
         background: THREE.Color;
@@ -59,7 +64,20 @@ export function NightGrade({ look }: { look: NightLook }) {
     [],
   );
   const visit = useMemo(() => {
-    const touch = (m: THREE.Material) => patchBlacklight(m);
+    const touch = (m: THREE.Material) => {
+      if (look.signature === "blacklight") patchBlacklight(m);
+      // unlit sky art and flat scenery: lights can't dim it, so scale it
+      if (
+        look.shade !== undefined &&
+        m instanceof THREE.MeshBasicMaterial &&
+        (m.toneMapped || !m.fog) &&
+        !state.shadedSeen.has(m)
+      ) {
+        state.shadedSeen.add(m);
+        state.shaded.push({ material: m, base: m.color.clone() });
+        m.color.multiplyScalar(look.shade).multiply(COOL);
+      }
+    };
     return (o: THREE.Object3D) => {
       if (o instanceof THREE.Light) {
         // the night's own fill light is marked, and left alone
@@ -69,7 +87,7 @@ export function NightGrade({ look }: { look: NightLook }) {
         const entry = { light: o, base: o.intensity, set: o.intensity * k };
         o.intensity = entry.set;
         state.dimmed.push(entry);
-      } else if (look.signature === "blacklight" && o instanceof THREE.Mesh) {
+      } else if (o instanceof THREE.Mesh) {
         if (Array.isArray(o.material)) o.material.forEach(touch);
         else touch(o.material);
       }
@@ -80,7 +98,11 @@ export function NightGrade({ look }: { look: NightLook }) {
     if (look.signature === "blacklight") uvGlow.value = 1;
     const dimmed = state.dimmed;
     const seen = state.seen;
+    const shaded = state.shaded;
     return () => {
+      for (const s of shaded) s.material.color.copy(s.base);
+      shaded.length = 0;
+      state.shadedSeen.clear();
       uvGlow.value = 0;
       // put back what the room set, for the lights still in the scene
       for (const d of dimmed)
