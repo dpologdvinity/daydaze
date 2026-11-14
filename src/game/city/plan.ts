@@ -218,7 +218,7 @@ export const TRIANGLES: Record<Kind, number> = {
   bulb: 20,
   furniture: 12,
   glass: 12,
-  puddle: 12,
+  puddle: 2,
   steam: 48,
 };
 
