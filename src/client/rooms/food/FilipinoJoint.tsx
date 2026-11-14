@@ -1,11 +1,12 @@
 // Kain Tayo, Little Manila's turo-turo: the shared FoodRoom in pink, gold and
-// magenta with a row of colored banners and three glowing parol lanterns over
-// the counter. Throws on render if the "kain-tayo-turo-turo" venue is missing
-// from FOOD_VENUES.
+// magenta with a row of colored banners, three glowing parol lanterns over the
+// counter and the day's ulam (Meshy dishes) along it. Throws on render if the
+// "kain-tayo-turo-turo" venue is missing from FOOD_VENUES.
 
 import type { JSX } from "react";
 import { FOOD_VENUES } from "../../../game/food/venues.ts";
 import type { PickHandler } from "../shared/Floor.tsx";
+import { Dishes, type DishAt } from "../shared/Dishes.tsx";
 import { FoodRoom, type FoodPalette } from "./FoodRoom.tsx";
 
 const VENUE = FOOD_VENUES.find((v) => v.id === "kain-tayo-turo-turo");
@@ -29,6 +30,19 @@ const COLORS = [
   "#b06bff",
   "#ff8a3d",
 ];
+
+/** The day's ulam along the counter top (y 1.17), the cashier behind them. */
+const COUNTER: readonly DishAt[] = (
+  [
+    "adobo",
+    "sinigang",
+    "kare-kare",
+    "palabok",
+    "lechon-kawali",
+    "sisig",
+    "inasal",
+  ] as const
+).map((dish, i) => ({ dish, x: -2.7 + i * 0.9, y: 1.17, z: -0.85 }));
 
 /**
  * The turo-turo: a point-and-eat Filipino kitchen. Parol star lanterns, pandan
@@ -62,6 +76,7 @@ export function FilipinoJoint({
       }}
       onPick={onPick}
     >
+      <Dishes items={COUNTER} />
       {COLORS.map((color, i) => (
         <mesh key={color} position={[-3.4 + i * 1.36, 3.1, 0.6]}>
           <boxGeometry args={[0.9, 0.12, 0.05]} />

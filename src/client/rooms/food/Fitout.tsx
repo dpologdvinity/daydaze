@@ -1,5 +1,6 @@
 import { Suspense, useEffect, useMemo } from "react";
 import * as THREE from "three";
+import type { RoomId } from "../../../game/rooms.ts";
 import { makeCanvas } from "../../canvas.ts";
 import { groundMaps, surface } from "../../city/worldTexture.ts";
 import { Batch } from "../shared/batch.ts";
@@ -269,13 +270,7 @@ export function Fitout({ palette }: { palette: FoodPalette }) {
     <>
       <primitive object={built.group} />
       <PlatedFood
-        model={
-          palette.room === "filipino-joint"
-            ? "food-ChickenLeg"
-            : palette.room === "bistro"
-              ? "food-Steak"
-              : "junk-Donut"
-        }
+        model={TABLE_FOOD[palette.room] ?? "junk-Donut"}
         at={TABLES.map(([x, z]) => [x - 0.27, 0.805, z + 0.2, 0] as const)}
       />
       <Suspense fallback={null}>
@@ -308,6 +303,15 @@ export function Fitout({ palette }: { palette: FoodPalette }) {
     </>
   );
 }
+
+/** What each room sets on its tables (a list: one per table in turn); rooms
+ * not here set a donut. The Filipino rooms use the Meshy dishes. */
+const TABLE_FOOD: Partial<Record<RoomId, string | readonly string[]>> = {
+  "filipino-joint": ["adobo", "sinigang", "lumpia"],
+  "halo-halo-cafe": ["halo-halo", "leche-flan", "buko-pandan"],
+  "ube-bakery": ["ensaymada", "bibingka", "puto-bumbong"],
+  bistro: "food-Steak",
+};
 
 // a chair each side of every table, facing it (see foodSeats in seats.ts)
 const CHAIRS = TABLES.flatMap(([x, z]) =>
