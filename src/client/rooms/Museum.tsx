@@ -1,10 +1,11 @@
-// Museo ng Little Manila scene: eight exhibits on plinths, each built from
-// simple shapes. Tapping a plaque starts the guided view (./museum/tour.ts):
+// Museo ng Little Manila scene: eight exhibits on plinths. The bahay kubo,
+// jeepney, banig and sari-sari store are Meshy models (the old simple shapes
+// stand in while they load); the rest are built from simple shapes. Tapping a plaque starts the guided view (./museum/tour.ts):
 // the Guide moves the player to the viewpoint and takes the camera through
 // cameraHold while an exhibit is in focus.
 
 import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, type JSX } from "react";
+import { Suspense, useEffect, useMemo, type JSX } from "react";
 import * as THREE from "three";
 import type { Look } from "../../game/look.ts";
 import {
@@ -35,6 +36,7 @@ import { surface } from "../city/worldTexture.ts";
 import { canvasTex, hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
+import { Prop } from "./shared/Prop.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
 
 const GOLD = "#ffd166";
@@ -201,8 +203,41 @@ const TERNO: Look = {
   outfitColor: "#ff2f9a",
 };
 
-/** The piece on an exhibit's plinth, built from simple shapes. */
+/** The Meshy models (public/models/meshy/museum/) that replace a simple shape,
+ * each fitted to the plinth top: the fit box in meters, and a turn to show it
+ * at an angle. */
+const MODELS: Partial<
+  Record<
+    ExhibitKind,
+    {
+      model: string;
+      width: number;
+      depth: number;
+      height: number;
+      yaw?: number;
+    }
+  >
+> = {
+  "bahay-kubo": { model: "bahay-kubo", width: 1.2, depth: 1.2, height: 1.5 },
+  jeepney: { model: "jeepney", width: 1.25, depth: 1, height: 1, yaw: 0.5 },
+  banig: { model: "banig", width: 1.1, depth: 0.5, height: 1.6 },
+  "sari-sari": { model: "sari-sari", width: 1.2, depth: 1.2, height: 1.3 },
+};
+
+/** The piece on an exhibit's plinth: its Meshy model where there is one, with
+ * the simple-shape piece standing in while it loads. */
 function Piece({ kind }: { kind: ExhibitKind }) {
+  const fit = MODELS[kind];
+  if (!fit) return <ShapePiece kind={kind} />;
+  return (
+    <Suspense fallback={<ShapePiece kind={kind} />}>
+      <Prop dir="meshy/museum" position-y={0.8} {...fit} />
+    </Suspense>
+  );
+}
+
+/** A piece on an exhibit's plinth, built from simple shapes. */
+function ShapePiece({ kind }: { kind: ExhibitKind }) {
   const banig = useMemo(banigTexture, []);
   const islands = useMemo(islandsTexture, []);
   const script = useMemo(scriptTexture, []);
