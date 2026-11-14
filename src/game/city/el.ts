@@ -217,6 +217,12 @@ export function nearestStation(x: number): ElStation {
   );
 }
 
+/** Whether a rider waiting on `trip.from`'s platform is aboard at clock time
+ * `t`: once the doors have opened. She stands there the whole dwell, so a
+ * frame that skips it (a slow device, a hitch) still finds her on the train;
+ * a check for the doors being open in that frame missed every train. */
+export const hasBoarded = (trip: ElTrip, t: number): boolean => t >= trip.board;
+
 /** Whether a rider bound for `trip.to` is to step off at clock time `t`: the
  * doors are open there, or (a throttled tab skipped the stop) the dwell is
  * over, so she is never carried on forever. */

@@ -11,6 +11,7 @@ import {
   EL_STATIONS,
   elTrainAt,
   hasArrived,
+  hasBoarded,
   nearestStation,
   planTrip,
   type ElStation,
@@ -96,22 +97,10 @@ export function ElRide({ player }: { player: Player }) {
     const train = elTrainAt(now);
     if (status.kind === "waiting") {
       const { trip } = status;
-      if (
-        now >= trip.board &&
-        now < trip.leave &&
-        train.at?.id === trip.from.id
-      ) {
+      if (hasBoarded(trip, now)) {
         player.seat = TRAIN_SEAT;
         seatInTrain(player, train);
         elRide.set({ status: { kind: "riding", trip } });
-      } else if (now >= trip.leave) {
-        // she missed it: the next one
-        const next = tryPlan(trip.from, trip.to, now);
-        if (next) elRide.set({ status: { kind: "waiting", trip: next } });
-        else {
-          getOff(player, trip.from);
-          elRide.set({ status: { kind: "idle" } });
-        }
       }
     } else {
       const { trip } = status;
