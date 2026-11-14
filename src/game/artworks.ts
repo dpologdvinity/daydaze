@@ -37,6 +37,15 @@ export const ARTWORKS = {
   "sap-prom": { title: "Prom", group: "sapphic" },
   "sap-lighthouse": { title: "Lighthouse", group: "sapphic" },
   "sap-debut": { title: "Debut", group: "sapphic" },
+  "sap-jazz-duet": { title: "Jazz Duet", group: "sapphic" },
+  "sap-night-market": { title: "Night Market Halo-Halo", group: "sapphic" },
+  "sap-ballet": { title: "Ballet", group: "sapphic" },
+  "sap-bus-stop": { title: "Bus Stop", group: "sapphic" },
+  "sap-aquarium": { title: "Aquarium Tunnel", group: "sapphic" },
+  "sap-mistletoe": { title: "Mistletoe", group: "sapphic" },
+  "sap-art-class": { title: "Art Class", group: "sapphic" },
+  "sap-water-park": { title: "Water Park Float", group: "sapphic" },
+  "sap-autumn-bench": { title: "Autumn Bench", group: "sapphic" },
   // Filipino
   "ph-parol-night": { title: "Parol Night", group: "filipino" },
   "ph-sinulog": { title: "Sinulog", group: "filipino" },
@@ -56,6 +65,10 @@ export const ARTWORKS = {
   "ph-mayon": { title: "Mayon", group: "filipino" },
   "ph-pabitin": { title: "Pabitin", group: "filipino" },
   "ph-tinikling": { title: "Tinikling", group: "filipino" },
+  "ph-intramuros": { title: "Intramuros", group: "filipino" },
+  "ph-sari-sari": { title: "Sari-Sari Afternoon", group: "filipino" },
+  "ph-fishing-village": { title: "Fishing Village", group: "filipino" },
+  "ph-jeepney-ride": { title: "Jeepney Ride", group: "filipino" },
   // Daydaze posters
   "dd-boardwalk": { title: "Boardwalk Poster", group: "daydaze" },
   "dd-mermaid-cove": { title: "Mermaid Cove Poster", group: "daydaze" },
@@ -65,6 +78,10 @@ export const ARTWORKS = {
   "dd-pulse": { title: "Pulse Poster", group: "daydaze" },
   "dd-roller": { title: "Roller Disco Poster", group: "daydaze" },
   "dd-travel": { title: "Travel Poster", group: "daydaze" },
+  "dd-fiesta": { title: "Fiesta Poster", group: "daydaze" },
+  "dd-halo-halo-haus": { title: "Halo-Halo Haus Poster", group: "daydaze" },
+  "dd-boodle-night": { title: "Boodle Night Poster", group: "daydaze" },
+  "dd-speedway": { title: "Speedway Poster", group: "daydaze" },
 } as const satisfies Record<string, { title: string; group: ArtGroup }>;
 
 export type ArtworkId = keyof typeof ARTWORKS;
