@@ -18,6 +18,7 @@ future imported packs belong here when they enter the game.
 
 | Title | Author | License | URL | Used for |
 | --- | --- | --- | --- | --- |
+| Meshy-generated models and art | Meshy | Per Meshy terms for paid plans | https://www.meshy.ai/terms-of-use | Generated for Daydaze: Filipino food, museum pieces, mangos, festival props, merch, paintings and posters. |
 | Animated Flying Fluttering Butterfly Loop | LasquetiSpice | CC-BY 4.0 | https://sketchfab.com/3d-models/none-80f8d9a6dadc411e89ca366cb0cfb0d9 | The park's, Larkspur Forest's and the garden's butterflies: frozen in the open-wing pose, decimated to 160 triangles, flapped in a shader (art/butterfly/build_butterfly.py). |
 | 90s Retro Vending Machine | MadeByYeshe | CC-BY 4.0 | https://sketchfab.com/3d-models/90s-retro-vending-machine-dfd9838c7475422099d8d435d08102fe | Snack vending machines on the avenue's sidewalks and in Skyline Supply, Player 2 and Boardwalk Arcade (art/vending/build_vending.py). |
 | Jaguar/Daimler XJ X308 Pack | Fishboe | CC-BY 4.0 | https://sketchfab.com/3d-models/none-50f5cb8779f74b0790b68a709d97447b | The Dealership's saloon showpiece (the XJ Sport only): decimated, every badge, wordmark and logo removed, shown in-game as the made-up Aurelia Grand Saloon (art/showroom/build_showpieces.py). |
