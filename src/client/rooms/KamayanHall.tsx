@@ -6,7 +6,7 @@
 import { Kitchen } from "./kamayan/Stove.tsx";
 import type { Player } from "../world/PlayerController.tsx";
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { FOOD_VENUES } from "../../game/food/venues.ts";
 import {
@@ -26,6 +26,7 @@ import { PortalPads } from "./shared/PortalPads.tsx";
 import { Batch } from "./shared/batch.ts";
 import { bunting, plant, poster } from "./shared/details.ts";
 import { Dishes, type DishAt } from "./shared/Dishes.tsx";
+import { PropSet } from "./shared/Prop.tsx";
 import { groundMaps, surface } from "../city/worldTexture.ts";
 
 const VENUE = FOOD_VENUES.find((v) => v.id === "lechon-kamayan-hall");
@@ -218,9 +219,53 @@ const FEAST = [
   "palabok",
 ] as const;
 
-/** The boodle fight: a low table under banana leaves, rice mounded down the
- * middle and the feast round it, the lechon at the head. */
+/** One Meshy boodle table (public/models/meshy/food/boodle.glb) is 2.3 times
+ * as long as it is wide: scaled to the 1.2 m table it is 2.8 m, so three of
+ * them, the middle one turned round, make the whole 8.5 m feast. */
+const BOODLE_LEN = 2.83;
+const BOODLE_AT: readonly (readonly [number, number, number, number])[] = [
+  [-BOODLE_LEN, 0, TABLE.z, 0],
+  [0, 0, TABLE.z, Math.PI],
+  [BOODLE_LEN, 0, TABLE.z, 0],
+];
+
+/** The boodle fight: the Meshy feast table, and the benches down both sides.
+ * The plain table (below) stands in while the model loads. */
 function BoodleTable() {
+  const len = TABLE.x1 - TABLE.x0;
+  return (
+    <group>
+      <Suspense fallback={<PlainBoodle />}>
+        <PropSet
+          model="boodle"
+          dir="meshy/food"
+          width={BOODLE_LEN}
+          depth={TABLE.half * 2 + 0.05}
+          height={0.8}
+          at={BOODLE_AT}
+        />
+      </Suspense>
+      {/* the benches down both sides */}
+      {[-1, 1].map((side) => (
+        <mesh
+          key={side}
+          position={[
+            (TABLE.x0 + TABLE.x1) / 2,
+            0.22,
+            TABLE.z + side * (TABLE.half + 0.45),
+          ]}
+          material={BENCH}
+        >
+          <boxGeometry args={[len, 0.44, 0.36]} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+/** A low table under banana leaves, rice mounded down the middle and dishes
+ * round it, the lechon at the head. */
+function PlainBoodle() {
   const len = TABLE.x1 - TABLE.x0;
   // rice in a ridge down the leaves; dishes either side of it
   const rice = useMemo(() => {
@@ -289,20 +334,6 @@ function BoodleTable() {
         ]}
         fallback={<Lechon position={[TABLE.x1 - 0.75, 0.73, TABLE.z]} />}
       />
-      {/* the benches down both sides */}
-      {[-1, 1].map((side) => (
-        <mesh
-          key={side}
-          position={[
-            (TABLE.x0 + TABLE.x1) / 2,
-            0.22,
-            TABLE.z + side * (TABLE.half + 0.45),
-          ]}
-          material={BENCH}
-        >
-          <boxGeometry args={[len, 0.44, 0.36]} />
-        </mesh>
-      ))}
     </group>
   );
 }
