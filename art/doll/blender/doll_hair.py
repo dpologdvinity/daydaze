@@ -632,8 +632,8 @@ def shade_strands(ctx, ob):
     own shadow and reads darker and denser; lengths and tips catch the light.
     The client multiplies these into the hair color. Each strand card is a
     little warmer or cooler (`layer_hue`), so a head of hair is many tones,
-    not one flat dye. Alpha is `layer_alpha` where set (the cap's feathered
-    hairline), else 1."""
+    not one flat dye. Alpha is `layer_alpha` where set (each lock's root
+    fading in, the cap's feathered hairline), else 1."""
     scalp = ctx.PB[[i for f in ctx.FACES["body"] for i in f if ctx.HEADW[i] > 0.98]]
     tree = KDTree(len(scalp))
     for i, p in enumerate(scalp):
@@ -664,7 +664,7 @@ def shade_strands(ctx, ob):
 # FEATHER from there; behind the ears, under the hair, it stops just above
 # the hairline as before (no hidden triangles)
 REACH = 0.014
-FEATHER = 0.04
+FEATHER = 0.02
 
 
 def _facing(ctx, x, y):
@@ -679,19 +679,29 @@ def cap_reach(ctx):
     return lambda x, y: 0.008 - (0.008 + REACH) * _facing(ctx, x, y)
 
 
-def feather_cap(ctx, cap):
-    """Vertex alpha for a scalp cap built with cap_reach: nothing at its edge
-    over the face, all there `FEATHER` higher up. The cap's strand image
-    breaks the fade up hair by hair (strands.cap_texture), so the hairline
-    is soft and natural, not the cut edge of a wig."""
-    co = np.array([v.co[:] for v in cap.data.vertices])
-    # it wanders a few millimeters up and down round the head, like a real
-    # one, never below the cap's cut edge (the fade is nothing there)
+def front_line(ctx, x, y):
+    """Where the hair visibly starts over the face: the hairline's curve,
+    dipping a few millimeters to a soft peak mid-forehead and rising round
+    the temple corners, with a slight wander, as a real one does."""
     head = ctx.JB["head"]
-    th = np.arctan2(co[:, 0] - head[0], co[:, 1] - head[1])
-    wander = 0.004 + 0.0025 * np.sin(5 * th + 1) + 0.0015 * np.sin(13 * th + 4)
+    th = np.arctan2(x - head[0], y - head[1])
+    # 0 straight ahead, pi straight back
+    off = np.pi - np.abs(th)
+    shape = -0.006 * np.exp(-((off / 0.13) ** 2)) + 0.008 * np.exp(-(((off - 0.7) / 0.25) ** 2))
+    wander = 0.0015 * np.sin(5 * th + 1) + 0.001 * np.sin(13 * th + 4)
+    return hairline(ctx, x, y) + shape + wander
+
+
+def feather_cap(ctx, cap):
+    """Vertex alpha for a scalp cap built with cap_reach: nothing just under
+    the front_line, all there `FEATHER` higher up. The cap's strand image
+    breaks the fade up hair by hair (strands.cap_texture), so the hairline
+    is short fine hairs along the head's curve, not the cut edge of a wig."""
+    co = np.array([v.co[:] for v in cap.data.vertices])
     edge = hairline(ctx, co[:, 0], co[:, 1]) + cap_reach(ctx)(co[:, 0], co[:, 1])
-    k = np.clip((co[:, 2] - edge - wander) / FEATHER, 0, 1)
+    # never below the cap's cut edge: the fade is nothing there
+    start = np.maximum(front_line(ctx, co[:, 0], co[:, 1]) - 0.008, edge)
+    k = np.clip((co[:, 2] - start) / FEATHER, 0, 1)
     k = k * k * (3 - 2 * k)
     # round the back the cap ends under the hair, whole
     w = _facing(ctx, co[:, 0], co[:, 1])
@@ -708,8 +718,8 @@ def strand_style(ctx, name, strand_mat, cap_mat, **style):
     strands.comb_cap(ctx, cap, style.get("tie"))
     fade = feather_cap(ctx, cap)
     cards = strands.build(ctx, name, strand_mat, **style)
-    # joining appends the cap's vertices after the cards' (all there)
-    fade = [1.0] * len(cards.data.vertices) + fade
+    # joining appends the cap's vertices after the cards'
+    fade = list(cards["layer_alpha"]) + fade
     out = doll_outfits.join(cards, cap)
     out["layer_alpha"] = fade
     return out
@@ -738,12 +748,13 @@ def pigtails(ctx, strand_mat, cap_mat):
     # strands' layer shading runs on in the same order; the cap goes last
     shade = list(halves[0]["layer_shade"]) + list(halves[1]["layer_shade"])
     hue = list(halves[0]["layer_hue"]) + list(halves[1]["layer_hue"])
+    fade = list(halves[0]["layer_alpha"]) + list(halves[1]["layer_alpha"])
     out = doll_outfits.join(halves[0], halves[1])
     out["layer_shade"] = shade
     out["layer_hue"] = hue
     cap = scalp_hair(ctx, "Hair_pigtails_cap", cap_mat, lambda bm, ctx: None, rise=cap_reach(ctx))
     strands.comb_cap(ctx, cap)
-    fade = [1.0] * len(out.data.vertices) + feather_cap(ctx, cap)
+    fade += feather_cap(ctx, cap)
     out = doll_outfits.join(out, cap)
     out["layer_alpha"] = fade
     out.name = "Hair_pigtails"

@@ -26,6 +26,28 @@ CAP_TEX = None
 ATLAS = "hair-pack-part-2/textures/hair109Diffuse_21.png"
 STRIPS = ((0.014, 0.243), (0.26, 0.488))
 V_ROOT, V_TIP = 0.975, 0.02
+# a strip's root end is loose wisps, made to hide under other locks: on a
+# card's root they stuck up off the crown as spikes, so cards start below them
+SKIP = 0.12
+# its outer edges are single strands: alone at mid range they read stringy
+INSET = 0.12
+
+
+def lock_v(t, span=1.0):
+    """The strip's v at `t` (0 root to 1 tip) along a card that wears
+    `span` of the strip below its root wisps (short hair stops before the
+    strip's wispy tips, or a pixie is all fuzz)."""
+    return V_ROOT - (V_ROOT - V_TIP) * (SKIP + (1 - SKIP) * span * t)
+
+
+def lock_u(rng, span=1.0):
+    """A card's two u edges: one strip, inset from its loose edges (more on
+    short locks, which would otherwise be all fuzz), and mirrored at random
+    for variety."""
+    s0, s1 = STRIPS[rng.integers(len(STRIPS))]
+    inset = INSET + 0.15 * (1 - span) / 0.55
+    s0, s1 = s0 + (s1 - s0) * inset, s1 - (s1 - s0) * inset
+    return (s1, s0) if rng.random() < 0.5 else (s0, s1)
 
 
 def atlas_texture():
@@ -146,7 +168,7 @@ def build(
     shoulder_x = abs(ctx.JB["lArm"][0]) + 0.05
 
     eye_z = ctx.JB["lEye"][2]
-    face_half = 0.078
+    face_half = 0.082
 
     # the body itself, for hair resting on the back and shoulders: a strand
     # point inside the skin (or within the margin) moves out along the normal
@@ -166,7 +188,8 @@ def build(
     def push_out(p, layer):
         # keep the face clear: strands in front of the face below the brow
         # move out to the sides and frame it instead of covering the eyes
-        if p[1] < head[1] - 0.02 and p[2] < eye_z + 0.035 and abs(p[0]) < face_half + layer:
+        # (up to the brows' top, so no lock hangs over them)
+        if p[1] < head[1] - 0.02 and p[2] < eye_z + 0.045 and abs(p[0]) < face_half + layer:
             p[0] = np.sign(p[0] or 1) * (face_half + layer)
         # outside the head ellipsoid
         d = (p - centre) / (radii + layer)
@@ -184,7 +207,7 @@ def build(
             p = off_body(p, 0.02 + layer)
         return p
 
-    verts, faces, uvs, root_src, shade, hue = [], [], [], [], [], []
+    verts, faces, uvs, root_src, shade, hue, alpha = [], [], [], [], [], [], []
     # which atlas strip each card wears, apart from the layout's draws
     looks = np.random.default_rng(seed + 101)
     gravity = np.array([0, 0, -1.0])
@@ -200,17 +223,14 @@ def build(
     if tie_at is not None:
         segments = 14
     over = 6  # of a ponytail strand's segments, how many cross the scalp
-    if tie_at is not None:
-        # slicked hair lies on the real skull, not the collision ellipsoid
-        from mathutils import Vector
-        from mathutils.bvhtree import BVHTree
+    # slicked hair, and any lock over the top of the head, lies on the real
+    # skull, not the collision ellipsoid (a centimeter off it at the brow)
+    scalp_f = [f for f in ctx.FACES["body"] if ctx.HEADW[f].min() > 0.98]
+    skull = BVHTree.FromPolygons([tuple(p) for p in ctx.PB], [list(f) for f in scalp_f])
 
-        scalp_f = [f for f in ctx.FACES["body"] if ctx.HEADW[f].min() > 0.98]
-        skull = BVHTree.FromPolygons([tuple(p) for p in ctx.PB], [list(f) for f in scalp_f])
-
-        def on_skull(p, off):
-            loc, nrm = skull.find_nearest(Vector(p))[:2]
-            return np.array(loc) + np.array(nrm) * off
+    def on_skull(p, off):
+        loc, nrm = skull.find_nearest(Vector(p))[:2]
+        return np.array(loc) + np.array(nrm) * off
 
     def tied(root, normal, lift, L, phase):
         """A ponytail strand: slicked over the scalp to the tie, then out
@@ -241,10 +261,26 @@ def build(
         off the head by `lift`, then falling under gravity."""
         if tie_at is not None:
             return tied(root, normal, lift, L, phase)
+
+        def layer_at(t):
+            return (0.003 + lift * 0.014) * volume + 0.004 * t
+
+        def hug(p, t):
+            """Over the top of the head a lock lies on it, its layer's depth
+            off the skull: left straight it left the curve as a spike off
+            the crown or a slab hovering in front of the forehead. Below the
+            head's middle it falls free."""
+            k = np.clip((p[2] - centre[2] + 0.02) / 0.04, 0, 1)
+            return p + (on_skull(p, 0.004 + layer_at(t)) - p) * k if k > 0 else p
+
         side = np.sign(root[0] - part) or 1
         # crown and sides comb out from the part; the back falls straight
         back = np.clip((root[1] - head[1]) / 0.06, 0, 1)
-        comb = np.array([side * 0.75 * (1 - back), 0.55, -0.35 - 0.6 * back])
+        # over the forehead "back" points into the head, which leaves only
+        # sideways and down across the face: there it is combed up and back
+        # over the head, away from the face, instead
+        front = np.clip((head[1] - root[1]) / 0.05, 0, 1)
+        comb = np.array([side * 0.75 * (1 - back) * (1 - 0.6 * front), 0.55, -0.35 - 0.6 * back + 1.2 * front])
         comb = comb - normal * np.dot(comb, normal)
         comb /= np.linalg.norm(comb) + 1e-9
         # hair lies close over the crown; only volume styles stand up off it
@@ -265,7 +301,7 @@ def build(
                 ang = t * 40 + phase
                 p = p + np.array([np.cos(ang), np.sin(ang), 0]) * curl * (0.4 + t) * (10 / segments)
             # outer layers stand further off the head: real volume, no hollow
-            pts.append(push_out(p, (0.003 + lift * 0.014) * volume + 0.004 * t))
+            pts.append(push_out(hug(p, t), layer_at(t)))
         # the clamps in push_out leave corners; relax them, then re-clear
         # the head and body, so every strand falls in one smooth curve
         # (not curls: their spiral turns most of a circle per segment, and
@@ -274,14 +310,14 @@ def build(
         for _ in range(0 if curl else 3):
             pts[1:-1] = pts[1:-1] * 0.5 + (pts[:-2] + pts[2:]) * 0.25
             for k in range(1, len(pts)):
-                pts[k] = push_out(pts[k], (0.003 + lift * 0.014) * volume + 0.004 * k / segments)
+                pts[k] = push_out(hug(pts[k], k / segments), layer_at(k / segments))
         return pts
 
     def card(pts, width, twist, dark, root):
         base = len(verts)
-        s0, s1 = STRIPS[looks.integers(len(STRIPS))]
-        if looks.random() < 0.5:
-            s0, s1 = s1, s0
+        # long locks wear the whole strip, short ones its root half
+        span = np.clip(np.linalg.norm(np.diff(pts, axis=0), axis=1).sum() / 0.45, 0.45, 1)
+        s0, s1 = lock_u(looks, span)
         # warmer or cooler than its neighbors: real hair is many tones
         warm = looks.uniform(-1, 1)
         for k, p in enumerate(pts):
@@ -300,12 +336,14 @@ def build(
                 # cap shows there), gathering into the tail at the band
                 half *= np.clip((k / over - 0.4) / 0.6, 0, 1) ** 2
             verts.extend([p - across * half, p + across * half])
-            # each card is one whole lock, root to tip (a strip, mirrored
-            # at random for variety)
-            v = V_ROOT - (V_ROOT - V_TIP) * t
+            # each card is one whole lock, root to tip
+            v = lock_v(t, span)
             uvs.extend([(s0, v), (s1, v)])
             shade.extend([dark, dark])
             hue.extend([warm, warm])
+            # a lock grows out of the cap: its root end fades in (vertex
+            # alpha) instead of starting at a hard edge along the hairline
+            alpha.extend([0.0, 0.0] if k == 0 else [1.0, 1.0])
         for k in range(segments):
             a = base + 2 * k
             faces.append((a, a + 1, a + 3, a + 2))
@@ -338,10 +376,11 @@ def build(
             for k, p in enumerate(rows[i]):
                 t = k / segments
                 verts.append(p)
-                uvs.append((u, V_ROOT - (V_ROOT - V_TIP) * t))
+                uvs.append((u, lock_v(t)))
                 # in the shadow of the cards over it: depth, not the surface
                 shade.append(0.55)
                 hue.append(0.0)
+                alpha.append(1.0)
             if i:
                 prev = base - (segments + 1)
                 for k in range(segments):
@@ -374,6 +413,11 @@ def build(
             # hanging below read as specks on the back
             L = length * rng.uniform(0.85, 1.0) * (0.85 + 0.15 * lift)
             phase = rng.uniform(0, 2 * np.pi)
+            # the wide, dark under-layer fills the volume behind: over the
+            # front of the head (where the cap does that) its wide cards
+            # read as flat slabs across the forehead
+            if lift == 0.0 and tie_at is None and root[1] < head[1] - 0.01:
+                continue
             g = guide(root, normal, lift, L, phase)
             # each lock catches the light its own way, so locks read apart
             lock = rng.uniform(0.84, 1.1)
@@ -393,6 +437,7 @@ def build(
     ob.data.materials.append(mat)
     ob["layer_shade"] = list(map(float, shade))
     ob["layer_hue"] = list(map(float, hue))
+    ob["layer_alpha"] = list(map(float, alpha))
     uv = ob.data.uv_layers.new(name="UVMap").data
     for poly in ob.data.polygons:
         poly.use_smooth = True
@@ -444,7 +489,11 @@ def cap_texture():
             mid = cx + rng.uniform(-6, 6) * v + 1.5 * np.sin(v * rng.uniform(3, 7) + rng.uniform(0, 6))
             gap = np.abs((x - mid + w / 2) % w - w / 2)
             prof = np.clip(1 - gap / rng.uniform(1.5, 3.5), 0, 1)
-            hairs = np.maximum(hairs, prof * rng.uniform(0.4, 1.0))
+            # each hair comes and goes along its length, so where the cap
+            # thins out at the hairline it leaves short fine hairs, not long
+            # lines hanging down the forehead
+            dash = np.clip(0.5 + 0.9 * np.sin(v * rng.uniform(40, 90) + rng.uniform(0, 6)), 0, 1)
+            hairs = np.maximum(hairs, prof * dash * rng.uniform(0.4, 1.0))
         # the hairs show in the color too, a little paler than the gaps
         px[..., :3] *= (0.85 + 0.3 * hairs)[..., None]
         # mostly near the floor, the hairs well above it: at the hairline's
