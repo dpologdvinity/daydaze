@@ -6,7 +6,7 @@
 import { Kitchen } from "./kamayan/Stove.tsx";
 import type { Player } from "../world/PlayerController.tsx";
 import { useFrame } from "@react-three/fiber";
-import { Suspense, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { FOOD_VENUES } from "../../game/food/venues.ts";
 import {
@@ -25,7 +25,7 @@ import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { Batch } from "./shared/batch.ts";
 import { bunting, plant, poster } from "./shared/details.ts";
-import { PropSet } from "./shared/Prop.tsx";
+import { Dishes, type DishAt } from "./shared/Dishes.tsx";
 import { groundMaps, surface } from "../city/worldTexture.ts";
 
 const VENUE = FOOD_VENUES.find((v) => v.id === "lechon-kamayan-hall");
@@ -208,6 +208,16 @@ function Parols() {
   );
 }
 
+/** The dishes the boodle table cycles through. */
+const FEAST = [
+  "lechon-kawali",
+  "inasal",
+  "lumpia",
+  "sisig",
+  "adobo",
+  "palabok",
+] as const;
+
 /** The boodle fight: a low table under banana leaves, rice mounded down the
  * middle and the feast round it, the lechon at the head. */
 function BoodleTable() {
@@ -219,10 +229,18 @@ function BoodleTable() {
       out.push([x, TABLE.z]);
     return out;
   }, []);
-  const dishes = useMemo(() => {
-    const out: (readonly [number, number, number, number])[] = [];
+  // the feast either side of the rice, a dish in turn from the Meshy set
+  const feast = useMemo(() => {
+    const out: DishAt[] = [];
+    let n = 0;
     for (let x = TABLE.x0 + 0.4; x < TABLE.x1 - 1.5; x += 0.42)
-      for (const side of [-1, 1]) out.push([x, 0.73, TABLE.z + side * 0.3, 0]);
+      for (const side of [-1, 1])
+        out.push({
+          dish: FEAST[n++ % FEAST.length] ?? "adobo",
+          x,
+          y: 0.73,
+          z: TABLE.z + side * 0.3,
+        });
     return out;
   }, []);
   return (
@@ -258,23 +276,19 @@ function BoodleTable() {
         <sphereGeometry args={[0.12, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2]} />
         <meshStandardMaterial color="#f8f4ec" roughness={0.9} />
       </instancedMesh>
-      <Suspense fallback={null}>
-        <PropSet
-          model="food-ChickenLeg"
-          width={0.18}
-          depth={0.18}
-          height={0.09}
-          at={dishes.filter((_, i) => i % 2 === 0)}
-        />
-        <PropSet
-          model="food-Fish"
-          width={0.2}
-          depth={0.16}
-          height={0.09}
-          at={dishes.filter((_, i) => i % 2 === 1)}
-        />
-      </Suspense>
-      <Lechon position={[TABLE.x1 - 0.75, 0.73, TABLE.z]} />
+      <Dishes items={feast} />
+      <Dishes
+        items={[
+          {
+            dish: "lechon",
+            x: TABLE.x1 - 0.75,
+            y: 0.73,
+            z: TABLE.z,
+            yaw: Math.PI / 2,
+          },
+        ]}
+        fallback={<Lechon position={[TABLE.x1 - 0.75, 0.73, TABLE.z]} />}
+      />
       {/* the benches down both sides */}
       {[-1, 1].map((side) => (
         <mesh
