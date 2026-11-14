@@ -582,16 +582,20 @@ function hairShine<M extends THREE.MeshStandardMaterial>(material: M): M {
           "{",
           "  vec3 V = normalize(vViewPosition);",
           "  vec3 T = normalize(vHairDir);",
-          // each strand's highlight sits a little higher or lower
+          // the strand texture's own fibers (pale hairs, darker gaps) break
+          // the bands up hair by hair and set each one's highlight a little
+          // higher or lower; its mips blend them into a soft sheen far off.
+          // (A hash per texture column did this in blocks a few texels
+          // wide: smeared gray bars across a close-up.)
           "  #ifdef USE_MAP",
-          "  float strand = fract(sin(floor(vMapUv.x * 40.0) * 12.9898) * 43758.5453);",
+          "  float fiber = smoothstep(0.45, 0.95, texture2D(map, vMapUv).g);",
           "  #else",
-          "  float strand = 0.5;",
+          "  float fiber = 0.5;",
           "  #endif",
-          "  float shift = (strand - 0.5) * 0.35;",
+          "  float shift = (fiber - 0.5) * 0.35;",
           // straight locks sit near the highlight angle all along, so the
-          // white lobe is kept faint and broken up strand by strand
-          "  float glint = 0.5 + 0.5 * fract(strand * 7.13);",
+          // white lobe is kept faint and only on the fibers
+          "  float glint = fiber;",
           // the white lobe is a sparkle against dark hair: dimmer on it
           "  float dim = 0.4 + 0.6 * clamp(dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722)) * 4.0, 0.0, 1.0);",
           "  vec3 T1 = normalize(T + normal * (0.08 + shift));",
@@ -601,7 +605,7 @@ function hairShine<M extends THREE.MeshStandardMaterial>(material: M): M {
           "    vec3 H = normalize(L + V);",
           "    float lit = smoothstep(-0.25, 0.5, dot(normal, L));",
           "    float a = hairLobe(T1, H, 36.0) * 0.2 * glint * dim;",
-          "    float b = hairLobe(T2, H, 22.0) * 0.35;",
+          "    float b = hairLobe(T2, H, 22.0) * 0.35 * (0.4 + 0.6 * fiber);",
           "    reflectedLight.directSpecular += directionalLights[i].color * lit *",
           "      (vec3(a) + b * diffuseColor.rgb * 1.6);",
           "  }",
