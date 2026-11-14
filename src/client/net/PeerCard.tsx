@@ -116,7 +116,9 @@ export function PeerCard(): JSX.Element | null {
           onClick={() => {
             // loaded on demand: it carries the karaoke songbook
             const { id, name } = open;
-            void import("./karaokeDuet.ts").then((m) => m.askToDuet(id, name));
+            import("./karaokeDuet.ts")
+              .then((m) => m.askToDuet(id, name))
+              .catch((e: unknown) => console.warn(e));
             close();
           }}
         >
