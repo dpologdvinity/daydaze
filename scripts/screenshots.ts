@@ -1083,9 +1083,11 @@ const SHOTS: {
       ["uv-night", "mini-golf", "0,6,12,0,0,0"],
       // looking up past the towers at the stargazing sky
       ["stargazing", "hotel-rooftop", "2,1.8,8,-6,34,-70"],
+      // and across the open side of the deck, horizon and all
+      ["stargazing", "hotel-rooftop", "0,2,0,3,12,40"],
     ] as const
   ).map(([night, room, cam]) => ({
-    name: `night-${night}-${room}`,
+    name: `night-${night}-${room}${cam === "0,2,0,3,12,40" ? "-open" : ""}`,
     query: `room=${room}&night=${night}&quality=low&time=23:30${cam ? `&cam=${cam}` : ""}`,
     live: true,
     act: async (page: Page) => {

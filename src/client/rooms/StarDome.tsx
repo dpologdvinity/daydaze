@@ -47,7 +47,7 @@ function starMaterial(px: number, twinkle: boolean): THREE.ShaderMaterial {
       void main() {
         float d = length(gl_PointCoord - 0.5) * 2.0;
         float a = smoothstep(1.0, 0.0, d);
-        gl_FragColor = vec4(vColor, a * a);
+        gl_FragColor = vec4(vColor, pow(a, 1.5));
       }`,
     transparent: true,
     depthWrite: false,

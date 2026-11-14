@@ -14,7 +14,7 @@ export type StarField = {
   count: number;
   /** Unit directions from the viewer, three floats a star, all above the horizon. */
   dir: Float32Array;
-  /** On-screen size in pixels, 1 to 4.5. */
+  /** On-screen size in pixels, 1.3 to 5. */
   size: Float32Array;
   /** 0 a cool blue-white, 0.5 white, 1 a warm gold. */
   warmth: Float32Array;
@@ -97,7 +97,7 @@ export function starField(field: number, band: number): StarField {
     }
     f.dir.set([x, y, z], i * 3);
     const big = rand(i, 5);
-    f.size[i] = inBand ? 1 + big * 0.5 : 1 + 3.5 * big ** 24;
+    f.size[i] = inBand ? 1.3 + big * 0.6 : 1.6 + 3.4 * big ** 24;
     f.bright[i] = inBand ? 0.15 + big * 0.3 : 0.45 + 0.55 * rand(i, 6);
     f.warmth[i] = rand(i, 7);
     f.phase[i] = rand(i, 8);

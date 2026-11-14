@@ -9,7 +9,7 @@ test("every star is a unit direction above the horizon, with sane size and warmt
     const [x, y, z] = [f.dir[i * 3]!, f.dir[i * 3 + 1]!, f.dir[i * 3 + 2]!];
     assert.ok(Math.abs(Math.hypot(x, y, z) - 1) < 1e-5, `unit ${i}`);
     assert.ok(y > 0.02, `above the horizon ${i}`);
-    assert.ok(f.size[i]! >= 1 && f.size[i]! <= 4.5, `size ${f.size[i]}`);
+    assert.ok(f.size[i]! >= 1.3 && f.size[i]! <= 5, `size ${f.size[i]}`);
     assert.ok(f.warmth[i]! >= 0 && f.warmth[i]! <= 1);
     assert.ok(f.bright[i]! > 0 && f.bright[i]! <= 1);
   }
@@ -17,8 +17,8 @@ test("every star is a unit direction above the horizon, with sane size and warmt
 
 test("most stars are tiny and a few are bright and large, with a spread of warmth", () => {
   const f = starField(1200, 0);
-  const small = Array.from(f.size).filter((s) => s < 2).length;
-  const big = Array.from(f.size).filter((s) => s > 3).length;
+  const small = Array.from(f.size).filter((s) => s < 2.4).length;
+  const big = Array.from(f.size).filter((s) => s > 3.6).length;
   assert.ok(small > 0.7 * f.count, `small ${small}`);
   assert.ok(big > 0 && big < 0.05 * f.count, `big ${big}`);
   const cool = Array.from(f.warmth).filter((w) => w < 0.35).length;
