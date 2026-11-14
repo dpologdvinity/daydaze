@@ -594,6 +594,22 @@ function hairShine<M extends THREE.MeshStandardMaterial>(material: M): M {
         ].join("\n"),
       )
       .replace(
+        "#include <alphatest_fragment>",
+        [
+          // a strand texel's alpha averages away down the mips, so locks
+          // thin into strings at mid range: put back what each mip level
+          // loses (alpha-to-coverage keeps the edge soft)
+          "#ifdef USE_MAP",
+          "{",
+          "  vec2 texel = vMapUv * vec2(textureSize(map, 0));",
+          "  float mip = max(0.0, 0.5 * log2(max(dot(dFdx(texel), dFdx(texel)), dot(dFdy(texel), dFdy(texel)))));",
+          "  diffuseColor.a *= 1.0 + mip * 0.25;",
+          "}",
+          "#endif",
+          "#include <alphatest_fragment>",
+        ].join("\n"),
+      )
+      .replace(
         "#include <lights_fragment_end>",
         [
           "#include <lights_fragment_end>",
