@@ -286,8 +286,8 @@ const SHOTS = {
   facesit: {
     looks: [{ ...LINEUP[0], hairStyle: hairParam(), ...makeupParam() }],
     x: () => 0,
-    cam: [0, 1.15, 0.95] as const,
-    target: [0, 1.07, 0] as const,
+    cam: [0, 1.25, 0.95] as const,
+    target: [0, 1.17, 0] as const,
     fov: 22,
   },
   // the closet's eye tile (public/closet/eye-*.webp): the eyes, close up,
@@ -578,15 +578,20 @@ const SHOTS = {
 };
 type ShotName = keyof typeof SHOTS;
 const plan = SHOTS[shot as ShotName] ?? SHOTS.lineup;
-// `?cam=x,y,z` moves the shot's camera, to look at a pose from another side
-const camAt = new URLSearchParams(location.search)
-  .get("cam")
-  ?.split(",")
-  .map(Number);
-const cam =
-  camAt?.length === 3 && camAt.every(Number.isFinite)
-    ? ([camAt[0], camAt[1], camAt[2]] as const)
-    : plan.cam;
+/** A query's `x,y,z` point, or the fallback when it is missing or bad. */
+function pointParam(name: string, fallback: readonly [number, number, number]) {
+  const at = new URLSearchParams(location.search)
+    .get(name)
+    ?.split(",")
+    .map(Number);
+  return at?.length === 3 && at.every(Number.isFinite)
+    ? ([at[0], at[1], at[2]] as const)
+    : fallback;
+}
+// `?cam=x,y,z` moves the shot's camera, to look at a pose from another side;
+// `?target=x,y,z` aims it elsewhere (the man's face sits higher)
+const cam = pointParam("cam", plan.cam);
+const target = pointParam("target", plan.target);
 
 function measure(root: THREE.Object3D) {
   let calls = 0;
@@ -636,7 +641,7 @@ function Lab() {
       onCreated={({ camera, gl, scene }) => {
         // dev-only: lets a test script inspect the lab scene
         Reflect.set(window, "labScene", scene);
-        camera.lookAt(plan.target[0], plan.target[1], plan.target[2]);
+        camera.lookAt(target[0], target[1], target[2]);
         gl.setClearColor(
           "#07020b",
           new URLSearchParams(location.search).get("clear") === "1" ? 0 : 1,

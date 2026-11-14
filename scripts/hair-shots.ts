@@ -65,7 +65,11 @@ const SHOTS: { name: string; query: string; shot?: string }[] = [
   // the face shot's doll up close (docs/screenshots/doll-face.png)
   { name: "face", shot: "face", query: "" },
   // and the man's (docs/screenshots/doll-face-men.png), and her seated
-  { name: "face-men", shot: "face", query: "men=1&hair=crop" },
+  {
+    name: "face-men",
+    shot: "face",
+    query: "men=1&hair=crop&cam=0,1.64,0.95&target=0,1.56,0",
+  },
   { name: "face-sit", shot: "facesit", query: "" },
   // a Hair Pack style up close (the face shot wears strand-card waves)
   { name: "face-pack", shot: "face", query: "hair=long-waves" },
