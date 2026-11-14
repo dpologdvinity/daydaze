@@ -8,6 +8,7 @@ import {
   PORTRAIT_ELEVATION,
   PORTRAIT_FOV,
   WIDE_FOV,
+  faceHeightOf,
   focusHeight,
   keyZoomNotches,
   portraitAmount,
@@ -226,4 +227,13 @@ test("already in front at eye level the camera stays; straight above her it is l
   assert.ok(same.every((v, i) => Math.abs(v - front[i]!) < 1e-9));
   const above: Vec3 = [0, 5, 0];
   assert.deepEqual(swingToFront(above, face, 1, 1), above);
+});
+
+test("the portrait aims at this doll's eyes: the man's are higher, a seated doll's lower", () => {
+  assert.ok(faceHeightOf("masculine", false) > faceHeightOf("feminine", false));
+  assert.ok(
+    faceHeightOf("feminine", true) < faceHeightOf("feminine", false) - 0.3,
+  );
+  assert.equal(focusHeight(MIN_ZOOM, 1.3), 1.3);
+  assert.equal(focusHeight(40, 1.3), CHEST_HEIGHT);
 });

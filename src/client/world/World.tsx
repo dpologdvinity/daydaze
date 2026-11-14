@@ -19,6 +19,7 @@ import { mayEnter } from "../../game/age.ts";
 import { ADULT_OK } from "../adult.ts";
 import type { Intensity } from "../../game/effects/buzz.ts";
 import {
+  bodyOf,
   swimFor,
   type Look,
   type Mood,
@@ -786,7 +787,12 @@ export function World({
               onPortal(portal);
             }}
           />
-          <CameraRig player={player} view={view} room={room} />
+          <CameraRig
+            player={player}
+            view={view}
+            room={room}
+            body={bodyOf(look)}
+          />
           <CreatorFrame />
           <Confetti />
           {tier === "high" ? <Effects /> : <NeonClamp key={`clamp-${room}`} />}

@@ -37,8 +37,17 @@ export function portraitAmount(distance: number): number {
 }
 
 /** The height on her the camera zooms toward, at `distance` meters away. */
-export function focusHeight(distance: number): number {
-  return CHEST_HEIGHT + (FACE_HEIGHT - CHEST_HEIGHT) * portraitAmount(distance);
+export function focusHeight(distance: number, face = FACE_HEIGHT): number {
+  return CHEST_HEIGHT + (face - CHEST_HEIGHT) * portraitAmount(distance);
+}
+
+/** Her eye line (meters above her feet): the woman is 1.66 m tall and the man
+ * 1.78 m, and a seated doll's head is about 0.42 m lower. */
+export function faceHeightOf(
+  body: "feminine" | "masculine",
+  seated: boolean,
+): number {
+  return (body === "masculine" ? 1.6 : 1.48) - (seated ? 0.42 : 0);
 }
 
 /** The lens (vertical fov, degrees) at `distance` meters from her. */

@@ -7,6 +7,7 @@ import {
   KEY_ZOOM_STEP,
   MIN_ZOOM,
   ZOOM_STEP,
+  faceHeightOf,
   focusHeight,
   keyZoomNotches,
   portraitFov,
@@ -545,10 +546,13 @@ export function CameraRig({
   player,
   view,
   room,
+  body = "feminine",
 }: {
   player: Player;
   view: View;
   room: RoomId;
+  /** Her build: the portrait aims at where her eyes are. */
+  body?: "feminine" | "masculine";
 }) {
   const controls = useRef<OrbitImpl>(null);
   const camera = useThree((s) => s.camera);
@@ -701,6 +705,8 @@ export function CameraRig({
       f.t += dt;
       if (f.snap || f.t > 1.4) fly.current = null;
     }
+    // where her eyes are, for the portrait to aim at (seated, she is lower)
+    const eyes = faceHeightOf(body, Boolean(player.seat?.sit));
     const zoomed = zoom.current !== 1;
     if (zoomed) {
       // a zoom takes over from a flight still under way; it glides over a
@@ -714,14 +720,14 @@ export function CameraRig({
       const { camera: eye, target } = zoomAbout(
         camera.position.toArray(),
         c.target.toArray(),
-        [at.x, at.y + focusHeight(d * k), at.z],
+        [at.x, at.y + focusHeight(d * k, eyes), at.z],
         k,
         MIN_ZOOM,
         MAX_DISTANCE[room],
       );
       camera.position.fromArray(eye);
       // the last stretch of a zoom centers her face, wherever the overview aimed
-      const face: Vec3 = [at.x, at.y + focusHeight(0), at.z];
+      const face: Vec3 = [at.x, at.y + eyes, at.z];
       c.target.fromArray(
         portraitTarget(target, face, camera.position.distanceTo(chest)),
       );
@@ -737,7 +743,7 @@ export function CameraRig({
         );
       }
       canvas.dataset.camDistance = camera.position
-        .distanceTo(chest.copy(at).setY(at.y + focusHeight(0)))
+        .distanceTo(chest.copy(at).setY(at.y + eyes))
         .toFixed(2);
     }
     c.update();
@@ -745,7 +751,7 @@ export function CameraRig({
     if (zoomed)
       canvas.dataset.camElevation = (
         (Math.atan2(
-          camera.position.y - (at.y + focusHeight(0)),
+          camera.position.y - (at.y + eyes),
           Math.hypot(camera.position.x - at.x, camera.position.z - at.z),
         ) *
           180) /
