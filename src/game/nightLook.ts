@@ -43,9 +43,9 @@ export const NIGHT_LOOKS: Partial<Record<NightId, NightLook>> = {
   },
   // the rooftop goes to a deep indigo night so the stars are the show
   stargazing: {
-    lights: 0.14,
-    key: 0.2,
-    tint: 0.7,
+    lights: 0.07,
+    key: 0.1,
+    tint: 0.4,
     tintColor: "#4f6bff",
     shade: 0.18,
     backdrop: "#04081f",

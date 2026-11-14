@@ -228,6 +228,24 @@ export function Lasers({ hall }: { hall: Hall }) {
   );
 }
 
+/**
+ * Keeps a points material's sprites from filling the screen: caps their size
+ * in pixels and fades them out within a few meters of the camera.
+ */
+function nearFade(m: THREE.PointsMaterial, maxPx: number) {
+  m.onBeforeCompile = (shader) => {
+    shader.vertexShader = shader.vertexShader.replace(
+      "#include <fog_vertex>",
+      `gl_PointSize = min(gl_PointSize, ${maxPx.toFixed(1)});
+      #ifdef USE_COLOR
+      vColor.rgb *= smoothstep(1.5, 5.0, -mvPosition.z);
+      #endif
+      #include <fog_vertex>`,
+    );
+  };
+  m.customProgramCacheKey = () => `near-fade-${maxPx}`;
+}
+
 const CANNONS = 4;
 const SCRAPS = 56;
 const CONFETTI = [
@@ -259,20 +277,20 @@ export function Cannons({ hall, low }: { hall: Hall; low: boolean }) {
     g.setAttribute("color", new THREE.BufferAttribute(colors, 3));
     return g;
   }, [per]);
-  const material = useMemo(
-    () =>
-      new THREE.PointsMaterial({
-        map: shapeTexture("square"),
-        size: 0.2 + hall.ceiling * 0.03,
-        sizeAttenuation: true,
-        vertexColors: true,
-        transparent: true,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending,
-        toneMapped: false,
-      }),
-    [hall.ceiling],
-  );
+  const material = useMemo(() => {
+    const m = new THREE.PointsMaterial({
+      map: shapeTexture("square"),
+      size: 0.2 + hall.ceiling * 0.03,
+      sizeAttenuation: true,
+      vertexColors: true,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      toneMapped: false,
+    });
+    nearFade(m, 22);
+    return m;
+  }, [hall.ceiling]);
   // each cannon stands at a corner, a little in from the walls
   const spots = useMemo(
     () =>

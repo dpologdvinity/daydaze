@@ -21,6 +21,7 @@ import { nightClock } from "../city/eventClocks.ts";
 import { useReducedMotion } from "../motion.ts";
 import { useQuality } from "../world/quality.ts";
 import { hdr } from "./shared/materials.ts";
+import { StarDome } from "./StarDome.tsx";
 import { Cannons, Lasers, NightGrade, type Hall } from "./NightSignature.tsx";
 import { rand, shapeTexture, type Shape } from "./shared/nightSprites.ts";
 
@@ -44,7 +45,10 @@ type Look = {
 };
 
 const NEON = ["#ff4fd8", "#4fe3ff", "#c3ff3d", "#ffd84f", "#9b5cff"];
-const LOOKS: Record<Exclude<Decor, "spotlights" | "bunting">, Look> = {
+const LOOKS: Record<
+  Exclude<Decor, "spotlights" | "bunting" | "stars">,
+  Look
+> = {
   glowsticks: {
     shape: "bar",
     colors: NEON,
@@ -140,18 +144,6 @@ const LOOKS: Record<Exclude<Decor, "spotlights" | "bunting">, Look> = {
     glow: 2.6,
     opacity: 1,
     twinkle: 0.7,
-  },
-  stars: {
-    shape: "star",
-    colors: ["#ffffff", "#bcd2ff", "#fff1c9"],
-    count: 110,
-    size: 0.3,
-    vy: 0,
-    drift: 0,
-    y: [0.55, 1],
-    glow: 2.4,
-    opacity: 1,
-    twinkle: 0.6,
   },
   fog: {
     shape: "dot",
@@ -424,6 +416,8 @@ export function NightDecor({ room }: { room: RoomId }) {
         <Beams color={night.color} box={box} />
       ) : kind === "bunting" ? (
         <Bunting box={box} />
+      ) : kind === "stars" ? (
+        <StarDome low={low} />
       ) : (
         <Cloud look={LOOKS[kind]} box={box} low={low} />
       )}
