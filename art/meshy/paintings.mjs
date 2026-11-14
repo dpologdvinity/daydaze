@@ -39,6 +39,13 @@ const CROPS = {
   "ph-mayon": [0.27, 0.23, 0.76, 0.74],
   "ph-pabitin": [0.13, 0.08, 0.89, 0.87],
   "ph-tinikling": [0.19, 0.15, 0.82, 0.77],
+  "sap-night-market": [0.23, 0.13, 0.78, 0.83],
+  "sap-bus-stop": [0.18, 0.17, 0.85, 0.81],
+  "ph-sari-sari": [0.23, 0.13, 0.82, 0.88],
+  "ph-fishing-village": [0.09, 0.02, 0.96, 0.95],
+  "dd-halo-halo-haus": [0, 0, 1, 1],
+  "dd-speedway": [0.02, 0, 0.98, 1],
+  "dd-fiesta": [0.02, 0, 0.98, 0.98],
 };
 const N = 256;
 
