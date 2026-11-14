@@ -1,4 +1,4 @@
-// Filipino dishes from the Meshy food set (public/models/meshy/food/, sizes in
+// Filipino dishes from the Meshy food and mango sets (public/models/meshy/, sizes in
 // game/food/dishes.ts): trays, plates and bowls on a counter or table. One
 // instanced draw per dish kind, however many of it stand in a room. Wrap in
 // Suspense (or pass `fallback`) while the models load.
@@ -36,12 +36,12 @@ export function Dishes({
   return (
     <Suspense fallback={fallback}>
       {groups.map(([id, at]) => {
-        const { width, height }: Dish = DISHES[id];
+        const { width, height, folder = "food" }: Dish = DISHES[id];
         return (
           <PropSet
             key={id}
             model={id}
-            dir="meshy/food"
+            dir={`meshy/${folder}`}
             width={width}
             depth={width}
             height={height}

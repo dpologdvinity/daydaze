@@ -13,6 +13,11 @@ test("every dish has a model file and a table-sized fit box", () => {
   }
 });
 
+test("the mango drinks and desserts load from the mango folder", () => {
+  assert.equal(dishUrl("mango-shake"), "/models/meshy/mango/mango-shake.glb");
+  assert.equal(dishUrl("adobo"), "/models/meshy/food/adobo.glb");
+});
+
 test("isDishId tells a dish from a Quaternius model name", () => {
   assert.ok(isDishId("adobo"));
   assert.ok(!isDishId("food-ChickenLeg"));

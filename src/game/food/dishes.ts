@@ -1,4 +1,5 @@
-// Filipino dishes made with Meshy (public/models/meshy/food/<id>.glb): the fit
+// Filipino dishes made with Meshy (public/models/meshy/food/<id>.glb, the mango
+// ones in meshy/mango/): the fit
 // box each is scaled into on a table or counter, and whether it still needs
 // the shared plate under it. Every dish so far brings its own plate, bowl,
 // bag, glass or stand, so none sets `plate`. The models keep their own scale;
@@ -11,6 +12,8 @@ export type Dish = {
   height: number;
   /** Put the shared plate under it (a dish that doesn't carry its own). */
   plate?: boolean;
+  /** Folder under public/models/meshy/; "food" when absent. */
+  folder?: "food" | "mango";
 };
 
 export const DISHES = {
@@ -38,12 +41,17 @@ export const DISHES = {
   pandesal: { width: 0.22, height: 0.18 },
   bibingka: { width: 0.24, height: 0.14 },
   "puto-bumbong": { width: 0.24, height: 0.1 },
+  "mango-float": { width: 0.26, height: 0.12, folder: "mango" },
+  "mango-shake": { width: 0.2, height: 0.28, folder: "mango" },
 } as const satisfies Record<string, Dish>;
 
 export type DishId = keyof typeof DISHES;
 
 /** Where the browser fetches a dish's model. */
-export const dishUrl = (id: DishId): string => `/models/meshy/food/${id}.glb`;
+export const dishUrl = (id: DishId): string => {
+  const dish: Dish = DISHES[id];
+  return `/models/meshy/${dish.folder ?? "food"}/${id}.glb`;
+};
 
 /** True for a dish id, false for any other model name (a Quaternius food). */
 export function isDishId(value: string): value is DishId {
