@@ -1,7 +1,7 @@
 // Apartment decorating: a starter catalog placed on a grid of 1 m cells.
 // Pure data and rules; the room renders whatever these functions return.
 
-import { ARTWORKS, type ArtworkId } from "../artworks.ts";
+import { ARTWORKS, type ArtGroup, type ArtworkId } from "../artworks.ts";
 
 export const HOME_GRID = { columns: 8, rows: 6 } as const;
 
@@ -111,6 +111,37 @@ const PRINT_NAMES: readonly string[] = [
   ...DRAWN_PRINTS,
   ...PRINT_ARTWORKS.map((id) => ARTWORKS[id].title),
 ];
+
+/** The looks the decorating panel lists together: `label` is null for the ones
+ * shown plainly (a piece's own looks, a print's six drawn ones). */
+export type LookGroup = { label: string | null; indexes: readonly number[] };
+
+const GROUP_LABELS: Record<ArtGroup, string> = {
+  sapphic: "Sapphic",
+  filipino: "Filipino",
+  daydaze: "Daydaze",
+};
+
+/** `id`'s looks as the panel groups them; the indexes are the saved variant
+ * indexes, unchanged. Prints list their painting looks by kind of painting. */
+export function lookGroups(id: FurnitureId): LookGroup[] {
+  const count = FURNITURE_CATALOG[id].variants.length;
+  const all = Array.from({ length: count }, (_, i) => i);
+  if (FURNITURE_CATALOG[id].variants !== PRINT_NAMES)
+    return [{ label: null, indexes: all }];
+  const groups: LookGroup[] = [
+    { label: null, indexes: all.slice(0, DRAWN_PRINTS.length) },
+  ];
+  for (const group of Object.keys(GROUP_LABELS) as ArtGroup[]) {
+    const indexes = all.filter((i) => {
+      const art = printArtwork(i);
+      return art !== null && ARTWORKS[art].group === group;
+    });
+    if (indexes.length > 0)
+      groups.push({ label: GROUP_LABELS[group], indexes });
+  }
+  return groups;
+}
 
 /** The painting a print's look shows, or null for the six drawn looks and any
  * index out of range. */

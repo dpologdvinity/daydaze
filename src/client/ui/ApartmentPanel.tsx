@@ -10,6 +10,7 @@ import {
   FURNITURE_IDS,
   WINDOW_COLUMNS,
   defaultVariant,
+  lookGroups,
   HOME_GRID,
   moveFurniture,
   pieceAt,
@@ -207,25 +208,39 @@ export function ApartmentPanel({
           );
         })}
       </div>
-      {looks.length > 1 && (
+      {looks.length > 1 && lookId !== null && (
         <fieldset>
           <legend>Look</legend>
-          {looks.map((name, i) => (
-            <button
-              key={name}
-              type="button"
-              aria-pressed={shownLook === i}
-              onClick={() => {
-                if (choice !== null || picked === null) {
-                  setVariant_(i);
-                  return;
-                }
-                apply(setVariant(home.furniture, picked, i), `${name}.`);
-              }}
-            >
-              {name}
-            </button>
-          ))}
+          {lookGroups(lookId).map((group) => {
+            const buttons = group.indexes.map((i) => (
+              <button
+                key={looks[i]}
+                type="button"
+                aria-pressed={shownLook === i}
+                onClick={() => {
+                  if (choice !== null || picked === null) {
+                    setVariant_(i);
+                    return;
+                  }
+                  apply(setVariant(home.furniture, picked, i), `${looks[i]}.`);
+                }}
+              >
+                {looks[i]}
+              </button>
+            ));
+            // a named group folds away, open while it holds the shown look
+            return group.label === null ? (
+              buttons
+            ) : (
+              <details
+                key={group.label}
+                open={group.indexes.includes(shownLook) || undefined}
+              >
+                <summary>{group.label}</summary>
+                {buttons}
+              </details>
+            );
+          })}
         </fieldset>
       )}
       <fieldset disabled={selected === undefined}>
