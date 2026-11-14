@@ -26,6 +26,7 @@ import { PortalPads } from "./shared/PortalPads.tsx";
 import { Batch } from "./shared/batch.ts";
 import { bunting, plant, poster } from "./shared/details.ts";
 import { Dishes, type DishAt } from "./shared/Dishes.tsx";
+import { AssetBoundary } from "./shared/AssetBoundary.tsx";
 import { ImagePiece } from "./shared/ImagePiece.tsx";
 import { PropSet } from "./shared/Prop.tsx";
 import { groundMaps, surface } from "../city/worldTexture.ts";
@@ -236,16 +237,18 @@ function BoodleTable() {
   const len = TABLE.x1 - TABLE.x0;
   return (
     <group>
-      <Suspense fallback={<PlainBoodle />}>
-        <PropSet
-          model="boodle"
-          dir="meshy/food"
-          width={BOODLE_LEN}
-          depth={TABLE.half * 2 + 0.05}
-          height={0.8}
-          at={BOODLE_AT}
-        />
-      </Suspense>
+      <AssetBoundary fallback={<PlainBoodle />}>
+        <Suspense fallback={<PlainBoodle />}>
+          <PropSet
+            model="boodle"
+            dir="meshy/food"
+            width={BOODLE_LEN}
+            depth={TABLE.half * 2 + 0.05}
+            height={0.8}
+            at={BOODLE_AT}
+          />
+        </Suspense>
+      </AssetBoundary>
       {/* the benches down both sides */}
       {[-1, 1].map((side) => (
         <mesh
@@ -447,16 +450,18 @@ function Shell() {
         </mesh>
       ))}
       {/* the boodle night poster on the east wall, above the sofa corner */}
-      <Suspense fallback={null}>
-        <ImagePiece
-          art="dd-boodle-night"
-          at={[FLOOR_BOUNDS.x1 - 0.04, 2.4, 1.7]}
-          ry={-Math.PI / 2}
-          maxW={1.1}
-          maxH={1.5}
-          frame={GOLD}
-        />
-      </Suspense>
+      <AssetBoundary>
+        <Suspense fallback={null}>
+          <ImagePiece
+            art="dd-boodle-night"
+            at={[FLOOR_BOUNDS.x1 - 0.04, 2.4, 1.7]}
+            ry={-Math.PI / 2}
+            maxW={1.1}
+            maxH={1.5}
+            frame={GOLD}
+          />
+        </Suspense>
+      </AssetBoundary>
       {/* capiz-shell windows down the north wall, lit from outside */}
       {[-4.5, -1.5, 1.5, 4.5].map((x) => (
         <mesh key={x} position={[x, 2, FLOOR_BOUNDS.z0 + 0.02]}>

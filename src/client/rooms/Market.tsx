@@ -29,6 +29,7 @@ import { cartGagOn } from "../../game/dance/venueDances.ts";
 import { CrowdFigure } from "./shared/CrowdFigure.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { canvasTex, hdr } from "./shared/materials.ts";
+import { AssetBoundary } from "./shared/AssetBoundary.tsx";
 import { PropSet } from "./shared/Prop.tsx";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
@@ -366,14 +367,16 @@ function Goods() {
             at={produceStock[i]}
           />
         ))}
-        <PropSet
-          model="mango-crate"
-          dir="meshy/mango"
-          width={0.55}
-          depth={0.45}
-          height={0.4}
-          at={MANGO_CRATES}
-        />
+        <AssetBoundary>
+          <PropSet
+            model="mango-crate"
+            dir="meshy/mango"
+            width={0.55}
+            depth={0.45}
+            height={0.4}
+            at={MANGO_CRATES}
+          />
+        </AssetBoundary>
       </Suspense>
     </>
   );

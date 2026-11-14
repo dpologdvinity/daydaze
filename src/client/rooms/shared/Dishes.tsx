@@ -5,6 +5,7 @@
 
 import { Suspense, useMemo, type JSX, type ReactNode } from "react";
 import { DISHES, type Dish, type DishId } from "../../../game/food/dishes.ts";
+import { AssetBoundary } from "./AssetBoundary.tsx";
 import { PropSet } from "./Prop.tsx";
 
 /** One dish: which, and where it stands (y is its base). */
@@ -38,21 +39,23 @@ export function Dishes({
     return [...by];
   }, [items]);
   return (
-    <Suspense fallback={fallback}>
-      {groups.map(([id, at]) => {
-        const { width, height, folder = "food" }: Dish = DISHES[id];
-        return (
-          <PropSet
-            key={id}
-            model={id}
-            dir={`meshy/${folder}`}
-            width={width * scale}
-            depth={width * scale}
-            height={height * scale}
-            at={at}
-          />
-        );
-      })}
-    </Suspense>
+    <AssetBoundary fallback={fallback}>
+      <Suspense fallback={fallback}>
+        {groups.map(([id, at]) => {
+          const { width, height, folder = "food" }: Dish = DISHES[id];
+          return (
+            <PropSet
+              key={id}
+              model={id}
+              dir={`meshy/${folder}`}
+              width={width * scale}
+              depth={width * scale}
+              height={height * scale}
+              at={at}
+            />
+          );
+        })}
+      </Suspense>
+    </AssetBoundary>
   );
 }

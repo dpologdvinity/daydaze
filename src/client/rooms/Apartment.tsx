@@ -16,6 +16,7 @@ import { plant, poster, stringLights } from "./shared/details.ts";
 import { GOLD, canvasTex } from "./shared/materials.ts";
 import { usePaintingTexture } from "./gallery/painting.ts";
 import { surface } from "../city/worldTexture.ts";
+import { AssetBoundary } from "./shared/AssetBoundary.tsx";
 import { textureAspect, useArtTexture } from "./shared/artTexture.ts";
 import { Prop } from "./shared/Prop.tsx";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
@@ -208,15 +209,17 @@ function WallPiece({ item }: { item: Furniture }) {
   if (art && (item.id === "wall-art" || item.id === "wall-art-wide")) {
     // the drawn poster stands in while the painting loads
     return (
-      <Suspense fallback={drawn && <primitive object={drawn} />}>
-        <ArtPrint
-          art={art}
-          x={x}
-          y={height}
-          maxW={item.id === "wall-art" ? 0.8 : 1.7}
-          maxH={item.id === "wall-art" ? 0.9 : 1.3}
-        />
-      </Suspense>
+      <AssetBoundary fallback={drawn && <primitive object={drawn} />}>
+        <Suspense fallback={drawn && <primitive object={drawn} />}>
+          <ArtPrint
+            art={art}
+            x={x}
+            y={height}
+            maxW={item.id === "wall-art" ? 0.8 : 1.7}
+            maxH={item.id === "wall-art" ? 0.9 : 1.3}
+          />
+        </Suspense>
+      </AssetBoundary>
     );
   }
   if (drawn) return <primitive object={drawn} />;
