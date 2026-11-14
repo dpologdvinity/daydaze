@@ -3477,7 +3477,7 @@ test("event nights with a signature look render clean: lasers, blacklight, indig
     ["uv-night", "mini-golf"],
     ["stargazing", "hotel-rooftop"],
   ]) {
-    await page.goto(`${STILL}&room=${room}&night=${night}&time=23:30`);
+    await page.goto(`${LOW}&room=${room}&night=${night}&time=23:30`);
     await expect(page.locator("canvas")).toHaveAttribute("data-frames", "10", {
       timeout: 150_000,
     });
