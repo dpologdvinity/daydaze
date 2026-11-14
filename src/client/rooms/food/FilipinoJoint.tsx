@@ -37,12 +37,13 @@ const COUNTER: readonly DishAt[] = (
     "adobo",
     "sinigang",
     "kare-kare",
-    "palabok",
+    "bulalo",
     "lechon-kawali",
-    "sisig",
+    "pinakbet",
+    "arroz-caldo",
     "inasal",
   ] as const
-).map((dish, i) => ({ dish, x: -2.7 + i * 0.9, y: 1.17, z: -0.85 }));
+).map((dish, i) => ({ dish, x: -2.8 + i * 0.8, y: 1.17, z: -0.85 }));
 
 /**
  * The turo-turo: a point-and-eat Filipino kitchen. Parol star lanterns, pandan

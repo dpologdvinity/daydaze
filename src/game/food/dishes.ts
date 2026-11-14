@@ -41,6 +41,11 @@ export const DISHES = {
   pandesal: { width: 0.22, height: 0.18 },
   bibingka: { width: 0.24, height: 0.14 },
   "puto-bumbong": { width: 0.24, height: 0.1 },
+  bulalo: { width: 0.3, height: 0.16 },
+  "arroz-caldo": { width: 0.26, height: 0.16 },
+  pinakbet: { width: 0.3, height: 0.1 },
+  champorado: { width: 0.26, height: 0.12 },
+  "mais-con-yelo": { width: 0.2, height: 0.26 },
   "mango-float": { width: 0.26, height: 0.12, folder: "mango" },
   "mango-shake": { width: 0.2, height: 0.28, folder: "mango" },
 } as const satisfies Record<string, Dish>;

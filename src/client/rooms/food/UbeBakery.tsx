@@ -45,7 +45,7 @@ const COUNTER_DISHES: readonly DishAt[] = (
     "bibingka",
     "puto-bumbong",
     "puto-kutsinta",
-    "ensaymada",
+    "champorado",
   ] as const
 ).map((dish, i) => ({ dish, x: -2.7 + i * 0.9, y: 1.17, z: -0.85 }));
 
