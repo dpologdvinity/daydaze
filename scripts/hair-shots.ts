@@ -73,7 +73,7 @@ const SHOTS: { name: string; query: string; shot?: string }[] = [
   {
     name: "face-men",
     shot: "face",
-    query: "men=1&hair=crop&cam=0,1.64,0.95&target=0,1.56,0",
+    query: "men=1&hair=shag&cam=0,1.64,0.95&target=0,1.56,0",
   },
   { name: "face-sit", shot: "facesit", query: "" },
   // a Hair Pack style up close (the face shot wears strand-card waves)

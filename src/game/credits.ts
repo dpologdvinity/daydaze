@@ -319,7 +319,7 @@ export const CREDITS: readonly {
         license: "CC-BY 4.0",
         url: "https://sketchfab.com/3d-models/none-06a783e91c194e12a296402453476824",
         usedFor:
-          "Hair-card styles rapunzel, long waves, sleek side-swept, high ponytail, twin tails, lob, blunt bob, side-swept bob, side fringe, messy bun and messy shag, refitted to our heads (art/doll/blender/pack_hair.py).",
+          "Hair-card styles rapunzel, long waves, sleek side-swept, high ponytail, twin tails, lob, blunt bob, side-swept bob, side fringe, messy bun and messy shag, refitted to our heads (art/doll/blender/pack_hair.py); the long-waves atlas's locks are also every strand-card style's strands (art/doll/blender/strands.py).",
       },
       {
         title: "Hair Pack (part 3)",

@@ -637,6 +637,27 @@ function hairShine<M extends THREE.MeshStandardMaterial>(material: M): M {
   return material;
 }
 
+/**
+ * A strand style's scalp cap fades into the skin along the hairline: its
+ * vertex alpha runs out there, broken up strand by strand by the strand
+ * image's alpha (art/doll/blender/strands.py cap_texture), which never drops
+ * below about 0.45 on its own. Blended, not cut out, so the hairline is a
+ * soft fade of fine hairs; the gain keeps the rest of the cap opaque.
+ */
+function featherCap<M extends THREE.MeshStandardMaterial>(material: M): M {
+  material.transparent = true;
+  material.onBeforeCompile = (shader) => {
+    shader.fragmentShader = shader.fragmentShader.replace(
+      "#include <alphatest_fragment>",
+      // the gaps between hairs clear before the hairs do: single hairs,
+      // not an even tint, where the hairline thins out
+      "diffuseColor.a = smoothstep(0.25, 0.9, diffuseColor.a * 2.2);",
+    );
+  };
+  material.customProgramCacheKey = () => "hair-feather";
+  return material;
+}
+
 /** Hair: strand cards shine with two highlight bands (hairShine); untextured
  * sculpted hair (afro, braids, buns) has no strand direction, so it stays
  * matte with a soft sheen. Baked root-to-tip shading tints both. */
@@ -649,6 +670,8 @@ function hairMaterial(
   cutout: boolean,
   /** Strand cards shine; a pack style's scalp cap (`*_cap`) stays matte. */
   shine: boolean,
+  /** A strand style's cap, feathered along the hairline (featherCap). */
+  feather = false,
 ) {
   // hair over the back is seen edge-on: without anisotropic filtering the
   // blurred mip's alpha breaks into specks at the cut-out threshold
@@ -660,13 +683,14 @@ function hairMaterial(
     // the shine comes from the bands; the base lighting stays soft
     roughness: map ? 0.7 : 0.55,
     side: THREE.DoubleSide,
-    alphaTest: map && cutout ? (rich ? 0.3 : 0.4) : 0,
+    alphaTest: map && cutout && !feather ? (rich ? 0.3 : 0.4) : 0,
     // Strand cards are a few texels wide, so their mips lose alpha unevenly
     // and a hard cut-out flickers into white specks against dark hair.
     // Alpha-to-coverage turns the (sharpened) alpha into MSAA coverage:
     // soft, stable edges, no sorting and no second blended pass.
-    alphaToCoverage: Boolean(map && cutout),
+    alphaToCoverage: Boolean(map && cutout && !feather),
   });
+  if (map && feather) return featherCap(material);
   // the shine bands run along strand cards; on the broad, smooth scalp cap
   // they would read as white streaks, so the cap stays matte
   return map && cutout && shine ? hairShine(material) : material;
@@ -829,6 +853,8 @@ function buildPart(
       // polygons are big and its UVs arbitrary, so strand shine on it
       // lights whole facets silver (the Quiff's forehead patch)
       const strands = !old?.name.endsWith("_cap");
+      // the strand styles' own cap (strands.py) fades out at the hairline
+      const feather = old?.name === "hair_cap";
       // glTF marks cut-out parts as blend or mask; an opaque one keeps its fill
       const cutout = Boolean(old && (old.transparent || old.alphaTest > 0));
       // the hair shine runs across each strand: it needs the cards' real
@@ -870,6 +896,7 @@ function buildPart(
               rich,
               cutout,
               strands,
+              feather,
             )
           : new THREE.MeshStandardMaterial({
               map: old?.map ?? null,

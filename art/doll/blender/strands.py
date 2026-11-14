@@ -1,9 +1,12 @@
 """Strand-card hair: hundreds of thin, tapered cards rooted on the scalp,
 combed away from a parting, falling under gravity with a wave or curl, and
-kept clear of the head and shoulders. Each card carries a generated strand
-texture with soft alpha, so the hair reads as many fine strands rather than
-a few wide ribbons. The style parameters cover hair types and lengths.
+kept clear of the head and shoulders. Each card wears a hand-drawn lock
+from the Hair Pack's atlas (clumps, gaps and wispy ends), so the hair reads
+as many fine strands rather than a few wide ribbons. The style parameters
+cover hair types and lengths.
 """
+
+import os
 
 import bpy
 import numpy as np
@@ -13,6 +16,28 @@ from mathutils.kdtree import KDTree
 import proxies
 
 STRAND_TEX = None
+ATLAS_TEX = None
+CAP_TEX = None
+
+# The cards' locks: the long clump strips of the Hair Pack's long-waves atlas
+# (part 2, style 109; CC-BY 4.0 rendysix, docs/assets.md), roots at the top
+# (Blender v runs up). A generated strand image read as flat, evenly toned
+# ribbons up close; these are drawn with clumps, gaps and wisps.
+ATLAS = "hair-pack-part-2/textures/hair109Diffuse_21.png"
+STRIPS = ((0.014, 0.243), (0.26, 0.488))
+V_ROOT, V_TIP = 0.975, 0.02
+
+
+def atlas_texture():
+    """The Hair Pack atlas, grayed for tinting like the pack styles' own."""
+    global ATLAS_TEX
+    if ATLAS_TEX is None:
+        import pack_hair
+
+        img = bpy.data.images.load(os.path.join(pack_hair.PACK_DIR, ATLAS))
+        ATLAS_TEX = pack_hair.grey_atlas(pack_hair._pixels(img), "strands")
+        bpy.data.images.remove(img)
+    return ATLAS_TEX
 
 
 def strand_texture(size=(256, 1024), seed=3):
@@ -159,7 +184,9 @@ def build(
             p = off_body(p, 0.02 + layer)
         return p
 
-    verts, faces, uvs, root_src, shade = [], [], [], [], []
+    verts, faces, uvs, root_src, shade, hue = [], [], [], [], [], []
+    # which atlas strip each card wears, apart from the layout's draws
+    looks = np.random.default_rng(seed + 101)
     gravity = np.array([0, 0, -1.0])
 
     if tie is not None and len(tie) == 2:
@@ -252,6 +279,11 @@ def build(
 
     def card(pts, width, twist, dark, root):
         base = len(verts)
+        s0, s1 = STRIPS[looks.integers(len(STRIPS))]
+        if looks.random() < 0.5:
+            s0, s1 = s1, s0
+        # warmer or cooler than its neighbors: real hair is many tones
+        warm = looks.uniform(-1, 1)
         for k, p in enumerate(pts):
             t = k / segments
             tan = pts[min(k + 1, segments)] - pts[max(k - 1, 0)]
@@ -268,11 +300,12 @@ def build(
                 # cap shows there), gathering into the tail at the band
                 half *= np.clip((k / over - 0.4) / 0.6, 0, 1) ** 2
             verts.extend([p - across * half, p + across * half])
-            # each card is one whole lock: feathered strands at both edges,
-            # its core down the middle (mirrored at random for variety)
-            flip = root[0] > 0
-            uvs.extend([(1.0 if flip else 0.0, 1 - t), (0.0 if flip else 1.0, 1 - t)])
+            # each card is one whole lock, root to tip (a strip, mirrored
+            # at random for variety)
+            v = V_ROOT - (V_ROOT - V_TIP) * t
+            uvs.extend([(s0, v), (s1, v)])
             shade.extend([dark, dark])
+            hue.extend([warm, warm])
         for k in range(segments):
             a = base + 2 * k
             faces.append((a, a + 1, a + 3, a + 2))
@@ -297,12 +330,18 @@ def build(
             rows.append(g)
         for i in range(ring + 1):
             base = len(verts)
+            # the dense middle of a strip, mirrored back and forth round
+            # the head so neighboring columns meet without a seam
+            s0, s1 = STRIPS[0]
+            zig = 1 - abs((i * tiles * 2 / ring) % 2 - 1)
+            u = s0 + (s1 - s0) * (0.3 + 0.4 * zig)
             for k, p in enumerate(rows[i]):
                 t = k / segments
                 verts.append(p)
-                uvs.append((tiles * i / ring, 1 - t))
+                uvs.append((u, V_ROOT - (V_ROOT - V_TIP) * t))
                 # in the shadow of the cards over it: depth, not the surface
                 shade.append(0.55)
+                hue.append(0.0)
             if i:
                 prev = base - (segments + 1)
                 for k in range(segments):
@@ -353,6 +392,7 @@ def build(
     ob = ctx.new_object(name, np.array(verts), faces)
     ob.data.materials.append(mat)
     ob["layer_shade"] = list(map(float, shade))
+    ob["layer_hue"] = list(map(float, hue))
     uv = ob.data.uv_layers.new(name="UVMap").data
     for poly in ob.data.polygons:
         poly.use_smooth = True
@@ -372,12 +412,54 @@ def build(
 
 
 def material(name):
-    return proxies.textured(name, strand_texture(), alpha=True)
+    return proxies.textured(name, atlas_texture(), alpha=True)
+
+
+def cap_texture():
+    """The strand image for the scalp cap, with an alpha that never drops
+    below about 0.45 on its own (the client scales it so the cap is opaque)
+    but varies hair by hair. Where the cap's vertex alpha fades out over the
+    hairline (doll_hair.feather_cap), the paler hairs outlast the gaps, so
+    the hairline thins out into single hairs instead of a cut edge.
+
+    The hairs here are a few texels wide, coarser than the strand image's: the
+    cap repeats the image 32 times round the head, so up close a texel is a
+    fraction of a pixel and finer hairs would blur into an even smudge."""
+    global CAP_TEX
+    if CAP_TEX is None:
+        src = strand_texture()
+        w, h = src.size
+        px = np.empty(w * h * 4, np.float32)
+        src.pixels.foreach_get(px)
+        px = px.reshape(h, w, 4)
+        rng = np.random.default_rng(7)
+        x = np.arange(w)[None, :]
+        v = np.linspace(0, 1, h)[:, None]
+        hairs = np.zeros((h, w), np.float32)
+        n = 48
+        for i in range(n):
+            # spread evenly across, wrapped round the tile's edges so
+            # neighboring tiles meet
+            cx = (i + rng.uniform(0, 1)) * w / n
+            mid = cx + rng.uniform(-6, 6) * v + 1.5 * np.sin(v * rng.uniform(3, 7) + rng.uniform(0, 6))
+            gap = np.abs((x - mid + w / 2) % w - w / 2)
+            prof = np.clip(1 - gap / rng.uniform(1.5, 3.5), 0, 1)
+            hairs = np.maximum(hairs, prof * rng.uniform(0.4, 1.0))
+        # the hairs show in the color too, a little paler than the gaps
+        px[..., :3] *= (0.85 + 0.3 * hairs)[..., None]
+        # mostly near the floor, the hairs well above it: at the hairline's
+        # thin end only the strongest few are left
+        px[..., 3] = 0.45 + 0.55 * hairs**1.5
+        CAP_TEX = bpy.data.images.new("strands_cap", w, h, alpha=True)
+        CAP_TEX.pixels.foreach_set(np.clip(px, 0, 1).ravel())
+        CAP_TEX.pack()
+    return CAP_TEX
 
 
 def cap_material(name):
-    """The strand image again, opaque: a cap that reads as combed hair."""
-    return proxies.textured(name, strand_texture(), alpha=False)
+    """The strand image again: a cap that reads as combed hair, fading into
+    the skin along its hairline (doll_hair.feather_cap)."""
+    return proxies.textured(name, cap_texture(), alpha=True)
 
 
 def comb_cap(ctx, ob, tie=None):
@@ -403,8 +485,10 @@ def comb_cap(ctx, ob, tie=None):
     tiles = 32  # around the head: about a card's width per tile
     u = (azim / (2 * np.pi) + 0.5) * tiles
     # scaled, never clamped: a clamped row of UVs has no area, and its
-    # tangents (which the hair shine runs along) come out NaN and black
-    v = polar / polar.max() * 0.8
+    # tangents (which the hair shine runs along) come out NaN and black.
+    # The strand image's middle, where its strands are thick: they reach
+    # the hairline and break up its fade (cap_texture)
+    v = 0.08 + polar / polar.max() * 0.5
     uv = ob.data.uv_layers.new(name="UVMap").data
     for poly in ob.data.polygons:
         us = [u[ob.data.vertices[ob.data.loops[li].vertex_index].index] for li in poly.loop_indices]
