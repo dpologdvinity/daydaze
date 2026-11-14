@@ -164,6 +164,18 @@ default (it is a URL flag today; the comment there says so).
 - Editing `src/` while Playwright runs reloads its pages (HMR): don't.
 - Headless WebGL is SwiftShader on the CPU; a failure under load is usually a
   flake: rerun alone before debugging. Timing games (paintball) flake most.
+- A city test that asserts anything the hour changes (pedestrians, chat
+  groups, shops, light) pins `&time=HH:MM`: without it the runner's UTC clock
+  decides, and the test fails every night.
+- A component that loads a model (`useGLTF`, a lazy chunk) after the room is
+  up gets its own `<Suspense fallback={null}>`: otherwise it suspends the
+  whole room (World's boundary) and, in dev, StrictMode re-runs every effect
+  in it when it reappears (cleanups that end a game fire).
+- `npm run verify` checks the initial JS budget (600 KB gzipped). Keep new
+  panels, games and data behind `lazy()`/`import()`; check what's in the
+  first load with a sourcemapped `vite build` before guessing.
+- After every merge, check `main`'s `ci` and `Tests` runs (`land.sh` prints
+  them); a red `main` comes before landing anything else.
 - The lineup lab (`lineup.html`) and the kit lab (`game3d/kit.html`) write
   `data-frames` on `<body>`, not on the canvas; with `still=1` a doll whose
   GLB loads after the 8th frame never draws, so shoot without `still`.
