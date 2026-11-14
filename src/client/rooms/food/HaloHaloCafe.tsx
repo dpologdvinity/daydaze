@@ -32,11 +32,11 @@ const COUNTER: readonly DishAt[] = (
   [
     "halo-halo",
     "leche-flan",
+    "mango-float",
     "buko-pandan",
     "turon",
-    "taho",
+    "mango-shake",
     "ube-halaya",
-    "halo-halo",
   ] as const
 ).map((dish, i) => ({ dish, x: -2.4 + i * 0.8, y: 1.17, z: -0.85 }));
 
@@ -62,7 +62,7 @@ function Glasses(): JSX.Element {
 
 /**
  * Halo-Halo Haus, Little Manila's dessert cafe: lilac walls, capiz-shell
- * lamps and a counter of halo-halo, leche flan, buko pandan and more. Tap the
+ * lamps and a counter of halo-halo, leche flan, mango float and shake and more. Tap the
  * server for a dessert.
  */
 export function HaloHaloCafe({ onPick }: { onPick: PickHandler }): JSX.Element {
