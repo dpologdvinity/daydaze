@@ -1,6 +1,6 @@
 import { OrbitControls } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import type { OrbitControls as OrbitImpl } from "three-stdlib";
 import {
@@ -19,7 +19,9 @@ import {
   zoomAbout,
   type Vec3,
 } from "../../game/cameraZoom.ts";
+import { nightView } from "../../game/nightLook.ts";
 import { ROOMS, type RoomId } from "../../game/rooms.ts";
+import { useNight } from "../rooms/useNight.ts";
 import { useReducedMotion } from "../motion.ts";
 import { cameraHold } from "./cameraHold.ts";
 import { driving } from "./driving.ts";
@@ -560,8 +562,22 @@ export function CameraRig({
   const camera = useThree((s) => s.camera);
   const canvas = useThree((s) => s.gl.domElement);
   const calm = useReducedMotion();
+  // a night may swap the room's overview for one that shows what it's about
+  const nightId = useNight(room)?.id;
+  const nightShot = useMemo(() => {
+    const v = nightId && nightView(nightId, room);
+    return v
+      ? { eye: new THREE.Vector3(...v.eye), look: new THREE.Vector3(...v.look) }
+      : undefined;
+  }, [nightId, room]);
+  const nightShotRef = useRef(nightShot);
+  nightShotRef.current = nightShot;
   const last = useRef(player.pos.clone());
   const fly = useRef<{ t: number; snap: boolean } | null>(null);
+  // a night starting (or ending) while she is here: glide to the new shot
+  useEffect(() => {
+    fly.current = { t: 0, snap: calm };
+  }, [nightShot, calm]);
   const shown = useRef<{ view: View; player: Player } | null>(null);
   const seated = useRef(false);
   const held = useRef(false);
@@ -692,6 +708,7 @@ export function CameraRig({
       if (view === "room" || view === "detail") {
         const shot =
           CAM_OVERRIDE ??
+          (view === "room" ? nightShotRef.current : undefined) ??
           ((view === "detail" && DETAIL_SHOTS[room]) || ROOM_SHOTS[room]);
         goalPos.copy(shot.eye);
         goalTarget.copy(shot.look);

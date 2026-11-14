@@ -1080,6 +1080,8 @@ const SHOTS: {
       ["mall-rave", "galleria", "-10,7,9.4,3,0.5,-2"],
       ["mall-rave", "sugar-rush", ""],
       ["uv-night", "laser-tag", ""],
+      // the other stargazing venue, from its default (night) camera
+      ["stargazing", "rooftop-bar", ""],
       ["uv-night", "mini-golf", "0,6,12,0,0,0"],
       // looking up past the towers at the stargazing sky
       ["stargazing", "hotel-rooftop", "2,1.8,8,-6,34,-70"],

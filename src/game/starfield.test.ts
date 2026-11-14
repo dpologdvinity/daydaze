@@ -67,3 +67,14 @@ test("a shooting star streaks now and then, falling and always in the sky", () =
   // a trail point lags behind the head
   assert.equal(shootingStarPoint(4.3, 0.5, out), false);
 });
+
+test("a lower floor lets stars come down toward the horizon but no further", () => {
+  const f = starField(900, 300, -0.17);
+  let below = 0;
+  for (let i = 0; i < f.count; i++) {
+    const y = f.dir[i * 3 + 1]!;
+    assert.ok(y > -0.17, `above the floor ${y}`);
+    if (y < 0) below++;
+  }
+  assert.ok(below > 20, `some sit below the true horizon: ${below}`);
+});

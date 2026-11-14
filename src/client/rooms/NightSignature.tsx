@@ -53,9 +53,10 @@ export function NightGrade({ look }: { look: NightLook }) {
       seen: new Set<THREE.Light>(),
       shaded: [] as { material: THREE.MeshBasicMaterial; base: THREE.Color }[],
       shadedSeen: new Set<THREE.Material>(),
+      squashed: [] as { mesh: THREE.Object3D; scale: number; y: number }[],
       backdrop: new THREE.Color(),
       saved: null as null | {
-        background: THREE.Color;
+        background: THREE.Color | null;
         bg: number;
         fog: THREE.Fog | THREE.FogExp2 | null;
         fogHex: number;
@@ -89,7 +90,20 @@ export function NightGrade({ look }: { look: NightLook }) {
         const entry = { light: o, base: o.intensity, set: o.intensity * k };
         o.intensity = entry.set;
         state.dimmed.push(entry);
-      } else if (o instanceof THREE.Mesh) {
+        return;
+      }
+      if (
+        look.skyline !== undefined &&
+        typeof o.userData.skyline === "number" &&
+        !state.squashed.some((q) => q.mesh === o)
+      ) {
+        // squash toward the street it stands on, so the towers drop out of the sky
+        state.squashed.push({ mesh: o, scale: o.scale.y, y: o.position.y });
+        o.scale.y *= look.skyline;
+        o.position.y =
+          o.userData.skyline * (1 - look.skyline) + o.position.y * look.skyline;
+      }
+      if (o instanceof THREE.Mesh) {
         if (Array.isArray(o.material)) o.material.forEach(touch);
         else touch(o.material);
       }
@@ -102,6 +116,11 @@ export function NightGrade({ look }: { look: NightLook }) {
     const seen = state.seen;
     const shaded = state.shaded;
     return () => {
+      for (const q of state.squashed) {
+        q.mesh.scale.y = q.scale;
+        q.mesh.position.y = q.y;
+      }
+      state.squashed.length = 0;
       for (const s of shaded) s.material.color.copy(s.base);
       shaded.length = 0;
       state.shadedSeen.clear();
@@ -113,7 +132,8 @@ export function NightGrade({ look }: { look: NightLook }) {
       seen.clear();
       const s = state.saved;
       if (s) {
-        if (scene.background === s.background) s.background.setHex(s.bg);
+        if (s.background && scene.background === s.background)
+          s.background.setHex(s.bg);
         if (s.fog && scene.fog === s.fog) s.fog.color.setHex(s.fogHex);
         state.saved = null;
       }
@@ -123,17 +143,25 @@ export function NightGrade({ look }: { look: NightLook }) {
   useFrame(() => {
     if (state.frame++ % SWEEP_EVERY !== 0) return;
     scene.traverse(visit);
-    if (look.backdrop && scene.background instanceof THREE.Color) {
-      if (!state.saved || state.saved.background !== scene.background)
+    if (look.backdrop) {
+      const bg =
+        scene.background instanceof THREE.Color ? scene.background : null;
+      const fog = scene.fog;
+      // a room may have a sky color, a fog, or both (the hotel's is fog only)
+      if (
+        !state.saved ||
+        state.saved.background !== bg ||
+        state.saved.fog !== fog
+      )
         state.saved = {
-          background: scene.background,
-          bg: scene.background.getHex(),
-          fog: scene.fog,
-          fogHex: scene.fog?.color.getHex() ?? 0,
+          background: bg,
+          bg: bg?.getHex() ?? 0,
+          fog,
+          fogHex: fog?.color.getHex() ?? 0,
         };
       state.backdrop.set(look.backdrop);
-      scene.background.copy(state.backdrop);
-      if (scene.fog) scene.fog.color.copy(state.backdrop);
+      bg?.copy(state.backdrop);
+      fog?.color.copy(state.backdrop);
     }
   });
   return null;

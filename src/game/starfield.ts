@@ -36,9 +36,14 @@ const BAND: readonly [number, number, number] = (() => {
 
 /**
  * `field` scattered stars over the whole sky, and `band` dim ones crowded along
- * the Milky Way. Most are tiny points; a few are bright and large.
+ * the Milky Way, none lower than `floor` (the sine of the elevation: a room
+ * whose ground stops short of the horizon lets the stars come down to meet it). Most are tiny points; a few are bright and large.
  */
-export function starField(field: number, band: number): StarField {
+export function starField(
+  field: number,
+  band: number,
+  floor: number = HORIZON,
+): StarField {
   const count = field + band;
   const f: StarField = {
     count,
@@ -86,8 +91,8 @@ export function starField(field: number, band: number): StarField {
       x /= l;
       y /= l;
       z /= l;
-      if (y > HORIZON || tries > 40) {
-        if (y <= HORIZON) y = HORIZON + 0.01 + rand(i, 99) * 0.3;
+      if (y > floor || tries > 40) {
+        if (y <= floor) y = floor + 0.01 + rand(i, 99) * 0.3;
         const m = Math.hypot(x, y, z);
         x /= m;
         y /= m;

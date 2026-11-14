@@ -7,6 +7,7 @@ import {
   confettiAt,
   laserAim,
   NIGHT_LOOKS,
+  nightView,
 } from "./nightLook.ts";
 
 test("every look belongs to a real night and stays within sane ranges", () => {
@@ -80,4 +81,24 @@ test("stargazing darkens a picture sky that no light can reach", () => {
   const look = NIGHT_LOOKS.stargazing;
   assert.ok(look && look.shade !== undefined && look.shade < 0.5);
   assert.ok(look.backdrop);
+});
+
+test("stargazing tilts each rooftop's camera up so the sky is in the frame", () => {
+  for (const room of ["hotel-rooftop", "rooftop-bar"] as const) {
+    const v = nightView("stargazing", room);
+    assert.ok(v, room);
+    const run = Math.hypot(v.eye[0] - v.look[0], v.eye[2] - v.look[2]);
+    const pitch = (Math.atan2(v.eye[1] - v.look[1], run) * 180) / Math.PI;
+    // the vertical field of view is 38 degrees: under 19 degrees down puts
+    // the horizon in the frame, and the deck stays in it past 5
+    assert.ok(pitch > 5 && pitch < 15, `${room} pitch ${pitch}`);
+  }
+  // other nights and rooms keep the room's own camera
+  assert.equal(nightView("mall-rave", "galleria"), undefined);
+  assert.equal(nightView("stargazing", "galleria"), undefined);
+});
+
+test("stargazing sinks the skyline below the deck so it stops covering the sky", () => {
+  const k = NIGHT_LOOKS.stargazing?.skyline;
+  assert.ok(k !== undefined && k > 0 && k < 0.5);
 });

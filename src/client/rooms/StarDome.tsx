@@ -12,7 +12,7 @@ import { shootingStarPoint, starField } from "../../game/starfield.ts";
 import { useReducedMotion } from "../motion.ts";
 
 /** How far out the dome sits: past every building, inside the sky sphere. */
-const RADIUS = 380;
+const DEFAULT_RADIUS = 380;
 const TRAIL = 8;
 
 const COOL = new THREE.Color("#a9c4ff");
@@ -67,18 +67,27 @@ function attribute(array: Float32Array, size: number) {
 }
 
 /** The stargazing night's dome of stars, with its Milky Way and shooting stars. */
-export function StarDome({ low }: { low: boolean }) {
+export function StarDome({
+  low,
+  radius = DEFAULT_RADIUS,
+  floor,
+}: {
+  low: boolean;
+  radius?: number;
+  /** The lowest a star may sit, as the sine of its elevation. */
+  floor?: number;
+}) {
   const calm = useReducedMotion();
   const px = useThree((s) => s.gl.getPixelRatio());
   const sky = useMemo(() => {
-    const f = starField(low ? 1800 : 3000, low ? 800 : 1500);
+    const f = starField(low ? 1800 : 3000, low ? 800 : 1500, floor);
     const g = new THREE.BufferGeometry();
     const pos = new Float32Array(f.count * 3);
     const col = new Float32Array(f.count * 3);
     const c = new THREE.Color();
     for (let i = 0; i < f.count; i++) {
       for (let k = 0; k < 3; k++)
-        pos[i * 3 + k] = (f.dir[i * 3 + k] ?? 0) * RADIUS;
+        pos[i * 3 + k] = (f.dir[i * 3 + k] ?? 0) * radius;
       starColor(f.warmth[i] ?? 0.5, f.bright[i] ?? 0.5, c);
       col.set([c.r, c.g, c.b], i * 3);
     }
@@ -87,7 +96,7 @@ export function StarDome({ low }: { low: boolean }) {
     g.setAttribute("aSize", attribute(f.size, 1));
     g.setAttribute("aPhase", attribute(f.phase, 1));
     return g;
-  }, [low]);
+  }, [low, radius, floor]);
   const trail = useMemo(() => {
     const g = new THREE.BufferGeometry();
     const size = new Float32Array(TRAIL);
@@ -127,9 +136,9 @@ export function StarDome({ low }: { low: boolean }) {
     if (!calm)
       for (let i = 0; i < TRAIL; i++) {
         if (shootingStarPoint(t, i * 0.025, out)) {
-          pos.setXYZ(i, out[0] * RADIUS, out[1] * RADIUS, out[2] * RADIUS);
+          pos.setXYZ(i, out[0] * radius, out[1] * radius, out[2] * radius);
           shown = true;
-        } else pos.setXYZ(i, 0, -RADIUS, 0);
+        } else pos.setXYZ(i, 0, -radius, 0);
       }
     s.visible = shown;
     if (shown) pos.needsUpdate = true;
