@@ -32,6 +32,13 @@ const CROPS = {
   "sap-flash-game": [0, 0, 1, 1],
   "sap-marina": [0.14, 0.06, 0.86, 0.93],
   "sap-rainy-window": [0, 0, 1, 1],
+  "sap-moving-in": [0.17, 0.18, 0.83, 0.82],
+  "sap-lighthouse": [0.12, 0.1, 0.9, 0.86],
+  "ph-chocolate-hills": [0.08, 0.14, 0.91, 0.86],
+  "ph-vigan": [0.15, 0.27, 0.86, 0.73],
+  "ph-mayon": [0.27, 0.23, 0.76, 0.74],
+  "ph-pabitin": [0.13, 0.08, 0.89, 0.87],
+  "ph-tinikling": [0.19, 0.15, 0.82, 0.77],
 };
 const N = 256;
 
