@@ -2106,6 +2106,28 @@ const SHOTS: {
     },
   },
   {
+    // the same close-up on the high tier (the hair's soft edges and shine)
+    name: "city-zoom-high",
+    query: "quality=high&room=city",
+    live: true,
+    act: async (page) => {
+      const canvas = page.locator("canvas");
+      await canvas.waitFor();
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      await page.mouse.move(640, 400);
+      for (let i = 0; i < 60; i++) await page.mouse.wheel(0, -100);
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.camDistance) < 1,
+        null,
+        { timeout: 120_000 },
+      );
+    },
+  },
+  {
     // the park's street-food stop from the zoomed-out orbit camera: the view the
     // low tier's triangle budget has to hold (src/game/city/budget.ts)
     name: "park-wide",
@@ -2346,11 +2368,15 @@ const SHOTS: {
 ];
 
 const only = process.argv.slice(2);
-// hair-<name> and doll-suit-<name> shots are the lineup page's
+// hair-<name>, doll-suit-<name> and doll-face shots are the lineup page's
 // (scripts/hair-shots.ts), which writes docs/screenshots/<prefix>-<name>.png
 // like any other shot
 const prefixOf = (n: string) =>
-  n.startsWith("hair-") ? "hair-" : n.startsWith("doll-suit-") ? "doll-" : "";
+  n.startsWith("hair-")
+    ? "hair-"
+    : n.startsWith("doll-suit-") || n === "doll-face"
+      ? "doll-"
+      : "";
 const hairShots = only.filter((n) => prefixOf(n));
 if (hairShots.length) {
   execFileSync(
@@ -2390,7 +2416,9 @@ for (const shot of SHOTS) {
   const started = Date.now();
   await page.setViewportSize(shot.viewport ?? { width: 1280, height: 800 });
   const still = shot.live ? "" : "&still=1";
-  await page.goto(`${BASE}/?quality=low${still}&${shot.query}`, {
+  // the low tier unless the shot picks its own (quality=high)
+  const tier = shot.query.includes("quality=") ? "" : "quality=low";
+  await page.goto(`${BASE}/?${tier}${still}&${shot.query}`, {
     timeout: 300_000,
   });
   if (shot.act) await shot.act(page);
