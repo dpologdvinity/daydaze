@@ -27,19 +27,20 @@
 ## Browser tests on GitHub (preferred, 2026-11-07)
 The local browser lock is a bottleneck (one CPU-rendered browser at a time). For Playwright TESTS, push your branch and run them on GitHub's free runners instead, in parallel with everyone else:
   git push -u origin <branch>      # feature branches may be pushed; never push main yourself
+  # every gh call counts against one 5000-an-hour account limit shared by all agents: watch with --interval 60, never poll in a loop
   gh workflow run browser-test.yml --ref <branch> -f grep="<exact test title fragment>"
-  gh run list --workflow browser-test.yml --branch <branch> -L 1   # then: gh run watch <id> --exit-status
+  gh run list --workflow browser-test.yml --branch <branch> -L 1   # then: gh run watch <id> --interval 60 --exit-status
   gh run view <id> --log-failed     # on failure; artifacts: gh run download <id>
 Use the local lock only for SCREENSHOTS (scripts/screenshots.ts) and keep each hold under ~10 minutes. Grep only the 1-2 exact tests your change touches — never broad words like "park" or "seat".
 Screenshots on GitHub too (works, ~2 min):
   gh workflow run screenshots.yml --ref <branch> -f shots="<name> <name>"   # names from scripts/screenshots.ts
-  id=$(gh run list --workflow screenshots.yml --branch <branch> -L 1 --json databaseId -q '.[0].databaseId'); gh run watch $id --exit-status; gh run download $id -n screenshots -D /tmp/shots-$id
+  id=$(gh run list --workflow screenshots.yml --branch <branch> -L 1 --json databaseId -q '.[0].databaseId'); gh run watch $id --interval 60 --exit-status; gh run download $id -n screenshots -D /tmp/shots-$id
 The local browser lock is now a last resort only.
 
 ## Verify on GitHub, not locally (2026-11-07, owner: don't load my computer)
 `npm run verify` runs automatically on GitHub (verify.yml, ~1.5 min) for every pushed branch named feat/**, fix/**, perf/** or ci/**. So: commit, push, read the result:
   git push origin <branch>    # if the remote branch was rebased (force needed), push to a fresh name instead: git push origin HEAD:refs/heads/ci/<name>-<short-sha>
-  id=$(gh run list --workflow verify.yml --branch <pushed-ref> -L 1 --json databaseId -q '.[0].databaseId'); gh run watch $id --exit-status; gh run view $id --log-failed
+  id=$(gh run list --workflow verify.yml --branch <pushed-ref> -L 1 --json databaseId -q '.[0].databaseId'); gh run watch $id --interval 60 --exit-status; gh run view $id --log-failed
 Don't run the full `npm run verify` locally. For quick local checks of one file use `nice -n 19` (e.g. `nice -n 19 npx tsc --noEmit`, `nice -n 19 node --test <file>`). Never run local browser renders (screenshots/profiling) except as a last resort, and then under `nice -n 19`. Stop every dev server you start as soon as you're done with it.
 
 ## Processes (hard rule, 2026-11-07)

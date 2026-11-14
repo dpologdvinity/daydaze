@@ -11,7 +11,7 @@ ref=ci/land-$w-$(git rev-parse --short HEAD)
 git push -q origin HEAD:refs/heads/$ref 2>&1 | grep -v "^remote:"
 id=""; for i in $(seq 1 30); do id=$(gh run list --workflow verify.yml --branch $ref -L 1 --json databaseId -q '.[0].databaseId'); [ -n "$id" ] && break; sleep 5; done
 [ -n "$id" ] || { echo "$w NO-CI-RUN on $ref"; exit 1; }
-if ! gh run watch $id --exit-status > /dev/null 2>&1; then echo "$w VERIFY-FAIL on GitHub run $id: $(gh run view $id --log-failed 2>/dev/null | grep -E 'error|✖|not ok' | head -3 | cut -c1-200 | tr '\n' ' ')"; exit 1; fi
+if ! gh run watch $id --interval 60 --exit-status > /dev/null 2>&1; then echo "$w VERIFY-FAIL on GitHub run $id: $(gh run view $id --log-failed 2>/dev/null | grep -E 'error|✖|not ok' | head -3 | cut -c1-200 | tr '\n' ' ')"; exit 1; fi
 if git -C $M merge-base --is-ancestor main $b && git -C $M merge --no-ff -q $b -m "Merge branch '$b': $msg"; then
   git -C $M push -q origin main 2>&1 | grep -v "^remote:"
   echo "$w MERGED $(git -C $M log --oneline -1 | cut -c1-9) (GitHub verify run $id)"
