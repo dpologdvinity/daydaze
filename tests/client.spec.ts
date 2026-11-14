@@ -161,6 +161,11 @@ test("the plus and minus keys and the wheel zoom from the wide view in to her fa
   await page.mouse.wheel(0, 1500);
   await expect.poll(distance, { timeout: 60_000 }).toBeGreaterThan(before + 1);
   const wide = await distance();
+  // out of the chat bar, whose typing the zoom keys leave alone
+  await page.evaluate(() => {
+    if (document.activeElement instanceof HTMLElement)
+      document.activeElement.blur();
+  });
   for (let i = 0; i < 4; i++) await page.keyboard.press("-");
   await expect.poll(distance, { timeout: 60_000 }).toBeGreaterThan(wide + 0.5);
 });
