@@ -256,7 +256,7 @@ Clip ids in `mocap.ts` stay stable; add a pack name per clip.
 22. **Dealership showroom cars: Future Car (3DHaupt) and Jaguar XJ saloon** -> DONE (2026-11-13): two unbadged showpieces on plinths in Daydaze Motors, shown as the made-up Aurelia Grand Saloon (the XJ Sport, 8.6k triangles, every badge material replaced by chrome and the JAGUAR plates painted out of its Details texture) and Comet Zero (the Future Car, 14.5k triangles). `art/showroom/build_showpieces.py`, `public/models/showroom/`.
 23. **Cute Fish Pack leftover species** -> DONE (2026-11-13): eight more species (royal gramma, parrotfish, cardinalfish, Moorish idol, cowfish, humphead wrasse in the Reef Dive logbook and the Aquarium; betta and tetra in the Aquarium), 30 KB each, built by `art/animals/build_animals.py`.
 24. **Sci-Fi Essentials guns** -> Photon Zone and Paintball marker props, game zones only.
-25. **Meshy-generated Daydaze models (`public/models/meshy/{fiesta,culture,brand,mango}`)** -> a Filipino fiesta night (a new entry in `src/game/events.ts`), Little Manila's streets, the Fairground gate and a gift shop. Generated for Daydaze (credited in `docs/assets.md`); each is one mesh at about 3k to 8k triangles, meshopt and WebP, normalized so its largest side is 1, with no fixed scale or facing: fit it with `Prop`/`PropSet` (`dir="meshy/<folder>"`). Already placed: the `food/` dishes, the `museum/` pieces, `mango-crate` (Skyline Supply's produce stand), `mango-float` and `mango-shake` (Halo-Halo Haus; they are dishes in `src/game/food/dishes.ts`). The rest are unplaced:
+25. **Meshy-generated Daydaze models (`public/models/meshy/{fiesta,culture,brand,mango}`)** -> a Filipino fiesta night (a new entry in `src/game/events.ts`), Little Manila's streets, the Fairground gate and a gift shop. Generated for Daydaze (credited in `docs/assets.md`); each is one mesh at about 3k to 8k triangles, meshopt and WebP, normalized so its largest side is 1, with no fixed scale or facing: fit it with `Prop`/`PropSet` (`dir="meshy/<folder>"`). Already placed: the `food/` dishes (all but `karinderya`), the `museum/` pieces, `mango-crate` (Skyline Supply's produce stand), `mango-float` and `mango-shake` (Halo-Halo Haus; they are dishes in `src/game/food/dishes.ts`). The rest are unplaced:
 
 | Model | What it is | Suggested place |
 | --- | --- | --- |
@@ -279,8 +279,14 @@ Clip ids in `mocap.ts` stay stable; add a pack name per clip.
 | `culture/kulintang` | Row of gongs | Museum; fiesta night stage |
 | `culture/tinikling` | Bamboo dance poles | Museum; a dance spot on the fiesta plaza |
 | `culture/carabao-statue` | Carabao statue | Little Manila's plaza or a park lawn |
+| `culture/sorbetes-cart` | Sorbetes ice-cream cart | Little Manila sidewalk vendor; fiesta night market |
+| `culture/fishball-cart` | Street fishball cart | Little Manila sidewalk vendor (`game/city/vendors.ts`); fiesta night market |
+| `culture/taho-pails` | Taho vendor's pair of pails | Little Manila morning sidewalk vendor; Halo-Halo Haus window |
+| `culture/bangka` | Outrigger boat | Beachside, Starboard Marina, Mermaid Cove |
+| `culture/sampaguita` | Sampaguita flower garland | Jeepney and museum displays; shop doors on fiesta night |
 | `culture/abaca-hammock` | Hammock | Beachside, the Skylark, a home decor piece |
 | `culture/palayok` | Clay pot | Kamayan Hall's kitchen; Little Manila market stalls |
+| `food/karinderya` | Glass-front karinderya counter of six pots | Kain Tayo's counter or a new Little Manila karinderya |
 | `brand/dd-arch` | The carnival gate | Fairground entrance |
 | `brand/dd-marquee` | DAYDAZE in bulb letters | Fairground entrance, over `dd-arch` |
 | `brand/dd-trophy` | Daydaze trophy | Contest and game prizes; the gift shop |
