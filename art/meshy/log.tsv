@@ -1,0 +1,78 @@
+name	group	image_task	model_task
+bahay-kubo	museum	01a1d8f9-092b-74ae-b3c3-50cad7fd204e	01a1d8fa-b69a-77d5-9b14-fd74cbc62b8b
+jeepney	museum	01a1d8f9-09aa-7228-9e6b-e409e027af65	01a1d8fa-ba53-72f5-9270-c8b865c2a1e0
+capiz-window	museum	01a1d8f9-0a24-716d-bbc1-beceb0f24a72	01a1d8fa-be18-73b4-9cf6-840a2fa05885
+banig	museum	01a1d8f9-0aa2-748c-8950-58a09e58123e	01a1d8fa-c162-7014-a298-9bcae104056a
+sari-sari	museum	01a1d8f9-0b2b-710d-ac0a-8681a9d735cb	01a1d8fa-c4ee-72f4-ba70-3144e16d51d3
+adobo	food	01a1d8f9-4a42-77ad-af12-22051dd76f7d	01a1d8fa-c8e4-77c6-8056-6088002e0034
+sinigang	food	01a1d8f9-4ab0-7409-b0ac-1fdae10cf89d	01a1d8fa-cbd6-71d7-b76a-157f52326946
+palabok	food	01a1d8f9-4b26-7107-9be9-d7e1d859f4e4	01a1d8fa-cf9d-75b3-8b9a-e53185f54aca
+lumpia	food	01a1d8f9-4b9e-7313-86d9-f09932189d0e	01a1d8fa-d303-7387-8653-b7502ab0b78f
+kare-kare	food	01a1d8f9-4c1c-7627-80b8-f9b9d3d521db	01a1d8fa-d5f7-72db-b34d-08b6ba1640ad
+sisig	food	01a1d8f9-4c96-764d-869e-ad0c7cead24e	01a1d8fa-d9ac-72a9-9f4f-efbfce247ee0
+lechon-kawali	food	01a1d8f9-4d02-7271-abf5-46c4b98f6acc	01a1d8fa-dcee-720d-84f9-26e096cc4425
+lechon	food	01a1d8f9-4d6f-7120-80cf-5837d06c131f	01a1d8fa-e062-7714-98be-4da8e510b538
+boodle	food	01a1d8fc-9b07-75db-afd9-922d66cd7539	01a1d902-abcd-75ba-a3b6-5decb53b8113
+inasal	food	01a1d8fb-46b2-75d6-a2a1-4c4f85573d0a	01a1d8fc-9b82-776d-a7b3-57b259a028e9
+isaw-grill	food	01a1d8fb-472b-75ab-8b4c-5a3477d3fa37	01a1d8fc-9eeb-7045-9e00-c114ae486ac8
+tapsilog	food	01a1d8fb-47a0-71c5-92c4-da077f43d00d	01a1d8fc-a2ee-7643-a3dd-ee00c00d20ab
+halo-halo	food	01a1d8fb-4821-7452-ac30-68022bf0bd1d	01a1d8fc-a66c-7120-9964-eef1d4ac8a84
+leche-flan	food	01a1d8fb-4894-70e1-9996-0de0d5c5899e	01a1d8fc-a9b2-70ec-aab6-07086442b3a1
+ube-halaya	food	01a1d8fb-4901-7397-bf4e-15fe6fa980f7	01a1d8fc-ac8c-7651-a2ec-0a7c05a7be15
+buko-pandan	food	01a1d8fb-498b-772b-9448-e231542b360b	01a1d8fc-af8a-717e-826c-4bfe0d58a74c
+turon	food	01a1d8fb-85a8-77b0-af31-9e354a6c685d	01a1d8fc-e58c-7640-a949-e28ff93271ff
+banana-cue	food	01a1d8fb-8626-77a9-81c2-8300fbeeb3d4	01a1d8fc-e851-743b-bcf1-6b7db917e7f7
+puto-kutsinta	food	01a1d8fb-86a2-74ae-a5c0-74885880f1ad	01a1d8fc-eb4e-7012-b209-70725f91a425
+taho	food	01a1d8fb-8704-71a4-b9fb-34f5e121eba6	01a1d8fc-ee8e-73e3-aad8-947d7a06023f
+ensaymada	food	01a1d8fb-8776-7695-b0e6-c13dc34830c9	01a1d8fc-f1ac-77dd-b5e5-f709673820b9
+pandesal	food	01a1d8fb-87dc-7412-adb8-b4ed8c1e08f3	01a1d8fc-f494-7419-b76d-4f0d61eb77cc
+bibingka	food	01a1d8fb-8842-718d-b08e-093706dc0719	01a1d8fc-f7e5-73b3-96b5-f1253c8d823d
+puto-bumbong	food	01a1d8fb-88a3-7454-97f3-b5b4ff02c5ad	01a1d8fc-fb2c-77f3-a0f5-99d4b14074db
+sap-boardwalk	art	01a1d8fd-ba08-72e0-9958-3ba236187703	
+sap-slow-dance	art	01a1d8fd-ba75-7480-8fd7-9488c0516469	
+sap-picnic	art	01a1d8fd-bada-76ac-8dda-ff9717c3019d	
+sap-pride	art	01a1d8fd-bb3a-71fb-9f37-b3541f80aeba	
+sap-rainy-window	art	01a1d8fd-bba3-75a3-b8cd-f39cc5b74704	
+sap-marina	art	01a1d8fd-bc08-70b0-9c55-0ad5ee60e100	
+sap-nouveau	art	01a1d8fd-bc75-73ba-ac32-c2721a31f5bf	
+sap-pop-art	art	01a1d8fd-bcee-731f-ade5-10cee6d410d4	
+sap-diner	art	01a1d8fd-bd54-7716-b62f-4423b528b6ff	
+sap-ferris-wheel	art	01a1d8fd-bdbf-757d-8bfc-3bd2189c83ed	
+sap-roller-rink	art	01a1d8fd-be2b-7497-b642-0fe7b77dcdd9	
+sap-bookshop	art	01a1d8fd-bea5-7055-8421-e3341dac326f	
+sap-bonfire	art	01a1d8fe-3316-75b2-9fd9-f315211d8f03	
+sap-ice-rink	art	01a1d8fe-337c-7681-8ef9-9771b1f20ce8	
+sap-karaoke	art	01a1d8fe-33e9-70aa-9c7b-a0d4bbf1dca5	
+sap-wedding	art	01a1d8fe-3446-727c-86d4-f693dec62292	
+sap-umbrella	art	01a1d8fe-34bc-70a5-9213-5b4cecc52711	
+sap-arcade	art	01a1d8fe-3524-778e-84f8-961cb3dcf67d	
+sap-stained-glass	art	01a1d8fe-3585-7103-8042-27ab24346950	
+sap-mermaids	art	01a1d8fe-35ea-746d-a0ea-9d989888be6e	
+sap-flash-game	art	01a1d8fe-365e-7601-b6f5-ba6d25eb2d9d	
+sap-polaroids	art	01a1d8fe-36c3-7171-b75f-c4bf366bdc7d	
+sap-cafe	art	01a1d8fe-3720-7109-9829-0b423d436285	
+sap-sunflowers	art	01a1d8fe-3789-71a5-8ed7-b931eee6c545	
+ph-rice-terraces	art	01a1d8fe-a531-701d-88f6-5005a71ab64f	
+ph-fiesta-street	art	01a1d8fe-a5b5-7776-b285-47d9400b9d95	
+ph-jeepney-dusk	art	01a1d8fe-a625-73fe-96e6-cf436c58ce83	
+ph-nipa-sea	art	01a1d8fe-a689-710f-9069-04c47243b64d	
+ph-carabao	art	01a1d8fe-a6fc-773d-aa2c-a8063f6514b9	
+ph-parol-night	art	01a1d8fe-a773-735d-95f1-56da34f1c667	
+ph-sinulog	art	01a1d8fe-a7e9-73e0-ab6c-6f42c4e4040a	
+ph-pahiyas	art	01a1d8fe-a855-734f-8c17-8ab0b2fcf3e5	
+ph-mango-orchard	art	01a1d8fe-a8cc-72b8-93b1-912f69c6678e	
+ph-manila-bay	art	01a1d8fe-a93f-7372-a8cc-9385d7d92ce9	
+ph-lola-kitchen	art	01a1d8fe-a9c0-7207-b293-565501765ba9	
+ph-noche-buena	art	01a1d8fe-aa36-74a6-b3d0-9cf98e5b0a9e	
+dd-travel	art	01a1d8ff-200e-76df-9492-31d23a540cdb	
+dd-pulse	art	01a1d8ff-2077-7037-ad60-6796fce5daef	
+dd-carnival	art	01a1d8ff-20ed-77c2-a26c-19269d294529	
+dd-boardwalk	art	01a1d8ff-2148-733b-b9a8-e4e4e8ad4cb4	
+dd-night-market	art	01a1d8ff-21b0-75c9-a69b-39b66e8295a4	
+dd-roller	art	01a1d8ff-221c-7506-9a90-ee12201c10ee	
+dd-skyline	art	01a1d8ff-228d-72ef-b415-0fedfc567de6	
+dd-mermaid-cove	art	01a1d8ff-22fb-7586-946b-915e4c844451	
+logo-bubble	brand	01a1d8ff-236b-7257-9f0f-dad8217f0151	
+logo-neon	brand	01a1d8ff-23e0-71b7-b2a4-a4b14c8acc0d	
+logo-badge	brand	01a1d8ff-2459-757a-9f10-6d3fce943263	
+logo-icon	brand	01a1d8ff-24c0-71be-9969-acf1fc8d1095	
