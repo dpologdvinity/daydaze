@@ -31,6 +31,7 @@ const LAYERS = ["#8a3a2a", "#3fd06a", "#f4f4f8", "#9b5cff", "#ffd166"];
 const COUNTER: readonly DishAt[] = (
   [
     "halo-halo",
+    "mais-con-yelo",
     "leche-flan",
     "mango-float",
     "buko-pandan",
@@ -38,7 +39,7 @@ const COUNTER: readonly DishAt[] = (
     "mango-shake",
     "ube-halaya",
   ] as const
-).map((dish, i) => ({ dish, x: -2.4 + i * 0.8, y: 1.17, z: -0.85 }));
+).map((dish, i) => ({ dish, x: -2.45 + i * 0.7, y: 1.17, z: -0.85 }));
 
 /** Layered halo-halo glasses: the placeholder while the dessert models load. */
 function Glasses(): JSX.Element {
