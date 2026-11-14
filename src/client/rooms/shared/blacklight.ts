@@ -18,10 +18,12 @@ const CHUNK = `
     float uvHi = max(uvc.r, max(uvc.g, uvc.b));
     float uvLo = min(uvc.r, min(uvc.g, uvc.b));
     float uvSat = uvHi > 0.0 ? (uvHi - uvLo) / uvHi : 0.0;
-    float paint = smoothstep(0.55, 0.85, uvSat) * smoothstep(0.4, 0.75, uvHi);
+    float paint = smoothstep(0.5, 0.8, uvSat) * smoothstep(0.25, 0.5, uvHi);
     float chalk = smoothstep(0.72, 0.92, uvLo);
-    totalEmissiveRadiance += uUvGlow * (diffuseColor.rgb * paint * 1.8
-      + vec3(0.5, 0.38, 1.0) * chalk * 0.7);
+    // paint glows at its full hue however dark it is in daylight
+    vec3 hue = diffuseColor.rgb / max(max(diffuseColor.r, max(diffuseColor.g, diffuseColor.b)), 0.001);
+    totalEmissiveRadiance += uUvGlow * (hue * paint * 1.1
+      + vec3(0.55, 0.4, 1.0) * chalk * 0.8);
   }`;
 
 /** `fragmentShader` with the blacklight glow in, or as it was if it has no emissive chunk. */

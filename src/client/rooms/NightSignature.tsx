@@ -133,7 +133,7 @@ export function Lasers({ hall }: { hall: Hall }) {
   const length = hall.ceiling * 1.8;
   const geometry = useMemo(() => {
     // apex at the fixture, pointing down; brightest at the source, fading out
-    const g = new THREE.CylinderGeometry(0.03, 0.13, length, 6, 1, true);
+    const g = new THREE.CylinderGeometry(0.015, 0.06, length, 5, 1, true);
     g.translate(0, -length / 2, 0);
     const pos = g.getAttribute("position");
     const fade = new Float32Array(pos.count * 3);
@@ -149,7 +149,7 @@ export function Lasers({ hall }: { hall: Hall }) {
       new THREE.MeshBasicMaterial({
         vertexColors: true,
         transparent: true,
-        opacity: 0.85,
+        opacity: 0.55,
         blending: THREE.AdditiveBlending,
         side: THREE.DoubleSide,
         depthWrite: false,
@@ -165,7 +165,7 @@ export function Lasers({ hall }: { hall: Hall }) {
     for (let i = 0; i < FIXTURES * PER_FIXTURE; i++)
       m.setColorAt(
         i,
-        c.set(BEAM_COLORS[i % PER_FIXTURE] ?? "#ffffff").multiplyScalar(2.2),
+        c.set(BEAM_COLORS[i % PER_FIXTURE] ?? "#ffffff").multiplyScalar(1.2),
       );
     if (m.instanceColor) m.instanceColor.needsUpdate = true;
   }, []);

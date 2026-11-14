@@ -410,7 +410,7 @@ export function NightDecor({ room }: { room: RoomId }) {
   return (
     <>
       <hemisphereLight
-        args={[night.color, "#000000", look?.tint ?? 0.85]}
+        args={[look?.tintColor ?? night.color, "#000000", look?.tint ?? 0.85]}
         userData={{ nightKeep: true }}
       />
       {look && <NightGrade look={look} />}

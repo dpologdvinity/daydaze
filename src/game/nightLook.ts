@@ -13,8 +13,10 @@ export type NightLook = {
   lights: number;
   /** Scale on the shared key light the dolls are lit by. */
   key: number;
-  /** Intensity of the night-colored fill light. */
+  /** Intensity of the fill light that washes the room. */
   tint: number;
+  /** The fill light's color, when not the night's own glow color. */
+  tintColor?: string;
   /**
    * `lasers`: a canopy of colored beams and confetti cannons.
    * `blacklight`: saturated and white surfaces fluoresce on their own.
@@ -26,12 +28,19 @@ export type NightLook = {
 
 export const NIGHT_LOOKS: Partial<Record<NightId, NightLook>> = {
   // the mall's lights drop to a glimmer so the beams are the light
-  "mall-rave": { lights: 0.22, key: 0.45, tint: 0.35, signature: "lasers" },
+  "mall-rave": {
+    lights: 0.1,
+    key: 0.22,
+    tint: 0.5,
+    tintColor: "#8a3dff",
+    signature: "lasers",
+  },
   // a real blacklight room: dark, deep violet, everything else glows by itself
   "uv-night": {
-    lights: 0.12,
-    key: 0.18,
-    tint: 0.7,
+    lights: 0.1,
+    key: 0.15,
+    tint: 1,
+    tintColor: "#6a1bff",
     signature: "blacklight",
     backdrop: "#08001c",
   },
@@ -39,7 +48,7 @@ export const NIGHT_LOOKS: Partial<Record<NightId, NightLook>> = {
 
 /**
  * Aim of laser `i` of `n` in a fan at time `t` seconds: a yaw round the
- * vertical and a tilt down from straight up. The fan turns slowly and each
+ * vertical and a tilt away from straight down. The fan turns slowly and each
  * beam nods on its own phase, always pointing well below the horizontal
  * ceiling plane and never straight down the wall.
  */
