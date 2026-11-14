@@ -127,6 +127,44 @@ test("the city dock shows one action and the rest under More actions, by keyboar
   await expect(seat).toHaveCount(0);
 });
 
+test("the plus and minus keys and the wheel zoom from the wide view in to her face and back", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  await page.goto(`${LOW}&room=lune&view=full`);
+  const canvas = canvasOf(page);
+  await expect(canvas).toHaveAttribute("data-frames", "10", {
+    timeout: 150_000,
+  });
+  const distance = async () =>
+    Number(await canvas.getAttribute("data-cam-distance"));
+  // + closes in, one press at a time, until her face fills the picture
+  for (let i = 0; i < 12; i++) await page.keyboard.press("+");
+  await expect.poll(distance, { timeout: 60_000 }).toBeLessThan(1);
+  await expect.poll(distance).toBeGreaterThan(0.5);
+  // it comes round to her front at about eye level for the portrait
+  await expect
+    .poll(async () => Number(await canvas.getAttribute("data-cam-front")), {
+      timeout: 30_000,
+    })
+    .toBeLessThan(20);
+  expect(Number(await canvas.getAttribute("data-cam-elevation"))).toBeLessThan(
+    15,
+  );
+  // typing a plus into the chat bar does not zoom
+  const before = await distance();
+  await page.getByPlaceholder("Say something").click();
+  await page.keyboard.type("1+1");
+  expect(await distance()).toBe(before);
+  // the wheel and - pull back out
+  await page.locator("canvas").hover();
+  await page.mouse.wheel(0, 1500);
+  await expect.poll(distance, { timeout: 60_000 }).toBeGreaterThan(before + 1);
+  const wide = await distance();
+  for (let i = 0; i < 4; i++) await page.keyboard.press("-");
+  await expect.poll(distance, { timeout: 60_000 }).toBeGreaterThan(wide + 0.5);
+});
+
 // Credits must remain readable and keyboard-accessible from the menu.
 test("Credits opens from Menu and restores focus when closed", async ({
   page,
