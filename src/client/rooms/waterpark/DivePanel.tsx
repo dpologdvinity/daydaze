@@ -5,7 +5,7 @@
 
 import { useEffect, type JSX } from "react";
 import { DIVES, TRICKS, total } from "../../../game/cliffDive.ts";
-import { useNow, usePressKeys } from "../shared/useNow.ts";
+import { useNow, useEndOnUnmount, usePressKeys } from "../shared/useNow.ts";
 import {
   diving,
   entryNow,
@@ -26,7 +26,7 @@ const CALL = {
 /** Off the tower: five dives, a trick each, stop the entry meter dead center. */
 export function DivePanel(): JSX.Element {
   // switching to another game (or leaving the room) ends this one
-  useEffect(() => () => leave(), []);
+  useEndOnUnmount(leave);
   const s = diving.use();
   const playing = s.phase !== "off";
   const now = useNow(

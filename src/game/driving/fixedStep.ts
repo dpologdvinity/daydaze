@@ -4,8 +4,9 @@
 
 /** Physics ticks per second for every car. */
 export const TICK_HZ = 50;
-/** Most ticks one frame may run; time beyond that is dropped. */
-export const MAX_TICKS_PER_FRAME = 5;
+/** Most ticks one frame may run (a quarter second's worth, so a slow device
+ * at 4 fps still runs in real time); time beyond that is dropped. */
+export const MAX_TICKS_PER_FRAME = 12;
 
 const TICK = 1 / TICK_HZ;
 

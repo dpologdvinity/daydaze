@@ -1,12 +1,15 @@
 import { useEffect, type JSX } from "react";
 import { EXHIBITS } from "../../../game/museum.ts";
+import { useEndOnUnmount } from "../shared/useNow.ts";
 import { look, tour } from "./tour.ts";
+
+const endTour = () => look(null);
 
 /** The museum guide: pick an exhibit to go and read its plaque. */
 export function ExhibitsPanel(): JSX.Element {
   const { focus } = tour.use();
   // leaving the museum closes the panel, which ends the tour
-  useEffect(() => () => look(null), []);
+  useEndOnUnmount(endTour);
   useEffect(() => {
     if (focus === null) return;
     const key = (e: KeyboardEvent) => {

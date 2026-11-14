@@ -13,8 +13,8 @@ and open decisions.
 
 - What exists: the rooms in `src/game/rooms.ts`, the city in
   `src/game/city/layout.ts`, and `git log`.
-- What to build next: `docs/plans/2026-11-14-next.md` (the current plan:
-  fix the red CI on `main` first), then the "Use next" list in
+- What to build next: `docs/plans/2026-11-14-next.md` (the current plan;
+  item 1, the red CI on `main`, is done), then the "Use next" list in
   `docs/asset-inventory.md`. `docs/plans/2026-11-11-handoff.md` is the
   previous handoff (done).
 - `docs/plans/2026-10-23-next-steps.md` is the running log and gotchas list;

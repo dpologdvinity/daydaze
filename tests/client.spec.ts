@@ -1515,7 +1515,10 @@ test("chat shows what you said above your doll", async ({ page }) => {
   const input = page.getByRole("textbox", { name: "Chat message" });
   await input.fill("velvet hour anyone?");
   await input.press("Enter");
-  await expect(page.getByRole("status")).toHaveText("velvet hour anyone?");
+  // the HUD's food toast is a status too (an empty live region): pick by text
+  await expect(
+    page.getByRole("status").filter({ hasText: "velvet hour anyone?" }),
+  ).toBeVisible();
   await expect(input).toHaveValue("");
 });
 
@@ -1882,7 +1885,8 @@ test("a pair stands talking on the sidewalk by the city's spawn", async ({
 }) => {
   test.setTimeout(330_000);
   const errors = collectErrors(page);
-  await page.goto(`${LOW}&room=city`);
+  // pinned to midday: by night the pair has gone home (chatGroupOut)
+  await page.goto(`${LOW}&room=city&time=12:00`);
   const canvas = canvasOf(page);
   await expect(canvas).toHaveAttribute("data-frames", "10", {
     timeout: 240_000,
@@ -2407,7 +2411,9 @@ test("the dive buoy won't take a swimmer without gear", async ({ page }) => {
     timeout: 240_000,
   });
   await page.getByRole("button", { name: "Go to the Reef" }).click();
-  await expect(page.getByRole("status")).toContainText("Rent scuba gear");
+  await expect(
+    page.getByRole("status").filter({ hasText: "Rent scuba gear" }),
+  ).toBeVisible();
   await expect(page.getByRole("region", { name: "Dive shack" })).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -2923,10 +2929,11 @@ test("Plate Rush orders a dish and the courier drops it in hand", async ({
     })
     .click();
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("status")).toContainText(
-    "The courier dropped off Adobo rice bowl.",
-    { timeout: 120_000 },
-  );
+  await expect(
+    page
+      .getByRole("status")
+      .filter({ hasText: "The courier dropped off Adobo rice bowl." }),
+  ).toBeVisible({ timeout: 120_000 });
   const held = page.getByRole("region", { name: "Held food" });
   await expect(held).toContainText("Adobo rice bowl");
   await held.getByRole("button", { name: "Eat it" }).click();

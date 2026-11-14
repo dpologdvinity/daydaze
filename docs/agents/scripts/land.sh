@@ -15,5 +15,7 @@ if ! gh run watch $id --exit-status > /dev/null 2>&1; then echo "$w VERIFY-FAIL 
 if git -C $M merge-base --is-ancestor main $b && git -C $M merge --no-ff -q $b -m "Merge branch '$b': $msg"; then
   git -C $M push -q origin main 2>&1 | grep -v "^remote:"
   echo "$w MERGED $(git -C $M log --oneline -1 | cut -c1-9) (GitHub verify run $id)"
+  # main's own ci and Tests runs: a red main comes before landing anything else
+  sleep 15; gh run list --branch main -L 3 --json workflowName,status,url -q '.[] | "  main: \(.workflowName) \(.status) \(.url)"'
   cd $M && git worktree remove --force $d && git branch -D $b > /dev/null
 else echo "$w NOT-MERGED (main moved during CI; rerun)"; fi

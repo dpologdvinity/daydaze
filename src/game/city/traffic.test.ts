@@ -183,6 +183,12 @@ test("a cab rolls in and stops at the curb on the rider's side, in its lane", ()
   assert.ok(p.z > 0 && p.z < 6, `z ${p.z}`);
 });
 
+test("a hailed cab comes from just up the street, not a block away", () => {
+  const cab = cabAtCurb(903, [-30, 0], [-30, 12]);
+  const back = (cab.trip?.stop.s ?? 0) - cab.s;
+  assert.ok(back > 0 && back <= 25, `starts ${back} m back`);
+});
+
 test("the cab drives to a faraway place along the streets and stops there", () => {
   const t = createTraffic(0);
   const cab = cabAtCurb(901, [-30, 0], [-30, 12]);

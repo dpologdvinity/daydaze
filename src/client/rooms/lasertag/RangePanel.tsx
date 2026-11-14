@@ -5,7 +5,12 @@
 
 import { useEffect, type JSX } from "react";
 import type { Gun } from "../../../game/targetRange.ts";
-import { typing, useNow, usePressKeys } from "../shared/useNow.ts";
+import {
+  typing,
+  useNow,
+  useEndOnUnmount,
+  usePressKeys,
+} from "../shared/useNow.ts";
 import {
   fire,
   leave,
@@ -35,7 +40,7 @@ const ARROWS: Record<string, [number, number]> = {
 /** Photon Zone's light-gun range: timed drills on the north wall. */
 export function RangePanel(): JSX.Element {
   // switching to another game (or leaving the room) ends this one
-  useEffect(() => () => leave(), []);
+  useEndOnUnmount(leave);
   const s = range.use();
   const playing = s.phase === "playing";
   const now = useNow(playing);

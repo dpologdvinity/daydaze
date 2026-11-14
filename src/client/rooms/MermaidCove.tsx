@@ -1,6 +1,5 @@
 import { Stars } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useEffect } from "react";
 import type { Look } from "../../game/look.ts";
 import { COVE_ROCKS, LOG_SEATS, SAND } from "../../game/mermaidCove.ts";
 import { ROOMS } from "../../game/rooms.ts";
@@ -33,6 +32,7 @@ import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { Sparkles } from "./shared/Sparkles.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
+import { useEndOnUnmount } from "./shared/useNow.ts";
 
 const PINK = "#ff4fb3";
 /** The moon, low over the sea cave. */
@@ -85,7 +85,7 @@ const MARINA_LOOK: Look = {
 
 /** Ticks Siren Song's playback, and stops it when you leave the cove. */
 function SongClock() {
-  useEffect(() => () => leave(), []);
+  useEndOnUnmount(leave);
   useFrame(() => tick(performance.now()));
   return null;
 }
