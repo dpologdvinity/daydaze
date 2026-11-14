@@ -35,7 +35,6 @@ import { SLIDES } from "../../game/waterPark.ts";
 import { areaOf } from "../../game/area.ts";
 import { DrunkState } from "../effects/DrunkState.tsx";
 import type { MinigameId } from "../../game/hotspots.ts";
-import { NightDecor } from "../rooms/NightDecor.tsx";
 import type { PickHandler } from "../rooms/shared/Floor.tsx";
 import { CameraRig, type View } from "./CameraRig.tsx";
 import { NeonClamp } from "./NeonClamp.tsx";
@@ -52,11 +51,9 @@ import {
 } from "./PlayerController.tsx";
 import { QualityContext, type QualityTier } from "./quality.ts";
 import { Seats } from "./Seats.tsx";
-import { VendingWatch } from "../vending/VendingWatch.tsx";
 import { isSceneReady, setSceneReady } from "./ready.ts";
 import { CompileGate } from "./compileGate.ts";
 import { Photo } from "./Photo.tsx";
-import { OnlinePeers } from "../net/OnlinePeers.tsx";
 import { Confetti } from "./Confetti.tsx";
 import { CreatorFrame } from "./CreatorFrame.tsx";
 import { PetFollower } from "../creatures/PetFollower.tsx";
@@ -74,6 +71,20 @@ const WaterPark = lazy(() =>
 );
 const CityScene = lazy(() =>
   import("../city/CityScene.tsx").then((m) => ({ default: m.CityScene })),
+);
+// Nothing on the first frame needs these, and their data (the city's street
+// furniture, the event calendar, the peers' car models) would otherwise weigh
+// down the first load.
+const OnlinePeers = lazy(() =>
+  import("../net/OnlinePeers.tsx").then((m) => ({ default: m.OnlinePeers })),
+);
+const NightDecor = lazy(() =>
+  import("../rooms/NightDecor.tsx").then((m) => ({ default: m.NightDecor })),
+);
+const VendingWatch = lazy(() =>
+  import("../vending/VendingWatch.tsx").then((m) => ({
+    default: m.VendingWatch,
+  })),
 );
 
 // Enough for the environment map, face textures and reflector to settle.
@@ -692,13 +703,15 @@ export function World({
         )}
         <FrameCount still={still} />
         <Photo />
-        <OnlinePeers
-          room={room}
-          player={player}
-          mood={mood}
-          dance={dance}
-          sitHold={holds.sit}
-        />
+        <Suspense fallback={null}>
+          <OnlinePeers
+            room={room}
+            player={player}
+            mood={mood}
+            dance={dance}
+            sitHold={holds.sit}
+          />
+        </Suspense>
         <DrunkState intensity={effects} />
         <Dancing mood={mood} move={dance} />
         <Wearing style={swimFor(def, swim)?.style ?? "outfit"} />
@@ -709,7 +722,11 @@ export function World({
           intensity={2.2}
         />
         {/* a weekly night on here tints the light and fills the air */}
-        {room !== "city" && <NightDecor room={room} />}
+        {room !== "city" && (
+          <Suspense fallback={null}>
+            <NightDecor room={room} />
+          </Suspense>
+        )}
         <Suspense fallback={null}>
           {room === "city" ? (
             <CityScene
@@ -737,7 +754,9 @@ export function World({
             </Suspense>
           )}
           <Seats room={room} player={player} area={area} home={home} />
-          <VendingWatch room={room} player={player} />
+          <Suspense fallback={null}>
+            <VendingWatch room={room} player={player} />
+          </Suspense>
           <PlayerController
             player={player}
             area={area}

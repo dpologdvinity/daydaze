@@ -5,10 +5,17 @@
 // restores the old view on close.
 
 import { activeTier, allows, byTier } from "../../game/age.ts";
-import { ElPanel } from "../city/ElPanel.tsx";
 import { ClubNightTicker } from "./EventCalendar.tsx";
 import { InviteButton } from "../net/InviteButton.tsx";
-import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  Fragment,
+  lazy,
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   FIGURES,
   PIERCING_SPOTS,
@@ -70,18 +77,11 @@ import { collectionsBook } from "./Collections.tsx";
 import { GameMenu, closeMenu } from "./GameMenu.tsx";
 import type { CrimeSave } from "../../game/crime/record.ts";
 import type { Caught } from "./ShopliftPanel.tsx";
-import { FoodVendorPanel } from "../city/FoodVendorPanel.tsx";
 import { VendingPanel } from "../vending/VendingPanel.tsx";
-import { BusPanel } from "../city/BusPanel.tsx";
 import { TaxiPanel } from "../city/TaxiPanel.tsx";
 import { driverSays, taxiRide } from "../city/taxiStore.ts";
 import { fareFor, planRoute, routeLength } from "../../game/city/taxi.ts";
 import { FuelStop } from "../city/FuelStop.tsx";
-import { ParkPanel } from "../city/ParkPanel.tsx";
-import { BandPanel } from "../city/BandPanel.tsx";
-import { VolleyStop } from "../city/VolleyStop.tsx";
-import { DealershipPanel } from "../city/DealershipPanel.tsx";
-import { RecordPlayer, RecordsPanel } from "../city/RecordsPanel.tsx";
 import type { ParkedCar } from "../../game/city/drive.ts";
 import type { RoomId, Spawn } from "../../game/rooms.ts";
 import {
@@ -98,8 +98,6 @@ import type { MinigameId } from "../../game/hotspots.ts";
 import { VIEWS, type View } from "../world/CameraRig.tsx";
 import { clearCityMapRequest, useCityMapRequest } from "./cityMapRequest.ts";
 import { RoomPanel } from "./RoomPanels.tsx";
-import { PiercingPanel } from "./PiercingPanel.tsx";
-import { DanceOffHud } from "../rooms/pulse/DanceOffHud.tsx";
 import { ShopPanel } from "./ShopPanel.tsx";
 import { setSkates, skates, SKATE_ROOMS } from "../world/skates.ts";
 import { openShop } from "./shopRequest.ts";
@@ -107,7 +105,6 @@ import { takePhoto } from "../world/Photo.tsx";
 import { STORES as GALLERIA_STORES } from "../../game/galleria.ts";
 import { CocktailIcon, RideIcon } from "./icons.tsx";
 import { DancePicker, HoldPicker } from "./DancePicker.tsx";
-import { CityMap } from "./CityMap.tsx";
 import type { ChallengeSave } from "../../game/challenges.ts";
 import { FireworksTicker } from "../city/FireworksTicker.tsx";
 import { PRIDE_CLUBS } from "../../game/prideNight.ts";
@@ -122,12 +119,59 @@ const PRONOUN_CHIPS = [
 import { seatsIn } from "../../game/seats.ts";
 import { seatRequest } from "../world/Seats.tsx";
 import { NEIGHBORHOOD_NAMES, useNeighborhood } from "../city/here.ts";
-import { DeliveryApp } from "./phone/DeliveryApp.tsx";
 import { FoodHud } from "./phone/FoodHud.tsx";
 import { Chips, Segmented, Slider, Swatches, Tiles } from "./controls.tsx";
 import { VenueGames } from "./Minigames.tsx";
 import { friends } from "../net/friends.ts";
 import { ONLINE } from "../net/online.ts";
+
+// Panels only some rooms show, loaded with first use so the first load stays
+// small; each renders inside a Suspense that shows nothing meanwhile.
+const ElPanel = lazy(() =>
+  import("../city/ElPanel.tsx").then((m) => ({ default: m.ElPanel })),
+);
+const VolleyStop = lazy(() =>
+  import("../city/VolleyStop.tsx").then((m) => ({ default: m.VolleyStop })),
+);
+const ParkPanel = lazy(() =>
+  import("../city/ParkPanel.tsx").then((m) => ({ default: m.ParkPanel })),
+);
+const BandPanel = lazy(() =>
+  import("../city/BandPanel.tsx").then((m) => ({ default: m.BandPanel })),
+);
+const BusPanel = lazy(() =>
+  import("../city/BusPanel.tsx").then((m) => ({ default: m.BusPanel })),
+);
+const FoodVendorPanel = lazy(() =>
+  import("../city/FoodVendorPanel.tsx").then((m) => ({
+    default: m.FoodVendorPanel,
+  })),
+);
+const DealershipPanel = lazy(() =>
+  import("../city/DealershipPanel.tsx").then((m) => ({
+    default: m.DealershipPanel,
+  })),
+);
+const RecordPlayer = lazy(() =>
+  import("../city/RecordsPanel.tsx").then((m) => ({ default: m.RecordPlayer })),
+);
+const RecordsPanel = lazy(() =>
+  import("../city/RecordsPanel.tsx").then((m) => ({ default: m.RecordsPanel })),
+);
+const PiercingPanel = lazy(() =>
+  import("./PiercingPanel.tsx").then((m) => ({ default: m.PiercingPanel })),
+);
+const DanceOffHud = lazy(() =>
+  import("../rooms/pulse/DanceOffHud.tsx").then((m) => ({
+    default: m.DanceOffHud,
+  })),
+);
+const CityMap = lazy(() =>
+  import("./CityMap.tsx").then((m) => ({ default: m.CityMap })),
+);
+const DeliveryApp = lazy(() =>
+  import("./phone/DeliveryApp.tsx").then((m) => ({ default: m.DeliveryApp })),
+);
 
 // Sit and lean need furniture, so the player only picks these.
 const PLAYER_MOODS: readonly { id: Mood; label: string }[] = [
@@ -904,7 +948,11 @@ export function Overlay({
         </p>
       </header>
 
-      {phone && <DeliveryApp onClose={() => setPhone(false)} />}
+      {phone && (
+        <Suspense fallback={null}>
+          <DeliveryApp onClose={() => setPhone(false)} />
+        </Suspense>
+      )}
       <FoodHud />
 
       <Dressing open={panelOpen} onOpenChange={setPanelOpen}>
@@ -935,54 +983,60 @@ export function Overlay({
       />
       <RoomPanel room={room} />
       {room === "city" && <FuelStop coins={coins} onSpend={onSpend} />}
-      {room === "city" && <VolleyStop />}
-      {room === "city" && <ParkPanel />}
-      {room === "city" && <BandPanel />}
-      {room === "city" && <BusPanel />}
-      {room === "city" && <FoodVendorPanel coins={coins} onSpend={onSpend} />}
+      {room === "city" && (
+        <Suspense fallback={null}>
+          <VolleyStop />
+          <ParkPanel />
+          <BandPanel />
+          <BusPanel />
+          <FoodVendorPanel coins={coins} onSpend={onSpend} />
+        </Suspense>
+      )}
       <VendingPanel coins={coins} onSpend={onSpend} />
-      {room === "vinyl-vault" && (
-        <RecordsPanel coins={coins} records={records} onBuy={onBuyRecord} />
-      )}
-      {room === "dealership" && (
-        <DealershipPanel coins={coins} garage={garage} onBuy={onBuyCar} />
-      )}
-      {room === "piercing" && (
-        <PiercingPanel
-          look={look}
-          setLook={setLook}
-          wardrobe={wardrobe}
-          onBuy={onBuy}
-        />
-      )}
-      {room === "pulse" && <DanceOffHud dancing={mood === "dance"} />}
+      <Suspense fallback={null}>
+        {room === "vinyl-vault" && (
+          <RecordsPanel coins={coins} records={records} onBuy={onBuyRecord} />
+        )}
+        {room === "dealership" && (
+          <DealershipPanel coins={coins} garage={garage} onBuy={onBuyCar} />
+        )}
+        {room === "piercing" && (
+          <PiercingPanel
+            look={look}
+            setLook={setLook}
+            wardrobe={wardrobe}
+            onBuy={onBuy}
+          />
+        )}
+        {room === "pulse" && <DanceOffHud dancing={mood === "dance"} />}
 
-      {mapOpen && room === "city" && (
-        <CityMap
-          onGo={(spawn) => {
-            setMapOpen(false);
-            onCityTravel(spawn);
-          }}
-          onClose={() => setMapOpen(false)}
-          challenges={challenges}
-        />
-      )}
-      {taxi.phase === "choosing" && room === "city" && (
-        <CityMap
-          fareTo={(spawn) =>
-            fareFor(routeLength(planRoute(taxi.from, spawn.position)))
-          }
-          onGo={(spawn) => {
-            const fare = fareFor(
-              routeLength(planRoute(taxi.from, spawn.position)),
-            );
-            if (onSpend(fare)) taxiRide.set({ fare, request: { go: spawn } });
-            else driverSays("action-leaving-without-paying");
-          }}
-          onClose={() => taxiRide.set({ request: "cancel" })}
-          challenges={challenges}
-        />
-      )}
+        {mapOpen && room === "city" && (
+          <CityMap
+            onGo={(spawn) => {
+              setMapOpen(false);
+              onCityTravel(spawn);
+            }}
+            onClose={() => setMapOpen(false)}
+            challenges={challenges}
+          />
+        )}
+        {taxi.phase === "choosing" && room === "city" && (
+          <CityMap
+            fareTo={(spawn) =>
+              fareFor(routeLength(planRoute(taxi.from, spawn.position)))
+            }
+            onGo={(spawn) => {
+              const fare = fareFor(
+                routeLength(planRoute(taxi.from, spawn.position)),
+              );
+              if (onSpend(fare)) taxiRide.set({ fare, request: { go: spawn } });
+              else driverSays("action-leaving-without-paying");
+            }}
+            onClose={() => taxiRide.set({ request: "cancel" })}
+            challenges={challenges}
+          />
+        )}
+      </Suspense>
       <div className="dock">
         {mood === "dance" && <DancePicker move={dance} onPick={setDance} />}
         {(mood === "pose" || mood === "sit") && (
@@ -993,7 +1047,11 @@ export function Overlay({
           />
         )}
         <div className="dock-actions" role="group" aria-label="Room actions">
-          {room === "city" && <ElPanel />}
+          {room === "city" && (
+            <Suspense fallback={null}>
+              <ElPanel />
+            </Suspense>
+          )}
           {room === "city" && <TaxiPanel />}
           {room === "city" && !inCab && (
             <button
@@ -1004,7 +1062,11 @@ export function Overlay({
               Drive your car
             </button>
           )}
-          {room === "apartment" && <RecordPlayer records={records} />}
+          {room === "apartment" && (
+            <Suspense fallback={null}>
+              <RecordPlayer records={records} />
+            </Suspense>
+          )}
           {!inCab && (seatsIn(room).length > 0 || room === "apartment") && (
             <button
               type="button"
