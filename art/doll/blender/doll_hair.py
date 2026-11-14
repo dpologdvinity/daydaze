@@ -27,6 +27,25 @@ PROXY = {
 }
 TEXTURE = {k: v.replace(".mhclo", "_diffuse.png") for k, v in PROXY.items()}
 
+# strand-card styles: length (m), wave (slow S), curl (tight spirals),
+# volume (lift off the scalp); ids match HAIR_STYLES in src/game/look.ts
+STRAND_STYLES = {
+    "waves": dict(length=0.56, count=456, wave=0.01),
+    "long-straight": dict(length=0.6, count=468, wave=0.002),
+    "long-curly": dict(length=0.5, count=492, curl=0.022, volume=1.8),
+    "mid-straight": dict(length=0.36, count=420, wave=0.002),
+    "mid-wavy": dict(length=0.36, count=420, wave=0.012),
+    "mid-curly": dict(length=0.3, count=456, curl=0.022, volume=1.9),
+    "bob": dict(length=0.24, count=390, wave=0.002, volume=1.2),
+    "pixie": dict(length=0.11, count=360, wave=0.004, volume=1.1),
+    # waist-skimming waves, a choppy layered shag, and short springy coils
+    "mermaid": dict(length=0.76, count=480, wave=0.024),
+    "shag": dict(length=0.27, count=432, wave=0.009, volume=1.5),
+    "coils": dict(length=0.2, count=468, curl=0.016, volume=1.7),
+    # a defined twist-out: loose spirals with lift, to the shoulder
+    "twist-out": dict(length=0.3, count=480, curl=0.03, wave=0.02, volume=2.2),
+}
+
 
 def swing(ctx, ob, start):
     """Moves weight from the head to the pony bone for strands hanging
@@ -674,6 +693,39 @@ def pigtails(ctx, strand_mat, cap_mat):
     return out
 
 
+# the strand-card styles tied with a band (built in strand_card_styles)
+TIED = ("ponytail", "low-pony", "pigtails")
+
+
+def strand_card_styles(ctx, names):
+    """The strand-card styles among `names` (STRAND_STYLES ids and TIED),
+    sharing one strand material and one cap material."""
+    strand = strands.material("hair_strands")
+    combed = strands.cap_material("hair_cap")
+    out = []
+    for name in names:
+        if name in STRAND_STYLES:
+            out.append(strand_style(ctx, f"Hair_{name}", strand, combed, seed=len(name), **STRAND_STYLES[name]))
+        elif name == "ponytail":
+            # a high ponytail: slicked back to a band at the crown's back, the
+            # tail on the pony bone so it swings
+            pony = strand_style(
+                ctx, "Hair_ponytail", strand, combed, seed=9, length=0.42, count=420, wave=0.004, tie=(0.085, 0.045)
+            )
+            swing(ctx, pony, ctx.JB["head"] + np.array([0, 0.08, 0.05]))
+            out.append(pony)
+        elif name == "low-pony":
+            # a low ponytail, tied at the nape
+            low = strand_style(
+                ctx, "Hair_low-pony", strand, combed, seed=11, length=0.38, count=420, wave=0.006, tie=(0.075, -0.045)
+            )
+            swing(ctx, low, ctx.JB["head"] + np.array([0, 0.07, -0.05]))
+            out.append(low)
+        elif name == "pigtails":
+            out.append(pigtails(ctx, strand, combed))
+    return out
+
+
 def build(ctx):
     import doll_outfits
 
@@ -682,6 +734,15 @@ def build(ctx):
     if only == ["packs"]:
         # HAIR_ONLY=packs builds just the pack styles (PACK_ONLY=a,b narrows it)
         out = pack_hair.build(ctx)
+        for ob in out:
+            shade_strands(ctx, ob)
+        return out
+    if only == ["strands"]:
+        # HAIR_ONLY=strands builds every strand-card style
+        only = [*STRAND_STYLES, *TIED]
+    if only and all(n in STRAND_STYLES or n in TIED for n in only):
+        # HAIR_ONLY=waves,ponytail builds just those strand-card styles
+        out = strand_card_styles(ctx, only)
         for ob in out:
             shade_strands(ctx, ob)
         return out
@@ -707,41 +768,7 @@ def build(ctx):
         puffs(ctx, solid),
     ]
     out += [hijab(ctx, solid), head_wrap(ctx, solid), turban(ctx, solid)]
-    strand = strands.material("hair_strands")
-    combed = strands.cap_material("hair_cap")
-    # strand-card styles: length (m), wave (slow S), curl (tight spirals),
-    # volume (lift off the scalp); ids match HAIR_STYLES in src/game/look.ts
-    for name, style in {
-        "waves": dict(length=0.56, count=456, wave=0.01),
-        "long-straight": dict(length=0.6, count=468, wave=0.002),
-        "long-curly": dict(length=0.5, count=492, curl=0.022, volume=1.8),
-        "mid-straight": dict(length=0.36, count=420, wave=0.002),
-        "mid-wavy": dict(length=0.36, count=420, wave=0.012),
-        "mid-curly": dict(length=0.3, count=456, curl=0.022, volume=1.9),
-        "bob": dict(length=0.24, count=390, wave=0.002, volume=1.2),
-        "pixie": dict(length=0.11, count=360, wave=0.004, volume=1.1),
-        # waist-skimming waves, a choppy layered shag, and short springy coils
-        "mermaid": dict(length=0.76, count=480, wave=0.024),
-        "shag": dict(length=0.27, count=432, wave=0.009, volume=1.5),
-        "coils": dict(length=0.2, count=468, curl=0.016, volume=1.7),
-        # a defined twist-out: loose spirals with lift, to the shoulder
-        "twist-out": dict(length=0.3, count=480, curl=0.03, wave=0.02, volume=2.2),
-    }.items():
-        out.append(strand_style(ctx, f"Hair_{name}", strand, combed, seed=len(name), **style))
-    # a high ponytail: slicked back to a band at the crown's back, the tail
-    # on the pony bone so it swings
-    pony = strand_style(
-        ctx, "Hair_ponytail", strand, combed, seed=9, length=0.42, count=420, wave=0.004, tie=(0.085, 0.045)
-    )
-    swing(ctx, pony, ctx.JB["head"] + np.array([0, 0.08, 0.05]))
-    out.append(pony)
-    # a low ponytail, tied at the nape
-    low = strand_style(
-        ctx, "Hair_low-pony", strand, combed, seed=11, length=0.38, count=420, wave=0.006, tie=(0.075, -0.045)
-    )
-    swing(ctx, low, ctx.JB["head"] + np.array([0, 0.07, -0.05]))
-    out.append(low)
-    out.append(pigtails(ctx, strand, combed))
+    out += strand_card_styles(ctx, [*STRAND_STYLES, *TIED])
     # close-cropped styles. bald has no model (the client wears none).
     # buzz: the combed cap alone, a few millimetres of fuzz
     buzz = ubc_hair(ctx, "Hair_buzz", "Hair_BuzzedFemale.gltf" if os.environ.get("DOLL_SEX", "female") == "female" else "Hair_Buzzed.gltf", solid)
