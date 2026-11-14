@@ -308,7 +308,7 @@ export function Fitout({ palette }: { palette: FoodPalette }) {
  * not here set a donut. The Filipino rooms use the Meshy dishes. */
 const TABLE_FOOD: Partial<Record<RoomId, string | readonly string[]>> = {
   "filipino-joint": ["adobo", "sinigang", "lumpia"],
-  "halo-halo-cafe": ["halo-halo", "leche-flan", "buko-pandan"],
+  "halo-halo-cafe": ["halo-halo", "green-mango", "buko-pandan"],
   "ube-bakery": ["ensaymada", "bibingka", "puto-bumbong"],
   bistro: "food-Steak",
 };

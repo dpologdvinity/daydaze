@@ -20,12 +20,13 @@ import { ROOMS } from "../../game/rooms.ts";
 import { useReducedMotion } from "../motion.ts";
 import { KamayanNpcs } from "./kamayan/Npcs.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
-import { canvasTex, hdr } from "./shared/materials.ts";
+import { GOLD, canvasTex, hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { Batch } from "./shared/batch.ts";
 import { bunting, plant, poster } from "./shared/details.ts";
 import { Dishes, type DishAt } from "./shared/Dishes.tsx";
+import { ImagePiece } from "./shared/ImagePiece.tsx";
 import { PropSet } from "./shared/Prop.tsx";
 import { groundMaps, surface } from "../city/worldTexture.ts";
 
@@ -445,6 +446,17 @@ function Shell() {
           {woven}
         </mesh>
       ))}
+      {/* the boodle night poster on the east wall, above the sofa corner */}
+      <Suspense fallback={null}>
+        <ImagePiece
+          art="dd-boodle-night"
+          at={[FLOOR_BOUNDS.x1 - 0.04, 2.4, 1.7]}
+          ry={-Math.PI / 2}
+          maxW={1.1}
+          maxH={1.5}
+          frame={GOLD}
+        />
+      </Suspense>
       {/* capiz-shell windows down the north wall, lit from outside */}
       {[-4.5, -1.5, 1.5, 4.5].map((x) => (
         <mesh key={x} position={[x, 2, FLOOR_BOUNDS.z0 + 0.02]}>
