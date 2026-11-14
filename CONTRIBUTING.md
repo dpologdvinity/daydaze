@@ -36,7 +36,7 @@ every push and pull request to `main` and fails fast.
 | `npm test` | unit tests (Node's test runner) |
 | `npm run test:coverage` | the same, with a coverage report in `coverage/` |
 | `npm run build` | the production bundle in `dist/` |
-| `npm run verify` | lint, tests, types, format and build together |
+| `npm run verify` | lint, tests, types, format, build and the perf budget together |
 
 Browser and server suites are slower; run the parts you touched:
 

@@ -65,7 +65,7 @@ npm run lint              # ESLint (TypeScript and React hooks rules)
 npm test                  # unit tests (game rules, protocol, server)
 npm run test:coverage     # the same, with a coverage report in coverage/
 npm run typecheck         # strict TypeScript, including the Worker
-npm run verify            # lint, tests, typecheck, format check and build
+npm run verify            # lint, tests, typecheck, format check, build, perf budget
 npm run test:e2e:client   # Playwright browser tests (slow: software WebGL)
 npm run test:e2e:online   # two browsers against a local Worker
 npm run test:e2e:sw       # the service worker on a production build
