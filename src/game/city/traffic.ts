@@ -505,7 +505,8 @@ function sAlong(lane: Lane, p: Vec2): number {
   return Math.hypot(p[0] - start[0], p[1] - start[1]);
 }
 
-/** Meters up the lane a hailed cab starts: close enough to arrive in seconds,
+/** Meters up the lane a hailed cab starts (never inside the junction curve):
+ * close enough to arrive in seconds,
  * even on a slow device, yet seen rolling in. */
 const CAB_RUN_IN = 25;
 
@@ -529,7 +530,7 @@ export function cabAtCurb(id: number, curb: Vec2, rider: Vec2): TrafficCar {
     kind: "car",
     body: "taxi",
     lane,
-    s: Math.max(0, s - CAB_RUN_IN),
+    s: Math.max(TURN, s - CAB_RUN_IN),
     speed: 0,
     color: "#ffd84f",
     turns: 0,

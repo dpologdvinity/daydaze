@@ -189,6 +189,29 @@ test("a hailed cab comes from just up the street, not a block away", () => {
   assert.ok(back > 0 && back <= 25, `starts ${back} m back`);
 });
 
+test("a cab hailed by a corner starts clear of the junction", () => {
+  // a long edge, hailed a meter from either end, from either side
+  const e = EDGES.find((edge) => edge.length > 60);
+  assert.ok(e);
+  const side: [number, number] = [-e.dir[1] * 12, e.dir[0] * 12];
+  for (const end of [e.from, e.to]) {
+    const curb: [number, number] = [
+      end[0] + ((e.to[0] - e.from[0]) / e.length) * (end === e.from ? 1 : -1),
+      end[1] + ((e.to[1] - e.from[1]) / e.length) * (end === e.from ? 1 : -1),
+    ];
+    for (const sign of [1, -1]) {
+      const rider: [number, number] = [
+        curb[0] + sign * side[0],
+        curb[1] + sign * side[1],
+      ];
+      const cab = cabAtCurb(904, curb, rider);
+      // the junction curve takes the lane's first 6 m (TURN)
+      assert.ok(cab.s >= 6, `starts ${cab.s} m along, in the junction`);
+      assert.ok((cab.trip?.stop.s ?? 0) > cab.s, "never rolls in");
+    }
+  }
+});
+
 test("the cab drives to a faraway place along the streets and stops there", () => {
   const t = createTraffic(0);
   const cab = cabAtCurb(901, [-30, 0], [-30, 12]);
