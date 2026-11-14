@@ -30,6 +30,32 @@ Not intended for children.
 
 All music and sound is synthesized in the browser. NPC lines are handwritten.
 
+## Screenshots
+
+Taken on GitHub's runners (CPU-rendered, low tier) from `main` on
+2026-11-14 with `gh workflow run screenshots.yml`; every shot is listed in
+`scripts/screenshots.ts`, and more live in [`docs/screenshots/`](docs/screenshots/).
+
+| | |
+| --- | --- |
+| ![Downtown from above: blocks of brick and glass towers](docs/screenshots/city-day-overview.png) | ![Beachside: a custard stand on the boardwalk](docs/screenshots/city-boardwalk.png) |
+| The city from above | The boardwalk at Beachside |
+| ![The Amusement Park at night: coaster, carousel and Ferris wheel in neon](docs/screenshots/amusement-park-coaster.png) | ![Karaoke Loft: singers on stage and the songbook](docs/screenshots/karaoke-songbook.png) |
+| The Amusement Park | Karaoke Loft and its rhythm game |
+| ![The Water Park: the dive tower, loungers and umbrellas](docs/screenshots/water-park-slide.png) | ![Uptown Aquarium: the seal show](docs/screenshots/aquarium-reefwall.png) |
+| The Water Park | Uptown Aquarium's seal show |
+| ![Your apartment: furniture placed on the decorating grid](docs/screenshots/apartment.png) | ![The Speedway: racing the pack on lap one](docs/screenshots/speedway-racing.png) |
+| Decorating your apartment | The Speedway |
+| ![The action dock at the El stairs with More actions open](docs/screenshots/hud-el-more.png) | ![Zoomed in: a front portrait of the doll's face](docs/screenshots/zoom-room.png) |
+| One action pill and a More menu | Zoom in for a portrait |
+
+Latest progress (2026-11-14): `main`'s CI is green again. The first load is
+568 KB of its 600 KB budget, and `npm run verify` now enforces it. Keyboard and
+portrait zoom shipped, and the dock now folds its actions into one pill. The
+running log is
+[`docs/plans/2026-10-23-next-steps.md`](docs/plans/2026-10-23-next-steps.md);
+next up is [`docs/plans/2026-11-14-next.md`](docs/plans/2026-11-14-next.md).
+
 ## Documentation
 
 - [ARCHITECTURE.md](ARCHITECTURE.md): how the code is laid out and fits
