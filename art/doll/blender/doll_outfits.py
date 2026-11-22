@@ -161,18 +161,20 @@ def taper(ob, top, bottom, squeeze):
     sync_keys(ob, co)
 
 
-def hem_out(ob, grow, band, reach=0.26):
-    """Lets a jacket's hem hang `grow` metres clear of the body, fading out
-    over the `band` metres above it. The MakeHuman jackets end at the hip on
-    the skin; trousers, a skirt or loose cargos worn under one are wider
-    there and poke through the hem in teeth. Sleeves (past `reach` from the
-    body's middle) stay as they are."""
+def inflate(ob, body, amount):
+    """Moves every vertex of `ob` `amount` metres further out from the skin
+    (along the body's own normal at the nearest point), for cloth that fits
+    closer to the skin than the layers under it are thick: the MakeHuman
+    puffer jacket hugs the chest and ends on the hip, and a corset, cargos
+    or a skirt worn under it (skin-tight shells a few millimeters proud of
+    the skin, wider still on a heavier figure) poke through its hem and chest
+    in teeth and patches."""
+    skin = BVHTree.FromObject(body, bpy.context.evaluated_depsgraph_get())
     co = np.array([v.co[:] for v in ob.data.vertices])
-    torso = np.abs(co[:, 0]) < reach
-    t = np.clip(1 - (co[:, 2] - co[:, 2].min()) / band, 0, 1) * torso
-    away = co[:, :2] - [0, co[torso, 1].mean()]
-    away /= np.maximum(np.linalg.norm(away, axis=1, keepdims=True), 1e-6)
-    co[:, :2] += away * (grow * t)[:, None]
+    for i, p in enumerate(co):
+        hit, normal, _f, _d = skin.find_nearest(Vector(p))
+        if hit is not None:
+            co[i] = p + np.array(normal) * amount
     ob.data.vertices.foreach_set("co", co.ravel())
     sync_keys(ob, co)
 
@@ -529,7 +531,7 @@ def build(ctx, body, body_src):
             # the open jacket alone: the shirt glimpsed inside it would fight
             # whatever top is worn under
             islands_kept(ob, 1)
-            hem_out(ob, 0.024, 0.08)
+            inflate(ob, body, 0.025)
 
     # satin bandeau and mini: a strapless satin bodice on the tights helper, a
     # fitted skirt from the skirt helper ending mid-thigh
