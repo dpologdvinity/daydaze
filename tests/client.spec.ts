@@ -1879,12 +1879,12 @@ test("Thrift Temple: buy a vintage dye and wear it", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test("Thrift Temple: pocket a dye while the clerk looks away", async ({
+test("Thrift Temple: pocketing a dye starts a pursuit that can end in jail", async ({
   page,
 }) => {
   test.setTimeout(330_000);
   const errors = collectErrors(page);
-  await page.goto(`${LOW}&room=thrift-temple`);
+  await page.goto(`${LOW}&room=thrift-temple&debug=1`);
   await page
     .getByRole("button", { name: "Shop at Thrift Temple" })
     .click({ timeout: 150_000 });
@@ -1906,6 +1906,18 @@ test("Thrift Temple: pocket a dye while the clerk looks away", async ({
       page.evaluate(() => localStorage.getItem("daydaze-save-v1") ?? ""),
     )
     .toContain('"stolen":{"#6b7a2a":"thrift-store"}');
+  await expect(
+    page.getByRole("status", { name: "Wanted level" }),
+  ).toContainText("2 of 5 stars");
+  await shop.getByRole("button", { name: "Close", exact: true }).click();
+  await page.getByRole("button", { name: "Go to City", exact: true }).click();
+  await expect(roomTitle(page)).toHaveText("City Jail, Block C", {
+    timeout: 150_000,
+  });
+  await expect(page.getByRole("timer")).toContainText("Time left:");
+  await expect(page.getByRole("status", { name: "Wanted level" })).toHaveCount(
+    0,
+  );
   expect(errors).toEqual([]);
 });
 
@@ -3858,8 +3870,12 @@ test("jail: the sentence counts down, push-ups shorten it, cards deal a hand, an
     );
   }, SAVE);
   await page.goto(`${VELVET}&debug=1`);
-  await page.getByRole("button", { name: "Go to Jail" }).click();
   await expect(roomTitle(page)).toHaveText("City Jail, Block C");
+  await page.getByRole("button", { name: "Go to City", exact: true }).click();
+  await expect(
+    page.getByText("Finish your sentence or pay bail to leave."),
+  ).toBeVisible();
+
   const clock = page.getByRole("timer");
   // a slow load eats into the sentence, so compare before and after cards
   const left = async () => {
@@ -3877,6 +3893,15 @@ test("jail: the sentence counts down, push-ups shorten it, cards deal a hand, an
   await table.getByRole("button", { name: "Draw" }).click();
   await expect(table.getByRole("status")).toContainText(/guard|win/i);
   await table.getByRole("button", { name: "Fold" }).click();
+  await page
+    .getByRole("button", { name: "Play a rhythm set for time off" })
+    .click();
+  const rhythm = page.getByRole("dialog", { name: "Bassline" });
+  await expect(rhythm).toBeVisible();
+  await rhythm.getByRole("button", { name: "Close Bassline" }).click();
+  await expect(
+    page.getByText("Earn a B or better to take a minute off."),
+  ).toBeVisible();
   await page.getByRole("button", { name: /Use the phone/ }).click();
   await expect(page.getByText(/you have 0/)).toBeVisible();
   await page.reload();

@@ -34,7 +34,8 @@ import { endVisit, homeVisit, listenForHomes } from "./net/home.ts";
 import { chatPrefs } from "./net/chatPrefs.ts";
 import { useCloudSave } from "./net/cloudSave.ts";
 import type { MinigameId } from "../game/hotspots.ts";
-import { isJailed } from "../game/jail/jail.ts";
+import { isJailed, jailAllowsTravel } from "../game/jail/jail.ts";
+import { loadDialogue, pickLine } from "../game/dialogue/pick.ts";
 import { jailAfterArrest } from "../game/police/arrest.ts";
 import {
   encodeSwim,
@@ -103,6 +104,9 @@ import { farmDesk } from "./rooms/farm/farmSession.ts";
 import { floristDesk } from "./rooms/florist/session.ts";
 import { gardenDesk } from "./rooms/garden/gardenSession.ts";
 import { pouchDesk } from "./inventory/pouchDesk.ts";
+import { WantedHud } from "./ui/WantedHud.tsx";
+import { driving, releaseControls } from "./world/driving.ts";
+import { arrestDesk, clearHeat, crime } from "./world/heat.ts";
 import { World } from "./world/World.tsx";
 
 const FADE_MS = 300;
@@ -212,7 +216,11 @@ export function App() {
     preloadLook(loaded.look);
     return loaded;
   });
-  useEffect(() => writeStorage(save), [save]);
+  const latest = useRef(save);
+  useEffect(() => {
+    latest.current = save;
+    writeStorage(save);
+  }, [save]);
   const previousCoins = useRef(save.coins);
   useEffect(() => {
     if (save.coins > previousCoins.current) void playSoundFile("coin");
@@ -258,25 +266,36 @@ export function App() {
     const id = window.setTimeout(() => setNotice(null), 4000);
     return () => window.clearTimeout(id);
   }, [notice]);
-  const travel = useCallback((room: RoomId, spawn: Spawn) => {
-    if (!mayEnter(room, ADULT_OK)) {
-      setNotice(ADULT_NOTICE);
-      return;
-    }
-    if (!mayDive(room, scuba.get().rented)) {
-      setNotice(DIVE_NOTICE);
-      return;
-    }
-    if (traveling.current) return;
-    traveling.current = true;
-    void playSoundFile("door");
-    setFading(true);
-    window.setTimeout(() => {
-      setHere(visit(room, spawn));
-      setFading(false);
-      traveling.current = false;
-    }, FADE_MS);
-  }, []);
+  const travel = useCallback(
+    (room: RoomId, spawn: Spawn, releasing = false) => {
+      if (
+        !releasing &&
+        !jailAllowsTravel(latest.current.jail, Date.now(), room)
+      ) {
+        setNotice("Finish your sentence or pay bail to leave.");
+        return false;
+      }
+      if (!mayEnter(room, ADULT_OK)) {
+        setNotice(ADULT_NOTICE);
+        return false;
+      }
+      if (!mayDive(room, scuba.get().rented)) {
+        setNotice(DIVE_NOTICE);
+        return false;
+      }
+      if (traveling.current) return false;
+      traveling.current = true;
+      void playSoundFile("door");
+      setFading(true);
+      window.setTimeout(() => {
+        setHere(visit(room, spawn));
+        setFading(false);
+        traveling.current = false;
+      }, FADE_MS);
+      return true;
+    },
+    [],
+  );
 
   // following a party leader through a door; a sentence in the cells
   // can't be walked out of that way
@@ -478,6 +497,7 @@ export function App() {
     }));
     setArrest(null);
     if (penalty.kind === "jail") {
+      clearHeat();
       travel("jail", ROOMS.jail.spawn);
     } else {
       setChat({
@@ -489,10 +509,35 @@ export function App() {
       });
     }
   }, [arrest, travel]);
+  useEffect(() => {
+    arrestDesk.onCapture = (jail) => {
+      if (traveling.current) return false;
+      releaseControls();
+      driving.request = "leave";
+      setSave((s) => ({ ...s, jail }));
+      travel("jail", ROOMS.jail.spawn);
+      return true;
+    };
+    return () => {
+      arrestDesk.onCapture = null;
+    };
+  }, [travel]);
+
   // Released players arrive outside the jail, by the gate.
   const release = useCallback(() => {
     setSave((s) => ({ ...s, jail: { endsAt: null } }));
-    travel("city", ROOMS.jail.portals[0].targetSpawn);
+    travel("city", ROOMS.jail.portals[0].targetSpawn, true);
+    void loadDialogue().then(
+      () => {
+        const { text } = pickLine({
+          role: "police",
+          situation: "state-released-from-jail",
+          rng: Math.random,
+        });
+        setChat({ text, at: Date.now() });
+      },
+      () => {},
+    );
   }, [travel]);
   const now = Date.now();
   const [rides, setRides] = useState(0);
@@ -505,11 +550,6 @@ export function App() {
   // a finished sports game pays its grade, and a bonus for a personal best
   const { pending } = prizeDesk.use();
   useEffect(() => prizeDesk.set({ bests: save.bests }), [save.bests]);
-  // the save as of the last render, for grading a prize when one comes in
-  const latest = useRef(save);
-  useEffect(() => {
-    latest.current = save;
-  }, [save]);
   useEffect(() => {
     if (!pending) return;
     const now = Date.now();
@@ -711,6 +751,7 @@ export function App() {
             {notice}
           </p>
         )}
+        <WantedHud inCity={here.room === "city"} />
         <Overlay
           room={here.room}
           roomName={
@@ -750,7 +791,10 @@ export function App() {
             return r;
           }}
           crime={save.crime}
-          onSteal={(id, storeId) => setSave((s) => rewardSteal(s, id, storeId))}
+          onSteal={(id, storeId) => {
+            crime("shoplift");
+            setSave((s) => rewardSteal(s, id, storeId));
+          }}
           onCaught={caught}
           onRide={() => setRides((n) => n + 1)}
           onPlayGame={setGame}
