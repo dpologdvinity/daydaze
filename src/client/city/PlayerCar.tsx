@@ -35,6 +35,7 @@ import {
   type Player,
 } from "../world/PlayerController.tsx";
 import { setData } from "../world/dataset.ts";
+import { reactingNow } from "../world/reaction.ts";
 
 const FALLBACK = ROAD_CARS[0];
 
@@ -131,7 +132,11 @@ export function PlayerCar({
         if (session.current) getOut(session.current);
       } else if (!session.current) {
         if (near) getIn();
-        else {
+        else if (reactingNow()) {
+          // knocked down: the reaction drops every walk target while it plays,
+          // so keep the request until she is back on her feet
+          driving.request = request;
+        } else {
           walkTo(
             player,
             CITY_AREA,
