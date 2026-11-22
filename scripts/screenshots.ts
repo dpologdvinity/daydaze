@@ -2952,6 +2952,25 @@ const SHOTS: {
       });
     },
   },
+  // a 13+ player half an hour in without a bite: the gentle hunger HUD
+  {
+    name: "hungry-hud",
+    query: "room=city",
+    act: async (page) => {
+      await page.evaluate(async (source) => {
+        const mod: unknown = await import(/* @vite-ignore */ source);
+        const tick: unknown =
+          typeof mod === "object" && mod !== null
+            ? Reflect.get(mod, "tickNeeds")
+            : undefined;
+        if (typeof tick !== "function") throw new Error("Missing tickNeeds");
+        Reflect.apply(tick, undefined, [1800]);
+      }, "/src/client/food/store.ts");
+      await expect(
+        page.getByRole("region", { name: "Food and water needs" }),
+      ).toBeVisible();
+    },
+  },
   { name: "point-and-eat-kitchen", query: "room=filipino-joint" },
   { name: "jade-whisk-boba-matcha", query: "room=boba-matcha" },
   { name: "purple-pandesal-ube", query: "room=ube-bakery" },
