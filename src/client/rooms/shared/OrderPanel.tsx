@@ -74,6 +74,12 @@ export function OrderPanel({
           {slip.slow ? ". Slow hours: half pay until tomorrow" : ""}
         </p>
       )}
+      {over && slip && slip.job === session.job && slip.promotion && (
+        <p className="game-call" role="status">
+          Promoted to {slip.promotion}! +{slip.bonus} coins, and every shift
+          pays more now
+        </p>
+      )}
       {!over && (
         <>
           <p className="game-call">
