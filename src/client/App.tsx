@@ -8,11 +8,14 @@ import {
   Suspense,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
 import { recordCaught } from "../game/crime/record.ts";
+import { dayOf } from "../game/challenges.ts";
+import { meet } from "../game/npcMemory.ts";
 import { penaltyFor, type Penalty } from "../game/crime/shoplift.ts";
 import type { BodyShape } from "../game/body.ts";
 import {
@@ -92,6 +95,7 @@ import { claimSet } from "../game/collections.ts";
 import { Onboarding } from "./ui/Onboarding.tsx";
 import { postPrize, prizeDesk } from "./ui/prizeDesk.ts";
 import { shiftDesk } from "./ui/shiftDesk.ts";
+import { npcDesk } from "./ui/npcDesk.ts";
 import { petDesk } from "./rooms/zoo/petDesk.ts";
 import { pottery } from "./rooms/pottery/session.ts";
 import { farmDesk } from "./rooms/farm/farmSession.ts";
@@ -535,6 +539,23 @@ export function App() {
       slip: { job, coins: r.coins, xp: r.xp, clean: r.clean, slow: r.slow },
     });
   }, [shiftPending]);
+  // recurring NPCs read their memories of the player from the desk (a layout
+  // effect, so it is filled before any NPC's greeting effect runs); each
+  // meeting they report is folded into the save (once per day per NPC)
+  useLayoutEffect(
+    () => npcDesk.set({ memories: save.npcs, player: save.name }),
+    [save.npcs, save.name],
+  );
+  const metNpcs = npcDesk.use().met;
+  useEffect(() => {
+    if (metNpcs.length === 0) return;
+    const day = dayOf(Date.now());
+    setSave((s) => {
+      const npcs = metNpcs.reduce((all, key) => meet(all, key, day), s.npcs);
+      return npcs === s.npcs ? s : { ...s, npcs };
+    });
+    npcDesk.set({ met: [] });
+  }, [metNpcs]);
   // opening the game on a new day counts toward the streak (and again if the
   // tab stays open past midnight); a milestone pays and celebrates
   useEffect(() => {

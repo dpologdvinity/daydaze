@@ -4,6 +4,8 @@ import { expect, test, type Page } from "@playwright/test";
 import { DEALER_AT } from "../src/game/city/dealer.ts";
 import { GAS_STATIONS, counterOf } from "../src/game/city/gasStations.ts";
 import { BUS_STOPS } from "../src/game/city/transit.ts";
+import { coatCheckBank } from "../src/game/dialogue/coat-check.ts";
+import { fillPlaceholders } from "../src/game/dialogue/pick.ts";
 import { SONGS } from "../src/game/karaokeSongs.ts";
 import { dockAction } from "./dock.ts";
 import { recordTestMap } from "./test-map.ts";
@@ -32,6 +34,7 @@ const SAVE = "daydaze-save-v1";
 /** The fields of the save that the tests read back; every one is optional. */
 interface SavedGame {
   coins?: number;
+  npcs?: Record<string, unknown>;
   garage?: string[];
   records?: string[];
   bouquet?: unknown;
@@ -5100,5 +5103,34 @@ test("closet radio groups support arrow-key navigation and single-tab roving foc
   await page.keyboard.press("Tab");
   await expect(brows.locator('button[role="radio"]:focus')).toHaveCount(0);
 
+  expect(errors).toEqual([]);
+});
+
+test("an NPC who knows you greets you as someone back from afar, by name, and remembers today", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  const today = Math.floor(Date.now() / 86_400_000);
+  await seedSave(page, {
+    name: "Dana",
+    npcs: { "piercing:vix": { visits: 6, last: today - 20 } },
+  });
+  await page.goto(`${LOW}&room=piercing`);
+  // her greeting is one of her "back after a long time" lines, with the name filled in
+  const returning = (coatCheckBank["greeting-returning"] ?? []).map((entry) =>
+    fillPlaceholders(typeof entry === "string" ? entry : entry.text, {
+      name: "Dana",
+    }),
+  );
+  expect(returning.length).toBeGreaterThanOrEqual(10);
+  const bubble = page.locator(".bubble");
+  await expect(bubble).toBeVisible({ timeout: 150_000 });
+  expect(returning).toContain(
+    ((await bubble.textContent()) ?? "").replace(/^Vix: /, ""),
+  );
+  // the meeting is saved: one more visit, last seen today
+  await expect
+    .poll(async () => (await readSave(page)).npcs?.["piercing:vix"])
+    .toEqual({ visits: 7, last: today });
   expect(errors).toEqual([]);
 });
