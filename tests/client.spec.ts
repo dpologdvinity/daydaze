@@ -5062,6 +5062,60 @@ test("the streak milestone card keeps focus on its button until it is dismissed"
   await expect(card).toHaveCount(0);
 });
 
+/** Opens the streak calendar a minute before midnight with Close focused,
+ * then runs the clock past midnight: the next check-in reaches day 3 and
+ * its milestone card opens over the calendar. */
+async function milestoneOverCalendar(page: Page) {
+  const evening = new Date("2026-01-10T23:59:00Z");
+  const today = Math.floor(evening.getTime() / 86_400_000);
+  // today already counted (day 2), so loading the game celebrates nothing
+  await seedSave(page, {
+    streak: {
+      count: 2,
+      best: 2,
+      last: today,
+      days: [today - 1, today],
+      frozen: [],
+      freezeWeek: -1,
+    },
+  });
+  await page.clock.install({ time: evening });
+  await page.goto(VELVET);
+  await (await fromMenu(page, "Daily streak")).click();
+  const calendar = page.getByRole("dialog", { name: "Daily streak" });
+  const close = calendar.getByRole("button", { name: "Close" });
+  await close.focus();
+  await page.clock.fastForward(90_000);
+  const card = page.getByRole("dialog", { name: "Streak milestone" });
+  await expect(
+    card.getByRole("button", { name: "Keep it burning" }),
+  ).toBeFocused();
+  return { calendar, close, card };
+}
+
+test("dismissing a milestone card over the streak calendar gives focus back to Close", async ({
+  page,
+}) => {
+  test.setTimeout(300_000);
+  const { close, card } = await milestoneOverCalendar(page);
+  await card.getByRole("button", { name: "Keep it burning" }).click();
+  await expect(card).toHaveCount(0);
+  await expect(close).toBeFocused();
+});
+
+test("Escape over a milestone card and the streak calendar closes both and focuses Menu", async ({
+  page,
+}) => {
+  test.setTimeout(300_000);
+  const { calendar, card } = await milestoneOverCalendar(page);
+  await page.keyboard.press("Escape");
+  await expect(card).toHaveCount(0);
+  await expect(calendar).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Menu", exact: true }),
+  ).toBeFocused();
+});
+
 test("closet radio groups support arrow-key navigation and single-tab roving focus", async ({
   page,
 }) => {
