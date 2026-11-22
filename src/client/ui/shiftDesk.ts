@@ -10,6 +10,10 @@ export type PaySlip = {
   xp: number;
   clean: boolean;
   slow: boolean;
+  /** "Kitchen · Sous chef" when this shift earned a promotion, else null. */
+  promotion: string | null;
+  /** The promotion's bonus coins, already inside `coins`. */
+  bonus: number;
 };
 
 export const shiftDesk = createStore<{
