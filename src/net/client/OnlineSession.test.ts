@@ -77,10 +77,14 @@ const sentBy = (socket: FakeSocket): ClientMessage[] =>
   });
 const serve = (socket: FakeSocket, message: ServerMessage) =>
   socket.receive(encodeServerMessage(message));
-const snapshot = (entities: EntityDelta[] = []): ServerMessage => ({
+const snapshot = (
+  entities: EntityDelta[] = [],
+  time?: number,
+): ServerMessage => ({
   type: "snapshot",
   roomId: "plaza",
   entities,
+  ...(time !== undefined && { time }),
 });
 const entity = (x: number, timestamp = 0) => ({
   id: other.id,
@@ -602,7 +606,7 @@ test("a snapshot's server time puts the shared wall clock on the server's", asyn
   socket.open();
   assert.equal(clockSynced(), false);
   // the session's own clock reads 0; the server is a minute ahead of it
-  serve(socket, { ...snapshot(), time: 60_000 });
+  serve(socket, snapshot([], 60_000));
   await join;
   assert.equal(clockSynced(), true);
   assert.ok(Math.abs(wallSeconds() * 1000 - Date.now() - 60_000) < 100);
