@@ -1296,6 +1296,41 @@ const SHOTS: {
       await page.waitForTimeout(3_000);
     },
   })),
+  // trivia night: the quiz host and the glowing pad that opens the hosted round
+  ...(
+    [
+      ["skate-diner", "1,3,8,4.8,0.8,3.4"],
+      ["wine-bar", "0,2.8,4.6,-5.3,0.8,1.2"],
+    ] as const
+  ).map(([room, cam]) => ({
+    name: `trivia-night-${room}`,
+    query: `room=${room}&night=trivia-night&quality=low&time=23:30&cam=${cam}`,
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+    },
+  })),
+  {
+    // trivia night: the hosted round open, the host's welcome and a first answer
+    name: "trivia-night-round",
+    query: "room=skate-diner&night=trivia-night&quality=low&time=23:30",
+    act: async (page: Page) => {
+      await page
+        .getByRole("button", { name: "Play Trivia Night with the host" })
+        .click();
+      const dialog = page.getByRole("dialog", { name: "Trivia Night" });
+      await expect(dialog).toBeVisible({ timeout: 120_000 });
+      await dialog.getByRole("button", { name: "Play" }).click();
+      await dialog.locator(".tt-answer").first().click();
+      await expect(
+        dialog.locator('.tt-answer[data-state="right"]'),
+      ).toBeVisible();
+    },
+  },
   // the same nights from further back: the whole hall, and the whole course
   ...(
     [

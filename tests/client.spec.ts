@@ -3554,6 +3554,31 @@ test("Throwback Trivia: answer a question and the right one lights up", async ({
   expect(errors).toEqual([]);
 });
 
+test("Trivia night: the host's pad opens a hosted round, and only on the night", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&room=skate-diner&night=trivia-night`);
+  await page
+    .getByRole("button", { name: "Play Trivia Night with the host" })
+    .click();
+  const dialog = page.getByRole("dialog", { name: "Trivia Night" });
+  await expect(dialog.getByText("Host:")).toBeVisible();
+  await dialog.getByRole("button", { name: "Play" }).click();
+  await dialog.locator(".tt-answer").first().click();
+  await expect(dialog.locator('.tt-answer[data-state="right"]')).toBeVisible();
+  await expect(dialog.getByText("Host:")).toBeVisible();
+  await dialog.getByRole("button", { name: "Close Trivia Night" }).click();
+  await expect(dialog).toBeHidden();
+  // an ordinary visit has no host and no button
+  await page.goto(`${STILL}&room=skate-diner&night=pajama-party`);
+  await expect(roomTitle(page)).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Play Trivia Night with the host" }),
+  ).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
 for (const room of [
   "rooftop-bar",
   "sugar-rush",

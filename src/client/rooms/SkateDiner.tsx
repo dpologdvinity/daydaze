@@ -26,6 +26,8 @@ import { canvasTex, hdr } from "./shared/materials.ts";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
+import { TriviaHost } from "./shared/TriviaHost.tsx";
+import type { MinigameId } from "../../game/hotspots.ts";
 import { Batch } from "./shared/batch.ts";
 import { plant, poster, tableSetting } from "./shared/details.ts";
 import { surface } from "../city/worldTexture.ts";
@@ -182,7 +184,13 @@ function Server({
  * between the tables on roller skates. Tap the cook at the pass to order;
  * the menu comes round a dish at a time.
  */
-export function SkateDiner({ onPick }: { onPick: PickHandler }): JSX.Element {
+export function SkateDiner({
+  onPick,
+  onGame,
+}: {
+  onPick: PickHandler;
+  onGame: (game: MinigameId) => void;
+}): JSX.Element {
   if (!VENUE) throw new Error("The Skate-Up Drive-In Diner is missing");
   const menu = VENUE.menu;
   const next = useRef(0);
@@ -370,6 +378,7 @@ export function SkateDiner({ onPick }: { onPick: PickHandler }): JSX.Element {
       {SERVERS.map((s, i) => (
         <Server key={i} {...s} seed={312 + i} />
       ))}
+      <TriviaHost room="skate-diner" onGame={onGame} />
     </>
   );
 }

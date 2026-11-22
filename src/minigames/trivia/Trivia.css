@@ -83,3 +83,17 @@
   font-weight: 900;
   color: #ff4fb3;
 }
+
+/* Trivia night: the quiz host's line above the question. */
+.tt-host {
+  width: fit-content;
+  max-width: min(30em, 90%);
+  margin: 14px auto 12px;
+  padding: 8px 14px;
+  border-left: 3px solid #7fd4ff;
+  border-radius: 6px;
+  background: rgba(127, 212, 255, 0.1);
+  color: #e8f6ff;
+  font-style: italic;
+  text-align: center;
+}
