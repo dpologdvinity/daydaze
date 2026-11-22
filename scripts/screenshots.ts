@@ -2502,7 +2502,14 @@ const SHOTS: {
           );
         if (pathname === "/api/save")
           return route.fulfill(
-            json(JSON.parse(serializeSave(createDefaultSave("Dusty")))),
+            json(
+              JSON.parse(
+                serializeSave({
+                  ...createDefaultSave("Dusty"),
+                  onboarded: true,
+                }),
+              ),
+            ),
           );
         if (pathname === "/api/progress/score")
           return route.fulfill(
