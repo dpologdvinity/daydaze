@@ -7,7 +7,7 @@ the product and its rules, [docs/VISION.md](docs/VISION.md).
 
 ## Setup
 
-- Node.js 22.18 or newer (`.nvmrc` pins 24; `nvm use` picks it up).
+- Node.js 22.18 or newer (`.nvmrc` pins 26; `nvm use` picks it up).
 - `npm install`
 - For the browser tests, once: `npx playwright install chromium`.
 - For online play locally:
