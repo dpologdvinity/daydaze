@@ -42,7 +42,7 @@ audience, tone, age tiers, platform and open decisions.
 
 ## Commands
 
-Node.js 22.18 or newer (`.nvmrc` pins 24).
+Node.js 22.18 or newer (`.nvmrc` pins 26).
 
 | Command                             | What it does                                                                                                                                    |
 | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
