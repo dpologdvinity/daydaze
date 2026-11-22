@@ -6,6 +6,7 @@
 
 import { byTier } from "../../game/age.ts";
 import type { ClosetSave } from "../../game/closet.ts";
+import type { ShiftsSave } from "../../game/shifts.ts";
 import type { Progression } from "../../game/progression/progression.ts";
 import { ProgressionHud, LadderPanel } from "./Progression.tsx";
 import { ActionDock, DockAction } from "./ActionDock.tsx";
@@ -295,6 +296,7 @@ export function Overlay({
   setSwim,
   coins,
   progression,
+  shifts,
   onTitle,
   wardrobe,
   onBuy,
@@ -343,6 +345,7 @@ export function Overlay({
   setSwim: (swim: SwimLook) => void;
   coins: number;
   progression: Progression;
+  shifts: ShiftsSave;
   onTitle: (title: string | null) => void;
   wardrobe: readonly string[];
   onBuy: (id: string, store?: ShopId, day?: number) => PurchaseResult;
@@ -737,7 +740,11 @@ export function Overlay({
             options={PLAYER_MOODS}
           />
           <GameMenu graphics={graphics} setGraphics={setGraphics}>
-            <LadderPanel progression={progression} onTitle={onTitle} />
+            <LadderPanel
+              progression={progression}
+              shifts={shifts}
+              onTitle={onTitle}
+            />
             <div className="game-menu-items" role="group" aria-label="Game">
               <button
                 type="button"

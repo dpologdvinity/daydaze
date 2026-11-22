@@ -320,6 +320,36 @@ The packs also hold other hats, caps and masks that are not hair-related
 (`hats01`, `hats03`, `masks01`, `masks02` folders). One hat, `toigo_maga_hat`, is a
 political slogan item: do not use it.
 
+**Fourth pass, 2026-11-21.** Checked and found nothing downloadable for the gaps:
+
+- **CharMorph** (and `CharMorph-db`), **MB-Lab** and its forks: hair is Blender particle
+  curves (`hair.blend`, `Particle_Hair/*.json`), not meshes or cards; MB-Lab data is
+  GPL-family. No usable file.
+- **MPFB2** extra asset packs: the same MakeHuman packs already catalogued; its hair
+  editor makes cards from particles at runtime.
+- **Blender Studio** characters (Sprite Fright, Charge, Coffee Run, Wing It!, Spring,
+  Agent 327, Gold; CC-BY): particle hair driven by scripts, and a login for the rigs.
+  The CC0 **Human Base Meshes** bundle has heads, bodies, hands and eyes but no hair.
+- **VRoid Studio** built-in hair presets: the VRoid Studio guidelines allow commercial
+  use of exported model data outside VRoid, but pixiv keeps the copyright and the
+  license is non-sublicensable, so shipping raw preset hair in our own pack needs the
+  owner's read of Terms of Use articles 11 to 13. Toon style. Not downloaded.
+  VRoid Hub CC0 models are whole avatars.
+- **Mixamo:** the roster can only be previewed with an Adobe login. From public
+  previews I confirmed Michelle (stylized twin afro puffs); Claire is a short bob and
+  Kaya wears a mushroom hat. The rest is unconfirmed, so only Michelle is on the owner
+  list.
+- **MakeHuman, full list:** every static pack page (hair 01 to 03, hair editor, hats
+  01 to 04, masks 01 and 02, bodyparts, system assets and materials) plus the archived
+  copy of the old user-contributed clothes repository (429 entries; hair was never
+  listed there). No afro, locs, braids or fade beyond what is already catalogued; the
+  extra head coverings are a balaclava, a blue scarf, a winter scarf, a bandana mask and
+  a Celtic headdress, nothing that fills a gap.
+- **Godot Asset Library, KayKit, Kenney, Quaternius** (via the CC0 mirror
+  `hakyong-tae/game-asset-library-3d`): characters with baked hair only.
+- **BlenderKit:** the Ddr Rcs free sets (royalty free, not CC) remain the only hair; see
+  the owner list.
+
 ## Accepted: third pass (2026-11-21)
 
 | Name                                                                 | Style                    | Author          | License   | Source                                                     | Local folder                                                     | Format | Tris             | Look | Notes                                                                    |
