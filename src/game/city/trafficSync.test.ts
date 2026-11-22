@@ -94,6 +94,17 @@ test("a new era restarts the fleet from its seed", () => {
   assert.deepEqual(state(ref.traffic.cars), state(fresh.cars));
 });
 
+test("shared time moving back within an era replays the reference from the era's start", () => {
+  const ref = createReference();
+  catchUp(ref, ERA_START + 60);
+  // a clock correction puts shared time 30 s earlier
+  assert.equal(advanceReference(ref, ERA_START + 30, 10_000), true);
+  assert.equal(ref.ticks, 30 * 50);
+  const fresh = createReference();
+  catchUp(fresh, ERA_START + 30);
+  assert.deepEqual(state(ref.traffic.cars), state(fresh.traffic.cars));
+});
+
 test("a time that is not a number leaves the reference alone", () => {
   const ref = createReference();
   catchUp(ref, ERA_START + 5);
@@ -143,10 +154,8 @@ test("a car near the player is never moved, even when it has drifted", () => {
   // and one that is near only in the reference stays too: it would pop in
   const truth = ref.traffic.cars[0];
   carPose(truth, pose);
-  const other = local.cars[1];
-  const otherWas = [other.lane.edge, other.lane.way, other.s];
   reconcileTraffic(local, ref, [pose.x, pose.z], 80);
-  assert.deepEqual([other.lane.edge, other.lane.way, other.s], otherWas);
+  assert.deepEqual([car.lane.edge, car.lane.way, car.s], was);
 });
 
 test("the first reconcile can adopt every car at once, in view or not", () => {

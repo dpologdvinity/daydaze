@@ -406,16 +406,17 @@ export function Traffic({ player }: { player: Player }) {
     syncClock(traffic, wall);
     // online (the server clock has arrived): once the reference fleet has
     // caught up with shared time, cars out of step that nobody can see go
-    // back onto it, all of them the first time (joining)
-    if (clockSynced() && advanceReference(reference, wall)) {
-      const memo = reconciled.current;
+    // back onto it. The cars stay undrawn until they have all been adopted
+    // once (about a second after joining), so that one big correction is
+    // never seen
+    const memo = reconciled.current;
+    const synced = clockSynced();
+    if (synced && advanceReference(reference, wall)) {
       const first = memo.fleet !== traffic;
       memo.since += dt;
       if (first || memo.since >= RECONCILE_EVERY) {
         memo.fleet = traffic;
         memo.since = 0;
-        // for the online test: both players are on the same traffic era
-        setData(canvas.dataset, "trafficEra", String(reference.era));
         reconcileTraffic(
           traffic,
           reference,
@@ -424,8 +425,11 @@ export function Traffic({ player }: { player: Player }) {
           (tier === "low" ? 80 : 180) + 20,
           first,
         );
+        // for the online test: both players are on the same traffic era
+        setData(canvas.dataset, "trafficEra", String(reference.era));
       }
     }
+    const awaitingFleet = synced && memo.fleet !== traffic;
     const { shell, trim, chrome, dark, wheels, lamps, signals } = meshes;
     const city = driving.session?.kind === "city" ? driving.session : null;
     bodies.reset();
@@ -512,7 +516,7 @@ export function Traffic({ player }: { player: Player }) {
       const distance = Math.hypot(pose.x - player.pos.x, pose.z - player.pos.z);
       if (probing && distance < 60)
         probe += `${pose.x.toFixed(1)},${pose.z.toFixed(1)},${pose.yaw.toFixed(2)},${car.speed.toFixed(1)},${car.body ? "c" : "j"};`;
-      if (distance > (tier === "low" ? 80 : 180)) continue;
+      if (awaitingFleet || distance > (tier === "low" ? 80 : 180)) continue;
       if (car.body) {
         // a downloaded body: the taxi, cop car, ambulance and school bus wear
         // their own paint, everyone else the car's

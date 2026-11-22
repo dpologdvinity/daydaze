@@ -59,9 +59,11 @@ player, the bus and the taxi, so driving and hits feel the same as offline).
 About twice a second `reconcileTraffic` compares it with the reference: a car
 that is out of step is copied from the reference (lane, position, speed, next
 turn) only when both its local and its reference position are beyond the draw
-range of the player, so a correction is never seen. The first time the
-reference is caught up every car is adopted at once (the join is the moment
-nobody has seen the city yet). Cars with a trip (the taxi) are never touched.
+range of the player, so a correction is never seen. Until the reference has caught up
+and every car has been adopted once (about a second after joining) the cars
+are not drawn, so that one big correction is never seen. If shared time
+moves back within an era (a clock correction) the reference replays from the
+era's start. Cars with a trip (the taxi) are never touched.
 
 Result: two players on the same corner see the same car at the same place
 (to within what the interaction with a local player changes), and a car that

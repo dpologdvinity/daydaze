@@ -38,7 +38,9 @@ export function syncServerClock(serverMs: number, localMs = Date.now()): void {
 /** True once a server time has arrived (online and connected). */
 export const clockSynced = (): boolean => synced;
 
-/** Back to the device's own clock (leaving online play; tests). */
+/** Back to the device's own clock (tests). A session that loses its server
+ * keeps the offset: server time is still the best guess, and resetting would
+ * make every shared schedule jump. */
 export function resetServerClock(): void {
   serverOffset = 0;
   synced = false;

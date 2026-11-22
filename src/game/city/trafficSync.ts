@@ -51,12 +51,13 @@ export function advanceReference(
   if (!Number.isFinite(wall)) return false;
   const era = Math.floor(wall / TRAFFIC_ERA);
   const start = era * TRAFFIC_ERA;
-  if (ref.era !== era) {
+  const due = Math.floor((wall - start) * TICK_HZ);
+  // a new era, or shared time moved back (a clock correction): start over
+  if (ref.era !== era || ref.ticks > due) {
     ref.traffic = createTraffic(TRAFFIC_COUNT.high, TRAFFIC_SEED);
     ref.era = era;
     ref.ticks = 0;
   }
-  const due = Math.floor((wall - start) * TICK_HZ);
   const stop = Math.min(due, ref.ticks + budget);
   while (ref.ticks < stop) {
     // the lights read the sim's own clock: the shared time of this very tick
