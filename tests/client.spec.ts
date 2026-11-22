@@ -3093,6 +3093,13 @@ test("city fishing and driving do not take the player at the same time", async (
     panel.getByRole("button", { name: "Reel in and leave" }),
   ).toBeVisible();
   await (await dockAction(page, "Drive your car")).click();
+  for (let i = 0; i < 24; i++) {
+    const snap = await page.evaluate(
+      `(() => { const pl = window.__dd.player; const c = document.querySelector("canvas"); return JSON.stringify({ pos: pl.walk.pos, target: pl.walk.target, leaving: pl.walk.leaving, seat: !!pl.seat, sitting: pl.sitting, ride: !!pl.ride, react: c.dataset.reaction, car: c.dataset.cityCar, z: c.dataset.playerZ }); })()`,
+    );
+    console.log("PROBE", i, snap);
+    await page.waitForTimeout(500);
+  }
   await expect(panel.getByRole("button", { name: "Go fishing" })).toBeVisible();
   await expect
     .poll(async () => Number(await canvas.getAttribute("data-player-z")), {
