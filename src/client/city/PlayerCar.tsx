@@ -70,6 +70,8 @@ export function PlayerCar({
     return () => {
       live.current = false;
       if (driving.session?.kind === "city") driving.session = null;
+      // a request kept for a knock-down must not outlive the city
+      if (driving.request === "city-drive") driving.request = null;
       session.current = null;
       releaseControls();
     };
@@ -131,12 +133,12 @@ export function PlayerCar({
       if (request === "leave") {
         if (session.current) getOut(session.current);
       } else if (!session.current) {
-        if (near) getIn();
-        else if (reactingNow()) {
+        if (reactingNow()) {
           // knocked down: the reaction drops every walk target while it plays,
           // so keep the request until she is back on her feet
           driving.request = request;
-        } else {
+        } else if (near) getIn();
+        else {
           walkTo(
             player,
             CITY_AREA,
