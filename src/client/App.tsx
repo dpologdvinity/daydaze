@@ -31,6 +31,7 @@ import { chatPrefs } from "./net/chatPrefs.ts";
 import { useCloudSave } from "./net/cloudSave.ts";
 import type { MinigameId } from "../game/hotspots.ts";
 import { isJailed } from "../game/jail/jail.ts";
+import { loadDialogue, pickLine } from "../game/dialogue/pick.ts";
 import { jailAfterArrest } from "../game/police/arrest.ts";
 import {
   encodeSwim,
@@ -98,6 +99,9 @@ import { farmDesk } from "./rooms/farm/farmSession.ts";
 import { floristDesk } from "./rooms/florist/session.ts";
 import { gardenDesk } from "./rooms/garden/gardenSession.ts";
 import { pouchDesk } from "./inventory/pouchDesk.ts";
+import { WantedHud } from "./ui/WantedHud.tsx";
+import { driving, releaseControls } from "./world/driving.ts";
+import { arrestDesk, clearHeat, crime } from "./world/heat.ts";
 import { World } from "./world/World.tsx";
 
 const FADE_MS = 300;
@@ -473,6 +477,7 @@ export function App() {
     }));
     setArrest(null);
     if (penalty.kind === "jail") {
+      clearHeat();
       travel("jail", ROOMS.jail.spawn);
     } else {
       setChat({
@@ -484,10 +489,35 @@ export function App() {
       });
     }
   }, [arrest, travel]);
+  useEffect(() => {
+    arrestDesk.onCapture = (jail) => {
+      if (traveling.current) return false;
+      releaseControls();
+      driving.request = "leave";
+      setSave((s) => ({ ...s, jail }));
+      travel("jail", ROOMS.jail.spawn);
+      return true;
+    };
+    return () => {
+      arrestDesk.onCapture = null;
+    };
+  }, [travel]);
+
   // Released players arrive outside the jail, by the gate.
   const release = useCallback(() => {
     setSave((s) => ({ ...s, jail: { endsAt: null } }));
     travel("city", ROOMS.jail.portals[0].targetSpawn);
+    void loadDialogue().then(
+      () => {
+        const { text } = pickLine({
+          role: "police",
+          situation: "state-released-from-jail",
+          rng: Math.random,
+        });
+        setChat({ text, at: Date.now() });
+      },
+      () => {},
+    );
   }, [travel]);
   const now = Date.now();
   const [rides, setRides] = useState(0);
@@ -679,6 +709,7 @@ export function App() {
             {notice}
           </p>
         )}
+        <WantedHud inCity={here.room === "city"} />
         <Overlay
           room={here.room}
           roomName={
@@ -717,7 +748,10 @@ export function App() {
             return r;
           }}
           crime={save.crime}
-          onSteal={(id, storeId) => setSave((s) => rewardSteal(s, id, storeId))}
+          onSteal={(id, storeId) => {
+            crime("shoplift");
+            setSave((s) => rewardSteal(s, id, storeId));
+          }}
           onCaught={caught}
           onRide={() => setRides((n) => n + 1)}
           onPlayGame={setGame}

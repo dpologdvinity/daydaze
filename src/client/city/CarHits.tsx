@@ -45,7 +45,7 @@ import type {
 import { playHorn, playScreech, playThump } from "../../audio/worldSounds.ts";
 import { setData } from "../world/dataset.ts";
 import { driving } from "../world/driving.ts";
-import { coolHeat, crime, heat } from "../world/heat.ts";
+import { crime } from "../world/heat.ts";
 import { placePlayer, type Player } from "../world/PlayerController.tsx";
 import { react } from "../world/reaction.ts";
 import { cityHour } from "./daylight.ts";
@@ -72,7 +72,6 @@ export function CarHits({ player }: { player: Player }) {
   // the player thrown by a car: from, to and seconds into the throw
   const slide = useRef({ on: false, t: 0, x0: 0, z0: 0, x1: 0, z1: 0 });
   const scene = useRef<HitScene | null>(null);
-  const cooling = useRef(0);
   const alarms = useRef(streetHits.alarms);
   const here = useMemo<[number, number]>(() => [0, 0], []);
   const pose = useMemo<StreetPose>(
@@ -305,13 +304,6 @@ export function CarHits({ player }: { player: Player }) {
       scene.current = r.scene;
       if (r.hitAndRun) crime("hitAndRun");
     }
-    // the heat cools a second at a time (each step makes a new state)
-    cooling.current += dt;
-    if (cooling.current >= 1) {
-      coolHeat(cooling.current * 1000);
-      cooling.current = 0;
-    }
-    setData(canvas.dataset, "heat", heat.state.heat.toFixed(0));
   });
 
   return (

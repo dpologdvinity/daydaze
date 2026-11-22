@@ -42,6 +42,7 @@ import {
   JEEPNEY_TRIM,
 } from "./carGeometry.ts";
 import { wheelMatrix } from "./wheelPlacement.ts";
+import { pursuer } from "./PlayerPursuit.tsx";
 import { streetHits } from "./streetHits.ts";
 
 /**
@@ -391,6 +392,19 @@ export function Traffic({ player }: { player: Player }) {
     const { shell, trim, chrome, dark, wheels, lamps, signals } = meshes;
     const city = driving.session?.kind === "city" ? driving.session : null;
     bodies.reset();
+    if (pursuer.cruiser) {
+      bodies.put(
+        "cop",
+        color.set(COP_PAINT),
+        pursuer.x,
+        pursuer.z,
+        pursuer.yaw,
+        tier === "low",
+        pursuer.travel,
+        0,
+        true,
+      );
+    }
     // the heist's cars go first, so a busy street never crowds them out
     heistFrame(heistClock(), heist);
     let heistCars = 0;

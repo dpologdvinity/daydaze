@@ -9,6 +9,7 @@ import {
   NOT_WANTED,
   RESPONSES,
   arrest,
+  captureTime,
   commitCrime,
   payBail,
   responseFor,
@@ -30,7 +31,7 @@ test("a clean record has no stars", () => {
 
 test("crimes raise stars: shoplifting a little, a heist a lot", () => {
   const lift = commitCrime(NOT_WANTED, "shoplift");
-  assert.equal(starsOf(lift.state), 1);
+  assert.equal(starsOf(lift.state), 2);
   const hit = commitCrime(NOT_WANTED, "hitAndRun");
   assert.ok(starsOf(hit.state) >= 2);
   const heist = commitCrime(NOT_WANTED, "heist");
@@ -175,4 +176,17 @@ test("saved wanted state is untrusted", () => {
   const big = validateWanted({ heat: 1e9, unseenMs: 5, hidingMs: Infinity });
   assert.equal(starsOf(big), MAX_STARS);
   assert.equal(big.hidingMs, 0);
+});
+
+test("a cruiser needs three uninterrupted seconds in reach of a stopped car", () => {
+  assert.equal(captureTime(0, 2999, 3.5, 0.5, true), 2999);
+  assert.equal(captureTime(2999, 1, 3.5, 0.5, true), 3000);
+  assert.equal(captureTime(2999, 1, 3.51, 0.5, true), 0);
+  assert.equal(captureTime(2999, 1, 3.5, -1, true), 0);
+  assert.equal(captureTime(2999, 1, 3.5, 0, false), 0);
+});
+
+test("an officer catches a wanted player within reach on foot", () => {
+  assert.equal(captureTime(0, 100, 2.5, null, true), 3000);
+  assert.equal(captureTime(0, 100, 2.51, null, true), 0);
 });

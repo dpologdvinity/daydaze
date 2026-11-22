@@ -10,6 +10,7 @@ import {
   goodBehavior,
   isJailed,
   remainingMs,
+  rhythmService,
   sentence,
   validateJail,
 } from "./jail.ts";
@@ -66,4 +67,15 @@ test("saved jail data that is not a finite time is dropped", () => {
   assert.deepEqual(validateJail(undefined), DEFAULT_JAIL);
   assert.deepEqual(validateJail({ endsAt: "soon" }), DEFAULT_JAIL);
   assert.deepEqual(validateJail({ endsAt: Infinity }), DEFAULT_JAIL);
+});
+
+test("a qualifying rhythm set takes a minute off the remaining sentence", () => {
+  assert.deepEqual(rhythmService(sentence(NOW, 2), NOW, "B"), sentence(NOW, 1));
+  assert.equal(rhythmService({ endsAt: NOW + 5000 }, NOW, "A").endsAt, null);
+});
+
+test("quitting or missing the rhythm set earns no time off", () => {
+  const jail = sentence(NOW, 1);
+  assert.equal(rhythmService(jail, NOW, null), jail);
+  assert.equal(rhythmService(jail, NOW, "C"), jail);
 });

@@ -40,6 +40,16 @@ export function goodBehavior(jail: JailSave, now: number): JailSave {
   return { endsAt: endsAt === now ? null : endsAt };
 }
 
+/** A qualifying community service set earns a minute off. */
+export function rhythmService(
+  jail: JailSave,
+  now: number,
+  grade: "S" | "A" | "B" | "C" | null,
+): JailSave {
+  if (grade === null || grade === "C") return jail;
+  return goodBehavior(goodBehavior(jail, now), now);
+}
+
 // Pays the bail from the wallet. Null when the player cannot afford it.
 export function bailOut(
   jail: JailSave,
