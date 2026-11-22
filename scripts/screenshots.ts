@@ -2882,6 +2882,21 @@ const SHOTS: {
     `wears=${WEAR_MIX}&cam=-3,0.95,3.4&target=-3,0.95,0`,
     "pose",
   ),
+  lineupShot(
+    "doll-wear-close-skirt",
+    `wears=${WEAR_MIX}&cam=3,0.95,2.4&target=3,0.95,0`,
+    "pose",
+  ),
+  lineupShot(
+    "doll-wear-close-crossed",
+    `wears=${WEAR_MIX}&cam=1,0.55,2.4&target=1,0.55,0`,
+    "pose",
+  ),
+  lineupShot(
+    "doll-wear-close-dance",
+    `wears=${WEAR_MIX}&cam=0,0.95,5&target=0,0.95,0`,
+    "dance",
+  ),
   // the far twin: a three-layer look merged into one draw (mergeGarments)
   lineupShot("doll-wear-far", `wears=${WEAR_MIX}`, "far"),
   // the same three past the LOD distance: the merged, atlas-textured twins
