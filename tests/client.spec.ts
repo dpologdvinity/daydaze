@@ -384,10 +384,8 @@ test("the closet searches and filters garments, keeps favorites and saves outfit
   await expect.poll(wear).toMatch(/^[a-z-]+#[0-9a-f]{6}\+tee#/);
   await page.getByRole("button", { name: "Wear Brunch", exact: true }).click();
   await expect.poll(wear).toMatch(/striped-shirt#/);
+  // the drawer reopens by itself after the reload
   await page.reload();
-  await page
-    .getByRole("button", { name: "Dressing room", exact: true })
-    .click();
   await page.getByRole("tab", { name: "Outfit", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Wear Brunch", exact: true }),
