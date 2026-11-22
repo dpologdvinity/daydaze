@@ -25,11 +25,17 @@ export function useCloudSave(
   const sync = useMemo(
     () =>
       createSaveSync<SaveV1>({
-        // the reply carries the server's XP and title, which replace ours
-        put: (value) =>
+        // the reply carries the server's XP and title, which replace ours,
+        // unless we've switched to another account while it was in flight
+        put: (value) => {
+          const sent = account.get().me?.id;
           void onlineSession()
             ?.storeSave(value)
-            .then((r) => r.ok && onProgress(r.value.progression)),
+            .then((r) => {
+              if (r.ok && sent === account.get().me?.id)
+                onProgress(r.value.progression);
+            });
+        },
         delayMs: 4000,
         timers: {
           set: (fn, ms) => window.setTimeout(fn, ms),
