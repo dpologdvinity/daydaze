@@ -1309,6 +1309,8 @@ button:focus-visible {
 .app:has(.dressing[data-open="true"]) .dock,
 .app:has(.dressing[data-open="true"]) .chat,
 .app:has(.dressing[data-open="true"]) .venue-games,
+.app:has(.dressing[data-open="true"]) .game-tabs,
+.app:has(.dressing[data-open="true"]) .game-panel,
 .app:has(.dressing[data-open="true"]) .views {
   visibility: hidden;
 }
