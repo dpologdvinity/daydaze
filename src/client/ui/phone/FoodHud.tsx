@@ -4,8 +4,7 @@
 
 import { useEffect, useSyncExternalStore } from "react";
 import "./phone.css";
-import { ADULT_OK } from "../../adult.ts";
-import { NEED_NOTICE } from "../../../game/food/needs.ts";
+import { needLabel } from "../../../game/food/needs.ts";
 import {
   clearToast,
   eatHeld,
@@ -13,6 +12,7 @@ import {
   onFoodChange,
   tickDeliveries,
   tickNeeds,
+  weedFelt,
 } from "../../food/store.ts";
 
 const TOAST_MS = 4000;
@@ -48,19 +48,15 @@ export function FoodHud() {
   }, [food.toast, food.toastId]);
 
   const held = food.held;
-  const showNeeds =
-    ADULT_OK &&
-    (food.needs.hunger >= NEED_NOTICE || food.needs.thirst >= NEED_NOTICE);
+  const heading = needLabel(food.needs, weedFelt());
   return (
     <div className="food-tray">
       <p className="food-toast" role="status" aria-live="polite">
         {food.toast ?? ""}
       </p>
-      {showNeeds && (
+      {heading && (
         <section className="food-needs" aria-label="Food and water needs">
-          <strong>
-            {food.needs.hunger >= NEED_NOTICE ? "The munchies" : "Cotton mouth"}
-          </strong>
+          <strong>{heading}</strong>
           <label>
             Hunger{" "}
             <meter
