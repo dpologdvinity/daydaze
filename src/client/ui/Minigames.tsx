@@ -1,6 +1,6 @@
 // Mounts the open minigame. Each one is lazy-loaded, since they are big and
 // rarely opened.
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState } from "react";
 import { hotspotsIn, type MinigameId } from "../../game/hotspots.ts";
 import type { RoomId } from "../../game/rooms.ts";
 import { hostedTrivia } from "../../game/triviaNight.ts";
@@ -92,6 +92,8 @@ export function GameOverlay({
   onClose: (grade: PayGrade | null) => void;
 }) {
   const reducedMotion = useReducedMotion();
+  // fixed as the game opens, so a night ending mid-round doesn't change it
+  const [hosted] = useState(() => hostedTrivia(room, nightClock()));
   const done = (
     result: { grade: PayGrade; score?: number; booth?: BoothId } | null,
   ) => {
@@ -112,11 +114,7 @@ export function GameOverlay({
       ) : game === "gem-glam" ? (
         <GemGlam onClose={done} reducedMotion={reducedMotion} />
       ) : game === "trivia" ? (
-        <Trivia
-          onClose={done}
-          reducedMotion={reducedMotion}
-          hosted={hostedTrivia(room, nightClock())}
-        />
+        <Trivia onClose={done} reducedMotion={reducedMotion} hosted={hosted} />
       ) : game === "star-siege" ? (
         <StarSiege onClose={done} reducedMotion={reducedMotion} />
       ) : (
