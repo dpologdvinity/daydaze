@@ -54,6 +54,7 @@ export function WardrobePicker({
   const [style, setStyle] = useState<Style | "all">("all");
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [name, setName] = useState("");
+  const [note, setNote] = useState("");
   const wear = wearOf(look);
   const owned = wearableGarments(wardrobe);
   const shown = filterGarments(
@@ -165,6 +166,14 @@ export function WardrobePicker({
             if (next !== closet) {
               setCloset(next);
               setName("");
+              setNote("");
+            } else {
+              // nothing was saved: an empty name, or a full closet
+              setNote(
+                name.trim() === ""
+                  ? "Give the outfit a name first."
+                  : `The closet holds ${MAX_OUTFITS} outfits. Delete one, or reuse a name to replace it.`,
+              );
             }
           }}
         >
@@ -180,6 +189,11 @@ export function WardrobePicker({
             Save this outfit
           </button>
         </form>
+        {note && (
+          <p role="status" className="closet-empty">
+            {note}
+          </p>
+        )}
         {closet.outfits.length === 0 ? (
           <p className="closet-empty">
             Nothing saved yet. Up to {MAX_OUTFITS} outfits are kept.
@@ -201,7 +215,10 @@ export function WardrobePicker({
                   type="button"
                   className="chip"
                   aria-label={`Delete ${o.name}`}
-                  onClick={() => setCloset(deleteOutfit(closet, o.name))}
+                  onClick={() => {
+                    setCloset(deleteOutfit(closet, o.name));
+                    setNote("");
+                  }}
                 >
                   Delete
                 </button>

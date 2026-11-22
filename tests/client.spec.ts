@@ -375,10 +375,18 @@ test("the closet searches and filters garments, keeps favorites and saves outfit
     .getByRole("button", { name: "Favorites only", exact: true })
     .click();
   // a saved outfit is worn again after the look changes, and survives a reload
+  // saving without a name says why nothing happened
+  await page
+    .getByRole("button", { name: "Save this outfit", exact: true })
+    .click();
+  await expect(page.getByRole("status")).toContainText(
+    "Give the outfit a name",
+  );
   await page.getByRole("textbox", { name: "Outfit name" }).fill("Brunch");
   await page
     .getByRole("button", { name: "Save this outfit", exact: true })
     .click();
+  await expect(page.getByRole("status")).toHaveCount(0);
   await top.getByRole("radio", { name: "Fitted tee", exact: true }).click();
   const wear = () => readSave(page).then(({ look }) => look?.wear);
   await expect.poll(wear).toMatch(/^[a-z-]+#[0-9a-f]{6}\+tee#/);
