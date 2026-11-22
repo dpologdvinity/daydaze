@@ -75,6 +75,7 @@ test("createDefaultSave uses the default look and auto quality", () => {
       freezeWeek: -1,
     },
     shifts: { day: 0, today: 0, worked: {} },
+    npcs: {},
   });
 });
 
@@ -137,6 +138,7 @@ test("a save round-trips through serializeSave and loadSave", () => {
       freezeWeek: -1,
     },
     shifts: { day: 0, today: 0, worked: {} },
+    npcs: { "piercing:vix": { visits: 3, last: 40 } },
   };
   assert.deepEqual(loadSave(serializeSave(save), "Fallback"), save);
 });
@@ -222,6 +224,7 @@ test("a save from before the swimsuit slot still loads", () => {
       freezeWeek: -1,
     },
     shifts: { day: 0, today: 0, worked: {} },
+    npcs: {},
   });
 });
 
@@ -302,6 +305,7 @@ test("loadSave keeps a valid name when the look is bad", () => {
       freezeWeek: -1,
     },
     shifts: { day: 0, today: 0, worked: {} },
+    npcs: {},
   });
 });
 
@@ -355,6 +359,7 @@ test("loadSave keeps a valid look when the name is bad", () => {
       freezeWeek: -1,
     },
     shifts: { day: 0, today: 0, worked: {} },
+    npcs: {},
   });
 });
 
@@ -552,6 +557,7 @@ test("loadSave salvages valid fields from a wrong version", () => {
       freezeWeek: -1,
     },
     shifts: { day: 0, today: 0, worked: {} },
+    npcs: {},
   });
 });
 

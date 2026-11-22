@@ -17,8 +17,6 @@ import type { BodyShape } from "../../game/body.ts";
 import type { DanceMoveId, Holds } from "../../game/dance/moves.ts";
 import type { HomeSave } from "../../game/home/home.ts";
 import type { ParkedCar } from "../../game/city/drive.ts";
-import { mayEnter } from "../../game/age.ts";
-import { ADULT_OK } from "../adult.ts";
 import type { Intensity } from "../../game/effects/buzz.ts";
 import {
   bodyOf,
@@ -43,8 +41,6 @@ import { CameraRig, type View } from "./CameraRig.tsx";
 import { useFreeCam } from "./dev/store.ts";
 import { NeonClamp } from "./NeonClamp.tsx";
 import { WATER } from "./water.ts";
-import { mayDive } from "../../game/dive.ts";
-import { scuba } from "../avatar/human/afloat.ts";
 import {
   createPlayer,
   PlayerController,
@@ -752,7 +748,7 @@ export type WorldProps = {
   /** The Graphics menu's settings (Auto lets the frame rate decide). */
   graphics: Graphics;
   still: boolean;
-  onPortal: (portal: Portal) => void;
+  onPortal: (portal: Portal) => boolean;
   home: HomeSave;
   /** The practice shelf in the apartment opens the shoplifting practice. */
   onShelf: () => void;
@@ -954,11 +950,8 @@ export function World({
               tag={tag}
               water={WATER[room] ?? null}
               onPortal={(portal) => {
-                // a shut door (an 18+ venue): step back off it and stay
-                if (
-                  !mayEnter(portal.target, ADULT_OK) ||
-                  !mayDive(portal.target, scuba.get().rented)
-                ) {
+                // Step back from a closed door so another approach can try it.
+                if (!onPortal(portal)) {
                   const back = 1.6;
                   placePlayer(
                     player,
@@ -967,7 +960,6 @@ export function World({
                   );
                   player.walk.leaving = false;
                 }
-                onPortal(portal);
               }}
             />
             {DevProbe && (
