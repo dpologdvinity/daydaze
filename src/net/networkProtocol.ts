@@ -4,6 +4,8 @@ export const MAX_ROOM_ENTITIES = 512;
 export const MAX_CHAT_LENGTH = 120;
 const MAX_NAME_LENGTH = 32;
 const MAX_PACKET_BYTES = 65_536;
+/** The latest time a `Date` holds, ms: the bound for a server clock stamp. */
+const MAX_SERVER_TIME = 8.64e15;
 
 /** WebSocket close codes for room sockets. */
 export const CLOSE_CODES = {
@@ -69,6 +71,9 @@ export type RoomSnapshotMessage = {
   type: "snapshot";
   roomId: string;
   entities: EntityDelta[];
+  /** The server's clock (epoch ms) when it sent this: the shared city clock
+   * (src/game/clock.ts). Absent from an older server. */
+  time?: number;
 };
 export type EntityDeltaBroadcast = {
   type: "delta";
@@ -298,7 +303,14 @@ export function decodeServerMessage(raw: unknown): ServerMessage | null {
           ids.add(delta.id);
           entities.push(delta);
         }
-        return { type: "snapshot", roomId, entities };
+        // a time that is not a plausible date is dropped, never trusted
+        const time = value.time;
+        return typeof time === "number" &&
+          Number.isInteger(time) &&
+          time >= 0 &&
+          time <= MAX_SERVER_TIME
+          ? { type: "snapshot", roomId, entities, time }
+          : { type: "snapshot", roomId, entities };
       }
       case "delta": {
         const delta = entity(value.entity);

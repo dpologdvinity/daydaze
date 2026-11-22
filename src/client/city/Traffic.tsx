@@ -3,7 +3,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { SIGNAL } from "../../game/city/furniture.ts";
-import { wallSeconds } from "../../game/clock.ts";
+import { clockSynced, wallSeconds } from "../../game/clock.ts";
 import { advance } from "../../game/driving/fixedStep.ts";
 import {
   carPose,
@@ -15,8 +15,14 @@ import {
   signalledJunctions,
   stepTraffic,
   type Signal,
+  type Traffic as TrafficState,
   type TrafficCar,
 } from "../../game/city/traffic.ts";
+import {
+  advanceReference,
+  createReference,
+  reconcileTraffic,
+} from "../../game/city/trafficSync.ts";
 import { placePlayer, type Player } from "../world/PlayerController.tsx";
 import { foodMotion } from "./foodVendors.ts";
 import { busMotion } from "./busRide.ts";
@@ -131,6 +137,9 @@ const scl = new THREE.Vector3();
 const yAxis = new THREE.Vector3(0, 1, 0);
 const color = new THREE.Color();
 
+/** Seconds between pulls of the unseen cars back onto the shared fleet. */
+const RECONCILE_EVERY = 0.5;
+
 /** How fast the front wheels follow the steering the car's path asks for, per second. */
 const STEER_EASE = 12;
 
@@ -165,6 +174,13 @@ export function Traffic({ player }: { player: Player }) {
   const bodies = useTrafficBodies(count);
   const traffic = useMemo(() => createTraffic(count, TRAFFIC_SEED), [count]);
   const clock = useRef({ accumulator: 0 });
+  // online, the shared reference fleet (src/game/city/trafficSync.ts), and
+  // when the visible fleet was last pulled onto it
+  const reference = useMemo(createReference, []);
+  const reconciled = useRef<{ fleet: TrafficState | null; since: number }>({
+    fleet: null,
+    since: 0,
+  });
   const here = useRef<[number, number]>([0, 0]);
   const busPosition = useRef<[number, number]>([0, 0]);
   const truckPosition = useRef<[number, number]>([0, 0]);
@@ -389,6 +405,32 @@ export function Traffic({ player }: { player: Player }) {
     });
     streetHits.alarms = traffic.alarms;
     syncClock(traffic, wall);
+    // online (the server clock has arrived): once the reference fleet has
+    // caught up with shared time, cars out of step that nobody can see go
+    // back onto it. The cars are hidden until they have all been adopted
+    // once (about a second after joining), so that one big correction is
+    // never seen
+    const memo = reconciled.current;
+    const synced = clockSynced();
+    if (synced && advanceReference(reference, wall)) {
+      const first = memo.fleet !== traffic;
+      memo.since += dt;
+      if (first || memo.since >= RECONCILE_EVERY) {
+        memo.fleet = traffic;
+        memo.since = 0;
+        reconcileTraffic(
+          traffic,
+          reference,
+          here.current,
+          // the farthest a car is drawn, and a margin
+          (tier === "low" ? 80 : 180) + 20,
+          first,
+        );
+        // for the online test: both players are on the same traffic era
+        setData(canvas.dataset, "trafficEra", String(reference.era));
+      }
+    }
+    const awaitingFleet = synced && memo.fleet !== traffic;
     const { shell, trim, chrome, dark, wheels, lamps, signals } = meshes;
     const city = driving.session?.kind === "city" ? driving.session : null;
     bodies.reset();
@@ -407,6 +449,7 @@ export function Traffic({ player }: { player: Player }) {
     }
     // the heist's cars go first, so a busy street never crowds them out
     heistFrame(heistClock(), heist);
+    streetHits.heist = heist;
     let heistCars = 0;
     for (let k = 0; k <= COPS; k++) {
       const car = k < COPS ? heist.cops[k] : heist.getaway;
@@ -431,6 +474,7 @@ export function Traffic({ player }: { player: Player }) {
     }
     // the police chase cars: fleeing sports car and squad cars
     chaseFrame(chaseClock(), chase);
+    streetHits.chase = chase;
     let chaseCars = 0;
     for (let k = 0; k <= CHASE_COPS; k++) {
       const car = k < CHASE_COPS ? chase.cops[k] : chase.fleeing;
@@ -486,7 +530,7 @@ export function Traffic({ player }: { player: Player }) {
       const distance = Math.hypot(pose.x - player.pos.x, pose.z - player.pos.z);
       if (probing && distance < 60)
         probe += `${pose.x.toFixed(1)},${pose.z.toFixed(1)},${pose.yaw.toFixed(2)},${car.speed.toFixed(1)},${car.body ? "c" : "j"};`;
-      if (distance > (tier === "low" ? 80 : 180)) continue;
+      if (awaitingFleet || distance > (tier === "low" ? 80 : 180)) continue;
       if (car.body) {
         // a downloaded body: the taxi, cop car, ambulance and school bus wear
         // their own paint, everyone else the car's

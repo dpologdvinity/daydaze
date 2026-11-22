@@ -1,5 +1,6 @@
 // The browser's online session: joins a room copy, sends movement at 12 Hz,
 // interpolates remote players 100 ms in the past and reports its status.
+import { syncServerClock } from "../../game/clock.ts";
 import { validateLook, type Look } from "../../game/look.ts";
 import { ROOMS, type RoomId } from "../../game/rooms.ts";
 import type { Identity } from "../identity.ts";
@@ -496,6 +497,9 @@ export class OnlineSession {
     const selfId = this.self?.id;
     switch (message.type) {
       case "snapshot":
+        // the server's clock: the city's lights, walkers and traffic run on it
+        if (message.time !== undefined)
+          syncServerClock(message.time, this.now());
         this.players.clear();
         for (const entity of message.entities)
           if (entity.id !== selfId)
