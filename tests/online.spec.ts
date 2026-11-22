@@ -293,6 +293,17 @@ test("friends party through doors, ride in a car and race at the Speedway", asyn
       "parked",
       { timeout: 240_000 },
     );
+  // both are on the server's clock, so both run the same shared traffic era
+  // (an era turns over every 3 minutes: read both again if it did between)
+  await expect(async () => {
+    const eras = await Promise.all(
+      [a, b].map((page) =>
+        page.locator("canvas").getAttribute("data-traffic-era"),
+      ),
+    );
+    expect(eras[0]).toMatch(/^\d+$/);
+    expect(eras[0]).toBe(eras[1]);
+  }).toPass({ timeout: 240_000 });
   await expect(tagOnA).toHaveCount(1, { timeout: 120_000 });
   await (await dockAction(a, "Drive your car")).click();
   await expect(a.locator("canvas")).toHaveAttribute(

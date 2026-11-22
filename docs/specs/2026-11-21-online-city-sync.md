@@ -45,8 +45,9 @@ the shared clock:
   from `createTraffic` at the era's start and steps it tick by tick to "now",
   with the signal clock set from the tick index, so any two clients with the
   same shared time hold the same fleet (same code, same inputs).
-- A client that joins mid-era catches up at most `CATCH_UP_TICKS` ticks per
-  frame (about 9000 ticks in total), so there is no hitch. Until it has caught
+- A client that joins mid-era catches up at most `CATCH_UP_TICKS` (150, about
+  5 ms) ticks per frame (9000 in the worst case, about a second), so there is
+  no hitch. Until it has caught
   up it keeps its local fleet.
 - The reference ignores the player, the bus, the food truck and the hailed
   taxi, which are local. It only runs when the clock is synced (online).
