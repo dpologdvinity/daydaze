@@ -28,7 +28,15 @@ import { ONLINE, onlineSession, useOnlineRoom } from "./net/online.ts";
 import { leaveParty } from "./net/party.ts";
 import { endVisit, homeVisit, listenForHomes } from "./net/home.ts";
 import { chatPrefs } from "./net/chatPrefs.ts";
+import { account } from "./net/account.ts";
 import { useCloudSave } from "./net/cloudSave.ts";
+import {
+  flushVisits,
+  queueVisit,
+  reportScore,
+  reportTitle,
+} from "./net/progress.ts";
+import { adoptServerProgress } from "../net/client/progressSync.ts";
 import type { MinigameId } from "../game/hotspots.ts";
 import { isJailed } from "../game/jail/jail.ts";
 import { jailAfterArrest } from "../game/police/arrest.ts";
@@ -88,7 +96,7 @@ import { RankMoment } from "./ui/Progression.tsx";
 import { PrizeCard } from "./ui/PrizeCard.tsx";
 import { UpdatePrompt } from "./ui/UpdatePrompt.tsx";
 import { Collections } from "./ui/Collections.tsx";
-import { claimSet } from "../game/collections.ts";
+import { ALBUM_PLACES, claimSet } from "../game/collections.ts";
 import { Onboarding } from "./ui/Onboarding.tsx";
 import { postPrize, prizeDesk } from "./ui/prizeDesk.ts";
 import { shiftDesk } from "./ui/shiftDesk.ts";
@@ -208,6 +216,11 @@ export function App() {
     return loaded;
   });
   useEffect(() => writeStorage(save), [save]);
+  // the save as of the last render, for grading a prize when one comes in
+  const latest = useRef(save);
+  useEffect(() => {
+    latest.current = save;
+  }, [save]);
   const previousCoins = useRef(save.coins);
   useEffect(() => {
     if (save.coins > previousCoins.current) void playSoundFile("coin");
@@ -233,16 +246,31 @@ export function App() {
   // visiting a friend's place: theirs is the home you see, read-only
   const visiting = homeVisit.use();
   useEffect(() => (ONLINE ? listenForHomes() : undefined), []);
+  // an account's progress is the server's: its replies replace the local XP
+  const adoptProgress = useCallback(
+    (server: Parameters<typeof adoptServerProgress>[1]) =>
+      setSave((s) => adoptServerProgress(s, server)),
+    [],
+  );
+  const { me, cloudReady } = account.use();
   // Discovery and real event visits commit their saved claim with the XP.
   useEffect(() => {
     const check = () => {
       const now = Date.now();
       setSave((s) => rewardVisit(s, here.room, now, ADULT_OK));
     };
+    // a place new to the album is also reported, once the account is ready
+    if (
+      mayEnter(here.room, ADULT_OK) &&
+      ALBUM_PLACES.includes(here.room) &&
+      !latest.current.visited.includes(here.room)
+    )
+      queueVisit(here.room);
+    void flushVisits(adoptProgress);
     check();
     const timer = window.setInterval(check, 30_000);
     return () => window.clearInterval(timer);
-  }, [here.room]);
+  }, [here.room, me, cloudReady, adoptProgress]);
   const [fading, setFading] = useState(false);
   const traveling = useRef(false);
   // Fade out, swap rooms behind the curtain, then fade back in.
@@ -347,7 +375,7 @@ export function App() {
     setSave(next);
     setRestores((n) => n + 1);
   }, []);
-  useCloudSave(save, restoreSave);
+  useCloudSave(save, restoreSave, adoptProgress);
   // the strict chat filter: set in the Friends panel, read by the chat
   const setStrictChat = (strictChat: boolean) =>
     setSave((s) => ({ ...s, settings: { ...s.settings, strictChat } }));
@@ -500,11 +528,6 @@ export function App() {
   // a finished sports game pays its grade, and a bonus for a personal best
   const { pending } = prizeDesk.use();
   useEffect(() => prizeDesk.set({ bests: save.bests }), [save.bests]);
-  // the save as of the last render, for grading a prize when one comes in
-  const latest = useRef(save);
-  useEffect(() => {
-    latest.current = save;
-  }, [save]);
   useEffect(() => {
     if (!pending) return;
     const now = Date.now();
@@ -515,11 +538,18 @@ export function App() {
     }
     setSave((s) => applyPrize(s, pending.game, result));
     postPrize(result.prize, result.daily, result.xp);
+    // an account's score also goes to the server, which pays the real XP
+    void reportScore(
+      pending.game,
+      pending.score,
+      prizeDesk.get().at,
+      adoptProgress,
+    );
     if (!latest.current.settings.muted)
       playFanfare(
         result.prize.grade === "S" ? 1 : result.prize.grade === "A" ? 0.6 : 0,
       );
-  }, [pending]);
+  }, [pending, adoptProgress]);
   // a finished paid shift pays its wage and Hustle XP, and posts the slip
   const shiftPending = shiftDesk.use().pending;
   useEffect(() => {
@@ -693,12 +723,13 @@ export function App() {
           body={save.body}
           setBody={setBody}
           progression={save.progression}
-          onTitle={(title) =>
+          onTitle={(title) => {
             setSave((s) => ({
               ...s,
               progression: selectTitle(s.progression, title),
-            }))
-          }
+            }));
+            void reportTitle(title, adoptProgress);
+          }}
           coins={save.coins}
           wardrobe={save.wardrobe}
           onBuy={(id, store, day) => {
