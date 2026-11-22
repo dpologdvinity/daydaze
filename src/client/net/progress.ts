@@ -115,6 +115,10 @@ export async function flushVisits(adopt: Adopt): Promise<void> {
   }
 }
 
+/** Counts title picks, so a retry of one that a newer pick replaced is
+ * never sent (it would overwrite the newer title on the server). */
+let latestTitle = 0;
+
 /** A title picked on the name tag. A refusal (the server's XP hasn't earned
  * it) falls back to the server's own title. */
 export async function reportTitle(
@@ -124,10 +128,15 @@ export async function reportTitle(
   const session = onlineSession();
   const id = current();
   if (!session || !id) return;
-  const result = await forAccount(id, () => session.progress.setTitle(title));
-  if (current() !== id) return;
+  const mine = ++latestTitle;
+  const result = await forAccount(id, () =>
+    mine === latestTitle
+      ? session.progress.setTitle(title)
+      : Promise.resolve(SWITCHED),
+  );
+  if (current() !== id || mine !== latestTitle) return;
   if (result.ok) return adopt(result.value);
   if (result.status !== 422) return;
   const own = await forAccount(id, () => session.progress.progress());
-  if (own.ok && current() === id) adopt(own.value);
+  if (own.ok && current() === id && mine === latestTitle) adopt(own.value);
 }

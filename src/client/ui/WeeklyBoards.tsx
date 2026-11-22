@@ -40,6 +40,8 @@ export function WeeklyBoards() {
   const [shown, setShown] = useState<Shown | null>(null);
   const { me } = account.use();
   const meId = me?.id ?? "";
+  // bumped when the week ends, to load the new week's board
+  const [week, setWeek] = useState(0);
   const choice = boardChoice(key);
   useEffect(() => {
     const session = onlineSession();
@@ -56,7 +58,15 @@ export function WeeklyBoards() {
     return () => {
       live = false;
     };
-  }, [key, meId]);
+  }, [key, meId, week]);
+  const endsAt = shown?.board?.endsAt;
+  useEffect(() => {
+    if (endsAt === undefined) return;
+    // at least 10 s, so a board that is already over can't reload in a loop
+    const wait = Math.max(endsAt - Date.now() + 1000, 10_000);
+    const timer = window.setTimeout(() => setWeek((n) => n + 1), wait);
+    return () => window.clearTimeout(timer);
+  }, [endsAt]);
   if (!ONLINE || !choice) return null;
   return (
     <section className="weekly-boards" aria-label="Weekly boards">
