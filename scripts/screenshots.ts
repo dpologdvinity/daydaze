@@ -2897,6 +2897,18 @@ const SHOTS: {
     `wears=${WEAR_MIX}&cam=0,0.95,5&target=0,0.95,0`,
     "dance",
   ),
+  // one look on every doll, three poses at a time, to judge it in motion:
+  // the pleated mini over tights, the puffer over cargos, white boots
+  lineupShot(
+    "doll-wear-skirt-poses",
+    "wears=baby-tee~ff2f9a.pleated-mini~9b5cff.tights~141018&holds=pose-foot-up,pose-legs-crossed,pose-lean-back&cam=0,0.8,3.2&target=0,0.8,0",
+    "pose",
+  ),
+  lineupShot(
+    "doll-wear-jacket-poses",
+    "wears=corset~141018.cargos~6b7a2a.puffer~e8e2ff&holds=pose-foot-up,pose-legs-crossed,pose-lean-back&cam=0,0.8,3.2&target=0,0.8,0",
+    "pose",
+  ),
   // the far twin: a three-layer look merged into one draw (mergeGarments)
   lineupShot("doll-wear-far", `wears=${WEAR_MIX}`, "far"),
   // the same three past the LOD distance: the merged, atlas-textured twins
