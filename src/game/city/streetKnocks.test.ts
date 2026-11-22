@@ -95,6 +95,15 @@ test("evasion does not move walkers into city blockers", () => {
   }
 });
 
+test("a pending car dodge takes priority over a nearby siren", () => {
+  const s = newStreet();
+  const at = pedestrianAt(p, 10);
+  const car = { x: at.x - 8, z: at.z, fx: 1, fz: 0, speed: 10 };
+  startle(s, p, 0, 10, car);
+  evadeFastCar(s, p, 10.1, { ...car, siren: true });
+  assert.equal(s.ev, null);
+});
+
 test("with nothing happening she walks her usual path", () => {
   const s = newStreet();
   for (const t of [0, 13.7, 99]) {

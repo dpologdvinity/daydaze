@@ -299,12 +299,13 @@ export function CarHits({ player }: { player: Player }) {
         if (p.bike || !pedestrianOut(p, hour)) continue;
         const half = Math.hypot(p.b[0] - p.a[0], p.b[1] - p.a[1]) / 2;
         if (
+          !streetHits.walkers.get(i)?.ev &&
           Math.hypot(
             (p.a[0] + p.b[0]) / 2 - danger.x,
             (p.a[1] + p.b[1]) / 2 - danger.z,
           ) -
             half >
-          12
+            12
         )
           continue;
         const st = walkerState(i);

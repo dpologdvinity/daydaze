@@ -235,7 +235,12 @@ export function evadeFastCar(
   time: number,
   car: { x: number; z: number; speed: number; siren: boolean },
 ): void {
-  if (busy(s, time) || (!car.siren && car.speed <= 15)) return;
+  if (
+    busy(s, time) ||
+    time - s.noticed < 1.5 ||
+    (!car.siren && car.speed <= 15)
+  )
+    return;
   const at = streetPose(p, s, time, scratch);
   const dx = at.x - car.x;
   const dz = at.z - car.z;
