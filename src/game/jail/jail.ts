@@ -1,6 +1,7 @@
 // Jail sentences and bail, saved as an end time on the wall clock so the
 // countdown survives a reload.
 import { spend } from "../wallet.ts";
+import type { RoomId } from "../roomTypes.ts";
 import { isRecord } from "../typed.ts";
 
 // Sentences run on the wall clock and are saved as an end time, so the
@@ -25,6 +26,15 @@ export function remainingMs(jail: JailSave, now: number): number {
 
 export function isJailed(jail: JailSave, now: number): boolean {
   return remainingMs(jail, now) > 0;
+}
+
+/** The cell block is the only available destination during a sentence. */
+export function jailAllowsTravel(
+  jail: JailSave,
+  now: number,
+  room: RoomId,
+): boolean {
+  return room === "jail" || !isJailed(jail, now);
 }
 
 export function bailCost(jail: JailSave, now: number): number {

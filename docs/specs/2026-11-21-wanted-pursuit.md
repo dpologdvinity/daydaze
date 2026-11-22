@@ -6,7 +6,8 @@ Status: Approved scope for [#209](https://github.com/dpologdvinity/daydaze/issue
 
 A completed theft at the Thrift Temple raises the wanted level to at least
 two stars. The stars appear immediately. On returning to the street, the
-player can flee on foot or by car. While a pursuer can see the player, heat
+player can flee on foot or by car once the city finishes loading. While a
+pursuer can see the player, heat
 holds. Breaking sight starts a search timer, and surviving the search clears
 the wanted level. Existing pedestrian collisions and hit-and-runs feed the
 same heat meter.
@@ -21,8 +22,9 @@ behavior.
 
 Jailed players can wait out their saved sentence, pay coin bail, or shorten
 their sentence through the existing rhythm game's scoring rules. The
-existing jail activities remain available. Release returns the player to the
-jail gate and uses the handwritten release dialogue.
+existing jail activities remain available. While the sentence is active, the
+gate and other room travel are locked. Release returns the player to the jail
+gate and uses the handwritten release dialogue.
 
 ## Approach
 

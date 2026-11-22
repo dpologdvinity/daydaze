@@ -9,6 +9,7 @@ import {
   bailOut,
   goodBehavior,
   isJailed,
+  jailAllowsTravel,
   remainingMs,
   rhythmService,
   sentence,
@@ -78,4 +79,12 @@ test("quitting or missing the rhythm set earns no time off", () => {
   const jail = sentence(NOW, 1);
   assert.equal(rhythmService(jail, NOW, null), jail);
   assert.equal(rhythmService(jail, NOW, "C"), jail);
+});
+
+test("an active sentence blocks travel out of jail until it ends", () => {
+  const jail = sentence(NOW, 1);
+  assert.equal(jailAllowsTravel(jail, NOW, "city"), false);
+  assert.equal(jailAllowsTravel(jail, NOW, "jail"), true);
+  assert.equal(jailAllowsTravel(jail, NOW + 60000, "city"), true);
+  assert.equal(jailAllowsTravel(DEFAULT_JAIL, NOW, "city"), true);
 });

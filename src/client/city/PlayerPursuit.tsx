@@ -15,6 +15,7 @@ import {
   starsOf,
 } from "../../game/wanted/wanted.ts";
 import { Doll } from "../avatar/Doll.tsx";
+import { isSceneReady } from "../world/ready.ts";
 import { setData } from "../world/dataset.ts";
 import { driving } from "../world/driving.ts";
 import { captureWanted, heat, tickHeat, wantedHud } from "../world/heat.ts";
@@ -61,6 +62,10 @@ export function PlayerPursuit({ player }: { player: Player }) {
       const now = performance.now();
       const dt = Math.min(150, now - previous);
       previous = now;
+      if (!isSceneReady() || document.hidden) {
+        captureMs = 0;
+        return;
+      }
       const stars = starsOf(heat.state);
       setData(canvas.dataset, "heat", heat.state.heat.toFixed(0));
       if (stars === 0) {

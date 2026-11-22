@@ -1859,7 +1859,7 @@ test("Thrift Temple: pocketing a dye starts a pursuit that can end in jail", asy
 }) => {
   test.setTimeout(330_000);
   const errors = collectErrors(page);
-  await page.goto(`${STILL}&room=thrift-temple&debug=1`);
+  await page.goto(`${LOW}&room=thrift-temple&debug=1`);
   await page
     .getByRole("button", { name: "Shop at Thrift Temple" })
     .click({ timeout: 150_000 });
@@ -3820,8 +3820,12 @@ test("jail: the sentence counts down, push-ups shorten it, cards deal a hand, an
     );
   }, SAVE);
   await page.goto(`${VELVET}&debug=1`);
-  await page.getByRole("button", { name: "Go to Jail" }).click();
   await expect(roomTitle(page)).toHaveText("City Jail, Block C");
+  await page.getByRole("button", { name: "Go to City", exact: true }).click();
+  await expect(
+    page.getByText("Finish your sentence or pay bail to leave."),
+  ).toBeVisible();
+
   const clock = page.getByRole("timer");
   // a slow load eats into the sentence, so compare before and after cards
   const left = async () => {
