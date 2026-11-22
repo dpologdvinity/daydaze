@@ -36,7 +36,6 @@ LEG_SHARE = {"Bottom": 0.55, "Dress": 0.55, "Legwear": 0.2, "Shoes": 0.2, "Top":
 LEG_RAMP = 0.06  # metres up from a garment's lowest edge over which that pull fades in
 LEGWEAR = -0.002  # metres legwear sits off the skin: inside it, under every other layer
 SKIRT_SNUG = 0.06  # metres: a skirt this near the skin takes the skin's bone weights (see shell)
-SKIRT_SWING = 0.12  # metres below its top a skirt's bone weights are fully smoothed over the cloth (see smooth_weights)
 SHARE = 0.03  # metres: hidden skin this near both pieces of a split suit goes with both
 INTO = 0.02  # metres: a garment whose cloth sits (in the median) this far outside a shoe or less tucks into it...
 INTO_FADE = 0.02  # ...each vertex fading out over this much further, so a stray flap isn't dragged in
@@ -98,10 +97,6 @@ def shell(ctx, name, groups, bands, push, mat, arms=0.3):
         # swing the legs poke through the skirt in patches. Near the skin it
         # follows the skin; the loose hem keeps its own swing.
         weights = proxies.snug_weights(ctx, rest, weights, SKIRT_SNUG)
-        # ...and the weights spread over the cloth, more towards the hem, so
-        # a raised leg lifts a wide swathe of it, not a strip with a gap
-        swing = np.clip((rest[:, 2].max() - rest[:, 2]) / SKIRT_SWING, 0, 1)
-        weights = smooth_weights(weights, polys, swing, 10)
     if len(bands) == 1 and not callable(bands[0][0]):
         # one straight band: cut the cloth on its lines, so a hem is flat
         # and a sleeve end a clean ring
@@ -145,25 +140,6 @@ def shell(ctx, name, groups, bands, push, mat, arms=0.3):
         ctx, ob, weights, {k: d[near] * (1.3 if k == "plus" else 1.05) for k, d in ctx.KEYS.items()}
     )
     return ob
-
-
-def smooth_weights(weights, polys, amount, rounds):
-    """Bone weights averaged with the neighboring vertices' over the polygon
-    mesh, `rounds` times, each vertex by its own `amount` (0 keeps its
-    weights, 1 takes the neighbors' average). A skirt's weights jump from one
-    thigh to the other over a vertex or two at the front; raise a leg and
-    that strip stretches into a V-shaped gap in the hem. Spread over a
-    hand's width, the cloth stretches evenly instead. Rows stay summing to 1."""
-    pairs = {(a, b) for poly in polys for a, b in zip(poly, poly[1:] + poly[:1])}
-    ends = np.array(sorted(pairs | {(b, a) for a, b in pairs}))
-    out = np.array(weights, dtype=float)
-    count = np.bincount(ends[:, 0], minlength=len(out)).astype(float)
-    for _ in range(rounds):
-        total = np.zeros_like(out)
-        np.add.at(total, ends[:, 0], out[ends[:, 1]])
-        mean = total / np.maximum(count, 1)[:, None]
-        out = out * (1 - amount)[:, None] + np.where(count[:, None] > 0, mean, out) * amount[:, None]
-    return out / np.maximum(out.sum(axis=1, keepdims=True), 1e-9)
 
 
 def roomy(low, high, loose, snug):

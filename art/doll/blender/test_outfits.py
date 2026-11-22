@@ -46,17 +46,6 @@ assert len(polys2) == 2
 ends = {tuple(np.round(kept2[i], 6)) for p in polys2 for i in p if kept2[i][0] > 1.2}
 assert ends == {(1.5, 0.0, 0.0), (1.5, 1.0, 0.0)}, f"shared cut edge was split: {ends}"
 
-# a strip of cloth whose weights jump from one bone to the other: smoothing
-# spreads the jump, leaves the fixed end alone and keeps each row summing to 1
-chain = [[i, i + 1] for i in range(7)]
-step = np.array([[1, 0]] * 4 + [[0, 1]] * 4, dtype=float)
-free = np.array([0, 0, 1, 1, 1, 1, 1, 1], dtype=float)
-soft = outfits.smooth_weights(step, chain, free, 6)
-assert np.allclose(soft.sum(axis=1), 1), f"smoothed rows no longer sum to one: {soft}"
-assert np.allclose(soft[:2], step[:2]), f"vertices with amount 0 moved: {soft[:2]}"
-assert np.abs(np.diff(soft[:, 0])).max() < 0.5, f"the jump is still a step: {soft[:, 0]}"
-assert soft[3, 0] < 1 and soft[4, 0] > 0, f"the jump did not spread both ways: {soft[:, 0]}"
-
 # the roomy push: loose below, snug above, easing between
 push = outfits.roomy(0.7, 0.9, 0.022, 0.01)
 assert np.isclose(push(0.5), 0.022) and np.isclose(push(1.0), 0.01) and 0.01 < push(0.8) < 0.022
