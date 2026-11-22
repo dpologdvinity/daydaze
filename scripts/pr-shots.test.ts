@@ -73,3 +73,10 @@ test("the closet's wardrobe code maps to the closet shot", () => {
     ["closet-wardrobe"],
   );
 });
+
+test("the hunger and thirst HUD maps to its own shot", () => {
+  assert.deepEqual(
+    pickShots(["src/game/food/needs.ts"], [...KNOWN, "hungry-hud"]),
+    ["hungry-hud"],
+  );
+});
