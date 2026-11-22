@@ -506,9 +506,8 @@ function stopRoom(car: TrafficCar): number {
 /**
  * Sets the simulation clock to the shared wall time (seconds), so the lights,
  * which read `t.time`, agree between players. The client calls it every frame:
- * dropped frames would otherwise let the lights drift.
- * shortcut: the cars are not synced, only the lights; each client steps its own
- * cars (they also dodge their own player), so they differ between players.
+ * dropped frames would otherwise let the lights drift. The cars themselves
+ * are kept together by src/game/city/trafficSync.ts.
  */
 export function syncClock(t: Traffic, wall: number): void {
   t.time = wall;
