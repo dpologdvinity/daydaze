@@ -1281,9 +1281,6 @@ const SHOTS: {
       ["pajama-party", "skate-diner"],
       ["night-market", "market"],
       ["poetry-slam", "bookshop"],
-      // the quiz host and the glowing pad that opens the hosted round
-      ["trivia-night", "skate-diner"],
-      ["trivia-night", "wine-bar"],
     ] as const
   ).map(([night, room]) => ({
     name: `night-${night}`,
@@ -1297,6 +1294,19 @@ const SHOTS: {
       );
       // let the decor drift for a few frames
       await page.waitForTimeout(3_000);
+    },
+  })),
+  // trivia night: the quiz host and the glowing pad that opens the hosted round
+  ...(["skate-diner", "wine-bar"] as const).map((room) => ({
+    name: `trivia-night-${room}`,
+    query: `room=${room}&night=trivia-night&quality=low&time=23:30`,
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
     },
   })),
   {
