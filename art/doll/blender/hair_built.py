@@ -632,7 +632,7 @@ def tied_path(drape, root, normal, layer, tie, length, mode, rng):
         # the braid's layer
         if rng.random() < 0.4:
             return np.array(pts), under, at_tie
-        bun = tie + up * 0.03
+        bun = tie + up * 0.016
         side = np.cross(up, [1.0, 0.0, 0.0])
         side /= np.linalg.norm(side)
         other = np.cross(up, side)
@@ -1090,9 +1090,10 @@ def fade_texture(fade, size=1024, seed=21):
     dens = fade.density(t, phi) * edge
     top = fade.top
     if top.get("waves"):
-        # 360 waves: ridges rippling out from the crown, bending as they go
+        # 360 waves: ridges rippling out from the crown, spiralling and
+        # bending as they go (not rings)
         crown = t * fade.scalp.metric(np.clip(t, 0, 1), phi)[0]
-        swirl = 0.6 * np.sin(phi * 3 + crown * 40)
+        swirl = 1.4 * np.sin(phi * 2 + crown * 25) + 0.8 * np.sin(phi * 5 - crown * 60) + 2.2 * phi
         ridge = 0.5 + 0.5 * np.sin(2 * np.pi * crown / top["waves"] + swirl)
         clump = 0.25 + 0.6 * ridge + 0.15 * _noise((half, half), 2, rng)
     elif top["clump"]:
