@@ -46,6 +46,11 @@ const AREA_SHOTS: readonly (readonly [RegExp, string])[] = [
     /^src\/(client\/ui\/(WardrobePicker|MirrorPanel)|game\/wardrobe)/,
     "closet-wardrobe",
   ],
+  // the hunger and thirst HUD
+  [
+    /^src\/(game\/food\/needs|client\/food\/|client\/ui\/phone\/FoodHud)/,
+    "hungry-hud",
+  ],
   [/^src\/client\/avatar\//, "plaza"],
   [/^src\/client\/ui\//, "hud-city"],
   [
