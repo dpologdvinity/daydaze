@@ -2703,7 +2703,7 @@ const SHOTS: {
     act: async (page: Page) => {
       await favoriteAndSave(page);
       await page
-        .getByRole("heading", { name: "Saved outfits", exact: true })
+        .getByRole("button", { name: "Delete Brunch", exact: true })
         .scrollIntoViewIfNeeded();
     },
   },
