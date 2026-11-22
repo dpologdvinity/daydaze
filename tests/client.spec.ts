@@ -4,6 +4,8 @@ import { expect, test, type Page } from "@playwright/test";
 import { DEALER_AT } from "../src/game/city/dealer.ts";
 import { GAS_STATIONS, counterOf } from "../src/game/city/gasStations.ts";
 import { BUS_STOPS } from "../src/game/city/transit.ts";
+import { coatCheckBank } from "../src/game/dialogue/coat-check.ts";
+import { fillPlaceholders } from "../src/game/dialogue/pick.ts";
 import { SONGS } from "../src/game/karaokeSongs.ts";
 import { dockAction } from "./dock.ts";
 import { recordTestMap } from "./test-map.ts";
@@ -32,6 +34,7 @@ const SAVE = "daydaze-save-v1";
 /** The fields of the save that the tests read back; every one is optional. */
 interface SavedGame {
   coins?: number;
+  npcs?: Record<string, unknown>;
   garage?: string[];
   records?: string[];
   bouquet?: unknown;
@@ -5084,6 +5087,64 @@ test("the streak milestone card keeps focus on its button until it is dismissed"
   await expect(card).toHaveCount(0);
 });
 
+/** Opens the streak calendar a minute before midnight with Close focused,
+ * then moves the date past midnight and runs the check-in timer: day 3's
+ * milestone card opens over the calendar. */
+async function milestoneOverCalendar(page: Page) {
+  const evening = new Date("2026-01-10T23:59:00Z");
+  const today = Math.floor(evening.getTime() / 86_400_000);
+  // today already counted (day 2), so loading the game celebrates nothing
+  await seedSave(page, {
+    streak: {
+      count: 2,
+      best: 2,
+      last: today,
+      days: [today - 1, today],
+      frozen: [],
+      freezeWeek: -1,
+    },
+  });
+  // timers run but the date stays put, so a slow load can't reach midnight
+  await page.clock.install({ time: evening });
+  await page.clock.setFixedTime(evening);
+  await page.goto(VELVET);
+  await (await fromMenu(page, "Daily streak")).click();
+  const calendar = page.getByRole("dialog", { name: "Daily streak" });
+  const close = calendar.getByRole("button", { name: "Close" });
+  await close.focus();
+  // the next day, then the minute check-in timer
+  await page.clock.setFixedTime(new Date(evening.getTime() + 120_000));
+  await page.clock.fastForward(61_000);
+  const card = page.getByRole("dialog", { name: "Streak milestone" });
+  await expect(
+    card.getByRole("button", { name: "Keep it burning" }),
+  ).toBeFocused();
+  return { calendar, close, card };
+}
+
+test("dismissing a milestone card over the streak calendar gives focus back to Close", async ({
+  page,
+}) => {
+  test.setTimeout(300_000);
+  const { close, card } = await milestoneOverCalendar(page);
+  await card.getByRole("button", { name: "Keep it burning" }).click();
+  await expect(card).toHaveCount(0);
+  await expect(close).toBeFocused();
+});
+
+test("Escape over a milestone card and the streak calendar closes both and focuses Menu", async ({
+  page,
+}) => {
+  test.setTimeout(300_000);
+  const { calendar, card } = await milestoneOverCalendar(page);
+  await page.keyboard.press("Escape");
+  await expect(card).toHaveCount(0);
+  await expect(calendar).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Menu", exact: true }),
+  ).toBeFocused();
+});
+
 test("closet radio groups support arrow-key navigation and single-tab roving focus", async ({
   page,
 }) => {
@@ -5122,5 +5183,34 @@ test("closet radio groups support arrow-key navigation and single-tab roving foc
   await page.keyboard.press("Tab");
   await expect(brows.locator('button[role="radio"]:focus')).toHaveCount(0);
 
+  expect(errors).toEqual([]);
+});
+
+test("an NPC who knows you greets you as someone back from afar, by name, and remembers today", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  const today = Math.floor(Date.now() / 86_400_000);
+  await seedSave(page, {
+    name: "Dana",
+    npcs: { "piercing:vix": { visits: 6, last: today - 20 } },
+  });
+  await page.goto(`${LOW}&room=piercing`);
+  // her greeting is one of her "back after a long time" lines, with the name filled in
+  const returning = (coatCheckBank["greeting-returning"] ?? []).map((entry) =>
+    fillPlaceholders(typeof entry === "string" ? entry : entry.text, {
+      name: "Dana",
+    }),
+  );
+  expect(returning.length).toBeGreaterThanOrEqual(10);
+  const bubble = page.locator(".bubble");
+  await expect(bubble).toBeVisible({ timeout: 150_000 });
+  expect(returning).toContain(
+    ((await bubble.textContent()) ?? "").replace(/^Vix: /, ""),
+  );
+  // the meeting is saved: one more visit, last seen today
+  await expect
+    .poll(async () => (await readSave(page)).npcs?.["piercing:vix"])
+    .toEqual({ visits: 7, last: today });
   expect(errors).toEqual([]);
 });
