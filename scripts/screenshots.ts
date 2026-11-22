@@ -1779,6 +1779,38 @@ const SHOTS: {
   petShot("pet-city", "room=city&view=full&time=12:00", "husky", "Biscuit"),
   petShot("pet-home", "room=apartment", "shibainu", "Kiko"),
   petShot("pet-lab", "room=city&view=full&time=12:00", "labrador", "Maple"),
+  // Vix at the piercing parlor greets a player she has known for weeks and
+  // not seen for twenty days (a returning-greeting bubble, by name)
+  {
+    name: "npc-returning",
+    query: "room=piercing",
+    live: true,
+    act: async (page) => {
+      // the capture waits out 8 quiet seconds and the bubble lasts 6: keep it up
+      await page.addInitScript(() => {
+        const native = window.setTimeout.bind(window);
+        const slowBubble = (
+          handler: TimerHandler,
+          ms?: number,
+          ...args: unknown[]
+        ) => native(handler, ms === 6000 ? 600_000 : ms, ...args);
+        Reflect.set(window, "setTimeout", slowBubble);
+      });
+      await page.evaluate(() => {
+        const day = Math.floor(Date.now() / 86_400_000);
+        localStorage.setItem(
+          "daydaze-save-v1",
+          JSON.stringify({
+            name: "Dana",
+            onboarded: true,
+            npcs: { "piercing:vix": { visits: 6, last: day - 20 } },
+          }),
+        );
+      });
+      await page.reload();
+      await expect(page.locator(".bubble")).toBeVisible({ timeout: 150_000 });
+    },
+  },
   { name: "city-street", query: "room=city&view=full&time=12:00&at=45,11" },
   // Fixed, human-scale compositions for the dream-city architecture review.
   ...[

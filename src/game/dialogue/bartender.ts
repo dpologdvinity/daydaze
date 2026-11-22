@@ -261,6 +261,19 @@ export const bartenderBank: RoleBank = {
     "Took you long enough! Pull up the stool, the usual's coming.",
     "Our favorite face, same as always. Sit, sit.",
   ],
+  "greeting-returning": [
+    "Wait, {name}? Where have you been? The bar's been too quiet.",
+    "Look who finally walked back in! I thought you'd left town.",
+    "It's been forever! Sit, sit, the whole menu changed on you.",
+    "Hey, stranger! Your old stool kept your spot warm, mostly.",
+    "{name}! I was just telling someone about you. Okay, you owe me a story.",
+    "You're back! I'd say I missed you, but I mostly missed the good tips.",
+    "Long time, no see. Pull up a seat and catch me up on everything.",
+    "Is that you? Look at you, back from the great beyond.",
+    "Well, well, well. The prodigal regular returns. Welcome back.",
+    "Hey, {name}! Don't worry, I remember what you like. Sit down.",
+    "A whole stretch of nothing and now you show up? I'm thrilled, honestly.",
+  ],
   "late-night": [
     "Late-night crowd, my favorite. Sit wherever.",
     {
