@@ -1,9 +1,12 @@
-"""Hair built here because no free download covers it (#396): knotless
-braids and a taper fade. Each is one object named Hair_<id>, fitted to the
-doll the same way the MakeHuman proxies are: every vertex mixes the bone
-weights and shape-key deltas of the skin under it.
+"""Hair built here because no free download covers it (#396): braid and
+fade variants, each one data row (BRAIDS, FADES) with an id, a label and its
+parameters, so a new variant costs a line. Every row builds two objects,
+Hair_<id> (near, under BUDGET triangles) and Hair_<id>@lo (a hand-made far
+model about a fifth of that; build_doll.py writes it as hair-<id>-lo.glb),
+fitted to the doll the way the MakeHuman proxies are: every vertex mixes
+the bone weights and shape-key deltas of the skin under it.
 
-Both styles grow from one map of the scalp (Scalp): rays from the middle of
+All of them grow from one map of the scalp (Scalp): rays from the middle of
 the head, at the eyes' height, out to the skin. A ray's direction is a ring
 `t` (0 at the crown, 1 on the hairline) and an azimuth `phi` (0 at the back,
 +-pi at the front, + on the doll's left), so the hairline is one curve,
@@ -11,17 +14,21 @@ HAIRLINE, drawn round the forehead, temples, ears and nape. The scalp caps'
 UVs are the same map laid flat as a disk (crown in the middle, hairline on
 the rim), so textures generated in (t, phi) line up with the geometry.
 
-- Knotless braids: the scalp is parted into brick-laid boxes, ring by ring
-  from the crown (the rows follow the hairline); a braid roots in each box,
-  lies along the scalp away from the part and falls under gravity, clear of
-  the head and body: front braids fall in front of the shoulders, the rest
-  behind them. A braid is a ridged ribbon textured with a real plait
-  (braid_strip.py renders it from Blender's Braid Hair Curves) and bent
-  normals that light it like a cord. The cap under them shows the parts.
-  Where a braid hangs it rides the torso skin nearest it (never the arms),
-  so it follows the back and shoulders rather than the head alone.
-- Taper fade: a scalp cap whose hair thins into skin at the temples, round
-  the ears and at the nape, under a few shells of short coily hair on top.
+- Braids (braid_style): the scalp is parted (brick, box or triangle parts,
+  irregular, a Voronoi diagram of nudged box middles); a braid roots in
+  each part, lies along the scalp and falls under gravity clear of the head
+  and body (front braids in front of the shoulders, the rest behind), or
+  gathers to a tie: a ponytail (its tail on the pony bone, so it swings), a
+  top bun, or the top half up. A braid is a ridged ribbon textured from the
+  shared lock atlas (braid_strip.py renders a plait, a twist and a curl
+  from Blender's own hair node groups) with bent normals that light it like
+  a cord. The cap under them draws the parts as fine dark creases. Where a
+  braid hangs it rides the torso skin nearest it (never the arms).
+- Fades (fade_style): a scalp layer whose hair thins into skin by the
+  fade's height (low, mid, high, skin, drop or burst), a solid core and two
+  fuzz shells on top (coils, sponge curls, a short afro, 360 waves, a
+  brushed crop or a buzz), a lined-up front edge, and optionally a shaved
+  hard part or line design. One atlas holds all four layers.
 """
 
 import json
