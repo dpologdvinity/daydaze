@@ -394,7 +394,8 @@ button:focus-visible {
   background: rgb(255 47 154 / 0.15);
 }
 
-.chip[aria-checked="true"] {
+.chip[aria-checked="true"],
+.chip[aria-pressed="true"] {
   border-color: transparent;
   background: var(--glow-button);
   color: #fff;
@@ -3865,4 +3866,44 @@ button:focus-visible {
   .streak-celebrate {
     animation: none;
   }
+}
+
+/* The closet's search, saved outfits and favorites (WardrobePicker.tsx). */
+.closet-find,
+.closet-outfits {
+  display: grid;
+  gap: 10px;
+}
+
+.closet-find input,
+.closet-outfits input {
+  padding: 7px 10px;
+  background: rgb(0 0 0 / 0.25);
+  color: var(--champagne);
+  border: 1px solid rgb(255 207 106 / 0.4);
+  border-radius: 6px;
+}
+
+.closet-find button.chip,
+.chip.favorite {
+  justify-self: start;
+}
+
+.closet-empty {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.closet-saved {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.closet-saved li {
+  display: flex;
+  gap: 8px;
 }

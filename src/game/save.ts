@@ -41,6 +41,7 @@ import { cleanGarage, STARTER } from "./garage.ts";
 import { cleanGraphics, defaultGraphics, type Graphics } from "./graphics.ts";
 import { cleanRecords, type RecordId } from "./records.ts";
 import { cleanWardrobe, unlockedLook } from "./shop.ts";
+import { cleanCloset, NO_CLOSET, type ClosetSave } from "./closet.ts";
 import { isCoins, STARTING_COINS } from "./wallet.ts";
 import {
   cleanProgression,
@@ -58,6 +59,8 @@ export type SaveV1 = {
   /** Shop items the player owns; unowned shop looks are never worn. */
   wardrobe: string[];
   body: BodyShape;
+  /** Favorite garments and saved outfits (closet.ts); older saves start empty. */
+  closet: ClosetSave;
   settings: {
     /** The Graphics menu: a preset or custom switches (graphics.ts). */
     graphics: Graphics;
@@ -126,6 +129,7 @@ export function createDefaultSave(name: string): SaveV1 {
     coins: STARTING_COINS,
     wardrobe: [],
     body: { ...DEFAULT_BODY },
+    closet: { ...NO_CLOSET, favorites: [], outfits: [] },
     settings: {
       graphics: defaultGraphics(),
       muted: false,
@@ -208,6 +212,7 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
     coins: isCoins(coins) ? coins : defaults.coins,
     wardrobe,
     body: cleanBody(save.get("body")),
+    closet: cleanCloset(save.get("closet")),
     settings: {
       graphics,
       muted: typeof muted === "boolean" ? muted : defaults.settings.muted,

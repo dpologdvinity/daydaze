@@ -2654,6 +2654,59 @@ const SHOTS: {
       );
     },
   },
+  // the closet's search, style filter, favorites and saved outfits
+  // (WardrobePicker.tsx): a long Top row, a search with no match
+  {
+    name: "closet-find",
+    query: "room=city&view=full",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      await page
+        .getByRole("button", { name: "Dressing room", exact: true })
+        .click();
+      await page.getByRole("tab", { name: "Outfit", exact: true }).click();
+      await page
+        .getByRole("radiogroup", { name: "Top", exact: true })
+        .getByRole("radio", { name: "Striped shirt", exact: true })
+        .click();
+      await page
+        .getByRole("button", { name: "Favorite Striped shirt", exact: true })
+        .click();
+      await page.getByRole("textbox", { name: "Outfit name" }).fill("Brunch");
+      await page
+        .getByRole("button", { name: "Save this outfit", exact: true })
+        .click();
+      await page
+        .getByRole("searchbox", { name: "Search clothes" })
+        .scrollIntoViewIfNeeded();
+      await page.getByRole("status").waitFor({ state: "detached" });
+    },
+  },
+  {
+    name: "closet-find-empty",
+    query: "room=city&view=full",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      await page
+        .getByRole("button", { name: "Dressing room", exact: true })
+        .click();
+      await page.getByRole("tab", { name: "Outfit", exact: true }).click();
+      await page
+        .getByRole("searchbox", { name: "Search clothes" })
+        .fill("zzzz");
+      await page.getByRole("status").waitFor();
+    },
+  },
   {
     name: "zoom-room",
     query: "room=salon",

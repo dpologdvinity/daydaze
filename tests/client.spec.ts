@@ -324,6 +324,85 @@ test("the closet mixes garments slot by slot, and a one-piece replaces top and b
   expect(errors).toEqual([]);
 });
 
+test("the closet searches and filters garments, keeps favorites and saves outfits", async ({
+  page,
+}) => {
+  test.setTimeout(300_000);
+  const errors = collectErrors(page);
+  await page.goto(VELVET);
+  await page
+    .getByRole("button", { name: "Dressing room", exact: true })
+    .click();
+  await expect(canvasOf(page)).toHaveAttribute("data-studio", "ready", {
+    timeout: 150_000,
+  });
+  await page.getByRole("tab", { name: "Outfit", exact: true }).click();
+  const top = page.getByRole("radiogroup", { name: "Top", exact: true });
+  const chips = top.getByRole("radio");
+  const all = await chips.count();
+  // search narrows every row; the worn garment stays so the group has a value
+  const search = page.getByRole("searchbox", { name: "Search clothes" });
+  await search.fill("zzzz");
+  await expect(page.getByRole("status")).toContainText("No clothes match");
+  await search.fill("striped");
+  await expect(top.getByRole("radio", { name: "Striped shirt" })).toBeVisible();
+  expect(await chips.count()).toBeLessThan(all);
+  await search.fill("");
+  await expect(chips).toHaveCount(all);
+  // the style filter
+  await page
+    .getByRole("radiogroup", { name: "Style", exact: true })
+    .getByRole("radio", { name: "Formal", exact: true })
+    .click();
+  await expect(top.getByRole("radio", { name: "Suit jacket" })).toBeVisible();
+  await expect(top.getByRole("radio", { name: "Fitted tee" })).toHaveCount(0);
+  await page
+    .getByRole("radiogroup", { name: "Style", exact: true })
+    .getByRole("radio", { name: "All styles", exact: true })
+    .click();
+  // a favorite floats to the front of its row and filters on its own
+  await top.getByRole("radio", { name: "Striped shirt", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Favorite Striped shirt", exact: true })
+    .click();
+  await expect(chips.first()).toHaveAccessibleName("Striped shirt");
+  await page
+    .getByRole("button", { name: "Favorites only", exact: true })
+    .click();
+  await expect(chips).toHaveCount(1);
+  await page
+    .getByRole("button", { name: "Favorites only", exact: true })
+    .click();
+  // a saved outfit is worn again after the look changes, and survives a reload
+  await page.getByRole("textbox", { name: "Outfit name" }).fill("Brunch");
+  await page
+    .getByRole("button", { name: "Save this outfit", exact: true })
+    .click();
+  await top.getByRole("radio", { name: "Fitted tee", exact: true }).click();
+  const wear = () => readSave(page).then(({ look }) => look?.wear);
+  await expect.poll(wear).toMatch(/^[a-z-]+#[0-9a-f]{6}\+tee#/);
+  await page.getByRole("button", { name: "Wear Brunch", exact: true }).click();
+  await expect.poll(wear).toMatch(/striped-shirt#/);
+  await page.reload();
+  await page
+    .getByRole("button", { name: "Dressing room", exact: true })
+    .click();
+  await page.getByRole("tab", { name: "Outfit", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Wear Brunch", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Favorite Striped shirt", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await page
+    .getByRole("button", { name: "Delete Brunch", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Wear Brunch", exact: true }),
+  ).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
 test("expanded face shapes show previews and persist with custom colors", async ({
   page,
 }) => {
