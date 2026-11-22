@@ -28,6 +28,8 @@ import { hdr } from "./shared/materials.ts";
 import { NeonText, SCRIPT } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
+import { TriviaHost } from "./shared/TriviaHost.tsx";
+import type { MinigameId } from "../../game/hotspots.ts";
 import { cellar, levelNow } from "./cellar/session.ts";
 
 const { x0, x1, z0, z1 } = BOUNDS;
@@ -252,7 +254,13 @@ function PouringGlass() {
  * stacked casks in the corner, and Inès the sommelier, who'll let you pour
  * a flight.
  */
-export function WineBar({ onPick }: { onPick: PickHandler }): JSX.Element {
+export function WineBar({
+  onPick,
+  onGame,
+}: {
+  onPick: PickHandler;
+  onGame: (game: MinigameId) => void;
+}): JSX.Element {
   const room = useCellar();
   const stools = useMemo(
     () => STOOL_XS.map((x) => [x, 0, STOOL_Z, 0] as const),
@@ -311,6 +319,7 @@ export function WineBar({ onPick }: { onPick: PickHandler }): JSX.Element {
           <CrowdFigure look={g.look} move="chatting" seed={602 + i} />
         </group>
       ))}
+      <TriviaHost room="wine-bar" onGame={onGame} />
     </>
   );
 }

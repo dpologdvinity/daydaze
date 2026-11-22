@@ -834,7 +834,7 @@ export function App() {
         )}
         {game && (
           <LazyPanel onContinue={() => endGame(null)}>
-            <GameOverlay game={game} onClose={endGame} />
+            <GameOverlay game={game} room={here.room} onClose={endGame} />
           </LazyPanel>
         )}
         {here.room === "apartment" && shopping && (
