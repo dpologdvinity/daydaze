@@ -393,6 +393,7 @@ export function Traffic({ player }: { player: Player }) {
     bodies.reset();
     // the heist's cars go first, so a busy street never crowds them out
     heistFrame(heistClock(), heist);
+    streetHits.heist = heist;
     let heistCars = 0;
     for (let k = 0; k <= COPS; k++) {
       const car = k < COPS ? heist.cops[k] : heist.getaway;
@@ -417,6 +418,7 @@ export function Traffic({ player }: { player: Player }) {
     }
     // the police chase cars: fleeing sports car and squad cars
     chaseFrame(chaseClock(), chase);
+    streetHits.chase = chase;
     let chaseCars = 0;
     for (let k = 0; k <= CHASE_COPS; k++) {
       const car = k < CHASE_COPS ? chase.cops[k] : chase.fleeing;
