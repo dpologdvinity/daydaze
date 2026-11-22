@@ -13,6 +13,7 @@
 import { appendFileSync, writeFileSync } from "node:fs";
 import { chromium, expect, type Page } from "@playwright/test";
 import { DEFAULT_LOOK } from "../src/game/look.ts";
+import { createDefaultSave, serializeSave } from "../src/game/save.ts";
 import { dockAction } from "../tests/dock.ts";
 import { SEATS, homeSeats } from "../src/game/seats.ts";
 import { CHAT_GROUPS } from "../src/game/city/chatGroups.ts";
@@ -2477,6 +2478,59 @@ const SHOTS: {
       const boards = page.getByRole("region", { name: "Weekly boards" });
       await expect(boards.getByText(/^You: #4/)).toBeVisible();
       await boards.scrollIntoViewIfNeeded();
+    },
+  },
+  {
+    // a finished game for an account: the card shows the server's XP and note
+    name: "prize-note",
+    query: "room=city&view=full&online=1&prizehold=1",
+    before: async (page) => {
+      const json = (body: unknown) => ({
+        contentType: "application/json",
+        body: JSON.stringify(body),
+      });
+      await page.route("**/api/**", (route) => {
+        const { pathname } = new URL(route.request().url());
+        if (pathname === "/api/me")
+          return route.fulfill(
+            json({
+              id: "u_" + "a".repeat(20),
+              name: "Dusty",
+              isGuest: false,
+              isAdmin: false,
+            }),
+          );
+        if (pathname === "/api/save")
+          return route.fulfill(
+            json(JSON.parse(serializeSave(createDefaultSave("Dusty")))),
+          );
+        if (pathname === "/api/progress/score")
+          return route.fulfill(
+            json({
+              xp: { street: 0, fame: 125, hustle: 0 },
+              title: null,
+              dailyXpLeft: 4875,
+              grade: "S",
+              ladder: "fame",
+              gained: 125,
+              best: true,
+              capped: false,
+            }),
+          );
+        return route.fulfill({ status: 404, body: "{}" });
+      });
+    },
+    act: async (page) => {
+      // the account's save has come down, so the score may go up
+      await page.waitForFunction(
+        "import('/src/client/net/account.ts').then((m) => m.account.get().cloudReady)",
+        null,
+        { timeout: 300_000 },
+      );
+      await page.evaluate(
+        "import('/src/client/ui/prizeDesk.ts').then((m) => m.award('bowling', 190))",
+      );
+      await expect(page.getByText("4,875 XP left today")).toBeVisible();
     },
   },
   {
