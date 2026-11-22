@@ -146,10 +146,10 @@ export function deleteOutfit(closet: ClosetSave, name: string): ClosetSave {
  * name and wear. Saves from before the closet, or malformed, start empty. */
 export function cleanCloset(value: unknown): ClosetSave {
   if (typeof value !== "object" || value === null) return { ...NO_CLOSET };
-  const favs: unknown = Reflect.get(value, "favorites");
+  const picks: unknown = Reflect.get(value, "favorites");
   const outs: unknown = Reflect.get(value, "outfits");
   const favorites = new Set<GarmentId>();
-  for (const id of Array.isArray(favs) ? favs : []) {
+  for (const id of Array.isArray(picks) ? picks : []) {
     const g = garment(id);
     if (g) favorites.add(g.id);
   }

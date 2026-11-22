@@ -106,15 +106,32 @@ export function WardrobePicker({
       </section>
       {ROWS.map(({ slot, label, optional }) => {
         const worn = wear[slot];
+        const wornGarment = worn && garment(worn.id);
+        const inRow = shown.filter((g) => g.slot === slot);
         // the worn garment stays listed, so the radio group always has a value
         const options = [
           ...(optional ? [{ id: "none", label: "None" }] : []),
-          ...shown.filter((g) => g.slot === slot || g.id === worn?.id),
+          ...(wornGarment && !inRow.includes(wornGarment) ? [wornGarment] : []),
+          ...inRow,
         ];
-        const wornGarment = worn && garment(worn.id);
         return (
           <section key={slot} data-slot={slot}>
-            <h3>{label}</h3>
+            <div className="closet-head">
+              <h3>{label}</h3>
+              {wornGarment && (
+                <button
+                  type="button"
+                  className="chip favorite"
+                  aria-pressed={closet.favorites.includes(wornGarment.id)}
+                  aria-label={`Favorite ${wornGarment.label}`}
+                  onClick={() =>
+                    setCloset(toggleFavorite(closet, wornGarment.id))
+                  }
+                >
+                  {closet.favorites.includes(wornGarment.id) ? "★" : "☆"}
+                </button>
+              )}
+            </div>
             <Chips
               label={label}
               options={options}
@@ -127,19 +144,6 @@ export function WardrobePicker({
                 )
               }
             />
-            {wornGarment && (
-              <button
-                type="button"
-                className="chip favorite"
-                aria-pressed={closet.favorites.includes(wornGarment.id)}
-                aria-label={`Favorite ${wornGarment.label}`}
-                onClick={() =>
-                  setCloset(toggleFavorite(closet, wornGarment.id))
-                }
-              >
-                {closet.favorites.includes(wornGarment.id) ? "★" : "☆"}
-              </button>
-            )}
             {worn && (
               <ColorPicker
                 label={`${label} color`}

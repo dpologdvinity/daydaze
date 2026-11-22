@@ -3884,9 +3884,24 @@ button:focus-visible {
   border-radius: 6px;
 }
 
-.closet-find button.chip,
-.chip.favorite {
+.closet-find button.chip {
   justify-self: start;
+}
+
+/* a row's heading with the favorite star beside it */
+.closet-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 9px;
+}
+
+.closet-head h3 {
+  margin: 0;
+}
+
+.chip.favorite {
+  padding: 3px 10px;
 }
 
 .closet-empty {

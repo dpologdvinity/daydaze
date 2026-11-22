@@ -335,6 +335,34 @@ function walkStrip(
   };
 }
 
+/** Opens the closet's Outfit tab, wears the striped shirt, favorites it and
+ * saves the look as "Brunch" (the closet-find shots). */
+async function favoriteAndSave(page: Page): Promise<void> {
+  await page.waitForFunction(
+    () => document.querySelector("canvas")?.dataset.frames === "10",
+    null,
+    { timeout: 300_000 },
+  );
+  await page
+    .getByRole("button", { name: "Dressing room", exact: true })
+    .click();
+  await page.getByRole("tab", { name: "Outfit", exact: true }).click();
+  await page
+    .getByRole("radiogroup", { name: "Top", exact: true })
+    .getByRole("radio", { name: "Striped shirt", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Favorite Striped shirt", exact: true })
+    .click();
+  await page.getByRole("textbox", { name: "Outfit name" }).fill("Brunch");
+  await page
+    .getByRole("button", { name: "Save this outfit", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Wear Brunch", exact: true })
+    .waitFor();
+}
+
 /**
  * Clicks the debug panel's "Debug: a minute later" button from the DOM, so it
  * still works while the panel is hidden for a recording (a display:none button
@@ -2655,36 +2683,28 @@ const SHOTS: {
     },
   },
   // the closet's search, style filter, favorites and saved outfits
-  // (WardrobePicker.tsx): a long Top row, a search with no match
+  // (WardrobePicker.tsx): a long Top row with a favorite, a saved outfit, and
+  // a search with no match
   {
     name: "closet-find",
     query: "room=city&view=full",
     live: true,
     act: async (page: Page) => {
-      await page.waitForFunction(
-        () => document.querySelector("canvas")?.dataset.frames === "10",
-        null,
-        { timeout: 300_000 },
-      );
-      await page
-        .getByRole("button", { name: "Dressing room", exact: true })
-        .click();
-      await page.getByRole("tab", { name: "Outfit", exact: true }).click();
-      await page
-        .getByRole("radiogroup", { name: "Top", exact: true })
-        .getByRole("radio", { name: "Striped shirt", exact: true })
-        .click();
-      await page
-        .getByRole("button", { name: "Favorite Striped shirt", exact: true })
-        .click();
-      await page.getByRole("textbox", { name: "Outfit name" }).fill("Brunch");
-      await page
-        .getByRole("button", { name: "Save this outfit", exact: true })
-        .click();
+      await favoriteAndSave(page);
       await page
         .getByRole("searchbox", { name: "Search clothes" })
         .scrollIntoViewIfNeeded();
-      await page.getByRole("status").waitFor({ state: "detached" });
+    },
+  },
+  {
+    name: "closet-saved",
+    query: "room=city&view=full",
+    live: true,
+    act: async (page: Page) => {
+      await favoriteAndSave(page);
+      await page
+        .getByRole("heading", { name: "Saved outfits", exact: true })
+        .scrollIntoViewIfNeeded();
     },
   },
   {

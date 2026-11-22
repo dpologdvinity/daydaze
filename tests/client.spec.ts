@@ -344,6 +344,7 @@ test("the closet searches and filters garments, keeps favorites and saves outfit
   const search = page.getByRole("searchbox", { name: "Search clothes" });
   await search.fill("zzzz");
   await expect(page.getByRole("status")).toContainText("No clothes match");
+  await expect(top.getByRole("radio", { checked: true })).toHaveCount(1);
   await search.fill("striped");
   await expect(top.getByRole("radio", { name: "Striped shirt" })).toBeVisible();
   expect(await chips.count()).toBeLessThan(all);

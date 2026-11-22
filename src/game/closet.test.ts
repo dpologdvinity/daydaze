@@ -38,9 +38,9 @@ test("filterGarments narrows by style and to favorites", () => {
   const formal = filterGarments(GARMENTS, { style: "formal" }, []);
   assert.ok(formal.some((g) => g.id === "suit-jacket"));
   assert.ok(formal.every((g) => GARMENT_STYLES[g.id].includes("formal")));
-  const favs = filterGarments(GARMENTS, { favoritesOnly: true }, ["tee"]);
+  const picks = filterGarments(GARMENTS, { favoritesOnly: true }, ["tee"]);
   assert.deepEqual(
-    favs.map((g) => g.id),
+    picks.map((g) => g.id),
     ["tee"],
   );
 });
