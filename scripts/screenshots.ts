@@ -1728,6 +1728,16 @@ const SHOTS: {
     query: "room=piercing",
     live: true,
     act: async (page) => {
+      // the capture waits out 8 quiet seconds and the bubble lasts 6: keep it up
+      await page.addInitScript(() => {
+        const native = window.setTimeout.bind(window);
+        const slowBubble = (
+          handler: TimerHandler,
+          ms?: number,
+          ...args: unknown[]
+        ) => native(handler, ms === 6000 ? 600_000 : ms, ...args);
+        Reflect.set(window, "setTimeout", slowBubble);
+      });
       await page.evaluate(() => {
         const day = Math.floor(Date.now() / 86_400_000);
         localStorage.setItem(
