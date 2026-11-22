@@ -6,6 +6,8 @@
 
 import { newStreet, type StreetState } from "../../game/city/streetKnocks.ts";
 import type { TrafficHit } from "../../game/city/traffic.ts";
+import type { HeistFrame } from "../../game/city/heist.ts";
+import type { ChaseFrame } from "../../game/city/chase.ts";
 
 export const streetHits: {
   /** Walkers a car has come near, by their PEDESTRIANS index. */
@@ -14,7 +16,9 @@ export const streetHits: {
   hit: TrafficHit | null;
   /** The hard stops traffic has made for the player in the road. */
   alarms: number;
-} = { walkers: new Map(), hit: null, alarms: 0 };
+  heist: HeistFrame | null;
+  chase: ChaseFrame | null;
+} = { walkers: new Map(), hit: null, alarms: 0, heist: null, chase: null };
 
 /** Walker `i`'s street state, made the first time a car comes near her. */
 export function walkerState(i: number): StreetState {
