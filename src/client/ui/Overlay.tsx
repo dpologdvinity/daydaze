@@ -9,6 +9,7 @@ import type { ClosetSave } from "../../game/closet.ts";
 import type { ShiftsSave } from "../../game/shifts.ts";
 import type { Progression } from "../../game/progression/progression.ts";
 import { ProgressionHud, LadderPanel } from "./Progression.tsx";
+import { WeeklyBoards } from "./WeeklyBoards.tsx";
 import { ActionDock, DockAction } from "./ActionDock.tsx";
 import { LazyPanel } from "./ReloadBoundary.tsx";
 import { ClubNightTicker } from "./EventCalendar.tsx";
@@ -745,6 +746,7 @@ export function Overlay({
               shifts={shifts}
               onTitle={onTitle}
             />
+            <WeeklyBoards />
             <div className="game-menu-items" role="group" aria-label="Game">
               <button
                 type="button"

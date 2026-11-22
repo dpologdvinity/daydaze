@@ -13,6 +13,7 @@
 import { appendFileSync, writeFileSync } from "node:fs";
 import { chromium, expect, type Page } from "@playwright/test";
 import { DEFAULT_LOOK } from "../src/game/look.ts";
+import { createDefaultSave, serializeSave } from "../src/game/save.ts";
 import { dockAction } from "../tests/dock.ts";
 import { SEATS, homeSeats } from "../src/game/seats.ts";
 import { CHAT_GROUPS } from "../src/game/city/chatGroups.ts";
@@ -896,6 +897,8 @@ const SHOTS: {
   /** A shot of the dev lineup page (lineup.html), not the game: its doll rows
    * report readiness and renderer numbers on <body>, not a canvas. */
   lineup?: boolean;
+  /** Runs before the page loads, e.g. to stand in for the server. */
+  before?: (page: Page) => Promise<void>;
   /** Drives the scene before the capture, e.g. to start a race. */
   act?: (page: Page) => Promise<void>;
 }[] = [
@@ -2583,6 +2586,114 @@ const SHOTS: {
     },
   },
   {
+    // an account's game menu, with a weekly board from a stand-in server
+    name: "weekly-board",
+    query: "room=city&view=full&online=1",
+    viewport: { width: 1280, height: 1000 },
+    before: async (page) => {
+      const json = (body: unknown) => ({
+        contentType: "application/json",
+        body: JSON.stringify(body),
+      });
+      const week = 7 * 24 * 3_600_000;
+      const startsAt = Math.floor(Date.now() / week) * week;
+      const names = ["Mochi", "Vela", "Juniper", "Rue", "Odessa", "Pip"];
+      await page.route("**/api/**", (route) => {
+        const path = new URL(route.request().url()).pathname;
+        if (path === "/api/me")
+          return route.fulfill(
+            json({
+              id: "u_" + "a".repeat(20),
+              name: "Dusty",
+              isGuest: false,
+              isAdmin: false,
+            }),
+          );
+        if (path.startsWith("/api/leaderboard/"))
+          return route.fulfill(
+            json({
+              week: 1,
+              startsAt,
+              endsAt: startsAt + week,
+              entries: names.map((name, i) => ({
+                name,
+                rank: i + 1,
+                value: 4200 - i * 530,
+              })),
+              you: { rank: 4, value: 2610 },
+            }),
+          );
+        return route.fulfill({ status: 404, body: "{}" });
+      });
+    },
+    act: async (page) => {
+      await page.getByRole("button", { name: "Menu", exact: true }).click();
+      const boards = page.getByRole("region", { name: "Weekly boards" });
+      await expect(boards.getByText(/^You: #4/)).toBeVisible();
+      await boards.scrollIntoViewIfNeeded();
+    },
+  },
+  {
+    // a finished game for an account: the card shows the server's XP and note
+    name: "prize-note",
+    query: "room=city&view=full&online=1&prizehold=1",
+    before: async (page) => {
+      const json = (body: unknown) => ({
+        contentType: "application/json",
+        body: JSON.stringify(body),
+      });
+      await page.route("**/api/**", (route) => {
+        const { pathname } = new URL(route.request().url());
+        if (pathname === "/api/me")
+          return route.fulfill(
+            json({
+              id: "u_" + "a".repeat(20),
+              name: "Dusty",
+              isGuest: false,
+              isAdmin: false,
+            }),
+          );
+        if (pathname === "/api/save")
+          return route.fulfill(
+            json(
+              JSON.parse(
+                serializeSave({
+                  ...createDefaultSave("Dusty"),
+                  onboarded: true,
+                }),
+              ),
+            ),
+          );
+        if (pathname === "/api/progress/score")
+          return route.fulfill(
+            json({
+              xp: { street: 0, fame: 125, hustle: 0 },
+              title: null,
+              dailyXpLeft: 4875,
+              grade: "S",
+              ladder: "fame",
+              gained: 125,
+              best: true,
+              capped: false,
+            }),
+          );
+        return route.fulfill({ status: 404, body: "{}" });
+      });
+    },
+    act: async (page) => {
+      // the account's save has come down, so the score may go up
+      await page.waitForFunction(
+        "import('/src/client/net/account.ts').then((m) => m.account.get().cloudReady)",
+        null,
+        { timeout: 300_000 },
+      );
+      await page.evaluate(
+        "import('/src/client/ui/prizeDesk.ts').then((m) => m.award('bowling', 190))",
+      );
+      await expect(page.getByText("4,875 XP left today")).toBeVisible();
+    },
+  },
+  {
     name: "credits",
     query: "room=city&view=full",
     act: async (page) => {
@@ -3198,6 +3309,7 @@ if (process.argv[2] === "--matrix") {
     const url = shot.lineup
       ? `${BASE}/src/client/avatar/lineup.html?human=1&still=1&${shot.query}`
       : `${BASE}/?${tier}${still}&${shot.query}`;
+    if (shot.before) await shot.before(page);
     await page.goto(url, { timeout: 300_000 });
     if (shot.act) await shot.act(page);
     const canvas = page.getByRole("img", { name: "3D room view" });
