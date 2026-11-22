@@ -214,6 +214,20 @@ export class OnlineSession {
     return this.api.putSave(save);
   }
 
+  /** The account's server-owned progress calls (accounts only; guests get a
+   * 403), and the weekly boards, which anyone may read. */
+  get progress(): Pick<
+    Api,
+    | "progress"
+    | "submitScore"
+    | "visit"
+    | "setTitle"
+    | "scoreBoard"
+    | "ladderBoard"
+  > {
+    return this.api;
+  }
+
   /**
    * Call after login, signup or logout: re-reads the cookie session (or becomes
    * a guest) and rejoins the current room copy, in place, as that identity.

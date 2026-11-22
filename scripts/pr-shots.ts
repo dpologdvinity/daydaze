@@ -55,6 +55,11 @@ const AREA_SHOTS: readonly (readonly [RegExp, string])[] = [
   [/^src\/client\/avatar\//, "plaza"],
   // the game menu's Careers group
   [/^src\/(game\/careers|client\/ui\/Progression)/, "careers-menu"],
+  // the weekly boards in the game menu and the server calls that feed them
+  [
+    /^src\/(client\/ui\/WeeklyBoards|net\/client\/progressSync)/,
+    "weekly-board",
+  ],
   [/^src\/client\/ui\//, "hud-city"],
   [
     /^src\/(game\/shifts|client\/rooms\/shared\/(Order|order))/,

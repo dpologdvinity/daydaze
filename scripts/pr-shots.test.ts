@@ -80,3 +80,10 @@ test("the hunger and thirst HUD maps to its own shot", () => {
     ["hungry-hud"],
   );
 });
+
+test("the weekly boards panel shows its own shot, not the generic HUD one", () => {
+  assert.deepEqual(
+    pickShots(["src/client/ui/WeeklyBoards.tsx"], [...KNOWN, "weekly-board"]),
+    ["weekly-board"],
+  );
+});
