@@ -1,13 +1,16 @@
 // Mounts the open minigame. Each one is lazy-loaded, since they are big and
 // rarely opened.
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState } from "react";
 import { hotspotsIn, type MinigameId } from "../../game/hotspots.ts";
 import type { RoomId } from "../../game/rooms.ts";
+import { hostedTrivia } from "../../game/triviaNight.ts";
 import type { PayGrade } from "../../game/wallet.ts";
 import type { PrizeGame } from "../../game/prizes.ts";
 import type { BoothId } from "../../minigames/midway/engine.ts";
 import { award } from "./prizeDesk.ts";
 import { useReducedMotion } from "../motion.ts";
+import { nightClock } from "../city/eventClocks.ts";
+import { useNight } from "../rooms/useNight.ts";
 
 // The minigames are big and rarely opened, so their code loads on first play.
 const Bassline = lazy(() =>
@@ -53,7 +56,9 @@ export function VenueGames({
   room: RoomId;
   onPlay: (game: MinigameId) => void;
 }) {
-  const spots = hotspotsIn(room);
+  // a night's games show while it is on (the hook re-draws as it starts)
+  useNight(room);
+  const spots = hotspotsIn(room, nightClock());
   if (spots.length === 0) return null;
   return (
     <nav className="venue-games" aria-label="Games in this room">
@@ -76,14 +81,19 @@ const PRIZES: Partial<Record<MinigameId, PrizeGame>> = {
 /** The open minigame as a modal dialog over the world; closing it returns to the room. */
 export function GameOverlay({
   game,
+  room,
   onClose,
 }: {
   game: MinigameId;
+  /** Where the game was opened: a trivia night there hosts the trivia. */
+  room: RoomId;
   /** Receives the finished round's grade to pay, or null when the player
    * quit or the prize desk paid instead. */
   onClose: (grade: PayGrade | null) => void;
 }) {
   const reducedMotion = useReducedMotion();
+  // fixed as the game opens, so a night ending mid-round doesn't change it
+  const [hosted] = useState(() => hostedTrivia(room, nightClock()));
   const done = (
     result: { grade: PayGrade; score?: number; booth?: BoothId } | null,
   ) => {
@@ -104,7 +114,7 @@ export function GameOverlay({
       ) : game === "gem-glam" ? (
         <GemGlam onClose={done} reducedMotion={reducedMotion} />
       ) : game === "trivia" ? (
-        <Trivia onClose={done} reducedMotion={reducedMotion} />
+        <Trivia onClose={done} reducedMotion={reducedMotion} hosted={hosted} />
       ) : game === "star-siege" ? (
         <StarSiege onClose={done} reducedMotion={reducedMotion} />
       ) : (

@@ -35,6 +35,7 @@ import {
 import { cleanShifts, NO_SHIFTS, type ShiftsSave } from "./shifts.ts";
 import { cleanStreak, NO_STREAK, type StreakSave } from "./streakSave.ts";
 import { cleanBests, type Bests } from "./prizes.ts";
+import { cleanNpcMemories, type NpcMemories } from "./npcMemory.ts";
 import { validatePet, type PetSave } from "./pet.ts";
 import { cleanParkedCar, type ParkedCar } from "./city/drive.ts";
 import { cleanGarage, STARTER } from "./garage.ts";
@@ -111,6 +112,8 @@ export type SaveV1 = {
   streak: StreakSave;
   /** Paid shifts worked (shifts.ts); saves from before jobs start with none. */
   shifts: ShiftsSave;
+  /** What recurring NPCs remember of you (npcMemory.ts); none before it. */
+  npcs: NpcMemories;
 };
 
 /** The localStorage key the save lives under. */
@@ -159,6 +162,7 @@ export function createDefaultSave(name: string): SaveV1 {
     garden: createDefaultGarden(),
     inventory: {},
     giftDay: 0,
+    npcs: {},
   };
 }
 
@@ -258,6 +262,7 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
     giftDay: cleanGiftDay(save.get("giftDay")),
     streak: cleanStreak(save.get("streak")),
     shifts: cleanShifts(save.get("shifts")),
+    npcs: cleanNpcMemories(save.get("npcs")),
   };
 }
 
