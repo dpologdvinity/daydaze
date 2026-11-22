@@ -1297,9 +1297,14 @@ const SHOTS: {
     },
   })),
   // trivia night: the quiz host and the glowing pad that opens the hosted round
-  ...(["skate-diner", "wine-bar"] as const).map((room) => ({
+  ...(
+    [
+      ["skate-diner", "1,3,8,4.8,0.8,3.4"],
+      ["wine-bar", "0,2.8,4.6,-5.3,0.8,1.2"],
+    ] as const
+  ).map(([room, cam]) => ({
     name: `trivia-night-${room}`,
-    query: `room=${room}&night=trivia-night&quality=low&time=23:30`,
+    query: `room=${room}&night=trivia-night&quality=low&time=23:30&cam=${cam}`,
     live: true,
     act: async (page: Page) => {
       await page.waitForFunction(
