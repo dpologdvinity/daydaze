@@ -10,6 +10,7 @@ import {
   adoptServerProgress,
   boardChoice,
   boardValue,
+  isTransient,
   retryBusy,
   scoreNote,
   weekCountdown,
@@ -153,4 +154,19 @@ test("a board picker value names a ladder or a game, and nothing else", () => {
   assert.deepEqual(boardChoice("game:bowling"), { game: "bowling" });
   for (const bad of ["", "fame", "ladder:bowling", "game:fame", "x:y", "game:"])
     assert.equal(boardChoice(bad), null, bad);
+});
+
+test("a dead network, a busy or rate limited server and a server error are worth retrying later", () => {
+  for (const status of [0, 409, 429, 500, 503])
+    assert.equal(
+      isTransient({ ok: false, status, error: "x" }),
+      true,
+      `${status}`,
+    );
+  for (const status of [400, 403, 404, 422])
+    assert.equal(
+      isTransient({ ok: false, status, error: "x" }),
+      false,
+      `${status}`,
+    );
 });

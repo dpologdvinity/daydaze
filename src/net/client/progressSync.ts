@@ -15,7 +15,7 @@ import {
 } from "../../game/progression/progression.ts";
 import type { SaveV1 } from "../../game/save.ts";
 import type { ScoreOutcome, ServerProgress } from "../progress.ts";
-import type { ApiResult } from "./api.ts";
+import type { ApiFailure, ApiResult } from "./api.ts";
 
 /** Tries a write gets when the server says it is busy with another one. */
 const BUSY_TRIES = 3;
@@ -56,6 +56,15 @@ export async function retryBusy<T>(
     result = await call();
   }
   return result;
+}
+
+/** A failure that says nothing about whether the server would take the write:
+ * no network, busy, rate limited, or a server error. Worth sending again
+ * later; any other refusal is final. */
+export function isTransient(failure: ApiFailure): boolean {
+  return (
+    failure.status === 0 || failure.status === 409 || failure.status >= 429
+  );
 }
 
 /** The line under a prize about what the server did with the score. The local

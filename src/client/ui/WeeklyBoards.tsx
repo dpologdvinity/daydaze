@@ -20,7 +20,18 @@ const GAMES = [...PRIZE_GAMES].sort((a, b) =>
   PRIZE_TABLES[a].label.localeCompare(PRIZE_TABLES[b].label),
 );
 
-type Shown = { key: string; board: Board | null };
+/** The time, refreshed every `ms`, so a countdown moves while the menu is open. */
+function useClock(ms: number): number {
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), ms);
+    return () => window.clearInterval(timer);
+  }, [ms]);
+  return now;
+}
+
+/** A board as loaded for a player (`me`, "" for none) and a picker value. */
+type Shown = { key: string; me: string; board: Board | null };
 
 /** The weekly boards, or nothing when the game is offline. */
 export function WeeklyBoards() {
@@ -28,6 +39,7 @@ export function WeeklyBoards() {
   // the board last loaded and the key it answers; null board: it failed
   const [shown, setShown] = useState<Shown | null>(null);
   const { me } = account.use();
+  const meId = me?.id ?? "";
   const choice = boardChoice(key);
   useEffect(() => {
     const session = onlineSession();
@@ -39,12 +51,12 @@ export function WeeklyBoards() {
         ? session.progress.scoreBoard(wanted.game)
         : session.progress.ladderBoard(wanted.ladder);
     void load.then((r) => {
-      if (live) setShown({ key, board: r.ok ? r.value : null });
+      if (live) setShown({ key, me: meId, board: r.ok ? r.value : null });
     });
     return () => {
       live = false;
     };
-  }, [key, me?.id]);
+  }, [key, meId]);
   if (!ONLINE || !choice) return null;
   return (
     <section className="weekly-boards" aria-label="Weekly boards">
@@ -70,7 +82,7 @@ export function WeeklyBoards() {
       </label>
       <BoardLines
         choice={choice}
-        shown={shown?.key === key ? shown : null}
+        shown={shown?.key === key && shown.me === meId ? shown : null}
         guest={me?.isGuest ?? true}
       />
     </section>
@@ -86,6 +98,7 @@ function BoardLines({
   shown: Shown | null;
   guest: boolean;
 }) {
+  const now = useClock(30_000);
   if (!shown) return <p role="status">Loading the board…</p>;
   const { board } = shown;
   if (!board)
@@ -93,7 +106,7 @@ function BoardLines({
   return (
     <>
       <p className="board-reset">
-        Resets in {weekCountdown(board.endsAt, Date.now())}
+        Resets in {weekCountdown(board.endsAt, now)}
       </p>
       {board.entries.length === 0 ? (
         <p>Nobody is on this board yet. Be the first!</p>

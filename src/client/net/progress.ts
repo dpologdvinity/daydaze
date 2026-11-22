@@ -5,7 +5,12 @@
 import type { PrizeGame } from "../../game/prizes.ts";
 import type { RoomId } from "../../game/rooms.ts";
 import { mayPush } from "../../net/client/saveSync.ts";
-import { retryBusy, scoreNote } from "../../net/client/progressSync.ts";
+import type { ApiResult } from "../../net/client/api.ts";
+import {
+  isTransient,
+  retryBusy,
+  scoreNote,
+} from "../../net/client/progressSync.ts";
 import type { ServerProgress } from "../../net/progress.ts";
 import { prizeDesk } from "../ui/prizeDesk.ts";
 import { account } from "./account.ts";
@@ -16,12 +21,33 @@ export type Adopt = (server: Pick<ServerProgress, "xp" | "title">) => void;
 
 const sleep = (ms: number) => new Promise<void>((done) => setTimeout(done, ms));
 
-/** An account whose own save has loaded: only then is the server row ours to
- * write to, and the local numbers safe to replace. */
-const signedIn = () => {
+/** The signed-in account whose own save has loaded (only then is the server
+ * row ours to write to and the local numbers safe to replace), or null. */
+const current = () => {
   const { me, cloudReady } = account.get();
-  return mayPush(me, cloudReady);
+  return me && mayPush(me, cloudReady) ? me.id : null;
 };
+
+const SWITCHED = {
+  ok: false,
+  status: 0,
+  error: "account-changed",
+} as const;
+
+/**
+ * Runs one write for the account that was signed in when it started. If the
+ * player switches accounts meanwhile, no further attempt is sent (it would
+ * carry the new session's cookie) and the result is not adopted.
+ */
+async function forAccount<T>(
+  id: string,
+  call: () => Promise<ApiResult<T>>,
+): Promise<ApiResult<T>> {
+  return retryBusy(
+    () => (current() === id ? call() : Promise.resolve(SWITCHED)),
+    sleep,
+  );
+}
 
 /**
  * A finished game: the server grades the score and pays the XP. The prize
@@ -35,11 +61,12 @@ export async function reportScore(
   adopt: Adopt,
 ): Promise<void> {
   const session = onlineSession();
-  if (!session || !signedIn()) return;
-  const result = await retryBusy(
-    () => session.progress.submitScore(game, score),
-    sleep,
+  const id = current();
+  if (!session || !id) return;
+  const result = await forAccount(id, () =>
+    session.progress.submitScore(game, score),
   );
+  if (current() !== id) return;
   if (result.ok) adopt(result.value);
   // a newer prize owns the card by now
   if (prizeDesk.get().at !== at) return;
@@ -59,17 +86,28 @@ export function queueVisit(room: RoomId): void {
   unreported.add(room);
 }
 
-/** Sends queued first visits. A refusal (a place the server doesn't count, or
- * already counted) drops the visit; a dead network or rate limit keeps it. */
+/** Sends queued first visits, including ones queued while it runs. Only a
+ * final refusal (a place the server doesn't count, or already counted) drops
+ * a visit; a dead network, a rate limit or a server error keeps it queued
+ * for the next flush. */
 export async function flushVisits(adopt: Adopt): Promise<void> {
   const session = onlineSession();
-  if (!session || !signedIn() || flushing) return;
+  const id = current();
+  if (!session || !id || flushing) return;
   flushing = true;
   try {
-    for (const room of [...unreported]) {
-      const result = await retryBusy(() => session.progress.visit(room), sleep);
+    for (
+      let room = unreported.values().next().value;
+      room !== undefined;
+      room = unreported.values().next().value
+    ) {
+      const visiting = room;
+      const result = await forAccount(id, () =>
+        session.progress.visit(visiting),
+      );
+      if (current() !== id) return;
       if (result.ok) adopt(result.value);
-      else if (result.status === 0 || result.status === 429) return;
+      else if (isTransient(result)) return;
       unreported.delete(room);
     }
   } finally {
@@ -84,10 +122,12 @@ export async function reportTitle(
   adopt: Adopt,
 ): Promise<void> {
   const session = onlineSession();
-  if (!session || !signedIn()) return;
-  const result = await retryBusy(() => session.progress.setTitle(title), sleep);
+  const id = current();
+  if (!session || !id) return;
+  const result = await forAccount(id, () => session.progress.setTitle(title));
+  if (current() !== id) return;
   if (result.ok) return adopt(result.value);
   if (result.status !== 422) return;
-  const own = await session.progress.progress();
-  if (own.ok) adopt(own.value);
+  const own = await forAccount(id, () => session.progress.progress());
+  if (own.ok && current() === id) adopt(own.value);
 }
