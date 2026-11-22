@@ -2,6 +2,7 @@
 // occurrences share their saved claim with the XP, so reloads cannot repay it.
 import { mayEnter } from "../age.ts";
 import { completeChallenge, dayOf } from "../challenges.ts";
+import { careerOf, careerRank, promotionFor, raised } from "../careers.ts";
 import { visit } from "../collections.ts";
 import { tagStolen } from "../crime/lift.ts";
 import { schedule } from "../events.ts";
@@ -144,7 +145,9 @@ export function finishPrize(
 }
 
 /** A finished paid shift (shifts.ts): its wage and Hustle XP land in the save
- * together with the shift count, so a reload cannot replay it. */
+ * together with the shift count, so a reload cannot replay it. The wage gets
+ * the career rank's raise (careers.ts); the shift that earns a promotion also
+ * pays its bonus, both in the returned `coins`. */
 export function finishShift(
   s: SaveV1,
   job: Job,
@@ -152,9 +155,12 @@ export function finishShift(
   now: number,
 ) {
   const w = settleShift(s.shifts, job, result, dayOf(now));
-  if (w.shifts === s.shifts) return { ...w, save: s };
-  const paid = { ...s, coins: earn(s.coins, w.coins), shifts: w.shifts };
-  return { ...w, save: rewardXp(paid, "hustle", w.xp) };
+  if (w.shifts === s.shifts) return { ...w, promotion: null, save: s };
+  const wage = raised(w.coins, careerRank(s.shifts.worked, careerOf(job)));
+  const promotion = promotionFor(s.shifts.worked, w.shifts.worked, job);
+  const coins = wage + (promotion?.bonus ?? 0);
+  const paid = { ...s, coins: earn(s.coins, coins), shifts: w.shifts };
+  return { ...w, coins, promotion, save: rewardXp(paid, "hustle", w.xp) };
 }
 
 export function rewardVisit(
