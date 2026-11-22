@@ -3182,6 +3182,61 @@ const SHOTS: {
   lineupShot("doll-wear-sit", `wears=${WEAR_MIX}`, "sit"),
   lineupShot("doll-wear-dance", `wears=${WEAR_MIX}`, "dance"),
   lineupShot("doll-wear-men", `men=1&wears=${WEAR_MIX}`, "pose"),
+  // hems, necklines and arm holes up close: the jacket, the halter top over a
+  // mini skirt, white boots in jeans (body scene, one doll each), then the
+  // pose lineup's middle and one side (#395)
+  lineupShot(
+    "doll-wear-close-jacket",
+    `wears=${WEAR_MIX}&cam=-1.4,0.95,2.2&target=-1.4,0.95,0`,
+    "body",
+  ),
+  lineupShot(
+    "doll-wear-close-halter",
+    `wears=${WEAR_MIX}&cam=0,1.05,2.2&target=0,1.05,0`,
+    "body",
+  ),
+  lineupShot(
+    "doll-wear-close-boots",
+    `wears=${WEAR_MIX}&cam=1.4,0.7,2.2&target=1.4,0.7,0`,
+    "body",
+  ),
+  lineupShot(
+    "doll-wear-close-pose",
+    `wears=${WEAR_MIX}&cam=0,0.95,3.4&target=0,0.95,0`,
+    "pose",
+  ),
+  lineupShot(
+    "doll-wear-close-pose-side",
+    `wears=${WEAR_MIX}&cam=-3,0.95,3.4&target=-3,0.95,0`,
+    "pose",
+  ),
+  lineupShot(
+    "doll-wear-close-skirt",
+    `wears=${WEAR_MIX}&cam=3,0.95,2.4&target=3,0.95,0`,
+    "pose",
+  ),
+  lineupShot(
+    "doll-wear-close-crossed",
+    `wears=${WEAR_MIX}&cam=1,0.55,2.4&target=1,0.55,0`,
+    "pose",
+  ),
+  lineupShot(
+    "doll-wear-close-dance",
+    `wears=${WEAR_MIX}&cam=0,0.95,5&target=0,0.95,0`,
+    "dance",
+  ),
+  // one look on every doll, three poses at a time, to judge it in motion:
+  // the pleated mini over tights, the puffer over cargos, white boots
+  lineupShot(
+    "doll-wear-skirt-poses",
+    "wears=baby-tee~ff2f9a.pleated-mini~9b5cff.tights~141018&holds=pose-foot-up,pose-legs-crossed,pose-lean-back&cam=0,0.8,3.2&target=0,0.8,0",
+    "pose",
+  ),
+  lineupShot(
+    "doll-wear-jacket-poses",
+    "wears=corset~141018.cargos~6b7a2a.puffer~e8e2ff&holds=pose-foot-up,pose-legs-crossed,pose-lean-back&cam=0,0.8,3.2&target=0,0.8,0",
+    "pose",
+  ),
   // the far twin: a three-layer look merged into one draw (mergeGarments)
   lineupShot("doll-wear-far", `wears=${WEAR_MIX}`, "far"),
   // the same three past the LOD distance: the merged, atlas-textured twins

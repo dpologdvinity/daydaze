@@ -8,6 +8,9 @@ garment also adds a "tuck_<name>" shape key to the body that pulls the skin
 under it inwards, so skin never pokes through cloth, in a pose or not.
 """
 
+import os
+import re
+
 import bmesh
 import bpy
 import numpy as np
@@ -22,9 +25,17 @@ DEPTH = 0.45  # ...and never more than this share of the body's thickness there
 SNUG = 0.03  # metres within which proxy cloth takes the skin's bone weights
 GRID = 0.002  # metres: the precision a tuck key is stored at
 CLEAR = 0.008  # gap kept between sunk skin and the cloth
-LEG_PULL = 1.0  # share of the way covered leg skin is drawn in to its leg's axis: 1 collapses it onto the axis, so there is nothing to show through
+LEG_PULL = 1.0  # share of the way covered leg skin is drawn in to its leg's axis (swimsuits, worn alone): 1 collapses it onto the axis, so there is nothing to show through
+# The keys of every garment worn at once add up, so the shares of the layers
+# that can cover the same leg skin add up too, and stay under 1: past the axis
+# the skin is flung out the far side of the leg, and in a tight boot that is
+# a red patch on the shin (jeans, tights and boots together made 2). The
+# thigh can hold a bottom, tights and a long top or coat, the calf a bottom,
+# tights and boots: no stack passes 1.
+LEG_SHARE = {"Bottom": 0.55, "Dress": 0.55, "Legwear": 0.2, "Shoes": 0.2, "Top": 0.1, "Outer": 0.1}
 LEG_RAMP = 0.06  # metres up from a garment's lowest edge over which that pull fades in
 LEGWEAR = -0.002  # metres legwear sits off the skin: inside it, under every other layer
+SKIRT_SNUG = 0.06  # metres: a skirt this near the skin takes the skin's bone weights (see shell)
 SHARE = 0.03  # metres: hidden skin this near both pieces of a split suit goes with both
 INTO = 0.02  # metres: a garment whose cloth sits (in the median) this far outside a shoe or less tucks into it...
 INTO_FADE = 0.02  # ...each vertex fading out over this much further, so a stray flap isn't dragged in
@@ -61,9 +72,13 @@ def flare(ctx, ob):
 
 def shell(ctx, name, groups, bands, push, mat, arms=0.3):
     """Cuts base-mesh helper shells (tights, skirt) to horizontal bands
-    [(z_lo, z_hi), ...], clamps cut edges flat onto the band lines so hems
-    are straight, and pushes the cloth out along its normals by `push`
-    metres. Faces mostly on the arms (bone weight > `arms`) are dropped.
+    [(z_lo, z_hi), ...] (cut on the band lines when there is just one
+    straight band, else cut edges are clamped flat onto them) so hems are
+    straight, and pushes the cloth out along its normals by `push`
+    metres (a number, or a function of height for cloth that fits snugly in
+    one place and loosely in another). The part of the shell on the arms
+    (bone weight above `arms`) is cut away along the weight's own contour
+    (clip_arms), so an arm hole is a smooth curve, not a row of teeth.
     A band's lower edge may be a function of (x, y) instead of a height, for
     a curved hem such as a bikini's leg line."""
 
@@ -74,16 +89,21 @@ def shell(ctx, name, groups, bands, push, mat, arms=0.3):
         pts = ctx.PB[f]
         return pts[:, 2].min() < hi and any(p[2] > edge(lo, p) for p in pts)
 
-    faces = []
-    for g in groups:
-        for f in ctx.FACES[g]:
-            if arm_weight(ctx, f) > arms:
-                continue
-            if any(overlaps(f, lo, hi) for lo, hi in bands):
-                faces.append(f)
-    used = sorted({i for f in faces for i in f})
-    remap = {o: n for n, o in enumerate(used)}
-    co = ctx.PB[used].copy()
+    faces = [f for g in groups for f in ctx.FACES[g] if any(overlaps(f, lo, hi) for lo, hi in bands)]
+    rest, weights, polys = clip_arms(ctx, faces, arms)
+    if "helper-skirt" in groups:
+        # the helper skirt's own weights move it a little more with the thigh
+        # than the skin and the tights under it: in a raised leg or a hip
+        # swing the legs poke through the skirt in patches. Near the skin it
+        # follows the skin; the loose hem keeps its own swing.
+        weights = proxies.snug_weights(ctx, rest, weights, SKIRT_SNUG)
+    if len(bands) == 1 and not callable(bands[0][0]):
+        # one straight band: cut the cloth on its lines, so a hem is flat
+        # and a sleeve end a clean ring
+        lo, hi = bands[0]
+        rest, weights, polys = clip(rest, weights, polys, -rest[:, 2], -lo)
+        rest, weights, polys = clip(rest, weights, polys, rest[:, 2], hi)
+    co = rest.copy()
     for i, p in enumerate(co):
         # snap each vertex into the nearest band
         z = p[2]
@@ -91,24 +111,23 @@ def shell(ctx, name, groups, bands, push, mat, arms=0.3):
         co[i, 2] = min(max(z, edge(lo, p)), hi)
     # a vertex moved onto a hem may float off a curved body (a hip): put it
     # back on the shell's surface
-    moved = np.abs(co[:, 2] - ctx.PB[used][:, 2]) > 1e-6
+    moved = np.abs(co[:, 2] - rest[:, 2]) > 1e-6
     if moved.any():
-        bvh = BVHTree.FromPolygons(
-            [tuple(p) for p in ctx.PB[used]], [[remap[i] for i in f] for f in faces]
-        )
+        tris = [[poly[0], poly[k], poly[k + 1]] for poly in polys for k in range(1, len(poly) - 1)]
+        bvh = BVHTree.FromPolygons([tuple(p) for p in rest], tris)
         for i in np.nonzero(moved)[0]:
             hit = bvh.find_nearest(Vector(co[i]))[0]
             if hit is not None:
                 co[i] = (hit.x, hit.y, co[i, 2])
-    ob = ctx.new_object(name, co, [[remap[i] for i in f] for f in faces])
+    ob = ctx.new_object(name, co, polys)
     ob.data.materials.append(mat)
     me = ob.data
     me.update()
     normals = np.array([v.normal[:] for v in me.vertices])
-    me.vertices.foreach_set("co", (co + normals * push).ravel())
+    out = push(co[:, 2]) if callable(push) else np.full(len(co), push)
+    me.vertices.foreach_set("co", (co + normals * out[:, None]).ravel())
     for p in me.polygons:
         p.use_smooth = True
-    src = np.array(used)
     # the helper shells follow some targets less than the skin does (bust),
     # so each key moves the cloth like the nearest skin vertex, a touch more
     skin = np.array(sorted({i for f in ctx.FACES["body"] for i in f}))
@@ -116,11 +135,17 @@ def shell(ctx, name, groups, bands, push, mat, arms=0.3):
     for i, p in enumerate(ctx.PB[skin]):
         tree.insert(p, i)
     tree.balance()
-    near = skin[[tree.find(ctx.PB[i])[1] for i in src]]
+    near = skin[[tree.find(p)[1] for p in rest]]
     proxies.attach(
-        ctx, ob, ctx.W[src], {k: d[near] * (1.3 if k == "plus" else 1.05) for k, d in ctx.KEYS.items()}
+        ctx, ob, weights, {k: d[near] * (1.3 if k == "plus" else 1.05) for k, d in ctx.KEYS.items()}
     )
     return ob
+
+
+def roomy(low, high, loose, snug):
+    """A `push` for shell: `loose` metres up to height `low`, `snug` from
+    `high` up, easing between."""
+    return lambda z: snug + (loose - snug) * np.clip((high - z) / (high - low), 0, 1)
 
 
 def taper(ob, top, bottom, squeeze):
@@ -132,6 +157,24 @@ def taper(ob, top, bottom, squeeze):
     k = 1 - squeeze * t
     co[:, 0] *= k
     co[:, 1] = cy + (co[:, 1] - cy) * k
+    ob.data.vertices.foreach_set("co", co.ravel())
+    sync_keys(ob, co)
+
+
+def inflate(ob, body, amount):
+    """Moves every vertex of `ob` `amount` metres further out from the skin
+    (along the body's own normal at the nearest point), for cloth that fits
+    closer to the skin than the layers under it are thick: the MakeHuman
+    puffer jacket hugs the chest and ends on the hip, and a corset, cargos
+    or a skirt worn under it (skin-tight shells a few millimeters proud of
+    the skin, wider still on a heavier figure) poke through its hem and chest
+    in teeth and patches."""
+    skin = BVHTree.FromObject(body, bpy.context.evaluated_depsgraph_get())
+    co = np.array([v.co[:] for v in ob.data.vertices])
+    for i, p in enumerate(co):
+        hit, normal, _f, _d = skin.find_nearest(Vector(p))
+        if hit is not None:
+            co[i] = p + np.array(normal) * amount
     ob.data.vertices.foreach_set("co", co.ravel())
     sync_keys(ob, co)
 
@@ -159,9 +202,67 @@ def sync_keys(ob, basis):
         k.data.foreach_set("co", (c.reshape(-1, 3) - old + basis).ravel())
 
 
-def arm_weight(ctx, f):
-    i = ("lArm", "rArm", "lFore", "rFore")
-    return sum(ctx.weight(g)[f] for g in i).max()
+ARMS = ("lArm", "rArm", "lFore", "rFore")
+
+
+def clip(pos, wts, polys, val, limit):
+    """Polygons without the part where `val` (one number per vertex) is over
+    `limit`: each polygon is cut where val crosses the limit, new vertices
+    going on the cut edges at the crossing (their position and bone weights
+    mixed from the two ends). `pos` and `wts` are the vertices' rest
+    positions and bone weights. Returns them for just the vertices the
+    kept polygons use, and the polygons over them. A smooth field gives a
+    smooth cut; dropping whole faces instead leaves a sawtooth edge as
+    coarse as the mesh."""
+    pos, wts, val = list(pos), list(wts), list(val)
+    made = {}  # a cut edge (low, high vertex) -> the vertex made on it
+
+    def crossing(a, b):
+        a, b = min(a, b), max(a, b)
+        if (a, b) not in made:
+            t = (limit - val[a]) / (val[b] - val[a])
+            pos.append(pos[a] * (1 - t) + pos[b] * t)
+            wts.append(wts[a] * (1 - t) + wts[b] * t)
+            val.append(limit)
+            made[(a, b)] = len(pos) - 1
+        return made[(a, b)]
+
+    kept = []
+    for ring in polys:
+        poly = []
+        for a, b in zip(ring, ring[1:] + ring[:1]):
+            inside_a, inside_b = val[a] <= limit, val[b] <= limit
+            if inside_a:
+                poly.append(a)
+            if inside_a != inside_b:
+                poly.append(crossing(a, b))
+        if len(poly) >= 3:
+            kept.append(poly)
+    keep = sorted({i for poly in kept for i in poly})
+    back = {o: n for n, o in enumerate(keep)}
+    return (
+        np.array([pos[i] for i in keep]),
+        np.array([wts[i] for i in keep]),
+        [[back[i] for i in poly] for poly in kept],
+    )
+
+
+def gather(ctx, faces):
+    """The vertices (rest positions, bone weights) and polygons of base-mesh
+    `faces`, renumbered from 0."""
+    used = sorted({i for f in faces for i in f})
+    index = {o: n for n, o in enumerate(used)}
+    return ctx.PB[used], ctx.W[used], [[index[i] for i in f] for f in faces], used
+
+
+def clip_arms(ctx, faces, limit):
+    """`faces` without the part on the arms: cut where a vertex's weight on
+    the arm bones crosses `limit` (see clip; the weights are smooth across
+    the shoulder, so an arm hole is a smooth curve). A limit of 1 or more
+    cuts nothing."""
+    arm = sum(ctx.weight(g) for g in ARMS)
+    pos, wts, polys, used = gather(ctx, faces)
+    return clip(pos, wts, polys, arm[used], limit)
 
 
 def leg_pull(ctx, body, co, covered, floor, share=LEG_PULL, ceil=np.inf):
@@ -174,7 +275,7 @@ def leg_pull(ctx, body, co, covered, floor, share=LEG_PULL, ceil=np.inf):
     poke out, the cloth hides it as if its faces were deleted. It fades in over
     LEG_RAMP above the garment's lowest edge (`floor`), so a hem leaves no
     step, and with the vertex's share of leg weight, so the hip is left alone.
-    `share` scales the pull (HALF_PULL layers take half). Legwear that ends
+    `share` scales the pull (LEG_SHARE: each layer's part of the budget). Legwear that ends
     on the leg (knee socks) passes its top edge as `ceil`: the pull fades
     out the same way below it, so the bare leg above keeps its shape.
     The weights come from the body object's own groups, so the low-poly body
@@ -255,13 +356,11 @@ def tuck(ctx, body, body_src, garment, name):
             sink[i] = max(sink[i], min(outside + CLEAR, 0.03))
     # shoes ride on the same body next to the trousers and their keys add up:
     # a pull from the sole up would collapse the ankle the hem leaves bare
-    # leg skin under cloth is drawn in to its leg's axis; shoes (whose tucks
-    # add to the trousers') draw it in halfway, up to their top
+    # leg skin under cloth is drawn in to its leg's axis (its share of the
+    # budget); shoes draw it in up to their top
+    share = LEG_SHARE.get(garment.name.split("_", 1)[0], LEG_PULL)
     if is_shoe:
-        share = LEG_PULL / 2
         ceil = max(v.co.z for v in garment.data.vertices)
-    else:
-        share = LEG_PULL / 2 if garment.name.startswith(HALF_PULL) else LEG_PULL
     pull, pulled = leg_pull(ctx, body, co, behind, floor, share, ceil)
     # skin drawn in to the axis needs no sink along its normal as well: on
     # top of another garment's pull (jeans in sneakers or boots) a sink
@@ -432,6 +531,7 @@ def build(ctx, body, body_src):
             # the open jacket alone: the shirt glimpsed inside it would fight
             # whatever top is worn under
             islands_kept(ob, 1)
+            inflate(ob, body, 0.025)
 
     # satin bandeau and mini: a strapless satin bodice on the tights helper, a
     # fitted skirt from the skirt helper ending mid-thigh
@@ -496,7 +596,9 @@ def build(ctx, body, body_src):
     # cargo pants and a tube top: wide, roomy legs to the ankle and a cropped
     # vest top
     out.append(shell(ctx, "Top_tube-top", ["helper-tights"], [(waist + 0.09, bust + 0.03)], 0.003, cloth, arms=0.15))
-    out.append(shell(ctx, "Bottom_cargos", ["helper-tights"], [(ankle, waist - 0.01)], 0.022, cloth))
+    # fitted at the hip, where a jacket hem sits close to the skin and wider
+    # cloth would poke through it, roomy from the thigh down
+    out.append(shell(ctx, "Bottom_cargos", ["helper-tights"], [(ankle, waist - 0.01)], roomy(h["hip"] - 0.2, h["hip"] - 0.02, 0.022, 0.01), cloth))
 
     # sundress: a fitted bodice and a skirt flaring to the knee
     sun = shell(ctx, "Dress_sundress", ["helper-tights"], [(waist - 0.03, bust + 0.01)], 0.003, cloth)
@@ -586,6 +688,14 @@ def build(ctx, body, body_src):
     gloss = bpy.data.materials.new("shoe_gloss")
     out.append(platforms(ctx, "Shoes_platforms", h["ankle"] + 0.02, gloss))
     out.append(platforms(ctx, "Shoes_boots", h["knee"] - 0.06, gloss))
+    # OUTFIT_PARTS='regex' (a dev shortcut) builds just the shoes and the
+    # garments whose names match: the body then holds only their tucks, so
+    # it is for looking at, never for shipping
+    only = os.environ.get("OUTFIT_PARTS")
+    if only:
+        for ob in [ob for ob in out if not ob.name.startswith("Shoes") and not re.search(only, ob.name)]:
+            bpy.data.objects.remove(ob)
+            out.remove(ob)
     shoes = [ob for ob in out if ob.name.startswith("Shoes")]
     for ob in out:
         if ob.name.startswith(("Bottom", "Dress", "Legwear")):
@@ -597,10 +707,6 @@ def build(ctx, body, body_src):
 
 # the prefixes of every worn part's object name: each gets a body tuck key
 WORN = ("Top", "Bottom", "Dress", "Outer", "Legwear", "Swim", "Shoes")
-# layers that go over or under another garment draw covered leg skin in only
-# halfway: their tucks add up with the bottom's, and two full pulls would
-# fling the skin through the axis and out the far side of the leg
-HALF_PULL = ("Top", "Outer", "Legwear")
 
 
 def into_shoes(ctx, garment, shoes):
