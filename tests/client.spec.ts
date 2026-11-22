@@ -4097,6 +4097,43 @@ test("weed munchies: delivered food and water relieve needs only at 18+", async 
   expect(errors).toEqual([]);
 });
 
+test("hunger and thirst at 13+: a gentle HUD that a snack and a drink clear", async ({
+  page,
+}) => {
+  test.setTimeout(240_000);
+  const errors = collectErrors(page);
+  const food = "/src/client/food/store.ts";
+  await page.goto(VELVET);
+  await expect(canvasOf(page)).toHaveAttribute(
+    "data-frames",
+    /^(?:[1-9]\d{1,}|10)$/,
+  );
+  const needs = page.getByRole("region", { name: "Food and water needs" });
+  await expect(needs).toHaveCount(0);
+  const call = (name: string, args: readonly unknown[]) =>
+    page.evaluate(
+      async ({ food, name, args }) => {
+        const mod: unknown = await import(/* @vite-ignore */ food);
+        const fn: unknown =
+          typeof mod === "object" && mod !== null
+            ? Reflect.get(mod, name)
+            : undefined;
+        if (typeof fn !== "function") throw new Error(`Missing ${name}`);
+        Reflect.apply(fn, undefined, args);
+      },
+      { food, name, args },
+    );
+  await call("tickNeeds", [1800]);
+  await expect(needs).toContainText("Hungry and thirsty");
+  await call("consumeFood", ["food"]);
+  await call("consumeFood", ["drink"]);
+  await expect(needs).toHaveCount(0);
+  await expect(
+    page.getByRole("status").filter({ hasText: /exactly what you needed/ }),
+  ).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test("the food rooms open from a query and show their counter staff", async ({
   page,
 }) => {
