@@ -66,6 +66,7 @@ Out of scope for now: anything that only hurts the cheater (client-owned coins),
 - Ten invalid frames disconnect the socket.
 - Movement (about 15/s), chat (1 per 2 s for accounts, 1 per 4 s for guests) and emotes are rate limited.
 - Positions are clamped to the room's walkable polygon.
+- The server stamps every snapshot with its clock (`time`); the client keeps it only as an integer within the `Date` range and moves its shared city clock (lights, pedestrians, traffic, events) only when it differs by over 250 ms. A wrong stamp can only skew that player's own shared schedules.
 - Looks must come from the catalog, and display names are 2 to 16 ASCII characters checked against the slur list.
 - A save upload is rejected unless `loadSave` would keep every field as sent, so a bad upload never replaces the last good save.
 

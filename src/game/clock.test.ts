@@ -3,7 +3,16 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { heldClock, secondsSince, shiftedClock, toNextStart } from "./clock.ts";
+import {
+  clockSynced,
+  heldClock,
+  resetServerClock,
+  secondsSince,
+  shiftedClock,
+  syncServerClock,
+  toNextStart,
+  wallSeconds,
+} from "./clock.ts";
 
 /** A fake wall clock in seconds the test moves by hand. */
 function fakeNow(start: number) {
@@ -60,4 +69,43 @@ test("secondsSince drops float jitter from large wall-clock bases", () => {
   assert.notEqual(start + 74.9 - start, 74.9); // the raw subtraction jitters
   assert.equal(secondsSince(start + 74.9, start), 74.9);
   assert.equal(secondsSince(start - 3.25, start), -3.25);
+});
+
+test("the wall clock is the device's own until a server time arrives", () => {
+  resetServerClock();
+  assert.equal(clockSynced(), false);
+  assert.ok(Math.abs(wallSeconds() - Date.now() / 1000) < 0.05);
+});
+
+test("a server time moves the wall clock onto the server's, and syncs it", () => {
+  const local = 1_700_000_000_000;
+  resetServerClock();
+  // this device runs a minute behind the server
+  syncServerClock(local + 60_000, local);
+  assert.equal(clockSynced(), true);
+  const now = Date.now();
+  assert.ok(Math.abs(wallSeconds() - (now + 60_000) / 1000) < 0.05);
+  resetServerClock();
+  assert.equal(clockSynced(), false);
+});
+
+test("later server times move the clock only past the jitter threshold", () => {
+  const local = 1_700_000_000_000;
+  resetServerClock();
+  syncServerClock(local + 1_000, local);
+  const first = wallSeconds();
+  // 100 ms of network jitter: the clock keeps its offset
+  syncServerClock(local + 1_100, local);
+  assert.ok(Math.abs(wallSeconds() - first) < 0.05);
+  // a real correction (the device clock was stepped): the clock follows
+  syncServerClock(local + 5_000, local);
+  assert.ok(wallSeconds() - first > 3.9);
+  resetServerClock();
+});
+
+test("server times that are not finite numbers are ignored", () => {
+  resetServerClock();
+  for (const bad of [Number.NaN, Infinity, -Infinity, 8.7e15, -1])
+    syncServerClock(bad, 1_700_000_000_000);
+  assert.equal(clockSynced(), false);
 });
