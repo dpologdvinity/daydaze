@@ -259,3 +259,26 @@ test("tier-tagged lines show only at their tier", () => {
   assert.deepEqual(seen("teen"), ["plain", "soda talk"]);
   assert.deepEqual(seen("adult"), ["beer talk", "plain"]);
 });
+
+test("a warmer greeting with no lines falls back to the colder greeting", () => {
+  const bank: RoleBank = { "greeting-first": tenLines, tapped: ["tapped"] };
+  for (const situation of ["greeting-regular", "greeting-returning"] as const) {
+    const { text } = pickLine({
+      role: "cashier",
+      situation,
+      rng: () => 0,
+      bank,
+    });
+    assert.match(text, /^line \d$/);
+  }
+  const regular: RoleBank = { "greeting-regular": ["regular"], tapped: ["t"] };
+  assert.equal(
+    pickLine({
+      role: "cashier",
+      situation: "greeting-returning",
+      rng: () => 0,
+      bank: regular,
+    }).text,
+    "regular",
+  );
+});

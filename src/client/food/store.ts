@@ -11,6 +11,7 @@ import { activeTier, allows } from "../../game/age.ts";
 import { FELT } from "../../game/effects/substances.ts";
 import {
   freshNeeds,
+  NEED_PECKISH,
   satisfyNeed,
   stepNeeds,
   type Needs,
@@ -67,24 +68,35 @@ export function eatHeld(): void {
 }
 
 /** Shared by held food, quick snacks/water, street food and vending drinks.
- * Keeps the existing food/hangover relief; never changes the high meter. */
+ * Keeps the existing food/hangover relief and eases the matching need; never
+ * changes the high meter. */
 export function consumeFood(kind: "food" | "drink"): void {
   relieve(kind);
-  if (!allows(activeTier(), "drugs")) return;
   const need = kind === "food" ? state.needs.hunger : state.needs.thirst;
-  const feelsBetter = getMeters().high.level >= FELT && need > 0;
+  const weedy = weedFelt();
+  // a quiet meal says nothing; a hungry or high one gets a line
+  const feelsBetter = (weedy && need > 0) || need >= NEED_PECKISH;
   set(
     {
       ...state,
       needs: satisfyNeed(state.needs, kind),
       toast: feelsBetter
-        ? kind === "food"
-          ? "That snack really hit the spot."
-          : "A cool drink feels extra refreshing."
+        ? weedy
+          ? kind === "food"
+            ? "That snack really hit the spot."
+            : "A cool drink feels extra refreshing."
+          : kind === "food"
+            ? "That really hit the spot."
+            : "Ahh, that was exactly what you needed."
         : state.toast,
     },
     feelsBetter,
   );
+}
+
+/** True while an adult's weed high is felt (never at 13+). */
+export function weedFelt(): boolean {
+  return allows(activeTier(), "drugs") && getMeters().high.level >= FELT;
 }
 
 /** Called on the food HUD's timer, not inside the rendering loop. */

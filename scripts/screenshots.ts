@@ -1296,6 +1296,41 @@ const SHOTS: {
       await page.waitForTimeout(3_000);
     },
   })),
+  // trivia night: the quiz host and the glowing pad that opens the hosted round
+  ...(
+    [
+      ["skate-diner", "1,3,8,4.8,0.8,3.4"],
+      ["wine-bar", "0,2.8,4.6,-5.3,0.8,1.2"],
+    ] as const
+  ).map(([room, cam]) => ({
+    name: `trivia-night-${room}`,
+    query: `room=${room}&night=trivia-night&quality=low&time=23:30&cam=${cam}`,
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+    },
+  })),
+  {
+    // trivia night: the hosted round open, the host's welcome and a first answer
+    name: "trivia-night-round",
+    query: "room=skate-diner&night=trivia-night&quality=low&time=23:30",
+    act: async (page: Page) => {
+      await page
+        .getByRole("button", { name: "Play Trivia Night with the host" })
+        .click();
+      const dialog = page.getByRole("dialog", { name: "Trivia Night" });
+      await expect(dialog).toBeVisible({ timeout: 120_000 });
+      await dialog.getByRole("button", { name: "Play" }).click();
+      await dialog.locator(".tt-answer").first().click();
+      await expect(
+        dialog.locator('.tt-answer[data-state="right"]'),
+      ).toBeVisible();
+    },
+  },
   // the same nights from further back: the whole hall, and the whole course
   ...(
     [
@@ -1550,6 +1585,64 @@ const SHOTS: {
       await expect(panel).toContainText(/Paid \d+ coins/);
     },
   },
+  // the shift that reaches a new rank (barista 2 worked, the third promotes):
+  // the slip adds the promotion line (game/careers.ts)
+  {
+    name: "barista-promotion",
+    query: "room=espresso-lab",
+    act: async (page) => {
+      await page.evaluate(() => {
+        const key = "daydaze-save-v1";
+        const parsed: unknown = JSON.parse(localStorage.getItem(key) ?? "{}");
+        const save: Record<string, unknown> =
+          typeof parsed === "object" && parsed !== null
+            ? Object.fromEntries(Object.entries(parsed))
+            : {};
+        const shifts = { day: 0, today: 0, worked: { barista: 2 } };
+        localStorage.setItem(key, JSON.stringify({ ...save, shifts }));
+      });
+      await page.reload();
+      const panel = page.getByRole("region", { name: "Barista station" });
+      await panel
+        .getByRole("button", { name: "Start a shift" })
+        .click({ timeout: 150_000 });
+      for (let i = 0; i < 8; i++)
+        await panel.getByRole("button", { name: "Hand it over" }).click();
+      await expect(panel).toContainText("Promoted to Cafe");
+    },
+  },
+  // the game menu's Careers group with some shifts worked
+  {
+    name: "careers-menu",
+    query: "room=city&view=full",
+    act: async (page) => {
+      await page.evaluate(() => {
+        const key = "daydaze-save-v1";
+        const parsed: unknown = JSON.parse(localStorage.getItem(key) ?? "{}");
+        const save: Record<string, unknown> =
+          typeof parsed === "object" && parsed !== null
+            ? Object.fromEntries(Object.entries(parsed))
+            : {};
+        const worked = { ramen: 6, "halo-halo": 3, barista: 3, feeding: 1 };
+        localStorage.setItem(
+          key,
+          JSON.stringify({ ...save, shifts: { day: 0, today: 0, worked } }),
+        );
+      });
+      await page.reload();
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.frames) >= 6,
+        null,
+        { timeout: 300_000 },
+      );
+      await page.getByRole("button", { name: "Menu", exact: true }).click();
+      await page.locator("details[data-career='chef'] summary").click();
+      await page.locator("details[data-career='cafe'] summary").click();
+      await expect(page.locator("details[data-career='chef']")).toContainText(
+        "Line cook",
+      );
+    },
+  },
   { name: "hotel-rooftop", query: "room=hotel-rooftop" },
   { name: "bookshop", query: "room=bookshop" },
   { name: "patisserie", query: "room=patisserie" },
@@ -1721,6 +1814,38 @@ const SHOTS: {
   petShot("pet-city", "room=city&view=full&time=12:00", "husky", "Biscuit"),
   petShot("pet-home", "room=apartment", "shibainu", "Kiko"),
   petShot("pet-lab", "room=city&view=full&time=12:00", "labrador", "Maple"),
+  // Vix at the piercing parlor greets a player she has known for weeks and
+  // not seen for twenty days (a returning-greeting bubble, by name)
+  {
+    name: "npc-returning",
+    query: "room=piercing",
+    live: true,
+    act: async (page) => {
+      // the capture waits out 8 quiet seconds and the bubble lasts 6: keep it up
+      await page.addInitScript(() => {
+        const native = window.setTimeout.bind(window);
+        const slowBubble = (
+          handler: TimerHandler,
+          ms?: number,
+          ...args: unknown[]
+        ) => native(handler, ms === 6000 ? 600_000 : ms, ...args);
+        Reflect.set(window, "setTimeout", slowBubble);
+      });
+      await page.evaluate(() => {
+        const day = Math.floor(Date.now() / 86_400_000);
+        localStorage.setItem(
+          "daydaze-save-v1",
+          JSON.stringify({
+            name: "Dana",
+            onboarded: true,
+            npcs: { "piercing:vix": { visits: 6, last: day - 20 } },
+          }),
+        );
+      });
+      await page.reload();
+      await expect(page.locator(".bubble")).toBeVisible({ timeout: 150_000 });
+    },
+  },
   { name: "city-street", query: "room=city&view=full&time=12:00&at=45,11" },
   // Fixed, human-scale compositions for the dream-city architecture review.
   ...[
@@ -2752,6 +2877,25 @@ const SHOTS: {
       await expect(canvas).toHaveAttribute("data-race-phase", "racing", {
         timeout: 120_000,
       });
+    },
+  },
+  // a 13+ player half an hour in without a bite: the gentle hunger HUD
+  {
+    name: "hungry-hud",
+    query: "room=city",
+    act: async (page) => {
+      await page.evaluate(async (source) => {
+        const mod: unknown = await import(/* @vite-ignore */ source);
+        const tick: unknown =
+          typeof mod === "object" && mod !== null
+            ? Reflect.get(mod, "tickNeeds")
+            : undefined;
+        if (typeof tick !== "function") throw new Error("Missing tickNeeds");
+        Reflect.apply(tick, undefined, [1800]);
+      }, "/src/client/food/store.ts");
+      await expect(
+        page.getByRole("region", { name: "Food and water needs" }),
+      ).toBeVisible();
     },
   },
   { name: "point-and-eat-kitchen", query: "room=filipino-joint" },

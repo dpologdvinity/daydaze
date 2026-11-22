@@ -4,6 +4,8 @@ import { expect, test, type Page } from "@playwright/test";
 import { DEALER_AT } from "../src/game/city/dealer.ts";
 import { GAS_STATIONS, counterOf } from "../src/game/city/gasStations.ts";
 import { BUS_STOPS } from "../src/game/city/transit.ts";
+import { coatCheckBank } from "../src/game/dialogue/coat-check.ts";
+import { fillPlaceholders } from "../src/game/dialogue/pick.ts";
 import { SONGS } from "../src/game/karaokeSongs.ts";
 import { dockAction } from "./dock.ts";
 import { recordTestMap } from "./test-map.ts";
@@ -32,6 +34,7 @@ const SAVE = "daydaze-save-v1";
 /** The fields of the save that the tests read back; every one is optional. */
 interface SavedGame {
   coins?: number;
+  npcs?: Record<string, unknown>;
   garage?: string[];
   records?: string[];
   bouquet?: unknown;
@@ -1835,6 +1838,28 @@ test("Espresso Lab: a finished shift posts a pay slip and counts in the save", a
   expect(errors).toEqual([]);
 });
 
+test("Espresso Lab: the shift that reaches a new rank posts a promotion", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  // two barista shifts already worked: the third reaches Counter hand
+  await seedSave(page, {
+    shifts: { day: 0, today: 0, worked: { barista: 2 } },
+  });
+  await page.goto(`${LOW}&room=espresso-lab`);
+  const panel = page.getByRole("region", { name: "Barista station" });
+  await panel
+    .getByRole("button", { name: "Start a shift" })
+    .click({ timeout: 150_000 });
+  for (let i = 0; i < 8; i++)
+    await panel.getByRole("button", { name: "Hand it over" }).click();
+  await expect(panel).toContainText(
+    "Promoted to Cafe · Counter hand! +50 coins",
+  );
+  expect(errors).toEqual([]);
+});
+
 test("Thrift Temple: buy a vintage dye and wear it", async ({ page }) => {
   test.setTimeout(330_000);
   const errors = collectErrors(page);
@@ -1854,12 +1879,12 @@ test("Thrift Temple: buy a vintage dye and wear it", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test("Thrift Temple: pocket a dye while the clerk looks away", async ({
+test("Thrift Temple: pocketing a dye starts a pursuit that can end in jail", async ({
   page,
 }) => {
   test.setTimeout(330_000);
   const errors = collectErrors(page);
-  await page.goto(`${LOW}&room=thrift-temple`);
+  await page.goto(`${LOW}&room=thrift-temple&debug=1`);
   await page
     .getByRole("button", { name: "Shop at Thrift Temple" })
     .click({ timeout: 150_000 });
@@ -1881,6 +1906,18 @@ test("Thrift Temple: pocket a dye while the clerk looks away", async ({
       page.evaluate(() => localStorage.getItem("daydaze-save-v1") ?? ""),
     )
     .toContain('"stolen":{"#6b7a2a":"thrift-store"}');
+  await expect(
+    page.getByRole("status", { name: "Wanted level" }),
+  ).toContainText("2 of 5 stars");
+  await shop.getByRole("button", { name: "Close", exact: true }).click();
+  await page.getByRole("button", { name: "Go to City", exact: true }).click();
+  await expect(roomTitle(page)).toHaveText("City Jail, Block C", {
+    timeout: 150_000,
+  });
+  await expect(page.getByRole("timer")).toContainText("Time left:");
+  await expect(page.getByRole("status", { name: "Wanted level" })).toHaveCount(
+    0,
+  );
   expect(errors).toEqual([]);
 });
 
@@ -3529,6 +3566,31 @@ test("Throwback Trivia: answer a question and the right one lights up", async ({
   expect(errors).toEqual([]);
 });
 
+test("Trivia night: the host's pad opens a hosted round, and only on the night", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto(`${STILL}&room=skate-diner&night=trivia-night`);
+  await page
+    .getByRole("button", { name: "Play Trivia Night with the host" })
+    .click();
+  const dialog = page.getByRole("dialog", { name: "Trivia Night" });
+  await expect(dialog.getByText("Host:")).toBeVisible();
+  await dialog.getByRole("button", { name: "Play" }).click();
+  await dialog.locator(".tt-answer").first().click();
+  await expect(dialog.locator('.tt-answer[data-state="right"]')).toBeVisible();
+  await expect(dialog.getByText("Host:")).toBeVisible();
+  await dialog.getByRole("button", { name: "Close Trivia Night" }).click();
+  await expect(dialog).toBeHidden();
+  // an ordinary visit has no host and no button
+  await page.goto(`${STILL}&room=skate-diner&night=pajama-party`);
+  await expect(roomTitle(page)).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Play Trivia Night with the host" }),
+  ).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
 for (const room of [
   "rooftop-bar",
   "sugar-rush",
@@ -3808,8 +3870,12 @@ test("jail: the sentence counts down, push-ups shorten it, cards deal a hand, an
     );
   }, SAVE);
   await page.goto(`${VELVET}&debug=1`);
-  await page.getByRole("button", { name: "Go to Jail" }).click();
   await expect(roomTitle(page)).toHaveText("City Jail, Block C");
+  await page.getByRole("button", { name: "Go to City", exact: true }).click();
+  await expect(
+    page.getByText("Finish your sentence or pay bail to leave."),
+  ).toBeVisible();
+
   const clock = page.getByRole("timer");
   // a slow load eats into the sentence, so compare before and after cards
   const left = async () => {
@@ -3827,6 +3893,15 @@ test("jail: the sentence counts down, push-ups shorten it, cards deal a hand, an
   await table.getByRole("button", { name: "Draw" }).click();
   await expect(table.getByRole("status")).toContainText(/guard|win/i);
   await table.getByRole("button", { name: "Fold" }).click();
+  await page
+    .getByRole("button", { name: "Play a rhythm set for time off" })
+    .click();
+  const rhythm = page.getByRole("dialog", { name: "Bassline" });
+  await expect(rhythm).toBeVisible();
+  await rhythm.getByRole("button", { name: "Close Bassline" }).click();
+  await expect(
+    page.getByText("Earn a B or better to take a minute off."),
+  ).toBeVisible();
   await page.getByRole("button", { name: /Use the phone/ }).click();
   await expect(page.getByText(/you have 0/)).toBeVisible();
   await page.reload();
@@ -4019,6 +4094,43 @@ test("weed munchies: delivered food and water relieve needs only at 18+", async 
   await call(high, "ageHigh", [110]);
   await call(food, "tickNeeds", [90]);
   await expect(needs).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+test("hunger and thirst at 13+: a gentle HUD that a snack and a drink clear", async ({
+  page,
+}) => {
+  test.setTimeout(240_000);
+  const errors = collectErrors(page);
+  const food = "/src/client/food/store.ts";
+  await page.goto(VELVET);
+  await expect(canvasOf(page)).toHaveAttribute(
+    "data-frames",
+    /^(?:[1-9]\d{1,}|10)$/,
+  );
+  const needs = page.getByRole("region", { name: "Food and water needs" });
+  await expect(needs).toHaveCount(0);
+  const call = (name: string, args: readonly unknown[]) =>
+    page.evaluate(
+      async ({ food, name, args }) => {
+        const mod: unknown = await import(/* @vite-ignore */ food);
+        const fn: unknown =
+          typeof mod === "object" && mod !== null
+            ? Reflect.get(mod, name)
+            : undefined;
+        if (typeof fn !== "function") throw new Error(`Missing ${name}`);
+        Reflect.apply(fn, undefined, args);
+      },
+      { food, name, args },
+    );
+  await call("tickNeeds", [1800]);
+  await expect(needs).toContainText("Hungry and thirsty");
+  await call("consumeFood", ["food"]);
+  await call("consumeFood", ["drink"]);
+  await expect(needs).toHaveCount(0);
+  await expect(
+    page.getByRole("status").filter({ hasText: /exactly what you needed/ }),
+  ).toBeVisible();
   expect(errors).toEqual([]);
 });
 
@@ -5062,6 +5174,64 @@ test("the streak milestone card keeps focus on its button until it is dismissed"
   await expect(card).toHaveCount(0);
 });
 
+/** Opens the streak calendar a minute before midnight with Close focused,
+ * then moves the date past midnight and runs the check-in timer: day 3's
+ * milestone card opens over the calendar. */
+async function milestoneOverCalendar(page: Page) {
+  const evening = new Date("2026-01-10T23:59:00Z");
+  const today = Math.floor(evening.getTime() / 86_400_000);
+  // today already counted (day 2), so loading the game celebrates nothing
+  await seedSave(page, {
+    streak: {
+      count: 2,
+      best: 2,
+      last: today,
+      days: [today - 1, today],
+      frozen: [],
+      freezeWeek: -1,
+    },
+  });
+  // timers run but the date stays put, so a slow load can't reach midnight
+  await page.clock.install({ time: evening });
+  await page.clock.setFixedTime(evening);
+  await page.goto(VELVET);
+  await (await fromMenu(page, "Daily streak")).click();
+  const calendar = page.getByRole("dialog", { name: "Daily streak" });
+  const close = calendar.getByRole("button", { name: "Close" });
+  await close.focus();
+  // the next day, then the minute check-in timer
+  await page.clock.setFixedTime(new Date(evening.getTime() + 120_000));
+  await page.clock.fastForward(61_000);
+  const card = page.getByRole("dialog", { name: "Streak milestone" });
+  await expect(
+    card.getByRole("button", { name: "Keep it burning" }),
+  ).toBeFocused();
+  return { calendar, close, card };
+}
+
+test("dismissing a milestone card over the streak calendar gives focus back to Close", async ({
+  page,
+}) => {
+  test.setTimeout(300_000);
+  const { close, card } = await milestoneOverCalendar(page);
+  await card.getByRole("button", { name: "Keep it burning" }).click();
+  await expect(card).toHaveCount(0);
+  await expect(close).toBeFocused();
+});
+
+test("Escape over a milestone card and the streak calendar closes both and focuses Menu", async ({
+  page,
+}) => {
+  test.setTimeout(300_000);
+  const { calendar, card } = await milestoneOverCalendar(page);
+  await page.keyboard.press("Escape");
+  await expect(card).toHaveCount(0);
+  await expect(calendar).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Menu", exact: true }),
+  ).toBeFocused();
+});
+
 test("closet radio groups support arrow-key navigation and single-tab roving focus", async ({
   page,
 }) => {
@@ -5100,5 +5270,34 @@ test("closet radio groups support arrow-key navigation and single-tab roving foc
   await page.keyboard.press("Tab");
   await expect(brows.locator('button[role="radio"]:focus')).toHaveCount(0);
 
+  expect(errors).toEqual([]);
+});
+
+test("an NPC who knows you greets you as someone back from afar, by name, and remembers today", async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  const today = Math.floor(Date.now() / 86_400_000);
+  await seedSave(page, {
+    name: "Dana",
+    npcs: { "piercing:vix": { visits: 6, last: today - 20 } },
+  });
+  await page.goto(`${LOW}&room=piercing`);
+  // her greeting is one of her "back after a long time" lines, with the name filled in
+  const returning = (coatCheckBank["greeting-returning"] ?? []).map((entry) =>
+    fillPlaceholders(typeof entry === "string" ? entry : entry.text, {
+      name: "Dana",
+    }),
+  );
+  expect(returning.length).toBeGreaterThanOrEqual(10);
+  const bubble = page.locator(".bubble");
+  await expect(bubble).toBeVisible({ timeout: 150_000 });
+  expect(returning).toContain(
+    ((await bubble.textContent()) ?? "").replace(/^Vix: /, ""),
+  );
+  // the meeting is saved: one more visit, last seen today
+  await expect
+    .poll(async () => (await readSave(page)).npcs?.["piercing:vix"])
+    .toEqual({ visits: 7, last: today });
   expect(errors).toEqual([]);
 });

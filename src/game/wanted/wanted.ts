@@ -8,6 +8,7 @@ import {
   type JailSave,
 } from "../jail/jail.ts";
 import { isRecord } from "../typed.ts";
+import type { Vec2 } from "../walk.ts";
 
 export const MAX_STARS = 5;
 
@@ -21,7 +22,7 @@ export type CrimeKind =
 /** Heat a crime adds and the Street-ladder XP it is worth. */
 export const CRIMES: Readonly<Record<CrimeKind, { heat: number; xp: number }>> =
   {
-    shoplift: { heat: 10, xp: 5 },
+    shoplift: { heat: 30, xp: 5 },
     streetFight: { heat: 20, xp: 10 },
     // knocking someone down with your car (game/city/carHits.ts); driving off
     // after adds a hitAndRun on top
@@ -177,4 +178,58 @@ export function validateWanted(value: unknown): WantedState {
     unseenMs: clean(unseenMs, MAX_TIMER_MS),
     hidingMs: clean(hidingMs, MAX_TIMER_MS),
   };
+}
+
+export const CAPTURE_MS = 3000;
+
+/** Accumulate time boxed in by a cruiser. On foot an officer catches on contact. */
+export function captureTime(
+  elapsedMs: number,
+  dtMs: number,
+  distance: number,
+  drivingSpeed: number | null,
+  inSight: boolean,
+): number {
+  if (!inSight) return 0;
+  if (drivingSpeed === null) return distance <= 2.5 ? CAPTURE_MS : 0;
+  if (distance > 3.5 || Math.abs(drivingSpeed) >= 1) return 0;
+  return Math.min(CAPTURE_MS, elapsedMs + dtMs);
+}
+
+/** A sight line is blocked by any solid footprint it enters or starts in. */
+export function hasPoliceSight(
+  from: Vec2,
+  to: Vec2,
+  blockers: readonly (readonly Vec2[])[],
+): boolean {
+  const [x, z] = from;
+  const dx = to[0] - x;
+  const dz = to[1] - z;
+  const maxX = Math.max(x, to[0]);
+  const minX = Math.min(x, to[0]);
+  const maxZ = Math.max(z, to[1]);
+  const minZ = Math.min(z, to[1]);
+  for (const polygon of blockers) {
+    let inside = false;
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+      const [ax, az] = polygon[j];
+      const [bx, bz] = polygon[i];
+      if (az > z !== bz > z && x < ax + ((bx - ax) * (z - az)) / (bz - az))
+        inside = !inside;
+      if (
+        Math.min(ax, bx) > maxX ||
+        Math.max(ax, bx) < minX ||
+        Math.min(az, bz) > maxZ ||
+        Math.max(az, bz) < minZ
+      )
+        continue;
+      const acrossA = dx * (az - z) - dz * (ax - x);
+      const acrossB = dx * (bz - z) - dz * (bx - x);
+      const acrossFrom = (bx - ax) * (z - az) - (bz - az) * (x - ax);
+      const acrossTo = (bx - ax) * (to[1] - az) - (bz - az) * (to[0] - ax);
+      if (acrossA * acrossB <= 0 && acrossFrom * acrossTo <= 0) return false;
+    }
+    if (inside) return false;
+  }
+  return true;
 }
