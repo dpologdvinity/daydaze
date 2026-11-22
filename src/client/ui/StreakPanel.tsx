@@ -74,6 +74,10 @@ function Burst(): JSX.Element {
   );
 }
 
+/** Hands focus to the Menu toggle, where the calendar was opened from. */
+const focusMenu = () =>
+  document.querySelector<HTMLElement>(".menu-open")?.focus();
+
 const REWARD_TITLES: Record<number, string> = {
   3: "Three days running!",
   7: "A whole week!",
@@ -85,12 +89,14 @@ const REWARD_TITLES: Record<number, string> = {
 function Celebration({ reward }: { reward: StreakReward }): JSX.Element {
   const reduced = usePrefersReducedMotion();
   const done = useRef<HTMLButtonElement>(null);
-  // the card takes focus and gives it back when it goes
+  // the card takes focus and gives it back when it goes; if Escape closed the
+  // calendar under it too, what it took focus from is gone, so use the Menu
   useEffect(() => {
     const from = document.activeElement;
     done.current?.focus();
     return () => {
       if (from instanceof HTMLElement && from.isConnected) from.focus();
+      else focusMenu();
     };
   }, []);
   useEffect(() => {
@@ -154,16 +160,18 @@ const WEEKDAYS = ["M", "T", "W", "T", "F", "S", "S"];
 export function StreakPanel({ streak }: { streak: StreakSave }): JSX.Element {
   const { open, celebrate, froze } = streakDesk.use();
   const heading = useRef<HTMLHeadingElement>(null);
+  const panel = useRef<HTMLElement>(null);
   // The calendar opens from the menu, which closes and drops its focused
   // button: move focus into the calendar, and on close hand it back to the
   // Menu toggle if it fell to the page.
   useEffect(() => {
-    // a milestone card showing keeps the focus; the calendar takes it after
+    // a milestone card showing keeps the focus; the calendar takes it after,
+    // unless the card already handed it back to a control in the calendar
     if (!open || celebrate) return;
-    heading.current?.focus();
+    if (!panel.current?.contains(document.activeElement))
+      heading.current?.focus();
     return () => {
-      if (document.activeElement === document.body)
-        document.querySelector<HTMLElement>(".menu-open")?.focus();
+      if (document.activeElement === document.body) focusMenu();
     };
   }, [open, celebrate]);
   useEffect(() => {
@@ -186,6 +194,7 @@ export function StreakPanel({ streak }: { streak: StreakSave }): JSX.Element {
       {celebrate && <Celebration reward={celebrate} />}
       {open && (
         <section
+          ref={panel}
           className="home-panel streak-panel"
           role="dialog"
           aria-label="Daily streak"
