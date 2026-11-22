@@ -2,6 +2,11 @@
 // unreachable server goes offline, joining picks a copy, and full or banned closes end the join.
 import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
+import {
+  clockSynced,
+  resetServerClock,
+  wallSeconds,
+} from "../../game/clock.ts";
 import { DEFAULT_LOOK } from "../../game/look.ts";
 import { ROOMS } from "../../game/rooms.ts";
 import {
@@ -585,4 +590,27 @@ test("a block in an apartment names its owner, so it reaches that home", async (
     copy: 1,
     owner: "u_friend",
   });
+});
+
+test("a snapshot's server time puts the shared wall clock on the server's", async () => {
+  resetServerClock();
+  const { session } = setup();
+  await session.start();
+  const join = session.joinRoom("plaza", DEFAULT_LOOK);
+  await flush();
+  const socket = FakeSocket.latest();
+  socket.open();
+  assert.equal(clockSynced(), false);
+  // the session's own clock reads 0; the server is a minute ahead of it
+  serve(socket, { ...snapshot(), time: 60_000 });
+  await join;
+  assert.equal(clockSynced(), true);
+  assert.ok(Math.abs(wallSeconds() * 1000 - Date.now() - 60_000) < 100);
+  resetServerClock();
+});
+
+test("a snapshot without a server time leaves the wall clock alone", async () => {
+  resetServerClock();
+  await joined();
+  assert.equal(clockSynced(), false);
 });
