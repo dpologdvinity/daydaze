@@ -10,8 +10,42 @@ export interface EventClock {
   release(): void;
 }
 
-/** The real wall clock, seconds. */
-export const wallSeconds = (): number => Date.now() / 1000;
+/** Milliseconds to add to this device's clock to get the server's (0: unsynced). */
+let serverOffset = 0;
+let synced = false;
+/** Offsets closer than this to the current one are network jitter, not drift. */
+const RESYNC_MS = 250;
+/** The largest time a `Date` can hold, ms. */
+const MAX_DATE_MS = 8.64e15;
+
+/**
+ * Takes the server's clock (epoch ms, as it stamped a message) against this
+ * device's `localMs` at receipt, so every player's shared schedules (lights,
+ * walkers, events, traffic) run on the server's time, not on each device's
+ * own. Later readings move the offset only past `RESYNC_MS`. A value that is
+ * not a plausible time is ignored.
+ */
+export function syncServerClock(serverMs: number, localMs = Date.now()): void {
+  if (!Number.isFinite(serverMs) || serverMs < 0 || serverMs > MAX_DATE_MS)
+    return;
+  const offset = serverMs - localMs;
+  if (!synced || Math.abs(offset - serverOffset) > RESYNC_MS) {
+    serverOffset = offset;
+    synced = true;
+  }
+}
+
+/** True once a server time has arrived (online and connected). */
+export const clockSynced = (): boolean => synced;
+
+/** Back to the device's own clock (leaving online play; tests). */
+export function resetServerClock(): void {
+  serverOffset = 0;
+  synced = false;
+}
+
+/** The shared wall clock, seconds: the server's once synced, else the device's. */
+export const wallSeconds = (): number => (Date.now() + serverOffset) / 1000;
 
 /**
  * A clock held `into` seconds into an event that comes round every `every`
