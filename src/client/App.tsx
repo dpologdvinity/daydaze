@@ -18,6 +18,7 @@ import { dayOf } from "../game/challenges.ts";
 import { meet } from "../game/npcMemory.ts";
 import { penaltyFor, type Penalty } from "../game/crime/shoplift.ts";
 import type { BodyShape } from "../game/body.ts";
+import { CAREER_DEFS } from "../game/careers.ts";
 import {
   DEFAULT_HOLDS,
   type DanceMoveId,
@@ -536,7 +537,17 @@ export function App() {
     setSave((s) => finishShift(s, job, result, now).save);
     shiftDesk.set({
       pending: null,
-      slip: { job, coins: r.coins, xp: r.xp, clean: r.clean, slow: r.slow },
+      slip: {
+        job,
+        coins: r.coins,
+        xp: r.xp,
+        clean: r.clean,
+        slow: r.slow,
+        promotion: r.promotion
+          ? `${CAREER_DEFS[r.promotion.career].label} · ${r.promotion.name}`
+          : null,
+        bonus: r.promotion?.bonus ?? 0,
+      },
     });
   }, [shiftPending]);
   // recurring NPCs read their memories of the player from the desk (a layout
@@ -714,6 +725,7 @@ export function App() {
           body={save.body}
           setBody={setBody}
           progression={save.progression}
+          shifts={save.shifts}
           onTitle={(title) =>
             setSave((s) => ({
               ...s,
