@@ -706,8 +706,8 @@ def braid_style(ctx, v, rows=8, seed=11):
         v0 = rng.random()
         mode = worn
         if worn == "half":
-            # the top half (crown to the front and sides above the ears) up
-            mode = "pony" if t < 0.62 and abs(phi) > np.radians(45) or t < 0.3 else "down"
+            # the top half up: everything rooted above the tops of the ears
+            mode = "pony" if p[2] > drape.eye_z + 0.03 else "down"
         if mode in ("pony", "bun"):
             hit = ties[mode if worn != "half" else "half"]
             tie = hit[0] + hit[1] * (0.01 + 0.004)
