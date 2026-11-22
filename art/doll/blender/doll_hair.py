@@ -648,9 +648,13 @@ def build(ctx):
         make = {"hijab": hijab, "head-wrap": head_wrap, "turban": turban}
         # the styles built in hair_built.py (#396) make their own materials
         built = {"knotless": hair_built.knotless, "taper": hair_built.taper}
-        out = [
-            built[n](ctx) if n in built else make[n](ctx, solid) if n in make else proxy_hair(ctx, n) for n in only
-        ]
+        for n in only:
+            if n in built:
+                # a list: the near model and its hand-made far one
+                made = built[n](ctx)
+                out += made if isinstance(made, list) else [made]
+            else:
+                out.append(make[n](ctx, solid) if n in make else proxy_hair(ctx, n))
         # the same root-to-tip shading the full build gives every style
         for ob in out:
             shade_strands(ctx, ob)

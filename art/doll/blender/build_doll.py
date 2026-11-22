@@ -1077,7 +1077,10 @@ def main():
         export(rig, [lo], f"body{SUFFIX}-lo")
     for ob in parts:
         kind, name = ob.name.split("_", 1)
-        export(rig, [ob], f"{kind.lower()}-{name}{SUFFIX}")
+        # "<name>@lo" is a hand-made far model: hair-<name>-m-lo.glb, which
+        # optimize-doll.sh then uses instead of simplifying the near one
+        name, lo = name.removesuffix("@lo"), name.endswith("@lo")
+        export(rig, [ob], f"{kind.lower()}-{name}{SUFFIX}" + ("-lo" if lo else ""))
     print("wrote", OUT_DIR, "body verts", len(body.data.vertices))
     # the bare rig, for mocap.py to bake clips onto the very same bones
     for ob in list(bpy.data.objects):

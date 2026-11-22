@@ -173,6 +173,19 @@ class Scalp:
         phi = np.arctan2(x, -y)
         return t, phi
 
+    def texel_points(self, t, phi):
+        """Skin points at (t, phi) arrays, from the fine grid (bilinear)."""
+        ft = np.clip(t, 0, 1) * (len(self.T) - 1)
+        fp = (np.asarray(phi) + np.pi) / (2 * np.pi) * (len(self.PHI) - 1)
+        i0 = np.clip(ft.astype(int), 0, len(self.T) - 2)
+        j0 = np.clip(fp.astype(int), 0, len(self.PHI) - 2)
+        a = (ft - i0)[..., None]
+        b = (fp - j0)[..., None]
+        g = self.grid
+        top = g[i0, j0] * (1 - b) + g[i0, j0 + 1] * b
+        bot = g[i0 + 1, j0] * (1 - b) + g[i0 + 1, j0 + 1] * b
+        return top * (1 - a) + bot * a
+
     def cap(self, name, rings, segments, lift, t_max=1.0, atlas=(0.0, 0.0, 1.0), keep=None):
         """A grid over the scalp from the crown to t_max, `lift(t, phi)`
         metres off the skin; returns the object and, per vertex, its skin
@@ -257,113 +270,104 @@ def _noise(shape, scale, rng):
 
 
 class Parts:
-    """Brick-laid box parts over the scalp: a round crown section, then
-    RINGS rows out to the hairline, each row cut into boxes about `size`
-    metres wide, every other row offset by half a box."""
+    """Box parts over the scalp, laid the way a braider lays them but by
+    hand: rows following the hairline out from the crown, each cut into
+    boxes about `size` metres wide and staggered against the row before,
+    then every box's middle nudged, a few boxes merged and a few split.
+    The parts are the lines halfway between neighbouring middles (a
+    Voronoi diagram), so they come out as uneven boxes, some triangles and
+    offsets, not a grid."""
 
     def __init__(self, scalp, rows, size, seed):
         self.scalp = scalp
         rng = np.random.default_rng(seed)
-        self.crown = 0.07
-        # row edges in t, each wobbling a little round the head
-        self.edges = np.linspace(self.crown, 1.0, rows + 1)
-        self.wobble = [(rng.uniform(-0.02, 0.02), rng.uniform(0, 2 * np.pi)) for _ in self.edges]
-        self.wobble[-1] = (0.0, 0.0)
-        self.cuts = []
+        edges = np.linspace(0.07, 1.0, rows + 1)
+        seeds = [(0.0, 0.0)]
         phis = np.linspace(-np.pi, np.pi, 721)
         for r in range(rows):
-            t = (self.edges[r] + self.edges[r + 1]) / 2
+            t = (edges[r] + edges[r + 1]) / 2
             ring = np.array([scalp.hit(t, f)[0] for f in phis])
             arc = np.concatenate([[0], np.cumsum(np.linalg.norm(np.diff(ring, axis=0), axis=1))])
             n = max(5, int(round(arc[-1] / size)))
-            # box edges at equal arc lengths round the row, offset by half a
-            # box on odd rows, each nudged up to a quarter of a box
-            s = (np.arange(n) + 0.5 * (r % 2) + rng.uniform(-0.25, 0.25, n)) / n * arc[-1]
-            self.cuts.append(np.sort(np.interp(np.mod(s, arc[-1]), arc, phis)))
-
-    def edge(self, r, phi):
-        amp, ph = self.wobble[r]
-        return self.edges[r] + amp * np.sin(3 * phi + ph)
-
-    def row(self, t, phi):
-        """Row index of (t, phi) arrays: -1 for the crown section."""
-        r = np.full(np.shape(t), -1)
-        for k in range(len(self.edges) - 1):
-            r = np.where(t >= self.edge(k, phi), k, r)
-        return r
+            s = (np.arange(n) + 0.5 * (r % 2) + rng.uniform(-0.3, 0.3, n)) / n * arc[-1]
+            for f in np.interp(np.mod(s, arc[-1]), arc, phis):
+                # a box's middle wanders up to a third of a row up or down
+                dt = (edges[1] - edges[0]) * rng.uniform(-0.33, 0.33)
+                seeds.append((float(np.clip(t + dt, 0.03, 0.97)), float(f)))
+        keep = []
+        for t, f in seeds:
+            roll = rng.random()
+            if roll < 0.07 and t > 0.1:
+                # merged into a neighbour: one bigger box
+                continue
+            keep.append((t, f))
+            if roll > 0.95:
+                # split: a small box beside it
+                keep.append((float(np.clip(t + rng.uniform(-0.03, 0.03), 0.03, 0.97)), f + rng.uniform(-0.06, 0.06)))
+        self.seeds = keep
+        hits = [scalp.hit(t, f) for t, f in keep]
+        self.points = np.array([h[0] for h in hits])
+        # a frame on the scalp at each middle, for the hair drawn toward it
+        n = np.array([h[1] for h in hits])
+        a = np.cross(n, [0.0, 0.0, 1.0])
+        a /= np.maximum(np.linalg.norm(a, axis=1, keepdims=True), 1e-6)
+        self.frame = (a, np.cross(n, a))
 
     def boxes(self):
-        """(row, t, phi) of every box's middle, crown first."""
-        out = [(-1, 0.0, 0.0)]
-        for r, cuts in enumerate(self.cuts):
-            nxt = np.roll(cuts, -1)
-            nxt[-1] += 2 * np.pi
-            mids = (cuts + nxt) / 2
-            mids = np.mod(mids + np.pi, 2 * np.pi) - np.pi
-            for f in mids:
-                out.append((r, float((self.edge(r, f) + self.edge(r + 1, f)) / 2), float(f)))
-        return out
+        """(t, phi) of every box's middle, where its braid roots."""
+        return self.seeds
 
-    def texel_parts(self, t, phi):
-        """For texel (t, phi) arrays: the distance (metres) to the nearest
-        part line, and the offset (metres, across and along the scalp) to
-        its box's middle, where the braid roots."""
-        dt_m, dphi_m = self.scalp.metric(np.clip(t, 0, 1), phi)
-        row = self.row(t, phi)
-        dist = np.full(t.shape, np.inf)
-        off_t = np.zeros(t.shape)
-        off_phi = np.zeros(t.shape)
-        # the crown section: a disk
-        crown = row < 0
-        dist[crown] = (self.edge(0, phi[crown]) - t[crown]) * dt_m[crown]
-        off_t[crown] = t[crown] * dt_m[crown]
-        for r, cuts in enumerate(self.cuts):
-            m = row == r
-            if not m.any():
-                continue
-            tm, fm = t[m], phi[m]
-            lo, hi = self.edge(r, fm), self.edge(r + 1, fm)
-            d_row = np.minimum(tm - lo, hi - tm) * dt_m[m]
-            # the box's cut edges round the ring (wrapping at +-pi)
-            k = np.searchsorted(cuts, fm)
-            left = cuts[(k - 1) % len(cuts)]
-            right = cuts[k % len(cuts)]
-            dl = np.mod(fm - left, 2 * np.pi)
-            dr = np.mod(right - fm, 2 * np.pi)
-            d_cut = np.minimum(dl, dr) * dphi_m[m]
-            dist[m] = np.minimum(d_row, d_cut)
-            off_t[m] = (tm - (lo + hi) / 2) * dt_m[m]
-            off_phi[m] = (dl - (dl + dr) / 2) * dphi_m[m]
-        # past the hairline
-        dist[t > 1] = -1
-        return dist, off_t, off_phi
+    def texel_parts(self, pts):
+        """For texel points (n, 3) on the scalp: the distance (metres) to the
+        nearest part line, and the offset to its box's middle in that
+        middle's own frame (two coordinates, metres)."""
+        dist = np.empty(len(pts))
+        near = np.empty(len(pts), int)
+        for c in range(0, len(pts), 32768):
+            q = pts[c : c + 32768]
+            d2 = ((q[:, None, :] - self.points[None, :, :]) ** 2).sum(-1)
+            two = np.argpartition(d2, 1, axis=1)[:, :2]
+            d_two = np.take_along_axis(d2, two, 1)
+            order = np.argsort(d_two, axis=1)
+            i1 = np.take_along_axis(two, order[:, :1], 1)[:, 0]
+            i2 = np.take_along_axis(two, order[:, 1:], 1)[:, 0]
+            gap = np.linalg.norm(self.points[i2] - self.points[i1], axis=1)
+            # distance to the bisector between the two nearest middles
+            dist[c : c + 32768] = (d2[np.arange(len(q)), i2] - d2[np.arange(len(q)), i1]) / (2 * np.maximum(gap, 1e-6))
+            near[c : c + 32768] = i1
+        off = pts - self.points[near]
+        a, b = self.frame
+        return dist, (off * a[near]).sum(1), (off * b[near]).sum(1)
 
 
 def braid_cap_texture(parts, size=1024, seed=4):
     """The scalp under the braids: each box's hair drawn tight toward its
-    braid's root, the part lines between boxes cut away (alpha 0) so the
-    doll's own skin shows in them, a soft broken edge at the hairline."""
+    braid's root, the parts between boxes a fine dark crease (the scalp in
+    the braids' shadow, so they show only up close), a soft broken edge at
+    the hairline where the doll's own skin shows through."""
     rng = np.random.default_rng(seed)
     t, phi = parts.scalp.texel_coords(size)
-    dist, off_t, off_phi = parts.texel_parts(t, phi)
+    pts = parts.scalp.texel_points(t, phi)
+    dist, u, v = parts.texel_parts(pts.reshape(-1, 3))
+    dist, u, v = dist.reshape(t.shape), u.reshape(t.shape), v.reshape(t.shape)
     # strands run toward the root: their direction is the offset's, and the
     # pattern across them is noise in the angle round the root
-    ang = np.arctan2(off_phi, off_t)
-    r = np.hypot(off_t, off_phi)
+    ang = np.arctan2(v, u)
+    r = np.hypot(u, v)
     streak = _noise((size, size), 2.5, rng)
     fine = 0.5 + 0.5 * np.sin(ang * 70 + streak * 9)
     # in the braids' shade: darker than the braids over it
     g = 0.5 + 0.18 * fine * np.clip(r / 0.004, 0, 1)
-    # hair is pulled tight at the root and thins toward the part edges
-    g *= 0.8 + 0.2 * np.clip(dist / 0.003, 0, 1)
-    # parts: under a millimetre of skin, their edges broken by stray hairs
-    edge = 0.0004 + 0.00015 * (_noise((size, size), 3, rng) - 0.5)
-    alpha = np.clip((dist - edge) / 0.0003, 0, 1)
+    # the parts: a crease about a millimetre wide, its edge broken by
+    # stray hairs, darkest in the middle
+    crease = 0.0005 + 0.0002 * (_noise((size, size), 3, rng) - 0.5)
+    k = np.clip(dist / crease, 0, 1)
+    g *= 0.3 + 0.7 * k * k * (3 - 2 * k)
     # the hairline: baby hairs, a ragged fade over the last few millimetres
     t_len = parts.scalp.metric(np.clip(t, 0, 1), phi)[0]
     to_line = (1 - t) * t_len
     ragged = 0.0015 + 0.002 * _noise((size, size), 6, rng)
-    alpha = np.minimum(alpha, np.clip((to_line - ragged) / 0.0015, 0, 1))
+    alpha = np.clip((to_line - ragged) / 0.0015, 0, 1)
     alpha[t > 1] = 0
     return np.dstack([g, g, g, alpha])
 
@@ -385,12 +389,14 @@ class Drape:
         self.eye_z = ctx.JB["lEye"][2]
         self.face_y = scalp.centre[1] - 0.05
 
-    def past_shoulder(self, p, front, margin):
+    def past_shoulder(self, p, front, margin, spread=0.0):
         """Where a braid leaving the head at p should cross the top of the
         shoulder: a little below it, `margin` behind the back (or in front
-        of the chest) at the same side."""
+        of the chest) at the same side, `spread` metres further out."""
         z = self.ctx.JB["lArm"][2] - 0.05
-        x = p[0] * 0.92
+        side = np.sign(p[0]) if abs(p[0]) > 1e-4 else 1.0
+        # (in front the throat stays clear; down the back they close ranks)
+        x = side * float(np.clip(abs(p[0]) * 1.1 + spread, 0.05 if front else 0.0, 0.17))
         start, toward = (np.array([x, -0.5, z]), (0, 1, 0)) if front else (np.array([x, 0.5, z]), (0, -1, 0))
         hit = self.skin.bvh.ray_cast(Vector(start), Vector(toward))[0]
         y = p[1] if hit is None else hit.y + (-margin if front else margin)
@@ -419,9 +425,11 @@ def braid_path(drape, root, normal, comb, length, layer, front, rng):
     every 6 mm with, for each, the skin under it and its normal there."""
     step = 0.006
     gravity = np.array([0.0, 0.0, -1.0])
-    p = root + normal * 0.002
+    # (the cap under the braids stands 2-3 mm off the skin, so a cap face
+    # never dips under the skull's curve between its corners)
+    p = root + normal * 0.0035
     d = comb
-    pts, under = [p], [drape(p, 0.002)[1]]
+    pts, under = [p], [drape(p, 0.0035)[1]]
     shoulder_z = drape.ctx.JB["lArm"][2]
     drift = rng.normal(0, 0.004, 3) * np.array([1.0, 1.0, 0.0])
     sway = np.cross(comb, gravity)
@@ -433,6 +441,12 @@ def braid_path(drape, root, normal, comb, length, layer, front, rng):
     margin_body = 0.014 + layer * 0.6 + depth
     jaw_z = drape.eye_z - 0.09
     aim = None
+    # how far out over the shoulder it lands: the fall widens from the head
+    # to the shoulders, and braids layer over them
+    spread = rng.uniform(-0.01, 0.05)
+    # below the skull the braids hang as a curtain round the neck, not
+    # collapsed onto it: bulk behind the ears and a full silhouette
+    curtain = 0.088 + layer + depth * 0.6
     s = 0.0
     while s < length:
         s += step
@@ -452,7 +466,7 @@ def braid_path(drape, root, normal, comb, length, layer, front, rng):
         # in front of it, for the front braids), clear of it, so it falls
         # down the back or the chest and never along the shoulder
         if aim is None and p[2] < jaw_z:
-            aim = drape.past_shoulder(p, front, margin_body)
+            aim = drape.past_shoulder(p, front, margin_body, spread)
         if aim is not None and p[2] > aim[2]:
             # out to the side of the shoulder it falls on first, then down:
             # a line straight to the spot would cut through the collarbone
@@ -462,10 +476,16 @@ def braid_path(drape, root, normal, comb, length, layer, front, rng):
             d = d * 0.5 + to / max(np.linalg.norm(to), 1e-6) * 0.5
         d /= np.linalg.norm(d)
         # lifts off the scalp onto its layer within the first few centimetres
-        margin = min(layer, 0.003 + s * 0.08)
+        margin = min(max(layer, 0.0045), 0.0035 + s * 0.08)
         # and eases out to its depth off the body over the shoulders
         margin = max(margin, margin_body * np.clip((shoulder_z + 0.16 - p[2]) / 0.08, 0, 1))
-        q, info = drape(p + d * step, margin, hug=on_skull)
+        q = p + d * step
+        if not on_skull and q[2] > shoulder_z + 0.02:
+            h = (q - drape.scalp.centre) * np.array([1.0, 1.0, 0.0])
+            r = np.linalg.norm(h)
+            if 1e-6 < r < curtain:
+                q = q + h / r * (curtain - r)
+        q, info = drape(q, margin, hug=on_skull)
         d = (q - p) / max(np.linalg.norm(q - p), 1e-9)
         p = q
         pts.append(p)
@@ -543,32 +563,85 @@ def knotless(ctx, rows=8, size=0.019, width=0.0105, length=0.5, seed=11):
     ribbon = width * 3.2 / 2.6
     repeat = ribbon * aspect
 
-    verts, faces, uvs, normals, wts = [], [], [], [], []
-    n_braids = 0
-    for row, t, phi in parts.boxes():
+    paths = []
+    for t, phi in parts.boxes():
         p, n, _, _ = scalp.hit(t, phi)
-        # comb: away from a middle part, down at the back; front braids fall
-        # beside the face, the rest behind the shoulders
+        # comb: away from a middle part, down at the back; braids from the
+        # temples forward sweep back past the face and fall in front of the
+        # shoulders, framing it; the rest fall behind
         side = np.sign(p[0]) if abs(p[0]) > 1e-4 else 1.0
         out = (p - scalp.centre) * np.array([1.0, 1.0, 0.0])
         out = out / max(np.linalg.norm(out), 1e-6) + np.array([0.0, 0.0, -0.6])
         aside = np.array([side * 0.45, 1.0, -0.2])
         w = np.clip((abs(phi) - np.radians(100)) / np.radians(35), 0, 1)
         comb = out * (1 - w) + aside * w
-        if row < 0:
+        if t < 0.06:
             # the crown's own braid lies back, down the middle
             comb = np.array([0.0, 1.0, -0.3])
-        front = abs(phi) > np.radians(125)
+        front = abs(phi) > np.radians(105)
         comb = comb - n * np.dot(comb, n)
         comb /= np.linalg.norm(comb)
         # higher roots lie over lower ones: a crown braid stands furthest out
-        layer = 0.004 + 0.007 * (1 - (row + 1) / rows)
+        layer = 0.004 + 0.007 * (1 - t)
         L = length * rng.uniform(0.94, 1.06)
-        n_braids += 1
         pts, under = braid_path(drape, p, n, comb, L, layer, front, rng)
-        keep = simplify(pts, 0.0045)
         arc = np.concatenate([[0], np.cumsum(np.linalg.norm(np.diff(pts, axis=0), axis=1))])
-        v0 = rng.random()
+        paths.append((pts, under, arc, rng.random()))
+    print("knotless:", len(paths), "braids")
+
+    # the cap of parts under the braids, just off the skin
+    cap_img = image("knotless_cap", braid_cap_texture(parts))
+
+    def cap(name, rings, segments):
+        ob, tris, barys = scalp.cap(name, rings, segments, lambda t, f: 0.0022 + 0.001 * (1 - t))
+        ob.data.materials.append(proxies.textured("knotless_cap", cap_img, alpha=True))
+        return ob, tris, barys
+
+    def assemble(name, braids, capped):
+        """One object: braids then cap, every vertex riding the skin under it."""
+        ob, tris, barys = braids
+        c, c_tris, c_barys = capped
+        ob = _join(ob, c)
+        ob.name = ob.data.name = name
+        weights, keys = skin_mix(ctx, np.concatenate([tris, c_tris]), np.concatenate([barys, c_barys]))
+        proxies.attach(ctx, ob, weights, keys)
+        return ob
+
+    mat = proxies.textured("hair_knotless", strip, alpha=True)
+    near_cap = cap("knotless_cap", 10, 48)
+    cap_tris = sum(len(p.vertices) - 2 for p in near_cap[0].data.polygons)
+    # the near model: ridged braids, simplified as little as the triangle
+    # budget allows
+    for tol in (0.004, 0.005, 0.0065, 0.008, 0.01):
+        braids = braid_ribbons(ctx, "Hair_knotless", paths, scalp.centre, ribbon, repeat, tol, ridged=True)
+        count = sum(len(p.vertices) - 2 for p in braids[0].data.polygons)
+        if count + cap_tris <= BUDGET or tol == 0.01:
+            break
+        bpy.data.objects.remove(braids[0])
+    braids[0].data.materials.append(mat)
+    near = assemble("Hair_knotless", braids, near_cap)
+    # the far model, by hand: every other braid, wider, flat and coarse,
+    # on a coarse cap (the automatic simplify tears braids apart)
+    far = braid_ribbons(ctx, "Hair_knotless@lo", paths[::2], scalp.centre, ribbon * 1.5, repeat * 1.5, 0.012, ridged=False)
+    far[0].data.materials.append(mat)
+    lo = assemble("Hair_knotless@lo", far, cap("knotless_cap_lo", 6, 24))
+    return [near, lo]
+
+
+# triangles a near hair model may have (the far ones about a fifth)
+BUDGET = 7900
+
+
+def braid_ribbons(ctx, name, paths, centre, ribbon, repeat, tolerance, ridged):
+    """Ribbons along braid paths: each simplified to `tolerance` metres,
+    tapered at the root (knotless) and the tip, ridged (a crest down the
+    middle, four triangles a step) or flat (two). Returns the object and
+    each vertex's skin triangle and barycentric weights. `centre` is the
+    head's middle (Scalp.centre)."""
+    verts, faces, uvs, normals, wts = [], [], [], [], []
+    across_k = ((-1, 0.0), (0, 0.45), (1, 0.0)) if ridged else ((-1, 0.0), (1, 0.0))
+    for pts, under, arc, v0 in paths:
+        keep = simplify(pts, tolerance)
         base = len(verts)
         prev_side = prev_out = None
         for i in keep:
@@ -577,9 +650,9 @@ def knotless(ctx, rows=8, size=0.019, width=0.0105, length=0.5, seed=11):
             # the braid faces out of the hair: away from the skin under it,
             # turned toward the body's axis where it hangs clear, and never
             # along itself (that would twist the ribbon edge-on)
-            radial = (q - scalp.centre) * np.array([1.0, 1.0, 0.0])
+            radial = (q - centre) * np.array([1.0, 1.0, 0.0])
             radial /= max(np.linalg.norm(radial), 1e-6)
-            on_head = np.clip((q[2] - (scalp.centre[2] - 0.07)) / 0.06, 0, 1)
+            on_head = np.clip((q[2] - (centre[2] - 0.07)) / 0.06, 0, 1)
             a, b = max(i - 1, 0), min(i + 1, len(pts) - 1)
             along = pts[b] - pts[a]
             along /= np.linalg.norm(along)
@@ -602,23 +675,20 @@ def knotless(ctx, rows=8, size=0.019, width=0.0105, length=0.5, seed=11):
             # lying on the head a braid flattens and spreads a little, and
             # the rows close up over the parts below them
             w *= 1 + 0.35 * on_head
-            # a ridged ribbon (left edge, crest, right edge): from the side it
-            # still shows a face, and its bent normals light it like a cord
-            for k, (side_k, lift) in enumerate(((-1, 0.0), (0, 0.45), (1, 0.0))):
+            # ridged: from the side it still shows a face; the bent normals
+            # light either kind like a cord
+            for k, (side_k, lift) in enumerate(across_k):
                 verts.append(q + across * side_k * w / 2 + face_out * lift * w)
                 nn = face_out + across * side_k * 0.9
                 normals.append(nn / np.linalg.norm(nn))
-                uvs.append((k / 2, v0 + s / repeat))
+                uvs.append((k / (len(across_k) - 1), v0 + s / repeat))
                 wts.append((tri, bary))
-        n_pts = len(keep)
-        for j in range(n_pts - 1):
-            a = base + 3 * j
-            faces.append((a, a + 1, a + 4, a + 3))
-            faces.append((a + 1, a + 2, a + 5, a + 4))
-
-    print("knotless:", n_braids, "braids")
-    verts = np.array(verts)
-    ob = ctx.new_object("Hair_knotless", verts, faces)
+        m = len(across_k)
+        for j in range(len(keep) - 1):
+            a = base + m * j
+            for k in range(m - 1):
+                faces.append((a + k, a + k + 1, a + m + k + 1, a + m + k))
+    ob = ctx.new_object(name, np.array(verts), faces)
     uv_layer = ob.data.uv_layers.new(name="UVMap").data
     for poly in ob.data.polygons:
         for li in poly.loop_indices:
@@ -626,23 +696,7 @@ def knotless(ctx, rows=8, size=0.019, width=0.0105, length=0.5, seed=11):
     for poly in ob.data.polygons:
         poly.use_smooth = True
     ob.data.normals_split_custom_set_from_vertices([tuple(n) for n in normals])
-    mat = proxies.textured("hair_knotless", strip, alpha=True)
-    ob.data.materials.append(mat)
-    tris = np.array([w[0] for w in wts])
-    barys = np.array([w[1] for w in wts])
-
-    # the cap of parts under the braids, just off the skin
-    cap, cap_tris, cap_barys = scalp.cap("knotless_cap", 10, 48, lambda t, f: 0.0012 + 0.0008 * (1 - t))
-    cap_img = image("knotless_cap", braid_cap_texture(parts))
-    cap.data.materials.append(proxies.textured("knotless_cap", cap_img, alpha=True))
-
-    # one object: braids then cap, every vertex riding the skin under it
-    all_tris = np.concatenate([tris, cap_tris])
-    all_barys = np.concatenate([barys, cap_barys])
-    ob = _join(ob, cap)
-    weights, key_d = skin_mix(ctx, all_tris, all_barys)
-    proxies.attach(ctx, ob, weights, key_d)
-    return ob
+    return ob, np.array([w[0] for w in wts]), np.array([w[1] for w in wts])
 
 
 def _join(a, b):
@@ -700,11 +754,37 @@ class Fade:
         return 1 - self.sides(phi) * (1 - f * f * (3 - 2 * f))
 
     def length(self, t, phi):
-        """Hair length (metres): the top's, tapering into the fade."""
-        f = np.clip((self.height(t, phi) - self.band * 0.3) / (self.band * 1.4), 0, 1)
+        """Hair length (metres): the top's, tapering into the fade, and
+        shorter (brushed down) for the last 1.5 cm to the front edge, so the
+        edge is a line on the skin, not the rim of a helmet."""
+        h = self.height(t, phi)
+        f = np.clip((h - self.band * 0.3) / (self.band * 1.4), 0, 1)
         k = f * f * (3 - 2 * f)
-        crisp = 1 - self.sides(phi)
-        return self.top * np.maximum(k, crisp * np.clip(self.height(t, phi) / 0.006, 0, 1))
+        crisp = (1 - self.sides(phi)) * (0.35 + 0.65 * np.clip(h / 0.015, 0, 1))
+        return self.top * np.maximum(k, crisp * (h > 0))
+
+    def edge(self, t, phi, rng):
+        """The lined-up front edge, 0 (skin) to 1 (hair): set back a few
+        millimetres from the scalp map's hairline, straighter across the
+        forehead, with a sharp corner cut into each temple (a barber's
+        line-up) and a slightly irregular, soft run of short hairs along it."""
+        a = np.degrees(np.abs(phi))
+        h = self.height(t, phi)
+
+        def smooth(x):
+            x = np.clip(x, 0, 1)
+            return x * x * (3 - 2 * x)
+
+        # straighter across: the middle of the forehead set back, so the
+        # line runs level and turns down only at the corners
+        back = 0.005 * np.clip((a - 148) / 32, 0, 1) ** 0.7
+        # the temple corners: a notch about a centimetre deep with steep
+        # sides, so the line turns down at an angle, not round a curve
+        back += 0.011 * smooth((a - 133) / 2.5) * smooth((149 - a) / 2.5)
+        # the edge wanders a little, hair by hair
+        back += 0.0006 * (_noise(np.shape(t), 7, rng) - 0.5) + 0.0003 * (_noise(np.shape(t), 1.5, rng) - 0.5)
+        front = 1 - self.sides(phi)
+        return 1 - front * (1 - np.clip((h - back) / 0.0012, 0, 1))
 
 
 SHELLS = 3
@@ -719,16 +799,17 @@ def fade_texture(fade, size=1024, seed=21):
     rng = np.random.default_rng(seed)
     half = size // 2
     t, phi = fade.scalp.texel_coords(half)
-    dens = fade.density(t, phi)
+    edge = fade.edge(t, phi, rng)
+    dens = fade.density(t, phi) * edge
     clump = 0.65 * _cells((half, half), 5, rng) + 0.35 * _cells((half, half), 2.5, rng)
     stubble = _noise((half, half), 1.0, rng)
     out = np.zeros((size, size, 4), np.float32)
     inside = t <= 1.0
     # the scalp layer: dense hair (darker in the clumps' shade) in the top,
-    # stubble dots thinning out through the fade
+    # stubble dots thinning out through the fade and along the front edge
+    # (noise is below 1, so full density leaves no hole for skin to show)
     g = 0.55 + 0.25 * clump
-    a = (stubble > 1 - dens) & inside
-    # the lined-up edge: hair right to it, a hairline-sharp cut
+    a = (stubble < dens) & inside
     out[:half, :half] = np.dstack([g, g, g, a.astype(np.float32)])
     for k in range(1, SHELLS + 1):
         # a shell shows the clumps that reach it: fewer, smaller and lighter
@@ -737,7 +818,9 @@ def fade_texture(fade, size=1024, seed=21):
         # (and they thin out where the hair shortens into the fade, so the
         # top blends down into it instead of ending in a ledge)
         short = 1 - np.clip(fade.length(t, phi) / fade.top, 0, 1)
-        a = (clump > 0.25 + 0.55 * level + 0.45 * short) & inside
+        # (dense: the outer shells make the head's outline, which should
+        # read as a soft fuzz of coils, not a smooth shell)
+        a = (clump > 0.15 + 0.5 * level + 0.45 * short) & inside & (edge > 0.5)
         g = (0.62 + 0.3 * level + 0.12 * (clump - 0.5)) * np.ones_like(t)
         y0, x0 = (k // 2) * half, (k % 2) * half
         out[y0 : y0 + half, x0 : x0 + half] = np.dstack([g, g, g, a.astype(np.float32)])
@@ -758,7 +841,8 @@ def taper(ctx):
         frac = k / SHELLS
 
         def lift(t, phi, frac=frac):
-            return 0.0008 + float(fade.length(t, phi)) * frac
+            # (2 mm: a coarse cap face never dips under the skull's curve)
+            return 0.0018 + float(fade.length(t, phi)) * frac
 
         keep = None if k == 0 else (lambda t, phi: fade.length(t, phi) > 0.002)
         ob, tris, barys = scalp.cap(f"taper_{k}", 14, 72, lift, atlas=(x0, y0, 0.5), keep=keep)
@@ -780,5 +864,5 @@ def taper(ctx):
 
 def build(ctx):
     """Every built style, for doll_hair.build."""
-    return [knotless(ctx), taper(ctx)]
+    return [*knotless(ctx), taper(ctx)]
 
