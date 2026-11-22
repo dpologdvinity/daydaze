@@ -29,6 +29,12 @@ const FALLBACK_SITUATIONS = [
   "idle",
 ] as const satisfies readonly DialogueSituation[];
 
+// A role with no lines for a warmer greeting says its colder one instead.
+const COLDER_GREETING: Partial<Record<DialogueSituation, DialogueSituation>> = {
+  "greeting-returning": "greeting-regular",
+  "greeting-regular": "greeting-first",
+};
+
 // Neutral words that still read naturally in any placeholder slot.
 const PLACEHOLDER_FALLBACKS: Record<PlaceholderId, string> = {
   name: "friend",
@@ -154,7 +160,10 @@ function eligibleLines(
   context: DialogueContext,
   tier: ContentTier,
 ): Line[] {
-  for (const id of [situation, ...FALLBACK_SITUATIONS]) {
+  const greetings: DialogueSituation[] = [];
+  for (let id = COLDER_GREETING[situation]; id; id = COLDER_GREETING[id])
+    greetings.push(id);
+  for (const id of [situation, ...greetings, ...FALLBACK_SITUATIONS]) {
     const lines = (bank[id] ?? [])
       .map(normalize)
       .filter((line) => matches(line.when, context, tier));
