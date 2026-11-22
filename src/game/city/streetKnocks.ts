@@ -14,6 +14,8 @@ import {
   type ReactionId,
 } from "../reactions.ts";
 import { yawTowards, type Vec2 } from "../walk.ts";
+import { isBlocked } from "../area.ts";
+import { CITY_AREA } from "./layout.ts";
 import { hitOutcome, hitReaction, knockback } from "./carHits.ts";
 import { hash } from "./hash.ts";
 import { pedestrianAt, type Pedestrian } from "./pedestrians.ts";
@@ -239,11 +241,28 @@ export function evadeFastCar(
   const dz = at.z - car.z;
   const distance = Math.hypot(dx, dz);
   if (distance > 12) return;
+  // Step across the strip, away from the car, without leaving its surface.
+  const alongX = Math.abs(p.b[0] - p.a[0]) >= Math.abs(p.b[1] - p.a[1]);
+  const coordinate = alongX ? at.z : at.x;
+  const away = alongX ? dz : dx;
+  const low = alongX ? p.bounds[2] : p.bounds[0];
+  const high = alongX ? p.bounds[3] : p.bounds[1];
+  const sign =
+    away === 0
+      ? high - coordinate >= coordinate - low
+        ? 1
+        : -1
+      : Math.sign(away);
+  let step =
+    sign *
+    Math.min(1, Math.max(0, sign > 0 ? high - coordinate : coordinate - low));
+  if (isBlocked(CITY_AREA, alongX ? [at.x, at.z + step] : [at.x + step, at.z]))
+    step = 0;
   begin(s, {
     kind: "freeze",
     at: time,
     hold: FREEZE_HOLD,
-    push: distance > 0 ? [dx / distance, dz / distance] : [0, 0],
+    push: alongX ? [0, step] : [step, 0],
     pushSeconds: DODGE_SECONDS,
     from: [0, 0],
     yaw: yawTowards([at.x, at.z], [car.x, car.z]),

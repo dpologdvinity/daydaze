@@ -21,6 +21,8 @@ import {
   type StreetPose,
 } from "./streetKnocks.ts";
 import { yawTowards } from "../walk.ts";
+import { isBlocked } from "../area.ts";
+import { CITY_AREA } from "./layout.ts";
 
 const p = PEDESTRIANS[3];
 const fresh = (): StreetPose => ({
@@ -39,8 +41,6 @@ test("nearby speeding cars and sirens make walkers flinch, then resume", () => {
   const s = newStreet();
   evadeFastCar(s, p, 10, car);
   assert.equal(streetPose(p, s, 10.3, fresh()).reaction, "hit-front");
-  const evading = streetPose(p, s, 10.8, fresh());
-  assert.ok(Math.hypot(evading.x - car.x, evading.z - car.z) > 8.5);
   assert.equal(streetPose(p, s, 15, fresh()).held, false);
   const siren = newStreet();
   evadeFastCar(siren, p, 10, { ...car, speed: 0, siren: true });
@@ -52,6 +52,46 @@ test("nearby speeding cars and sirens make walkers flinch, then resume", () => {
     const unaffected = newStreet();
     evadeFastCar(unaffected, p, 10, other);
     assert.equal(unaffected.ev, null);
+  }
+});
+
+test("evasion moves sideways within the sidewalk even when the car is behind", () => {
+  const walker = {
+    ...p,
+    a: [0, 0] as const,
+    b: [20, 0] as const,
+    speed: 0,
+    bounds: [-1, 21, -2, 2] as const,
+  };
+  for (const car of [
+    { x: -8, z: 0, speed: 20, siren: false },
+    { x: 0, z: 1, speed: 20, siren: false },
+    { x: 0, z: -1, speed: 20, siren: false },
+  ]) {
+    const s = newStreet();
+    evadeFastCar(s, walker, 0, car);
+    const at = streetPose(walker, s, 0.8, fresh());
+    assert.equal(at.x, 0);
+    assert.ok(Math.abs(at.z) > 0.5 && Math.abs(at.z) <= 2);
+    if (car.z !== 0) assert.ok(at.z * car.z < 0);
+  }
+});
+
+test("evasion does not move walkers into city blockers", () => {
+  for (const walker of PEDESTRIANS) {
+    const at = pedestrianAt(walker, 10);
+    if (isBlocked(CITY_AREA, [at.x, at.z])) continue;
+    for (const offset of [-2, 2]) {
+      const s = newStreet();
+      evadeFastCar(s, walker, 10, {
+        x: at.x + offset,
+        z: at.z + offset,
+        speed: 20,
+        siren: false,
+      });
+      const pose = streetPose(walker, s, 10.8, fresh());
+      assert.equal(isBlocked(CITY_AREA, [pose.x, pose.z]), false);
+    }
   }
 });
 

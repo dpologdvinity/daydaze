@@ -20,8 +20,8 @@ import {
   type HitScene,
 } from "../../game/city/carHits.ts";
 import { CITY_AREA } from "../../game/city/layout.ts";
-import { blankHeist, COPS, heistFrame } from "../../game/city/heist.ts";
-import { blankChase, CHASE_COPS, chaseFrame } from "../../game/city/chase.ts";
+import { COPS } from "../../game/city/heist.ts";
+import { CHASE_COPS } from "../../game/city/chase.ts";
 import { PEDESTRIANS, pedestrianOut } from "../../game/city/pedestrians.ts";
 import {
   knock,
@@ -52,7 +52,6 @@ import { coolHeat, crime, heat } from "../world/heat.ts";
 import { placePlayer, type Player } from "../world/PlayerController.tsx";
 import { react } from "../world/reaction.ts";
 import { cityHour } from "./daylight.ts";
-import { chaseClock, heistClock } from "./eventClocks.ts";
 import { streetHits, walkerState } from "./streetHits.ts";
 
 /** Walkers farther than this from a car (meters) are left alone. */
@@ -87,8 +86,6 @@ export function CarHits({ player }: { player: Player }) {
     () => ({ x: 0, z: 0, fx: 0, fz: 1, speed: 0 }),
     [],
   );
-  const heist = useMemo(blankHeist, []);
-  const chase = useMemo(blankChase, []);
   const danger = useMemo(() => ({ x: 0, z: 0, speed: 0, siren: false }), []);
 
   useEffect(() => {
@@ -98,6 +95,8 @@ export function CarHits({ player }: { player: Player }) {
     return () => {
       pending.forEach((t) => window.clearTimeout(t));
       streetHits.hit = null;
+      streetHits.heist = null;
+      streetHits.chase = null;
     };
   }, []);
 
@@ -274,11 +273,11 @@ export function CarHits({ player }: { player: Player }) {
     }
 
     // Event cars share the same pedestrian reactions as the player's car.
-    heistFrame(heistClock(), heist);
-    chaseFrame(chaseClock(), chase);
+    const { heist, chase } = streetHits;
     const hour = cityHour();
     for (let k = 0; k < COPS + 1 + CHASE_COPS + 1; k++) {
       const isHeist = k <= COPS;
+      if (!heist || !chase) break;
       const n = isHeist ? k : k - COPS - 1;
       const eventCar = isHeist
         ? n < COPS
@@ -337,11 +336,6 @@ export function CarHits({ player }: { player: Player }) {
         if (!pedestrianOut(p, hour)) continue;
         const st = walkerState(i);
         settle(st, now);
-        danger.x = car.x;
-        danger.z = car.z;
-        danger.speed = car.speed;
-        danger.siren = false;
-        evadeFastCar(st, p, now, danger);
         startle(st, p, i, now, car);
         streetPose(p, st, now, pose);
         if (!touches(car, s.spec.length, s.spec.width, pose)) continue;
