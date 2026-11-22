@@ -13,7 +13,7 @@ import { GamePad } from "./GamePad.tsx";
 import { TalkingNpc } from "./TalkingNpc.tsx";
 
 const HOST_LOOK: Look = {
-  skin: "#c98a5e",
+  skin: "#c48d68",
   hairStyle: "waves",
   hairColor: "#2a1a14",
   lips: "lips-burgundy-cherry",
