@@ -26,6 +26,8 @@ export type Pedestrian = {
   /** The strip she paces: from `a` to `b` along its middle, offset by `lane`. */
   a: Vec2;
   b: Vec2;
+  /** Bounds of the walkable strip: min/max x, then min/max z. */
+  bounds: readonly [number, number, number, number];
   speed: number;
   /** Seconds into her walk at time 0. */
   start: number;
@@ -112,6 +114,7 @@ export const PEDESTRIANS: readonly Pedestrian[] = CITY_SURFACES.filter(
     return {
       a,
       b,
+      bounds: [x0, x1, z0, z1],
       ...(inPark && k === 0 && { dog: si % 2 ? "husky" : "shibainu" }),
       // her gait clip's own pace, give or take a little, so her legs keep
       // up with the ground at 1x (src/game/dance/stride.ts)

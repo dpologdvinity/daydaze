@@ -1585,6 +1585,64 @@ const SHOTS: {
       await expect(panel).toContainText(/Paid \d+ coins/);
     },
   },
+  // the shift that reaches a new rank (barista 2 worked, the third promotes):
+  // the slip adds the promotion line (game/careers.ts)
+  {
+    name: "barista-promotion",
+    query: "room=espresso-lab",
+    act: async (page) => {
+      await page.evaluate(() => {
+        const key = "daydaze-save-v1";
+        const parsed: unknown = JSON.parse(localStorage.getItem(key) ?? "{}");
+        const save: Record<string, unknown> =
+          typeof parsed === "object" && parsed !== null
+            ? Object.fromEntries(Object.entries(parsed))
+            : {};
+        const shifts = { day: 0, today: 0, worked: { barista: 2 } };
+        localStorage.setItem(key, JSON.stringify({ ...save, shifts }));
+      });
+      await page.reload();
+      const panel = page.getByRole("region", { name: "Barista station" });
+      await panel
+        .getByRole("button", { name: "Start a shift" })
+        .click({ timeout: 150_000 });
+      for (let i = 0; i < 8; i++)
+        await panel.getByRole("button", { name: "Hand it over" }).click();
+      await expect(panel).toContainText("Promoted to Cafe");
+    },
+  },
+  // the game menu's Careers group with some shifts worked
+  {
+    name: "careers-menu",
+    query: "room=city&view=full",
+    act: async (page) => {
+      await page.evaluate(() => {
+        const key = "daydaze-save-v1";
+        const parsed: unknown = JSON.parse(localStorage.getItem(key) ?? "{}");
+        const save: Record<string, unknown> =
+          typeof parsed === "object" && parsed !== null
+            ? Object.fromEntries(Object.entries(parsed))
+            : {};
+        const worked = { ramen: 6, "halo-halo": 3, barista: 3, feeding: 1 };
+        localStorage.setItem(
+          key,
+          JSON.stringify({ ...save, shifts: { day: 0, today: 0, worked } }),
+        );
+      });
+      await page.reload();
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.frames) >= 6,
+        null,
+        { timeout: 300_000 },
+      );
+      await page.getByRole("button", { name: "Menu", exact: true }).click();
+      await page.locator("details[data-career='chef'] summary").click();
+      await page.locator("details[data-career='cafe'] summary").click();
+      await expect(page.locator("details[data-career='chef']")).toContainText(
+        "Line cook",
+      );
+    },
+  },
   { name: "hotel-rooftop", query: "room=hotel-rooftop" },
   { name: "bookshop", query: "room=bookshop" },
   { name: "patisserie", query: "room=patisserie" },
