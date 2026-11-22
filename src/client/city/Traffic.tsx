@@ -406,7 +406,7 @@ export function Traffic({ player }: { player: Player }) {
     syncClock(traffic, wall);
     // online (the server clock has arrived): once the reference fleet has
     // caught up with shared time, cars out of step that nobody can see go
-    // back onto it. The cars stay undrawn until they have all been adopted
+    // back onto it. The cars are hidden until they have all been adopted
     // once (about a second after joining), so that one big correction is
     // never seen
     const memo = reconciled.current;
