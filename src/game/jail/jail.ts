@@ -1,6 +1,7 @@
 // Jail sentences and bail, saved as an end time on the wall clock so the
 // countdown survives a reload.
 import { spend } from "../wallet.ts";
+import type { RoomId } from "../roomTypes.ts";
 import { isRecord } from "../typed.ts";
 
 // Sentences run on the wall clock and are saved as an end time, so the
@@ -27,6 +28,15 @@ export function isJailed(jail: JailSave, now: number): boolean {
   return remainingMs(jail, now) > 0;
 }
 
+/** The cell block is the only available destination during a sentence. */
+export function jailAllowsTravel(
+  jail: JailSave,
+  now: number,
+  room: RoomId,
+): boolean {
+  return room === "jail" || !isJailed(jail, now);
+}
+
 export function bailCost(jail: JailSave, now: number): number {
   const minutesLeft = Math.ceil(remainingMs(jail, now) / MINUTE_MS);
   if (minutesLeft === 0) return 0;
@@ -38,6 +48,16 @@ export function goodBehavior(jail: JailSave, now: number): JailSave {
   if (jail.endsAt === null) return jail;
   const endsAt = Math.max(now, jail.endsAt - GOOD_BEHAVIOR_MS);
   return { endsAt: endsAt === now ? null : endsAt };
+}
+
+/** A qualifying community service set earns a minute off. */
+export function rhythmService(
+  jail: JailSave,
+  now: number,
+  grade: "S" | "A" | "B" | "C" | null,
+): JailSave {
+  if (grade === null || grade === "C") return jail;
+  return goodBehavior(goodBehavior(jail, now), now);
 }
 
 // Pays the bail from the wallet. Null when the player cannot afford it.
