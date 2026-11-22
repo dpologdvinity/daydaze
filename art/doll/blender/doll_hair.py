@@ -647,12 +647,10 @@ def build(ctx):
         solid = bpy.data.materials.new("hair_solid")
         make = {"hijab": hijab, "head-wrap": head_wrap, "turban": turban}
         # the styles built in hair_built.py (#396) make their own materials
-        built = {"knotless": hair_built.knotless, "taper": hair_built.taper}
         for n in only:
-            if n in built:
-                # a list: the near model and its hand-made far one
-                made = built[n](ctx)
-                out += made if isinstance(made, list) else [made]
+            if n in hair_built.STYLE_IDS:
+                # the near model and its hand-made far one
+                out += hair_built.style(ctx, n)
             else:
                 out.append(make[n](ctx, solid) if n in make else proxy_hair(ctx, n))
         # the same root-to-tip shading the full build gives every style
