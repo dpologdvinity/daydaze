@@ -20,9 +20,12 @@ import {
   type HitScene,
 } from "../../game/city/carHits.ts";
 import { CITY_AREA } from "../../game/city/layout.ts";
+import { blankHeist, COPS, heistFrame } from "../../game/city/heist.ts";
+import { blankChase, CHASE_COPS, chaseFrame } from "../../game/city/chase.ts";
 import { PEDESTRIANS, pedestrianOut } from "../../game/city/pedestrians.ts";
 import {
   knock,
+  evadeFastCar,
   settle,
   startle,
   streetPose,
@@ -49,6 +52,7 @@ import { coolHeat, crime, heat } from "../world/heat.ts";
 import { placePlayer, type Player } from "../world/PlayerController.tsx";
 import { react } from "../world/reaction.ts";
 import { cityHour } from "./daylight.ts";
+import { chaseClock, heistClock } from "./eventClocks.ts";
 import { streetHits, walkerState } from "./streetHits.ts";
 
 /** Walkers farther than this from a car (meters) are left alone. */
@@ -83,6 +87,9 @@ export function CarHits({ player }: { player: Player }) {
     () => ({ x: 0, z: 0, fx: 0, fz: 1, speed: 0 }),
     [],
   );
+  const heist = useMemo(blankHeist, []);
+  const chase = useMemo(blankChase, []);
+  const danger = useMemo(() => ({ x: 0, z: 0, speed: 0, siren: false }), []);
 
   useEffect(() => {
     // the line banks are their own chunk; a failed load leaves "..." lines
@@ -266,6 +273,47 @@ export function CarHits({ player }: { player: Player }) {
       if (k >= 1) sl.on = false;
     }
 
+    // Event cars share the same pedestrian reactions as the player's car.
+    heistFrame(heistClock(), heist);
+    chaseFrame(chaseClock(), chase);
+    const hour = cityHour();
+    for (let k = 0; k < COPS + 1 + CHASE_COPS + 1; k++) {
+      const isHeist = k <= COPS;
+      const n = isHeist ? k : k - COPS - 1;
+      const eventCar = isHeist
+        ? n < COPS
+          ? heist.cops[n]
+          : heist.getaway
+        : n < CHASE_COPS
+          ? chase.cops[n]
+          : chase.fleeing;
+      if (!eventCar.visible) continue;
+      danger.x = eventCar.x;
+      danger.z = eventCar.z;
+      danger.speed = eventCar.speed;
+      danger.siren = isHeist
+        ? n < COPS && heist.siren && heist.lit[n]
+        : n < CHASE_COPS && chase.siren && chase.lit[n];
+      if (!danger.siren && danger.speed <= 15) continue;
+      for (let i = 0; i < PEDESTRIANS.length; i++) {
+        const p = PEDESTRIANS[i];
+        if (p.bike || !pedestrianOut(p, hour)) continue;
+        const half = Math.hypot(p.b[0] - p.a[0], p.b[1] - p.a[1]) / 2;
+        if (
+          Math.hypot(
+            (p.a[0] + p.b[0]) / 2 - danger.x,
+            (p.a[1] + p.b[1]) / 2 - danger.z,
+          ) -
+            half >
+          12
+        )
+          continue;
+        const st = walkerState(i);
+        settle(st, now);
+        evadeFastCar(st, p, now, danger);
+      }
+    }
+
     // your own car among the walkers
     const s = driving.session?.kind === "city" ? driving.session : null;
     if (s) {
@@ -289,6 +337,11 @@ export function CarHits({ player }: { player: Player }) {
         if (!pedestrianOut(p, hour)) continue;
         const st = walkerState(i);
         settle(st, now);
+        danger.x = car.x;
+        danger.z = car.z;
+        danger.speed = car.speed;
+        danger.siren = false;
+        evadeFastCar(st, p, now, danger);
         startle(st, p, i, now, car);
         streetPose(p, st, now, pose);
         if (!touches(car, s.spec.length, s.spec.width, pose)) continue;

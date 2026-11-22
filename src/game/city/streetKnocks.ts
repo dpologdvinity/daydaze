@@ -226,6 +226,31 @@ const scratch: StreetPose = {
   reaction: null,
 };
 
+/** Flinch at a nearby siren or speeding vehicle without interrupting a fall. */
+export function evadeFastCar(
+  s: StreetState,
+  p: Pedestrian,
+  time: number,
+  car: { x: number; z: number; speed: number; siren: boolean },
+): void {
+  if (busy(s, time) || (!car.siren && car.speed <= 15)) return;
+  const at = streetPose(p, s, time, scratch);
+  const dx = at.x - car.x;
+  const dz = at.z - car.z;
+  const distance = Math.hypot(dx, dz);
+  if (distance > 12) return;
+  begin(s, {
+    kind: "freeze",
+    at: time,
+    hold: FREEZE_HOLD,
+    push: distance > 0 ? [dx / distance, dz / distance] : [0, 0],
+    pushSeconds: DODGE_SECONDS,
+    from: [0, 0],
+    yaw: yawTowards([at.x, at.z], [car.x, car.z]),
+    play: startReaction(null, "hit-front", time),
+  });
+}
+
 /**
  * Walker `i` with `car` near her at `time`: while it bears down she notices
  * it after her own delay, then dodges sideways out of its line or freezes

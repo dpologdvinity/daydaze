@@ -7,6 +7,7 @@ import { PEDESTRIANS, pedestrianAt } from "./pedestrians.ts";
 import {
   RETURN_SECONDS,
   freezes,
+  evadeFastCar,
   knock,
   newStreet,
   noticeDelay,
@@ -31,6 +32,28 @@ const fresh = (): StreetPose => ({
 });
 const dist = (a: StreetPose, b: { x: number; z: number }) =>
   Math.hypot(a.x - b.x, a.z - b.z);
+
+test("nearby speeding cars and sirens make walkers flinch, then resume", () => {
+  const at = pedestrianAt(p, 10);
+  const car = { x: at.x + 8, z: at.z, speed: 16, siren: false };
+  const s = newStreet();
+  evadeFastCar(s, p, 10, car);
+  assert.equal(streetPose(p, s, 10.3, fresh()).reaction, "hit-front");
+  const evading = streetPose(p, s, 10.8, fresh());
+  assert.ok(Math.hypot(evading.x - car.x, evading.z - car.z) > 8.5);
+  assert.equal(streetPose(p, s, 15, fresh()).held, false);
+  const siren = newStreet();
+  evadeFastCar(siren, p, 10, { ...car, speed: 0, siren: true });
+  assert.ok(streetPose(p, siren, 10.3, fresh()).held);
+  for (const other of [
+    { ...car, speed: 15 },
+    { ...car, x: at.x + 13 },
+  ]) {
+    const unaffected = newStreet();
+    evadeFastCar(unaffected, p, 10, other);
+    assert.equal(unaffected.ev, null);
+  }
+});
 
 test("with nothing happening she walks her usual path", () => {
   const s = newStreet();
