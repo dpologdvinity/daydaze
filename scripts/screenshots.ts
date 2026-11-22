@@ -2443,7 +2443,7 @@ const SHOTS: {
       });
       const week = 7 * 24 * 3_600_000;
       const startsAt = Math.floor(Date.now() / week) * week;
-      const names = ["Mochi", "Vela", "Juniper", "Rue", "Odalys", "Pip"];
+      const names = ["Mochi", "Vela", "Juniper", "Rue", "Odessa", "Pip"];
       await page.route("**/api/**", (route) => {
         const path = new URL(route.request().url()).pathname;
         if (path === "/api/me")
