@@ -76,6 +76,8 @@ import { playStepFile } from "../../audio/soundFiles.ts";
 import { submergedView } from "./submerged.ts";
 import { stick } from "./joystick.ts";
 import { getMeters } from "../effects/high.ts";
+import { needPace } from "../../game/food/needs.ts";
+import { getFoodState } from "../food/store.ts";
 import { paceBoost } from "../../game/effects/substances.ts";
 
 /** Frame time the simulation may catch up on; longer gaps (a hidden tab) are dropped. */
@@ -479,8 +481,9 @@ export function PlayerController({
       player.acc = 0;
       player.walk.target = null;
     } else {
-      // cocaine quickens her, legs and all (1 when sober)
-      quick = paceBoost(getMeters());
+      // cocaine quickens her, legs and all (1 when sober); an empty stomach
+      // or a dry mouth trims it a little (1 when fed)
+      quick = paceBoost(getMeters()) * needPace(getFoodState().needs);
       // short trips stroll in her walk style; long ones ramp up to the jog
       const target = player.walk.target;
       stepPace(
