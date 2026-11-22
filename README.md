@@ -99,7 +99,7 @@ GitHub Actions, in `.github/workflows/`:
 
 ## Develop
 
-Requires Node.js 22.18 or newer (`.nvmrc` pins 24).
+Requires Node.js 22.18 or newer (`.nvmrc` pins 26).
 
 ```bash
 npm install

@@ -19,6 +19,7 @@ import {
   rewardXp,
   prizeXp,
 } from "./activities.ts";
+import { PROMOTION_BONUS, RANK_SHIFTS, raised } from "../careers.ts";
 
 test("every scored activity has a ladder and grades increase XP", () => {
   for (const game of PRIZE_GAMES) assert.ok(GAME_LADDERS[game]);
@@ -185,4 +186,26 @@ test("a result no station can produce changes nothing", () => {
   const r = finishShift(start, "boba", { right: 99, tips: 0 }, 0);
   assert.equal(r.save, start);
   assert.equal(r.coins, 0);
+});
+
+test("a shift at a higher rank pays the raise, and the promoting shift pays the bonus", () => {
+  const now = Date.UTC(2026, 10, 20);
+  const result = { right: 8, tips: 6 };
+  const base = 8 * WAGE_PER_ORDER + 6 + CLEAN_BONUS;
+  const seed = (n: number) => {
+    const s = createDefaultSave("Mango");
+    return { ...s, shifts: { ...s.shifts, worked: { barista: n } } };
+  };
+  // rank 0 shift that reaches rank 1: bonus, but no raise yet
+  const up = finishShift(seed(RANK_SHIFTS[1] - 1), "barista", result, now);
+  assert.equal(up.promotion?.rank, 1);
+  assert.equal(up.coins, base + PROMOTION_BONUS);
+  assert.equal(up.save.coins, 100 + up.coins);
+  // next shift at rank 1: raised wage, no promotion
+  const next = finishShift(seed(RANK_SHIFTS[1]), "barista", result, now);
+  assert.equal(next.promotion, null);
+  assert.equal(next.coins, raised(base, 1));
+  // the boba counter counts toward the same Cafe career
+  const boba = finishShift(seed(RANK_SHIFTS[1]), "boba", result, now);
+  assert.equal(boba.coins, raised(base, 1));
 });

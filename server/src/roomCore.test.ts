@@ -67,9 +67,10 @@ const ofType = <T extends ServerMessage["type"]>(
   );
 
 test("joining sends a snapshot and every occupant's profile, and announces the newcomer", () => {
-  const { room, join } = setup();
+  const { room, clock, join } = setup();
   const a = join("a");
   room.handle("a", update(entity("a", { x: 2, z: 3 })));
+  clock.t = 1_763_500_000_123;
   const b = join("b");
 
   assert.deepEqual(b.result, { ok: true });
@@ -78,6 +79,7 @@ test("joining sends a snapshot and every occupant's profile, and announces the n
       type: "snapshot",
       roomId: "plaza",
       entities: [entity("a", { x: 2, z: 3 })],
+      time: 1_763_500_000_123,
     },
     {
       type: "profile",

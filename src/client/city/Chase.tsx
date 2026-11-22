@@ -17,6 +17,7 @@ import {
   chaseInto,
 } from "../../game/city/chase.ts";
 import { useReducedMotion } from "../motion.ts";
+import { pursuer } from "./PlayerPursuit.tsx";
 import { chaseClock } from "./eventClocks.ts";
 
 /** Distance meters audio can be heard from cars. */
@@ -27,6 +28,7 @@ const CRASH_RANGE = 360;
 const BAR_Y = 1.62;
 const BAR_SIDE = 0.32;
 const FLASH = 0.18;
+const BAR_SIDES = [-1, 1];
 
 const RED = new THREE.Color("#ff2236").multiplyScalar(3);
 const BLUE = new THREE.Color("#2a5bff").multiplyScalar(3);
@@ -78,7 +80,12 @@ export function Chase() {
         }
       }
     }
-    if (live && frame.siren && nearestCop < SIREN_RANGE) {
+    if (pursuer.cruiser)
+      nearestCop = Math.min(
+        nearestCop,
+        Math.hypot(cx - pursuer.x, cz - pursuer.z),
+      );
+    if (nearestCop < SIREN_RANGE) {
       siren.current ??= startSiren();
       siren.current?.level((1 - nearestCop / SIREN_RANGE) ** 2);
     } else if (siren.current) {
@@ -107,26 +114,28 @@ export function Chase() {
     const barMesh = bars.current;
     if (barMesh) {
       let n = 0;
-      if (live && frame.lights) {
-        for (let k = 0; k < CHASE_COPS; k++) {
-          const cop = frame.cops[k];
-          if (!cop.visible || !frame.lit[k]) continue;
-          matrix.compose(
-            at.set(cop.x, 0, cop.z),
-            turn.setFromAxisAngle(up, cop.yaw + NOSE),
-            unit,
+      for (let k = 0; k <= CHASE_COPS; k++) {
+        const cop = k === CHASE_COPS ? pursuer : frame.cops[k];
+        const lit =
+          k === CHASE_COPS
+            ? pursuer.cruiser
+            : live && frame.lights && frame.cops[k].visible && frame.lit[k];
+        if (!lit) continue;
+        matrix.compose(
+          at.set(cop.x, 0, cop.z),
+          turn.setFromAxisAngle(up, cop.yaw + NOSE),
+          unit,
+        );
+        for (const side of BAR_SIDES) {
+          local.makeTranslation(side * BAR_SIDE, BAR_Y, 0);
+          barMesh.setMatrixAt(n, local.premultiply(matrix));
+          const red = side < 0;
+          const bright = calm || (red ? swap : !swap);
+          barMesh.setColorAt(
+            n,
+            red ? (bright ? RED : DIM_RED) : bright ? BLUE : DIM_BLUE,
           );
-          for (const side of [-1, 1]) {
-            local.makeTranslation(side * BAR_SIDE, BAR_Y, 0);
-            barMesh.setMatrixAt(n, local.premultiply(matrix));
-            const red = side < 0;
-            const bright = calm || (red ? swap : !swap);
-            barMesh.setColorAt(
-              n,
-              red ? (bright ? RED : DIM_RED) : bright ? BLUE : DIM_BLUE,
-            );
-            n++;
-          }
+          n++;
         }
       }
       barMesh.count = n;
@@ -170,7 +179,7 @@ export function Chase() {
     <>
       <instancedMesh
         ref={bars}
-        args={[undefined, undefined, CHASE_COPS * 2]}
+        args={[undefined, undefined, (CHASE_COPS + 1) * 2]}
         frustumCulled={false}
         visible={false}
       >

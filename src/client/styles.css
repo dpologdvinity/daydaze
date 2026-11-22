@@ -3866,3 +3866,34 @@ button:focus-visible {
     animation: none;
   }
 }
+
+.wanted-hud {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  z-index: 5;
+  display: grid;
+  gap: 2px;
+  justify-items: center;
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 12px;
+  translate: -50% 0;
+  background: rgb(20 10 40 / 0.85);
+  color: var(--champagne);
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.wanted-hud strong {
+  letter-spacing: 0.14em;
+  font-size: 18px;
+}
+
+.wanted-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}

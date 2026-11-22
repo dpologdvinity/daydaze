@@ -52,6 +52,8 @@ const AREA_SHOTS: readonly (readonly [RegExp, string])[] = [
     "hungry-hud",
   ],
   [/^src\/client\/avatar\//, "plaza"],
+  // the game menu's Careers group
+  [/^src\/(game\/careers|client\/ui\/Progression)/, "careers-menu"],
   [/^src\/client\/ui\//, "hud-city"],
   [
     /^src\/(game\/shifts|client\/rooms\/shared\/(Order|order))/,
