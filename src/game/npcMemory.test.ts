@@ -16,7 +16,7 @@ import { createDefaultSave, loadSave, serializeSave } from "./save.ts";
 
 test("npcKey slugs the venue and the name, and always has a colon", () => {
   assert.equal(npcKey("piercing", "Vix"), "piercing:vix");
-  assert.equal(npcKey("Green Haze", "Señor O'Neil"), "green-haze:se-or-o-neil");
+  assert.equal(npcKey("Green Haze", "Café Noir!"), "green-haze:caf-noir");
   assert.equal(npcKey(undefined, "Dee"), "city:dee");
 });
 
@@ -98,7 +98,7 @@ test("cleanNpcMemories keeps good entries and drops bad ones", () => {
     "a:neg": { visits: -1, last: 20 },
     "a:zero": { visits: 0, last: 20 },
     "a:str": { visits: "3", last: 20 },
-    "a:nolast": { visits: 3 },
+    "a:no-last": { visits: 3 },
     "no colon": { visits: 1, last: 1 },
     "a:null": null,
   });
