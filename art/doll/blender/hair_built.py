@@ -931,8 +931,7 @@ FADE_KINDS = {
 }
 
 # Tops: hair length on top (metres), the coil clumps' size (texels of a
-# 512 px layer; 0 for straight hair brushed down), and a flat top's height
-# above the crown (metres, None for a rounded top). waves: 360 waves, ridges
+# 512 px layer; 0 for straight hair brushed down). waves: 360 waves, ridges
 # rippling out from the crown.
 TOPS = {
     "coils": dict(length=0.011, clump=5.0),
@@ -940,7 +939,7 @@ TOPS = {
     "afro": dict(length=0.036, clump=6.0),
     "waves": dict(length=0.006, clump=0.0, waves=0.0085),
     "crop": dict(length=0.009, clump=0.0),
-    "hightop": dict(length=0.075, clump=6.0, flat=0.05),
+    "buzz": dict(length=0.0035, clump=3.0),
 }
 
 # The fade variants: one row each. fade: FADE_KINDS; top: TOPS; part: a
@@ -949,7 +948,7 @@ TOPS = {
 FADES = [
     dict(id="taper", label="Low taper, short coils", fade="low", top="coils"),
     dict(id="fade-waves", label="Mid fade, 360 waves", fade="mid", top="waves"),
-    dict(id="high-top", label="High-top fade", fade="skin", top="hightop"),
+    dict(id="buzz-skin", label="Skin fade, buzz cut", fade="skin", top="buzz"),
     dict(id="burst-sponge", label="Burst fade, sponge curls", fade="burst", top="sponge"),
     dict(id="drop-crop", label="Drop fade, textured crop", fade="drop", top="crop"),
     dict(id="skin-part", label="Skin fade with a hard part", fade="high", top="coils", part=True),
@@ -989,26 +988,15 @@ class Fade:
     def length(self, t, phi):
         """Hair length (metres): the top's, rising out of the fade; shorter
         (brushed down) for the last 1.5 cm to the front edge, so the edge is
-        a line on the skin, not the rim of a helmet; a flat top cut level."""
+        a line on the skin, not the rim of a helmet."""
         h = self.height(t, phi)
         top = self.top["length"]
         line = self.line_at(phi)
-        if self.top.get("flat") is not None:
-            # a high top rises steeply off the fade line into a block
-            f = np.clip((h - line + 0.004) / 0.014, 0, 1)
-        else:
-            f = np.clip((h - line + self.kind["band"] * 0.7) / (self.kind["band"] * 1.4), 0, 1)
+        f = np.clip((h - line + self.kind["band"] * 0.7) / (self.kind["band"] * 1.4), 0, 1)
         k = f * f * (3 - 2 * f)
-        crisp = (1 - self.sides(phi)) * (0.35 + 0.65 * np.clip(h / 0.015, 0, 1))
+        brushed = max(0.015, top * 0.8)
+        crisp = (1 - self.sides(phi)) * (0.35 + 0.65 * np.clip(h / brushed, 0, 1))
         return top * np.maximum(np.where(line <= 0, 1.0, k), crisp * (h > 0))
-
-    def flat_cut(self, points, normals, lengths):
-        """A flat top: hair pointing up stops at one level above the crown."""
-        if self.top.get("flat") is None:
-            return lengths
-        level = self.scalp.grid[0, 0][2] + self.top["flat"]
-        up = np.clip(normals[:, 2], 0.25, 1)
-        return np.minimum(lengths, np.maximum(level - points[:, 2], 0) / up)
 
     def edge(self, t, phi, rng):
         """The lined-up front edge, 0 (skin) to 1 (hair): set back a few
@@ -1023,11 +1011,12 @@ class Fade:
             return x * x * (3 - 2 * x)
 
         # straighter across: the middle of the forehead set back, so the
-        # line runs level and turns down only at the corners
-        back = 0.005 * np.clip((a - 148) / 32, 0, 1) ** 0.7
-        # the temple corners: a notch about a centimetre deep with steep
+        # line runs level and turns down only at the corners (short cuts:
+        # longer hair covers the line and would only dip there)
+        back = 0.005 * np.clip((a - 148) / 32, 0, 1) ** 0.7 * (self.top["length"] < 0.015)
+        # the temple corners: a notch about 6 mm deep with steep
         # sides, so the line turns down at an angle, not round a curve
-        back += 0.011 * smooth((a - 133) / 2.5) * smooth((149 - a) / 2.5)
+        back += 0.0065 * smooth((a - 133) / 3) * smooth((148 - a) / 3)
         # the edge wanders a little, hair by hair
         back += 0.0006 * (_noise(np.shape(t), 7, rng) - 0.5) + 0.0003 * (_noise(np.shape(t), 1.5, rng) - 0.5)
         front = 1 - self.sides(phi)
@@ -1069,6 +1058,17 @@ class Fade:
 LAYERS = (0.0, 0.7, 0.86, 1.0)
 
 
+def layer_lift(length, k):
+    """How far (metres) layer k stands off the scalp where the hair is
+    `length` long: the core and fuzz sit in the last few millimetres of
+    long hair (a solid block with a soft skin, never stacked slices), and
+    at LAYERS' fractions of short hair."""
+    if k == 0:
+        return 0.0
+    tail = (1 - LAYERS[k]) * np.minimum(length, 0.014) * 1.4
+    return np.maximum(length - tail, 0.0) if np.ndim(length) else max(length - tail, 0.0)
+
+
 def fade_texture(fade, size=1024, seed=21):
     """A fade's atlas: one 512 px disk per layer (scalp, core, two fuzz
     shells) in the corners. Each texel's clump height (cellular noise, or
@@ -1092,8 +1092,12 @@ def fade_texture(fade, size=1024, seed=21):
         c = top["clump"]
         clump = 0.65 * _cells((half, half), c, rng) + 0.35 * _cells((half, half), c / 2, rng)
     else:
-        # straight hair brushed down: streaks round the head
-        clump = 0.55 * _noise((half, half), 1.2, rng) + 0.45 * (0.5 + 0.5 * np.sin(phi * 260 + _noise((half, half), 6, rng) * 6))
+        # straight hair brushed down from the crown: short strokes along
+        # the scalp map's meridians (value noise stretched down them)
+        strokes = _noise((64, 1400), 1.0, rng)
+        i = np.clip(t * 63, 0, 63).astype(int)
+        j = ((phi + np.pi) / (2 * np.pi) * 1399).astype(int)
+        clump = 0.75 * strokes[i, j] + 0.25 * _noise((half, half), 1.5, rng)
     stubble = _noise((half, half), 1.0, rng)
     out = np.zeros((size, size, 4), np.float32)
     inside = t <= 1.0
@@ -1109,16 +1113,17 @@ def fade_texture(fade, size=1024, seed=21):
             # the top, stubble thinning out through the fade and along the
             # front edge (noise is below 1, so full density leaves no hole)
             a = (stubble < dens) & inside & ~bare
-            g = 0.5 + 0.25 * clump
+            g = 0.55 + 0.2 * clump
         elif k == 1:
             # the core: solid wherever the hair is long enough to stand
             a = (dens > 0.97) & (long > 0.002) & inside & ~groove & (clump > 0.08)
-            g = 0.55 + 0.25 * clump
+            # (low contrast: light colors would show the clumps as coral)
+            g = 0.62 + 0.16 * clump
         else:
             # the fuzz: the clumps that reach it, fewer and lighter (their
             # tips catch the light) the further out, thinning into the fade
             a = (clump > 0.1 + 0.42 * level + 0.45 * short) & inside & (edge > 0.5) & ~groove
-            g = 0.62 + 0.3 * level + 0.12 * (clump - 0.5)
+            g = 0.68 + 0.2 * level + 0.08 * (clump - 0.5)
         y0, x0 = (k // 2) * half, (k % 2) * half
         out[y0 : y0 + half, x0 : x0 + half] = np.dstack([g, g, g, a.astype(np.float32)])
     return np.clip(out, 0, 1)
@@ -1133,7 +1138,6 @@ def fade_style(ctx, v):
     fade = Fade(scalp, v)
     img = image(v["id"], fade_texture(fade))
     mat = proxies.textured(f"hair_{v['id']}", img, alpha=True)
-    flat = fade.top.get("flat") is not None
 
     def model(name, layers, rings, segments):
         made = []
@@ -1141,22 +1145,12 @@ def fade_style(ctx, v):
             level = LAYERS[k]
             y0, x0 = (k // 2) * 0.5, (k % 2) * 0.5
 
-            def lift(t, phi, level=level):
+            def lift(t, phi, k=k):
                 # (2 mm: a coarse cap face never dips under the skull's curve)
-                return 0.0018 + float(fade.length(t, phi)) * level
+                return 0.0018 + layer_lift(float(fade.length(t, phi)), k)
 
             keep = None if k == 0 else (lambda t, phi: fade.length(t, phi) > 0.002)
             ob, tris, barys = scalp.cap(f"{name}_{k}", rings, segments, lift, atlas=(x0, y0, 0.5), keep=keep)
-            if flat and k:
-                # cut the block level on top: each vertex comes down its own
-                # normal to the flat
-                co = np.array([v_.co[:] for v_ in ob.data.vertices])
-                base = np.einsum("nk,nkd->nd", barys, ctx.PB[tris])
-                nrm = co - base
-                L = np.linalg.norm(nrm, axis=1)
-                nrm /= np.maximum(L, 1e-9)[:, None]
-                cut = fade.flat_cut(base, nrm, (L - 0.0018) / level) * level + 0.0018
-                ob.data.vertices.foreach_set("co", (base + nrm * cut[:, None]).ravel())
             ob.data.materials.append(mat)
             # inner layers sit in the hair's own shade
             ob["layer_shade"] = [0.7 + 0.3 * level] * len(ob.data.vertices)
@@ -1172,8 +1166,7 @@ def fade_style(ctx, v):
         proxies.attach(ctx, ob, weights, keys)
         return ob
 
-    rings = 18 if flat else 12
-    near = model(f"Hair_{v['id']}", range(len(LAYERS)), rings, 64)
+    near = model(f"Hair_{v['id']}", range(len(LAYERS)), 12, 64)
     lo = model(f"Hair_{v['id']}@lo", (0, 1, 3), 8, 32)
     return [near, lo]
 
