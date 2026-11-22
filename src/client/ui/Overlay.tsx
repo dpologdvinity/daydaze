@@ -7,6 +7,7 @@
 import { byTier } from "../../game/age.ts";
 import type { Progression } from "../../game/progression/progression.ts";
 import { ProgressionHud, LadderPanel } from "./Progression.tsx";
+import { WeeklyBoards } from "./WeeklyBoards.tsx";
 import { ActionDock, DockAction } from "./ActionDock.tsx";
 import { LazyPanel } from "./ReloadBoundary.tsx";
 import { ClubNightTicker } from "./EventCalendar.tsx";
@@ -731,6 +732,7 @@ export function Overlay({
           />
           <GameMenu graphics={graphics} setGraphics={setGraphics}>
             <LadderPanel progression={progression} onTitle={onTitle} />
+            <WeeklyBoards />
             <div className="game-menu-items" role="group" aria-label="Game">
               <button
                 type="button"

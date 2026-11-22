@@ -868,6 +868,8 @@ const SHOTS: {
   /** A shot of the dev lineup page (lineup.html), not the game: its doll rows
    * report readiness and renderer numbers on <body>, not a canvas. */
   lineup?: boolean;
+  /** Runs before the page loads, e.g. to stand in for the server. */
+  before?: (page: Page) => Promise<void>;
   /** Drives the scene before the capture, e.g. to start a race. */
   act?: (page: Page) => Promise<void>;
 }[] = [
@@ -2430,6 +2432,54 @@ const SHOTS: {
     },
   },
   {
+    // an account's game menu, with a weekly board from a stand-in server
+    name: "weekly-board",
+    query: "room=city&view=full&online=1",
+    viewport: { width: 1280, height: 1000 },
+    before: async (page) => {
+      const json = (body: unknown) => ({
+        contentType: "application/json",
+        body: JSON.stringify(body),
+      });
+      const week = 7 * 24 * 3_600_000;
+      const startsAt = Math.floor(Date.now() / week) * week;
+      const names = ["Mochi", "Vela", "Juniper", "Rue", "Odalys", "Pip"];
+      await page.route("**/api/**", (route) => {
+        const path = new URL(route.request().url()).pathname;
+        if (path === "/api/me")
+          return route.fulfill(
+            json({
+              id: "u_" + "a".repeat(20),
+              name: "Dusty",
+              isGuest: false,
+              isAdmin: false,
+            }),
+          );
+        if (path.startsWith("/api/leaderboard/"))
+          return route.fulfill(
+            json({
+              week: 1,
+              startsAt,
+              endsAt: startsAt + week,
+              entries: names.map((name, i) => ({
+                name,
+                rank: i + 1,
+                value: 4200 - i * 530,
+              })),
+              you: { rank: 4, value: 2610 },
+            }),
+          );
+        return route.fulfill({ status: 404, body: "{}" });
+      });
+    },
+    act: async (page) => {
+      await page.getByRole("button", { name: "Menu", exact: true }).click();
+      const boards = page.getByRole("region", { name: "Weekly boards" });
+      await expect(boards.getByText(/^You: #4/)).toBeVisible();
+      await boards.scrollIntoViewIfNeeded();
+    },
+  },
+  {
     name: "credits",
     query: "room=city&view=full",
     act: async (page) => {
@@ -2926,6 +2976,7 @@ if (process.argv[2] === "--matrix") {
     const url = shot.lineup
       ? `${BASE}/src/client/avatar/lineup.html?human=1&still=1&${shot.query}`
       : `${BASE}/?${tier}${still}&${shot.query}`;
+    if (shot.before) await shot.before(page);
     await page.goto(url, { timeout: 300_000 });
     if (shot.act) await shot.act(page);
     const canvas = page.getByRole("img", { name: "3D room view" });

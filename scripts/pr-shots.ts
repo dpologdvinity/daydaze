@@ -47,6 +47,11 @@ const AREA_SHOTS: readonly (readonly [RegExp, string])[] = [
     "closet-wardrobe",
   ],
   [/^src\/client\/avatar\//, "plaza"],
+  // the weekly boards in the game menu and the server calls that feed them
+  [
+    /^src\/(client\/ui\/(WeeklyBoards|Progression)|net\/client\/progressSync)/,
+    "weekly-board",
+  ],
   [/^src\/client\/ui\//, "hud-city"],
   [
     /^src\/(game\/shifts|client\/rooms\/shared\/(Order|order))/,
