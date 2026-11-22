@@ -38,6 +38,26 @@ function inRoad(x: number, z: number): boolean {
   return ROADS.some((r) => x > r.x0 && x < r.x1 && z > r.z0 && z < r.z1);
 }
 
+test("garden accents distinguish three destinations without occupying roads or doors", () => {
+  const accents = FURNITURE.filter((spot) =>
+    ["ivy-arch", "rose-arch", "flower-box", "hanging-planter"].includes(
+      spot.kind,
+    ),
+  );
+  assert.ok(new Set(accents.map((spot) => spot.kind)).size >= 3);
+  for (const spot of accents) {
+    assert.ok(!inRoad(spot.x, spot.z), `${spot.kind} on road`);
+    for (const building of BUILDINGS) {
+      if (!building.door) continue;
+      const [x, z] = building.door.position;
+      assert.ok(
+        Math.hypot(spot.x - x, spot.z - z) > building.door.radius + 1,
+        `${spot.kind} blocks ${building.id}`,
+      );
+    }
+  }
+});
+
 function emptyBuckets(): Buckets {
   return emptyInstances();
 }

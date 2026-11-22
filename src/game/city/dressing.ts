@@ -1045,4 +1045,8 @@ function furnitureSpots(): FurnitureSpot[] {
 export const FURNITURE: readonly FurnitureSpot[] = [
   ...furnitureSpots(),
   ...YARD_FURNITURE,
+  { kind: "ivy-arch", x: -39, z: 47, yaw: 0, scale: 0.5 },
+  { kind: "rose-arch", x: 25, z: 47, yaw: 0, scale: 1 },
+  { kind: "flower-box", x: 284, z: -244, y: 3, yaw: 0, scale: 1 },
+  { kind: "hanging-planter", x: 296, z: -244, y: 4, yaw: 0, scale: 1 },
 ];
