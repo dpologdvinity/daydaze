@@ -1835,6 +1835,28 @@ test("Espresso Lab: a finished shift posts a pay slip and counts in the save", a
   expect(errors).toEqual([]);
 });
 
+test("Espresso Lab: the shift that reaches a new rank posts a promotion", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  // two barista shifts already worked: the third reaches Counter hand
+  await seedSave(page, {
+    shifts: { day: 0, today: 0, worked: { barista: 2 } },
+  });
+  await page.goto(`${LOW}&room=espresso-lab`);
+  const panel = page.getByRole("region", { name: "Barista station" });
+  await panel
+    .getByRole("button", { name: "Start a shift" })
+    .click({ timeout: 150_000 });
+  for (let i = 0; i < 8; i++)
+    await panel.getByRole("button", { name: "Hand it over" }).click();
+  await expect(panel).toContainText(
+    "Promoted to Cafe · Counter hand! +50 coins",
+  );
+  expect(errors).toEqual([]);
+});
+
 test("Thrift Temple: buy a vintage dye and wear it", async ({ page }) => {
   test.setTimeout(330_000);
   const errors = collectErrors(page);
