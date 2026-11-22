@@ -1281,6 +1281,9 @@ const SHOTS: {
       ["pajama-party", "skate-diner"],
       ["night-market", "market"],
       ["poetry-slam", "bookshop"],
+      // the quiz host and the glowing pad that opens the hosted round
+      ["trivia-night", "skate-diner"],
+      ["trivia-night", "wine-bar"],
     ] as const
   ).map(([night, room]) => ({
     name: `night-${night}`,
@@ -1296,6 +1299,23 @@ const SHOTS: {
       await page.waitForTimeout(3_000);
     },
   })),
+  {
+    // trivia night: the hosted round open, the host's welcome and a first answer
+    name: "trivia-night-round",
+    query: "room=skate-diner&night=trivia-night&quality=low&time=23:30",
+    act: async (page: Page) => {
+      await page
+        .getByRole("button", { name: "Play Trivia Night with the host" })
+        .click();
+      const dialog = page.getByRole("dialog", { name: "Trivia Night" });
+      await expect(dialog).toBeVisible({ timeout: 120_000 });
+      await dialog.getByRole("button", { name: "Play" }).click();
+      await dialog.locator(".tt-answer").first().click();
+      await expect(
+        dialog.locator('.tt-answer[data-state="right"]'),
+      ).toBeVisible();
+    },
+  },
   // the same nights from further back: the whole hall, and the whole course
   ...(
     [
