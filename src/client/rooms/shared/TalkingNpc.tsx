@@ -1,12 +1,17 @@
 // The standard talking NPC: a doll (or a cheap CrowdFigure) with an invisible
 // tap cylinder, a speech bubble for six seconds, and lines from pickLine for
 // its role. Remembers its recent lines so taps rarely repeat; greets once per
-// mount.
+// mount, as a stranger, a regular or someone back from afar by what it
+// remembers of the player (game/npcMemory.ts), and uses their name once it
+// knows them.
 
 import { stateSituation } from "../../../game/effects/buzz.ts";
 import { eventSituation } from "../../../game/events.ts";
 import { PRIDE_CLUBS, prideNightOn } from "../../../game/prideNight.ts";
 import { isRoomId, type RoomId } from "../../../game/rooms.ts";
+import { dayOf } from "../../../game/challenges.ts";
+import { greetingFor, nameFor, npcKey } from "../../../game/npcMemory.ts";
+import { metNpc, npcDesk } from "../../ui/npcDesk.ts";
 import { nightClock, prideClock } from "../../city/eventClocks.ts";
 import { Html } from "@react-three/drei";
 import type { ThreeEvent } from "@react-three/fiber";
@@ -79,13 +84,18 @@ export function TalkingNpc({
   // lines this NPC said lately, so taps rarely repeat
   const recent = useRef<RecentLines>([]);
   const timer = useRef(0);
+  const key = npcKey(context.venue, name);
   const say = (when: DialogueSituation) => {
+    // an NPC that knows the player by now calls them by name
+    const { memories, player } = npcDesk.get();
+    const known = nameFor(memories[key], dayOf(Date.now()), player);
+    const spoken = known ? { name: known, ...context } : context;
     // the line banks load lazily; a failed load is retried on the next tap
     loadDialogue().then(() => {
       const picked = pickLine({
         role,
         situation: when,
-        context,
+        context: spoken,
         rng: Math.random,
         recent: recent.current,
       });
@@ -103,9 +113,15 @@ export function TalkingNpc({
     sayNow.current = say;
   });
   const greets = useRef(greet);
+  // the NPC's memory key as of the mount: the greeting is a once-per-mount thing
+  const mountKey = useRef(key);
   useEffect(() => {
     const pending = timer;
-    if (greets.current) sayNow.current("greeting-first");
+    if (greets.current) {
+      const memory = npcDesk.get().memories[mountKey.current];
+      sayNow.current(greetingFor(memory, dayOf(Date.now())));
+      metNpc(mountKey.current);
+    }
     return () => window.clearTimeout(pending.current);
   }, []);
   const tap = (e: ThreeEvent<MouseEvent>) => {
