@@ -168,6 +168,8 @@ export class RoomCore {
       type: "snapshot",
       roomId: this.roomId,
       entities: others.flatMap((other) => (other.entity ? [other.entity] : [])),
+      // the shared city clock: clients run their lights, walkers and traffic on it
+      time: this.now(),
     });
     for (const other of others) {
       occupant.seen.add(other.id);
