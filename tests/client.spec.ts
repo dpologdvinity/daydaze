@@ -5063,8 +5063,8 @@ test("the streak milestone card keeps focus on its button until it is dismissed"
 });
 
 /** Opens the streak calendar a minute before midnight with Close focused,
- * then runs the clock past midnight: the next check-in reaches day 3 and
- * its milestone card opens over the calendar. */
+ * then moves the date past midnight and runs the check-in timer: day 3's
+ * milestone card opens over the calendar. */
 async function milestoneOverCalendar(page: Page) {
   const evening = new Date("2026-01-10T23:59:00Z");
   const today = Math.floor(evening.getTime() / 86_400_000);
@@ -5079,13 +5079,17 @@ async function milestoneOverCalendar(page: Page) {
       freezeWeek: -1,
     },
   });
+  // timers run but the date stays put, so a slow load can't reach midnight
   await page.clock.install({ time: evening });
+  await page.clock.setFixedTime(evening);
   await page.goto(VELVET);
   await (await fromMenu(page, "Daily streak")).click();
   const calendar = page.getByRole("dialog", { name: "Daily streak" });
   const close = calendar.getByRole("button", { name: "Close" });
   await close.focus();
-  await page.clock.fastForward(90_000);
+  // the next day, then the minute check-in timer
+  await page.clock.setFixedTime(new Date(evening.getTime() + 120_000));
+  await page.clock.fastForward(61_000);
   const card = page.getByRole("dialog", { name: "Streak milestone" });
   await expect(
     card.getByRole("button", { name: "Keep it burning" }),
