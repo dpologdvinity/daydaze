@@ -116,6 +116,7 @@ import { WantedHud } from "./ui/WantedHud.tsx";
 import { driving, releaseControls } from "./world/driving.ts";
 import { arrestDesk, clearHeat, crime } from "./world/heat.ts";
 import { World } from "./world/World.tsx";
+import type { ClosetSave } from "../game/closet.ts";
 
 const FADE_MS = 300;
 const BUBBLE_MS = 6000;
@@ -378,6 +379,7 @@ export function App() {
   const setLook = (look: Look) => setSave((s) => ({ ...s, look }));
   const setSwim = (swim: SwimLook) => setSave((s) => ({ ...s, swim }));
   const setBody = (body: BodyShape) => setSave((s) => ({ ...s, body }));
+  const setCloset = (closet: ClosetSave) => setSave((s) => ({ ...s, closet }));
   const setMuted = (muted: boolean) =>
     setSave((s) => ({ ...s, settings: { ...s.settings, muted } }));
   const setEffects = (effects: Intensity) =>
@@ -795,6 +797,8 @@ export function App() {
           setSwim={setSwim}
           body={save.body}
           setBody={setBody}
+          closet={save.closet}
+          setCloset={setCloset}
           progression={save.progression}
           shifts={save.shifts}
           onTitle={(title) => {

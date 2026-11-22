@@ -5,6 +5,7 @@
 // restores the old view on close.
 
 import { byTier } from "../../game/age.ts";
+import type { ClosetSave } from "../../game/closet.ts";
 import type { ShiftsSave } from "../../game/shifts.ts";
 import type { Progression } from "../../game/progression/progression.ts";
 import { ProgressionHud, LadderPanel } from "./Progression.tsx";
@@ -305,6 +306,8 @@ export function Overlay({
   onCaught,
   body,
   setBody,
+  closet,
+  setCloset,
   onRide,
   onPlayGame,
   onCityTravel,
@@ -352,6 +355,8 @@ export function Overlay({
   onCaught: (caught: Caught) => void;
   body: BodyShape;
   setBody: (body: BodyShape) => void;
+  closet: ClosetSave;
+  setCloset: (closet: ClosetSave) => void;
   onRide: () => void;
   onPlayGame: (game: MinigameId) => void;
   /** Fast travel within the city, from the city map. */
@@ -468,6 +473,8 @@ export function Overlay({
               wardrobe={wardrobe}
               body={body}
               setBody={setBody}
+              closet={closet}
+              setCloset={setCloset}
               effects={effects}
               setEffects={setEffects}
               highAudio={highAudio}

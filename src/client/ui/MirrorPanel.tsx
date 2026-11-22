@@ -4,6 +4,7 @@
 
 import { encodeWear, recolor, wearOf } from "../../game/wardrobe.ts";
 import { WardrobePicker } from "./WardrobePicker.tsx";
+import type { ClosetSave } from "../../game/closet.ts";
 import { activeTier, allows } from "../../game/age.ts";
 import { Fragment, type ReactNode } from "react";
 import {
@@ -118,6 +119,8 @@ export function Mirror({
   wardrobe,
   body,
   setBody,
+  closet,
+  setCloset,
   effects,
   setEffects,
   highAudio = true,
@@ -132,6 +135,8 @@ export function Mirror({
   wardrobe: readonly string[];
   body: BodyShape;
   setBody: (body: BodyShape) => void;
+  closet: ClosetSave;
+  setCloset: (closet: ClosetSave) => void;
   effects: Intensity;
   setEffects: (effects: Intensity) => void;
   highAudio?: boolean;
@@ -515,7 +520,13 @@ export function Mirror({
             }
           />
         </section>
-        <WardrobePicker look={look} setLook={setLook} wardrobe={wardrobe} />
+        <WardrobePicker
+          look={look}
+          setLook={setLook}
+          wardrobe={wardrobe}
+          closet={closet}
+          setCloset={setCloset}
+        />
         <section>
           <h3>Shoes</h3>
           <Chips
