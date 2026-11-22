@@ -16,12 +16,15 @@ met a couple of times.
   `greeting-returning`; anything else is `greeting-regular`. A role that lacks
   the warmer situation falls back to the colder one (`greeting-returning`, then
   `greeting-regular`, then `greeting-first`, then tapped, then idle).
-- **Name**: from the second visit day on, `context.name` is the player's name;
-  before that the placeholder keeps its neutral fallback ("friend").
+- **Name** (`nameFor`): from the second visit day on, counting the arrival
+  itself, `context.name` is the player's name; before that the placeholder
+  keeps its neutral fallback ("friend").
 - **Save**: `SaveV1.npcs`, an additive field. `cleanNpcMemories` drops any
   malformed entry, clamps numbers, and keeps at most `MAX_NPCS` records (the
   most recently met), so a hand-edited or runaway save cannot grow without
-  bound. Local only; never sent online.
+  bound. It belongs to the player: it travels with their save (including the
+  account's cloud save, which has room for it at 150 short records) and is
+  never shown to other players or sent into a room.
 - **Wiring**: `TalkingNpc` reads `npcDesk` (a store the app mirrors from the
   save), says the greeting, then posts the meeting; the app folds it into the
   save through `meet`, as `shiftDesk` does for paid shifts.

@@ -10,7 +10,7 @@ import { eventSituation } from "../../../game/events.ts";
 import { PRIDE_CLUBS, prideNightOn } from "../../../game/prideNight.ts";
 import { isRoomId, type RoomId } from "../../../game/rooms.ts";
 import { dayOf } from "../../../game/challenges.ts";
-import { greetingFor, knowsPlayer, npcKey } from "../../../game/npcMemory.ts";
+import { greetingFor, nameFor, npcKey } from "../../../game/npcMemory.ts";
 import { metNpc, npcDesk } from "../../ui/npcDesk.ts";
 import { nightClock, prideClock } from "../../city/eventClocks.ts";
 import { Html } from "@react-three/drei";
@@ -88,10 +88,8 @@ export function TalkingNpc({
   const say = (when: DialogueSituation) => {
     // an NPC that knows the player by now calls them by name
     const { memories, player } = npcDesk.get();
-    const spoken =
-      player && knowsPlayer(memories[key])
-        ? { name: player, ...context }
-        : context;
+    const known = nameFor(memories[key], dayOf(Date.now()), player);
+    const spoken = known ? { name: known, ...context } : context;
     // the line banks load lazily; a failed load is retried on the next tap
     loadDialogue().then(() => {
       const picked = pickLine({

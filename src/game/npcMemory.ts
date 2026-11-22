@@ -1,7 +1,8 @@
 // What recurring NPCs remember about the player: per NPC, how many days they
 // have met and the last day. From that, which greeting the NPC gives and
-// whether it uses the player's name. Saved with the player (SaveV1.npcs), local
-// only; the record is capped, so a save can't grow without bound. Pure.
+// whether it uses the player's name. Saved with the player (SaveV1.npcs, also in
+// their account save, never shown to others); the record is capped, so a save
+// can't grow without bound. Pure.
 
 import type { DialogueSituation } from "./dialogue/types.ts";
 import { isRecord } from "./typed.ts";
@@ -59,9 +60,19 @@ export function greetingFor(
     : "greeting-regular";
 }
 
-/** Whether this NPC knows the player well enough to use their name. */
-export function knowsPlayer(memory: NpcMemory | undefined): boolean {
-  return memory !== undefined && memory.visits >= NAME_VISITS;
+/**
+ * The name this NPC calls the player by, or undefined while they are still a
+ * stranger. It counts today's meeting (not yet saved when the NPC greets), so
+ * the second visit day's greeting already uses the name.
+ */
+export function nameFor(
+  memory: NpcMemory | undefined,
+  day: number,
+  player: string,
+): string | undefined {
+  if (!memory || !player) return undefined;
+  const visits = memory.visits + (day > memory.last ? 1 : 0);
+  return visits >= NAME_VISITS ? player : undefined;
 }
 
 // The newest MAX_NPCS entries, in a fresh record.

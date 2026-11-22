@@ -8,8 +8,8 @@ import {
   RETURNING_DAYS,
   cleanNpcMemories,
   greetingFor,
-  knowsPlayer,
   meet,
+  nameFor,
   npcKey,
 } from "./npcMemory.ts";
 import { createDefaultSave, loadSave, serializeSave } from "./save.ts";
@@ -49,10 +49,16 @@ test("a long gap gets the returning greeting, even for a regular", () => {
   );
 });
 
-test("an NPC uses the player's name from the second visit day", () => {
-  assert.equal(knowsPlayer(undefined), false);
-  assert.equal(knowsPlayer({ visits: 1, last: 5 }), false);
-  assert.equal(knowsPlayer({ visits: 2, last: 5 }), true);
+test("an NPC uses the player's name from the second visit day, on arrival", () => {
+  assert.equal(nameFor(undefined, 10, "Dana"), undefined);
+  // met today already: still the first day
+  assert.equal(nameFor({ visits: 1, last: 10 }, 10, "Dana"), undefined);
+  // arriving on the second day: today's meeting counts
+  assert.equal(nameFor({ visits: 1, last: 10 }, 11, "Dana"), "Dana");
+  assert.equal(nameFor({ visits: 2, last: 10 }, 10, "Dana"), "Dana");
+  // a long absence changes the greeting, not whether they know the name
+  assert.equal(nameFor({ visits: 1, last: 10 }, 40, "Dana"), "Dana");
+  assert.equal(nameFor({ visits: 5, last: 10 }, 11, ""), undefined);
 });
 
 test("meet counts one visit per day and never mutates", () => {
