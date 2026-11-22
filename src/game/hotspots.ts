@@ -1,11 +1,13 @@
 // Minigame hotspots: floor spots in a room that open a 2D minigame over the
 // world. Tapping the spot and the keyboard button both launch the same game.
-import type { RoomId } from "./rooms.ts";
+import { isRoomId, type RoomId } from "./rooms.ts";
 import type { Vec2 } from "./walk.ts";
 import { DECKS_SPOT } from "./warehouse.ts";
 import { CABINET_SPOT, DECKS_SPOT as ORBIT_DECKS } from "./orbit.ts";
 import { LAST_CALL_SPOT, PLAYABLE, playSpot } from "./arcadeBar.ts";
 import { TRIVIA_SPOT as REWIND_TRIVIA } from "./videoStore.ts";
+import { nightsAt, type ClubNight } from "./events.ts";
+import { TRIVIA_HOSTS } from "./triviaNight.ts";
 
 export const MINIGAME_IDS = [
   "bassline",
@@ -26,6 +28,8 @@ export type Hotspot = {
   label: string;
   position: Vec2;
   radius: number;
+  /** The club night that has to be on in the room for the spot to exist. */
+  night?: ClubNight["id"] | undefined;
 };
 
 export const HOTSPOTS: readonly Hotspot[] = [
@@ -159,8 +163,31 @@ export const HOTSPOTS: readonly Hotspot[] = [
     position: [-10.1, -6],
     radius: 0.9,
   },
+  // Trivia night's hosted round, in front of each quiz host
+  ...Object.entries(TRIVIA_HOSTS).flatMap(([room, host]) =>
+    isRoomId(room)
+      ? [
+          {
+            id: `trivia-night-${room}`,
+            room,
+            game: "trivia" as const,
+            label: "Play Trivia Night with the host",
+            position: host.spot,
+            radius: 0.9,
+            night: "trivia-night" as const,
+          },
+        ]
+      : [],
+  ),
 ];
 
-export function hotspotsIn(room: RoomId): readonly Hotspot[] {
-  return HOTSPOTS.filter((spot) => spot.room === room);
+/** The spots in a room; a night's spots only when `ms` finds that night on. */
+export function hotspotsIn(room: RoomId, ms?: number): readonly Hotspot[] {
+  return HOTSPOTS.filter(
+    (spot) =>
+      spot.room === room &&
+      (spot.night === undefined ||
+        (ms !== undefined &&
+          nightsAt(room, ms).some((n) => n.id === spot.night))),
+  );
 }
