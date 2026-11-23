@@ -42,7 +42,7 @@ def linear(hex_color):
 
 HEX = keys.get("color", "#6a3a24")
 HAIR = linear(HEX)
-SKINS = {"light": "#f3d4c4", "medium": "#b8805a", "deep": "#5a3424"}
+SKINS = {"light": "#e2b8a0", "medium": "#b8805a", "deep": "#5a3424"}
 # camera at, aim, lens angle: head and shoulders, close-up three-quarter
 VIEWS = {
     "front": ((0, -1.5, 1.52), (0, 0, 1.45), 19),
@@ -112,8 +112,8 @@ def paint_skin(color):
 
 
 def tint(objects):
-    """Multiplies each hair material's atlas by the hair color, as the
-    client does (an untextured material takes the color alone)."""
+    """Multiplies each hair material's colour (its atlas and root-to-tip
+    vertex shading, as imported) by the hair color, as the client does."""
     for ob in objects:
         if ob.type != "MESH":
             continue
@@ -123,22 +123,25 @@ def tint(objects):
             m["tinted"] = True
             nt = m.node_tree
             bsdf = nt.nodes.get("Principled BSDF")
-            tex = next((n for n in nt.nodes if n.type == "TEX_IMAGE"), None)
             bsdf.inputs["Roughness"].default_value = 0.55
-            if tex is None:
-                bsdf.inputs["Base Color"].default_value = HAIR
-                continue
+            base = bsdf.inputs["Base Color"]
             mul = nt.nodes.new("ShaderNodeMix")
             mul.data_type = "RGBA"
             mul.blend_type = "MULTIPLY"
             mul.inputs["Factor"].default_value = 1.0
-            nt.links.new(tex.outputs["Color"], mul.inputs[6])
+            if base.links:
+                nt.links.new(base.links[0].from_socket, mul.inputs[6])
+            else:
+                mul.inputs[6].default_value = base.default_value[:]
             mul.inputs[7].default_value = HAIR
-            nt.links.new(mul.outputs[2], bsdf.inputs["Base Color"])
+            nt.links.new(mul.outputs[2], base)
 
 
-def render(sc, view, path):
+def render(sc, view, path, lift=0.0):
+    """One tile; `lift` raises the camera and its aim (the man is taller)."""
     loc, aim, fov = VIEWS[view]
+    loc = (loc[0], loc[1], loc[2] + lift)
+    aim = (aim[0], aim[1], aim[2] + lift)
     cam = sc.camera
     cam.location = loc
     cam.data.angle = math.radians(fov)
@@ -151,6 +154,18 @@ def render(sc, view, path):
     bpy.data.images.remove(img)
     os.remove(path)
     return px.reshape(res, res, 4)
+
+
+def save(name, strips):
+    # Blender rows run bottom to top: the first strip goes on top
+    sheet = np.concatenate(strips[::-1], axis=0)
+    h, w = sheet.shape[:2]
+    img = bpy.data.images.new(f"sheet-{name}", w, h, alpha=True)
+    img.pixels.foreach_set(sheet.ravel())
+    img.filepath_raw = os.path.join(dest, f"{name}.png")
+    img.file_format = "PNG"
+    img.save()
+    print("wrote", img.filepath_raw, flush=True)
 
 
 rows = {n: [] for n in names}
@@ -173,20 +188,11 @@ for sex in sexes:
         for skin in skins:
             paint_skin(linear(SKINS[skin]))
             tile = os.path.join(dest, f".tile-{name}.png")
-            rows[name].append(np.concatenate([render(sc, v, tile) for v in views], axis=1))
+            lift = 0.08 if sex == "m" else 0.0
+            rows[name].append(np.concatenate([render(sc, v, tile, lift) for v in views], axis=1))
         for o in added:
             bpy.data.objects.remove(o)
         print("rendered", name, sex, flush=True)
-
-for name, strips in rows.items():
-    if not strips:
-        continue
-    # Blender rows run bottom to top: the first strip goes on top
-    sheet = np.concatenate(strips[::-1], axis=0)
-    h, w = sheet.shape[:2]
-    img = bpy.data.images.new(f"sheet-{name}", w, h, alpha=True)
-    img.pixels.foreach_set(sheet.ravel())
-    img.filepath_raw = os.path.join(dest, f"{name}.png")
-    img.file_format = "PNG"
-    img.save()
-    print("wrote", img.filepath_raw, flush=True)
+        # each sheet as soon as its last head is done
+        if sex == sexes[-1] and rows[name]:
+            save(name, rows[name])

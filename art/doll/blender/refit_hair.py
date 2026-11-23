@@ -42,7 +42,11 @@ DOWNLOADS = os.environ.get("HAIR_DOWNLOADS", os.path.join(HERE, "..", "..", ".."
 # Style id -> options:
 #   src:    the download folder under DOWNLOADS (its extracted/scene.gltf)
 #   head:   name fragment of the model's own head mesh, to fit by (and drop)
+#   ref:    name fragments of kept meshes to fit by instead (a scalp cap
+#           that hugs the skull it was made on)
 #   keep:   name fragments of the meshes to keep (default: every other mesh)
+#   drop:   name fragments of meshes or materials to leave out (a mannequin's
+#           eyes, a stray backdrop card)
 #   cap:    name fragments of scalp-cap meshes: a matte, opaque material
 #   scale:  multiplies the fitted size; offset: metres (x right, y back, z up)
 #   turn:   degrees about the vertical before fitting (a model facing +y: 180)
@@ -50,27 +54,16 @@ DOWNLOADS = os.environ.get("HAIR_DOWNLOADS", os.path.join(HERE, "..", "..", ".."
 #   tris:   near-model triangle budget (default TRI_BUDGET)
 #   thin:   share of strand cards (loose mesh islands) to drop before decimating
 #   swing:  offset from the head joint where a tail starts to sway (pony bone)
-#   grow:   for a model without a head, how much wider than our crown the
-#           hair's own crown is (its thickness)
-STYLES: dict[str, dict] = {
-    # trial fits, renamed to style ids once they look right
-    "try-twintail": {"src": "hair-sketchfab-summer66-twintail-19984", "head": "retopo", "keep": ["hair_l", "hair_tail"]},
-    "try-pocolov13": {"src": "hair-sketchfab-pocolov-pocolov-hair-13-325ae", "head": "Head_", "cap": ["Hair_Base"]},
-    "try-pocolov05": {"src": "hair-sketchfab-pocolov-pocolov-hair-05-a86b6", "head": "Head_", "cap": ["Hair_Base"]},
-    "try-pocolov09": {"src": "hair-sketchfab-pocolov-pocolov-hair-09-51535", "head": "Head_", "cap": ["Hair_Base"]},
-    "try-pocolov11": {"src": "hair-sketchfab-pocolov-pocolov-hair-11-1f848", "head": "Head_", "cap": ["Hair_Base"]},
-    "try-pocolov16": {"src": "hair-sketchfab-pocolov-pocolov-hair-16-9d4f1", "head": "Head_", "cap": ["Hair_Base"]},
-    "try-pocolov17": {"src": "hair-sketchfab-pocolov-pocolov-hair-17-605ea", "head": "Head_", "cap": ["Hair_Base"]},
-    "try-alexpony": {"src": "hair-sketchfab-alexm777-female-hair-ponytail-bb4d9", "head": "Head_"},
-    "try-turban": {"src": "hair-sketchfab-harsh4756-sikh-turban-30cdd", "grow": 1.18},
-    "try-afro": {"src": "hair-sketchfab-continuumreed-hair-afro-style-rose-character-4b2ab", "keep": ["Object"]},
-    "try-bantu": {"src": "hair-sketchfab-marvibun-bantu-knot-hairstyle-game-read-cb069", "grow": 1.1},
-    "try-cliffbun": {"src": "hair-sketchfab-cliffunderside-messy-low-bun-female-hairstyle-db7a6", "head": "M_Head", "keep": ["Hair"]},
-    "try-greedybuns": {"src": "hair-sketchfab-greedyengine-hair-double-buns-f77fc", "head": "Mesh_Mannequin", "keep": ["Hair"]},
-    "try-pixie": {"src": "hair-sketchfab-dlm96-stylised-pixie-haircut-24737"},
-    "try-digibob": {"src": "hair-sketchfab-digitalwitch-bobhair-2149a"},
-    "try-hijab": {"src": "hair-sketchfab-witmerad-hijab-1-6e176", "grow": 1.25},
-}
+#   bend:   (metres below the crown, degrees): hair hanging below that height
+#           swings back about it by up to that angle, so tails cut for a
+#           slimmer body fall behind our shoulders instead of through them
+#   grow:   for a model without a head or ref, how much wider than our crown
+#           the hair's own crown is (its thickness)
+#   flat:   drop the textures: cloth the hair color tints evenly, its folds
+#           shaded by the geometry alone
+#   strands: an untextured sculpt gets the strand image combed from the crown
+#           (strands.comb_cap), so it reads as hair rather than plastic
+STYLES: dict[str, dict] = {}
 
 TRI_BUDGET = int(os.environ.get("HAIR_TRIS", "8000"))
 ALPHA_LEVELS = 15
@@ -287,7 +280,7 @@ def load(src, opts):
     rot = Euler((math.radians(opts.get("tilt", 0.0)), 0, math.radians(opts.get("turn", 0.0)))).to_matrix()
     head_frag = opts.get("head")
     keep = opts.get("keep")
-    pieces, head = [], []
+    pieces, head, ref = [], [], []
     deps = bpy.context.evaluated_depsgraph_get()
     for ob in added:
         if ob.type != "MESH":
@@ -303,22 +296,27 @@ def load(src, opts):
             continue
         if keep is not None and not _matches(ob.name, keep):
             continue
+        if _matches(ob.name, opts.get("drop", ())):
+            continue
+        if _matches(ob.name, opts.get("ref", ())):
+            ref.append(co)
         uvs = np.array([lp.uv[:] for lp in me.uv_layers.active.data]) if me.uv_layers.active else None
         # one piece per material, so a mesh's cards and cap stay apart
         for mi, mat in enumerate(me.materials or [None]):
             polys = [p for p in me.polygons if p.material_index == mi]
-            if not polys:
+            if not polys or (mat is not None and _matches(mat.name, opts.get("drop", ()))):
                 continue
             faces = [list(p.vertices) for p in polys]
             loops = None if uvs is None else np.concatenate([uvs[p.loop_start : p.loop_start + p.loop_total] for p in polys])
-            img = _image_of(mat)
+            img = None if opts.get("flat") or opts.get("strands") else _image_of(mat)
             cap = _matches(ob.name, opts.get("cap", ())) or (mat is not None and _matches(mat.name, opts.get("cap", ())))
             pieces.append((co, faces, loops, img, cap))
     images = {id(p[3]): _pixels(p[3]) for p in pieces if p[3] is not None}
     pieces = [(co, f, uv, None if img is None else images[id(img)], cap) for co, f, uv, img, cap in pieces]
     for ob in added:
         bpy.data.objects.remove(ob)
-    return pieces, (np.concatenate(head) if head else None)
+    fit_by = head or ref
+    return pieces, (np.concatenate(fit_by) if fit_by else None)
 
 
 def fit(ctx, co, ref, opts):
@@ -329,13 +327,30 @@ def fit(ctx, co, ref, opts):
     # a first guess from overall width sets how deep a band to compare
     k = np.ptp(ours[:, 0]) / max(np.ptp(ref[:, 0]), 1e-9)
     c1, h1, top1 = crown(ref, CROWN / k)
-    grow = 1.0 if opts.get("head") else opts.get("grow", 1.12)
+    grow = opts.get("grow", 1.0 if opts.get("head") or opts.get("ref") else 1.12)
     k = float(np.mean(h0[:2] / h1[:2])) * grow * opts.get("scale", 1.0)
     out = (co - np.array([c1[0], c1[1], top1])) * k + np.array([c0[0], c0[1], top0])
-    if not opts.get("head"):
+    if grow != 1.0:
         # the hair's own crown sits its thickness above the skull's
         out[:, 2] += (grow - 1) * h0[0]
     return out + np.array(opts.get("offset", (0.0, 0.0, 0.0)))
+
+
+def bend(ctx, co, below, degrees):
+    """Swings hair hanging more than `below` metres under the crown back
+    about that height, easing in over 6 cm so the fall stays smooth."""
+    top = head_points(ctx)[:, 2].max()
+    pivot_z = top - below
+    pivot_y = float(np.median(co[co[:, 2] > pivot_z - 0.02][:, 1])) if (co[:, 2] > pivot_z).any() else 0.0
+    out = co.copy()
+    depth = np.clip((pivot_z - co[:, 2]) / 0.06, 0, 1)
+    angle = np.radians(degrees) * depth * depth * (3 - 2 * depth)
+    dz = co[:, 2] - pivot_z
+    dy = co[:, 1] - pivot_y
+    # positive angles carry the hanging hair toward +y, behind the doll
+    out[:, 1] = pivot_y + dy * np.cos(angle) - dz * np.sin(angle)
+    out[:, 2] = pivot_z + dy * np.sin(angle) + dz * np.cos(angle)
+    return out
 
 
 def thin(faces, keep_share, seed):
@@ -395,13 +410,23 @@ def build_style(ctx, sid, opts):
         uvs.append(uv if uv is not None else np.zeros((sum(len(f) for f in fs), 2)))
         base += count
     co = np.concatenate(verts)
+    if "bend" in opts:
+        co = bend(ctx, co, *opts["bend"])
     co = clear_of_body(ctx, clear_of_skin(ctx, co))
     ob = ctx.new_object(f"Hair_{sid}", co, faces)
     for m in materials:
         ob.data.materials.append(m)
     ob.data.polygons.foreach_set("material_index", np.array(mat_idx, np.int32))
-    uv_layer = ob.data.uv_layers.new(name="UVMap")
-    uv_layer.data.foreach_set("uv", np.concatenate(uvs).ravel())
+    if opts.get("strands"):
+        import strands
+
+        ob.data.materials.clear()
+        ob.data.materials.append(strands.cap_material(f"hair_{sid}"))
+        ob.data.polygons.foreach_set("material_index", np.zeros(len(ob.data.polygons), np.int32))
+        strands.comb_cap(ctx, ob)
+    else:
+        uv_layer = ob.data.uv_layers.new(name="UVMap")
+        uv_layer.data.foreach_set("uv", np.concatenate(uvs).ravel())
     for p in ob.data.polygons:
         p.use_smooth = True
     # unused vertices (thinned cards) go

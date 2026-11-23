@@ -58,11 +58,11 @@ export const HAIR_STYLES = [
   { id: "mid-curly", label: "Shoulder curls" },
   { id: "pixie", label: "Pixie" },
   { id: "mermaid", label: "Mermaid waves" },
-  { id: "shag", label: "Shag" },
+  { id: "shag", label: "Shaggy bob" },
   { id: "coils", label: "Coils" },
   { id: "low-pony", label: "Low pony" },
   { id: "pigtails", label: "Braided pigtails" },
-  { id: "top-knot", label: "Top knot" },
+  { id: "top-knot", label: "Braided top knot" },
   // textured styles
   { id: "locs", label: "Locs" },
   { id: "box-braids", label: "Box braids" },
@@ -85,11 +85,10 @@ export const HAIR_STYLES = [
   { id: "shaved-sides", label: "Shaved sides" },
   { id: "bald", label: "Bald" },
   { id: "edges", label: "Slicked edges" },
-  // hair-card styles refitted from the Hair Pack (credits.ts): long and
-  // mid-length, ponytails and a bun, bobs
+  // long and mid-length, ponytails and a bun, bobs
   { id: "rapunzel", label: "Rapunzel" },
   { id: "long-waves", label: "Long waves" },
-  { id: "fishtail", label: "Fishtail braid" },
+  { id: "fishtail", label: "French braid" },
   { id: "layered-long", label: "Layered waves" },
   { id: "sleek-side", label: "Side-swept long" },
   { id: "high-pony", label: "High ponytail" },
@@ -97,7 +96,7 @@ export const HAIR_STYLES = [
   { id: "lob", label: "Curled-under bob" },
   { id: "blunt-bob", label: "Blunt bob" },
   { id: "sidebob", label: "Inverted bob" },
-  { id: "side-fringe", label: "Side fringe" },
+  { id: "side-fringe", label: "Side-fringe bob" },
   { id: "messy-bun", label: "Sleek bun" },
   // and the short cuts and a mohawk
   { id: "quiff", label: "Quiff" },

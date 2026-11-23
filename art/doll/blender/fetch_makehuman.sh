@@ -175,10 +175,11 @@ echo "MPFB2 Mixamo rig in $OUT/rigs"
 # Hair, clothes and shoe proxies from MakeHuman's CC0 system asset pack
 # (280 MB zip; only the folders proxies.py uses are kept).
 PACK="$(dirname "$0")/.cache/mhassets"
-if [ ! -d "$PACK/hair/long01" ]; then
+# (bob02 joined later: a cache without it extracts again)
+if [ ! -d "$PACK/hair/bob02" ]; then
   tmp="$(mktemp -d)"
   curl -fsSL https://files.makehumancommunity.org/asset_packs/makehuman_system_assets/makehuman_system_assets_cc0.zip -o "$tmp/cc0.zip"
-  unzip -q -o "$tmp/cc0.zip" '*hair/afro01/*' '*hair/bob01/*' '*hair/braid01/*' \
+  unzip -q -o "$tmp/cc0.zip" '*hair/afro01/*' '*hair/bob01/*' '*hair/bob02/*' '*hair/braid01/*' \
     '*hair/long01/*' '*hair/ponytail01/*' '*clothes/shoes06/*' \
     '*clothes/female_sportsuit01/*' -d "$PACK"
   rm -r "$tmp"
@@ -191,18 +192,24 @@ if [ ! -d "$PACK/proxymeshes/male1591" ]; then
   rm -r "$tmp"
 fi
 # community hair (doll_hair.py COMMUNITY): CC0 from hair01, CC-BY from hair02
-# (2026-11-20); only the styles we wear are kept
-# a marker, written last, so an interrupted extraction is retried
-if [ ! -f "$PACK/hair/.community-done" ]; then
+# and hair03; only the styles we wear are kept. The marker, written last, is
+# bumped when the list grows, so an older or interrupted extraction is redone
+if [ ! -f "$PACK/hair/.community-2" ]; then
   tmp="$(mktemp -d)"
   curl -fsSL https://files.makehumancommunity.org/asset_packs/hair01/hair01_cc0.zip -o "$tmp/hair01.zip"
   unzip -q -o "$tmp/hair01.zip" 'hair/toigo_blunt_bob_with_bangs/*' 'hair/toigo_curled_under_bob/*' \
-    'hair/toigo_inverted_bob/*' 'hair/elvs_double_mh_braid/*' 'hair/rehmanpolanski_hair_bun_brown/*' -d "$PACK"
+    'hair/toigo_inverted_bob/*' 'hair/elvs_double_mh_braid/*' 'hair/rehmanpolanski_hair_bun_brown/*' \
+    'hair/toigo_blunt_bob/*' 'hair/elvs_french_braid_variation/*' 'hair/littleright_bobcut_hair/*' \
+    'hair/culturalibre_hair_02/*' 'hair/culturalibre_hair_05/*' -d "$PACK"
   curl -fsSL https://files.makehumancommunity.org/asset_packs/hair02/hair02_ccby.zip -o "$tmp/hair02.zip"
   unzip -q -o "$tmp/hair02.zip" 'hair/elvs_daisy_hair/*' 'hair/elvs_katherine_hair/*' \
     'hair/elvs_ashley_may_hair/*' 'hair/elvs_hazel_hair/*' 'hair/elvs_micky_afro/*' \
-    'hair/elvs_braided_rows/*' 'hair/elvs_maxwell_hair/*' -d "$PACK"
+    'hair/elvs_braided_rows/*' 'hair/elvs_maxwell_hair/*' 'hair/elvs_adrienne_hair/*' \
+    'hair/elvs_island_princess_hair/*' 'hair/elvs_that_80s_babe_hair/*' 'hair/elvs_grump_hair/*' \
+    'hair/elvs_braid_bun/*' -d "$PACK"
+  curl -fsSL https://files.makehumancommunity.org/asset_packs/hair03/hair03_ccby.zip -o "$tmp/hair03.zip"
+  unzip -q -o "$tmp/hair03.zip" 'hair/culturalibre_hair_17/*' -d "$PACK"
   rm -r "$tmp"
-  touch "$PACK/hair/.community-done"
+  touch "$PACK/hair/.community-2"
 fi
 echo "MakeHuman proxies in $PACK"

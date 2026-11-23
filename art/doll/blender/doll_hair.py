@@ -25,6 +25,7 @@ PROXY = {
     "swept": "hair/short04/short04.mhclo",
     "textured": "hair/short01/short01.mhclo",
     "fringe": "hair/short03/short03.mhclo",
+    "side-fringe": "hair/bob02/bob02.mhclo",
 }
 # style id -> MakeHuman community hair (fetch_makehuman.sh), made for the
 # MakeHuman base mesh, so it sits on our head with a natural hairline where
@@ -46,11 +47,28 @@ COMMUNITY = {
     "puffs": "elvs_micky_afro",
     "cornrows": "elvs_braided_rows",
     "quiff": "elvs_maxwell_hair",
+    # the ripped pack's styles (#314), and the old strand-card ones (#312)
+    # MargaretToigo, Elvaerwyn, littleright and culturalibre, CC0
+    "blunt-bob": "toigo_blunt_bob",
+    "fishtail": "elvs_french_braid_variation",
+    "shag": "littleright_bobcut_hair",
+    "crew": "culturalibre_hair_02",
+    "tousled": "culturalibre_hair_05",
+    # Elvaerwyn, CC-BY
+    "sleek-side": "elvs_adrienne_hair",
+    "rapunzel": "elvs_island_princess_hair",
+    "long-waves": "elvs_that_80s_babe_hair",
+    "slick-back": "elvs_grump_hair",
+    "top-knot": "elvs_braid_bun",
+    # culturalibre after miccall, CC-BY
+    "layered-long": "culturalibre_hair_17",
 }
 PROXY |= {style: f"hair/{name}/{name}.mhclo" for style, name in COMMUNITY.items()}
 # decimate ratios for proxies far denser than the rest: the beaded cornrows
 # are 41k triangles as authored, eight times the hair around them
-RATIO = {"cornrows": 0.25}
+RATIO = {"cornrows": 0.25, "top-knot": 0.4, "layered-long": 0.6, "slick-back": 0.65}
+# texture contrast caps (proxy_hair) below the community default
+CONTRAST = {"pigtails": 0.12, "fishtail": 0.12, "side-fringe": 0.15}
 
 
 def diffuse(path):
@@ -217,23 +235,6 @@ def buns(ctx, mat):
                 v.co += c
 
     return scalp_hair(ctx, "Hair_buns", mat, extra)
-
-
-def top_knot(ctx, mat):
-    """Slicked up into one big twisted bun on the crown."""
-
-    def extra(bm, ctx):
-        top = _top(bm)
-        c = Vector((0.0, 0.02, top + 0.02))
-        ret = bmesh.ops.create_uvsphere(bm, u_segments=22, v_segments=16, radius=0.062)
-        for v in ret["verts"]:
-            d = v.co.normalized()
-            ang = np.arctan2(d.y, d.x)
-            v.co *= 1 + 0.07 * np.sin(ang * 6 + d.z * 7)
-            v.co.z *= 0.8
-            v.co += c
-
-    return scalp_hair(ctx, "Hair_top-knot", mat, extra)
 
 
 def afro(ctx, mat):
@@ -627,8 +628,9 @@ def proxy_hair(ctx, style):
     path = PROXY.get(style, f"hair/{style}/{style}.mhclo")
     # community textures range from near-black to two-tone: cap their
     # contrast so a tint doesn't break into dark and bright patches (the
-    # braid's crown is painted in broad highlight bands: flatter still)
-    contrast = {"pigtails": 0.12}.get(style, 0.35) if style in COMMUNITY or style not in PROXY else None
+    # braids' crowns are painted in broad highlight bands, and the silver
+    # bob in pale streaks: flatter still)
+    contrast = CONTRAST.get(style, 0.35 if style in COMMUNITY or style not in PROXY else None)
     img = proxies.detail_texture(diffuse(path), 1024, contrast=contrast)
     mat = proxies.textured(f"hair_{style}", img, alpha=True)
     return proxies.build(ctx, f"Hair_{style}", path, mat, ratio=RATIO.get(style, 1.0))
@@ -656,7 +658,7 @@ def build(ctx):
         return out
     out += [proxy_hair(ctx, style) for style in PROXY]
     solid = bpy.data.materials.new("hair_solid")
-    out += [buns(ctx, solid), afro(ctx, solid), braids(ctx, solid), top_knot(ctx, solid)]
+    out += [buns(ctx, solid), afro(ctx, solid), braids(ctx, solid)]
     out += [
         box_braids(ctx, solid),
         locs(ctx, solid),
@@ -671,9 +673,8 @@ def build(ctx):
         "long-curly": dict(length=0.5, count=492, curl=0.022, volume=1.8),
         "mid-curly": dict(length=0.3, count=456, curl=0.022, volume=1.9),
         "pixie": dict(length=0.11, count=360, wave=0.004, volume=1.1),
-        # waist-skimming waves, a choppy layered shag, and short springy coils
+        # waist-skimming waves and short springy coils
         "mermaid": dict(length=0.76, count=480, wave=0.024),
-        "shag": dict(length=0.27, count=432, wave=0.009, volume=1.5),
         "coils": dict(length=0.2, count=468, curl=0.016, volume=1.7),
         # a defined twist-out: loose spirals with lift, to the shoulder
         "twist-out": dict(length=0.3, count=480, curl=0.03, wave=0.02, volume=2.2),
