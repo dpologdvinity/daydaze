@@ -169,6 +169,12 @@ const servers: ServerMessage[] = [
     look,
   },
   { type: "game", roomId: "downtown-plaza", from: "a1", data: "{}" },
+  {
+    type: "snapshot",
+    roomId: "downtown-plaza",
+    entities: [rounded],
+    time: 1_763_500_000_123,
+  },
 ];
 
 test("every directional message round trips through JSON framing", () => {
@@ -332,4 +338,16 @@ test("a home layout travels as a shape: a lock flag and a bounded furniture list
 
 test("a closed home has its own final close code", () => {
   assert.equal(CLOSE_CODES.closed, 4006);
+});
+
+test("a snapshot's server time is kept only when it is a plausible date", () => {
+  const base = { type: "snapshot", roomId: "r", entities: [] };
+  for (const bad of [-1, 1.5, "now", null, Number.NaN, 8.7e15, {}])
+    assert.deepEqual(decodeServerMessage({ ...base, time: bad }), {
+      ...base,
+    });
+  assert.deepEqual(decodeServerMessage({ ...base, time: 5 }), {
+    ...base,
+    time: 5,
+  });
 });

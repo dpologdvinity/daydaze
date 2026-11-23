@@ -20,9 +20,12 @@ import {
   type HitScene,
 } from "../../game/city/carHits.ts";
 import { CITY_AREA } from "../../game/city/layout.ts";
+import { COPS } from "../../game/city/heist.ts";
+import { CHASE_COPS } from "../../game/city/chase.ts";
 import { PEDESTRIANS, pedestrianOut } from "../../game/city/pedestrians.ts";
 import {
   knock,
+  evadeFastCar,
   settle,
   startle,
   streetPose,
@@ -45,7 +48,7 @@ import type {
 import { playHorn, playScreech, playThump } from "../../audio/worldSounds.ts";
 import { setData } from "../world/dataset.ts";
 import { driving } from "../world/driving.ts";
-import { coolHeat, crime, heat } from "../world/heat.ts";
+import { crime } from "../world/heat.ts";
 import { placePlayer, type Player } from "../world/PlayerController.tsx";
 import { react } from "../world/reaction.ts";
 import { cityHour } from "./daylight.ts";
@@ -72,7 +75,6 @@ export function CarHits({ player }: { player: Player }) {
   // the player thrown by a car: from, to and seconds into the throw
   const slide = useRef({ on: false, t: 0, x0: 0, z0: 0, x1: 0, z1: 0 });
   const scene = useRef<HitScene | null>(null);
-  const cooling = useRef(0);
   const alarms = useRef(streetHits.alarms);
   const here = useMemo<[number, number]>(() => [0, 0], []);
   const pose = useMemo<StreetPose>(
@@ -83,6 +85,7 @@ export function CarHits({ player }: { player: Player }) {
     () => ({ x: 0, z: 0, fx: 0, fz: 1, speed: 0 }),
     [],
   );
+  const danger = useMemo(() => ({ x: 0, z: 0, speed: 0, siren: false }), []);
 
   useEffect(() => {
     // the line banks are their own chunk; a failed load leaves "..." lines
@@ -91,6 +94,8 @@ export function CarHits({ player }: { player: Player }) {
     return () => {
       pending.forEach((t) => window.clearTimeout(t));
       streetHits.hit = null;
+      streetHits.heist = null;
+      streetHits.chase = null;
     };
   }, []);
 
@@ -266,6 +271,48 @@ export function CarHits({ player }: { player: Player }) {
       if (k >= 1) sl.on = false;
     }
 
+    // Event cars share the same pedestrian reactions as the player's car.
+    const { heist, chase } = streetHits;
+    const hour = cityHour();
+    for (let k = 0; k < COPS + 1 + CHASE_COPS + 1; k++) {
+      const isHeist = k <= COPS;
+      if (!heist || !chase) break;
+      const n = isHeist ? k : k - COPS - 1;
+      const eventCar = isHeist
+        ? n < COPS
+          ? heist.cops[n]
+          : heist.getaway
+        : n < CHASE_COPS
+          ? chase.cops[n]
+          : chase.fleeing;
+      if (!eventCar.visible) continue;
+      danger.x = eventCar.x;
+      danger.z = eventCar.z;
+      danger.speed = eventCar.speed;
+      danger.siren = isHeist
+        ? n < COPS && heist.siren && heist.lit[n]
+        : n < CHASE_COPS && chase.siren && chase.lit[n];
+      if (!danger.siren && danger.speed <= 15) continue;
+      for (let i = 0; i < PEDESTRIANS.length; i++) {
+        const p = PEDESTRIANS[i];
+        if (p.bike || !pedestrianOut(p, hour)) continue;
+        const half = Math.hypot(p.b[0] - p.a[0], p.b[1] - p.a[1]) / 2;
+        if (
+          !streetHits.walkers.get(i)?.ev &&
+          Math.hypot(
+            (p.a[0] + p.b[0]) / 2 - danger.x,
+            (p.a[1] + p.b[1]) / 2 - danger.z,
+          ) -
+            half >
+            12
+        )
+          continue;
+        const st = walkerState(i);
+        settle(st, now);
+        evadeFastCar(st, p, now, danger);
+      }
+    }
+
     // your own car among the walkers
     const s = driving.session?.kind === "city" ? driving.session : null;
     if (s) {
@@ -305,13 +352,6 @@ export function CarHits({ player }: { player: Player }) {
       scene.current = r.scene;
       if (r.hitAndRun) crime("hitAndRun");
     }
-    // the heat cools a second at a time (each step makes a new state)
-    cooling.current += dt;
-    if (cooling.current >= 1) {
-      coolHeat(cooling.current * 1000);
-      cooling.current = 0;
-    }
-    setData(canvas.dataset, "heat", heat.state.heat.toFixed(0));
   });
 
   return (

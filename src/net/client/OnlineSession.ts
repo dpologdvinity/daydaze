@@ -1,5 +1,6 @@
 // The browser's online session: joins a room copy, sends movement at 12 Hz,
 // interpolates remote players 100 ms in the past and reports its status.
+import { syncServerClock } from "../../game/clock.ts";
 import { validateLook, type Look } from "../../game/look.ts";
 import { ROOMS, type RoomId } from "../../game/rooms.ts";
 import type { Identity } from "../identity.ts";
@@ -211,6 +212,20 @@ export class OnlineSession {
 
   storeSave(save: SaveV1): Promise<ApiResult<SaveV1>> {
     return this.api.putSave(save);
+  }
+
+  /** The account's server-owned progress calls (accounts only; guests get a
+   * 403), and the weekly boards, which anyone may read. */
+  get progress(): Pick<
+    Api,
+    | "progress"
+    | "submitScore"
+    | "visit"
+    | "setTitle"
+    | "scoreBoard"
+    | "ladderBoard"
+  > {
+    return this.api;
   }
 
   /**
@@ -496,6 +511,9 @@ export class OnlineSession {
     const selfId = this.self?.id;
     switch (message.type) {
       case "snapshot":
+        // the server's clock: the city's lights, walkers and traffic run on it
+        if (message.time !== undefined)
+          syncServerClock(message.time, this.now());
         this.players.clear();
         for (const entity of message.entities)
           if (entity.id !== selfId)

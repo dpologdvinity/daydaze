@@ -42,7 +42,7 @@ audience, tone, age tiers, platform and open decisions.
 
 ## Commands
 
-Node.js 22.18 or newer (`.nvmrc` pins 24).
+Node.js 22.18 or newer (`.nvmrc` pins 26).
 
 | Command                             | What it does                                                                                                                                    |
 | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -221,7 +221,10 @@ request. Use the `gh` CLI.
   Do not fix it in the same branch. Title it like a Conventional Commit subject
   (`fix(net): ...`), say what you saw, how to reproduce it, which files, and
   what you expect. Add labels (`bug`, `enhancement`, `documentation`,
-  `security`, `performance`, and one `area: *`) and assign it to the owner
+  `security`, `performance`, and one `area: *`), plus exactly one
+  `model: *` and one `effort: *` label saying which agent should work it
+  (`gh label list --search model:` describes each), and any `mcp: *` or
+  `skill: *` it needs. Assign it to the owner
   (`--assignee dpologdvinity`). Never put secrets in an issue.
 - **Work from an issue when one exists**: comment when you start, and
   reference it in the PR description with `Closes #n` (or `Refs #n` if it

@@ -2,10 +2,9 @@
 // courier toast. It also runs the delivery clock every 250 ms, so orders land
 // while the phone is closed.
 
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import "./phone.css";
-import { ADULT_OK } from "../../adult.ts";
-import { NEED_NOTICE } from "../../../game/food/needs.ts";
+import { needLabel } from "../../../game/food/needs.ts";
 import {
   clearToast,
   eatHeld,
@@ -13,6 +12,7 @@ import {
   onFoodChange,
   tickDeliveries,
   tickNeeds,
+  weedFelt,
 } from "../../food/store.ts";
 
 const TOAST_MS = 4000;
@@ -24,6 +24,8 @@ const TICK_MS = 250;
  */
 export function FoodHud() {
   const food = useSyncExternalStore(onFoodChange, getFoodState);
+  // the high meter publishes nothing as it fades, so the timer samples it
+  const [weedy, setWeedy] = useState(weedFelt);
 
   // Couriers land while the phone is closed too, so the clock runs here.
   useEffect(() => {
@@ -37,6 +39,7 @@ export function FoodHud() {
         : Math.min(1, (now - previous) / 1000);
       previous = now;
       tickNeeds(seconds);
+      setWeedy(weedFelt());
     }, TICK_MS);
     return () => window.clearInterval(id);
   }, []);
@@ -48,25 +51,24 @@ export function FoodHud() {
   }, [food.toast, food.toastId]);
 
   const held = food.held;
-  const showNeeds =
-    ADULT_OK &&
-    (food.needs.hunger >= NEED_NOTICE || food.needs.thirst >= NEED_NOTICE);
+  const heading = needLabel(food.needs, weedy);
   return (
     <div className="food-tray">
       <p className="food-toast" role="status" aria-live="polite">
         {food.toast ?? ""}
       </p>
-      {showNeeds && (
+      {heading && (
         <section className="food-needs" aria-label="Food and water needs">
-          <strong>
-            {food.needs.hunger >= NEED_NOTICE ? "The munchies" : "Cotton mouth"}
-          </strong>
+          <strong>{heading}</strong>
           <label>
             Hunger{" "}
             <meter
               aria-label="Hunger"
               min={0}
               max={1}
+              low={0.6}
+              high={0.85}
+              optimum={0}
               value={food.needs.hunger}
             />
           </label>
@@ -76,6 +78,9 @@ export function FoodHud() {
               aria-label="Thirst"
               min={0}
               max={1}
+              low={0.6}
+              high={0.85}
+              optimum={0}
               value={food.needs.thirst}
             />
           </label>

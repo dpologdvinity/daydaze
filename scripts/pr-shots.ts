@@ -42,11 +42,24 @@ const ROOM_SHOT_ALIASES: Readonly<Record<string, string>> = {
 const AREA_SHOTS: readonly (readonly [RegExp, string])[] = [
   [/^src\/(client|game)\/(city|world)\//, "city-day"],
   // the closet's wardrobe pickers and the rules behind them
+  [/^src\/game\/closet/, "closet-find"],
   [
     /^src\/(client\/ui\/(WardrobePicker|MirrorPanel)|game\/wardrobe)/,
     "closet-wardrobe",
   ],
+  // the hunger and thirst HUD
+  [
+    /^src\/(game\/food\/needs|client\/food\/|client\/ui\/phone\/FoodHud)/,
+    "hungry-hud",
+  ],
   [/^src\/client\/avatar\//, "plaza"],
+  // the game menu's Careers group
+  [/^src\/(game\/careers|client\/ui\/Progression)/, "careers-menu"],
+  // the weekly boards in the game menu and the server calls that feed them
+  [
+    /^src\/(client\/ui\/WeeklyBoards|net\/client\/progressSync)/,
+    "weekly-board",
+  ],
   [/^src\/client\/ui\//, "hud-city"],
   [
     /^src\/(game\/shifts|client\/rooms\/shared\/(Order|order))/,
