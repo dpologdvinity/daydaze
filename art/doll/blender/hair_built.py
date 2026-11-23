@@ -347,18 +347,19 @@ class Parts:
         middle's own frame (two coordinates, metres)."""
         dist = np.empty(len(pts))
         near = np.empty(len(pts), int)
-        for c in range(0, len(pts), 32768):
-            q = pts[c : c + 32768]
+        for c in range(0, len(pts), 8192):
+            q = pts[c : c + 8192]
             d2 = ((q[:, None, :] - self.points[None, :, :]) ** 2).sum(-1)
-            two = np.argpartition(d2, 1, axis=1)[:, :2]
-            d_two = np.take_along_axis(d2, two, 1)
-            order = np.argsort(d_two, axis=1)
-            i1 = np.take_along_axis(two, order[:, :1], 1)[:, 0]
-            i2 = np.take_along_axis(two, order[:, 1:], 1)[:, 0]
-            gap = np.linalg.norm(self.points[i2] - self.points[i1], axis=1)
-            # distance to the bisector between the two nearest middles
-            dist[c : c + 32768] = (d2[np.arange(len(q)), i2] - d2[np.arange(len(q)), i1]) / (2 * np.maximum(gap, 1e-6))
-            near[c : c + 32768] = i1
+            i1 = d2.argmin(1)
+            rows = np.arange(len(q))
+            # distance to the bisector with every other middle; the nearest
+            # of them is the cell's edge (the second-nearest middle's need
+            # not be)
+            gap = np.linalg.norm(self.points[None, :, :] - self.points[i1][:, None, :], axis=2)
+            to_edge = (d2 - d2[rows, i1][:, None]) / (2 * np.maximum(gap, 1e-9))
+            to_edge[rows, i1] = np.inf
+            dist[c : c + 8192] = to_edge.min(1)
+            near[c : c + 8192] = i1
         off = pts - self.points[near]
         a, b = self.frame
         return dist, (off * a[near]).sum(1), (off * b[near]).sum(1)
@@ -412,6 +413,13 @@ class Drape:
         self.scalp = scalp
         self.eye_z = ctx.JB["lEye"][2]
         self.face_y = scalp.centre[1] - 0.05
+
+    def under(self, p):
+        """The record a braid point keeps (without moving it): the skin it
+        rides (off the arms) and the normal of the skin nearest it."""
+        _, nrm, _, _ = self.skin.nearest(p)
+        _, _, tri, bary = self.anchor.nearest(p)
+        return tri, bary, nrm
 
     def anchor_at(self, p):
         """What a point off the body rides: the skin nearest it (off the
@@ -526,6 +534,9 @@ def braid_path(drape, root, normal, comb, length, layer, front, rng):
     # eased a little more, then cleared of the body again
     for _ in range(4):
         pts[1:-1] = pts[1:-1] * 0.5 + (pts[:-2] + pts[2:]) * 0.25
+    # the moved points ride the skin under where they are now
+    for k in range(1, len(pts) - 1):
+        under[k] = drape.under(pts[k])
     low = np.where(pts[:, 2] < jaw_z + 0.03)[0]
     if len(low) > 2:
         a = max(int(low[0]), 1)
@@ -538,27 +549,30 @@ def braid_path(drape, root, normal, comb, length, layer, front, rng):
 
 def simplify(pts, tolerance, keep_first=6):
     """Indices of a polyline's points to keep: the first few (the root's
-    bend, where the braid leaves the scalp) and any whose removal would move
-    the line more than `tolerance` metres (Douglas-Peucker)."""
+    bend, where the braid leaves the scalp) and, between each pair of those
+    kept, any whose removal would move the line more than `tolerance` metres
+    from the segment that replaces it (Douglas-Peucker)."""
     keep = {0, len(pts) - 1, *range(0, min(keep_first, len(pts)), keep_first // 2)}
 
     def rec(a, b):
         if b <= a + 1:
             return
         seg = pts[b] - pts[a]
-        L = np.linalg.norm(seg)
+        L2 = float(seg @ seg)
         rel = pts[a + 1 : b] - pts[a]
-        if L < 1e-9:
-            dist = np.linalg.norm(rel, axis=1)
-        else:
-            dist = np.linalg.norm(rel - np.outer(rel @ seg / L**2, seg), axis=1)
-        k = int(np.argmax(dist))
-        if dist[k] > tolerance:
-            keep.add(a + 1 + k)
-            rec(a, a + 1 + k)
-            rec(a + 1 + k, b)
+        # distance to the finite segment, not its line: a point past either
+        # end is as far as that end
+        k = np.clip(rel @ seg / L2, 0, 1) if L2 > 1e-18 else np.zeros(len(rel))
+        dist = np.linalg.norm(rel - np.outer(k, seg), axis=1)
+        i = int(np.argmax(dist))
+        if dist[i] > tolerance:
+            keep.add(a + 1 + i)
+            rec(a, a + 1 + i)
+            rec(a + 1 + i, b)
 
-    rec(0, len(pts) - 1)
+    fixed = sorted(keep)
+    for a, b in zip(fixed[:-1], fixed[1:]):
+        rec(a, b)
     return sorted(keep)
 
 
@@ -608,7 +622,7 @@ def tied_path(drape, root, normal, layer, tie, length, mode, rng):
     """A braid gathered to a tie: it lies over the scalp straight to the tie,
     then either falls from it as a tail (mode "pony", out and back first) or
     wraps once round a bun on it (mode "bun"). Returns points every 6 mm,
-    the skin under each, and the arc length at the tie."""
+    the skin under each, and the index of the point at the tie."""
     step = 0.006
     p = root + normal * 0.0035
     pts, under = [p], [drape(p, 0.0035)[1]]
@@ -622,7 +636,8 @@ def tied_path(drape, root, normal, layer, tie, length, mode, rng):
         p = q
         pts.append(p)
         under.append(info)
-    at_tie = s
+    # the tie, as an index: arc lengths are measured on the final points
+    at_tie = len(pts) - 1
     centre = drape.scalp.centre
     up = tie - centre
     up /= np.linalg.norm(up)
@@ -673,6 +688,8 @@ def tied_path(drape, root, normal, layer, tie, length, mode, rng):
     pts = np.array(pts)
     for _ in range(4):
         pts[1:-1] = pts[1:-1] * 0.5 + (pts[:-2] + pts[2:]) * 0.25
+    for k in range(1, len(pts) - 1):
+        under[k] = drape.under(pts[k])
     return pts, under, at_tie
 
 
@@ -699,7 +716,7 @@ def braid_style(ctx, v, rows=8, seed=11):
     }
 
     paths = []
-    for t, phi in parts.boxes():
+    for root, (t, phi) in enumerate(parts.boxes()):
         p, n, _, _ = scalp.hit(t, phi)
         layer = 0.004 + 0.007 * (1 - t)
         L = length * rng.uniform(0.94, 1.06)
@@ -713,9 +730,9 @@ def braid_style(ctx, v, rows=8, seed=11):
             tie = hit[0] + hit[1] * (0.01 + 0.004)
             pts, under, at_tie = tied_path(drape, p, n, layer, tie, L * (0.75 if worn == "half" else 1.0), mode, rng)
             arc = np.concatenate([[0], np.cumsum(np.linalg.norm(np.diff(pts, axis=0), axis=1))])
-            # a tail rides the pony bone, so it swings
-            pony = at_tie if mode == "pony" else None
-            paths.append(dict(pts=pts, under=under, arc=arc, v0=v0, lock=lock, s0=0.0, s1=arc[-1], pony=pony))
+            # a tail rides the pony bone from the tie on, so it swings
+            pony = arc[at_tie] if mode == "pony" else None
+            paths.append(dict(root=root, pts=pts, under=under, arc=arc, v0=v0, lock=lock, s0=0.0, s1=arc[-1], pony=pony))
             continue
         # comb: away from a middle part, down at the back; braids from the
         # temples forward sweep back past the face and fall in front of the
@@ -738,13 +755,17 @@ def braid_style(ctx, v, rows=8, seed=11):
             # goddess: the last 12 cm comes loose in a curl, and every third
             # braid has a loose curly lock falling alongside it
             cut = arc[-1] - 0.12
-            paths.append(dict(pts=pts, under=under, arc=arc, v0=v0, lock=lock, s0=0.0, s1=cut, pony=None))
-            paths.append(dict(pts=pts, under=under, arc=arc, v0=v0, lock="curl", s0=cut - 0.01, s1=arc[-1], pony=None, scale=1.15))
-            if len(paths) % 3 == 0:
+            paths.append(dict(root=root, pts=pts, under=under, arc=arc, v0=v0, lock=lock, s0=0.0, s1=cut, pony=None))
+            paths.append(
+                dict(root=root, pts=pts, under=under, arc=arc, v0=v0, lock="curl", s0=cut - 0.01, s1=arc[-1], pony=None, scale=1.15)
+            )
+            if root % 3 == 0:
                 shifted = pts + np.cross(pts[-1] - pts[0], [0.0, 0.0, 1.0]) * 0.02
-                paths.append(dict(pts=shifted, under=under, arc=arc, v0=rng.random(), lock="curl", s0=0.06, s1=arc[-1] * 0.8, pony=None, scale=1.2))
+                paths.append(
+                    dict(root=root, pts=shifted, under=under, arc=arc, v0=rng.random(), lock="curl", s0=0.06, s1=arc[-1] * 0.8, pony=None, scale=1.2)
+                )
             continue
-        paths.append(dict(pts=pts, under=under, arc=arc, v0=v0, lock=lock, s0=0.0, s1=arc[-1], pony=None))
+        paths.append(dict(root=root, pts=pts, under=under, arc=arc, v0=v0, lock=lock, s0=0.0, s1=arc[-1], pony=None))
     if worn in ("pony", "half"):
         # one braid wrapped twice round the base of the ponytail, as a band
         hit = ties[worn]
@@ -760,7 +781,7 @@ def braid_style(ctx, v, rows=8, seed=11):
         under = [drape.anchor_at(q) for q in ring]
         under = [(tri, bary, np.cos(x) * e1 + np.sin(x) * e2) for (tri, bary, _), x in zip(under, a)]
         arc = np.concatenate([[0], np.cumsum(np.linalg.norm(np.diff(ring, axis=0), axis=1))])
-        paths.append(dict(pts=ring, under=under, arc=arc, v0=0.3, lock=lock, s0=0.05, s1=arc[-1], pony=None))
+        paths.append(dict(root=0, pts=ring, under=under, arc=arc, v0=0.3, lock=lock, s0=0.05, s1=arc[-1], pony=None))
     print(v["id"], len(paths), "ribbons")
 
     # the cap of parts under the braids, just off the skin
@@ -772,6 +793,9 @@ def braid_style(ctx, v, rows=8, seed=11):
         return ob, tris, barys
 
     pony_bone = ctx.BONES.index("pony")
+    # braids never ride the arms: the anchor skin is mostly off them, and
+    # what arm weight its edges carry is dropped
+    arms = [i for i, b in enumerate(ctx.BONES) if any(k in b for k in ("Arm", "Hand"))]
 
     def assemble(name, braids, capped):
         """One object: braids then cap, every vertex riding the skin under
@@ -782,6 +806,8 @@ def braid_style(ctx, v, rows=8, seed=11):
         ob.name = ob.data.name = name
         weights, keys = skin_mix(ctx, np.concatenate([tris, c_tris]), np.concatenate([barys, c_barys]))
         swing = np.concatenate([swing, np.zeros(len(c_tris))])
+        weights[:, arms] = 0
+        weights /= np.maximum(weights.sum(1, keepdims=True), 1e-9)
         weights = weights * (1 - swing[:, None])
         weights[:, pony_bone] += swing
         proxies.attach(ctx, ob, weights, keys)
@@ -795,14 +821,18 @@ def braid_style(ctx, v, rows=8, seed=11):
     for tol in (0.004, 0.005, 0.0065, 0.008, 0.01, 0.013):
         braids = braid_ribbons(ctx, f"Hair_{v['id']}", paths, scalp.centre, ribbon, locks, tol, ridged=True)
         count = sum(len(p.vertices) - 2 for p in braids[0].data.polygons)
-        if count + cap_tris <= BUDGET or tol == 0.013:
+        if count + cap_tris <= BUDGET:
             break
         bpy.data.objects.remove(braids[0])
+    else:
+        raise ValueError(f"{v['id']}: {count + cap_tris} triangles even simplified to 13 mm (budget {BUDGET})")
     braids[0].data.materials.append(mat)
     near = assemble(f"Hair_{v['id']}", braids, near_cap)
-    # the far model, by hand: every other ribbon, wider, flat and coarse, on
-    # a coarse cap (the automatic simplify tears braids apart)
-    far = braid_ribbons(ctx, f"Hair_{v['id']}@lo", paths[::2], scalp.centre, ribbon * 1.5, locks, 0.012, ridged=False)
+    # the far model, by hand: every other braid (with all its pieces: a
+    # goddess braid keeps its curled end), wider, flat and coarse, on a
+    # coarse cap (the automatic simplify tears braids apart)
+    every_other = [path for path in paths if path["root"] % 2 == 0]
+    far = braid_ribbons(ctx, f"Hair_{v['id']}@lo", every_other, scalp.centre, ribbon * 1.5, locks, 0.012, ridged=False)
     far[0].data.materials.append(mat)
     lo = assemble(f"Hair_{v['id']}@lo", far, cap(f"{v['id']}_cap_lo", 6, 24))
     return [near, lo]
@@ -1093,7 +1123,7 @@ def fade_texture(fade, size=1024, seed=21):
         # 360 waves: ridges rippling out from the crown, spiralling and
         # bending as they go (not rings)
         crown = t * fade.scalp.metric(np.clip(t, 0, 1), phi)[0]
-        swirl = 1.4 * np.sin(phi * 2 + crown * 25) + 0.8 * np.sin(phi * 5 - crown * 60) + 2.2 * phi
+        swirl = 1.4 * np.sin(phi * 2 + crown * 25) + 0.8 * np.sin(phi * 5 - crown * 60) + 2 * phi
         ridge = 0.5 + 0.5 * np.sin(2 * np.pi * crown / top["waves"] + swirl)
         clump = 0.25 + 0.6 * ridge + 0.15 * _noise((half, half), 2, rng)
     elif top["clump"]:
