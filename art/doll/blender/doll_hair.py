@@ -15,6 +15,7 @@ from mathutils.kdtree import KDTree
 
 import pack_hair
 import proxies
+import refit_hair
 import strands
 
 # style id -> MakeHuman proxy: the short cuts, where strand cards that short
@@ -620,12 +621,14 @@ def strand_style(ctx, name, strand_mat, cap_mat, **style):
 
 
 def proxy_hair(ctx, style):
-    """A PROXY style fitted to the doll, its texture a tintable grey."""
-    path = PROXY[style]
+    """A PROXY style fitted to the doll, its texture a tintable grey. A name
+    that isn't a style but is a fetched MakeHuman hair (`hair/<name>/`) builds
+    that hair as Hair_<name>, to try a model on before it gets a style id."""
+    path = PROXY.get(style, f"hair/{style}/{style}.mhclo")
     # community textures range from near-black to two-tone: cap their
     # contrast so a tint doesn't break into dark and bright patches (the
     # braid's crown is painted in broad highlight bands: flatter still)
-    contrast = {"pigtails": 0.12}.get(style, 0.35) if style in COMMUNITY else None
+    contrast = {"pigtails": 0.12}.get(style, 0.35) if style in COMMUNITY or style not in PROXY else None
     img = proxies.detail_texture(diffuse(path), 1024, contrast=contrast)
     mat = proxies.textured(f"hair_{style}", img, alpha=True)
     return proxies.build(ctx, f"Hair_{style}", path, mat, ratio=RATIO.get(style, 1.0))
@@ -645,6 +648,7 @@ def build(ctx):
         # HAIR_ONLY=hijab,bob builds just those sculpted or proxy parts (fast)
         solid = bpy.data.materials.new("hair_solid")
         make = {"hijab": hijab, "head-wrap": head_wrap, "turban": turban}
+        make |= {n: (lambda ctx, _, n=n: refit_hair.build_style(ctx, n, refit_hair.STYLES[n])) for n in refit_hair.STYLES}
         out = [make[n](ctx, solid) if n in make else proxy_hair(ctx, n) for n in only]
         # the same root-to-tip shading the full build gives every style
         for ob in out:
