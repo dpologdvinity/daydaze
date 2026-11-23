@@ -30,8 +30,12 @@ for entry in "${MODELS[@]}"; do
     python3 -I -c 'import json, sys; print(json.load(sys.stdin)["gltf"]["url"])')"
   tmp="$(mktemp -d)"
   curl -fsSL "$url" -o "$tmp/model.zip"
-  mkdir -p "$dest"
-  unzip -q -o "$tmp/model.zip" -d "$dest"
+  # unpack beside the target and move it into place whole, so an interrupted
+  # run never leaves a half-extracted model that the skip above would trust
+  unzip -q -o "$tmp/model.zip" -d "$tmp/extracted"
+  mkdir -p "$OUT/$folder"
+  rm -rf "$dest"
+  mv "$tmp/extracted" "$dest"
   rm -r "$tmp"
   echo "fetched $folder"
 done

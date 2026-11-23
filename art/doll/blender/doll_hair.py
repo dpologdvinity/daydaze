@@ -526,6 +526,7 @@ def build(ctx):
     # volume (lift off the scalp); ids match HAIR_STYLES in src/game/look.ts
     for name, style in {
         "long-curly": dict(length=0.5, count=492, curl=0.022, volume=1.8),
+        "coils": dict(length=0.2, count=468, curl=0.016, volume=1.7),
         # a defined twist-out: loose spirals with lift, to the shoulder
         "twist-out": dict(length=0.3, count=480, curl=0.03, wave=0.02, volume=2.2),
     }.items():
