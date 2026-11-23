@@ -59,6 +59,8 @@ DOWNLOADS = os.environ.get("HAIR_DOWNLOADS", os.path.join(HERE, "..", "..", ".."
 #           slimmer body fall behind our shoulders instead of through them
 #   grow:   for a model without a head or ref, how much wider than our crown
 #           the hair's own crown is (its thickness)
+#   drape:  bind every vertex to the nearest skin anywhere, not just the
+#           head's, for cloth that rests on the shoulders
 #   flat:   drop the textures: cloth the hair color tints evenly, its folds
 #           shaded by the geometry alone
 #   strands: an untextured sculpt gets the strand image combed from the crown
@@ -77,7 +79,7 @@ STYLES: dict[str, dict] = {
     # marvibun, CC-BY
     "bantu-knots": {"src": "hair-sketchfab-marvibun-bantu-knot-hairstyle-game-read-cb069", "grow": 1.1},
     # witmerad, CC-BY: a full hijab with a face opening; cloth, so no texture
-    "hijab": {"src": "hair-sketchfab-witmerad-hijab-1-6e176", "grow": 1.34, "flat": True, "tris": 12000},
+    "hijab": {"src": "hair-sketchfab-witmerad-hijab-1-6e176", "grow": 1.34, "flat": True, "tris": 12000, "drape": True},
     # harsh4756, CC-BY
     "turban": {"src": "hair-sketchfab-harsh4756-sikh-turban-30cdd", "grow": 1.32, "flat": True, "offset": (0.0, 0.012, 0.01)},
     # DLM96, CC-BY: an untextured sculpt, combed with the strand image
@@ -481,7 +483,10 @@ def build_style(ctx, sid, opts):
     if caps:
         lift_cap(ctx, ob, index=caps[0])
     co = np.array([v.co[:] for v in ob.data.vertices])
-    skin = np.unique(np.array([i for f in ctx.FACES["body"] for i in f if ctx.HEADW[i] > 0.5]))
+    # hair rides the head; cloth draped over the shoulders rides the skin
+    # under it, or the shoulders push through it as the doll moves
+    reach = 0.0 if opts.get("drape") else 0.5
+    skin = np.unique(np.array([i for f in ctx.FACES["body"] for i in f if ctx.HEADW[i] > reach - 1e-9]))
     tree = KDTree(len(skin))
     for i, p in enumerate(ctx.PB[skin]):
         tree.insert(p, i)
