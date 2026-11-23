@@ -87,7 +87,7 @@ export const piercerBank: RoleBank = {
     "Take care! No swimming pools or ocean dips until that tissue is fully healed.",
     "Bye! You sat like an absolute rock in that chair. Wear that metal proudly.",
     "See you soon! Come right back if you need any help swapping the ball or ring.",
-    "Ingat! Spray with sterile saline, leave the crusties alone, and stay happy.",
+    "Ingat! Spray with sterile saline, leave it alone, and stay happy.",
     "Good night! Clean pillowcase tonight is mandatory aftercare protocol.",
     "Thanks for trusting Ink & Needle with your skin! Show off that sparkle.",
   ],
