@@ -3,6 +3,9 @@ braid variant in hair_built.py shares (#396), side by side in one atlas.
 
     blender --background --factory-startup --python-exit-code 1 --python art/doll/blender/braid_strip.py
 
+Needs Blender 5.2 or newer (it sets node-group modifier inputs through
+`modifier.properties.inputs`, new in 5.2); the committed atlas needs nothing.
+
 Three locks of real hair, not painted ones. Each is a bundle of hair curves
 shaped by Blender's own procedural hair node groups (CC0, shipped with
 Blender), with a pinch of `Frizz Hair Curves` for flyaways:
