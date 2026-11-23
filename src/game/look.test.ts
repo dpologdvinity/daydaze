@@ -32,6 +32,7 @@ import {
   encodeFace,
   faceOf,
   seededFace,
+  seededMakeup,
   DEFAULT_LOOK,
   EYESHADOWS,
   GLOSSES,
@@ -258,6 +259,72 @@ test("seeded NPC faces are stable, valid and varied", () => {
   assert.deepEqual(seededFace(3), faces[2]);
   for (const f of faces) assert.notEqual(decodeFace(encodeFace(f)), null);
   assert.ok(new Set(faces.map(encodeFace)).size > 8);
+});
+
+test("seeded NPC makeup is stable, valid, and small seeds receive all traits with expected frequencies", () => {
+  assert.deepEqual(seededMakeup(7), seededMakeup(7));
+
+  const counts = {
+    bindi: 0,
+    hearing: 0,
+    vitiligo: 0,
+    birthmark: 0,
+  };
+  const seenBindi = new Set<string>();
+  const seenHearing = new Set<string>();
+  const seenVitiligo = new Set<string>();
+  const seenBirthmark = new Set<string>();
+
+  for (let seed = 1; seed <= 500; seed++) {
+    const m = seededMakeup(seed);
+    const code = encodeMakeup(m);
+    assert.deepEqual(decodeMakeup(code), m);
+    seenBindi.add(m.bindi);
+    seenHearing.add(m.hearing);
+    seenVitiligo.add(m.vitiligo);
+    seenBirthmark.add(m.birthmark);
+    if (m.bindi !== "none") counts.bindi++;
+    if (m.hearing !== "none") counts.hearing++;
+    if (m.vitiligo !== "none") counts.vitiligo++;
+    if (m.birthmark !== "none") counts.birthmark++;
+  }
+
+  // All trait options are present among small seeds
+  assert.deepEqual(Array.from(seenBindi).sort(), ["gold", "none", "red"]);
+  assert.deepEqual(Array.from(seenHearing).sort(), ["beige", "none", "pink"]);
+  assert.deepEqual(Array.from(seenVitiligo).sort(), [
+    "light",
+    "none",
+    "patchy",
+  ]);
+  assert.deepEqual(Array.from(seenBirthmark).sort(), [
+    "cafe-au-lait",
+    "moles",
+    "none",
+    "port-wine",
+  ]);
+
+  // Expected frequencies across 500 seeds:
+  // bindi: 2/7 (~143)
+  // hearing: 2/8 (125)
+  // vitiligo: 2/7 (~143)
+  // birthmark: 3/7 (~214)
+  assert.ok(
+    counts.bindi > 100 && counts.bindi < 200,
+    `bindi count ${counts.bindi} out of expected range`,
+  );
+  assert.ok(
+    counts.hearing > 80 && counts.hearing < 170,
+    `hearing count ${counts.hearing} out of expected range`,
+  );
+  assert.ok(
+    counts.vitiligo > 100 && counts.vitiligo < 200,
+    `vitiligo count ${counts.vitiligo} out of expected range`,
+  );
+  assert.ok(
+    counts.birthmark > 160 && counts.birthmark < 270,
+    `birthmark count ${counts.birthmark} out of expected range`,
+  );
 });
 
 test("makeup codes round-trip and old looks wear the default", () => {
