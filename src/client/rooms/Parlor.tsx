@@ -197,7 +197,7 @@ export function Parlor({ onPick }: { onPick: PickHandler }): JSX.Element {
       />
       <TalkingNpc
         name="Vix"
-        role="coat-check"
+        role="piercer"
         look={PIERCER}
         mood="idle"
         at={[PARLOR.piercer[0], 0, PARLOR.piercer[1]]}
