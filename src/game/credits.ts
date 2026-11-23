@@ -141,6 +141,13 @@ export const CREDITS: readonly {
     title: "3D models",
     entries: [
       {
+        title: "Wisteria Flowers",
+        author: "omiyaio",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/wisteria-flowers-44e2546c4d554d4c8dd6b884e0a9b5e0",
+        usedFor: "City wisteria, optimized (art/city/pack_garden_assets.py).",
+      },
+      {
         title: "Pergola Ivy Arch low poly",
         author: "Andre Lages",
         license: "CC-BY 4.0",

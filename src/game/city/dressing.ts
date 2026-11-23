@@ -1051,7 +1051,8 @@ export const FURNITURE: readonly FurnitureSpot[] = [
   { kind: "flower-box", x: -32.5, z: 42, yaw: 0, scale: 1 },
   { kind: "flower-box", x: -27.5, z: 42, yaw: 0, scale: 1 },
   { kind: "rose-arch", x: 32, z: 42, yaw: 0, scale: 1 },
-  { kind: "hanging-planter", x: 32, z: 42, y: 2.35, yaw: 0, scale: 0.65 },
+  { kind: "wisteria", x: 32, z: 42, y: 2.4, yaw: 0, scale: 0.5 },
+  { kind: "hanging-planter", x: 32.9, z: 42, y: 2.35, yaw: 0, scale: 0.45 },
   { kind: "flower-box", x: 30, z: 42, yaw: 0, scale: 1 },
   { kind: "flower-box", x: 34, z: 42, yaw: 0, scale: 1 },
   // A row of window boxes dresses the florist without covering its doorway.

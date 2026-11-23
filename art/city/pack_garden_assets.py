@@ -6,6 +6,7 @@ The source downloads are never modified. Requires glTF Transform 4.5.1.
 
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -23,6 +24,7 @@ MODELS = {
     "rose_arch": ("rose-arch", "CC-BY-4.0"),
     "village_window_box": ("flower-box", "CC0-1.0"),
     "hanging_planter": ("hanging-planter", "CC-BY-4.0"),
+    "wisteria_flowers": ("wisteria", "CC-BY-4.0"),
 }
 
 
@@ -46,6 +48,8 @@ def main():
             archive.writestr(f"{source}/sha256.json", json.dumps(hashes, indent=2) + "\n")
     with tempfile.TemporaryDirectory(prefix="daydaze-garden-") as tmp:
         for source, (name, license_id) in MODELS.items():
+            if os.environ.get("GARDEN_ONLY") not in (None, source):
+                continue
             original = SOURCE / source
             if license_id not in (original / "license.txt").read_text():
                 raise ValueError(f"Unexpected license for {source}")
@@ -64,7 +68,7 @@ def main():
             subprocess.run([
                 "nice", "-n", "19", cli,
                 "center", str(scene), str(centered), "--pivot",
-                "above" if source == "hanging_planter" else "below",
+                "above" if source in ("hanging_planter", "wisteria_flowers") else "below",
             ], cwd=ROOT, check=True)
             subprocess.run([
                 "nice", "-n", "19", cli,
