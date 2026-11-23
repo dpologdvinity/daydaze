@@ -108,7 +108,7 @@ export const HAIR_STYLES = [
   { id: "quiff", label: "Quiff" },
   { id: "side-part", label: "Messy side part" },
   { id: "tousled", label: "Tousled" },
-  { id: "messy-curls", label: "Short curls" },
+  { id: "messy-curls", label: "Messy shag" },
   { id: "crew", label: "Crew cut" },
   { id: "slick-back", label: "Slick back" },
   { id: "mop", label: "Mop top" },

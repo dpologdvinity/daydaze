@@ -47,7 +47,7 @@ test("every hair the Blender build makes is in the closet", () => {
   for (const [file, start, end, floor] of [
     ["pack_hair.py", "STYLES = {", "# pieces", 5],
     ["doll_hair.py", "COMMUNITY = {", "PROXY |=", 20],
-    ["refit_hair.py", "STYLES: dict", "ALPHA_LEVELS =", 10],
+    ["refit_hair.py", "STYLES: dict", "ALPHA_LEVELS =", 8],
   ] as const) {
     const built = builtIds(file, start, end);
     // a floor, so a parse that silently matches nothing fails
@@ -64,7 +64,7 @@ test("fetch_hair.sh downloads every model refit_hair.py refits", () => {
   const refit = readFileSync("art/doll/blender/refit_hair.py", "utf8");
   const fetch = readFileSync("art/doll/blender/fetch_hair.sh", "utf8");
   const sources = [...refit.matchAll(/"src": "([^"]+)"/g)].map((m) => m[1]);
-  assert.ok(sources.length >= 10, `found ${sources.length} sources`);
+  assert.ok(sources.length >= 8, `found ${sources.length} sources`);
   assert.deepEqual(
     sources.filter((src) => !fetch.includes(`"${src ?? ""} `)),
     [],

@@ -391,7 +391,7 @@ export const CREDITS: readonly {
         license: "CC-BY 4.0",
         url: "https://sketchfab.com/3d-models/none-06a783e91c194e12a296402453476824",
         usedFor:
-          "The high ponytail hair-card style, refitted to our heads (art/doll/blender/pack_hair.py).",
+          "Hair-card styles high ponytail and messy shag, refitted to our heads (art/doll/blender/pack_hair.py).",
       },
       {
         title: "Bob hair (three cuts)",
@@ -772,22 +772,6 @@ export const CREDITS: readonly {
         url: "https://sketchfab.com/3d-models/89ed2c07a0d9418d9d6b231bedf2772a",
         usedFor:
           "The Shoulder curls hairstyle, refitted to our heads by its hair cap (art/doll/blender/refit_hair.py).",
-      },
-      {
-        title: "Brown Kink Hairs 08",
-        author: "MotionStudioArts",
-        license: "CC-BY 4.0",
-        url: "https://sketchfab.com/3d-models/0a77bd1b218249f6a423e877a4d7fc90",
-        usedFor:
-          "The Coils hairstyle: kinky curl cards thinned to a game weight over their own scalp shell, refitted to our heads (art/doll/blender/refit_hair.py).",
-      },
-      {
-        title: "Black Short Curl Hairs 06",
-        author: "MotionStudioArts",
-        license: "CC-BY 4.0",
-        url: "https://sketchfab.com/3d-models/0f77a56bc72a404abba7914af3ab6c0e",
-        usedFor:
-          "The Short curls hairstyle: curl cards thinned to a game weight over their own scalp shell, refitted to our heads (art/doll/blender/refit_hair.py).",
       },
       {
         title: "Pocolov Hair 17",

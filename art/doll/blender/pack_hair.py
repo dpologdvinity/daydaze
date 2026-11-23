@@ -49,6 +49,7 @@ STYLES = {
     "high-pony": ("p2", 105, {"swing": (0.0, 0.07, 0.07)}),
     # short cuts, for either sex
     "side-part": ("p1", 2, {}),
+    "messy-curls": ("p2", 102, {}),
     "mop": ("p1", 5, {}),
     "pompadour": ("p1", 8, {}),
     "mohawk": ("p1", 9, {}),

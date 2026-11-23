@@ -18,8 +18,6 @@ MODELS=(
   "hair-sketchfab-dlm96-stylised-pixie-haircut-24737 247375418ba645a3ab98e62737a47e24"
   "hair-sketchfab-alexm777-female-hair-ponytail-bb4d9 bb4d9bb056d34391b5a9aec8210c38c7"
   "hair-sketchfab-continuumreed-curly-hair-1-beatrice-characte-89ed2 89ed2c07a0d9418d9d6b231bedf2772a"
-  "hair-sketchfab-motionstudioarts-brown-kink-hairs-08-0a77b 0a77bd1b218249f6a423e877a4d7fc90"
-  "hair-sketchfab-motionstudioarts-black-short-curl-hairs-06-0f77a 0f77a56bc72a404abba7914af3ab6c0e"
   "hair-sketchfab-pocolov-pocolov-hair-17-605ea 605ea5ffc77845cd8b5ffd32b6ef9e77"
 )
 for entry in "${MODELS[@]}"; do

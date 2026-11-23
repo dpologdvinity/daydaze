@@ -44,8 +44,6 @@ DOWNLOADS = os.environ.get("HAIR_DOWNLOADS", os.path.join(HERE, "..", "..", ".."
 #   head:   name fragment of the model's own head mesh, to fit by (and drop)
 #   ref:    name fragments of kept meshes to fit by instead (a scalp cap
 #           that hugs the skull it was made on)
-#   fill:   the ref shell loses its texture and becomes a matte cap in the
-#           hair color, so skin never shows between sparse curl cards
 #   keep:   name fragments of the meshes to keep (default: every other mesh)
 #   drop:   name fragments of meshes or materials to leave out (a mannequin's
 #           eyes, a stray backdrop card)
@@ -81,7 +79,7 @@ STYLES: dict[str, dict] = {
     # witmerad, CC-BY: a full hijab with a face opening; cloth, so no texture
     "hijab": {"src": "hair-sketchfab-witmerad-hijab-1-6e176", "grow": 1.34, "flat": True, "tris": 12000},
     # harsh4756, CC-BY
-    "turban": {"src": "hair-sketchfab-harsh4756-sikh-turban-30cdd", "grow": 1.3, "flat": True},
+    "turban": {"src": "hair-sketchfab-harsh4756-sikh-turban-30cdd", "grow": 1.32, "flat": True, "offset": (0.0, 0.012, 0.01)},
     # DLM96, CC-BY: an untextured sculpt, combed with the strand image
     "pixie": {"src": "hair-sketchfab-dlm96-stylised-pixie-haircut-24737", "strands": True},
     # AlexM777, CC-BY: slicked back to a low tail that swings
@@ -93,15 +91,6 @@ STYLES: dict[str, dict] = {
     },
     # continuumreed, CC-BY: shoulder-length spiral curls, fitted by their cap
     "mid-curly": {"src": "hair-sketchfab-continuumreed-curly-hair-1-beatrice-characte-89ed2", "ref": ["HairCap"]},
-    # MotionStudioArts, CC-BY: dense curl cards, thinned to the budget and
-    # fitted by the scalp shell they were made on, which fills in under them
-    "coils": {"src": "hair-sketchfab-motionstudioarts-brown-kink-hairs-08-0a77b", "ref": ["Object_5"], "fill": True, "thin": 0.6},
-    "messy-curls": {
-        "src": "hair-sketchfab-motionstudioarts-black-short-curl-hairs-06-0f77a",
-        "ref": ["Object_4"],
-        "fill": True,
-        "thin": 0.6,
-    },
     # pocolov, CC-BY: long waves with a fringe
     "mermaid": {"src": "hair-sketchfab-pocolov-pocolov-hair-17-605ea", "head": "Head_"},
 }
@@ -351,9 +340,8 @@ def load(src, opts):
             faces = [list(p.vertices) for p in polys]
             loops = None if uvs is None else np.concatenate([uvs[p.loop_start : p.loop_start + p.loop_total] for p in polys])
             is_ref = _matches(ob.name, opts.get("ref", ()))
-            img = None if opts.get("flat") or opts.get("strands") or (is_ref and opts.get("fill")) else _image_of(mat)
+            img = None if opts.get("flat") or opts.get("strands") else _image_of(mat)
             cap = _matches(ob.name, opts.get("cap", ())) or (mat is not None and _matches(mat.name, opts.get("cap", ())))
-            cap = cap or (is_ref and bool(opts.get("fill")))
             # a ref shell (the scalp it was made on) is kept whole, never thinned
             pieces.append((co, faces, loops, img, cap, is_ref))
     images = {id(p[3]): _pixels(p[3]) for p in pieces if p[3] is not None}
