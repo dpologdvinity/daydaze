@@ -47,7 +47,6 @@ PACKS = {
 STYLES = {
     # women's, longest first
     "high-pony": ("p2", 105, {"swing": (0.0, 0.07, 0.07)}),
-    "twin-tails": ("p2", 107, {}),
     # short cuts, for either sex
     "side-part": ("p1", 2, {}),
     "messy-curls": ("p2", 102, {}),

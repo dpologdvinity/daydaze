@@ -391,7 +391,7 @@ export const CREDITS: readonly {
         license: "CC-BY 4.0",
         url: "https://sketchfab.com/3d-models/none-06a783e91c194e12a296402453476824",
         usedFor:
-          "Hair-card styles high ponytail, twin tails and messy shag, refitted to our heads (art/doll/blender/pack_hair.py).",
+          "Hair-card styles high ponytail and messy shag, refitted to our heads (art/doll/blender/pack_hair.py).",
       },
       {
         title: "Bob hair (three cuts)",
@@ -710,12 +710,76 @@ export const CREDITS: readonly {
           "Zoo savanna giraffes, with a calm idle clip (swayed along when walking).",
       },
       {
-        title: "Hijab",
-        author: "lam_m_zack",
+        title: "Twintail",
+        author: "summer66",
         license: "CC-BY 4.0",
-        url: "https://sketchfab.com/3d-models/hijab-ee50e01adc864ccc880caed9b5eb3bcb",
+        url: "https://sketchfab.com/3d-models/199844b5b2d94e0fb75b0a9e11f2a7b4",
         usedFor:
-          "The closet's hijab: the scarf's drape with its mannequin cut out, scaled and skinned to the doll.",
+          "The Twin tails hairstyle: the hair alone, refitted to our heads, the tails swung behind the shoulders and combed with our strand texture (art/doll/blender/refit_hair.py).",
+      },
+      {
+        title: "Hair - Double Buns",
+        author: "GreedyEngine",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/f77fc793db8c40e09781dccd629b7f1b",
+        usedFor:
+          "The Space buns hairstyle: the hair without its mannequin, refitted to our heads by the mannequin's head (art/doll/blender/refit_hair.py).",
+      },
+      {
+        title: "Bantu Knot Hairstyle (Game Ready)",
+        author: "marvibun",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/cb0690a6891d4d528dc1a6b49702dbd3",
+        usedFor:
+          "The Bantu knots hairstyle, refitted to our heads, the atlas greyed so hair color tints it (art/doll/blender/refit_hair.py).",
+      },
+      {
+        title: "Hijab 1",
+        author: "witmerad",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/6e176f7f54e2429d939db26e90d03396",
+        usedFor:
+          "The closet's hijab, refitted to our heads; the hair color tints the cloth (art/doll/blender/refit_hair.py).",
+      },
+      {
+        title: "Sikh Turban",
+        author: "harsh4756",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/30cddcf08c2e4f0fbdc19eb3ced5ed75",
+        usedFor:
+          "The closet's turban, refitted to our heads; the hair color tints the cloth (art/doll/blender/refit_hair.py).",
+      },
+      {
+        title: "Stylised Pixie Haircut",
+        author: "DLM96",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/247375418ba645a3ab98e62737a47e24",
+        usedFor:
+          "The Pixie hairstyle, refitted to our heads and combed with our strand texture (art/doll/blender/refit_hair.py).",
+      },
+      {
+        title: "Female Hair Ponytail",
+        author: "AlexM777",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/bb4d9bb056d34391b5a9aec8210c38c7",
+        usedFor:
+          "The Low pony hairstyle, refitted to our heads by the head it was made on and combed with our strand texture (art/doll/blender/refit_hair.py).",
+      },
+      {
+        title: "Curly Hair 1 (Beatrice)",
+        author: "continuumreed",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/89ed2c07a0d9418d9d6b231bedf2772a",
+        usedFor:
+          "The Shoulder curls hairstyle, refitted to our heads by its hair cap (art/doll/blender/refit_hair.py).",
+      },
+      {
+        title: "Pocolov Hair 17",
+        author: "pocolov",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/605ea5ffc77845cd8b5ffd32b6ef9e77",
+        usedFor:
+          "The Mermaid waves hairstyle: hair cards fitted to our heads by the head they were made on, the atlas greyed so hair color tints it (art/doll/blender/refit_hair.py).",
       },
       {
         title: "Elephant",
