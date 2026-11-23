@@ -466,12 +466,12 @@ export const CREDITS: readonly {
           "Adrienne, Island Princess, That 80s Babe, Grump and Braid Bun as the Side-swept long, Rapunzel, Long waves, Slick back and Braided top knot hairstyles, fitted to our heads as MakeHuman proxies (art/doll/blender/doll_hair.py).",
       },
       {
-        title: "Hair 17 (from miccall's Female hairs)",
+        title: "Hair 17 and 18 (after miccall)",
         author: "culturalibre, after miccall",
         license: "CC-BY 4.0",
         url: "https://static.makehumancommunity.org/assets/assetpacks/hair03.html",
         usedFor:
-          "The Layered waves hairstyle, fitted to our heads as a MakeHuman proxy (art/doll/blender/doll_hair.py).",
+          "The Layered waves and Fringed lob hairstyles, fitted to our heads as MakeHuman proxies (art/doll/blender/doll_hair.py).",
       },
       {
         title: "Realistic Car Pack",

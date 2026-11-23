@@ -175,11 +175,10 @@ echo "MPFB2 Mixamo rig in $OUT/rigs"
 # Hair, clothes and shoe proxies from MakeHuman's CC0 system asset pack
 # (280 MB zip; only the folders proxies.py uses are kept).
 PACK="$(dirname "$0")/.cache/mhassets"
-# (bob02 joined later: a cache without it extracts again)
-if [ ! -d "$PACK/hair/bob02" ]; then
+if [ ! -d "$PACK/hair/long01" ]; then
   tmp="$(mktemp -d)"
   curl -fsSL https://files.makehumancommunity.org/asset_packs/makehuman_system_assets/makehuman_system_assets_cc0.zip -o "$tmp/cc0.zip"
-  unzip -q -o "$tmp/cc0.zip" '*hair/afro01/*' '*hair/bob01/*' '*hair/bob02/*' '*hair/braid01/*' \
+  unzip -q -o "$tmp/cc0.zip" '*hair/afro01/*' '*hair/bob01/*' '*hair/braid01/*' \
     '*hair/long01/*' '*hair/ponytail01/*' '*clothes/shoes06/*' \
     '*clothes/female_sportsuit01/*' -d "$PACK"
   rm -r "$tmp"
@@ -208,7 +207,7 @@ if [ ! -f "$PACK/hair/.community-2" ]; then
     'hair/elvs_island_princess_hair/*' 'hair/elvs_that_80s_babe_hair/*' 'hair/elvs_grump_hair/*' \
     'hair/elvs_braid_bun/*' -d "$PACK"
   curl -fsSL https://files.makehumancommunity.org/asset_packs/hair03/hair03_ccby.zip -o "$tmp/hair03.zip"
-  unzip -q -o "$tmp/hair03.zip" 'hair/culturalibre_hair_17/*' -d "$PACK"
+  unzip -q -o "$tmp/hair03.zip" 'hair/culturalibre_hair_17/*' 'hair/culturalibre_hair_18/*' -d "$PACK"
   rm -r "$tmp"
   touch "$PACK/hair/.community-2"
 fi

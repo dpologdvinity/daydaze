@@ -25,7 +25,6 @@ PROXY = {
     "swept": "hair/short04/short04.mhclo",
     "textured": "hair/short01/short01.mhclo",
     "fringe": "hair/short03/short03.mhclo",
-    "side-fringe": "hair/bob02/bob02.mhclo",
 }
 # style id -> MakeHuman community hair (fetch_makehuman.sh), made for the
 # MakeHuman base mesh, so it sits on our head with a natural hairline where
@@ -62,13 +61,14 @@ COMMUNITY = {
     "top-knot": "elvs_braid_bun",
     # culturalibre after miccall, CC-BY
     "layered-long": "culturalibre_hair_17",
+    "side-fringe": "culturalibre_hair_18",
 }
 PROXY |= {style: f"hair/{name}/{name}.mhclo" for style, name in COMMUNITY.items()}
 # decimate ratios for proxies far denser than the rest: the beaded cornrows
 # are 41k triangles as authored, eight times the hair around them
 RATIO = {"cornrows": 0.25, "top-knot": 0.4, "layered-long": 0.6, "slick-back": 0.65}
 # texture contrast caps (proxy_hair) below the community default
-CONTRAST = {"pigtails": 0.12, "fishtail": 0.12, "side-fringe": 0.15}
+CONTRAST = {"pigtails": 0.12, "fishtail": 0.12}
 
 
 def diffuse(path):
@@ -628,8 +628,7 @@ def proxy_hair(ctx, style):
     path = PROXY.get(style, f"hair/{style}/{style}.mhclo")
     # community textures range from near-black to two-tone: cap their
     # contrast so a tint doesn't break into dark and bright patches (the
-    # braids' crowns are painted in broad highlight bands, and the silver
-    # bob in pale streaks: flatter still)
+    # braids' crowns are painted in broad highlight bands: flatter still)
     contrast = CONTRAST.get(style, 0.35 if style in COMMUNITY or style not in PROXY else None)
     img = proxies.detail_texture(diffuse(path), 1024, contrast=contrast)
     mat = proxies.textured(f"hair_{style}", img, alpha=True)

@@ -96,7 +96,7 @@ export const HAIR_STYLES = [
   { id: "lob", label: "Curled-under bob" },
   { id: "blunt-bob", label: "Blunt bob" },
   { id: "sidebob", label: "Inverted bob" },
-  { id: "side-fringe", label: "Side-fringe bob" },
+  { id: "side-fringe", label: "Fringed lob" },
   { id: "messy-bun", label: "Sleek bun" },
   // and the short cuts and a mohawk
   { id: "quiff", label: "Quiff" },
