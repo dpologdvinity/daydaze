@@ -56,9 +56,17 @@ function pick<T>(list: readonly T[], r: number): T {
 const STREET_OUTFITS = ["jeans", "shorts", "blouse", "flares", "mini"] as const;
 // sculpted styles are cheapest to draw; strand styles add the variety
 const STREET_HAIR = HAIR_STYLES.filter((h) =>
-  ["waves", "ponytail", "bob", "buns", "afro", "braids", "mid-wavy"].includes(
-    h.id,
-  ),
+  [
+    "waves",
+    "ponytail",
+    "bob",
+    "buns",
+    "afro",
+    "braids",
+    "mid-wavy",
+    "knotless",
+    "goddess",
+  ].includes(h.id),
 );
 
 /** About one pedestrian per 40 m of sidewalk, on every long strip. */

@@ -383,7 +383,7 @@ export const CREDITS: readonly {
         license: "CC-BY 4.0",
         url: "https://sketchfab.com/3d-models/none-41f1709e39e24a3fafdbcd2c2aac72a1",
         usedFor:
-          "Hair-card styles side part, tousled, mop, pompadour, mohawk, spiky crop and layered waves, refitted to our heads, the atlas greyed so hair color tints it (art/doll/blender/pack_hair.py).",
+          "Hair-card styles side part, mop, pompadour, mohawk and spiky crop, refitted to our heads, the atlas greyed so hair color tints it (art/doll/blender/pack_hair.py).",
       },
       {
         title: "Hair Pack (part 2)",
@@ -391,15 +391,7 @@ export const CREDITS: readonly {
         license: "CC-BY 4.0",
         url: "https://sketchfab.com/3d-models/none-06a783e91c194e12a296402453476824",
         usedFor:
-          "Hair-card styles rapunzel, long waves, sleek side-swept, high ponytail, twin tails, blunt bob, side fringe and messy shag, refitted to our heads (art/doll/blender/pack_hair.py).",
-      },
-      {
-        title: "Hair Pack (part 3)",
-        author: "rendysix",
-        license: "CC-BY 4.0",
-        url: "https://sketchfab.com/3d-models/none-9dc99938fab341e29b34354004e230b6",
-        usedFor:
-          "Hair-card styles fishtail braid, crew cut and slick back, refitted to our heads (art/doll/blender/pack_hair.py).",
+          "Hair-card styles high ponytail, twin tails and messy shag, refitted to our heads (art/doll/blender/pack_hair.py).",
       },
       {
         title: "Bob hair (three cuts)",
@@ -432,6 +424,54 @@ export const CREDITS: readonly {
         url: "https://static.makehumancommunity.org/assets/assetpacks/hair02.html",
         usedFor:
           "Daisy, Katherine, Ashley May, Hazel, Micky Afro, Braided Rows and Maxwell as the Glossy waves, Long and sleek, Shoulder waves, Shoulder-length, Puffs, Cornrows and Quiff hairstyles, fitted to our heads as MakeHuman proxies (art/doll/blender/doll_hair.py).",
+      },
+      {
+        title: "Blunt Bob",
+        author: "MargaretToigo",
+        license: "CC0 1.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/hair01.html",
+        usedFor:
+          "The Blunt bob hairstyle, fitted to our heads as a MakeHuman proxy (art/doll/blender/doll_hair.py).",
+      },
+      {
+        title: "French Braid Variation",
+        author: "Elvaerwyn",
+        license: "CC0 1.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/hair01.html",
+        usedFor:
+          "The French braid hairstyle, fitted to our heads as a MakeHuman proxy (art/doll/blender/doll_hair.py).",
+      },
+      {
+        title: "BobCut Hair",
+        author: "littleright",
+        license: "CC0 1.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/hair01.html",
+        usedFor:
+          "The Shaggy bob hairstyle, fitted to our heads as a MakeHuman proxy (art/doll/blender/doll_hair.py).",
+      },
+      {
+        title: "Hair 02 and Hair 05",
+        author: "culturalibre",
+        license: "CC0 1.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/hair01.html",
+        usedFor:
+          "The Crew cut and Tousled hairstyles (Hair 05 is after swift502's CC0 model on BlendSwap), fitted to our heads as MakeHuman proxies (art/doll/blender/doll_hair.py).",
+      },
+      {
+        title: "Five hairstyles (hair02 pack)",
+        author: "Elvaerwyn",
+        license: "CC-BY 4.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/hair02.html",
+        usedFor:
+          "Adrienne, Island Princess, That 80s Babe, Grump and Braid Bun as the Side-swept long, Rapunzel, Long waves, Slick back and Braided top knot hairstyles, fitted to our heads as MakeHuman proxies (art/doll/blender/doll_hair.py).",
+      },
+      {
+        title: "Hair 17 and 18 (after miccall)",
+        author: "culturalibre, after miccall",
+        license: "CC-BY 4.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/hair03.html",
+        usedFor:
+          "The Layered waves and Fringed lob hairstyles, fitted to our heads as MakeHuman proxies (art/doll/blender/doll_hair.py).",
       },
       {
         title: "Realistic Car Pack",
