@@ -44,6 +44,8 @@ DOWNLOADS = os.environ.get("HAIR_DOWNLOADS", os.path.join(HERE, "..", "..", ".."
 #   head:   name fragment of the model's own head mesh, to fit by (and drop)
 #   ref:    name fragments of kept meshes to fit by instead (a scalp cap
 #           that hugs the skull it was made on)
+#   fill:   the ref shell loses its texture and becomes a matte cap in the
+#           hair color, so skin never shows between sparse curl cards
 #   keep:   name fragments of the meshes to keep (default: every other mesh)
 #   drop:   name fragments of meshes or materials to leave out (a mannequin's
 #           eyes, a stray backdrop card)
@@ -63,7 +65,46 @@ DOWNLOADS = os.environ.get("HAIR_DOWNLOADS", os.path.join(HERE, "..", "..", ".."
 #           shaded by the geometry alone
 #   strands: an untextured sculpt gets the strand image combed from the crown
 #           (strands.comb_cap), so it reads as hair rather than plastic
-STYLES: dict[str, dict] = {}
+STYLES: dict[str, dict] = {
+    # summer66, CC-BY: high twin tails, swung back to fall behind the shoulders
+    "twin-tails": {
+        "src": "hair-sketchfab-summer66-twintail-19984",
+        "head": "retopo",
+        "keep": ["hair_l", "hair_tail"],
+        "bend": (0.1, 30),
+        "strands": True,
+    },
+    # GreedyEngine, CC-BY: two buns with loose face-framing strands
+    "buns": {"src": "hair-sketchfab-greedyengine-hair-double-buns-f77fc", "head": "Mesh_Mannequin", "keep": ["Hair"]},
+    # marvibun, CC-BY
+    "bantu-knots": {"src": "hair-sketchfab-marvibun-bantu-knot-hairstyle-game-read-cb069", "grow": 1.1},
+    # witmerad, CC-BY: a full hijab with a face opening; cloth, so no texture
+    "hijab": {"src": "hair-sketchfab-witmerad-hijab-1-6e176", "grow": 1.34, "flat": True, "tris": 12000},
+    # harsh4756, CC-BY
+    "turban": {"src": "hair-sketchfab-harsh4756-sikh-turban-30cdd", "grow": 1.3, "flat": True},
+    # DLM96, CC-BY: an untextured sculpt, combed with the strand image
+    "pixie": {"src": "hair-sketchfab-dlm96-stylised-pixie-haircut-24737", "strands": True},
+    # AlexM777, CC-BY: slicked back to a low tail that swings
+    "low-pony": {
+        "src": "hair-sketchfab-alexm777-female-hair-ponytail-bb4d9",
+        "head": "Head_",
+        "strands": True,
+        "swing": (0.0, 0.07, -0.05),
+    },
+    # continuumreed, CC-BY: shoulder-length spiral curls, fitted by their cap
+    "mid-curly": {"src": "hair-sketchfab-continuumreed-curly-hair-1-beatrice-characte-89ed2", "ref": ["HairCap"]},
+    # MotionStudioArts, CC-BY: dense curl cards, thinned to the budget and
+    # fitted by the scalp shell they were made on, which fills in under them
+    "coils": {"src": "hair-sketchfab-motionstudioarts-brown-kink-hairs-08-0a77b", "ref": ["Object_5"], "fill": True, "thin": 0.6},
+    "messy-curls": {
+        "src": "hair-sketchfab-motionstudioarts-black-short-curl-hairs-06-0f77a",
+        "ref": ["Object_4"],
+        "fill": True,
+        "thin": 0.6,
+    },
+    # pocolov, CC-BY: long waves with a fringe
+    "mermaid": {"src": "hair-sketchfab-pocolov-pocolov-hair-17-605ea", "head": "Head_"},
+}
 
 TRI_BUDGET = int(os.environ.get("HAIR_TRIS", "8000"))
 ALPHA_LEVELS = 15
@@ -271,7 +312,8 @@ def _matches(name, fragments):
 def load(src, opts):
     """The model's kept meshes as world-space pieces, and its head's points.
 
-    Each piece is (verts, faces, per-loop uvs or None, image or None, is_cap);
+    Each piece is (verts, faces, per-loop uvs or None, image or None, is_cap,
+    is_ref);
     the import is removed again afterwards."""
     path = os.path.join(DOWNLOADS, src, opts.get("file", os.path.join("extracted", "scene.gltf")))
     before = set(bpy.data.objects)
@@ -308,11 +350,14 @@ def load(src, opts):
                 continue
             faces = [list(p.vertices) for p in polys]
             loops = None if uvs is None else np.concatenate([uvs[p.loop_start : p.loop_start + p.loop_total] for p in polys])
-            img = None if opts.get("flat") or opts.get("strands") else _image_of(mat)
+            is_ref = _matches(ob.name, opts.get("ref", ()))
+            img = None if opts.get("flat") or opts.get("strands") or (is_ref and opts.get("fill")) else _image_of(mat)
             cap = _matches(ob.name, opts.get("cap", ())) or (mat is not None and _matches(mat.name, opts.get("cap", ())))
-            pieces.append((co, faces, loops, img, cap))
+            cap = cap or (is_ref and bool(opts.get("fill")))
+            # a ref shell (the scalp it was made on) is kept whole, never thinned
+            pieces.append((co, faces, loops, img, cap, is_ref))
     images = {id(p[3]): _pixels(p[3]) for p in pieces if p[3] is not None}
-    pieces = [(co, f, uv, None if img is None else images[id(img)], cap) for co, f, uv, img, cap in pieces]
+    pieces = [(co, f, uv, None if img is None else images[id(img)], cap, whole) for co, f, uv, img, cap, whole in pieces]
     for ob in added:
         bpy.data.objects.remove(ob)
     fit_by = head or ref
@@ -380,7 +425,7 @@ def build_style(ctx, sid, opts):
     materials, mat_of = [], {}
     verts, faces, uvs, mat_idx, base = [], [], [], [], 0
     offset = 0
-    for n, (co, fs, uv, px, cap) in enumerate(pieces):
+    for n, (co, fs, uv, px, cap, whole) in enumerate(pieces):
         count = len(co)
         fitted = co_all[offset : offset + count]
         offset += count
@@ -398,7 +443,7 @@ def build_style(ctx, sid, opts):
                 m.node_tree.nodes["Principled BSDF"].inputs["Roughness"].default_value = 1.0
             mat_of[key] = len(materials)
             materials.append(m)
-        if opts.get("thin") and not cap:
+        if opts.get("thin") and not cap and not whole:
             idx = thin(fs, 1 - opts["thin"], n)
             loop_starts = np.cumsum([0] + [len(f) for f in fs])
             if uv is not None:

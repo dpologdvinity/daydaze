@@ -32,14 +32,16 @@ No code under `src/` loads the 2D folders; they feed `compositor.html` and the [
 | `build_doll.py` | Main build: body, rig, face UV projection, shape keys. |
 | `proxies.py` | Fits MakeHuman `.mhclo` hair and clothes to the shaped body. |
 | `doll_outfits.py` | Garments, swimsuits and shoes, with tuck shape keys. |
-| `doll_hair.py`, `strands.py`, `pack_hair.py` | Hair styles: strand cards, sculpted styles, and refits from downloaded hair packs. |
+| `doll_hair.py`, `strands.py`, `pack_hair.py` | Hair styles: MakeHuman community hair, strand cards, sculpted styles, and refits from downloaded hair packs. |
+| `refit_hair.py`, `fetch_hair.sh` | Downloaded Sketchfab hair (CC-BY), fetched and refitted to the doll's head. |
+| `hair_sheet.py` | Dev-only contact sheets of hair styles on both heads and three skin tones. |
 | `skin_detail.py`, `fetch_skin.py` | Bake CC0 skin detail into the face atlas. |
 | `prosthesis.py`, `wheelchair.py` | Fit the downloaded prosthetic leg and wheelchair to the doll. |
 | `mocap.py`, `mocap_clips.py` | Bake clips onto the rig; `mocap_clips.py` is the clip tables. |
 | `thumbs.py` | Renders the character creator's picture tiles into `public/closet/`. |
 | `preview.py`, `anim_strip.py`, `source_strip.py`, `walk_strip.py`, `walk_check.py` | Dev-only renders and gait checks. |
 | `skin_check.py`, `test_outfits.py`, `test_skin_detail.py` | Dev-only self-checks, run in Blender. |
-| `src/` | Downloaded source model (`hijab-sketchfab.glb`). |
+| `src/` | Rendered braid, twist and curl strips the built hair styles share. |
 
 ## Subfolders
 
