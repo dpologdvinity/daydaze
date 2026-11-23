@@ -312,6 +312,7 @@ the Ultimate Nature Pack) and compressed by `scripts/import-forest.sh` into
 - Base mesh, morph targets, default skeleton: MakeHuman `makehuman/data`, commit `a8bc2d54` (CC0 1.0, `LICENSE.ASSETS.md`), fetched by `art/doll/blender/fetch_makehuman.sh`.
 - Hair, clothes, shoes and far-LOD body proxies: MakeHuman system asset pack (`makehuman_system_assets_cc0.zip`, CC0 1.0), same script.
 - Community hair (bobs, braids, buns, long and short cuts, puffs, cornrows): MakeHuman `hair01` (CC0 1.0), `hair02` and `hair03` (CC-BY 4.0) asset packs, same script.
+- Built hair (braids and fades, `art/doll/blender/hair_built.py`): no third-party geometry. The braid, twist and curl textures are rendered by `art/doll/blender/braid_strip.py` from the procedural hair node groups bundled with Blender (`Braid`, `Curl` and `Frizz Hair Curves`).
 - Skeleton `rig.mixamo.json` (52 bones named `mixamorig:*`) and skin weights `weights.mixamo.json`: MPFB2 `src/mpfb/data/rigs/standard/`, commit `6ff1eb35`. CC0 1.0: MPFB's rigs and weights are assets (its `LICENSE.md`, section C); only its program code is GPL, and none of it is used.
 
 `art/doll/blender/build_doll.py` shapes the mesh, fits the MPFB2 skeleton to

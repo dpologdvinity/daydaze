@@ -25,6 +25,8 @@ HAIR = [
     "mermaid", "shag", "coils", "low-pony", "pigtails", "top-knot",
     "locs", "box-braids", "cornrows", "bantu-knots", "twist-out", "puffs",
     "hijab", "head-wrap", "turban",
+    # hair_built.py's braids (#396)
+    "knotless", "knotless-waist", "jumbo-box", "goddess", "braid-pony",
 ]
 PRESETS = {
     "eye": ["almond", "round", "hooded", "upturned", "downturned"],

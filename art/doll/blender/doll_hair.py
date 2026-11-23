@@ -13,6 +13,7 @@ import numpy as np
 from mathutils import Euler, Vector
 from mathutils.kdtree import KDTree
 
+import hair_built
 import pack_hair
 import proxies
 import refit_hair
@@ -650,7 +651,13 @@ def build(ctx):
         solid = bpy.data.materials.new("hair_solid")
         make = {"hijab": hijab, "head-wrap": head_wrap, "turban": turban}
         make |= {n: (lambda ctx, _, n=n: refit_hair.build_style(ctx, n, refit_hair.STYLES[n])) for n in refit_hair.STYLES}
-        out = [make[n](ctx, solid) if n in make else proxy_hair(ctx, n) for n in only]
+        # the styles built in hair_built.py (#396) make their own materials
+        for n in only:
+            if n in hair_built.STYLE_IDS:
+                # the near model and its hand-made far one
+                out += hair_built.style(ctx, n)
+            else:
+                out.append(make[n](ctx, solid) if n in make else proxy_hair(ctx, n))
         # the same root-to-tip shading the full build gives every style
         for ob in out:
             shade_strands(ctx, ob)
@@ -664,6 +671,7 @@ def build(ctx):
         bantu_knots(ctx, solid),
     ]
     out += [hijab(ctx, solid), head_wrap(ctx, solid), turban(ctx, solid)]
+    out += hair_built.build(ctx)
     strand = strands.material("hair_strands")
     combed = strands.cap_material("hair_cap")
     # strand-card styles: length (m), wave (slow S), curl (tight spirals),
