@@ -15,6 +15,7 @@ export const prizeDesk = createStore<{
   shown: Prize | null;
   challenge: number;
   xp: number;
+  note: string;
   bests: Bests;
   at: number;
 }>({
@@ -24,6 +25,9 @@ export const prizeDesk = createStore<{
   challenge: 0,
   /** XP the finished game added to its ladder. */
   xp: 0,
+  /** What the server did with the score (the daily XP left, or why it
+   * didn't count); empty for a guest or before it answers. */
+  note: "",
   /** The saved personal bests, mirrored here for the scoreboards. */
   bests: NO_BESTS,
   /** performance.now() when `shown` was posted. */
@@ -40,6 +44,7 @@ export function postPrize(prize: Prize, challenge: number, xp = 0) {
     shown: prize,
     challenge,
     xp,
+    note: "",
     at: performance.now(),
   });
 }

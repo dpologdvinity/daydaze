@@ -161,6 +161,18 @@ default (it is a URL flag today; the comment there says so).
   the pattern (it kills itself, exit 144); kill by PID from `ss -ltnp`.
   8787 is taken by `caveman-proxy`; run wrangler on 8797 with
   `WORKER_PORT=8797` and `--var ALLOWED_ORIGINS:http://localhost:5199`.
+- The doll's body tuck keys (`tuck_<garment>`) are plain additive shape keys,
+  so everything worn at once adds up. Leg skin is drawn in toward its axis by
+  a share per layer (`LEG_SHARE` in `art/doll/blender/doll_outfits.py`) and the
+  shares of layers that can cover the same skin must stay under 1: past the
+  axis the skin is flung out the far side of the leg (red patches on the shins
+  of white boots over jeans, #395). A new layer takes a share from the budget.
+- A loose garment worn over another (a jacket over cargos, tights under a
+  skirt) must clear it everywhere, in the bind pose and the figure keys:
+  check with a signed distance between the two meshes, not by eye in one pose.
+  Garments cut from the helper shells are cut where a field crosses its limit
+  (`clip` in `doll_outfits.py`), never by dropping whole faces, which leaves a
+  sawtooth edge.
 - Editing `src/` while Playwright runs reloads its pages (HMR): don't.
 - Headless WebGL is SwiftShader on the CPU; a failure under load is usually a
   flake: rerun alone before debugging. Timing games (paintball) flake most.

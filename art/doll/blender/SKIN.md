@@ -35,6 +35,10 @@ geometry or fitted parts. Run it once for each `DOLL_SEX` after bake-only change
 occlusion shape keys. Use `ONLY='body($|-)' bash scripts/optimize-doll.sh` when
 only the bodies changed. A full hair rebuild additionally needs the existing
 Universal Base Characters source pack at the location in `doll_hair.py`.
+`OUTFIT_PARTS='puffer|corset'` (with `OUTFIT_ONLY=1`) builds just the shoes and
+the garments whose names match, in about a minute: look at the raw files in
+`.cache/out`, but never ship that body, which holds only their tuck keys.
+A garment-only change is checked in Blender with `test_outfits.py`.
 
 Sources and license: https://static.makehumancommunity.org/assets/assetpacks/skins01.html
 (CC0 1.0). Credits are mirrored in `docs/assets.md` and `src/game/credits.ts`.
