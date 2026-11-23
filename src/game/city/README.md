@@ -1,0 +1,98 @@
+# src/game/city
+
+The open city as pure data and rules: the road graph and buildings, the shared clock, daylight, traffic, pedestrians and the scheduled events. `src/client/city/` streams and draws what these modules plan; none of it imports React or three.js.
+
+## Files
+
+### Layout, cells and rendering plans
+
+| File                                                                                                          | What it does                                                                                                                                                                |
+| ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `layout.ts` (+ `layout.test.ts`)                                                                              | The Downtown and Nightlife Row slice: road graph, sidewalks, building footprints and street props. Axis-aligned static data that the renderer and the walk rules both read. |
+| `buildingTypes.ts`                                                                                            | Building styles, neighborhood ids and surface geometry types.                                                                                                               |
+| `cells.ts` (+ `cells.test.ts`)                                                                                | The city cut into 64 m cells that the renderer streams near the player.                                                                                                     |
+| `plan.ts` (+ `plan.test.ts`)                                                                                  | What the renderer draws for the cells in view: every kind becomes one `InstancedMesh`, so a plan is a handful of draw calls.                                                |
+| `instanceTypes.ts`                                                                                            | Instanced mesh kinds and instance placement types.                                                                                                                          |
+| `budget.ts` (+ `budget.test.ts`)                                                                              | What the low tier's streamed city costs to draw from where the player stands.                                                                                               |
+| `tuning.ts`                                                                                                   | Values tuned by ear and by profile; nothing else hardcodes them.                                                                                                            |
+| `nearPlane.ts` (+ `nearPlane.test.ts`)                                                                        | The camera's near clip plane for a view a given distance from the player, to keep depth precision.                                                                          |
+| `places.ts` (+ `places.test.ts`, `venuePlaces.test.ts`)                                                       | Fast-travel spots, one sidewalk point per neighborhood, for the city map.                                                                                                   |
+| `spots.ts` (+ `spots.test.ts`)                                                                                | Named spots for the `?spot=<building-id>` flag and the screenshot tour.                                                                                                     |
+| `districtNames.ts`                                                                                            | The made-up shop names painted on the district lots, in each district's own language and style.                                                                             |
+| `dream.ts`, `dreamCosts.ts`, `dreamCosts.generated.ts`, `dreamLandmarkCosts.generated.ts` (+ `dream.test.ts`) | The "dream city" architectural vocabulary fitted to the collision footprints, and its triangle costs. The `.generated.ts` files come from `art/city/` scripts; do not edit. |
+
+### Infill, yards and ground
+
+| File                                               | What it does                                                                                                           |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `infill.ts` (+ `infill.test.ts`), `infillInput.ts` | The infill planner: finds the empty blocks and plans what fills them. The test fails when the generated file is stale. |
+| `infill.generated.ts`                              | Generated by `scripts/gen-infill.ts` from `infill.ts`. Do not edit.                                                    |
+| `yards.ts` (+ `yards.test.ts`)                     | The yards and lanes in the gaps the infill plan leaves, each with a use.                                               |
+| `ground.ts` (+ `ground.test.ts`)                   | What the ground is underfoot, for footstep sounds.                                                                     |
+| `sidewalk.ts` (+ `sidewalk.test.ts`)               | Whether a point is on a sidewalk.                                                                                      |
+| `roofs.ts` (+ `roofs.test.ts`)                     | What a flat roof is made of and what stands on it.                                                                     |
+| `wear.ts` (+ `wear.test.ts`)                       | How Main Avenue wears under the El: tire tracks and marks laid out deterministically.                                  |
+| `growth.ts` (+ `growth.test.ts`)                   | The undergrowth drawn near the player: lawns, beds and grass round street trees.                                       |
+| `treeLook.ts` (+ `treeLook.test.ts`)               | The leaf color of each street tree, with autumn turns.                                                                 |
+| `hash.ts`                                          | Stable pseudo-random picks, so a place always dresses the same way on every load.                                      |
+
+### Dressing and street furniture
+
+| File                                                     | What it does                                                                                                      |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `dressing.ts` (+ `dressing.test.ts`), `dressingTypes.ts` | Lit windows, neon signs, awnings, string lights, parked cars, queues, puddles and steam, deterministic.           |
+| `detail.ts`                                              | The detail pass: balconies, fire escapes, rooftop kit, shopfront displays, graffiti, planter foliage and signals. |
+| `furniture.ts` (+ `furniture.test.ts`)                   | Street furniture drawn instanced by `src/client/city/CityFurniture.tsx`: per-kind draw rules and spots.           |
+| `streetPieces.ts` (+ `streetPieces.test.ts`)             | Where the Downtown City MegaKit's street pieces go.                                                               |
+| `streetLoop.ts`                                          | Shared arc-length street loops: rounded corners, dwell and pooled poses.                                          |
+| `queues.ts` (+ `queues.test.ts`)                         | The people waiting outside the clubs and the bouncers.                                                            |
+| `seasonSpots.ts` (+ `seasonSpots.test.ts`)               | Where the seasonal dressings go: fairy lights, the Plaza tree, lantern strings.                                   |
+| `season.ts` (+ `season.test.ts`)                         | Seasons and holidays from the city's New York calendar date.                                                      |
+
+### Time and daylight
+
+| File                                   | What it does                                                           |
+| -------------------------------------- | ---------------------------------------------------------------------- |
+| `cityClock.ts` (+ `cityClock.test.ts`) | The one shared clock: every player sees New York time.                 |
+| `daylight.ts` (+ `daylight.test.ts`)   | Day and night on that clock: sky, fog, light colors and neon by night. |
+
+### People, traffic and transit
+
+| File                                                        | What it does                                                                                         |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `pedestrians.ts` (+ `pedestrians.test.ts`)                  | People walking the sidewalks, as a pure function of time so every client agrees.                     |
+| `chatGroups.ts` (+ `chatGroups.test.ts`)                    | Standing conversations on the sidewalks.                                                             |
+| `traffic.ts` (+ `traffic.test.ts`)                          | City traffic: cars follow lanes, brake for cars, lights and people, and turn at junctions.           |
+| `trafficSync.ts` (+ `trafficSync.test.ts`)                  | Shared traffic: a reference fleet every client steps on the shared clock.                            |
+| `drive.ts` (+ `drive.test.ts`)                              | Driving your own car on the streets: curbs and traffic are solid.                                    |
+| `carHits.ts` (+ `carHits.test.ts`)                          | Braking distance and what a car does to a person at a given speed; always a get-up, never an injury. |
+| `streetKnocks.ts` (+ `streetKnocks.test.ts`)                | What a car does to people on the street: a knocked walker falls, gets up and walks on.               |
+| `taxi.ts` (+ `taxi.test.ts`)                                | Taxi fares and routes over the road graph.                                                           |
+| `gasStations.ts` (+ `gasStations.test.ts`)                  | Gas stations: pump layout, tank range and fill-up prices.                                            |
+| `el.ts` (+ `el.test.ts`)                                    | The El: an elevated train on a fixed timetable that depends only on the clock.                       |
+| `transit.ts` (+ `transit.test.ts`, `transitAssets.test.ts`) | Line 1, a deterministic street loop with timetable and poses on one arc-length path.                 |
+| `vendors.ts` (+ `vendors.test.ts`)                          | Street-food stops, menus and walk-up rules.                                                          |
+
+### Places and scheduled events
+
+| File                                                                  | What it does                                                                                                               |
+| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `park.ts` (+ `park.test.ts`)                                          | Uptown's Park and Gardens: paths, fountain, pond, lawns.                                                                   |
+| `bandShell.ts` (+ `bandShell.test.ts`), `bandTunes.ts`, `blankets.ts` | The park band shell, what the band plays (public-domain tunes arranged as timed events) and the picnic blankets and seats. |
+| `parkWildlife.ts` (+ `parkWildlife.test.ts`)                          | Deer, a fox, rabbits and a doe on the park lawns.                                                                          |
+| `dogPark.ts` (+ `dogPark.test.ts`)                                    | Uptown's dog park: fence, gate, agility pieces and off-leash dogs.                                                         |
+| `farmersMarket.ts` (+ `farmersMarket.test.ts`)                        | The weekend farmers market stalls.                                                                                         |
+| `nightMarket.ts` (+ `nightMarket.test.ts`)                            | The Chinatown and Koreatown night market square.                                                                           |
+| `boardwalk.ts`                                                        | Beachside's boardwalk: storefronts, plank deck, benches and lamps.                                                         |
+| `fireworks.ts` (+ `fireworks.test.ts`)                                | The hourly fireworks show over Beachside, deterministic on the clock.                                                      |
+| `parade.ts` (+ `parade.test.ts`)                                      | The Pride parade along the boardwalk, deterministic on the clock.                                                          |
+| `chase.ts` (+ `chase.test.ts`)                                        | A police chase through downtown, one per 40-minute slot.                                                                   |
+| `heist.ts` (+ `heist.test.ts`)                                        | A heist at City Trust: robbers, a getaway car and squad cars.                                                              |
+| `dealer.ts` (+ `dealer.test.ts`)                                      | The street dealer's corner spot. Sells weed to 18+ players only; see Notes.                                                |
+| `smokingSpots.ts` (+ `smokingSpots.test.ts`)                          | Outdoor and rooftop smoking spots after dark, behind `ADULT_OK`.                                                           |
+
+## Notes
+
+- `dealer.ts` and `smokingSpots.ts` are adult-tier: reach them only behind `ADULT_OK` (`src/client/adult.ts`, rules in [`../age.ts`](../age.ts)).
+- Everything shared across players (traffic, the El, fireworks, the parade, pedestrians) is a pure function of the shared clock, so nothing needs to be stored or synced beyond the time.
+- Generated files (`*.generated.ts`) are rewritten by scripts; edit their source instead.
