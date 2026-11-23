@@ -4,7 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { DEALER_AT } from "../src/game/city/dealer.ts";
 import { GAS_STATIONS, counterOf } from "../src/game/city/gasStations.ts";
 import { BUS_STOPS } from "../src/game/city/transit.ts";
-import { coatCheckBank } from "../src/game/dialogue/coat-check.ts";
+import { piercerBank } from "../src/game/dialogue/piercer.ts";
 import { fillPlaceholders } from "../src/game/dialogue/pick.ts";
 import { SONGS } from "../src/game/karaokeSongs.ts";
 import { dockAction } from "./dock.ts";
@@ -5284,7 +5284,7 @@ test("an NPC who knows you greets you as someone back from afar, by name, and re
   });
   await page.goto(`${LOW}&room=piercing`);
   // her greeting is one of her "back after a long time" lines, with the name filled in
-  const returning = (coatCheckBank["greeting-returning"] ?? []).map((entry) =>
+  const returning = (piercerBank["greeting-returning"] ?? []).map((entry) =>
     fillPlaceholders(typeof entry === "string" ? entry : entry.text, {
       name: "Dana",
     }),
