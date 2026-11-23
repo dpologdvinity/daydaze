@@ -3148,6 +3148,17 @@ const SHOTS: {
       `styles=${styles}&colors=${HAIR_COLORS}&${BEHIND}`,
     ),
   ]),
+  // the styles refitted from Sketchfab hair (refit_hair.py STYLES), front and back
+  ...[
+    "twin-tails,buns,bantu-knots,hijab,turban",
+    "pixie,low-pony,mid-curly,mermaid",
+  ].flatMap((styles, i) => [
+    lineupShot(`hair-refit-${i + 1}`, `styles=${styles}&colors=${HAIR_COLORS}`),
+    lineupShot(
+      `hair-refit-${i + 1}-back`,
+      `styles=${styles}&colors=${HAIR_COLORS}&${BEHIND}`,
+    ),
+  ]),
   // close-ups of the speckle cases: men's and women's dark hair from behind,
   // and the Quiff's forehead in several colors
   lineupShot(
