@@ -193,6 +193,7 @@ for sex in sexes:
         for o in added:
             bpy.data.objects.remove(o)
         print("rendered", name, sex, flush=True)
-        # each sheet as soon as its last head is done
-        if sex == sexes[-1] and rows[name]:
-            save(name, rows[name])
+
+for name, strips in rows.items():
+    if strips:
+        save(name, strips)

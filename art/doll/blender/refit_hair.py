@@ -402,7 +402,7 @@ def build_style(ctx, sid, opts):
             idx = thin(fs, 1 - opts["thin"], n)
             loop_starts = np.cumsum([0] + [len(f) for f in fs])
             if uv is not None:
-                uv = np.concatenate([uv[loop_starts[i] : loop_starts[i + 1]] for i in idx])
+                uv = np.concatenate([uv[loop_starts[i] : loop_starts[i + 1]] for i in idx]) if idx else uv[:0]
             fs = [fs[i] for i in idx]
         verts.append(fitted)
         faces += [[i + base for i in f] for f in fs]
@@ -436,6 +436,8 @@ def build_style(ctx, sid, opts):
     bpy.ops.mesh.delete_loose(use_verts=True, use_edges=True, use_faces=False)
     bpy.ops.object.mode_set(mode="OBJECT")
     tris = sum(len(p.vertices) - 2 for p in ob.data.polygons)
+    if not tris:
+        raise ValueError(f"hair {sid}: thinning left no faces")
     ratio = min(1.0, opts.get("tris", TRI_BUDGET) / tris)
     print(f"hair {sid}: {tris} tris, ratio {ratio:.2f}")
     if ratio < 1.0:
