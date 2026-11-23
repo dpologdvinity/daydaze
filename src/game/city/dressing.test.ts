@@ -14,7 +14,8 @@ import {
   STREET_DRESS,
   type Buckets,
 } from "./dressing.ts";
-import { BUILDINGS, CITY_SURFACES, PROPS } from "./layout.ts";
+import { BUILDINGS, CITY_AREA, CITY_SURFACES, PROPS } from "./layout.ts";
+import { isBlocked } from "../area.ts";
 import { emptyInstances, type Instance, type Kind } from "./plan.ts";
 
 type Box = { x0: number; z0: number; x1: number; z1: number };
@@ -61,6 +62,19 @@ test("garden accents distinguish three destinations without occupying roads or d
       assert.ok(
         Math.hypot(spot.x - x, spot.z - z) > building.door.radius + 1,
         `${spot.kind} blocks ${building.id}`,
+      );
+    }
+  }
+  for (const arch of accents.filter(
+    (spot) => spot.kind === "ivy-arch" || spot.kind === "rose-arch",
+  )) {
+    for (let distance = -6; distance <= 6; distance++) {
+      assert.ok(
+        !isBlocked(CITY_AREA, [
+          arch.x + Math.sin(arch.yaw) * distance,
+          arch.z + Math.cos(arch.yaw) * distance,
+        ]),
+        `${arch.kind} leads into a collider`,
       );
     }
   }
