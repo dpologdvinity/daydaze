@@ -50,21 +50,23 @@ for src in "${files[@]}"; do
   # hair also loses face-feature keys and target normals (pruneMorphs.ts)
   flag=""
   case "$name" in hair-*) flag="--hair" ;; esac
-  # a hand-made far model (hair_built.py's "@lo" parts): pruned like the
-  # automatic ones (no head-shape keys, a 128 px atlas), never simplified
-  if [[ "$name" == hair-*-lo ]]; then
-    node --experimental-strip-types "$(dirname "$0")/pruneMorphs.ts" "$src" "$f" --hair
-    node --experimental-strip-types "$(dirname "$0")/pruneMorphs.ts" "$f" "$LO/$name-bare.glb" --bare
-    npx -y @gltf-transform/cli@4.5.1 optimize "$LO/$name-bare.glb" "$OUT/$name.glb" "${OPTS[@]}" --texture-size 128
-    continue
-  fi
+  # a hand-made far model (hair_built.py's "@lo" parts) is handled with its
+  # near model, below, so selecting the near one alone (ONLY='hair-x$')
+  # still rebuilds it
+  if [[ "$name" == hair-*-lo ]]; then continue; fi
   node --experimental-strip-types "$(dirname "$0")/pruneMorphs.ts" "$src" "$f" $flag
   near_opts=("${OPTS[@]}")
   npx -y @gltf-transform/cli@4.5.1 optimize "$f" "$OUT/$name.glb" "${near_opts[@]}"
   # worn parts get a low-poly twin for far-off dolls: the same vertices'
   # attributes (skin weights, shape keys) on about a fifth of the triangles
-  # (unless a hand-made one came with it)
-  [ -f "$IN/$name-lo.glb" ] && continue
+  # (or the hand-made one that came with it: pruned like the automatic
+  # ones, no head-shape keys and a 128 px atlas, never simplified)
+  if [ -f "$IN/$name-lo.glb" ]; then
+    node --experimental-strip-types "$(dirname "$0")/pruneMorphs.ts" "$IN/$name-lo.glb" "$LO/$name-lo-pruned.glb" --hair
+    node --experimental-strip-types "$(dirname "$0")/pruneMorphs.ts" "$LO/$name-lo-pruned.glb" "$LO/$name-lo-bare.glb" --bare
+    npx -y @gltf-transform/cli@4.5.1 optimize "$LO/$name-lo-bare.glb" "$OUT/$name-lo.glb" "${OPTS[@]}" --texture-size 128
+    continue
+  fi
   case "$name" in
     hair-* | top-* | bottom-* | dress-* | outer-* | legwear-* | shoes-* | swim-*)
       # hair cards only reach a fifth of their triangles at a looser error
