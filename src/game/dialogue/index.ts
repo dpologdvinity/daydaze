@@ -15,6 +15,7 @@ import { streetFoodVendorBank } from "./street-food-vendor.ts";
 import { cashierBank } from "./cashier.ts";
 import { stylistBank } from "./stylist.ts";
 import { nailTechBank } from "./nail-tech.ts";
+import { piercerBank } from "./piercer.ts";
 import { lifeguardBank } from "./lifeguard.ts";
 import { snackCashierBank } from "./snack-cashier.ts";
 import { swimmerBank } from "./swimmer.ts";
@@ -56,6 +57,7 @@ export const LINE_BANKS: Record<DialogueRole, RoleBank> = {
   "street-food-vendor": streetFoodVendorBank,
   stylist: stylistBank,
   "nail-tech": nailTechBank,
+  piercer: piercerBank,
   lifeguard: lifeguardBank,
   "snack-cashier": snackCashierBank,
   swimmer: swimmerBank,

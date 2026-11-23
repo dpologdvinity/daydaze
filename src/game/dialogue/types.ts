@@ -19,6 +19,7 @@ export const ROLE_IDS = [
   "cashier",
   "stylist",
   "nail-tech",
+  "piercer",
   "lifeguard",
   "snack-cashier",
   "street-food-vendor",
