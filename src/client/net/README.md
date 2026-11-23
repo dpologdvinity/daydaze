@@ -1,6 +1,6 @@
 # src/client/net
 
-The online UI and its client-side stores. `online.ts` and `session.ts` hold the single `OnlineSession` from `src/net/client/` (the framework-free browser client); everything else here reaches the server through it. Rules and codecs for each feature are in `src/game/` and `src/net/`. Online play is opt-in (`?online=1`); without it the game stays single-player.
+The online UI and its client-side stores. `online.ts` and `session.ts` hold the single `OnlineSession` from `src/net/client/` (the framework-free browser client); everything else here reaches the server through it. Rules and codecs for each feature are in `src/game/` and `src/net/`. Online play is opt-in: `?online=1`, or a valid invite link (`?join=room.copy`), switches it on; without either the game stays single-player.
 
 ## Files
 

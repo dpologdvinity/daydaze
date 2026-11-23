@@ -24,4 +24,4 @@ The 2D minigames that open over the 3D world in a modal dialog. Each game is a f
 
 - Every game folder holds `<Game>.tsx` and `<Game>.css` (the view) and `engine.ts` (+ `engine.test.ts`); the engines are pure, with no DOM or audio.
 - Last Call picks its content by age tier (`src/game/age.ts`); keep adult content behind `ADULT_OK`.
-- Payouts are graded through `src/game/wallet.ts`.
+- Payouts: `src/game/wallet.ts` maps a grade to its base coins. For Gem Glam and the other prize-desk games, `src/game/prizes.ts` turns the score into that grade (`gradeFor`) and adds the personal-best bonus.

@@ -7,8 +7,8 @@ Everything that makes the Daydaze doll, the game's avatar. The shipped 3D doll i
 All steps run from the repo root. `blender/` writes raw GLBs into the git-ignored `blender/.cache/out/`; the optimize step compresses them into `public/models/doll/`.
 
 1. `bash art/doll/blender/fetch_makehuman.sh` downloads the pinned MakeHuman base mesh and morph targets. `python3 art/doll/blender/fetch_skin.py` fetches the CC0 skin texture (see [`blender/SKIN.md`](blender/SKIN.md)).
-2. `blender --background --factory-startup --python-exit-code 1 --python art/doll/blender/build_doll.py` builds the body, rig (Mixamo's 52-bone skeleton), hair, outfits and shoes. Add `DOLL_SEX=male` for the `-m` files.
-3. `art/doll/blender/mocap.py` bakes Mixamo and Universal Animation Library clips onto the doll's skeleton and writes the clip catalog `src/game/dance/mocap.ts` (and `mocapSources.ts`). Mixamo FBX files live in the git-ignored `mixamo/` at the repo root.
+2. `blender --background --factory-startup --python-exit-code 1 --python art/doll/blender/build_doll.py` builds the body, rig (Mixamo's 52-bone skeleton), hair, outfits and shoes. Add `DOLL_SEX=male` for the `-m` files. Some hairstyles come from Quaternius's CC0 [Universal Base Characters](https://quaternius.com/packs/universalbasecharacters.html) pack, which `blender/doll_hair.py` reads from `/tmp/ubc/`: download it and unpack it there first.
+3. `art/doll/blender/mocap.py` bakes Mixamo and Universal Animation Library clips onto the doll's skeleton and writes the clip catalog `src/game/dance/mocap.ts` (and `mocapSources.ts`). Run it again with `DOLL_SEX=male` for the male clip files (`anims*-m.glb`). Mixamo FBX files live in the git-ignored `mixamo/` at the repo root.
 4. `bash scripts/optimize-doll.sh` compresses everything into `public/models/doll/`, with a simplified `-lo` twin of each worn part.
 
 ## Folders

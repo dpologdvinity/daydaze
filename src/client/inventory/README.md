@@ -1,6 +1,6 @@
 # src/client/inventory
 
-The weed counters and the carried pouch. Everything here is 18+: the panels gate themselves on `ADULT_OK` (`../adult.ts`, rules in `src/game/age.ts`) and show nothing at 13+. Prices and strains come from `src/game/`.
+The weed counters and the carried pouch. Everything here is 18+: the panels check the active age tier themselves (`WeedShopPanel` calls `allows(activeTier(), "drugs")`, `PouchPanel` calls `usable(activeTier(), ...)` from `src/game/inventory.ts`; `activeTier` and `allows` are in `src/game/age.ts`) and show nothing at 13+. Prices and strains come from `src/game/`.
 
 ## Files
 
