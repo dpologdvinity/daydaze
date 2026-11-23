@@ -70,6 +70,12 @@ export const HAIR_STYLES = [
   { id: "bantu-knots", label: "Bantu knots" },
   { id: "twist-out", label: "Twist-out" },
   { id: "puffs", label: "Puffs" },
+  // braids built in Blender (art/doll/blender/hair_built.py, #396)
+  { id: "knotless", label: "Small knotless braids" },
+  { id: "knotless-waist", label: "Waist-length knotless" },
+  { id: "jumbo-box", label: "Jumbo box braids" },
+  { id: "goddess", label: "Goddess braids" },
+  { id: "braid-pony", label: "Braided high pony" },
   // head coverings: the hair color tints the cloth
   { id: "hijab", label: "Hijab" },
   { id: "head-wrap", label: "Head wrap" },
