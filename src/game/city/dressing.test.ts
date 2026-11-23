@@ -45,6 +45,9 @@ test("garden accents distinguish three destinations without occupying roads or d
     ),
   );
   assert.ok(new Set(accents.map((spot) => spot.kind)).size >= 3);
+  assert.ok(accents.filter((spot) => spot.x < 0).length >= 3);
+  assert.ok(accents.filter((spot) => spot.x > 20 && spot.x < 40).length >= 3);
+  assert.ok(accents.filter((spot) => spot.x > 280).length >= 3);
   for (const spot of accents) {
     assert.ok(!inRoad(spot.x, spot.z), `${spot.kind} on road`);
     for (const building of BUILDINGS) {

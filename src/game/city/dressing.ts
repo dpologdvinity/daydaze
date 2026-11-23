@@ -1045,8 +1045,18 @@ function furnitureSpots(): FurnitureSpot[] {
 export const FURNITURE: readonly FurnitureSpot[] = [
   ...furnitureSpots(),
   ...YARD_FURNITURE,
-  { kind: "ivy-arch", x: -39, z: 47, yaw: 0, scale: 0.5 },
-  { kind: "rose-arch", x: 25, z: 47, yaw: 0, scale: 1 },
-  { kind: "flower-box", x: 284, z: -244, y: 3, yaw: 0, scale: 1 },
-  { kind: "hanging-planter", x: 296, z: -244, y: 4, yaw: 0, scale: 1 },
+  // Set the arches back in the plaza, clear of its sidewalk and the
+  // landmarks' projecting steps. Boxes frame each passage at ground level.
+  { kind: "ivy-arch", x: -30, z: 42, yaw: 0, scale: 0.5 },
+  { kind: "flower-box", x: -32.5, z: 42, yaw: 0, scale: 1 },
+  { kind: "flower-box", x: -27.5, z: 42, yaw: 0, scale: 1 },
+  { kind: "rose-arch", x: 32, z: 42, yaw: 0, scale: 1 },
+  { kind: "hanging-planter", x: 32, z: 42, y: 2.35, yaw: 0, scale: 0.65 },
+  { kind: "flower-box", x: 30, z: 42, yaw: 0, scale: 1 },
+  { kind: "flower-box", x: 34, z: 42, yaw: 0, scale: 1 },
+  // A row of window boxes dresses the florist without covering its doorway.
+  { kind: "flower-box", x: 284, z: -244, y: 1.5, yaw: 0, scale: 1 },
+  { kind: "flower-box", x: 286, z: -244, y: 1.5, yaw: 0, scale: 1 },
+  { kind: "flower-box", x: 294, z: -244, y: 1.5, yaw: 0, scale: 1 },
+  { kind: "flower-box", x: 296, z: -244, y: 1.5, yaw: 0, scale: 1 },
 ];
