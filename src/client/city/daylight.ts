@@ -14,6 +14,7 @@ import {
   parseTimeFlag,
   type Daylight,
 } from "../../game/city/daylight.ts";
+import { locationSearch } from "../flags.ts";
 
 /** A live pin from the dev panel (development only), and when it was set. */
 let devHour: number | null = null;
@@ -38,13 +39,13 @@ const cityDate = () => new Date(wallSeconds() * 1000);
 
 /** The hour now: the dev pin, else `?time=`, else shared city time. */
 export const cityHour = (date?: Date) =>
-  devHour ?? parseTimeFlag(location.search) ?? hourOf(date ?? cityDate());
+  devHour ?? parseTimeFlag(locationSearch()) ?? hourOf(date ?? cityDate());
 
 function readWeather() {
   const date = cityDate();
   const hour = cityHour(date);
   return {
-    rain: parseWeatherFlag(location.search) ?? rainAt(cityTime(date), hour),
+    rain: parseWeatherFlag(locationSearch()) ?? rainAt(cityTime(date), hour),
     quiet: quietAt(hour),
   };
 }

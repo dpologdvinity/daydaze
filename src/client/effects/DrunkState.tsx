@@ -13,6 +13,7 @@ import {
 import {
   dryMouthHint,
   highParams,
+  panicHint,
   strongest,
   SUBSTANCES,
   type Phase,
@@ -57,6 +58,7 @@ export function DrunkState({
   const acidHeard = useRef(0);
   const highHeard = useRef(0);
   const weedPhase = useRef<Phase | null>(null);
+  const weedLevel = useRef(0);
 
   useEffect(() => onBuzzChange(() => invalidate()), [invalidate]);
   useEffect(() => onHighChange(() => invalidate()), [invalidate]);
@@ -107,6 +109,9 @@ export function DrunkState({
     const hint = dryMouthHint(weedPhase.current, meters);
     weedPhase.current = meters.high.phase;
     if (hint) showToast(hint);
+    const panic = panicHint(weedLevel.current, meters);
+    weedLevel.current = meters.high.level;
+    if (panic) showToast(panic);
     const lifted = highParams(meters, intensityFactor(intensity), calm);
     liveHigh.glow = lifted.glow;
     liveHigh.hue = lifted.hue;
