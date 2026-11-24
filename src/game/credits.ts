@@ -1613,6 +1613,13 @@ export const CREDITS: readonly {
         usedFor: "Surface textures for the city, venues and furnishings.",
       },
       {
+        title: "Graffiti Set 001",
+        author: "ambientCG",
+        license: "CC0 1.0",
+        url: "https://ambientcg.com/view?id=GraffitiSet001",
+        usedFor: "Painted wall decal at Bassline on the Realistic tier.",
+      },
+      {
         title: "Patinated city copper",
         author: "ambientCG",
         license: "CC0 1.0",

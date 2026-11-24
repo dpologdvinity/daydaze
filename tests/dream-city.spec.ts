@@ -92,8 +92,14 @@ test("dream city: Realistic loads scanned occlusion and daytime glass reflection
   page,
 }) => {
   const errors: string[] = [];
+  test.setTimeout(180_000);
   const detail = new Set<string>();
-  const paths = ["/textures/asphalt_02/ao.jpg", "/hdri/wide_street_01.hdr"];
+  const paths = [
+    "/textures/asphalt_02/ao.jpg",
+    "/textures/stone_tile_wall/ao.jpg",
+    "/textures/graffiti/tag.png",
+    "/hdri/wide_street_01.hdr",
+  ];
   page.on("response", (response) => {
     const path = new URL(response.url()).pathname;
     if (response.ok() && paths.includes(path)) detail.add(path);

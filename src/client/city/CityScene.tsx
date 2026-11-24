@@ -304,9 +304,10 @@ export function CityScene({
         intensity={0}
       />
       {/* high tier at night: a real night street lights skin, cars and glass */}
-      {tier !== "low" && day.neon > 0.5 && (
+      {((tier !== "low" && day.neon > 0.5) ||
+        (tier === "ultra" && reflections)) && (
         <Suspense fallback={null}>
-          <CityHdri />
+          <CityHdri night={day.neon > 0.5} />
         </Suspense>
       )}
       {tier === "ultra" && (
