@@ -78,7 +78,8 @@ jobs:
       - if: steps.scope.outputs.run == 'true'
         run: npm ci
       - if: steps.scope.outputs.run == 'true'
-        run: npx playwright install --with-deps chromium
+        timeout-minutes: 5
+        run: npx playwright install chromium
       # Headless WebGL runs on SwiftShader, so these are slow but real. With a
       # selection, a shard can be left with no tests; that's a pass.
       - if: steps.scope.outputs.run == 'true'
@@ -132,7 +133,8 @@ jobs:
       - if: steps.scope.outputs.run == 'true'
         run: npm ci
       - if: steps.scope.outputs.run == 'true'
-        run: npx playwright install --with-deps chromium
+        timeout-minutes: 5
+        run: npx playwright install chromium
       - if: steps.scope.outputs.run == 'true'
         run: npm run test:e2e
       - uses: actions/upload-artifact@v7

@@ -64,8 +64,13 @@ export type Flags = {
 /** Room copies are numbered 1 to 99 (OnlineSession's MAX_COPY). */
 const MAX_COPY = 99;
 
+/** Safe access to location.search; returns empty string in Node or environments without location. */
+export function locationSearch(): string {
+  return typeof location !== "undefined" ? location.search : "";
+}
+
 /** Reads the flags from a location.search string. */
-export function readFlags(search: string): Flags {
+export function readFlags(search: string = locationSearch()): Flags {
   const q = new URLSearchParams(search);
   const quality = q.get("quality");
   const room = q.get("room");

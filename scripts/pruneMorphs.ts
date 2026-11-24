@@ -38,7 +38,14 @@ interface Accessor {
 }
 
 interface Primitive {
+  attributes?: Record<string, number>;
   targets?: Record<string, number>[];
+}
+
+interface Node {
+  mesh?: number;
+  scale?: number[];
+  translation?: number[];
 }
 
 interface Mesh {
@@ -51,6 +58,7 @@ interface Mesh {
 export interface Gltf {
   accessors: Accessor[];
   meshes: Mesh[];
+  nodes?: Node[];
 }
 
 const JSON_CHUNK = 0x4e4f534a;

@@ -6,14 +6,14 @@ GitHub Actions for the repo: the merge gate (CI and browser suites), the auto-me
 
 ### Merge gate and tests
 
-| File                 | Trigger                                                 | What it does                                                                                                                                                                              |
-| -------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ci.yml`             | push and PR to `main`; `v*` tags                        | Install, lint (ESLint, Ruff, markdownlint, knip, headers, dependency rules, spelling), format and type checks, unit tests with coverage, the build; drafts a GitHub release on a `v*` tag |
-| `playwright.yml`     | push and PR to `main`; manual                           | The browser suites (`browser` shards and `minigames`). Only tests a PR's changes reach run (`scripts/select-tests.ts`); `main` runs everything and records the test map                   |
-| `verify.yml`         | push to `feat/**`, `fix/**`, `perf/**`, `ci/**`; manual | `npm run verify` on GitHub's runners for work branches                                                                                                                                    |
-| `browser-test.yml`   | manual (`grep` input)                                   | Runs Playwright client tests matching a title fragment on any branch                                                                                                                      |
-| `nightly-online.yml` | daily cron; manual                                      | The two-player online suite (`npm run test:e2e:online`) against a local Worker; opens or updates an issue on failure                                                                      |
-| `node-min.yml`       | push and PR to `main`                                   | Unit tests on the minimum Node version in `package.json` `engines`; not a required check                                                                                                  |
+| File                 | Trigger                          | What it does                                                                                                                                                                              |
+| -------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ci.yml`             | push and PR to `main`; `v*` tags | Install, lint (ESLint, Ruff, markdownlint, knip, headers, dependency rules, spelling), format and type checks, unit tests with coverage, the build; drafts a GitHub release on a `v*` tag |
+| `playwright.yml`     | push and PR to `main`; manual    | The browser suites (`browser` shards and `minigames`). Only tests a PR's changes reach run (`scripts/select-tests.ts`); `main` runs everything and records the test map                   |
+| `verify.yml`         | push to `ci/**`; manual          | `npm run verify` on GitHub's runners for work branches                                                                                                                                    |
+| `browser-test.yml`   | manual (`grep` input)            | Runs Playwright client tests matching a title fragment on any branch                                                                                                                      |
+| `nightly-online.yml` | daily cron; manual               | The two-player online suite (`npm run test:e2e:online`) against a local Worker; opens or updates an issue on failure                                                                      |
+| `node-min.yml`       | push and PR to `main`            | Unit tests on the minimum Node version in `package.json` `engines`; not a required check                                                                                                  |
 
 ### Auto-merge line
 

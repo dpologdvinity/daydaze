@@ -11,6 +11,7 @@ import { useReducedMotion } from "../../motion.ts";
 import { placePlayer, type Player } from "../../world/PlayerController.tsx";
 import { cameraHold } from "../../world/cameraHold.ts";
 import { FLIGHT, fishing, leave, tick } from "../marina/session.ts";
+import { useGameClip } from "./game3d/gameClip.ts";
 import { hdr } from "./materials.ts";
 
 const BOARDWALK_SPOT = [PIER.x, PIER.end - 1.5] as const;
@@ -38,6 +39,13 @@ export function Fishing({
   const WATER_Y = spot === "marina" ? -0.5 : -0.05;
   const calm = useReducedMotion();
   const state = fishing.use();
+  const clip =
+    state.phase === "off" || state.phase === "over" || state.spot !== spot
+      ? null
+      : state.phase === "flying" || state.phase === "result"
+        ? "fishing-cast"
+        : "fishing-idle";
+  useGameClip("fishing", clip);
   const camera = useThree((st) => st.camera);
   const bobber = useRef<THREE.Mesh>(null);
   const eye = useMemo(() => new THREE.Vector3(), []);

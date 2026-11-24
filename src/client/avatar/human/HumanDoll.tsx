@@ -1403,12 +1403,14 @@ export function HumanDoll({
   // garments' in_<shoe> keys, doll_outfits.py into_shoes)
   const shoe = shoesOf(look);
   const shod = swim ? null : shoe;
+  const hasLegwear = !swim && Boolean(wearOf(look).legwear);
   const shapeKeys = useMemo(
     () => [
       ...dollShapeKeys(face, shape),
       ...SHOES.map(({ id }) => [`in_${id}`, id === shod ? 1 : 0] as const),
+      ["no_socks", hasLegwear ? 1 : 0] as const,
     ],
-    [face, shape, shod],
+    [face, shape, shod, hasLegwear],
   );
   const shapedFor = useRef<THREE.Mesh[] | null>(null);
   const shapedWith = useRef<typeof shapeKeys | null>(null);

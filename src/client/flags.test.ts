@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { spotFor } from "../game/city/spots.ts";
-import { bootTier, inviteLink, readFlags } from "./flags.ts";
+import { bootTier, inviteLink, locationSearch, readFlags } from "./flags.ts";
 
 const saveWith = (quality: string) =>
   JSON.stringify({ version: 1, settings: { quality } });
@@ -117,4 +117,20 @@ test("?heistend= parses caught or escape, falls back to null", () => {
   assert.equal(readFlags("?heistend=escape").heistend, "escape");
   assert.equal(readFlags("?heistend=other").heistend, null);
   assert.equal(readFlags("").heistend, null);
+});
+
+test("locationSearch returns empty string in Node environment without location", () => {
+  assert.equal(typeof location, "undefined");
+  assert.equal(locationSearch(), "");
+});
+
+test("readFlags defaults to locationSearch() and returns default flags in Node", () => {
+  assert.equal(typeof location, "undefined");
+  const flags = readFlags();
+  assert.equal(flags.quality, null);
+  assert.equal(flags.still, false);
+  assert.equal(flags.debug, false);
+  assert.equal(flags.room, null);
+  assert.equal(flags.adult, false);
+  assert.equal(flags.join, null);
 });

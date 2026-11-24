@@ -12,6 +12,7 @@
 // are the dev lineup page's (lineupShot below) and take the same tokens.
 import { appendFileSync, writeFileSync } from "node:fs";
 import { chromium, expect, type Page } from "@playwright/test";
+import { completeBaristaShift } from "../tests/barista.ts";
 import { DEFAULT_LOOK } from "../src/game/look.ts";
 import { createDefaultSave, serializeSave } from "../src/game/save.ts";
 import { dockAction } from "../tests/dock.ts";
@@ -33,6 +34,12 @@ declare global {
     daydazeReact: (id: string) => void;
     /** In the city (src/client/city/Traffic.tsx). */
     daydazeStepOut: (ahead: number, dry?: boolean) => boolean;
+    /** In the city (src/client/city/CarHits.tsx). */
+    daydazeKnockWalker: (
+      speed: number,
+      pinCam?: boolean,
+      dry?: boolean,
+    ) => number | boolean;
   }
 }
 
@@ -1129,6 +1136,44 @@ const SHOTS: {
     150,
     60,
   ),
+  // your car knocking a walker down: the hit, her fall and get-up, her line for
+  // the driver and bystanders stopping to look (game/city/streetKnocks.ts);
+  // the camera pinned on the scene and events at a twentieth of speed
+  actionStrip(
+    "walker-hit",
+    "room=city&view=room&quality=low&debug=1&time=12:00&timescale=0.05",
+    async (page) => {
+      await page.waitForTimeout(40_000);
+      // warm the moves pack up, so the fall is not missed while it loads
+      await page.evaluate(() => window.daydazeReact("stumble"));
+      await page.waitForTimeout(110_000);
+      // before recording starts, a walker near her to knock down,
+      // pinning the camera on the hit spot
+      await page.waitForFunction(
+        () => window.daydazeKnockWalker(9, true, true) === true,
+        null,
+        {
+          timeout: 120_000,
+          polling: 2_000,
+        },
+      );
+    },
+    async (page) => {
+      await page.waitForFunction(
+        () => {
+          const res = window.daydazeKnockWalker(9, true);
+          return typeof res === "number" && res >= 0;
+        },
+        null,
+        {
+          timeout: 120_000,
+          polling: 2_000,
+        },
+      );
+    },
+    150,
+    60,
+  ),
   // the player's own emotes, full body: a whisper and a laugh
   ...(["Whisper", "Laughing"] as const).map((emote) =>
     actionStrip(
@@ -1643,8 +1688,7 @@ const SHOTS: {
       await panel
         .getByRole("button", { name: "Start a shift" })
         .click({ timeout: 150_000 });
-      for (let i = 0; i < 8; i++)
-        await panel.getByRole("button", { name: "Hand it over" }).click();
+      await completeBaristaShift(panel);
       await expect(panel).toContainText("Promoted to Cafe");
     },
   },
@@ -2245,6 +2289,18 @@ const SHOTS: {
     act: furnitureReady,
   },
   // the avenue sidewalk with its street furniture (src/client/city/CityFurniture.tsx)
+  ...(
+    [
+      ["garden-square-day", "-37,42", "-40,3,42,-30,2,42", "12:00"],
+      ["garden-square-night", "-37,42", "-40,3,42,-30,2,42", "21:00"],
+      ["garden-hotel-day", "25,42", "22,3,42,32,2,42", "12:00"],
+      ["garden-hotel-night", "25,42", "22,3,42,32,2,42", "21:00"],
+    ] as const
+  ).map(([name, at, cam, time]) => ({
+    name,
+    query: `room=city&quality=low&at=${at}&cam=${cam}&time=${time}`,
+    act: furnitureReady,
+  })),
   {
     name: "city-sidewalk",
     query: "room=city&view=full&time=12:00&at=-36,9.5",
@@ -2579,6 +2635,17 @@ const SHOTS: {
     act: furnitureReady,
   },
   {
+    name: "city-boardwalk-rain",
+    query:
+      "room=city&view=room&time=15:00&at=40,283&cam=-10,2.2,284,90,1.8,283.5&weather=rain",
+    act: furnitureReady,
+  },
+  {
+    name: "city-neon-rain",
+    query: "room=city&view=full&time=04:00&at=-36,9.5&weather=rain",
+    act: cityReady,
+  },
+  {
     // the game menu open over the city: everything not needed this moment
     name: "city-menu",
     query: "room=city&view=full",
@@ -2589,6 +2656,409 @@ const SHOTS: {
         { timeout: 300_000 },
       );
       await page.getByRole("button", { name: "Menu", exact: true }).click();
+    },
+  },
+  {
+    // progression ladders open in the game menu, with ranks earned and title picked
+    name: "menu-ladders",
+    query: "room=city&view=full",
+    act: async (page) => {
+      await page.evaluate(() => {
+        const key = "daydaze-save-v1";
+        const parsed: unknown = JSON.parse(localStorage.getItem(key) ?? "{}");
+        const save: Record<string, unknown> =
+          typeof parsed === "object" && parsed !== null
+            ? Object.fromEntries(Object.entries(parsed))
+            : {};
+        localStorage.setItem(
+          key,
+          JSON.stringify({
+            ...save,
+            progression: {
+              version: 1,
+              xp: { street: 1200, fame: 500, hustle: 300 },
+              title: "street:2",
+              events: {},
+            },
+          }),
+        );
+      });
+      await page.reload();
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.frames) >= 6,
+        null,
+        { timeout: 300_000 },
+      );
+      await page.getByRole("button", { name: "Menu", exact: true }).click();
+      await page.locator("details[data-ladder='street'] summary").click();
+      await expect(
+        page.locator("details[data-ladder='street']"),
+      ).toHaveAttribute("open", "");
+    },
+  },
+  {
+    // street rank-up celebration moment when first-visit XP crosses rank threshold
+    name: "rank-up",
+    query: "room=karaoke",
+    act: async (page) => {
+      await page.addInitScript(() => {
+        const native = window.setTimeout.bind(window);
+        const slowBubble = (
+          handler: TimerHandler,
+          ms?: number,
+          ...args: unknown[]
+        ) => native(handler, ms === 6000 ? 600_000 : ms, ...args);
+        Reflect.set(window, "setTimeout", slowBubble);
+      });
+      await page.evaluate(() => {
+        const key = "daydaze-save-v1";
+        const parsed: unknown = JSON.parse(localStorage.getItem(key) ?? "{}");
+        const save: Record<string, unknown> =
+          typeof parsed === "object" && parsed !== null
+            ? Object.fromEntries(Object.entries(parsed))
+            : {};
+        localStorage.setItem(
+          key,
+          JSON.stringify({
+            ...save,
+            visited: ["city"],
+            progression: {
+              version: 1,
+              xp: { street: 240, fame: 0, hustle: 0 },
+              title: null,
+              events: {},
+            },
+          }),
+        );
+      });
+      await page.reload();
+      await expect(page.locator(".rank-moment")).toBeVisible({
+        timeout: 120_000,
+      });
+      await expect(page.locator(".rank-moment")).toContainText("Corner kid");
+    },
+  },
+  {
+    // rank-up celebration moment under reduced motion
+    name: "rank-up-reduced",
+    query: "room=karaoke",
+    act: async (page) => {
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await page.addInitScript(() => {
+        const native = window.setTimeout.bind(window);
+        const slowBubble = (
+          handler: TimerHandler,
+          ms?: number,
+          ...args: unknown[]
+        ) => native(handler, ms === 6000 ? 600_000 : ms, ...args);
+        Reflect.set(window, "setTimeout", slowBubble);
+      });
+      await page.evaluate(() => {
+        const key = "daydaze-save-v1";
+        const parsed: unknown = JSON.parse(localStorage.getItem(key) ?? "{}");
+        const save: Record<string, unknown> =
+          typeof parsed === "object" && parsed !== null
+            ? Object.fromEntries(Object.entries(parsed))
+            : {};
+        localStorage.setItem(
+          key,
+          JSON.stringify({
+            ...save,
+            visited: ["city"],
+            progression: {
+              version: 1,
+              xp: { street: 240, fame: 0, hustle: 0 },
+              title: null,
+              events: {},
+            },
+          }),
+        );
+      });
+      await page.reload();
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await expect(page.locator(".rank-moment")).toBeVisible({
+        timeout: 120_000,
+      });
+      await expect(page.locator(".rank-moment")).toContainText("Corner kid");
+    },
+  },
+  {
+    // finished scored game prize card with grade and earned XP
+    name: "prize-card",
+    query: "room=city&view=full&prizehold=1",
+    act: async (page) => {
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.frames) >= 6,
+        null,
+        { timeout: 300_000 },
+      );
+      await page.evaluate(
+        "import('/src/client/ui/prizeDesk.ts').then((m) => m.award('bowling', 190))",
+      );
+      await expect(page.locator(".prize-card")).toBeVisible({
+        timeout: 120_000,
+      });
+      await expect(page.locator(".prize-card .prize-xp")).toBeVisible();
+    },
+  },
+  {
+    // shop counter open with stock, prices, buy and shoplift options
+    name: "shop-panel",
+    query: "room=city",
+    act: async (page) => {
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.frames) >= 6,
+        null,
+        { timeout: 300_000 },
+      );
+      await page.evaluate(
+        "import('/src/client/ui/shopRequest.ts').then((m) => m.openShop('thrift', 'Thrift Temple'))",
+      );
+      await expect(
+        page.getByRole("dialog", { name: "Thrift Temple" }),
+      ).toBeVisible({ timeout: 120_000 });
+    },
+  },
+  {
+    // closet mirror open to face tab with brow and makeup controls
+    name: "closet-mirror",
+    query: "room=city&view=full",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      await page
+        .getByRole("button", { name: "Dressing room", exact: true })
+        .click();
+      await expect(page.locator(".mirror-panel")).toBeVisible({
+        timeout: 120_000,
+      });
+      await expect(page.getByRole("tab", { name: "Face" })).toHaveAttribute(
+        "aria-selected",
+        "true",
+      );
+    },
+  },
+  {
+    // city map dialog showing streets, neighborhoods and event calendar
+    name: "city-map",
+    query: "room=city",
+    act: async (page) => {
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.frames) >= 6,
+        null,
+        { timeout: 300_000 },
+      );
+      await page.evaluate(
+        "import('/src/client/ui/cityMapRequest.ts').then((m) => m.requestCityMap())",
+      );
+      await expect(page.getByRole("dialog", { name: "City map" })).toBeVisible({
+        timeout: 120_000,
+      });
+    },
+  },
+  {
+    // weekly club events schedule inside the city map dialog
+    name: "event-calendar",
+    query: "room=city",
+    act: async (page) => {
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.frames) >= 6,
+        null,
+        { timeout: 300_000 },
+      );
+      await page.evaluate(
+        "import('/src/client/ui/cityMapRequest.ts').then((m) => m.requestCityMap())",
+      );
+      await expect(page.getByRole("dialog", { name: "City map" })).toBeVisible({
+        timeout: 120_000,
+      });
+      const cal = page.locator(".city-calendar");
+      await expect(cal).toBeVisible();
+      await cal.scrollIntoViewIfNeeded();
+    },
+  },
+  {
+    // collections dialog showing photo album places and closet sets
+    name: "collections",
+    query: "room=city",
+    act: async (page) => {
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.frames) >= 6,
+        null,
+        { timeout: 300_000 },
+      );
+      await page.evaluate(
+        "import('/src/client/ui/Collections.tsx').then((m) => m.collectionsBook.set({ open: true }))",
+      );
+      await expect(
+        page.getByRole("dialog", { name: "Collections" }),
+      ).toBeVisible({ timeout: 120_000 });
+    },
+  },
+  {
+    // daily streak dialog with calendar and flame milestone ladder
+    name: "streak-panel",
+    query: "room=city",
+    act: async (page) => {
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.frames) >= 6,
+        null,
+        { timeout: 300_000 },
+      );
+      await page.evaluate(
+        "import('/src/client/ui/Streak.tsx').then((m) => m.openStreak())",
+      );
+      await expect(
+        page.getByRole("dialog", { name: "Daily streak" }),
+      ).toBeVisible({ timeout: 120_000 });
+    },
+  },
+  {
+    // graphics sheet: presets, advanced switches and live FPS readout
+    name: "graphics-menu",
+    query: "room=city&view=full",
+    act: async (page) => {
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.frames) >= 6,
+        null,
+        { timeout: 300_000 },
+      );
+      await page.getByRole("button", { name: "Menu", exact: true }).click();
+      await page.getByRole("button", { name: "Graphics", exact: true }).click();
+      await expect(
+        page.getByRole("dialog", { name: "Graphics", exact: true }),
+      ).toBeVisible({ timeout: 120_000 });
+    },
+  },
+  {
+    // online friends and account panel with room copies and strict chat filter
+    name: "friends-panel",
+    query: "room=city&view=full&online=1",
+    viewport: { width: 1280, height: 1000 },
+    before: async (page) => {
+      const json = (body: unknown) => ({
+        contentType: "application/json",
+        body: JSON.stringify(body),
+      });
+      await page.route("**/api/**", (route) => {
+        const { pathname } = new URL(route.request().url());
+        if (pathname === "/api/me")
+          return route.fulfill(
+            json({
+              id: "u_" + "a".repeat(20),
+              name: "Dusty",
+              isGuest: false,
+              isAdmin: false,
+            }),
+          );
+        if (pathname === "/api/friends")
+          return route.fulfill(
+            json({
+              incoming: [],
+              sent: [],
+              friends: [
+                {
+                  id: "u_" + "b".repeat(20),
+                  name: "Vela",
+                  room: "pulse",
+                },
+              ],
+            }),
+          );
+        return route.fulfill({ status: 404, body: "{}" });
+      });
+    },
+    act: async (page) => {
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.frames) >= 6,
+        null,
+        { timeout: 300_000 },
+      );
+      await page.getByRole("button", { name: "Menu", exact: true }).click();
+      await page.getByRole("button", { name: "Friends", exact: true }).click();
+      await expect(page.getByRole("region", { name: "Friends" })).toBeVisible({
+        timeout: 120_000,
+      });
+      await expect(page.getByRole("region", { name: "Account" })).toBeVisible();
+    },
+  },
+  {
+    // crazy eights card table against an NPC
+    name: "card-table",
+    query: "room=jail",
+    act: async (page) => {
+      await page.evaluate(() => {
+        localStorage.setItem(
+          "daydaze-save-v1",
+          JSON.stringify({ jail: { endsAt: Date.now() + 180_000 } }),
+        );
+      });
+      await page.reload();
+      await page
+        .getByRole("button", { name: "Play cards with the guard" })
+        .click();
+      await expect(page.locator(".card-table")).toBeVisible({
+        timeout: 120_000,
+      });
+    },
+  },
+  {
+    // shoplifting test panel with suspicion meter at apartment shelf
+    name: "shoplift-panel",
+    query: "room=apartment",
+    act: async (page) => {
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.frames) >= 6,
+        null,
+        { timeout: 300_000 },
+      );
+      await page.getByRole("button", { name: "Practice at the shelf" }).click();
+      await expect(page.locator(".shoplift-panel")).toBeVisible({
+        timeout: 120_000,
+      });
+    },
+  },
+  {
+    // dance picker open with styles and moves
+    name: "dance-picker",
+    query: "room=city&view=full",
+    act: async (page) => {
+      await page.waitForFunction(
+        () => Number(document.querySelector("canvas")?.dataset.frames) >= 6,
+        null,
+        { timeout: 300_000 },
+      );
+      await page.getByRole("radio", { name: "Dance", exact: true }).click();
+      await expect(
+        page.getByRole("radiogroup", { name: "Dance move" }),
+      ).toBeVisible({ timeout: 120_000 });
+    },
+  },
+  {
+    // first-visit walkthrough card
+    name: "onboarding",
+    query: "room=city",
+    act: async (page) => {
+      await page.evaluate(() => {
+        const key = "daydaze-save-v1";
+        const parsed: unknown = JSON.parse(localStorage.getItem(key) ?? "{}");
+        const save: Record<string, unknown> =
+          typeof parsed === "object" && parsed !== null
+            ? Object.fromEntries(Object.entries(parsed))
+            : {};
+        localStorage.setItem(
+          key,
+          JSON.stringify({ ...save, onboarded: false }),
+        );
+      });
+      await page.reload();
+      await expect(page.getByRole("region", { name: "Welcome" })).toBeVisible({
+        timeout: 120_000,
+      });
     },
   },
   {
@@ -3358,9 +3828,15 @@ if (process.argv[2] === "--matrix") {
     // the low tier unless the shot picks its own (quality=high)
     const tier = shot.query.includes("quality=") ? "" : "quality=low";
     // the lineup page renders its still frames on its own: no tier flag
+    // Keep city captures repeatable across calendar days.
+    const params = new URLSearchParams(shot.query);
+    const weather =
+      params.get("room") === "city" && !params.has("weather")
+        ? "&weather=clear"
+        : "";
     const url = shot.lineup
       ? `${BASE}/src/client/avatar/lineup.html?human=1&still=1&${shot.query}`
-      : `${BASE}/?${tier}${still}&${shot.query}`;
+      : `${BASE}/?${tier}${still}&${shot.query}${weather}`;
     if (shot.before) await shot.before(page);
     await page.goto(url, { timeout: 300_000 });
     if (shot.act) await shot.act(page);
@@ -3410,6 +3886,33 @@ if (process.argv[2] === "--matrix") {
       // renderer stats for the first frames: draw calls and triangles
       calls = Number(await canvas.getAttribute("data-calls"));
       triangles = Number(await canvas.getAttribute("data-triangles"));
+    }
+    if (shot.name.startsWith("closet-")) {
+      // Native lazy loading follows the drawer's scroll position. Give the
+      // visible tiles time to load before capturing the final pose.
+      await page.waitForFunction(
+        () => {
+          const drawer = document.querySelector(".dressing");
+          if (!drawer) return true;
+          const { top, bottom } = drawer.getBoundingClientRect();
+          return Array.from(
+            drawer.querySelectorAll<HTMLImageElement>(
+              '[data-tiles="garment"] img',
+            ),
+          ).every((img) => {
+            const tile = img.closest("button")?.getBoundingClientRect();
+            return (
+              !tile ||
+              tile.height === 0 ||
+              tile.bottom <= top ||
+              tile.top >= bottom ||
+              (img.complete && img.naturalWidth > 0)
+            );
+          });
+        },
+        null,
+        { timeout: 120_000 },
+      );
     }
     // a live frame loop can make the capture wait a long time on SwiftShader
     await page.screenshot({

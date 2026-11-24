@@ -3,9 +3,12 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { test } from "node:test";
+import { Vector3 } from "three";
+import { GLTFLoader, MeshoptDecoder } from "three-stdlib";
 import { readGlb } from "../../../../scripts/pruneMorphs.ts";
 import { FACE_SLIDERS, SHOES } from "../../../game/look.ts";
 import { garmentAsset, GARMENTS } from "../../../game/wardrobe.ts";
+import { isSkinnedMesh } from "../../world/guards.ts";
 
 test("both human bodies and their distance models carry every facial slider", () => {
   for (const file of ["body", "body-lo", "body-m", "body-m-lo"]) {
@@ -97,6 +100,66 @@ test("every garment ships fitted to both bodies, with its tuck key", () => {
         );
         if (tuck) assert.ok(keys.has(tuck), `body${m}${lo}: ${tuck}`);
       }
+    }
+  }
+});
+
+test("tights cover the leg down to the foot and sneakers have no_socks morph", async () => {
+  const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder());
+  const vertex = new Vector3();
+  for (const m of ["", "-m"]) {
+    for (const lo of ["", "-lo"]) {
+      const file = `legwear-tights${m}${lo}.glb`;
+      const bytes = Uint8Array.from(
+        readFileSync(
+          new URL(`../../../../public/models/doll/${file}`, import.meta.url),
+        ),
+      );
+      const { scene } = await loader.parseAsync(bytes.buffer, "");
+      scene.updateMatrixWorld(true);
+      // The inverse bind matrices carry the meshopt quantization transform.
+      let lowest = Infinity;
+      scene.traverse((object) => {
+        if (!isSkinnedMesh(object)) return;
+        const count = object.geometry.getAttribute("position").count;
+        for (let i = 0; i < count; i++) {
+          object.getVertexPosition(i, vertex);
+          object.localToWorld(vertex);
+          lowest = Math.min(lowest, vertex.y);
+        }
+      });
+      assert.ok(
+        lowest < 0.02,
+        `${file}: tights must reach foot level (got ${lowest})`,
+      );
+    }
+
+    // Sneakers have no_socks shape key that moves vertices
+    for (const lo of ["", "-lo"]) {
+      const file = `shoes-sneakers${m}${lo}.glb`;
+      const { json } = readGlb(
+        readFileSync(
+          new URL(`../../../../public/models/doll/${file}`, import.meta.url),
+        ),
+      );
+      const mesh = json.meshes[0];
+      const targets = mesh?.extras?.targetNames ?? [];
+      assert.ok(
+        targets.includes("no_socks"),
+        `${file}: must carry no_socks morph target`,
+      );
+      const targetIdx = targets.indexOf("no_socks");
+      assert.ok(
+        mesh?.primitives.some((primitive) => {
+          const position = primitive.targets?.[targetIdx]?.POSITION;
+          if (position === undefined) return false;
+          const accessor = json.accessors[position];
+          return [...(accessor.min ?? []), ...(accessor.max ?? [])].some(
+            (value) => Math.abs(value) > 0.0001,
+          );
+        }),
+        `${file}: no_socks must move vertices`,
+      );
     }
   }
 });

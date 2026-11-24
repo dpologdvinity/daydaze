@@ -63,6 +63,9 @@ export const GARMENT_STYLES: Record<GarmentId, readonly Style[]> = {
   headscarf: ["casual", "formal"],
   "hijab-wrap": ["casual", "formal"],
   "sun-visor": ["sporty"],
+  beret: ["casual", "formal"],
+  "sun-hat": ["casual"],
+  "cowboy-hat": ["casual", "street"],
 };
 
 /** The most outfits one closet keeps, and the longest name. */

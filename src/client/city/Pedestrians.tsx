@@ -17,7 +17,6 @@ import {
   PEDESTRIAN_DOLLS,
   PEDESTRIAN_DOLL_RADIUS,
 } from "../../game/city/tuning.ts";
-import { wallSeconds } from "../../game/clock.ts";
 import { streetPose, type StreetPose } from "../../game/city/streetKnocks.ts";
 import { reactionClip, type ReactionId } from "../../game/reactions.ts";
 import { useDetail } from "../world/quality.ts";
@@ -27,7 +26,7 @@ import type { Player } from "../world/PlayerController.tsx";
 import { cityHour } from "./daylight.ts";
 import { usePersonAt } from "../rooms/speedway/peopleModel.ts";
 import { FAN_LOOKS, RIDER_LOOKS, crowdUrl } from "../../game/crowd.ts";
-import { streetHits } from "./streetHits.ts";
+import { streetHits, streetSeconds } from "./streetHits.ts";
 
 /** Walker `i` at `time`: on her path, or where a car has put her. */
 function walkerAt(i: number, time: number, out: StreetPose): StreetPose {
@@ -62,7 +61,7 @@ function Walker({ index }: { index: number }) {
   );
   useFrame(() => {
     if (!g.current) return;
-    const now = walkerAt(index, wallSeconds(), pose.current);
+    const now = walkerAt(index, streetSeconds(), pose.current);
     g.current.position.set(now.x, 0, now.z);
     g.current.rotation.y = now.yaw;
     // knocked down, frozen or staring, she stands; a reaction plays once
@@ -171,7 +170,7 @@ function Cyclist({
     const i = bikers.current[slot];
     g.visible = i !== undefined;
     if (i === undefined) return;
-    pedestrianAt(PEDESTRIANS[i], wallSeconds(), pose.current);
+    pedestrianAt(PEDESTRIANS[i], streetSeconds(), pose.current);
     g.position.set(pose.current.x, 0.14, pose.current.z);
     g.rotation.y = pose.current.yaw;
     // the rider is the one this walker's number picks
@@ -214,7 +213,7 @@ function CrowdFigures({
     new Array<number>(LOOKS.length * STRIDES.length).fill(0),
   );
   useFrame(({ clock }) => {
-    const t = wallSeconds();
+    const t = streetSeconds();
     // repick on the monotonic frame clock: a device clock set back must not stall it
     if (clock.elapsedTime - last.current >= REPICK) {
       last.current = clock.elapsedTime;
@@ -293,7 +292,7 @@ export function Pedestrians({ player }: { player: Player }) {
     last.current = clock.elapsedTime;
     const next = nearestPedestrians(
       [player.pos.x, player.pos.z],
-      wallSeconds(),
+      streetSeconds(),
       drawn,
       radius,
       cityHour(),

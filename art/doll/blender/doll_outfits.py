@@ -621,12 +621,11 @@ def build(ctx, body, body_src, male):
     out.append(shell(ctx, "Bottom_bike-shorts", ["helper-tights"], [(midthigh, waist - 0.01)], 0.003, satin))
 
     # legwear, under everything: opaque tights from the waist over the feet,
-    # and knee socks
-    # and knee socks; both stop at the ankle, inside every pair of shoes.
+    # and knee socks; knee socks stop at the ankle, inside every pair of shoes.
     # They sit a hair inside the bare leg's surface (the skin under them is
     # drawn in by their tuck), so every skirt and short over them clears
     # them by a few millimeters and none shows through in specks
-    out.append(shell(ctx, "Legwear_tights", ["helper-tights"], [(h["ankle"], waist - 0.02)], LEGWEAR, cloth, arms=0.2))
+    out.append(shell(ctx, "Legwear_tights", ["helper-tights"], [(-1.0, waist - 0.02)], LEGWEAR, cloth, arms=0.2))
     out.append(shell(ctx, "Legwear_knee-socks", ["helper-tights"], [(h["ankle"], knee - 0.04)], LEGWEAR, cloth, arms=0.2))
 
     # swimsuits. The bikini's leg line dips to the crotch and rises over the
@@ -684,14 +683,14 @@ def build(ctx, body, body_src, male):
     shoe_img = proxies.detail_texture(
         "clothes/shoes06/shoes06_diffuse.png", 512, keep_colour=True
     )
-    out.append(
-        proxies.build(
-            ctx,
-            "Shoes_sneakers",
-            "clothes/shoes06/shoes06.mhclo",
-            proxies.textured("shoes_sneakers", shoe_img),
-        )
+    sneakers = proxies.build(
+        ctx,
+        "Shoes_sneakers",
+        "clothes/shoes06/shoes06.mhclo",
+        proxies.textured("shoes_sneakers", shoe_img),
     )
+    add_no_socks(sneakers)
+    out.append(sneakers)
     gloss = bpy.data.materials.new("shoe_gloss")
     out.append(platforms(ctx, "Shoes_platforms", h["ankle"] + 0.02, gloss))
     out.append(platforms(ctx, "Shoes_boots", h["knee"] - 0.06, gloss))
@@ -718,8 +717,21 @@ def build(ctx, body, body_src, male):
          footwear.garment_pose(ctx, poses[shoe.name]) if shoe.name in poses else None)
         for shoe in out if shoe.name.startswith("Shoes")
     ]
+    # Use the sneaker shell without its built-in socks when fitting legwear.
+    socks = sneakers.data.shape_keys.key_blocks["no_socks"]
+    socks.value = 1.0
+    bpy.context.view_layer.update()
+    sneaker_shell = sneakers.evaluated_get(depsgraph)
+    without_socks = (
+        "sneakers", max(v.co.z for v in sneaker_shell.data.vertices),
+        BVHTree.FromObject(sneakers, depsgraph), None,
+    )
+    socks.value = 0.0
+    bpy.context.view_layer.update()
     for ob in out:
-        if ob.name.startswith(("Bottom", "Dress", "Legwear")):
+        if ob.name.startswith("Legwear"):
+            into_shoes(ctx, ob, [without_socks if shoe[0] == "sneakers" else shoe for shoe in shoes])
+        elif ob.name.startswith(("Bottom", "Dress")):
             into_shoes(ctx, ob, shoes)
     for ob in out:
         if ob.name.startswith("Hat") or ob.name == "Legwear_sheer-tights":
@@ -732,6 +744,26 @@ def build(ctx, body, body_src, male):
 
 # the prefixes of every worn part's object name: each gets a body tuck key
 WORN = ("Top", "Bottom", "Dress", "Outer", "Legwear", "Swim", "Shoes")
+
+
+def add_no_socks(ob):
+    """Adds a 'no_socks' shape key collapsing the sneakers' default crew socks
+    down inside the shoe cavity (Z ~ 0.01), so legwear can hide them."""
+    sock_verts = set()
+    uv_layer = ob.data.uv_layers.active.data
+    for poly in ob.data.polygons:
+        for loop_idx in poly.loop_indices:
+            uv = uv_layer[loop_idx].uv
+            if uv.x >= 0.75 and uv.y <= 0.16:
+                sock_verts.add(ob.data.loops[loop_idx].vertex_index)
+    co = np.array([v.co[:] for v in ob.data.vertices])
+    for i in sock_verts:
+        foot_x = 0.13 if co[i, 0] > 0 else -0.13
+        co[i, 0] = foot_x + (co[i, 0] - foot_x) * 0.5
+        co[i, 1] = co[i, 1] * 0.5
+        co[i, 2] = 0.01
+    sk = ob.shape_key_add(name="no_socks", from_mix=False)
+    sk.data.foreach_set("co", co.ravel())
 
 
 def into_shoes(ctx, garment, shoes):
