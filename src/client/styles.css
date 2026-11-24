@@ -3008,7 +3008,8 @@ button:focus-visible {
 }
 
 /* a room with two games: tabs just above the game panel */
-.game-tabs {
+.game-tabs,
+.farm-tabs {
   position: fixed;
   right: 28px;
   top: 112px;
@@ -3017,7 +3018,14 @@ button:focus-visible {
   gap: 6px;
 }
 
-.game-tabs button {
+.farm-tabs {
+  position: static;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.game-tabs button,
+.farm-tabs button {
   padding: 4px 12px;
   border: 1px solid rgb(255 255 255 / 0.25);
   border-radius: 999px;
@@ -3026,7 +3034,8 @@ button:focus-visible {
   cursor: pointer;
 }
 
-.game-tabs button[aria-pressed="true"] {
+.game-tabs button[aria-pressed="true"],
+.farm-tabs button[aria-pressed="true"] {
   background: var(--champagne);
   color: #1a0a28;
 }
