@@ -1,10 +1,13 @@
-// The city's day and night in the client: the hour (the player's own clock,
+// The city's day and night in the client: the hour (shared New York time,
 // or `?time=HH:MM`), its light from src/game/city/daylight.ts, and the shared
 // uniforms the sky dome reads. CityScene applies the rest (fog, lights, how
 // lit the neon is) whenever the light changes, about every half minute.
 
 import { useEffect, useState } from "react";
 import * as THREE from "three";
+import { cityTime } from "../../game/city/cityClock.ts";
+import { parseWeatherFlag, quietAt, rainAt } from "../../game/city/weather.ts";
+import { wallSeconds } from "../../game/clock.ts";
 import {
   daylightAt,
   hourOf,
@@ -31,9 +34,23 @@ export function devDaySeconds(): number | null {
     : devHour * 3600 + (Date.now() - devSetAt) / 1000;
 }
 
-/** The hour now: the dev pin, else `?time=`, else the local clock. */
-export const cityHour = () =>
-  devHour ?? parseTimeFlag(location.search) ?? hourOf(new Date());
+const cityDate = () => new Date(wallSeconds() * 1000);
+
+/** The hour now: the dev pin, else `?time=`, else shared city time. */
+export const cityHour = (date?: Date) =>
+  devHour ?? parseTimeFlag(location.search) ?? hourOf(date ?? cityDate());
+
+function readWeather() {
+  const date = cityDate();
+  const hour = cityHour(date);
+  return {
+    rain: parseWeatherFlag(location.search) ?? rainAt(cityTime(date), hour),
+    quiet: quietAt(hour),
+  };
+}
+
+/** Outdoor weather and street activity follow the same hour as the sky. */
+export const useCityWeather = () => useCityClockReading(readWeather);
 
 /** Sky colors, shared by the dome's shader (CitySky.tsx). */
 export const SKY_UNIFORMS = {
@@ -43,18 +60,25 @@ export const SKY_UNIFORMS = {
   uNeon: { value: 1 },
 };
 
-/** The light now, refreshed every 30 s and whenever the dev pin moves. */
-export function useDaylight(): Daylight {
-  const [light, setLight] = useState(() => daylightAt(cityHour()));
+function useCityClockReading<T>(read: () => T): T {
+  const [value, setValue] = useState(read);
   useEffect(() => {
-    const refresh = () => setLight(daylightAt(cityHour()));
+    const refresh = () => setValue(read());
     const id = window.setInterval(refresh, 30_000);
     devListeners.add(refresh);
     return () => {
       window.clearInterval(id);
       devListeners.delete(refresh);
     };
-  }, []);
+  }, [read]);
+  return value;
+}
+
+const readDaylight = () => daylightAt(cityHour());
+
+/** The light now, refreshed every 30 s and whenever the dev pin moves. */
+export function useDaylight(): Daylight {
+  const light = useCityClockReading(readDaylight);
   useEffect(() => {
     SKY_UNIFORMS.uZenith.value.setRGB(...light.zenith);
     SKY_UNIFORMS.uHorizon.value.setRGB(...light.horizon);
