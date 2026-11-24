@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { setActiveTier } from "../../game/age.ts";
 import { stateSituation } from "../../game/effects/buzz.ts";
 import { DOSES, gameSeconds } from "../../game/effects/substances.ts";
-import { drink, getBuzz } from "./drunk.ts";
+import { ageBuzz, drink, getBuzz } from "./drunk.ts";
 import {
   ageHigh,
   dosesOnboard,
@@ -155,6 +155,8 @@ test("taking an edible or weed with alcohol toasts harm-reduction hints", () => 
     assert.equal(toasts[2], "Weed then drink is gentler than drink then weed.");
   } finally {
     setDoseToastListener(null);
+    ageBuzz(100_000);
+    ageHigh(100_000);
     setActiveTier("teen");
   }
 });
