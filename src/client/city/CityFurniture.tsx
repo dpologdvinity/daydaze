@@ -219,9 +219,8 @@ function buildKind(
         return spec && boxMapped(surface(...spec).clone(), spec[1]?.scale ?? 1);
       }),
   );
-  // the chain fence's mesh is a cutout texture: cut, never blend, so a
-  // row of panels never sorts wrongly against itself
-  if (kind === "fence-chain")
+  // Fences and hedges use cutout textures, avoiding transparent sorting.
+  if (kind === "fence-chain" || kind === "hedge")
     for (const mesh of parts)
       if (mesh.material instanceof THREE.MeshStandardMaterial) {
         mesh.material.transparent = false;
