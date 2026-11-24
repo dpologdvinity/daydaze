@@ -51,9 +51,60 @@ test("docs and unmapped code attach nothing", () => {
   assert.deepEqual(pickShots(["README.md", "src/net/x.ts"], KNOWN), []);
 });
 
-test("knownShots reads the shot names and ignores other name: strings", () => {
+test("knownShots reads literal shot names and ignores other name: strings", () => {
   const src = `{ name: "plaza", query: "" }, getByRole("img", { name: "3D room view" })`;
   assert.deepEqual(knownShots(src), ["plaza"]);
+});
+
+test("knownShots reads helper-defined and mapped shot names", () => {
+  const sample = `
+    actionStrip("acid-peak", "query", () => {}, () => {}),
+    lineupShot("together-kiss", "emote=kiss", "together"),
+    petShot("pet-city", "room=city", "husky", "Biscuit"),
+    homeShot("apartment-furnished", []),
+    walkStrip("walk-feminine-short", "feminine", "click"),
+    firefightStrip("firefight-laser", "room=laser-tag", "Suit up"),
+    seatStrip("seat-bench-sit", "dome-bench-0", "sit", -1),
+    wheelSheet("car-wheels"),
+    jeepneyRoll("jeepney-wheels"),
+    trafficClose("car-traffic-close-night", 23),
+    ...(
+      [
+        ["dance-headspin", "Breaking", "Head spin"],
+        ["dance-uprock", "Breaking", "Uprock"],
+      ] as const
+    ).map(([name, style, move]) => actionStrip(name, "query", () => {}, () => {})),
+    ...(["Whisper", "Laughing"] as const).map((emote) =>
+      actionStrip(\`emote-\${emote === "Whisper" ? "whisper" : "laugh"}\`, "query", () => {}, () => {}),
+    ),
+  `;
+  const shots = knownShots(sample);
+  assert.ok(shots.includes("acid-peak"));
+  assert.ok(shots.includes("together-kiss"));
+  assert.ok(shots.includes("pet-city"));
+  assert.ok(shots.includes("apartment-furnished"));
+  assert.ok(shots.includes("walk-feminine-short"));
+  assert.ok(shots.includes("firefight-laser"));
+  assert.ok(shots.includes("seat-bench-sit"));
+  assert.ok(shots.includes("car-wheels"));
+  assert.ok(shots.includes("jeepney-wheels"));
+  assert.ok(shots.includes("car-traffic-close-night"));
+  assert.ok(shots.includes("dance-headspin"));
+  assert.ok(shots.includes("dance-uprock"));
+  assert.ok(shots.includes("emote-whisper"));
+  assert.ok(shots.includes("emote-laugh"));
+});
+
+test("knownShots extracts helper-defined shots from scripts/screenshots.ts", () => {
+  const src = readFileSync("scripts/screenshots.ts", "utf8");
+  const shots = knownShots(src);
+  assert.ok(shots.includes("dance-headspin"));
+  assert.ok(shots.includes("apartment-furnished"));
+  assert.ok(shots.includes("pet-city"));
+  assert.ok(shots.includes("together-kiss"));
+  assert.ok(shots.includes("car-wheels"));
+  assert.ok(shots.includes("acid-peak"));
+  assert.ok(shots.length > 290);
 });
 
 test("the shared order panel and the shift rules map to the pay-slip shot", () => {
