@@ -13,6 +13,7 @@
 import { appendFileSync, writeFileSync } from "node:fs";
 import { chromium, expect, type Page } from "@playwright/test";
 import { DEFAULT_LOOK } from "../src/game/look.ts";
+import { createDefaultSave, serializeSave } from "../src/game/save.ts";
 import { dockAction } from "../tests/dock.ts";
 import { SEATS, homeSeats } from "../src/game/seats.ts";
 import { CHAT_GROUPS } from "../src/game/city/chatGroups.ts";
@@ -333,6 +334,34 @@ function walkStrip(
       console.log(`${name}: ${frames.length} screencast frames`);
     },
   };
+}
+
+/** Opens the closet's Outfit tab, wears the striped shirt, favorites it and
+ * saves the look as "Brunch" (the closet-find shots). */
+async function favoriteAndSave(page: Page): Promise<void> {
+  await page.waitForFunction(
+    () => document.querySelector("canvas")?.dataset.frames === "10",
+    null,
+    { timeout: 300_000 },
+  );
+  await page
+    .getByRole("button", { name: "Dressing room", exact: true })
+    .click();
+  await page.getByRole("tab", { name: "Outfit", exact: true }).click();
+  await page
+    .getByRole("radiogroup", { name: "Top", exact: true })
+    .getByRole("radio", { name: "Striped shirt", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Favorite Striped shirt", exact: true })
+    .click();
+  await page.getByRole("textbox", { name: "Outfit name" }).fill("Brunch");
+  await page
+    .getByRole("button", { name: "Save this outfit", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Wear Brunch", exact: true })
+    .waitFor();
 }
 
 /**
@@ -868,6 +897,8 @@ const SHOTS: {
   /** A shot of the dev lineup page (lineup.html), not the game: its doll rows
    * report readiness and renderer numbers on <body>, not a canvas. */
   lineup?: boolean;
+  /** Runs before the page loads, e.g. to stand in for the server. */
+  before?: (page: Page) => Promise<void>;
   /** Drives the scene before the capture, e.g. to start a race. */
   act?: (page: Page) => Promise<void>;
 }[] = [
@@ -2555,6 +2586,114 @@ const SHOTS: {
     },
   },
   {
+    // an account's game menu, with a weekly board from a stand-in server
+    name: "weekly-board",
+    query: "room=city&view=full&online=1",
+    viewport: { width: 1280, height: 1000 },
+    before: async (page) => {
+      const json = (body: unknown) => ({
+        contentType: "application/json",
+        body: JSON.stringify(body),
+      });
+      const week = 7 * 24 * 3_600_000;
+      const startsAt = Math.floor(Date.now() / week) * week;
+      const names = ["Mochi", "Vela", "Juniper", "Rue", "Odessa", "Pip"];
+      await page.route("**/api/**", (route) => {
+        const path = new URL(route.request().url()).pathname;
+        if (path === "/api/me")
+          return route.fulfill(
+            json({
+              id: "u_" + "a".repeat(20),
+              name: "Dusty",
+              isGuest: false,
+              isAdmin: false,
+            }),
+          );
+        if (path.startsWith("/api/leaderboard/"))
+          return route.fulfill(
+            json({
+              week: 1,
+              startsAt,
+              endsAt: startsAt + week,
+              entries: names.map((name, i) => ({
+                name,
+                rank: i + 1,
+                value: 4200 - i * 530,
+              })),
+              you: { rank: 4, value: 2610 },
+            }),
+          );
+        return route.fulfill({ status: 404, body: "{}" });
+      });
+    },
+    act: async (page) => {
+      await page.getByRole("button", { name: "Menu", exact: true }).click();
+      const boards = page.getByRole("region", { name: "Weekly boards" });
+      await expect(boards.getByText(/^You: #4/)).toBeVisible();
+      await boards.scrollIntoViewIfNeeded();
+    },
+  },
+  {
+    // a finished game for an account: the card shows the server's XP and note
+    name: "prize-note",
+    query: "room=city&view=full&online=1&prizehold=1",
+    before: async (page) => {
+      const json = (body: unknown) => ({
+        contentType: "application/json",
+        body: JSON.stringify(body),
+      });
+      await page.route("**/api/**", (route) => {
+        const { pathname } = new URL(route.request().url());
+        if (pathname === "/api/me")
+          return route.fulfill(
+            json({
+              id: "u_" + "a".repeat(20),
+              name: "Dusty",
+              isGuest: false,
+              isAdmin: false,
+            }),
+          );
+        if (pathname === "/api/save")
+          return route.fulfill(
+            json(
+              JSON.parse(
+                serializeSave({
+                  ...createDefaultSave("Dusty"),
+                  onboarded: true,
+                }),
+              ),
+            ),
+          );
+        if (pathname === "/api/progress/score")
+          return route.fulfill(
+            json({
+              xp: { street: 0, fame: 125, hustle: 0 },
+              title: null,
+              dailyXpLeft: 4875,
+              grade: "S",
+              ladder: "fame",
+              gained: 125,
+              best: true,
+              capped: false,
+            }),
+          );
+        return route.fulfill({ status: 404, body: "{}" });
+      });
+    },
+    act: async (page) => {
+      // the account's save has come down, so the score may go up
+      await page.waitForFunction(
+        "import('/src/client/net/account.ts').then((m) => m.account.get().cloudReady)",
+        null,
+        { timeout: 300_000 },
+      );
+      await page.evaluate(
+        "import('/src/client/ui/prizeDesk.ts').then((m) => m.award('bowling', 190))",
+      );
+      await expect(page.getByText("4,875 XP left today")).toBeVisible();
+    },
+  },
+  {
     name: "credits",
     query: "room=city&view=full",
     act: async (page) => {
@@ -2779,6 +2918,51 @@ const SHOTS: {
       );
     },
   },
+  // the closet's search, style filter, favorites and saved outfits
+  // (WardrobePicker.tsx): a long Top row with a favorite, a saved outfit, and
+  // a search with no match
+  {
+    name: "closet-find",
+    query: "room=city&view=full",
+    live: true,
+    act: async (page: Page) => {
+      await favoriteAndSave(page);
+      await page
+        .getByRole("searchbox", { name: "Search clothes" })
+        .scrollIntoViewIfNeeded();
+    },
+  },
+  {
+    name: "closet-saved",
+    query: "room=city&view=full",
+    live: true,
+    act: async (page: Page) => {
+      await favoriteAndSave(page);
+      await page
+        .getByRole("button", { name: "Delete Brunch", exact: true })
+        .scrollIntoViewIfNeeded();
+    },
+  },
+  {
+    name: "closet-find-empty",
+    query: "room=city&view=full",
+    live: true,
+    act: async (page: Page) => {
+      await page.waitForFunction(
+        () => document.querySelector("canvas")?.dataset.frames === "10",
+        null,
+        { timeout: 300_000 },
+      );
+      await page
+        .getByRole("button", { name: "Dressing room", exact: true })
+        .click();
+      await page.getByRole("tab", { name: "Outfit", exact: true }).click();
+      await page
+        .getByRole("searchbox", { name: "Search clothes" })
+        .fill("zzzz");
+      await page.getByRole("status").waitFor();
+    },
+  },
   {
     name: "zoom-room",
     query: "room=salon",
@@ -2964,6 +3148,17 @@ const SHOTS: {
       `styles=${styles}&colors=${HAIR_COLORS}&${BEHIND}`,
     ),
   ]),
+  // the styles refitted from Sketchfab hair (refit_hair.py STYLES), front and back
+  ...[
+    "twin-tails,buns,bantu-knots,hijab,turban",
+    "pixie,low-pony,mid-curly,mermaid",
+  ].flatMap((styles, i) => [
+    lineupShot(`hair-refit-${i + 1}`, `styles=${styles}&colors=${HAIR_COLORS}`),
+    lineupShot(
+      `hair-refit-${i + 1}-back`,
+      `styles=${styles}&colors=${HAIR_COLORS}&${BEHIND}`,
+    ),
+  ]),
   // close-ups of the speckle cases: men's and women's dark hair from behind,
   // and the Quiff's forehead in several colors
   lineupShot(
@@ -2998,6 +3193,61 @@ const SHOTS: {
   lineupShot("doll-wear-sit", `wears=${WEAR_MIX}`, "sit"),
   lineupShot("doll-wear-dance", `wears=${WEAR_MIX}`, "dance"),
   lineupShot("doll-wear-men", `men=1&wears=${WEAR_MIX}`, "pose"),
+  // hems, necklines and arm holes up close: the jacket, the halter top over a
+  // mini skirt, white boots in jeans (body scene, one doll each), then the
+  // pose lineup's middle and one side (#395)
+  lineupShot(
+    "doll-wear-close-jacket",
+    `wears=${WEAR_MIX}&cam=-1.4,0.95,2.2&target=-1.4,0.95,0`,
+    "body",
+  ),
+  lineupShot(
+    "doll-wear-close-halter",
+    `wears=${WEAR_MIX}&cam=0,1.05,2.2&target=0,1.05,0`,
+    "body",
+  ),
+  lineupShot(
+    "doll-wear-close-boots",
+    `wears=${WEAR_MIX}&cam=1.4,0.7,2.2&target=1.4,0.7,0`,
+    "body",
+  ),
+  lineupShot(
+    "doll-wear-close-pose",
+    `wears=${WEAR_MIX}&cam=0,0.95,3.4&target=0,0.95,0`,
+    "pose",
+  ),
+  lineupShot(
+    "doll-wear-close-pose-side",
+    `wears=${WEAR_MIX}&cam=-3,0.95,3.4&target=-3,0.95,0`,
+    "pose",
+  ),
+  lineupShot(
+    "doll-wear-close-skirt",
+    `wears=${WEAR_MIX}&cam=3,0.95,2.4&target=3,0.95,0`,
+    "pose",
+  ),
+  lineupShot(
+    "doll-wear-close-crossed",
+    `wears=${WEAR_MIX}&cam=1,0.55,2.4&target=1,0.55,0`,
+    "pose",
+  ),
+  lineupShot(
+    "doll-wear-close-dance",
+    `wears=${WEAR_MIX}&cam=0,0.95,5&target=0,0.95,0`,
+    "dance",
+  ),
+  // one look on every doll, three poses at a time, to judge it in motion:
+  // the pleated mini over tights, the puffer over cargos, white boots
+  lineupShot(
+    "doll-wear-skirt-poses",
+    "wears=baby-tee~ff2f9a.pleated-mini~9b5cff.tights~141018&holds=pose-foot-up,pose-legs-crossed,pose-lean-back&cam=0,0.8,3.2&target=0,0.8,0",
+    "pose",
+  ),
+  lineupShot(
+    "doll-wear-jacket-poses",
+    "wears=corset~141018.cargos~6b7a2a.puffer~e8e2ff&holds=pose-foot-up,pose-legs-crossed,pose-lean-back&cam=0,0.8,3.2&target=0,0.8,0",
+    "pose",
+  ),
   // the far twin: a three-layer look merged into one draw (mergeGarments)
   lineupShot("doll-wear-far", `wears=${WEAR_MIX}`, "far"),
   // the same three past the LOD distance: the merged, atlas-textured twins
@@ -3070,6 +3320,7 @@ if (process.argv[2] === "--matrix") {
     const url = shot.lineup
       ? `${BASE}/src/client/avatar/lineup.html?human=1&still=1&${shot.query}`
       : `${BASE}/?${tier}${still}&${shot.query}`;
+    if (shot.before) await shot.before(page);
     await page.goto(url, { timeout: 300_000 });
     if (shot.act) await shot.act(page);
     const canvas = page.getByRole("img", { name: "3D room view" });

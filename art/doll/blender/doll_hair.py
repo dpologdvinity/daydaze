@@ -13,8 +13,10 @@ import numpy as np
 from mathutils import Euler, Vector
 from mathutils.kdtree import KDTree
 
+import hair_built
 import pack_hair
 import proxies
+import refit_hair
 import strands
 
 # style id -> MakeHuman proxy: the short cuts, where strand cards that short
@@ -45,11 +47,29 @@ COMMUNITY = {
     "puffs": "elvs_micky_afro",
     "cornrows": "elvs_braided_rows",
     "quiff": "elvs_maxwell_hair",
+    # the ripped pack's styles (#314), and the old strand-card ones (#312)
+    # MargaretToigo, Elvaerwyn, littleright and culturalibre, CC0
+    "blunt-bob": "toigo_blunt_bob",
+    "fishtail": "elvs_french_braid_variation",
+    "shag": "littleright_bobcut_hair",
+    "crew": "culturalibre_hair_02",
+    "tousled": "culturalibre_hair_05",
+    # Elvaerwyn, CC-BY
+    "sleek-side": "elvs_adrienne_hair",
+    "rapunzel": "elvs_island_princess_hair",
+    "long-waves": "elvs_that_80s_babe_hair",
+    "slick-back": "elvs_grump_hair",
+    "top-knot": "elvs_braid_bun",
+    # culturalibre after miccall, CC-BY
+    "layered-long": "culturalibre_hair_17",
+    "side-fringe": "culturalibre_hair_18",
 }
 PROXY |= {style: f"hair/{name}/{name}.mhclo" for style, name in COMMUNITY.items()}
 # decimate ratios for proxies far denser than the rest: the beaded cornrows
 # are 41k triangles as authored, eight times the hair around them
-RATIO = {"cornrows": 0.25}
+RATIO = {"cornrows": 0.25, "top-knot": 0.4, "layered-long": 0.6, "slick-back": 0.65}
+# texture contrast caps (proxy_hair) below the community default
+CONTRAST = {"pigtails": 0.12, "fishtail": 0.12}
 
 
 def diffuse(path):
@@ -197,44 +217,6 @@ def _top(bm):
     return max(v.co.z for v in bm.verts)
 
 
-def buns(ctx, mat):
-    """Two twisted buns on top of a slicked-back scalp."""
-
-    def extra(bm, ctx):
-        top = _top(bm)
-        for side in (1, -1):
-            c = Vector((side * 0.062, 0.01, top - 0.012))
-            ret = bmesh.ops.create_uvsphere(
-                bm, u_segments=20, v_segments=14, radius=0.045
-            )
-            for v in ret["verts"]:
-                # a twist: ridges spiral around the bun
-                d = v.co.normalized()
-                ang = np.arctan2(d.y, d.x)
-                v.co *= 1 + 0.06 * np.sin(ang * 5 + d.z * 6)
-                v.co.z *= 0.86
-                v.co += c
-
-    return scalp_hair(ctx, "Hair_buns", mat, extra)
-
-
-def top_knot(ctx, mat):
-    """Slicked up into one big twisted bun on the crown."""
-
-    def extra(bm, ctx):
-        top = _top(bm)
-        c = Vector((0.0, 0.02, top + 0.02))
-        ret = bmesh.ops.create_uvsphere(bm, u_segments=22, v_segments=16, radius=0.062)
-        for v in ret["verts"]:
-            d = v.co.normalized()
-            ang = np.arctan2(d.y, d.x)
-            v.co *= 1 + 0.07 * np.sin(ang * 6 + d.z * 7)
-            v.co.z *= 0.8
-            v.co += c
-
-    return scalp_hair(ctx, "Hair_top-knot", mat, extra)
-
-
 def afro(ctx, mat):
     """An afro puff: one rounded cloud with fine curl texture, cut back from
     the face and the nape so the hairline frames the face."""
@@ -355,46 +337,6 @@ def locs(ctx, mat):
     )
 
 
-def _surface_z(scalp, x, y, window=0.014):
-    """Height of the scalp shell at (x, y): the highest vertex nearby."""
-    zs = [c.z for c in scalp if abs(c.x - x) < window and abs(c.y - y) < window]
-    if not zs:
-        zs = [c.z for c in scalp if abs(c.x - x) < 2 * window and abs(c.y - y) < 2 * window]
-    return max(zs) if zs else None
-
-
-
-
-def bantu_knots(ctx, mat):
-    """Bantu knots: sixteen small twisted knots over the head."""
-    head = ctx.JB["head"]
-
-    def extra(bm, ctx):
-        scalp = [v.co.copy() for v in bm.verts]
-        spots = [(0.0, 0.0)]
-        for ring_r, n, off in ((0.045, 6, 0.0), (0.085, 9, 0.35)):
-            for i in range(n):
-                a = 2 * np.pi * i / n + off
-                # keep the front free so the face stays framed
-                spots.append((ring_r * np.sin(a), ring_r * np.cos(a) * 1.05 + 0.01))
-        for dx, dy in spots:
-            x, y = head[0] + dx, head[1] + dy
-            z = _surface_z(scalp, x, y)
-            if z is None:
-                continue
-            ret = bmesh.ops.create_uvsphere(bm, u_segments=20, v_segments=14, radius=0.021)
-            for v in ret["verts"]:
-                d = v.co.normalized()
-                ang = np.arctan2(d.y, d.x)
-                v.co *= 1 + 0.12 * np.sin(ang * 3 + d.z * 9)
-                v.co.z *= 1.15
-                v.co += Vector((x, y, z + 0.012))
-
-    return scalp_hair(ctx, "Hair_bantu-knots", mat, extra)
-
-
-
-
 def _surface(bm, zs, n, point, skip=None):
     """Grid surface of rings over heights `zs` with `n` samples round each:
     `point(z, a)` gives a vertex for the angle a (0 = the back, pi = the
@@ -434,78 +376,6 @@ def _head_box(bm, ctx):
         (max(ys) - min(ys)) / 2,
         max(p.z for p in pts),
     )
-
-
-HIJAB_SRC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src", "hijab-sketchfab.glb")
-# the scan's mannequin head: width and top height, its y centre, in its own units
-HIJAB_HEAD = dict(width=1.75, top=1.93, cy=0.1)
-
-
-def hijab(ctx, mat):
-    """A hijab: the draped scarf of Sketchfab's "Hijab" (CC-BY, see
-    docs/assets.md) with its mannequin cut out, scaled to the doll's head,
-    pushed clear of the body and skinned from the nearest body vertices, so
-    it frames the face, covers hair and neck and falls over the shoulders."""
-    import bmesh as bm_
-
-    eye_z = ctx.JB["lEye"][2]
-    head = [i for i in range(len(ctx.PB)) if ctx.HEADW[i] >= 0.98 and ctx.PB[i][2] > eye_z]
-    hp = ctx.PB[head]
-    cx, cy = (hp[:, 0].max() + hp[:, 0].min()) / 2, (hp[:, 1].max() + hp[:, 1].min()) / 2
-    scale = (hp[:, 0].max() - hp[:, 0].min()) * 1.16 / HIJAB_HEAD["width"]
-    top = hp[:, 2].max()
-
-    before = set(bpy.data.objects)
-    bpy.ops.import_scene.gltf(filepath=HIJAB_SRC)
-    src = next(o for o in bpy.data.objects if o not in before and o.type == "MESH")
-    bm = bm_.new()
-    bm.from_mesh(src.data)
-    uv = bm.loops.layers.uv.active
-    # the texture's top-left corner paints the mannequin's skin: those faces go
-    bm_.ops.delete(
-        bm,
-        geom=[f for f in bm.faces if all(l[uv].uv.x < 0.21 and l[uv].uv.y > 0.8 for l in f.loops)],
-        context="FACES",
-    )
-    bm_.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context="VERTS")
-    # the scan splits vertices along UV seams; welded, it smooths across them
-    bm_.ops.remove_doubles(bm, verts=bm.verts, dist=1e-4)
-    world = src.matrix_world.copy()
-    verts = np.array([(world @ v.co)[:] for v in bm.verts])
-    faces = [[v.index for v in f.verts] for f in bm.faces]
-    bm.free()
-    for o in [o for o in bpy.data.objects if o not in before]:
-        bpy.data.objects.remove(o)
-
-    verts = np.array(verts)
-    verts[:, 0] = cx + verts[:, 0] * scale
-    verts[:, 1] = cy - 0.012 + (verts[:, 1] - HIJAB_HEAD["cy"]) * scale
-    verts[:, 2] = top + 0.006 + (verts[:, 2] - HIJAB_HEAD["top"]) * scale
-
-    # nearest body vertex: its weights, and a push out along its normal so no
-    # fold sinks into the skin or the shoulders
-    nrm = np.zeros_like(ctx.PB)
-    for f in ctx.FACES["body"]:
-        pts = ctx.PB[f]
-        n = np.cross(pts[1] - pts[0], pts[2] - pts[0])
-        nrm[list(f)] += n
-    nrm /= np.maximum(np.linalg.norm(nrm, axis=1, keepdims=True), 1e-9)
-    tree = KDTree(len(ctx.PB))
-    for i, p in enumerate(ctx.PB):
-        tree.insert(p, i)
-    tree.balance()
-    near = np.array([tree.find(v)[1] for v in verts], int)
-    for i, (v, n) in enumerate(zip(verts, near)):
-        out = float(np.dot(v - ctx.PB[n], nrm[n]))
-        if out < 0.007:
-            verts[i] = v + nrm[n] * (0.007 - out)
-
-    ob = ctx.new_object("Hair_hijab", verts, faces)
-    ob.data.materials.append(mat)
-    for p in ob.data.polygons:
-        p.use_smooth = True
-    proxies.attach(ctx, ob, ctx.W[near], {k: d[near] for k, d in ctx.KEYS.items()})
-    return ob
 
 
 def _cloth_dome(ctx, bm, top, rise, grow, fold_fn, n, rows):
@@ -565,21 +435,6 @@ def head_wrap(ctx, mat):
     return scalp_hair(ctx, "Hair_head-wrap", mat, extra)
 
 
-def turban(ctx, mat):
-    """A turban: a tall wound dome, ridged folds climbing round it."""
-
-    def extra(bm, ctx):
-        top = _head_box(bm, ctx)[4]
-
-        def fold(t, a):
-            # twisted cloth: sharp ridges spiralling up the dome
-            return 0.014 * np.abs(np.sin(a * 3 + t * 11)) ** 0.7 * (0.3 + t)
-
-        _cloth_dome(ctx, bm, top, 0.05, 0.022, fold, 96, 64)
-
-    return scalp_hair(ctx, "Hair_turban", mat, extra)
-
-
 def shade_strands(ctx, ob):
     """Root-to-tip shading as vertex colours: hair near the scalp sits in its
     own shadow and reads darker and denser; lengths and tips catch the light.
@@ -620,12 +475,14 @@ def strand_style(ctx, name, strand_mat, cap_mat, **style):
 
 
 def proxy_hair(ctx, style):
-    """A PROXY style fitted to the doll, its texture a tintable grey."""
-    path = PROXY[style]
+    """A PROXY style fitted to the doll, its texture a tintable grey. A name
+    that isn't a style but is a fetched MakeHuman hair (`hair/<name>/`) builds
+    that hair as Hair_<name>, to try a model on before it gets a style id."""
+    path = PROXY.get(style, f"hair/{style}/{style}.mhclo")
     # community textures range from near-black to two-tone: cap their
     # contrast so a tint doesn't break into dark and bright patches (the
-    # braid's crown is painted in broad highlight bands: flatter still)
-    contrast = {"pigtails": 0.12}.get(style, 0.35) if style in COMMUNITY else None
+    # braids' crowns are painted in broad highlight bands: flatter still)
+    contrast = CONTRAST.get(style, 0.35 if style in COMMUNITY or style not in PROXY else None)
     img = proxies.detail_texture(diffuse(path), 1024, contrast=contrast)
     mat = proxies.textured(f"hair_{style}", img, alpha=True)
     return proxies.build(ctx, f"Hair_{style}", path, mat, ratio=RATIO.get(style, 1.0))
@@ -644,32 +501,31 @@ def build(ctx):
     if only:
         # HAIR_ONLY=hijab,bob builds just those sculpted or proxy parts (fast)
         solid = bpy.data.materials.new("hair_solid")
-        make = {"hijab": hijab, "head-wrap": head_wrap, "turban": turban}
-        out = [make[n](ctx, solid) if n in make else proxy_hair(ctx, n) for n in only]
+        make = {"head-wrap": head_wrap}
+        make |= {n: (lambda ctx, _, n=n: refit_hair.build_style(ctx, n, refit_hair.STYLES[n])) for n in refit_hair.STYLES}
+        # the styles built in hair_built.py (#396) make their own materials
+        for n in only:
+            if n in hair_built.STYLE_IDS:
+                # the near model and its hand-made far one
+                out += hair_built.style(ctx, n)
+            else:
+                out.append(make[n](ctx, solid) if n in make else proxy_hair(ctx, n))
         # the same root-to-tip shading the full build gives every style
         for ob in out:
             shade_strands(ctx, ob)
         return out
     out += [proxy_hair(ctx, style) for style in PROXY]
     solid = bpy.data.materials.new("hair_solid")
-    out += [buns(ctx, solid), afro(ctx, solid), braids(ctx, solid), top_knot(ctx, solid)]
-    out += [
-        box_braids(ctx, solid),
-        locs(ctx, solid),
-        bantu_knots(ctx, solid),
-    ]
-    out += [hijab(ctx, solid), head_wrap(ctx, solid), turban(ctx, solid)]
+    out += [afro(ctx, solid), braids(ctx, solid), box_braids(ctx, solid), locs(ctx, solid)]
+    out += [head_wrap(ctx, solid)]
+    out += refit_hair.build(ctx)
+    out += hair_built.build(ctx)
     strand = strands.material("hair_strands")
     combed = strands.cap_material("hair_cap")
     # strand-card styles: length (m), wave (slow S), curl (tight spirals),
     # volume (lift off the scalp); ids match HAIR_STYLES in src/game/look.ts
     for name, style in {
         "long-curly": dict(length=0.5, count=492, curl=0.022, volume=1.8),
-        "mid-curly": dict(length=0.3, count=456, curl=0.022, volume=1.9),
-        "pixie": dict(length=0.11, count=360, wave=0.004, volume=1.1),
-        # waist-skimming waves, a choppy layered shag, and short springy coils
-        "mermaid": dict(length=0.76, count=480, wave=0.024),
-        "shag": dict(length=0.27, count=432, wave=0.009, volume=1.5),
         "coils": dict(length=0.2, count=468, curl=0.016, volume=1.7),
         # a defined twist-out: loose spirals with lift, to the shoulder
         "twist-out": dict(length=0.3, count=480, curl=0.03, wave=0.02, volume=2.2),
@@ -682,12 +538,6 @@ def build(ctx):
     )
     swing(ctx, pony, ctx.JB["head"] + np.array([0, 0.08, 0.05]))
     out.append(pony)
-    # a low ponytail, tied at the nape
-    low = strand_style(
-        ctx, "Hair_low-pony", strand, combed, seed=11, length=0.38, count=420, wave=0.006, tie=(0.075, -0.045)
-    )
-    swing(ctx, low, ctx.JB["head"] + np.array([0, 0.07, -0.05]))
-    out.append(low)
     # close-cropped styles. bald has no model (the client wears none).
     # buzz: the combed cap alone, a few millimetres of fuzz
     buzz = ubc_hair(ctx, "Hair_buzz", "Hair_BuzzedFemale.gltf" if os.environ.get("DOLL_SEX", "female") == "female" else "Hair_Buzzed.gltf", solid)

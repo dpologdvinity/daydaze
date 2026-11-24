@@ -23,7 +23,10 @@ const MIGRATIONS = new URL("../migrations/", import.meta.url);
 /** A D1-shaped wrapper over node:sqlite; batches run in one transaction. */
 function database() {
   const sqlite = new DatabaseSync(":memory:");
-  for (const file of readdirSync(MIGRATIONS).sort())
+  // only *.sql, like `wrangler d1 migrations apply`; the folder holds a README
+  for (const file of readdirSync(MIGRATIONS)
+    .filter((name) => name.endsWith(".sql"))
+    .sort())
     sqlite.exec(readFileSync(new URL(file, MIGRATIONS), "utf8"));
   const parts = new Map<Statement, { sql: string; values: unknown[] }>();
   const statement = (sql: string, values: unknown[]): Statement => {

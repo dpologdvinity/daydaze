@@ -4,7 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { DEALER_AT } from "../src/game/city/dealer.ts";
 import { GAS_STATIONS, counterOf } from "../src/game/city/gasStations.ts";
 import { BUS_STOPS } from "../src/game/city/transit.ts";
-import { coatCheckBank } from "../src/game/dialogue/coat-check.ts";
+import { piercerBank } from "../src/game/dialogue/piercer.ts";
 import { fillPlaceholders } from "../src/game/dialogue/pick.ts";
 import { SONGS } from "../src/game/karaokeSongs.ts";
 import { dockAction } from "./dock.ts";
@@ -324,6 +324,92 @@ test("the closet mixes garments slot by slot, and a one-piece replaces top and b
   await expect(canvasOf(page)).toHaveAttribute("data-avatar", "ready", {
     timeout: 120_000,
   });
+  expect(errors).toEqual([]);
+});
+
+test("the closet searches and filters garments, keeps favorites and saves outfits", async ({
+  page,
+}) => {
+  test.setTimeout(300_000);
+  const errors = collectErrors(page);
+  await page.goto(VELVET);
+  await page
+    .getByRole("button", { name: "Dressing room", exact: true })
+    .click();
+  await expect(canvasOf(page)).toHaveAttribute("data-studio", "ready", {
+    timeout: 150_000,
+  });
+  await page.getByRole("tab", { name: "Outfit", exact: true }).click();
+  const top = page.getByRole("radiogroup", { name: "Top", exact: true });
+  const chips = top.getByRole("radio");
+  const all = await chips.count();
+  // search narrows every row; the worn garment stays so the group has a value
+  const search = page.getByRole("searchbox", { name: "Search clothes" });
+  await search.fill("zzzz");
+  await expect(page.getByRole("status")).toContainText("No clothes match");
+  await expect(top.getByRole("radio", { checked: true })).toHaveCount(1);
+  await search.fill("striped");
+  await expect(top.getByRole("radio", { name: "Striped shirt" })).toBeVisible();
+  expect(await chips.count()).toBeLessThan(all);
+  await search.fill("");
+  await expect(chips).toHaveCount(all);
+  // the style filter
+  await page
+    .getByRole("radiogroup", { name: "Style", exact: true })
+    .getByRole("radio", { name: "Formal", exact: true })
+    .click();
+  await expect(top.getByRole("radio", { name: "Suit jacket" })).toBeVisible();
+  await expect(top.getByRole("radio", { name: "Fitted tee" })).toHaveCount(0);
+  await page
+    .getByRole("radiogroup", { name: "Style", exact: true })
+    .getByRole("radio", { name: "All styles", exact: true })
+    .click();
+  // a favorite floats to the front of its row and filters on its own
+  await top.getByRole("radio", { name: "Striped shirt", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Favorite Striped shirt", exact: true })
+    .click();
+  await expect(chips.first()).toHaveAccessibleName("Striped shirt");
+  await page
+    .getByRole("button", { name: "Favorites only", exact: true })
+    .click();
+  await expect(chips).toHaveCount(1);
+  await page
+    .getByRole("button", { name: "Favorites only", exact: true })
+    .click();
+  // a saved outfit is worn again after the look changes, and survives a reload
+  // saving without a name says why nothing happened
+  await page
+    .getByRole("button", { name: "Save this outfit", exact: true })
+    .click();
+  await expect(page.getByRole("status")).toContainText(
+    "Give the outfit a name",
+  );
+  await page.getByRole("textbox", { name: "Outfit name" }).fill("Brunch");
+  await page
+    .getByRole("button", { name: "Save this outfit", exact: true })
+    .click();
+  await expect(page.getByRole("status")).toHaveCount(0);
+  await top.getByRole("radio", { name: "Fitted tee", exact: true }).click();
+  const wear = () => readSave(page).then(({ look }) => look?.wear);
+  await expect.poll(wear).toMatch(/^[a-z-]+#[0-9a-f]{6}\+tee#/);
+  await page.getByRole("button", { name: "Wear Brunch", exact: true }).click();
+  await expect.poll(wear).toMatch(/striped-shirt#/);
+  // the drawer reopens by itself after the reload
+  await page.reload();
+  await page.getByRole("tab", { name: "Outfit", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Wear Brunch", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Favorite Striped shirt", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await page
+    .getByRole("button", { name: "Delete Brunch", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Wear Brunch", exact: true }),
+  ).toHaveCount(0);
   expect(errors).toEqual([]);
 });
 
@@ -5284,7 +5370,7 @@ test("an NPC who knows you greets you as someone back from afar, by name, and re
   });
   await page.goto(`${LOW}&room=piercing`);
   // her greeting is one of her "back after a long time" lines, with the name filled in
-  const returning = (coatCheckBank["greeting-returning"] ?? []).map((entry) =>
+  const returning = (piercerBank["greeting-returning"] ?? []).map((entry) =>
     fillPlaceholders(typeof entry === "string" ? entry : entry.text, {
       name: "Dana",
     }),

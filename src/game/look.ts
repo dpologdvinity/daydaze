@@ -58,11 +58,11 @@ export const HAIR_STYLES = [
   { id: "mid-curly", label: "Shoulder curls" },
   { id: "pixie", label: "Pixie" },
   { id: "mermaid", label: "Mermaid waves" },
-  { id: "shag", label: "Shag" },
+  { id: "shag", label: "Shaggy bob" },
   { id: "coils", label: "Coils" },
   { id: "low-pony", label: "Low pony" },
   { id: "pigtails", label: "Braided pigtails" },
-  { id: "top-knot", label: "Top knot" },
+  { id: "top-knot", label: "Braided top knot" },
   // textured styles
   { id: "locs", label: "Locs" },
   { id: "box-braids", label: "Box braids" },
@@ -70,6 +70,12 @@ export const HAIR_STYLES = [
   { id: "bantu-knots", label: "Bantu knots" },
   { id: "twist-out", label: "Twist-out" },
   { id: "puffs", label: "Puffs" },
+  // braids built in Blender (art/doll/blender/hair_built.py, #396)
+  { id: "knotless", label: "Small knotless braids" },
+  { id: "knotless-waist", label: "Waist-length knotless" },
+  { id: "jumbo-box", label: "Jumbo box braids" },
+  { id: "goddess", label: "Goddess braids" },
+  { id: "braid-pony", label: "Braided high pony" },
   // head coverings: the hair color tints the cloth
   { id: "hijab", label: "Hijab" },
   { id: "head-wrap", label: "Head wrap" },
@@ -85,11 +91,10 @@ export const HAIR_STYLES = [
   { id: "shaved-sides", label: "Shaved sides" },
   { id: "bald", label: "Bald" },
   { id: "edges", label: "Slicked edges" },
-  // hair-card styles refitted from the Hair Pack (credits.ts): long and
-  // mid-length, ponytails and a bun, bobs
+  // long and mid-length, ponytails and a bun, bobs
   { id: "rapunzel", label: "Rapunzel" },
   { id: "long-waves", label: "Long waves" },
-  { id: "fishtail", label: "Fishtail braid" },
+  { id: "fishtail", label: "French braid" },
   { id: "layered-long", label: "Layered waves" },
   { id: "sleek-side", label: "Side-swept long" },
   { id: "high-pony", label: "High ponytail" },
@@ -97,7 +102,7 @@ export const HAIR_STYLES = [
   { id: "lob", label: "Curled-under bob" },
   { id: "blunt-bob", label: "Blunt bob" },
   { id: "sidebob", label: "Inverted bob" },
-  { id: "side-fringe", label: "Side fringe" },
+  { id: "side-fringe", label: "Fringed lob" },
   { id: "messy-bun", label: "Sleek bun" },
   // and the short cuts and a mohawk
   { id: "quiff", label: "Quiff" },
@@ -552,27 +557,32 @@ export function seededFace(seed: number): Face {
 
 /** Light makeup for an NPC: a polished look, varied by seed. */
 export function seededMakeup(seed: number): Makeup {
-  const n = Math.floor(seed * 7919) >>> 0;
+  // Scramble the seed across 32 bits (mulberry32 integer hash) so small NPC
+  // seeds (1..500) distribute evenly across low and high bit ranges.
+  let t = (Math.floor(seed) + 0x6d2b79f5) >>> 0;
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  const n = (t ^ (t >>> 14)) >>> 0;
   return {
     liner: (["none", "thin", "thin", "winged"] as const)[n % 4],
-    gloss: (["matte", "satin", "satin", "glossy"] as const)[(n >> 2) % 4],
-    blush: (["rose", "peach", "berry", "coral"] as const)[(n >> 4) % 4],
+    gloss: (["matte", "satin", "satin", "glossy"] as const)[(n >>> 2) % 4],
+    blush: (["rose", "peach", "berry", "coral"] as const)[(n >>> 4) % 4],
     blushStrength: "soft",
-    highlight: (["champagne", "rose-gold", "icy"] as const)[(n >> 6) % 3],
+    highlight: (["champagne", "rose-gold", "icy"] as const)[(n >>> 6) % 3],
     shadowStyle: (["none", "none", "wash", "wash", "halo"] as const)[
-      (n >> 8) % 5
+      (n >>> 8) % 5
     ],
     // some strangers have freckles, a few wear glasses
     freckles: (["none", "none", "none", "light", "lots"] as const)[
-      (n >> 10) % 5
+      (n >>> 10) % 5
     ],
     glasses: (
       ["none", "none", "none", "none", "round", "cat-eye", "square"] as const
-    )[(n >> 13) % 7],
+    )[(n >>> 13) % 7],
     // strangers come with marks too, now and then
     vitiligo: (
       ["none", "none", "none", "none", "none", "light", "patchy"] as const
-    )[(n >> 16) % 7],
+    )[(n >>> 16) % 7],
     birthmark: (
       [
         "none",
@@ -583,18 +593,19 @@ export function seededMakeup(seed: number): Makeup {
         "cafe-au-lait",
         "moles",
       ] as const
-    )[(n >> 19) % 7],
+    )[(n >>> 19) % 7],
     // a few strangers wear a bindi or hearing aids
     bindi: (["none", "none", "none", "none", "none", "red", "gold"] as const)[
-      (n >> 22) % 7
+      (n >>> 22) % 7
     ],
     hearing: (
       ["none", "none", "none", "none", "none", "none", "beige", "pink"] as const
-    )[(n >> 25) % 8],
+    )[(n >>> 25) % 8],
     // mostly a plain lip, sometimes ombre or a blurred stain
     lipLiner: "soft",
-    // low bits: NPC seeds are small, so high bits would always be zero
-    lipStyle: (["full", "full", "full", "ombre", "blurred"] as const)[n % 5],
+    lipStyle: (["full", "full", "full", "ombre", "blurred"] as const)[
+      (n >>> 28) % 5
+    ],
   };
 }
 
