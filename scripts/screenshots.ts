@@ -2908,7 +2908,7 @@ const SHOTS: {
         ["Top", "Striped shirt"],
         ["Bottom", "Pencil skirt"],
         ["Outerwear", "Puffer jacket"],
-        ["Legwear", "Tights"],
+        ["Legwear", "Opaque tights"],
       ] as const)
         await page
           .getByRole("radiogroup", { name: slot, exact: true })
