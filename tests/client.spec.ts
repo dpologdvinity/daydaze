@@ -342,8 +342,24 @@ test("the closet searches and filters garments, keeps favorites and saves outfit
   });
   await page.getByRole("tab", { name: "Outfit", exact: true }).click();
   const top = page.getByRole("radiogroup", { name: "Top", exact: true });
-  const chips = top.getByRole("radio");
-  const all = await chips.count();
+  const tiles = top.getByRole("radio");
+  const all = await tiles.count();
+  const striped = top.getByRole("radio", { name: "Striped shirt" });
+  const stripedPreview = striped.locator("img");
+  await expect(stripedPreview).toHaveAttribute(
+    "src",
+    "/closet/garment-striped-shirt.webp",
+  );
+  await expect(stripedPreview).toHaveAttribute("loading", "lazy");
+  await expect(stripedPreview).toHaveAttribute("alt", "");
+  await stripedPreview.scrollIntoViewIfNeeded();
+  await expect(stripedPreview).toHaveJSProperty("naturalWidth", 192);
+  await expect(
+    page
+      .getByRole("radiogroup", { name: "Outerwear", exact: true })
+      .getByRole("radio", { name: "None" })
+      .locator("img"),
+  ).toHaveCount(0);
   // search narrows every row; the worn garment stays so the group has a value
   const search = page.getByRole("searchbox", { name: "Search clothes" });
   await search.fill("zzzz");
@@ -351,9 +367,9 @@ test("the closet searches and filters garments, keeps favorites and saves outfit
   await expect(top.getByRole("radio", { checked: true })).toHaveCount(1);
   await search.fill("striped");
   await expect(top.getByRole("radio", { name: "Striped shirt" })).toBeVisible();
-  expect(await chips.count()).toBeLessThan(all);
+  expect(await tiles.count()).toBeLessThan(all);
   await search.fill("");
-  await expect(chips).toHaveCount(all);
+  await expect(tiles).toHaveCount(all);
   // the style filter
   await page
     .getByRole("radiogroup", { name: "Style", exact: true })
@@ -365,16 +381,22 @@ test("the closet searches and filters garments, keeps favorites and saves outfit
     .getByRole("radiogroup", { name: "Style", exact: true })
     .getByRole("radio", { name: "All styles", exact: true })
     .click();
+  // arrows still select and focus a garment after filtering to shirts
+  await search.fill("shirt");
+  await top.getByRole("radio", { name: "Denim shirt" }).press("ArrowRight");
+  await expect(striped).toBeFocused();
+  await expect(striped).toHaveAttribute("aria-checked", "true");
+  await expect(striped).toHaveAttribute("tabindex", "0");
+  await search.fill("");
   // a favorite floats to the front of its row and filters on its own
-  await top.getByRole("radio", { name: "Striped shirt", exact: true }).click();
   await page
     .getByRole("button", { name: "Favorite Striped shirt", exact: true })
     .click();
-  await expect(chips.first()).toHaveAccessibleName("Striped shirt");
+  await expect(tiles.first()).toHaveAccessibleName("Striped shirt");
   await page
     .getByRole("button", { name: "Favorites only", exact: true })
     .click();
-  await expect(chips).toHaveCount(1);
+  await expect(tiles).toHaveCount(1);
   await page
     .getByRole("button", { name: "Favorites only", exact: true })
     .click();
@@ -435,6 +457,13 @@ test("the closet shows unowned garments dimmed with shop price and opens the sho
   await expect(shopButton).toBeVisible();
   await expect(shopButton).toHaveClass(/unowned/);
   await expect(shopButton).toHaveClass(/dimmed/);
+  const preview = shopButton.locator("img");
+  await expect(preview).toHaveAttribute(
+    "src",
+    "/closet/garment-velour-hoodie.webp",
+  );
+  await expect(preview).toHaveAttribute("loading", "lazy");
+  await expect(preview).toHaveJSProperty("naturalWidth", 192);
   // clicking the button opens the boutique counter
   await shopButton.click();
   const shop = page.getByRole("dialog", { name: "Glitterbox", exact: true });

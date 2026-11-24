@@ -3,6 +3,7 @@
 // map onto their garments.
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
 import { DEFAULT_LOOK, OUTFITS, validateLook } from "./look.ts";
 import {
   GARMENTS,
@@ -145,4 +146,14 @@ test("recolor dyes every worn garment and keeps bad colors out", () => {
   for (const worn of Object.values(dyed)) assert.equal(worn.color, "#c9a227");
   assert.deepEqual(Object.keys(dyed).sort(), Object.keys(coat).sort());
   assert.deepEqual(recolor(coat, "red"), coat);
+});
+
+test("every closet garment has a rendered thumbnail", () => {
+  const missing = GARMENTS.filter(
+    ({ id }) =>
+      !existsSync(
+        new URL(`../../public/closet/garment-${id}.webp`, import.meta.url),
+      ),
+  ).map(({ id }) => id);
+  assert.deepEqual(missing, []);
 });

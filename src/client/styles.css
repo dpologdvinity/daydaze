@@ -1464,6 +1464,10 @@ button:focus-visible {
     transform 0.15s;
 }
 
+.tile-text {
+  place-items: center;
+}
+
 .tile img {
   width: 100%;
   aspect-ratio: 1;
@@ -4004,6 +4008,10 @@ button:focus-visible {
   align-items: center;
   gap: 6px;
   cursor: pointer;
+}
+
+.closet-buyable .chip.unowned {
+  display: grid;
 }
 
 .chip.unowned:hover,
