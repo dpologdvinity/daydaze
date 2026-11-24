@@ -1,13 +1,13 @@
 // Playwright end-to-end browser tests for the 3D client, rooms, HUD and navigation.
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Locator, type Page } from "@playwright/test";
-import { ESPRESSO } from "../src/game/barista.ts";
+import { expect, test, type Page } from "@playwright/test";
 import { DEALER_AT } from "../src/game/city/dealer.ts";
 import { GAS_STATIONS, counterOf } from "../src/game/city/gasStations.ts";
 import { BUS_STOPS } from "../src/game/city/transit.ts";
 import { piercerBank } from "../src/game/dialogue/piercer.ts";
 import { fillPlaceholders } from "../src/game/dialogue/pick.ts";
 import { SONGS } from "../src/game/karaokeSongs.ts";
+import { completeBaristaShift } from "./barista.ts";
 import { dockAction } from "./dock.ts";
 import { recordTestMap } from "./test-map.ts";
 
@@ -1903,32 +1903,27 @@ test("Espresso Lab: a barista shift takes a ticket and scores a drink", async ({
   expect(errors).toEqual([]);
 });
 
-const ESPRESSO_LABELS = new Map(
-  ESPRESSO.ingredients.map((i) => [i.id, i.label]),
-);
-const ESPRESSO_RECIPES = new Map(
-  ESPRESSO.menu.map((m) => [
-    m.name,
-    m.recipe.map((id) => ESPRESSO_LABELS.get(id) ?? id),
-  ]),
-);
-
-async function completeBaristaShift(panel: Locator): Promise<void> {
-  for (let i = 0; i < 8; i++) {
-    const status = panel.getByRole("status");
-    if (i > 0) await expect(status).toContainText("Next:");
-    const text = (await status.textContent()) ?? "";
-    const match = text.match(/(?:Ticket|Next):\s*([^\n\r]+)/);
-    const drink = match ? match[1].trim() : "";
-    const ingredients = ESPRESSO_RECIPES.get(drink) ?? [];
-    for (const ingredient of ingredients) {
-      await panel
-        .getByRole("button", { name: ingredient, exact: true })
-        .click();
-    }
+test("Espresso Lab: a shift below the passing threshold does not count in worked", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=espresso-lab`);
+  const panel = page.getByRole("region", { name: "Barista station" });
+  await panel
+    .getByRole("button", { name: "Start a shift" })
+    .click({ timeout: 150_000 });
+  // empty cups are wrong orders: 0 of 8 right is below PASSING_ORDERS
+  for (let i = 0; i < 8; i++)
     await panel.getByRole("button", { name: "Hand it over" }).click();
-  }
-}
+  await expect(panel).toContainText(/Paid \d+ coins and \d+ Hustle XP/);
+  await expect
+    .poll(() =>
+      page.evaluate(() => localStorage.getItem("daydaze-save-v1") ?? ""),
+    )
+    .not.toContain('"worked":{"barista":1}');
+  expect(errors).toEqual([]);
+});
 
 test("Espresso Lab: a finished shift posts a pay slip and counts in the save", async ({
   page,
