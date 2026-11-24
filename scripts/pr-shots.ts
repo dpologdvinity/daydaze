@@ -132,9 +132,55 @@ const AREA_SHOTS: readonly (readonly [RegExp, string | readonly string[]])[] = [
   ],
 ];
 
-/** Shot names defined in scripts/screenshots.ts (`name: "plaza"` entries). */
+/** Helpers that construct screenshot shot objects taking a name parameter. */
+const SHOT_HELPERS = [
+  "actionStrip",
+  "firefightStrip",
+  "homeShot",
+  "jeepneyRoll",
+  "lineupShot",
+  "petShot",
+  "seatStrip",
+  "trafficClose",
+  "walkStrip",
+  "wheelSheet",
+] as const;
+
+/** Shot names defined in scripts/screenshots.ts. */
 export function knownShots(source: string): string[] {
-  return [...source.matchAll(/\bname: "([a-z0-9-]+)"/g)].map((m) => m[1] ?? "");
+  const shots = new Set<string>();
+
+  // Literal property declarations: name: "..."
+  for (const m of source.matchAll(/\bname:\s*"([a-z0-9-]+)"/g)) {
+    if (m[1]) shots.add(m[1]);
+  }
+
+  // Helper calls: helper("...")
+  const helperPattern = new RegExp(
+    `\\b(?:${SHOT_HELPERS.join("|")})\\s*\\(\\s*"([a-z0-9-]+)"`,
+    "g",
+  );
+  for (const m of source.matchAll(helperPattern)) {
+    if (m[1]) shots.add(m[1]);
+  }
+
+  // Tuple tables mapped to helpers: [["react-flinch", ...], ...].map(([name, ...]) => ...)
+  const arrayMapPattern =
+    /\[\s*((?:\[\s*"[a-z0-9-]+"[^\]]*\]\s*,\s*)+)\](?:\s*as\s+const)?\s*\)\.map\(\s*(?:async\s*)?\(\s*\[\s*name/g;
+  for (const match of source.matchAll(arrayMapPattern)) {
+    const block = match[1] ?? "";
+    for (const item of block.matchAll(/\[\s*"([a-z0-9-]+)"/g)) {
+      if (item[1]) shots.add(item[1]);
+    }
+  }
+
+  // Emote actionStrip mapped template: emote-${... ? "whisper" : "laugh"}
+  if (source.includes('`emote-${emote === "Whisper" ? "whisper" : "laugh"}`')) {
+    shots.add("emote-whisper");
+    shots.add("emote-laugh");
+  }
+
+  return [...shots];
 }
 
 /** The shots to attach for these changed files, deduplicated and capped. */
