@@ -98,3 +98,10 @@ test("cleanCloset keeps what validates: old saves have none", () => {
   assert.deepEqual(cleaned.favorites, ["tee"]);
   assert.deepEqual(cleaned.outfits, [{ name: "Ok", wear: jeansWear }]);
 });
+
+test("filterGarments includes boutique shop garments", () => {
+  const hoodies = filterGarments(GARMENTS, { query: "hoodie" }, []);
+  const ids = hoodies.map((g) => g.id);
+  assert.ok(ids.includes("velour-hoodie"));
+  assert.ok(ids.includes("cropped-hoodie"));
+});
