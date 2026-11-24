@@ -23,6 +23,7 @@ import {
   createReference,
   reconcileTraffic,
 } from "../../game/city/trafficSync.ts";
+import { updateAmbientTraffic } from "../../game/city/trafficMood.ts";
 import { placePlayer, type Player } from "../world/PlayerController.tsx";
 import { foodMotion } from "./foodVendors.ts";
 import { busMotion } from "./busRide.ts";
@@ -168,11 +169,17 @@ function placePart(
   mesh.setMatrixAt(index, partMatrix.premultiply(carMatrix));
 }
 
-export function Traffic({ player }: { player: Player }) {
+export function Traffic({ player, quiet }: { player: Player; quiet: number }) {
   const tier = useDetail();
   const count = TRAFFIC_COUNT[tier];
   const bodies = useTrafficBodies(count);
-  const traffic = useMemo(() => createTraffic(count, TRAFFIC_SEED), [count]);
+  const { traffic, fleet } = useMemo(() => {
+    const traffic = createTraffic(count, TRAFFIC_SEED);
+    return { traffic, fleet: traffic.cars.slice() };
+  }, [count]);
+  const started = useRef<TrafficState | null>(null);
+  const drawRange = tier === "low" ? 80 : 180;
+  const ambientLimit = Math.round(count * (1 - 0.75 * quiet));
   const clock = useRef({ accumulator: 0 });
   // online, the shared reference fleet (src/game/city/trafficSync.ts), and
   // when the visible fleet was last pulled onto it
@@ -184,6 +191,11 @@ export function Traffic({ player }: { player: Player }) {
   const here = useRef<[number, number]>([0, 0]);
   const busPosition = useRef<[number, number]>([0, 0]);
   const truckPosition = useRef<[number, number]>([0, 0]);
+  // The active roster can grow into slots used by service vehicles last frame.
+  const carCollision = useMemo(
+    () => Array.from({ length: count + 1 }, (): [number, number] => [0, 0]),
+    [count],
+  );
   const busCollision = useMemo<[number, number][]>(
     () => [
       [0, 0],
@@ -372,12 +384,19 @@ export function Traffic({ player }: { player: Player }) {
   useFrame((_, dt) => {
     // the hailed taxi drives in the same lanes as everyone else
     const cab = taxiCab.car;
-    if (traffic.cars.length > count) traffic.cars.length = count;
-    if (cab) traffic.cars.push(cab);
     // a rider on a seat (the El, a bus) is not in the road, whatever the
     // walker's ground position says
     here.current[0] = player.pos.x;
     here.current[1] = player.pos.z;
+    updateAmbientTraffic(
+      traffic,
+      fleet,
+      ambientLimit,
+      here.current,
+      started.current === traffic ? drawRange + 20 : -1,
+      cab,
+    );
+    started.current = traffic;
     const onFoot = player.seat === null;
     // in a car (hers or a friend's) traffic yields to the car; on foot it
     // brakes for her like for anyone, and may not stop in time
@@ -423,7 +442,7 @@ export function Traffic({ player }: { player: Player }) {
           reference,
           here.current,
           // the farthest a car is drawn, and a margin
-          (tier === "low" ? 80 : 180) + 20,
+          drawRange + 20,
           first,
         );
         // for the online test: both players are on the same traffic era
@@ -459,7 +478,7 @@ export function Traffic({ player }: { player: Player }) {
       point[0] = car.x;
       point[1] = car.z;
       const distance = Math.hypot(car.x - player.pos.x, car.z - player.pos.z);
-      if (distance > (tier === "low" ? 80 : 180)) continue;
+      if (distance > drawRange) continue;
       bodies.put(
         k < COPS ? "cop" : "sedan",
         color.set(k < COPS ? COP_PAINT : GETAWAY_PAINT),
@@ -484,7 +503,7 @@ export function Traffic({ player }: { player: Player }) {
       point[0] = car.x;
       point[1] = car.z;
       const distance = Math.hypot(car.x - player.pos.x, car.z - player.pos.z);
-      if (distance > (tier === "low" ? 80 : 180)) continue;
+      if (distance > drawRange) continue;
       bodies.put(
         k < CHASE_COPS ? "cop" : "sports",
         color.set(k < CHASE_COPS ? COP_PAINT : chase.fleeingColor),
@@ -503,34 +522,36 @@ export function Traffic({ player }: { player: Player }) {
       const car = traffic.cars[i];
       carPose(car, pose);
       // your own car out on the street bumps into this one
+      const wheelSlot = car === cab ? count : car.id;
       if (city) {
-        const c = city.traffic[i];
-        if (c) {
-          c[0] = pose.x;
-          c[1] = pose.z;
-        } else city.traffic[i] = [pose.x, pose.z];
+        const point = carCollision[wheelSlot];
+        point[0] = pose.x;
+        point[1] = pose.z;
+        city.traffic[i] = point;
       }
       // the wheels keep rolling and steering out of sight, so a car coming
       // into range is not at a standstill with its wheels askew
       let travel = 0;
       let steer = 0;
-      if (i < rolled.travel.length) {
+      if (wheelSlot < rolled.travel.length) {
         const wheels = car.body ? BODY_WHEELS[car.body] : JEEPNEY_WHEELS;
         const ds = car.speed * dt;
-        const dYaw = Number.isNaN(rolled.yaw[i]) ? 0 : pose.yaw - rolled.yaw[i];
-        rolled.yaw[i] = pose.yaw;
-        rolled.travel[i] += ds;
-        rolled.steer[i] +=
+        const dYaw = Number.isNaN(rolled.yaw[wheelSlot])
+          ? 0
+          : pose.yaw - rolled.yaw[wheelSlot];
+        rolled.yaw[wheelSlot] = pose.yaw;
+        rolled.travel[wheelSlot] += ds;
+        rolled.steer[wheelSlot] +=
           (steerAngle(wheels.frontZ - wheels.rearZ, dYaw, ds) -
-            rolled.steer[i]) *
+            rolled.steer[wheelSlot]) *
           Math.min(1, dt * STEER_EASE);
-        travel = rolled.travel[i];
-        steer = rolled.steer[i];
+        travel = rolled.travel[wheelSlot];
+        steer = rolled.steer[wheelSlot];
       }
       const distance = Math.hypot(pose.x - player.pos.x, pose.z - player.pos.z);
       if (probing && distance < 60)
         probe += `${pose.x.toFixed(1)},${pose.z.toFixed(1)},${pose.yaw.toFixed(2)},${car.speed.toFixed(1)},${car.body ? "c" : "j"};`;
-      if (awaitingFleet || distance > (tier === "low" ? 80 : 180)) continue;
+      if (awaitingFleet || distance > drawRange) continue;
       if (car.body) {
         // a downloaded body: the taxi, cop car, ambulance and school bus wear
         // their own paint, everyone else the car's

@@ -49,7 +49,9 @@ import {
   disposeKindMeshes,
   writeKind,
 } from "./meshes.ts";
-import { useDaylight } from "./daylight.ts";
+import { useCityWeather, useDaylight } from "./daylight.ts";
+import { Rain } from "./Rain.tsx";
+import { setWetSigns, setWetWeather } from "./wetSurface.ts";
 import { groundMaps, worldMapped } from "./worldTexture.ts";
 import { useDressings } from "./season.ts";
 import { QueueCrowd } from "./QueueCrowd.tsx";
@@ -163,6 +165,8 @@ export function CityScene({
   // day and night (daylight.ts): sky, fog, sun and hemisphere follow the
   // hour; neon, signs, lit windows and the walls' night glow dim by day
   const day = useDaylight();
+  const { rain, quiet } = useCityWeather();
+  useEffect(() => setWetWeather(rain, day.neon), [rain, day.neon]);
   const background = useMemo(() => new THREE.Color(), []);
   const fog = useRef<THREE.Fog>(null);
   const sun = useRef<THREE.DirectionalLight>(null);
@@ -215,16 +219,16 @@ export function CityScene({
           sunG * sW + moonG * mW,
           sunB * sW + moonB * mW,
         );
-        sun.current.intensity = total;
+        sun.current.intensity = total - 0.48 * rain * wSun;
       }
     }
     if (hemi.current) {
       hemi.current.color.setRGB(...day.hemiSky);
       hemi.current.groundColor.setRGB(...day.hemiGround);
-      hemi.current.intensity = day.hemi;
+      hemi.current.intensity = day.hemi * (1 - 0.18 * rain);
     }
     dimForDay(meshes, day.neon);
-  }, [day, background, meshes, far]);
+  }, [day, rain, background, meshes, far]);
 
   useFrame(({ gl, clock, camera }) => {
     CITY_CLOCK.uTime.value = clock.elapsedTime;
@@ -262,6 +266,7 @@ export function CityScene({
       cityFurniture.set({ spots: plan.furniture, at, overview: !bays });
       cityDream.set({ spots: plan.dream });
       cityStreet.set({ pieces: plan.street });
+      setWetSigns(plan.lights);
       lights.current.forEach((light, i) => {
         if (!light) return;
         const sign = plan.lights[i];
@@ -321,6 +326,9 @@ export function CityScene({
         </Suspense>
       )}
       <CitySky night={day.neon} />
+      {rain > 0 && !reduced && (
+        <Rain amount={rain} low={tier === "low"} night={day.neon} />
+      )}
       <hemisphereLight ref={hemi} args={["#8fa6ff", "#2a1038", 1.6]} />
       {Array.from({ length: lightCount }, (_, i) => (
         <pointLight
@@ -376,7 +384,7 @@ export function CityScene({
         <StreetFood player={player} />
         <StreetDealer player={player} />
         <TaxiRide player={player} />
-        <Traffic player={player} />
+        <Traffic player={player} quiet={quiet} />
         <ParkedCars player={player} />
       </Suspense>
       <PlayerCar player={player} parked={car} onPark={onPark} />

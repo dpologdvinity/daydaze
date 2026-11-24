@@ -13,11 +13,21 @@ declare module "react" {
   }
 }
 
-type Option<T extends string> = {
+export type Option<T extends string> = {
   readonly id: T;
   readonly label: string;
   /** The color a swatch shows when the id itself is not a color. */
-  readonly swatch?: string;
+  readonly swatch?: string | undefined;
+  /** A text-only option in a picture picker. */
+  readonly thumbnail?: false | undefined;
+  /** An item not owned yet in the player's wardrobe. */
+  readonly unowned?: boolean | undefined;
+  /** The item's price in coins when sold in a shop. */
+  readonly price?: number | null | undefined;
+  /** The store name where this item is sold. */
+  readonly store?: string | undefined;
+  /** Opens the shop counter when the unowned item is clicked. */
+  readonly onShop?: (() => void) | undefined;
 };
 
 type PickerProps<T extends string> = {
@@ -30,24 +40,32 @@ type PickerProps<T extends string> = {
 /** Moves focus and selection between buttons in a radiogroup with arrow keys. */
 export function onRadioKeyDown<T extends string>(
   e: KeyboardEvent<HTMLButtonElement>,
-  options: readonly { id: T }[],
+  options: readonly { id: T; unowned?: boolean | undefined }[],
   currentIndex: number,
   onPick: (id: T) => void,
 ) {
-  let nextIndex = -1;
+  const selectable = options
+    .map((o, i) => ({ o, i }))
+    .filter(({ o }) => !o.unowned);
+  if (selectable.length === 0) return;
+  const currentSelectableIdx = selectable.findIndex(
+    ({ i }) => i === currentIndex,
+  );
+  let nextSelectableIdx = -1;
   if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-    nextIndex = (currentIndex + 1) % options.length;
+    nextSelectableIdx = (currentSelectableIdx + 1) % selectable.length;
   } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-    nextIndex = (currentIndex - 1 + options.length) % options.length;
+    nextSelectableIdx =
+      (currentSelectableIdx - 1 + selectable.length) % selectable.length;
   }
-  if (nextIndex >= 0) {
+  if (nextSelectableIdx >= 0) {
     e.preventDefault();
-    onPick(options[nextIndex].id);
+    onPick(selectable[nextSelectableIdx].o.id);
     const parent = e.currentTarget.parentElement;
     const buttons = parent?.querySelectorAll<HTMLButtonElement>(
       'button[role="radio"]',
     );
-    buttons?.[nextIndex]?.focus();
+    buttons?.[nextSelectableIdx]?.focus();
   }
 }
 
@@ -143,8 +161,8 @@ export function ColorPicker({
 
 /**
  * Option buttons. `tiles` shows each option as a picture card from
- * `/closet/<tiles>-<id>.webp` with its name under it; options without a
- * picture fall back to a lettered card.
+ * `/closet/<tiles>-<id>.webp` with its name under it. Options can omit
+ * their image, and callers can set how many images load eagerly.
  */
 export function Tiles<T extends string>({
   label,
@@ -152,9 +170,16 @@ export function Tiles<T extends string>({
   value,
   onPick,
   tiles,
-}: PickerProps<T> & { tiles: string }) {
-  const selectedIndex = options.findIndex((o) => o.id === value);
-  const activeIndex = selectedIndex >= 0 ? selectedIndex : 0;
+  eagerCount = 6,
+}: PickerProps<T> & { tiles: string; eagerCount?: number }) {
+  const selectedIndex = options.findIndex((o) => o.id === value && !o.unowned);
+  const firstOwnedIndex = options.findIndex((o) => !o.unowned);
+  const activeIndex =
+    selectedIndex >= 0
+      ? selectedIndex
+      : firstOwnedIndex >= 0
+        ? firstOwnedIndex
+        : 0;
   return (
     <div
       className="tiles"
@@ -162,29 +187,76 @@ export function Tiles<T extends string>({
       role="radiogroup"
       aria-label={label}
     >
-      {options.map((o, idx) => (
-        <button
-          key={o.id}
-          type="button"
-          role="radio"
-          tabIndex={idx === activeIndex ? 0 : -1}
-          aria-checked={o.id === value}
-          className="tile"
-          onClick={() => onPick(o.id)}
-          onKeyDown={(e) => onRadioKeyDown(e, options, idx, onPick)}
-        >
-          <img
-            src={`/closet/${tiles}-${o.id}.webp`}
-            alt=""
-            loading={idx < 6 ? undefined : "lazy"}
-            decoding="async"
-            onError={(e) => {
-              e.currentTarget.hidden = true;
-            }}
-          />
-          <span>{o.label}</span>
-        </button>
-      ))}
+      {options.map((o, idx) => {
+        if (o.unowned) {
+          const price = o.price;
+          const priceTag =
+            price !== null && price !== undefined
+              ? `${price} ${price === 1 ? "coin" : "coins"}`
+              : "free";
+          const store = o.store ?? "Shop";
+          return (
+            <button
+              key={o.id}
+              type="button"
+              className={
+                o.thumbnail === false
+                  ? "tile tile-text unowned dimmed"
+                  : "tile unowned dimmed"
+              }
+              onClick={() => {
+                o.onShop?.();
+              }}
+              aria-label={`${o.label}, ${priceTag} at ${store}`}
+              title={`${o.label} · ${priceTag} · Open ${store}`}
+            >
+              {o.thumbnail !== false && (
+                <img
+                  src={`/closet/${tiles}-${o.id}.webp`}
+                  alt=""
+                  loading={idx < eagerCount ? undefined : "lazy"}
+                  decoding="async"
+                  onError={(e) => {
+                    e.currentTarget.hidden = true;
+                  }}
+                />
+              )}
+              <span>{o.label}</span>
+              <span className="tile-buy">
+                {price !== null && price !== undefined && (
+                  <span className="tile-price chip-price">{priceTag}</span>
+                )}
+                <span className="tile-shop chip-shop">Shop</span>
+              </span>
+            </button>
+          );
+        }
+        return (
+          <button
+            key={o.id}
+            type="button"
+            role="radio"
+            tabIndex={idx === activeIndex ? 0 : -1}
+            aria-checked={o.id === value}
+            className={o.thumbnail === false ? "tile tile-text" : "tile"}
+            onClick={() => onPick(o.id)}
+            onKeyDown={(e) => onRadioKeyDown(e, options, idx, onPick)}
+          >
+            {o.thumbnail !== false && (
+              <img
+                src={`/closet/${tiles}-${o.id}.webp`}
+                alt=""
+                loading={idx < eagerCount ? undefined : "lazy"}
+                decoding="async"
+                onError={(e) => {
+                  e.currentTarget.hidden = true;
+                }}
+              />
+            )}
+            <span>{o.label}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }

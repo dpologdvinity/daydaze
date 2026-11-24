@@ -1464,6 +1464,10 @@ button:focus-visible {
     transform 0.15s;
 }
 
+.tile-text {
+  place-items: center;
+}
+
 .tile img {
   width: 100%;
   aspect-ratio: 1;
@@ -1500,6 +1504,42 @@ button:focus-visible {
   box-shadow:
     0 0 0 2px var(--fuchsia),
     0 0 18px rgb(255 47 154 / 0.55);
+}
+
+/* buyable tiles the player does not own yet */
+.tile.unowned,
+.tile.dimmed {
+  opacity: 0.6;
+  border-style: dashed;
+}
+
+.tile.unowned:hover,
+.tile.dimmed:hover {
+  opacity: 0.9;
+  background: rgb(255 47 154 / 0.15);
+  border-color: rgb(255 207 106 / 0.7);
+}
+
+.tile.unowned .tile-price,
+.tile.dimmed .tile-price {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.tile.unowned .tile-shop,
+.tile.dimmed .tile-shop {
+  font-size: 11px;
+  color: var(--champagne);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.tile-buy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-wrap: wrap;
 }
 
 .tiles + .row,
@@ -3968,6 +4008,10 @@ button:focus-visible {
   align-items: center;
   gap: 6px;
   cursor: pointer;
+}
+
+.closet-buyable .chip.unowned {
+  display: grid;
 }
 
 .chip.unowned:hover,

@@ -16,3 +16,6 @@ pre-commit:
     - name: actionlint
       glob: ".github/workflows/*.{yml,yaml}"
       run: if command -v actionlint >/dev/null; then actionlint {staged_files}; else echo "actionlint not installed - skipping"; fi
+    - name: cspell-words
+      glob: "cspell-words.txt"
+      run: node --experimental-strip-types scripts/check-cspell-words.ts

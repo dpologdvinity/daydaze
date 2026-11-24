@@ -7,6 +7,7 @@ import { BUS_STOPS } from "../src/game/city/transit.ts";
 import { piercerBank } from "../src/game/dialogue/piercer.ts";
 import { fillPlaceholders } from "../src/game/dialogue/pick.ts";
 import { SONGS } from "../src/game/karaokeSongs.ts";
+import { completeBaristaShift } from "./barista.ts";
 import { dockAction } from "./dock.ts";
 import { recordTestMap } from "./test-map.ts";
 
@@ -341,8 +342,24 @@ test("the closet searches and filters garments, keeps favorites and saves outfit
   });
   await page.getByRole("tab", { name: "Outfit", exact: true }).click();
   const top = page.getByRole("radiogroup", { name: "Top", exact: true });
-  const chips = top.getByRole("radio");
-  const all = await chips.count();
+  const tiles = top.getByRole("radio");
+  const all = await tiles.count();
+  const striped = top.getByRole("radio", { name: "Striped shirt" });
+  const stripedPreview = striped.locator("img");
+  await expect(stripedPreview).toHaveAttribute(
+    "src",
+    "/closet/garment-striped-shirt.webp",
+  );
+  await expect(stripedPreview).toHaveAttribute("loading", "lazy");
+  await expect(stripedPreview).toHaveAttribute("alt", "");
+  await stripedPreview.scrollIntoViewIfNeeded();
+  await expect(stripedPreview).toHaveJSProperty("naturalWidth", 192);
+  await expect(
+    page
+      .getByRole("radiogroup", { name: "Outerwear", exact: true })
+      .getByRole("radio", { name: "None" })
+      .locator("img"),
+  ).toHaveCount(0);
   // search narrows every row; the worn garment stays so the group has a value
   const search = page.getByRole("searchbox", { name: "Search clothes" });
   await search.fill("zzzz");
@@ -350,9 +367,9 @@ test("the closet searches and filters garments, keeps favorites and saves outfit
   await expect(top.getByRole("radio", { checked: true })).toHaveCount(1);
   await search.fill("striped");
   await expect(top.getByRole("radio", { name: "Striped shirt" })).toBeVisible();
-  expect(await chips.count()).toBeLessThan(all);
+  expect(await tiles.count()).toBeLessThan(all);
   await search.fill("");
-  await expect(chips).toHaveCount(all);
+  await expect(tiles).toHaveCount(all);
   // the style filter
   await page
     .getByRole("radiogroup", { name: "Style", exact: true })
@@ -364,16 +381,22 @@ test("the closet searches and filters garments, keeps favorites and saves outfit
     .getByRole("radiogroup", { name: "Style", exact: true })
     .getByRole("radio", { name: "All styles", exact: true })
     .click();
+  // arrows still select and focus a garment after filtering to shirts
+  await search.fill("shirt");
+  await top.getByRole("radio", { name: "Denim shirt" }).press("ArrowRight");
+  await expect(striped).toBeFocused();
+  await expect(striped).toHaveAttribute("aria-checked", "true");
+  await expect(striped).toHaveAttribute("tabindex", "0");
+  await search.fill("");
   // a favorite floats to the front of its row and filters on its own
-  await top.getByRole("radio", { name: "Striped shirt", exact: true }).click();
   await page
     .getByRole("button", { name: "Favorite Striped shirt", exact: true })
     .click();
-  await expect(chips.first()).toHaveAccessibleName("Striped shirt");
+  await expect(tiles.first()).toHaveAccessibleName("Striped shirt");
   await page
     .getByRole("button", { name: "Favorites only", exact: true })
     .click();
-  await expect(chips).toHaveCount(1);
+  await expect(tiles).toHaveCount(1);
   await page
     .getByRole("button", { name: "Favorites only", exact: true })
     .click();
@@ -434,8 +457,48 @@ test("the closet shows unowned garments dimmed with shop price and opens the sho
   await expect(shopButton).toBeVisible();
   await expect(shopButton).toHaveClass(/unowned/);
   await expect(shopButton).toHaveClass(/dimmed/);
+  const preview = shopButton.locator("img");
+  await expect(preview).toHaveAttribute(
+    "src",
+    "/closet/garment-velour-hoodie.webp",
+  );
+  await expect(preview).toHaveAttribute("loading", "lazy");
+  await expect(preview).toHaveJSProperty("naturalWidth", 192);
   // clicking the button opens the boutique counter
   await shopButton.click();
+  const shop = page.getByRole("dialog", { name: "Glitterbox", exact: true });
+  await expect(shop).toBeVisible();
+  await expect(shop.getByRole("heading", { name: "Glitterbox" })).toBeVisible();
+  await shop.getByRole("button", { name: "Close", exact: true }).click();
+  await expect(shop).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+test("the closet shows unowned whole outfits dimmed with shop price and opens the shop", async ({
+  page,
+}) => {
+  test.setTimeout(300_000);
+  const errors = collectErrors(page);
+  await page.goto(VELVET);
+  await page
+    .getByRole("button", { name: "Dressing room", exact: true })
+    .click();
+  await expect(canvasOf(page)).toHaveAttribute("data-studio", "ready", {
+    timeout: 150_000,
+  });
+  await page.getByRole("tab", { name: "Outfit", exact: true }).click();
+  // an unowned boutique whole outfit is visible in the Outfit radiogroup with price and shop link
+  const outfitButton = page
+    .getByRole("radiogroup", { name: "Outfit", exact: true })
+    .getByRole("button", {
+      name: "Y2K velour tracksuit, 60 coins at Glitterbox",
+      exact: true,
+    });
+  await expect(outfitButton).toBeVisible();
+  await expect(outfitButton).toHaveClass(/unowned/);
+  await expect(outfitButton).toHaveClass(/dimmed/);
+  // clicking the tile opens the boutique counter
+  await outfitButton.click();
   const shop = page.getByRole("dialog", { name: "Glitterbox", exact: true });
   await expect(shop).toBeVisible();
   await expect(shop.getByRole("heading", { name: "Glitterbox" })).toBeVisible();
@@ -1933,6 +1996,32 @@ test("Espresso Lab: a barista shift takes a ticket and scores a drink", async ({
   expect(errors).toEqual([]);
 });
 
+test("Espresso Lab: a shift below the passing threshold does not count in worked", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=espresso-lab`);
+  const panel = page.getByRole("region", { name: "Barista station" });
+  await panel
+    .getByRole("button", { name: "Start a shift" })
+    .click({ timeout: 150_000 });
+  // empty cups are wrong orders: 0 of 8 right is below PASSING_ORDERS
+  for (let i = 0; i < 8; i++)
+    await panel.getByRole("button", { name: "Hand it over" }).click();
+  await expect(panel).toContainText(/Paid \d+ coins and \d+ Hustle XP/);
+  await expect
+    .poll(() =>
+      page.evaluate(() => localStorage.getItem("daydaze-save-v1") ?? ""),
+    )
+    .toContain('"today":1');
+  const saved: unknown = await page.evaluate((): unknown =>
+    JSON.parse(localStorage.getItem("daydaze-save-v1") ?? "{}"),
+  );
+  expect(saved).toMatchObject({ shifts: { today: 1, worked: {} } });
+  expect(errors).toEqual([]);
+});
+
 test("Espresso Lab: a finished shift posts a pay slip and counts in the save", async ({
   page,
 }) => {
@@ -1943,9 +2032,7 @@ test("Espresso Lab: a finished shift posts a pay slip and counts in the save", a
   await panel
     .getByRole("button", { name: "Start a shift" })
     .click({ timeout: 150_000 });
-  // empty cups are wrong orders: the shift still ends and is logged
-  for (let i = 0; i < 8; i++)
-    await panel.getByRole("button", { name: "Hand it over" }).click();
+  await completeBaristaShift(panel);
   await expect(panel).toContainText(/Paid \d+ coins and \d+ Hustle XP/);
   await expect
     .poll(() =>
@@ -1969,8 +2056,7 @@ test("Espresso Lab: the shift that reaches a new rank posts a promotion", async 
   await panel
     .getByRole("button", { name: "Start a shift" })
     .click({ timeout: 150_000 });
-  for (let i = 0; i < 8; i++)
-    await panel.getByRole("button", { name: "Hand it over" }).click();
+  await completeBaristaShift(panel);
   await expect(panel).toContainText(
     "Promoted to Cafe · Counter hand! +50 coins",
   );
@@ -3534,6 +3620,9 @@ test("the Galleria: buy at Glitterbox and Platform Palace, and wear them", async
   await expect(row.getByRole("button", { name: "Wear" })).toBeVisible();
   await shop.getByRole("button", { name: "Close" }).click();
   await expect(shop).toBeHidden();
+  await expect(
+    page.getByRole("button", { name: "Shop at Glitterbox" }),
+  ).toBeFocused();
   // Platform Palace next door: the boots are 55, all that's left
   await page.getByRole("button", { name: "Shop at Platform Palace" }).click();
   const shoes = page.getByRole("dialog", { name: "Platform Palace" });
@@ -3545,6 +3634,11 @@ test("the Galleria: buy at Glitterbox and Platform Palace, and wear them", async
       page.evaluate(() => localStorage.getItem("daydaze-save-v1") ?? ""),
     )
     .toContain('"shoes":"boots"');
+  await page.keyboard.press("Escape");
+  await expect(shoes).toBeHidden();
+  await expect(
+    page.getByRole("button", { name: "Shop at Platform Palace" }),
+  ).toBeFocused();
   expect(errors).toEqual([]);
 });
 
