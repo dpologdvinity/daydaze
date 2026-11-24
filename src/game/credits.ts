@@ -141,6 +141,43 @@ export const CREDITS: readonly {
     title: "3D models",
     entries: [
       {
+        title: "Wisteria Flowers",
+        author: "omiyaio",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/wisteria-flowers-44e2546c4d554d4c8dd6b884e0a9b5e0",
+        usedFor: "City wisteria, optimized (art/city/pack_garden_assets.py).",
+      },
+      {
+        title: "Pergola Ivy Arch low poly",
+        author: "Andre Lages",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/pergola-ivy-arch-low-poly-ab557f112e804c129e5a631761b6394e",
+        usedFor:
+          "City ivy arch, alpha cutout and optimized (art/city/pack_garden_assets.py).",
+      },
+      {
+        title: "CC0 - Rose Arch",
+        author: "plaggy",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/cc0-rose-arch-5578bdc83ed743feb5f7c775197f5fbe",
+        usedFor: "City rose arch, optimized (art/city/pack_garden_assets.py).",
+      },
+      {
+        title: "Village Window Box - Low Poly Medieval, CC0",
+        author: "Avramania",
+        license: "CC0 1.0",
+        url: "https://sketchfab.com/3d-models/village-window-box-low-poly-medieval-cc0-2cb6d5813c704c28b2dc0dc791b49843",
+        usedFor: "City flower box, optimized (art/city/pack_garden_assets.py).",
+      },
+      {
+        title: "Hanging Planter",
+        author: "rwmahr",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/hanging-planter-56f4bacf85d546408bca4769306da814",
+        usedFor:
+          "City hanging planter, optimized (art/city/pack_garden_assets.py).",
+      },
+      {
         title: "Majestic Victorian Mansion [Rapid Assets]",
         author: "RapidAssets",
         license: "CC-BY 4.0",
@@ -1315,7 +1352,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://poly.pizza/m/df8uCl1YpK",
         usedFor:
-          "Hedges and climbing-rose backing at the community garden gate.",
+          "Hedges and climbing-rose backing at the community garden gate and city garden borders.",
       },
       {
         title: "Racing Kit",
