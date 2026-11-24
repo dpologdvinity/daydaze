@@ -3958,7 +3958,8 @@ button:focus-visible {
 }
 
 /* buyable garments the player does not own yet */
-.chip.unowned {
+.chip.unowned,
+.chip.dimmed {
   opacity: 0.6;
   border-style: dashed;
   text-decoration: none;
@@ -3969,7 +3970,8 @@ button:focus-visible {
   cursor: pointer;
 }
 
-.chip.unowned:hover {
+.chip.unowned:hover,
+.chip.dimmed:hover {
   opacity: 0.9;
   background: rgb(255 47 154 / 0.15);
   border-color: rgb(255 207 106 / 0.7);

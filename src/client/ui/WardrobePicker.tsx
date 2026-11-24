@@ -159,10 +159,15 @@ export function WardrobePicker({
             {unownedInRow.length > 0 && (
               <div
                 className="row closet-buyable"
+                role="group"
                 aria-label={`Buyable ${label.toLowerCase()}`}
               >
                 {unownedInRow.map((g) => {
                   const price = garmentPrice(g);
+                  const priceTag =
+                    price !== null
+                      ? `${price} ${price === 1 ? "coin" : "coins"}`
+                      : "free";
                   const item = garmentShopItem(g);
                   const store = item ? shopName(item.store) : "Shop";
                   return (
@@ -173,12 +178,12 @@ export function WardrobePicker({
                       onClick={() => {
                         if (item) openShop(item.store, store);
                       }}
-                      aria-label={`${g.label}, ${price} coins at ${store}`}
-                      title={`${g.label} · ${price} coins · Open ${store}`}
+                      aria-label={`${g.label}, ${priceTag} at ${store}`}
+                      title={`${g.label} · ${priceTag} · Open ${store}`}
                     >
                       <span>{g.label}</span>
                       {price !== null && (
-                        <span className="chip-price">{price} coins</span>
+                        <span className="chip-price">{priceTag}</span>
                       )}
                       <span className="chip-shop">Shop</span>
                     </button>
