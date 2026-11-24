@@ -2629,6 +2629,17 @@ const SHOTS: {
     act: furnitureReady,
   },
   {
+    name: "city-boardwalk-rain",
+    query:
+      "room=city&view=room&time=15:00&at=40,283&cam=-10,2.2,284,90,1.8,283.5&weather=rain",
+    act: furnitureReady,
+  },
+  {
+    name: "city-neon-rain",
+    query: "room=city&view=full&time=04:00&at=-36,9.5&weather=rain",
+    act: cityReady,
+  },
+  {
     // the game menu open over the city: everything not needed this moment
     name: "city-menu",
     query: "room=city&view=full",
@@ -3776,9 +3787,15 @@ if (process.argv[2] === "--matrix") {
     // the low tier unless the shot picks its own (quality=high)
     const tier = shot.query.includes("quality=") ? "" : "quality=low";
     // the lineup page renders its still frames on its own: no tier flag
+    // Keep city captures repeatable across calendar days.
+    const params = new URLSearchParams(shot.query);
+    const weather =
+      params.get("room") === "city" && !params.has("weather")
+        ? "&weather=clear"
+        : "";
     const url = shot.lineup
       ? `${BASE}/src/client/avatar/lineup.html?human=1&still=1&${shot.query}`
-      : `${BASE}/?${tier}${still}&${shot.query}`;
+      : `${BASE}/?${tier}${still}&${shot.query}${weather}`;
     if (shot.before) await shot.before(page);
     await page.goto(url, { timeout: 300_000 });
     if (shot.act) await shot.act(page);

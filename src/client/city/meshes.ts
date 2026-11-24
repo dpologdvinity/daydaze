@@ -1,5 +1,6 @@
 // Builds the city's instanced meshes and their materials, one per plan `Kind`,
 // with glowing kinds boosted for bloom and the animated ones wired to shaders.
+import { wetSurface } from "./wetSurface.ts";
 import * as THREE from "three";
 import { sidewalkMaterial } from "./sidewalkLook.ts";
 import { boxMapped, groundMaps, worldMapped } from "./worldTexture.ts";
@@ -211,19 +212,21 @@ const isFacade = (kind: Kind): kind is FacadeKind => FACADES.has(kind);
 const MATERIAL: Record<Exclude<Shared, FacadeKind>, THREE.Material> = {
   // wet asphalt: low roughness catches the neon as a soft sheen
   // wet asphalt (Poly Haven CC0), mapped by world position
-  road: worldMapped(
-    new THREE.MeshStandardMaterial({
-      ...groundMaps("asphalt_02"),
-      roughness: 0.55,
-      metalness: 0.15,
-      emissive: "#1a1036",
-      emissiveIntensity: 0.5,
-    }),
-    0.25,
-    false,
-    // patched, worn and darkened by tires across its length, so a far road
-    // keeps some texture once the photo has blurred out
-    0.6,
+  road: wetSurface(
+    worldMapped(
+      new THREE.MeshStandardMaterial({
+        ...groundMaps("asphalt_02"),
+        roughness: 0.55,
+        metalness: 0.15,
+        emissive: "#1a1036",
+        emissiveIntensity: 0.5,
+      }),
+      0.25,
+      false,
+      // patched, worn and darkened by tires across its length, so a far road
+      // keeps some texture once the photo has blurred out
+      0.6,
+    ),
   ),
   sidewalk: sidewalkMaterial(),
   // sand, lawns and the boardwalk: CC0 scans by world position, tinted per
@@ -246,16 +249,18 @@ const MATERIAL: Record<Exclude<Shared, FacadeKind>, THREE.Material> = {
     }),
     0.5,
   ),
-  planks: worldMapped(
-    new THREE.MeshStandardMaterial({
-      ...groundMaps("wood_floor_deck"),
-      roughness: 0.85,
-      emissive: "#2a1d3a",
-      emissiveIntensity: 0.3,
-    }),
-    // weathered boards, laid crosswise to the way people walk the deck
-    0.3,
-    true,
+  planks: wetSurface(
+    worldMapped(
+      new THREE.MeshStandardMaterial({
+        ...groundMaps("wood_floor_deck"),
+        roughness: 0.85,
+        emissive: "#2a1d3a",
+        emissiveIntensity: 0.3,
+      }),
+      // weathered boards, laid crosswise to the way people walk the deck
+      0.3,
+      true,
+    ),
   ),
   lane: new THREE.MeshBasicMaterial({ toneMapped: false }),
   band: new THREE.MeshBasicMaterial({ toneMapped: false }),
