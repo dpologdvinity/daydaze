@@ -99,7 +99,7 @@ test("every garment ships fitted to both bodies, with its tuck key", () => {
 
 test("tights cover the leg down to the foot and sneakers have no_socks morph", () => {
   for (const m of ["", "-m"]) {
-    // Tights reach foot level (unquantized Y min <= -0.83 in glTF space, where floor is ~ -0.87)
+    // Tights reach foot level (raw Y min <= -0.83 in glTF space, where floor is ~ -0.87)
     for (const lo of ["", "-lo"]) {
       const file = `legwear-tights${m}${lo}.glb`;
       const { json } = readGlb(
@@ -124,7 +124,7 @@ test("tights cover the leg down to the foot and sneakers have no_socks morph", (
       );
     }
 
-    // Sneakers have no_socks shape key
+    // Sneakers have no_socks shape key that moves vertices
     for (const lo of ["", "-lo"]) {
       const file = `shoes-sneakers${m}${lo}.glb`;
       const { json } = readGlb(
@@ -137,6 +137,18 @@ test("tights cover the leg down to the foot and sneakers have no_socks morph", (
       assert.ok(
         targets.includes("no_socks"),
         `${file}: must carry no_socks morph target`,
+      );
+      const targetIdx = targets.indexOf("no_socks");
+      assert.ok(
+        mesh?.primitives.some((primitive) => {
+          const position = primitive.targets?.[targetIdx]?.POSITION;
+          if (position === undefined) return false;
+          const accessor = json.accessors[position];
+          return [...(accessor.min ?? []), ...(accessor.max ?? [])].some(
+            (value) => Math.abs(value) > 0.0001,
+          );
+        }),
+        `${file}: no_socks must move vertices`,
       );
     }
   }
