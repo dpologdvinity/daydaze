@@ -3166,7 +3166,10 @@ test("sunny acres farm: cast and leave fishing", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto(`${LOW}&room=farm`);
   await expect(canvasOf(page)).toHaveAttribute("data-frames", "10");
-  await page.getByRole("button", { name: "Fishing", exact: true }).click();
+  await page
+    .getByRole("group", { name: "Games here" })
+    .getByRole("button", { name: "Fishing", exact: true })
+    .click();
   const panel = page.getByRole("region", { name: "Fishing" });
   await panel.getByRole("button", { name: "Go fishing" }).click();
   await panel.getByRole("button", { name: "Cast", exact: true }).click();
@@ -3201,7 +3204,10 @@ test("open water: cast and leave fishing", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto(`${LOW}&room=open-water`);
   await expect(canvasOf(page)).toHaveAttribute("data-frames", "10");
-  await page.getByRole("button", { name: "Fishing", exact: true }).click();
+  await page
+    .getByRole("group", { name: "Games here" })
+    .getByRole("button", { name: "Fishing", exact: true })
+    .click();
   const panel = page.getByRole("region", { name: "Fishing" });
   await panel.getByRole("button", { name: "Go fishing" }).click();
   await panel.getByRole("button", { name: "Cast", exact: true }).click();
