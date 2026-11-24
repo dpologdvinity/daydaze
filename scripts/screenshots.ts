@@ -2574,7 +2574,8 @@ const SHOTS: {
   },
   {
     name: "city-boardwalk-rain",
-    query: "room=city&view=full&time=15:00&at=-34,286&weather=rain",
+    query:
+      "room=city&view=room&time=15:00&at=40,283&cam=-10,2.2,284,90,1.8,283.5&weather=rain",
     act: furnitureReady,
   },
   {

@@ -218,16 +218,16 @@ export function CityScene({
           sunG * sW + moonG * mW,
           sunB * sW + moonB * mW,
         );
-        sun.current.intensity = total;
+        sun.current.intensity = total - 0.48 * rain * wSun;
       }
     }
     if (hemi.current) {
       hemi.current.color.setRGB(...day.hemiSky);
       hemi.current.groundColor.setRGB(...day.hemiGround);
-      hemi.current.intensity = day.hemi;
+      hemi.current.intensity = day.hemi * (1 - 0.18 * rain);
     }
     dimForDay(meshes, day.neon);
-  }, [day, background, meshes, far]);
+  }, [day, rain, background, meshes, far]);
 
   useFrame(({ gl, clock, camera }) => {
     CITY_CLOCK.uTime.value = clock.elapsedTime;
@@ -314,7 +314,9 @@ export function CityScene({
         </Suspense>
       )}
       <CitySky night={day.neon} />
-      {rain > 0 && !reduced && <Rain amount={rain} low={tier === "low"} />}
+      {rain > 0 && !reduced && (
+        <Rain amount={rain} low={tier === "low"} night={day.neon} />
+      )}
       <hemisphereLight ref={hemi} args={["#8fa6ff", "#2a1038", 1.6]} />
       {Array.from({ length: lightCount }, (_, i) => (
         <pointLight

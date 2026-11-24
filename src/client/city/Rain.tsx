@@ -26,17 +26,27 @@ const vertexShader = /* glsl */ `
 
 const fragmentShader = /* glsl */ `
   uniform float uRain;
+  uniform float uNight;
   varying float vFade;
 
   void main() {
-    gl_FragColor = vec4(0.42, 0.57, 0.73, vFade * uRain * 0.54);
+    vec3 rainColor = mix(vec3(0.15, 0.25, 0.34), vec3(0.52, 0.67, 0.82), uNight);
+    gl_FragColor = vec4(rainColor, vFade * uRain * 0.67);
     #include <colorspace_fragment>
   }
 `;
 
-export function Rain({ amount, low }: { amount: number; low: boolean }) {
+export function Rain({
+  amount,
+  low,
+  night,
+}: {
+  amount: number;
+  low: boolean;
+  night: number;
+}) {
   const positions = useMemo(() => {
-    const count = low ? 560 : 1500;
+    const count = low ? 760 : 1500;
     const data = new Float32Array(count * 6);
     for (let i = 0; i < count; i++) {
       const x = hash(i, 1) * 38;
@@ -48,13 +58,14 @@ export function Rain({ amount, low }: { amount: number; low: boolean }) {
   }, [low]);
   const material = useRef<ShaderMaterial>(null);
   const uniforms = useMemo(
-    () => ({ uTime: { value: 0 }, uRain: { value: 0 } }),
+    () => ({ uTime: { value: 0 }, uRain: { value: 0 }, uNight: { value: 0 } }),
     [],
   );
   useFrame(({ clock }) => {
     if (!material.current) return;
     material.current.uniforms.uTime.value = clock.elapsedTime;
     material.current.uniforms.uRain.value = amount;
+    material.current.uniforms.uNight.value = night;
   });
   return (
     <lineSegments name="city-rain" frustumCulled={false}>
