@@ -21,7 +21,8 @@ export function updateAmbientTraffic(
     return;
   }
   for (const car of fleet) {
-    const wanted = car.id < limit;
+    const wanted =
+      car.id < limit || car.kind === "heavy" || car.body === "taxi";
     const index = cars.indexOf(car);
     if (wanted === index >= 0) continue;
     carPose(car, pose);

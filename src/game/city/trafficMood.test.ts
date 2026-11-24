@@ -15,9 +15,21 @@ test("the overnight roster preserves nearby traffic until it moves away", () => 
   assert.ok(traffic.cars.includes(fleet[7]));
   assert.ok(traffic.cars.includes(cab));
   updateAmbientTraffic(traffic, fleet, 2, [10000, 10000], 80, cab);
-  assert.deepEqual(traffic.cars, [fleet[0], fleet[1], cab]);
+  const nightFleet = fleet.filter(
+    (car) => car.id < 2 || car.kind === "heavy" || car.body === "taxi",
+  );
+  assert.deepEqual(traffic.cars, [...nightFleet, cab]);
   updateAmbientTraffic(traffic, fleet, 8, [x, z], 1, null);
   assert.ok(!traffic.cars.includes(fleet[7]));
   updateAmbientTraffic(traffic, fleet, 8, [10000, 10000], 80, null);
   assert.deepEqual(traffic.cars, fleet);
+});
+
+test("service vehicles beyond the overnight cutoff stay on the road", () => {
+  const traffic = createTraffic(8, TRAFFIC_SEED);
+  const fleet = traffic.cars.slice();
+  fleet[7].kind = "heavy";
+  updateAmbientTraffic(traffic, fleet, 2, [10000, 10000], 80, null);
+  assert.ok(traffic.cars.includes(fleet[7]));
+  assert.ok(traffic.cars.some((car) => car.body === "taxi" && car.id >= 2));
 });

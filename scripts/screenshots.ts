@@ -2580,7 +2580,7 @@ const SHOTS: {
   {
     name: "city-neon-rain",
     query: "room=city&view=full&time=04:00&at=-36,9.5&weather=rain",
-    act: furnitureReady,
+    act: cityReady,
   },
   {
     // the game menu open over the city: everything not needed this moment
