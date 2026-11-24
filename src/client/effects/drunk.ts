@@ -31,6 +31,11 @@ export function getBuzz(): number {
   return buzzLevel(bar);
 }
 
+/** Whether any alcohol is in the system (active BAC or still absorbing). */
+export function hasAlcohol(): boolean {
+  return bar.bac > 0 || bar.absorbing.length > 0;
+}
+
 /** How bad the hangover is, 0..1. */
 export function getHangover(): number {
   return bar.hangover;

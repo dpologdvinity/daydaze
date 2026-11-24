@@ -617,3 +617,43 @@ export function dryMouthHint(
     ? "Cotton mouth. A glass of water helps."
     : null;
 }
+
+/** A harm-reduction toast when weed is taken (an edible redose warning before
+ * the first lands, advice to start low, or mixing with alcohol). Null if none. */
+export function takeWeedHint(
+  dose: Dose,
+  taken: readonly Taken[],
+  now: number,
+  alcohol: boolean | number = false,
+): string | null {
+  if (profileOf(dose).substance !== "high") return null;
+  if (dose === "edible") {
+    const unlanded = taken.some(
+      (t) =>
+        t.dose === "edible" &&
+        now - t.at < gameSeconds(profileOf(t.dose, t.strain).onset),
+    );
+    if (unlanded) {
+      return "Edibles take up to 2 hours. Don't take another one yet.";
+    }
+  }
+  const hasAlc = typeof alcohol === "number" ? alcohol > 0 : alcohol;
+  if (hasAlc) {
+    return "Weed then drink is gentler than drink then weed.";
+  }
+  if (dose === "edible") {
+    return "Edibles take up to 2 hours. Start low, go slow.";
+  }
+  return null;
+}
+
+/** Harm-reduction advice when weed reaches strong/overwhelming levels
+ * (`wasLevel` is the level last frame): calm breathing and a snack. Null otherwise. */
+export function panicHint(
+  wasLevel: number,
+  meters: Readonly<Meters>,
+): string | null {
+  return meters.high.level >= 0.8 && wasLevel < 0.8
+    ? "Panicking? Sit, breathe, have a snack and some water; it passes."
+    : null;
+}
