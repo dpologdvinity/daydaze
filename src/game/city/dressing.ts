@@ -1050,6 +1050,15 @@ export const FURNITURE: readonly FurnitureSpot[] = [
   { kind: "ivy-arch", x: -30, z: 42, yaw: Math.PI / 2, scale: 0.5 },
   { kind: "flower-box", x: -30, z: 39.5, yaw: Math.PI / 2, scale: 1 },
   { kind: "flower-box", x: -30, z: 44.5, yaw: Math.PI / 2, scale: 1 },
+  ...[-27, -25].flatMap((x) =>
+    [39.5, 44.5].map((z): FurnitureSpot => ({
+      kind: "hedge",
+      x,
+      z,
+      yaw: 0,
+      scale: 1,
+    })),
+  ),
   { kind: "rose-arch", x: 32, z: 42, yaw: Math.PI / 2, scale: 1.6 },
   { kind: "wisteria", x: 32, z: 42, y: 3.84, yaw: Math.PI / 2, scale: 1.2 },
   {
@@ -1062,6 +1071,15 @@ export const FURNITURE: readonly FurnitureSpot[] = [
   },
   { kind: "flower-box", x: 32, z: 40, yaw: Math.PI / 2, scale: 1 },
   { kind: "flower-box", x: 32, z: 44, yaw: Math.PI / 2, scale: 1 },
+  ...[35, 37].flatMap((x) =>
+    [40, 44].map((z): FurnitureSpot => ({
+      kind: "hedge",
+      x,
+      z,
+      yaw: 0,
+      scale: 1,
+    })),
+  ),
   // A row of window boxes dresses the florist without covering its doorway.
   { kind: "flower-box", x: 284, z: -244, y: 1.5, yaw: 0, scale: 1 },
   { kind: "flower-box", x: 286, z: -244, y: 1.5, yaw: 0, scale: 1 },

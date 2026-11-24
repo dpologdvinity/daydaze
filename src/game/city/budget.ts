@@ -126,6 +126,7 @@ export const MODEL_COST: Readonly<
   "garden/flower-box": { tris: 1330, parts: 1 },
   "garden/hanging-planter": { tris: 1254, parts: 1 },
   "garden/wisteria": { tris: 20032, parts: 3 },
+  "garden/hedge": { tris: 917, parts: 1 },
   "yards/dumpster": { tris: 302, parts: 3 },
   "yards/fence-chain": { tris: 218, parts: 2 },
   "yards/fence-wood": { tris: 248, parts: 1 },

@@ -1248,7 +1248,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://poly.pizza/m/df8uCl1YpK",
         usedFor:
-          "Hedges and climbing-rose backing at the community garden gate.",
+          "Hedges and climbing-rose backing at the community garden gate and city garden borders.",
       },
       {
         title: "Racing Kit",

@@ -54,6 +54,7 @@ test("garden accents distinguish three destinations without occupying roads or d
       (spot) => spot.kind === "wisteria" && spot.x > 20 && spot.x < 40,
     ),
   );
+  assert.ok(FURNITURE.filter((spot) => spot.kind === "hedge").length >= 8);
   for (const spot of accents) {
     assert.ok(!inRoad(spot.x, spot.z), `${spot.kind} on road`);
     for (const building of BUILDINGS) {
