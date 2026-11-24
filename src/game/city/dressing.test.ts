@@ -14,7 +14,8 @@ import {
   STREET_DRESS,
   type Buckets,
 } from "./dressing.ts";
-import { BUILDINGS, CITY_SURFACES, PROPS } from "./layout.ts";
+import { BUILDINGS, CITY_AREA, CITY_SURFACES, PROPS } from "./layout.ts";
+import { isBlocked } from "../area.ts";
 import { emptyInstances, type Instance, type Kind } from "./plan.ts";
 
 type Box = { x0: number; z0: number; x1: number; z1: number };
@@ -37,6 +38,48 @@ const ROADS = CITY_SURFACES.filter((s) => s.kind === "road").map((s) =>
 function inRoad(x: number, z: number): boolean {
   return ROADS.some((r) => x > r.x0 && x < r.x1 && z > r.z0 && z < r.z1);
 }
+
+test("garden accents distinguish three destinations without occupying roads or doors", () => {
+  const accents = FURNITURE.filter((spot) =>
+    ["ivy-arch", "rose-arch", "flower-box", "hanging-planter"].includes(
+      spot.kind,
+    ),
+  );
+  assert.ok(new Set(accents.map((spot) => spot.kind)).size >= 3);
+  assert.ok(accents.filter((spot) => spot.x < 0).length >= 3);
+  assert.ok(accents.filter((spot) => spot.x > 20 && spot.x < 40).length >= 3);
+  assert.ok(accents.filter((spot) => spot.x > 280).length >= 3);
+  assert.ok(
+    FURNITURE.some(
+      (spot) => spot.kind === "wisteria" && spot.x > 20 && spot.x < 40,
+    ),
+  );
+  assert.ok(FURNITURE.filter((spot) => spot.kind === "hedge").length >= 8);
+  for (const spot of accents) {
+    assert.ok(!inRoad(spot.x, spot.z), `${spot.kind} on road`);
+    for (const building of BUILDINGS) {
+      if (!building.door) continue;
+      const [x, z] = building.door.position;
+      assert.ok(
+        Math.hypot(spot.x - x, spot.z - z) > building.door.radius + 1,
+        `${spot.kind} blocks ${building.id}`,
+      );
+    }
+  }
+  for (const arch of accents.filter(
+    (spot) => spot.kind === "ivy-arch" || spot.kind === "rose-arch",
+  )) {
+    for (let distance = -6; distance <= 6; distance++) {
+      assert.ok(
+        !isBlocked(CITY_AREA, [
+          arch.x + Math.sin(arch.yaw) * distance,
+          arch.z + Math.cos(arch.yaw) * distance,
+        ]),
+        `${arch.kind} leads into a collider`,
+      );
+    }
+  }
+});
 
 function emptyBuckets(): Buckets {
   return emptyInstances();

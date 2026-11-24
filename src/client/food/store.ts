@@ -16,7 +16,7 @@ import {
   stepNeeds,
   type Needs,
 } from "../../game/food/needs.ts";
-import { getMeters } from "../effects/high.ts";
+import { getMeters, setDoseToastListener } from "../effects/high.ts";
 
 export type FoodState = {
   held: MenuItem | null;
@@ -186,3 +186,4 @@ export function sipMocktail(): void {
   );
 }
 setSoftDrinkListener(sipMocktail);
+setDoseToastListener(showToast);
