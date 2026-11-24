@@ -614,12 +614,11 @@ def build(ctx, body, body_src):
     out.append(shell(ctx, "Bottom_bike-shorts", ["helper-tights"], [(midthigh, waist - 0.01)], 0.003, satin))
 
     # legwear, under everything: opaque tights from the waist over the feet,
-    # and knee socks
-    # and knee socks; both stop at the ankle, inside every pair of shoes.
+    # and knee socks; knee socks stop at the ankle, inside every pair of shoes.
     # They sit a hair inside the bare leg's surface (the skin under them is
     # drawn in by their tuck), so every skirt and short over them clears
     # them by a few millimeters and none shows through in specks
-    out.append(shell(ctx, "Legwear_tights", ["helper-tights"], [(h["ankle"], waist - 0.02)], LEGWEAR, cloth, arms=0.2))
+    out.append(shell(ctx, "Legwear_tights", ["helper-tights"], [(-1.0, waist - 0.02)], LEGWEAR, cloth, arms=0.2))
     out.append(shell(ctx, "Legwear_knee-socks", ["helper-tights"], [(h["ankle"], knee - 0.04)], LEGWEAR, cloth, arms=0.2))
 
     # swimsuits. The bikini's leg line dips to the crotch and rises over the
@@ -677,14 +676,14 @@ def build(ctx, body, body_src):
     shoe_img = proxies.detail_texture(
         "clothes/shoes06/shoes06_diffuse.png", 512, keep_colour=True
     )
-    out.append(
-        proxies.build(
-            ctx,
-            "Shoes_sneakers",
-            "clothes/shoes06/shoes06.mhclo",
-            proxies.textured("shoes_sneakers", shoe_img),
-        )
+    sneakers = proxies.build(
+        ctx,
+        "Shoes_sneakers",
+        "clothes/shoes06/shoes06.mhclo",
+        proxies.textured("shoes_sneakers", shoe_img),
     )
+    add_no_socks(sneakers)
+    out.append(sneakers)
     gloss = bpy.data.materials.new("shoe_gloss")
     out.append(platforms(ctx, "Shoes_platforms", h["ankle"] + 0.02, gloss))
     out.append(platforms(ctx, "Shoes_boots", h["knee"] - 0.06, gloss))
@@ -707,6 +706,26 @@ def build(ctx, body, body_src):
 
 # the prefixes of every worn part's object name: each gets a body tuck key
 WORN = ("Top", "Bottom", "Dress", "Outer", "Legwear", "Swim", "Shoes")
+
+
+def add_no_socks(ob):
+    """Adds a 'no_socks' shape key collapsing the sneakers' default crew socks
+    down inside the shoe cavity (Z ~ 0.01), so legwear can hide them."""
+    sock_verts = set()
+    uv_layer = ob.data.uv_layers.active.data
+    for poly in ob.data.polygons:
+        for loop_idx in poly.loop_indices:
+            uv = uv_layer[loop_idx].uv
+            if uv.x >= 0.75 and uv.y <= 0.16:
+                sock_verts.add(ob.data.loops[loop_idx].vertex_index)
+    co = np.array([v.co[:] for v in ob.data.vertices])
+    for i in sock_verts:
+        foot_x = 0.13 if co[i, 0] > 0 else -0.13
+        co[i, 0] = foot_x + (co[i, 0] - foot_x) * 0.5
+        co[i, 1] = co[i, 1] * 0.5
+        co[i, 2] = 0.01
+    sk = ob.shape_key_add(name="no_socks", from_mix=False)
+    sk.data.foreach_set("co", co.ravel())
 
 
 def into_shoes(ctx, garment, shoes):
@@ -736,8 +755,20 @@ def into_shoes(ctx, garment, shoes):
         return knee + t * d
 
     for shoe in shoes:
+        has_socks_key = (
+            garment.name.startswith("Legwear")
+            and shoe.data.shape_keys
+            and "no_socks" in shoe.data.shape_keys.key_blocks
+        )
+        if has_socks_key:
+            shoe.data.shape_keys.key_blocks["no_socks"].value = 1.0
+            bpy.context.view_layer.update()
         bvh = BVHTree.FromObject(shoe, bpy.context.evaluated_depsgraph_get())
-        top = max(v.co.z for v in shoe.data.vertices)
+        if has_socks_key:
+            eval_ob = shoe.evaluated_get(bpy.context.evaluated_depsgraph_get())
+            top = max(v.co.z for v in eval_ob.data.vertices)
+        else:
+            top = max(v.co.z for v in shoe.data.vertices)
         move = np.zeros_like(co)
         seen = []  # (vertex, ray, radius, how far outside the shoe's wall)
         for i, p in enumerate(co):
@@ -764,6 +795,9 @@ def into_shoes(ctx, garment, shoes):
             move[i] = -ray * min(outside + INSIDE, 0.8 * r) * fade
         sk = garment.shape_key_add(name=f"in_{shoe.name.split('_', 1)[1]}", from_mix=False)
         sk.data.foreach_set("co", (co + move).ravel())
+        if has_socks_key:
+            shoe.data.shape_keys.key_blocks["no_socks"].value = 0.0
+            bpy.context.view_layer.update()
 
 
 PLATFORM = 0.05  # sole height in metres; the client lifts the doll by this
