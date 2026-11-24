@@ -3558,6 +3558,9 @@ test("the Galleria: buy at Glitterbox and Platform Palace, and wear them", async
   await expect(row.getByRole("button", { name: "Wear" })).toBeVisible();
   await shop.getByRole("button", { name: "Close" }).click();
   await expect(shop).toBeHidden();
+  await expect(
+    page.getByRole("button", { name: "Shop at Glitterbox" }),
+  ).toBeFocused();
   // Platform Palace next door: the boots are 55, all that's left
   await page.getByRole("button", { name: "Shop at Platform Palace" }).click();
   const shoes = page.getByRole("dialog", { name: "Platform Palace" });
@@ -3569,6 +3572,11 @@ test("the Galleria: buy at Glitterbox and Platform Palace, and wear them", async
       page.evaluate(() => localStorage.getItem("daydaze-save-v1") ?? ""),
     )
     .toContain('"shoes":"boots"');
+  await page.keyboard.press("Escape");
+  await expect(shoes).toBeHidden();
+  await expect(
+    page.getByRole("button", { name: "Shop at Platform Palace" }),
+  ).toBeFocused();
   expect(errors).toEqual([]);
 });
 
