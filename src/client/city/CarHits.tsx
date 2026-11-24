@@ -272,20 +272,32 @@ export function CarHits({ player }: { player: Player }) {
   }, [player, pose]);
 
   useFrame((_, dt) => {
-    tickStreetClock(dt);
+    const frameDt = TIME_SCALE === 1 ? dt : Math.min(dt, 0.25);
+    tickStreetClock(frameDt);
     const now = streetSeconds();
-    const gameDt = dt * TIME_SCALE;
+    const gameDt = frameDt * TIME_SCALE;
 
-    if (queue.current.length > 0) {
-      queue.current = queue.current.filter((b) => now < b.expireAt);
-      const active = queue.current.filter((b) => now >= b.showAt).slice(-2);
+    const q = queue.current;
+    if (q.length > 0) {
+      let write = 0;
+      for (let i = 0; i < q.length; i++) {
+        const item = q[i];
+        if (item && now < item.expireAt) q[write++] = item;
+      }
+      q.length = write;
+      const active: Bubble[] = [];
+      for (let i = 0; i < q.length; i++) {
+        const item = q[i];
+        if (item && now >= item.showAt) active.push(item);
+      }
+      const top = active.length > 2 ? active.slice(-2) : active;
       const prev = visible.current;
       if (
-        active.length !== prev.length ||
-        active.some((b, idx) => b.id !== prev[idx]?.id)
+        top.length !== prev.length ||
+        top.some((b, idx) => b.id !== prev[idx]?.id)
       ) {
-        visible.current = active;
-        setBubbles(active);
+        visible.current = top;
+        setBubbles(top);
       }
     }
     // a hard stop for the player in the road: tires lock and the horn goes
