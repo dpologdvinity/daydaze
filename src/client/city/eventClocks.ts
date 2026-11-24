@@ -16,6 +16,7 @@ import { CHASE_SLOT, chaseOffset, nextChaseIn } from "../../game/city/chase.ts";
 import { heldClock, toNextStart, wallSeconds } from "../../game/clock.ts";
 import { PRIDE_EVERY } from "../../game/prideNight.ts";
 import { schedule } from "../../game/events.ts";
+import { locationSearch } from "../flags.ts";
 
 /** The city events the dev panel can set off. */
 export const DEV_EVENTS = [
@@ -44,15 +45,16 @@ function clockFor(
   lead = 0,
   slot = 1000,
 ): () => number {
-  const search = typeof location !== "undefined" ? location.search : "";
-  const preview = Number(new URLSearchParams(search).get(flag) ?? Number.NaN);
+  const preview = Number(
+    new URLSearchParams(locationSearch()).get(flag) ?? Number.NaN,
+  );
   if (!Number.isFinite(preview)) return () => wallSeconds() + skew[flag];
   const held = heldClock(every, lead + preview, wallSeconds, slot);
   return () => held.read() + skew[flag];
 }
 
 /** Resolves the slot and offset for previewing a heist with ?heistend=caught|escape. */
-export function heistPreviewConfig(search: string): {
+export function heistPreviewConfig(search = locationSearch()): {
   slot: number;
   lead: number;
 } {
@@ -63,9 +65,7 @@ export function heistPreviewConfig(search: string): {
   return { slot, lead: heistOffset(slot) };
 }
 
-const heistConfig = heistPreviewConfig(
-  typeof location !== "undefined" ? location.search : "",
-);
+const heistConfig = heistPreviewConfig();
 
 /** The fireworks clock (`?fireworks=20` holds it 20 s into a show). */
 export const showClock = clockFor("fireworks", SHOW_EVERY);
@@ -119,8 +119,7 @@ export function onNightSkip(fn: () => void): () => void {
  * next run, so a screenshot or a test can see it on any day of the week.
  */
 export const nightClock: () => number = (() => {
-  const search = typeof location !== "undefined" ? location.search : "";
-  const id = new URLSearchParams(search).get("night");
+  const id = new URLSearchParams(locationSearch()).get("night");
   const row = schedule(Date.now()).find((r) => r.id === id);
   const offset = !row || row.on ? 0 : row.inMs + 3_600_000;
   return () => Date.now() + offset + nightSkew;

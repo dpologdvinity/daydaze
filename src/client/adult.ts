@@ -7,9 +7,7 @@ import { readFlags } from "./flags.ts";
 // ships (roadmap M10), only a development build opened with ?adult=1 does.
 // main.tsx imports this module first, so the tier is set before any module
 // that builds tier-dependent data loads (see age.ts).
-setActiveTier(
-  contentTier(import.meta.env.DEV && readFlags(location.search).adult),
-);
+setActiveTier(contentTier(import.meta.env?.DEV && readFlags().adult));
 
 /** Whether this client may enter the 18+ rooms: derived from the tier gate. */
 export const ADULT_OK: boolean = allows(activeTier(), "adult-venues");
