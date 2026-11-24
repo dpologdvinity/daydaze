@@ -1,6 +1,6 @@
 // Wet asphalt and planks catch elongated color from nearby planned signs.
 import { Color, Vector3, type MeshStandardMaterial } from "three";
-import type { Light } from "../../game/city/plan.ts";
+import type { Light } from "../../game/city/instanceTypes.ts";
 import { POINT_LIGHTS } from "../../game/city/tuning.ts";
 
 const positions = Array.from(

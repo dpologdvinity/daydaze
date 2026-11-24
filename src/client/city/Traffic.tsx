@@ -191,6 +191,11 @@ export function Traffic({ player, quiet }: { player: Player; quiet: number }) {
   const here = useRef<[number, number]>([0, 0]);
   const busPosition = useRef<[number, number]>([0, 0]);
   const truckPosition = useRef<[number, number]>([0, 0]);
+  // The active roster can grow into slots used by service vehicles last frame.
+  const carCollision = useMemo(
+    () => Array.from({ length: count + 1 }, (): [number, number] => [0, 0]),
+    [count],
+  );
   const busCollision = useMemo<[number, number][]>(
     () => [
       [0, 0],
@@ -517,18 +522,17 @@ export function Traffic({ player, quiet }: { player: Player; quiet: number }) {
       const car = traffic.cars[i];
       carPose(car, pose);
       // your own car out on the street bumps into this one
+      const wheelSlot = car === cab ? count : car.id;
       if (city) {
-        const c = city.traffic[i];
-        if (c) {
-          c[0] = pose.x;
-          c[1] = pose.z;
-        } else city.traffic[i] = [pose.x, pose.z];
+        const point = carCollision[wheelSlot];
+        point[0] = pose.x;
+        point[1] = pose.z;
+        city.traffic[i] = point;
       }
       // the wheels keep rolling and steering out of sight, so a car coming
       // into range is not at a standstill with its wheels askew
       let travel = 0;
       let steer = 0;
-      const wheelSlot = car === cab ? count : car.id;
       if (wheelSlot < rolled.travel.length) {
         const wheels = car.body ? BODY_WHEELS[car.body] : JEEPNEY_WHEELS;
         const ds = car.speed * dt;
