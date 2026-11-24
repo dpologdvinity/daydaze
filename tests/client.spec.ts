@@ -413,6 +413,37 @@ test("the closet searches and filters garments, keeps favorites and saves outfit
   expect(errors).toEqual([]);
 });
 
+test("the closet shows unowned garments dimmed with shop price and opens the shop", async ({
+  page,
+}) => {
+  test.setTimeout(300_000);
+  const errors = collectErrors(page);
+  await page.goto(VELVET);
+  await page
+    .getByRole("button", { name: "Dressing room", exact: true })
+    .click();
+  await expect(canvasOf(page)).toHaveAttribute("data-studio", "ready", {
+    timeout: 150_000,
+  });
+  await page.getByRole("tab", { name: "Outfit", exact: true }).click();
+  // an unowned boutique garment is visible in its row with price and shop link
+  const shopButton = page.getByRole("button", {
+    name: "Velour zip hoodie, 60 coins at Glitterbox",
+    exact: true,
+  });
+  await expect(shopButton).toBeVisible();
+  await expect(shopButton).toHaveClass(/unowned/);
+  await expect(shopButton).toHaveClass(/dimmed/);
+  // clicking the button opens the boutique counter
+  await shopButton.click();
+  const shop = page.getByRole("dialog", { name: "Glitterbox", exact: true });
+  await expect(shop).toBeVisible();
+  await expect(shop.getByRole("heading", { name: "Glitterbox" })).toBeVisible();
+  await shop.getByRole("button", { name: "Close", exact: true }).click();
+  await expect(shop).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
 test("expanded face shapes show previews and persist with custom colors", async ({
   page,
 }) => {
