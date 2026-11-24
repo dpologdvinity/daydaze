@@ -67,7 +67,14 @@ import {
   clampTrait,
   type BodyShape,
 } from "../../game/body.ts";
-import { wearable } from "../../game/shop.ts";
+import {
+  outfitPrice,
+  outfitShopItem,
+  ownsOutfit,
+  shopName,
+  wearable,
+} from "../../game/shop.ts";
+import { openShop } from "./shopRequest.ts";
 import { GAITS, gaitOf } from "../../game/gaits.ts";
 import {
   Chips,
@@ -496,7 +503,20 @@ export function Mirror({
           <Tiles
             label="Outfit"
             tiles="outfit"
-            options={wearable(OUTFITS, wardrobe)}
+            options={OUTFITS.map((o) => {
+              const owned = ownsOutfit(o.id, wardrobe);
+              const price = outfitPrice(o.id);
+              const item = outfitShopItem(o.id);
+              const store = item ? shopName(item.store) : "Shop";
+              return {
+                id: o.id,
+                label: o.label,
+                unowned: !owned,
+                price,
+                store,
+                ...(item ? { onShop: () => openShop(item.store, store) } : {}),
+              };
+            })}
             value={look.outfit}
             onPick={(outfit) => {
               // a whole outfit goes on over any mix

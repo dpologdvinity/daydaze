@@ -279,6 +279,23 @@ export function wearable<T extends { id: string }>(
   return options.filter((option) => !locked(option.id, wardrobe));
 }
 
+/** Whether the wardrobe owns the outfit (free ones are always owned). */
+export function ownsOutfit(id: string, wardrobe: readonly string[]): boolean {
+  return !locked(id, wardrobe);
+}
+
+/** An outfit's price in coins from the boutique, or null if it is free. */
+export function outfitPrice(id: string): number | null {
+  const item = shopItem(id);
+  return item && item.slot === "outfit" ? item.price : null;
+}
+
+/** The shop item whose purchase unlocks this outfit, if any. */
+export function outfitShopItem(id: string): ShopItem | undefined {
+  const item = shopItem(id);
+  return item && item.slot === "outfit" ? item : undefined;
+}
+
 /** Whether the wardrobe owns the garment (free ones are always owned). */
 export function ownsGarment(g: Garment, wardrobe: readonly string[]): boolean {
   return g.from === null || !locked(g.from, wardrobe);

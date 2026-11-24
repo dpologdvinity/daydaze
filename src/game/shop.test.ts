@@ -33,6 +33,9 @@ import {
   garmentPrice,
   garmentShopItem,
   ownsGarment,
+  ownsOutfit,
+  outfitPrice,
+  outfitShopItem,
   shopName,
 } from "./shop.ts";
 import { encodeWear, garment } from "./wardrobe.ts";
@@ -304,4 +307,17 @@ test("ownsGarment, garmentPrice and garmentShopItem reflect shop outfits", () =>
   assert.equal(garmentShopItem(tights), undefined);
 
   assert.equal(shopName("boutique"), "Glitterbox");
+});
+
+test("ownsOutfit, outfitPrice and outfitShopItem reflect shop outfits", () => {
+  assert.equal(ownsOutfit("tracksuit-y2k", []), false);
+  assert.equal(ownsOutfit("tracksuit-y2k", ["tracksuit-y2k"]), true);
+  assert.equal(ownsOutfit("flares", []), true);
+
+  assert.equal(outfitPrice("tracksuit-y2k"), 60);
+  assert.equal(outfitPrice("flares"), null);
+
+  assert.equal(outfitShopItem("tracksuit-y2k")?.id, "tracksuit-y2k");
+  assert.equal(outfitShopItem("tracksuit-y2k")?.store, "boutique");
+  assert.equal(outfitShopItem("flares"), undefined);
 });
