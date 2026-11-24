@@ -12,6 +12,7 @@
 // are the dev lineup page's (lineupShot below) and take the same tokens.
 import { appendFileSync, writeFileSync } from "node:fs";
 import { chromium, expect, type Page } from "@playwright/test";
+import { completeBaristaShift } from "../tests/barista.ts";
 import { DEFAULT_LOOK } from "../src/game/look.ts";
 import { createDefaultSave, serializeSave } from "../src/game/save.ts";
 import { dockAction } from "../tests/dock.ts";
@@ -33,6 +34,12 @@ declare global {
     daydazeReact: (id: string) => void;
     /** In the city (src/client/city/Traffic.tsx). */
     daydazeStepOut: (ahead: number, dry?: boolean) => boolean;
+    /** In the city (src/client/city/CarHits.tsx). */
+    daydazeKnockWalker: (
+      speed: number,
+      pinCam?: boolean,
+      dry?: boolean,
+    ) => number | boolean;
   }
 }
 
@@ -1123,6 +1130,44 @@ const SHOTS: {
     150,
     60,
   ),
+  // your car knocking a walker down: the hit, her fall and get-up, her line for
+  // the driver and bystanders stopping to look (game/city/streetKnocks.ts);
+  // the camera pinned on the scene and events at a twentieth of speed
+  actionStrip(
+    "walker-hit",
+    "room=city&view=room&quality=low&debug=1&time=12:00&timescale=0.05",
+    async (page) => {
+      await page.waitForTimeout(40_000);
+      // warm the moves pack up, so the fall is not missed while it loads
+      await page.evaluate(() => window.daydazeReact("stumble"));
+      await page.waitForTimeout(110_000);
+      // before recording starts, a walker near her to knock down,
+      // pinning the camera on the hit spot
+      await page.waitForFunction(
+        () => window.daydazeKnockWalker(9, true, true) === true,
+        null,
+        {
+          timeout: 120_000,
+          polling: 2_000,
+        },
+      );
+    },
+    async (page) => {
+      await page.waitForFunction(
+        () => {
+          const res = window.daydazeKnockWalker(9, true);
+          return typeof res === "number" && res >= 0;
+        },
+        null,
+        {
+          timeout: 120_000,
+          polling: 2_000,
+        },
+      );
+    },
+    150,
+    60,
+  ),
   // the player's own emotes, full body: a whisper and a laugh
   ...(["Whisper", "Laughing"] as const).map((emote) =>
     actionStrip(
@@ -1637,8 +1682,7 @@ const SHOTS: {
       await panel
         .getByRole("button", { name: "Start a shift" })
         .click({ timeout: 150_000 });
-      for (let i = 0; i < 8; i++)
-        await panel.getByRole("button", { name: "Hand it over" }).click();
+      await completeBaristaShift(panel);
       await expect(panel).toContainText("Promoted to Cafe");
     },
   },
@@ -2583,6 +2627,17 @@ const SHOTS: {
     name: "city-sidewalk-night",
     query: "room=city&view=full&time=23:00&at=-36,9.5",
     act: furnitureReady,
+  },
+  {
+    name: "city-boardwalk-rain",
+    query:
+      "room=city&view=room&time=15:00&at=40,283&cam=-10,2.2,284,90,1.8,283.5&weather=rain",
+    act: furnitureReady,
+  },
+  {
+    name: "city-neon-rain",
+    query: "room=city&view=full&time=04:00&at=-36,9.5&weather=rain",
+    act: cityReady,
   },
   {
     // the game menu open over the city: everything not needed this moment
@@ -3732,9 +3787,15 @@ if (process.argv[2] === "--matrix") {
     // the low tier unless the shot picks its own (quality=high)
     const tier = shot.query.includes("quality=") ? "" : "quality=low";
     // the lineup page renders its still frames on its own: no tier flag
+    // Keep city captures repeatable across calendar days.
+    const params = new URLSearchParams(shot.query);
+    const weather =
+      params.get("room") === "city" && !params.has("weather")
+        ? "&weather=clear"
+        : "";
     const url = shot.lineup
       ? `${BASE}/src/client/avatar/lineup.html?human=1&still=1&${shot.query}`
-      : `${BASE}/?${tier}${still}&${shot.query}`;
+      : `${BASE}/?${tier}${still}&${shot.query}${weather}`;
     if (shot.before) await shot.before(page);
     await page.goto(url, { timeout: 300_000 });
     if (shot.act) await shot.act(page);
@@ -3784,6 +3845,33 @@ if (process.argv[2] === "--matrix") {
       // renderer stats for the first frames: draw calls and triangles
       calls = Number(await canvas.getAttribute("data-calls"));
       triangles = Number(await canvas.getAttribute("data-triangles"));
+    }
+    if (shot.name.startsWith("closet-")) {
+      // Native lazy loading follows the drawer's scroll position. Give the
+      // visible tiles time to load before capturing the final pose.
+      await page.waitForFunction(
+        () => {
+          const drawer = document.querySelector(".dressing");
+          if (!drawer) return true;
+          const { top, bottom } = drawer.getBoundingClientRect();
+          return Array.from(
+            drawer.querySelectorAll<HTMLImageElement>(
+              '[data-tiles="garment"] img',
+            ),
+          ).every((img) => {
+            const tile = img.closest("button")?.getBoundingClientRect();
+            return (
+              !tile ||
+              tile.height === 0 ||
+              tile.bottom <= top ||
+              tile.top >= bottom ||
+              (img.complete && img.naturalWidth > 0)
+            );
+          });
+        },
+        null,
+        { timeout: 120_000 },
+      );
     }
     // a live frame loop can make the capture wait a long time on SwiftShader
     await page.screenshot({

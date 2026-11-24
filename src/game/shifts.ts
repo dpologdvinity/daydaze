@@ -23,6 +23,8 @@ export const WAGE_PER_ORDER = 4;
 export const CLEAN_BONUS = 10;
 /** Hustle XP per right order. */
 export const XP_PER_ORDER = 5;
+/** Right orders needed for a shift to qualify as worked for career advancement. */
+export const PASSING_ORDERS = Math.ceil(TICKETS / 2);
 /** Shifts per day that pay in full. */
 export const FULL_PAY_SHIFTS = 3;
 /** Cap on a saved shift count, so a hand-edited save stays sane. */
@@ -82,6 +84,7 @@ export function settleShift(
   const scale = (n: number) => (full ? n : Math.floor(n / 2));
   const wage =
     result.right * WAGE_PER_ORDER + result.tips + (clean ? CLEAN_BONUS : 0);
+  const passed = result.right >= PASSING_ORDERS;
   return {
     coins: scale(wage),
     xp: scale(result.right * XP_PER_ORDER),
@@ -90,10 +93,12 @@ export function settleShift(
     shifts: {
       day: Math.max(day, shifts.day),
       today: today + 1,
-      worked: {
-        ...shifts.worked,
-        [job]: Math.min(MAX_WORKED, (shifts.worked[job] ?? 0) + 1),
-      },
+      worked: passed
+        ? {
+            ...shifts.worked,
+            [job]: Math.min(MAX_WORKED, (shifts.worked[job] ?? 0) + 1),
+          }
+        : shifts.worked,
     },
   };
 }
