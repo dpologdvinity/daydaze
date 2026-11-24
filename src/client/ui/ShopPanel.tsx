@@ -69,6 +69,11 @@ export function ShopPanel({
   const panel = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;
+    const returnFocus =
+      document.activeElement instanceof HTMLElement &&
+      document.activeElement !== document.body
+        ? document.activeElement
+        : null;
     setNote("");
     setLift(null);
     panel.current?.querySelector("button")?.focus();
@@ -76,7 +81,10 @@ export function ShopPanel({
       if (e.key === "Escape") closeShop();
     };
     window.addEventListener("keydown", key);
-    return () => window.removeEventListener("keydown", key);
+    return () => {
+      window.removeEventListener("keydown", key);
+      if (returnFocus?.isConnected) returnFocus.focus({ preventScroll: true });
+    };
   }, [open]);
   if (!open) return null;
   const now = Date.now();
