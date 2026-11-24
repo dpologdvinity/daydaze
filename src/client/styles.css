@@ -1464,6 +1464,10 @@ button:focus-visible {
     transform 0.15s;
 }
 
+.tile-text {
+  place-items: center;
+}
+
 .tile img {
   width: 100%;
   aspect-ratio: 1;

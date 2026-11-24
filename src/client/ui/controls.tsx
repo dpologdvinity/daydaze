@@ -172,7 +172,7 @@ export function Tiles<T extends string>({
           role="radio"
           tabIndex={idx === activeIndex ? 0 : -1}
           aria-checked={o.id === value}
-          className="tile"
+          className={o.thumbnail === false ? "tile tile-text" : "tile"}
           onClick={() => onPick(o.id)}
           onKeyDown={(e) => onRadioKeyDown(e, options, idx, onPick)}
         >
