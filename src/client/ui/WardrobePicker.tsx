@@ -33,7 +33,7 @@ import {
   wearOf,
   type Slot,
 } from "../../game/wardrobe.ts";
-import { Chips, ColorPicker } from "./controls.tsx";
+import { Chips, ColorPicker, Tiles } from "./controls.tsx";
 import { openShop } from "./shopRequest.ts";
 
 /** The slots in closet order, with their names. */
@@ -120,7 +120,9 @@ export function WardrobePicker({
         const unownedInRow = inRow.filter((g) => !ownsGarment(g, wardrobe));
         // the worn garment stays listed, so the radio group always has a value
         const options = [
-          ...(optional ? [{ id: "none", label: "None" }] : []),
+          ...(optional
+            ? [{ id: "none", label: "None", thumbnail: false } as const]
+            : []),
           ...(wornGarment && !ownedInRow.includes(wornGarment)
             ? [wornGarment]
             : []),
@@ -144,7 +146,9 @@ export function WardrobePicker({
                 </button>
               )}
             </div>
-            <Chips
+            <Tiles
+              tiles="garment"
+              eagerCount={0}
               label={label}
               options={options}
               value={worn?.id ?? (optional ? "none" : "")}
@@ -158,7 +162,8 @@ export function WardrobePicker({
             />
             {unownedInRow.length > 0 && (
               <div
-                className="row closet-buyable"
+                className="tiles closet-buyable"
+                data-tiles="garment"
                 role="group"
                 aria-label={`Buyable ${label.toLowerCase()}`}
               >
@@ -174,13 +179,22 @@ export function WardrobePicker({
                     <button
                       key={g.id}
                       type="button"
-                      className="chip unowned dimmed"
+                      className="tile chip unowned dimmed"
                       onClick={() => {
                         if (item) openShop(item.store, store);
                       }}
                       aria-label={`${g.label}, ${priceTag} at ${store}`}
                       title={`${g.label} · ${priceTag} · Open ${store}`}
                     >
+                      <img
+                        src={`/closet/garment-${g.id}.webp`}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        onError={(event) => {
+                          event.currentTarget.hidden = true;
+                        }}
+                      />
                       <span>{g.label}</span>
                       {price !== null && (
                         <span className="chip-price">{priceTag}</span>

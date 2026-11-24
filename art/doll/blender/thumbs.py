@@ -2,15 +2,19 @@
 per hair style and face preset, on the built doll, so the character creator
 shows options instead of words.
 
-    blender --background --factory-startup --python-exit-code 1 --python art/doll/blender/thumbs.py [-- outfits hair figures]
+    blender --background --factory-startup --python-exit-code 1 --python art/doll/blender/thumbs.py [-- outfits hair figures garments]
 
 Run after build_doll.py, then convert to WebP (192 px) with sharp, as the
 commit that added it did; the client loads `/closet/<group>-<id>.webp`. Hair tiles are three-quarter views in a warm brown;
 face tiles are tight front views with only that preset's key on.
+
+The explicit `-- garments` mode imports the published meshopt garment GLBs
+with Blender 5.3 or newer and writes the final 192 px WebPs directly.
 """
 
 import math
 import os
+from pathlib import Path
 
 import bpy
 from mathutils import Vector
@@ -197,10 +201,66 @@ def render(name):
     bpy.ops.render.render(write_still=True)
 
 
+def garment_tiles():
+    """Frame each standalone garment in its rest pose with its own material."""
+    models = Path(DEST).parent / "models" / "doll"
+    sources = sorted(
+        path
+        for slot in ("top", "bottom", "dress", "outer", "legwear")
+        for path in models.glob(f"{slot}-*.glb")
+        if not path.stem.endswith(("-m", "-lo"))
+    )
+    if not sources:
+        raise RuntimeError(f"No garment models in {models}")
+
+    os.makedirs(DEST, exist_ok=True)
+    selected = os.environ.get("GARMENT_ONLY")
+    for source in sources:
+        if selected and source.stem.split("-", 1)[1] != selected:
+            continue
+        reset()
+        # The importer's bone display meshes are hidden in renders.
+        bpy.ops.import_scene.gltf(filepath=str(source), disable_bone_shape=True)
+        scene = bpy.context.scene
+        # Fit the projected mesh with an even margin on all four sides.
+        camera((0.32, -1, 0.12), (0, 0, 0), 30)
+        cam = scene.camera
+        rotation = cam.rotation_euler.to_quaternion()
+        inverse = rotation.inverted()
+        corners = [
+            inverse @ (ob.matrix_world @ Vector(corner))
+            for ob in scene.objects
+            if ob.type == "MESH"
+            for corner in ob.bound_box
+        ]
+        low = Vector(tuple(min(point[i] for point in corners) for i in range(3)))
+        high = Vector(tuple(max(point[i] for point in corners) for i in range(3)))
+        center = (low + high) / 2
+        cam.location = rotation @ (center + Vector((0, 0, 2)))
+        for ob in scene.objects:
+            if ob.type == "LIGHT":
+                ob.location += rotation @ center - Vector((0, 0, 1.45))
+                ob.data.energy *= 0.035
+        cam.data.type = "ORTHO"
+        cam.data.ortho_scale = max(high.x - low.x, high.y - low.y) * 1.12
+        scene.render.engine = "CYCLES"
+        scene.cycles.samples = 8
+        scene.cycles.use_denoising = True
+        scene.render.resolution_x = scene.render.resolution_y = 192
+        scene.render.image_settings.file_format = "WEBP"
+        scene.render.image_settings.color_mode = "RGBA"
+        scene.render.image_settings.quality = 84
+        garment_id = source.stem.split("-", 1)[1]
+        scene.render.filepath = os.path.join(DEST, f"garment-{garment_id}.webp")
+        bpy.ops.render.render(write_still=True)
+
+
 def main():
     import sys
 
     only = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else []
+    if "garments" in only:
+        garment_tiles()
     if not only or "outfits" in only:
         global CLOTH
         for oid, (garments, shoes, colour) in OUTFITS.items():

@@ -11,6 +11,15 @@ All steps run from the repo root. `blender/` writes raw GLBs into the git-ignore
 3. `art/doll/blender/mocap.py` bakes Mixamo and Universal Animation Library clips onto the doll's skeleton and writes the clip catalog `src/game/dance/mocap.ts` (and `mocapSources.ts`). Run it again with `DOLL_SEX=male` for the male clip files (`anims*-m.glb`); that run opens `blender/.cache/rig-m.blend`, so do the `DOLL_SEX=male` run of step 2 first. Mixamo FBX files live in the git-ignored `mixamo/` at the repo root.
 4. `bash scripts/optimize-doll.sh` compresses everything into `public/models/doll/`, with a simplified `-lo` twin of each worn part.
 
+Rebuild the garment thumbnails when the catalog or garment meshes change.
+
+```bash
+blender --background --factory-startup --python-exit-code 1 --python art/doll/blender/thumbs.py -- garments
+```
+
+Use Blender 5.3 or newer to import the optimized GLBs from step 4. The command
+writes 192 px WebPs to `public/closet/`.
+
 ## Folders
 
 | Folder or file | What it holds |

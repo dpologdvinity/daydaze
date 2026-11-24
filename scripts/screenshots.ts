@@ -3846,6 +3846,33 @@ if (process.argv[2] === "--matrix") {
       calls = Number(await canvas.getAttribute("data-calls"));
       triangles = Number(await canvas.getAttribute("data-triangles"));
     }
+    if (shot.name.startsWith("closet-")) {
+      // Native lazy loading follows the drawer's scroll position. Give the
+      // visible tiles time to load before capturing the final pose.
+      await page.waitForFunction(
+        () => {
+          const drawer = document.querySelector(".dressing");
+          if (!drawer) return true;
+          const { top, bottom } = drawer.getBoundingClientRect();
+          return Array.from(
+            drawer.querySelectorAll<HTMLImageElement>(
+              '[data-tiles="garment"] img',
+            ),
+          ).every((img) => {
+            const tile = img.closest("button")?.getBoundingClientRect();
+            return (
+              !tile ||
+              tile.height === 0 ||
+              tile.bottom <= top ||
+              tile.top >= bottom ||
+              (img.complete && img.naturalWidth > 0)
+            );
+          });
+        },
+        null,
+        { timeout: 120_000 },
+      );
+    }
     // a live frame loop can make the capture wait a long time on SwiftShader
     await page.screenshot({
       path: `docs/screenshots/${shot.name}.png`,
