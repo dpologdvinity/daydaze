@@ -32,7 +32,14 @@ export const MARINA_SPECIES: readonly Species[] = [
   { name: "Sunset marlin", kg: [15, 40], reach: 22, weight: 0.4 },
 ];
 
-export const SPECIES: readonly Species[] = MARINA_SPECIES;
+export const SPECIES: readonly Species[] = [
+  { name: "Sardine", kg: [0.1, 0.3], reach: 0, weight: 5 },
+  { name: "Mackerel", kg: [0.5, 1.5], reach: 0, weight: 4 },
+  { name: "Sea bass", kg: [1, 4], reach: 10, weight: 3 },
+  { name: "Red snapper", kg: [2, 6], reach: 14, weight: 2.5 },
+  { name: "Yellowtail", kg: [4, 10], reach: 18, weight: 1.5 },
+  { name: "Sunset marlin", kg: [15, 40], reach: 22, weight: 0.4 },
+];
 
 export const BOARDWALK_SPECIES: readonly Species[] = [
   { name: "Sardine", kg: [0.1, 0.3], reach: 0, weight: 5 },
