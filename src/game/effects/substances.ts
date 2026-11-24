@@ -631,7 +631,7 @@ export function takeWeedHint(
     const unlanded = taken.some(
       (t) =>
         t.dose === "edible" &&
-        now - t.at < gameSeconds(profileOf("edible").onset),
+        now - t.at < gameSeconds(profileOf(t.dose, t.strain).onset),
     );
     if (unlanded) {
       return "Edibles take up to 2 hours. Don't take another one yet.";

@@ -573,6 +573,30 @@ test("an edible gives a tip to start low, and warns if redosing before the first
     "Edibles take up to 2 hours. Start low, go slow.",
   );
 
+  // strain-adjusted onset: indica takes longer to land (49.5 min vs 45 min)
+  const indicaOnset = gameSeconds(profileOf("edible", "indica").onset);
+  const hybridOnset = gameSeconds(profileOf("edible", "hybrid").onset);
+  const sativaOnset = gameSeconds(profileOf("edible", "sativa").onset);
+  assert.ok(sativaOnset < hybridOnset && hybridOnset < indicaOnset);
+
+  // between hybrid and indica onset: hybrid has landed, but indica has not
+  const midIndica: Taken[] = [
+    { dose: "edible", at: t - (hybridOnset + 5), strain: "indica" },
+  ];
+  assert.equal(
+    takeWeedHint("edible", midIndica, t),
+    "Edibles take up to 2 hours. Don't take another one yet.",
+  );
+
+  // between sativa and hybrid onset: sativa has already landed
+  const midSativa: Taken[] = [
+    { dose: "edible", at: t - (sativaOnset + 5), strain: "sativa" },
+  ];
+  assert.equal(
+    takeWeedHint("edible", midSativa, t),
+    "Edibles take up to 2 hours. Start low, go slow.",
+  );
+
   // a smoked joint does not give an edible warning
   assert.equal(takeWeedHint("joint", pending, t), null);
   // non-weed doses return null
