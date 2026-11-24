@@ -1,10 +1,9 @@
-// Shared fishing presentation for the marina and boardwalk pier.
+// Reusable fishing presentation for all spots (marina, boardwalk, farm, forest, open-water).
 import { useFrame, useThree } from "@react-three/fiber";
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { playClick } from "../../../audio/worldSounds.ts";
-import { FISH_SPOT as MARINA_SPOT } from "../../../game/marina.ts";
-import { PIER } from "../../../game/city/layout.ts";
+import { FISHING_SPOTS, type FishingSpotId } from "../../../game/fishing.ts";
 import type { FishKind } from "../../../game/creatures.ts";
 import { Creature } from "../../creatures/Creature.tsx";
 import { useReducedMotion } from "../../motion.ts";
@@ -13,8 +12,6 @@ import { cameraHold } from "../../world/cameraHold.ts";
 import { FLIGHT, fishing, leave, tick } from "../marina/session.ts";
 import { hdr } from "./materials.ts";
 
-const BOARDWALK_SPOT = [PIER.x, PIER.end - 1.5] as const;
-
 const CATCH_MODELS: Record<string, FishKind> = {
   Sardine: "fish1",
   Mackerel: "fish2",
@@ -22,20 +19,34 @@ const CATCH_MODELS: Record<string, FishKind> = {
   "Red snapper": "cute-goldfish",
   Yellowtail: "cute-yellowtang",
   "Sunset marlin": "fish3",
+  Minnow: "cute-tetra",
+  Bluegill: "cute-cardinalfish",
+  "Pond perch": "fish1",
+  "Mud carp": "cute-koi",
+  "Golden koi": "cute-goldfish",
+  "Brook trout": "fish2",
+  "Rainbow trout": "fish1",
+  "Smallmouth bass": "fish3",
+  "Silver salmon": "fish2",
+  Pike: "fish3",
+  Kingfish: "fish2",
+  "Giant trevally": "fish1",
+  "Bluefin tuna": "fish3",
 };
 
-/** The fishing rod in its holder at the end of the dock, the line and the
+/** The fishing rod in its holder at the spot, the line and the
  * bobber, and the camera over your shoulder while you fish. */
 export function Fishing({
   player,
   spot,
 }: {
   player: Player;
-  spot: "marina" | "boardwalk";
+  spot: FishingSpotId;
 }) {
-  const FISH_SPOT = spot === "marina" ? MARINA_SPOT : BOARDWALK_SPOT;
-  const dir = spot === "marina" ? -1 : 1;
-  const WATER_Y = spot === "marina" ? -0.5 : -0.05;
+  const spotDef = FISHING_SPOTS[spot];
+  const FISH_SPOT = spotDef.position;
+  const dir = spotDef.dir;
+  const WATER_Y = spotDef.waterY;
   const calm = useReducedMotion();
   const state = fishing.use();
   const camera = useThree((st) => st.camera);
@@ -85,12 +96,12 @@ export function Fishing({
       line.visible = false;
       return;
     }
-    // stand her at the end of the dock, facing out to sea
+    // stand her at the fishing spot, facing the water
     // eslint-disable-next-line no-restricted-syntax -- one-time lazy init of the player's seat, not per frame
     if (!seat.current) seat.current = { position: new THREE.Vector3(), yaw: 0 };
     player.seat = seat.current;
     player.seat.position.set(FISH_SPOT[0], 0.02, FISH_SPOT[1]);
-    player.seat.yaw = dir < 0 ? Math.PI : 0;
+    player.seat.yaw = spotDef.yaw;
     player.seat.sit = false;
     const out = FISH_SPOT[1] + dir * s.distance;
     const landingX = FISH_SPOT[0] + 0.7;

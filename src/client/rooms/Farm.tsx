@@ -11,6 +11,7 @@ import {
   BARN_POS,
   BOUNDS,
   FARM_ANIMALS,
+  FARM_POND,
   PASTURE_FENCE_SPOTS,
   PLOTS,
   SILO_POS,
@@ -29,6 +30,7 @@ import { Scatter } from "./zoo/Scatter.tsx";
 import { Floor, type PickHandler } from "./shared/Floor.tsx";
 import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
+import { Fishing } from "./shared/Fishing.tsx";
 
 const { x0, x1, z0, z1 } = BOUNDS;
 const W = x1 - x0;
@@ -322,6 +324,33 @@ export function Farm({
 
         {/* Fences for pastures */}
         <PastureFences />
+
+        {/* Farm pond and fishing pier */}
+        <mesh
+          position={[FARM_POND.x, 0.02, FARM_POND.z]}
+          rotation-x={-Math.PI / 2}
+        >
+          <circleGeometry args={[FARM_POND.r, 32]} />
+          <meshStandardMaterial
+            color="#2d6a78"
+            roughness={0.15}
+            metalness={0.1}
+          />
+        </mesh>
+        <mesh
+          position={[FARM_POND.x, 0.025, FARM_POND.z]}
+          rotation-x={-Math.PI / 2}
+        >
+          <ringGeometry args={[FARM_POND.r - 0.25, FARM_POND.r + 0.35, 32]} />
+          <meshStandardMaterial color="#64748b" roughness={0.9} />
+        </mesh>
+        <mesh position={[FARM_POND.x, 0.05, 7.5]}>
+          <boxGeometry args={[2.4, 0.08, 2.0]} />
+          <meshStandardMaterial color="#784d28" roughness={0.8} />
+        </mesh>
+
+        {/* Fishing spot */}
+        <Fishing player={player} spot="farm" />
 
         {/* Nature trees surrounding the farm borders */}
         <SurroundingNature />

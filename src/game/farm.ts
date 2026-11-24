@@ -340,6 +340,9 @@ export const BARN_POS: Vec2 = [-13, -8];
 export const SILO_POS: Vec2 = [-19, -8];
 export const STAND_POS: Vec2 = [10, 12];
 export const TRACTOR_POS: Vec2 = [14, -8];
+/** The farm pond in the east yard and the wooden fishing pier. */
+export const FARM_POND = { x: 17, z: 2.5, r: 4.0 } as const;
+export const FARM_FISH_SPOT: Vec2 = [17, 8];
 
 /** Crop field: 6 plots in two rows of 3. */
 export const PLOTS: readonly { id: number; position: Vec2 }[] = [
@@ -421,6 +424,13 @@ export const FLOOR: readonly Vec2[] = box(
   BOUNDS.z1,
 );
 
+function round(at: readonly [number, number], r: number): Vec2[] {
+  return Array.from({ length: 8 }, (_, i): Vec2 => {
+    const a = (i / 8) * Math.PI * 2;
+    return [at[0] + r * Math.cos(a), at[1] + r * Math.sin(a)];
+  });
+}
+
 /** Solid structures the player walks around (barn, pastures, farm stand). */
 export const BLOCKERS: readonly (readonly Vec2[])[] = [
   // Barn
@@ -443,6 +453,8 @@ export const BLOCKERS: readonly (readonly Vec2[])[] = [
   ),
   // Farm stand
   box(8, 10, 13, 14),
+  // Farm pond water
+  round([FARM_POND.x, FARM_POND.z], FARM_POND.r - 0.4),
 ];
 
 /** Pasture fence panels (the Quaternius fence is 5.9 m long and 1.2 m tall; 0.9 brings it to a farm fence; the picket run only fills about 40% of the model box, so panels are stretched to meet end to end). */

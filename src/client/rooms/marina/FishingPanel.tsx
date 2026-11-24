@@ -1,9 +1,15 @@
-// Starboard Marina's fishing panel: five casts, each set on a power meter and
-// then struck when the bobber dips. Rules live in game/fishing.ts and the state
+// Reusable fishing panel for all spots: five casts, each set on a power meter
+// and then struck when the bobber dips. Rules live in game/fishing.ts and state
 // in ./session.ts; this only reads and presses.
 
 import { useState, type JSX } from "react";
-import { CASTS, tripKg, type Catch } from "../../../game/fishing.ts";
+import {
+  CASTS,
+  FISHING_SPOTS,
+  tripKg,
+  type Catch,
+  type FishingSpotId,
+} from "../../../game/fishing.ts";
 import { driving } from "../../world/driving.ts";
 import { useNow, usePressKeys } from "../shared/useNow.ts";
 import { fishing, leave, powerAt, press, start } from "./session.ts";
@@ -23,23 +29,24 @@ function call(c: Catch): string {
   return `${c.species}, ${c.kg} kg!`;
 }
 
-/** Five casts off the dock: set the power, then strike the moment the
+/** Five casts off the spot: set the power, then strike the moment the
  * bobber dips. */
 export function FishingPanel({
   spot = "marina",
 }: {
-  spot?: "marina" | "boardwalk";
+  spot?: FishingSpotId;
 }): JSX.Element {
   const s = fishing.use();
   const [vehicleNotice, setVehicleNotice] = useState(false);
   const playing = s.phase !== "off";
   const now = useNow(s.phase === "power");
+  const spotDef = FISHING_SPOTS[spot];
   usePressKeys(playing, press, leave);
   if (!playing)
     return (
       <section className="game-panel" aria-label="Fishing">
         <p className="game-call">
-          Five casts off the end of the dock. Strike when the bobber dips.
+          {spotDef.description} Strike when the bobber dips.
         </p>
         {vehicleNotice && <p role="status">Leave the car before fishing.</p>}
         {vehicleNotice && driving.session && (
@@ -112,4 +119,19 @@ export function FishingPanel({
 /** Fishing from the city pier. */
 export function BoardwalkFishingPanel(): JSX.Element {
   return <FishingPanel spot="boardwalk" />;
+}
+
+/** Fishing from the Sunny Acres farm pond. */
+export function FarmFishingPanel(): JSX.Element {
+  return <FishingPanel spot="farm" />;
+}
+
+/** Fishing from the Larkspur Forest lake. */
+export function ForestFishingPanel(): JSX.Element {
+  return <FishingPanel spot="forest" />;
+}
+
+/** Fishing from the open-water boat. */
+export function OpenWaterFishingPanel(): JSX.Element {
+  return <FishingPanel spot="open-water" />;
 }

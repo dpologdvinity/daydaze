@@ -9,8 +9,13 @@ import {
   castDistance,
   CAST_RANGE,
   CASTS,
+  FARM_SPECIES,
+  FISHING_SPOTS,
+  FOREST_SPECIES,
   HOOK_WINDOW,
+  MARINA_SPECIES,
   NEW_TRIP,
+  OPEN_WATER_SPECIES,
   SPECIES,
   speciesFor,
   strike,
@@ -94,4 +99,66 @@ test("strikes use the selected spot's fish table", () => {
       BOARDWALK_SPECIES.some((fish) => fish.name === catchResult.species),
     );
   }
+});
+
+test("sunny acres farm pond catches come from its small freshwater table", () => {
+  const caught = new Set<string>();
+  for (let seed = 0; seed < 200; seed++) {
+    const fish = speciesFor(seed, 14, FARM_SPECIES);
+    assert.ok(FARM_SPECIES.includes(fish));
+    caught.add(fish.name);
+    assert.ok(fish.kg[1] <= 5.0, `${fish.name} too big for pond`);
+  }
+  assert.ok(caught.has("Minnow"));
+  assert.ok(caught.has("Bluegill"));
+  assert.ok(caught.has("Golden koi"));
+});
+
+test("larkspur forest lake catches include trout, salmon and pike", () => {
+  const caught = new Set<string>();
+  for (let seed = 0; seed < 200; seed++) {
+    const fish = speciesFor(seed, 18, FOREST_SPECIES);
+    assert.ok(FOREST_SPECIES.includes(fish));
+    caught.add(fish.name);
+  }
+  assert.ok(caught.has("Brook trout"));
+  assert.ok(caught.has("Rainbow trout"));
+  assert.ok(caught.has("Pike"));
+});
+
+test("open water catches include larger game fish", () => {
+  const caught = new Set<string>();
+  for (let seed = 0; seed < 400; seed++) {
+    const fish = speciesFor(seed, 30, OPEN_WATER_SPECIES);
+    assert.ok(OPEN_WATER_SPECIES.includes(fish));
+    caught.add(fish.name);
+  }
+  assert.ok(caught.has("Giant trevally"));
+  assert.ok(caught.has("Bluefin tuna"));
+  const tuna = OPEN_WATER_SPECIES.find((s) => s.name === "Bluefin tuna");
+  assert.ok(tuna && tuna.kg[1] >= 50);
+});
+
+test("fishing spots registry configures every spot with valid parameters", () => {
+  const spotIds = [
+    "marina",
+    "boardwalk",
+    "farm",
+    "forest",
+    "open-water",
+  ] as const;
+  assert.equal(MARINA_SPECIES, SPECIES);
+  for (const id of spotIds) {
+    const spot = FISHING_SPOTS[id];
+    assert.ok(spot, `spot ${id} must exist`);
+    assert.equal(spot.id, id);
+    assert.ok(spot.position.length === 2);
+    assert.ok(spot.species.length >= 3);
+    assert.ok(spot.dir === 1 || spot.dir === -1);
+    assert.ok(typeof spot.yaw === "number");
+    assert.ok(typeof spot.waterY === "number");
+    assert.ok(spot.description.length > 0);
+  }
+  assert.deepEqual(FISHING_SPOTS.farm.castRange, [4, 14]);
+  assert.equal(castDistance(1, FISHING_SPOTS.farm.castRange), 14);
 });
