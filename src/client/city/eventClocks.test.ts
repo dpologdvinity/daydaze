@@ -16,7 +16,18 @@ import {
   chaseOffset,
   chaseStart,
 } from "../../game/city/chase.ts";
-import { DEV_EVENTS, heistPreviewConfig } from "./eventClocks.ts";
+import {
+  DEV_EVENTS,
+  chaseClock,
+  devStartEvent,
+  devStartNight,
+  heistClock,
+  heistPreviewConfig,
+  nightClock,
+  paradeClock,
+  prideClock,
+  showClock,
+} from "./eventClocks.ts";
 
 test("heistPreviewConfig defaults to slot 1000's escape heist", () => {
   const { slot, lead } = heistPreviewConfig("");
@@ -58,4 +69,27 @@ test("chase clock calculations for held preview align with chaseInto", () => {
   const t = chaseStart(slot) + 20;
   assert.equal(t, slot * CHASE_SLOT + lead + 20);
   assert.equal(chaseInto(t), 20);
+});
+
+test("event clocks load and read finite timestamps without window or location", () => {
+  assert.equal(typeof window, "undefined");
+  assert.equal(typeof location, "undefined");
+  assert.ok(Number.isFinite(showClock()));
+  assert.ok(Number.isFinite(paradeClock()));
+  assert.ok(Number.isFinite(prideClock()));
+  assert.ok(Number.isFinite(heistClock()));
+  assert.ok(Number.isFinite(chaseClock()));
+  assert.ok(Number.isFinite(nightClock()));
+});
+
+test("devStartEvent and devStartNight operate safely without window or location", () => {
+  assert.equal(typeof window, "undefined");
+  assert.equal(typeof location, "undefined");
+  const beforeShow = showClock();
+  devStartEvent("fireworks");
+  assert.ok(showClock() >= beforeShow);
+
+  const beforeNight = nightClock();
+  devStartNight("latin-night");
+  assert.ok(nightClock() >= beforeNight);
 });

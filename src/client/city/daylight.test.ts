@@ -12,4 +12,7 @@ test("a dev hour pins the city hour and runs the day clock on from it", () => {
   assert.ok(seconds !== null && seconds < 21.5 * 3600 + 5);
   setDevHour(null);
   assert.equal(devDaySeconds(), null);
+  const hour = cityHour();
+  assert.equal(typeof hour, "number");
+  assert.ok(hour >= 0 && hour <= 24);
 });
