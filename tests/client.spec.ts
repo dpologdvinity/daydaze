@@ -1921,7 +1921,11 @@ test("Espresso Lab: a shift below the passing threshold does not count in worked
     .poll(() =>
       page.evaluate(() => localStorage.getItem("daydaze-save-v1") ?? ""),
     )
-    .not.toContain('"worked":{"barista":1}');
+    .toContain('"today":1');
+  const saved: unknown = await page.evaluate((): unknown =>
+    JSON.parse(localStorage.getItem("daydaze-save-v1") ?? "{}"),
+  );
+  expect(saved).toMatchObject({ shifts: { today: 1, worked: {} } });
   expect(errors).toEqual([]);
 });
 
