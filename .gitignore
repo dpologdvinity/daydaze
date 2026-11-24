@@ -40,7 +40,7 @@ art/ocean/.cache
 art/speedway/.cache/
 art/crowd/.cache/
 art/home/.cache/
-/.cache/
+/.cache
 art/motels/.cache/
 
 # Per-machine and credential files (Claude Code settings.local.json, CLAUDE.local.md, ...)
