@@ -1,6 +1,7 @@
 // Playwright end-to-end browser tests for the 3D client, rooms, HUD and navigation.
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
+import { ESPRESSO } from "../src/game/barista.ts";
 import { DEALER_AT } from "../src/game/city/dealer.ts";
 import { GAS_STATIONS, counterOf } from "../src/game/city/gasStations.ts";
 import { BUS_STOPS } from "../src/game/city/transit.ts";
@@ -1902,6 +1903,33 @@ test("Espresso Lab: a barista shift takes a ticket and scores a drink", async ({
   expect(errors).toEqual([]);
 });
 
+const ESPRESSO_LABELS = new Map(
+  ESPRESSO.ingredients.map((i) => [i.id, i.label]),
+);
+const ESPRESSO_RECIPES = new Map(
+  ESPRESSO.menu.map((m) => [
+    m.name,
+    m.recipe.map((id) => ESPRESSO_LABELS.get(id) ?? id),
+  ]),
+);
+
+async function completeBaristaShift(panel: Locator): Promise<void> {
+  for (let i = 0; i < 8; i++) {
+    const status = panel.getByRole("status");
+    if (i > 0) await expect(status).toContainText("Next:");
+    const text = (await status.textContent()) ?? "";
+    const match = text.match(/(?:Ticket|Next):\s*([^\n\r]+)/);
+    const drink = match ? match[1].trim() : "";
+    const ingredients = ESPRESSO_RECIPES.get(drink) ?? [];
+    for (const ingredient of ingredients) {
+      await panel
+        .getByRole("button", { name: ingredient, exact: true })
+        .click();
+    }
+    await panel.getByRole("button", { name: "Hand it over" }).click();
+  }
+}
+
 test("Espresso Lab: a finished shift posts a pay slip and counts in the save", async ({
   page,
 }) => {
@@ -1912,9 +1940,7 @@ test("Espresso Lab: a finished shift posts a pay slip and counts in the save", a
   await panel
     .getByRole("button", { name: "Start a shift" })
     .click({ timeout: 150_000 });
-  // empty cups are wrong orders: the shift still ends and is logged
-  for (let i = 0; i < 8; i++)
-    await panel.getByRole("button", { name: "Hand it over" }).click();
+  await completeBaristaShift(panel);
   await expect(panel).toContainText(/Paid \d+ coins and \d+ Hustle XP/);
   await expect
     .poll(() =>
@@ -1938,8 +1964,7 @@ test("Espresso Lab: the shift that reaches a new rank posts a promotion", async 
   await panel
     .getByRole("button", { name: "Start a shift" })
     .click({ timeout: 150_000 });
-  for (let i = 0; i < 8; i++)
-    await panel.getByRole("button", { name: "Hand it over" }).click();
+  await completeBaristaShift(panel);
   await expect(panel).toContainText(
     "Promoted to Cafe · Counter hand! +50 coins",
   );

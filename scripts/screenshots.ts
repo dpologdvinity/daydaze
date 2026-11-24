@@ -12,6 +12,7 @@
 // are the dev lineup page's (lineupShot below) and take the same tokens.
 import { appendFileSync, writeFileSync } from "node:fs";
 import { chromium, expect, type Page } from "@playwright/test";
+import { ESPRESSO } from "../src/game/barista.ts";
 import { DEFAULT_LOOK } from "../src/game/look.ts";
 import { createDefaultSave, serializeSave } from "../src/game/save.ts";
 import { dockAction } from "../tests/dock.ts";
@@ -1637,8 +1638,27 @@ const SHOTS: {
       await panel
         .getByRole("button", { name: "Start a shift" })
         .click({ timeout: 150_000 });
-      for (let i = 0; i < 8; i++)
+      const labels = new Map(ESPRESSO.ingredients.map((i) => [i.id, i.label]));
+      const recipes = new Map(
+        ESPRESSO.menu.map((m) => [
+          m.name,
+          m.recipe.map((id) => labels.get(id) ?? id),
+        ]),
+      );
+      for (let i = 0; i < 8; i++) {
+        const status = panel.getByRole("status");
+        if (i > 0) await expect(status).toContainText("Next:");
+        const text = (await status.textContent()) ?? "";
+        const match = text.match(/(?:Ticket|Next):\s*([^\n\r]+)/);
+        const drink = match ? match[1].trim() : "";
+        const ingredients = recipes.get(drink) ?? [];
+        for (const ingredient of ingredients) {
+          await panel
+            .getByRole("button", { name: ingredient, exact: true })
+            .click();
+        }
         await panel.getByRole("button", { name: "Hand it over" }).click();
+      }
       await expect(panel).toContainText("Promoted to Cafe");
     },
   },
