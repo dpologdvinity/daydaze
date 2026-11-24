@@ -62,9 +62,11 @@ for src in "${files[@]}"; do
   # (or the hand-made one that came with it: pruned like the automatic
   # ones, no head-shape keys and a 128 px atlas, never simplified)
   if [ -f "$IN/$name-lo.glb" ]; then
-    node --experimental-strip-types "$(dirname "$0")/pruneMorphs.ts" "$IN/$name-lo.glb" "$LO/$name-lo-pruned.glb" --hair
-    node --experimental-strip-types "$(dirname "$0")/pruneMorphs.ts" "$LO/$name-lo-pruned.glb" "$LO/$name-lo-bare.glb" --bare
-    npx -y @gltf-transform/cli@4.5.1 optimize "$LO/$name-lo-bare.glb" "$OUT/$name-lo.glb" "${OPTS[@]}" --texture-size 128
+    if [[ "$name" == hair-* ]]; then
+      node --experimental-strip-types "$(dirname "$0")/pruneMorphs.ts" "$IN/$name-lo.glb" "$LO/$name-lo-pruned.glb" --hair
+      node --experimental-strip-types "$(dirname "$0")/pruneMorphs.ts" "$LO/$name-lo-pruned.glb" "$LO/$name-lo-bare.glb" --bare
+      npx -y @gltf-transform/cli@4.5.1 optimize "$LO/$name-lo-bare.glb" "$OUT/$name-lo.glb" "${OPTS[@]}" --texture-size 128
+    fi
     continue
   fi
   case "$name" in
