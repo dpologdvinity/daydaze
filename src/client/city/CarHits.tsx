@@ -70,13 +70,21 @@ const SLIDE_SECONDS = 0.35;
 /** Seconds a shout stays over the spot. */
 const BUBBLE_SECONDS = 4;
 
-type Bubble = { id: number; x: number; z: number; text: string };
+type Bubble = {
+  id: number;
+  x: number;
+  z: number;
+  text: string;
+  showAt: number;
+  expireAt: number;
+};
 
 export function CarHits({ player }: { player: Player }) {
   const canvas = useThree((s) => s.gl.domElement);
   const [bubbles, setBubbles] = useState<readonly Bubble[]>([]);
-  // pending bubble timers, each dropped once it fires
-  const timers = useRef(new Set<number>());
+  // queued speech bubbles, scheduled and expired against the street events clock
+  const queue = useRef<Bubble[]>([]);
+  const visible = useRef<readonly Bubble[]>([]);
   const recent = useRef<RecentLines>([]);
   const nextId = useRef(0);
   // the player thrown by a car: from, to and seconds into the throw
@@ -97,9 +105,9 @@ export function CarHits({ player }: { player: Player }) {
   useEffect(() => {
     // the line banks are their own chunk; a failed load leaves "..." lines
     loadDialogue().catch((e: unknown) => console.warn(e));
-    const pending = timers.current;
     return () => {
-      pending.forEach((t) => window.clearTimeout(t));
+      queue.current = [];
+      visible.current = [];
       streetHits.hit = null;
       streetHits.heist = null;
       streetHits.chase = null;
@@ -123,22 +131,15 @@ export function CarHits({ player }: { player: Player }) {
       recent: recent.current,
     });
     recent.current = picked.recent;
-    const bubble: Bubble = { id: nextId.current++, x, z, text: picked.text };
-    const later = (fn: () => void, seconds: number) => {
-      const id = window.setTimeout(
-        () => {
-          timers.current.delete(id);
-          fn();
-        },
-        (seconds * 1000) / TIME_SCALE,
-      );
-      timers.current.add(id);
-    };
-    later(() => setBubbles((b) => [...b.slice(-2), bubble]), delay);
-    later(
-      () => setBubbles((b) => b.filter((o) => o !== bubble)),
-      delay + BUBBLE_SECONDS,
-    );
+    const now = streetSeconds();
+    queue.current.push({
+      id: nextId.current++,
+      x,
+      z,
+      text: picked.text,
+      showAt: now + delay,
+      expireAt: now + delay + BUBBLE_SECONDS,
+    });
   };
 
   /** Walkers near (x, z) stop and look; the nearest one gasps. */
@@ -274,6 +275,19 @@ export function CarHits({ player }: { player: Player }) {
     tickStreetClock(dt);
     const now = streetSeconds();
     const gameDt = dt * TIME_SCALE;
+
+    if (queue.current.length > 0) {
+      queue.current = queue.current.filter((b) => now < b.expireAt);
+      const active = queue.current.filter((b) => now >= b.showAt).slice(-2);
+      const prev = visible.current;
+      if (
+        active.length !== prev.length ||
+        active.some((b, idx) => b.id !== prev[idx]?.id)
+      ) {
+        visible.current = active;
+        setBubbles(active);
+      }
+    }
     // a hard stop for the player in the road: tires lock and the horn goes
     // (a new traffic simulation starts its count over: no alarm in that)
     if (streetHits.alarms > alarms.current) {

@@ -1143,7 +1143,7 @@ const SHOTS: {
       // before recording starts, a walker near her to knock down,
       // pinning the camera on the hit spot
       await page.waitForFunction(
-        () => window.daydazeKnockWalker(9, true, true),
+        () => window.daydazeKnockWalker(9, true, true) === true,
         null,
         {
           timeout: 120_000,
@@ -1153,7 +1153,10 @@ const SHOTS: {
     },
     async (page) => {
       await page.waitForFunction(
-        () => window.daydazeKnockWalker(9, true),
+        () => {
+          const res = window.daydazeKnockWalker(9, true);
+          return typeof res === "number" && res >= 0;
+        },
         null,
         {
           timeout: 120_000,
