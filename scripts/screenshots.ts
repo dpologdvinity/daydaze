@@ -2729,7 +2729,7 @@ const SHOTS: {
     },
   },
   {
-    // closet mirror open to face customizer with brow and makeup controls
+    // closet mirror open to face tab with brow and makeup controls
     name: "closet-mirror",
     query: "room=city&view=full",
     live: true,
