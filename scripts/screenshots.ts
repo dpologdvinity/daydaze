@@ -2239,6 +2239,18 @@ const SHOTS: {
     act: furnitureReady,
   },
   // the avenue sidewalk with its street furniture (src/client/city/CityFurniture.tsx)
+  ...(
+    [
+      ["garden-square-day", "-37,42", "-40,3,42,-30,2,42", "12:00"],
+      ["garden-square-night", "-37,42", "-40,3,42,-30,2,42", "21:00"],
+      ["garden-hotel-day", "25,42", "22,3,42,32,2,42", "12:00"],
+      ["garden-hotel-night", "25,42", "22,3,42,32,2,42", "21:00"],
+    ] as const
+  ).map(([name, at, cam, time]) => ({
+    name,
+    query: `room=city&quality=low&at=${at}&cam=${cam}&time=${time}`,
+    act: furnitureReady,
+  })),
   {
     name: "city-sidewalk",
     query: "room=city&view=full&time=12:00&at=-36,9.5",
