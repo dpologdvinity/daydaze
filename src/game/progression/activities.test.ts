@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { PRIZE_GAMES, PRIZE_TABLES } from "../prizes.ts";
 import { challengesFor, dayOf } from "../challenges.ts";
 import { createDefaultSave, loadSave, serializeSave } from "../save.ts";
-import { CLEAN_BONUS, WAGE_PER_ORDER } from "../shifts.ts";
+import { CLEAN_BONUS, PASSING_ORDERS, WAGE_PER_ORDER } from "../shifts.ts";
 import { freshProgression, totalXp } from "./progression.ts";
 import {
   GAME_LADDERS,
@@ -208,4 +208,22 @@ test("a shift at a higher rank pays the raise, and the promoting shift pays the 
   // the boba counter counts toward the same Cafe career
   const boba = finishShift(seed(RANK_SHIFTS[1]), "boba", result, now);
   assert.equal(boba.coins, raised(base, 1));
+});
+
+test("a shift with fewer than PASSING_ORDERS does not trigger a promotion or bonus", () => {
+  const now = Date.UTC(2026, 10, 20);
+  const start = {
+    ...createDefaultSave("Mango"),
+    shifts: { day: 0, today: 0, worked: { barista: RANK_SHIFTS[1] - 1 } },
+  };
+  const r = finishShift(
+    start,
+    "barista",
+    { right: PASSING_ORDERS - 1, tips: 2 },
+    now,
+  );
+  assert.equal(r.promotion, null);
+  assert.equal(r.coins, (PASSING_ORDERS - 1) * WAGE_PER_ORDER + 2);
+  assert.equal(r.save.coins, start.coins + r.coins);
+  assert.equal(r.save.shifts.worked.barista, RANK_SHIFTS[1] - 1);
 });

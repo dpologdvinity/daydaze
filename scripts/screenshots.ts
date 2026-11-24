@@ -12,6 +12,7 @@
 // are the dev lineup page's (lineupShot below) and take the same tokens.
 import { appendFileSync, writeFileSync } from "node:fs";
 import { chromium, expect, type Page } from "@playwright/test";
+import { completeBaristaShift } from "../tests/barista.ts";
 import { DEFAULT_LOOK } from "../src/game/look.ts";
 import { createDefaultSave, serializeSave } from "../src/game/save.ts";
 import { dockAction } from "../tests/dock.ts";
@@ -1681,8 +1682,7 @@ const SHOTS: {
       await panel
         .getByRole("button", { name: "Start a shift" })
         .click({ timeout: 150_000 });
-      for (let i = 0; i < 8; i++)
-        await panel.getByRole("button", { name: "Hand it over" }).click();
+      await completeBaristaShift(panel);
       await expect(panel).toContainText("Promoted to Cafe");
     },
   },
