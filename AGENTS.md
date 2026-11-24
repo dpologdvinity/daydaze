@@ -144,8 +144,9 @@ A Vite port other than 5173 must be in `ALLOWED_ORIGINS`
   `docs/agents/agent-rules.md` as
   their brief.
 - CI does the heavy lifting so the owner's machine stays free:
-  - Pushing `feat/**`, `fix/**`, `perf/**` or `ci/**` runs `npm run verify`
-    (`verify.yml`). Locally, run single checks under `nice -n 19`.
+  - Pushing `ci/**` runs `npm run verify` (`verify.yml`). Pull request branches
+    run the parallel fast checks in `ci.yml`. Locally, run single checks under
+    `nice -n 19`.
   - Browser tests: `gh workflow run browser-test.yml --ref <branch> -f grep="<test title>"`.
   - Screenshots: `gh workflow run screenshots.yml --ref <branch> -f shots="<tokens>"`
     (registry names, raw queries like `room=city&at=10,5&turn=4`, `spot=<building>`,
