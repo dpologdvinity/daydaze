@@ -150,6 +150,9 @@ export const GARMENTS = [
   { id: "patrol-cap", slot: "hat", label: "Patrol cap", from: null },
   { id: "headscarf", slot: "hat", label: "Headscarf", from: null },
   { id: "sun-visor", slot: "hat", label: "Sun visor", from: null },
+  { id: "beret", slot: "hat", label: "Beret", from: null },
+  { id: "sun-hat", slot: "hat", label: "Sun hat", from: null },
+  { id: "cowboy-hat", slot: "hat", label: "Cowboy hat", from: null },
   { id: "hijab-wrap", slot: "hat", label: "Hijab", from: null },
 ] as const satisfies readonly {
   id: string;
@@ -167,7 +170,7 @@ export function garmentAsset(slot: Slot, id: GarmentId) {
   const fit = id === "fishnet-tights" ? "sheer-tights" : id;
   return {
     model: id === "hijab-wrap" ? "hair-hijab" : `${slot}-${fit}`,
-    tuck: slot === "hat" ? null : `tuck_${fit}`,
+    tuck: slot === "hat" || fit === "sheer-tights" ? null : `tuck_${fit}`,
   };
 }
 

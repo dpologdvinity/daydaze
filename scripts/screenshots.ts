@@ -3256,23 +3256,28 @@ const SHOTS: {
   ),
   lineupShot(
     "doll-footwear-walk",
-    `shoes=stiletto-booties,gladiator-sandals,chunky-sneakers&wears=${WEAR_FEET}&cam=0,0.55,3.8&target=0,0.45,0`,
+    `shoes=slingback-heels,gladiator-sandals,chunky-sneakers&wears=${WEAR_FEET}&cam=0,0.55,3.8&target=0,0.45,0`,
     "trackwalk",
   ),
   lineupShot(
     "doll-footwear-sit",
-    "shoes=stiletto-booties,flip-flops,knee-high-boots,go-go-platforms&cam=0,0.55,4.8&target=0,0.45,0",
+    "holds=sit-crossed,sit-at-table,sit-hug-knee,sit-reclined&shoes=slingback-heels,flip-flops,knee-high-boots,go-go-platforms&cam=0,0.55,4.8&target=0,0.45,0",
     "sit",
   ),
   lineupShot(
     "doll-footwear-dance",
-    "shoes=running-shoes,stiletto-booties,biker-boots,gladiator-sandals,flip-flops&cam=0,0.6,5.5&target=0,0.48,0",
+    "shoes=running-shoes,slingback-heels,biker-boots,gladiator-sandals,flip-flops&cam=0,0.6,5.5&target=0,0.48,0",
     "dance",
   ),
   lineupShot(
     "doll-footwear-men",
     "men=1&shoes=biker-boots,monk-straps,high-top-sneakers&cam=0,0.65,3.7&target=0,0.55,0",
     "men",
+  ),
+  lineupShot(
+    "doll-brimmed-hats",
+    "wears=tee~eea8be.denim-shorts~202538.beret~81264c,tee~dde2ec.denim-shorts~253653.sun-hat~d3ac68,tee~f3ccd8.denim-shorts~202538.cowboy-hat~573880&cam=0,1.48,3.8&target=0,1.47,0",
+    "body",
   ),
   lineupShot(
     "doll-tights",

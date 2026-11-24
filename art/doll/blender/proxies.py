@@ -98,7 +98,7 @@ def mix(clo, per_vertex):
     return np.einsum("nk,nk...->n...", clo["w"], per_vertex[clo["refs"]])
 
 
-def snug_weights(ctx, verts, weights, reach):
+def snug_weights(ctx, verts, weights, reach, reference=None):
     """Bone weights that make cloth follow the skin under it.
 
     A proxy's own weights blend three base vertices' weights, so in a pose
@@ -109,7 +109,8 @@ def snug_weights(ctx, verts, weights, reach):
     own weights by `reach`, so loose hems and skirts keep theirs."""
     skin = np.array(sorted({i for f in ctx.FACES["body"] for i in f}))
     tree = KDTree(len(skin))
-    for i, p in enumerate(ctx.PB[skin]):
+    points = ctx.PB if reference is None else reference
+    for i, p in enumerate(points[skin]):
         tree.insert(p, i)
     tree.balance()
     out = weights.copy()
@@ -126,17 +127,24 @@ def snug_weights(ctx, verts, weights, reach):
     return out
 
 
-def build(ctx, name, rel_path, mat, snug=0.0, ratio=1.0):
+def build(ctx, name, rel_path, mat, snug=0.0, ratio=1.0, fit_delta=None, skin=None):
     """One proxy as a skinned, shape-keyed Blender object.
 
     ctx carries the doll's P, W, BONES, KEYS (MakeHuman space) and its
     to_blender and new_object helpers. `snug` (metres) makes cloth within
     that reach of the skin follow it (snug_weights); 0 keeps the proxy's own.
     `ratio` < 1 decimates a proxy denser than it needs to be.
+    `fit_delta` is a MakeHuman pose target for proxies authored on bent feet.
+    `skin` projects close-fitting transparent cloth just over the skin.
     """
     clo = read_mhclo(os.path.join(ASSETS, rel_path))
     uvs, faces = read_obj(os.path.join(clo["dir"], clo["obj"]))
-    verts = ctx.to_blender(fit(clo, ctx.P))
+    base = ctx.P if fit_delta is None else ctx.P + fit_delta
+    verts = ctx.to_blender(fit(clo, base))
+    if skin is not None:
+        for i, vert in enumerate(verts):
+            point, normal, _face, _distance = skin.find_nearest(vert)
+            verts[i] = point + normal * 0.006
     ob = ctx.new_object(name, verts, [f[0] for f in faces])
     ob.data.materials.append(mat)
     uv = ob.data.uv_layers.new(name="UVMap").data
@@ -149,7 +157,8 @@ def build(ctx, name, rel_path, mat, snug=0.0, ratio=1.0):
         p.use_smooth = True
     weights = mix(clo, ctx.W)
     if snug:
-        weights = snug_weights(ctx, verts, weights, snug)
+        reference = None if fit_delta is None else ctx.to_blender(base)
+        weights = snug_weights(ctx, verts, weights, snug, reference)
     keys = {k: mix(clo, d) * (1.25 if k == "plus" else 1) for k, d in ctx.KEYS.items()}
     if ratio < 1.0:
         mod = ob.modifiers.new("decimate", "DECIMATE")

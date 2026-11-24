@@ -47,8 +47,40 @@ def fetch_community():
             temp.replace(dest)
 
 
+def fetch_fitted_hats():
+    target = DESTINATION / "wardrobe-props"
+    target.mkdir(parents=True, exist_ok=True)
+    with TemporaryDirectory() as temp:
+        for label, checksum, members in (
+            ("beret_hat_e", "962fdde85cc4aad6c24ad06a76bca20a1093bf83307a0ee04682b34d44a3b245", {
+                "beret lowpoly.fbx": "beret.fbx", "beret color.png": "beret.png",
+            }),
+            ("straw_hat", "0ca17909ce677ec5b32a02c5c046d42659a998db59dd4a3ef03e6041136e0683", {
+                "straw hat.fbx": "sun-hat.fbx", "Basket_weave_001_COLOR ": "straw.png",
+                "Fabric_Knitted_002_COLOR ": "ribbon.jpg",
+            }),
+        ):
+            marker = target / f".{label}"
+            if marker.is_file() and marker.read_text() == checksum and all((target / name).is_file() for name in members.values()):
+                continue
+            archive = Path(temp) / f"{label}.zip"
+            download_verified(f"https://opengameart.org/sites/default/files/{archive.name}", archive, checksum)
+            with ZipFile(archive) as pack:
+                for prefix, name in members.items():
+                    member, = [item for item in pack.namelist() if item.startswith(prefix)]
+                    (target / name).write_bytes(pack.read(member))
+            marker.write_text(checksum)
+    cowboy_hat = target / "cowboy-hat.glb"
+    checksum = "77db0243e2a27e47d0e98c5ee80d931cfd5845838101e83c0ada057f718d6d61"
+    if not cowboy_hat.is_file() or not verify(cowboy_hat, checksum):
+        temporary = cowboy_hat.with_suffix(".part")
+        download_verified("https://grab3d.com/dl/cowboy-hat/cowboy-hat.glb", temporary, checksum)
+        temporary.replace(cowboy_hat)
+
+
 def main():
     fetch_community()
+    fetch_fitted_hats()
     packs = json.loads((HERE / "src" / "footwear.json").read_text())
     for archive, styles in packs.items():
         if archive.endswith("-community"):

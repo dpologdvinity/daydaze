@@ -544,6 +544,21 @@ export const CREDITS: readonly {
           "Two fits of the loafers, fitted and simplified for both doll rigs.",
       },
       {
+        title: "Elvs Peep Toe Slingbacks",
+        author: "Elvaerwyn",
+        license: "CC-BY 4.0",
+        url: "https://files.makehumancommunity.org/sites/default/files/clothes/2512/835643529/slingtex1.png",
+        usedFor: "Slingback heels, fitted and simplified for both doll rigs.",
+      },
+      {
+        title: "High Heels Footpose",
+        author: "punkduck and Elvaerwyn",
+        license: "CC-BY 4.0",
+        url: "https://files.makehumancommunity.org/sites/default/files/targets/2512/heels.target",
+        usedFor:
+          "Foot, sock and tights pose in slingback heels for both doll rigs.",
+      },
+      {
         title: "Snapback Cap",
         author: "WojackOWL",
         license: "CC-BY 4.0",
@@ -558,6 +573,21 @@ export const CREDITS: readonly {
         url: "https://files.makehumancommunity.org/sites/default/files/clothes/2539/2102128081/pantyhose01.mhclo",
         usedFor:
           "Tintable sheer tights, fitted and simplified for both doll rigs.",
+      },
+      {
+        title: "Beret and Straw Hat",
+        author: "Teh_Bucket and João Paulo",
+        license: "CC0 1.0",
+        url: "https://opengameart.org/content/hats-clothing-props",
+        usedFor:
+          "Beret and sun hat, fitted to both rigs with tintable detail maps.",
+      },
+      {
+        title: "Cowboy Hat",
+        author: "Grab3D",
+        license: "CC0 1.0",
+        url: "https://grab3d.com/models/props/cowboy-hat/",
+        usedFor: "Cowboy hat, fitted and simplified for both doll rigs.",
       },
       {
         title: "Bob hair (three cuts)",

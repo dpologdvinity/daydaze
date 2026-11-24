@@ -140,6 +140,10 @@
     "loafers": [
       "toigo-loafers-female",
       "toigo-loafers-male"
+    ],
+    "slingback-heels": [
+      "elvs-slingbacks",
+      0.12
     ]
   },
   "hats-community": {

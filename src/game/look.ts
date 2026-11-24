@@ -285,6 +285,7 @@ export const SHOES = [
   { id: "foldover-boots", label: "Foldover boots" },
   { id: "rain-boots", label: "Rain boots" },
   { id: "stiletto-booties", label: "Stiletto booties" },
+  { id: "slingback-heels", label: "Slingback heels" },
   { id: "go-go-platforms", label: "Go-go platforms" },
   { id: "block-heel-boots", label: "Block-heel boots" },
   { id: "biker-boots", label: "Biker boots" },

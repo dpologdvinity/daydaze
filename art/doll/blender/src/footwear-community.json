@@ -70,5 +70,27 @@
       "https://files.makehumancommunity.org/sites/default/files/clothes/8124/652068162/SnapbackCap_Snapback_BaseColor_sRGB.png",
       "07434894962083ad5433c86d8da8276ca5f75ab89cdd9b050fbca1c7684458f4"
     ]
+  },
+  "elvs-slingbacks": {
+    "elvs_peepytoe_slingback1.obj": [
+      "https://files.makehumancommunity.org/sites/default/files/clothes/2512/1275455859/elvs_peepytoe_slingback1.obj",
+      "d404d567850b432ad504260f4da8cbb26c127d2c8d8d251a6d120b86cda1e1d2"
+    ],
+    "elvs_peepytoe_slingback1.mhmat": [
+      "https://files.makehumancommunity.org/sites/default/files/clothes/2512/2035213329/elvs_peepytoe_slingback1.mhmat",
+      "87e6f9b9b4f635ba5556315358228404b46b288c416b6fb458429c4c63699b14"
+    ],
+    "elvs_peepytoe_slingback1.mhclo": [
+      "https://files.makehumancommunity.org/sites/default/files/clothes/2512/704888190/elvs_peepytoe_slingback1.mhclo",
+      "213872c33173ead06da7bff417484d60a24dab9453c39e53fdb9821c87a9e043"
+    ],
+    "slingtex1.png": [
+      "https://files.makehumancommunity.org/sites/default/files/clothes/2512/835643529/slingtex1.png",
+      "566958b7d01e7a3751bb22912747f49f5faf1c9dcb1f5a440e64f6cc07474c6b"
+    ],
+    "heels.target": [
+      "https://files.makehumancommunity.org/sites/default/files/targets/2512/heels.target",
+      "045aeea2469c3c98bb814ad1f77a1572724466d27f41074c6eb910d72f2d1179"
+    ]
   }
 }

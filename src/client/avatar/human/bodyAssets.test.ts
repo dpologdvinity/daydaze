@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 import { readGlb } from "../../../../scripts/pruneMorphs.ts";
-import { FACE_SLIDERS } from "../../../game/look.ts";
+import { FACE_SLIDERS, SHOES } from "../../../game/look.ts";
 import { garmentAsset, GARMENTS } from "../../../game/wardrobe.ts";
 
 test("both human bodies and their distance models carry every facial slider", () => {
@@ -83,6 +83,9 @@ test("every garment ships fitted to both bodies, with its tuck key", () => {
       const keys = new Set(
         json.meshes.flatMap((mesh) => mesh.extras?.targetNames ?? []),
       );
+      for (const { id } of SHOES) {
+        assert.ok(keys.has(`tuck_${id}`), `body${m}${lo}: tuck_${id}`);
+      }
       for (const g of GARMENTS) {
         const { model, tuck } = garmentAsset(g.slot, g.id);
         const file = `${model}${m}${lo}.glb`;
