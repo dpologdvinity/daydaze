@@ -12,7 +12,7 @@ import {
 import { readFlags } from "../../flags.ts";
 import { useFarmState } from "./farmSession.ts";
 
-const DEBUG = readFlags(location.search).debug;
+const DEBUG = readFlags().debug;
 
 export function FarmPanel(): JSX.Element {
   const { farm, coins, plant, water, harvest, sell, feed, skipTime } =

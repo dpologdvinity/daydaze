@@ -11,6 +11,7 @@ import {
   parseTimeFlag,
   type Daylight,
 } from "../../game/city/daylight.ts";
+import { locationSearch } from "../flags.ts";
 
 /** A live pin from the dev panel (development only), and when it was set. */
 let devHour: number | null = null;
@@ -33,7 +34,7 @@ export function devDaySeconds(): number | null {
 
 /** The hour now: the dev pin, else `?time=`, else the local clock. */
 export const cityHour = () =>
-  devHour ?? parseTimeFlag(location.search) ?? hourOf(new Date());
+  devHour ?? parseTimeFlag(locationSearch()) ?? hourOf(new Date());
 
 /** Sky colors, shared by the dome's shader (CitySky.tsx). */
 export const SKY_UNIFORMS = {
