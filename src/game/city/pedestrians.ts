@@ -2,6 +2,7 @@
 // strip, end to end and back, at her own speed and lane; where she is is a
 // pure function of time, so every client agrees and nothing is stored.
 // The renderer draws only the few nearest the player.
+import { quietAt } from "./weather.ts";
 import {
   BEARDS,
   HAIR_COLORS,
@@ -190,9 +191,9 @@ export function pedestrianAt(
 }
 
 /** Whether she is out at `hour` (0..24): everyone by day, a quarter of the
- * crowd at the dead of night. */
+ * crowd after dark and fewer still at 4 a.m. */
 export function pedestrianOut(p: Pedestrian, hour: number): boolean {
-  return p.night >= 0.75 * daylightAt(hour).neon;
+  return p.night >= 0.75 * daylightAt(hour).neon + 0.18 * quietAt(hour);
 }
 
 const scratch: PedestrianPose = { x: 0, z: 0, yaw: 0 };
