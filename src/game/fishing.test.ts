@@ -159,6 +159,6 @@ test("fishing spots registry configures every spot with valid parameters", () =>
     assert.ok(typeof spot.waterY === "number");
     assert.ok(spot.description.length > 0);
   }
-  assert.deepEqual(FISHING_SPOTS.farm.castRange, [4, 14]);
-  assert.equal(castDistance(1, FISHING_SPOTS.farm.castRange), 14);
+  assert.deepEqual(FISHING_SPOTS.farm.castRange, [2.5, 8.5]);
+  assert.equal(castDistance(1, FISHING_SPOTS.farm.castRange), 8.5);
 });

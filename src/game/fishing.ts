@@ -50,17 +50,17 @@ export const BOARDWALK_SPECIES: readonly Species[] = [
 export const FARM_SPECIES: readonly Species[] = [
   { name: "Minnow", kg: [0.05, 0.2], reach: 0, weight: 5 },
   { name: "Bluegill", kg: [0.2, 0.7], reach: 0, weight: 4 },
-  { name: "Pond perch", kg: [0.4, 1.4], reach: 5, weight: 3 },
-  { name: "Mud carp", kg: [1.0, 3.5], reach: 8, weight: 2 },
-  { name: "Golden koi", kg: [1.5, 5.0], reach: 11, weight: 1 },
+  { name: "Pond perch", kg: [0.4, 1.4], reach: 3, weight: 3 },
+  { name: "Mud carp", kg: [1.0, 3.5], reach: 5, weight: 2 },
+  { name: "Golden koi", kg: [1.5, 5.0], reach: 7, weight: 1 },
 ];
 
 export const FOREST_SPECIES: readonly Species[] = [
   { name: "Brook trout", kg: [0.3, 1.2], reach: 0, weight: 5 },
-  { name: "Rainbow trout", kg: [0.8, 2.8], reach: 5, weight: 4 },
-  { name: "Smallmouth bass", kg: [1.0, 3.2], reach: 9, weight: 3 },
-  { name: "Silver salmon", kg: [2.5, 7.0], reach: 12, weight: 2 },
-  { name: "Pike", kg: [4.0, 10.0], reach: 15, weight: 1 },
+  { name: "Rainbow trout", kg: [0.8, 2.8], reach: 2, weight: 4 },
+  { name: "Smallmouth bass", kg: [1.0, 3.2], reach: 3, weight: 3 },
+  { name: "Silver salmon", kg: [2.5, 7.0], reach: 4, weight: 2 },
+  { name: "Pike", kg: [4.0, 10.0], reach: 5, weight: 1 },
 ];
 
 export const OPEN_WATER_SPECIES: readonly Species[] = [
@@ -127,20 +127,20 @@ export const FISHING_SPOTS: Record<FishingSpotId, FishingSpotConfig> = {
     yaw: Math.PI,
     waterY: 0.02,
     species: FARM_SPECIES,
-    castRange: [4, 14],
+    castRange: [2.5, 8.5],
     description: "Five casts into the quiet farm pond.",
   },
   forest: {
     id: "forest",
-    name: "Larkspur Lake",
+    name: "Larkspur Creek",
     room: "forest",
     position: [-14, -11],
     dir: -1,
     yaw: Math.PI,
     waterY: 0.05,
     species: FOREST_SPECIES,
-    castRange: [5, 18],
-    description: "Five casts into the tranquil forest lake.",
+    castRange: [2.0, 5.5],
+    description: "Five casts into the tranquil forest creek.",
   },
   "open-water": {
     id: "open-water",
