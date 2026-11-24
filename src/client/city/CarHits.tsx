@@ -35,7 +35,6 @@ import {
   type StreetPose,
 } from "../../game/city/streetKnocks.ts";
 import type { TrafficHit } from "../../game/city/traffic.ts";
-import { wallSeconds } from "../../game/clock.ts";
 import {
   loadDialogue,
   pickLine,
@@ -46,13 +45,21 @@ import type {
   DialogueSituation,
 } from "../../game/dialogue/types.ts";
 import { playHorn, playScreech, playThump } from "../../audio/worldSounds.ts";
+import { setCamOverride } from "../world/camOverride.ts";
 import { setData } from "../world/dataset.ts";
 import { driving } from "../world/driving.ts";
 import { crime } from "../world/heat.ts";
 import { placePlayer, type Player } from "../world/PlayerController.tsx";
 import { react } from "../world/reaction.ts";
+import { TIME_SCALE } from "../timeScale.ts";
 import { cityHour } from "./daylight.ts";
-import { streetHits, walkerState } from "./streetHits.ts";
+import {
+  resetStreetClock,
+  streetHits,
+  streetSeconds,
+  tickStreetClock,
+  walkerState,
+} from "./streetHits.ts";
 
 /** Walkers farther than this from a car (meters) are left alone. */
 const NEAR_CAR = 30;
@@ -96,6 +103,8 @@ export function CarHits({ player }: { player: Player }) {
       streetHits.hit = null;
       streetHits.heist = null;
       streetHits.chase = null;
+      streetHits.walkers.clear();
+      resetStreetClock();
     };
   }, []);
 
@@ -116,10 +125,13 @@ export function CarHits({ player }: { player: Player }) {
     recent.current = picked.recent;
     const bubble: Bubble = { id: nextId.current++, x, z, text: picked.text };
     const later = (fn: () => void, seconds: number) => {
-      const id = window.setTimeout(() => {
-        timers.current.delete(id);
-        fn();
-      }, seconds * 1000);
+      const id = window.setTimeout(
+        () => {
+          timers.current.delete(id);
+          fn();
+        },
+        (seconds * 1000) / TIME_SCALE,
+      );
       timers.current.add(id);
     };
     later(() => setBubbles((b) => [...b.slice(-2), bubble]), delay);
@@ -209,16 +221,18 @@ export function CarHits({ player }: { player: Player }) {
     return true;
   };
 
-  // `?debug=1` puts `daydazeKnockWalker(speed)` on the page, for tests and
-  // screenshots: the walker nearest you is hit as by your car at `speed` m/s,
-  // coming from your side (her index, or -1 with nobody near)
+  // `?debug=1` puts `daydazeKnockWalker(speed, pinCam?, dry?)` on the page,
+  // for tests and screenshots: the walker nearest you is hit as by your car at
+  // `speed` m/s, coming from your side (her index, or -1 with nobody near).
+  // `pinCam: true` pins the camera to frame her fall, get-up and speech bubble.
+  // `dry: true` only probes whether someone is near (boolean).
   const hitRef = useRef(hitWalker);
   hitRef.current = hitWalker;
   useEffect(() => {
     if (new URLSearchParams(location.search).get("debug") !== "1") return;
-    const knockNearest = (speed: unknown) => {
+    const knockNearest = (speed: unknown, pinCam?: unknown, dry?: unknown) => {
       if (typeof speed !== "number" || !Number.isFinite(speed)) return -1;
-      const now = wallSeconds();
+      const now = streetSeconds();
       const hour = cityHour();
       let nearest = -1;
       let best = 25;
@@ -231,11 +245,23 @@ export function CarHits({ player }: { player: Player }) {
           nearest = i;
         }
       });
-      if (nearest < 0) return -1;
+      if (nearest < 0) return dry === true ? false : -1;
       streetPose(PEDESTRIANS[nearest], walkerState(nearest), now, pose);
       const d = Math.max(best, 1e-6);
       const fx = (pose.x - player.pos.x) / d;
       const fz = (pose.z - player.pos.z) / d;
+      if (pinCam === true) {
+        const far = knockback(speed);
+        const landX = pose.x + fx * far;
+        const landZ = pose.z + fz * far;
+        const px = -fz;
+        const pz = fx;
+        setCamOverride({
+          eye: [landX + px * 3.2 - fx * 2.8, 1.7, landZ + pz * 3.2 - fz * 2.8],
+          look: [landX, 0.9, landZ],
+        });
+      }
+      if (dry === true) return true;
       return hitRef.current(nearest, now, speed, fx, fz) ? nearest : -1;
     };
     Object.assign(window, { daydazeKnockWalker: knockNearest });
@@ -245,7 +271,9 @@ export function CarHits({ player }: { player: Player }) {
   }, [player, pose]);
 
   useFrame((_, dt) => {
-    const now = wallSeconds();
+    tickStreetClock(dt);
+    const now = streetSeconds();
+    const gameDt = dt * TIME_SCALE;
     // a hard stop for the player in the road: tires lock and the horn goes
     // (a new traffic simulation starts its count over: no alarm in that)
     if (streetHits.alarms > alarms.current) {
@@ -260,7 +288,7 @@ export function CarHits({ player }: { player: Player }) {
     }
     const sl = slide.current;
     if (sl.on) {
-      sl.t += dt;
+      sl.t += gameDt;
       const k = Math.min(1, sl.t / SLIDE_SECONDS);
       const e = 1 - (1 - k) * (1 - k);
       placePlayer(
@@ -348,7 +376,7 @@ export function CarHits({ player }: { player: Player }) {
     if (scene.current) {
       here[0] = player.pos.x;
       here[1] = player.pos.z;
-      const r = stepHitScene(scene.current, dt, here);
+      const r = stepHitScene(scene.current, gameDt, here);
       scene.current = r.scene;
       if (r.hitAndRun) crime("hitAndRun");
     }

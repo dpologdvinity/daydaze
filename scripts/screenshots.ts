@@ -33,6 +33,12 @@ declare global {
     daydazeReact: (id: string) => void;
     /** In the city (src/client/city/Traffic.tsx). */
     daydazeStepOut: (ahead: number, dry?: boolean) => boolean;
+    /** In the city (src/client/city/CarHits.tsx). */
+    daydazeKnockWalker: (
+      speed: number,
+      pinCam?: boolean,
+      dry?: boolean,
+    ) => number | boolean;
   }
 }
 
@@ -1119,6 +1125,41 @@ const SHOTS: {
         timeout: 120_000,
         polling: 2_000,
       });
+    },
+    150,
+    60,
+  ),
+  // your car knocking a walker down: the hit, her fall and get-up, her line for
+  // the driver and bystanders stopping to look (game/city/streetKnocks.ts);
+  // the camera pinned on the scene and events at a twentieth of speed
+  actionStrip(
+    "walker-hit",
+    "room=city&view=room&quality=low&debug=1&time=12:00&timescale=0.05",
+    async (page) => {
+      await page.waitForTimeout(40_000);
+      // warm the moves pack up, so the fall is not missed while it loads
+      await page.evaluate(() => window.daydazeReact("stumble"));
+      await page.waitForTimeout(110_000);
+      // before recording starts, a walker near her to knock down,
+      // pinning the camera on the hit spot
+      await page.waitForFunction(
+        () => window.daydazeKnockWalker(9, true, true),
+        null,
+        {
+          timeout: 120_000,
+          polling: 2_000,
+        },
+      );
+    },
+    async (page) => {
+      await page.waitForFunction(
+        () => window.daydazeKnockWalker(9, true),
+        null,
+        {
+          timeout: 120_000,
+          polling: 2_000,
+        },
+      );
     },
     150,
     60,
