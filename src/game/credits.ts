@@ -583,7 +583,7 @@ export const CREDITS: readonly {
         license: "CC0 1.0",
         url: "https://github.com/makehumancommunity/makehuman",
         usedFor:
-          "Avatar bodies, morph targets, hair and clothing, adapted for Daydaze; baked (art/crowd/) into the club queues, the street's far crowd and cyclists, the arena and Speedway stands and the pit crew.",
+          "Avatar bodies, morph targets, hair and clothing adapted for Daydaze. The closet thumbnails render these garments, and the avatars are baked (art/crowd/) into the club queues, the street's far crowd and cyclists, the arena and Speedway stands and the pit crew.",
       },
       {
         title: "MPFB2 Mixamo-named rig",

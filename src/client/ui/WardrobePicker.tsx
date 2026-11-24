@@ -26,7 +26,7 @@ import {
   wearOf,
   type Slot,
 } from "../../game/wardrobe.ts";
-import { Chips, ColorPicker } from "./controls.tsx";
+import { Chips, ColorPicker, Tiles } from "./controls.tsx";
 
 /** The slots in closet order, with their names. */
 const ROWS: readonly { slot: Slot; label: string; optional: boolean }[] = [
@@ -111,7 +111,9 @@ export function WardrobePicker({
         const inRow = shown.filter((g) => g.slot === slot);
         // the worn garment stays listed, so the radio group always has a value
         const options = [
-          ...(optional ? [{ id: "none", label: "None" }] : []),
+          ...(optional
+            ? [{ id: "none", label: "None", thumbnail: false } as const]
+            : []),
           ...(wornGarment && !inRow.includes(wornGarment) ? [wornGarment] : []),
           ...inRow,
         ];
@@ -133,7 +135,9 @@ export function WardrobePicker({
                 </button>
               )}
             </div>
-            <Chips
+            <Tiles
+              tiles="garment"
+              eagerCount={0}
               label={label}
               options={options}
               value={worn?.id ?? (optional ? "none" : "")}
