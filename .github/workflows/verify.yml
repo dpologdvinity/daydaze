@@ -4,7 +4,7 @@ name: Verify
 # The land script pushes a rebased branch to ci/** and waits for this.
 on:
   push:
-    branches: ["feat/**", "fix/**", "perf/**", "ci/**"]
+    branches: ["ci/**"]
   workflow_dispatch:
 concurrency:
   group: verify-${{ github.ref }}

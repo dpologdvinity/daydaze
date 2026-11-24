@@ -3961,6 +3961,42 @@ button:focus-visible {
   padding: 3px 10px;
 }
 
+/* buyable garments the player does not own yet */
+.chip.unowned,
+.chip.dimmed {
+  opacity: 0.6;
+  border-style: dashed;
+  text-decoration: none;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.closet-buyable .chip.unowned {
+  display: grid;
+}
+
+.chip.unowned:hover,
+.chip.dimmed:hover {
+  opacity: 0.9;
+  background: rgb(255 47 154 / 0.15);
+  border-color: rgb(255 207 106 / 0.7);
+}
+
+.chip.unowned .chip-price {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.chip.unowned .chip-shop {
+  font-size: 11px;
+  color: var(--champagne);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .closet-empty {
   margin: 0;
   font-size: 13px;
