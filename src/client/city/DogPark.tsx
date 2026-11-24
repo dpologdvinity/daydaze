@@ -37,24 +37,18 @@ import { propParts, type PropSpot } from "./instancedProps.ts";
 import { parkWorld } from "./parkDesk.ts";
 import { DOG_PARK } from "../../game/city/park.ts";
 import { usePreloadNear } from "./preloadNear.ts";
+import { typedKeys } from "../../game/typed.ts";
 
-const KEYS = [
-  "fence",
-  "agility-tunnel",
-  "agility-ramp",
-  "agility-seesaw",
-  "dog-bowl",
-  "ball",
-] as const;
-type Key = (typeof KEYS)[number];
-const URLS: Record<Key, string> = {
+const URLS = {
   fence: "/models/farm/fence.glb",
   "agility-tunnel": "/models/park/agility-tunnel.glb",
   "agility-ramp": "/models/park/agility-ramp.glb",
   "agility-seesaw": "/models/park/agility-seesaw.glb",
   "dog-bowl": "/models/park/dog-bowl.glb",
   ball: "/models/park/tennis-ball.glb",
-};
+} as const;
+type Key = keyof typeof URLS;
+const KEYS = typedKeys(URLS);
 const PATHS = KEYS.map((k) => URLS[k]);
 /** The yard's middle, and how far off its models start to fetch. */
 const DOG_PARK_AT: readonly [number, number] = [
