@@ -61,7 +61,7 @@ for src in "${files[@]}"; do
   # attributes (skin weights, shape keys) on about a fifth of the triangles
   # (or the hand-made one that came with it: pruned like the automatic
   # ones, no head-shape keys and a 128 px atlas, never simplified)
-  if [ -f "$IN/$name-lo.glb" ]; then
+  if [[ "$name" == hair-* && -f "$IN/$name-lo.glb" ]]; then
     node --experimental-strip-types "$(dirname "$0")/pruneMorphs.ts" "$IN/$name-lo.glb" "$LO/$name-lo-pruned.glb" --hair
     node --experimental-strip-types "$(dirname "$0")/pruneMorphs.ts" "$LO/$name-lo-pruned.glb" "$LO/$name-lo-bare.glb" --bare
     npx -y @gltf-transform/cli@4.5.1 optimize "$LO/$name-lo-bare.glb" "$OUT/$name-lo.glb" "${OPTS[@]}" --texture-size 128

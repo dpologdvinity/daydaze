@@ -161,6 +161,16 @@ export const GARMENTS = [
 export type Garment = (typeof GARMENTS)[number];
 export type GarmentId = Garment["id"];
 
+/** The fitted mesh and body tuck for a wardrobe entry. Fishnet and sheer
+ * tights share their fit, and hats sit over a bare scalp. */
+export function garmentAsset(slot: Slot, id: GarmentId) {
+  const fit = id === "fishnet-tights" ? "sheer-tights" : id;
+  return {
+    model: id === "hijab-wrap" ? "hair-hijab" : `${slot}-${fit}`,
+    tuck: slot === "hat" ? null : `tuck_${fit}`,
+  };
+}
+
 /** A garment worn, in its color (an RGB hex id, like OUTFIT_COLORS'). */
 export type Worn = { id: GarmentId; color: string };
 /** What a doll wears, by slot. Valid wear (isWearValid) has a one-piece or

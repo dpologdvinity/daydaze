@@ -5,7 +5,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 import { readGlb } from "../../../../scripts/pruneMorphs.ts";
 import { FACE_SLIDERS } from "../../../game/look.ts";
-import { GARMENTS } from "../../../game/wardrobe.ts";
+import { garmentAsset, GARMENTS } from "../../../game/wardrobe.ts";
 
 test("both human bodies and their distance models carry every facial slider", () => {
   for (const file of ["body", "body-lo", "body-m", "body-m-lo"]) {
@@ -84,14 +84,15 @@ test("every garment ships fitted to both bodies, with its tuck key", () => {
         json.meshes.flatMap((mesh) => mesh.extras?.targetNames ?? []),
       );
       for (const g of GARMENTS) {
-        const file = `${g.slot}-${g.id}${m}${lo}.glb`;
+        const { model, tuck } = garmentAsset(g.slot, g.id);
+        const file = `${model}${m}${lo}.glb`;
         assert.ok(
           existsSync(
             new URL(`../../../../public/models/doll/${file}`, import.meta.url),
           ),
           file,
         );
-        assert.ok(keys.has(`tuck_${g.id}`), `body${m}${lo}: tuck_${g.id}`);
+        if (tuck) assert.ok(keys.has(tuck), `body${m}${lo}: ${tuck}`);
       }
     }
   }

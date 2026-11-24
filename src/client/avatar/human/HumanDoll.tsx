@@ -49,7 +49,7 @@ import {
   type Mood,
   type SwimLook,
 } from "../../../game/look.ts";
-import { SLOTS, wearOf } from "../../../game/wardrobe.ts";
+import { garmentAsset, SLOTS, wearOf } from "../../../game/wardrobe.ts";
 import { getBuzz, getHangover, liveDrunk } from "../../effects/drunk.ts";
 import { getMeters } from "../../effects/high.ts";
 import { ADULT_OK } from "../../adult.ts";
@@ -292,7 +292,7 @@ export function partsFor(look: Look, swim: SwimLook | null) {
     : SLOTS.flatMap((slot) => {
         const worn = wear[slot];
         if (!worn) return [];
-        const style = worn.id === "fishnet-tights" ? "sheer-tights" : worn.id;
+        const { model, tuck } = garmentAsset(slot, worn.id);
         const finish: "cloth" | "sheer" | "fishnet" =
           worn.id === "fishnet-tights"
             ? "fishnet"
@@ -302,9 +302,9 @@ export function partsFor(look: Look, swim: SwimLook | null) {
         return [
           {
             key: slot,
-            url: `${MODELS}/${slot}-${style}${m}.glb`,
+            url: `${MODELS}/${model}${m}.glb`,
             color: worn.color,
-            tuck: slot === "hat" ? null : `tuck_${style}`,
+            tuck,
             finish,
           },
         ];
