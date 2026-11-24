@@ -18,6 +18,8 @@ type Option<T extends string> = {
   readonly label: string;
   /** The color a swatch shows when the id itself is not a color. */
   readonly swatch?: string;
+  /** A text-only option in a picture picker. */
+  readonly thumbnail?: false;
 };
 
 type PickerProps<T extends string> = {
@@ -143,8 +145,8 @@ export function ColorPicker({
 
 /**
  * Option buttons. `tiles` shows each option as a picture card from
- * `/closet/<tiles>-<id>.webp` with its name under it; options without a
- * picture fall back to a lettered card.
+ * `/closet/<tiles>-<id>.webp` with its name under it. Options can omit
+ * their image, and callers can set how many images load eagerly.
  */
 export function Tiles<T extends string>({
   label,
@@ -152,7 +154,8 @@ export function Tiles<T extends string>({
   value,
   onPick,
   tiles,
-}: PickerProps<T> & { tiles: string }) {
+  eagerCount = 6,
+}: PickerProps<T> & { tiles: string; eagerCount?: number }) {
   const selectedIndex = options.findIndex((o) => o.id === value);
   const activeIndex = selectedIndex >= 0 ? selectedIndex : 0;
   return (
@@ -169,19 +172,21 @@ export function Tiles<T extends string>({
           role="radio"
           tabIndex={idx === activeIndex ? 0 : -1}
           aria-checked={o.id === value}
-          className="tile"
+          className={o.thumbnail === false ? "tile tile-text" : "tile"}
           onClick={() => onPick(o.id)}
           onKeyDown={(e) => onRadioKeyDown(e, options, idx, onPick)}
         >
-          <img
-            src={`/closet/${tiles}-${o.id}.webp`}
-            alt=""
-            loading={idx < 6 ? undefined : "lazy"}
-            decoding="async"
-            onError={(e) => {
-              e.currentTarget.hidden = true;
-            }}
-          />
+          {o.thumbnail !== false && (
+            <img
+              src={`/closet/${tiles}-${o.id}.webp`}
+              alt=""
+              loading={idx < eagerCount ? undefined : "lazy"}
+              decoding="async"
+              onError={(e) => {
+                e.currentTarget.hidden = true;
+              }}
+            />
+          )}
           <span>{o.label}</span>
         </button>
       ))}

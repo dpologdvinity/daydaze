@@ -167,6 +167,8 @@ CORE_NEW = {
     "jump": ("jumping/Jumping-And-Landing-In-Place", "trans", "Jump"),
     "jump-ual": ("ual1:Jump_Start", "trans", "Jump up"),
     "land-ual": ("ual1:Jump_Land", "trans", "Land"),
+    "fishing-cast": ("sports/Fishing-Cast_Fishing-Cast-And-Reel-In", "emote", "Fishing cast"),
+    "fishing-idle": ("idle/Fishing-Idle_Fishing-Idle", "emote", "Fishing idle"),
 }
 
 # -------------------------------------------------------------------- social
