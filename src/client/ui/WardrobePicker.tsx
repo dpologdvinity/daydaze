@@ -2,7 +2,8 @@
 // bottom, one-piece, outerwear, legwear) with the garments the wardrobe may
 // wear, and a color for the one worn. The layering rules are wardrobe.ts's.
 // Above the rows, a search box, a style filter and favorites narrow a long
-// closet; below them, whole outfits are saved and worn again (closet.ts).
+// closet; unowned garments appear dimmed with shop prices and shop links;
+// below them, whole outfits are saved and worn again (closet.ts).
 import { useState } from "react";
 import {
   MAX_NAME,
@@ -17,8 +18,14 @@ import {
 } from "../../game/closet.ts";
 import type { Look } from "../../game/look.ts";
 import { OUTFIT_COLORS } from "../../game/look.ts";
-import { wearableGarments } from "../../game/shop.ts";
 import {
+  garmentPrice,
+  garmentShopItem,
+  ownsGarment,
+  shopName,
+} from "../../game/shop.ts";
+import {
+  GARMENTS,
   encodeWear,
   garment,
   putOn,
@@ -27,6 +34,7 @@ import {
   type Slot,
 } from "../../game/wardrobe.ts";
 import { Chips, ColorPicker } from "./controls.tsx";
+import { openShop } from "./shopRequest.ts";
 
 /** The slots in closet order, with their names. */
 const ROWS: readonly { slot: Slot; label: string; optional: boolean }[] = [
@@ -56,9 +64,8 @@ export function WardrobePicker({
   const [name, setName] = useState("");
   const [note, setNote] = useState("");
   const wear = wearOf(look);
-  const owned = wearableGarments(wardrobe);
   const shown = filterGarments(
-    owned,
+    GARMENTS,
     {
       query,
       style: style === "all" ? undefined : style,
@@ -109,11 +116,15 @@ export function WardrobePicker({
         const worn = wear[slot];
         const wornGarment = worn && garment(worn.id);
         const inRow = shown.filter((g) => g.slot === slot);
+        const ownedInRow = inRow.filter((g) => ownsGarment(g, wardrobe));
+        const unownedInRow = inRow.filter((g) => !ownsGarment(g, wardrobe));
         // the worn garment stays listed, so the radio group always has a value
         const options = [
           ...(optional ? [{ id: "none", label: "None" }] : []),
-          ...(wornGarment && !inRow.includes(wornGarment) ? [wornGarment] : []),
-          ...inRow,
+          ...(wornGarment && !ownedInRow.includes(wornGarment)
+            ? [wornGarment]
+            : []),
+          ...ownedInRow,
         ];
         return (
           <section key={slot} data-slot={slot}>
@@ -145,6 +156,37 @@ export function WardrobePicker({
                 )
               }
             />
+            {unownedInRow.length > 0 && (
+              <div
+                className="row closet-buyable"
+                aria-label={`Buyable ${label.toLowerCase()}`}
+              >
+                {unownedInRow.map((g) => {
+                  const price = garmentPrice(g);
+                  const item = garmentShopItem(g);
+                  const store = item ? shopName(item.store) : "Shop";
+                  return (
+                    <a
+                      key={g.id}
+                      href="#shop"
+                      className="chip unowned dimmed"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (item) openShop(item.store, store);
+                      }}
+                      aria-label={`${g.label}, ${price} coins at ${store}`}
+                      title={`${g.label} · ${price} coins · Open ${store}`}
+                    >
+                      <span>{g.label}</span>
+                      {price !== null && (
+                        <span className="chip-price">{price} coins</span>
+                      )}
+                      <span className="chip-shop">Shop</span>
+                    </a>
+                  );
+                })}
+              </div>
+            )}
             {worn && (
               <ColorPicker
                 label={`${label} color`}
