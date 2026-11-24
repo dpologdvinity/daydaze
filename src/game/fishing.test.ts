@@ -147,7 +147,7 @@ test("fishing spots registry configures every spot with valid parameters", () =>
     "forest",
     "open-water",
   ] as const;
-  assert.equal(MARINA_SPECIES, SPECIES);
+  assert.deepEqual(MARINA_SPECIES, SPECIES);
   for (const id of spotIds) {
     const spot = FISHING_SPOTS[id];
     assert.ok(spot, `spot ${id} must exist`);
