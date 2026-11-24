@@ -47,15 +47,30 @@ on:
       - "index.html"
       - "vite.config.ts"
       - "package-lock.json"
-concurrency:
-  group: screenshots-${{ github.ref }}-${{ inputs.shots || 'tour' }}
-  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
+  # hash the shot list so long token lists fit in GitHub's 255-char concurrency
+  # group limit; runs first with no checkout (~5 s)
+  hash:
+    timeout-minutes: 5
+    runs-on: ubuntu-24.04
+    outputs:
+      shots-key: ${{ steps.key.outputs.shots-key }}
+    steps:
+      - id: key
+        run: |
+          key=$(printf '%s' "$SHOTS" | sha256sum | cut -c1-16)
+          echo "shots-key=$key" >> "$GITHUB_OUTPUT"
+        env:
+          SHOTS: ${{ inputs.shots || 'tour' }}
   # expand the tokens and deal them into shards; a bad token fails here,
   # before any browser starts
   plan:
+    needs: hash
+    concurrency:
+      group: screenshots-plan-${{ github.ref }}-${{ needs.hash.outputs.shots-key }}
+      cancel-in-progress: true
     timeout-minutes: 10
     runs-on: ubuntu-24.04
     outputs:
@@ -75,7 +90,10 @@ jobs:
           SHOTS: ${{ inputs.shots || 'tour' }}
           SHARDS: ${{ inputs.shards || 8 }}
   shots:
-    needs: plan
+    needs: [hash, plan]
+    concurrency:
+      group: screenshots-shots-${{ github.ref }}-${{ matrix.shard }}-${{ needs.hash.outputs.shots-key }}
+      cancel-in-progress: true
     timeout-minutes: 90
     runs-on: ubuntu-24.04
     strategy:
@@ -115,7 +133,10 @@ jobs:
   # merge the shards into one `screenshots` artifact, then (not for pull
   # requests) publish the branch's folder on the `screenshots` branch
   gallery:
-    needs: [plan, shots]
+    needs: [hash, plan, shots]
+    concurrency:
+      group: screenshots-gallery-${{ github.ref }}-${{ needs.hash.outputs.shots-key }}
+      cancel-in-progress: true
     if: ${{ !cancelled() && needs.plan.result == 'success' }}
     timeout-minutes: 15
     runs-on: ubuntu-24.04

@@ -28,6 +28,20 @@ import { GARMENTS, wearOf, type Garment } from "./wardrobe.ts";
 export type ShopId =
   "boutique" | "beauty" | "salon" | "piercing" | "thrift" | "shoes";
 
+export const SHOP_NAMES: Record<ShopId, string> = {
+  boutique: "Glitterbox",
+  beauty: "Gloss & Glow",
+  salon: "Curl & Chrome",
+  piercing: "Ink & Needle",
+  thrift: "Thrift Temple",
+  shoes: "Platform Palace",
+};
+
+/** A store's display name. */
+export function shopName(store: ShopId): string {
+  return SHOP_NAMES[store];
+}
+
 /** A Look slot a shop item fills; its id is the catalog option in that slot. */
 export type ShopSlot =
   | "outfit"
@@ -265,10 +279,44 @@ export function wearable<T extends { id: string }>(
   return options.filter((option) => !locked(option.id, wardrobe));
 }
 
+/** Whether the wardrobe owns the outfit (free ones are always owned). */
+export function ownsOutfit(id: string, wardrobe: readonly string[]): boolean {
+  return !locked(id, wardrobe);
+}
+
+/** An outfit's price in coins from the boutique, or null if it is free. */
+export function outfitPrice(id: string): number | null {
+  const item = shopItem(id);
+  return item && item.slot === "outfit" ? item.price : null;
+}
+
+/** The shop item whose purchase unlocks this outfit, if any. */
+export function outfitShopItem(id: string): ShopItem | undefined {
+  const item = shopItem(id);
+  return item && item.slot === "outfit" ? item : undefined;
+}
+
+/** Whether the wardrobe owns the garment (free ones are always owned). */
+export function ownsGarment(g: Garment, wardrobe: readonly string[]): boolean {
+  return g.from === null || !locked(g.from, wardrobe);
+}
+
+/** A garment's price in coins from its shop outfit, or null if it is free. */
+export function garmentPrice(g: Garment): number | null {
+  if (!g.from) return null;
+  return shopItem(g.from)?.price ?? null;
+}
+
+/** The shop item whose purchase unlocks this garment, if any. */
+export function garmentShopItem(g: Garment): ShopItem | undefined {
+  if (!g.from) return undefined;
+  return shopItem(g.from);
+}
+
 /** The garments a wardrobe may wear: free ones, and those split from an
  * outfit that is free or owned. */
 export function wearableGarments(wardrobe: readonly string[]): Garment[] {
-  return GARMENTS.filter((g) => g.from === null || !locked(g.from, wardrobe));
+  return GARMENTS.filter((g) => ownsGarment(g, wardrobe));
 }
 
 /** Known, unique shop ids only; anything else is dropped. */

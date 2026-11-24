@@ -121,6 +121,12 @@ export const MODEL_COST: Readonly<
   "street/meter": { tris: 164, parts: 3 },
   "street/bikerack": { tris: 800, parts: 1 },
   "street/planter": { tris: 622, parts: 3 },
+  "garden/ivy-arch": { tris: 892, parts: 1 },
+  "garden/rose-arch": { tris: 2824, parts: 1 },
+  "garden/flower-box": { tris: 1330, parts: 1 },
+  "garden/hanging-planter": { tris: 1254, parts: 1 },
+  "garden/wisteria": { tris: 20032, parts: 3 },
+  "garden/hedge": { tris: 917, parts: 1 },
   "yards/dumpster": { tris: 302, parts: 3 },
   "yards/fence-chain": { tris: 218, parts: 2 },
   "yards/fence-wood": { tris: 248, parts: 1 },
@@ -649,7 +655,8 @@ export function lowTierCost(
     grown.set(g.kind, n + 1);
     add(growthModel(g.kind));
   }
-  let drawCalls = EL_DRAW_CALLS + WEAR_DRAW_CALLS + drawCallsOf(plan);
+  // Reserve one draw for the rain batch on a wet day. It draws lines only.
+  let drawCalls = 1 + EL_DRAW_CALLS + WEAR_DRAW_CALLS + drawCallsOf(plan);
   const allDream = plan.dream.reduce((n, s) => n + dreamTriangles(s), 0);
   // The overview camera can see architecture on every side of the player.
   // Price all of it there, rather than a street camera's directional wedge.

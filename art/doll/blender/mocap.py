@@ -586,7 +586,7 @@ def write_catalog():
             metas += json.load(f)
     by = lambda *kinds: [m["id"] for m in metas if m["kind"] in kinds]
     # the take each clip came from is credits data, kept out of the first load
-    sources = {m["id"]: m["source"] for m in metas}
+    sources = {m["id"]: m.get("source", "") for m in metas}
     metas = [{k: v for k, v in m.items() if k != "source"} for m in metas]
     with open(SOURCES, "w") as f:
         f.write(

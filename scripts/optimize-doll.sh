@@ -50,10 +50,10 @@ for src in "${files[@]}"; do
   # hair also loses face-feature keys and target normals (pruneMorphs.ts)
   flag=""
   case "$name" in hair-*) flag="--hair" ;; esac
-  # a hand-made far model (hair_built.py's "@lo" parts) is handled with its
-  # near model, below, so selecting the near one alone (ONLY='hair-x$')
-  # still rebuilds it
-  if [[ "$name" == hair-*-lo ]]; then continue; fi
+  # a hand-made far model (hair_built.py's "@lo" parts, or body-lo.glb) is
+  # handled with its near model, below, so selecting the near one alone
+  # (ONLY='hair-x$' or ONLY='body$') still rebuilds it
+  if [[ "$name" == hair-*-lo || "$name" == body*-lo ]]; then continue; fi
   node --experimental-strip-types "$(dirname "$0")/pruneMorphs.ts" "$src" "$f" $flag
   near_opts=("${OPTS[@]}")
   npx -y @gltf-transform/cli@4.5.1 optimize "$f" "$OUT/$name.glb" "${near_opts[@]}"
@@ -62,9 +62,14 @@ for src in "${files[@]}"; do
   # (or the hand-made one that came with it: pruned like the automatic
   # ones, no head-shape keys and a 128 px atlas, never simplified)
   if [ -f "$IN/$name-lo.glb" ]; then
-    node --experimental-strip-types "$(dirname "$0")/pruneMorphs.ts" "$IN/$name-lo.glb" "$LO/$name-lo-pruned.glb" --hair
-    node --experimental-strip-types "$(dirname "$0")/pruneMorphs.ts" "$LO/$name-lo-pruned.glb" "$LO/$name-lo-bare.glb" --bare
-    npx -y @gltf-transform/cli@4.5.1 optimize "$LO/$name-lo-bare.glb" "$OUT/$name-lo.glb" "${OPTS[@]}" --texture-size 128
+    if [[ "$name" == hair-* ]]; then
+      node --experimental-strip-types "$(dirname "$0")/pruneMorphs.ts" "$IN/$name-lo.glb" "$LO/$name-lo-pruned.glb" --hair
+      node --experimental-strip-types "$(dirname "$0")/pruneMorphs.ts" "$LO/$name-lo-pruned.glb" "$LO/$name-lo-bare.glb" --bare
+      npx -y @gltf-transform/cli@4.5.1 optimize "$LO/$name-lo-bare.glb" "$OUT/$name-lo.glb" "${OPTS[@]}" --texture-size 128
+    else
+      node --experimental-strip-types "$(dirname "$0")/pruneMorphs.ts" "$IN/$name-lo.glb" "$LO/$name-lo-pruned.glb"
+      npx -y @gltf-transform/cli@4.5.1 optimize "$LO/$name-lo-pruned.glb" "$OUT/$name-lo.glb" "${near_opts[@]}"
+    fi
     continue
   fi
   case "$name" in

@@ -30,8 +30,15 @@ import {
   wearable,
   wearableGarments,
   wearItem,
+  garmentPrice,
+  garmentShopItem,
+  ownsGarment,
+  ownsOutfit,
+  outfitPrice,
+  outfitShopItem,
+  shopName,
 } from "./shop.ts";
-import { encodeWear } from "./wardrobe.ts";
+import { encodeWear, garment } from "./wardrobe.ts";
 
 const catalogs = {
   outfit: OUTFITS,
@@ -277,4 +284,40 @@ test("garments split from a boutique outfit are locked until it is bought", () =
   assert.equal(unlockedLook(laced, ["corset-maxi"]).wear, laced.wear);
   // trying on a whole outfit takes the mixed garments off
   assert.equal("wear" in wearItem(laced, corset), false);
+});
+
+test("ownsGarment, garmentPrice and garmentShopItem reflect shop outfits", () => {
+  const corset = garment("corset");
+  const tee = garment("tee");
+  const tights = garment("tights");
+  assert.ok(corset && tee && tights);
+
+  assert.equal(ownsGarment(corset, []), false);
+  assert.equal(ownsGarment(corset, ["corset-maxi"]), true);
+  assert.equal(ownsGarment(tee, []), true);
+  assert.equal(ownsGarment(tights, []), true);
+
+  assert.equal(garmentPrice(corset), 90);
+  assert.equal(garmentPrice(tee), null);
+  assert.equal(garmentPrice(tights), null);
+
+  assert.equal(garmentShopItem(corset)?.id, "corset-maxi");
+  assert.equal(garmentShopItem(corset)?.store, "boutique");
+  assert.equal(garmentShopItem(tee), undefined);
+  assert.equal(garmentShopItem(tights), undefined);
+
+  assert.equal(shopName("boutique"), "Glitterbox");
+});
+
+test("ownsOutfit, outfitPrice and outfitShopItem reflect shop outfits", () => {
+  assert.equal(ownsOutfit("tracksuit-y2k", []), false);
+  assert.equal(ownsOutfit("tracksuit-y2k", ["tracksuit-y2k"]), true);
+  assert.equal(ownsOutfit("flares", []), true);
+
+  assert.equal(outfitPrice("tracksuit-y2k"), 60);
+  assert.equal(outfitPrice("flares"), null);
+
+  assert.equal(outfitShopItem("tracksuit-y2k")?.id, "tracksuit-y2k");
+  assert.equal(outfitShopItem("tracksuit-y2k")?.store, "boutique");
+  assert.equal(outfitShopItem("flares"), undefined);
 });

@@ -5,8 +5,14 @@ import assert from "node:assert/strict";
 import { setActiveTier } from "../../game/age.ts";
 import { stateSituation } from "../../game/effects/buzz.ts";
 import { DOSES, gameSeconds } from "../../game/effects/substances.ts";
-import { drink, getBuzz } from "./drunk.ts";
-import { ageHigh, dosesOnboard, getMeters, take } from "./high.ts";
+import { ageBuzz, drink, getBuzz } from "./drunk.ts";
+import {
+  ageHigh,
+  dosesOnboard,
+  getMeters,
+  setDoseToastListener,
+  take,
+} from "./high.ts";
 
 test("at 13+ a dose does nothing", () => {
   setActiveTier("teen");
@@ -111,6 +117,46 @@ test("a vape of a strain reads that strain; hemp is weaker; none is hybrid", () 
     assert.equal(getMeters().high.strain, "hybrid");
     ageHigh(gameSeconds(DOSES.joint.end));
   } finally {
+    setActiveTier("teen");
+  }
+});
+
+test("taking an edible or weed with alcohol toasts harm-reduction hints", () => {
+  const toasts: string[] = [];
+  setDoseToastListener((msg) => toasts.push(msg));
+  try {
+    // at 13+ nothing is toasted
+    setActiveTier("teen");
+    take("edible");
+    assert.equal(toasts.length, 0);
+
+    // at 18+: first edible gives the start-low tip
+    setActiveTier("adult");
+    take("edible");
+    assert.equal(toasts.length, 1);
+    assert.equal(toasts[0], "Edibles take up to 2 hours. Start low, go slow.");
+
+    // second edible before onset lands gives the redose trap warning
+    take("edible");
+    assert.equal(toasts.length, 2);
+    assert.equal(
+      toasts[1],
+      "Edibles take up to 2 hours. Don't take another one yet.",
+    );
+
+    // age past both edibles
+    ageHigh(gameSeconds(DOSES.edible.end + 1));
+    assert.equal(dosesOnboard(), 0);
+
+    // taking weed while buzzed gives the combo warning
+    drink("cocktail");
+    take("joint");
+    assert.equal(toasts.length, 3);
+    assert.equal(toasts[2], "Weed then drink is gentler than drink then weed.");
+  } finally {
+    setDoseToastListener(null);
+    ageBuzz(100_000);
+    ageHigh(100_000);
     setActiveTier("teen");
   }
 });
