@@ -3506,7 +3506,9 @@ test("the Galleria: buy at Glitterbox and Platform Palace, and wear them", async
   // Platform Palace next door: the boots are 55, all that's left
   await page.getByRole("button", { name: "Shop at Platform Palace" }).click();
   const shoes = page.getByRole("dialog", { name: "Platform Palace" });
-  const boots = shoes.getByRole("listitem").filter({ hasText: "Boots" });
+  const boots = shoes.getByRole("listitem").filter({
+    has: page.getByText("Boots", { exact: true }),
+  });
   await boots.getByRole("button", { name: "Buy" }).click();
   await expect(shoes).toContainText("0 coins");
   await expect

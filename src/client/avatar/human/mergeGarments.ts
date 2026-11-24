@@ -69,6 +69,7 @@ const near = (a: THREE.Matrix4, b: THREE.Matrix4) =>
  */
 export function mergeGarments(
   pieces: readonly Piece[],
+  shoeTuck?: string,
 ): THREE.SkinnedMesh | null {
   const first = pieces[0];
   if (!first) return null;
@@ -80,7 +81,11 @@ export function mergeGarments(
   const names: string[] = [];
   for (const { mesh } of pieces)
     for (const name of Object.keys(mesh.morphTargetDictionary ?? {}))
-      if (!names.includes(name)) names.push(name);
+      if (
+        (!name.startsWith("in_") || name === shoeTuck) &&
+        !names.includes(name)
+      )
+        names.push(name);
   const withNormals = pieces.every(
     ({ mesh }) =>
       !mesh.morphTargetDictionary ||

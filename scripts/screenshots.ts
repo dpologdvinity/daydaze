@@ -848,6 +848,12 @@ const WEAR_MIX = [
   "baby-tee~ff2f9a.pleated-mini~9b5cff.tights~141018",
   "blouse~f2e6c8.skinny-jeans~3a5a8a.fur-jacket~ffb02e",
 ].join(",");
+/** Exposed ankles and legwear for the footwear reviews. */
+const WEAR_FEET = [
+  "tee~e8e2ff.denim-shorts~3a5a8a.leg-warmers~f2e6c8",
+  "tee~141018.denim-shorts~3a5a8a",
+  "tee~e8e2ff.denim-shorts~141018.crew-socks~e8e2ff",
+].join(",");
 /** A camera from behind the dolls, for the back of the hair. */
 const BEHIND = "cam=0,1.52,-2.4";
 /**
@@ -3247,6 +3253,36 @@ const SHOTS: {
     "doll-wear-jacket-poses",
     "wears=corset~141018.cargos~6b7a2a.puffer~e8e2ff&holds=pose-foot-up,pose-legs-crossed,pose-lean-back&cam=0,0.8,3.2&target=0,0.8,0",
     "pose",
+  ),
+  lineupShot(
+    "doll-footwear-walk",
+    `shoes=stiletto-booties,gladiator-sandals,chunky-sneakers&wears=${WEAR_FEET}&cam=0,0.55,3.8&target=0,0.45,0`,
+    "trackwalk",
+  ),
+  lineupShot(
+    "doll-footwear-sit",
+    "shoes=stiletto-booties,flip-flops,knee-high-boots,go-go-platforms&cam=0,0.55,4.8&target=0,0.45,0",
+    "sit",
+  ),
+  lineupShot(
+    "doll-footwear-dance",
+    "shoes=running-shoes,stiletto-booties,biker-boots,gladiator-sandals,flip-flops&cam=0,0.6,5.5&target=0,0.48,0",
+    "dance",
+  ),
+  lineupShot(
+    "doll-footwear-men",
+    "men=1&shoes=biker-boots,monk-straps,high-top-sneakers&cam=0,0.65,3.7&target=0,0.55,0",
+    "men",
+  ),
+  lineupShot(
+    "doll-tights",
+    "shoes=ballet-flats,mary-janes,loafers&wears=tee~eea8be.denim-shorts~202538.tights~33283b,tee~dde2ec.denim-shorts~253653.sheer-tights~33283b,tee~f3ccd8.denim-shorts~202538.fishnet-tights~33283b&cam=0,0.55,3.7&target=0,0.5,0",
+    "body",
+  ),
+  lineupShot(
+    "doll-headwear",
+    "wears=tee~eea8be.denim-shorts~202538.beanie~81264c,tee~dde2ec.denim-shorts~253653.bucket-hat~405840,tee~f3ccd8.denim-shorts~202538.headscarf~573880&cam=0,1.48,3.6&target=0,1.47,0",
+    "body",
   ),
   // the far twin: a three-layer look merged into one draw (mergeGarments)
   lineupShot("doll-wear-far", `wears=${WEAR_MIX}`, "far"),

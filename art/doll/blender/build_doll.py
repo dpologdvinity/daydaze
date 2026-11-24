@@ -1042,7 +1042,7 @@ def main():
     outfit_only = bool(os.environ.get("OUTFIT_ONLY"))
     print("Building fitted parts", flush=True)
     parts = ([] if outfit_only else doll_hair.build(ctx)) + (
-        [] if hair_only else doll_outfits.build(ctx, body, BODY_SRC)
+        [] if hair_only else doll_outfits.build(ctx, body, BODY_SRC, SEX == "male")
     )
     for ob in parts:
         bind(ob, rig)

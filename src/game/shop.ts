@@ -55,6 +55,14 @@ export const SHOP_ITEMS: readonly ShopItem[] = [
   // Platform Palace: shoes (sneakers are everyone's)
   { id: "platforms", slot: "shoes", store: "shoes", price: 40 },
   { id: "boots", slot: "shoes", store: "shoes", price: 55 },
+  ...SHOES.filter(
+    ({ id }) => id !== "sneakers" && id !== "platforms" && id !== "boots",
+  ).map(({ id }): ShopItem => ({
+    id,
+    slot: "shoes",
+    store: "shoes",
+    price: 45,
+  })),
   // Pixel Mall Boutique: outfits and glam wear
   { id: "tracksuit-y2k", slot: "outfit", store: "boutique", price: 60 },
   { id: "baby-tee-mini", slot: "outfit", store: "boutique", price: 45 },

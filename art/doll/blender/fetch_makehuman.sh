@@ -211,4 +211,5 @@ if [ ! -f "$PACK/hair/.community-2" ]; then
   rm -r "$tmp"
   touch "$PACK/hair/.community-2"
 fi
+python3 "$(dirname "$0")/fetch_footwear.py"
 echo "MakeHuman proxies in $PACK"

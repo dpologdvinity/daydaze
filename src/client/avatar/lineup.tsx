@@ -14,6 +14,7 @@ import {
   DEFAULT_LOOK,
   HAIR_COLORS,
   HAIR_STYLES,
+  isShoe,
   OUTFITS,
   BEARDS,
   type Look,
@@ -231,6 +232,12 @@ const WEAR_PICK = new URLSearchParams(location.search)
       .join("+"),
   )
   .filter((code) => decodeWear(code) !== null);
+// ?shoes=a,b,c picks a shoe per doll for fit and pose reviews.
+const SHOE_PICK = new URLSearchParams(location.search).get("shoes")?.split(",");
+const shod = (look: Look, i: number): Look => {
+  const shoes = SHOE_PICK?.[i % SHOE_PICK.length];
+  return isShoe(shoes) ? { ...look, shoes } : look;
+};
 const worn = (look: Look, i: number): Look => {
   const wear = WEAR_PICK?.[i % WEAR_PICK.length];
   return wear ? { ...look, wear } : look;
@@ -414,11 +421,13 @@ const SHOTS = {
   // women walking in place in the three trouser outfits, side on, to check the
   // skin behind the knee and calf (`?cam=` looks from behind)
   trackwalk: {
-    looks: [
-      { ...LINEUP[0], outfit: "tracksuit-y2k" },
-      { ...LINEUP[5], outfit: "flares" },
-      { ...LINEUP[2], outfit: "jeans" },
-    ] satisfies Look[],
+    looks: (
+      [
+        { ...LINEUP[0], outfit: "tracksuit-y2k" },
+        { ...LINEUP[5], outfit: "flares" },
+        { ...LINEUP[2], outfit: "jeans" },
+      ] satisfies Look[]
+    ).map(worn),
     x: (i: number) => (i - 1) * 1.1,
     cam: [0.6, 0.6, 3.2] as const,
     target: [0, 0.5, 0] as const,
@@ -707,6 +716,7 @@ const SHOTS = {
 type ShotName = keyof typeof SHOTS;
 const isShotName = (s: string): s is ShotName => Object.hasOwn(SHOTS, s);
 const plan = isShotName(shot) ? SHOTS[shot] : SHOTS.lineup;
+const looks = SHOE_PICK ? plan.looks.map(shod) : plan.looks;
 // `?cam=x,y,z` moves the shot's camera, to look at a pose from another side
 // and `?target=x,y,z` the point it looks at, for a close-up of one doll
 const vecParam = (name: string) => {
@@ -884,7 +894,7 @@ function Lab() {
         intensity={0.5}
         color={studio ? "#ffffff" : "#ff74d4"}
       />
-      {plan.looks.map((look, i) => (
+      {looks.map((look, i) => (
         <group
           key={i}
           name={`doll-${i}`}

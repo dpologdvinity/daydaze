@@ -68,7 +68,7 @@ for src in "${files[@]}"; do
     continue
   fi
   case "$name" in
-    hair-* | top-* | bottom-* | dress-* | outer-* | legwear-* | shoes-* | swim-*)
+    hair-* | top-* | bottom-* | dress-* | outer-* | legwear-* | hat-* | shoes-* | swim-*)
       # hair cards only reach a fifth of their triangles at a looser error
       err=0.02
       [ -n "$flag" ] && err=0.1

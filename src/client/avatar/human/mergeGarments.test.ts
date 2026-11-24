@@ -213,3 +213,17 @@ test("atlas cells tile the texture without overlap, the white cell last", () => 
   // the white cell is a single spot in the middle of the last quarter
   assert.deepEqual(atlasRect(3, 3), [0.75, 0.75, 0, 0]);
 });
+
+test("the merged far geometry carries only the tuck for the shoe worn", () => {
+  const { root, arm, inverses } = rig();
+  const pieces = ["plus", "in_ankle-boots", "in_flip-flops"].map((name) => ({
+    mesh: piece([root, arm], inverses, new THREE.Matrix4(), name),
+    color: "#ffffff",
+  }));
+  const merged = mergeGarments(pieces, "in_ankle-boots");
+  assert.ok(merged);
+  assert.deepEqual(Object.keys(merged.morphTargetDictionary ?? {}), [
+    "plus",
+    "in_ankle-boots",
+  ]);
+});

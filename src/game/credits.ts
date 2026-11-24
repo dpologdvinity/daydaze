@@ -394,6 +394,172 @@ export const CREDITS: readonly {
           "Hair-card styles high ponytail and messy shag, refitted to our heads (art/doll/blender/pack_hair.py).",
       },
       {
+        title: "Toigo shoes and boots",
+        author: "MargaretToigo",
+        license: "CC0 1.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/shoes01.html",
+        usedFor:
+          "Ankle boots (two fits), ballet flats (plain, bow and flower), cloth Mary Janes and stiletto booties, fitted and simplified for both doll rigs.",
+      },
+      {
+        title: "Floppy Overknee Shoes and T-Bar",
+        author: "Cortu",
+        license: "CC0 1.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/shoes01.html",
+        usedFor:
+          "Foldover boots and T-bar shoes, fitted and simplified for both doll rigs.",
+      },
+      {
+        title: "Go-Go Platform and Water Boots",
+        author: "scailman",
+        license: "CC0 1.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/shoes01.html",
+        usedFor:
+          "Go-go platforms and rain boots, fitted and simplified for both doll rigs. The rain boots are opaque in Daydaze.",
+      },
+      {
+        title: "Sneakers",
+        author: "culturalibre",
+        license: "CC-BY 4.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/shoes02.html",
+        usedFor: "High-top sneakers, fitted and simplified for both doll rigs.",
+      },
+      {
+        title: "Punkduck sneakers (shoes02 pack)",
+        author: "punkduck",
+        license: "CC-BY 4.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/shoes02.html",
+        usedFor:
+          "Running shoes, low-top sneakers and tennis shoes, fitted and simplified for both doll rigs.",
+      },
+      {
+        title: "Oxford and Monk Strap Shoes",
+        author: "Mindfront",
+        license: "CC-BY 4.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/shoes02.html",
+        usedFor:
+          "Oxfords and monk straps, using the source fits for both doll rigs, with simplified geometry.",
+      },
+      {
+        title: "Harvey Saddle Shoes",
+        author: "callharvey3d",
+        license: "CC-BY 4.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/shoes02.html",
+        usedFor:
+          "Two-tone saddle shoes, fitted and simplified for both doll rigs.",
+      },
+      {
+        title: "Elvaerwyn footwear (shoes02 pack)",
+        author: "Elvaerwyn",
+        license: "CC-BY 4.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/shoes02.html",
+        usedFor:
+          "Chunky sneakers, gladiator sandals and flip-flops, fitted and simplified for both doll rigs.",
+      },
+      {
+        title: "Biker Boots",
+        author: "Mindfront",
+        license: "CC-BY 4.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/shoes03.html",
+        usedFor:
+          "Biker boots, using the source fits for both doll rigs, with simplified geometry.",
+      },
+      {
+        title: "Low-Heeled Boots",
+        author: "scailman",
+        license: "CC-BY 4.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/shoes03.html",
+        usedFor: "Block-heel boots, fitted and simplified for both doll rigs.",
+      },
+      {
+        title: "Punkduck boots (shoes03 pack)",
+        author: "punkduck",
+        license: "CC-BY 4.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/shoes03.html",
+        usedFor:
+          "Riding boots, winter boots and knee-high boots, fitted and simplified for both doll rigs.",
+      },
+      {
+        title: "Crude Low Socks",
+        author: "Joel Palmius",
+        license: "CC0 1.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/underwear04.html",
+        usedFor:
+          "Crew socks, fitted and simplified for both doll rigs, with a grayscale detail map for tinting.",
+      },
+      {
+        title: "Leg Warmer Socks",
+        author: "MargaretToigo",
+        license: "CC0 1.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/underwear04.html",
+        usedFor:
+          "Leg warmers, fitted and simplified for both doll rigs, with a grayscale detail map for tinting.",
+      },
+      {
+        title: "Cloche Hat",
+        author: "Aethelraed_Unraed",
+        license: "CC0 1.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/hats01.html",
+        usedFor:
+          "Cloche, fitted to both doll rigs with a grayscale detail map for tinting.",
+      },
+      {
+        title: "Newsboy Cap",
+        author: "jujube",
+        license: "CC0 1.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/hats01.html",
+        usedFor:
+          "Newsboy cap, fitted to both doll rigs with a grayscale detail map for tinting.",
+      },
+      {
+        title: "Slouchy Beanie and Charity Veil",
+        author: "Elvaerwyn",
+        license: "CC-BY 4.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/hats03.html",
+        usedFor:
+          "Beanie and headscarf, fitted and simplified for both doll rigs with grayscale detail maps.",
+      },
+      {
+        title: "Fishing Hat and Patrol Cap",
+        author: "Mindfront",
+        license: "CC-BY 4.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/hats03.html",
+        usedFor:
+          "Bucket hat and patrol cap, fitted and simplified for both doll rigs with grayscale detail maps.",
+      },
+      {
+        title: "Sun Visor",
+        author: "punkduck",
+        license: "CC-BY 4.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/hats03.html",
+        usedFor:
+          "Sun visor, fitted to both doll rigs with a grayscale detail map for tinting.",
+      },
+      {
+        title: "Men's and Women's Loafers",
+        author: "MargaretToigo",
+        license: "CC0 1.0",
+        url: "https://files.makehumancommunity.org/sites/default/files/clothes/1968/1711036613/shoes_loafers.mhclo",
+        usedFor:
+          "Two fits of the loafers, fitted and simplified for both doll rigs.",
+      },
+      {
+        title: "Snapback Cap",
+        author: "WojackOWL",
+        license: "CC-BY 4.0",
+        url: "https://files.makehumancommunity.org/sites/default/files/clothes/8124/1254638436/Snapback_Cap.mhclo",
+        usedFor:
+          "Baseball cap, fitted and simplified for both doll rigs with a grayscale detail map.",
+      },
+      {
+        title: "Pantyhose01",
+        author: "kwnet_at",
+        license: "CC0 1.0",
+        url: "https://files.makehumancommunity.org/sites/default/files/clothes/2539/2102128081/pantyhose01.mhclo",
+        usedFor:
+          "Tintable sheer tights, fitted and simplified for both doll rigs.",
+      },
+      {
         title: "Bob hair (three cuts)",
         author: "MargaretToigo",
         license: "CC0 1.0",
@@ -1505,6 +1671,14 @@ export const CREDITS: readonly {
   {
     title: "Textures",
     entries: [
+      {
+        title: "Fishnet textile",
+        author: "V0rT3X",
+        license: "CC0 1.0",
+        url: "https://files.makehumancommunity.org/sites/default/files/clothes/1340/103687227/stockings_fishnet_medium.png",
+        usedFor:
+          "Plain netting extracted from the source texture for the full-length fishnet tights, with the original stocking trim cropped off.",
+      },
       {
         title: "Anti Skid Tiles",
         author: "Amal Kumar",

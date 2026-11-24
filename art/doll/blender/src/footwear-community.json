@@ -1,0 +1,74 @@
+{
+  "kwnet-pantyhose": {
+    "pantyhose01.obj": [
+      "https://files.makehumancommunity.org/sites/default/files/clothes/2539/1860237874/pantyhose01.obj",
+      "f0b2b3b2bd70ab4436d32fb726095f42608df895e28161085a89a9487158d5be"
+    ],
+    "pantyhose01.mhmat": [
+      "https://files.makehumancommunity.org/sites/default/files/clothes/2539/1105414321/pantyhose01.mhmat",
+      "4433f959afbf957ceb984ea4f472fc6475b6c3a54c80a404be68b5c33805a50d"
+    ],
+    "pantyhose01.mhclo": [
+      "https://files.makehumancommunity.org/sites/default/files/clothes/2539/2102128081/pantyhose01.mhclo",
+      "820551dbb5c2c3369c78b596f19aee3ab081b1ccff703885570842cb5004e9d6"
+    ],
+    "pantyhose01.png": [
+      "https://files.makehumancommunity.org/sites/default/files/clothes/2539/1354638493/pantyhose01.png",
+      "416cc8b68c674ee366657f891d87d73a437d57d223eb5ee6062a75164f0eb7a6"
+    ]
+  },
+  "toigo-loafers-female": {
+    "shoes_loafers_f.obj": [
+      "https://files.makehumancommunity.org/sites/default/files/clothes/1968/1893238737/shoes_loafers_f.obj",
+      "28d9eb1fc2b53b71d381ff79ab764c46b6e81edb848ad1ed4388a0ee03fc36fa"
+    ],
+    "shoes_loafers_f.mhmat": [
+      "https://files.makehumancommunity.org/sites/default/files/clothes/1968/1598212986/shoes_loafers_f.mhmat",
+      "bfc4c3fb32cd056e1a73aea7da968afed50130a67c77d2bf3ec6d718c966cd64"
+    ],
+    "shoes_loafers_f.mhclo": [
+      "https://files.makehumancommunity.org/sites/default/files/clothes/1968/1133297375/shoes_loafers_f.mhclo",
+      "51a61a106c2fa92dbc647018778d7f790efde4404867eead93edd5b7913205dd"
+    ],
+    "LoafersF.png": [
+      "https://files.makehumancommunity.org/sites/default/files/clothes/1968/1749011617/LoafersF.png",
+      "1459bd58f7c70ef0249be6e8e9e3aa26abcceec394bfc14953b63595b82d6b10"
+    ]
+  },
+  "toigo-loafers-male": {
+    "shoes_loafers.obj": [
+      "https://files.makehumancommunity.org/sites/default/files/clothes/1968/1692806016/shoes_loafers.obj",
+      "049cbcef32217b60f112c3bb4e84305aa82f3eeb274478cdb16697affeb0a057"
+    ],
+    "shoes_loafers.mhmat": [
+      "https://files.makehumancommunity.org/sites/default/files/clothes/1968/882317308/shoes_loafers.mhmat",
+      "9b7b063658c465dee6af7c016bb54ba538eb89fb8c02e1d898e909fff66fe1f0"
+    ],
+    "shoes_loafers.mhclo": [
+      "https://files.makehumancommunity.org/sites/default/files/clothes/1968/1711036613/shoes_loafers.mhclo",
+      "e4b70c1620f9fa57b482873182d6abe31750c45f2010c2d62d541dabea0194a7"
+    ],
+    "Loafers.png": [
+      "https://files.makehumancommunity.org/sites/default/files/clothes/1968/740904737/Loafers.png",
+      "252128dcb209798c7f792c74236ca4a9ac4d4525dfbbcbbbe0fa3cc37860688e"
+    ]
+  },
+  "wojack-snapback": {
+    "Snapback_Cap.obj": [
+      "https://files.makehumancommunity.org/sites/default/files/clothes/8124/385719816/Snapback_Cap.obj",
+      "39b6a787996fc2a312a37ea797f05157186d4155b9640c0c5b40afdd10b1b533"
+    ],
+    "Snapback_Cap.mhmat": [
+      "https://files.makehumancommunity.org/sites/default/files/clothes/8124/1512284335/Snapback_Cap.mhmat",
+      "745fe2f698f47db792e3799864598fe250675f458a80129024408fb93861bc7b"
+    ],
+    "Snapback_Cap.mhclo": [
+      "https://files.makehumancommunity.org/sites/default/files/clothes/8124/1254638436/Snapback_Cap.mhclo",
+      "c6847849ccddcbba1d2b9efeaa3a8cc94d94852f16419b0a8df521062493a919"
+    ],
+    "SnapbackCap_Snapback_BaseColor_sRGB.png": [
+      "https://files.makehumancommunity.org/sites/default/files/clothes/8124/652068162/SnapbackCap_Snapback_BaseColor_sRGB.png",
+      "07434894962083ad5433c86d8da8276ca5f75ab89cdd9b050fbca1c7684458f4"
+    ]
+  }
+}
