@@ -293,7 +293,7 @@ export function partsFor(look: Look, swim: SwimLook | null) {
         const worn = wear[slot];
         if (!worn) return [];
         const style = worn.id === "fishnet-tights" ? "sheer-tights" : worn.id;
-        const finish =
+        const finish: "cloth" | "sheer" | "fishnet" =
           worn.id === "fishnet-tights"
             ? "fishnet"
             : worn.id === "sheer-tights"
@@ -1196,7 +1196,7 @@ function buildPart(
     let lift = 0;
     scene.traverse((o) => {
       const v: unknown = o.userData.lift;
-      if (typeof v === "number" && Number.isFinite(v) && v >= 0 && v < 0.2)
+      if (typeof v === "number" && Number.isFinite(v) && v >= 0 && v < 0.25)
         lift = v;
     });
     for (const src of meshes) {

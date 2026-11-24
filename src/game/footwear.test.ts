@@ -51,8 +51,12 @@ test("a hat and legwear round-trip together and can be removed independently", (
     "#525260",
   );
   assert.deepEqual(decodeWear(encodeWear(wear)), wear);
-  assert.equal(takeOff(wear, "hat").legwear?.id, "leg-warmers");
-  assert.equal(takeOff(wear, "legwear").hat?.id, "beanie");
+  const withoutHat = takeOff(wear, "hat");
+  assert.equal(withoutHat.hat, undefined);
+  assert.equal(withoutHat.legwear?.id, "leg-warmers");
+  const withoutLegwear = takeOff(wear, "legwear");
+  assert.equal(withoutLegwear.legwear, undefined);
+  assert.equal(withoutLegwear.hat?.id, "beanie");
   assert.equal(
     putOn(wear, "fishnet-tights", "#111111").legwear?.id,
     "fishnet-tights",
