@@ -2017,6 +2017,13 @@ export const CREDITS: readonly {
           "Environment lighting and reflections on the high quality tier.",
       },
       {
+        title: "Wide Street 01 HDRI",
+        author: "Sergej Majboroda",
+        license: "CC0 1.0",
+        url: "https://polyhaven.com/a/wide_street_01",
+        usedFor: "Daytime city glass reflections on the Realistic tier.",
+      },
+      {
         title: "Kloofendal 48d Partly Cloudy (Pure Sky) HDRI",
         author: "Greg Zaal, Jarod Guest",
         license: "CC0 1.0",

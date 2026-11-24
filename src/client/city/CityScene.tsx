@@ -78,6 +78,7 @@ import { GasStations } from "./GasStations.tsx";
 import type { ParkedCar } from "../../game/city/drive.ts";
 
 const CityHdri = lazy(() => import("./CityHdri.tsx"));
+const CityMaterialDetail = lazy(() => import("./CityMaterialDetail.tsx"));
 
 /** `?bays=0` selects the skyline level of architectural detail. */
 const NO_BAYS = new URLSearchParams(location.search).get("bays") === "0";
@@ -123,7 +124,7 @@ export function CityScene({
     };
   }, [canvas, dressingNames]);
   const tier = useDetail();
-  const { distance, shadows } = useGraphics();
+  const { distance, reflections, shadows } = useGraphics();
   const far = DRAW_FAR[distance];
   const reduced = useReducedMotion();
   // the key light is the World's; these are the city's real lights
@@ -306,6 +307,16 @@ export function CityScene({
       {tier !== "low" && day.neon > 0.5 && (
         <Suspense fallback={null}>
           <CityHdri />
+        </Suspense>
+      )}
+      {tier === "ultra" && (
+        <Suspense fallback={null}>
+          <CityMaterialDetail
+            meshes={meshes}
+            ground={groundMaterial}
+            reflections={reflections}
+            night={day.neon > 0.5}
+          />
         </Suspense>
       )}
       <CitySky night={day.neon} />

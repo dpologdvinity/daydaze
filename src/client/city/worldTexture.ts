@@ -55,6 +55,11 @@ export function groundMaps(id: string, { full = false } = {}) {
   };
 }
 
+/** A linear occlusion scan. Realistic city materials opt in when mounted. */
+export function groundOcclusion(id: string) {
+  return tex(`/textures/${id}/ao.jpg`, false, true);
+}
+
 export function worldMapped<M extends THREE.MeshStandardMaterial>(
   material: M,
   scale: number,
@@ -114,6 +119,10 @@ export function worldMapped<M extends THREE.MeshStandardMaterial>(
       .replace(
         "#include <normal_fragment_maps>",
         THREE.ShaderChunk.normal_fragment_maps.replaceAll("vNormalMapUv", uv),
+      )
+      .replace(
+        "#include <aomap_fragment>",
+        THREE.ShaderChunk.aomap_fragment.replaceAll("vAoMapUv", uv),
       )
       .replace(
         "#include <roughnessmap_fragment>",
@@ -212,6 +221,9 @@ export function boxMapped<M extends THREE.MeshStandardMaterial>(
         "#endif",
         "#ifdef USE_ROUGHNESSMAP",
         "vRoughnessMapUv = (roughnessMapTransform * vec3(boxUv, 1.0)).xy;",
+        "#endif",
+        "#ifdef USE_AOMAP",
+        "vAoMapUv = (mapTransform * vec3(boxUv, 1.0)).xy;",
         "#endif",
         "#ifdef USE_EMISSIVEMAP",
         "vEmissiveMapUv = (emissiveMapTransform * vec3(boxUv, 1.0)).xy;",
