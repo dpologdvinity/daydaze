@@ -1613,6 +1613,13 @@ export const CREDITS: readonly {
         usedFor: "Surface textures for the city, venues and furnishings.",
       },
       {
+        title: "Graffiti Set 001",
+        author: "ambientCG",
+        license: "CC0 1.0",
+        url: "https://ambientcg.com/view?id=GraffitiSet001",
+        usedFor: "Painted wall decal at Bassline on the Realistic tier.",
+      },
+      {
         title: "Patinated city copper",
         author: "ambientCG",
         license: "CC0 1.0",
@@ -2015,6 +2022,13 @@ export const CREDITS: readonly {
         url: "https://polyhaven.com/a/cobblestone_street_night",
         usedFor:
           "Environment lighting and reflections on the high quality tier.",
+      },
+      {
+        title: "Wide Street 01 HDRI",
+        author: "Sergej Majboroda",
+        license: "CC0 1.0",
+        url: "https://polyhaven.com/a/wide_street_01",
+        usedFor: "Daytime city glass reflections on the Realistic tier.",
       },
       {
         title: "Kloofendal 48d Partly Cloudy (Pure Sky) HDRI",

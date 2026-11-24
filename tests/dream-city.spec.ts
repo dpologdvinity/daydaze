@@ -87,3 +87,46 @@ test("dream city: architecture loads across distinct streets and keeps venue doo
   await page.keyboard.up("KeyS");
   expect(errors).toEqual([]);
 });
+
+test("dream city: Realistic loads scanned occlusion and daytime glass reflections", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  test.setTimeout(180_000);
+  const detail = new Set<string>();
+  const paths = [
+    "/textures/asphalt_02/ao.jpg",
+    "/textures/stone_tile_wall/ao.jpg",
+    "/textures/graffiti/tag.png",
+    "/hdri/wide_street_01.hdr",
+  ];
+  page.on("response", (response) => {
+    const path = new URL(response.url()).pathname;
+    if (response.ok() && paths.includes(path)) detail.add(path);
+  });
+  page.on("pageerror", (error) => errors.push(error.message));
+  page.on("console", (message) => {
+    if (message.text().includes("THREE.WebGLProgram"))
+      errors.push(message.text());
+  });
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "daydaze-save-v1",
+      JSON.stringify({ onboarded: true }),
+    );
+  });
+  const canvas = page.getByRole("img", { name: "3D room view" });
+  const city = "/?room=city&still=1&at=8,12&time=12:00";
+  await page.goto(`${city}&quality=low`);
+  await expect(canvas).toHaveAttribute("data-frames", "10");
+  expect(detail.size).toBe(0);
+  expect(Number(await canvas.getAttribute("data-calls"))).toBeLessThan(250);
+  expect(Number(await canvas.getAttribute("data-triangles"))).toBeLessThan(
+    300_000,
+  );
+
+  await page.goto(`${city}&quality=ultra`);
+  await expect.poll(() => [...detail].sort()).toEqual([...paths].sort());
+  await expect(canvas).toHaveAttribute("data-frames", "10");
+  expect(errors).toEqual([]);
+});

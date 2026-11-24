@@ -8,9 +8,10 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 import { DREAM_KINDS, type DreamSpot } from "../../game/city/dream.ts";
 import { createStore } from "../rooms/shared/store.ts";
+import { useDetail, useGraphics } from "../world/quality.ts";
 import { bakedGeometry } from "../world/bakedGeometry.ts";
 import { useDaylight } from "./daylight.ts";
-import { boxMapped, groundMaps } from "./worldTexture.ts";
+import { boxMapped, groundMaps, groundOcclusion } from "./worldTexture.ts";
 import {
   createDreamMesh,
   placeDreamMeshes,
@@ -28,7 +29,12 @@ export const cityDream = createStore<{ spots: readonly DreamSpot[] }>({
 });
 
 /** Surface flags survive meshopt quantization; UV.y is unused. */
-function architectureMaterial(night: { value: number }, onReady: () => void) {
+function architectureMaterial(
+  night: { value: number },
+  onReady: () => void,
+  realism: { graffiti: THREE.Texture; occlusion: THREE.Texture } | null,
+  reflections: boolean,
+) {
   const maps = groundMaps("stone_tile_wall", { full: true });
   const loader = new THREE.TextureLoader();
   let loaded = 0;
@@ -45,6 +51,8 @@ function architectureMaterial(night: { value: number }, onReady: () => void) {
   const material = boxMapped(
     new THREE.MeshStandardMaterial({
       ...maps,
+      aoMap: realism?.occlusion ?? null,
+      aoMapIntensity: 0.65,
       vertexColors: true,
       roughness: 0.76,
       normalScale: new THREE.Vector2(0.55, 0.55),
@@ -61,6 +69,7 @@ function architectureMaterial(night: { value: number }, onReady: () => void) {
   material.onBeforeCompile = (shader, renderer) => {
     boxed.call(material, shader, renderer);
     shader.uniforms.uDreamNight = night;
+    if (realism) shader.uniforms.uGraffiti = { value: realism.graffiti };
     shader.uniforms.uCopperColor = { value: copperColor };
     shader.uniforms.uCopperNormal = { value: copperNormal };
     shader.uniforms.uCopperSurface = { value: copperSurface };
@@ -72,7 +81,7 @@ function architectureMaterial(night: { value: number }, onReady: () => void) {
     shader.fragmentShader = shader.fragmentShader
       .replace(
         "void main() {",
-        "varying float vSurface;\nvarying float vDistant;\nvarying vec3 vArchitectureP;\nvarying vec3 vArchitectureN;\nuniform float uDreamNight;\nuniform sampler2D uCopperColor;\nuniform sampler2D uCopperNormal;\nuniform sampler2D uCopperSurface;\nvoid main() {",
+        "varying float vSurface;\nvarying float vDistant;\nvarying vec3 vArchitectureP;\nvarying vec3 vArchitectureN;\nuniform float uDreamNight;\nuniform sampler2D uCopperColor;\nuniform sampler2D uCopperNormal;\nuniform sampler2D uCopperSurface;\n#ifdef DREAM_DETAIL\nuniform sampler2D uGraffiti;\n#endif\nvoid main() {",
       )
       .replace(
         "#include <color_fragment>",
@@ -110,6 +119,14 @@ function architectureMaterial(night: { value: number }, onReady: () => void) {
           "diffuseColor.rgb *= mix(vec3(1.0), dreamMasonry, dreamStone);",
           "float dreamFoot = smoothstep(0.0, 2.0, vBoxP.y);",
           "diffuseColor.rgb *= mix(1.0, mix(0.79, 1.0, dreamFoot), dreamStone);",
+          "#ifdef DREAM_DETAIL",
+          // Project the painted tag onto the masonry of Bassline's west wall.
+          "vec2 tagUv = (vBoxP.zy - vec2(61.3, 0.1)) / vec2(3.4);",
+          "if (vBoxP.x > 135.9 && vBoxP.x < 137.4 && all(greaterThan(tagUv, vec2(0.0))) && all(lessThan(tagUv, vec2(1.0)))) {",
+          "  vec4 tag = texture2D(uGraffiti, tagUv);",
+          "  diffuseColor.rgb = mix(diffuseColor.rgb, tag.rgb, tag.a * dreamStone * 0.75);",
+          "}",
+          "#endif",
         ].join("\n"),
       )
       .replace(
@@ -142,7 +159,13 @@ function architectureMaterial(night: { value: number }, onReady: () => void) {
       )
       .replace(
         "#include <metalnessmap_fragment>",
-        "#include <metalnessmap_fragment>\nmetalnessFactor = mix(metalnessFactor, dreamCopperPbr.y * 0.72, dreamBrass);",
+        [
+          "#include <metalnessmap_fragment>",
+          "metalnessFactor = mix(metalnessFactor, dreamCopperPbr.y * 0.72, dreamBrass);",
+          "#ifdef DREAM_REFLECTIONS",
+          "metalnessFactor = mix(metalnessFactor, 0.62, dreamGlass);",
+          "#endif",
+        ].join("\n"),
       )
       .replace(
         "#include <emissivemap_fragment>",
@@ -159,7 +182,10 @@ function architectureMaterial(night: { value: number }, onReady: () => void) {
         ].join("\n"),
       );
   };
-  material.customProgramCacheKey = () => "dream-architecture-v4-copper";
+  if (realism) material.defines = { ...material.defines, DREAM_DETAIL: "" };
+  if (reflections)
+    material.defines = { ...material.defines, DREAM_REFLECTIONS: "" };
+  material.customProgramCacheKey = () => "dream-architecture-v5";
   return material;
 }
 
@@ -185,17 +211,39 @@ export function DreamBuildings() {
   const [meshes, setMeshes] = useState<readonly FamilyMesh[]>([]);
   const night = useMemo(() => ({ value: 0 }), []);
   const day = useDaylight();
+  const realistic = useDetail() === "ultra";
+  const graphics = useGraphics();
+  const reflections = realistic && graphics.reflections;
   const invalidate = useThree((state) => state.invalidate);
   const canvas = useThree((state) => state.gl.domElement);
 
   useEffect(() => {
     gltf.scene.updateMatrixWorld(true);
     let active = true;
-    const material = architectureMaterial(night, () => {
-      if (!active) return;
-      canvas.dataset.architectureMetal = "ready";
-      invalidate();
-    });
+    const realism = realistic
+      ? {
+          graffiti: new THREE.TextureLoader().load(
+            "/textures/graffiti/tag.png",
+            () => {
+              if (active) invalidate();
+            },
+          ),
+          occlusion: groundOcclusion("stone_tile_wall", () => {
+            if (active) invalidate();
+          }),
+        }
+      : null;
+    if (realism) realism.graffiti.colorSpace = THREE.SRGBColorSpace;
+    const material = architectureMaterial(
+      night,
+      () => {
+        if (!active) return;
+        canvas.dataset.architectureMetal = "ready";
+        invalidate();
+      },
+      realism,
+      reflections,
+    );
     const built = DREAM_KINDS.flatMap((kind) =>
       [false, true].map((far) => {
         const name = far ? `${kind}-lo` : kind;
@@ -214,6 +262,8 @@ export function DreamBuildings() {
         mesh.geometry.dispose();
         mesh.dispose();
       }
+      realism?.graffiti.dispose();
+      realism?.occlusion.dispose();
       material.map?.dispose();
       material.normalMap?.dispose();
       material.roughnessMap?.dispose();
@@ -223,7 +273,7 @@ export function DreamBuildings() {
       delete canvas.dataset.architectureFamilies;
       delete canvas.dataset.landmarkExpected;
     };
-  }, [gltf, night, canvas, invalidate]);
+  }, [gltf, night, canvas, invalidate, realistic, reflections]);
 
   useEffect(() => {
     night.value = day.neon;

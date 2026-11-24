@@ -34,11 +34,11 @@ function standIn(pixel: Uint8Array) {
   return t;
 }
 
-function tex(path: string, srgb: boolean, full = false) {
+function tex(path: string, srgb: boolean, full = false, onLoad?: () => void) {
   const t =
     lean && !srgb && !full
       ? standIn(path.endsWith("/nor.webp") ? FLAT_NORMAL : FULL_ROUGH)
-      : loader.load(path);
+      : loader.load(path, onLoad);
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
   t.anisotropy = 8;
   if (srgb) t.colorSpace = THREE.SRGBColorSpace;
@@ -50,9 +50,21 @@ function tex(path: string, srgb: boolean, full = false) {
 export function groundMaps(id: string, { full = false } = {}) {
   return {
     map: tex(`/textures/${id}/diff.webp`, true),
+    ...groundDetailMaps(id, full),
+  };
+}
+
+/** Load the linear maps without reloading a surface's color map. */
+export function groundDetailMaps(id: string, full = false) {
+  return {
     normalMap: tex(`/textures/${id}/nor.webp`, false, full),
     roughnessMap: tex(`/textures/${id}/rough.webp`, false, full),
   };
+}
+
+/** A linear occlusion scan. Realistic city materials opt in when mounted. */
+export function groundOcclusion(id: string, onLoad?: () => void) {
+  return tex(`/textures/${id}/ao.jpg`, false, true, onLoad);
 }
 
 export function worldMapped<M extends THREE.MeshStandardMaterial>(
@@ -114,6 +126,10 @@ export function worldMapped<M extends THREE.MeshStandardMaterial>(
       .replace(
         "#include <normal_fragment_maps>",
         THREE.ShaderChunk.normal_fragment_maps.replaceAll("vNormalMapUv", uv),
+      )
+      .replace(
+        "#include <aomap_fragment>",
+        THREE.ShaderChunk.aomap_fragment.replaceAll("vAoMapUv", uv),
       )
       .replace(
         "#include <roughnessmap_fragment>",
@@ -212,6 +228,9 @@ export function boxMapped<M extends THREE.MeshStandardMaterial>(
         "#endif",
         "#ifdef USE_ROUGHNESSMAP",
         "vRoughnessMapUv = (roughnessMapTransform * vec3(boxUv, 1.0)).xy;",
+        "#endif",
+        "#ifdef USE_AOMAP",
+        "vAoMapUv = (mapTransform * vec3(boxUv, 1.0)).xy;",
         "#endif",
         "#ifdef USE_EMISSIVEMAP",
         "vEmissiveMapUv = (emissiveMapTransform * vec3(boxUv, 1.0)).xy;",
