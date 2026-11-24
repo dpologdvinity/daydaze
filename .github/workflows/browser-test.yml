@@ -26,7 +26,8 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - timeout-minutes: 5
+        run: npx playwright install chromium
       # the pattern goes through an env var, never interpolated into the shell
       - run: npx playwright test -g "$GREP" --reporter=line
         env:
