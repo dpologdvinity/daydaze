@@ -26,6 +26,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import doll_hair  # noqa: E402
 import doll_outfits  # noqa: E402
+import fitted_hats  # noqa: E402
 import proxies  # noqa: E402
 import skin_detail  # noqa: E402
 
@@ -520,6 +521,14 @@ def repose():
 
 
 TURN = repose()
+
+
+def foot_pose(path):
+    """Carry a MakeHuman foot target into the doll's legs-together rest pose."""
+    delta = target(path)
+    for side, select in (("Left", P[:, 0] > 0), ("Right", P[:, 0] <= 0)):
+        delta[select] = delta[select] @ TURN[f"mixamorig:{side}Foot"].T
+    return delta
 
 # MakeHuman is Y-up in decimetres; Blender is Z-up in metres, front at -Y.
 _body_y = P[sorted({i for f in FACES["body"] for i in f})][:, 1]
@@ -1035,15 +1044,16 @@ def main():
     ctx = SimpleNamespace(
         P=P, PB=PB, W=W, BONES=BONES, KEYS=KEYS, FACES=FACES, JB=JB,
         HEAD=HEAD, HEADW=weight("head"), GROUPS=GROUPS, weight=weight,
-        to_blender=to_blender, new_object=new_object, rig=rig,
+        to_blender=to_blender, new_object=new_object, rig=rig, foot_pose=foot_pose,
     )
     hair_only = bool(os.environ.get("HAIR_ONLY"))
     # OUTFIT_ONLY=1 rebuilds the body and outfits without the (slow) hair
     outfit_only = bool(os.environ.get("OUTFIT_ONLY"))
     print("Building fitted parts", flush=True)
-    parts = ([] if outfit_only else doll_hair.build(ctx)) + (
-        [] if hair_only else doll_outfits.build(ctx, body, BODY_SRC)
-    )
+    outfits, poses = ([], {}) if hair_only else doll_outfits.build(ctx, body, BODY_SRC, SEX == "male")
+    parts = ([] if outfit_only else doll_hair.build(ctx)) + outfits
+    if not hair_only:
+        parts.extend(fitted_hats.build(ctx))
     for ob in parts:
         bind(ob, rig)
         # build-time bookkeeping; glTF would ship it as (large) node extras
@@ -1057,7 +1067,9 @@ def main():
         export(rig, [body, eyes], f"body{SUFFIX}")
         # far LOD: MakeHuman's CC0 1.6k-vertex proxy, painted with the same face
         proxy = "male1591/male1591" if SEX == "male" else "female1605/female1605"
-        lo = proxies.build(ctx, "Lod_body", f"proxymeshes/{proxy}.proxy", material("skin"))
+        proxy_path = f"proxymeshes/{proxy}.proxy"
+        lo = proxies.build(ctx, "Lod_body", proxy_path, material("skin"))
+        definition = proxies.read_mhclo(os.path.join(proxies.ASSETS, proxy_path)) if poses else None
         heads = np.zeros(len(lo.data.vertices))
         hi = lo.vertex_groups[HEAD].index
         for v in lo.data.vertices:
@@ -1068,8 +1080,9 @@ def main():
         # same tuck keys, in the same order as the full body's
         no_src = np.full(len(lo.data.vertices), -1)
         for part in parts:
-            if part.name.startswith(doll_outfits.WORN):
-                doll_outfits.tuck(ctx, lo, no_src, part, part.name.split("_", 1)[1])
+            if part.name.startswith(doll_outfits.WORN) and part.name != "Legwear_sheer-tights":
+                pose = proxies.mix(definition, poses[part.name]) if part.name in poses else None
+                doll_outfits.tuck(ctx, lo, no_src, part, part.name.split("_", 1)[1], pose)
         bind(lo, rig)
         for key in ("deleted", "src"):
             if key in lo:

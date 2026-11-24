@@ -201,26 +201,50 @@ def render(name):
     bpy.ops.render.render(write_still=True)
 
 
+def garment_tile_finish(garment_id):
+    """Preview the opacity or knit of the two tights finishes."""
+    if garment_id not in ("sheer-tights", "fishnet-tights"):
+        return
+    for ob in bpy.context.scene.objects:
+        if ob.type != "MESH":
+            continue
+        for material in ob.data.materials:
+            tree = material.node_tree
+            surface = next(node for node in tree.nodes if node.type == "BSDF_PRINCIPLED")
+            if garment_id == "sheer-tights":
+                surface.inputs["Alpha"].default_value = 0.4
+            else:
+                texture = tree.nodes.new("ShaderNodeTexImage")
+                texture.image = bpy.data.images.load(str(Path(DEST).parent / "models/doll/fishnet-mask.webp"))
+                texture.image.colorspace_settings.name = "Non-Color"
+                tree.links.new(texture.outputs["Color"], surface.inputs["Alpha"])
+
+
 def garment_tiles():
     """Frame each standalone garment in its rest pose with its own material."""
     models = Path(DEST).parent / "models" / "doll"
-    sources = sorted(
-        path
-        for slot in ("top", "bottom", "dress", "outer", "legwear")
+    sources = {
+        path.stem.split("-", 1)[1]: path
+        for slot in ("top", "bottom", "dress", "outer", "legwear", "hat")
         for path in models.glob(f"{slot}-*.glb")
         if not path.stem.endswith(("-m", "-lo"))
-    )
+    }
+    if "sheer-tights" in sources:
+        sources["fishnet-tights"] = sources["sheer-tights"]
+    if (models / "hair-hijab.glb").is_file():
+        sources["hijab-wrap"] = models / "hair-hijab.glb"
     if not sources:
         raise RuntimeError(f"No garment models in {models}")
 
     os.makedirs(DEST, exist_ok=True)
-    selected = os.environ.get("GARMENT_ONLY")
-    for source in sources:
-        if selected and source.stem.split("-", 1)[1] != selected:
+    selected = set(os.environ.get("GARMENT_ONLY", "").split(",")) - {""}
+    for garment_id, source in sorted(sources.items()):
+        if selected and garment_id not in selected:
             continue
         reset()
         # The importer's bone display meshes are hidden in renders.
         bpy.ops.import_scene.gltf(filepath=str(source), disable_bone_shape=True)
+        garment_tile_finish(garment_id)
         scene = bpy.context.scene
         # Fit the projected mesh with an even margin on all four sides.
         camera((0.32, -1, 0.12), (0, 0, 0), 30)
@@ -250,7 +274,6 @@ def garment_tiles():
         scene.render.image_settings.file_format = "WEBP"
         scene.render.image_settings.color_mode = "RGBA"
         scene.render.image_settings.quality = 84
-        garment_id = source.stem.split("-", 1)[1]
         scene.render.filepath = os.path.join(DEST, f"garment-{garment_id}.webp")
         bpy.ops.render.render(write_still=True)
 

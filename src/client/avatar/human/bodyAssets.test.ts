@@ -3,9 +3,12 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { test } from "node:test";
+import { Vector3 } from "three";
+import { GLTFLoader, MeshoptDecoder } from "three-stdlib";
 import { readGlb } from "../../../../scripts/pruneMorphs.ts";
-import { FACE_SLIDERS } from "../../../game/look.ts";
-import { GARMENTS } from "../../../game/wardrobe.ts";
+import { FACE_SLIDERS, SHOES } from "../../../game/look.ts";
+import { garmentAsset, GARMENTS } from "../../../game/wardrobe.ts";
+import { isSkinnedMesh } from "../../world/guards.ts";
 
 test("both human bodies and their distance models carry every facial slider", () => {
   for (const file of ["body", "body-lo", "body-m", "body-m-lo"]) {
@@ -83,44 +86,51 @@ test("every garment ships fitted to both bodies, with its tuck key", () => {
       const keys = new Set(
         json.meshes.flatMap((mesh) => mesh.extras?.targetNames ?? []),
       );
+      for (const { id } of SHOES) {
+        assert.ok(keys.has(`tuck_${id}`), `body${m}${lo}: tuck_${id}`);
+      }
       for (const g of GARMENTS) {
-        const file = `${g.slot}-${g.id}${m}${lo}.glb`;
+        const { model, tuck } = garmentAsset(g.slot, g.id);
+        const file = `${model}${m}${lo}.glb`;
         assert.ok(
           existsSync(
             new URL(`../../../../public/models/doll/${file}`, import.meta.url),
           ),
           file,
         );
-        assert.ok(keys.has(`tuck_${g.id}`), `body${m}${lo}: tuck_${g.id}`);
+        if (tuck) assert.ok(keys.has(tuck), `body${m}${lo}: ${tuck}`);
       }
     }
   }
 });
 
-test("tights cover the leg down to the foot and sneakers have no_socks morph", () => {
+test("tights cover the leg down to the foot and sneakers have no_socks morph", async () => {
+  const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder());
+  const vertex = new Vector3();
   for (const m of ["", "-m"]) {
-    // Tights reach foot level (raw Y min <= -0.83 in glTF space, where floor is ~ -0.87)
     for (const lo of ["", "-lo"]) {
       const file = `legwear-tights${m}${lo}.glb`;
-      const { json } = readGlb(
+      const bytes = Uint8Array.from(
         readFileSync(
           new URL(`../../../../public/models/doll/${file}`, import.meta.url),
         ),
       );
-      const mesh = json.meshes[0];
-      const posIdx = mesh?.primitives[0]?.attributes?.POSITION;
-      assert.ok(posIdx !== undefined, `${file}: missing POSITION accessor`);
-      const posAcc = json.accessors[posIdx];
-      const node = json.nodes?.find((n) => n.mesh === 0);
-      const scale = node?.scale?.[1] ?? 1;
-      const trans = node?.translation?.[1] ?? 0;
-      const yMin =
-        posAcc?.min?.[1] !== undefined
-          ? (posAcc.min[1] / 32767) * scale + trans
-          : 0;
+      const { scene } = await loader.parseAsync(bytes.buffer, "");
+      scene.updateMatrixWorld(true);
+      // The inverse bind matrices carry the meshopt quantization transform.
+      let lowest = Infinity;
+      scene.traverse((object) => {
+        if (!isSkinnedMesh(object)) return;
+        const count = object.geometry.getAttribute("position").count;
+        for (let i = 0; i < count; i++) {
+          object.getVertexPosition(i, vertex);
+          object.localToWorld(vertex);
+          lowest = Math.min(lowest, vertex.y);
+        }
+      });
       assert.ok(
-        yMin < -0.83,
-        `${file}: tights must reach foot level (got ${yMin})`,
+        lowest < 0.02,
+        `${file}: tights must reach foot level (got ${lowest})`,
       );
     }
 

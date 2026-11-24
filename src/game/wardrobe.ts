@@ -36,7 +36,14 @@ export type Outfit = (typeof OUTFITS)[number]["id"];
 
 /** Wardrobe slots, from the skin out. A one-piece (`dress`, a dress or a
  * jumpsuit) replaces the top and the bottom; outerwear goes over the top. */
-export const SLOTS = ["legwear", "bottom", "top", "dress", "outer"] as const;
+export const SLOTS = [
+  "legwear",
+  "bottom",
+  "top",
+  "dress",
+  "outer",
+  "hat",
+] as const;
 export type Slot = (typeof SLOTS)[number];
 
 /** Every garment: its slot, and the old outfit it was split from (whose shop
@@ -124,8 +131,29 @@ export const GARMENTS = [
     from: "glam-faux-fur",
   },
   { id: "puffer", slot: "outer", label: "Puffer jacket", from: "puffer" },
-  { id: "tights", slot: "legwear", label: "Tights", from: null },
+  { id: "tights", slot: "legwear", label: "Opaque tights", from: null },
+  { id: "sheer-tights", slot: "legwear", label: "Sheer tights", from: null },
+  {
+    id: "fishnet-tights",
+    slot: "legwear",
+    label: "Fishnet tights",
+    from: null,
+  },
+  { id: "crew-socks", slot: "legwear", label: "Crew socks", from: null },
   { id: "knee-socks", slot: "legwear", label: "Knee socks", from: null },
+  { id: "leg-warmers", slot: "legwear", label: "Leg warmers", from: null },
+  { id: "cloche", slot: "hat", label: "Cloche", from: null },
+  { id: "newsboy-cap", slot: "hat", label: "Newsboy cap", from: null },
+  { id: "baseball-cap", slot: "hat", label: "Baseball cap", from: null },
+  { id: "beanie", slot: "hat", label: "Beanie", from: null },
+  { id: "bucket-hat", slot: "hat", label: "Bucket hat", from: null },
+  { id: "patrol-cap", slot: "hat", label: "Patrol cap", from: null },
+  { id: "headscarf", slot: "hat", label: "Headscarf", from: null },
+  { id: "sun-visor", slot: "hat", label: "Sun visor", from: null },
+  { id: "beret", slot: "hat", label: "Beret", from: null },
+  { id: "sun-hat", slot: "hat", label: "Sun hat", from: null },
+  { id: "cowboy-hat", slot: "hat", label: "Cowboy hat", from: null },
+  { id: "hijab-wrap", slot: "hat", label: "Hijab", from: null },
 ] as const satisfies readonly {
   id: string;
   slot: Slot;
@@ -135,6 +163,16 @@ export const GARMENTS = [
 
 export type Garment = (typeof GARMENTS)[number];
 export type GarmentId = Garment["id"];
+
+/** The fitted mesh and body tuck for a wardrobe entry. Fishnet and sheer
+ * tights share their fit, and hats sit over a bare scalp. */
+export function garmentAsset(slot: Slot, id: GarmentId) {
+  const fit = id === "fishnet-tights" ? "sheer-tights" : id;
+  return {
+    model: id === "hijab-wrap" ? "hair-hijab" : `${slot}-${fit}`,
+    tuck: slot === "hat" || fit === "sheer-tights" ? null : `tuck_${fit}`,
+  };
+}
 
 /** A garment worn, in its color (an RGB hex id, like OUTFIT_COLORS'). */
 export type Worn = { id: GarmentId; color: string };
@@ -254,7 +292,7 @@ export function putOn(wear: Wear, id: string, color: string): Wear {
 /** Wear with a layer (outerwear, legwear) taken off. Tops, bottoms and
  * one-pieces are only ever swapped, never left bare. */
 export function takeOff(wear: Wear, slot: Slot): Wear {
-  if (slot !== "outer" && slot !== "legwear") return wear;
+  if (slot !== "outer" && slot !== "legwear" && slot !== "hat") return wear;
   const next = { ...wear };
   delete next[slot];
   return next;

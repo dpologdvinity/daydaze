@@ -49,7 +49,7 @@ import {
   type Mood,
   type SwimLook,
 } from "../../../game/look.ts";
-import { SLOTS, wearOf } from "../../../game/wardrobe.ts";
+import { garmentAsset, SLOTS, wearOf } from "../../../game/wardrobe.ts";
 import { getBuzz, getHangover, liveDrunk } from "../../effects/drunk.ts";
 import { getMeters } from "../../effects/high.ts";
 import { ADULT_OK } from "../../adult.ts";
@@ -286,31 +286,39 @@ export function partsFor(look: Look, swim: SwimLook | null) {
           url: `${MODELS}/swim-${swim.style}${m}.glb`,
           color: swim.color,
           tuck: `tuck_${swim.style}`,
+          finish: "cloth" as const,
         },
       ]
     : SLOTS.flatMap((slot) => {
         const worn = wear[slot];
-        return worn
-          ? [
-              {
-                key: slot,
-                url: `${MODELS}/${slot}-${worn.id}${m}.glb`,
-                color: worn.color,
-                tuck: `tuck_${worn.id}`,
-              },
-            ]
-          : [];
+        if (!worn) return [];
+        const { model, tuck } = garmentAsset(slot, worn.id);
+        const finish: "cloth" | "sheer" | "fishnet" =
+          worn.id === "fishnet-tights"
+            ? "fishnet"
+            : worn.id === "sheer-tights"
+              ? "sheer"
+              : "cloth";
+        return [
+          {
+            key: slot,
+            url: `${MODELS}/${model}${m}.glb`,
+            color: worn.color,
+            tuck,
+            finish,
+          },
+        ];
       });
   return {
-    // bald wears no hair model at all
+    // Hats replace the hair mesh to keep it inside the crown.
     hair:
-      look.hairStyle === "bald"
+      look.hairStyle === "bald" || (!swim && wear.hat)
         ? null
         : `${MODELS}/hair-${HAIR[look.hairStyle] ?? look.hairStyle}${m}.glb`,
     garments,
     shoes: swim ? null : `${MODELS}/shoes-${shoesOf(look)}${m}.glb`,
     tucks: [
-      ...garments.map((g) => g.tuck),
+      ...garments.flatMap((g) => (g.tuck ? [g.tuck] : [])),
       ...(swim ? [] : [`tuck_${shoesOf(look)}`]),
     ],
   };
@@ -789,7 +797,11 @@ function hairMaterial(
   return map && cutout && shine ? hairShine(material) : material;
 }
 
-type Tint = { color: string; kind: "hair" | "cloth" | "gloss" | "keep" };
+type Tint = {
+  color: string;
+  kind: "hair" | "cloth" | "gloss" | "keep" | "sheer" | "fishnet";
+  alphaMap?: THREE.Texture | undefined;
+};
 
 /** How a cloth catches light, by the Blender material it was cut from. */
 const FEEL: Record<string, { roughness: number; metalness?: number }> = {
@@ -834,10 +846,11 @@ function Part({
   const gltfLo = useGLTF(full ? url : lodOf(url));
   const rich = useQuality() !== "low";
   const { shadows } = useGraphics();
-  const { color, kind } = tint;
+  const { color, kind, alphaMap } = tint;
   const lo = useMemo(
-    () => buildPart(gltfLo.scene, bones, { color, kind }, full && rich),
-    [gltfLo, bones, color, kind, full, rich],
+    () =>
+      buildPart(gltfLo.scene, bones, { color, kind, alphaMap }, full && rich),
+    [gltfLo, bones, color, kind, alphaMap, full, rich],
   );
   // the full model, once it has been wanted and has loaded
   const [wantNear, setWantNear] = useState(false);
@@ -881,6 +894,15 @@ function Part({
   );
 }
 
+/** The two tights finishes share a fitted mesh. Only fishnets need a mask. */
+function FishnetPart(
+  props: Omit<Parameters<typeof Part>[0], "tint"> & { color: string },
+) {
+  const alphaMap = useTexture(`${MODELS}/fishnet-mask.webp`);
+  const { color, ...part } = props;
+  return <Part {...part} tint={{ color, kind: "fishnet", alphaMap }} />;
+}
+
 /** The full-detail part, fetched on demand; it hands itself up when built. */
 function NearPart({
   url,
@@ -897,10 +919,10 @@ function NearPart({
   // the glossy hair shading and its soft-edge pass are for capable GPUs
   const rich = useQuality() !== "low";
   const { shadows } = useGraphics();
-  const { color, kind } = tint;
+  const { color, kind, alphaMap } = tint;
   const part = useMemo(
-    () => buildPart(gltf.scene, bones, { color, kind }, rich),
-    [gltf, bones, color, kind, rich],
+    () => buildPart(gltf.scene, bones, { color, kind, alphaMap }, rich),
+    [gltf, bones, color, kind, alphaMap, rich],
   );
   useEffect(() => {
     castShadows(part.group, shadows);
@@ -981,11 +1003,13 @@ type Garment = { key: string; url: string; color: string };
  */
 function Garments({
   garments,
+  shoeTuck,
   bones,
   far,
   track,
 }: {
   garments: readonly Garment[];
+  shoeTuck?: string | undefined;
   bones: Map<string, THREE.Bone>;
   far: { current: boolean };
   track: (key: string) => (meshes: THREE.Mesh[] | null, lift: number) => void;
@@ -1032,6 +1056,7 @@ function Garments({
             )
           : undefined,
       })),
+      shoeTuck,
     );
     const group = new THREE.Group();
     if (!merged) {
@@ -1057,7 +1082,7 @@ function Garments({
       // a render React throws away never holds a reference
       atlas: images.length ? { key: atlasKey, images } : null,
     };
-  }, [gltfs, bones, tints]);
+  }, [gltfs, bones, tints, shoeTuck]);
   useEffect(
     () => () => {
       lo.materials.forEach((m) => m.dispose());
@@ -1171,7 +1196,7 @@ function buildPart(
     let lift = 0;
     scene.traverse((o) => {
       const v: unknown = o.userData.lift;
-      if (typeof v === "number" && Number.isFinite(v) && v >= 0 && v < 0.2)
+      if (typeof v === "number" && Number.isFinite(v) && v >= 0 && v < 0.25)
         lift = v;
     });
     for (const src of meshes) {
@@ -1240,6 +1265,16 @@ function buildPart(
               color: tint.kind === "keep" ? "#ffffff" : tint.color,
               roughness: tint.kind === "gloss" ? 0.22 : 0.7,
               ...(tint.kind === "cloth" ? FEEL[old?.name ?? ""] : undefined),
+              ...(tint.kind === "sheer"
+                ? { transparent: true, opacity: 0.4, depthWrite: false }
+                : undefined),
+              ...(tint.kind === "fishnet"
+                ? {
+                    alphaMap: tint.alphaMap ?? null,
+                    alphaTest: 0.35,
+                    alphaToCoverage: true,
+                  }
+                : undefined),
             });
       materials.push(mat);
       mesh.material = mat;
@@ -1316,7 +1351,12 @@ export function HumanDoll({
   const parts = useMemo(() => partsFor(look, swim), [look, swim]);
   const tuckKey = parts.tucks.join(",");
   // the garments remount when what she wears changes, not when it's dyed
-  const garmentUrls = parts.garments.map((g) => g.url).join(",");
+  // Transparent tights keep their own draw call so the far atlas can stay opaque.
+  const opaqueGarments = useMemo(
+    () => parts.garments.filter((garment) => garment.finish === "cloth"),
+    [parts.garments],
+  );
+  const garmentUrls = opaqueGarments.map((g) => g.url).join(",");
   const tucks = useMemo(() => tuckKey.split(","), [tuckKey]);
   const calm = useReducedMotion();
   const phase = useRef(0);
@@ -1361,7 +1401,8 @@ export function HumanDoll({
   // every face and body key with its value (dollShapeKeys)
   // and the trouser legs and legwear tucked into the shoes worn (the
   // garments' in_<shoe> keys, doll_outfits.py into_shoes)
-  const shod = swim ? null : shoesOf(look);
+  const shoe = shoesOf(look);
+  const shod = swim ? null : shoe;
   const hasLegwear = !swim && Boolean(wearOf(look).legwear);
   const shapeKeys = useMemo(
     () => [
@@ -1873,26 +1914,31 @@ export function HumanDoll({
           />
         </Suspense>
       )}
-      {own ? (
-        // her own doll is always near: the full garments, no twins
-        // keyed by model, so a swapped garment's old part unregisters
-        parts.garments.map((g) => (
-          <Suspense key={g.url} fallback={null}>
-            <Part
-              key={g.url}
-              url={g.url}
-              bones={body.bones}
-              tint={{ color: g.color, kind: "cloth" }}
-              far={farParts}
-              full
-              onMeshes={track(g.key)}
-            />
-          </Suspense>
-        ))
-      ) : (
+      {parts.garments
+        .filter((garment) => own || garment.finish !== "cloth")
+        .map((g) => {
+          const part = {
+            url: g.url,
+            bones: body.bones,
+            far: farParts,
+            full: own,
+            onMeshes: track(g.key),
+          };
+          return (
+            <Suspense key={g.url} fallback={null}>
+              {g.finish === "fishnet" ? (
+                <FishnetPart {...part} color={g.color} />
+              ) : (
+                <Part {...part} tint={{ color: g.color, kind: g.finish }} />
+              )}
+            </Suspense>
+          );
+        })}
+      {!own && (
         <Suspense key={garmentUrls} fallback={null}>
           <Garments
-            garments={parts.garments}
+            garments={opaqueGarments}
+            shoeTuck={shod ? `in_${shod}` : undefined}
             bones={body.bones}
             far={farParts}
             track={track}
@@ -1906,13 +1952,13 @@ export function HumanDoll({
             url={parts.shoes}
             bones={body.bones}
             tint={
-              shoesOf(look) === "sneakers"
-                ? { color: "#ffffff", kind: "keep" }
-                : {
+              shoe === "platforms" || shoe === "boots"
+                ? {
                     color:
                       look.outfit === "mini" ? "#f6e7ff" : look.outfitColor,
                     kind: "gloss",
                   }
+                : { color: "#ffffff", kind: "keep" }
             }
             far={farParts}
             full={own}

@@ -49,7 +49,23 @@ export const GARMENT_STYLES: Record<GarmentId, readonly Style[]> = {
   "fur-wrap": ["glam", "formal"],
   puffer: ["street", "casual"],
   tights: ["casual", "glam"],
+  "sheer-tights": ["glam", "formal"],
+  "fishnet-tights": ["glam", "street"],
+  "crew-socks": ["casual", "sporty"],
   "knee-socks": ["street", "sporty"],
+  "leg-warmers": ["street", "sporty"],
+  cloche: ["glam", "formal"],
+  "newsboy-cap": ["casual", "street"],
+  "baseball-cap": ["street", "sporty"],
+  beanie: ["casual", "street"],
+  "bucket-hat": ["casual", "street"],
+  "patrol-cap": ["casual", "street"],
+  headscarf: ["casual", "formal"],
+  "hijab-wrap": ["casual", "formal"],
+  "sun-visor": ["sporty"],
+  beret: ["casual", "formal"],
+  "sun-hat": ["casual"],
+  "cowboy-hat": ["casual", "street"],
 };
 
 /** The most outfits one closet keeps, and the longest name. */

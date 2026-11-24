@@ -18,6 +18,7 @@ from mathutils import Vector
 from mathutils.bvhtree import BVHTree
 from mathutils.kdtree import KDTree
 
+import footwear
 import proxies
 
 TUCK = 0.03  # metres the skin a garment hides sinks, at most
@@ -310,7 +311,7 @@ def leg_pull(ctx, body, co, covered, floor, share=LEG_PULL, ceil=np.inf):
     return pull, pulled
 
 
-def tuck(ctx, body, body_src, garment, name):
+def tuck(ctx, body, body_src, garment, name, pose=None):
     """A body shape key sinking the skin a garment covers.
 
     Skin the garment hides (MakeHuman's delete_verts) sinks well into the
@@ -332,6 +333,8 @@ def tuck(ctx, body, body_src, garment, name):
             far, _n, _f, thick = inside.ray_cast(Vector(co[i] - normals[i] * 1e-3), Vector(-normals[i]))
             sink[i] = TUCK if far is None else min(TUCK, DEPTH * thick)
         behind[hidden] = True
+    if pose is not None:
+        co = co + pose
     bvh = BVHTree.FromObject(garment, bpy.context.evaluated_depsgraph_get())
     is_shoe = garment.name.startswith("Shoes")
     floor = min(v.co.z for v in garment.data.vertices) if not is_shoe else -1.0
@@ -366,6 +369,10 @@ def tuck(ctx, body, body_src, garment, name):
     # top of another garment's pull (jeans in sneakers or boots) a sink
     # carried collapsed skin out through the far side of the shin
     move = -normals * (sink * (1 - pulled / share))[:, None] + pull
+    if is_shoe and footwear.closed(name):
+        foot = footwear.tuck_foot(ctx, co)
+        lower = np.linalg.norm(foot, axis=1) > 0
+        move[lower] = foot[lower]
     sk = body.shape_key_add(name=f"tuck_{name}", from_mix=False)
     # on a GRID-metre grid: the key compresses far smaller, unseen
     sk.data.foreach_set("co", (co + np.round(move / GRID) * GRID).ravel())
@@ -472,7 +479,7 @@ def islands_kept(ob, keep):
         bpy.data.objects.remove(separate(ob, drop))
 
 
-def build(ctx, body, body_src):
+def build(ctx, body, body_src, male):
     """Every garment as its own object, named <Slot>_<id> (GARMENTS in
     src/game/wardrobe.ts), then swimsuits and shoes. Each old outfit is split
     into its pieces (OUTFIT_WEAR there), so any top goes with any bottom."""
@@ -687,6 +694,12 @@ def build(ctx, body, body_src):
     gloss = bpy.data.materials.new("shoe_gloss")
     out.append(platforms(ctx, "Shoes_platforms", h["ankle"] + 0.02, gloss))
     out.append(platforms(ctx, "Shoes_boots", h["knee"] - 0.06, gloss))
+    poses = {}
+    skin = BVHTree.FromObject(body, bpy.context.evaluated_depsgraph_get())
+    for ob, pose in footwear.build(ctx, male, skin):
+        out.append(ob)
+        if pose is not None:
+            poses[ob.name] = pose
     # OUTFIT_PARTS='regex' (a dev shortcut) builds just the shoes and the
     # garments whose names match: the body then holds only their tucks, so
     # it is for looking at, never for shipping
@@ -695,13 +708,38 @@ def build(ctx, body, body_src):
         for ob in [ob for ob in out if not ob.name.startswith("Shoes") and not re.search(only, ob.name)]:
             bpy.data.objects.remove(ob)
             out.remove(ob)
-    shoes = [ob for ob in out if ob.name.startswith("Shoes")]
+    # The shoe colliders stay in their rest position while the garment keys
+    # are authored. Reuse each collider across all trousers, dresses and socks.
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    shoes = [
+        (shoe.name.split("_", 1)[1], max(v.co.z for v in shoe.data.vertices),
+         BVHTree.FromObject(shoe, depsgraph),
+         footwear.garment_pose(ctx, poses[shoe.name]) if shoe.name in poses else None)
+        for shoe in out if shoe.name.startswith("Shoes")
+    ]
+    # Use the sneaker shell without its built-in socks when fitting legwear.
+    socks = sneakers.data.shape_keys.key_blocks["no_socks"]
+    socks.value = 1.0
+    bpy.context.view_layer.update()
+    sneaker_shell = sneakers.evaluated_get(depsgraph)
+    without_socks = (
+        "sneakers", max(v.co.z for v in sneaker_shell.data.vertices),
+        BVHTree.FromObject(sneakers, depsgraph), None,
+    )
+    socks.value = 0.0
+    bpy.context.view_layer.update()
     for ob in out:
-        if ob.name.startswith(("Bottom", "Dress", "Legwear")):
+        if ob.name.startswith("Legwear"):
+            into_shoes(ctx, ob, [without_socks if shoe[0] == "sneakers" else shoe for shoe in shoes])
+        elif ob.name.startswith(("Bottom", "Dress")):
             into_shoes(ctx, ob, shoes)
     for ob in out:
-        tuck(ctx, body, body_src, ob, ob.name.split("_", 1)[1])
-    return out
+        if ob.name.startswith("Hat") or ob.name == "Legwear_sheer-tights":
+            continue
+        pose = poses.get(ob.name)
+        tuck(ctx, body, body_src, ob, ob.name.split("_", 1)[1],
+             None if pose is None else pose[body_src])
+    return out, poses
 
 
 # the prefixes of every worn part's object name: each gets a body tuck key
@@ -740,46 +778,34 @@ def into_shoes(ctx, garment, shoes):
     out here: the sneakers' lining faces inward. Cloth further out than INTO
     fades back to its own place, so flares and gowns stay over the shoe.
     The client sets the key of the shoes worn."""
-    co = np.array([v.co[:] for v in garment.data.vertices])
-    bones = ctx.rig.data.bones
-    # each side's calf axis, knee to ankle, run on past the ankle to the sole
-    legs = {
-        side: tuple(np.array(bones[f"mixamorig:{side}{b}"].head_local) for b in ("Leg", "Foot"))
-        for side in ("Left", "Right")
-    }
+    base = np.array([v.co[:] for v in garment.data.vertices])
 
-    def axis(p):
-        knee, ankle = legs["Left" if p[0] > 0 else "Right"]
-        d = ankle - knee
-        t = np.clip((p - knee) @ d / (d @ d), 0, 1.5)
-        return knee + t * d
+    def leg_rays(co):
+        bones = ctx.rig.data.bones
+        # each side's calf axis, knee to ankle, run on past the ankle to the sole
+        origins = np.empty_like(co)
+        for side, selected in (("Left", co[:, 0] > 0), ("Right", co[:, 0] <= 0)):
+            knee, ankle = (
+                np.array(bones[f"mixamorig:{side}{bone}"].head_local)
+                for bone in ("Leg", "Foot")
+            )
+            calf = ankle - knee
+            along = np.clip((co[selected] - knee) @ calf / (calf @ calf), 0, 1.5)
+            origins[selected] = knee + along[:, None] * calf
+        radial = co - origins
+        radii = np.linalg.norm(radial, axis=1)
+        rays = radial / np.maximum(radii[:, None], 1e-6)
+        return origins, radii, rays
 
-    for shoe in shoes:
-        has_socks_key = (
-            garment.name.startswith("Legwear")
-            and shoe.data.shape_keys
-            and "no_socks" in shoe.data.shape_keys.key_blocks
-        )
-        if has_socks_key:
-            shoe.data.shape_keys.key_blocks["no_socks"].value = 1.0
-            bpy.context.view_layer.update()
-        bvh = BVHTree.FromObject(shoe, bpy.context.evaluated_depsgraph_get())
-        if has_socks_key:
-            eval_ob = shoe.evaluated_get(bpy.context.evaluated_depsgraph_get())
-            top = max(v.co.z for v in eval_ob.data.vertices)
-        else:
-            top = max(v.co.z for v in shoe.data.vertices)
+    default_rays = leg_rays(base)
+    for shoe, top, bvh, pose in shoes:
+        co = base if pose is None else pose(base)
+        origins, radii, rays = default_rays if pose is None else leg_rays(co)
         move = np.zeros_like(co)
         seen = []  # (vertex, ray, radius, how far outside the shoe's wall)
-        for i, p in enumerate(co):
-            if p[2] > top:
-                continue
-            a = axis(p)
-            r = float(np.linalg.norm(p - a))
-            if r < 1e-6:
-                continue
-            ray = (p - a) / r
-            hit, _n, _f, wall = bvh.ray_cast(Vector(a), Vector(ray), r + 0.1)
+        for i in np.flatnonzero((co[:, 2] <= top) & (radii >= 1e-6)):
+            r, ray = radii[i], rays[i]
+            hit, _n, _f, wall = bvh.ray_cast(Vector(origins[i]), Vector(ray), r + 0.1)
             if hit is not None:
                 seen.append((i, ray, r, r - wall))
         # one call per garment and shoe, so a hem never half-tucks into a
@@ -793,11 +819,12 @@ def into_shoes(ctx, garment, shoes):
             fade = np.clip((INTO + INTO_FADE - outside) / INTO_FADE, 0, 1)
             # never past the axis: at most most of the way in
             move[i] = -ray * min(outside + INSIDE, 0.8 * r) * fade
-        sk = garment.shape_key_add(name=f"in_{shoe.name.split('_', 1)[1]}", from_mix=False)
+        if garment.name.startswith("Legwear") and footwear.closed(shoe):
+            foot = footwear.tuck_foot(ctx, co)
+            lower = np.linalg.norm(foot, axis=1) > 0
+            move[lower] = foot[lower]
+        sk = garment.shape_key_add(name=f"in_{shoe}", from_mix=False)
         sk.data.foreach_set("co", (co + move).ravel())
-        if has_socks_key:
-            shoe.data.shape_keys.key_blocks["no_socks"].value = 0.0
-            bpy.context.view_layer.update()
 
 
 PLATFORM = 0.05  # sole height in metres; the client lifts the doll by this

@@ -1,5 +1,5 @@
 // The closet's mix-and-match pickers: one row per wardrobe slot (top,
-// bottom, one-piece, outerwear, legwear) with the garments the wardrobe may
+// bottom, one-piece, outerwear, legwear, hats) with the garments the wardrobe may
 // wear, and a color for the one worn. The layering rules are wardrobe.ts's.
 // Above the rows, a search box, a style filter and favorites narrow a long
 // closet; unowned garments appear dimmed with shop prices and shop links;
@@ -43,6 +43,7 @@ const ROWS: readonly { slot: Slot; label: string; optional: boolean }[] = [
   { slot: "dress", label: "One-piece", optional: false },
   { slot: "outer", label: "Outerwear", optional: true },
   { slot: "legwear", label: "Legwear", optional: true },
+  { slot: "hat", label: "Hat", optional: true },
 ];
 
 export function WardrobePicker({

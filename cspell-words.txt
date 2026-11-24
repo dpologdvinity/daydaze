@@ -1,5 +1,7 @@
 Netw
 PLOS
+Palmius
+Wojack
 aabb
 abenaitwe
 abhayexe
@@ -179,6 +181,7 @@ byeee
 caisons
 calamansi
 caldo
+callharvey
 camo
 camptown
 capcom
@@ -381,7 +384,9 @@ floaties
 flutterbat
 flybridge
 fnaf
+foldover
 folkinfo
+footpose
 forno
 fortnite
 fract
@@ -428,6 +433,7 @@ gogi
 golukumar
 gracias
 gramma
+grayscale
 greedyengine
 grinsegold
 gruber
@@ -545,6 +551,7 @@ jollibee
 jollof
 josegp
 josé
+joão
 jpop
 junglebook
 kaitlyn
@@ -606,6 +613,7 @@ kulintang
 kumar
 kutsinta
 kuya
+kwnet
 kylie
 labada
 lages
@@ -826,6 +834,7 @@ oram
 oscs
 outerspace
 outpiston
+overKnee
 overcorrecting
 overlined
 overlining
@@ -984,6 +993,7 @@ sarangbang
 sarif
 sariwa
 savva
+scailman
 scand
 scanline
 scanlines
