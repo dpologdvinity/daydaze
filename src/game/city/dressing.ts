@@ -1064,8 +1064,8 @@ export const FURNITURE: readonly FurnitureSpot[] = [
   {
     kind: "hanging-planter",
     x: 32,
-    z: 40.8,
-    y: 3.65,
+    z: 41.8,
+    y: 3.82,
     yaw: Math.PI / 2,
     scale: 0.65,
   },
