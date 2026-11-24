@@ -7,6 +7,7 @@ import { BUS_STOPS } from "../src/game/city/transit.ts";
 import { piercerBank } from "../src/game/dialogue/piercer.ts";
 import { fillPlaceholders } from "../src/game/dialogue/pick.ts";
 import { SONGS } from "../src/game/karaokeSongs.ts";
+import { completeBaristaShift } from "./barista.ts";
 import { dockAction } from "./dock.ts";
 import { recordTestMap } from "./test-map.ts";
 
@@ -1966,6 +1967,32 @@ test("Espresso Lab: a barista shift takes a ticket and scores a drink", async ({
   expect(errors).toEqual([]);
 });
 
+test("Espresso Lab: a shift below the passing threshold does not count in worked", async ({
+  page,
+}) => {
+  test.setTimeout(330_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=espresso-lab`);
+  const panel = page.getByRole("region", { name: "Barista station" });
+  await panel
+    .getByRole("button", { name: "Start a shift" })
+    .click({ timeout: 150_000 });
+  // empty cups are wrong orders: 0 of 8 right is below PASSING_ORDERS
+  for (let i = 0; i < 8; i++)
+    await panel.getByRole("button", { name: "Hand it over" }).click();
+  await expect(panel).toContainText(/Paid \d+ coins and \d+ Hustle XP/);
+  await expect
+    .poll(() =>
+      page.evaluate(() => localStorage.getItem("daydaze-save-v1") ?? ""),
+    )
+    .toContain('"today":1');
+  const saved: unknown = await page.evaluate((): unknown =>
+    JSON.parse(localStorage.getItem("daydaze-save-v1") ?? "{}"),
+  );
+  expect(saved).toMatchObject({ shifts: { today: 1, worked: {} } });
+  expect(errors).toEqual([]);
+});
+
 test("Espresso Lab: a finished shift posts a pay slip and counts in the save", async ({
   page,
 }) => {
@@ -1976,9 +2003,7 @@ test("Espresso Lab: a finished shift posts a pay slip and counts in the save", a
   await panel
     .getByRole("button", { name: "Start a shift" })
     .click({ timeout: 150_000 });
-  // empty cups are wrong orders: the shift still ends and is logged
-  for (let i = 0; i < 8; i++)
-    await panel.getByRole("button", { name: "Hand it over" }).click();
+  await completeBaristaShift(panel);
   await expect(panel).toContainText(/Paid \d+ coins and \d+ Hustle XP/);
   await expect
     .poll(() =>
@@ -2002,8 +2027,7 @@ test("Espresso Lab: the shift that reaches a new rank posts a promotion", async 
   await panel
     .getByRole("button", { name: "Start a shift" })
     .click({ timeout: 150_000 });
-  for (let i = 0; i < 8; i++)
-    await panel.getByRole("button", { name: "Hand it over" }).click();
+  await completeBaristaShift(panel);
   await expect(panel).toContainText(
     "Promoted to Cafe · Counter hand! +50 coins",
   );
@@ -3567,6 +3591,9 @@ test("the Galleria: buy at Glitterbox and Platform Palace, and wear them", async
   await expect(row.getByRole("button", { name: "Wear" })).toBeVisible();
   await shop.getByRole("button", { name: "Close" }).click();
   await expect(shop).toBeHidden();
+  await expect(
+    page.getByRole("button", { name: "Shop at Glitterbox" }),
+  ).toBeFocused();
   // Platform Palace next door: the boots are 55, all that's left
   await page.getByRole("button", { name: "Shop at Platform Palace" }).click();
   const shoes = page.getByRole("dialog", { name: "Platform Palace" });
@@ -3578,6 +3605,11 @@ test("the Galleria: buy at Glitterbox and Platform Palace, and wear them", async
       page.evaluate(() => localStorage.getItem("daydaze-save-v1") ?? ""),
     )
     .toContain('"shoes":"boots"');
+  await page.keyboard.press("Escape");
+  await expect(shoes).toBeHidden();
+  await expect(
+    page.getByRole("button", { name: "Shop at Platform Palace" }),
+  ).toBeFocused();
   expect(errors).toEqual([]);
 });
 
