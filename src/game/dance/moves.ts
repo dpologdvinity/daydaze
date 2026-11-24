@@ -1224,6 +1224,8 @@ export const GAME_CLIP_IDS = [
   "farm-harvest",
   "climb",
   "throw",
+  "fishing-cast",
+  "fishing-idle",
 ] as const satisfies readonly DanceMoveId[];
 
 /** One of the game clips. */

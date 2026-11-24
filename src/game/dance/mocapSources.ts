@@ -137,6 +137,8 @@ export const MOCAP_SOURCES: Readonly<Record<string, string>> = {
   jump: "Mixamo Jumping-And-Landing-In-Place",
   "jump-ual": "UAL Jump_Start",
   "land-ual": "UAL Jump_Land",
+  "fishing-cast": "Mixamo Fishing-Cast_Fishing-Cast-And-Reel-In",
+  "fishing-idle": "Mixamo Fishing-Idle_Fishing-Idle",
   "talk-two-hands": "Mixamo Talking_Asking-A-Question-With-Two-Hands",
   "talk-ask": "Mixamo Talking_Asking-A-Question",
   "talk-argue": "Mixamo Standing-Arguing_Standing-Arguing-With-Another-Person",
