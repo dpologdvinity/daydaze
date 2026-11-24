@@ -40,6 +40,8 @@ const ROOM_SHOT_ALIASES: Readonly<Record<string, string>> = {
 
 /** Folders outside rooms/ that each show one representative shot. */
 const AREA_SHOTS: readonly (readonly [RegExp, string])[] = [
+  [/^src\/client\/city\/Rain\.tsx$/, "city-boardwalk-rain"],
+  [/^src\/client\/city\/wetSurface\.ts$/, "city-neon-rain"],
   [/^src\/(client|game)\/(city|world)\//, "city-day"],
   // the closet's wardrobe pickers and the rules behind them
   [/^src\/game\/closet/, "closet-find"],

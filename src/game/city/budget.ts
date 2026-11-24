@@ -649,7 +649,8 @@ export function lowTierCost(
     grown.set(g.kind, n + 1);
     add(growthModel(g.kind));
   }
-  let drawCalls = EL_DRAW_CALLS + WEAR_DRAW_CALLS + drawCallsOf(plan);
+  // Reserve one draw for the rain batch on a wet day. It draws lines only.
+  let drawCalls = 1 + EL_DRAW_CALLS + WEAR_DRAW_CALLS + drawCallsOf(plan);
   const allDream = plan.dream.reduce((n, s) => n + dreamTriangles(s), 0);
   // The overview camera can see architecture on every side of the player.
   // Price all of it there, rather than a street camera's directional wedge.
