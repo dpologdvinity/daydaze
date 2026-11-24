@@ -2628,6 +2628,15 @@ const SHOTS: {
     name: "rank-up",
     query: "room=karaoke",
     act: async (page) => {
+      await page.addInitScript(() => {
+        const native = window.setTimeout.bind(window);
+        const slowBubble = (
+          handler: TimerHandler,
+          ms?: number,
+          ...args: unknown[]
+        ) => native(handler, ms === 6000 ? 600_000 : ms, ...args);
+        Reflect.set(window, "setTimeout", slowBubble);
+      });
       await page.evaluate(() => {
         const key = "daydaze-save-v1";
         const parsed: unknown = JSON.parse(localStorage.getItem(key) ?? "{}");
@@ -2662,6 +2671,15 @@ const SHOTS: {
     query: "room=karaoke",
     act: async (page) => {
       await page.emulateMedia({ reducedMotion: "reduce" });
+      await page.addInitScript(() => {
+        const native = window.setTimeout.bind(window);
+        const slowBubble = (
+          handler: TimerHandler,
+          ms?: number,
+          ...args: unknown[]
+        ) => native(handler, ms === 6000 ? 600_000 : ms, ...args);
+        Reflect.set(window, "setTimeout", slowBubble);
+      });
       await page.evaluate(() => {
         const key = "daydaze-save-v1";
         const parsed: unknown = JSON.parse(localStorage.getItem(key) ?? "{}");
