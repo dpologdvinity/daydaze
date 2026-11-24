@@ -9,18 +9,21 @@ import {
   readMeters,
   soberMeters,
   spent,
+  takeWeedHint,
   type Dose,
   type HighLook,
   type Meters,
   type Strain,
   type Taken,
 } from "../../game/effects/substances.ts";
+import { hasAlcohol } from "./drunk.ts";
 
 const taken: Taken[] = [];
 /** Seconds of play: doses are timed on it, so a hidden tab doesn't age them. */
 let clock = 0;
 const meters: Meters = soberMeters();
 const listeners = new Set<() => void>();
+let doseToastListener: ((text: string) => void) | null = null;
 const changed = () => {
   for (const listen of listeners) listen();
 };
@@ -45,9 +48,18 @@ export const getMeters = (): Readonly<Meters> => meters;
  * hybrid). Returns whether it was taken. */
 export function take(dose: Dose, strain?: Strain): boolean {
   if (!allows(activeTier(), "drugs")) return false;
+  const hint = takeWeedHint(dose, taken, clock, hasAlcohol());
   taken.push(strain ? { dose, at: clock, strain } : { dose, at: clock });
   changed();
+  if (hint) doseToastListener?.(hint);
   return true;
+}
+
+/** Registers a listener to show harm-reduction hints when doses are taken. */
+export function setDoseToastListener(
+  listener: ((text: string) => void) | null,
+): void {
+  doseToastListener = listener;
 }
 
 /** How many doses are still working (read by tests). */

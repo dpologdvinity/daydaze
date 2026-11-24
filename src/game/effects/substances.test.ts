@@ -19,6 +19,7 @@ import {
   isStrain,
   jawClench,
   paceBoost,
+  panicHint,
   phaseOf,
   profileOf,
   pupilDilation,
@@ -32,6 +33,7 @@ import {
   STRAINS,
   strongest,
   SUBSTANCES,
+  takeWeedHint,
   type Substance,
   type Taken,
 } from "./substances.ts";
@@ -547,6 +549,73 @@ test("the dry-mouth hint shows once, as the weed peaks", () => {
   m.high = { level: 0.5, phase: "comedown", strain: "hybrid" };
   assert.equal(dryMouthHint("peak", m), null);
   assert.equal(dryMouthHint(null, soberMeters()), null);
+});
+
+test("an edible gives a tip to start low, and warns if redosing before the first lands", () => {
+  const t = 1000;
+  // first edible: tip to wait / start low, go slow
+  assert.equal(
+    takeWeedHint("edible", [], t),
+    "Edibles take up to 2 hours. Start low, go slow.",
+  );
+
+  // second edible taken before first lands (onset is ~198 play seconds)
+  const pending: Taken[] = [{ dose: "edible", at: t - 50 }];
+  assert.equal(
+    takeWeedHint("edible", pending, t),
+    "Edibles take up to 2 hours. Don't take another one yet.",
+  );
+
+  // after first edible lands (e.g. 300 play seconds in), no redose warning
+  const landed: Taken[] = [{ dose: "edible", at: t - 300 }];
+  assert.equal(
+    takeWeedHint("edible", landed, t),
+    "Edibles take up to 2 hours. Start low, go slow.",
+  );
+
+  // a smoked joint does not give an edible warning
+  assert.equal(takeWeedHint("joint", pending, t), null);
+  // non-weed doses return null
+  assert.equal(takeWeedHint("pill", pending, t), null);
+});
+
+test("taking weed while buzzed warns that weed then drink is gentler", () => {
+  const t = 1000;
+  assert.equal(
+    takeWeedHint("joint", [], t, 0.2),
+    "Weed then drink is gentler than drink then weed.",
+  );
+  assert.equal(
+    takeWeedHint("vape", [], t, 0.1),
+    "Weed then drink is gentler than drink then weed.",
+  );
+  // unlanded edible redose warning takes priority over buzz warning
+  const pending: Taken[] = [{ dose: "edible", at: t - 50 }];
+  assert.equal(
+    takeWeedHint("edible", pending, t, 0.2),
+    "Edibles take up to 2 hours. Don't take another one yet.",
+  );
+  // but first edible while buzzed gives the combo warning
+  assert.equal(
+    takeWeedHint("edible", [], t, 0.2),
+    "Weed then drink is gentler than drink then weed.",
+  );
+});
+
+test("panic hint triggers when weed level crosses into heavy high", () => {
+  const m = soberMeters();
+  m.high = { level: 0.85, phase: "peak", strain: "hybrid" };
+  assert.equal(
+    panicHint(0.7, m),
+    "Panicking? Sit, breathe, have a snack and some water; it passes.",
+  );
+  // does not re-trigger while level stays high
+  assert.equal(panicHint(0.85, m), null);
+  // does not trigger when sober or low
+  assert.equal(panicHint(0, soberMeters()), null);
+  const low = soberMeters();
+  low.high = { level: 0.5, phase: "peak", strain: "hybrid" };
+  assert.equal(panicHint(0.4, low), null);
 });
 
 test("pupils open and the jaw sets by the research's table: molly most, weed not at all", () => {
