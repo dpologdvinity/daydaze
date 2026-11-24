@@ -427,15 +427,15 @@ test("the closet shows unowned garments dimmed with shop price and opens the sho
   });
   await page.getByRole("tab", { name: "Outfit", exact: true }).click();
   // an unowned boutique garment is visible in its row with price and shop link
-  const link = page.getByRole("link", {
+  const shopButton = page.getByRole("button", {
     name: "Velour zip hoodie, 60 coins at Glitterbox",
     exact: true,
   });
-  await expect(link).toBeVisible();
-  await expect(link).toHaveClass(/unowned/);
-  await expect(link).toHaveClass(/dimmed/);
-  // clicking the link opens the boutique counter
-  await link.click();
+  await expect(shopButton).toBeVisible();
+  await expect(shopButton).toHaveClass(/unowned/);
+  await expect(shopButton).toHaveClass(/dimmed/);
+  // clicking the button opens the boutique counter
+  await shopButton.click();
   const shop = page.getByRole("dialog", { name: "Glitterbox", exact: true });
   await expect(shop).toBeVisible();
   await expect(shop.getByRole("heading", { name: "Glitterbox" })).toBeVisible();

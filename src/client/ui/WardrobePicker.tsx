@@ -166,12 +166,11 @@ export function WardrobePicker({
                   const item = garmentShopItem(g);
                   const store = item ? shopName(item.store) : "Shop";
                   return (
-                    <a
+                    <button
                       key={g.id}
-                      href="#shop"
+                      type="button"
                       className="chip unowned dimmed"
-                      onClick={(e) => {
-                        e.preventDefault();
+                      onClick={() => {
                         if (item) openShop(item.store, store);
                       }}
                       aria-label={`${g.label}, ${price} coins at ${store}`}
@@ -182,7 +181,7 @@ export function WardrobePicker({
                         <span className="chip-price">{price} coins</span>
                       )}
                       <span className="chip-shop">Shop</span>
-                    </a>
+                    </button>
                   );
                 })}
               </div>
