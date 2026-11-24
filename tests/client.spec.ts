@@ -444,6 +444,39 @@ test("the closet shows unowned garments dimmed with shop price and opens the sho
   expect(errors).toEqual([]);
 });
 
+test("the closet shows unowned whole outfits dimmed with shop price and opens the shop", async ({
+  page,
+}) => {
+  test.setTimeout(300_000);
+  const errors = collectErrors(page);
+  await page.goto(VELVET);
+  await page
+    .getByRole("button", { name: "Dressing room", exact: true })
+    .click();
+  await expect(canvasOf(page)).toHaveAttribute("data-studio", "ready", {
+    timeout: 150_000,
+  });
+  await page.getByRole("tab", { name: "Outfit", exact: true }).click();
+  // an unowned boutique whole outfit is visible in the Outfit radiogroup with price and shop link
+  const outfitButton = page
+    .getByRole("radiogroup", { name: "Outfit", exact: true })
+    .getByRole("button", {
+      name: "Y2K velour tracksuit, 60 coins at Glitterbox",
+      exact: true,
+    });
+  await expect(outfitButton).toBeVisible();
+  await expect(outfitButton).toHaveClass(/unowned/);
+  await expect(outfitButton).toHaveClass(/dimmed/);
+  // clicking the tile opens the boutique counter
+  await outfitButton.click();
+  const shop = page.getByRole("dialog", { name: "Glitterbox", exact: true });
+  await expect(shop).toBeVisible();
+  await expect(shop.getByRole("heading", { name: "Glitterbox" })).toBeVisible();
+  await shop.getByRole("button", { name: "Close", exact: true }).click();
+  await expect(shop).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
 test("expanded face shapes show previews and persist with custom colors", async ({
   page,
 }) => {
