@@ -35,12 +35,14 @@ import {
 import { cleanShifts, NO_SHIFTS, type ShiftsSave } from "./shifts.ts";
 import { cleanStreak, NO_STREAK, type StreakSave } from "./streakSave.ts";
 import { cleanBests, type Bests } from "./prizes.ts";
+import { cleanNpcMemories, type NpcMemories } from "./npcMemory.ts";
 import { validatePet, type PetSave } from "./pet.ts";
 import { cleanParkedCar, type ParkedCar } from "./city/drive.ts";
 import { cleanGarage, STARTER } from "./garage.ts";
 import { cleanGraphics, defaultGraphics, type Graphics } from "./graphics.ts";
 import { cleanRecords, type RecordId } from "./records.ts";
 import { cleanWardrobe, unlockedLook } from "./shop.ts";
+import { cleanCloset, NO_CLOSET, type ClosetSave } from "./closet.ts";
 import { isCoins, STARTING_COINS } from "./wallet.ts";
 import {
   cleanProgression,
@@ -58,6 +60,8 @@ export type SaveV1 = {
   /** Shop items the player owns; unowned shop looks are never worn. */
   wardrobe: string[];
   body: BodyShape;
+  /** Favorite garments and saved outfits (closet.ts); older saves start empty. */
+  closet: ClosetSave;
   settings: {
     /** The Graphics menu: a preset or custom switches (graphics.ts). */
     graphics: Graphics;
@@ -108,6 +112,8 @@ export type SaveV1 = {
   streak: StreakSave;
   /** Paid shifts worked (shifts.ts); saves from before jobs start with none. */
   shifts: ShiftsSave;
+  /** What recurring NPCs remember of you (npcMemory.ts); none before it. */
+  npcs: NpcMemories;
 };
 
 /** The localStorage key the save lives under. */
@@ -126,6 +132,7 @@ export function createDefaultSave(name: string): SaveV1 {
     coins: STARTING_COINS,
     wardrobe: [],
     body: { ...DEFAULT_BODY },
+    closet: { ...NO_CLOSET, favorites: [], outfits: [] },
     settings: {
       graphics: defaultGraphics(),
       muted: false,
@@ -155,6 +162,7 @@ export function createDefaultSave(name: string): SaveV1 {
     garden: createDefaultGarden(),
     inventory: {},
     giftDay: 0,
+    npcs: {},
   };
 }
 
@@ -208,6 +216,7 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
     coins: isCoins(coins) ? coins : defaults.coins,
     wardrobe,
     body: cleanBody(save.get("body")),
+    closet: cleanCloset(save.get("closet")),
     settings: {
       graphics,
       muted: typeof muted === "boolean" ? muted : defaults.settings.muted,
@@ -253,6 +262,7 @@ export function loadSave(raw: string | null, fallbackName: string): SaveV1 {
     giftDay: cleanGiftDay(save.get("giftDay")),
     streak: cleanStreak(save.get("streak")),
     shifts: cleanShifts(save.get("shifts")),
+    npcs: cleanNpcMemories(save.get("npcs")),
   };
 }
 

@@ -46,21 +46,10 @@ PACKS = {
 #   ratio: Decimate ratio for cards that are denser than they need to be
 STYLES = {
     # women's, longest first
-    "rapunzel": ("p2", 110, {}),
-    "long-waves": ("p2", 109, {}),
-    "fishtail": ("p3", 301, {"swing": (0.0, 0.075, -0.03)}),
-    "layered-long": ("p1", 1, {}),
-    "sleek-side": ("p2", 104, {}),
     "high-pony": ("p2", 105, {"swing": (0.0, 0.07, 0.07)}),
-    "twin-tails": ("p2", 107, {}),
-    "blunt-bob": ("p2", 106, {}),
-    "side-fringe": ("p2", 101, {}),
     # short cuts, for either sex
     "side-part": ("p1", 2, {}),
-    "tousled": ("p1", 3, {}),
     "messy-curls": ("p2", 102, {}),
-    "crew": ("p3", 201, {"solid_scalp": True}),
-    "slick-back": ("p3", 200, {}),
     "mop": ("p1", 5, {}),
     "pompadour": ("p1", 8, {}),
     "mohawk": ("p1", 9, {}),

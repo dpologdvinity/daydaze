@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState } from "react";
 import { payoutFor, type PayGrade } from "../../game/wallet.ts";
 import { Dialog } from "../Dialog.tsx";
+import { hostLine, hostMoment } from "./host.ts";
 import {
   answer,
   correct,
@@ -22,6 +23,8 @@ import "./Trivia.css";
 type Result = { grade: PayGrade; score: number };
 type Props = {
   onClose: (result: Result | null) => void;
+  /** A trivia night round: the quiz host talks you through it. */
+  hosted?: boolean;
   reducedMotion?: boolean;
 };
 
@@ -33,11 +36,17 @@ const REVEAL_MS = 1400;
  * answers each, fifteen seconds a question. The cabinet pays on how many
  * you get right.
  */
-export function Trivia({ onClose }: Props) {
+export function Trivia({ onClose, hosted = false }: Props) {
   const [game, setGame] = useState<Game | null>(null);
   const [left, setLeft] = useState(SECONDS);
   /** The pick being revealed (right answer lit), or null while asking. */
   const [shown, setShown] = useState<number | null>(null);
+  /** What the host just said, on a trivia night. */
+  const [hostSays, setHostSays] = useState<string | null>(() =>
+    hosted ? hostLine("open", Math.floor(Math.random() * 1e9)) : null,
+  );
+  /** The game's seed, which also picks the host's final line. */
+  const seed = useRef(0);
   const best = useRef<Result | null>(null);
   const startRef = useRef<HTMLButtonElement>(null);
 
@@ -65,11 +74,20 @@ export function Trivia({ onClose }: Props) {
   const pick = (choice: number) => {
     if (!game || shown !== null || done) return;
     setShown(choice);
+    if (hosted)
+      setHostSays(
+        hostLine(
+          choice === current(game)?.right ? "right" : "wrong",
+          game.picks.length,
+        ),
+      );
     window.setTimeout(() => {
       const next = answer(game, choice);
       setShown(null);
       setGame(next);
       if (over(next)) {
+        if (hosted)
+          setHostSays(hostLine(hostMoment(correct(next)), seed.current));
         const r = { score: correct(next), grade: grade(correct(next)) };
         if (!best.current || payoutFor(r.grade) > payoutFor(best.current.grade))
           best.current = r;
@@ -77,11 +95,15 @@ export function Trivia({ onClose }: Props) {
     }, REVEAL_MS);
   };
 
-  const start = () => setGame(newGame(Math.floor(Math.random() * 1e9)));
+  const start = () => {
+    seed.current = Math.floor(Math.random() * 1e9);
+    setGame(newGame(seed.current));
+    if (hosted) setHostSays(hostLine("open", seed.current));
+  };
 
   return (
     <Dialog
-      title="Throwback Trivia"
+      title={hosted ? "Trivia Night" : "Throwback Trivia"}
       subtitle="Ten questions from the 2000s."
       className="tt"
       onClose={() => onClose(best.current)}
@@ -101,6 +123,11 @@ export function Trivia({ onClose }: Props) {
             Play
           </button>
         </section>
+      )}
+      {hosted && hostSays && (
+        <p className="tt-host" aria-live="polite">
+          <strong>Host:</strong> {hostSays}
+        </p>
       )}
       {game && card && (
         <section className="tt-play">
@@ -141,7 +168,8 @@ export function Trivia({ onClose }: Props) {
         <section className="tt-result" aria-live="polite">
           <p className="tt-grade">{grade(correct(game))}</p>
           <p>
-            {correct(game)} of {ROUND} right. The arcade pays{" "}
+            {correct(game)} of {ROUND} right.{" "}
+            {hosted ? "The house" : "The arcade"} pays{" "}
             <strong>{payoutFor(grade(correct(game)))} coins</strong>.
           </p>
           <div className="tt-actions">

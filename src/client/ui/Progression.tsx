@@ -3,6 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import { playFanfare } from "../../audio/worldSounds.ts";
 import {
+  CAREERS,
+  CAREER_DEFS,
+  PROMOTION_BONUS,
+  RANK_SHIFTS,
+  RAISE_PER_RANK,
+  careerRank,
+  careerShifts,
+} from "../../game/careers.ts";
+import type { ShiftsSave } from "../../game/shifts.ts";
+import {
   LADDERS,
   RANKS,
   RANK_XP,
@@ -45,9 +55,11 @@ export function ProgressionHud({ progression }: { progression: Progression }) {
 
 export function LadderPanel({
   progression,
+  shifts,
   onTitle,
 }: {
   progression: Progression;
+  shifts: ShiftsSave;
   onTitle: (title: string | null) => void;
 }) {
   return (
@@ -84,6 +96,44 @@ export function LadderPanel({
                   <small>
                     {RANK_XP[index].toLocaleString("en-US")} XP
                     {index > 0 ? ` · +${index * 100} coins` : ""}
+                  </small>
+                </li>
+              ))}
+            </ol>
+          </details>
+        );
+      })}
+      <h3>Careers</h3>
+      <p>Work shifts to get promoted. Every rank pays more.</p>
+      {CAREERS.map((id) => {
+        const def = CAREER_DEFS[id];
+        const rank = careerRank(shifts.worked, id);
+        const worked = careerShifts(shifts.worked, id);
+        const next = RANK_SHIFTS[rank + 1];
+        return (
+          <details key={id} className="ladder" data-career={id}>
+            <summary>
+              <strong>{def.label}</strong>
+              <span>{def.ranks[rank]}</span>
+              <small>
+                {rank + 1} / {def.ranks.length}
+              </small>
+            </summary>
+            <p>{def.where}</p>
+            <p>
+              {next === undefined
+                ? `${worked} shifts worked. Top rank reached`
+                : `${worked} shifts worked. ${next - worked} more to ${def.ranks[rank + 1]}`}
+            </p>
+            <ol>
+              {def.ranks.map((name, index) => (
+                <li key={name} data-earned={index <= rank}>
+                  <span>{name}</span>
+                  <small>
+                    {RANK_SHIFTS[index]} shifts
+                    {index > 0
+                      ? ` · +${Math.round(index * RAISE_PER_RANK * 100)}% pay · +${index * PROMOTION_BONUS} coins`
+                      : ""}
                   </small>
                 </li>
               ))}

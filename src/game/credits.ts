@@ -420,7 +420,7 @@ export const CREDITS: readonly {
         license: "CC-BY 4.0",
         url: "https://sketchfab.com/3d-models/none-41f1709e39e24a3fafdbcd2c2aac72a1",
         usedFor:
-          "Hair-card styles side part, tousled, mop, pompadour, mohawk, spiky crop and layered waves, refitted to our heads, the atlas greyed so hair color tints it (art/doll/blender/pack_hair.py).",
+          "Hair-card styles side part, mop, pompadour, mohawk and spiky crop, refitted to our heads, the atlas greyed so hair color tints it (art/doll/blender/pack_hair.py).",
       },
       {
         title: "Hair Pack (part 2)",
@@ -428,15 +428,7 @@ export const CREDITS: readonly {
         license: "CC-BY 4.0",
         url: "https://sketchfab.com/3d-models/none-06a783e91c194e12a296402453476824",
         usedFor:
-          "Hair-card styles rapunzel, long waves, sleek side-swept, high ponytail, twin tails, blunt bob, side fringe and messy shag, refitted to our heads (art/doll/blender/pack_hair.py).",
-      },
-      {
-        title: "Hair Pack (part 3)",
-        author: "rendysix",
-        license: "CC-BY 4.0",
-        url: "https://sketchfab.com/3d-models/none-9dc99938fab341e29b34354004e230b6",
-        usedFor:
-          "Hair-card styles fishtail braid, crew cut and slick back, refitted to our heads (art/doll/blender/pack_hair.py).",
+          "Hair-card styles high ponytail and messy shag, refitted to our heads (art/doll/blender/pack_hair.py).",
       },
       {
         title: "Bob hair (three cuts)",
@@ -469,6 +461,54 @@ export const CREDITS: readonly {
         url: "https://static.makehumancommunity.org/assets/assetpacks/hair02.html",
         usedFor:
           "Daisy, Katherine, Ashley May, Hazel, Micky Afro, Braided Rows and Maxwell as the Glossy waves, Long and sleek, Shoulder waves, Shoulder-length, Puffs, Cornrows and Quiff hairstyles, fitted to our heads as MakeHuman proxies (art/doll/blender/doll_hair.py).",
+      },
+      {
+        title: "Blunt Bob",
+        author: "MargaretToigo",
+        license: "CC0 1.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/hair01.html",
+        usedFor:
+          "The Blunt bob hairstyle, fitted to our heads as a MakeHuman proxy (art/doll/blender/doll_hair.py).",
+      },
+      {
+        title: "French Braid Variation",
+        author: "Elvaerwyn",
+        license: "CC0 1.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/hair01.html",
+        usedFor:
+          "The French braid hairstyle, fitted to our heads as a MakeHuman proxy (art/doll/blender/doll_hair.py).",
+      },
+      {
+        title: "BobCut Hair",
+        author: "littleright",
+        license: "CC0 1.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/hair01.html",
+        usedFor:
+          "The Shaggy bob hairstyle, fitted to our heads as a MakeHuman proxy (art/doll/blender/doll_hair.py).",
+      },
+      {
+        title: "Hair 02 and Hair 05",
+        author: "culturalibre",
+        license: "CC0 1.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/hair01.html",
+        usedFor:
+          "The Crew cut and Tousled hairstyles (Hair 05 is after swift502's CC0 model on BlendSwap), fitted to our heads as MakeHuman proxies (art/doll/blender/doll_hair.py).",
+      },
+      {
+        title: "Five hairstyles (hair02 pack)",
+        author: "Elvaerwyn",
+        license: "CC-BY 4.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/hair02.html",
+        usedFor:
+          "Adrienne, Island Princess, That 80s Babe, Grump and Braid Bun as the Side-swept long, Rapunzel, Long waves, Slick back and Braided top knot hairstyles, fitted to our heads as MakeHuman proxies (art/doll/blender/doll_hair.py).",
+      },
+      {
+        title: "Hair 17 and 18 (after miccall)",
+        author: "culturalibre, after miccall",
+        license: "CC-BY 4.0",
+        url: "https://static.makehumancommunity.org/assets/assetpacks/hair03.html",
+        usedFor:
+          "The Layered waves and Fringed lob hairstyles, fitted to our heads as MakeHuman proxies (art/doll/blender/doll_hair.py).",
       },
       {
         title: "Realistic Car Pack",
@@ -707,12 +747,76 @@ export const CREDITS: readonly {
           "Zoo savanna giraffes, with a calm idle clip (swayed along when walking).",
       },
       {
-        title: "Hijab",
-        author: "lam_m_zack",
+        title: "Twintail",
+        author: "summer66",
         license: "CC-BY 4.0",
-        url: "https://sketchfab.com/3d-models/hijab-ee50e01adc864ccc880caed9b5eb3bcb",
+        url: "https://sketchfab.com/3d-models/199844b5b2d94e0fb75b0a9e11f2a7b4",
         usedFor:
-          "The closet's hijab: the scarf's drape with its mannequin cut out, scaled and skinned to the doll.",
+          "The Twin tails hairstyle: the hair alone, refitted to our heads, the tails swung behind the shoulders and combed with our strand texture (art/doll/blender/refit_hair.py).",
+      },
+      {
+        title: "Hair - Double Buns",
+        author: "GreedyEngine",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/f77fc793db8c40e09781dccd629b7f1b",
+        usedFor:
+          "The Space buns hairstyle: the hair without its mannequin, refitted to our heads by the mannequin's head (art/doll/blender/refit_hair.py).",
+      },
+      {
+        title: "Bantu Knot Hairstyle (Game Ready)",
+        author: "marvibun",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/cb0690a6891d4d528dc1a6b49702dbd3",
+        usedFor:
+          "The Bantu knots hairstyle, refitted to our heads, the atlas greyed so hair color tints it (art/doll/blender/refit_hair.py).",
+      },
+      {
+        title: "Hijab 1",
+        author: "witmerad",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/6e176f7f54e2429d939db26e90d03396",
+        usedFor:
+          "The closet's hijab, refitted to our heads; the hair color tints the cloth (art/doll/blender/refit_hair.py).",
+      },
+      {
+        title: "Sikh Turban",
+        author: "harsh4756",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/30cddcf08c2e4f0fbdc19eb3ced5ed75",
+        usedFor:
+          "The closet's turban, refitted to our heads; the hair color tints the cloth (art/doll/blender/refit_hair.py).",
+      },
+      {
+        title: "Stylised Pixie Haircut",
+        author: "DLM96",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/247375418ba645a3ab98e62737a47e24",
+        usedFor:
+          "The Pixie hairstyle, refitted to our heads and combed with our strand texture (art/doll/blender/refit_hair.py).",
+      },
+      {
+        title: "Female Hair Ponytail",
+        author: "AlexM777",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/bb4d9bb056d34391b5a9aec8210c38c7",
+        usedFor:
+          "The Low pony hairstyle, refitted to our heads by the head it was made on and combed with our strand texture (art/doll/blender/refit_hair.py).",
+      },
+      {
+        title: "Curly Hair 1 (Beatrice)",
+        author: "continuumreed",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/89ed2c07a0d9418d9d6b231bedf2772a",
+        usedFor:
+          "The Shoulder curls hairstyle, refitted to our heads by its hair cap (art/doll/blender/refit_hair.py).",
+      },
+      {
+        title: "Pocolov Hair 17",
+        author: "pocolov",
+        license: "CC-BY 4.0",
+        url: "https://sketchfab.com/3d-models/605ea5ffc77845cd8b5ffd32b6ef9e77",
+        usedFor:
+          "The Mermaid waves hairstyle: hair cards fitted to our heads by the head they were made on, the atlas greyed so hair color tints it (art/doll/blender/refit_hair.py).",
       },
       {
         title: "Elephant",

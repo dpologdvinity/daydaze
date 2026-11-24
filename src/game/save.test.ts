@@ -4,6 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { DEFAULT_LOOK, DEFAULT_SWIM, type Look } from "./look.ts";
 import { DEFAULT_BODY } from "./body.ts";
+import { encodeWear, outfitWear } from "./wardrobe.ts";
 import { freshProgression } from "./progression/progression.ts";
 import { STARTING_COINS } from "./wallet.ts";
 import { createDefaultFarm } from "./farm.ts";
@@ -39,6 +40,7 @@ test("createDefaultSave uses the default look and auto quality", () => {
     coins: STARTING_COINS,
     wardrobe: [],
     body: DEFAULT_BODY,
+    closet: { favorites: [], outfits: [] },
     settings: {
       graphics: defaultGraphics(),
       muted: false,
@@ -75,6 +77,7 @@ test("createDefaultSave uses the default look and auto quality", () => {
       freezeWeek: -1,
     },
     shifts: { day: 0, today: 0, worked: {} },
+    npcs: {},
   });
 });
 
@@ -92,6 +95,7 @@ test("a save round-trips through serializeSave and loadSave", () => {
     coins: 320,
     wardrobe: [],
     body: DEFAULT_BODY,
+    closet: { favorites: [], outfits: [] },
     settings: {
       graphics: presetGraphics("performance"),
       muted: true,
@@ -137,6 +141,7 @@ test("a save round-trips through serializeSave and loadSave", () => {
       freezeWeek: -1,
     },
     shifts: { day: 0, today: 0, worked: {} },
+    npcs: { "piercing:vix": { visits: 3, last: 40 } },
   };
   assert.deepEqual(loadSave(serializeSave(save), "Fallback"), save);
 });
@@ -186,6 +191,7 @@ test("a save from before the swimsuit slot still loads", () => {
     coins: STARTING_COINS,
     wardrobe: [],
     body: DEFAULT_BODY,
+    closet: { favorites: [], outfits: [] },
     settings: {
       graphics: presetGraphics("performance"),
       muted: true,
@@ -222,6 +228,7 @@ test("a save from before the swimsuit slot still loads", () => {
       freezeWeek: -1,
     },
     shifts: { day: 0, today: 0, worked: {} },
+    npcs: {},
   });
 });
 
@@ -266,6 +273,7 @@ test("loadSave keeps a valid name when the look is bad", () => {
     coins: STARTING_COINS,
     wardrobe: [],
     body: DEFAULT_BODY,
+    closet: { favorites: [], outfits: [] },
     settings: {
       graphics: presetGraphics("balanced"),
       muted: true,
@@ -302,6 +310,7 @@ test("loadSave keeps a valid name when the look is bad", () => {
       freezeWeek: -1,
     },
     shifts: { day: 0, today: 0, worked: {} },
+    npcs: {},
   });
 });
 
@@ -319,6 +328,7 @@ test("loadSave keeps a valid look when the name is bad", () => {
     coins: STARTING_COINS,
     wardrobe: [],
     body: DEFAULT_BODY,
+    closet: { favorites: [], outfits: [] },
     settings: {
       graphics: defaultGraphics(),
       muted: false,
@@ -355,6 +365,7 @@ test("loadSave keeps a valid look when the name is bad", () => {
       freezeWeek: -1,
     },
     shifts: { day: 0, today: 0, worked: {} },
+    npcs: {},
   });
 });
 
@@ -552,6 +563,7 @@ test("loadSave salvages valid fields from a wrong version", () => {
       freezeWeek: -1,
     },
     shifts: { day: 0, today: 0, worked: {} },
+    npcs: {},
   });
 });
 
@@ -857,5 +869,25 @@ test("a saved shift record survives a reload and bad ones are cleaned", () => {
     day: 0,
     today: 0,
     worked: {},
+  });
+});
+
+test("the closet's favorites and outfits round-trip; older or bad ones start empty", () => {
+  const wear = encodeWear(outfitWear("jeans", "#3fe0d0"));
+  const save = {
+    ...createDefaultSave("Kat"),
+    closet: {
+      favorites: ["tee" as const],
+      outfits: [{ name: "Brunch", wear }],
+    },
+  };
+  assert.deepEqual(loadSave(serializeSave(save), "x").closet, save.closet);
+  assert.deepEqual(loadSave(JSON.stringify({ name: "Kat" }), "x").closet, {
+    favorites: [],
+    outfits: [],
+  });
+  assert.deepEqual(loadSave(JSON.stringify({ closet: 7 }), "x").closet, {
+    favorites: [],
+    outfits: [],
   });
 });

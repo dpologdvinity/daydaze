@@ -1,0 +1,27 @@
+# tests
+
+Playwright browser tests, run against the Vite dev server (or a build, or a local Worker). Pure unit tests are not here: they sit beside the code as `*.test.ts` under `src/`, `server/` and `scripts/` and run with `npm test`. Each spec is wired to one Playwright config at the repo root, so each npm command runs only its own specs.
+
+## Files
+
+| File                 | What it does                                                                                                                                                                                                                                                                                                           | Run with                                                  |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `client.spec.ts`     | The 3D client end to end: rooms and venues, city walking and driving, HUD and menus, the closet and dressing room, the walkthrough, midway, zoo, farm and other places, and accessibility (axe) scans. The 18+ cases use the `?adult=1` dev flag. Forces the low quality tier, since headless WebGL is CPU SwiftShader | `npm run test:e2e:client` (`playwright.config.ts`)        |
+| `dream-city.spec.ts` | The city's architecture loads and renders across distinct streets, without shader errors, and keeps every venue door                                                                                                                                                                                                   | `npm run test:e2e:client`                                 |
+| `minigames.spec.ts`  | The 2D minigames served from `/minigames.html`: the DJ booth and the bar (scoring, payout once, keyboard play, reduced motion, audio failure, axe)                                                                                                                                                                     | `npm run test:e2e` (`playwright.minigames.config.ts`)     |
+| `sw.spec.ts`         | The service worker (`public/sw.js`) against a production build: a second visit is served from its cache, and a page from another build never gets this worker's cached art                                                                                                                                             | `npm run test:e2e:sw` (`playwright.sw.config.ts`)         |
+| `online.spec.ts`     | Two players in separate browser contexts against a local Worker: meeting, chat, friends, cards, parties through doors, cars and the Speedway, apartment visits, signup and login, invite links. About 7 minutes                                                                                                        | `npm run test:e2e:online` (`playwright.online.config.ts`) |
+| `online.teardown.ts` | Global teardown for the online suite: deletes its local D1 and Durable Object state                                                                                                                                                                                                                                    | (by the online config)                                    |
+| `dock.ts`            | Helper `dockAction(page, name)`: finds a dock action whether it is the pill or inside the "More actions" menu                                                                                                                                                                                                          | (imported by specs)                                       |
+| `test-map.ts`        | `recordTestMap(test)`: records which source and public files each test loaded, for test selection                                                                                                                                                                                                                      | (called by specs)                                         |
+
+## Test-map selection
+
+PRs run only the browser tests their changes can reach. On `main`, the Tests workflow (`.github/workflows/playwright.yml`) sets `RECORD_TEST_MAP=1`, and `recordTestMap` writes each test's loaded files to `test-map/<shard>-<worker>.jsonl`, which is uploaded as an artifact. On a PR, `scripts/select-tests.ts` reads the latest map and the PR's changed files and prints `all`, `none` or a grep pattern (`PW_GREP` in `playwright.config.ts`). It falls back to `all` when the map cannot vouch for a change. `main` always runs the full suite.
+
+## Notes
+
+- A new spec file in the client suite must call `recordTestMap(test)` like `client.spec.ts` and `dream-city.spec.ts` do.
+- Do not use `waitForTimeout`; wait on `data-*` attributes on the canvas (`data-frames` reaches `10`), and use role locators and the `?debug=1` room buttons.
+- Run only the tests you need locally (for example `npx playwright test -g "<title>"`), or use `gh workflow run browser-test.yml --ref <branch> -f grep="<title>"`. A cold first-run failure is usually a flake; rerun once.
+- Stop dev servers and delete `test-results/` when done.

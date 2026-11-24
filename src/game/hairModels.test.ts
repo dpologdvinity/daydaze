@@ -34,15 +34,39 @@ test("the textured styles are in the closet", () => {
     assert.ok(ids.includes(id), id);
 });
 
-test("every pack hair the Blender build makes is in the closet", () => {
-  const src = readFileSync("art/doll/blender/pack_hair.py", "utf8");
-  const block = src.slice(src.indexOf("STYLES = {"), src.indexOf("# pieces"));
-  const built = [...block.matchAll(/^ {4}"([a-z-]+)": \(/gm)].map((m) => m[1]);
-  // a floor, so a parse that silently matches nothing fails
-  assert.ok(built.length >= 15, `found ${built.length} pack styles`);
+/** The style ids a table in one of the Blender hair scripts builds: each
+ * entry is a line `    "<id>": ...` between `start` and `end`. */
+function builtIds(file: string, start: string, end: string): string[] {
+  const src = readFileSync(`art/doll/blender/${file}`, "utf8");
+  const block = src.slice(src.indexOf(start), src.indexOf(end));
+  return [...block.matchAll(/^ {4}"([a-z-]+)": /gm)].map((m) => m[1] ?? "");
+}
+
+test("every hair the Blender build makes is in the closet", () => {
   const ids: string[] = HAIR_STYLES.map((h) => h.id);
+  for (const [file, start, end, floor] of [
+    ["pack_hair.py", "STYLES = {", "# pieces", 5],
+    ["doll_hair.py", "COMMUNITY = {", "PROXY |=", 20],
+    ["refit_hair.py", "STYLES: dict", "ALPHA_LEVELS =", 8],
+  ] as const) {
+    const built = builtIds(file, start, end);
+    // a floor, so a parse that silently matches nothing fails
+    assert.ok(built.length >= floor, `found ${built.length} in ${file}`);
+    assert.deepEqual(
+      built.filter((id) => !ids.includes(id)),
+      [],
+      file,
+    );
+  }
+});
+
+test("fetch_hair.sh downloads every model refit_hair.py refits", () => {
+  const refit = readFileSync("art/doll/blender/refit_hair.py", "utf8");
+  const fetch = readFileSync("art/doll/blender/fetch_hair.sh", "utf8");
+  const sources = [...refit.matchAll(/"src": "([^"]+)"/g)].map((m) => m[1]);
+  assert.ok(sources.length >= 8, `found ${sources.length} sources`);
   assert.deepEqual(
-    built.filter((id) => !ids.includes(id)),
+    sources.filter((src) => !fetch.includes(`"${src ?? ""} `)),
     [],
   );
 });

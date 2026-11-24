@@ -73,3 +73,17 @@ test("the closet's wardrobe code maps to the closet shot", () => {
     ["closet-wardrobe"],
   );
 });
+
+test("the hunger and thirst HUD maps to its own shot", () => {
+  assert.deepEqual(
+    pickShots(["src/game/food/needs.ts"], [...KNOWN, "hungry-hud"]),
+    ["hungry-hud"],
+  );
+});
+
+test("the weekly boards panel shows its own shot, not the generic HUD one", () => {
+  assert.deepEqual(
+    pickShots(["src/client/ui/WeeklyBoards.tsx"], [...KNOWN, "weekly-board"]),
+    ["weekly-board"],
+  );
+});

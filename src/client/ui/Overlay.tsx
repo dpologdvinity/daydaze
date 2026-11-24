@@ -5,8 +5,11 @@
 // restores the old view on close.
 
 import { byTier } from "../../game/age.ts";
+import type { ClosetSave } from "../../game/closet.ts";
+import type { ShiftsSave } from "../../game/shifts.ts";
 import type { Progression } from "../../game/progression/progression.ts";
 import { ProgressionHud, LadderPanel } from "./Progression.tsx";
+import { WeeklyBoards } from "./WeeklyBoards.tsx";
 import { ActionDock, DockAction } from "./ActionDock.tsx";
 import { LazyPanel } from "./ReloadBoundary.tsx";
 import { ClubNightTicker } from "./EventCalendar.tsx";
@@ -294,6 +297,7 @@ export function Overlay({
   setSwim,
   coins,
   progression,
+  shifts,
   onTitle,
   wardrobe,
   onBuy,
@@ -302,6 +306,8 @@ export function Overlay({
   onCaught,
   body,
   setBody,
+  closet,
+  setCloset,
   onRide,
   onPlayGame,
   onCityTravel,
@@ -340,6 +346,7 @@ export function Overlay({
   setSwim: (swim: SwimLook) => void;
   coins: number;
   progression: Progression;
+  shifts: ShiftsSave;
   onTitle: (title: string | null) => void;
   wardrobe: readonly string[];
   onBuy: (id: string, store?: ShopId, day?: number) => PurchaseResult;
@@ -348,6 +355,8 @@ export function Overlay({
   onCaught: (caught: Caught) => void;
   body: BodyShape;
   setBody: (body: BodyShape) => void;
+  closet: ClosetSave;
+  setCloset: (closet: ClosetSave) => void;
   onRide: () => void;
   onPlayGame: (game: MinigameId) => void;
   /** Fast travel within the city, from the city map. */
@@ -464,6 +473,8 @@ export function Overlay({
               wardrobe={wardrobe}
               body={body}
               setBody={setBody}
+              closet={closet}
+              setCloset={setCloset}
               effects={effects}
               setEffects={setEffects}
               highAudio={highAudio}
@@ -730,7 +741,12 @@ export function Overlay({
             options={PLAYER_MOODS}
           />
           <GameMenu graphics={graphics} setGraphics={setGraphics}>
-            <LadderPanel progression={progression} onTitle={onTitle} />
+            <LadderPanel
+              progression={progression}
+              shifts={shifts}
+              onTitle={onTitle}
+            />
+            <WeeklyBoards />
             <div className="game-menu-items" role="group" aria-label="Game">
               <button
                 type="button"

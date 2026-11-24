@@ -3,15 +3,22 @@
 // the saved end time, so reloads resume it; release fires once the time reaches
 // zero.
 
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import {
   bailCost,
   bailOut,
   goodBehavior,
   remainingMs,
+  rhythmService,
   type JailSave,
 } from "../../game/jail/jail.ts";
 import { CardTable } from "./CardTable.tsx";
+
+const Bassline = lazy(() =>
+  import("../../minigames/bassline/Bassline.tsx").then((m) => ({
+    default: m.Bassline,
+  })),
+);
 
 function clock(ms: number): string {
   const total = Math.ceil(ms / 1000);
@@ -37,6 +44,7 @@ export function JailHud({
   const [now, setNow] = useState(() => Date.now());
   const [note, setNote] = useState("");
   const [cards, setCards] = useState(false);
+  const [rhythm, setRhythm] = useState(false);
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 500);
     return () => window.clearInterval(id);
@@ -48,6 +56,11 @@ export function JailHud({
   useEffect(() => {
     if (done) onRelease();
   }, [done, onRelease]);
+
+  const shorten = (next: JailSave) => {
+    onChange(next);
+    if (next.endsAt === null) onRelease();
+  };
 
   return (
     <section className="home-panel jail-hud" aria-label="Your sentence">
@@ -65,7 +78,7 @@ export function JailHud({
         type="button"
         disabled={!serving || done}
         onClick={() => {
-          onChange(goodBehavior(jail, Date.now()));
+          shorten(goodBehavior(jail, Date.now()));
           setNote("Push-ups in the yard: 30 seconds off.");
         }}
       >
@@ -89,12 +102,39 @@ export function JailHud({
       >
         Use the phone: bail ({bailCost(jail, now)} coins)
       </button>
+      <button
+        type="button"
+        disabled={!serving || done || cards || rhythm}
+        onClick={() => setRhythm(true)}
+      >
+        Play a rhythm set for time off
+      </button>
+      {rhythm && serving && !done && (
+        <Suspense fallback={null}>
+          <Bassline
+            onClose={(result) => {
+              setRhythm(false);
+              const next = rhythmService(
+                jail,
+                Date.now(),
+                result?.grade ?? null,
+              );
+              if (next === jail) {
+                setNote("Earn a B or better to take a minute off.");
+              } else {
+                shorten(next);
+                setNote("Community service: a minute off.");
+              }
+            }}
+          />
+        </Suspense>
+      )}
       {cards && serving && !done && (
         <CardTable
           onWin={() => {
             const t = Date.now();
             // a win at cards is a minute's good behavior
-            onChange(goodBehavior(goodBehavior(jail, t), t));
+            shorten(goodBehavior(goodBehavior(jail, t), t));
             setNote("You beat the guard at cards: a minute off.");
           }}
           onClose={() => setCards(false)}

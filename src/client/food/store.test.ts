@@ -14,6 +14,7 @@ import {
   tickNeeds,
   consumeFood,
   showToast,
+  weedFelt,
 } from "./store.ts";
 import { take, ageHigh, getMeters } from "../effects/high.ts";
 import { FOOD_VENUES, foodVenuesFor } from "../../game/food/venues.ts";
@@ -108,7 +109,7 @@ test("food and water satisfy weed needs, including a delivered meal, without sob
   resetFood();
 });
 
-test("alcohol does not satisfy dry mouth, and the teen gate clears needs", () => {
+test("alcohol does not satisfy dry mouth, and 13+ gets no weed boost", () => {
   resetFood();
   setActiveTier("adult");
   take("joint");
@@ -123,13 +124,32 @@ test("alcohol does not satisfy dry mouth, and the teen gate clears needs", () =>
   eatHeld();
   assert.deepEqual(getFoodState().needs, before);
   assert.equal(getFoodState().toast, null);
-  setActiveTier("teen");
-  tickNeeds(60);
-  assert.deepEqual(getFoodState().needs, { hunger: 0, thirst: 0 });
-  consumeFood("drink");
-  assert.equal(getFoodState().toast, null);
   ageHigh(100_000);
+  setActiveTier("teen");
+  resetFood();
+  tickNeeds(60); // plain hunger and thirst only, a sliver
+  const { hunger, thirst } = getFoodState().needs;
+  assert.ok(hunger > 0 && hunger < 0.05);
+  assert.ok(thirst > hunger && thirst < 0.1);
+  consumeFood("drink");
+  assert.equal(getFoodState().toast, null, "a quiet sip says nothing");
+  assert.equal(getFoodState().needs.thirst, 0);
   ageBuzz(100_000);
+  resetFood();
+});
+
+test("a hungry 13+ player is eased by food, with a line", () => {
+  resetFood();
+  setActiveTier("teen");
+  tickNeeds(1); // 13+ drift only: far under the weed pace
+  tickNeeds(1800);
+  assert.equal(getFoodState().needs.hunger, 1);
+  assert.equal(weedFelt(), false);
+  eatHeld(); // nothing held: inert
+  holdItem(item);
+  eatHeld();
+  assert.ok(getFoodState().needs.hunger < 0.4);
+  assert.match(getFoodState().toast ?? "", /hit the spot/);
   resetFood();
 });
 
