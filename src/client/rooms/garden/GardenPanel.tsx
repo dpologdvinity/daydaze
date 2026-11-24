@@ -12,7 +12,7 @@ import {
 import { readFlags } from "../../flags.ts";
 import { useGardenState } from "./gardenSession.ts";
 
-const DEBUG = readFlags(location.search).debug;
+const DEBUG = readFlags().debug;
 
 export function GardenPanel(): JSX.Element {
   const { garden, coins, claim, plant, water, harvest, skipTime } =
