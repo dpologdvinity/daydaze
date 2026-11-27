@@ -3307,7 +3307,9 @@ test("larkspur forest trail: cast and leave fishing", async ({ page }) => {
   const panel = page.getByRole("region", { name: "Fishing" });
   await panel.getByRole("button", { name: "Go fishing" }).click();
   await panel.getByRole("button", { name: "Cast", exact: true }).click();
-  await panel.getByRole("button", { name: "Strike!" }).click();
+  const strikeBtn = panel.getByRole("button", { name: "Strike!" });
+  await expect(strikeBtn).toBeVisible({ timeout: 60_000 });
+  await strikeBtn.click();
   await expect(panel.getByRole("status")).toHaveText(/spooked|got away|kg/, {
     timeout: 120_000,
   });
