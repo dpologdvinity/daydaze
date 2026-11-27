@@ -1,7 +1,7 @@
 // The Open Water room: a sandy shore running out to sea, with lane buoys, a
 // dive buoy, a beach shack and sea life.
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
-import { useEffect, useMemo } from "react";
+import { Suspense, useEffect, useMemo } from "react";
 import * as THREE from "three";
 import {
   DIVE_BUOY,
@@ -20,6 +20,9 @@ import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { TalkingNpc } from "./shared/TalkingNpc.tsx";
 import { SeaLife } from "./ocean/SeaLife.tsx";
+import { Prop } from "./shared/Prop.tsx";
+import { Fishing } from "./shared/Fishing.tsx";
+import type { Player } from "../world/PlayerController.tsx";
 
 const SEA_LENGTH = SHORE_Z - SEA.far;
 
@@ -197,7 +200,13 @@ function SeaSurface({ onPick }: { onPick: PickHandler }) {
  * the dive shack, then the sea: wade in, swim out among schools of fish and
  * the dolphin pod, and swim into the red buoy (with rented gear) to dive.
  */
-export function OpenWater({ onPick }: { onPick: PickHandler }) {
+export function OpenWater({
+  onPick,
+  player,
+}: {
+  onPick: PickHandler;
+  player?: Player;
+}) {
   const bed = useMemo(seabed, []);
   useEffect(() => () => bed.dispose(), [bed]);
   return (
@@ -231,6 +240,18 @@ export function OpenWater({ onPick }: { onPick: PickHandler }) {
       <Shack />
       <Buoys />
       <SeaLife />
+      <Suspense fallback={null}>
+        <Prop
+          model="rowboat"
+          dir="park"
+          width={1.8}
+          depth={3.5}
+          height={1.0}
+          position={[-14, 0.05, 0.5]}
+          yaw={Math.PI}
+        />
+        {player && <Fishing player={player} spot="open-water" />}
+      </Suspense>
       <TalkingNpc
         name="Kai"
         role="lifeguard"

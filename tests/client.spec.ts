@@ -3278,6 +3278,67 @@ test("the boardwalk pier: cast and leave fishing", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("sunny acres farm: cast and leave fishing", async ({ page }) => {
+  test.setTimeout(300_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=farm`);
+  await expect(canvasOf(page)).toHaveAttribute("data-frames", "10");
+  await page
+    .getByRole("group", { name: "Games here" })
+    .getByRole("button", { name: "Fishing", exact: true })
+    .click();
+  const panel = page.getByRole("region", { name: "Fishing" });
+  await panel.getByRole("button", { name: "Go fishing" }).click();
+  await panel.getByRole("button", { name: "Cast", exact: true }).click();
+  await panel.getByRole("button", { name: "Strike!" }).click();
+  await expect(panel.getByRole("status")).toHaveText(/spooked|got away|kg/, {
+    timeout: 120_000,
+  });
+  await panel.getByRole("button", { name: "Reel in and leave" }).click();
+  await expect(panel.getByRole("button", { name: "Go fishing" })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("larkspur forest trail: cast and leave fishing", async ({ page }) => {
+  test.setTimeout(300_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=forest`);
+  await expect(canvasOf(page)).toHaveAttribute("data-frames", "10");
+  const panel = page.getByRole("region", { name: "Fishing" });
+  await panel.getByRole("button", { name: "Go fishing" }).click();
+  await panel.getByRole("button", { name: "Cast", exact: true }).click();
+  const strikeBtn = panel.getByRole("button", { name: "Strike!" });
+  await expect(strikeBtn).toBeVisible({ timeout: 60_000 });
+  await strikeBtn.click();
+  await expect(panel.getByRole("status")).toHaveText(/spooked|got away|kg/, {
+    timeout: 120_000,
+  });
+  await panel.getByRole("button", { name: "Reel in and leave" }).click();
+  await expect(panel.getByRole("button", { name: "Go fishing" })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("open water: cast and leave fishing", async ({ page }) => {
+  test.setTimeout(300_000);
+  const errors = collectErrors(page);
+  await page.goto(`${LOW}&room=open-water`);
+  await expect(canvasOf(page)).toHaveAttribute("data-frames", "10");
+  await page
+    .getByRole("group", { name: "Games here" })
+    .getByRole("button", { name: "Fishing", exact: true })
+    .click();
+  const panel = page.getByRole("region", { name: "Fishing" });
+  await panel.getByRole("button", { name: "Go fishing" }).click();
+  await panel.getByRole("button", { name: "Cast", exact: true }).click();
+  await panel.getByRole("button", { name: "Strike!" }).click();
+  await expect(panel.getByRole("status")).toHaveText(/spooked|got away|kg/, {
+    timeout: 120_000,
+  });
+  await panel.getByRole("button", { name: "Reel in and leave" }).click();
+  await expect(panel.getByRole("button", { name: "Go fishing" })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test("city fishing and driving do not take the player at the same time", async ({
   page,
 }) => {

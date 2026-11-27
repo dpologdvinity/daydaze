@@ -131,9 +131,18 @@ const PANELS: Partial<Record<RoomId, ComponentType>> = {
       panel(() => import("../rooms/icerink/CurlingPanel.tsx"), "CurlingPanel"),
     ],
   ),
-  "open-water": panel(
-    () => import("../rooms/ocean/ShackPanel.tsx"),
-    "ShackPanel",
+  "open-water": games(
+    [
+      "Dive shack",
+      panel(() => import("../rooms/ocean/ShackPanel.tsx"), "ShackPanel"),
+    ],
+    [
+      "Fishing",
+      panel(
+        () => import("../rooms/marina/FishingPanel.tsx"),
+        "OpenWaterFishingPanel",
+      ),
+    ],
   ),
   "reef-dive": panel(() => import("../rooms/ocean/DivePanel.tsx"), "DivePanel"),
   "mermaid-cove": panel(
@@ -246,7 +255,20 @@ const PANELS: Partial<Record<RoomId, ComponentType>> = {
     () => import("../rooms/speedway/SpeedwayPanels.tsx"),
     "SpeedwayPanels",
   ),
-  farm: panel(() => import("../rooms/farm/FarmPanel.tsx"), "FarmPanel"),
+  farm: games(
+    ["Farm", panel(() => import("../rooms/farm/FarmPanel.tsx"), "FarmPanel")],
+    [
+      "Fishing",
+      panel(
+        () => import("../rooms/marina/FishingPanel.tsx"),
+        "FarmFishingPanel",
+      ),
+    ],
+  ),
+  forest: panel(
+    () => import("../rooms/marina/FishingPanel.tsx"),
+    "ForestFishingPanel",
+  ),
   garden: panel(() => import("../rooms/garden/GardenPanel.tsx"), "GardenPanel"),
 };
 

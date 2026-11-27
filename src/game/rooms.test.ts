@@ -22,6 +22,9 @@ import { SPOT as PENALTY_SPOT } from "./stadium.ts";
 import { HOLE_XS as LINKS_HOLE_XS } from "./lagoonLinks.ts";
 import { MIC } from "./karaoke.ts";
 import { FISH_SPOT as MARINA_FISH_SPOT } from "./marina.ts";
+import { FARM_FISH_SPOT } from "./farm.ts";
+import { FOREST_FISH_SPOT } from "./forest.ts";
+import { OPEN_WATER_FISH_SPOT } from "./openWater.ts";
 import { seatsIn } from "./seats.ts";
 import { pointInPolygon, type Vec2 } from "./walk.ts";
 import { vec2 } from "./typed.ts";
@@ -598,6 +601,17 @@ test("the marina's fishing spot is on the dock and clear", () => {
   const area = areaOf(ROOMS.marina);
   assert.equal(isBlocked(area, MARINA_FISH_SPOT), false);
   assert.equal(isBlocked(area, ROOMS.marina.spawn.position), false);
+});
+
+test("all fishing spots are on walkable floor and clear of blockers", () => {
+  const farmArea = areaOf(ROOMS.farm);
+  assert.equal(isBlocked(farmArea, FARM_FISH_SPOT), false);
+
+  const forestArea = areaOf(ROOMS.forest);
+  assert.equal(isBlocked(forestArea, FOREST_FISH_SPOT), false);
+
+  const openWaterArea = areaOf(ROOMS["open-water"]);
+  assert.equal(isBlocked(openWaterArea, OPEN_WATER_FISH_SPOT), false);
 });
 
 test("homes and the jail stay solo online, until per-player copies exist", () => {

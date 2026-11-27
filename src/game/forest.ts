@@ -38,6 +38,9 @@ export const creekZ = (x: number): number =>
 /** The plank bridge over the creek, running north-south where the path crosses. */
 export const BRIDGE = { x: 3, length: 5.2, width: 2.6 } as const;
 
+/** The fishing pier on the south bank of the creek / lake. */
+export const FOREST_FISH_SPOT: Vec2 = [-14, -11];
+
 /** The lookout deck at the trail's end, with a rail along its north edge. */
 export const LOOKOUT: Rect = { x0: 0, z0: -49, x1: 14, z1: -42.5 };
 
@@ -285,6 +288,8 @@ function kept(x: number, z: number): boolean {
   if (distToCreek(x, z) < CREEK.halfWidth + 1.2) return true;
   if (Object.values(GLADES).some((g) => inside(g, x, z, 1.5))) return true;
   if (inside(LOOKOUT, x, z, 1.5)) return true;
+  if (Math.hypot(FOREST_FISH_SPOT[0] - x, FOREST_FISH_SPOT[1] - z) < 2.5)
+    return true;
   if (BENCH_SPOTS.some((b) => Math.hypot(b.x - x, b.z - z) < 2.2)) return true;
   if (Math.hypot(PICNIC_SPOT.x - x, PICNIC_SPOT.z - z) < 3) return true;
   // the default camera looks up the trailhead's lane: keep it clear
@@ -413,6 +418,8 @@ export function undergrowth(count = 260): Plant[] {
       continue;
     if (distToCreek(x, z) < CREEK.halfWidth + 0.2) continue;
     if (inside(LOOKOUT, x, z, 0.5)) continue;
+    if (Math.hypot(FOREST_FISH_SPOT[0] - x, FOREST_FISH_SPOT[1] - z) < 2)
+      continue;
     if (BENCH_SPOTS.some((b) => Math.hypot(b.x - x, b.z - z) < 1.4)) continue;
     if (pick.near === "path" && dPath > 5) continue;
     if (pick.near === "creek" && distToCreek(x, z) > CREEK.halfWidth + 2.2)

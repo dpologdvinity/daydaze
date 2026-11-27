@@ -44,6 +44,7 @@ import { MARQUEE, NeonText } from "./shared/Neon.tsx";
 import { PortalPads } from "./shared/PortalPads.tsx";
 import { Hikers } from "./forest/Hikers.tsx";
 import { Scatter } from "./zoo/Scatter.tsx";
+import { Fishing } from "./shared/Fishing.tsx";
 
 const { x0, x1, z0, z1 } = BOUNDS;
 
@@ -310,6 +311,10 @@ function useGrounds() {
         });
       }
     }
+    // fishing pier on the creek bank
+    b.add(new THREE.BoxGeometry(2.4, 0.08, 2.2), PLANK, {
+      position: [-14, 0.08, -11.5],
+    });
     // the lookout deck
     b.add(
       new THREE.BoxGeometry(
@@ -498,6 +503,7 @@ export function Forest({
           />
         ))}
         <Hikers />
+        <Fishing player={player} spot="forest" />
       </Suspense>
     </>
   );

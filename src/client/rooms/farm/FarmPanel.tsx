@@ -73,7 +73,7 @@ export function FarmPanel(): JSX.Element {
       role="region"
       aria-label="Sunny Acres Farm"
     >
-      <div className="game-tabs" role="group" aria-label="Farm options">
+      <div className="farm-tabs" role="group" aria-label="Farm options">
         <button
           type="button"
           aria-pressed={activeTab === "plots"}
